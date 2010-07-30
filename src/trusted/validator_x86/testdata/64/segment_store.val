@@ -1,7 +1,7 @@
-0000000000000000: 6d                                           insd
-ERROR: This instruction has been marked illegal by Native Client
-0000000000000000: 6d                                           insd
-ERROR: Segment memory reference not allowed
-Checking jump targets: 0 to 1
-Checking that basic blocks are aligned
+VALIDATOR: 0000000000000000: 6d                                           insd
+VALIDATOR: ERROR: This instruction has been marked illegal by Native Client
+VALIDATOR: 0000000000000000: 6d                                           insd
+VALIDATOR: ERROR: Segment memory reference not allowed
+VALIDATOR: Checking jump targets: 0 to 1
+VALIDATOR: Checking that basic blocks are aligned
 ***MODULE IS UNSAFE***

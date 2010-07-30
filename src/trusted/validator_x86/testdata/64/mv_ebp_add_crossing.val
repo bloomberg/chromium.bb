@@ -1,5 +1,5 @@
-Checking jump targets: 0 to 23
-Checking that basic blocks are aligned
-At address 20:
-ERROR: Bad basic block alignment.
+VALIDATOR: Checking jump targets: 0 to 23
+VALIDATOR: Checking that basic blocks are aligned
+VALIDATOR: At address 20:
+VALIDATOR: ERROR: Bad basic block alignment.
 ***MODULE IS UNSAFE***

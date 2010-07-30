@@ -234,25 +234,54 @@ if env['TARGET_SUBARCH'] == '32':
   env.AddNodeToTestSuite(node, ['large_tests'])
 
 # ======================================================================
-TEST_IMAGES_NACL=[
-    'fib_array.nexe',
-    'fib_scalar.nexe',
-    'null.nexe',
-    ]
+# Helper functions for getting automated tests from the corresponding
+# test directory.
 
 TESTDATA_DIR = 'testdata/' + env['TARGET_SUBARCH'] + '/'
+
+# Generates the set of test files with the given extension.
+def __GoldenFiles(ext):
+  return Glob(TESTDATA_DIR + '*.' + ext)
+
+# Generates base names (i.e. minus path and extention (ext) suffix) of
+# all test data input files.
+def __FilterOutTestFileBaseGen(files, ext):
+  for f in files:
+    yield os.path.basename(f.path).replace('.' + ext, "")
+
+# Generates the set of golden bases for the given extension.
+def __GoldenBases(ext):
+  return __FilterOutTestFileBaseGen(__GoldenFiles(ext), ext)
+
+# Generates the corresponding test file from the given base.
+def __BaseTestFile(base, ext):
+  return env.File(TESTDATA_DIR + base + '.' + ext)
+
+# Generates the corresponding test name from the given base.
+def __BaseTestName(test, base, ext):
+  return test + '_' + base + '_' + ext
+
+# Generates the corresponding output file from the given base.
+def __OutTestFile(test, base, ext):
+  return test + "_" + base + '.' + ext + '.out'
+
+def __AddTest(test, base, ext, command, groups):
+  env.AddNodeToTestSuite(command, groups, __BaseTestName(test, base, ext))
+
 
 # ======================================================================
 # Decoder vs objdump tests
 # TODO: add tests using the toolchain binaries in the sdk
 if env.Bit('linux') and env['TARGET_SUBARCH'] == '32':
-  for vtest in TEST_IMAGES_NACL:
+  test = 'discmp'
+  ext = 'nexe'
+  for base in __GoldenBases(ext):
     node = env.CommandTest(
-        'discmp_' + vtest + ".out",
+        __OutTestFile(test, base, ext),
         ["${PYTHON}", env.File('discmp.py'), env.File('ncdis'),
-         env.File(TESTDATA_DIR + vtest)],
+         __BaseTestFile(base, ext)],
         )
-    env.AddNodeToTestSuite(node, ['large_tests'])
+    __AddTest(test, base, ext, node, ['large_tests'])
 
 # ======================================================================
 # Decoder on sample instruction sequences.
@@ -320,44 +349,33 @@ env.Requires(ncval, crt)
 # TODO: consider comparing the actual output (not just exit codes)
 # Validate tests
 if env['TARGET_SUBARCH'] == '32':
-  for vtest in TEST_IMAGES_NACL:
+  test = 'validate'
+  ext = 'nexe'
+  for base in __GoldenBases(ext):
     node = env.CommandTest(
-        'validate_' + vtest + ".out",
-        [ncval[0], '-t', env.File(TESTDATA_DIR + vtest)],
+        __OutTestFile(test, base, ext),
+        [ncval[0], '-t', __BaseTestFile(base, ext)],
         )
-    env.AddNodeToTestSuite(node, ['large_tests'])
-
-# Directory where test files are located.
-TESTDATA_DIR = 'testdata/' + env['TARGET_SUBARCH'] + '/'
-
-# Generates base names (i.e. minus path and extention (ext) suffix) of
-# all test data input files.
-def __FilterOutTestFileBaseGen(files, ext):
-  for f in files:
-    yield os.path.basename(f.path).replace('.' + ext, "")
+    __AddTest(test, base, ext, node, ['large_tests'])
 
 # Run tests using ncdis on test files. Assumes that extension
 # dis implies to use the iterator model, while ndis does not.
 def __AddNcDisTests(use_iter):
+  test = 'ncdis_hex'
   if use_iter:
     ext = "dis"
   else:
     ext = "ndis"
-  golden_files = Glob(TESTDATA_DIR + '*.' + ext)
   options = ['-hex_text=-']
   if use_iter:
     options.append('-use_iter');
-  for vtest in __FilterOutTestFileBaseGen(golden_files, ext):
-    TEST_PREFIX = 'ncval_test_' + vtest + "_" + ext
-    DIS_TEST_NAME = TEST_PREFIX + "_dis"
+  for base in __GoldenBases(ext):
     node_dis = env.CommandTest(
-        DIS_TEST_NAME + ".out",
+        __OutTestFile(test, base, ext),
         [ncdis[0]] + options,
-        stdin = env.File(TESTDATA_DIR + vtest + ".hex"),
-        stdout_golden = env.File(TESTDATA_DIR + vtest + "." + ext))
-
-    env.AddNodeToTestSuite(node_dis, ['small_tests', 'validator_tests'],
-                           DIS_TEST_NAME)
+        stdin = __BaseTestFile(base, 'hex'),
+        stdout_golden = __BaseTestFile(base, ext))
+    __AddTest(test, base, ext, node_dis, ['small_tests', 'validator_tests'])
 
 __AddNcDisTests(True)
 __AddNcDisTests(False)
@@ -366,27 +384,24 @@ __AddNcDisTests(False)
 # use extension 'val' while read/write sandbox tests use extention 'rval'.
 def __AddNcvalSfiTests(test_readwrite):
   if env['TARGET_SUBARCH'] == '64':
+    test = 'ncval_hex'
     if test_readwrite:
       ext = 'rval'
     else:
       ext = 'val'
     golden_files = Glob(TESTDATA_DIR + '*.' + ext)
-    for vtest in __FilterOutTestFileBaseGen(golden_files, ext):
-      TEST_PREFIX = 'ncval_test_' + vtest + "_" + ext
-
-      VAL_TEST_NAME = TEST_PREFIX + "_" + ext
-      VAL_TEST_CL = [ncval[0], '-use_iter', '-hex_text=-']
+    for base in __GoldenBases(ext):
+      command = [ncval[0], '-use_iter', '-hex_text=-']
       if test_readwrite:
-        VAL_TEST_CL.append('-readwrite_sfi')
+        command.append('-readwrite_sfi')
       else:
-        VAL_TEST_CL.append("-write_sfi")
+        command.append("-write_sfi")
       node_val = env.CommandTest(
-          VAL_TEST_NAME + ".out",
-          VAL_TEST_CL,
-          stdin = env.File(TESTDATA_DIR + vtest + ".hex"),
-          stdout_golden = env.File(TESTDATA_DIR + vtest + "." + ext))
-      env.AddNodeToTestSuite(node_val, ['small_tests', 'validator_tests'],
-                             VAL_TEST_NAME)
+          __OutTestFile(test, base, ext),
+          command,
+          stdin = __BaseTestFile(base, 'hex'),
+          stdout_golden = __BaseTestFile(base, ext))
+      __AddTest(test, base, ext, node_val, ['small_tests', 'validator_tests'])
 
 __AddNcvalSfiTests(True)
 __AddNcvalSfiTests(False)

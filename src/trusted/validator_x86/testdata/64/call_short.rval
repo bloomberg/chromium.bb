@@ -1,3 +1,3 @@
-Checking jump targets: 20260 to 20280
-Checking that basic blocks are aligned
+VALIDATOR: Checking jump targets: 20260 to 20280
+VALIDATOR: Checking that basic blocks are aligned
 ***module is safe***

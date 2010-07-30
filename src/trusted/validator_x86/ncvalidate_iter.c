@@ -84,7 +84,7 @@ void NaClValidatorMessage(int level,
     va_list ap;
 
     NaClLogLock();
-    NaClLog_mu(level, "%s", NaClLogLevelLabel(level));
+    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
     NaClLogV_mu(level, format, ap);
     va_end(ap);
@@ -99,7 +99,7 @@ void NaClValidatorVarargMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(level)) {
     NaClLogLock();
-    NaClLog_mu(level, "%s", NaClLogLevelLabel(level));
+    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
     NaClLogV_mu(level, format, ap);
     NaClLogUnlock();
   }
@@ -115,9 +115,9 @@ void NaClValidatorPcAddressMessage(int level,
     va_list ap;
 
     NaClLogLock();
-    NaClLog_mu(level, "At address %"NACL_PRIxNaClPcAddress":\n", addr);
+    NaClLog_mu(level, "VALIDATOR: At address %"NACL_PRIxNaClPcAddress":\n", addr);
     NaClLogTagNext_mu();
-    NaClLog_mu(level, "%s", NaClLogLevelLabel(level));
+    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
     NaClLogV_mu(level, format, ap);
     va_end(ap);
@@ -137,12 +137,12 @@ void NaClValidatorInstMessage(int level,
     NaClLogLock();
 
     /* TODO(karl): empty fmt strings not allowed */
-    NaClLog_mu(level, "%s", "");
+    NaClLog_mu(level, "VALIDATOR: %s", "");
     /* TODO(karl) - Make printing of instruction state possible via format. */
     NaClInstStateInstPrint(NaClValidatorStateLogFile(state), inst);
 
     va_start(ap, format);
-    NaClLog_mu(level, "%s", NaClLogLevelLabel(level));
+    NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
     NaClLogV_mu(level, format, ap);
     va_end(ap);
     NaClLogUnlock();
