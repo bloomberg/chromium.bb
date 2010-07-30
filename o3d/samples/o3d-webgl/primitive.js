@@ -129,7 +129,16 @@ o3d.Primitive.prototype.render = function() {
            semantic_index < streams.length;
            ++semantic_index) {
         var gl_index = semantic + semantic_index - 1;
-        var stream = streams[semantic_index];
+        var stream_param = streams[semantic_index];
+
+        while (!stream_param.owner_.updateStreams &&
+               stream_param.inputConnection) {
+          stream_param = stream_param.inputConnection;
+        }
+        if (stream_param.owner_.updateStreams) {
+          stream_param.owner_.updateStreams();  // Triggers updating.
+        }
+        var stream = streams[semantic_index].stream;
         var field = stream.field;
         var buffer = field.buffer;
 
@@ -344,8 +353,8 @@ o3d.Primitive.prototype.intersectRay =
 
   var streamBank = this.streamBank;
   var indexBuffer = this.indexBuffer;
-  var stream =
-    this.streamBank.vertex_streams_[o3d.Stream.POSITION][position_stream_index];
+  var positionStreams = this.streamBank.vertex_streams_[o3d.Stream.POSITION];
+  var stream = positionStreams[position_stream_index].stream;
 
   var field = stream.field;
   var buffer = field.buffer;

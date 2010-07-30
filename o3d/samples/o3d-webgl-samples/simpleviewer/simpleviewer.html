@@ -227,13 +227,17 @@ function loadFile(context, path) {
     g_loadingElement.innerHTML = "Loading: " + path;
     enableInput(false);
     try {
-      o3djs.scene.loadScene(g_client, g_pack, parent, path, callback);
+      var secondCounter = g_pack.createObject('SecondCounter');
+      secondCounter.countMode = o3d.Counter.CYCLE;
+      secondCounter.start = 0;
+      secondCounter.end = 1;
+      o3djs.scene.loadScene(g_client, g_pack, parent, path, callback,
+        {opt_animSource: secondCounter.getParam('count')});
     } catch (e) {
       enableInput(true);
       g_loadingElement.innerHTML = "loading failed : " + e;
     }
   }
-
   return parent;
 }
 

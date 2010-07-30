@@ -99,4 +99,22 @@ o3d.Stream.prototype.semanticIndex = 0;
 o3d.Stream.prototype.startIndex = 0;
 
 
+/**
+ * Gets the max number of vertices in this stream.
+ *
+ * @return {number} The maximum vertices available given the stream's settings
+ *     and its buffer.
+ * @private
+ */
+o3d.Stream.prototype.getMaxVertices = function() {
+  var buffer = this.field.buffer;
+  if (!buffer)
+    return 0;
+
+  var num_elements = buffer.numElements;
+  if (this.startIndex > num_elements)
+    return 0;
+
+  return num_elements - this.startIndex;
+};
 
