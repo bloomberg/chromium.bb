@@ -487,8 +487,8 @@ class UITestBase {
   void StartHttpServer(const FilePath& root_directory);
 
   // Launches local http server on the specified port.
-  void StartHttpServerWithPort(const FilePath& root_directory,
-                               const std::wstring& port);
+  void StartHttpServerWithPort(const FilePath& root_directory, int port);
+
   void StopHttpServer();
 
   // Prints IO performance data for use by perf graphs.

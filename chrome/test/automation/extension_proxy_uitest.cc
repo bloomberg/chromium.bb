@@ -109,7 +109,7 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
   // The root directory for the http server does not matter in this case,
   // but we have to pick something.
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  StartHttpServerWithPort(path, L"1365");
+  StartHttpServerWithPort(path, 1365);
   GURL localhost = GURL("http://localhost:1365");
   NavigateToURL(localhost);
 

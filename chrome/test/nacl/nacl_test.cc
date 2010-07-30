@@ -87,7 +87,7 @@ void NaClTest::SetUp() {
 
   UITest::SetUp();
 
-  StartHttpServerWithPort(nacl_test_dir, L"5103");
+  StartHttpServerWithPort(nacl_test_dir, 5103);
 }
 
 void NaClTest::TearDown() {
