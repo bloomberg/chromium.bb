@@ -29,7 +29,6 @@ namespace history {
 
 class InMemoryDatabase;
 class InMemoryURLIndex;
-class URLDatabase;
 struct URLsDeletedDetails;
 struct URLsModifiedDetails;
 
@@ -39,7 +38,7 @@ class InMemoryHistoryBackend : public NotificationObserver {
   ~InMemoryHistoryBackend();
 
   // Initializes with data from the given history database.
-  bool Init(const FilePath& history_filename, URLDatabase* db);
+  bool Init(const FilePath& history_filename);
 
   // Does initialization work when this object is attached to the history
   // system on the main thread. The argument is the profile with which the

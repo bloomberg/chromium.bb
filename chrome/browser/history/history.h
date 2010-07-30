@@ -51,7 +51,6 @@ class TypedUrlDataTypeController;
 namespace history {
 
 class InMemoryHistoryBackend;
-class InMemoryURLIndex;
 class HistoryBackend;
 class HistoryDatabase;
 struct HistoryDetails;
@@ -151,8 +150,6 @@ class HistoryService : public CancelableRequestProvider,
   //
   // TODO(brettw) this should return the InMemoryHistoryBackend.
   history::URLDatabase* InMemoryDatabase();
-
-  history::InMemoryURLIndex* InMemoryIndex();
 
   // Navigation ----------------------------------------------------------------
 

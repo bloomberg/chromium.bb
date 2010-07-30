@@ -222,16 +222,6 @@ history::URLDatabase* HistoryService::InMemoryDatabase() {
   return NULL;
 }
 
-history::InMemoryURLIndex* HistoryService::InMemoryIndex() {
-  // NOTE: See comments in BackendLoaded() as to why we call
-  // LoadBackendIfNecessary() here even though it won't affect the return value
-  // for this call.
-  LoadBackendIfNecessary();
-  if (in_memory_backend_.get())
-    return in_memory_backend_->index();
-  return NULL;
-}
-
 void HistoryService::SetSegmentPresentationIndex(int64 segment_id, int index) {
   ScheduleAndForget(PRIORITY_UI,
                     &HistoryBackend::SetSegmentPresentationIndex,

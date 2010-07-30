@@ -107,8 +107,6 @@
         'browser/autocomplete/autocomplete_popup_view_mac.mm',
         'browser/autocomplete/history_contents_provider.cc',
         'browser/autocomplete/history_contents_provider.h',
-        'browser/autocomplete/history_quick_provider.cc',
-        'browser/autocomplete/history_quick_provider.h',
         'browser/autocomplete/history_url_provider.cc',
         'browser/autocomplete/history_url_provider.h',
         'browser/autocomplete/keyword_provider.cc',

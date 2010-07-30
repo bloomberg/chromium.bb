@@ -5,13 +5,10 @@
 #include "chrome/browser/history/in_memory_history_backend.h"
 
 #include "base/command_line.h"
-#include "base/histogram.h"
-#include "base/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_url_index.h"
-#include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -29,18 +26,14 @@ InMemoryHistoryBackend::InMemoryHistoryBackend()
 InMemoryHistoryBackend::~InMemoryHistoryBackend() {
 }
 
-bool InMemoryHistoryBackend::Init(const FilePath& history_filename,
-                                  URLDatabase* db) {
+bool InMemoryHistoryBackend::Init(const FilePath& history_filename) {
   db_.reset(new InMemoryDatabase);
   bool success = db_->InitFromDisk(history_filename);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableInMemoryURLIndex)) {
     index_.reset(new InMemoryURLIndex);
-    base::TimeTicks beginning_time = base::TimeTicks::Now();
-    index_->Init(db);
-    UMA_HISTOGRAM_TIMES("Autocomplete.HistoryDatabaseIndexingTime",
-                        base::TimeTicks::Now() - beginning_time);
+    // TODO(rohitrao): Load index.
   }
 
   return success;

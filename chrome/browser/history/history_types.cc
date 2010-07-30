@@ -10,7 +10,6 @@
 #include "base/stl_util-inl.h"
 
 using base::Time;
-using base::TimeDelta;
 
 namespace history {
 
@@ -236,12 +235,6 @@ void QueryResults::AdjustResultMap(size_t begin, size_t end, ptrdiff_t delta) {
         i->second[match] += delta;
     }
   }
-}
-
-Time AutocompleteAgeThreshold() {
-  Time recent_threshold =
-      Time::Now() - TimeDelta::FromDays(kLowQualityMatchAgeLimitInDays);
-  return recent_threshold;
 }
 
 }  // namespace history

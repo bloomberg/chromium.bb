@@ -4,16 +4,10 @@
 
 #include "chrome/browser/history/in_memory_url_index.h"
 
-#include "chrome/browser/history/url_database.h"
-
 namespace history {
 
-// Indexing
+InMemoryURLIndex::InMemoryURLIndex() {}
 
-bool InMemoryURLIndex::Init(history::URLDatabase* history_db) {
-  bool success = true;
-  // TODO(mrossetti): Implement.
-  return success;
-}
+InMemoryURLIndex::~InMemoryURLIndex() {}
 
 }  // namespace history

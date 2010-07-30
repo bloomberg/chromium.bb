@@ -8,8 +8,6 @@
 
 namespace history {
 
-class URLDatabase;
-
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
 // quickly look up matching URLs for a given query string.  Used by
@@ -17,11 +15,8 @@ class URLDatabase;
 // matches to the omnibox.
 class InMemoryURLIndex {
  public:
-  InMemoryURLIndex() {}
-  ~InMemoryURLIndex() {}
-
-  // Open and index the URL history database.
-  bool Init(URLDatabase* history_db);
+  InMemoryURLIndex();
+  ~InMemoryURLIndex();
 };
 
 }  // namespace history

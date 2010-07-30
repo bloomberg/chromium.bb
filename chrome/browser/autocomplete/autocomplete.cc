@@ -8,12 +8,10 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
 #include "base/string_util.h"
-#include "chrome/browser/autocomplete/history_contents_provider.h"
-#include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
+#include "chrome/browser/autocomplete/history_contents_provider.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -22,7 +20,6 @@
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -758,11 +755,7 @@ AutocompleteController::AutocompleteController(Profile* profile)
       have_committed_during_this_query_(false),
       done_(true) {
   providers_.push_back(new SearchProvider(this, profile));
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInMemoryURLIndex))
-    providers_.push_back(new HistoryQuickProvider(this, profile));
-  else
-    providers_.push_back(new HistoryURLProvider(this, profile));
+  providers_.push_back(new HistoryURLProvider(this, profile));
   providers_.push_back(new KeywordProvider(this, profile));
   history_contents_provider_ = new HistoryContentsProvider(this, profile);
   providers_.push_back(history_contents_provider_);
