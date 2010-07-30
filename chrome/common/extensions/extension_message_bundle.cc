@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,7 +73,7 @@ bool ExtensionMessageBundle::Init(const CatalogVector& locale_catalogs,
     DictionaryValue* catalog = (*it).get();
     for (DictionaryValue::key_iterator key_it = catalog->begin_keys();
          key_it != catalog->end_keys(); ++key_it) {
-      std::string key(StringToLowerASCII(WideToUTF8(*key_it)));
+      std::string key(StringToLowerASCII(*key_it));
       if (!IsValidName(*key_it))
         return BadKeyMessage(key, error);
       std::string value;
@@ -126,14 +126,13 @@ bool ExtensionMessageBundle::AppendReservedMessagesForLocale(
   return true;
 }
 
-bool ExtensionMessageBundle::GetMessageValue(const std::wstring& wkey,
+bool ExtensionMessageBundle::GetMessageValue(const std::string& key,
                                              const DictionaryValue& catalog,
                                              std::string* value,
                                              std::string* error) const {
-  std::string key(WideToUTF8(wkey));
   // Get the top level tree for given key (name part).
   DictionaryValue* name_tree;
-  if (!catalog.GetDictionaryWithoutPathExpansion(wkey, &name_tree)) {
+  if (!catalog.GetDictionaryWithoutPathExpansion(key, &name_tree)) {
     *error = StringPrintf("Not a valid tree for key %s.", key.c_str());
     return false;
   }
@@ -176,10 +175,10 @@ bool ExtensionMessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
   for (DictionaryValue::key_iterator key_it = placeholders_tree->begin_keys();
        key_it != placeholders_tree->end_keys(); ++key_it) {
     DictionaryValue* placeholder;
-    std::string content_key = WideToUTF8(*key_it);
-    if (!IsValidName(*key_it))
+    const std::string& content_key(*key_it);
+    if (!IsValidName(content_key))
       return BadKeyMessage(content_key, error);
-    if (!placeholders_tree->GetDictionaryWithoutPathExpansion(*key_it,
+    if (!placeholders_tree->GetDictionaryWithoutPathExpansion(content_key,
                                                               &placeholder)) {
       *error = StringPrintf("Invalid placeholder %s for key %s",
                             content_key.c_str(),

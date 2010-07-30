@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,8 +44,8 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
     Visitor* visitor, const std::set<std::string>& ids_to_ignore) const {
   for (DictionaryValue::key_iterator i = prefs_->begin_keys();
        i != prefs_->end_keys(); ++i) {
-    const std::wstring& extension_id = *i;
-    if (ids_to_ignore.find(WideToASCII(extension_id)) != ids_to_ignore.end())
+    const std::string& extension_id = *i;
+    if (ids_to_ignore.find(extension_id) != ids_to_ignore.end())
       continue;
 
     DictionaryValue* extension;
@@ -79,8 +79,8 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
 
     scoped_ptr<Version> version;
     version.reset(Version::GetVersionFromString(external_version));
-    visitor->OnExternalExtensionFound(WideToASCII(extension_id), version.get(),
-                                      path, Extension::EXTERNAL_PREF);
+    visitor->OnExternalExtensionFound(extension_id, version.get(), path,
+                                      Extension::EXTERNAL_PREF);
   }
 }
 

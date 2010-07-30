@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,7 +40,7 @@ bool JsonDictionaryToMap(const std::string& json,
 
     EXPECT_TRUE(value->IsType(Value::TYPE_STRING));
     if (value->IsType(Value::TYPE_STRING)) {
-      std::string key = WideToUTF8(*it);
+      const std::string& key(*it);
 
       std::string result;
       succeeded = value->GetAsString(&result);

@@ -47,7 +47,7 @@ void ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread(
   if (token_dictionary != NULL) {
     for (DictionaryValue::key_iterator it = token_dictionary->begin_keys();
         it != token_dictionary->end_keys(); ++it) {
-      GURL url(WideToUTF8(*it));
+      GURL url(*it);
       if (!url.is_valid())
         continue;
       token_dictionary->GetStringAsUTF16WithoutPathExpansion(

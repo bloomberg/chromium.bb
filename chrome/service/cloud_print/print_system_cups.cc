@@ -363,10 +363,10 @@ bool PrintSystemCUPS::ParsePrintTicket(const std::string& print_ticket,
       static_cast<DictionaryValue*>(ticket_value.get());
   DictionaryValue::key_iterator it(ticket_dict->begin_keys());
   for (; it != ticket_dict->end_keys(); ++it) {
-    std::wstring key = *it;
+    const std::string& key = *it;
     std::string value;
     if (ticket_dict->GetString(key, &value)) {
-      (*options)[WideToUTF8(key.c_str())] = value;
+      (*options)[key] = value;
     }
   }
 

@@ -152,11 +152,11 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
         prefs->GetDictionary(prefs::kPerHostContentSettings);
     for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
          i != all_settings_dictionary->end_keys(); ++i) {
-      std::wstring wide_host(*i);
-      Pattern pattern(std::string(kDomainWildcard) + WideToUTF8(wide_host));
+      const std::string& host(*i);
+      Pattern pattern(std::string(kDomainWildcard) + host);
       DictionaryValue* host_settings_dictionary = NULL;
       bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          wide_host, &host_settings_dictionary);
+          host, &host_settings_dictionary);
       DCHECK(found);
       ContentSettings settings;
       GetSettingsFromDictionary(host_settings_dictionary, &settings);
@@ -570,14 +570,14 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
     ContentSettings* settings) {
   for (DictionaryValue::key_iterator i(dictionary->begin_keys());
        i != dictionary->end_keys(); ++i) {
-    std::wstring content_type(*i);
+    const std::string& content_type(*i);
     int setting = CONTENT_SETTING_DEFAULT;
     bool found = dictionary->GetIntegerWithoutPathExpansion(content_type,
                                                             &setting);
     DCHECK(found);
     for (size_t type = 0; type < arraysize(kTypeNames); ++type) {
       if ((kTypeNames[type] != NULL) &&
-          (std::wstring(kTypeNames[type]) == content_type)) {
+          (WideToUTF8(kTypeNames[type]) == content_type)) {
         settings->settings[type] = IntToContentSetting(setting);
         break;
       }
@@ -634,16 +634,16 @@ void HostContentSettingsMap::ReadExceptions(bool overwrite) {
   if (all_settings_dictionary != NULL) {
     for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
          i != all_settings_dictionary->end_keys(); ++i) {
-      std::wstring wide_pattern(*i);
-      if (!Pattern(WideToUTF8(wide_pattern)).IsValid())
+      const std::string& pattern(*i);
+      if (!Pattern(pattern).IsValid())
         LOG(WARNING) << "Invalid pattern stored in content settings";
       DictionaryValue* pattern_settings_dictionary = NULL;
       bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          wide_pattern, &pattern_settings_dictionary);
+          pattern, &pattern_settings_dictionary);
       DCHECK(found);
       ContentSettings settings;
       GetSettingsFromDictionary(pattern_settings_dictionary, &settings);
-      host_content_settings_[WideToUTF8(wide_pattern)] = settings;
+      host_content_settings_[pattern] = settings;
     }
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_handle.h"
 #include "base/task.h"
+#include "base/utf_string_conversions.h"  // TODO(viettrungluu): delete me.
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -381,7 +382,9 @@ bool SandboxedExtensionUnpacker::RewriteCatalogFiles() {
       return false;
     }
 
-    FilePath relative_path = FilePath::FromWStringHack(*key_it);
+    // TODO(viettrungluu): Fix the |FilePath::FromWStringHack(UTF8ToWide())|
+    // hack and remove the corresponding #include.
+    FilePath relative_path = FilePath::FromWStringHack(UTF8ToWide(*key_it));
     relative_path = relative_path.Append(Extension::kMessagesFilename);
     if (relative_path.IsAbsolute() || relative_path.ReferencesParent()) {
       ReportFailure("Invalid path for catalog.");

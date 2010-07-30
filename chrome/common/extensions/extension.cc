@@ -514,11 +514,12 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
 
 bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
   // Generate a map of allowable keys
-  static std::map<std::wstring, bool> theme_keys;
+  static std::map<std::string, bool> theme_keys;
   static bool theme_key_mapped = false;
   if (!theme_key_mapped) {
     for (size_t i = 0; i < arraysize(kValidThemeKeys); ++i) {
-      theme_keys[kValidThemeKeys[i]] = true;
+      // TODO(viettrungluu): Make the constants |char*|s and avoid converting.
+      theme_keys[WideToUTF8(kValidThemeKeys[i])] = true;
     }
     theme_key_mapped = true;
   }
@@ -1454,7 +1455,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     // Validate that the overrides are all strings
     for (DictionaryValue::key_iterator iter = overrides->begin_keys();
          iter != overrides->end_keys(); ++iter) {
-      std::string page = WideToUTF8(*iter);
+      std::string page = *iter;
       std::string val;
       // Restrict override pages to a list of supported URLs.
       if ((page != chrome::kChromeUINewTabHost &&
@@ -1529,6 +1530,8 @@ GURL Extension::GalleryUrl() const {
 
 std::set<FilePath> Extension::GetBrowserImages() {
   std::set<FilePath> image_paths;
+  // TODO(viettrungluu): These |FilePath::FromWStringHack(UTF8ToWide())|
+  // indicate that we're doing something wrong.
 
   // Extension icons.
   for (std::map<int, std::string>::iterator iter = icons_.begin();
@@ -1541,9 +1544,9 @@ std::set<FilePath> Extension::GetBrowserImages() {
   if (theme_images) {
     for (DictionaryValue::key_iterator it = theme_images->begin_keys();
          it != theme_images->end_keys(); ++it) {
-      std::wstring val;
+      std::string val;
       if (theme_images->GetStringWithoutPathExpansion(*it, &val))
-        image_paths.insert(FilePath::FromWStringHack(val));
+        image_paths.insert(FilePath::FromWStringHack(UTF8ToWide(val)));
     }
   }
 

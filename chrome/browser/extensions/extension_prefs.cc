@@ -82,16 +82,16 @@ namespace {
 // and http://crbug.com/39745 for more details).
 static void CleanupBadExtensionKeys(PrefService* prefs) {
   DictionaryValue* dictionary = prefs->GetMutableDictionary(kExtensionsPref);
-  std::set<std::wstring> bad_keys;
+  std::set<std::string> bad_keys;
   for (DictionaryValue::key_iterator i = dictionary->begin_keys();
        i != dictionary->end_keys(); ++i) {
-    const std::wstring key_name = *i;
-    if (!Extension::IdIsValid(WideToASCII(key_name))) {
+    const std::string& key_name(*i);
+    if (!Extension::IdIsValid(key_name)) {
       bad_keys.insert(key_name);
     }
   }
   bool dirty = false;
-  for (std::set<std::wstring>::iterator i = bad_keys.begin();
+  for (std::set<std::string>::iterator i = bad_keys.begin();
        i != bad_keys.end(); ++i) {
     dirty = true;
     dictionary->Remove(*i, NULL);
@@ -259,7 +259,7 @@ void ExtensionPrefs::UpdateBlacklist(
         NOTREACHED() << "Invalid pref for extension " << *extension_id;
         continue;
       }
-      std::string id = WideToASCII(*extension_id);
+      const std::string& id(*extension_id);
       if (blacklist_set.find(id) == blacklist_set.end()) {
         if (!IsBlacklistBitSet(ext)) {
           // This extension is not in blacklist. And it was not blacklisted
@@ -373,10 +373,9 @@ void ExtensionPrefs::GetKilledExtensionIds(std::set<std::string>* killed_ids) {
 
   for (DictionaryValue::key_iterator i = dict->begin_keys();
        i != dict->end_keys(); ++i) {
-    std::wstring key_name = *i;
-    if (!Extension::IdIsValid(WideToASCII(key_name))) {
-      LOG(WARNING) << "Invalid external extension ID encountered: "
-                   << WideToASCII(key_name);
+    const std::string& key_name(*i);
+    if (!Extension::IdIsValid(key_name)) {
+      LOG(WARNING) << "Invalid external extension ID encountered: " << key_name;
       continue;
     }
 
@@ -390,8 +389,7 @@ void ExtensionPrefs::GetKilledExtensionIds(std::set<std::string>* killed_ids) {
     int state;
     if (extension->GetInteger(kPrefState, &state) &&
         state == static_cast<int>(Extension::KILLBIT)) {
-      StringToLowerASCII(&key_name);
-      killed_ids->insert(WideToASCII(key_name));
+      killed_ids->insert(StringToLowerASCII(key_name));
     }
   }
 }
@@ -643,8 +641,7 @@ static ExtensionInfo* GetInstalledExtensionInfoImpl(
     // Just a warning for now.
   }
 
-  return new ExtensionInfo(manifest, WideToASCII(*extension_id),
-                           FilePath(path), location);
+  return new ExtensionInfo(manifest, *extension_id, FilePath(path), location);
 }
 
 ExtensionPrefs::ExtensionsInfo* ExtensionPrefs::GetInstalledExtensionsInfo() {
@@ -655,7 +652,7 @@ ExtensionPrefs::ExtensionsInfo* ExtensionPrefs::GetInstalledExtensionsInfo() {
   for (DictionaryValue::key_iterator extension_id(
            extension_data->begin_keys());
        extension_id != extension_data->end_keys(); ++extension_id) {
-    if (!Extension::IdIsValid(WideToASCII(*extension_id)))
+    if (!Extension::IdIsValid(*extension_id))
       continue;
 
     ExtensionInfo* info = GetInstalledExtensionInfoImpl(extension_data.get(),
@@ -674,7 +671,7 @@ ExtensionInfo* ExtensionPrefs::GetInstalledExtensionInfo(
   for (DictionaryValue::key_iterator extension_iter(
            extension_data->begin_keys());
        extension_iter != extension_data->end_keys(); ++extension_iter) {
-    if (WideToASCII(*extension_iter) == extension_id) {
+    if (*extension_iter == extension_id) {
       return GetInstalledExtensionInfoImpl(extension_data.get(),
                                            extension_iter);
     }
@@ -762,7 +759,7 @@ std::set<std::string> ExtensionPrefs::GetIdleInstallInfoIds() {
 
   for (DictionaryValue::key_iterator iter = extensions->begin_keys();
        iter != extensions->end_keys(); ++iter) {
-    std::string id = WideToASCII(*iter);
+    const std::string& id(*iter);
     if (!Extension::IdIsValid(id)) {
       NOTREACHED();
       continue;

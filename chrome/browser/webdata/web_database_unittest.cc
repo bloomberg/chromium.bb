@@ -128,7 +128,7 @@ class WebDatabaseTest : public testing::Test {
     int b_count = GetKeyCount(b);
     DictionaryValue::key_iterator i(a.begin_keys());
     DictionaryValue::key_iterator e(a.end_keys());
-    std::wstring av, bv;
+    std::string av, bv;
     while (i != e) {
       if (!(a.GetStringWithoutPathExpansion(*i, &av)) ||
           !(b.GetStringWithoutPathExpansion(*i, &bv)) ||

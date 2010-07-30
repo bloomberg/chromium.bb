@@ -100,7 +100,7 @@ static bool ReadDictionaryValue(const Message* m, void** iter,
     return false;
 
   for (int i = 0; i < size; ++i) {
-    std::wstring key;
+    std::string key;
     Value* subval;
     if (!ReadParam(m, iter, &key) ||
         !ReadValue(m, iter, &subval, recursion + 1))

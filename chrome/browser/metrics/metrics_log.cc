@@ -354,10 +354,10 @@ void MetricsLog::RecordEnvironment(
 
 void MetricsLog::WriteAllProfilesMetrics(
     const DictionaryValue& all_profiles_metrics) {
-  const std::wstring profile_prefix(prefs::kProfilePrefix);
+  const std::string profile_prefix(WideToUTF8(prefs::kProfilePrefix));
   for (DictionaryValue::key_iterator i = all_profiles_metrics.begin_keys();
        i != all_profiles_metrics.end_keys(); ++i) {
-    const std::wstring& key_name = *i;
+    const std::string& key_name = *i;
     if (key_name.compare(0, profile_prefix.size(), profile_prefix) == 0) {
       DictionaryValue* profile;
       if (all_profiles_metrics.GetDictionaryWithoutPathExpansion(key_name,
@@ -367,21 +367,21 @@ void MetricsLog::WriteAllProfilesMetrics(
   }
 }
 
-void MetricsLog::WriteProfileMetrics(const std::wstring& profileidhash,
+void MetricsLog::WriteProfileMetrics(const std::string& profileidhash,
                                      const DictionaryValue& profile_metrics) {
   OPEN_ELEMENT_FOR_SCOPE("userprofile");
-  WriteAttribute("profileidhash", WideToUTF8(profileidhash));
+  WriteAttribute("profileidhash", profileidhash);
   for (DictionaryValue::key_iterator i = profile_metrics.begin_keys();
        i != profile_metrics.end_keys(); ++i) {
     Value* value;
     if (profile_metrics.GetWithoutPathExpansion(*i, &value)) {
-      DCHECK(*i != L"id");
+      DCHECK(*i != "id");
       switch (value->GetType()) {
         case Value::TYPE_STRING: {
           std::string string_value;
           if (value->GetAsString(&string_value)) {
             OPEN_ELEMENT_FOR_SCOPE("profileparam");
-            WriteAttribute("name", WideToUTF8(*i));
+            WriteAttribute("name", *i);
             WriteAttribute("value", string_value);
           }
           break;
@@ -391,7 +391,7 @@ void MetricsLog::WriteProfileMetrics(const std::wstring& profileidhash,
           bool bool_value;
           if (value->GetAsBoolean(&bool_value)) {
             OPEN_ELEMENT_FOR_SCOPE("profileparam");
-            WriteAttribute("name", WideToUTF8(*i));
+            WriteAttribute("name", *i);
             WriteIntAttribute("value", bool_value ? 1 : 0);
           }
           break;
@@ -401,7 +401,7 @@ void MetricsLog::WriteProfileMetrics(const std::wstring& profileidhash,
           int int_value;
           if (value->GetAsInteger(&int_value)) {
             OPEN_ELEMENT_FOR_SCOPE("profileparam");
-            WriteAttribute("name", WideToUTF8(*i));
+            WriteAttribute("name", *i);
             WriteIntAttribute("value", int_value);
           }
           break;

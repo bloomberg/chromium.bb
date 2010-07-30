@@ -151,7 +151,7 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
     CreateBackgroundContents(profile,
                              GURL(url),
                              frame_name,
-                             WideToUTF16(*it));
+                             UTF8ToUTF16(*it));
   }
 }
 

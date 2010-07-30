@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -730,7 +730,7 @@ bool TopSites::GetPinnedURLAtIndex(size_t index, GURL* url) {
     int current_index;
     if (pinned_urls_->GetIntegerWithoutPathExpansion(*it, &current_index)) {
       if (static_cast<size_t>(current_index) == index) {
-        *url = GURL(WideToASCII(*it));
+        *url = GURL(*it);
         return true;
       }
     }

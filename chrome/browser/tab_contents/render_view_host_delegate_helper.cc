@@ -222,7 +222,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       std::string value;
       if (inspector_settings->GetStringWithoutPathExpansion(*iter, &value))
           web_prefs.inspector_settings.push_back(
-              std::make_pair(WideToUTF8(*iter), value));
+              std::make_pair(*iter, value));
     }
   }
   web_prefs.tabs_to_links = prefs->GetBoolean(prefs::kWebkitTabsToLinks);

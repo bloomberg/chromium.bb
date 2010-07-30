@@ -93,7 +93,7 @@ class MetricsLog : public MetricsLogBase {
 
   // Writes metrics for the profile identified by key. This writes all
   // key/value pairs in profile_metrics.
-  void WriteProfileMetrics(const std::wstring& key,
+  void WriteProfileMetrics(const std::string& key,
                            const DictionaryValue& profile_metrics);
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);

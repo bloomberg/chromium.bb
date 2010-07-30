@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -19,6 +19,7 @@
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "base/wmi_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -235,12 +236,12 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
        iter != uninstall_metrics_dict->end_keys(); ++iter) {
     has_values = true;
     metrics->append(L"&");
-    metrics->append(*iter);
+    metrics->append(UTF8ToWide(*iter));
     metrics->append(L"=");
 
-    std::wstring value;
+    std::string value;
     uninstall_metrics_dict->GetStringWithoutPathExpansion(*iter, &value);
-    metrics->append(value);
+    metrics->append(UTF8ToWide(value));
   }
 
   return has_values;

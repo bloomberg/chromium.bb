@@ -618,7 +618,7 @@ void BrowserThemePack::BuildTintsFromJSON(DictionaryValue* tints_value) {
       if (ValidRealValue(tint_list, 0, &hsl.h) &&
           ValidRealValue(tint_list, 1, &hsl.s) &&
           ValidRealValue(tint_list, 2, &hsl.l)) {
-        int id = GetIntForString(WideToUTF8(*iter), kTintTable);
+        int id = GetIntForString(*iter, kTintTable);
         if (id != -1) {
           temp_tints[id] = hsl;
         }
@@ -689,7 +689,7 @@ void BrowserThemePack::ReadColorsFromJSON(
           color = SkColorSetRGB(r, g, b);
         }
 
-        int id = GetIntForString(WideToUTF8(*iter), kColorTable);
+        int id = GetIntForString(*iter, kColorTable);
         if (id != -1) {
           (*temp_colors)[id] = color;
         }
@@ -769,7 +769,7 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
   for (DictionaryValue::key_iterator iter(
        display_properties_value->begin_keys());
        iter != display_properties_value->end_keys(); ++iter) {
-    int property_id = GetIntForString(WideToUTF8(*iter), kDisplayProperties);
+    int property_id = GetIntForString(*iter, kDisplayProperties);
     switch (property_id) {
       case BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT: {
         std::string val;
@@ -817,7 +817,7 @@ void BrowserThemePack::ParseImageNamesFromJSON(
        iter != images_value->end_keys(); ++iter) {
     std::string val;
     if (images_value->GetString(*iter, &val)) {
-      int id = GetPersistentIDByName(WideToUTF8(*iter));
+      int id = GetPersistentIDByName(*iter);
       if (id != -1)
         (*file_paths)[id] = images_path.AppendASCII(val);
     }

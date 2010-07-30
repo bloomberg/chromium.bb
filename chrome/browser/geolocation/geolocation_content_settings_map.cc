@@ -92,13 +92,13 @@ GeolocationContentSettingsMap::AllOriginsSettings
   if (all_settings_dictionary != NULL) {
     for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
          i != all_settings_dictionary->end_keys(); ++i) {
-      const std::wstring& wide_origin(*i);
-      GURL origin_as_url(WideToUTF8(wide_origin));
+      const std::string& origin(*i);
+      GURL origin_as_url(origin);
       if (!origin_as_url.is_valid())
         continue;
       DictionaryValue* requesting_origin_settings_dictionary = NULL;
       bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-          wide_origin, &requesting_origin_settings_dictionary);
+          origin, &requesting_origin_settings_dictionary);
       DCHECK(found);
       if (!requesting_origin_settings_dictionary)
         continue;
@@ -177,11 +177,11 @@ void GeolocationContentSettingsMap::GetOneOriginSettingsFromDictionary(
     OneOriginSettings* one_origin_settings) {
   for (DictionaryValue::key_iterator i(dictionary->begin_keys());
        i != dictionary->end_keys(); ++i) {
-    const std::wstring& target(*i);
+    const std::string& target(*i);
     int setting = kDefaultSetting;
     bool found = dictionary->GetIntegerWithoutPathExpansion(target, &setting);
     DCHECK(found);
-    GURL target_url(WideToUTF8(target));
+    GURL target_url(target);
     // An empty URL has a special meaning (wildcard), so only accept invalid
     // URLs if the original version was empty (avoids treating corrupted prefs
     // as the wildcard entry; see http://crbug.com/39685)

@@ -42,12 +42,12 @@ void HostZoomMap::Load() {
   if (host_zoom_dictionary != NULL) {
     for (DictionaryValue::key_iterator i(host_zoom_dictionary->begin_keys());
          i != host_zoom_dictionary->end_keys(); ++i) {
-      std::wstring wide_host(*i);
+      const std::string& host(*i);
       int zoom_level = 0;
       bool success = host_zoom_dictionary->GetIntegerWithoutPathExpansion(
-          wide_host, &zoom_level);
+          host, &zoom_level);
       DCHECK(success);
-      host_zoom_levels_[WideToUTF8(wide_host)] = zoom_level;
+      host_zoom_levels_[host] = zoom_level;
     }
   }
 }

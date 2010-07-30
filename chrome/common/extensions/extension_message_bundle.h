@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,7 +133,7 @@ class ExtensionMessageBundle {
   // Helper methods that navigate JSON tree and return simplified message.
   // They replace all $PLACEHOLDERS$ with their value, and return just key/value
   // of the message.
-  bool GetMessageValue(const std::wstring& wkey,
+  bool GetMessageValue(const std::string& key,
                        const DictionaryValue& catalog,
                        std::string* value,
                        std::string* error) const;
