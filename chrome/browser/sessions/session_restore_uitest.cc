@@ -420,8 +420,7 @@ TEST_F(SessionRestoreUITest,
   include_testing_id_ = false;
   clear_profile_ = false;
   CommandLine app_launch_arguments = launch_arguments_;
-  app_launch_arguments.AppendSwitchWithValue(switches::kApp,
-                                             UTF8ToWide(url2_.spec()));
+  app_launch_arguments.AppendSwitchASCII(switches::kApp, url2_.spec());
   LaunchAnotherBrowserBlockUntilClosed(app_launch_arguments);
   ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
 

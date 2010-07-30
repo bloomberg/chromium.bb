@@ -311,8 +311,7 @@ class AppModeTest : public UITest {
     test_file = test_file.AppendASCII("title1.html");
     GURL test_file_url(net::FilePathToFileURL(test_file));
 
-    launch_arguments_.AppendSwitchWithValue(switches::kApp,
-                                            test_file_url.spec());
+    launch_arguments_.AppendSwitchASCII(switches::kApp, test_file_url.spec());
   }
 };
 

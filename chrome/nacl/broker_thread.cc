@@ -52,8 +52,9 @@ void NaClBrokerThread::OnLaunchLoaderThroughBroker(
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kNaClLoaderProcess);
 
-    cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-                                    loader_channel_id);
+    // TODO(evanm): remove needless usage of wstring for channel id.
+    cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
+                                WideToASCII(loader_channel_id));
 
     loader_process = sandbox::StartProcessWithAccess(cmd_line, FilePath());
     if (loader_process) {
