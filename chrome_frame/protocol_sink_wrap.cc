@@ -225,10 +225,14 @@ bool IsCFRequest(IBindCtx* pbc) {
 }
 
 void PutProtData(IBindCtx* pbc, ProtData* data) {
+  // AddRef and Release to avoid a potential leak of a ProtData instance if
+  // FromBindContext fails.
+  data->AddRef();
   ScopedComPtr<BindContextInfo> info;
   BindContextInfo::FromBindContext(pbc, info.Receive());
   if (info)
     info->set_prot_data(data);
+  data->Release();
 }
 
 bool IsTextHtml(const wchar_t* status_text) {
