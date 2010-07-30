@@ -2245,8 +2245,9 @@ organize-native-code() {
   # PNaCl. We should build these files with PNaCl.
   StepBanner "PNaCl" "x86-32 native code: ${PNACL_X8632_ROOT}"
   mkdir -p ${PNACL_X8632_ROOT}
-  cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/32/libgcc.a \
-    ${x86_src}/nacl64/lib/32/crt*.o \
+  cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}/libgcc.a \
+    ${PNACL_X8632_ROOT}
+  cp -f  ${x86_src}/nacl64/lib/32/crt*.o \
     ${x86_src}/nacl64/lib/32/libcrt*.a \
     ${x86_src}/nacl64/lib/32/intrinsics.o \
     ${PNACL_X8632_ROOT}
