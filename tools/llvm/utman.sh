@@ -42,6 +42,8 @@ readonly UTMAN_CONCURRENCY=${UTMAN_CONCURRENCY:-8}
 
 # TODO(pdox): Decide what the target should really permanently be
 readonly CROSS_TARGET_ARM=arm-none-linux-gnueabi
+readonly CROSS_TARGET_X86_32=i686-none-linux-gnu
+readonly CROSS_TARGET_X86_64=x86_64-none-linux-gnu
 readonly REAL_CROSS_TARGET=pnacl
 
 readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
@@ -619,7 +621,9 @@ everything() {
   binutils-arm
   llvm
   driver
-  gcc-stage1
+  gcc-stage1-sysroot
+  gcc-stage1 ${CROSS_TARGET_ARM}
+  gcc-stage1 ${CROSS_TARGET_X86_32}
 
   rebuild-pnacl-libs
 
@@ -910,23 +914,22 @@ llvm-install() {
 #+ gcc-stage1            - build and install pre-gcc
 gcc-stage1() {
   StepBanner "GCC-STAGE1"
+  local target=$1
 
-  gcc-stage1-sysroot
-
-  if gcc-stage1-needs-configure; then
-    gcc-stage1-clean
-    gcc-stage1-configure
+  if gcc-stage1-needs-configure ${target}; then
+    gcc-stage1-clean ${target}
+    gcc-stage1-configure ${target}
   else
     SkipBanner "GCC-STAGE1" "configure"
   fi
 
-  if gcc-stage1-needs-make; then
-    gcc-stage1-make
+  if gcc-stage1-needs-make ${target}; then
+    gcc-stage1-make ${target}
   else
     SkipBanner "GCC-STAGE1" "make"
   fi
 
-  gcc-stage1-install
+  gcc-stage1-install ${target}
 }
 
 #+ gcc-stage1-sysroot    - setup initial sysroot
@@ -945,27 +948,46 @@ gcc-stage1-sysroot() {
 #+ gcc-stage1-clean      - Clean gcc stage 1
 gcc-stage1-clean() {
   StepBanner "GCC-STAGE1" "Clean"
-  local objdir="${TC_BUILD_LLVM_GCC1}"
+  local target=$1
+  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
   rm -rf "${objdir}"
 }
 
 gcc-stage1-needs-configure() {
-  [ ! -f "${TC_BUILD_LLVM_GCC1}/config.status" ]
+  local target=$1
+  [ ! -f "${TC_BUILD_LLVM_GCC1}-${target}/config.status" ]
   return $?
 }
 
 #+ gcc-stage1-configure  - Configure GCC stage 1
 gcc-stage1-configure() {
-  StepBanner "GCC-STAGE1" "Configure"
+  local target=$1
+  StepBanner "GCC-STAGE1" "Configure $target"
 
   local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC1}"
+  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
 
   mkdir -p "${objdir}"
   spushd "${objdir}"
 
+  # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
+  local x86_32_as="${INSTALL_ROOT}/../linux_x86/bin/nacl-as"
+  local x86_64_as="${INSTALL_ROOT}/../linux_x86/bin/nacl64-as"
+  local config_opts=""
+  case ${target} in
+      arm-*)
+          config_opts="--with-arch=${ARM_ARCH} --with-fpu=${ARM_FPU}"
+          ;;
+      i686-*)
+          config_opts="--with-as=${x86_32_as}"
+          ;;
+      x86_64-*)
+          config_opts="--with-as=${x86_64_as}"
+          ;;
+  esac
+
   # TODO(robertm): do we really need CROSS_TARGET_*
-  RunWithLog llvm-pregcc.configure \
+  RunWithLog llvm-pregcc-${target}.configure \
       env -i PATH=/usr/bin/:/bin \
              CC=${CC} \
              CXX=${CXX} \
@@ -983,9 +1005,8 @@ gcc-stage1-configure() {
                --disable-libstdcxx-pch \
                --disable-shared \
                --without-headers \
-               --target=${CROSS_TARGET_ARM} \
-               --with-arch=${ARM_ARCH} \
-               --with-fpu=${ARM_FPU} \
+               ${config_opts} \
+               --target=${target} \
                --with-sysroot="${NEWLIB_INSTALL_DIR}"
 
   spopd
@@ -993,13 +1014,14 @@ gcc-stage1-configure() {
 
 gcc-stage1-needs-make() {
   local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC1}"
+  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+  local target=$1
 
   # In safe mode, rebuild gcc-stage1 when LLVM is updated.
   if ${UTMAN_SAFE_MODE}; then
     speculative-check "llvm" && return 0
     ts-newer-than "${TC_BUILD_LLVM}" \
-                  "${TC_BUILD_LLVM_GCC1}" && return 0
+                  "${TC_BUILD_LLVM_GCC1}-${target}" && return 0
   fi
 
   ts-modified "$srcdir" "$objdir"
@@ -1009,27 +1031,32 @@ gcc-stage1-needs-make() {
 gcc-stage1-make() {
   StepBanner "GCC-STAGE1" "Make"
 
+  local target=$1
   local srcdir="${TC_SRC_LLVM_GCC}"
-  local objdir="${TC_BUILD_LLVM_GCC1}"
+  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
   spushd ${objdir}
 
   ts-touch-open "${objdir}"
 
+  mkdir -p "${objdir}/dummy-bin"
+  ln -s ${CROSS_TARGET_AR} "${objdir}/dummy-bin/${target}-ar"
+  ln -s ${CROSS_TARGET_RANLIB} "${objdir}/dummy-bin/${target}-ranlib"
+
   # NOTE: we add ${INSTALL_DIR}/bin to PATH
-  RunWithLog llvm-pregcc.make \
-       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+  RunWithLog llvm-pregcc-${target}.make \
+       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
               CC=${CC} \
               CXX=${CXX} \
               CFLAGS="-Dinhibit_libc" \
               make ${MAKE_OPTS} all-gcc
 
-  xgcc-patch
+  xgcc-patch ${target}
 
   # NOTE: This builds more than what we need right now. For example,
   # libstdc++ is unused (we always use the bitcode one). This might change
   # when we start supporting shared libraries.
-  RunWithLog llvm-pregcc2.make \
-       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+  RunWithLog llvm-pregcc2-${target}.make \
+       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
               CC=${CC} \
               CXX=${CXX} \
               CFLAGS="-Dinhibit_libc" \
@@ -1048,32 +1075,56 @@ xgcc-patch() {
   # This is a hack. Ideally gcc would be configured with a pnacl-nacl target
   # and xgcc would produce sfi code automatically. This is not the case, so
   # we cheat gcc's build by replacing xgcc behind its back.
+  local target=$1
+  StepBanner "GCC-STAGE1" "Patching xgcc and cleaning libgcc $target"
 
-  StepBanner "GCC-STAGE1" "Patching xgcc and cleaning libgcc"
+  local arch=""
+  local driver=""
 
+  case ${target} in
+      arm-*)
+          arch="arm"
+          ;;
+      i686-*)
+
+          arch="x86-32"
+          ;;
+      x86_64-*)
+          arch="x86-64"
+          ;;
+  esac
   mv gcc/xgcc gcc/xgcc-real
+  # N.B:
+  # * We have to use the arch cc1 istead of the more common practice of using
+  # the ARM cc1 for everything. The reason is that the ARM cc1 will reject a
+  # asm that uses ebx for example
+  # * Because of the previous item, we have to use the arch driver bacuse
+  # the ARM driver will pass options like -mfpu that the x86 cc1 cannot handle.
   cat > gcc/xgcc <<EOF
 #!/bin/sh
 
 DIR="\$(readlink -mn \${0%/*})"
-\${DIR}/../../../../toolchain/linux_arm-untrusted/arm-none-linux-gnueabi/llvm-fake-sfigcc --driver=\${DIR}/xgcc-real -arch arm ${CFLAGS_FOR_SFI_TARGET} "\$@"
+DIR2="\${DIR}/../../../../toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
+\${DIR2}/llvm-fake-sfigcc --driver=\${DIR}/xgcc-real -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
 EOF
   chmod 755 gcc/xgcc
 
-  RunWithLog libgcc.clean \
+  RunWithLog libgcc-${target}.clean \
       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
              make clean-target-libgcc
 }
 
 #+ gcc-stage1-install    - Install GCC stage 1
 gcc-stage1-install() {
-  StepBanner "GCC-STAGE1" "Install"
+  local target=$1
+  StepBanner "GCC-STAGE1" "Install $target"
 
-  spushd "${TC_BUILD_LLVM_GCC1}"
+  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+  spushd "${TC_BUILD_LLVM_GCC1}-${target}"
 
   # NOTE: we add ${INSTALL_DIR}/bin to PATH
-  RunWithLog llvm-pregcc.install \
-       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+  RunWithLog llvm-pregcc-${target}.install \
+       env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin:${objdir}/dummy-bin \
               CC=${CC} \
               CXX=${CXX} \
               CFLAGS="-Dinhibit_libc" \
@@ -1117,7 +1168,7 @@ libstdcpp-bitcode-clean() {
 
 libstdcpp-bitcode-needs-configure() {
   speculative-check "gcc-stage1" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC1}" \
+  ts-newer-than "${TC_BUILD_LLVM_GCC1}-${CROSS_TARGET_ARM}" \
                 "${TC_BUILD_LIBSTDCPP_BITCODE}" && return 0
   [ ! -f "${TC_BUILD_LIBSTDCPP_BITCODE}/config.status" ]
   return #?
@@ -1833,7 +1884,7 @@ newlib-bitcode-clean() {
 
 newlib-bitcode-needs-configure() {
   speculative-check "gcc-stage1" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC1}" \
+  ts-newer-than "${TC_BUILD_LLVM_GCC1}-${CROSS_TARGET_ARM}" \
                    "${TC_BUILD_NEWLIB_BITCODE}" && return 0
 
   [ ! -f "${TC_BUILD_NEWLIB_BITCODE}/config.status" ]
@@ -1992,7 +2043,7 @@ extrasdk-bitcode() {
 
 extrasdk-bitcode-needs-make() {
   speculative-check "gcc-stage1" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC1}" \
+  ts-newer-than "${TC_BUILD_LLVM_GCC1}-${CROSS_TARGET_ARM}" \
                 "${TC_BUILD_EXTRASDK_BITCODE}" && return 0
   return 1   # false
 }
