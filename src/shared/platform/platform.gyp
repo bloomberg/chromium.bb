@@ -148,21 +148,20 @@
           '<@(common_sources)',
           '<@(platform_sources)',
         ],
-      }
-    ],
-    ['target_base=="platform_tests"', {
-        'sources': [
-          'platform_tests.cc',
-        ],
-        'conditions': [[
-          'OS=="win"', {
-            'sources': [
-              'win/port_win_test.c',
-            ],
-          }
-        ]]
-      }
-    ]
+      }],
+      ['target_base=="platform_tests"', {
+          'sources': [
+            'platform_tests.cc',
+          ],
+          'conditions': [[
+            'OS=="win"', {
+              'sources': [
+                'win/port_win_test.c',
+              ],
+            }
+          ]]
+        }
+      ]
     ],
   },
   'targets': [
