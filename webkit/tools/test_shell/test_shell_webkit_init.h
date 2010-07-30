@@ -6,7 +6,7 @@
 #define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBKIT_INIT_H_
 
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIndexedDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 #include "webkit/glue/webclipboard_impl.h"
 #include "webkit/glue/webfilesystem_impl.h"
@@ -109,8 +109,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     // The event is dispatched by the proxy.
   }
 
-  virtual WebKit::WebIndexedDatabase* indexedDatabase() {
-    return WebKit::WebIndexedDatabase::create();
+  virtual WebKit::WebIDBFactory* idbFactory() {
+    return WebKit::WebIDBFactory::create();
   }
 
 #if defined(OS_WIN)
