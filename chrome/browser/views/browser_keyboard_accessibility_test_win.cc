@@ -35,6 +35,9 @@ class BrowserKeyboardAccessibility : public InProcessBrowserTest,
     current_event_type_ = event_type;
 
     // Are we within a message loop waiting for a particular event?
+    // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+    LOG(ERROR) << "Got notification; is_waiting_ is "
+               << (is_waiting_ ? "true" : "false");
     if (is_waiting_) {
       is_waiting_ = false;
       MessageLoop::current()->Quit();
@@ -98,7 +101,14 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInOptionsDialog) {
 
   // Tab through each of the three tabs.
   for (int i = 0; i < 3; ++i) {
+    // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+    LOG(ERROR) << "Iteration no. " << i;
+
     TabCyclerForwardAndBack(current_view_native_window());
+
+
+    // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+    LOG(ERROR) << "Sending TAB key event...";
     ui_controls::SendKeyPressNotifyWhenDone(current_view_native_window(),
                                             base::VKEY_TAB,
                                             true, false, false, false,
@@ -152,9 +162,13 @@ void BrowserKeyboardAccessibility::TabCycler(gfx::NativeWindow hwnd,
   // Wait for a focus event on the provided native window.
   while (current_event() != AccessibilityTypes::EVENT_FOCUS ||
          current_view_native_window() != hwnd) {
+    // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+    LOG(ERROR) << "Runnig message loop...";
     set_waiting(true);
     ui_test_utils::RunMessageLoop();
   }
+  // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+  LOG(ERROR) << "After the loop.";
 
   views::View* first_focused_item = current_view();
 
@@ -164,12 +178,16 @@ void BrowserKeyboardAccessibility::TabCycler(gfx::NativeWindow hwnd,
 
   // Keep tabbing until we reach the originally focused view.
   do {
+    // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+    LOG(ERROR) << "Sending TAB key event.";
     ui_controls::SendKeyPressNotifyWhenDone(hwnd, base::VKEY_TAB,
         false, !forward_tab, false, false, new MessageLoop::QuitTask());
     set_waiting(true);
     ui_test_utils::RunMessageLoop();
     next_focused_item = current_view();
   } while (first_focused_item != next_focused_item);
+  // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+  LOG(ERROR) << "After second loop.";
 }
 
 }  // namespace
