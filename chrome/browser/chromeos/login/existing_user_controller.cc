@@ -141,6 +141,27 @@ void ExistingUserController::OwnBackground(
   background_view_ = background_view;
 }
 
+void ExistingUserController::LoginNewUser(const std::string& username,
+                                          const std::string& password) {
+  SelectNewUser();
+  UserController* new_user = controllers_.back();
+  if (!new_user->is_guest())
+    return;
+  NewUserView* new_user_view = new_user->new_user_view();
+  new_user_view->SetUsername(username);
+
+  if (password.empty())
+    return;
+
+  new_user_view->SetPassword(password);
+  LOG(INFO) << "Password: " << password;
+  new_user_view->Login();
+}
+
+void ExistingUserController::SelectNewUser() {
+  SelectUser(controllers_.size() - 1);
+}
+
 ExistingUserController::~ExistingUserController() {
   ClearErrors();
 
@@ -348,7 +369,7 @@ void ExistingUserController::OnLoginSuccess(const std::string& username,
   AppendStartUrlToCmdline();
   if (selected_view_index_ + 1 == controllers_.size()) {
     // For new user login don't launch browser until we pass image screen.
-    chromeos::LoginUtils::Get()->EnableBrowserLaunch(false);
+    LoginUtils::Get()->EnableBrowserLaunch(false);
     LoginUtils::Get()->CompleteLogin(username, credentials);
     ActivateWizard(WizardController::kUserImageScreenName);
   } else {

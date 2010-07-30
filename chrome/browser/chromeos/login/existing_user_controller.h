@@ -57,6 +57,12 @@ class ExistingUserController : public WmMessageListener::Observer,
   void OwnBackground(views::Widget* background_widget,
                      chromeos::BackgroundView* background_view);
 
+  // Tries to login from new user pod with given user login and password.
+  void LoginNewUser(const std::string& username, const std::string& password);
+
+  // Selects new user pod.
+  void SelectNewUser();
+
  private:
   friend class DeleteTask<ExistingUserController>;
 

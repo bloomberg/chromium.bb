@@ -340,7 +340,7 @@ void WizardController::ShowNetworkScreen() {
   background_view_->SetOobeProgress(chromeos::BackgroundView::SELECT_NETWORK);
 }
 
-void WizardController::ShowLoginScreen() {
+chromeos::ExistingUserController* WizardController::ShowLoginScreen() {
   SetStatusAreaVisible(true);
   background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
 
@@ -372,10 +372,11 @@ void WizardController::ShowLoginScreen() {
         NewRunnableFunction(&DeleteWizardControllerAndApplyCustomization,
                             this));
 
-    return;
+    return controller;
   }
 
   SetCurrentScreen(GetLoginScreen());
+  return NULL;
 }
 
 void WizardController::ShowAccountScreen() {
@@ -470,22 +471,33 @@ void WizardController::OnNetworkOffline() {
 }
 
 void WizardController::OnAccountCreateBack() {
-  ShowLoginScreen();
+  chromeos::ExistingUserController* controller = ShowLoginScreen();
+  if (controller)
+    controller->SelectNewUser();
 }
 
 void WizardController::OnAccountCreated() {
-  ShowLoginScreen();
+  chromeos::ExistingUserController* controller = ShowLoginScreen();
+  if (controller)
+    controller->LoginNewUser(username_, password_);
+  else
+    Login(username_, password_);
+  // TODO(dpolukhin): clear password memory for real. Now it is not
+  // a problem because we can't extract password from the form.
+  password_.clear();
+}
+
+void WizardController::Login(const std::string& username,
+                             const std::string& password) {
   chromeos::LoginScreen* login = GetLoginScreen();
-  if (!username_.empty()) {
-    login->view()->SetUsername(username_);
-    if (!password_.empty()) {
-      login->view()->SetPassword(password_);
-      // TODO(dpolukhin): clear password memory for real. Now it is not
-      // a problem because we can't extract password from the form.
-      password_.clear();
-      login->view()->Login();
-    }
-  }
+  if (username.empty())
+    return;
+  login->view()->SetUsername(username);
+
+  if (password.empty())
+    return;
+  login->view()->SetPassword(password);
+  login->view()->Login();
 }
 
 void WizardController::OnConnectionFailed() {

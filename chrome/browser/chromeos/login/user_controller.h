@@ -76,6 +76,7 @@ class UserController : public views::ButtonListener,
   int user_index() const { return user_index_; }
   bool is_user_selected() const { return is_user_selected_; }
   bool is_guest() const { return is_guest_; }
+  NewUserView* new_user_view() const { return new_user_view_; }
 
   const UserManager::User& user() const { return user_; }
 

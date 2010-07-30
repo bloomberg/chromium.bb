@@ -24,6 +24,7 @@ namespace chromeos {
 class AccountScreen;
 class BackgroundView;
 class EulaScreen;
+class ExistingUserController;
 class LoginScreen;
 class NetworkScreen;
 class RegistrationScreen;
@@ -90,12 +91,15 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Show specific screen.
   void ShowNetworkScreen();
-  void ShowLoginScreen();
   void ShowAccountScreen();
   void ShowUpdateScreen();
   void ShowUserImageScreen();
   void ShowEulaScreen();
   void ShowRegistrationScreen();
+  // Shows the default login screen and returns NULL or shows images login
+  // screen and returns the corresponding controller instance for optional
+  // tweaking.
+  chromeos::ExistingUserController* ShowLoginScreen();
 
   // Returns a pointer to the current screen or NULL if there's no such
   // screen.
@@ -174,6 +178,9 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Marks device registered. i.e. second part of OOBE is completed.
   void MarkDeviceRegistered();
+
+  // Logs in the specified user via default login screen.
+  void Login(const std::string& username, const std::string& password);
 
   // Widget we're showing in.
   views::Widget* widget_;
