@@ -577,11 +577,20 @@ download-trusted() {
 #@ download-toolchains   - Download and Install all SDKs (arm,x86-32,x86-64)
 
 download-toolchains() {
-  # "--help" prevents building libs after the download
-  # TODO(robertm): fix this in the SConstruct file to be less of a hack
-  ./scons platform=arm --download --help sdl=none
-  # we use "targetplatform" so that this works on both 32 and 64bit systems
-  ./scons targetplatform=x86-64 --download --help sdl=none
+  TRUSTED_TOOLCHAIN=native_client/toolchain/linux_arm-trusted/arm-2009q3
+  AR=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ar
+  AS=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-as
+  CC=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-gcc
+  CXX=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-g++
+  GYP_DEFINES= \
+      target_arch=arm \
+      sysroot=${TRUSTED_TOOLCHAIN}/arm-none-linux-gnueabi/libc \
+      linux_use_tcmalloc=0 armv7=1 arm_thumb=1
+  GYP_GENERATORS=make
+  LD=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ld
+  RANLIB=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ranlib
+  # This downloads both toolchains and regenerates gyp.
+  gclient runhooks --force
 }
 
 #@-------------------------------------------------------------------------
