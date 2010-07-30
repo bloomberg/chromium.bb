@@ -63,20 +63,6 @@ void SandboxedExtensionUnpacker::Start() {
     return;
   }
 
-  // The utility process will have access to the directory passed to
-  // SandboxedExtensionUnpacker.  That directory should not contain a
-  // symlink or NTFS junction, because when the path is used, following
-  // the link will cause file system access outside the sandbox path.
-  FilePath normalized_crx_path;
-  if (!file_util::NormalizeFilePath(temp_crx_path, &normalized_crx_path)) {
-    LOG(ERROR) << "Could not get the normalized path of "
-               << temp_crx_path.value();
-    normalized_crx_path = temp_crx_path;
-  } else {
-    LOG(INFO) << "RealFilePath: from " << temp_crx_path.value()
-              << " to " << normalized_crx_path.value();
-  }
-
   // If we are supposed to use a subprocess, kick off the subprocess.
   //
   // TODO(asargent) we shouldn't need to do this branch here - instead
@@ -84,15 +70,42 @@ void SandboxedExtensionUnpacker::Start() {
   bool use_utility_process = rdh_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
   if (use_utility_process) {
+    // The utility process will have access to the directory passed to
+    // SandboxedExtensionUnpacker.  That directory should not contain a
+    // symlink or NTFS reparse point.  When the path is used, following
+    // the link/reparse point will cause file system access outside the
+    // sandbox path, and the sandbox will deny the operation.
+    FilePath link_free_crx_path;
+    if (!file_util::NormalizeFilePath(temp_crx_path, &link_free_crx_path)) {
+      LOG(ERROR) << "Could not get the normalized path of "
+                 << temp_crx_path.value();
+#if defined (OS_WIN)
+      // On windows, it is possible to mount a disk without the root of that
+      // disk having a drive letter.  The sandbox does not support this.
+      // See crbug/49530 .
+      ReportFailure(
+          "Can not unpack extension.  To safely unpack an extension, "
+          "there must be a path to your profile directory that starts "
+          "with a drive letter and does not contain a junction, mount "
+          "point, or symlink.  No such path exists for your profile.");
+#else
+      ReportFailure(
+          "Can not unpack extension.  To safely unpack an extension, "
+          "there must be a path to your profile directory that does "
+          "not contain a symlink.  No such path exists for your profile.");
+#endif
+      return;
+    }
+
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(
             this,
             &SandboxedExtensionUnpacker::StartProcessOnIOThread,
-            normalized_crx_path));
+            link_free_crx_path));
   } else {
     // Otherwise, unpack the extension in this process.
-    ExtensionUnpacker unpacker(normalized_crx_path);
+    ExtensionUnpacker unpacker(temp_crx_path);
     if (unpacker.Run() && unpacker.DumpImagesToFile() &&
         unpacker.DumpMessageCatalogsToFile()) {
       OnUnpackExtensionSucceeded(*unpacker.parsed_manifest());
