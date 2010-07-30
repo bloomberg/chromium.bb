@@ -1345,8 +1345,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   poofPoint = [[oldButton window] convertBaseToScreen:poofPoint];
 
   // If a hover-open is pending, cancel it.
-  if (oldButton == buttonThatMouseIsIn_)
+  if (oldButton == buttonThatMouseIsIn_) {
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    buttonThatMouseIsIn_ = nil;
+  }
 
   [oldButton removeFromSuperview];
   if (animate && !ignoreAnimations_)
@@ -1406,6 +1408,10 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 
 - (void)setIgnoreAnimations:(BOOL)ignore {
   ignoreAnimations_ = ignore;
+}
+
+- (BookmarkButton*)buttonThatMouseIsIn {
+  return buttonThatMouseIsIn_;
 }
 
 @end  // BookmarkBarFolderController

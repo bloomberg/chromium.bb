@@ -168,6 +168,7 @@
 - (id)folderTarget;
 - (void)configureWindowLevel;
 - (void)performOneScroll:(CGFloat)delta;
+- (BookmarkButton*)buttonThatMouseIsIn;
 // Set to YES in order to prevent animations.
 - (void)setIgnoreAnimations:(BOOL)ignore;
 

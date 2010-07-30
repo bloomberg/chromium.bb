@@ -184,7 +184,6 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
     return kLotsOfNodesCount;
   }
 
-
   // Return a simple BookmarkBarFolderController.
   BookmarkBarFolderControllerPong* SimpleBookmarkBarFolderController() {
     BookmarkButton* parentButton = [[bar_ buttons] objectAtIndex:0];
@@ -1190,6 +1189,38 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   // Check the size. It should have reduced.
   EXPECT_GT(menuWidth, NSWidth([folderMenu frame]));
   EXPECT_GT(buttonWidth, NSWidth([button frame]));
+}
+
+// See http://crbug.com/46101
+TEST_F(BookmarkBarFolderControllerMenuTest, HoverThenDeleteBookmark) {
+  BookmarkModel& model(*helper_.profile()->GetBookmarkModel());
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const BookmarkNode* folder = model.AddGroup(root,
+                                              root->GetChildCount(),
+                                              L"BIG");
+  for (int i = 0; i < kLotsOfNodesCount; i++)
+    model.AddURL(folder, folder->GetChildCount(), L"kid",
+                  GURL("http://kid.com/smile"));
+
+  // Pop open the new folder window and hover one of its kids.
+  BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"BIG"];
+  [[button target] performSelector:@selector(openBookmarkFolderFromButton:)
+                        withObject:button];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  NSArray* buttons = [bbfc buttons];
+
+  // Hover over a button and verify that it is now known.
+  button = [buttons objectAtIndex:3];
+  BookmarkButton* buttonThatMouseIsIn = [bbfc buttonThatMouseIsIn];
+  EXPECT_FALSE(buttonThatMouseIsIn);
+  [bbfc mouseEnteredButton:button event:nil];
+  buttonThatMouseIsIn = [bbfc buttonThatMouseIsIn];
+  EXPECT_EQ(button, buttonThatMouseIsIn);
+
+  // Delete the bookmark and verify that it is now not known.
+  model.Remove(folder, 3);
+  buttonThatMouseIsIn = [bbfc buttonThatMouseIsIn];
+  EXPECT_FALSE(buttonThatMouseIsIn);
 }
 
 // Just like a BookmarkBarFolderController but intercedes when providing
