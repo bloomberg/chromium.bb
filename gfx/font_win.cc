@@ -170,18 +170,9 @@ Font Font::DeriveFont(int size_delta, int style) const {
 }
 
 int Font::GetStringWidth(const std::wstring& text) const {
-  int width = 0;
-  HDC dc = GetDC(NULL);
-  HFONT previous_font = static_cast<HFONT>(SelectObject(dc, hfont()));
-  SIZE size;
-  if (GetTextExtentPoint32(dc, text.c_str(), static_cast<int>(text.size()),
-                           &size)) {
-    width = size.cx;
-  } else {
-    width = 0;
-  }
-  SelectObject(dc, previous_font);
-  ReleaseDC(NULL, dc);
+  int width = 0, height = 0;
+  CanvasSkia::SizeStringInt(text, *this, &width, &height,
+                            gfx::Canvas::NO_ELLIPSIS);
   return width;
 }
 
