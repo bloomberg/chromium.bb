@@ -36,6 +36,7 @@ const CGFloat kXShadowCircleAlpha = 0.1;
 }
 
 - (void)awakeFromNib {
+  [super awakeFromNib];
   [self commonInit];
 }
 
@@ -70,10 +71,6 @@ const CGFloat kXShadowCircleAlpha = 0.1;
 }
 
 - (void)commonInit {
-  [self setTrackingEnabled:YES];
-  hoverState_ = kHoverStateNone;
-  [self updateTrackingAreas];
-
   // Set accessibility description.
   NSString* description = l10n_util::GetNSStringWithFixup(IDS_ACCNAME_CLOSE);
   [[self cell]
@@ -106,79 +103,6 @@ const CGFloat kXShadowCircleAlpha = 0.1;
   [transform translateXBy:-pathCenter.x yBy:-pathCenter.y];
 
   [xPath_ transformUsingAffineTransform:transform];
-}
-
-- (void)dealloc {
-  [self setTrackingEnabled:NO];
-  [super dealloc];
-}
-
-- (void)mouseEntered:(NSEvent*)theEvent {
-  hoverState_ = kHoverStateMouseOver;
-  [self setNeedsDisplay:YES];
-}
-
-- (void)mouseExited:(NSEvent*)theEvent {
-  hoverState_ = kHoverStateNone;
-  [self setNeedsDisplay:YES];
-}
-
-- (void)mouseDown:(NSEvent*)theEvent {
-  hoverState_ = kHoverStateMouseDown;
-  [self setNeedsDisplay:YES];
-  // The hover button needs to hold onto itself here for a bit.  Otherwise,
-  // it can be freed while |super mouseDown:| is in it's loop, and the
-  // |checkImageState| call will crash.
-  // http://crbug.com/28220
-  scoped_nsobject<HoverCloseButton> myself([self retain]);
-
-  [super mouseDown:theEvent];
-  // We need to check the image state after the mouseDown event loop finishes.
-  // It's possible that we won't get a mouseExited event if the button was
-  // moved under the mouse during tab resize, instead of the mouse moving over
-  // the button.
-  // http://crbug.com/31279
-  [self checkImageState];
-}
-
-- (void)setTrackingEnabled:(BOOL)enabled {
-  if (enabled) {
-    closeTrackingArea_.reset(
-        [[NSTrackingArea alloc] initWithRect:[self bounds]
-                                     options:NSTrackingMouseEnteredAndExited |
-                                             NSTrackingActiveAlways
-                                       owner:self
-                                    userInfo:nil]);
-    [self addTrackingArea:closeTrackingArea_.get()];
-
-    // If you have a separate window that overlaps the close button, and you
-    // move the mouse directly over the close button without entering another
-    // part of the tab strip, we don't get any mouseEntered event since the
-    // tracking area was disabled when we entered.
-    [self checkImageState];
-  } else {
-    if (closeTrackingArea_.get()) {
-      [self removeTrackingArea:closeTrackingArea_.get()];
-      closeTrackingArea_.reset(nil);
-    }
-  }
-}
-
-- (void)updateTrackingAreas {
-  [super updateTrackingAreas];
-  [self checkImageState];
-}
-
-- (void)checkImageState {
-  if (!closeTrackingArea_.get())
-    return;
-
-  // Update the close buttons if the tab has moved.
-  NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
-  mouseLoc = [self convertPoint:mouseLoc fromView:nil];
-  hoverState_ = NSPointInRect(mouseLoc, [self bounds]) ?
-      kHoverStateMouseOver : kHoverStateNone;
-  [self setNeedsDisplay:YES];
 }
 
 @end

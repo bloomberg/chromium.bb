@@ -12,7 +12,7 @@
 
 namespace {
 
-const int kRoundedCornerSize = 6.5;
+const int kRoundedCornerSize = 8;
 
 }  // namespace
 
@@ -32,6 +32,10 @@ const int kRoundedCornerSize = 6.5;
   }
   return self;
 }
+
+- (BOOL)canBecomeMainWindow {
+  return NO;
+}
 @end
 
 @implementation BalloonShelfViewCocoa
@@ -45,20 +49,25 @@ const int kRoundedCornerSize = 6.5;
 
   [[NSColor colorWithCalibratedWhite:0.957 alpha:1.0] set];
   [path fill];
-  [[NSColor blackColor] set];
-  [path stroke];
+
+  [[NSColor colorWithCalibratedWhite:0.8 alpha:1.0] set];
+  NSPoint origin = [self bounds].origin;
+  [NSBezierPath strokeLineFromPoint:origin
+      toPoint:NSMakePoint(origin.x + NSWidth([self bounds]), origin.y)];
 }
 @end
 
 @implementation BalloonContentViewCocoa
 - (void)drawRect:(NSRect)rect {
+  rect = NSInsetRect([self bounds], 0.5, 0.5);
   NSBezierPath* path =
-      [NSBezierPath gtm_bezierPathWithRoundRect:[self bounds]
+      [NSBezierPath gtm_bezierPathWithRoundRect:rect
                             topLeftCornerRadius:0.0
                            topRightCornerRadius:0.0
                          bottomLeftCornerRadius:kRoundedCornerSize
                         bottomRightCornerRadius:kRoundedCornerSize];
-  [[NSColor blackColor] set];
+  [[NSColor whiteColor] set];
+  [path setLineWidth:3];
   [path stroke];
 }
 @end

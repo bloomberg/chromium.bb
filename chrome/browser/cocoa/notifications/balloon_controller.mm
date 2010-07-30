@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #import "base/cocoa_protocols_mac.h"
 #include "base/mac_util.h"
+#include "base/nsimage_cache_mac.h"
 #import "base/scoped_nsobject.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/cocoa/menu_controller.h"
@@ -25,11 +26,15 @@ namespace {
 // Margin, in pixels, between the notification frame and the contents
 // of the notification.
 const int kTopMargin = 1;
-const int kBottomMargin = 1;
-const int kLeftMargin = 1;
-const int kRightMargin = 1;
+const int kBottomMargin = 2;
+const int kLeftMargin = 2;
+const int kRightMargin = 2;
 
 }  // namespace
+
+@interface BalloonController (Private)
+- (void)updateTrackingRect;
+@end
 
 @implementation BalloonController
 
@@ -51,10 +56,13 @@ const int kRightMargin = 1;
   DCHECK([self window]);
   DCHECK_EQ(self, [[self window] delegate]);
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  NSImage* image = rb.GetNSImageNamed(IDR_BALLOON_WRENCH);
-  DCHECK(image);
-  [optionsButton_ setImage:image];
+  NSImage* image = nsimage_cache::ImageNamed(@"balloon_wrench.pdf");
+  [optionsButton_ setDefaultImage:image];
+  [optionsButton_ setDefaultOpacity:0.6];
+  [optionsButton_ setHoverImage:image];
+  [optionsButton_ setHoverOpacity:0.9];
+  [optionsButton_ setPressedImage:image];
+  [optionsButton_ setPressedOpacity:1.0];
 
   NSString* sourceLabelText = l10n_util::GetNSStringF(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
@@ -69,6 +77,36 @@ const int kRightMargin = 1;
                                 positioned:NSWindowBelow
                                 relativeTo:nil];
   }
+
+  // Use the standard close button for a utility window.
+  closeButton_ = [NSWindow standardWindowButton:NSWindowCloseButton
+                                   forStyleMask:NSUtilityWindowMask];
+  NSRect frame = [closeButton_ frame];
+  [closeButton_ setFrame:NSMakeRect(6, 1, frame.size.width, frame.size.height)];
+  [closeButton_ setTarget:self];
+  [closeButton_ setAction:@selector(closeButtonPressed:)];
+  [shelf_ addSubview:closeButton_];
+  [self updateTrackingRect];
+
+  [self repositionToBalloon];
+}
+
+- (void)updateTrackingRect {
+  if (closeButtonTrackingTag_)
+    [shelf_ removeTrackingRect:closeButtonTrackingTag_];
+
+  closeButtonTrackingTag_ = [shelf_ addTrackingRect:[closeButton_ frame]
+                                              owner:self
+                                           userData:nil
+                                       assumeInside:NO];
+}
+
+- (void) mouseEntered:(NSEvent*)event {
+  [[closeButton_ cell] setHighlighted:YES];
+}
+
+- (void) mouseExited:(NSEvent*)event {
+  [[closeButton_ cell] setHighlighted:NO];
 }
 
 - (IBAction)optionsButtonPressed:(id)sender {
@@ -86,6 +124,13 @@ const int kRightMargin = 1;
 - (IBAction)closeButtonPressed:(id)sender {
   [self closeBalloon:YES];
   [self close];
+}
+
+- (void)close {
+  if (closeButtonTrackingTag_)
+    [shelf_ removeTrackingRect:closeButtonTrackingTag_];
+
+  [super close];
 }
 
 - (void)closeBalloon:(bool)byUser {

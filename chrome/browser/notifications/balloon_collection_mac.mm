@@ -30,7 +30,7 @@ int BalloonCollectionImpl::Layout::HorizontalEdgeMargin() const {
 }
 
 int BalloonCollectionImpl::Layout::VerticalEdgeMargin() const {
-  return 5;
+  return 0;
 }
 
 // static

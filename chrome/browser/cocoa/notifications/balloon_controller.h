@@ -10,7 +10,7 @@
 
 #include "base/scoped_nsobject.h"
 #include "base/cocoa_protocols_mac.h"
-#import "chrome/browser/cocoa/hover_close_button.h"
+#import "chrome/browser/cocoa/hover_image_button.h"
 #import "chrome/browser/cocoa/notifications/balloon_view.h"
 #import "chrome/browser/cocoa/notifications/balloon_view_host_mac.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -35,13 +35,16 @@ class NotificationOptionsMenuModel;
   IBOutlet BalloonShelfViewCocoa* shelf_;
 
   // The close button.
-  IBOutlet HoverCloseButton* closeButton_;
+  IBOutlet NSButton* closeButton_;
+
+  // Tracking region for the close button.
+  int closeButtonTrackingTag_;
 
   // The origin label.
   IBOutlet NSTextField* originLabel_;
 
   // The options menu that appears when "options" is pressed.
-  IBOutlet NSButton* optionsButton_;
+  IBOutlet HoverImageButton* optionsButton_;
   scoped_ptr<NotificationOptionsMenuModel> menuModel_;
   scoped_nsobject<MenuController> menuController_;
 

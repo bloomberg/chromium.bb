@@ -37,7 +37,7 @@
 			<object class="NSWindowTemplate" id="644637438">
 				<int key="NSWindowStyleMask">1</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{1140, 794}, {300, 84}}</string>
+				<string key="NSWindowRect">{{1140, 794}, {300, 76}}</string>
 				<int key="NSWTFlags">603980800</int>
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">BalloonWindow</string>
@@ -64,7 +64,7 @@
 								<object class="NSTextField" id="293244832">
 									<reference key="NSNextResponder" ref="667965148"/>
 									<int key="NSvFlags">271</int>
-									<string key="NSFrame">{{24, 5}, {248, 14}}</string>
+									<string key="NSFrame">{{24, 2}, {248, 14}}</string>
 									<reference key="NSSuperview" ref="667965148"/>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSTextFieldCell" key="NSCell" id="963811960">
@@ -87,45 +87,17 @@
 											</object>
 										</object>
 										<object class="NSColor" key="NSTextColor">
-											<int key="NSColorSpace">6</int>
-											<string key="NSCatalogName">System</string>
-											<string key="NSColorName">controlTextColor</string>
-											<object class="NSColor" key="NSColor" id="56913">
-												<int key="NSColorSpace">3</int>
-												<bytes key="NSWhite">MAA</bytes>
-											</object>
+											<int key="NSColorSpace">3</int>
+											<bytes key="NSWhite">MC40MzE0NTE2MgA</bytes>
 										</object>
-									</object>
-								</object>
-								<object class="NSButton" id="690499602">
-									<reference key="NSNextResponder" ref="667965148"/>
-									<int key="NSvFlags">268</int>
-									<string key="NSFrame">{{4, 3}, {16, 16}}</string>
-									<reference key="NSSuperview" ref="667965148"/>
-									<bool key="NSEnabled">YES</bool>
-									<object class="NSButtonCell" key="NSCell" id="485798191">
-										<int key="NSCellFlags">67239424</int>
-										<int key="NSCellFlags2">134479872</int>
-										<string key="NSContents">Button</string>
-										<object class="NSFont" key="NSSupport">
-											<string key="NSName">LucidaGrande</string>
-											<double key="NSSize">9.000000e+00</double>
-											<int key="NSfFlags">3614</int>
-										</object>
-										<reference key="NSControlView" ref="690499602"/>
-										<int key="NSButtonFlags">-2038284033</int>
-										<int key="NSButtonFlags2">129</int>
-										<string key="NSAlternateContents"/>
-										<string key="NSKeyEquivalent"/>
-										<int key="NSPeriodicDelay">200</int>
-										<int key="NSPeriodicInterval">25</int>
 									</object>
 								</object>
 								<object class="NSButton" id="439315238">
 									<reference key="NSNextResponder" ref="667965148"/>
 									<int key="NSvFlags">265</int>
-									<string key="NSFrame">{{279.5, 4}, {14, 14}}</string>
+									<string key="NSFrame">{{279, 2}, {14, 14}}</string>
 									<reference key="NSSuperview" ref="667965148"/>
+									<bool key="NSViewIsLayerTreeHost">YES</bool>
 									<bool key="NSEnabled">YES</bool>
 									<object class="NSButtonCell" key="NSCell" id="34148179">
 										<int key="NSCellFlags">67239424</int>
@@ -146,12 +118,12 @@
 									</object>
 								</object>
 							</object>
-							<string key="NSFrame">{{0, 59}, {300, 24}}</string>
+							<string key="NSFrame">{{0, 59}, {300, 16}}</string>
 							<reference key="NSSuperview" ref="433977361"/>
 							<string key="NSClassName">BalloonShelfViewCocoa</string>
 						</object>
 					</object>
-					<string key="NSFrameSize">{300, 84}</string>
+					<string key="NSFrameSize">{300, 76}</string>
 					<reference key="NSSuperview"/>
 				</object>
 				<string key="NSScreenRect">{{0, 0}, {1440, 878}}</string>
@@ -201,22 +173,6 @@
 						<reference key="destination" ref="644637438"/>
 					</object>
 					<int key="connectionID">68</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
-						<string key="label">closeButton_</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="690499602"/>
-					</object>
-					<int key="connectionID">77</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBActionConnection" key="connection">
-						<string key="label">closeButtonPressed:</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="690499602"/>
-					</object>
-					<int key="connectionID">78</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
@@ -297,7 +253,6 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="293244832"/>
-							<reference ref="690499602"/>
 							<reference ref="439315238"/>
 						</object>
 						<reference key="parent" ref="433977361"/>
@@ -315,20 +270,6 @@
 						<int key="objectID">3</int>
 						<reference key="object" ref="963811960"/>
 						<reference key="parent" ref="293244832"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">71</int>
-						<reference key="object" ref="690499602"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="485798191"/>
-						</object>
-						<reference key="parent" ref="667965148"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">72</int>
-						<reference key="object" ref="485798191"/>
-						<reference key="parent" ref="690499602"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">64</int>
@@ -367,11 +308,9 @@
 					<string>56.IBViewIntegration.shadowColor</string>
 					<string>56.IBViewIntegration.shadowOffsetHeight</string>
 					<string>56.IBViewIntegration.shadowOffsetWidth</string>
+					<string>64.CustomClassName</string>
 					<string>64.IBPluginDependency</string>
 					<string>65.IBPluginDependency</string>
-					<string>71.CustomClassName</string>
-					<string>71.IBPluginDependency</string>
-					<string>72.IBPluginDependency</string>
 					<string>85.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
@@ -381,21 +320,22 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{642, 507}, {300, 84}}</string>
+					<string>{{441, 539}, {300, 76}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{642, 507}, {300, 84}}</string>
+					<string>{{441, 539}, {300, 76}}</string>
 					<boolean value="NO"/>
 					<boolean value="YES"/>
 					<string>{300, 25}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<real value="0.000000e+00"/>
-					<reference ref="56913"/>
+					<object class="NSColor">
+						<int key="NSColorSpace">3</int>
+						<bytes key="NSWhite">MAA</bytes>
+					</object>
 					<real value="0.000000e+00"/>
 					<real value="0.000000e+00"/>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>HoverCloseButton</string>
+					<string>HoverImageButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -464,9 +404,9 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>HoverCloseButton</string>
-							<string>BalloonContentViewCocoa</string>
 							<string>NSButton</string>
+							<string>BalloonContentViewCocoa</string>
+							<string>HoverImageButton</string>
 							<string>NSTextField</string>
 							<string>BalloonShelfViewCocoa</string>
 						</object>
@@ -487,11 +427,11 @@
 					<reference key="sourceIdentifier" ref="513011931"/>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">HoverCloseButton</string>
+					<string key="className">HoverImageButton</string>
 					<string key="superclassName">NSButton</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/cocoa/hover_close_button.h</string>
+						<string key="minorKey">browser/cocoa/hover_image_button.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -520,6 +460,13 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/cocoa/tab_strip_model_observer_bridge.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">NSView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/cocoa/view_id_util.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

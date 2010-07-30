@@ -836,6 +836,7 @@
         'browser/cocoa/gradient_button_cell_unittest.mm',
         'browser/cocoa/history_menu_bridge_unittest.mm',
         'browser/cocoa/history_menu_cocoa_controller_unittest.mm',
+        'browser/cocoa/hover_image_button_unittest.mm',
         'browser/cocoa/html_dialog_window_controller_unittest.mm',
         'browser/cocoa/hung_renderer_controller_unittest.mm',
         'browser/cocoa/hyperlink_button_cell_unittest.mm',
