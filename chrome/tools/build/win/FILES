@@ -64,3 +64,6 @@ wow_helper.exe
 gcswf32.dll
 plugin.vch
 pdf.dll
+d3dx9_42.dll
+libEGL.dll
+libGLESv2.dll
