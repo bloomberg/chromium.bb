@@ -269,11 +269,32 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const url,
     0,                            // Length
     spdy::DATA_FLAG_NONE          // Data Flags
   };
+
+  GURL gurl(url);
+
+  // This is so ugly.  Why are we using char* in here again?
+  std::string str_path = gurl.PathForRequest();
+  std::string str_scheme = gurl.scheme();
+  std::string str_host = gurl.host();  // TODO(mbelshe): should have a port.
+  scoped_ptr<char> req(new char[str_path.size() + 1]);
+  scoped_ptr<char> scheme(new char[str_scheme.size() + 1]);
+  scoped_ptr<char> host(new char[str_host.size() + 1]);
+  memcpy(req.get(), str_path.c_str(), str_path.size());
+  memcpy(scheme.get(), str_scheme.c_str(), str_scheme.size());
+  memcpy(host.get(), str_host.c_str(), str_host.size());
+  req.get()[str_path.size()] = '\0';
+  scheme.get()[str_scheme.size()] = '\0';
+  host.get()[str_host.size()] = '\0';
+
   const char* const headers[] = {
     "method",
     "GET",
     "url",
-    url,
+    req.get(),
+    "host",
+    host.get(),
+    "scheme",
+    scheme.get(),
     "version",
     "HTTP/1.1"
   };
@@ -310,7 +331,11 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
     "method",
     "GET",
     "url",
-    "http://www.google.com/",
+    "/",
+    "host",
+    "www.google.com",
+    "scheme",
+    "http",
     "version",
     "HTTP/1.1"
   };
@@ -381,7 +406,11 @@ spdy::SpdyFrame* ConstructSpdyPost(const char* const extra_headers[],
     "method",
     "POST",
     "url",
-    "http://www.google.com/",
+    "/",
+    "host",
+    "www.google.com",
+    "scheme",
+    "http",
     "version",
     "HTTP/1.1"
   };
