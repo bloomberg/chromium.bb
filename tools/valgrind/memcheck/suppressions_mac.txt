@@ -22,13 +22,11 @@
    # CoreAudio leak.  See http://crbug.com/9351
    bug_9351
    Memcheck:Leak
-   fun:_Znw*
+   ...
    fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
    fun:_ZN16HALDefaultDevice22InstallServerListenersEv
    fun:_ZN16HALDefaultDevice10InitializeEv
    fun:_ZN9HALSystem16CheckOutInstanceEv
-   fun:AudioObjectGetPropertyData
-   fun:_ZN15AudioManagerMac*HasAudioOutputDevicesEv
 }
 {
    # Mac test_shell_tests.  See http://crbug.com/11134
