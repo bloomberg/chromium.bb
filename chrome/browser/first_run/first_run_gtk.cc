@@ -106,7 +106,8 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 
   if (!import_bookmarks_path.empty()) {
     // There are bookmarks to import from a file.
-    if (!FirstRun::ImportBookmarks(import_bookmarks_path)) {
+    FilePath path = FilePath::FromWStringHack(import_bookmarks_path);
+    if (!FirstRun::ImportBookmarks(path)) {
       LOG(WARNING) << "silent bookmark import failed";
     }
   }
@@ -115,7 +116,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
 
 // TODO(port): This is just a piece of the silent import functionality from
 // ImportSettings for Windows.  It would be nice to get the rest of it ported.
-bool FirstRun::ImportBookmarks(const std::wstring& import_bookmarks_path) {
+bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
   CommandLine import_cmd(cmdline.GetProgram());
 
@@ -130,8 +131,8 @@ bool FirstRun::ImportBookmarks(const std::wstring& import_bookmarks_path) {
   import_cmd.AppendSwitchASCII(switches::kLang,
                                g_browser_process->GetApplicationLocale());
 
-  import_cmd.CommandLine::AppendSwitchWithValue(
-      switches::kImportFromFile, import_bookmarks_path);
+  import_cmd.CommandLine::AppendSwitchPath(switches::kImportFromFile,
+                                           import_bookmarks_path);
   // Time to launch the process that is going to do the import. We'll wait
   // for the process to return.
   return base::LaunchApp(import_cmd, true, false, NULL);

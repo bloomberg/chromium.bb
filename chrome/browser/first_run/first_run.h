@@ -135,13 +135,13 @@ class FirstRun {
   // public version.
   static bool ImportSettings(Profile* profile, int browser_type,
                              int items_to_import,
-                             const std::wstring& import_path,
+                             const FilePath& import_path,
                              gfx::NativeView parent_window);
   // Import browser items in this process. The browser and the items to
   // import are encoded int the command line.
   static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
 #elif defined(OS_LINUX)
-  static bool ImportBookmarks(const std::wstring& import_bookmarks_path);
+  static bool ImportBookmarks(const FilePath& import_bookmarks_path);
 #endif
 
   // Import bookmarks from an html file. The path to the file is provided in

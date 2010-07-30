@@ -399,7 +399,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     scoped_refptr<ImporterHost> importer_host = new ImporterHost();
     if (!FirstRun::ImportSettings(NULL,
           importer_host->GetSourceProfileInfoAt(0).browser_type,
-          import_items, import_bookmarks_path, NULL)) {
+              import_items, FilePath(import_bookmarks_path), NULL)) {
       LOG(WARNING) << "silent import failed";
     }
   }
@@ -679,7 +679,7 @@ void FirstRun::AutoImport(Profile* profile,
 
 bool FirstRun::ImportSettings(Profile* profile, int browser_type,
                               int items_to_import,
-                              const std::wstring& import_bookmarks_path,
+                              const FilePath& import_bookmarks_path,
                               HWND parent_window) {
   const CommandLine& cmdline = *CommandLine::ForCurrentProcess();
   CommandLine import_cmd(cmdline.GetProgram());
@@ -703,8 +703,8 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
   }
 
   if (!import_bookmarks_path.empty()) {
-    import_cmd.CommandLine::AppendSwitchWithValue(
-        switches::kImportFromFile, import_bookmarks_path.c_str());
+    import_cmd.CommandLine::AppendSwitchPath(
+        switches::kImportFromFile, import_bookmarks_path);
   }
 
   // Time to launch the process that is going to do the import.
@@ -734,7 +734,7 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
                               int items_to_import,
                               HWND parent_window) {
   return ImportSettings(profile, browser_type, items_to_import,
-                        std::wstring(), parent_window);
+                        FilePath(), parent_window);
 }
 
 int FirstRun::ImportFromBrowser(Profile* profile,
