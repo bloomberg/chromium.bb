@@ -578,17 +578,14 @@ download-trusted() {
 
 download-toolchains() {
   TRUSTED_TOOLCHAIN=native_client/toolchain/linux_arm-trusted/arm-2009q3
-  AR=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ar
-  AS=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-as
-  CC=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-gcc
-  CXX=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-g++
-  GYP_DEFINES= \
-      target_arch=arm \
-      sysroot=${TRUSTED_TOOLCHAIN}/arm-none-linux-gnueabi/libc \
-      linux_use_tcmalloc=0 armv7=1 arm_thumb=1
-  GYP_GENERATORS=make
-  LD=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ld
-  RANLIB=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ranlib
+  export AR=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ar
+  export AS=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-as
+  export CC=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-gcc
+  export CXX=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-g++
+  export GYP_DEFINES="target_arch=arm sysroot=${TRUSTED_TOOLCHAIN}/arm-none-linux-gnueabi/libc linux_use_tcmalloc=0 armv7=1 arm_thumb=1"
+  export GYP_GENERATORS=make
+  export LD=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ld
+  export RANLIB=${TRUSTED_TOOLCHAIN}/bin/arm-none-linux-gnueabi-ranlib
   # This downloads both toolchains and regenerates gyp.
   gclient runhooks --force
 }
