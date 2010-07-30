@@ -128,6 +128,7 @@ const char* Extension::kIdlePermission = "idle";
 const char* Extension::kNotificationPermission = "notifications";
 const char* Extension::kTabPermission = "tabs";
 const char* Extension::kUnlimitedStoragePermission = "unlimited_storage";
+const char* Extension::kNativeClientPermission = "native_client";
 
 const char* Extension::kPermissionNames[] = {
   Extension::kBackgroundPermission,
@@ -141,6 +142,7 @@ const char* Extension::kPermissionNames[] = {
   Extension::kNotificationPermission,
   Extension::kTabPermission,
   Extension::kUnlimitedStoragePermission,
+  Extension::kNativeClientPermission,
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);

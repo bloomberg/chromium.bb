@@ -104,8 +104,7 @@ PluginService::PluginService()
   }
 
 #ifndef DISABLE_NACL
-  if (command_line->HasSwitch(switches::kInternalNaCl))
-    RegisterInternalNaClPlugin();
+  RegisterInternalNaClPlugin();
 #endif
 
   chrome::RegisterInternalGPUPlugin();

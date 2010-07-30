@@ -3247,8 +3247,28 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
   }
 
   // Check for Native Client modules.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl)) {
-    if (mime_type == "application/x-nacl-srpc") {
+  if (mime_type == "application/x-nacl-srpc") {
+    // NaCl is only permitted when we're in an extension/application with the
+    // appropriate permission, or when explicitly enabled on the command line.
+
+    // TODO(cbiffle): need browser test for this before M7 (bug 45881)
+    GURL main_frame_url(webview()->mainFrame()->url());
+    const std::string &extension_id =
+        RenderThread::current()->GetExtensionIdByURL(main_frame_url);
+    bool in_ext = extension_id != "";
+    bool explicit_enable =
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl);
+
+    if (in_ext) {
+      if (ExtensionProcessBindings::HasPermission(extension_id,
+              Extension::kNativeClientPermission)) {
+        in_process_plugin = true;
+        use_pepper_host = true;
+      } else {
+        // Disable NaCl for apps lacking the permission, even with the flag.
+        return NULL;
+      }
+    } else if (explicit_enable) {
       in_process_plugin = true;
       use_pepper_host = true;
     }
