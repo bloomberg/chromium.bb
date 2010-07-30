@@ -12,6 +12,7 @@ namespace net {
 const char HttpAlternateProtocols::kHeader[] = "Alternate-Protocol";
 const char* const HttpAlternateProtocols::kProtocolStrings[] = {
   "npn-spdy/1",
+  "npn-spdy/2",
 };
 
 HttpAlternateProtocols::HttpAlternateProtocols() {}

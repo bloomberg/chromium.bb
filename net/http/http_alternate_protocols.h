@@ -23,6 +23,7 @@ class HttpAlternateProtocols {
  public:
   enum Protocol {
     NPN_SPDY_1,
+    NPN_SPDY_2,
     NUM_ALTERNATE_PROTOCOLS,
     BROKEN,  // The alternate protocol is known to be broken.
   };
