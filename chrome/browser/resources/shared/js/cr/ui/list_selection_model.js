@@ -2,18 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(arv): Refactor parts of this into a SelectionController.
-
 cr.define('cr.ui', function() {
   const Event = cr.Event;
   const EventTarget = cr.EventTarget;
 
   /**
-   * Creates a new selection model that is to be used with lists. This is
-   * implemented for vertical lists but changing the behavior for horizontal
-   * lists or icon views is a matter of overriding {@code getIndexBefore},
-   * {@code getIndexAfter}, {@code getIndexAbove} as well as
-   * {@code getIndexBelow}.
+   * Creates a new selection model that is to be used with lists.
    *
    * @param {number=} opt_length The number items in the selection.
    *
@@ -39,236 +33,14 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * Returns the index below (y axis) the given element.
-     * @param {*} index The index to get the index below.
-     * @return {*} The index below or -1 if not found.
-     */
-    getIndexBelow: function(index) {
-      if (index == this.getLastIndex())
-        return -1;
-      return index + 1;
-    },
-
-    /**
-     * Returns the index above (y axis) the given element.
-     * @param {*} index The index to get the index above.
-     * @return {*} The index below or -1 if not found.
-     */
-    getIndexAbove: function(index) {
-      return index - 1;
-    },
-
-    /**
-     * Returns the index before (x axis) the given element. This returns -1
-     * by default but override this for icon view and horizontal selection
-     * models.
-     *
-     * @param {*} index The index to get the index before.
-     * @return {*} The index before or -1 if not found.
-     */
-    getIndexBefore: function(index) {
-      return -1;
-    },
-
-    /**
-     * Returns the index after (x axis) the given element. This returns -1
-     * by default but override this for icon view and horizontal selection
-     * models.
-     *
-     * @param {*} index The index to get the index after.
-     * @return {*} The index after or -1 if not found.
-     */
-    getIndexAfter: function(index) {
-      return -1;
-    },
-
-    /**
-     * Returns the next list index. This is the next logical and should not
-     * depend on any kind of layout of the list.
-     * @param {*} index The index to get the next index for.
-     * @return {*} The next index or -1 if not found.
-     */
-    getNextIndex: function(index) {
-      if (index == this.getLastIndex())
-        return -1;
-      return index + 1;
-    },
-
-    /**
-     * Returns the prevous list index. This is the previous logical and should
-     * not depend on any kind of layout of the list.
-     * @param {*} index The index to get the previous index for.
-     * @return {*} The previous index or -1 if not found.
-     */
-    getPreviousIndex: function(index) {
-      return index - 1;
-    },
-
-    /**
-     * @return {*} The first index.
-     */
-    getFirstIndex: function() {
-      return 0;
-    },
-
-    /**
-     * @return {*} The last index.
-     */
-    getLastIndex: function() {
-      return this.length_ - 1;
-    },
-
-    /**
-     * Called by the view when the user does a mousedown or mouseup on the list.
-     * @param {!Event} e The browser mousedown event.
-     * @param {*} index The index that was under the mouse pointer, -1 if none.
-     */
-    handleMouseDownUp: function(e, index) {
-      var anchorIndex = this.anchorIndex;
-      var isDown = e.type == 'mousedown';
-
-      this.beginChange_();
-
-      if (index == -1) {
-        // On Mac we always clear the selection if the user clicks a blank area.
-        // On Windows, we only clear the selection if neither Shift nor Ctrl are
-        // pressed.
-        if (cr.isMac) {
-          this.clear_();
-        } else if (!isDown && !e.shiftKey && !e.ctrlKey)
-          // Keep anchor and lead indexes. Note that this is intentionally
-          // different than on the Mac.
-          this.clearAllSelected_();
-      } else {
-        if (cr.isMac ? e.metaKey : e.ctrlKey) {
-          // Selection is handled at mouseUp on windows/linux, mouseDown on mac.
-          if (cr.isMac? isDown : !isDown) {
-            // toggle the current one and make it anchor index
-            this.setIndexSelected(index, !this.getIndexSelected(index));
-            this.leadIndex = index;
-            this.anchorIndex = index;
-          }
-        } else if (e.shiftKey && anchorIndex != -1 && anchorIndex != index) {
-          // Shift is done in mousedown
-          if (isDown) {
-            this.clearAllSelected_();
-            this.leadIndex = index;
-            this.selectRange(anchorIndex, index);
-          }
-        } else {
-          // Right click for a context menu need to not clear the selection.
-          var isRightClick = e.button == 2;
-
-          // If the index is selected this is handled in mouseup.
-          var indexSelected = this.getIndexSelected(index);
-          if ((indexSelected && !isDown || !indexSelected && isDown) &&
-              !(indexSelected && isRightClick)) {
-            this.clearAllSelected_();
-            this.setIndexSelected(index, true);
-            this.leadIndex = index;
-            this.anchorIndex = index;
-          }
-        }
-      }
-
-      this.endChange_();
-    },
-
-    /**
-     * Called by the view when it recieves a keydown event.
-     * @param {Event} e The keydown event.
-     */
-    handleKeyDown: function(e) {
-      var newIndex = -1;
-      var leadIndex = this.leadIndex;
-      var prevent = true;
-
-      // Ctrl/Meta+A
-      if (e.keyCode == 65 &&
-          (cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey)) {
-        this.selectAll();
-        e.preventDefault();
-        return;
-      }
-
-      // Space
-      if (e.keyCode == 32) {
-        if (leadIndex != -1) {
-          var selected = this.getIndexSelected(leadIndex);
-          if (e.ctrlKey || !selected) {
-            this.beginChange_();
-            this.setIndexSelected(leadIndex, !selected);
-            this.endChange_();
-            return;
-          }
-        }
-      }
-
-      switch (e.keyIdentifier) {
-        case 'Home':
-          newIndex = this.getFirstIndex();
-          break;
-        case 'End':
-          newIndex = this.getLastIndex();
-          break;
-        case 'Up':
-          newIndex = leadIndex == -1 ?
-              this.getLastIndex() : this.getIndexAbove(leadIndex);
-          break;
-        case 'Down':
-          newIndex = leadIndex == -1 ?
-              this.getFirstIndex() : this.getIndexBelow(leadIndex);
-          break;
-        case 'Left':
-          newIndex = leadIndex == -1 ?
-              this.getLastIndex() : this.getIndexBefore(leadIndex);
-          break;
-        case 'Right':
-          newIndex = leadIndex == -1 ?
-              this.getFirstIndex() : this.getIndexAfter(leadIndex);
-          break;
-        default:
-          prevent = false;
-      }
-
-      if (newIndex != -1) {
-        this.beginChange_();
-
-        this.leadIndex = newIndex;
-        if (e.shiftKey) {
-          var anchorIndex = this.anchorIndex;
-          this.clearAllSelected_();
-          if (anchorIndex == -1) {
-            this.setIndexSelected(newIndex, true);
-            this.anchorIndex = newIndex;
-          } else {
-            this.selectRange(anchorIndex, newIndex);
-          }
-        } else if (e.ctrlKey && !cr.isMac) {
-          // Setting the lead index is done above
-          // Mac does not allow you to change the lead.
-        } else {
-          this.clearAllSelected_();
-          this.setIndexSelected(newIndex, true);
-          this.anchorIndex = newIndex;
-        }
-
-        this.endChange_();
-
-        if (prevent)
-          e.preventDefault();
-      }
-    },
-
-    /**
      * @type {!Array} The selected indexes.
      */
     get selectedIndexes() {
       return Object.keys(this.selectedIndexes_).map(Number);
     },
     set selectedIndexes(selectedIndexes) {
-      this.beginChange_();
-      this.clearAllSelected_();
+      this.beginChange();
+      this.unselectAll();
       for (var i = 0; i < selectedIndexes.length; i++) {
         this.setIndexSelected(selectedIndexes[i], true);
       }
@@ -277,12 +49,12 @@ cr.define('cr.ui', function() {
       } else {
         this.leadIndex = this.anchorIndex = -1;
       }
-      this.endChange_();
+      this.endChange();
     },
 
     /**
      * Convenience getter which returns the first selected index.
-     * @type {*}
+     * @type {number}
      */
     get selectedIndex() {
       for (var i in this.selectedIndexes_) {
@@ -291,21 +63,21 @@ cr.define('cr.ui', function() {
       return -1;
     },
     set selectedIndex(selectedIndex) {
-      this.beginChange_();
-      this.clearAllSelected_();
+      this.beginChange();
+      this.unselectAll();
       if (selectedIndex != -1) {
         this.selectedIndexes = [selectedIndex];
       } else {
         this.leadIndex = this.anchorIndex = -1;
       }
-      this.endChange_();
+      this.endChange();
     },
 
     /**
      * Selects a range of indexes, starting with {@code start} and ends with
      * {@code end}.
-     * @param {*} start The first index to select.
-     * @param {*} end The last index to select.
+     * @param {number} start The first index to select.
+     * @param {number} end The last index to select.
      */
     selectRange: function(start, end) {
       // Swap if starts comes after end.
@@ -315,55 +87,48 @@ cr.define('cr.ui', function() {
         end = tmp;
       }
 
-      this.beginChange_();
+      this.beginChange();
 
       for (var index = start; index != end; index++) {
         this.setIndexSelected(index, true);
       }
       this.setIndexSelected(end, true);
 
-      this.endChange_();
+      this.endChange();
     },
 
     /**
      * Selects all indexes.
      */
     selectAll: function() {
-      this.selectRange(this.getFirstIndex(), this.getLastIndex());
+      this.selectRange(0, this.length);
     },
 
     /**
      * Clears the selection
      */
     clear: function() {
-      this.beginChange_();
+      this.beginChange();
       this.length_ = 0;
-      this.clear_();
-      this.endChange_();
-    },
-
-    /**
-     * Clears all selected as well as the lead and anchor index.
-     * @private
-     */
-    clear_: function() {
       this.anchorIndex = this.leadIndex = -1;
-      this.clearAllSelected_();
+      this.unselectAll();
+      this.endChange();
     },
 
     /**
-     * Clears the selection and updates the view.
-     * @private
+     * Unselects all selected items.
      */
-    clearAllSelected_: function() {
+    unselectAll: function() {
+      this.beginChange();
       for (var i in this.selectedIndexes_) {
         this.setIndexSelected(i, false);
       }
+      this.endChange();
     },
 
     /**
      * Sets the selected state for an index.
-     * @param {*} index The index to set the selected state for.
+     * @param {number} index The index to set the selected state for.
      * @param {boolean} b Whether to select the index or not.
      */
     setIndexSelected: function(index, b) {
@@ -376,7 +141,7 @@ cr.define('cr.ui', function() {
       else
         delete this.selectedIndexes_[index];
 
-      this.beginChange_();
+      this.beginChange();
 
       // Changing back?
       if (index in this.changedIndexes_ && this.changedIndexes_[index] == !b) {
@@ -386,12 +151,12 @@ cr.define('cr.ui', function() {
       }
 
       // End change dispatches an event which in turn may update the view.
-      this.endChange_();
+      this.endChange();
     },
 
     /**
      * Whether a given index is selected or not.
-     * @param {*} index The index to check.
+     * @param {number} index The index to check.
      * @return {boolean} Whether an index is selected.
      */
     getIndexSelected: function(index) {
@@ -399,11 +164,10 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * This is used to begin batching changes. Call {@code endChange_} when you
+     * This is used to begin batching changes. Call {@code endChange} when you
      * are done making changes.
-     * @private
      */
-    beginChange_: function() {
+    beginChange: function() {
       if (!this.changeCount_) {
         this.changeCount_ = 0;
         this.changedIndexes_ = {};
@@ -414,9 +178,8 @@ cr.define('cr.ui', function() {
     /**
      * Call this after changes are done and it will dispatch a change event if
      * any changes were actually done.
-     * @private
      */
-    endChange_: function() {
+    endChange: function() {
       this.changeCount_--;
       if (!this.changeCount_) {
         var indexes = Object.keys(this.changedIndexes_);
@@ -440,7 +203,7 @@ cr.define('cr.ui', function() {
     /**
      * The leadIndex is used with multiple selection and it is the index that
      * the user is moving using the arrow keys.
-     * @type {*}
+     * @type {number}
      */
     get leadIndex() {
       return this.leadIndex_;
@@ -458,7 +221,7 @@ cr.define('cr.ui', function() {
 
     /**
      * The anchorIndex is used with multiple selection.
-     * @type {*}
+     * @type {number}
      */
     get anchorIndex() {
       return this.anchorIndex_;

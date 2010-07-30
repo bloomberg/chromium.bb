@@ -46,6 +46,8 @@ without changes to the corresponding grd file. paaaae -->
                file="shared/js/cr/ui/list.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_LIST_ITEM"
                file="shared/js/cr/ui/list_item.js" type="BINDATA" />
+      <include name="IDR_SHARED_JS_CR_UI_LIST_SELECTION_CONTROLLER"
+               file="shared/js/cr/ui/list_selection_controller.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_LIST_SELECTION_MODEL"
                file="shared/js/cr/ui/list_selection_model.js" type="BINDATA" />
       <include name="IDR_SHARED_JS_CR_UI_MENU"

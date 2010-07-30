@@ -10,6 +10,7 @@
 
 cr.define('cr.ui', function() {
   const ListSelectionModel = cr.ui.ListSelectionModel;
+  const ListSelectionController = cr.ui.ListSelectionController;
   const ArrayDataModel = cr.ui.ArrayDataModel;
 
   /**
@@ -149,6 +150,7 @@ cr.define('cr.ui', function() {
       }
 
       this.selectionModel_ = sm;
+      this.selectionController_ = new ListSelectionController(sm);
 
       if (sm) {
         sm.addEventListener('change', this.boundHandleOnChange_);
@@ -265,13 +267,13 @@ cr.define('cr.ui', function() {
       }
 
       if (!target) {
-        this.selectionModel.handleMouseDownUp(e, -1);
+        this.selectionController_.handleMouseDownUp(e, -1);
       } else {
         var cs = getComputedStyle(target);
         var top = target.offsetTop -
                   parseFloat(cs.marginTop);
         var index = Math.floor(top / this.itemHeight_);
-        this.selectionModel.handleMouseDownUp(e, index);
+        this.selectionController_.handleMouseDownUp(e, index);
       }
     },
 
@@ -281,7 +283,7 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether the key event was handled.
      */
     handleKeyDown: function(e) {
-      return this.selectionModel.handleKeyDown(e);
+      return this.selectionController_.handleKeyDown(e);
     },
 
     /**
