@@ -390,7 +390,7 @@ class NetworkLibraryImpl : public NetworkLibrary,
   virtual void OnJobDone(URLRequestJob* job, const URLRequestStatus& status);
   virtual void OnJobRedirect(URLRequestJob* job, const GURL& location,
                              int status_code);
-  virtual void OnBytesRead(URLRequestJob* job, int byte_count);
+  virtual void OnBytesRead(URLRequestJob* job, const char* buf, int byte_count);
 
   // NetworkLibrary overrides.
   virtual void AddObserver(Observer* observer);

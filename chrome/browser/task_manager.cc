@@ -835,7 +835,8 @@ void TaskManagerModel::OnJobRedirect(URLRequestJob* job,
                                      int status_code) {
 }
 
-void TaskManagerModel::OnBytesRead(URLRequestJob* job, int byte_count) {
+void TaskManagerModel::OnBytesRead(URLRequestJob* job, const char* buf,
+                                   int byte_count) {
   int render_process_host_child_id = -1, routing_id = -1;
   ResourceDispatcherHost::RenderViewForRequest(job->request(),
                                                &render_process_host_child_id,

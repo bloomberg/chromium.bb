@@ -250,11 +250,12 @@ void NetworkLibraryImpl::OnJobDone(URLRequestJob* job,
 }
 
 void NetworkLibraryImpl::OnJobRedirect(URLRequestJob* job, const GURL& location,
-                                   int status_code) {
+                                       int status_code) {
   CheckNetworkTraffic(false);
 }
 
-void NetworkLibraryImpl::OnBytesRead(URLRequestJob* job, int byte_count) {
+void NetworkLibraryImpl::OnBytesRead(URLRequestJob* job, const char* buf,
+                                     int byte_count) {
   CheckNetworkTraffic(true);
 }
 
