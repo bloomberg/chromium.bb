@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
+#include "base/env_var.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -18,6 +19,7 @@
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/scoped_ptr.h"
 #include "base/unix_domain_socket_posix.h"
 
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
@@ -38,11 +40,12 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
     if (!saved_envvar)
       continue;
 
-    const char* const value = getenv(envvar);
-    if (value)
-      setenv(saved_envvar, value, 1 /* overwrite */);
+    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    std::string value;
+    if (env->GetEnv(envvar, &value))
+      env->SetEnv(saved_envvar, value);
     else
-      unsetenv(saved_envvar);
+      env->UnSetEnv(saved_envvar);
 
     free(saved_envvar);
   }
