@@ -216,9 +216,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
   ASSERT_TRUE(tab.get());
 
   // Cause the renderer to crash.
-  // TODO(albertb): We need to disable this on Linux since
-  // crash_service.exe hasn't been ported yet.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(LINUX_BREAKPAD)
   expected_crashes_ = 1;
 #endif
   ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutCrashURL)));
