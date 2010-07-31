@@ -216,7 +216,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
   ASSERT_TRUE(tab.get());
 
   // Cause the renderer to crash.
-#if defined(OS_WIN) || defined(LINUX_BREAKPAD)
+#if defined(OS_WIN) || defined(USE_LINUX_BREAKPAD)
   expected_crashes_ = 1;
 #endif
   ASSERT_TRUE(tab->NavigateToURLAsync(GURL(chrome::kAboutCrashURL)));
