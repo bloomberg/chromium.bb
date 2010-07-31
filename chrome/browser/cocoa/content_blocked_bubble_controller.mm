@@ -362,8 +362,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 }
 
 - (void)removeInfoButton {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableCookiePrompt)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCookiePrompt)) {
     // Remove info button and resize vertically.
     int deltaY = NSHeight([infoButton_ frame]);
     [infoButton_ removeFromSuperview];

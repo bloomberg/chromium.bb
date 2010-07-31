@@ -178,8 +178,8 @@ static ContentExceptionsWindowController*
     model_.reset(new ContentExceptionsTableModel(
         settingsMap_, otrSettingsMap_, settingsType_));
     showSession_ = settingsType_ == CONTENT_SETTINGS_TYPE_COOKIES;
-    disableCookiePrompt_ = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableCookiePrompt);
+    disableCookiePrompt_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableCookiePrompt);
     otrAllowed_ = otrSettingsMap != NULL;
     tableObserver_.reset(new UpdatingContentSettingsObserver(self));
     updatesEnabled_ = YES;

@@ -125,8 +125,8 @@ class PrefObserverDisabler {
 
 - (id)initWithProfile:(Profile*)profile {
   DCHECK(profile);
-  disableCookiePrompt_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableCookiePrompt);
+  disableCookiePrompt_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCookiePrompt);
   NSString* nibpath =
       [mac_util::MainAppBundle() pathForResource:@"ContentSettings"
                                           ofType:@"nib"];

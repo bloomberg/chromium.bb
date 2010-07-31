@@ -31,8 +31,8 @@ const ContentSetting kSessionAskSettings[] = { CONTENT_SETTING_ALLOW,
 
 ContentSettingComboModel::ContentSettingComboModel(bool show_session)
     : show_session_(show_session),
-      disable_cookie_prompt_(CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kDisableCookiePrompt)) {
+      disable_cookie_prompt_(!CommandLine::ForCurrentProcess()->HasSwitch(
+                             switches::kEnableCookiePrompt)) {
 }
 
 ContentSettingComboModel::~ContentSettingComboModel() {

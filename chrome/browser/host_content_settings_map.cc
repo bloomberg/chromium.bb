@@ -583,8 +583,8 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
       }
     }
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableCookiePrompt)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCookiePrompt)) {
     // Migrate obsolete cookie prompt mode.
     if (settings->settings[CONTENT_SETTINGS_TYPE_COOKIES] ==
         CONTENT_SETTING_ASK)

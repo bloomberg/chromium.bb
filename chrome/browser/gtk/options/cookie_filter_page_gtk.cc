@@ -66,8 +66,8 @@ void CookieFilterPageGtk::HighlightGroup(OptionsGroup highlight_group) {
 }
 
 GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
-  bool disable_cookie_prompt = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableCookiePrompt);
+  bool disable_cookie_prompt = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableCookiePrompt);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 

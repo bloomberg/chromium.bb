@@ -75,8 +75,8 @@ class ContentSettingTitleLinkAndInfoModel
                                       Profile* profile,
                                       ContentSettingsType content_type)
       : ContentSettingTitleAndLinkModel(tab_contents, profile, content_type) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableCookiePrompt))
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableCookiePrompt))
       SetInfoLink();
   }
 
