@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_switches.h"
@@ -187,7 +187,7 @@ void BrowserMainPartsPosix::PreEarlyInitialization() {
           switches::kFileDescriptorLimit);
   int fd_limit = 0;
   if (!fd_limit_string.empty()) {
-    StringToInt(fd_limit_string, &fd_limit);
+    base::StringToInt(fd_limit_string, &fd_limit);
   }
 #if defined(OS_MACOSX)
   // We use quite a few file descriptors for our IPC, and the default limit on

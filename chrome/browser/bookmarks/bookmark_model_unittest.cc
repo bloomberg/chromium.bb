@@ -7,6 +7,7 @@
 #include "app/tree_node_iterator.h"
 #include "app/tree_node_model.h"
 #include "base/hash_tables.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -566,7 +567,7 @@ static void PopulateNodeImpl(const std::vector<std::wstring>& description,
       // in debugging.
       static int next_group_id = 1;
       TestNode* new_node =
-          new TestNode(IntToWString(next_group_id++),
+          new TestNode(UTF8ToWide(base::IntToString(next_group_id++)),
                        BookmarkNode::FOLDER);
       parent->Add(parent->GetChildCount(), new_node);
       PopulateNodeImpl(description, index, new_node);

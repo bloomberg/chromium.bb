@@ -5,7 +5,7 @@
 #include "media/filters/ffmpeg_video_decode_engine.h"
 
 #include "base/command_line.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "media/base/buffers.h"
 #include "media/base/callback.h"
@@ -69,7 +69,7 @@ void FFmpegVideoDecodeEngine::Initialize(
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
   if ((!threads.empty() &&
-      !StringToInt(threads, &decode_threads)) ||
+      !base::StringToInt(threads, &decode_threads)) ||
       decode_threads < 0 || decode_threads > kMaxDecodeThreads) {
     decode_threads = kDecodeThreads;
   }

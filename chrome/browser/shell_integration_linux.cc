@@ -23,6 +23,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/task.h"
@@ -113,7 +114,7 @@ std::string CreateShortcutIcon(
   argv.push_back("user");
 
   argv.push_back("--size");
-  argv.push_back(IntToString(shortcut_info.favicon.width()));
+  argv.push_back(base::IntToString(shortcut_info.favicon.width()));
 
   argv.push_back(temp_file_path.value());
   std::string icon_name = temp_file_path.BaseName().RemoveExtension().value();

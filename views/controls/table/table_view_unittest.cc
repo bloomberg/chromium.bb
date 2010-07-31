@@ -7,7 +7,7 @@
 #include "app/table_model.h"
 #include "app/table_model_observer.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "views/controls/table/table_view.h"
@@ -94,7 +94,7 @@ int TestTableModel::RowCount() {
 }
 
 std::wstring TestTableModel::GetText(int row, int column_id) {
-  return IntToWString(rows_[row][column_id]);
+  return UTF8ToWide(base::IntToString(rows_[row][column_id]));
 }
 
 void TestTableModel::SetObserver(TableModelObserver* observer) {

@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -313,11 +314,11 @@ void ParseURL(const xmlChar** atts, ParsingContext* context) {
     } else if (name == kURLTemplateAttribute) {
       template_url = XMLCharToString(value);
     } else if (name == kURLIndexOffsetAttribute) {
-      index_offset =
-          std::max(1, StringToInt(WideToUTF16Hack(XMLCharToWide(value))));
+      base::StringToInt(XMLCharToString(value), &index_offset);
+      index_offset = std::max(1, index_offset);
     } else if (name == kURLPageOffsetAttribute) {
-      page_offset =
-          std::max(1, StringToInt(WideToUTF16Hack(XMLCharToWide(value))));
+      base::StringToInt(XMLCharToString(value), &page_offset);
+      page_offset = std::max(1, page_offset);
     } else if (name == kParamMethodAttribute) {
       is_post = LowerCaseEqualsASCII(XMLCharToString(value), "post");
     }
@@ -350,9 +351,9 @@ void ParseImage(const xmlChar** atts, ParsingContext* context) {
     if (name == kImageTypeAttribute) {
       type = XMLCharToWide(value);
     } else if (name == kImageWidthAttribute) {
-      width = StringToInt(WideToUTF16Hack(XMLCharToWide(value)));
+      base::StringToInt(XMLCharToString(value), &width);
     } else if (name == kImageHeightAttribute) {
-      height = StringToInt(WideToUTF16Hack(XMLCharToWide(value)));
+      base::StringToInt(XMLCharToString(value), &height);
     }
     attributes += 2;
   }

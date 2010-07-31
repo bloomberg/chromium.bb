@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
@@ -205,7 +205,8 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const Value* value) {
     NOTREACHED();
     return;
   }
-  int selected_index = StringToInt(string_value);
+  int selected_index;
+  base::StringToInt(string_value, &selected_index);
 
   std::vector<const TemplateURL*> model_urls =
       template_url_model_->GetTemplateURLs();
@@ -280,7 +281,8 @@ void BrowserOptionsHandler::RemoveStartupPages(const Value* value) {
       NOTREACHED();
       return;
     }
-    int selected_index = StringToInt(string_value);
+    int selected_index;
+    base::StringToInt(string_value, &selected_index);
     if (selected_index < 0 ||
         selected_index >= startup_custom_pages_table_model_->RowCount()) {
       NOTREACHED();

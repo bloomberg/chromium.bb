@@ -7,7 +7,8 @@
 #include "app/combobox_model.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/background.h"
@@ -322,7 +323,7 @@ class DummyComboboxModel : public ComboboxModel {
   virtual int GetItemCount() { return 10; }
 
   virtual std::wstring GetItemAt(int index) {
-    return L"Item " + IntToWString(index);
+    return L"Item " + UTF16ToWideHack(base::IntToString16(index));
   }
 };
 

@@ -1581,7 +1581,7 @@ std::ostream& operator<<(std::ostream& s, const syncable::Blob& blob) {
 FastDump& operator<<(FastDump& dump, const syncable::Blob& blob) {
   if (blob.empty())
     return dump;
-  string buffer(HexEncode(&blob[0], blob.size()));
+  string buffer(base::HexEncode(&blob[0], blob.size()));
   dump.out_->sputn(buffer.c_str(), buffer.size());
   return dump;
 }

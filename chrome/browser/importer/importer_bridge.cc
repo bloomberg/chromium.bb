@@ -184,7 +184,8 @@ void ExternalProcessImporterBridge::NotifyEnded() {
 std::wstring ExternalProcessImporterBridge::GetLocalizedString(
     int message_id) {
   std::wstring message;
-  localized_strings_->GetString(IntToWString(message_id), &message);
+  localized_strings_->GetString(ASCIIToWide(base::IntToString(message_id)),
+                                &message);
   return message;
 }
 

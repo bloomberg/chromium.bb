@@ -14,6 +14,7 @@
 #include "base/histogram.h"
 #include "base/i18n/rtl.h"
 #include "base/singleton.h"
+#include "base/string_number_conversions.h"
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chrome_thread.h"
@@ -196,7 +197,8 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const Value* content) {
           static_cast<const StringValue*>(list_member);
       std::wstring wstring_value;
       if (string_value->GetAsString(&wstring_value)) {
-        int session_to_restore = StringToInt(WideToUTF16Hack(wstring_value));
+        int session_to_restore;
+        base::StringToInt(WideToUTF8(wstring_value), &session_to_restore);
         tab_restore_service_->RestoreEntryById(browser, session_to_restore,
                                                true);
         // The current tab has been nuked at this point; don't touch any member

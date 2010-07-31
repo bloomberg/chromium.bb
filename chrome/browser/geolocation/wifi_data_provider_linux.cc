@@ -14,6 +14,7 @@
 #include <glib.h>
 
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 
 namespace {
@@ -294,7 +295,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       std::string mac = g_value_get_string(&mac_g_value.v);
       ReplaceSubstringsAfterOffset(&mac, 0U, ":", "");
       std::vector<uint8> mac_bytes;
-      if (!HexStringToBytes(mac, &mac_bytes) || mac_bytes.size() != 6) {
+      if (!base::HexStringToBytes(mac, &mac_bytes) || mac_bytes.size() != 6) {
         DLOG(WARNING) << "Can't parse mac address (found " << mac_bytes.size()
                       << " bytes) so using raw string: " << mac;
         access_point_data.mac_address = UTF8ToUTF16(mac);

@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -77,7 +78,7 @@ void TestProvider::AddResults(int start_at, int num) {
     AutocompleteMatch match(this, relevance_ - i, false,
                             AutocompleteMatch::URL_WHAT_YOU_TYPED);
 
-    match.fill_into_edit = prefix_ + IntToWString(i);
+    match.fill_into_edit = prefix_ + UTF8ToWide(base::IntToString(i));
     match.destination_url = GURL(WideToUTF8(match.fill_into_edit));
 
     match.contents = match.fill_into_edit;

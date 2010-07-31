@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/md5.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/server/http_listen_socket.h"
 #include "net/server/http_server_request_info.h"
@@ -81,7 +82,7 @@ uint32 WebSocketKeyFingerprint(const std::string& str) {
   if (spaces == 0)
     return 0;
   int64 number = 0;
-  if (!StringToInt64(result, &number))
+  if (!base::StringToInt64(result, &number))
     return 0;
   return htonl(static_cast<uint32>(number / spaces));
 }

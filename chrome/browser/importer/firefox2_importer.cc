@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/history/history_types.h"
@@ -483,7 +484,8 @@ bool Firefox2Importer::ParseBookmarkFromLine(const std::string& line,
 
   // Add date
   if (GetAttribute(attribute_list, kAddDateAttribute, &value)) {
-    int64 time = StringToInt64(value);
+    int64 time;
+    base::StringToInt64(value, &time);
     // Upper bound it at 32 bits.
     if (0 < time && time < (1LL << 32))
       *add_date = Time::FromTimeT(time);

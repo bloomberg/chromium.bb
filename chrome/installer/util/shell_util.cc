@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -19,6 +19,7 @@
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_constants.h"
@@ -502,7 +503,7 @@ std::wstring ShellUtil::GetChromeIcon(const std::wstring& chrome_exe) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   std::wstring chrome_icon(chrome_exe);
   chrome_icon.append(L",");
-  chrome_icon.append(IntToWString(dist->GetIconIndex()));
+  chrome_icon.append(base::IntToString16(dist->GetIconIndex()));
   return chrome_icon;
 }
 

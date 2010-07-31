@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -86,15 +87,17 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
     for (size_t i = 0; i < lines.size() / 8; i++) {
       std::string type(lines[8 * i]);
       std::string name(lines[8 * i + 1]);
-      int64 size = StringToInt64(lines[8 * i + 2]);
+      int64 size;
+      base::StringToInt64(lines[8 * i + 2], &size);
 
       SCOPED_TRACE(StringPrintf("Filename: %s", name.c_str()));
 
-      int year = StringToInt(lines[8 * i + 3]);
-      int month = StringToInt(lines[8 * i + 4]);
-      int day_of_month = StringToInt(lines[8 * i + 5]);
-      int hour = StringToInt(lines[8 * i + 6]);
-      int minute = StringToInt(lines[8 * i + 7]);
+      int year, month, day_of_month, hour, minute;
+      base::StringToInt(lines[8 * i + 3], &year);
+      base::StringToInt(lines[8 * i + 4], &month);
+      base::StringToInt(lines[8 * i + 5], &day_of_month);
+      base::StringToInt(lines[8 * i + 6], &hour);
+      base::StringToInt(lines[8 * i + 7], &minute);
 
       ASSERT_TRUE(buffer.EntryAvailable());
       net::FtpDirectoryListingEntry entry = buffer.PopEntry();

@@ -193,7 +193,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
   int64 id = 0;
   if (ids_valid_) {
     if (!value.GetString(kIdKey, &id_string) ||
-        !StringToInt64(id_string, &id) ||
+        !base::StringToInt64(id_string, &id) ||
         ids_.count(id) != 0) {
       ids_valid_ = false;
     } else {
@@ -209,8 +209,9 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
   std::string date_added_string;
   if (!value.GetString(kDateAddedKey, &date_added_string))
     date_added_string = base::Int64ToString(Time::Now().ToInternalValue());
-  base::Time date_added = base::Time::FromInternalValue(
-      StringToInt64(date_added_string));
+  int64 internal_time;
+  base::StringToInt64(date_added_string, &internal_time);
+  base::Time date_added = base::Time::FromInternalValue(internal_time);
 #if !defined(OS_WIN)
   // We changed the epoch for dates on Mac & Linux from 1970 to the Windows
   // one of 1601. We assume any number we encounter from before 1970 is using
@@ -267,8 +268,9 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
     }
 
     node->set_type(BookmarkNode::FOLDER);
-    node->set_date_group_modified(Time::FromInternalValue(
-        StringToInt64(last_modified_date)));
+    int64 internal_time;
+    base::StringToInt64(last_modified_date, &internal_time);
+    node->set_date_group_modified(Time::FromInternalValue(internal_time));
 
     if (parent)
       parent->Add(parent->GetChildCount(), node);

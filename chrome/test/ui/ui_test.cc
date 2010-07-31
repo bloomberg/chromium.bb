@@ -214,27 +214,31 @@ void UITestBase::InitializeTimeouts() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(kUiTestTimeout)) {
     std::wstring timeout_str = command_line.GetSwitchValue(kUiTestTimeout);
-    int timeout = StringToInt(WideToUTF16Hack(timeout_str));
+    int timeout;
+    base::StringToInt(WideToUTF8(timeout_str), &timeout);
     command_execution_timeout_ms_ = std::max(kCommandExecutionTimeout, timeout);
   }
 
   if (command_line.HasSwitch(kUiTestActionTimeout)) {
     std::wstring act_str = command_line.GetSwitchValue(kUiTestActionTimeout);
-    int act_timeout = StringToInt(WideToUTF16Hack(act_str));
+    int act_timeout;
+    base::StringToInt(WideToUTF8(act_str), &act_timeout);
     action_timeout_ms_ = std::max(kWaitForActionMsec, act_timeout);
   }
 
   if (command_line.HasSwitch(kUiTestActionMaxTimeout)) {
     std::wstring action_max_str =
         command_line.GetSwitchValue(kUiTestActionMaxTimeout);
-    int max_timeout = StringToInt(WideToUTF16Hack(action_max_str));
+    int max_timeout;
+    base::StringToInt(WideToUTF8(action_max_str), &max_timeout);
     action_max_timeout_ms_ = std::max(kWaitForActionMaxMsec, max_timeout);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kUiTestSleepTimeout)) {
     std::wstring sleep_timeout_str =
         CommandLine::ForCurrentProcess()->GetSwitchValue(kUiTestSleepTimeout);
-    int sleep_timeout = StringToInt(WideToUTF16Hack(sleep_timeout_str));
+    int sleep_timeout;
+    base::StringToInt(WideToUTF8(sleep_timeout_str), &sleep_timeout);
     sleep_timeout_ms_ = std::max(kWaitForActionMsec, sleep_timeout);
   }
 
@@ -242,7 +246,8 @@ void UITestBase::InitializeTimeouts() {
     std::wstring terminate_timeout_str =
         CommandLine::ForCurrentProcess()->GetSwitchValue(
             kUiTestTerminateTimeout);
-    int terminate_timeout = StringToInt(WideToUTF16Hack(terminate_timeout_str));
+    int terminate_timeout;
+    base::StringToInt(WideToUTF8(terminate_timeout_str), &terminate_timeout);
     terminate_timeout_ms_ = std::max(kWaitForActionMsec, terminate_timeout);
   }
 }
@@ -348,7 +353,7 @@ void UITestBase::StartHttpServerWithPort(const FilePath& root_directory,
 #endif
 
   if (port)
-    cmd_line->AppendSwitchASCII("port", IntToString(port));
+    cmd_line->AppendSwitchASCII("port", base::IntToString(port));
   RunCommand(*cmd_line.get());
 }
 
@@ -921,7 +926,7 @@ void UITestBase::PrintResult(const std::string& measurement,
                          size_t value,
                          const std::string& units,
                          bool important) {
-  PrintResultsImpl(measurement, modifier, trace, UintToString(value),
+  PrintResultsImpl(measurement, modifier, trace, base::UintToString(value),
                    "", "", units, important);
 }
 

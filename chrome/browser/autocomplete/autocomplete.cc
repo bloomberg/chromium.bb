@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/i18n/number_formatting.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/history_contents_provider.h"
@@ -236,7 +237,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // number.  If it's just garbage after a colon, this is a query.
   if (parts->port.is_nonempty()) {
     int port;
-    return (StringToInt(WideToUTF16(
+    return (base::StringToInt(WideToUTF8(
                 text.substr(parts->port.begin, parts->port.len)), &port) &&
             (port >= 0) && (port <= 65535)) ? URL : QUERY;
   }

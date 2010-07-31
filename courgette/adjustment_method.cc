@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 
 #include "courgette/assembly_program.h"
@@ -183,7 +184,7 @@ static std::string ToString(Node* node) {
 
   s += StringPrintf("%u", node->count_);
   s += " @";
-  s += Uint64ToString(node->edges_in_frequency_order.size());
+  s += base::Uint64ToString(node->edges_in_frequency_order.size());
   s += "}";
   return s;
 }

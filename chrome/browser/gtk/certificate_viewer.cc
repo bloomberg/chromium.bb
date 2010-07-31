@@ -17,7 +17,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/nss_util.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/certificate_dialogs.h"
@@ -394,7 +394,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
   if (SEC_ASN1DecodeInteger(&cert->version, &version) == SECSuccess &&
       version != ULONG_MAX)
     version_str = l10n_util::GetStringFUTF8(IDS_CERT_DETAILS_VERSION_FORMAT,
-                                            UintToString16(version + 1));
+                                            base::UintToString16(version + 1));
   GtkTreeIter iter;
   gtk_tree_store_append(store, &iter, &cert_iter);
   gtk_tree_store_set(

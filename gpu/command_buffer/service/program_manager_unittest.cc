@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/program_manager.h"
+
 #include <algorithm>
+
 #include "app/gfx/gl/gl_mock.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -245,7 +248,7 @@ class ProgramManagerWithShaderTest : public testing::Test {
           }
           for (GLsizei jj = 1; jj < info.size; ++jj) {
             std::string element_name(
-                std::string(base_name) + "[" + IntToString(jj) + "]");
+                std::string(base_name) + "[" + base::IntToString(jj) + "]");
             EXPECT_CALL(*gl_, GetUniformLocation(service_id,
                                                  StrEq(element_name)))
                 .WillOnce(Return(info.location + jj * 2))

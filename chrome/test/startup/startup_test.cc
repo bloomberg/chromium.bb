@@ -109,7 +109,7 @@ class StartupTest : public UITest {
     scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
     std::string numCyclesEnv;
     if (env->GetEnv(env_vars::kStartupTestsNumCycles, &numCyclesEnv) &&
-        StringToInt(numCyclesEnv, &numCycles)) {
+        base::StringToInt(numCyclesEnv, &numCycles)) {
       if (numCycles <= kNumCyclesMax) {
         LOG(INFO) << env_vars::kStartupTestsNumCycles
                   << " set in environment, so setting numCycles to "
@@ -163,7 +163,7 @@ class StartupTest : public UITest {
         std::vector<std::string> version_numbers;
         SplitString(server_version, '.', &version_numbers);
         int chrome_buildnum = 0;
-        ASSERT_TRUE(StringToInt(version_numbers[2], &chrome_buildnum));
+        ASSERT_TRUE(base::StringToInt(version_numbers[2], &chrome_buildnum));
         if (chrome_buildnum < 368) {
           num_tabs = 0;
         }
@@ -284,7 +284,7 @@ void StartupTest::RunPerfTestWithManyTabs(const char* graph, const char* trace,
     // and each time, UITest::SetUp will wait for |tab_count| tabs to
     // finish loading.
     launch_arguments_.AppendSwitchASCII(switches::kRestoreLastSession,
-                                        IntToString(tab_count));
+                                        base::IntToString(tab_count));
   }
   RunStartupTest(graph, trace, WARM, NOT_IMPORTANT, UITest::DEFAULT_THEME,
                  tab_count, nth_timed_tab);

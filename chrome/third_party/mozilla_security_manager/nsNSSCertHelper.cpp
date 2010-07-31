@@ -46,6 +46,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "grit/generated_resources.h"
@@ -712,7 +713,7 @@ std::string ProcessUserNotice(SECItem* der_notice) {
         if (itemList != notice->noticeReference.noticeNumbers)
           rv += ", ";
         rv += '#';
-        rv += UTF16ToUTF8(UintToString16(number));
+        rv += UTF16ToUTF8(base::UintToString16(number));
       }
       itemList++;
     }
@@ -1073,9 +1074,9 @@ std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki) {
       case rsaKey: {
         rv = l10n_util::GetStringFUTF8(
             IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT,
-            UintToString16(key->u.rsa.modulus.len * 8),
+            base::UintToString16(key->u.rsa.modulus.len * 8),
             UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.modulus)),
-            UintToString16(key->u.rsa.publicExponent.len * 8),
+            base::UintToString16(key->u.rsa.publicExponent.len * 8),
             UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.publicExponent)));
         break;
       }

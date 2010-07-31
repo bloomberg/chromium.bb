@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -438,7 +439,7 @@ bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs) {
 
     // Or value could be an integer.
     int int_value = 0;
-    if (StringToInt(value, &int_value)) {
+    if (base::StringToInt(value, &int_value)) {
       prefs->SetInteger(ASCIIToWide(key), int_value);
       continue;
     }

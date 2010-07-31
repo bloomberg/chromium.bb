@@ -8,7 +8,8 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_login_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
@@ -47,7 +48,7 @@ class DummyComboboxModel : public ComboboxModel {
   virtual int GetItemCount() { return 2; }
 
   virtual std::wstring GetItemAt(int index) {
-    return L"Item " + IntToWString(index);
+    return L"Item " + UTF16ToWideHack(base::IntToString16(index));
   }
 };
 

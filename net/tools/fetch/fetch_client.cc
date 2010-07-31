@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/stats_counters.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_resolver.h"
@@ -125,8 +126,10 @@ int main(int argc, char**argv) {
   if (!url.length())
     usage(argv[0]);
   int client_limit = 1;
-  if (parsed_command_line.HasSwitch("n"))
-    StringToInt(parsed_command_line.GetSwitchValueASCII("n"), &client_limit);
+  if (parsed_command_line.HasSwitch("n")) {
+    base::StringToInt(parsed_command_line.GetSwitchValueASCII("n"),
+                      &client_limit);
+  }
   bool use_cache = parsed_command_line.HasSwitch("use-cache");
 
   // Do work here.

@@ -799,16 +799,19 @@ void AutoFillCreditCardEditor::SetWidgetValues(CreditCard* card) {
   gtk_entry_set_text(GTK_ENTRY(number_),
                      UTF16ToUTF8(card->ObfuscatedNumber()).c_str());
 
-  int month = StringToInt(
-      UTF16ToUTF8(card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH))));
+  int month;
+  base::StringToInt(card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)),
+                    &month);
   if (month >= 1 && month <= 12) {
     gtk_combo_box_set_active(GTK_COMBO_BOX(month_), month - 1);
   } else {
     gtk_combo_box_set_active(GTK_COMBO_BOX(month_), 0);
   }
 
-  int year = StringToInt(UTF16ToUTF8(
-      card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR))));
+  int year;
+  base::StringToInt(
+      card->GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)),
+      &year);
   if (year >= base_year_ && year < base_year_ + kNumYears)
     gtk_combo_box_set_active(GTK_COMBO_BOX(year_), year - base_year_);
   else

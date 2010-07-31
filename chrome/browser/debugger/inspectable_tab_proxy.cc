@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/debugger/inspectable_tab_proxy.h"
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -98,7 +99,7 @@ DevToolsClientHost* InspectableTabProxy::NewClientHost(
 void InspectableTabProxy::OnRemoteDebuggerDetached() {
   while (id_to_client_host_map_.size() > 0) {
     IdToClientHostMap::iterator it = id_to_client_host_map_.begin();
-    it->second->debugger_remote_service()->DetachFromTab(IntToString(it->first),
-                                                         NULL);
+    it->second->debugger_remote_service()->DetachFromTab(
+        base::IntToString(it->first), NULL);
   }
 }

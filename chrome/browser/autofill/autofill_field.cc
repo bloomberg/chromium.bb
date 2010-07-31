@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/sha1.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 
 namespace {
@@ -20,7 +20,7 @@ static std::string Hash32Bit(const std::string& str) {
                   ((hash_bin[2] & 0xFF) << 8) |
                    (hash_bin[3] & 0xFF);
 
-  return UintToString(hash32);
+  return base::UintToString(hash32);
 }
 
 }  // namespace

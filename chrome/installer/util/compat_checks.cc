@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/installer/util/compat_checks.h"
 
 #include "base/registry.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 
 namespace {
@@ -27,11 +28,11 @@ bool ParseSEPVersion(const std::wstring& version, int* v0, int* v1, int* v2) {
   SplitString(version, L'.', &v);
   if (v.size() != 4)
     return false;
-  if (!StringToInt(v[0], v0))
+  if (!base::StringToInt(v[0], v0))
     return false;
-  if (!StringToInt(v[1], v1))
+  if (!base::StringToInt(v[1], v1))
     return false;
-  if (!StringToInt(v[2], v2))
+  if (!base::StringToInt(v[2], v2))
     return false;
   return true;
 }

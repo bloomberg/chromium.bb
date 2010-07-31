@@ -4,6 +4,7 @@
 
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"

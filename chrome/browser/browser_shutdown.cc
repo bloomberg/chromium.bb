@@ -229,7 +229,7 @@ void ReadLastShutdownFile(
   std::string shutdown_ms_str;
   int64 shutdown_ms = 0;
   if (file_util::ReadFileToString(shutdown_ms_file, &shutdown_ms_str))
-    shutdown_ms = StringToInt64(shutdown_ms_str);
+    base::StringToInt64(shutdown_ms_str, &shutdown_ms);
   file_util::Delete(shutdown_ms_file, false);
 
   if (type == NOT_VALID || shutdown_ms == 0 || num_procs == 0)

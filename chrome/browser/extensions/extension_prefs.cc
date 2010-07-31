@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_prefs.h"
+
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 
@@ -306,7 +307,7 @@ Time ExtensionPrefs::LastPingDayImpl(const DictionaryValue* dictionary) const {
     std::string string_value;
     int64 value;
     dictionary->GetString(kLastPingDay, &string_value);
-    if (StringToInt64(string_value, &value)) {
+    if (base::StringToInt64(string_value, &value)) {
       return Time::FromInternalValue(value);
     }
   }
@@ -735,7 +736,7 @@ bool ExtensionPrefs::GetIdleInstallInfo(const std::string& extension_id,
     return false;
 
   int64 fetch_time_value;
-  if (!StringToInt64(fetch_time_string, &fetch_time_value))
+  if (!base::StringToInt64(fetch_time_string, &fetch_time_value))
     return false;
 
   if (crx_path)

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -70,8 +71,11 @@ class BookmarkIndexTest : public testing::Test {
       SplitString(match_strings[i], ',', &chunks);
       ASSERT_EQ(2U, chunks.size());
       matches->push_back(Snippet::MatchPosition());
-      matches->back().first = StringToInt(chunks[0]);
-      matches->back().second = StringToInt(chunks[1]);
+      int chunks0, chunks1;
+      base::StringToInt(chunks[0], &chunks0);
+      base::StringToInt(chunks[1], &chunks1);
+      matches->back().first = chunks0;
+      matches->back().second = chunks1;
     }
   }
 

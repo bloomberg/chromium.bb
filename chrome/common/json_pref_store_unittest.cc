@@ -7,6 +7,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
@@ -134,9 +135,12 @@ TEST_F(JsonPrefStoreTest, Basic) {
   EXPECT_TRUE(prefs->GetInteger(kMaxTabs, &integer));
   EXPECT_EQ(10, integer);
 
-  prefs->SetString(kLongIntPref, Int64ToWString(214748364842LL));
+  prefs->SetString(kLongIntPref,
+                   UTF8ToWide(base::Int64ToString(214748364842LL)));
   EXPECT_TRUE(prefs->GetString(kLongIntPref, &string_value));
-  EXPECT_EQ(214748364842LL, StringToInt64(WideToUTF16Hack(string_value)));
+  int64 value;
+  base::StringToInt64(WideToUTF8(string_value), &value);
+  EXPECT_EQ(214748364842LL, value);
 
   // Serialize and compare to expected output.
   FilePath output_file = input_file;

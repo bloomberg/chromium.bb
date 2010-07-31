@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
@@ -580,7 +581,7 @@ void EventSendingController::keyDown(
       for (int i = 1; i <= 24; ++i) {
         std::wstring function_key_name;
         function_key_name += L"F";
-        function_key_name += IntToWString(i);
+        function_key_name += UTF8ToWide(base::IntToString(i));
         if (function_key_name == code_str) {
           code = base::VKEY_F1 + (i - 1);
           break;

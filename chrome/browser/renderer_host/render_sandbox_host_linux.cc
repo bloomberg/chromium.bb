@@ -340,7 +340,7 @@ class SandboxIPCProcess  {
     sandbox_cmd.push_back(base::Int64ToString(inode));
     CommandLine get_inode_cmd(sandbox_cmd);
     if (base::GetAppOutput(get_inode_cmd, &inode_output))
-      StringToInt(inode_output, &pid);
+      base::StringToInt(inode_output, &pid);
 
     if (!pid) {
       LOG(ERROR) << "Could not get pid";

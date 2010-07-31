@@ -166,8 +166,8 @@ PasswordForm* FormFromAttributes(GnomeKeyringAttributeList* attrs) {
   form->ssl_valid = uint_attr_map["ssl_valid"];
   form->preferred = uint_attr_map["preferred"];
   int64 date_created = 0;
-  bool date_ok = StringToInt64(string_attr_map["date_created"],
-                               &date_created);
+  bool date_ok = base::StringToInt64(string_attr_map["date_created"],
+                                     &date_created);
   DCHECK(date_ok);
   DCHECK_NE(date_created, 0);
   form->date_created = base::Time::FromTimeT(date_created);

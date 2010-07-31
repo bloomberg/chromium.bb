@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/rand_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -231,7 +232,7 @@ void Toolbar5Importer::GetAuthenticationFromServer() {
 
   // Random number construction.
   int random = base::RandInt(0, std::numeric_limits<int>::max());
-  std::string random_string = UintToString(random);
+  std::string random_string = base::UintToString(random);
 
   // Retrieve authorization token from the network.
   std::string url_string(kT5AuthorizationTokenUrl);
@@ -264,7 +265,7 @@ void Toolbar5Importer::GetBookmarkDataFromServer(const std::string& response) {
   // the xml blob.  We must tag the connection string with a random number.
   std::string conn_string = kT5FrontEndUrlTemplate;
   int random = base::RandInt(0, std::numeric_limits<int>::max());
-  std::string random_string = UintToString(random);
+  std::string random_string = base::UintToString(random);
   conn_string.replace(conn_string.find(kRandomNumberToken),
                       arraysize(kRandomNumberToken) - 1,
                       random_string);
@@ -520,7 +521,7 @@ bool Toolbar5Importer::ExtractTimeFromXmlReader(
     return false;
   }
   int64 timestamp;
-  if (!StringToInt64(buffer, &timestamp)) {
+  if (!base::StringToInt64(buffer, &timestamp)) {
     return false;
   }
   entry->creation_time = base::Time::FromTimeT(timestamp);

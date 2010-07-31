@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/installer/util/version.h"
+
 #include <vector>
 
 #include "base/format_macros.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "chrome/installer/util/version.h"
 
 installer::Version::Version(int64 major, int64 minor, int64 build,
                             int64 patch)
@@ -42,6 +44,10 @@ installer::Version* installer::Version::GetVersionFromString(
     return NULL;
   }
 
-  return new Version(StringToInt64(numbers[0]), StringToInt64(numbers[1]),
-                     StringToInt64(numbers[2]), StringToInt64(numbers[3]));
+  int64 v0, v1, v2, v3;
+  base::StringToInt64(numbers[0], &v0);
+  base::StringToInt64(numbers[1], &v1);
+  base::StringToInt64(numbers[2], &v2);
+  base::StringToInt64(numbers[3], &v3);
+  return new Version(v0, v1, v2, v3);
 }

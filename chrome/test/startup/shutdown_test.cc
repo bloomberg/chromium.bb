@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/time.h"
@@ -72,7 +73,7 @@ class ShutdownTest : public UITest {
     scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
     std::string numCyclesEnv;
     if (env->GetEnv(env_vars::kStartupTestsNumCycles, &numCyclesEnv) &&
-        StringToInt(numCyclesEnv, &numCycles)) {
+        base::StringToInt(numCyclesEnv, &numCycles)) {
       if (numCycles <= kNumCyclesMax) {
         LOG(INFO) << env_vars::kStartupTestsNumCycles
                   << " set in environment, so setting numCycles to "

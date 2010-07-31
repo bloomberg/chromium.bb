@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -409,9 +410,10 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
         parsed_command_line.GetSwitchValueASCII(switches::kHostRules));
 
   if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
-    int value = StringToInt(
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kMaxSpdySessionsPerDomain));
+    int value;
+    base::StringToInt(parsed_command_line.GetSwitchValueASCII(
+            switches::kMaxSpdySessionsPerDomain),
+        &value);
     net::SpdySessionPool::set_max_sessions_per_domain(value);
   }
 }
@@ -643,8 +645,12 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
     if (size_arg.size()) {
       std::vector<std::string> dimensions;
       SplitString(size_arg, ',', &dimensions);
-      if (dimensions.size() == 2)
-        size.SetSize(StringToInt(dimensions[0]), StringToInt(dimensions[1]));
+      if (dimensions.size() == 2) {
+        int width, height;
+        if (base::StringToInt(dimensions[0], &width) &&
+            base::StringToInt(dimensions[1], &height))
+          size.SetSize(width, height);
+      }
     }
     browser::ShowLoginWizard(first_screen, size);
   }

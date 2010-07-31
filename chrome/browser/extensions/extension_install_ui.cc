@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/rand_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
@@ -99,7 +100,7 @@ static void GetV2Warnings(Extension* extension,
               IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS,
               UTF8ToUTF16(*hosts.begin()),
               UTF8ToUTF16(*(++hosts.begin())),
-              IntToString16(hosts.size() - 2)));
+              base::IntToString16(hosts.size() - 2)));
     }
   }
 

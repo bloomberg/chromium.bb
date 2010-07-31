@@ -28,6 +28,7 @@
 #endif
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
@@ -609,7 +610,7 @@ NPError WebPluginDelegatePepper::Device2DGetStateContext(
     std::string hex_md5 = MD5DigestToBase16(md5_result);
     // Return the least significant 8 characters (i.e. 4 bytes)
     // of the 32 character hexadecimal result as an int.
-    *value = HexStringToInt(hex_md5.substr(24));
+    base::HexStringToInt(hex_md5.substr(24), value);
     return NPERR_NO_ERROR;
   }
   return NPERR_GENERIC_ERROR;

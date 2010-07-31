@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/autofill_field.h"
@@ -578,7 +579,7 @@ void PersonalDataManager::SetUniqueProfileLabels(
     // has an implicit index of 1.
     for (size_t i = 1; i < iter->second.size(); ++i) {
       string16 newlabel = iter->second[i]->Label() +
-          UintToString16(static_cast<unsigned int>(i + 1));
+          base::UintToString16(static_cast<unsigned int>(i + 1));
       iter->second[i]->set_label(newlabel);
     }
   }
@@ -600,7 +601,7 @@ void PersonalDataManager::SetUniqueCreditCardLabels(
     // has an implicit index of 1.
     for (size_t i = 1; i < iter->second.size(); ++i) {
       string16 newlabel = iter->second[i]->Label() +
-          UintToString16(static_cast<unsigned int>(i + 1));
+          base::UintToString16(static_cast<unsigned int>(i + 1));
       iter->second[i]->set_label(newlabel);
     }
   }

@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -183,7 +183,7 @@ void GetLocalizedErrorValues(const WebURLError& error,
   std::wstring details = l10n_util::GetString(options.details_resource_id);
   error_strings->SetString(L"details",
       l10n_util::GetStringF(IDS_ERRORPAGES_DETAILS_TEMPLATE,
-                            IntToWString(-error_code),
+                            ASCIIToWide(base::IntToString(-error_code)),
                             ASCIIToWide(net::ErrorToString(error_code)),
                             details));
 

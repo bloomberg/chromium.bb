@@ -5,6 +5,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
@@ -43,7 +44,7 @@ static int GetNumObjects(int log_skip, const std::string& constructor) {
   size_t j = v8_log.find(",", i);
   CHECK(j != std::string::npos);
   int num_objects;
-  CHECK(StringToInt(v8_log.substr(i, j - i), &num_objects));
+  CHECK(base::StringToInt(v8_log.substr(i, j - i), &num_objects));
   return num_objects;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 
 // These string constants and the formats used in this file must stay
@@ -26,7 +27,7 @@ bool ExtensionDevToolsEvents::IsDevToolsEventName(
     // At this point we want something like "4.onPageEvent"
     std::vector<std::string> parts;
     SplitString(event_name.substr(strlen(kDevToolsEventPrefix)), '.', &parts);
-    if (parts.size() == 2 && StringToInt(parts[0], tab_id)) {
+    if (parts.size() == 2 && base::StringToInt(parts[0], tab_id)) {
       return true;
     }
   }

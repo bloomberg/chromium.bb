@@ -11,6 +11,8 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
 #include "chrome/browser/automation/ui_controls.h"
@@ -288,7 +290,8 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
     } else {
       warning_text =
           l10n_util::GetStringF(IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_WARNING,
-                                product_name_, IntToWString(download_count));
+                                product_name_,
+                                UTF8ToWide(base::IntToString(download_count)));
       explanation_text =
           l10n_util::GetStringF(
               IDS_MULTIPLE_DOWNLOADS_REMOVE_CONFIRM_EXPLANATION, product_name_);

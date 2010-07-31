@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/ref_counted.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/automation/dom_element_proxy.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
@@ -45,8 +46,10 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByXPath) {
   std::vector<DOMElementProxyRef> elements;
   ASSERT_TRUE(main_doc->FindElements(By::XPath("//div"), &elements));
   ASSERT_EQ(2u, elements.size());
-  for (size_t i = 0; i < elements.size(); i++)
-    ASSERT_NO_FATAL_FAILURE(elements[i]->EnsureNameMatches(UintToString(i)));
+  for (size_t i = 0; i < elements.size(); i++) {
+    ASSERT_NO_FATAL_FAILURE(elements[i]->EnsureNameMatches(
+        base::UintToString(i)));
+  }
 
   // Find 0 elements.
   ASSERT_FALSE(main_doc->FindElement(By::XPath("//nosuchtag")));
@@ -90,8 +93,10 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindBySelectors) {
   std::vector<DOMElementProxyRef> elements;
   ASSERT_TRUE(main_doc->FindElements(By::Selectors(".myclass"), &elements));
   ASSERT_EQ(2u, elements.size());
-  for (size_t i = 0; i < elements.size(); i++)
-    ASSERT_NO_FATAL_FAILURE(elements[i]->EnsureNameMatches(UintToString(i)));
+  for (size_t i = 0; i < elements.size(); i++) {
+    ASSERT_NO_FATAL_FAILURE(elements[i]->EnsureNameMatches(
+        base::UintToString(i)));
+  }
 
   // Find 0 elements.
   ASSERT_FALSE(main_doc->FindElement(By::Selectors("#nosuchid")));
@@ -131,8 +136,10 @@ IN_PROC_BROWSER_TEST_F(DOMAutomationTest, FindByText) {
   std::vector<DOMElementProxyRef> elements;
   ASSERT_TRUE(main_doc->FindElements(By::Text("div_text"), &elements));
   ASSERT_EQ(2u, elements.size());
-  for (size_t i = 0; i < elements.size(); i++)
-    ASSERT_NO_FATAL_FAILURE(elements[i]->EnsureNameMatches(UintToString(i)));
+  for (size_t i = 0; i < elements.size(); i++) {
+    ASSERT_NO_FATAL_FAILURE(elements[i]->EnsureNameMatches(
+        base::UintToString(i)));
+  }
 
   // Find 0 elements.
   ASSERT_FALSE(main_doc->FindElement(By::Text("nosuchtext")));

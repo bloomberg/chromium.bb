@@ -214,7 +214,8 @@ FilePath DatabaseTracker::GetFullDBFilePath(
   if (id < 0)
     return FilePath();
 
-  FilePath file_name = FilePath::FromWStringHack(Int64ToWString(id));
+  FilePath file_name = FilePath::FromWStringHack(
+      UTF8ToWide(base::Int64ToString(id)));
   return db_dir_.Append(FilePath::FromWStringHack(
       UTF16ToWide(GetOriginDirectory(origin_identifier)))).Append(file_name);
 }

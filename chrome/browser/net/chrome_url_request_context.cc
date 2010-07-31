@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
@@ -105,7 +106,7 @@ net::ProxyService* CreateProxyService(
 
     // Parse the switch (it should be a positive integer formatted as decimal).
     int n;
-    if (StringToInt(s, &n) && n > 0) {
+    if (base::StringToInt(s, &n) && n > 0) {
       num_pac_threads = static_cast<size_t>(n);
     } else {
       LOG(ERROR) << "Invalid switch for number of PAC threads: " << s;

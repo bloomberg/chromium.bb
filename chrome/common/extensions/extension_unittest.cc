@@ -14,6 +14,7 @@
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
@@ -123,7 +124,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   DictionaryValue* icons = NULL;
   input_value->GetDictionary(keys::kIcons, &icons);
   ASSERT_FALSE(NULL == icons);
-  icons->SetInteger(ASCIIToWide(IntToString(128)), 42);
+  icons->SetInteger(ASCIIToWide(base::IntToString(128)), 42);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidIconPath));
 

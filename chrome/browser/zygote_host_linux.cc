@@ -163,7 +163,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
       get_inode_cmdline.push_back(base::Int64ToString(inode));
       CommandLine get_inode_cmd(get_inode_cmdline);
       if (base::GetAppOutput(get_inode_cmd, &inode_output)) {
-        StringToInt(inode_output, &pid_);
+        base::StringToInt(inode_output, &pid_);
       }
     }
     CHECK(pid_ > 0) << "Did not find zygote process (using sandbox binary "

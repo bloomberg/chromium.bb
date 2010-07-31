@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
@@ -106,8 +107,9 @@ TextDatabase::DBIdent TextDatabase::FileNameToID(const FilePath& file_path) {
     return 0;
   }
 
-  int year = StringToInt(suffix.substr(0, 4));
-  int month = StringToInt(suffix.substr(5, 2));
+  int year, month;
+  base::StringToInt(suffix.substr(0, 4), &year);
+  base::StringToInt(suffix.substr(5, 2), &month);
 
   return year * 100 + month;
 }

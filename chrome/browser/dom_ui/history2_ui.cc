@@ -10,8 +10,8 @@
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
+#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
-#include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -321,7 +321,7 @@ void BrowsingHistoryHandler2::ExtractSearchHistoryArguments(const Value* value,
         static_cast<const StringValue*>(list_member);
       string16 string16_value;
       string_value->GetAsUTF16(&string16_value);
-      *month = StringToInt(string16_value);
+      base::StringToInt(string16_value, month);
     }
   }
 }

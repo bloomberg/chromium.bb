@@ -52,7 +52,7 @@ static std::string Hash64Bit(const std::string& str) {
                   (((static_cast<uint64>(hash_bin[6])) & 0xFF) << 8) |
                    ((static_cast<uint64>(hash_bin[7])) & 0xFF);
 
-  return Uint64ToString(hash64);
+  return base::Uint64ToString(hash64);
 }
 
 }  // namespace
@@ -429,7 +429,7 @@ bool FormStructure::EncodeFormRequest(
         field_element->SetAttr(buzz::QName(kAttributeSignature),
                                field->FieldSignature());
         field_element->SetAttr(buzz::QName(kAttributeAutoFillType),
-                               IntToString(*type));
+                               base::IntToString(*type));
         encompassing_xml_element->AddElement(field_element);
       }
     } else {

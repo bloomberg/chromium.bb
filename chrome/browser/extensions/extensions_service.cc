@@ -10,6 +10,7 @@
 #include "base/histogram.h"
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -180,8 +181,9 @@ ExtensionsService::ExtensionsService(Profile* profile,
   if (autoupdate_enabled) {
     int update_frequency = kDefaultUpdateFrequencySeconds;
     if (command_line->HasSwitch(switches::kExtensionsUpdateFrequency)) {
-      update_frequency = StringToInt(command_line->GetSwitchValueASCII(
-          switches::kExtensionsUpdateFrequency));
+      base::StringToInt(command_line->GetSwitchValueASCII(
+          switches::kExtensionsUpdateFrequency),
+          &update_frequency);
     }
     updater_ = new ExtensionUpdater(this, prefs, update_frequency);
   }

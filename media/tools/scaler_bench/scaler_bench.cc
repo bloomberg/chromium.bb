@@ -11,7 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/scoped_vector.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
@@ -156,37 +156,37 @@ int main(int argc, const char** argv) {
 
   std::string source_width_param(cmd_line->GetSwitchValueASCII("src-w"));
   if (!source_width_param.empty() &&
-      !StringToInt(source_width_param, &source_width)) {
+      !base::StringToInt(source_width_param, &source_width)) {
     source_width = 0;
   }
 
   std::string source_height_param(cmd_line->GetSwitchValueASCII("src-h"));
   if (!source_height_param.empty() &&
-      !StringToInt(source_height_param, &source_height)) {
+      !base::StringToInt(source_height_param, &source_height)) {
     source_height = 0;
   }
 
   std::string dest_width_param(cmd_line->GetSwitchValueASCII("dest-w"));
   if (!dest_width_param.empty() &&
-      !StringToInt(dest_width_param, &dest_width)) {
+      !base::StringToInt(dest_width_param, &dest_width)) {
     dest_width = 0;
   }
 
   std::string dest_height_param(cmd_line->GetSwitchValueASCII("dest-h"));
   if (!dest_height_param.empty() &&
-      !StringToInt(dest_height_param, &dest_height)) {
+      !base::StringToInt(dest_height_param, &dest_height)) {
     dest_height = 0;
   }
 
   std::string frames_param(cmd_line->GetSwitchValueASCII("frames"));
   if (!frames_param.empty() &&
-      !StringToInt(frames_param, &num_frames)) {
+      !base::StringToInt(frames_param, &num_frames)) {
     num_frames = 0;
   }
 
   std::string buffers_param(cmd_line->GetSwitchValueASCII("buffers"));
   if (!buffers_param.empty() &&
-      !StringToInt(buffers_param, &num_buffers)) {
+      !base::StringToInt(buffers_param, &num_buffers)) {
     num_buffers = 0;
   }
 

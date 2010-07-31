@@ -1,11 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_paths.h"
@@ -39,7 +39,7 @@ class SessionRestoreUITest : public UITest {
     clear_profile_ = false;
 
     launch_arguments_.AppendSwitchASCII(switches::kRestoreLastSession,
-                                        IntToString(expected_tab_count));
+                                        base::IntToString(expected_tab_count));
     UITest::SetUp();
   }
 

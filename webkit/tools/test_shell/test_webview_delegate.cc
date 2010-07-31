@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "base/trace_event.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/point.h"
@@ -255,13 +256,13 @@ std::string GetRangeDescription(const WebRange& range) {
   int exception = 0;
   std::string str = "range from ";
   int offset = range.startOffset();
-  str.append(IntToString(offset));
+  str.append(base::IntToString(offset));
   str.append(" of ");
   WebNode container = range.startContainer(exception);
   str.append(GetNodeDescription(container, exception));
   str.append(" to ");
   offset = range.endOffset();
-  str.append(IntToString(offset));
+  str.append(base::IntToString(offset));
   str.append(" of ");
   container = range.endContainer(exception);
   str.append(GetNodeDescription(container, exception));

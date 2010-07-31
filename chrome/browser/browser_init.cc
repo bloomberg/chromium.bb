@@ -13,6 +13,7 @@
 #include "base/histogram.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/chrome_frame_automation_provider.h"
@@ -499,16 +500,16 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
   if (command_line_.HasSwitch(switches::kRemoteShellPort)) {
     std::string port_str =
         command_line_.GetSwitchValueASCII(switches::kRemoteShellPort);
-    int64 port = StringToInt64(port_str);
-    if (port > 0 && port < 65535)
+    int64 port;
+    if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535)
       g_browser_process->InitDebuggerWrapper(static_cast<int>(port), false);
     else
       DLOG(WARNING) << "Invalid remote shell port number " << port;
   } else if (command_line_.HasSwitch(switches::kRemoteDebuggingPort)) {
     std::string port_str =
         command_line_.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
-    int64 port = StringToInt64(port_str);
-    if (port > 0 && port < 65535)
+    int64 port;
+    if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535)
       g_browser_process->InitDebuggerWrapper(static_cast<int>(port), true);
     else
       DLOG(WARNING) << "Invalid http debugger port number " << port;
@@ -940,7 +941,7 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
       if (command_line.HasSwitch(switches::kRestoreLastSession)) {
         std::string restore_session_value(
             command_line.GetSwitchValueASCII(switches::kRestoreLastSession));
-        StringToInt(restore_session_value, &expected_tab_count);
+        base::StringToInt(restore_session_value, &expected_tab_count);
       } else {
         expected_tab_count =
             std::max(1, static_cast<int>(command_line.args().size()));

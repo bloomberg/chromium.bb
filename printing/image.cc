@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/md5.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "gfx/codec/png_codec.h"
 #include "gfx/rect.h"
 #include "skia/ext/platform_device.h"
@@ -96,7 +96,7 @@ Image::Image(const Image& image)
 std::string Image::checksum() const {
   MD5Digest digest;
   MD5Sum(&data_[0], data_.size(), &digest);
-  return HexEncode(&digest, sizeof(digest));
+  return base::HexEncode(&digest, sizeof(digest));
 }
 
 bool Image::SaveToPng(const FilePath& filepath) const {

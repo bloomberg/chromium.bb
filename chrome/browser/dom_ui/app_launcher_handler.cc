@@ -6,7 +6,7 @@
 
 #include "app/animation.h"
 #include "base/base64.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_launched_animation.h"
@@ -32,7 +32,7 @@ bool ExtractInt(const ListValue* list, size_t index, int* out_int) {
   std::string string_value;
 
   if (list->GetString(index, &string_value)) {
-    *out_int = StringToInt(string_value);
+    base::StringToInt(string_value, out_int);
     return true;
   }
 

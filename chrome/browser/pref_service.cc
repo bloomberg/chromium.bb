@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -44,20 +45,19 @@ Value* CreateLocaleDefaultValue(Value::ValueType type, int message_id) {
     }
 
     case Value::TYPE_INTEGER: {
-      return Value::CreateIntegerValue(
-          StringToInt(WideToUTF16Hack(resource_string)));
-      break;
+      int val;
+      base::StringToInt(WideToUTF8(resource_string), &val);
+      return Value::CreateIntegerValue(val);
     }
 
     case Value::TYPE_REAL: {
-      return Value::CreateRealValue(
-          StringToDouble(WideToUTF16Hack(resource_string)));
-      break;
+      double val;
+      base::StringToDouble(WideToUTF8(resource_string), &val);
+      return Value::CreateRealValue(val);
     }
 
     case Value::TYPE_STRING: {
       return Value::CreateStringValue(resource_string);
-      break;
     }
 
     default: {
@@ -682,7 +682,7 @@ void PrefService::SetInt64(const wchar_t* path, int64 value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  Value* new_value = Value::CreateStringValue(Int64ToWString(value));
+  Value* new_value = Value::CreateStringValue(base::Int64ToString(value));
   pref_value_store_->SetUserPrefValue(path, new_value);
 
   FireObserversIfChanged(path, old_value.get());
@@ -699,12 +699,15 @@ int64 PrefService::GetInt64(const wchar_t* path) const {
   std::wstring result(L"0");
   bool rv = pref->GetValue()->GetAsString(&result);
   DCHECK(rv);
-  return StringToInt64(WideToUTF16Hack(result));
+
+  int64 val;
+  base::StringToInt64(WideToUTF8(result), &val);
+  return val;
 }
 
 void PrefService::RegisterInt64Pref(const wchar_t* path, int64 default_value) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
-      Value::CreateStringValue(Int64ToWString(default_value)));
+      Value::CreateStringValue(base::Int64ToString(default_value)));
   RegisterPreference(pref);
 }
 

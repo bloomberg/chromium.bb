@@ -57,6 +57,7 @@
 #include "base/process_util.h"
 #include "base/safe_strerror_posix.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/time.h"
@@ -259,7 +260,7 @@ bool ParseLockPath(const std::string& path,
   *hostname = real_path.substr(0, pos);
 
   const std::string& pid_str = real_path.substr(pos + 1);
-  if (!StringToInt(pid_str, pid))
+  if (!base::StringToInt(pid_str, pid))
     *pid = -1;
 
   return true;
@@ -269,7 +270,7 @@ void DisplayProfileInUseError(const std::string& lock_path,
                               const std::string& hostname,
                               int pid) {
   std::wstring error = l10n_util::GetStringF(IDS_PROFILE_IN_USE_LINUX,
-        IntToWString(pid),
+        UTF8ToWide(base::IntToString(pid)),
         ASCIIToWide(hostname),
         base::SysNativeMBToWide(lock_path),
         l10n_util::GetString(IDS_PRODUCT_NAME));

@@ -7,7 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
 #include "chrome/browser/importer/importer_messages.h"
@@ -35,20 +35,20 @@ bool ProfileImportProcessHost::StartProfileImportProcess(
   // in the external process.
   DictionaryValue localized_strings;
   localized_strings.SetString(
-      IntToWString(IDS_BOOKMARK_GROUP_FROM_FIREFOX),
-          l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_FIREFOX));
+      base::IntToString(IDS_BOOKMARK_GROUP_FROM_FIREFOX),
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP_FROM_FIREFOX));
   localized_strings.SetString(
-      IntToWString(IDS_BOOKMARK_GROUP_FROM_SAFARI),
-          l10n_util::GetString(IDS_BOOKMARK_GROUP_FROM_SAFARI));
+      base::IntToString(IDS_BOOKMARK_GROUP_FROM_SAFARI),
+      l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP_FROM_SAFARI));
   localized_strings.SetString(
-      IntToWString(IDS_IMPORT_FROM_FIREFOX),
-          l10n_util::GetString(IDS_IMPORT_FROM_FIREFOX));
+      base::IntToString(IDS_IMPORT_FROM_FIREFOX),
+      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_FIREFOX));
   localized_strings.SetString(
-      IntToWString(IDS_IMPORT_FROM_GOOGLE_TOOLBAR),
-          l10n_util::GetString(IDS_IMPORT_FROM_GOOGLE_TOOLBAR));
+      base::IntToString(IDS_IMPORT_FROM_GOOGLE_TOOLBAR),
+      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_GOOGLE_TOOLBAR));
   localized_strings.SetString(
-      IntToWString(IDS_IMPORT_FROM_SAFARI),
-          l10n_util::GetString(IDS_IMPORT_FROM_SAFARI));
+      base::IntToString(IDS_IMPORT_FROM_SAFARI),
+      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
 
   Send(new ProfileImportProcessMsg_StartImport(
       profile_info, items, localized_strings, import_to_bookmark_bar));

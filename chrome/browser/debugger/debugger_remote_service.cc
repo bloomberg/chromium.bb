@@ -96,7 +96,7 @@ void DebuggerRemoteService::HandleMessage(
     return;
   }
   int32 tab_uid = -1;
-  StringToInt(destination, &tab_uid);
+  base::StringToInt(destination, &tab_uid);
 
   if (command == DebuggerRemoteServiceCommand::kAttach) {
     // TODO(apavlov): handle 0 for a new tab
@@ -205,7 +205,7 @@ void DebuggerRemoteService::TabClosed(int32 tab_id) {
 void DebuggerRemoteService::AttachToTab(const std::string& destination,
                                         DictionaryValue* response) {
   int32 tab_uid = -1;
-  StringToInt(destination, &tab_uid);
+  base::StringToInt(destination, &tab_uid);
   if (tab_uid < 0) {
     // Bad tab_uid received from remote debugger (perhaps NaN)
     response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
@@ -249,7 +249,7 @@ void DebuggerRemoteService::AttachToTab(const std::string& destination,
 void DebuggerRemoteService::DetachFromTab(const std::string& destination,
                                           DictionaryValue* response) {
   int32 tab_uid = -1;
-  StringToInt(destination, &tab_uid);
+  base::StringToInt(destination, &tab_uid);
   if (tab_uid == -1) {
     // Bad tab_uid received from remote debugger (NaN)
     if (response != NULL) {

@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -127,7 +128,7 @@ AutomatedUITest::AutomatedUITest()
     if (str.empty()) {
       post_action_delay_ = 1;
     } else {
-      post_action_delay_ = StringToInt(str);
+      base::StringToInt(str, &post_action_delay_);
     }
   }
   scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
@@ -146,8 +147,9 @@ void AutomatedUITest::RunReproduction() {
 
   int64 num_reproductions = 1;
   if (parsed_command_line.HasSwitch(kReproRepeatSwitch)) {
-    num_reproductions = StringToInt64(
-        parsed_command_line.GetSwitchValueASCII(kReproRepeatSwitch));
+    base::StringToInt64(
+        parsed_command_line.GetSwitchValueASCII(kReproRepeatSwitch),
+        &num_reproductions);
   }
   std::vector<std::string> actions;
   SplitString(action_string, ',', &actions);

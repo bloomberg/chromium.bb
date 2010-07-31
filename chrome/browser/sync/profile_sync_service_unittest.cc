@@ -8,6 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -771,16 +772,16 @@ TEST_F(ProfileSyncServiceTest, RepeatedMiddleInsertion) {
   // Test insertion in first half of range by repeatedly inserting in second
   // position.
   for (int i = 0; i < kTimesToInsert; ++i) {
-    std::wstring title = std::wstring(L"Pre-insertion ") + IntToWString(i);
-    model_->AddGroup(model_->other_node(), 1, title);
+    string16 title = ASCIIToUTF16("Pre-insertion ") + base::IntToString16(i);
+    model_->AddGroup(model_->other_node(), 1, UTF16ToWideHack(title));
     count++;
   }
 
   // Test insertion in second half of range by repeatedly inserting in
   // second-to-last position.
   for (int i = 0; i < kTimesToInsert; ++i) {
-    std::wstring title = std::wstring(L"Post-insertion ") + IntToWString(i);
-    model_->AddGroup(model_->other_node(), count - 1, title);
+    string16 title = ASCIIToUTF16("Post-insertion ") + base::IntToString16(i);
+    model_->AddGroup(model_->other_node(), count - 1, UTF16ToWideHack(title));
     count++;
   }
 

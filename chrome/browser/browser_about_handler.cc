@@ -280,7 +280,7 @@ std::string AboutAbout() {
 #if defined(OS_CHROMEOS)
 std::string AboutNetwork(const std::string& query) {
   int refresh;
-  StringToInt(query, &refresh);
+  base::StringToInt(query, &refresh);
   return chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
       GetHtmlInfo(refresh);
 }

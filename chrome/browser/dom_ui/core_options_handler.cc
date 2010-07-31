@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/core_options_handler.h"
 
 #include "app/l10n_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/notification_service.h"
@@ -141,7 +142,7 @@ void CoreOptionsHandler::SetPref(const std::wstring& pref_name,
       break;
     case Value::TYPE_INTEGER:
       int int_value;
-      if (StringToInt(value_string, &int_value))
+      if (base::StringToInt(value_string, &int_value))
         pref_service->SetInteger(pref_name.c_str(), int_value);
       break;
     case Value::TYPE_STRING:

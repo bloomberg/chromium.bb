@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string16.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "webkit/glue/form_field.h"
@@ -459,7 +459,7 @@ bool FillExpirationMonthSelectControl(const string16& value,
     return true;
 
   int index = 0;
-  if (!StringToInt(value, &index) ||
+  if (!base::StringToInt(value, &index) ||
       index <= 0 ||
       static_cast<size_t>(index) >= arraysize(kMonthsFull))
     return false;

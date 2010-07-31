@@ -863,10 +863,16 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
   (*default_provider)->set_short_name(name);
   (*default_provider)->SetURL(search_url, 0, 0);
   (*default_provider)->SetSuggestionsURL(suggest_url, 0, 0);
-  if (!id_string.empty())
-    (*default_provider)->set_id(StringToInt64(id_string));
-  if (!prepopulate_id.empty())
-    (*default_provider)->set_prepopulate_id(StringToInt(prepopulate_id));
+  if (!id_string.empty()) {
+    int64 value;
+    base::StringToInt64(id_string, &value);
+    (*default_provider)->set_id(value);
+  }
+  if (!prepopulate_id.empty()) {
+    int value;
+    base::StringToInt(prepopulate_id, &value);
+    (*default_provider)->set_prepopulate_id(value);
+  }
   return true;
 }
 

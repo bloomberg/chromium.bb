@@ -6,7 +6,7 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
@@ -92,7 +92,8 @@ void ShownSectionsHandler::HandleSetShownSections(const Value* value) {
   bool r = list->GetString(0, &mode_string);
   DCHECK(r) << "Missing value in setShownSections from the NTP Most Visited.";
 
-  int mode = StringToInt(mode_string);
+  int mode;
+  base::StringToInt(mode_string, &mode);
   int old_mode = pref_service_->GetInteger(prefs::kNTPShownSections);
 
   if (old_mode != mode) {

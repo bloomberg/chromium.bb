@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
@@ -463,7 +464,8 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     increment_button_->SetEnabled(enable_increment);
     decrement_button_->SetEnabled(enable_decrement);
     zoom_label_->SetText(l10n_util::GetStringF(
-                             IDS_ZOOM_PERCENT, IntToWString(zoom_percent)));
+                             IDS_ZOOM_PERCENT,
+                             UTF8ToWide(base::IntToString(zoom_percent))));
     // If both increment and decrement are disabled, then we disable the zoom
     // label too.
     zoom_label_->SetEnabled(enable_increment || enable_decrement);

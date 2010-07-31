@@ -8,7 +8,9 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_bar_state.h"
@@ -199,8 +201,8 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   if (!find_text.empty() && have_valid_range) {
     match_count_text_->SetText(
         l10n_util::GetStringF(IDS_FIND_IN_PAGE_COUNT,
-                              IntToWString(result.active_match_ordinal()),
-                              IntToWString(result.number_of_matches())));
+            UTF8ToWide(base::IntToString(result.active_match_ordinal())),
+            UTF8ToWide(base::IntToString(result.number_of_matches()))));
 
     UpdateMatchCountAppearance(result.number_of_matches() == 0 &&
                                result.final_update());

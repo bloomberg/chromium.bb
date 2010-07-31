@@ -18,6 +18,7 @@
 #include "base/rand_util.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
@@ -131,7 +132,7 @@ int GetDirectoryWriteAgeInHours(const wchar_t* path) {
 bool RelaunchSetup(const std::wstring& flag, int value,
                    bool system_level_toast) {
   CommandLine cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
-  cmd_line.AppendSwitchASCII(WideToASCII(flag), IntToString(value));
+  cmd_line.AppendSwitchASCII(WideToASCII(flag), base::IntToString(value));
   if (system_level_toast)
     cmd_line.AppendSwitch(
       WideToASCII(installer_util::switches::kSystemLevelToast));

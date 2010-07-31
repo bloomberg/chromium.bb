@@ -8,7 +8,8 @@
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/dom_ui/language_options_util.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -38,10 +39,10 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
         l10n_util::GetString(preference.message_id));
     localized_strings->SetString(
         GetTemplateDataMinName(preference),
-        IntToWString(preference.min_pref_value));
+        UTF8ToWide(base::IntToString(preference.min_pref_value)));
     localized_strings->SetString(
         GetTemplateDataMaxName(preference),
-        IntToWString(preference.max_pref_value));
+        UTF8ToWide(base::IntToString(preference.max_pref_value)));
   }
 
   for (size_t i = 0; i < arraysize(chromeos::kChewingMultipleChoicePrefs);
@@ -79,8 +80,8 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString(
       GetTemplateDataMinName(chromeos::kChewingHsuSelKeyType),
-      IntToWString(hsu_sel_key_type_min));
+      UTF8ToWide(base::IntToString(hsu_sel_key_type_min)));
   localized_strings->SetString(
       GetTemplateDataMaxName(chromeos::kChewingHsuSelKeyType),
-      IntToWString(hsu_sel_key_type_max));
+      UTF8ToWide(base::IntToString(hsu_sel_key_type_max)));
 }

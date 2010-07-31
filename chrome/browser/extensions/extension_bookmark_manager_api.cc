@@ -35,7 +35,7 @@ const BookmarkNode* GetNodeFromArguments(BookmarkModel* model,
   if (!args->GetString(0, &id_string))
     return NULL;
   int64 id;
-  if (!StringToInt64(id_string, &id))
+  if (!base::StringToInt64(id_string, &id))
     return NULL;
   return model->GetNodeByID(id);
 }
@@ -58,7 +58,7 @@ bool GetNodesFromArguments(BookmarkModel* model, const ListValue* args,
     if (!ids->GetString(i, &id_string))
       return false;
     int64 id;
-    if (!StringToInt64(id_string, &id))
+    if (!base::StringToInt64(id_string, &id))
       return false;
     const BookmarkNode* node = model->GetNodeByID(id);
     if (!node)
@@ -363,7 +363,7 @@ bool DropBookmarkManagerFunction::RunImpl() {
   std::string id_string;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &id_string));
 
-  if (!StringToInt64(id_string, &id)) {
+  if (!base::StringToInt64(id_string, &id)) {
     error_ = keys::kInvalidIdError;
     return false;
   }
@@ -417,7 +417,7 @@ bool GetSubtreeBookmarkManagerFunction::RunImpl() {
   if (id_string == "") {
     node = model->root_node();
   } else {
-     if (!StringToInt64(id_string, &id)) {
+     if (!base::StringToInt64(id_string, &id)) {
       error_ = keys::kInvalidIdError;
       return false;
     }

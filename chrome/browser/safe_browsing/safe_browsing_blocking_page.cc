@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
@@ -332,7 +333,7 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     DCHECK(colon_index < command.size() - 1);
     std::string index_str = command.substr(colon_index + 1);
     command = command.substr(0, colon_index);
-    bool result = StringToInt(index_str, &element_index);
+    bool result = base::StringToInt(index_str, &element_index);
     DCHECK(result);
   }
 

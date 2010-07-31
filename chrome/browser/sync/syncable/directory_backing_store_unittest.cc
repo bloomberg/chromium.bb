@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
@@ -772,7 +773,7 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion70To71) {
       "initial_sync_ended, last_download_timestamp FROM models"));
   ASSERT_TRUE(s.Step());
   std::string model_id = s.ColumnString(0);
-  EXPECT_EQ("C2881000", HexEncode(model_id.data(), model_id.size()))
+  EXPECT_EQ("C2881000", base::HexEncode(model_id.data(), model_id.size()))
       << "Model ID is expected to be the empty BookmarkSpecifics proto.";
   EXPECT_EQ(true, s.ColumnBool(1));
   EXPECT_EQ(694, s.ColumnInt64(2));

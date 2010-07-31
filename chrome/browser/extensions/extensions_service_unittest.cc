@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/version.h"
@@ -537,7 +538,7 @@ class ExtensionsServiceTest
     msg += L" ";
     msg += pref_path;
     msg += L" == ";
-    msg += IntToWString(expected_val);
+    msg += UTF8ToWide(base::IntToString(expected_val));
 
     const DictionaryValue* dict =
         prefs_->GetDictionary(L"extensions.settings");
@@ -580,7 +581,7 @@ class ExtensionsServiceTest
     msg += L" ";
     msg += pref_path;
     msg += L" = ";
-    msg += IntToWString(value);
+    msg += UTF8ToWide(base::IntToString(value));
 
     const DictionaryValue* dict =
         prefs_->GetMutableDictionary(L"extensions.settings");

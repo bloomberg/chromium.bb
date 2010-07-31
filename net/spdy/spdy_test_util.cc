@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "net/http/http_network_transaction.h"
 #include "net/spdy/spdy_framer.h"
@@ -410,7 +411,7 @@ spdy::SpdyFrame* ConstructSpdyPost(int64 content_length,
     0,                            // Length
     spdy::DATA_FLAG_NONE          // Data Flags
   };
-  std::string length_str = Int64ToString(content_length);
+  std::string length_str = base::Int64ToString(content_length);
   const char* post_headers[] = {
     "method",
     "POST",

@@ -18,7 +18,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
 #include "base/singleton.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -262,7 +262,7 @@ int GetBigProgressIconSize() {
   if (big_progress_icon_size == 0) {
     string16 locale_size_str =
         WideToUTF16Hack(l10n_util::GetString(IDS_DOWNLOAD_BIG_PROGRESS_SIZE));
-    bool rc = StringToInt(locale_size_str, &big_progress_icon_size);
+    bool rc = base::StringToInt(locale_size_str, &big_progress_icon_size);
     if (!rc || big_progress_icon_size < kBigProgressIconSize) {
       NOTREACHED();
       big_progress_icon_size = kBigProgressIconSize;

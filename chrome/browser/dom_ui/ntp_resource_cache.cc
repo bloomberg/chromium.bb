@@ -69,7 +69,7 @@ std::string SkColorToRGBAString(SkColor color) {
   // locale specific formatters (e.g., use , instead of . in German).
   return StringPrintf("rgba(%d,%d,%d,%s)", SkColorGetR(color),
       SkColorGetG(color), SkColorGetB(color),
-      DoubleToString(SkColorGetA(color) / 255.0).c_str());
+      base::DoubleToString(SkColorGetA(color) / 255.0).c_str());
 }
 
 // Get the CSS string for the background position on the new tab page for the

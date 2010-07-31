@@ -25,7 +25,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/md5.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "media/base/djb2.h"
@@ -150,7 +150,7 @@ int main(int argc, const char** argv) {
   int video_threads = 0;
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
   if (!threads.empty() &&
-      !StringToInt(threads, &video_threads)) {
+      !base::StringToInt(threads, &video_threads)) {
     video_threads = 0;
   }
 
@@ -158,7 +158,7 @@ int main(int argc, const char** argv) {
   int verbose_level = AV_LOG_FATAL;
   std::string verbose(cmd_line->GetSwitchValueASCII(switches::kVerbose));
   if (!verbose.empty() &&
-      !StringToInt(verbose, &verbose_level)) {
+      !base::StringToInt(verbose, &verbose_level)) {
     verbose_level = AV_LOG_FATAL;
   }
 
@@ -166,7 +166,7 @@ int main(int argc, const char** argv) {
   int max_frames = 0;
   std::string frames_opt(cmd_line->GetSwitchValueASCII(switches::kFrames));
   if (!frames_opt.empty() &&
-      !StringToInt(frames_opt, &max_frames)) {
+      !base::StringToInt(frames_opt, &max_frames)) {
     max_frames = 0;
   }
 
@@ -174,7 +174,7 @@ int main(int argc, const char** argv) {
   int max_loops = 0;
   std::string loop_opt(cmd_line->GetSwitchValueASCII(switches::kLoop));
   if (!loop_opt.empty() &&
-      !StringToInt(loop_opt, &max_loops)) {
+      !base::StringToInt(loop_opt, &max_loops)) {
     max_loops = 0;
   }
 
@@ -209,7 +209,7 @@ int main(int argc, const char** argv) {
   int skip = 0;
   if (cmd_line->HasSwitch(switches::kSkip)) {
     std::string skip_opt(cmd_line->GetSwitchValueASCII(switches::kSkip));
-    if (!StringToInt(skip_opt, &skip)) {
+    if (!base::StringToInt(skip_opt, &skip)) {
       skip = 0;
     }
   }

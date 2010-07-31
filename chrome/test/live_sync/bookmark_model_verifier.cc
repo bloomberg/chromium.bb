@@ -9,6 +9,7 @@
 
 #include "app/tree_node_iterator.h"
 #include "base/rand_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
@@ -155,9 +156,9 @@ const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
     if (random_int > 40) {
       wstring child_bm_title(bm_folder->GetTitle());
       child_bm_title.append(L"-ChildBM");
-      child_bm_title.append(IntToWString(index));
+      child_bm_title.append(UTF8ToWide(base::IntToString(index)));
       string url("http://www.nofaviconurl");
-      url.append(IntToString(index));
+      url.append(base::IntToString(index));
       url.append(".com");
       const BookmarkNode* child_nofavicon_bm =
          AddURL(model, bm_folder, child_index, child_bm_title, GURL(url));
@@ -166,7 +167,7 @@ const BookmarkNode* BookmarkModelVerifier::AddNonEmptyGroup(
       // Remaining % of time - Add Bookmark folders
       wstring child_bmfolder_title(bm_folder->GetTitle());
       child_bmfolder_title.append(L"-ChildBMFolder");
-      child_bmfolder_title.append(IntToWString(index));
+      child_bmfolder_title.append(UTF8ToWide(base::IntToString(index)));
       const BookmarkNode* child_bm_folder =
           AddGroup(model, bm_folder, child_index, child_bmfolder_title);
       EXPECT_TRUE(child_bm_folder != NULL);

@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -803,7 +804,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
                                 profile_);
       check_button_status_ = CHECKBUTTON_HIDDEN;
       update_label_.SetText(l10n_util::GetStringF(IDS_UPGRADE_ERROR,
-                                                  IntToWString(error_code)));
+          UTF8ToWide(base::IntToString(error_code))));
       show_timeout_indicator = true;
       break;
     default:

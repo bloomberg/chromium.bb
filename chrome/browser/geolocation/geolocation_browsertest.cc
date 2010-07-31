@@ -272,10 +272,10 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   void CheckGeoposition(const Geoposition& geoposition) {
     // Checks we have no error.
     CheckStringValueFromJavascript("0", "geoGetLastError()");
-    CheckStringValueFromJavascript(
-        DoubleToString(geoposition.latitude), "geoGetLastPositionLatitude()");
-    CheckStringValueFromJavascript(
-        DoubleToString(geoposition.longitude), "geoGetLastPositionLongitude()");
+    CheckStringValueFromJavascript(base::DoubleToString(geoposition.latitude),
+                                   "geoGetLastPositionLatitude()");
+    CheckStringValueFromJavascript(base::DoubleToString(geoposition.longitude),
+                                   "geoGetLastPositionLongitude()");
   }
 
   void SetInfobarResponse(const GURL& requesting_url, bool allowed) {

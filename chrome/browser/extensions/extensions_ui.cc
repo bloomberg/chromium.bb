@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
@@ -67,7 +68,7 @@ static bool ShouldShowExtension(Extension* extension) {
   return true;
 }
 
-}
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -428,8 +429,8 @@ void ExtensionsDOMHandler::HandleInspectMessage(const Value* value) {
   CHECK(list->GetSize() == 2);
   CHECK(list->GetString(0, &render_process_id_str));
   CHECK(list->GetString(1, &render_view_id_str));
-  CHECK(StringToInt(render_process_id_str, &render_process_id));
-  CHECK(StringToInt(render_view_id_str, &render_view_id));
+  CHECK(base::StringToInt(render_process_id_str, &render_process_id));
+  CHECK(base::StringToInt(render_view_id_str, &render_view_id));
   RenderViewHost* host = RenderViewHost::FromID(render_process_id,
                                                 render_view_id);
   if (!host) {

@@ -23,7 +23,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -333,7 +333,7 @@ class RenderWidgetHostViewGtkWidget {
           command_line->GetSwitchValueASCII(switches::kScrollPixels);
       if (!scroll_pixels_option.empty()) {
         double v;
-        if (StringToDouble(scroll_pixels_option, &v))
+        if (base::StringToDouble(scroll_pixels_option, &v))
           scroll_pixels = static_cast<float>(v);
       }
       DCHECK_GT(scroll_pixels, 0);

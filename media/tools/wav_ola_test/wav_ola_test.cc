@@ -16,7 +16,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "media/base/data_buffer.h"
 #include "media/filters/audio_renderer_algorithm_ola.h"
@@ -90,7 +90,7 @@ int main(int argc, const char** argv) {
 #else
   const std::string& filename_str = filenames[0];
 #endif
-  if (!StringToDouble(filename_str, &playback_rate))
+  if (!base::StringToDouble(filename_str, &playback_rate))
     playback_rate = 0.0;
 
   // Open input file.

@@ -9,6 +9,7 @@
 #include "base/env_var.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/common/env_vars.h"
 
 // Timeout for the test in milliseconds.  UI tests only.
@@ -51,7 +52,9 @@ void UITestSuite::Initialize() {
   std::wstring test_timeout =
       parsed_command_line.GetSwitchValue(UITestSuite::kTestTimeout);
   if (!test_timeout.empty()) {
-    UITest::set_test_timeout_ms(StringToInt(WideToUTF16Hack(test_timeout)));
+    int timeout;
+    base::StringToInt(WideToUTF8(test_timeout), &timeout);
+    UITest::set_test_timeout_ms(timeout);
   }
 
 #if defined(OS_WIN)

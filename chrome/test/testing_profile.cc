@@ -7,7 +7,7 @@
 #include "build/build_config.h"
 #include "base/command_line.h"
 #include "base/message_loop_proxy.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
@@ -164,7 +164,7 @@ TestingProfile::TestingProfile(int count)
       last_session_exited_cleanly_(true) {
   PathService::Get(base::DIR_TEMP, &path_);
   path_ = path_.Append(FILE_PATH_LITERAL("TestingProfilePath"));
-  path_ = path_.AppendASCII(IntToString(count));
+  path_ = path_.AppendASCII(base::IntToString(count));
   file_util::Delete(path_, true);
   file_util::CreateDirectory(path_);
 }

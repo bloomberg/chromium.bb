@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/dom_ui/core_chromeos_options_handler.h"
 
 #include "base/json/json_reader.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 
 namespace chromeos {
@@ -39,7 +39,7 @@ void CoreChromeOSOptionsHandler::SetPref(const std::wstring& pref_name,
       break;
     case Value::TYPE_INTEGER:
       int int_value;
-      if (StringToInt(value_string, &int_value))
+      if (base::StringToInt(value_string, &int_value))
         cros_settings->SetInteger(pref_name, int_value);
       break;
     case Value::TYPE_STRING:

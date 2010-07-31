@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/io_thread.h"
+
 #include "base/command_line.h"
 #include "base/leak_tracker.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/gpu_process_host.h"
@@ -37,7 +39,7 @@ net::HostResolver* CreateGlobalHostResolver() {
 
     // Parse the switch (it should be a positive integer formatted as decimal).
     int n;
-    if (StringToInt(s, &n) && n > 0) {
+    if (base::StringToInt(s, &n) && n > 0) {
       parallelism = static_cast<size_t>(n);
     } else {
       LOG(ERROR) << "Invalid switch for host resolver parallelism: " << s;

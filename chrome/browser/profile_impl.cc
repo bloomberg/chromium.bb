@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -133,7 +134,7 @@ void GetCacheParameters(ContextType type, FilePath* cache_path,
 
   // By default we let the cache determine the right size.
   *max_size = 0;
-  if (!StringToInt(value, max_size)) {
+  if (!base::StringToInt(value, max_size)) {
     *max_size = 0;
   } else if (max_size < 0) {
     *max_size = 0;

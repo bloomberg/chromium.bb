@@ -1,12 +1,13 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_H__
-#define WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_H__
+#ifndef WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_H_
+#define WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_H_
 
 #include <string>
 
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/nphostapi.h"
@@ -82,9 +83,9 @@ class PluginTest {
     if (val1 != val2) {
       std::string err;
       err = "Expected Equal for '";
-      err.append(IntToString(val1));
+      err.append(base::IntToString(val1));
       err.append("' and '");
-      err.append(IntToString(val2));
+      err.append(base::IntToString(val2));
       err.append("'");
       SetError(err);
     }
@@ -128,4 +129,4 @@ class PluginTest {
 
 } // namespace NPAPIClient
 
-#endif  // WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_H__
+#endif  // WEBKIT_PORT_PLUGINS_TEST_PLUGIN_TEST_H_

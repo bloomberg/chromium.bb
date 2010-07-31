@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "app/text_elider.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "printing/printed_document.h"
@@ -169,21 +170,21 @@ std::wstring PageOverlays::ReplaceVariables(const std::wstring& input,
       offset = ReplaceKey(&output,
                           offset,
                           wcslen(kPage),
-                          IntToWString(page.page_number()));
+                          UTF8ToWide(base::IntToString(page.page_number())));
     } else if (0 == output.compare(offset,
                                    wcslen(kPageCount),
                                    kPageCount)) {
       offset = ReplaceKey(&output,
                           offset,
                           wcslen(kPageCount),
-                          IntToWString(document.page_count()));
+                          UTF8ToWide(base::IntToString(document.page_count())));
     } else if (0 == output.compare(offset,
                                    wcslen(kPageOnTotal),
                                    kPageOnTotal)) {
       std::wstring replacement;
-      replacement = IntToWString(page.page_number());
+      replacement = UTF8ToWide(base::IntToString(page.page_number()));
       replacement += L"/";
-      replacement += IntToWString(document.page_count());
+      replacement += UTF8ToWide(base::IntToString(document.page_count()));
       offset = ReplaceKey(&output,
                           offset,
                           wcslen(kPageOnTotal),

@@ -4,8 +4,11 @@
 
 #include "chrome/installer/util/google_update_settings.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/registry.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/common/chrome_switches.h"
@@ -101,17 +104,17 @@ int GoogleUpdateSettings::GetLastRunTime() {
   if (!ReadGoogleUpdateStrKey(google_update::kRegLastRunTimeField, &time_s))
     return -1;
   int64 time_i;
-  if (!StringToInt64(time_s, &time_i))
+  if (!base::StringToInt64(time_s, &time_i))
     return -1;
   base::TimeDelta td =
-    base::Time::NowFromSystemTime() - base::Time::FromInternalValue(time_i);
+      base::Time::NowFromSystemTime() - base::Time::FromInternalValue(time_i);
   return td.InDays();
 }
 
 bool GoogleUpdateSettings::SetLastRunTime() {
   int64 time = base::Time::NowFromSystemTime().ToInternalValue();
   return WriteGoogleUpdateStrKey(google_update::kRegLastRunTimeField,
-                                 Int64ToWString(time));
+                                 base::Int64ToString16(time));
 }
 
 bool GoogleUpdateSettings::RemoveLastRunTime() {

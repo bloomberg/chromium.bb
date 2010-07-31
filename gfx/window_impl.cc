@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@
 #include <list>
 
 #include "base/singleton.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/win_util.h"
 
 namespace gfx {
@@ -61,8 +61,8 @@ class ClassRegistrar {
       }
     }
 
-    name->assign(std::wstring(WindowImpl::kBaseClassName) +
-        IntToWString(registered_count_++));
+    name->assign(string16(WindowImpl::kBaseClassName) +
+        base::IntToString16(registered_count_++));
     return false;
   }
 

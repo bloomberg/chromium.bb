@@ -48,6 +48,7 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
@@ -530,9 +531,10 @@ void AddToHistory(MorkReader::ColumnDataList* column_values,
       count = 1;
     row.set_visit_count(count);
 
-    time_t date = StringToInt64(values[kLastVisitColumn]);
+    int64 date;
+    base::StringToInt64(values[kLastVisitColumn], &date);
     if (date != 0)
-      row.set_last_visit(Time::FromTimeT(date/1000000));
+      row.set_last_visit(Time::FromTimeT(date / 1000000));
 
     bool is_typed = (values[kTypedColumn] == "1");
     if (is_typed)

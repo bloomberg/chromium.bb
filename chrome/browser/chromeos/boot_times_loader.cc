@@ -13,6 +13,7 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -96,7 +97,7 @@ static bool GetTime(const std::string& log, double* value) {
     size_t chars_left =
         space_index != std::string::npos ? space_index : std::string::npos;
     std::string value_string = contents.substr(0, chars_left);
-    return StringToDouble(value_string, value);
+    return base::StringToDouble(value_string, value);
   }
   return false;
 }

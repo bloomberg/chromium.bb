@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/values.h"
 
 // Manifest attributes names.
@@ -93,8 +93,9 @@ bool StartupCustomizationDocument::ParseFromJsonValue(
   root->GetString(kBackgroundColorAttr, &background_color_string);
   if (!background_color_string.empty()) {
     if (background_color_string[0] == '#') {
-      background_color_ = static_cast<SkColor>(
-          0xff000000 | HexStringToInt(background_color_string.substr(1)));
+      int background_int;
+      base::HexStringToInt(background_color_string.substr(1), &background_int);
+      background_color_ = static_cast<SkColor>(0xff000000 | background_int);
     } else {
       // Literal color constants are not supported yet.
       return false;

@@ -10,6 +10,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
@@ -166,7 +167,8 @@ std::wstring TaskManagerModel::GetResourcePhysicalMemory(int index) const {
 
 std::wstring TaskManagerModel::GetResourceProcessId(int index) const {
   DCHECK(index < ResourceCount());
-  return IntToWString(base::GetProcId(resources_[index]->GetProcess()));
+  return UTF8ToWide(base::IntToString(base::GetProcId(
+      resources_[index]->GetProcess())));
 }
 
 std::wstring TaskManagerModel::GetResourceGoatsTeleported(int index) const {

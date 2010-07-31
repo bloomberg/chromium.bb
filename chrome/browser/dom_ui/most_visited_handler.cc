@@ -12,6 +12,7 @@
 #include "base/md5.h"
 #include "base/singleton.h"
 #include "base/scoped_vector.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/thread.h"
 #include "base/values.h"
@@ -269,7 +270,7 @@ void MostVisitedHandler::HandleAddPinnedURL(const Value* value) {
 
   r = list->GetString(4, &tmp_string);
   DCHECK(r) << "Missing index in addPinnedURL from the NTP Most Visited.";
-  index = StringToInt(tmp_string);
+  base::StringToInt(tmp_string, &index);
 
   AddPinnedURL(mvp, index);
 }

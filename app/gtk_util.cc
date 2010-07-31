@@ -9,7 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/env_var.h"
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/xdg_util.h"
 
 namespace gtk_util {
@@ -22,11 +22,11 @@ void GetWidgetSizeFromResources(
 
   double chars = 0;
   if (width)
-    StringToDouble(l10n_util::GetStringUTF8(width_chars), &chars);
+    base::StringToDouble(l10n_util::GetStringUTF8(width_chars), &chars);
 
   double lines = 0;
   if (height)
-    StringToDouble(l10n_util::GetStringUTF8(height_lines), &lines);
+    base::StringToDouble(l10n_util::GetStringUTF8(height_lines), &lines);
 
   GetWidgetSizeFromCharacters(widget, chars, lines, width, height);
 }

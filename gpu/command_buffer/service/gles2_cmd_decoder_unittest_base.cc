@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
+
 #include <algorithm>
 #include <string>
+
 #include "app/gfx/gl/gl_mock.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
@@ -531,7 +533,7 @@ void GLES2DecoderTestBase::SetupShader(
           }
           for (GLsizei jj = 1; jj < info.size; ++jj) {
             std::string element_name(
-                std::string(base_name) + "[" + IntToString(jj) + "]");
+                std::string(base_name) + "[" + base::IntToString(jj) + "]");
             EXPECT_CALL(*gl_, GetUniformLocation(program_service_id,
                                                  StrEq(element_name)))
                 .WillOnce(Return(info.location + jj * 2))

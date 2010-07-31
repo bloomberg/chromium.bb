@@ -5,6 +5,7 @@
 
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -273,9 +274,11 @@ void WebResourceService::StartAfterDelay() {
     std::string last_update_pref =
       prefs_->GetString(prefs::kNTPTipsCacheUpdate);
     if (!last_update_pref.empty()) {
+      double last_update_value;
+      base::StringToDouble(last_update_pref, &last_update_value);
       int ms_until_update = kCacheUpdateDelay -
           static_cast<int>((base::Time::Now() - base::Time::FromDoubleT(
-          StringToDouble(last_update_pref))).InMilliseconds());
+          last_update_value)).InMilliseconds());
 
       delay = ms_until_update > kCacheUpdateDelay ?
               kCacheUpdateDelay : (ms_until_update < kStartResourceFetchDelay ?
@@ -293,6 +296,6 @@ void WebResourceService::UpdateResourceCache(const std::string& json_data) {
 
   // Update resource server and cache update time in preferences.
   prefs_->SetString(prefs::kNTPTipsCacheUpdate,
-      DoubleToString(base::Time::Now().ToDoubleT()));
+      base::DoubleToString(base::Time::Now().ToDoubleT()));
   prefs_->SetString(prefs::kNTPTipsServer, web_resource_server_);
 }

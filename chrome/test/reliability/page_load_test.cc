@@ -43,6 +43,7 @@
 #include "base/keyboard_codes.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
@@ -455,7 +456,7 @@ class PageLoadTest : public UITest {
   FilePath ConstructSavedDebugLogPath(const FilePath& debug_log_path,
                                       int index) {
     std::string suffix("_");
-    suffix.append(IntToString(index));
+    suffix.append(base::IntToString(index));
     return debug_log_path.InsertBeforeExtensionASCII(suffix);
   }
 

@@ -28,6 +28,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
@@ -324,7 +325,7 @@ bool ParseCommandLine(CommandLine* command_line, CommandLineOptions* options) {
   options->async = command_line->HasSwitch(kAsync);
   if (command_line->HasSwitch(kCacheSize)) {
     std::string cache_size = command_line->GetSwitchValueASCII(kCacheSize);
-    bool valid_size = StringToInt(cache_size, &options->cache_size);
+    bool valid_size = base::StringToInt(cache_size, &options->cache_size);
     if (valid_size) {
       valid_size = options->cache_size >= 0;
     }
@@ -336,7 +337,7 @@ bool ParseCommandLine(CommandLine* command_line, CommandLineOptions* options) {
 
   if (command_line->HasSwitch(kCacheTtl)) {
     std::string cache_ttl = command_line->GetSwitchValueASCII(kCacheTtl);
-    bool valid_ttl = StringToInt(cache_ttl, &options->cache_ttl);
+    bool valid_ttl = base::StringToInt(cache_ttl, &options->cache_ttl);
     if (valid_ttl) {
       valid_ttl = options->cache_ttl >= 0;
     }
@@ -400,7 +401,7 @@ bool ReadHostsAndTimesFromFile(const FilePath& path,
       }
       case 2: {
         int timestamp;
-        if (!StringToInt(tokens[1], &timestamp)) {
+        if (!base::StringToInt(tokens[1], &timestamp)) {
           // Unexpected value - keep going.
         }
         if (timestamp < previous_timestamp) {

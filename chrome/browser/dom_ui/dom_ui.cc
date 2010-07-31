@@ -7,7 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/stl_util-inl.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -148,7 +148,7 @@ bool DOMMessageHandler::ExtractIntegerValue(const Value* value, int* out_int) {
     const ListValue* list_value = static_cast<const ListValue*>(value);
     std::string string_value;
     if (list_value->GetString(0, &string_value)) {
-      *out_int = StringToInt(string_value);
+      base::StringToInt(string_value, out_int);
       return true;
     }
   }

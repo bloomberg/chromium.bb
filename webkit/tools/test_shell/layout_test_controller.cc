@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -1021,7 +1022,7 @@ int32 LayoutTestController::CppVariantToInt32(const CppVariant& value) {
     return value.ToInt32();
   else if (value.isString()) {
     int number;
-    if (StringToInt(value.ToString(), &number))
+    if (base::StringToInt(value.ToString(), &number))
       return number;
   }
   LogErrorToConsole("Invalid value for preference. Expected integer value.");

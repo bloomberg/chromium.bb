@@ -13,8 +13,9 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media.h"
 #include "media/base/video_frame.h"
@@ -219,8 +220,11 @@ static bool HasSwitch(const char* name) {
 }
 
 static int GetIntSwitch(const char* name) {
-  if (HasSwitch(name))
-    return StringToInt(GetStringSwitch(name));
+  if (HasSwitch(name)) {
+    int val;
+    base::StringToInt(GetStringSwitch(name), &val);
+    return val;
+  }
   return 0;
 }
 

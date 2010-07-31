@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/test/test_suite.h"
 #include "chrome/test/test_launcher/test_runner.h"
 #include "chrome/test/unit/chrome_test_suite.h"
@@ -87,7 +88,8 @@ class OutOfProcTestRunner : public tests::TestRunner {
     if (cmd_line->HasSwitch(kTestTerminateTimeoutFlag)) {
       std::wstring timeout_str(
           cmd_line->GetSwitchValue(kTestTerminateTimeoutFlag));
-      int timeout = StringToInt(WideToUTF16Hack(timeout_str));
+      int timeout;
+      base::StringToInt(WideToUTF8(timeout_str), &timeout);
       test_terminate_timeout_ms = std::max(test_terminate_timeout_ms, timeout);
     }
 

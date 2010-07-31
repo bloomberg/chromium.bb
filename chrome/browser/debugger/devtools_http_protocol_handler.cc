@@ -7,7 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
-#include "base/string_util.h"
+#include "base/string_number_conversions.h"
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -218,7 +218,7 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
   }
   std::string page_id = request.path.substr(prefix.length());
   int id = 0;
-  if (!StringToInt(page_id, &id)) {
+  if (!base::StringToInt(page_id, &id)) {
     Send500(socket, "Invalid page id: " + page_id);
     return;
   }

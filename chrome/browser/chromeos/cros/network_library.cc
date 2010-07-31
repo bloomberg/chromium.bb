@@ -52,8 +52,8 @@ static std::string ToHtmlTableRow(Network* network) {
   if (network->type() == TYPE_WIFI || network->type() == TYPE_CELLULAR) {
     WirelessNetwork* wireless = static_cast<WirelessNetwork*>(network);
     str += WrapWithTD(wireless->name()) +
-        WrapWithTD(IntToString(wireless->auto_connect())) +
-        WrapWithTD(IntToString(wireless->strength()));
+        WrapWithTD(base::IntToString(wireless->auto_connect())) +
+        WrapWithTD(base::IntToString(wireless->strength()));
     if (network->type() == TYPE_WIFI) {
       WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
       str += WrapWithTD(wifi->GetEncryptionString()) +
