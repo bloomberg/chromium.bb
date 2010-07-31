@@ -610,7 +610,9 @@ NPError WebPluginDelegatePepper::Device2DGetStateContext(
     std::string hex_md5 = MD5DigestToBase16(md5_result);
     // Return the least significant 8 characters (i.e. 4 bytes)
     // of the 32 character hexadecimal result as an int.
-    base::HexStringToInt(hex_md5.substr(24), value);
+    int int_val;
+    base::HexStringToInt(hex_md5.substr(24), &int_val);
+    *value = int_val;
     return NPERR_NO_ERROR;
   }
   return NPERR_GENERIC_ERROR;
