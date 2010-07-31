@@ -13,6 +13,12 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/spellcheck_host_observer.h"
+#include "chrome/common/notification_registrar.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/preferences.h"
+#endif
 
 namespace history {
 class TopSites;
