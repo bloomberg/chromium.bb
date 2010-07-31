@@ -106,7 +106,7 @@ TEST_F(ExtensionApiJsonValidityTest, Basic) {
       << error_message;
 
   ListValue* functions_list;
-  ASSERT_TRUE(test_namespace_dict->GetList(L"functions", &functions_list))
+  ASSERT_TRUE(test_namespace_dict->GetList("functions", &functions_list))
               << "Namespace 'test' should define some functions.";
 
   EXPECT_TRUE(FindDictionaryWithProperyValue(

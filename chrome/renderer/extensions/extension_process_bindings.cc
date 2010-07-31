@@ -295,7 +295,7 @@ class ExtensionImpl : public ExtensionBase {
 
     if (viewtype_to_find != ViewType::EXTENSION_POPUP &&
         viewtype_to_find != ViewType::EXTENSION_TOOLSTRIP) {
-      NOTREACHED() << L"Requesting invalid view type.";
+      NOTREACHED() << "Requesting invalid view type.";
     }
 
     // Disallow searching for a host view if we are a popup view, and likewise
@@ -527,10 +527,10 @@ class ExtensionImpl : public ExtensionBase {
         static_cast<const char*>(bitmap_pickle.data()), bitmap_pickle.size());
 
     DictionaryValue* dict = new DictionaryValue();
-    dict->Set(L"imageData", bitmap_value);
+    dict->Set("imageData", bitmap_value);
 
     if (details->Has(v8::String::New("tabId"))) {
-      dict->SetInteger(L"tabId",
+      dict->SetInteger("tabId",
                        details->Get(v8::String::New("tabId"))->Int32Value());
     }
 
