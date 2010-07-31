@@ -43,3 +43,5 @@ BUG50438 : media/controls-drag-timebar.html = PASS FAIL
 // it provides a mock DeviceOrientationClient.
 // See crbug.com/50637.
 BUG50637 : fast/dom/prototype-inheritance.html = FAIL
+
+BUG50816 MAC : fast/forms/search-transformed.html = FAIL
