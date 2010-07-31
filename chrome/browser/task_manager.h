@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -241,7 +241,7 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   void OnJobRemoved(URLRequestJob* job);
   void OnJobDone(URLRequestJob* job, const URLRequestStatus& status);
   void OnJobRedirect(URLRequestJob* job, const GURL& location, int status_code);
-  void OnBytesRead(URLRequestJob* job, const char* buf, int byte_count);
+  void OnBytesRead(URLRequestJob* job, int byte_count);
 
   void AddResourceProvider(TaskManager::ResourceProvider* provider);
   void RemoveResourceProvider(TaskManager::ResourceProvider* provider);
