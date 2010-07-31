@@ -1,10 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/test/ui/ui_test.h"
 
-#include "base/env_var.h"
 #include "build/build_config.h"
 
 class LocaleTestsBase : public UITest {
@@ -15,11 +14,10 @@ class LocaleTestsBase : public UITest {
  protected:
   void RestoreLcAllEnvironment() {
 #if defined(OS_LINUX)
-    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
     if (old_lc_all_) {
-      env->SetEnv("LC_ALL", old_lc_all_);
+      setenv("LC_ALL", old_lc_all_, 1);
     } else {
-      env->UnSetEnv("LC_ALL");
+      unsetenv("LC_ALL");
     }
 #endif
   };

@@ -20,13 +20,10 @@ extern const char kHome[];
 
 }  // namespace env_vars
 
+// These are used to derive mocks for unittests.
 class EnvVarGetter {
  public:
   virtual ~EnvVarGetter();
-
-  // Static factory method that returns the implementation that provide the
-  // appropriate platform-specific instance.
-  static EnvVarGetter* Create();
 
   // Gets an environment variable's value and stores it in |result|.
   // Returns false if the key is unset.
@@ -39,8 +36,8 @@ class EnvVarGetter {
   virtual bool SetEnv(const char* variable_name,
                       const std::string& new_value) = 0;
 
-  // Returns true on success, otherwise returns false.
-  virtual bool UnSetEnv(const char* variable_name) = 0;
+  // Create an instance of EnvVarGetter
+  static EnvVarGetter* Create();
 };
 
 }  // namespace base

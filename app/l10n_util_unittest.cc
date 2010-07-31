@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,7 +15,6 @@
 #include "app/test/data/resource.h"
 #endif
 #include "base/basictypes.h"
-#include "base/env_var.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
@@ -139,32 +138,30 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   icu::Locale locale = icu::Locale::getDefault();
 
 #if defined(OS_POSIX) && !defined(OS_CHROMEOS)
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
-
   // Test the support of LANGUAGE environment variable.
   SetICUDefaultLocale("en-US");
-  env->SetEnv("LANGUAGE", "xx:fr_CA");
+  ::setenv("LANGUAGE", "xx:fr_CA", 1);
   EXPECT_EQ("fr", l10n_util::GetApplicationLocale(L""));
 
-  env->SetEnv("LANGUAGE", "xx:yy:en_gb.utf-8@quot");
+  ::setenv("LANGUAGE", "xx:yy:en_gb.utf-8@quot", 1);
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(L""));
 
-  env->SetEnv("LANGUAGE", "xx:zh-hk");
+  ::setenv("LANGUAGE", "xx:zh-hk", 1);
   EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(L""));
 
   // We emulate gettext's behavior here, which ignores LANG/LC_MESSAGES/LC_ALL
   // when LANGUAGE is specified. If no language specified in LANGUAGE is valid,
   // then just fallback to the default language, which is en-US for us.
   SetICUDefaultLocale("fr-FR");
-  env->SetEnv("LANGUAGE", "xx:yy");
+  ::setenv("LANGUAGE", "xx:yy", 1);
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(L""));
 
-  env->SetEnv("LANGUAGE", "/fr:zh_CN");
+  ::setenv("LANGUAGE", "/fr:zh_CN", 1);
   EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(L""));
 
   // Make sure the follow tests won't be affected by LANGUAGE environment
   // variable.
-  env->UnSetEnv("LANGUAGE");
+  ::unsetenv("LANGUAGE");
 #endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS)
 
   SetICUDefaultLocale("en-US");
