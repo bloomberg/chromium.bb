@@ -175,8 +175,8 @@ void BrowserMainParts::EarlyInitialization() {
 // on browsing. Too large a value might cause us to run into SYN flood detection
 // mechanisms.
 void BrowserMainParts::ConnectionFieldTrial() {
-  const FieldTrial::Probability kConnectDivisor = 1000;
-  const FieldTrial::Probability kConnectProbability = 20;  // 2% probability
+  const FieldTrial::Probability kConnectDivisor = 100;
+  const FieldTrial::Probability kConnectProbability = 20;  // 20% probability
 
   scoped_refptr<FieldTrial> connect_trial =
       new FieldTrial("ConnCountImpact", kConnectDivisor);
@@ -219,8 +219,8 @@ void BrowserMainParts::ConnectionFieldTrial() {
 // result in more ERR_CONNECT_RESETs, requiring one RTT to receive the RST
 // packet and possibly another RTT to re-establish the connection.
 void BrowserMainParts::SocketTimeoutFieldTrial() {
-  const FieldTrial::Probability kIdleSocketTimeoutDivisor = 1000;
-  // 2.5% probability
+  const FieldTrial::Probability kIdleSocketTimeoutDivisor = 100;
+  // 25% probability
   const FieldTrial::Probability kSocketTimeoutProbability = 25;
 
   scoped_refptr<FieldTrial> socket_timeout_trial =
