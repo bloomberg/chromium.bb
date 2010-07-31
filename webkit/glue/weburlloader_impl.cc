@@ -132,6 +132,8 @@ ResourceType::Type FromTargetType(WebURLRequest::TargetType type) {
       return ResourceType::WORKER;
     case WebURLRequest::TargetIsSharedWorker:
       return ResourceType::SHARED_WORKER;
+    case WebURLRequest::TargetIsPrefetch:
+      return ResourceType::PREFETCH;
     default:
       NOTREACHED();
       return ResourceType::SUB_RESOURCE;

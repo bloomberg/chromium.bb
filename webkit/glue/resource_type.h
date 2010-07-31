@@ -22,6 +22,7 @@ class ResourceType {
     MEDIA,           // a media resource.
     WORKER,          // the main resource of a dedicated worker.
     SHARED_WORKER,   // the main resource of a shared worker.
+    PREFETCH,        // an explicitly requested prefetch
     LAST_TYPE        // Place holder so we don't need to change ValidType
                      // everytime.
   };

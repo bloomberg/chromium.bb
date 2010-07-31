@@ -8,6 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/string_util.h"
+#include "net/http/http_network_transaction.h"
+#include "net/spdy/spdy_framer.h"
 
 namespace net {
 
@@ -261,7 +263,8 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const url,
     spdy::SYN_STREAM,             // Kind = Syn
     stream_id,                    // Stream ID
     0,                            // Associated stream ID
-    request_priority,             // Priority
+    net::ConvertRequestPriorityToSpdyPriority(request_priority),
+                                  // Priority
     spdy::CONTROL_FLAG_FIN,       // Control Flags
     compressed,                   // Compressed
     spdy::INVALID,                // Status
@@ -319,7 +322,8 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
     spdy::SYN_STREAM,             // Kind = Syn
     stream_id,                    // Stream ID
     0,                            // Associated stream ID
-    request_priority,             // Priority
+    net::ConvertRequestPriorityToSpdyPriority(request_priority),
+                                  // Priority
     spdy::CONTROL_FLAG_FIN,       // Control Flags
     compressed,                   // Compressed
     spdy::INVALID,                // Status
@@ -358,7 +362,8 @@ spdy::SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
     spdy::SYN_REPLY,              // Kind = SynReply
     stream_id,                    // Stream ID
     0,                            // Associated stream ID
-    SPDY_PRIORITY_LOWEST,         // Priority
+    net::ConvertRequestPriorityToSpdyPriority(LOWEST),
+                                  // Priority
     spdy::CONTROL_FLAG_NONE,      // Control Flags
     false,                        // Compressed
     spdy::INVALID,                // Status
@@ -396,7 +401,8 @@ spdy::SpdyFrame* ConstructSpdyPost(int64 content_length,
     spdy::SYN_STREAM,             // Kind = Syn
     1,                            // Stream ID
     0,                            // Associated stream ID
-    SPDY_PRIORITY_LOWEST,         // Priority
+    net::ConvertRequestPriorityToSpdyPriority(LOWEST),
+                                  // Priority
     spdy::CONTROL_FLAG_NONE,      // Control Flags
     false,                        // Compressed
     spdy::INVALID,                // Status
@@ -437,7 +443,8 @@ spdy::SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
     spdy::SYN_REPLY,              // Kind = SynReply
     1,                            // Stream ID
     0,                            // Associated stream ID
-    SPDY_PRIORITY_LOWEST,         // Priority
+    net::ConvertRequestPriorityToSpdyPriority(LOWEST),
+                                  // Priority
     spdy::CONTROL_FLAG_NONE,      // Control Flags
     false,                        // Compressed
     spdy::INVALID,                // Status

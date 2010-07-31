@@ -67,6 +67,7 @@ extern const char kDisableLogging[];
 extern const char kDisableNewTabFirstRun[];
 extern const char kDisablePlugins[];
 extern const char kDisablePopupBlocking[];
+extern const char kDisablePrefetch[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableRemoteFonts[];
 extern const char kDisableRendererAccessibility[];

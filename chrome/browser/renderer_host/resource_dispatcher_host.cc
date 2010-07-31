@@ -125,6 +125,10 @@ bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
   if (process_type == ChildProcessInfo::PLUGIN_PROCESS)
     return true;
 
+  if (request_data.resource_type == ResourceType::PREFETCH &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisablePrefetch))
+    return false;
+
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
 
@@ -1837,11 +1841,16 @@ net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
     case ResourceType::SHARED_WORKER:
       return net::LOW;
 
-    // Images are the lowest priority because they typically do not block
+    // Images are the "lowest" priority because they typically do not block
     // downloads or rendering and most pages have some useful content without
     // them.
     case ResourceType::IMAGE:
       return net::LOWEST;
+
+    // Prefetches are at a lower priority than even LOWEST, since they
+    // are not even required for rendering of the current page.
+    case ResourceType::PREFETCH:
+      return net::IDLE;
 
     default:
       // When new resource types are added, their priority must be considered.

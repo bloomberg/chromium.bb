@@ -184,6 +184,11 @@ const char kDisablePlugins[]                = "disable-plugins";
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
+// Disable requests that webkit labels TargetIsPrefetch.  As of
+// writing only <link rel=prefetch...> but also eventually
+// Link: headers.
+const char kDisablePrefetch[]               = "disable-prefetch";
+
 // Normally when the user attempts to navigate to a page that was the result of
 // a post we prompt to make sure they want to. This switch may be used to
 // disable that check. This switch is used during automated testing.
