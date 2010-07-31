@@ -31,17 +31,11 @@ class JsonHostConfig : public MutableHostConfig {
   virtual bool Read();
 
   // MutableHostConfig interface.
-  virtual bool GetString(const std::wstring& path,
-                         std::wstring* out_value);
-  virtual bool GetString(const std::wstring& path,
-                         std::string* out_value);
+  virtual bool GetString(const std::string& path, std::string* out_value);
 
   virtual void Update(Task* task);
 
-  virtual void SetString(const std::wstring& path,
-                         const std::wstring& in_value);
-  virtual void SetString(const std::wstring& path,
-                         const std::string& in_value);
+  virtual void SetString(const std::string& path, const std::string& in_value);
 
  private:
   void DoWrite();

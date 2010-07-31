@@ -79,7 +79,7 @@ TEST_F(JsonHostConfigTest, Read) {
   EXPECT_TRUE(target->GetString(kPrivateKeyConfigPath, &value));
   EXPECT_EQ("TEST_PRIVATE_KEY", value);
 
-  EXPECT_FALSE(target->GetString(L"non_existent_value", &value));
+  EXPECT_FALSE(target->GetString("non_existent_value", &value));
 }
 
 TEST_F(JsonHostConfigTest, Write) {

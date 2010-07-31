@@ -6,10 +6,10 @@
 
 namespace remoting {
 
-const wchar_t* kXmppLoginConfigPath = L"xmpp_login";
-const wchar_t* kXmppAuthTokenConfigPath = L"xmpp_auth_token";
-const wchar_t* kHostIdConfigPath = L"host_id";
-const wchar_t* kHostNameConfigPath = L"host_name";
-const wchar_t* kPrivateKeyConfigPath = L"private_key";
+const char* kXmppLoginConfigPath = "xmpp_login";
+const char* kXmppAuthTokenConfigPath = "xmpp_auth_token";
+const char* kHostIdConfigPath = "host_id";
+const char* kHostNameConfigPath = "host_name";
+const char* kPrivateKeyConfigPath = "private_key";
 
 }  // namespace remoting
