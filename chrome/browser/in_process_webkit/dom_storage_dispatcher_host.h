@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_DISPATCHER_HOST_H_
@@ -29,7 +29,7 @@ class DOMStorageDispatcherHost
  public:
   // Only call the constructor from the UI thread.
   DOMStorageDispatcherHost(
-      ResourceMessageFilter* resource_message_filter_,
+      ResourceMessageFilter* resource_message_filter,
       WebKitContext* webkit_context);
 
   // Only call from ResourceMessageFilter on the IO thread.

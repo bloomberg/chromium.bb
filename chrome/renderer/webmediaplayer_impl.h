@@ -1,7 +1,7 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file.
-//
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Delegate calls from WebCore::MediaPlayerPrivate to Chrome's video player.
 // It contains PipelineImpl which is the actual media player pipeline, it glues
 // the media player pipeline, data source, audio renderer and renderer.

@@ -1,14 +1,14 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_NAMESPACE_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_NAMESPACE_H_
 #pragma once
 
-#include "base/string16.h"
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "chrome/common/dom_storage_common.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
