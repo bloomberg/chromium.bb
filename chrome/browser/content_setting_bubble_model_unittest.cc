@@ -72,8 +72,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
   EXPECT_NE(std::string(), bubble_content.manage_link);
-  // The info link is disabled by default.
-  EXPECT_EQ(std::string(), bubble_content.info_link);
+  EXPECT_NE(std::string(), bubble_content.info_link);
   EXPECT_NE(std::string(), bubble_content.title);
 }
 
