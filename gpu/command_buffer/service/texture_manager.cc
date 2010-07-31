@@ -157,7 +157,7 @@ void TextureManager::TextureInfo::SetLevelInfo(
     const TextureManager* manager,
     GLenum target,
     GLint level,
-    GLint internal_format,
+    GLenum internal_format,
     GLsizei width,
     GLsizei height,
     GLsizei depth,
@@ -186,8 +186,37 @@ void TextureManager::TextureInfo::SetLevelInfo(
   Update(manager);
 }
 
+bool TextureManager::TextureInfo::ValidForTexture(
+    GLint face,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLsizei width,
+    GLsizei height,
+    GLenum format,
+    GLenum type) const {
+  size_t face_index = GLTargetToFaceIndex(face);
+  if (!IsDeleted() && level >= 0 && face_index < level_infos_.size() &&
+      static_cast<size_t>(level) < level_infos_[face_index].size()) {
+    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
+    GLint right;
+    GLint top;
+    return SafeAdd(xoffset, width, &right) &&
+           SafeAdd(yoffset, height, &top) &&
+           xoffset >= 0 &&
+           yoffset >= 0 &&
+           right <= info.width &&
+           top <= info.height &&
+           format == info.internal_format &&
+           type == info.type;
+  }
+  return false;
+}
+
 bool TextureManager::TextureInfo::GetLevelSize(
     GLint face, GLint level, GLsizei* width, GLsizei* height) const {
+  DCHECK(width);
+  DCHECK(height);
   size_t face_index = GLTargetToFaceIndex(face);
   if (!IsDeleted() && level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
@@ -199,8 +228,24 @@ bool TextureManager::TextureInfo::GetLevelSize(
   return false;
 }
 
+bool TextureManager::TextureInfo::GetLevelType(
+    GLint face, GLint level, GLenum* type, GLenum* internal_format) const {
+  DCHECK(type);
+  DCHECK(internal_format);
+  size_t face_index = GLTargetToFaceIndex(face);
+  if (!IsDeleted() && level >= 0 && face_index < level_infos_.size() &&
+      static_cast<size_t>(level) < level_infos_[face_index].size()) {
+    const LevelInfo& info = level_infos_[GLTargetToFaceIndex(face)][level];
+    *type = info.type;
+    *internal_format = info.internal_format;
+    return true;
+  }
+  return false;
+}
+
 void TextureManager::TextureInfo::SetParameter(
     const TextureManager* manager, GLenum pname, GLint param) {
+  DCHECK(manager);
   switch (pname) {
     case GL_TEXTURE_MIN_FILTER:
       min_filter_ = param;
@@ -345,7 +390,7 @@ void TextureManager::SetLevelInfo(
     TextureManager::TextureInfo* info,
     GLenum target,
     GLint level,
-    GLint internal_format,
+    GLenum internal_format,
     GLsizei width,
     GLsizei height,
     GLsizei depth,

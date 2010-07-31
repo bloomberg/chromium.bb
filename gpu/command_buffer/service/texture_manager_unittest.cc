@@ -392,6 +392,70 @@ TEST_F(TextureInfoTest, GetLevelSize) {
   EXPECT_FALSE(info_->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height));
 }
 
+TEST_F(TextureInfoTest, GetLevelType) {
+  manager_.SetInfoTarget(info_, GL_TEXTURE_2D);
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 4, 5, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  GLenum type = -1;
+  GLenum format = -1;
+  EXPECT_FALSE(info_->GetLevelType(GL_TEXTURE_2D, -1, &type, &format));
+  EXPECT_FALSE(info_->GetLevelType(GL_TEXTURE_2D, 1000, &type, &format));
+  EXPECT_TRUE(info_->GetLevelType(GL_TEXTURE_2D, 0, &type, &format));
+  EXPECT_EQ(0u, type);
+  EXPECT_EQ(0u, format);
+  EXPECT_TRUE(info_->GetLevelType(GL_TEXTURE_2D, 1, &type, &format));
+  EXPECT_EQ(static_cast<GLenum>(GL_UNSIGNED_BYTE), type);
+  EXPECT_EQ(static_cast<GLenum>(GL_RGBA), format);
+  manager_.RemoveTextureInfo(kClient1Id);
+  EXPECT_FALSE(info_->GetLevelType(GL_TEXTURE_2D, 1, &type, &format));
+}
+
+TEST_F(TextureInfoTest, ValidForTexture) {
+  manager_.SetInfoTarget(info_, GL_TEXTURE_2D);
+  manager_.SetLevelInfo(info_,
+      GL_TEXTURE_2D, 1, GL_RGBA, 4, 5, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
+  // Check bad face.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+      1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+  // Check bad level.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 0, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+  // Check bad xoffset.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, -1, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+  // Check bad xoffset + width > width.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 1, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+  // Check bad yoffset.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 0, -1, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+  // Check bad yoffset + height > height.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 0, 1, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+  // Check bad width.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 0, 0, 5, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+  // Check bad height.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 0, 0, 4, 6, GL_RGBA, GL_UNSIGNED_BYTE));
+  // Check bad format.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGB, GL_UNSIGNED_BYTE));
+  // Check bad type.
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4));
+  // Check valid full size
+  EXPECT_TRUE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+  // Check valid particial size.
+  EXPECT_TRUE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 1, 1, 2, 3, GL_RGBA, GL_UNSIGNED_BYTE));
+  manager_.RemoveTextureInfo(kClient1Id);
+  EXPECT_FALSE(info_->ValidForTexture(
+      GL_TEXTURE_2D, 1, 0, 0, 4, 5, GL_RGBA, GL_UNSIGNED_BYTE));
+}
+
 TEST_F(TextureInfoTest, FloatNotLinear) {
   TextureManager manager(
       false, false, false, kMaxTextureSize, kMaxCubeMapTextureSize);

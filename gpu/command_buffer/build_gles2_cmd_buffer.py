@@ -1056,6 +1056,13 @@ _FUNCTION_INFO = {
   'CompressedTexSubImage2D': {
     'type': 'Data',
     'bucket': True,
+    'decoder_func': 'DoCompressedTexSubImage2D',
+  },
+  'CopyTexImage2D': {
+    'decoder_func': 'DoCopyTexImage2D',
+  },
+  'CopyTexSubImage2D': {
+    'decoder_func': 'DoCopyTexSubImage2D',
   },
   'CreateProgram': {'type': 'Create'},
   'CreateShader': {'type': 'Create'},
@@ -1388,7 +1395,10 @@ _FUNCTION_INFO = {
     'count': 1,
     'decoder_func': 'DoTexParameteriv',
   },
-  'TexSubImage2D': {'type': 'Data'},
+  'TexSubImage2D': {
+    'type': 'Data',
+    'decoder_func': 'DoTexSubImage2D',
+  },
   'Uniform1f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 1},
   'Uniform1fv': {
     'type': 'PUTn',

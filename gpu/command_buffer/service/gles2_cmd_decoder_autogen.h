@@ -304,7 +304,7 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2D(
   if (data == NULL) {
     return error::kOutOfBounds;
   }
-  glCompressedTexSubImage2D(
+  DoCompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, imageSize, data);
   return error::kNoError;
 }
@@ -348,7 +348,7 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DImmediate(
   if (data == NULL) {
     return error::kOutOfBounds;
   }
-  glCompressedTexSubImage2D(
+  DoCompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, imageSize, data);
   return error::kNoError;
 }
@@ -375,7 +375,7 @@ error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
     SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: height < 0");
     return error::kNoError;
   }
-  glCopyTexImage2D(target, level, internalformat, x, y, width, height, border);
+  DoCopyTexImage2D(target, level, internalformat, x, y, width, height, border);
   return error::kNoError;
 }
 
@@ -401,7 +401,7 @@ error::Error GLES2DecoderImpl::HandleCopyTexSubImage2D(
     SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D: height < 0");
     return error::kNoError;
   }
-  glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+  DoCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
   return error::kNoError;
 }
 
@@ -1852,7 +1852,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
   if (pixels == NULL) {
     return error::kOutOfBounds;
   }
-  glTexSubImage2D(
+  DoTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, type, pixels);
   return error::kNoError;
 }
@@ -1897,7 +1897,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2DImmediate(
   if (pixels == NULL) {
     return error::kOutOfBounds;
   }
-  glTexSubImage2D(
+  DoTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, type, pixels);
   return error::kNoError;
 }

@@ -49,6 +49,28 @@ void GLES2DecoderTestBase::SpecializedSetup<CheckFramebufferStatus, 0>(
 };
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<CopyTexImage2D, 0>(
+    bool valid) {
+  if (valid) {
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+  }
+};
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<CopyTexSubImage2D, 0>(
+    bool valid) {
+  if (valid) {
+    DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+    DoTexImage2D(
+        GL_TEXTURE_2D, 2, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+        0, 0);
+  }
+};
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<FramebufferRenderbuffer, 0>(
     bool /* valid */) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,

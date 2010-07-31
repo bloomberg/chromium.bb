@@ -632,6 +632,40 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     GLsizei image_size,
     const void* data);
 
+  // Wrapper for CompressedTexSubImage2D.
+  void DoCompressedTexSubImage2D(
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLsizei width,
+    GLsizei height,
+    GLenum format,
+    GLsizei imageSize,
+    const void * data);
+
+  // Wrapper for CopyTexImage2D.
+  void DoCopyTexImage2D(
+    GLenum target,
+    GLint level,
+    GLenum internal_format,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLint border);
+
+  // Wrapper for CopyTexSubImage2D.
+  void DoCopyTexSubImage2D(
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height);
+
   // Wrapper for TexImage2D commands.
   error::Error DoTexImage2D(
     GLenum target,
@@ -644,6 +678,18 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     GLenum type,
     const void* pixels,
     uint32 pixels_size);
+
+  // Wrapper for TexSubImage2D.
+  void DoTexSubImage2D(
+    GLenum target,
+    GLint level,
+    GLint xoffset,
+    GLint yoffset,
+    GLsizei width,
+    GLsizei height,
+    GLenum format,
+    GLenum type,
+    const void * data);
 
   // Creates a ProgramInfo for the given program.
   void CreateProgramInfo(GLuint client_id, GLuint service_id) {
@@ -4193,10 +4239,14 @@ error::Error GLES2DecoderImpl::DoCompressedTexImage2D(
     memset(zero.get(), 0, image_size);
     data = zero.get();
   }
-  texture_manager()->SetLevelInfo(
-      info, target, level, internal_format, width, height, 1, border, 0, 0);
+  CopyRealGLErrorsToWrapper();
   glCompressedTexImage2D(
       target, level, internal_format, width, height, border, image_size, data);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    texture_manager()->SetLevelInfo(
+        info, target, level, internal_format, width, height, 1, border, 0, 0);
+  }
   return error::kNoError;
 }
 
@@ -4291,7 +4341,7 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
     SetGLError(GL_INVALID_VALUE, "glCompressedTexSubImage2D: imageSize < 0");
     return error::kNoError;
   }
-  glCompressedTexSubImage2D(
+  DoCompressedTexSubImage2D(
       target, level, xoffset, yoffset, width, height, format, imageSize, data);
   return error::kNoError;
 }
@@ -4345,8 +4395,6 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     memset(zero.get(), 0, pixels_size);
     pixels = zero.get();
   }
-  texture_manager()->SetLevelInfo(info,
-      target, level, internal_format, width, height, 1, border, format, type);
   #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
   if (format == GL_BGRA_EXT && internal_format == GL_BGRA_EXT) {
     internal_format = GL_RGBA;
@@ -4364,9 +4412,15 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     }
   }
   #endif
+  CopyRealGLErrorsToWrapper();
   glTexImage2D(
       target, level, internal_format, width, height, border, format, type,
       pixels);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    texture_manager()->SetLevelInfo(info,
+        target, level, internal_format, width, height, 1, border, format, type);
+  }
   return error::kNoError;
 }
 
@@ -4424,6 +4478,118 @@ error::Error GLES2DecoderImpl::HandleTexImage2DImmediate(
       target, level, internal_format, width, height, border, format, type,
       pixels, size);
   return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoCompressedTexSubImage2D(
+  GLenum target,
+  GLint level,
+  GLint xoffset,
+  GLint yoffset,
+  GLsizei width,
+  GLsizei height,
+  GLenum format,
+  GLsizei image_size,
+  const void * data) {
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glCompressedTexSubImage2D: unknown texture for target");
+    return;
+  }
+  GLenum type = 0;
+  GLenum dummy = 0;
+  if (!info->GetLevelType(target, level, &type, &dummy) ||
+      !info->ValidForTexture(
+          target, level, xoffset, yoffset, width, height, format, type)) {
+    SetGLError(GL_INVALID_VALUE,
+               "glCompressdTexSubImage2D: bad dimensions.");
+    return;
+  }
+  glCompressedTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, image_size, data);
+}
+
+void GLES2DecoderImpl::DoCopyTexImage2D(
+  GLenum target,
+  GLint level,
+  GLenum internal_format,
+  GLint x,
+  GLint y,
+  GLsizei width,
+  GLsizei height,
+  GLint border) {
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glCopyTexImage2D: unknown texture for target");
+    return;
+  }
+  // TODO(gman): Need to check that current FBO is compatible with
+  // internal_format.
+  // TODO(gman): Type needs to match format for FBO.
+  CopyRealGLErrorsToWrapper();
+  glCopyTexImage2D(target, level, internal_format, x, y, width, height, border);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    texture_manager()->SetLevelInfo(
+        info,  target, level, internal_format, width, height, 1, border,
+        internal_format, GL_UNSIGNED_BYTE);
+  }
+}
+
+void GLES2DecoderImpl::DoCopyTexSubImage2D(
+  GLenum target,
+  GLint level,
+  GLint xoffset,
+  GLint yoffset,
+  GLint x,
+  GLint y,
+  GLsizei width,
+  GLsizei height) {
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glCopyTexSubImage2D: unknown texture for target");
+    return;
+  }
+  GLenum type = 0;
+  GLenum format = 0;
+  if (!info->GetLevelType(target, level, &type, &format) ||
+      !info->ValidForTexture(
+          target, level, xoffset, yoffset, width, height, format, type)) {
+    SetGLError(GL_INVALID_VALUE,
+               "glCopyTexSubImage2D: bad dimensions.");
+    return;
+  }
+  // TODO(gman): Should we check that x, y, width, and height are in range
+  // for current FBO?
+  glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+}
+
+void GLES2DecoderImpl::DoTexSubImage2D(
+  GLenum target,
+  GLint level,
+  GLint xoffset,
+  GLint yoffset,
+  GLsizei width,
+  GLsizei height,
+  GLenum format,
+  GLenum type,
+  const void * data) {
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexSubImage2D: unknown texture for target");
+    return;
+  }
+  if (!info->ValidForTexture(
+          target, level, xoffset, yoffset, width, height, format, type)) {
+    SetGLError(GL_INVALID_VALUE,
+               "glTexSubImage2D: bad dimensions.");
+    return;
+  }
+  glTexSubImage2D(
+      target, level, xoffset, yoffset, width, height, format, type, data);
 }
 
 error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(

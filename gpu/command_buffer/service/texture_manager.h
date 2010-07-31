@@ -83,9 +83,25 @@ class TextureManager {
     bool GetLevelSize(
         GLint face, GLint level, GLsizei* width, GLsizei* height) const;
 
+    // Get the type of a level. Returns false if level does not exist.
+    bool GetLevelType(
+        GLint face, GLint level, GLenum* type, GLenum* internal_format) const;
+
     bool IsDeleted() const {
       return deleted_;
     }
+
+    // Returns true of the given dimensions are inside the dimensions of the
+    // level and if the format and type match the level.
+    bool ValidForTexture(
+        GLint face,
+        GLint level,
+        GLint xoffset,
+        GLint yoffset,
+        GLsizei width,
+        GLsizei height,
+        GLenum format,
+        GLenum type) const;
 
    private:
     friend class TextureManager;
@@ -106,7 +122,7 @@ class TextureManager {
       }
 
       bool valid;
-      GLint internal_format;
+      GLenum internal_format;
       GLsizei width;
       GLsizei height;
       GLsizei depth;
@@ -120,7 +136,7 @@ class TextureManager {
         const TextureManager* manager,
         GLenum target,
         GLint level,
-        GLint internal_format,
+        GLenum internal_format,
         GLsizei width,
         GLsizei height,
         GLsizei depth,
@@ -249,7 +265,7 @@ class TextureManager {
       TextureInfo* info,
       GLenum target,
       GLint level,
-      GLint internal_format,
+      GLenum internal_format,
       GLsizei width,
       GLsizei height,
       GLsizei depth,
