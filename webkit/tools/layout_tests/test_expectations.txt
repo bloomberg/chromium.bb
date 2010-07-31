@@ -45,3 +45,4 @@ BUG50438 : media/controls-drag-timebar.html = PASS FAIL
 BUG50637 : fast/dom/prototype-inheritance.html = FAIL
 
 BUG50816 MAC : fast/forms/search-transformed.html = FAIL
+BUG50825 LINUX : svg/custom/massive-coordinates.svg = FAIL
