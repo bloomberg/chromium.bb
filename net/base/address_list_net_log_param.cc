@@ -23,7 +23,7 @@ Value* AddressListNetLogParam::ToValue() const {
     list->Append(Value::CreateStringValue(NetAddressToStringWithPort(head)));
   }
 
-  dict->Set(L"address_list", list);
+  dict->Set("address_list", list);
   return dict;
 }
 
