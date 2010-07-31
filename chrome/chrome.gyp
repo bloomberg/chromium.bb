@@ -1069,6 +1069,8 @@
       'sources': [
         'service/service_child_process_host.cc',
         'service/service_child_process_host.h',
+        'service/service_ipc_server.cc',
+        'service/service_ipc_server.h',
         'service/service_main.cc',
         'service/service_process.cc',
         'service/service_process.h',

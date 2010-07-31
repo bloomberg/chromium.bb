@@ -257,6 +257,8 @@
         'common/resource_dispatcher.h',
         'common/security_filter_peer.cc',
         'common/security_filter_peer.h',
+        'common/service_messages.h',
+        'common/services_messages_internal.h',
         'common/socket_stream_dispatcher.cc',
         'common/socket_stream_dispatcher.h',
         'common/spellcheck_common.cc',

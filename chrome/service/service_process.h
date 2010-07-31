@@ -6,14 +6,14 @@
 #define CHROME_SERVICE_SERVICE_PROCESS_H_
 #pragma once
 
-#include <vector>
-
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
+#include "base/waitable_event.h"
 
 class CloudPrintProxy;
 class JsonPrefStore;
+class ServiceIPCServer;
 namespace net {
 class NetworkChangeNotifier;
 }
@@ -55,7 +55,15 @@ class ServiceProcess {
   base::Thread* file_thread() const {
     return file_thread_.get();
   }
-  CloudPrintProxy* CreateCloudPrintProxy(JsonPrefStore* service_prefs);
+
+  // A global event object that is signalled when the main thread's message
+  // loop exits. This gives background threads a way to observe the main
+  // thread shutting down.
+  base::WaitableEvent* shutdown_event() {
+    return &shutdown_event_;
+  }
+
+  CloudPrintProxy* GetCloudPrintProxy();
 #if defined(ENABLE_REMOTING)
   remoting::ChromotingHost* CreateChromotingHost(
       remoting::ChromotingHostContext* context,
@@ -66,7 +74,11 @@ class ServiceProcess {
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
-  std::vector<CloudPrintProxy*> cloud_print_proxy_list_;
+  scoped_ptr<CloudPrintProxy> cloud_print_proxy_;
+  scoped_ptr<JsonPrefStore> service_prefs_;
+  scoped_ptr<ServiceIPCServer> ipc_server_;
+  // An event that will be signalled when we shutdown.
+  base::WaitableEvent shutdown_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);
 };

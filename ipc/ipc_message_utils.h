@@ -58,6 +58,8 @@ enum IPCMessageStart {
   GpuMsgStart,
   GpuHostMsgStart,
   GpuChannelMsgStart,
+  ServiceMsgStart,
+  ServiceHostMsgStart,
   // NOTE: When you add a new message class, also update
   // IPCStatusView::IPCStatusView to ensure logging works.
   LastMsgIndex

@@ -4,8 +4,15 @@
 
 #include "chrome/service/service_process.h"
 
-#include "base/stl_util-inl.h"
+#include <algorithm>
+
+#include "base/path_service.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
+#include "chrome/service/service_ipc_server.h"
 #include "net/base/network_change_notifier.h"
 
 #if defined(ENABLE_REMOTING)
@@ -28,7 +35,7 @@
 
 ServiceProcess* g_service_process = NULL;
 
-ServiceProcess::ServiceProcess() {
+ServiceProcess::ServiceProcess() : shutdown_event_(true, false) {
   DCHECK(!g_service_process);
   g_service_process = this;
 }
@@ -45,25 +52,49 @@ bool ServiceProcess::Initialize() {
     Teardown();
     return false;
   }
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  FilePath pref_path = user_data_dir.Append(chrome::kServiceStateFileName);
+  service_prefs_.reset(new JsonPrefStore(pref_path,
+                                         file_thread_->message_loop_proxy()));
+  service_prefs_->ReadPrefs();
+  // TODO(sanjeevr): We need to actually figure out the right way to determine
+  // a channel name. The below is to facilitate testing only.
+#if defined(OS_WIN)
+  std::string channel_name = WideToUTF8(user_data_dir.value());
+#elif defined(OS_POSIX)
+  std::string channel_name = user_data_dir.value();
+#endif  // defined(OS_WIN)
+
+  std::replace(channel_name.begin(), channel_name.end(), '\\', '!');
+  channel_name.append("_service_ipc");
+  ipc_server_.reset(new ServiceIPCServer(channel_name));
+  ipc_server_->Init();
   return true;
 }
 
 bool ServiceProcess::Teardown() {
+  service_prefs_->WritePrefs();
+  service_prefs_.reset();
+  cloud_print_proxy_.reset();
+  ipc_server_.reset();
+  // Signal this event before shutting down the service process. That way all
+  // background threads can cleanup.
+  shutdown_event_.Signal();
   io_thread_.reset();
   file_thread_.reset();
-  STLDeleteElements(&cloud_print_proxy_list_);
   // The NetworkChangeNotifier must be destroyed after all other threads that
   // might use it have been shut down.
   network_change_notifier_.reset();
   return true;
 }
 
-CloudPrintProxy* ServiceProcess::CreateCloudPrintProxy(
-    JsonPrefStore* service_prefs) {
-  CloudPrintProxy* cloud_print_proxy = new CloudPrintProxy();
-  cloud_print_proxy->Initialize(service_prefs);
-  cloud_print_proxy_list_.push_back(cloud_print_proxy);
-  return cloud_print_proxy;
+CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {
+  if (!cloud_print_proxy_.get()) {
+    cloud_print_proxy_.reset(new CloudPrintProxy());
+    cloud_print_proxy_->Initialize(service_prefs_.get());
+  }
+  return cloud_print_proxy_.get();
 }
 
 #if defined(ENABLE_REMOTING)
@@ -94,6 +125,5 @@ remoting::ChromotingHost* ServiceProcess::CreateChromotingHost(
 
 ServiceProcess::~ServiceProcess() {
   Teardown();
-  DCHECK(cloud_print_proxy_list_.size() == 0);
   g_service_process = NULL;
 }
