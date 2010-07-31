@@ -211,6 +211,9 @@ class CMDuploadUnittest(GclTestsBase):
                                                                     "2"))
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
     gcl.os.chdir('somewhere')
+    gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
+                         " submit a try. ***")
+    gcl.sys.stdout.write("\n")
     change_info.Save()
     gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
     gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
@@ -241,6 +244,9 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.remove('descfile')
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
     gcl.os.chdir('somewhere')
+    gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
+                         " submit a try. ***")
+    gcl.sys.stdout.write("\n")
     gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
     gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
         ).AndReturn(change_info)
@@ -270,6 +276,9 @@ class CMDuploadUnittest(GclTestsBase):
     gcl.os.remove('descfile')
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
     gcl.os.chdir('somewhere')
+    gcl.sys.stdout.write("*** Upload does not submit a try; use gcl try to"
+                         " submit a try. ***")
+    gcl.sys.stdout.write("\n")
     gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
     gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
         ).AndReturn(change_info)
