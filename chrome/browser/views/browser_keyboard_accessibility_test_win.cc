@@ -71,7 +71,9 @@ class BrowserKeyboardAccessibility : public InProcessBrowserTest,
   AccessibilityTypes::Event current_event_type_;
 };
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInAboutChromeDialog) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInAboutChromeDialog) {
   views::Window* about_chrome_window =
       BrowserView::GetBrowserViewForNativeWindow(
           browser()->window()->GetNativeHandle())->ShowAboutChromeDialog();
@@ -79,24 +81,30 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInAboutChromeDialog) {
   TabCyclerForwardAndBack(about_chrome_window->GetNativeWindow());
 }
 
+// This test is disabled, see bug 50864.
 IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
-                       TabInClearBrowsingDataDialog) {
+                       DISABLED_TabInClearBrowsingDataDialog) {
   browser()->OpenClearBrowsingDataDialog();
   TabCyclerForwardAndBack(current_view_native_window());
 }
 
+// This test is disabled, see bug 50864.
 IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
-                       TabInImportSettingsDialog) {
+                       DISABLED_TabInImportSettingsDialog) {
   browser()->OpenImportSettingsDialog();
   TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInKeywordEditor) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInKeywordEditor) {
   browser()->OpenKeywordEditor();
   TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInOptionsDialog) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInOptionsDialog) {
   browser()->OpenOptionsDialog();
 
   // Tab through each of the three tabs.
@@ -118,7 +126,9 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInOptionsDialog) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInPasswordManager) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInPasswordManager) {
   browser()->OpenPasswordManager();
   TabCyclerForwardAndBack(current_view_native_window());
 }
@@ -130,12 +140,16 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
   TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInTaskManager) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInTaskManager) {
   browser()->OpenTaskManager();
   TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInToolbar) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInToolbar) {
   gfx::NativeWindow native_window = browser()->window()->GetNativeHandle();
   ui_controls::SendKeyPressNotifyWhenDone(native_window,
                                           base::VKEY_T,
@@ -146,7 +160,9 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInToolbar) {
   TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInUpdateChromeDialog) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInUpdateChromeDialog) {
   browser()->OpenUpdateChromeDialog();
   TabCyclerForwardAndBack(current_view_native_window());
 }
