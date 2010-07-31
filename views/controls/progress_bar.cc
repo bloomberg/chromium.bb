@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "gfx/canvas_skia.h"

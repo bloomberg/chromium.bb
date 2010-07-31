@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "app/linear_animation.h"
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
 #include "base/i18n/rtl.h"

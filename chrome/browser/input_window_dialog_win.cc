@@ -4,7 +4,6 @@
 
 #include "chrome/browser/input_window_dialog.h"
 
-#include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/task.h"

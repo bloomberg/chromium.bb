@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_VIEWS_FIND_BAR_HOST_H_
 #pragma once
 
-#include "app/animation.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/views/dropdown_bar_host.h"

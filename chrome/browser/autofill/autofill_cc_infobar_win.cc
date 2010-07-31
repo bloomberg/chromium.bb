@@ -4,7 +4,6 @@
 
 #include "chrome/browser/autofill/autofill_cc_infobar.h"
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/infobars/infobar_button_border.h"
@@ -191,4 +190,3 @@ InfoBar* CreateAutofillCcInfoBar(ConfirmInfoBarDelegate* delegate) {
   DCHECK(delegate);
   return new SaveCCInfoConfirmInfoBar(delegate);
 }
-

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_VIEWS_H_
 #pragma once
 
-#include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"

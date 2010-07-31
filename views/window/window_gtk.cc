@@ -4,7 +4,6 @@
 
 #include "views/window/window_gtk.h"
 
-#include "app/l10n_util.h"
 #include "gfx/rect.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"

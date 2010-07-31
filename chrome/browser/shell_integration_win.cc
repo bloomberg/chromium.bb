@@ -9,7 +9,6 @@
 #include <shlobj.h>
 #include <shobjidl.h>
 
-#include "app/win_util.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"

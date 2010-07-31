@@ -7,8 +7,6 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 
-#include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "app/win_util.h"
 #include "base/i18n/rtl.h"

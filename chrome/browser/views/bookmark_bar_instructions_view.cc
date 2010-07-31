@@ -5,7 +5,6 @@
 #include "chrome/browser/views/bookmark_bar_instructions_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/defaults.h"
 #include "grit/generated_resources.h"

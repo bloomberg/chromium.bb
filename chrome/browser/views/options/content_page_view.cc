@@ -10,7 +10,6 @@
 #include <vssym32.h>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/autofill_dialog.h"

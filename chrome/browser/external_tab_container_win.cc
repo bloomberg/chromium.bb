@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/win_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/win_util.h"
@@ -994,4 +993,3 @@ void ExternalTabContainer::SetupExternalTabView() {
   // Note that SetTabContents must be called after AddChildView is called
   tab_contents_container_->ChangeTabContents(tab_contents_);
 }
-

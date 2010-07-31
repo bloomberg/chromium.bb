@@ -8,7 +8,6 @@
 #include "app/drag_drop_types.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/slide_animation.h"
 #include "base/compiler_specific.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser.h"

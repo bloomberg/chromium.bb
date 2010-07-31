@@ -5,7 +5,6 @@
 #include "chrome/browser/views/infobars/after_translate_infobar.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"

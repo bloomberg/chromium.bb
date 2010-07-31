@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/autocomplete/autocomplete_popup_win.h"
 
-#include "app/win_util.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"

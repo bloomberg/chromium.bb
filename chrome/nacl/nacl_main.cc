@@ -5,9 +5,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
-#include "app/win_util.h"
-#include "chrome/test/injection_test_dll.h"
-#include "sandbox/src/sandbox.h"
+#include <windows.h>
 #endif
 
 #include "app/hi_res_timer_manager.h"
@@ -22,11 +20,14 @@
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/sandbox_policy.h"
-#if defined(OS_WIN)
-#include "chrome/nacl/broker_thread.h"
-#endif
 #include "chrome/nacl/nacl_main_platform_delegate.h"
 #include "chrome/nacl/nacl_thread.h"
+
+#if defined(OS_WIN)
+#include "chrome/nacl/broker_thread.h"
+#include "chrome/test/injection_test_dll.h"
+#include "sandbox/src/sandbox.h"
+#endif
 
 #ifdef _WIN64
 
@@ -131,5 +132,3 @@ int NaClMain(const MainFunctionParams& parameters) {
   platform.PlatformUninitialize();
   return 0;
 }
-
-

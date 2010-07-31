@@ -9,7 +9,6 @@
 #include "views/screen.h"
 #endif
 
-#include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"

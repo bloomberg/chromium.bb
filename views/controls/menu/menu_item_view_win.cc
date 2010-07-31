@@ -7,7 +7,6 @@
 #include <uxtheme.h>
 #include <Vssym32.h>
 
-#include "app/l10n_util.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/native_theme_win.h"
 #include "grit/app_strings.h"

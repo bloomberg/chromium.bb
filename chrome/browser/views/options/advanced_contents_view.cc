@@ -12,7 +12,6 @@
 #include <vsstyle.h>
 #include <vssym32.h>
 
-#include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"

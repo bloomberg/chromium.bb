@@ -5,7 +5,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "app/combobox_model.h"
-#include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/string_util.h"

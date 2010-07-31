@@ -5,7 +5,6 @@
 #include "chrome/browser/views/options/content_settings_window_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"

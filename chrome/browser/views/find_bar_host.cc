@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/find_bar_host.h"
 
-#include "app/slide_animation.h"
 #include "base/keyboard_codes.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"

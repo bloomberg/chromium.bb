@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/l10n_util_collator.h"
 #include "app/resource_bundle.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/default_encoding_combo_model.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"

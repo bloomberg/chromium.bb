@@ -8,8 +8,6 @@
 #endif  // OS_MACOSX
 
 #include "app/hi_res_timer_manager.h"
-#include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/field_trial.h"

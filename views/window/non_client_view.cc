@@ -4,14 +4,11 @@
 
 #include "views/window/non_client_view.h"
 
-#include "app/theme_provider.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#else
+#if !defined(OS_WIN)
 #include "views/window/hit_test.h"
 #endif
 

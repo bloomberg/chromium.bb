@@ -4,11 +4,13 @@
 
 #include "build/build_config.h"
 
+#if defined(OS_WIN)
+#include <objbase.h>
+#include <windows.h>
+#endif
+
 #include "app/hi_res_timer_manager.h"
 #include "app/system_monitor.h"
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"

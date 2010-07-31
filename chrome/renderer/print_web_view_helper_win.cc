@@ -4,7 +4,6 @@
 
 #include "chrome/renderer/print_web_view_helper.h"
 
-#include "app/l10n_util.h"
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"

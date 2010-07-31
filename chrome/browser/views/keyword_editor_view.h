@@ -9,7 +9,6 @@
 #include <Windows.h>
 #include <map>
 
-#include "app/table_model.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url_model.h"

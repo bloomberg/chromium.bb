@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "app/tree_model.h"
 #include "base/task.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "net/base/cookie_monster.h"
@@ -34,6 +33,8 @@ class DatabaseInfoView;
 class LocalStorageInfoView;
 class Profile;
 class Timer;
+class TreeModel;
+class TreeModelNode;
 
 
 class CookiesView : public CookiesTreeModel::Observer,

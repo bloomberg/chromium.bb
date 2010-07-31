@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/browser_bubble.h"
 
-#include "app/l10n_util_win.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"

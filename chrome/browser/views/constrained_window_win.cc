@@ -4,9 +4,7 @@
 
 #include "chrome/browser/views/constrained_window_win.h"
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/text_elider.h"
 #include "app/win_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"

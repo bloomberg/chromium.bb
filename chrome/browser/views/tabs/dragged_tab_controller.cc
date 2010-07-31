@@ -9,7 +9,6 @@
 
 #include "app/animation.h"
 #include "app/slide_animation.h"
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"

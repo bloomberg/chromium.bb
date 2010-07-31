@@ -5,7 +5,6 @@
 #include "chrome/browser/options_window.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"

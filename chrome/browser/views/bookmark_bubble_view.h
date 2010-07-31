@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "app/combobox_model.h"
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "gfx/rect.h"

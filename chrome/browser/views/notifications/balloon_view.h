@@ -39,7 +39,6 @@ class BalloonCollection;
 class NotificationDetails;
 class NotificationOptionsMenuModel;
 class NotificationSource;
-class SlideAnimation;
 
 // A balloon view is the UI component for a desktop notification toasts.
 // It draws a border, and within the border an HTML renderer.

@@ -7,7 +7,6 @@
 #include <commctrl.h>
 #include <windowsx.h>
 
-#include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"

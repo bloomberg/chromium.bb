@@ -4,7 +4,6 @@
 
 #include "views/controls/menu/menu_2.h"
 
-#include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "views/controls/menu/menu_wrapper.h"

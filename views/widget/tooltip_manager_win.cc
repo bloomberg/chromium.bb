@@ -7,7 +7,6 @@
 #include <windowsx.h>
 #include <limits>
 
-#include "app/l10n_util.h"
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
 #include "base/i18n/rtl.h"

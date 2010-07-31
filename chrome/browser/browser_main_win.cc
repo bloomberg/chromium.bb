@@ -11,7 +11,6 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "app/message_box_flags.h"
 #include "app/win_util.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"

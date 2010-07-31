@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/bookmark_menu_controller_views.h"
 
-#include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"

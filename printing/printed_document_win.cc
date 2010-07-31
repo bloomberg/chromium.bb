@@ -4,7 +4,6 @@
 
 #include "printing/printed_document.h"
 
-#include "app/win_util.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "gfx/font.h"

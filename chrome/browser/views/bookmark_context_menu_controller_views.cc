@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/bookmark_context_menu_controller_views.h"
 
-#include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"

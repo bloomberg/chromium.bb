@@ -14,7 +14,6 @@
 // TODO(port): trim this include list once first run has been refactored fully.
 #include "app/app_switches.h"
 #include "app/l10n_util.h"
-#include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"

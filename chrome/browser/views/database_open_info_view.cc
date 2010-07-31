@@ -4,7 +4,7 @@
 
 #include "chrome/browser/views/database_open_info_view.h"
 
-#include "app/l10n_util.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 

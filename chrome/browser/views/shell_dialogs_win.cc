@@ -12,7 +12,6 @@
 #include <set>
 
 #include "app/l10n_util.h"
-#include "app/win_util.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/registry.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/browser_bubble.h"
 
-#include "app/l10n_util.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #if defined(OS_WIN)
 #include "chrome/browser/external_tab_container_win.h"

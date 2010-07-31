@@ -9,8 +9,6 @@
 
 #include <set>
 
-#include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "app/win_util.h"
 #include "base/win_util.h"
 #include "chrome/browser/profile.h"

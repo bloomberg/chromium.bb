@@ -9,7 +9,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/text_elider.h"
-#include "app/theme_provider.h"
 #include "base/callback.h"
 #include "base/file_path.h"
 #include "base/histogram.h"
@@ -29,10 +28,6 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
-
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
 
 using base::TimeDelta;
 

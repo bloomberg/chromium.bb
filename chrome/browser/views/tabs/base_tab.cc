@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "app/animation_container.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"

@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"

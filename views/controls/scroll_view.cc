@@ -4,7 +4,6 @@
 
 #include "views/controls/scroll_view.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/widget/root_view.h"

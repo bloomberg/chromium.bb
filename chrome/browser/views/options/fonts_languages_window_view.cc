@@ -5,7 +5,6 @@
 #include "chrome/browser/views/options/fonts_languages_window_view.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/fonts_page_view.h"

@@ -28,10 +28,6 @@
 #include "views/window/window_resources.h"
 #include "views/window/window_shape.h"
 
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#endif
-
 #if defined(OS_LINUX)
 #include "views/window/hit_test.h"
 #endif
