@@ -47,8 +47,8 @@ def PatchGlob(name):
 def GetSources():
   return {
     "binutils": dirtree.PatchedTree(
-        dirtree.TarballTree(FindFile("binutils-2.20.tar.bz2")),
-        PatchGlob("binutils-2.20"), strip=2),
+        dirtree.TarballTree(FindFile("binutils-2.20.1.tar.bz2")),
+        PatchGlob("binutils-2.20.1"), strip=2),
     "gcc": dirtree.PatchedTree(
         dirtree.MultiTarballTree(
             [FindFile("gcc-core-4.4.3.tar.bz2"),
