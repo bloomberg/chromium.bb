@@ -35,8 +35,7 @@ ACTION(ReturnNewDataTypeManager) {
 // running in these tests, and allows tests to provide a task on construction
 // to set up initial nodes to mock out an actual server initial sync
 // download.
-class SyncBackendHostForProfileSyncTest :
-    public browser_sync::SyncBackendHost {
+class SyncBackendHostForProfileSyncTest : public browser_sync::SyncBackendHost {
  public:
   SyncBackendHostForProfileSyncTest(browser_sync::SyncFrontend* frontend,
       Profile* profile,

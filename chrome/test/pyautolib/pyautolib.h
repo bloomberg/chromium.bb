@@ -153,10 +153,10 @@ class PyUITestBase : public UITestBase {
 
   // Sets a cookie value for a url. Returns true on success.
   bool SetCookie(const GURL& cookie_url, const std::string& value,
-                 int window_index=0, int tab_index=0);
+                 int window_index = 0, int tab_index = 0);
   // Gets a cookie value for the given url.
-  std::string GetCookie(const GURL& cookie_url, int window_index=0,
-                        int tab_index=0);
+  std::string GetCookie(const GURL& cookie_url, int window_index = 0,
+                        int tab_index = 0);
 
  private:
   // Enables PostTask to main thread.
@@ -169,4 +169,3 @@ class PyUITestBase : public UITestBase {
 };
 
 #endif  // CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
-

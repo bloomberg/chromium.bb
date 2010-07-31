@@ -25,9 +25,8 @@ class Menu2;
 class MenuButton;
 }
 
-class AfterTranslateInfoBar :
-      public TranslateInfoBarBase,
-      public views::ViewMenuDelegate {
+class AfterTranslateInfoBar : public TranslateInfoBarBase,
+                              public views::ViewMenuDelegate {
  public:
   explicit AfterTranslateInfoBar(TranslateInfoBarDelegate* delegate);
   virtual ~AfterTranslateInfoBar();
