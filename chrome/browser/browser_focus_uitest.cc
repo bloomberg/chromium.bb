@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/ref_counted.h"
+#include "base/string_util.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
