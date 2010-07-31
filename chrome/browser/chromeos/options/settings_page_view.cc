@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/options/settings_page_view.h"
 
+#include "app/l10n_util.h"
+#include "app/resource_bundle.h"
+#include "base/string_util.h"
 #include "gfx/skia_utils_gtk.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"

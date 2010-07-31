@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/resource_bundle.h"
+#include "base/logging.h"
 #include "gfx/canvas.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"

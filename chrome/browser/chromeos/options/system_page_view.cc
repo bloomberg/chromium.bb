@@ -7,8 +7,10 @@
 #include <string>
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "app/combobox_model.h"
 #include "base/stl_util-inl.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
