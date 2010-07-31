@@ -5,6 +5,7 @@
 #include "chrome/browser/net/view_http_cache_job_factory.h"
 
 #include "base/message_loop.h"
+#include "base/string_util.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"

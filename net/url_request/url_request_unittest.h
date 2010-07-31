@@ -18,6 +18,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "base/string16.h"
 #include "base/thread.h"
 #include "base/time.h"
