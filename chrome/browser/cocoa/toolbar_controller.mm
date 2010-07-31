@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "app/menus/accelerator_cocoa.h"
 #include "app/menus/menu_model.h"

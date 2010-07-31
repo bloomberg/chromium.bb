@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 
-#include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "gfx/canvas_skia.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"

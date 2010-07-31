@@ -4,6 +4,7 @@
 
 #import "chrome/browser/app_controller_mac.h"
 
+#include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"

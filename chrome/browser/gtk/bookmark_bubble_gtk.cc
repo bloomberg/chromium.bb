@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"

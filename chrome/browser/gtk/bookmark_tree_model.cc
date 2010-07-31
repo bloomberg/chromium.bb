@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"

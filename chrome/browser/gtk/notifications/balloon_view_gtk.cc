@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"

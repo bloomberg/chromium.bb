@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "gfx/canvas.h"
 #include "grit/theme_resources.h"

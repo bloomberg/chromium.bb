@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "app/combobox_model.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/options_window_view.h"

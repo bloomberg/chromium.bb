@@ -6,6 +6,7 @@
 
 #include <Carbon/Carbon.h>
 
+#include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"

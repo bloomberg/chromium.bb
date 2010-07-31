@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/restart_browser.h"
 
+#include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"

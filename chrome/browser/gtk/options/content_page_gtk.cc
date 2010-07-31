@@ -8,7 +8,6 @@
 
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"

@@ -4,9 +4,7 @@
 
 #include "chrome/browser/gtk/custom_button.h"
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"

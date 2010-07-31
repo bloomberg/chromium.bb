@@ -5,7 +5,6 @@
 #include "chrome/browser/gtk/options/managed_prefs_banner_gtk.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "grit/generated_resources.h"

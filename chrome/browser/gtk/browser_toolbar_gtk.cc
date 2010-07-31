@@ -11,7 +11,6 @@
 #include "app/gtk_dnd_util.h"
 #include "app/l10n_util.h"
 #include "app/menus/accelerator_gtk.h"
-#include "app/resource_bundle.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"

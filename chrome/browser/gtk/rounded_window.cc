@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 #include <math.h>
 
-#include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/gtk/gtk_util.h"

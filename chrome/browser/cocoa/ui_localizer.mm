@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include <stdlib.h>
+#include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/logging.h"

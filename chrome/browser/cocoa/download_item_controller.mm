@@ -9,6 +9,7 @@
 #include "app/text_elider.h"
 #include "base/histogram.h"
 #include "base/mac_util.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/browser_theme_provider.h"

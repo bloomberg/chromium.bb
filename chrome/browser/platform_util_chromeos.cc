@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
-#include "app/gtk_util.h"
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/task.h"

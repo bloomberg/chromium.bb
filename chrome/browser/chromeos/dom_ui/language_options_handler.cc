@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"

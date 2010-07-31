@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/content_exceptions_window_controller.h"
 
+#include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "app/table_model_observer.h"
 #include "base/command_line.h"

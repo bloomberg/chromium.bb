@@ -3,9 +3,12 @@
 // found in the LICENSE file.
 
 #import <Foundation/Foundation.h>
+
+#include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/sys_string_conversions.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 
 namespace {
 

@@ -7,7 +7,6 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"

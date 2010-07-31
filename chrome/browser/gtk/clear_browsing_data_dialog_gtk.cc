@@ -7,7 +7,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"

@@ -10,8 +10,6 @@
 
 #include "chrome/browser/views/options/options_page_view.h"
 
-#include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 

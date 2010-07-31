@@ -7,7 +7,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"

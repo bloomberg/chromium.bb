@@ -7,7 +7,6 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
-#include "app/menus/menu_model.h"
 #include "base/message_loop.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/back_forward_menu_model.h"
@@ -133,4 +132,3 @@ gboolean BackForwardButtonGtk::OnMouseMove(GtkWidget* widget,
   ShowBackForwardMenu();
   return FALSE;
 }
-

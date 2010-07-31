@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "app/message_box_flags.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"

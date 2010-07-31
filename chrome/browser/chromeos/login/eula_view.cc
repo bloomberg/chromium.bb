@@ -9,7 +9,6 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization_document.h"

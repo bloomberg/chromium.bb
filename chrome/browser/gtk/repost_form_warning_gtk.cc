@@ -4,7 +4,6 @@
 
 #include "chrome/browser/gtk/repost_form_warning_gtk.h"
 
-#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -89,4 +88,3 @@ void RepostFormWarningGtk::OnHierarchyChanged(GtkWidget* root,
   }
   gtk_widget_grab_focus(cancel_);
 }
-

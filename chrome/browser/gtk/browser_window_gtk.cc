@@ -10,8 +10,6 @@
 
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/keyboard_codes.h"

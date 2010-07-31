@@ -5,7 +5,6 @@
 #include "chrome/browser/gtk/nine_box.h"
 
 #include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"

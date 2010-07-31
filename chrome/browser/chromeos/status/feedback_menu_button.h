@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_FEEDBACK_MENU_BUTTON_H_
 #pragma once
 
-#include "app/menus/simple_menu_model.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/import_progress_dialog.h"
 
+#include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/mac_util.h"

@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "app/l10n_util.h"
 #import "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/mac_util.h"

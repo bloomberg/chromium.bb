@@ -4,9 +4,7 @@
 
 #include "chrome/browser/gtk/download_item_gtk.h"
 
-#include "app/gtk_util.h"
 #include "app/l10n_util.h"
-#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "app/text_elider.h"

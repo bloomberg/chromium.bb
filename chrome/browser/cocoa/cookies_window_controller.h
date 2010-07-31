@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/tree_model.h"
 #include "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
@@ -15,6 +14,8 @@
 @class CookiesWindowController;
 @class CookieDetailsViewController;
 class Profile;
+class TreeModel;
+class TreeModelNode;
 
 namespace {
 class CookiesWindowControllerTest;

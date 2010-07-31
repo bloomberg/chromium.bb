@@ -8,7 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/download_file_interface.h"
 #include "base/file_path.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
@@ -63,4 +62,3 @@
 @end
 
 #endif // define CHROME_BROWSER_COCOA_WEB_CONTENTS_DRAG_SOURCE_H_
-

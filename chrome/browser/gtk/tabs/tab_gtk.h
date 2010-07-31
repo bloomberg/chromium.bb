@@ -7,7 +7,6 @@
 #pragma once
 
 #include "app/gtk_signal.h"
-#include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/tabs/tab_renderer_gtk.h"

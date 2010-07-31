@@ -13,6 +13,7 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 
+#include "app/l10n_util.h"
 #import "app/l10n_util_mac.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"

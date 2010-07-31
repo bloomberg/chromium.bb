@@ -5,7 +5,6 @@
 #include "chrome/browser/gtk/import_lock_dialog_gtk.h"
 
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/importer/importer.h"

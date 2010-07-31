@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/options/language_pinyin_config_view.h"
 
-#include "app/combobox_model.h"
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/notification_type.h"

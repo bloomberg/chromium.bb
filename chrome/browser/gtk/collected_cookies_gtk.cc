@@ -4,7 +4,6 @@
 
 #include "chrome/browser/gtk/collected_cookies_gtk.h"
 
-#include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/gtk/gtk_util.h"
