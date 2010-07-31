@@ -4,10 +4,9 @@
 
 #include "base/xdg_util.h"
 
+#include "base/env_var.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include "base/env_var.h"
 
 using ::testing::_;
 using ::testing::Return;
@@ -20,6 +19,7 @@ class MockEnvVarGetter : public base::EnvVarGetter {
  public:
   MOCK_METHOD2(GetEnv, bool(const char*, std::string* result));
   MOCK_METHOD2(SetEnv, bool(const char*, const std::string& new_value));
+  MOCK_METHOD1(UnSetEnv, bool(const char*));
 };
 
 const char* kGnome = "gnome";

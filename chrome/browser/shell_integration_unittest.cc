@@ -32,8 +32,7 @@ namespace {
 // Provides mock environment variables values based on a stored map.
 class MockEnvVarGetter : public base::EnvVarGetter {
  public:
-  MockEnvVarGetter() {
-  }
+  MockEnvVarGetter() {}
 
   void Set(const std::string& name, const std::string& value) {
     variables_[name] = value;
@@ -49,7 +48,12 @@ class MockEnvVarGetter : public base::EnvVarGetter {
   }
 
   virtual bool SetEnv(const char* variable_name, const std::string& new_value) {
-    NOTIMPLEMENTED();
+    ADD_FAILURE();
+    return false;
+  }
+
+  virtual bool UnSetEnv(const char* variable_name) {
+    ADD_FAILURE();
     return false;
   }
 

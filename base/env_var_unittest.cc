@@ -24,9 +24,10 @@ TEST_F(EnvVarTest, HasEnvVar) {
 }
 
 TEST_F(EnvVarTest, SetEnvVar) {
+  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+
   const char kFooUpper[] = "FOO";
   const char kFooLower[] = "foo";
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
   EXPECT_TRUE(env->SetEnv(kFooUpper, kFooLower));
 
   // Now verify that the environment has the new variable.
@@ -35,4 +36,22 @@ TEST_F(EnvVarTest, SetEnvVar) {
   std::string var_value;
   EXPECT_TRUE(env->GetEnv(kFooUpper, &var_value));
   EXPECT_EQ(var_value, kFooLower);
+}
+
+TEST_F(EnvVarTest, UnSetEnvVar) {
+  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+
+  const char kFooUpper[] = "FOO";
+  const char kFooLower[] = "foo";
+  // First set some environment variable.
+  EXPECT_TRUE(env->SetEnv(kFooUpper, kFooLower));
+
+  // Now verify that the environment has the new variable.
+  EXPECT_TRUE(env->HasEnv(kFooUpper));
+
+  // Finally verify that the environment variable was erased.
+  EXPECT_TRUE(env->UnSetEnv(kFooUpper));
+
+  // And check that the variable has been unset.
+  EXPECT_FALSE(env->HasEnv(kFooUpper));
 }

@@ -44,6 +44,10 @@ class EnvVarGetterImpl : public base::EnvVarGetter {
     return SetEnvImpl(variable_name, new_value);
   }
 
+  virtual bool UnSetEnv(const char* variable_name) {
+    return UnSetEnvImpl(variable_name);
+  }
+
  private:
   bool GetEnvImpl(const char* variable_name, std::string* result) {
 #if defined(OS_POSIX)
@@ -81,6 +85,17 @@ class EnvVarGetterImpl : public base::EnvVarGetter {
                                     ASCIIToWide(new_value).c_str()) != 0;
 #endif
   }
+
+  bool UnSetEnvImpl(const char* variable_name) {
+#if defined(OS_POSIX)
+    // On success, zero is returned.
+    return unsetenv(variable_name) == 0;
+#elif defined(OS_WIN)
+    // On success, a nonzero is returned.
+    return ::SetEnvironmentVariable(ASCIIToWide(variable_name).c_str(),
+                                    NULL) != 0;
+#endif
+  }
 };
 
 }  // namespace
@@ -99,13 +114,13 @@ const char kHome[] = "HOME";
 
 EnvVarGetter::~EnvVarGetter() {}
 
-bool EnvVarGetter::HasEnv(const char* variable_name) {
-  return GetEnv(variable_name, NULL);
-}
-
 // static
 EnvVarGetter* EnvVarGetter::Create() {
   return new EnvVarGetterImpl();
+}
+
+bool EnvVarGetter::HasEnv(const char* variable_name) {
+  return GetEnv(variable_name, NULL);
 }
 
 }  // namespace base
