@@ -374,6 +374,11 @@ const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
 
+// Enable requests that webkit labels TargetIsPrefetch.  As of
+// writing only <link rel=prefetch...> but also eventually
+// Link: headers.
+const char kEnablePrefetch[]               = "enable-prefetch";
+
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 

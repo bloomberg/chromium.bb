@@ -126,7 +126,7 @@ bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
     return true;
 
   if (request_data.resource_type == ResourceType::PREFETCH &&
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisablePrefetch))
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePrefetch))
     return false;
 
   ChildProcessSecurityPolicy* policy =
