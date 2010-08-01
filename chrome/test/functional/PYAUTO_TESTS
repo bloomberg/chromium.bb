@@ -44,6 +44,8 @@
   ],
 
   'win': [
+    # Autofill test is failing on windows. crbug.com/50904
+    '-autofill',
     # testBookmarkBarVisible fails on windows. crbug.com/42823
     '-bookmark_bar.BookmarkBarTest.testBookmarkBarVisible',
     # download test fails on official builder, thru buildbot only.
