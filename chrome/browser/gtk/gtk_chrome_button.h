@@ -18,11 +18,11 @@ G_BEGIN_DECLS
   (G_TYPE_CHECK_CLASS_CAST((klass), GTK_TYPE_CHROME_BUTTON, \
                            GtkChromeButtonClass))
 #define GTK_IS_CHROME_BUTTON(obj)                           \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GTK_TYPE_CHROME_BUTTON))
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_TYPE_CHROME_BUTTON))
 #define GTK_IS_CHROME_BUTTON_CLASS(klass)                   \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_TYPE_CHROME_BUTTON))
+  (G_TYPE_CHECK_CLASS_TYPE((klass), GTK_TYPE_CHROME_BUTTON))
 #define GTK_CHROME_BUTTON_GET_CLASS(obj)                    \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), GTK_TYPE_CHROME_BUTTON, GtkChromeButton))
+  (G_TYPE_INSTANCE_GET_CLASS((obj), GTK_TYPE_CHROME_BUTTON, GtkChromeButton))
 
 typedef struct _GtkChromeButton        GtkChromeButton;
 typedef struct _GtkChromeButtonClass   GtkChromeButtonClass;

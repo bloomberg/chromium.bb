@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,13 +24,12 @@ G_BEGIN_DECLS
                                              GTK_TYPE_CHROME_LINK_BUTTON, \
                                              GtkChromeLinkButtonClass))
 #define GTK_IS_CHROME_LINK_BUTTON(obj)                           \
-  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GTK_TYPE_CHROME_LINK_BUTTON))
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj), GTK_TYPE_CHROME_LINK_BUTTON))
 #define GTK_IS_CHROME_LINK_BUTTON_CLASS(klass)                   \
-  (G_TYPE_CHECK_CLASS_TYPE ((klass), GTK_TYPE_CHROME_LINK_BUTTON))
+  (G_TYPE_CHECK_CLASS_TYPE((klass), GTK_TYPE_CHROME_LINK_BUTTON))
 #define GTK_CHROME_LINK_BUTTON_GET_CLASS(obj) \
-  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
-  GTK_TYPE_CHROME_LINK_BUTTON, \
-  GtkChromeLinkButton))
+  (G_TYPE_INSTANCE_GET_CLASS((obj), GTK_TYPE_CHROME_LINK_BUTTON, \
+                             GtkChromeLinkButton))
 
 typedef struct _GtkChromeLinkButton        GtkChromeLinkButton;
 typedef struct _GtkChromeLinkButtonClass   GtkChromeLinkButtonClass;
