@@ -46,7 +46,7 @@ class BalloonHost : public RenderViewHostDelegate,
 
   RenderViewHost* render_view_host() const { return render_view_host_; }
 
-  std::wstring GetSource() const {
+  const string16& GetSource() const {
     return balloon_->notification().display_source();
   }
 

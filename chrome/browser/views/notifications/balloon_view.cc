@@ -274,22 +274,22 @@ gfx::Rect BalloonViewImpl::GetLabelBounds() const {
 void BalloonViewImpl::Show(Balloon* balloon) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  const std::wstring source_label_text = l10n_util::GetStringF(
-      IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
-      balloon->notification().display_source());
-  const std::wstring dismiss_text =
-      l10n_util::GetString(IDS_NOTIFICATION_BALLOON_DISMISS_LABEL);
-
   balloon_ = balloon;
 
   SetBounds(balloon_->GetPosition().x(), balloon_->GetPosition().y(),
             GetTotalWidth(), GetTotalHeight());
 
-  source_label_ = new views::Label(source_label_text);
+  const string16 source_label_text = l10n_util::GetStringFUTF16(
+      IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
+      balloon->notification().display_source());
+
+  source_label_ = new views::Label(UTF16ToWide(source_label_text));
   AddChildView(source_label_);
   options_menu_button_ = new views::MenuButton(NULL, L"", this, false);
   AddChildView(options_menu_button_);
   close_button_ = new views::ImageButton(this);
+  close_button_->SetTooltipText(l10n_util::GetString(
+      IDS_NOTIFICATION_BALLOON_DISMISS_LABEL));
   AddChildView(close_button_);
 
   // We have to create two windows: one for the contents and one for the

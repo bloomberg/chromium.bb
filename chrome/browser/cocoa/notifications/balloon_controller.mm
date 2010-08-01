@@ -66,7 +66,7 @@ const int kRightMargin = 2;
 
   NSString* sourceLabelText = l10n_util::GetNSStringF(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
-      WideToUTF16(balloon_->notification().display_source()));
+      balloon_->notification().display_source());
   [originLabel_ setStringValue:sourceLabelText];
 
   // This condition is false in unit tests which have no RVH.

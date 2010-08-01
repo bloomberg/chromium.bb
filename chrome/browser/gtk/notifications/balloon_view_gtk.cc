@@ -200,7 +200,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   const std::string source_label_text = l10n_util::GetStringFUTF8(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
-      WideToUTF16(balloon->notification().display_source()));
+      balloon->notification().display_source());
   const std::string options_text =
       l10n_util::GetStringUTF8(IDS_NOTIFICATION_OPTIONS_MENU_LABEL);
   const std::string dismiss_text =

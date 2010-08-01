@@ -102,6 +102,7 @@ class DesktopNotificationService : public NotificationObserver {
   void ResetAllOrigins();
 
   static void RegisterUserPrefs(PrefService* user_prefs);
+
  private:
   void InitPrefs();
   void StartObserving();
@@ -116,7 +117,7 @@ class DesktopNotificationService : public NotificationObserver {
   // Returns a display name for an origin, to be used in permission infobar
   // or on the frame of the notification toast.  Different from the origin
   // itself when dealing with extensions.
-  std::wstring DisplayNameForOrigin(const GURL& origin);
+  string16 DisplayNameForOrigin(const GURL& origin);
 
   ContentSetting GetContentSetting(const GURL& origin);
 

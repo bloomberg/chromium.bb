@@ -514,7 +514,7 @@ void DesktopNotificationService::RequestPermission(
   ContentSetting setting = GetContentSetting(origin);
   if (setting == CONTENT_SETTING_ASK) {
     // Show an info bar requesting permission.
-    std::wstring display_name = DisplayNameForOrigin(origin);
+    std::wstring display_name = UTF16ToWide(DisplayNameForOrigin(origin));
 
     tab->AddInfoBar(new NotificationPermissionInfoBarDelegate(
         tab, origin, display_name, process_id, route_id, callback_context));
@@ -538,7 +538,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
   // TODO(johnnyg): clean up this "empty" notification.
-  Notification notif(GURL(), GURL(), L"", ASCIIToUTF16(""), proxy);
+  Notification notif(GURL(), GURL(), string16(), string16(), proxy);
   return ui_manager_->Cancel(notif);
 }
 
@@ -561,13 +561,14 @@ bool DesktopNotificationService::ShowDesktopNotification(
         CreateDataUrl(params.icon_url, params.title, params.body,
                       params.direction));
   }
-  Notification notif(
-      origin, contents, DisplayNameForOrigin(origin), params.replace_id, proxy);
-  ShowNotification(notif);
+  Notification notification(
+      origin, contents, DisplayNameForOrigin(origin),
+      params.replace_id, proxy);
+  ShowNotification(notification);
   return true;
 }
 
-std::wstring DesktopNotificationService::DisplayNameForOrigin(
+string16 DesktopNotificationService::DisplayNameForOrigin(
     const GURL& origin) {
   // If the source is an extension, lookup the display name.
   if (origin.SchemeIs(chrome::kExtensionScheme)) {
@@ -575,8 +576,8 @@ std::wstring DesktopNotificationService::DisplayNameForOrigin(
     if (ext_service) {
       Extension* extension = ext_service->GetExtensionByURL(origin);
       if (extension)
-        return UTF8ToWide(extension->name());
+        return UTF8ToUTF16(extension->name());
     }
   }
-  return UTF8ToWide(origin.host());
+  return UTF8ToUTF16(origin.host());
 }

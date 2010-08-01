@@ -153,12 +153,12 @@ class NotificationControlView : public views::View,
   void CreateOptionsMenu() {
     if (options_menu_contents_.get())
       return;
-    const string16 source_label_text = WideToUTF16Hack(l10n_util::GetStringF(
+    const string16 source_label_text = l10n_util::GetStringFUTF16(
         IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
-        balloon_view_->balloon_->notification().display_source()));
-    const string16 label_text = WideToUTF16Hack(l10n_util::GetStringF(
+        balloon_view_->balloon_->notification().display_source());
+    const string16 label_text = l10n_util::GetStringFUTF16(
         IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
-        balloon_view_->balloon_->notification().display_source()));
+        balloon_view_->balloon_->notification().display_source());
 
     options_menu_contents_.reset(new menus::SimpleMenuModel(this));
     // TODO(oshima): Showing the source info in the menu for now.

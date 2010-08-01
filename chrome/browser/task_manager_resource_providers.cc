@@ -696,8 +696,9 @@ TaskManagerNotificationResource::TaskManagerNotificationResource(
   }
   process_handle_ = balloon_host_->render_view_host()->process()->GetHandle();
   pid_ = base::GetProcId(process_handle_);
-  title_ = l10n_util::GetStringF(IDS_TASK_MANAGER_NOTIFICATION_PREFIX,
-                                 balloon_host_->GetSource());
+  title_ = UTF16ToWide(l10n_util::GetStringFUTF16(
+      IDS_TASK_MANAGER_NOTIFICATION_PREFIX,
+      balloon_host_->GetSource()));
 }
 
 TaskManagerNotificationResource::~TaskManagerNotificationResource() {

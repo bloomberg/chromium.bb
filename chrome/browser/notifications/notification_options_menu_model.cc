@@ -7,7 +7,6 @@
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -36,7 +35,7 @@ NotificationOptionsMenuModel::NotificationOptionsMenuModel(Balloon* balloon)
   } else {
     const string16 disable_label = l10n_util::GetStringFUTF16(
         IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
-        WideToUTF16(notification.display_source()));
+        notification.display_source());
     AddItem(kRevokePermissionCommand, disable_label);
   }
 

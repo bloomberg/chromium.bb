@@ -17,9 +17,8 @@ class NotificationDelegate;
 // data: URLs representing simple text+icon notifications.
 class Notification {
  public:
-  // TODO: http://crbug.com/43899 Convert this class to string16.
   Notification(const GURL& origin_url, const GURL& content_url,
-               const std::wstring& display_source,
+               const string16& display_source,
                const string16& replace_id,
                NotificationDelegate* delegate)
       : origin_url_(origin_url),
@@ -52,7 +51,7 @@ class Notification {
   const GURL& origin_url() const { return origin_url_; }
 
   // A display string for the source of the notification.
-  const std::wstring& display_source() const { return display_source_; }
+  const string16& display_source() const { return display_source_; }
 
   const string16& replace_id() const { return replace_id_; }
 
@@ -76,7 +75,7 @@ class Notification {
 
   // The display string for the source of the notification.  Could be
   // the same as origin_url_, or the name of an extension.
-  std::wstring display_source_;
+  string16 display_source_;
 
   // The replace ID for the notification.
   string16 replace_id_;
