@@ -3186,17 +3186,18 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
                               PasswordFormManager* form_to_save)
       : ConfirmInfoBarDelegate(tab_contents),
         form_to_save_(form_to_save),
-        infobar_response_(kNoResponse) {
-  }
+        infobar_response_(NO_RESPONSE) {}
 
-  virtual ~SavePasswordInfoBarDelegate() { }
+  virtual ~SavePasswordInfoBarDelegate() {}
 
-  // Overridden from ConfirmInfoBarDelegate:
+  // Begin ConfirmInfoBarDelegate implementation.
   virtual void InfoBarClosed() {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.InfoBarResponse",
-                              infobar_response_, kNumResponseTypes);
+                              infobar_response_, NUM_RESPONSE_TYPES);
     delete this;
   }
+
+  virtual Type GetInfoBarType() { return PAGE_ACTION_TYPE; }
 
   virtual std::wstring GetMessageText() const {
     return l10n_util::GetString(IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
@@ -3223,16 +3224,17 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() {
     DCHECK(form_to_save_.get());
     form_to_save_->Save();
-    infobar_response_ = kRememberPassword;
+    infobar_response_ = REMEMBER_PASSWORD;
     return true;
   }
 
   virtual bool Cancel() {
     DCHECK(form_to_save_.get());
     form_to_save_->PermanentlyBlacklist();
-    infobar_response_ = kDontRememberPassword;
+    infobar_response_ = DONT_REMEMBER_PASSWORD;
     return true;
   }
+  // End ConfirmInfoBarDelegate implementation.
 
  private:
   // The PasswordFormManager managing the form we're asking the user about,
@@ -3241,10 +3243,10 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Used to track the results we get from the info bar.
   enum ResponseType {
-    kNoResponse = 0,
-    kRememberPassword,
-    kDontRememberPassword,
-    kNumResponseTypes,
+    NO_RESPONSE = 0,
+    REMEMBER_PASSWORD,
+    DONT_REMEMBER_PASSWORD,
+    NUM_RESPONSE_TYPES,
   };
   ResponseType infobar_response_;
 
