@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/app/breakpad_mac.h"
 
+#include <CoreFoundation/CoreFoundation.h>
 #import <Foundation/Foundation.h>
 
 #include "base/base_switches.h"
@@ -13,11 +14,13 @@
 #include "base/file_util.h"
 #import "base/logging.h"
 #include "base/mac_util.h"
+#include "base/scoped_cftyperef.h"
 #import "base/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/policy_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 namespace {
@@ -42,20 +45,38 @@ void InitCrashReporter() {
   DCHECK(gBreakpadRef == NULL);
   base::ScopedNSAutoreleasePool autorelease_pool;
 
-  // Check whether the user has consented to stats and crash reporting.  The
-  // browser process can make this determination directly.  Helper processes
-  // may not have access to the disk or to the same data as the browser
-  // process, so the browser passes the consent preference to them on the
+  // Check whether crash reporting should be enabled. If enterprise
+  // configuration management controls crash reporting, it takes precedence.
+  // Otherwise, check whether the user has consented to stats and crash
+  // reporting. The browser process can make this determination directly.
+  // Helper processes may not have access to the disk or to the same data as
+  // the browser process, so the browser passes the decision to them on the
   // command line.
   NSBundle* main_bundle = mac_util::MainAppBundle();
   bool is_browser = !mac_util::IsBackgroundOnlyProcess();
+  bool enable_breakpad = false;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  bool enable_breakpad =
-      is_browser ? GoogleUpdateSettings::GetCollectStatsConsent() :
-                   command_line->HasSwitch(switches::kEnableCrashReporter);
 
-  if (command_line->HasSwitch(switches::kDisableBreakpad)) {
-    enable_breakpad = false;
+  if (is_browser) {
+    // Since the configuration management infrastructure is possibly not
+    // initialized when this code runs, read the policy preference directly.
+    scoped_cftyperef<CFStringRef> key(
+        base::SysUTF8ToCFStringRef(policy::key::kMetricsReportingEnabled));
+    Boolean key_valid;
+    Boolean metrics_reporting_enabled = CFPreferencesGetAppBooleanValue(key,
+        kCFPreferencesCurrentApplication, &key_valid);
+    if (key_valid &&
+        CFPreferencesAppValueIsForced(key, kCFPreferencesCurrentApplication)) {
+      // Controlled by configuration manangement.
+      enable_breakpad = metrics_reporting_enabled;
+    } else {
+      // Controlled by the user.
+      enable_breakpad = GoogleUpdateSettings::GetCollectStatsConsent() &&
+          !command_line->HasSwitch(switches::kDisableBreakpad);
+    }
+  } else {
+    // This is a helper process, check the command line switch.
+    enable_breakpad = command_line->HasSwitch(switches::kEnableCrashReporter);
   }
 
   if (!enable_breakpad) {

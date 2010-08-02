@@ -14,13 +14,17 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/waitable_event.h"
+#include "chrome/app/breakpad_mac.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -94,9 +98,11 @@ void BrowserChildProcessHost::SetCrashReporterCommandLine(
                                     base::GetLinuxDistro());
   }
 #elif defined(OS_MACOSX)
-  if (GoogleUpdateSettings::GetCollectStatsConsent())
-    command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-                                    google_update::posix_guid);
+  if (IsCrashReporterEnabled()) {
+    std::string client_id =
+        g_browser_process->local_state()->GetString(prefs::kMetricsClientID);
+    command_line->AppendSwitchASCII(switches::kEnableCrashReporter, client_id);
+  }
 #endif  // OS_MACOSX
 }
 
