@@ -21,8 +21,7 @@ class AutoFillTest(pyauto.PyUITest):
                      'CREDIT_CARD_EXP_MONTH': '12',
                      'CREDIT_CARD_EXP_4_DIGIT_YEAR': '2011'},
                     {'label': 'Credit Card 2',
-                     'CREDIT_CARD_NAME': 'Bob C. Smith',
-                     'CREDIT_CARD_TYPE': 'Visa'}]
+                     'CREDIT_CARD_NAME': 'Bob C. Smith'}]
 
     self.FillAutoFillProfile(profiles=profiles, credit_cards=credit_cards)
     profile = self.GetAutoFillProfile()

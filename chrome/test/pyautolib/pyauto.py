@@ -821,8 +821,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       }
 
       Each dictionary must have a key 'label'. Other possible keys are:
-      'CREDIT_CARD_NAME', 'CREDIT_CARD_NUMBER', 'CREDIT_CARD_TYPE',
-      'CREDIT_CARD_EXP_MONTH', 'CREDIT_CARD_EXP_4_DIGIT_YEAR'
+      'CREDIT_CARD_NAME', 'CREDIT_CARD_NUMBER', 'CREDIT_CARD_EXP_MONTH',
+      'CREDIT_CARD_EXP_4_DIGIT_YEAR'
 
       All values must be strings.
 

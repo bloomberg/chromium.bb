@@ -3154,7 +3154,6 @@ std::map<AutoFillFieldType, std::wstring>
   std::map<AutoFillFieldType, std::wstring> credit_card_type_to_string;
   credit_card_type_to_string[CREDIT_CARD_NAME] = L"CREDIT_CARD_NAME";
   credit_card_type_to_string[CREDIT_CARD_NUMBER] = L"CREDIT_CARD_NUMBER";
-  credit_card_type_to_string[CREDIT_CARD_TYPE] = L"CREDIT_CARD_TYPE";
   credit_card_type_to_string[CREDIT_CARD_EXP_MONTH] = L"CREDIT_CARD_EXP_MONTH";
   credit_card_type_to_string[CREDIT_CARD_EXP_4_DIGIT_YEAR] =
       L"CREDIT_CARD_EXP_4_DIGIT_YEAR";
