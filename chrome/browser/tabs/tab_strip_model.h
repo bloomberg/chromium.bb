@@ -161,7 +161,8 @@ class TabStripModelDelegate {
   // show the window, it's up to the caller to do so.
   virtual Browser* CreateNewStripWithContents(TabContents* contents,
                                               const gfx::Rect& window_bounds,
-                                              const DockInfo& dock_info) = 0;
+                                              const DockInfo& dock_info,
+                                              bool maximize) = 0;
 
   // Creates a new Browser object and window containing the specified
   // |contents|, and continues a drag operation that began within the source
@@ -610,12 +611,6 @@ class TabStripModel : public NotificationObserver {
   void MoveTabPrevious();
 
   // View API //////////////////////////////////////////////////////////////////
-
-  // The specified contents should be opened in a new tabstrip. Returns the
-  // Browser that holds it.
-  Browser* TearOffTabContents(TabContents* detached_contents,
-                              const gfx::Rect& window_bounds,
-                              const DockInfo& dock_info);
 
   // Context menu functions.
   enum ContextMenuCommand {

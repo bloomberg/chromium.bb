@@ -1210,10 +1210,9 @@ void DraggedTabController::CompleteDrag() {
       }
     }
     // Compel the model to construct a new window for the detached TabContents.
-    gfx::Rect browser_rect = source_tabstrip_->GetWindow()->GetBounds();
-    gfx::Rect window_bounds(
-        GetWindowCreatePoint(),
-        gfx::Size(browser_rect.width(), browser_rect.height()));
+    views::Window* window = source_tabstrip_->GetWindow();
+    gfx::Rect window_bounds(window->GetNormalBounds());
+    window_bounds.set_origin(GetWindowCreatePoint());
     // When modifying the following if statement, please make sure not to
     // introduce issue listed in http://crbug.com/6223 comment #11.
     bool rtl_ui = base::i18n::IsRTL();
@@ -1225,7 +1224,7 @@ void DraggedTabController::CompleteDrag() {
     }
     Browser* new_browser =
         GetModel(source_tabstrip_)->delegate()->CreateNewStripWithContents(
-            dragged_contents_, window_bounds, dock_info_);
+        dragged_contents_, window_bounds, dock_info_, window->IsMaximized());
     TabStripModel* new_model = new_browser->tabstrip_model();
     new_model->SetTabPinned(new_model->GetIndexOfTabContents(dragged_contents_),
                             pinned_);

@@ -630,7 +630,8 @@ class Browser : public TabStripModelDelegate,
   virtual TabContents* AddBlankTabAt(int index, bool foreground);
   virtual Browser* CreateNewStripWithContents(TabContents* detached_contents,
                                               const gfx::Rect& window_bounds,
-                                              const DockInfo& dock_info);
+                                              const DockInfo& dock_info,
+                                              bool maximize);
   virtual void ContinueDraggingDetachedTab(TabContents* contents,
                                            const gfx::Rect& window_bounds,
                                            const gfx::Rect& tab_bounds);

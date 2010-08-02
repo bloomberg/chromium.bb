@@ -662,14 +662,6 @@ void TabStripModel::MoveTabPrevious() {
   MoveTabContentsAt(selected_index_, new_index, true);
 }
 
-Browser* TabStripModel::TearOffTabContents(TabContents* detached_contents,
-                                           const gfx::Rect& window_bounds,
-                                           const DockInfo& dock_info) {
-  DCHECK(detached_contents);
-  return delegate_->CreateNewStripWithContents(detached_contents, window_bounds,
-                                               dock_info);
-}
-
 // Context menu functions.
 bool TabStripModel::IsContextMenuCommandEnabled(
     int context_index, ContextMenuCommand command_id) const {

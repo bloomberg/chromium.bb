@@ -2191,11 +2191,11 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
 
 Browser* Browser::CreateNewStripWithContents(TabContents* detached_contents,
                                              const gfx::Rect& window_bounds,
-                                             const DockInfo& dock_info) {
+                                             const DockInfo& dock_info,
+                                             bool maximize) {
   DCHECK(CanSupportWindowFeature(FEATURE_TABSTRIP));
 
   gfx::Rect new_window_bounds = window_bounds;
-  bool maximize = false;
   if (dock_info.GetNewWindowBounds(&new_window_bounds, &maximize))
     dock_info.AdjustOtherWindowBounds();
 

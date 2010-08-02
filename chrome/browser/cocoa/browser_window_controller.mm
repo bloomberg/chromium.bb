@@ -1157,10 +1157,8 @@
   // Create the new window with a single tab in its model, the one being
   // dragged.
   DockInfo dockInfo;
-  Browser* newBrowser =
-      browser_->tabstrip_model()->TearOffTabContents(contents,
-                                                     browserRect,
-                                                     dockInfo);
+  Browser* newBrowser = browser_->tabstrip_model()->delegate()->
+      CreateNewStripWithContents(contents, browserRect, dockInfo, false);
 
   // Propagate the tab pinned state of the new tab (which is the only tab in
   // this new window).

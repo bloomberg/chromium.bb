@@ -47,7 +47,8 @@ class TabStripDummyDelegate : public TabStripModelDelegate {
   }
   virtual Browser* CreateNewStripWithContents(TabContents* contents,
                                               const gfx::Rect& window_bounds,
-                                              const DockInfo& dock_info) {
+                                              const DockInfo& dock_info,
+                                              bool maximize) {
     return NULL;
   }
   virtual void ContinueDraggingDetachedTab(TabContents* contents,
