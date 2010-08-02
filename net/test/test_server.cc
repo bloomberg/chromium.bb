@@ -36,11 +36,12 @@
 
 namespace {
 
-// Number of connection attempts for tests.
-const int kServerConnectionAttempts = 10;
+// Number of connection attempts for tests. With a timeout of 100ms, this is 60
+// seconds.
+const int kServerConnectionAttempts = 600;
 
 // Connection timeout in milliseconds for tests.
-const int kServerConnectionTimeoutMs = 1000;
+const int kServerConnectionTimeoutMs = 100;
 
 }  // namespace
 
