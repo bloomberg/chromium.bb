@@ -300,6 +300,42 @@ bool ApplyPolicyForUntrustedPlugin(sandbox::TargetPolicy* policy) {
   return true;
 }
 
+// Creates a sandbox for the built-in flash plugin running in a restricted
+// environment. This is a work in progress and for the time being do not
+// pay attention to the duplication between this function and the above
+// function. For more information see bug 50796.
+bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
+  // TODO(cpu): Lock down the job level more.
+  policy->SetJobLevel(sandbox::JOB_INTERACTIVE, 0);
+
+  sandbox::TokenLevel initial_token = sandbox::USER_UNPROTECTED;
+  if (win_util::GetWinVersion() > win_util::WINVERSION_XP)
+    initial_token = sandbox::USER_RESTRICTED_SAME_ACCESS;
+  policy->SetTokenLevel(initial_token, sandbox::USER_LIMITED);
+
+  policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
+
+  // TODO(cpu): Proxy registry access and remove this policies.
+  if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\ADOBE",
+                        sandbox::TargetPolicy::REG_ALLOW_ANY,
+                        policy))
+    return false;
+
+  if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\MACROMEDIA",
+                        sandbox::TargetPolicy::REG_ALLOW_ANY,
+                        policy))
+    return false;
+
+  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+    if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\AppDataLow",
+                          sandbox::TargetPolicy::REG_ALLOW_ANY,
+                          policy))
+      return false;
+  }
+
+  return true;
+}
+
 // Adds the custom policy rules for a given plugin. |trusted_plugins| contains
 // the comma separate list of plugin dll names that should not be sandboxed.
 bool AddPolicyForPlugin(const CommandLine* cmd_line,
@@ -316,6 +352,14 @@ bool AddPolicyForPlugin(const CommandLine* cmd_line,
   if (result != sandbox::SBOX_ALL_OK) {
     NOTREACHED();
     return false;
+  }
+
+  // The built-in flash gets a custom, more restricted sandbox.
+  FilePath builtin_flash;
+  if (PathService::Get(chrome::FILE_FLASH_PLUGIN, &builtin_flash)) {
+    FilePath plugin_path(plugin_dll);
+    if (plugin_path == builtin_flash)
+      return ApplyPolicyForBuiltInFlashPlugin(policy);
   }
 
   PluginPolicyCategory policy_category =
