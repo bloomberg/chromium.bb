@@ -174,7 +174,8 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
 
  public:
   ChromeFrameActivexBase()
-      : ready_state_(READYSTATE_UNINITIALIZED) {
+      : ready_state_(READYSTATE_UNINITIALIZED),
+        failed_to_fetch_in_place_frame_(false) {
     m_bWindowOnly = TRUE;
     url_fetcher_.set_container(static_cast<IDispatch*>(this));
   }
@@ -311,6 +312,10 @@ END_MSG_MAP()
     doc_site_.Release();
     if (client_site) {
       doc_site_.QueryFrom(client_site);
+    }
+
+    if (client_site == NULL) {
+      in_place_frame_.Release();
     }
 
     return CComControlBase::IOleObject_SetClientSite(client_site);
@@ -988,15 +993,40 @@ END_MSG_MAP()
     accel_message.hwnd = ::GetParent(m_hWnd);
     HRESULT hr = S_FALSE;
     ScopedComPtr<IBrowserService2> bs2;
-    // The code below explicitly checks for whether the
-    // IBrowserService2::v_MayTranslateAccelerator function is valid. On IE8
-    // there is one vtable ieframe!c_ImpostorBrowserService2Vtbl where this
-    // function entry is NULL which leads to a crash. We don't know under what
-    // circumstances this vtable is actually used though.
-    if (S_OK == DoQueryService(SID_STopLevelBrowser, m_spInPlaceSite,
-                               bs2.Receive()) && bs2.get() &&
-                               *(*(reinterpret_cast<void***>(bs2.get())) +
-                                   kMayTranslateAcceleratorOffset)) {
+
+    // For non-IE containers, we use the standard IOleInPlaceFrame contract
+    // (which IE does not support). For IE, we try to use IBrowserService2,
+    // but need special handling for IE8 (see below).
+    //
+    // We try to cache an IOleInPlaceFrame for our site.  If we fail, we don't
+    // retry, and we fall back to the IBrowserService2 and PostMessage
+    // approaches below.
+    if (!in_place_frame_ && !failed_to_fetch_in_place_frame_) {
+      ScopedComPtr<IOleInPlaceUIWindow> dummy_ui_window;
+      RECT dummy_pos_rect = {0};
+      RECT dummy_clip_rect = {0};
+      OLEINPLACEFRAMEINFO dummy_frame_info = {0};
+      if (FAILED(m_spInPlaceSite->GetWindowContext(in_place_frame_.Receive(),
+                                                   dummy_ui_window.Receive(),
+                                                   &dummy_pos_rect,
+                                                   &dummy_clip_rect,
+                                                   &dummy_frame_info))) {
+        failed_to_fetch_in_place_frame_ = true;
+      }
+    }
+
+    // The IBrowserService2 code below (second conditional) explicitly checks
+    // for whether the IBrowserService2::v_MayTranslateAccelerator function is
+    // valid. On IE8 there is one vtable ieframe!c_ImpostorBrowserService2Vtbl
+    // where this function entry is NULL which leads to a crash. We don't know
+    // under what circumstances this vtable is actually used though.
+    if (in_place_frame_) {
+      hr = in_place_frame_->TranslateAccelerator(&accel_message, 0);
+    } else if (S_OK == DoQueryService(
+        SID_STopLevelBrowser, m_spInPlaceSite,
+        bs2.Receive()) && bs2.get() &&
+        *(*(reinterpret_cast<void***>(bs2.get())) +
+        kMayTranslateAcceleratorOffset)) {
       hr = bs2->v_MayTranslateAccelerator(&accel_message);
     } else {
       // IE8 doesn't support IBrowserService2 unless you enable a special,
@@ -1017,10 +1047,11 @@ END_MSG_MAP()
       // ieframe.dll.  I checked this by scanning for the address of
       // those functions inside the dll and found none, which means that
       // all calls to those functions are relative.
-      // So, for IE8, our approach is very simple.  Just post the message
-      // to our parent window and IE will pick it up if it's an
-      // accelerator. We won't know for sure if the browser handled the
-      // keystroke or not.
+      // So, for IE8 in certain cases, and for other containers that may
+      // support neither IOleInPlaceFrame or IBrowserService2 our approach
+      // is very simple.  Just post the message to our parent window and IE
+      // will pick it up if it's an accelerator. We won't know for sure if
+      // the browser handled the keystroke or not.
       ::PostMessage(accel_message.hwnd, accel_message.message,
                     accel_message.wParam, accel_message.lParam);
     }
@@ -1166,6 +1197,11 @@ END_MSG_MAP()
 
   ScopedBstr url_;
   ScopedComPtr<IOleDocumentSite> doc_site_;
+
+  // If false, we tried but failed to fetch an IOleInPlaceFrame from our host.
+  // Cached here so we don't try to fetch it every time if we keep failing.
+  bool failed_to_fetch_in_place_frame_;
+  ScopedComPtr<IOleInPlaceFrame> in_place_frame_;
 
   // For more information on the ready_state_ property see:
   // http://msdn.microsoft.com/en-us/library/aa768179(VS.85).aspx#

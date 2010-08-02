@@ -351,6 +351,9 @@ END_EXEC_COMMAND_MAP()
   STDMETHOD(GetPrivacyImpacted)(BOOL* privacy_impacted);
   STDMETHOD(Next)(BSTR* url, BSTR* policy, LONG* reserved, DWORD* flags);
 
+  // Accessor for InPlaceMenu.  Returns S_OK if set, S_FALSE if NULL.
+  HRESULT GetInPlaceFrame(IOleInPlaceFrame** in_place_frame);
+
  protected:
   // ChromeFrameActivexBase overrides
   virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,
@@ -461,7 +464,6 @@ END_EXEC_COMMAND_MAP()
   // Dimensions of the window. Used only when opening popups.
   gfx::Rect dimensions_;
  public:
-  ScopedComPtr<IOleInPlaceFrame> in_place_frame_;
   OLEINPLACEFRAMEINFO frame_info_;
 };
 

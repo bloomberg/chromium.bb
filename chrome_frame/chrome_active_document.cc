@@ -497,6 +497,18 @@ STDMETHODIMP ChromeActiveDocument::Next(BSTR* url, BSTR* policy,
   return S_OK;
 }
 
+HRESULT ChromeActiveDocument::GetInPlaceFrame(
+    IOleInPlaceFrame** in_place_frame) {
+  DCHECK(in_place_frame);
+  if (in_place_frame_) {
+    *in_place_frame = in_place_frame_.get();
+    (*in_place_frame)->AddRef();
+    return S_OK;
+  } else {
+    return S_FALSE;
+  }
+}
+
 HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
     IOleClientSite* client_site) {
   if (client_site == NULL) {
@@ -515,7 +527,6 @@ HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
       doc_host_handler->HideUI();
 
     doc_site_.Release();
-    in_place_frame_.Release();
   }
 
   if (client_site != m_spClientSite)
