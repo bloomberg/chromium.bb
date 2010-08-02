@@ -28,7 +28,31 @@
 
 namespace {
 
-typedef UITest ProcessSingletonLinuxTest;
+class ProcessSingletonLinuxTest : public UITest {
+ public:
+  virtual void SetUp() {
+    UITest::SetUp();
+    lock_path_ = user_data_dir().Append(chrome::kSingletonLockFilename);
+    socket_path_ = user_data_dir().Append(chrome::kSingletonSocketFilename);
+  }
+
+  virtual void TearDown() {
+    UITest::TearDown();
+
+    // Check that the test cleaned up after itself.
+    struct stat statbuf;
+    bool lock_exists = lstat(lock_path_.value().c_str(), &statbuf) == 0;
+    EXPECT_FALSE(lock_exists);
+
+    if (lock_exists) {
+      // Unlink to prevent failing future tests if the lock still exists.
+      EXPECT_EQ(unlink(lock_path_.value().c_str()), 0);
+    }
+  }
+
+  FilePath lock_path_;
+  FilePath socket_path_;
+};
 
 ProcessSingleton* CreateProcessSingleton() {
   FilePath user_data_dir;
@@ -78,23 +102,15 @@ ProcessSingleton::NotifyResult NotifyOtherProcessOrCreate(
 // are valid. When running this test, the ProcessSingleton object is already
 // initiated by UITest. So we just test against this existing object.
 TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
-  FilePath user_data_dir;
-  FilePath socket_path;
-  FilePath lock_path;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-
-  socket_path = user_data_dir.Append(chrome::kSingletonSocketFilename);
-  lock_path = user_data_dir.Append(chrome::kSingletonLockFilename);
-
   struct stat statbuf;
-  ASSERT_EQ(0, lstat(lock_path.value().c_str(), &statbuf));
+  ASSERT_EQ(0, lstat(lock_path_.value().c_str(), &statbuf));
   ASSERT_TRUE(S_ISLNK(statbuf.st_mode));
   char buf[PATH_MAX + 1];
-  ssize_t len = readlink(lock_path.value().c_str(), buf, PATH_MAX);
+  ssize_t len = readlink(lock_path_.value().c_str(), buf, PATH_MAX);
   ASSERT_GT(len, 0);
   buf[len] = '\0';
 
-  ASSERT_EQ(0, lstat(socket_path.value().c_str(), &statbuf));
+  ASSERT_EQ(0, lstat(socket_path_.value().c_str(), &statbuf));
   ASSERT_TRUE(S_ISSOCK(statbuf.st_mode));
 }
 
@@ -148,20 +164,17 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessFailure) {
 // would have to be duplicated or shared if this test was moved into a
 // unittest.)
 TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
-  FilePath lock_path = user_data_dir().Append(chrome::kSingletonLockFilename);
-  FilePath socket_path = user_data_dir().Append(chrome::kSingletonSocketFilename);
-
   // Replace lockfile with one containing our own pid.
-  EXPECT_EQ(0, unlink(lock_path.value().c_str()));
+  EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
   std::string symlink_content = StringPrintf(
       "%s%c%u",
       net::GetHostName().c_str(),
       '-',
       base::GetCurrentProcId());
-  EXPECT_EQ(0, symlink(symlink_content.c_str(), lock_path.value().c_str()));
+  EXPECT_EQ(0, symlink(symlink_content.c_str(), lock_path_.value().c_str()));
 
   // Remove socket so that we will not be able to notify the existing browser.
-  EXPECT_EQ(0, unlink(socket_path.value().c_str()));
+  EXPECT_EQ(0, unlink(socket_path_.value().c_str()));
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROCESS_NONE,
@@ -172,9 +185,8 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessNoSuicide) {
 // Test that we can still notify a process on the same host even after the
 // hostname changed.
 TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessHostChanged) {
-  FilePath lock_path = user_data_dir().Append(chrome::kSingletonLockFilename);
-  EXPECT_EQ(0, unlink(lock_path.value().c_str()));
-  EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path.value().c_str()));
+  EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
+  EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
 
   int original_tab_count = GetTabCount();
 
@@ -197,13 +209,14 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessDifferingHost) {
   // Wait for a while to make sure the browser process is actually killed.
   EXPECT_FALSE(CrashAwareSleep(sleep_timeout_ms()));
 
-  FilePath lock_path = user_data_dir().Append(chrome::kSingletonLockFilename);
-  EXPECT_EQ(0, unlink(lock_path.value().c_str()));
-  EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path.value().c_str()));
+  EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
+  EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE,
             NotifyOtherProcess(url, action_timeout_ms()));
+
+  ASSERT_EQ(0, unlink(lock_path_.value().c_str()));
 }
 
 // Test that we fail when lock says process is on another host and we can't
@@ -218,13 +231,14 @@ TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessOrCreate_DifferingHost) {
   // Wait for a while to make sure the browser process is actually killed.
   EXPECT_FALSE(CrashAwareSleep(sleep_timeout_ms()));
 
-  FilePath lock_path = user_data_dir().Append(chrome::kSingletonLockFilename);
-  EXPECT_EQ(0, unlink(lock_path.value().c_str()));
-  EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path.value().c_str()));
+  EXPECT_EQ(0, unlink(lock_path_.value().c_str()));
+  EXPECT_EQ(0, symlink("FAKEFOOHOST-1234", lock_path_.value().c_str()));
 
   std::string url("about:blank");
   EXPECT_EQ(ProcessSingleton::PROFILE_IN_USE,
             NotifyOtherProcessOrCreate(url, action_timeout_ms()));
+
+  ASSERT_EQ(0, unlink(lock_path_.value().c_str()));
 }
 
 // Test that Create fails when another browser is using the profile directory.
