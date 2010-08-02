@@ -632,7 +632,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
         ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
-      Browser::OpenApplicationWindow(profile, url);
+      Browser::OpenApplicationWindow(profile, url, NULL);
       return true;
     }
   }

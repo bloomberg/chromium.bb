@@ -148,8 +148,6 @@ class ExternalTabContainer : public TabContentsDelegate,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
 
-  virtual Browser* GetBrowser() { return browser_.get(); }
-
   // Overriden from TabContentsDelegate::AutomationResourceRoutingDelegate
   virtual void RegisterRenderViewHost(RenderViewHost* render_view_host);
   virtual void UnregisterRenderViewHost(RenderViewHost* render_view_host);

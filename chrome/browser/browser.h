@@ -227,20 +227,29 @@ class Browser : public TabStripModelDelegate,
   // app panel window, otherwise it will be opened as as either
   // Browser::Type::APP a.k.a. "thin frame" (if |extension| is NULL) or
   // Browser::Type::EXTENSION_APP (if |extension| is non-NULL).
+  // Returns the browser hosting for the TabContents via optional parameter,
+  // |browser|.
   static TabContents* OpenApplicationWindow(
       Profile* profile,
       Extension* extension,
       Extension::LaunchContainer container,
-      const GURL& url);
+      const GURL& url,
+      Browser** browser);
 
   // Open an application for |extension| in a new application window or panel.
+  // Returns the browser hosting the TabContents via optional parameter,
+  // |browser|.
   static TabContents* OpenApplicationWindow(Profile* profile,
-                                            GURL& url);
+                                            GURL& url,
+                                            Browser** browser);
 
   // Open an application for |extension| in a new application tab.  Returns
   // NULL if there are no appropriate existing browser windows for |profile|.
+  // Returns the browser hosting the TabContents via optional parameter,
+  // |browser|.
   static TabContents* OpenApplicationTab(Profile* profile,
-                                         Extension* extension);
+                                         Extension* extension,
+                                         Browser** browser);
 
   // Opens a new window and opens the bookmark manager.
   static void OpenBookmarkManagerWindow(Profile* profile);
@@ -655,6 +664,7 @@ class Browser : public TabStripModelDelegate,
   virtual void ToggleUseVerticalTabs();
   virtual bool CanRestoreTab();
   virtual void RestoreTab();
+  virtual bool LargeIconsPermitted() const;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContents* contents,
@@ -734,7 +744,6 @@ class Browser : public TabStripModelDelegate,
   virtual bool ShouldAddNavigationsToHistory() const;
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id);
-  virtual Browser* GetBrowser();
   virtual void ContentTypeChanged(TabContents* source);
 
   // Overridden from SelectFileDialog::Listener:

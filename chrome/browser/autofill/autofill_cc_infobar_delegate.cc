@@ -9,7 +9,6 @@
 #include "base/histogram.h"
 #include "chrome/browser/autofill/autofill_cc_infobar.h"
 #include "chrome/browser/autofill/autofill_manager.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -23,15 +22,9 @@
 AutoFillCCInfoBarDelegate::AutoFillCCInfoBarDelegate(TabContents* tab_contents,
                                                      AutoFillManager* host)
     : ConfirmInfoBarDelegate(tab_contents),
-      browser_(NULL),
       host_(host) {
-  if (tab_contents) {
-    // This is NULL for TestTabContents.
-    if (tab_contents->delegate())
-      browser_ = tab_contents->delegate()->GetBrowser();
-
+  if (tab_contents)
     tab_contents->AddInfoBar(this);
-  }
 }
 
 AutoFillCCInfoBarDelegate::~AutoFillCCInfoBarDelegate() {
@@ -103,8 +96,8 @@ std::wstring AutoFillCCInfoBarDelegate::GetLinkText() {
 }
 
 bool AutoFillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  browser_->OpenURL(GURL(kAutoFillLearnMoreUrl), GURL(), NEW_FOREGROUND_TAB,
-                    PageTransition::TYPED);
+  host_->tab_contents()->OpenURL(GURL(kAutoFillLearnMoreUrl), GURL(),
+                                 NEW_FOREGROUND_TAB, PageTransition::TYPED);
   return false;
 }
 

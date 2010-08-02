@@ -86,7 +86,7 @@ void DOMUI::RegisterMessageCallback(const std::string &message,
   message_callbacks_.insert(std::make_pair(message, callback));
 }
 
-Profile* DOMUI::GetProfile() {
+Profile* DOMUI::GetProfile() const {
   return tab_contents()->profile();
 }
 

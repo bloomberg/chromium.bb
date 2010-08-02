@@ -23,7 +23,6 @@
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/cert_store.h"
@@ -539,13 +538,6 @@ void TabContents::SetExtensionAppById(const std::string& extension_app_id) {
 }
 
 SkBitmap* TabContents::GetExtensionAppIcon() {
-  // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
-  // for those windows, we already have a big icon in the top-left outside any
-  // tab. Having big tab icons too looks kinda redonk.
-  Browser* browser = delegate_ ? delegate_->GetBrowser() : NULL;
-  if (browser && browser->type() == Browser::TYPE_EXTENSION_APP)
-    return NULL;
-
   if (extension_app_icon_.empty())
     return NULL;
 
