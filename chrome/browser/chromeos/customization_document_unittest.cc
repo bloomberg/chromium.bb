@@ -104,13 +104,13 @@ TEST_F(StartupCustomizationDocumentTest, LoadGoodManifestFromString) {
   EXPECT_EQ(customization_.background_color(),
             SkColorSetRGB(0x88, 0x00, 0x88));
   EXPECT_EQ(customization_.registration_url(), "http://www.google.com");
-  EXPECT_EQ(customization_.GetSetupContent("en_US")->help_page_path,
+  EXPECT_EQ(customization_.GetHelpPagePath("en_US").value(),
             "setup_content/en_US/help.html");
-  EXPECT_EQ(customization_.GetSetupContent("en_US")->eula_page_path,
+  EXPECT_EQ(customization_.GetEULAPagePath("en_US").value(),
             "setup_content/en_US/eula.html");
-  EXPECT_EQ(customization_.GetSetupContent("ru")->help_page_path,
+  EXPECT_EQ(customization_.GetHelpPagePath("ru").value(),
             "setup_content/ru/help.html");
-  EXPECT_EQ(customization_.GetSetupContent("ru")->eula_page_path,
+  EXPECT_EQ(customization_.GetEULAPagePath("ru").value(),
             "setup_content/ru/eula.html");
 }
 

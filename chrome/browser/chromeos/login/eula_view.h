@@ -90,6 +90,10 @@ class EulaView
   void LinkActivated(views::Link* source, int event_flags);
 
  private:
+  // TabContentsDelegate implementation.
+  virtual void NavigationStateChanged(const TabContents* contents,
+                                      unsigned changed_flags);
+
   // Loads specified URL to the specified DOMView and updates specified
   // label with its title.
   void LoadEulaView(DOMView* eula_view,
