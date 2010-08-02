@@ -2202,6 +2202,9 @@
           'dependencies+++': [
             '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
           ],
+          # The sync_integration_tests do not run on mac without this flag.
+          # Search for comments about "xcode_settings" elsewhere in this file.
+          'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
         ['OS=="win"', {
           'sources': [
