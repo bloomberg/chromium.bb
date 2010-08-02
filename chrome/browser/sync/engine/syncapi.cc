@@ -1583,7 +1583,6 @@ void SyncManager::SyncInternal::Shutdown() {
   // example, and cause initialization to continue, which is bad.
   if (auth_watcher_) {
     auth_watcher_->Shutdown();
-    auth_watcher_ = NULL;
     authwatcher_hookup_.reset();
   }
 
@@ -1593,6 +1592,15 @@ void SyncManager::SyncInternal::Shutdown() {
     }
     syncer_event_.reset();
     syncer_thread_ = NULL;
+  }
+
+  // TODO(chron): Since the auth_watcher_ is held by the sync session state,
+  //              we release the ref here after the syncer is deallocated.
+  //              In reality the SyncerSessionState's pointer to the
+  //              authwatcher should be ref counted, but for M6 we use this
+  //              lower risk fix so it's deallocated on the original thread.
+  if (auth_watcher_) {
+    auth_watcher_ = NULL;
   }
 
   // Shutdown the xmpp buzz connection.
