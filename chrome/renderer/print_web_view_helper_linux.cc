@@ -42,6 +42,7 @@ static void FillDefaultPrintParams(ViewMsg_Print_Params* params) {
   params->margin_left = static_cast<int>(
       NativeMetafile::kLeftMarginInInch * printing::kPixelsPerInch);
   params->dpi = printing::kPixelsPerInch;
+  params->desired_dpi = params->dpi;
 }
 
 void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
@@ -51,11 +52,18 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
 
   ViewMsg_Print_Params default_settings;
   FillDefaultPrintParams(&default_settings);
-
   double content_width, content_height;
-  GetPageSizeAndMarginsInPoints(frame, 0, default_settings,
-                                &content_width, &content_height,
-                                NULL, NULL, NULL, NULL);
+
+  {
+    // PrepareFrameAndViewForPrint instance must be destructed before calling
+    // PrintPages where another instance is created.
+    PrepareFrameAndViewForPrint prepare(default_settings,
+                                        frame,
+                                        frame->view());
+    GetPageSizeAndMarginsInPoints(frame, 0, default_settings,
+                                  &content_width, &content_height,
+                                  NULL, NULL, NULL, NULL);
+  }
 
   default_settings.dpi = printing::kPointsPerInch;
   default_settings.min_shrink = 1.25;
