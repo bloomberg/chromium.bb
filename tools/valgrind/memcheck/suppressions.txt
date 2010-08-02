@@ -3357,6 +3357,26 @@
    fun:_ZN17URLRequestHttpJob14SaveNextCookieEv
 }
 {
+   bug_46570_d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
+   ...
+   fun:_ZN6chrome12PathProviderEiP8FilePath
+   fun:_ZN11PathService3GetEiP8FilePath
+   fun:_ZN18chrome_browser_net25SetUrlRequestMocksEnabledEb
+   fun:_ZN31AutomationResourceMessageFilter17OnSetFilteredInetEb
+   fun:_Z16DispatchToMethodI31AutomationResourceMessageFilterMS0_FvbEbEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple1IbEE8DispatchI31AutomationResourceMessageFilterMS5_FvbEEEbPKNS_7MessageEPT_T0_
+   fun:_ZN31AutomationResourceMessageFilter17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context10TryFiltersERKNS_7MessageE
+   fun:_ZN3IPC11SyncChannel11SyncContext17OnMessageReceivedERKNS_7MessageE
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+}
+{
    bug_46678
    Memcheck:Leak
    fun:_Znw*
