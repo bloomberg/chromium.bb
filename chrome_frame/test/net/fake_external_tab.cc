@@ -36,7 +36,7 @@
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
-#include "chrome_frame/test/window_watchdog.h"
+#include "chrome_frame/test/win_event_receiver.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
 
 namespace {

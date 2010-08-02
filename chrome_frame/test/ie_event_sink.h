@@ -119,6 +119,10 @@ class IEEventSink
   // Expect the address bar to have |url|.
   void ExpectAddressBarUrl(const std::wstring& url);
 
+  // Waits for the Accessibility tree for the DOM to be ready. This is only
+  // necessary for Chrome, so this method is a no-op for IE.
+  void WaitForDOMAccessibilityTree();
+
   // These methods are just simple wrappers of the IWebBrowser2 methods.
   // They are needed because you cannot post tasks to IWebBrowser2.
   void GoBack() {

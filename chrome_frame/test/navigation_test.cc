@@ -536,8 +536,8 @@ TEST_P(NavigationTransitionTest, DISABLED_JavascriptRedirection) {
   LaunchIEAndNavigate(redirect_url);
 }
 
-// Test following a link by TAB + ENTER.
-TEST_P(NavigationTransitionTest, FLAKY_FollowLink) {
+// Test following a link.
+TEST_P(NavigationTransitionTest, FollowLink) {
   if (page1_.invokes_cf() && page2_.invokes_cf() &&
       GetInstalledIEVersion() > IE_6) {
     // For some reason IE 7 and 8 send two BeforeNavigate events for the second
@@ -546,15 +546,16 @@ TEST_P(NavigationTransitionTest, FLAKY_FollowLink) {
     return;
   }
   ie_mock_.ExpectNavigation(page1_.invokes_cf(), GetLinkPageUrl());
-  server_mock_.ExpectAndServeRequestAllowCache(page1_, GetLinkPageUrl());
+  // Two requests are made when going from CF to IE, at least on Win7 IE8.
+  EXPECT_CALL(server_mock_, Get(_, UrlPathEq(GetLinkPageUrl()), _))
+      .Times(testing::Between(1, 2))
+      .WillRepeatedly(SendResponse(&server_mock_, page1_));
   EXPECT_CALL(ie_mock_, OnLoad(page1_.invokes_cf(), StrEq(GetLinkPageUrl())))
-      .WillOnce(testing::DoAll(
-          SetFocusToRenderer(&ie_mock_),
-          DelaySendChar(&loop_, 500, VK_TAB, simulate_input::NONE),
-          DelaySendChar(&loop_, 1000, VK_RETURN, simulate_input::NONE)));
+      .WillOnce(DoDefaultUIActionInDocument(&ie_mock_,
+          UIObjectMatcher(L"", L"link")));
 
   ie_mock_.ExpectNavigation(page2_.invokes_cf(), GetSimplePageUrl());
-  server_mock_.ExpectAndServeRequestAllowCache(page2_, GetSimplePageUrl());
+  server_mock_.ExpectAndServeRequest(page2_, GetSimplePageUrl());
   EXPECT_CALL(ie_mock_, OnLoad(page2_.invokes_cf(), StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrl(&ie_mock_),

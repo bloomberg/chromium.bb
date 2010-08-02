@@ -152,8 +152,8 @@
         'test/urlmon_moniker_tests.h',
         'test/urlmon_moniker_unittest.cc',
         'test/util_unittests.cc',
-        'test/window_watchdog.h',
-        'test/window_watchdog.cc',
+        'test/win_event_receiver.h',
+        'test/win_event_receiver.cc',
         'unittest_precompile.h',
         'unittest_precompile.cc',
         'urlmon_upload_data_stream.cc',
@@ -172,7 +172,7 @@
         ['OS=="win"', {
           'link_settings': {
             'libraries': [
-              '-lshdocvw.lib',
+              '-lshdocvw.lib', '-loleacc.lib',
             ],
           },
           'msvs_settings': {
@@ -246,8 +246,8 @@
         'test/urlmon_moniker_tests.h',
         'test/urlmon_moniker_integration_test.cc',
         'test/url_request_test.cc',
-        'test/window_watchdog.cc',
-        'test/window_watchdog.h',
+        'test/win_event_receiver.cc',
+        'test/win_event_receiver.h',
         'chrome_tab.h',
         'chrome_tab.idl',
         'test_utils.cc',
@@ -264,6 +264,11 @@
       ],
       'conditions': [
         ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-loleacc.lib',
+            ],
+          },
           'msvs_settings': {
             'VCLinkerTool': {
               'DelayLoadDLLs': ['xpcom.dll', 'nspr4.dll'],
@@ -317,8 +322,8 @@
         'test/simulate_input.h',
         'test_utils.cc',
         'test_utils.h',
-        'test/window_watchdog.cc',
-        'test/window_watchdog.h',
+        'test/win_event_receiver.cc',
+        'test/win_event_receiver.h',
       ],
       'include_dirs': [
         '<@(xul_include_directories)',
@@ -328,6 +333,11 @@
       ],
       'conditions': [
         ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-loleacc.lib',
+            ],
+          },
           'dependencies': [
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../chrome/chrome.gyp:automation',
@@ -370,8 +380,8 @@
         'test/simulate_input.h',
         'test/test_server.cc',
         'test/test_server.h',
-        'test/window_watchdog.cc',
-        'test/window_watchdog.h',
+        'test/win_event_receiver.cc',
+        'test/win_event_receiver.h',
         'test/net/fake_external_tab.cc',
         'test/net/fake_external_tab.h',
         'test/net/process_singleton_subclass.cc',
@@ -389,6 +399,11 @@
       ],
       'conditions': [
         ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-loleacc.lib',
+            ],
+          },
           'msvs_settings': {
             'VCLinkerTool': {
               'DelayLoadDLLs': ['prntvpt.dll'],
@@ -438,8 +453,8 @@
         'test_utils.h',
         'test/simulate_input.cc',
         'test/simulate_input.h',
-        'test/window_watchdog.cc',
-        'test/window_watchdog.h',
+        'test/win_event_receiver.cc',
+        'test/win_event_receiver.h',
         'chrome_tab.h',
         'chrome_tab.idl',
         '../base/test/test_file_util_win.cc',
@@ -458,6 +473,11 @@
       ],
       'conditions': [
         ['OS=="win"', {
+          'link_settings': {
+            'libraries': [
+              '-loleacc.lib',
+            ],
+          },
           'dependencies': [
             # TODO(slightlyoff): Get automation targets working on OS X
             '../chrome/chrome.gyp:automation',

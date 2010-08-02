@@ -14,6 +14,7 @@
 #include "chrome_frame/test/ie_event_sink.h"
 #include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test/test_with_web_server.h"
+#include "chrome_frame/test/win_event_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_FRAME_TEST_MOCK_IE_EVENT_SINK_ACTIONS_H_
 #define CHROME_FRAME_TEST_MOCK_IE_EVENT_SINK_ACTIONS_H_
 
+#include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -165,6 +166,11 @@ ACTION_P2(OpenContextMenu, loop, delay) {
 ACTION_P3(SelectItem, loop, delay, index) {
   chrome_frame_test::DelaySendExtendedKeysEnter(loop, delay, VK_DOWN, index + 1,
       simulate_input::NONE);
+}
+
+ACTION_P2(DoDefaultUIActionInDocument, mock, matcher) {
+  mock->event_sink()->WaitForDOMAccessibilityTree();
+  DoDefaultUIAction(mock->event_sink()->GetRendererWindow(), matcher);
 }
 
 }  // namespace chrome_frame_test

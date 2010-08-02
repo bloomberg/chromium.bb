@@ -23,7 +23,6 @@
 
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
-#include "chrome_frame/test/window_watchdog.h"
 #include "chrome_frame/utils.h"
 
 // Include without path to make GYP build see it.
@@ -136,7 +135,6 @@ class WebBrowserEventSink
     : public CComObjectRootEx<CComMultiThreadModel>,
       public IDispEventSimpleImpl<0, WebBrowserEventSink,
                                   &DIID_DWebBrowserEvents2>,
-      public WindowObserver,
       public IUnknown {
  public:
   typedef IDispEventSimpleImpl<0, WebBrowserEventSink,
@@ -208,10 +206,6 @@ END_SINK_MAP()
 
   void Exec(const GUID* cmd_group_guid, DWORD command_id,
             DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
-
-  // Watch for new window created.
-  void WatchChromeWindow(const wchar_t* window_class);
-  void StopWatching();
 
   // Overridable methods for the mock.
   STDMETHOD_(void, OnNavigateError)(IDispatch* dispatch, VARIANT* url,
@@ -329,8 +323,6 @@ END_SINK_MAP()
   static _ATL_FUNC_INFO kVoidMethodInfo;
   static _ATL_FUNC_INFO kDocumentCompleteInfo;
   static _ATL_FUNC_INFO kFileDownloadInfo;
-
-  WindowWatchdog window_watcher_;
 };
 
 // Returns the path of the exe passed in.
@@ -376,6 +368,63 @@ class CloseIeAtEndOfScope {
   CloseIeAtEndOfScope() {}
   ~CloseIeAtEndOfScope();
 };
+
+// Finds a UI/accessibility object with properties that match the specified
+// matching patterns. These patterns can include the standard * and ? wildcards.
+class UIObjectMatcher {
+ public:
+  // Create a matcher from the given string. |matcher| should include matching
+  // patterns for each property separated by colons. Matching patterns must
+  // be specified from left to right in the following order:
+  //   1) Name
+  //   2) Role: A string representation of a Windows object role, which can be
+  //        found by using the win32 GetRoleText function. E.g.,
+  //        ROLE_SYSTEM_ALERT should be represented as 'alert', and
+  //        ROLE_SYSTEM_MENUPOPUP should be represented as 'popup menu'.
+  //   3) Value
+  // Matching patterns can be blank, essentially equal to *.
+  // Literal *, ?, and : characters can be escaped with a backslash.
+  UIObjectMatcher(const std::wstring& name = L"",
+                  const std::wstring& role = L"",
+                  const std::wstring& value = L"");
+
+  // Finds the first object which satisfies this matcher and sets as |match|.
+  // This searches the accessibility tree (including |object| itself) of
+  // |object| in a pre-order fasion. If no object is matched, |match| will be
+  // NULL. Returns true if no error occured while trying to find a match. It is
+  // possible to use this method to test for an object's non-existence.
+  bool Find(IAccessible* object, IAccessible** match) const;
+
+  // Same as above except that it searches within the accessibility tree of the
+  // given window, which must support the IAccessible interface.
+  bool FindInWindow(HWND hwnd, IAccessible** match) const;
+
+  // Return a description of the matcher, for debugging/logging purposes.
+  std::wstring GetDescription() const;
+
+ private:
+  std::wstring name_;
+  std::wstring role_;
+  std::wstring value_;
+};
+
+// Perform the default UI action for the object which satisfies |matcher|.
+// Will cause test failure in case of error or no match is found in the
+// accessibility tree of the specified window.
+void DoDefaultUIAction(HWND hwnd, const UIObjectMatcher& matcher);
+
+// Wait for Chrome to report that the DOM accessibility tree is ready. Chrome
+// prepares the tree asynchronously and will return a fake tree if it is not
+// ready. Returns whether the tree is ready. Returns false if the message loop
+// was quit while waiting for the tree.
+bool WaitForChromeDOMAccessibilityTree(HWND hwnd);
+
+// Writes the accessibility tree for |object| to standard out. Used for
+// debugging/logging. |object| must be non-null.
+void DumpAccessibilityTree(IAccessible* object);
+
+// Same as above except that it writes the tree for the given window.
+void DumpAccessibilityTreeForWindow(HWND hwnd);
 
 // Starts the Chrome crash service which enables us to gather crash dumps
 // during test runs.

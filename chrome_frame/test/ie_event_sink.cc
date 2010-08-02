@@ -213,17 +213,6 @@ void IEEventSink::ExpectRendererWindowHasFocus() {
   HWND renderer_window = GetRendererWindow();
   EXPECT_TRUE(IsWindow(renderer_window));
 
-  if (IsCFRendering()) {
-    for (HWND first_child = renderer_window;
-        IsWindow(first_child); first_child = GetWindow(first_child, GW_CHILD)) {
-      renderer_window = first_child;
-    }
-
-    wchar_t class_name[MAX_PATH] = {0};
-    GetClassName(renderer_window, class_name, arraysize(class_name));
-    EXPECT_EQ(0, _wcsicmp(class_name, L"Chrome_RenderWidgetHostHWND"));
-  }
-
   DWORD renderer_thread = 0;
   DWORD renderer_process = 0;
   renderer_thread = GetWindowThreadProcessId(renderer_window,
@@ -270,9 +259,13 @@ HWND IEEventSink::GetRendererWindow() {
       EXPECT_TRUE(IsWindow(activex_window));
 
       // chrome tab window is the first (and the only) child of activex
-      HWND chrome_tab_window = GetWindow(activex_window, GW_CHILD);
-      EXPECT_TRUE(IsWindow(chrome_tab_window));
-      renderer_window = GetWindow(chrome_tab_window, GW_CHILD);
+      for (HWND first_child = activex_window;
+        IsWindow(first_child); first_child = GetWindow(first_child, GW_CHILD)) {
+        renderer_window = first_child;
+      }
+      wchar_t class_name[MAX_PATH] = {0};
+      GetClassName(renderer_window, class_name, arraysize(class_name));
+      EXPECT_EQ(0, _wcsicmp(class_name, L"Chrome_RenderWidgetHostHWND"));
     }
   } else {
     DCHECK(web_browser2_);
@@ -336,6 +329,12 @@ void IEEventSink::Refresh() {
   web_browser2_->Refresh2(refresh_level.AsInput());
 }
 
+void IEEventSink::WaitForDOMAccessibilityTree() {
+  if (IsCFRendering())
+    WaitForChromeDOMAccessibilityTree(GetRendererWindow());
+}
+
+// private methods
 void IEEventSink::ConnectToChromeFrame() {
   DCHECK(web_browser2_);
   if (chrome_frame_.get())
