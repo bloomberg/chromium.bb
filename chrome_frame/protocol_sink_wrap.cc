@@ -224,6 +224,15 @@ bool IsCFRequest(IBindCtx* pbc) {
   return false;
 }
 
+bool HasProtData(IBindCtx* pbc) {
+  ScopedComPtr<BindContextInfo> info;
+  BindContextInfo::FromBindContext(pbc, info.Receive());
+  bool result = false;
+  if (info)
+    result = info->has_prot_data();
+  return result;
+}
+
 void PutProtData(IBindCtx* pbc, ProtData* data) {
   // AddRef and Release to avoid a potential leak of a ProtData instance if
   // FromBindContext fails.
@@ -317,11 +326,7 @@ ProtData::ProtData(IInternetProtocol* protocol,
 
 ProtData::~ProtData() {
   DLOG(INFO) << __FUNCTION__ << " " << this;
-
-  // Remove from map.
-  AutoLock lock(datamap_lock_);
-  DCHECK(datamap_.end() != datamap_.find(protocol_));
-  datamap_.erase(protocol_);
+  Invalidate();
 }
 
 HRESULT ProtData::Read(void* buffer, ULONG size, ULONG* size_read) {
@@ -541,6 +546,16 @@ scoped_refptr<ProtData> ProtData::DataFromProtocol(
   return instance;
 }
 
+void ProtData::Invalidate() {
+  if (protocol_) {
+    // Remove from map.
+    AutoLock lock(datamap_lock_);
+    DCHECK(datamap_.end() != datamap_.find(protocol_));
+    datamap_.erase(protocol_);
+    protocol_ = NULL;
+  }
+}
+
 // This function looks for the url pattern indicating that this request needs
 // to be forced into chrome frame.
 // This hack is required because window.open requests from Chrome don't have
@@ -590,6 +605,12 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
     return orig_start(protocol, url, prot_sink, bind_info, flags, reserved);
   }
 
+  scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
+  if (prot_data && !HasProtData(bind_ctx)) {
+    prot_data->Invalidate();
+    prot_data = NULL;
+  }
+
   if (HandleAttachToExistingExternalTab(url, protocol, prot_sink, bind_ctx)) {
     return S_OK;
   }
@@ -598,7 +619,6 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
     return orig_start(protocol, url, prot_sink, bind_info, flags, reserved);
   }
 
-  scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
   if (prot_data) {
     DLOG(INFO) << "Found existing ProtData!";
     prot_data->UpdateUrl(url);
@@ -641,6 +661,12 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
     return orig_start_ex(protocol, uri, prot_sink, bind_info, flags, reserved);
   }
 
+  scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
+  if (prot_data && !HasProtData(bind_ctx)) {
+    prot_data->Invalidate();
+    prot_data = NULL;
+  }
+
   if (HandleAttachToExistingExternalTab(url, protocol, prot_sink, bind_ctx)) {
     return S_OK;
   }
@@ -649,7 +675,6 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
     return orig_start_ex(protocol, uri, prot_sink, bind_info, flags, reserved);
   }
 
-  scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
   if (prot_data) {
     DLOG(INFO) << "Found existing ProtData!";
     prot_data->UpdateUrl(url);

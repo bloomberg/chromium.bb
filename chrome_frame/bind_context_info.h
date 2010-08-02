@@ -89,6 +89,10 @@ class __declspec(uuid("00000000-0000-0000-0000-000000000000")) BindContextInfo
     return prot_data_;
   }
 
+  bool has_prot_data() const {
+    return prot_data_.get() != NULL;
+  }
+
  protected:
   STDMETHOD(GetCppObject)(void** me) {
     DCHECK(me);
