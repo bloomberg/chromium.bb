@@ -71,6 +71,9 @@ try:
   from pyautolib import *
 except ImportError:
   print >>sys.stderr, "Could not locate built libraries. Did you build?"
+  # Mac requires python2.5 even when not the default 'python' (e.g. 10.6)
+  if 'darwin' == sys.platform and sys.version_info[:2] != (2,5):
+    print  >>sys.stderr, "*\n* Perhaps use 'python2.5', not 'python' ?\n*"
   raise
 
 # Should go after sys.path is set appropriately
