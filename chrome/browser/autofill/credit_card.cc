@@ -77,7 +77,7 @@ std::string GetCreditCardType(string16 number) {
 
       break;
     case 14:
-      if (first_three_digits <= 300 && first_three_digits >=305)
+      if (first_three_digits >= 300 && first_three_digits <=305)
         return kDinersCard;
 
       if (first_digit == 36)
