@@ -12,9 +12,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "talk/base/sigslot.h"
 #include "talk/xmpp/jid.h"
-#include "talk/xmpp/xmppengine.h"
 
 namespace buzz {
 class XmppClient;
@@ -29,7 +27,7 @@ namespace sync_notifier {
 
 // TODO(akalin): Add a NonThreadSafe member to this class and use it.
 
-class CacheInvalidationPacketHandler : public sigslot::has_slots<> {
+class CacheInvalidationPacketHandler {
  public:
   // Starts routing packets from |invalidation_client| through
   // |xmpp_client|.  |invalidation_client| must not already be routing
@@ -49,8 +47,6 @@ class CacheInvalidationPacketHandler : public sigslot::has_slots<> {
       invalidation::NetworkEndpoint* const& network_endpoint);
 
   void HandleInboundPacket(const std::string& packet);
-
-  void OnClientStateChange(buzz::XmppEngine::State state);
 
   buzz::XmppClient* xmpp_client_;
   invalidation::InvalidationClient* invalidation_client_;

@@ -203,13 +203,6 @@ CacheInvalidationPacketHandler::CacheInvalidationPacketHandler(
       sid_(MakeSid()) {
   CHECK(xmpp_client_);
   CHECK(invalidation_client_);
-  if (xmpp_client_->GetState() != buzz::XmppEngine::STATE_OPEN) {
-    LOG(DFATAL) << "non-open xmpp_client_ passed to "
-                << "CacheInvalidationPacketHandler";
-    return;
-  }
-  xmpp_client_->SignalStateChange.connect(
-      this, &CacheInvalidationPacketHandler::OnClientStateChange);
   invalidation::NetworkEndpoint* network_endpoint =
       invalidation_client_->network_endpoint();
   CHECK(network_endpoint);
@@ -235,10 +228,6 @@ CacheInvalidationPacketHandler::~CacheInvalidationPacketHandler() {
 void CacheInvalidationPacketHandler::HandleOutboundPacket(
     invalidation::NetworkEndpoint* const& network_endpoint) {
   CHECK_EQ(network_endpoint, invalidation_client_->network_endpoint());
-  if (!xmpp_client_) {
-    LOG(DFATAL) << "HandleOutboundPacket() called with NULL xmpp_client_";
-    return;
-  }
   invalidation::string message;
   network_endpoint->TakeOutboundMessage(&message);
   std::string encoded_message;
@@ -268,23 +257,6 @@ void CacheInvalidationPacketHandler::HandleInboundPacket(
     return;
   }
   network_endpoint->HandleInboundMessage(decoded_message);
-}
-
-void CacheInvalidationPacketHandler::OnClientStateChange(
-    buzz::XmppEngine::State state) {
-  switch (state) {
-    case buzz::XmppEngine::STATE_OPEN:
-      LOG(INFO) << "redundant STATE_OPEN message received";
-      break;
-    case buzz::XmppEngine::STATE_CLOSED:
-      LOG(INFO) << "xmpp_client_ closed -- setting to NULL";
-      xmpp_client_->SignalStateChange.disconnect(this);
-      xmpp_client_ = NULL;
-      break;
-    default:
-      LOG(INFO) << "xmpp_client_ state changed to " << state;
-      break;
-  }
 }
 
 }  // namespace sync_notifier
