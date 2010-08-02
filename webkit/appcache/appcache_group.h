@@ -8,12 +8,12 @@
 #include <map>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace appcache {
 
@@ -153,11 +153,12 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   // True if we're in our destructor.
   bool is_in_dtor_;
 
-  FRIEND_TEST(AppCacheGroupTest, StartUpdate);
-  FRIEND_TEST(AppCacheGroupTest, CancelUpdate);
-  FRIEND_TEST(AppCacheGroupTest, QueueUpdate);
-  FRIEND_TEST(AppCacheUpdateJobTest, AlreadyChecking);
-  FRIEND_TEST(AppCacheUpdateJobTest, AlreadyDownloading);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, StartUpdate);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, CancelUpdate);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, QueueUpdate);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheUpdateJobTest, AlreadyChecking);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheUpdateJobTest, AlreadyDownloading);
+
   DISALLOW_COPY_AND_ASSIGN(AppCacheGroup);
 };
 

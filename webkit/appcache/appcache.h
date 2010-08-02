@@ -10,10 +10,10 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/manifest_parser.h"
@@ -143,7 +143,8 @@ class AppCache : public base::RefCounted<AppCache> {
   // to notify service when cache is deleted
   AppCacheService* service_;
 
-  FRIEND_TEST(AppCacheTest, InitializeWithManifest);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheTest, InitializeWithManifest);
+
   DISALLOW_COPY_AND_ASSIGN(AppCache);
 };
 

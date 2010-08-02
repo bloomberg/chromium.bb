@@ -10,10 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace sql {
 class Connection;
@@ -195,15 +195,16 @@ class AppCacheDatabase {
   bool is_disabled_;
   bool is_recreating_;
 
-  FRIEND_TEST(AppCacheDatabaseTest, CacheRecords);
-  FRIEND_TEST(AppCacheDatabaseTest, EntryRecords);
-  FRIEND_TEST(AppCacheDatabaseTest, FallbackNameSpaceRecords);
-  FRIEND_TEST(AppCacheDatabaseTest, GroupRecords);
-  FRIEND_TEST(AppCacheDatabaseTest, LazyOpen);
-  FRIEND_TEST(AppCacheDatabaseTest, OnlineWhiteListRecords);
-  FRIEND_TEST(AppCacheDatabaseTest, ReCreate);
-  FRIEND_TEST(AppCacheDatabaseTest, DeletableResponseIds);
-  FRIEND_TEST(AppCacheDatabaseTest, Quotas);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, CacheRecords);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, EntryRecords);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, FallbackNameSpaceRecords);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, GroupRecords);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, LazyOpen);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, OnlineWhiteListRecords);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, ReCreate);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, DeletableResponseIds);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheDatabaseTest, Quotas);
+
   DISALLOW_COPY_AND_ASSIGN(AppCacheDatabase);
 };
 

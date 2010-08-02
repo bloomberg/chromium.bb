@@ -10,10 +10,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "net/base/completion_callback.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache_working_set.h"
 
 class GURL;
@@ -296,7 +296,8 @@ class AppCacheStorage {
   // The set of last ids must be retrieved from storage prior to being used.
   static const int64 kUnitializedId;
 
-  FRIEND_TEST(AppCacheStorageTest, DelegateReferences);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheStorageTest, DelegateReferences);
+
   DISALLOW_COPY_AND_ASSIGN(AppCacheStorage);
 };
 
