@@ -57,15 +57,20 @@ FontEquivClass GetFontEquivClass(const char* fontname)
     // much larger than Liberation. Note that Ascender Sans Mono
     // is metrically compatible with Courier New, but the former
     // is sans-serif while ther latter is serif.
+    // Arimo, Tinos and Cousine are the names of new fonts derived from and
+    // expanded upon Ascender Sans, Ascender Serif and Ascender Sans Mono.
     if (strcasecmp(fontname, "Arial") == 0 ||
         strcasecmp(fontname, "Liberation Sans") == 0 ||
+        strcasecmp(fontname, "Arimo") == 0 ||
         strcasecmp(fontname, "Ascender Sans") == 0) {
         return SANS;
     } else if (strcasecmp(fontname, "Times New Roman") == 0 ||
                strcasecmp(fontname, "Liberation Serif") == 0 ||
+               strcasecmp(fontname, "Tinos") == 0 ||
                strcasecmp(fontname, "Ascender Serif") == 0) {
         return SERIF;
     } else if (strcasecmp(fontname, "Courier New") == 0 ||
+               strcasecmp(fontname, "Cousine") == 0 ||
                strcasecmp(fontname, "Ascender Sans Mono") == 0) {
         return MONO;
     }
