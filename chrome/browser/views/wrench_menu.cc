@@ -118,8 +118,13 @@ class MenuButtonBackground : public views::Background {
   // Used when the type is CENTER_BUTTON to determine if the left/right edge
   // needs to be rendered selected.
   void SetOtherButtons(CustomButton* left_button, CustomButton* right_button) {
-    left_button_ = left_button;
-    right_button_ = right_button;
+    if (base::i18n::IsRTL()) {
+      left_button_ = right_button;
+      right_button_ = left_button;
+    } else {
+      left_button_ = left_button;
+      right_button_ = right_button;
+    }
   }
 
   virtual void Paint(gfx::Canvas* canvas, View* view) const {
@@ -375,7 +380,7 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
         this, this, IDS_ZOOM_PLUS2, MenuButtonBackground::RIGHT_BUTTON,
         menu_model, increment_index, NULL);
 
-    center_bg->SetOtherButtons(increment_button_, decrement_button_);
+    center_bg->SetOtherButtons(decrement_button_, increment_button_);
 
     fullscreen_button_ = new FullscreenButton(this);
     fullscreen_button_->SetImage(
