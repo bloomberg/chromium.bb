@@ -41,6 +41,10 @@ class GLContext {
   // Get the underlying platform specific GL context "handle".
   virtual void* GetHandle() = 0;
 
+  // Returns whether the current context supports the named extension. The
+  // context must be current.
+  virtual bool HasExtension(const char* name);
+
   static bool InitializeOneOff();
 
 #if !defined(OS_MACOSX)

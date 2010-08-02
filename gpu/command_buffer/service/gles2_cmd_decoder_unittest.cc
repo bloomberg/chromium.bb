@@ -48,7 +48,6 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
 
   void AddExpectationsForSimulatedAttrib0(
       GLsizei num_vertices, GLuint buffer_id) {
-#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
     EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, kServiceAttrib0BufferId))
         .Times(1)
         .RetiresOnSaturation();
@@ -70,7 +69,6 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
         .Times(1)
         .RetiresOnSaturation();
   }
-#endif  // !GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 };
 
 TEST_F(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {

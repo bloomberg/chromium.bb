@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/gfx/gl/gl_implementation.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/common/id_allocator.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
@@ -157,23 +158,20 @@ bool ContextGroup::Initialize() {
   GetIntegerv(
       GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &max_vertex_texture_image_units_);
 
-#if defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-
-  GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, &max_fragment_uniform_vectors_);
-  GetIntegerv(GL_MAX_VARYING_VECTORS, &max_varying_vectors_);
-  GetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &max_vertex_uniform_vectors_);
-
-#else  // !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-
-  GetIntegerv(
-      GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &max_fragment_uniform_vectors_);
-  max_fragment_uniform_vectors_ /= 4;
-  GetIntegerv(GL_MAX_VARYING_FLOATS, &max_varying_vectors_);
-  max_varying_vectors_ /= 4;
-  GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform_vectors_);
-  max_vertex_uniform_vectors_ /= 4;
-
-#endif  // !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
+    GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS,
+        &max_fragment_uniform_vectors_);
+    GetIntegerv(GL_MAX_VARYING_VECTORS, &max_varying_vectors_);
+    GetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &max_vertex_uniform_vectors_);
+  } else {
+    GetIntegerv(
+        GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &max_fragment_uniform_vectors_);
+    max_fragment_uniform_vectors_ /= 4;
+    GetIntegerv(GL_MAX_VARYING_FLOATS, &max_varying_vectors_);
+    max_varying_vectors_ /= 4;
+    GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &max_vertex_uniform_vectors_);
+    max_vertex_uniform_vectors_ /= 4;
+  }
 
   initialized_ = true;
   return true;

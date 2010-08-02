@@ -23,6 +23,7 @@ class StubGLContext : public gfx::GLContext {
   virtual void SwapBuffers() {}
   virtual gfx::Size GetSize() { return size_; }
   virtual void* GetHandle() { return NULL; }
+  virtual bool HasExtension(const char* name) { return false; }
 
   void SetSize(const gfx::Size& size) { size_ = size; }
 

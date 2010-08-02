@@ -96,21 +96,6 @@ void ContextGroupTest::SetupInitExpectations(const char* extensions) {
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, _))
       .WillOnce(SetArgumentPointee<1>(kMaxVertexTextureImageUnits))
       .RetiresOnSaturation();
-
-#if defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformVectors * 4))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VARYING_VECTORS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVaryingVectors * 4))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformVectors * 4))
-      .RetiresOnSaturation();
-
-#else  // !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, _))
       .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformVectors))
       .RetiresOnSaturation();
@@ -120,8 +105,6 @@ void ContextGroupTest::SetupInitExpectations(const char* extensions) {
   EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, _))
       .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformVectors))
       .RetiresOnSaturation();
-
-#endif  // !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
 }
 
 TEST_F(ContextGroupTest, Basic) {

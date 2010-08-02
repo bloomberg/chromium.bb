@@ -1195,6 +1195,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Cached from the context group.
   const Validators* validators_;
 
+  // Supported extensions.
+  bool depth24_stencil8_oes_supported_;
+
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
 
@@ -1458,7 +1461,8 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       use_shader_translator_(true),
       vertex_compiler_(NULL),
       fragment_compiler_(NULL),
-      validators_(group->validators()) {
+      validators_(group->validators()),
+      depth24_stencil8_oes_supported_(false) {
   attrib_0_value_.v[0] = 0.0f;
   attrib_0_value_.v[1] = 0.0f;
   attrib_0_value_.v[2] = 0.0f;
@@ -1512,6 +1516,11 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   }
 
   vertex_attrib_manager_.Initialize(group_->max_vertex_attribs());
+
+  // Check supported extensions.
+  depth24_stencil8_oes_supported_ =
+      context_->HasExtension("GL_OES_packed_depth_stencil");
+
   // We have to enable vertex array 0 on OpenGL or it won't render. Note that
   // OpenGL ES 2.0 does not have this issue.
   glEnableVertexAttribArray(0);
@@ -1841,11 +1850,12 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
     return false;
   }
 
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
-    // ANGLE only allows 16-bit depth buffers to be requested. As it happens,
-    // it creates a 24-bit depth buffer behind the scenes.
-    // TODO(apatrick): Attempt to use a packed 24/8 depth stencil buffer here if
-    // the extension is available.
+  // GLES2 may only allow a combination of 16-bit depth buffers and / or 8-bit
+  // stencil buffer. A packed 24/8 bit depth stencil buffer is preferred.
+  // ANGLE only supports the latter, i.e. is does not support core GLES2 in
+  // this respect. So we check for packed depth stencil support.
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+      !depth24_stencil8_oes_supported_) {
     if (!offscreen_target_depth_render_buffer_->AllocateStorage(
         pending_offscreen_size_, GL_DEPTH_COMPONENT16)) {
       return false;
@@ -1868,7 +1878,8 @@ bool GLES2DecoderImpl::UpdateOffscreenFrameBufferSize() {
   offscreen_target_frame_buffer_->AttachRenderBuffer(
       GL_DEPTH_ATTACHMENT,
       offscreen_target_depth_render_buffer_.get());
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
+      !depth24_stencil8_oes_supported_) {
     offscreen_target_frame_buffer_->AttachRenderBuffer(
         GL_STENCIL_ATTACHMENT,
         offscreen_target_stencil_render_buffer_.get());
@@ -2804,20 +2815,22 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
     return;
   }
   bound_renderbuffer_->set_internal_format(internalformat);
-#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-  switch (internalformat) {
-    case GL_DEPTH_COMPONENT16:
-      internalformat = GL_DEPTH_COMPONENT;
-      break;
-    case GL_RGBA4:
-    case GL_RGB5_A1:
-      internalformat = GL_RGBA;
-      break;
-    case GL_RGB565:
-      internalformat = GL_RGB;
-      break;
+
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    switch (internalformat) {
+      case GL_DEPTH_COMPONENT16:
+        internalformat = GL_DEPTH_COMPONENT;
+        break;
+      case GL_RGBA4:
+      case GL_RGB5_A1:
+        internalformat = GL_RGBA;
+        break;
+      case GL_RGB565:
+        internalformat = GL_RGB;
+        break;
+    }
   }
-#endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
+
   glRenderbufferStorageEXT(target, internalformat, width, height);
 }
 
@@ -3184,7 +3197,9 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
 }
 
 bool GLES2DecoderImpl::SimulateAttrib0(GLuint max_vertex_accessed) {
-#if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
+  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2)
+    return false;
+
   const VertexAttribManager::VertexAttribInfo* info =
       vertex_attrib_manager_.GetVertexAttribInfo(0);
   // If it's enabled or it's not used then we don't need to do anything.
@@ -3222,9 +3237,6 @@ bool GLES2DecoderImpl::SimulateAttrib0(GLuint max_vertex_accessed) {
   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
   return true;
-#else  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
-  return false;
-#endif  // GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2
 }
 
 void GLES2DecoderImpl::RestoreStateForSimulatedAttrib0() {
@@ -4395,23 +4407,25 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     memset(zero.get(), 0, pixels_size);
     pixels = zero.get();
   }
-  #if !defined(GLES2_GPU_SERVICE_BACKEND_NATIVE_GLES2)
-  if (format == GL_BGRA_EXT && internal_format == GL_BGRA_EXT) {
-    internal_format = GL_RGBA;
-  } else if (type == GL_FLOAT) {
-    if (format == GL_RGBA) {
-      internal_format = GL_RGBA32F_ARB;
-    } else if (format == GL_RGB) {
-      internal_format = GL_RGB32F_ARB;
-    }
-  } else if (type == GL_HALF_FLOAT_OES) {
-    if (format == GL_RGBA) {
-      internal_format = GL_RGBA16F_ARB;
-    } else if (format == GL_RGB) {
-      internal_format = GL_RGB16F_ARB;
+
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+    if (format == GL_BGRA_EXT && internal_format == GL_BGRA_EXT) {
+      internal_format = GL_RGBA;
+    } else if (type == GL_FLOAT) {
+      if (format == GL_RGBA) {
+        internal_format = GL_RGBA32F_ARB;
+      } else if (format == GL_RGB) {
+        internal_format = GL_RGB32F_ARB;
+      }
+    } else if (type == GL_HALF_FLOAT_OES) {
+      if (format == GL_RGBA) {
+        internal_format = GL_RGBA16F_ARB;
+      } else if (format == GL_RGB) {
+        internal_format = GL_RGB16F_ARB;
+      }
     }
   }
-  #endif
+
   CopyRealGLErrorsToWrapper();
   glTexImage2D(
       target, level, internal_format, width, height, border, format, type,
