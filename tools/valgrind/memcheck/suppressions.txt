@@ -3780,8 +3780,27 @@
    fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
 }
 {
-   bug_50968
+   bug_50968_a
    Memcheck:Leak
    ...
+   fun:sqlite3Malloc
+   ...
+   fun:openDatabase
+   fun:sqlite3_open
+   fun:_ZN3sql10Connection12OpenInternalERKSs
+   fun:_ZN3sql10Connection4OpenERK8FilePath
+   fun:_ZN11WebDatabase4InitERK8FilePath
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodI14WebDataServiceMS0_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
+{
+   bug_50968_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+   fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodI14WebDataServiceMS0_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
 }
