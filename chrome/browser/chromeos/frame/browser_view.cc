@@ -445,7 +445,7 @@ void BrowserView::UpdateOTRBackground() {
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   // Create a browser view for chromeos.
   BrowserView* view;
-  if (browser->type() & Browser::TYPE_POPUP)
+  if (browser->type() & (Browser::TYPE_POPUP | Browser::TYPE_APP_PANEL))
     view = new chromeos::PanelBrowserView(browser);
   else
     view = new chromeos::BrowserView(browser);
