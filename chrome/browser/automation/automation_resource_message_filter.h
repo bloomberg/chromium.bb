@@ -132,6 +132,13 @@ class AutomationResourceMessageFilter
       int renderer_pid, int renderer_id, int tab_handle,
       AutomationResourceMessageFilter* filter);
 
+  // Helper function to execute the GetCookies completion callback with the
+  // response for the GetCookies request from the renderer.
+  static void OnGetCookiesHostResponseInternal(
+      int tab_handle, bool success, const GURL& url,
+      const std::string& cookies, net::CompletionCallback* callback,
+      net::CookieStore* cookie_store);
+
  private:
   void OnSetFilteredInet(bool enable);
   void OnGetFilteredInetHitCount(int* hit_count);

@@ -345,6 +345,11 @@ void AutomationResourceMessageFilter::GetCookiesForUrl(
         filtered_render_views_.Get().find(RendererId(
             get_cookies_callback->render_process_id(),
             get_cookies_callback->render_view_id())));
+  if (automation_details_iter == filtered_render_views_.Get().end()) {
+    OnGetCookiesHostResponseInternal(tab_handle, false, url, "", callback,
+                                     cookie_store);
+    return;
+  }
 
   DCHECK(automation_details_iter->second.filter != NULL);
 
@@ -379,19 +384,29 @@ void AutomationResourceMessageFilter::OnGetCookiesHostResponse(
 
     completion_callback_map_.Get().erase(index);
 
-    // Set the cookie in the cookie store so that the callback can read it.
-    cookie_store->SetCookieWithOptions(url, cookies, net::CookieOptions());
-
-    Tuple1<int> params;
-    params.a = success ? net::OK : net::ERR_ACCESS_DENIED;
-    callback->RunWithParams(params);
-
-    // The cookie for this URL is only valid until it is read by the callback.
-    cookie_store->SetCookieWithOptions(url, "", net::CookieOptions());
+    OnGetCookiesHostResponseInternal(tab_handle, success, url, cookies,
+                                     callback, cookie_store.get());
   } else {
     NOTREACHED() << "Received invalid completion callback id:"
                  << cookie_id;
   }
+}
+
+void AutomationResourceMessageFilter::OnGetCookiesHostResponseInternal(
+    int tab_handle, bool success, const GURL& url, const std::string& cookies,
+  net::CompletionCallback* callback, net::CookieStore* cookie_store) {
+  DCHECK(callback);
+  DCHECK(cookie_store);
+
+  // Set the cookie in the cookie store so that the callback can read it.
+  cookie_store->SetCookieWithOptions(url, cookies, net::CookieOptions());
+
+  Tuple1<int> params;
+  params.a = success ? net::OK : net::ERR_ACCESS_DENIED;
+  callback->RunWithParams(params);
+
+  // The cookie for this URL is only valid until it is read by the callback.
+  cookie_store->SetCookieWithOptions(url, "", net::CookieOptions());
 }
 
 void AutomationResourceMessageFilter::SetCookiesForUrl(
