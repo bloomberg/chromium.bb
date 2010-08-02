@@ -55,8 +55,6 @@ static const std::string kBreakpadServer =
 static const std::string kBreakpadServer =
   "http://clients2.google.com/cr/report";
 #endif
-static const std::string kBreakpadDumpFilenameTemplate =
-  "/tmp/google-o3d-plugin-minidump-XXXXXX";
 
 //TODO(zhurunz): Add/use decent path utility functions.
 
@@ -128,55 +126,6 @@ bool Breakpad::SendDumpFile(const char* filename) {
              proxy_.c_str(),
              passwd_.c_str());
   return uploader.Upload();
-}
-
-bool Breakpad::GenerateAndSendDumpFile(
-    const std::map<std::string, std::string>* extra_params) {
-
-  // Create pipe.
-  int fds[2];
-  if (0 != pipe(fds))
-    return false;
-
-  std::string filename = kBreakpadDumpFilenameTemplate;
-  if (NULL == mktemp(const_cast<char*>(filename.c_str()))) {
-    close(fds[0]);
-    close(fds[1]);
-    return false;
-  }
-
-  // We must breakpad minidump the child process.
-  // Minidump ourself would crash in breakpad.
-  const pid_t child = fork();
-  if (0 == child) {
-    close(fds[1]);
-    char b;
-    HANDLE_EINTR(read(fds[0], &b, sizeof(b)));
-    close(fds[0]);
-    syscall(__NR_exit);
-  }
-  if (-1 == child) {
-    close(fds[0]);
-    close(fds[1]);
-    return false;
-  }
-
-  close(fds[0]);
-
-  // Create minidump.
-  google_breakpad::ExceptionHandler::CrashContext context;
-  memset(&context, 0, sizeof(context));
-  if (!WriteMinidump(filename.c_str(), child,
-                     &context, sizeof(context))) {
-    close(fds[1]);
-    return false;
-  }
-
-  // Upload minidump.
-  bool ret = SendDumpFile(filename.c_str());
-  unlink(filename.c_str());
-  close(fds[1]);
-  return ret;
 }
 
 bool Breakpad::OnBreakpadCallback(const char* dump_path,

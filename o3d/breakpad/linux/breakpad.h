@@ -65,9 +65,6 @@ class Breakpad {
 
   bool Initialize();
   bool Shutdown();
-  // Any data in extra_params is currently discarded.
-  bool GenerateAndSendDumpFile(
-      const std::map<std::string, std::string>* extra_params);
 
  private:
   static bool BuildDumpFilename(char* filename,
