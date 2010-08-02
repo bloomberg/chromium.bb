@@ -3784,3 +3784,9 @@
    fun:_ZN11MessageLoop7RunTaskEP4Task
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
 }
+{
+   bug_50968
+   Memcheck:Leak
+   ...
+   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
+}
