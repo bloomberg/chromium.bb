@@ -230,8 +230,9 @@ int SpdyNetworkTransaction::DoInitConnection() {
       new TCPSocketParams(host_port_pair, request_->priority,
                           request_->referrer, false);
 
+  HostPortProxyPair pair(host_port_pair, "");
   spdy_ = session_->spdy_session_pool()->Get(
-      host_port_pair, session_, net_log_);
+      pair, session_, net_log_);
   DCHECK(spdy_);
 
   return spdy_->Connect(

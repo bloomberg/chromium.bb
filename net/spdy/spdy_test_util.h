@@ -261,6 +261,9 @@ class SpdySessionDependencies {
 }
 };
 
+// This creates a proxy for testing purposes.
+// |proxy| should be in the form "myproxy:70".
+ProxyService* SpdyCreateFixedProxyService(const std::string& proxy);
 
 }  // namespace net
 
