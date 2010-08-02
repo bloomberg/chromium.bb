@@ -10,7 +10,8 @@
 using WebKit::WebIDBKey;
 
 IndexedDBKey::IndexedDBKey()
-    : type_(WebIDBKey::InvalidType) {
+    : type_(WebIDBKey::InvalidType),
+      number_(0) {
 }
 
 IndexedDBKey::IndexedDBKey(const WebIDBKey& key)
