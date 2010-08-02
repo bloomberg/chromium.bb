@@ -16,7 +16,6 @@ fi
 
 rm -f *.out
 rm -f *.in
-rm -f train*
 cp  data/train/input/* .
 
 if [[ "${EMU_HACK}" != "no" ]] ; then
@@ -38,7 +37,8 @@ LIST="place_log.out route_log.out costs.out route.out"
 if [[ "${VERIFY}" != "no" ]] ; then
    echo "VERIFY"
    for i in ${LIST} ; do
-     # NOTE: we are a little more conservative than spec with regard to reltol
+     # NOTE: We are a little more conservative than spec with regard to reltol.
+     # (the normal harness uses weaker reltols for some files).
      ../specdiff.sh -r 0.015 -l 10 $i data/train/output/$i
    done
 fi
