@@ -1882,10 +1882,7 @@ copy-translator-to-dir() {
   local bindir="${PNACL_CLIENT_TC_ROOT}/${arch}"
   assert-dir "${bindir}" "Unsupported arch. Choose one of: x8632, x8664"
 
-  if ! mkdir -p "${dir_name}" ; then
-     echo "ERROR: ${dir_name} can't be created."
-    exit -1
-  fi
+  mkdir -p "${dir_name}"
 
   assert-file "${TARGET_ROOT}/bin/llc" "Install PNaCl toolchain."
   cp "${TARGET_ROOT}/bin/llc" "${dir_name}"
@@ -1909,6 +1906,16 @@ copy-translator-to-dir() {
   assert-file "${bindir}/translator" \
         "Run this script with build-sandboxed-translators"
   cp "${bindir}/translator" "${dir_name}"
+
+  if [ ${arch} == "x8632" ]; then
+    assert-file "./scons-out/opt-linux-x86-32/staging/sel_ldr" \
+          "Install NaCl toolchain."
+    cp "./scons-out/opt-linux-x86-32/staging/sel_ldr" "${dir_name}"
+  else
+    assert-file "./scons-out/opt-linux-x86-64/staging/sel_ldr" \
+          "Install NaCl toolchain."
+    cp "./scons-out/opt-linux-x86-64/staging/sel_ldr" "${dir_name}"
+  fi
 
   echo "Done"
 }
