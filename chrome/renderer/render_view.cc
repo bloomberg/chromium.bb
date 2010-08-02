@@ -4687,7 +4687,7 @@ void RenderView::DumpLoadHistograms() const {
     }
   }
 
-
+  // Histograms to determine effect of idle socket timeout.
   static bool use_idle_socket_timeout_histogram(
       FieldTrialList::Find("IdleSktToImpact") &&
       !FieldTrialList::Find("IdleSktToImpact")->group_name().empty());
@@ -4714,6 +4714,40 @@ void RenderView::DumpLoadHistograms() const {
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "IdleSktToImpact"),
+            begin_to_finish);
+        break;
+      default:
+        break;
+    }
+  }
+
+  // Histograms to determine effect of number of connections per proxy.
+  static bool use_proxy_connection_impact_histogram(
+      FieldTrialList::Find("ProxyConnectionImpact") &&
+      !FieldTrialList::Find("ProxyConnectionImpact")->group_name().empty());
+  if (use_proxy_connection_impact_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.Abandoned", "ProxyConnectionImpact"),
+        abandoned_page ? 1 : 0, 2);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_NormalLoad", "ProxyConnectionImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadNormal", "ProxyConnectionImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadReload", "ProxyConnectionImpact"),
+            begin_to_finish);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadStaleOk", "ProxyConnectionImpact"),
             begin_to_finish);
         break;
       default:

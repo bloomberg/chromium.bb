@@ -163,6 +163,7 @@ void BrowserMainParts::EarlyInitialization() {
 
   ConnectionFieldTrial();
   SocketTimeoutFieldTrial();
+  ProxyConnectionsFieldTrial();
   SpdyFieldTrial();
   InitializeSSL();
 
@@ -255,6 +256,47 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
     net::ClientSocketPool::set_unused_idle_socket_timeout(20);
   } else if (idle_to_trial_group == socket_timeout_60) {
     net::ClientSocketPool::set_unused_idle_socket_timeout(60);
+  } else {
+    NOTREACHED();
+  }
+}
+
+void BrowserMainParts::ProxyConnectionsFieldTrial() {
+  const FieldTrial::Probability kProxyConnectionsDivisor = 100;
+  // 25% probability
+  const FieldTrial::Probability kProxyConnectionProbability = 25;
+
+  scoped_refptr<FieldTrial> proxy_connection_trial =
+      new FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor);
+
+  const int proxy_connections_8 =
+      proxy_connection_trial->AppendGroup("_proxy_connections_8",
+                                          kProxyConnectionProbability);
+  const int proxy_connections_16 =
+      proxy_connection_trial->AppendGroup("_proxy_connections_16",
+                                          kProxyConnectionProbability);
+  const int proxy_connections_64 =
+      proxy_connection_trial->AppendGroup("_proxy_connections_64",
+                                          kProxyConnectionProbability);
+
+  // This (32 connections per proxy server) is the current default value.
+  // Declaring it here allows us to easily re-assign the probability space while
+  // maintaining that the default group always has the remainder of the "share",
+  // which allows for cleaner and quicker changes down the line if needed.
+  const int proxy_connections_32 =
+      proxy_connection_trial->AppendGroup("_proxy_connections_32",
+                                          FieldTrial::kAllRemainingProbability);
+
+  const int proxy_connections_trial_group = proxy_connection_trial->group();
+
+  if (proxy_connections_trial_group == proxy_connections_8) {
+    net::HttpNetworkSession::set_max_sockets_per_proxy_server(8);
+  } else if (proxy_connections_trial_group == proxy_connections_16) {
+    net::HttpNetworkSession::set_max_sockets_per_proxy_server(16);
+  } else if (proxy_connections_trial_group == proxy_connections_32) {
+    net::HttpNetworkSession::set_max_sockets_per_proxy_server(32);
+  } else if (proxy_connections_trial_group == proxy_connections_64) {
+    net::HttpNetworkSession::set_max_sockets_per_proxy_server(64);
   } else {
     NOTREACHED();
   }

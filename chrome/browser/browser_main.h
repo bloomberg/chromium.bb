@@ -107,6 +107,9 @@ class BrowserMainParts {
   // A/B test for determining a value for unused socket timeout.
   void SocketTimeoutFieldTrial();
 
+  // A/B test for the maximum number of connections per proxy server.
+  void ProxyConnectionsFieldTrial();
+
   // A/B test for spdy when --use-spdy not set.
   void SpdyFieldTrial();
 
