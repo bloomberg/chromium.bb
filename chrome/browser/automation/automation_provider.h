@@ -519,6 +519,12 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                              DictionaryValue* args,
                              IPC::Message* reply_message);
 
+  // Waits until an attempted page translation has completed to reply.
+  // Uses the JSON interface for input/output.
+  void WaitUntilTranslateComplete(Browser* browser,
+                                  DictionaryValue* args,
+                                  IPC::Message* reply_message);
+
   // Get the profiles that are currently saved to the DB.
   // Uses the JSON interface for input/output.
   void GetAutoFillProfile(Browser* browser,

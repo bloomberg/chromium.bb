@@ -2863,6 +2863,40 @@ void AutomationProvider::SelectTranslateOption(Browser* browser,
   }
 }
 
+// See WaitUntilTranslateComplete() in chrome/test/pyautolib/pyauto.py for
+// sample json input and output.
+void AutomationProvider::WaitUntilTranslateComplete(
+    Browser* browser, DictionaryValue* args, IPC::Message* reply_message) {
+  std::string error_message;
+  TabContents* tab_contents = GetTabContentsFromDict(browser, args,
+                                                     &error_message);
+  if (!tab_contents) {
+    AutomationJSONReply(this, reply_message).SendError(error_message);
+    return;
+  }
+
+  // If the translation is still pending, the observer will wait
+  // for it to finish and then reply.
+  if (tab_contents->language_state().translation_pending()) {
+    new PageTranslatedObserver(this, reply_message, tab_contents);
+    return;
+  }
+  // Otherwise send back the success or failure of the attempted translation
+  // based on the translate bar state.
+  AutomationJSONReply reply(this, reply_message);
+  TranslateInfoBarDelegate* translate_bar =
+      GetTranslateInfoBarDelegate(tab_contents);
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  if (!translate_bar) {
+    return_value->SetBoolean(L"translation_success", false);
+  } else {
+    return_value->SetBoolean(
+        L"translation_success",
+        translate_bar->type() == TranslateInfoBarDelegate::AFTER_TRANSLATE);
+  }
+  reply.SendSuccess(return_value.get());
+}
+
 // Sample json input: { "command": "GetThemeInfo" }
 // Refer GetThemeInfo() in chrome/test/pyautolib/pyauto.py for sample output.
 void AutomationProvider::GetThemeInfo(Browser* browser,
@@ -3213,6 +3247,8 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["SelectTranslateOption"] =
       &AutomationProvider::SelectTranslateOption;
   handler_map["GetTranslateInfo"] =  &AutomationProvider::GetTranslateInfo;
+  handler_map["WaitUntilTranslateComplete"] =
+      &AutomationProvider::WaitUntilTranslateComplete;
 
   handler_map["GetAutoFillProfile"] = &AutomationProvider::GetAutoFillProfile;
   handler_map["FillAutoFillProfile"] = &AutomationProvider::FillAutoFillProfile;

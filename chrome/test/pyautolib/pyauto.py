@@ -747,6 +747,31 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
+  def WaitUntilTranslateComplete(self, tab_index=0, window_index=0):
+    """Waits until an attempted translation has finished.
+
+    This should be called after navigating to a page that should be translated
+    automatically (because the language always-translate is on). It does not
+    need to be called after 'ClickTranslateBarTranslate'.
+
+    Do not call this function if you are not expecting a page translation - it
+    will hang. If you call it when there is no translate bar, it will return
+    False.
+
+    Args:
+      tab_index: The tab index, default is 0.
+      window_index: The window index, default is 0.
+
+    Returns:
+      True if the translation was successful, False if there was an error.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'WaitUntilTranslateComplete',
+      'tab_index': tab_index
+    }
+    return self._GetResultFromJSONRequest(
+        cmd_dict, windex=window_index)['translation_success']
+
   def FillAutoFillProfile(self, profiles=None, credit_cards=None,
                           tab_index=0, window_index=0):
     """Set the autofill profile to contain the given profiles and credit cards.
