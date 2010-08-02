@@ -178,7 +178,7 @@ class SandboxIPCProcess  {
     const char* characters = NULL;
     if (characters_bytes > 0) {
       const uint32_t kMaxCharactersBytes = 1 << 10;
-      if (characters_bytes % 2 == 0 ||  // We expect UTF-16.
+      if (characters_bytes % 2 != 0 ||  // We expect UTF-16.
           characters_bytes > kMaxCharactersBytes ||
           !pickle.ReadBytes(&iter, &characters, characters_bytes))
         return;
