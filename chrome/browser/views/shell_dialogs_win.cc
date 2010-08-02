@@ -41,11 +41,14 @@ std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
   DCHECK(!filename.empty());
   std::wstring return_value = filename;
 
-  // If the user didn't give us a known extension, and we wanted one, add it.
+  // If we wanted a specific extension, but the user's filename deleted it or
+  // changed it to something that the system doesn't understand, re-append.
   std::string selected_mime_type;
+  std::wstring file_extension = file_util::GetFileExtensionFromPath(filename);
   if (!(filter_selected.empty() || filter_selected == L"*.*") &&
       !net::GetMimeTypeFromExtension(
-          file_util::GetFileExtensionFromPath(filename), &selected_mime_type)) {
+          file_extension, &selected_mime_type) &&
+      file_extension != suggested_ext) {
     if (return_value[return_value.length() - 1] != L'.')
       return_value.append(L".");
     return_value.append(suggested_ext);

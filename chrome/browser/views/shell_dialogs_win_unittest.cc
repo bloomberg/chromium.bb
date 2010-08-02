@@ -70,3 +70,27 @@ TEST(AppendExtensionIfNeeded, AllFilesFilter_NoExtensionAppended) {
 
   ASSERT_EQ(L"sample.unknown-mime-type", actual_filename);
 }
+
+TEST(AppendExtensionIfNeeded, StripsDotsForUnknownSelectedMimeType) {
+  const std::wstring filename = L"product";
+  const std::wstring filter_selected = L"*.unknown-extension.";
+  const std::wstring suggested_ext = L"html";
+
+  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
+      filter_selected, suggested_ext);
+
+  ASSERT_EQ(L"product.html", actual_filename);
+}
+
+TEST(AppendExtensionIfNeeded, EqualToExtension_NoDoubleExtension) {
+  // Make sure we don't add a duplicate extension like .tbl.tbl for
+  // files that the system doesn't have a mime type for.
+  const std::wstring filename = L"product.tbl";
+  const std::wstring filter_selected = L"*.tbl";
+  const std::wstring suggested_ext = L"tbl";
+
+  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
+      filter_selected, suggested_ext);
+
+  ASSERT_EQ(L"product.tbl", actual_filename);
+}
