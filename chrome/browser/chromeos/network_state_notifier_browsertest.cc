@@ -21,15 +21,16 @@ using ::testing::_;
 class NetworkStateNotifierTest : public CrosInProcessBrowserTest,
                                  public NotificationObserver {
  public:
-  NetworkStateNotifierTest() {
+  NetworkStateNotifierTest() : mock_network_library_(NULL) {
   }
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
-    InitStatusAreaMocks();
-    SetStatusAreaMocksExpectations();
+    cros_mock_->InitStatusAreaMocks();
+    cros_mock_->SetStatusAreaMocksExpectations();
     // Initialize network state notifier.
     ASSERT_TRUE(CrosLibrary::Get()->EnsureLoaded());
+    mock_network_library_ = cros_mock_->mock_network_library();
     ASSERT_TRUE(mock_network_library_);
     EXPECT_CALL(*mock_network_library_, Connected())
         .Times(1)
@@ -55,6 +56,7 @@ class NetworkStateNotifierTest : public CrosInProcessBrowserTest,
   }
 
  protected:
+  MockNetworkLibrary *mock_network_library_;
   NetworkStateDetails::State state_;
 };
 

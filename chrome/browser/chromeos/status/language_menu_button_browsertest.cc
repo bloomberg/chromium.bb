@@ -23,8 +23,8 @@ class LanguageMenuButtonTest : public CrosInProcessBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {
-    InitStatusAreaMocks();
-    SetStatusAreaMocksExpectations();
+    cros_mock_->InitStatusAreaMocks();
+    cros_mock_->SetStatusAreaMocksExpectations();
   }
 
   LanguageMenuButton* GetLanguageMenuButton() {

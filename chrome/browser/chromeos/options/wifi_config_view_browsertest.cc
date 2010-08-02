@@ -18,11 +18,14 @@ using ::testing::_;
 
 class WifiConfigViewTest : public CrosInProcessBrowserTest {
  protected:
+  MockNetworkLibrary *mock_network_library_;
+
   WifiConfigViewTest() : CrosInProcessBrowserTest() {}
 
   virtual void SetUpInProcessBrowserTestFixture() {
-    InitStatusAreaMocks();
-    SetStatusAreaMocksExpectations();
+    cros_mock_->InitStatusAreaMocks();
+    cros_mock_->SetStatusAreaMocksExpectations();
+    mock_network_library_ = cros_mock_->mock_network_library();
   }
 };
 

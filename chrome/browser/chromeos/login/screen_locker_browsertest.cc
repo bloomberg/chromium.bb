@@ -31,7 +31,7 @@ namespace {
 // An object that wait for lock state and fullscreen state.
 class Waiter : public NotificationObserver {
  public:
-  Waiter(Browser* browser)
+  explicit Waiter(Browser* browser)
       : browser_(browser) {
     registrar_.Add(this,
                    NotificationType::SCREEN_LOCK_STATE_CHANGED,
@@ -91,9 +91,13 @@ namespace chromeos {
 
 class ScreenLockerTest : public CrosInProcessBrowserTest {
  public:
-  ScreenLockerTest() {}
+  ScreenLockerTest() : mock_screen_lock_library_(NULL),
+                       mock_input_method_library_(NULL) {
+  }
 
  protected:
+  MockScreenLockLibrary *mock_screen_lock_library_;
+  MockInputMethodLibrary *mock_input_method_library_;
 
   // Test the no password mode with different unlock scheme given by
   // |unlock| function.
@@ -126,8 +130,10 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
 
  private:
   virtual void SetUpInProcessBrowserTestFixture() {
-    InitStatusAreaMocks();
-    InitMockScreenLockLibrary();
+    cros_mock_->InitStatusAreaMocks();
+    cros_mock_->InitMockScreenLockLibrary();
+    mock_screen_lock_library_ = cros_mock_->mock_screen_lock_library();
+    mock_input_method_library_ = cros_mock_->mock_input_method_library();
     EXPECT_CALL(*mock_screen_lock_library_, AddObserver(testing::_))
         .Times(1)
         .RetiresOnSaturation();
@@ -135,9 +141,9 @@ class ScreenLockerTest : public CrosInProcessBrowserTest {
         .Times(1)
         .RetiresOnSaturation();
     // Expectations for the status are on the screen lock window.
-    SetStatusAreaMocksExpectations();
+    cros_mock_->SetStatusAreaMocksExpectations();
     // Expectations for the status area on the browser window.
-    SetStatusAreaMocksExpectations();
+    cros_mock_->SetStatusAreaMocksExpectations();
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {

@@ -22,11 +22,16 @@ using ::testing::_;
 
 class PowerMenuButtonTest : public CrosInProcessBrowserTest {
  protected:
-  PowerMenuButtonTest() : CrosInProcessBrowserTest() {}
+  MockPowerLibrary *mock_power_library_;
+
+  PowerMenuButtonTest() : CrosInProcessBrowserTest(),
+                          mock_power_library_(NULL) {
+  }
 
   virtual void SetUpInProcessBrowserTestFixture() {
-    InitStatusAreaMocks();
-    SetStatusAreaMocksExpectations();
+    cros_mock_->InitStatusAreaMocks();
+    cros_mock_->SetStatusAreaMocksExpectations();
+    mock_power_library_ = cros_mock_->mock_power_library();
   }
 
   PowerMenuButton* GetPowerMenuButton() {

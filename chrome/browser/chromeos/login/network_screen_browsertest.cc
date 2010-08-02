@@ -54,17 +54,19 @@ class DummyComboboxModel : public ComboboxModel {
 
 class NetworkScreenTest : public WizardInProcessBrowserTest {
  public:
-  NetworkScreenTest(): WizardInProcessBrowserTest("network") {
+  NetworkScreenTest(): WizardInProcessBrowserTest("network"),
+                       mock_login_library_(NULL),
+                       mock_network_library_(NULL) {
     cellular_.set_name("Cellular network");
     wifi_.set_name("WiFi network");
   }
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
-    InitStatusAreaMocks();
-
+    cros_mock_->InitStatusAreaMocks();
+    mock_network_library_ = cros_mock_->mock_network_library();
     mock_login_library_ = new MockLoginLibrary();
-    test_api()->SetLoginLibrary(mock_login_library_, true);
+    cros_mock_->test_api()->SetLoginLibrary(mock_login_library_, true);
     EXPECT_CALL(*mock_login_library_, EmitLoginPromptReady())
         .Times(1);
 
@@ -91,12 +93,12 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_network_library_, RemoveObserver(_))
         .Times(1);
 
-    SetStatusAreaMocksExpectations();
+    cros_mock_->SetStatusAreaMocksExpectations();
   }
 
   virtual void TearDownInProcessBrowserTestFixture() {
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-    test_api()->SetLoginLibrary(NULL, false);
+    cros_mock_->test_api()->SetLoginLibrary(NULL, false);
   }
 
   void NetworkChangedExpectations(bool wifi_enabled) {
@@ -185,6 +187,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   }
 
   MockLoginLibrary* mock_login_library_;
+  MockNetworkLibrary* mock_network_library_;
 
   CellularNetworkVector cellular_networks_;
   WifiNetworkVector wifi_networks_;

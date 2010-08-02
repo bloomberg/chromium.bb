@@ -28,21 +28,31 @@ const char kPassword[] = "test_password";
 
 class LoginScreenTest : public WizardInProcessBrowserTest {
  public:
-  LoginScreenTest(): WizardInProcessBrowserTest("login") {
+  LoginScreenTest(): WizardInProcessBrowserTest("login"),
+                     mock_cryptohome_library_(NULL),
+                     mock_login_library_(NULL),
+                     mock_network_library_(NULL) {
   }
 
  protected:
+  MockCryptohomeLibrary *mock_cryptohome_library_;
+  MockLoginLibrary *mock_login_library_;
+  MockNetworkLibrary *mock_network_library_;
+
   virtual void SetUpInProcessBrowserTestFixture() {
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    InitStatusAreaMocks();
-    SetStatusAreaMocksExpectations();
+    cros_mock_->InitStatusAreaMocks();
+    cros_mock_->SetStatusAreaMocksExpectations();
+
+    mock_network_library_ = cros_mock_->mock_network_library();
 
     mock_login_library_ = new MockLoginLibrary();
     EXPECT_CALL(*mock_login_library_, EmitLoginPromptReady())
         .Times(1);
-    test_api()->SetLoginLibrary(mock_login_library_, true);
+    cros_mock_->test_api()->SetLoginLibrary(mock_login_library_, true);
 
-    InitMockCryptohomeLibrary();
+    cros_mock_->InitMockCryptohomeLibrary();
+    mock_cryptohome_library_ = cros_mock_->mock_cryptohome_library();
     EXPECT_CALL(*mock_cryptohome_library_, IsMounted())
         .Times(AnyNumber())
         .WillRepeatedly((Return(true)));
@@ -51,12 +61,10 @@ class LoginScreenTest : public WizardInProcessBrowserTest {
 
   virtual void TearDownInProcessBrowserTestFixture() {
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-    test_api()->SetLoginLibrary(NULL, false);
+    cros_mock_->test_api()->SetLoginLibrary(NULL, false);
   }
 
  private:
-  MockLoginLibrary* mock_login_library_;
-
   DISALLOW_COPY_AND_ASSIGN(LoginScreenTest);
 };
 

@@ -1490,6 +1490,8 @@
         'browser/child_process_security_policy_browsertest.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.cc',
         'browser/chromeos/cros/cros_in_process_browser_test.h',
+        'browser/chromeos/cros/cros_mock.cc',
+        'browser/chromeos/cros/cros_mock.h',
         'browser/chromeos/cros/mock_cros_library.h',
         'browser/chromeos/cros/mock_cryptohome_library.h',
         'browser/chromeos/cros/mock_keyboard_library.h',
