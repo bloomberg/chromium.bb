@@ -2305,7 +2305,7 @@
    fun:_ZNK7WebCore16FontFallbackList14determinePitchEPKNS_4FontE
    fun:_ZNK7WebCore16FontFallbackList12isFixedPitchEPKNS_4FontE
    fun:_ZNK7WebCore4Font12isFixedPitchEv
-   fun:_ZN7WebCore11RenderBlock17findNextLineBreakERNS_12BidiResolverINS_14InlineIteratorENS_7BidiRunEEEbRbS6_PNS_6EClearE
+   fun:_ZN7WebCore11RenderBlock17findNextLineBreakERNS_12BidiResolverINS_14InlineIteratorENS_7BidiRun*ClearE
    fun:_ZN7WebCore11RenderBlock20layoutInlineChildrenEbRiS1_
    fun:_ZN7WebCore11RenderBlock11layoutBlockEb
    fun:_ZN7WebCore11RenderBlock6layoutEv
