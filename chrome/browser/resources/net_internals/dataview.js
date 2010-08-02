@@ -105,6 +105,8 @@ DataView.prototype.onExportToText_ = function() {
       }
 
       text.push('Valid until: ' + this.formatExpirationTime_(e.expiration));
+      var expirationDate = g_browser.convertTimeTicksToDate(e.expiration);
+      text.push('  (' + expirationDate.toLocaleString() + ')');
     }
   } else {
     text.push('');
@@ -172,10 +174,13 @@ DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
     var eventList = sourceIdToEventList[sourceId];
     var sourceType = eventList[0].source.type;
 
-    out.push('------------------------------');
+    var startDate = g_browser.convertTimeTicksToDate(eventList[0].time);
+
+    out.push('------------------------------------------');
     out.push(getKeyWithValue(LogSourceType, sourceType) +
-             ' (id=' + sourceId + ')');
-    out.push('------------------------------');
+             ' (id=' + sourceId + ')' +
+             '  [start=' + startDate.toLocaleString() + ']');
+    out.push('------------------------------------------');
 
     out.push(PrintSourceEntriesAsText(eventList));
   }

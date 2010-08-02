@@ -33,8 +33,15 @@ function addSourceEntry_(node, sourceEntry) {
 
   addTextNode(nobr, sourceEntry.getDescription());
 
+  var p2 = addNode(div, 'p');
+  var nobr2 = addNode(p2, 'nobr');
+
+  var logEntries = sourceEntry.getLogEntries();
+  var startDate = g_browser.convertTimeTicksToDate(logEntries[0].time);
+  addTextNode(nobr2, 'Start Time: ' + startDate.toLocaleString());
+
   var pre = addNode(div, 'pre');
-  addTextNode(pre, PrintSourceEntriesAsText(sourceEntry.getLogEntries()));
+  addTextNode(pre, PrintSourceEntriesAsText(logEntries));
 }
 
 function canCollapseBeginWithEnd(beginEntry) {
@@ -50,6 +57,11 @@ function canCollapseBeginWithEnd(beginEntry) {
 
 PrintSourceEntriesAsText = function(sourceEntries) {
   var entries = LogGroupEntry.createArrayFrom(sourceEntries);
+  if (entries.length == 0)
+    return '';
+
+  var startDate = g_browser.convertTimeTicksToDate(entries[0].orig.time);
+  var startTime = startDate.getTime();
 
   var tablePrinter = new TablePrinter();
 
@@ -66,10 +78,13 @@ PrintSourceEntriesAsText = function(sourceEntries) {
     tablePrinter.addCell(entry.orig.wasPassivelyCaptured ? '(P) ' : '');
 
     tablePrinter.addCell('t=');
-    var tCell = tablePrinter.addCell(
-        g_browser.convertTimeTicksToDate(entry.orig.time).getTime());
+    var date = g_browser.convertTimeTicksToDate(entry.orig.time) ;
+    var tCell = tablePrinter.addCell(date.getTime());
     tCell.alignRight = true;
-    tablePrinter.addCell('  ');
+    tablePrinter.addCell(' [st=');
+    var stCell = tablePrinter.addCell(date.getTime() - startTime);
+    stCell.alignRight = true;
+    tablePrinter.addCell('] ');
 
     var indentationStr = makeRepeatedString(' ', entry.getDepth() * 3);
     var mainCell =
@@ -102,6 +117,8 @@ PrintSourceEntriesAsText = function(sourceEntries) {
         tablePrinter.addRow();
         tablePrinter.addCell('');  // Empty passive annotation.
         tablePrinter.addCell('');  // No t=.
+        tablePrinter.addCell('');
+        tablePrinter.addCell('');  // No st=.
         tablePrinter.addCell('');
         tablePrinter.addCell('  ');
 
