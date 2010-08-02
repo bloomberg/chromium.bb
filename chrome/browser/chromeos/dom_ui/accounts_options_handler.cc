@@ -28,19 +28,14 @@ void AccountsOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION));
   localized_strings->SetString(L"allow_guest",l10n_util::GetString(
       IDS_OPTIONS_ACCOUNTS_ALLOW_GUEST_DESCRIPTION));
-  localized_strings->SetString(L"user_list_title",l10n_util::GetString(
-      IDS_OPTIONS_ACCOUNTS_USER_LIST_TITLE));
-  localized_strings->SetString(L"add_user",l10n_util::GetString(
-      IDS_OPTIONS_ACCOUNTS_ADD_USER));
-  localized_strings->SetString(L"remove_user",l10n_util::GetString(
-      IDS_OPTIONS_ACCOUNTS_REMOVE_USER));
-  localized_strings->SetString(L"add_user_email",l10n_util::GetString(
-      IDS_OPTIONS_ACCOUNTS_EMAIL_LABEL));
-
-  localized_strings->SetString(L"ok_label",l10n_util::GetString(
-      IDS_OK));
-  localized_strings->SetString(L"cancel_label",l10n_util::GetString(
-      IDS_CANCEL));
+  localized_strings->SetString(L"show_user_on_signin",l10n_util::GetString(
+      IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION));
+  localized_strings->SetString(L"username_edit_hint",l10n_util::GetString(
+      IDS_OPTIONS_ACCOUNTS_USERNAME_EDIT_HINT));
+  localized_strings->SetString(L"username_format",l10n_util::GetString(
+      IDS_OPTIONS_ACCOUNTS_USERNAME_FORMAT));
+  localized_strings->SetString(L"add_users",l10n_util::GetString(
+      IDS_OPTIONS_ACCOUNTS_ADD_USERS));
 }
 
 }  // namespace chromeos

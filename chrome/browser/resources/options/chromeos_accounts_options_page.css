@@ -1,6 +1,68 @@
-#userList {
+.user-list-table {
   border: 1px solid lightgrey;
+  border-collapse: collapse;
+  border-spacing: 0px;
+}
+
+.user-name-edit-row {
+  border: 1px solid lightgrey;
+  background-color: #ebeffa;
+  padding: 5px;
+}
+
+.user-list-item {
+  line-height: 35px;
   padding: 2px;
-  width: 160px;
-  height: 120px;
+}
+
+.user-icon {
+  border: 1px solid black;
+  width: 26px;
+  height: 26px;
+  vertical-align: middle;
+}
+
+.user-email-label {
+  -webkit-margin-start: 10px;
+}
+
+.user-name-label {
+  color: darkgray;
+  -webkit-margin-start: 10px;
+}
+
+.remove-user-button {
+  background-image: url(chrome://theme/IDR_CLOSE_BAR);
+  background-color: transparent;
+  border: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 8px;
+}
+
+html[dir=ltr] .remove-user-button {
+  float: right;
+}
+
+html[dir=rtl] .remove-user-button {
+  float: left;
+}
+
+.remove-user-button:hover {
+  background-image: url(chrome://theme/IDR_CLOSE_BAR_H);
+}
+
+#userList {
+  padding: 5px;
+  width: 366px;
+  height: 166px;
+}
+
+#userNameEdit {
+  border: 1px solid lightgrey;
+  width: 366px;
+}
+
+input#userNameEdit:invalid {
+  background-color: #ff6666;
 }
