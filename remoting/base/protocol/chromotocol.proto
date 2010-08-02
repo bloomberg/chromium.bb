@@ -47,8 +47,9 @@ enum PixelFormat {
   PixelFormatRgba = 5;
   PixelFormatYv12 = 6;
   PixelFormatYv16 = 7;
-  PixelFormatEmpty = 8;
-  PixelFormatAscii = 9;
+  PixelFormatNv12 = 8;
+  PixelFormatEmpty = 9;
+  PixelFormatAscii = 10;
 }
 
 // A message that denotes the beginning of an updating rectangle in an update
