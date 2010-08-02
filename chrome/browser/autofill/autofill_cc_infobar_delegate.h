@@ -11,6 +11,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
 class AutoFillManager;
+class Browser;
 class SkBitmap;
 class TabContents;
 
@@ -45,6 +46,9 @@ class AutoFillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
  private:
+  // The browser.
+  Browser* browser_;
+
   // The AutoFillManager that initiated this InfoBar.
   AutoFillManager* host_;
 

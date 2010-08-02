@@ -13,7 +13,6 @@
 
 class BaseTab;
 class BaseTabStrip;
-class Browser;
 
 struct TabRendererData;
 
@@ -23,7 +22,7 @@ class BrowserTabStripController : public TabStripController,
                                   public TabStripModelObserver,
                                   public NotificationObserver {
  public:
-  BrowserTabStripController(Browser* browser, TabStripModel* model);
+  explicit BrowserTabStripController(TabStripModel* model);
   virtual ~BrowserTabStripController();
 
   void InitFromModel(BaseTabStrip* tabstrip);
@@ -104,9 +103,6 @@ class BrowserTabStripController : public TabStripController,
   TabStripModel* model_;
 
   BaseTabStrip* tabstrip_;
-
-  // Non-owning pointer to the browser which is using this controller.
-  Browser* browser_;
 
   // If non-NULL it means we're showing a menu for the tab.
   scoped_ptr<TabContextMenuContents> context_menu_contents_;

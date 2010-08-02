@@ -139,6 +139,10 @@ void TabContentsDelegate::OnDidGetApplicationInfo(TabContents* tab_contents,
                                                   int32 page_id) {
 }
 
+Browser* TabContentsDelegate::GetBrowser() {
+  return NULL;
+}
+
 gfx::NativeWindow TabContentsDelegate::GetFrameNativeWindow() {
   return NULL;
 }

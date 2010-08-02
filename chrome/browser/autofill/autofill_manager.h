@@ -45,9 +45,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Registers our Enable/Disable AutoFill pref.
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns the TabContents hosting this AutoFillManager.
-  TabContents* tab_contents() const { return tab_contents_; }
-
   // RenderViewHostDelegate::AutoFill implementation:
   virtual void FormSubmitted(const webkit_glue::FormData& form);
   virtual void FormsSeen(const std::vector<webkit_glue::FormData>& forms);

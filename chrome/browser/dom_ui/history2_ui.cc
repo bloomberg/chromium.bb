@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -236,11 +235,8 @@ void BrowsingHistoryHandler2::HandleRemoveURLsOnOneDay(const Value* value) {
 }
 
 void BrowsingHistoryHandler2::HandleClearBrowsingData(const Value* value) {
-  // TODO(beng): This is an improper direct dependency on Browser. Route this
-  // through some sort of delegate.
-  Browser* browser = BrowserList::FindBrowserWithProfile(dom_ui_->GetProfile());
-  if (browser)
-    browser->OpenClearBrowsingDataDialog();
+  dom_ui_->tab_contents()->delegate()->GetBrowser()->
+      OpenClearBrowsingDataDialog();
 }
 
 void BrowsingHistoryHandler2::QueryComplete(

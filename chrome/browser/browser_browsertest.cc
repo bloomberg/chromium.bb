@@ -707,8 +707,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   ASSERT_EQ(NULL, Browser::FindAppTab(browser(), extension_app_));
 
   // Open a tab with the app.
-  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_,
-                                                 NULL);
+  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_);
   ASSERT_TRUE(WaitForTab(tab));
   ASSERT_EQ(2, browser()->tab_count());
 
@@ -765,7 +764,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
 
   // Open the app in a panel.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_PANEL, GURL(), NULL);
+                                 Extension::LAUNCH_PANEL, GURL());
   Browser* app_panel = BrowserList::GetLastActive();
   ASSERT_TRUE(app_panel);
   ASSERT_NE(app_panel, browser()) << "New browser should have opened.";
@@ -798,7 +797,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenWindow) {
 
   // Open a window with the app.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_WINDOW, GURL(), NULL);
+                                 Extension::LAUNCH_WINDOW, GURL());
   Browser* app_window = BrowserList::GetLastActive();
   ASSERT_TRUE(app_window);
   ASSERT_NE(app_window, browser()) << "New browser should have opened.";
@@ -826,7 +825,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_WindowBeforeTab) {
   ASSERT_EQ(1, browser()->tab_count());
 
   // Open a tab with the app.
-  Browser::OpenApplicationTab(profile_, extension_app_, NULL);
+  Browser::OpenApplicationTab(profile_, extension_app_);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   ASSERT_EQ(2, browser()->tab_count());
   int app_tab_index = browser()->selected_index();
@@ -834,7 +833,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_WindowBeforeTab) {
 
   // Open a window with the app.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_WINDOW, GURL(), NULL);
+                                 Extension::LAUNCH_WINDOW, GURL());
   Browser* app_window = BrowserList::GetLastActive();
   ASSERT_TRUE(app_window);
   ASSERT_NE(app_window, browser()) << "New browser should have opened.";
@@ -855,8 +854,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_PanelBeforeTab) {
   ASSERT_EQ(1, browser()->tab_count());
 
   // Open a tab with the app.
-  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_,
-                                                 NULL);
+  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_);
   ASSERT_TRUE(WaitForTab(tab));
   ASSERT_EQ(2, browser()->tab_count());
   int app_tab_index = browser()->selected_index();
@@ -864,7 +862,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_PanelBeforeTab) {
 
   // Open a panel with the app.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_PANEL, GURL(), NULL);
+                                 Extension::LAUNCH_PANEL, GURL());
   Browser* app_panel = BrowserList::GetLastActive();
   ASSERT_TRUE(app_panel);
   ASSERT_NE(app_panel, browser()) << "New browser should have opened.";
@@ -884,7 +882,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_TabInFocusedWindow) {
 
   ASSERT_EQ(1, browser()->tab_count());
 
-  Browser::OpenApplicationTab(profile_, extension_app_, NULL);
+  Browser::OpenApplicationTab(profile_, extension_app_);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   ASSERT_EQ(2, browser()->tab_count());
   int app_tab_index = browser()->selected_index();
@@ -894,7 +892,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_TabInFocusedWindow) {
   Browser* extra_browser = CreateBrowser(profile_);
   ASSERT_EQ(extra_browser, BrowserList::GetLastActive());
 
-  Browser::OpenApplicationTab(profile_, extension_app_, NULL);
+  Browser::OpenApplicationTab(profile_, extension_app_);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(extra_browser));
   ASSERT_EQ(2, extra_browser->tab_count());
   app_tab_index = extra_browser->selected_index();

@@ -116,7 +116,7 @@ class DOMUI {
 
   TabContents* tab_contents() const { return tab_contents_; }
 
-  Profile* GetProfile() const;
+  Profile* GetProfile();
 
  protected:
   void AddMessageHandler(DOMMessageHandler* handler);
