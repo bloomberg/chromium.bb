@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 
+#include <map>
+
 #include "base/process_util.h"
 #include "base/singleton.h"
 #include "base/ref_counted.h"
@@ -222,6 +224,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ExtensionTestLogFunction>();
   RegisterFunction<ExtensionTestQuotaResetFunction>();
   RegisterFunction<ExtensionTestCreateIncognitoTabFunction>();
+  RegisterFunction<ExtensionTestSendMessageFunction>();
 
   // Accessibility.
   RegisterFunction<GetFocusedControlFunction>();

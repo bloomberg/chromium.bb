@@ -1579,6 +1579,8 @@
         'browser/extensions/extension_startup_browsertest.cc',
         'browser/extensions/extension_storage_apitest.cc',
         'browser/extensions/extension_tabs_apitest.cc',
+        'browser/extensions/extension_test_message_listener.cc',
+        'browser/extensions/extension_test_message_listener.h',
         'browser/extensions/extension_toolbar_model_browsertest.cc',
         'browser/extensions/extension_toolstrip_apitest.cc',
         'browser/extensions/extension_websocket_apitest.cc',

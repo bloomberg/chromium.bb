@@ -868,6 +868,12 @@ class NotificationType {
     EXTENSION_TEST_PASSED,
     EXTENSION_TEST_FAILED,
 
+    // Sent by extension test javascript code, typically in a browser test. The
+    // sender is a std::string representing the extension id, and the details
+    // are a std::string with some message. This is particularly useful when you
+    // want to have C++ code wait for javascript code to do something.
+    EXTENSION_TEST_MESSAGE,
+
     // Sent when an bookmarks extensions API function was successfully invoked.
     // The source is the id of the extension that invoked the function, and the
     // details are a pointer to the const BookmarksFunction in question.

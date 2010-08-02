@@ -32,6 +32,9 @@ struct WebMediaPlayerAction;
 
 class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
  public:
+  static const size_t kMaxExtensionItemTitleLength;
+  static const size_t kMaxSelectionTextLength;
+
   RenderViewContextMenu(TabContents* tab_contents,
                         const ContextMenuParams& params);
 

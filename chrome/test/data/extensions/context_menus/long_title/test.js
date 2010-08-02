@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function onclick(info) {
-  chrome.test.sendMessage("onclick fired");
-}
-
 window.onload = function() {
-  chrome.contextMenus.create({"title":"Extension Item 1",
-                              "onclick": onclick}, function() {
+  // Make a 1000-character long title.
+  var title = "";
+  for (var i = 0; i < 1000; i++) {
+    title += "x";
+  }
+  chrome.test.log("creating item");
+  chrome.contextMenus.create({"title":title}, function() {
     if (!chrome.extension.lastError) {
-      chrome.test.sendMessage("created item");
+      chrome.test.sendMessage("created");
     }
   });
 };

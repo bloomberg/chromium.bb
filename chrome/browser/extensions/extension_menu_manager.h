@@ -120,8 +120,10 @@ class ExtensionMenuItem {
     target_url_patterns_ = patterns;
   }
 
-  // Returns the title with any instances of %s replaced by |selection|.
-  string16 TitleWithReplacement(const string16& selection) const;
+  // Returns the title with any instances of %s replaced by |selection|. The
+  // result will be no longer than |max_length|.
+  string16 TitleWithReplacement(const string16& selection,
+                                size_t max_length) const;
 
   // Set the checked state to |checked|. Returns true if successful.
   bool SetChecked(bool checked);
