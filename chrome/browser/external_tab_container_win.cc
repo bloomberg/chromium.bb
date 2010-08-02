@@ -767,6 +767,7 @@ bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
   nav_info->navigation_index =
       tab_contents_->controller().GetCurrentEntryIndex();
   nav_info->url = entry->url();
+  nav_info->referrer = entry->referrer();
   nav_info->title =  UTF16ToWideHack(entry->title());
   if (nav_info->title.empty())
     nav_info->title = UTF8ToWide(nav_info->url.spec());

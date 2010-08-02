@@ -449,6 +449,7 @@ struct NavigationInfo {
   int navigation_index;
   std::wstring title;
   GURL url;
+  GURL referrer;
   SecurityStyle security_style;
   bool displayed_insecure_content;
   bool ran_insecure_content;
@@ -464,6 +465,7 @@ struct ParamTraits<NavigationInfo> {
     WriteParam(m, p.navigation_index);
     WriteParam(m, p.title);
     WriteParam(m, p.url);
+    WriteParam(m, p.referrer);
     WriteParam(m, p.security_style);
     WriteParam(m, p.displayed_insecure_content);
     WriteParam(m, p.ran_insecure_content);
@@ -474,6 +476,7 @@ struct ParamTraits<NavigationInfo> {
            ReadParam(m, iter, &p->navigation_index) &&
            ReadParam(m, iter, &p->title) &&
            ReadParam(m, iter, &p->url) &&
+           ReadParam(m, iter, &p->referrer) &&
            ReadParam(m, iter, &p->security_style) &&
            ReadParam(m, iter, &p->displayed_insecure_content) &&
            ReadParam(m, iter, &p->ran_insecure_content);
@@ -489,6 +492,8 @@ struct ParamTraits<NavigationInfo> {
     LogParam(p.title, l);
     l->append(L", ");
     LogParam(p.url, l);
+    l->append(L", ");
+    LogParam(p.referrer, l);
     l->append(L", ");
     LogParam(p.security_style, l);
     l->append(L", ");
