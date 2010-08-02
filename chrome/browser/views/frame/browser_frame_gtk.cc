@@ -132,6 +132,10 @@ views::View* BrowserFrameGtk::GetFrameView() const {
 }
 
 void BrowserFrameGtk::TabStripDisplayModeChanged() {
+  if (GetRootView()->GetChildViewCount() > 0) {
+    // Make sure the child of the root view gets Layout again.
+    GetRootView()->GetChildViewAt(0)->InvalidateLayout();
+  }
   GetRootView()->Layout();
 }
 

@@ -135,9 +135,13 @@ views::View* BrowserFrameWin::GetFrameView() const {
 }
 
 void BrowserFrameWin::TabStripDisplayModeChanged() {
+  if (GetRootView()->GetChildViewCount() > 0) {
+    // Make sure the child of the root view gets Layout again.
+    GetRootView()->GetChildViewAt(0)->InvalidateLayout();
+  }
   GetRootView()->Layout();
+
   UpdateDWMFrame();
-  GetRootView()->Layout();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
