@@ -3299,13 +3299,10 @@
    fun:_ZN20AsyncResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
    fun:_ZN23BufferedResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
    fun:_ZN27SafeBrowsingResourceHandler10OnWillReadEiPPN3net8IOBufferEPii
+   ...
    fun:_ZN22ResourceDispatcherHost4ReadEP10URLRequestPi
    fun:_ZN22ResourceDispatcherHost15OnReadCompletedEP10URLRequesti
    fun:_ZN13URLRequestJob18NotifyReadCompleteEi
-   fun:_ZN19URLRequestChromeJob13DataAvailableEP16RefCountedMemory
-   fun:_ZN20ChromeURLDataManager13DataAvailableEi13scoped_refptrI16RefCountedMemoryE
-   fun:_Z16DispatchToMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEEiS3_EvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN14RunnableMethodI20ChromeURLDataManagerMS0_Fvi13scoped_refptrI16RefCountedMemoryEE6Tuple2IiS3_EE3RunEv
 }
 {
    bug_46570_b
@@ -3362,9 +3359,6 @@
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
    ...
-   fun:_ZN6chrome12PathProviderEiP8FilePath
-   fun:_ZN11PathService3GetEiP8FilePath
-   fun:_ZN18chrome_browser_net25SetUrlRequestMocksEnabledEb
    fun:_ZN31AutomationResourceMessageFilter17OnSetFilteredInetEb
    fun:_Z16DispatchToMethodI31AutomationResourceMessageFilterMS0_FvbEbEvPT_T0_RK6Tuple1IT1_E
    fun:_ZN3IPC16MessageWithTupleI6Tuple1IbEE8DispatchI31AutomationResourceMessageFilterMS5_FvbEEEbPKNS_7MessageEPT_T0_
@@ -3763,4 +3757,30 @@
    fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
    fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
    fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
+}
+{
+   bug_50936
+   Memcheck:Leak
+   fun:_Znw*
+   fun:*
+   fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
+   fun:*FactoryForOffTheRecordC1EP7Profile
+   fun:_ZN29ChromeURLRequestContextGetter18CreateOffTheRecordEP7Profile
+   fun:_ZN23OffTheRecordProfileImplC1EP7Profile
+   fun:_ZN7Profile25CreateOffTheRecordProfileEv
+   fun:_ZN11ProfileImpl22GetOffTheRecordProfileEv
+   fun:_ZN7Browser18NewIncognitoWindowEv
+   fun:_ZN7Browser29ExecuteCommandWithDispositionEi21WindowOpenDisposition
+   fun:_ZN7Browser14ExecuteCommandEi
+   fun:_ZN18AutomationProvider21ExecuteBrowserCommandEiiPN3IPC7MessageE
+   fun:_Z16DispatchToMethodI18AutomationProviderMS0_FviiPN3IPC7MessageEEiiRS2_EvPT_T0_RK6Tuple2IT1_T2_EP6Tuple1IT3_E
+   fun:_ZN3IPC16MessageWithReplyI6Tuple2IiiE6Tuple1IRbEE18DispatchDelayReplyI18AutomationProviderMS8_FviiPNS_7MessageEEEEbPKS9_PT_T0_
+   fun:_ZN18AutomationProvider17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
+   fun:_ZN3IPC11SyncChannel11SyncContext16DispatchMessagesEv
+   fun:_ZN3IPC11SyncChannel23OnWaitableEventSignaledEPN4base13WaitableEventE
+   fun:_ZN4base17AsyncCallbackTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
 }
