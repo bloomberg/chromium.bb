@@ -2572,14 +2572,16 @@ test-all() {
 #@ test-spec <official-spec-dir> <setup> -  run spec tests
 test-spec() {
   if [ $# < 2 ]; then
-    echo "test-spec {spec2krefdir} {setupfunc} {*optional_list_of_benchmarks}"
+    echo "test-spec {spec2krefdir} {setupfunc} " \
+         "[ref|train] [*optional_list_of_benchmarks]"
     exit 1
   fi;
   official=$(readlink -f $1)
+  shift
   spushd tests/spec2k
   ./run_all.sh CleanBenchmarks
   ./run_all.sh PopulateFromSpecHarness ${official}
-  ./run_all.sh BuildAndRunBenchmarks  $2
+  ./run_all.sh BuildAndRunBenchmarks "$@"
   spopd
 }
 
@@ -2592,15 +2594,18 @@ CollectTimingInfo() {
   result_file=$2
   setup=$3
   (cd ${wd};
+   mkdir -p $(dirname ${result_file})
    echo "##################################################" >>${result_file}
    date +"# Completed at %F %H:%M:%S %A ${result_file}" >> ${result_file}
    echo "# " ${wd}
    echo "#" $(uname -a) >> ${result_file}
    echo "# SETUP: ${setup}" >>${result_file}
    echo "##################################################" >>${result_file}
+   echo "# COMPILE " >> ${result_file}
    for ff in $(find . -name "*.compile_time"); do
      cat ${ff} >> ${result_file}
    done
+   echo "# RUN " >> ${result_file}
    for ff in $(find . -name "*.run_time"); do
      cat ${ff} >> ${result_file}
    done
@@ -2616,17 +2621,19 @@ CollectTimingInfo() {
 #@  Note that the VERIFY variable effects the timing!
 timed-test-spec() {
   if [ "$#" -lt "3" ]; then
-    echo "timed-test-spec {result-file} {spec2krefdir} {setupfunc}"
+    echo "timed-test-spec {result-file} {spec2krefdir} {setupfunc}" \
+         "[ref|train] [*optional_list_of_benchmarks]"
     exit 1
   fi;
   result_file=$1
   shift
   official=$(readlink -f $1)
+  shift
   spushd tests/spec2k
   ./run_all.sh CleanBenchmarks
   ./run_all.sh PopulateFromSpecHarness ${official}
-  ./run_all.sh TimedBuildAndRunBenchmarks $2
-  CollectTimingInfo $(pwd) ${result_file} $2
+  ./run_all.sh TimedBuildAndRunBenchmarks "$@"
+  CollectTimingInfo $(pwd) ${result_file} $1
   spopd
 }
 

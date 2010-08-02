@@ -88,7 +88,7 @@ $(IT).gcc.opt.arm: $(SRC)
 ######################################################################
 ## NACL-GCC TOOLCHAINS
 ######################################################################
-NACL_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/sdk/nacl-sdk/bin/nacl-gcc
+NACL_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl-gcc
 
 # nacl x86 gcc
 $(IT).nacl.x8632: $(SRC)
@@ -99,7 +99,7 @@ $(IT).nacl.opt.x8632: $(SRC)
 	$(NACL_GCC) -O3 -m32 $(CFLAGS) $(SRC)  -static -lm  -lnosys -o $@
 
 ######################################################################
-NACL64_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/sdk/nacl-sdk/bin/nacl64-gcc
+NACL64_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl64-gcc
 
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC)

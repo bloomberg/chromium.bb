@@ -21,8 +21,7 @@ readonly LIST_INT_CPP="252.eon"
 
 # TODO(robertm): make "252.eon" work
 LIST="${LIST_FP_C} ${LIST_INT_C}"
-#Pick one
-#SCRIPT=./run.ref.sh
+# One of {./run.train.sh, ./run.ref.sh}
 SCRIPT=./run.train.sh
 
 # uncomment this to disable verification
@@ -339,12 +338,33 @@ BuildBenchmarks() {
   done
 }
 
+#+
+#+ PickInputSize [train|ref]
+#+
+#+  Picks input size for spec runs (train or ref)
+PickInputSize() {
+  if [ $# -ge 1 ]; then
+    case $1 in
+      train)
+        SCRIPT="./run.train.sh"
+        ;;
+      ref)
+        SCRIPT="./run.ref.sh"
+        ;;
+      *)
+        echo "Unknown spec input size $1, using ${SCRIPT}"
+        ;;
+    esac
+    return 0
+  fi
+  return 1
+}
+
 #@
 #@ TimedRunCmd <time_result_file> {actual_cmd }
 #@
 #@  Run the command under time. Each individual timed run files
 #@  have a history of one run. To keep history, refer to CollectTimingInfo
-#@
 TimedRunCmd() {
   target=$1
   shift
@@ -379,7 +399,6 @@ RunBenchmarks() {
 #@  Run all benchmarks according to the setup.
 #@  All timing related files are stored in {execname}.run_time
 #@  Note that the VERIFY variable effects the timing!
-#@
 RunTimedBenchmarks() {
   export PREFIX=
   "$1"
@@ -399,16 +418,21 @@ RunTimedBenchmarks() {
 
 
 #@
-#@ BuildAndRunBenchmarks <setup> <benchmark>*
+#@ BuildAndRunBenchmarks <setup> [ref|train] <benchmark>*
 #@
 #@   Builds and run all benchmarks according to the setup
 BuildAndRunBenchmarks() {
+  setup=$1
+  shift
+  if PickInputSize "$@"; then
+    shift
+  fi
   BuildBenchmarks 0 "$@"
   RunBenchmarks "$@"
 }
 
 #@
-#@ TimedBuildAndRunBenchmarks <setup> <benchmark>*
+#@ TimedBuildAndRunBenchmarks <setup> [ref|train] <benchmark>*
 #@
 #@   Builds and run all benchmarks according to the setup, using
 #@   and records the time spent at each task..
@@ -417,8 +441,13 @@ BuildAndRunBenchmarks() {
 #@   Note that the VERIFY variable effects the timing!
 
 TimedBuildAndRunBenchmarks() {
-  BuildBenchmarks 1 "$@"
-  RunTimedBenchmarks "$@"
+  setup=$1
+  shift
+  if PickInputSize "$@"; then
+    shift
+  fi
+  BuildBenchmarks 1 ${setup} "$@"
+  RunTimedBenchmarks ${setup} "$@"
 }
 
 
