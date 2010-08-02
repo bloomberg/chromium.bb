@@ -391,7 +391,7 @@ void MostVisitedHandler::SetPagesValue(std::vector<PageUsageData*>* data) {
   const std::vector<MostVisitedPage> pre_populated_pages =
       MostVisitedHandler::GetPrePopulatedPages();
   bool add_chrome_store =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableApps) &&
       !HasApps();
 
   while (output_index < kMostVisitedPages) {

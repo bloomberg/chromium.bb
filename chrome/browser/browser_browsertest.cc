@@ -131,13 +131,6 @@ class BrowserTest : public ExtensionBrowserTest {
   }
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-
-    // Needed for phantom tab tests.
-    command_line->AppendSwitch(switches::kEnableApps);
-  }
-
   // In RTL locales wrap the page title with RTL embedding characters so that it
   // matches the value returned by GetWindowTitle().
   std::wstring LocaleWindowCaptionFromPageTitle(
@@ -624,11 +617,6 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
                            profile_(NULL) {}
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableApps);
-  }
-
   // Common setup for all tests.  Can't use SetUpInProcessBrowserTestFixture
   // because starting the http server crashes if called from that function.
   // The IO thread is not set up at that point.

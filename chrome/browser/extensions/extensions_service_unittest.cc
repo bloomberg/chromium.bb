@@ -248,8 +248,6 @@ void ExtensionsServiceTestBase::InitializeExtensionsService(
   // when the prefs are registered.
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExtensionToolstrips);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableApps);
 
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
   // Create a preference service that only contains user defined

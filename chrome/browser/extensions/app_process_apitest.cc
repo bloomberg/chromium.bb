@@ -14,11 +14,6 @@
 #include "net/base/mock_host_resolver.h"
 
 class AppApiTest : public ExtensionApiTest {
- public:
-  void SetUpCommandLine(CommandLine* command_line) {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableApps);
-  }
 };
 
 // Simulates a page calling window.open on an URL, and waits for the navigation.

@@ -287,7 +287,7 @@ int TopSites::GetIndexForChromeStore(const MostVisitedURLList& urls) {
 }
 
 bool TopSites::AddChromeStore(MostVisitedURLList* urls) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableApps))
     return false;
 
   ExtensionsService* service = profile_->GetExtensionsService();

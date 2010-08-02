@@ -12,7 +12,6 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
  public:
   void SetUpCommandLine(CommandLine* command_line) {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableApps);
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
   }
 };

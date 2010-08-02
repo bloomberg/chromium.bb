@@ -953,11 +953,7 @@ GURL Extension::GetBaseURLFromExtensionId(const std::string& extension_id) {
 
 // static
 bool Extension::AppsAreEnabled() {
-#if defined(OS_CHROMEOS)
-  return true;
-#else
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableApps);
-#endif
+  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableApps);
 }
 
 bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,

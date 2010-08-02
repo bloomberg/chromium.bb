@@ -102,6 +102,9 @@ const char kDisableAltWinstation[]          = "disable-winsta";
 // Disable the ApplicationCache.
 const char kDisableApplicationCache[]       = "disable-application-cache";
 
+// Disable extension apps.
+const char kDisableApps[]                   = "disable-apps";
+
 // Replaces the audio IPC layer for <audio> and <video> with a mock audio
 // device, useful when using remote desktop or machines without sound cards.
 // This is temporary until we fix the underlying problem.
@@ -278,9 +281,6 @@ const char kEnableAccelerated2dCanvas[]     = "enable-accelerated-2d-canvas";
 
 // Enables AeroPeek for each tab. (This switch only works on Windows 7).
 const char kEnableAeroPeekTabs[]            = "enable-aero-peek-tabs";
-
-// Enable experimental extension apps.
-const char kEnableApps[]                    = "enable-apps";
 
 // Enable the inclusion of non-standard ports when generating the Kerberos SPN
 // in response to a Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN
