@@ -37,7 +37,7 @@ Language DetectLanguageOfUnicodeText(
     const CompactLangDet::DetectionTables* detection_tables,
     const UChar* text, bool is_plain_text,
     bool* is_reliable, int* num_languages,
-    int* error_code) {
+    int* error_code, int* text_bytes) {
   if (!text || !num_languages)
     return NUM_LANGUAGES;
   // Normalize text to NFC, lowercase and convert to UTF-8.
@@ -50,7 +50,7 @@ Language DetectLanguageOfUnicodeText(
     UNKNOWN_LANGUAGE, UNKNOWN_LANGUAGE, UNKNOWN_LANGUAGE
   };
   int percent3[3] = { 0, 0, 0 };
-  int text_bytes = 0;
+  int text_bytes_tmp = 0;
   // We ignore return value here due to the problem described in bug 1800161.
   // For example, translate.google.com was detected as Indonesian.  It happened
   // due to the heuristic in CLD, which ignores English as a top language
@@ -62,11 +62,13 @@ Language DetectLanguageOfUnicodeText(
                                         utf8_encoded.c_str(),
                                         utf8_encoded.length(),
                                         is_plain_text, language3, percent3,
-                                        &text_bytes, is_reliable);
+                                        &text_bytes_tmp, is_reliable);
 
   // Calcualte a number of languages detected in more than 20% of the text.
   const int kMinTextPercentToCountLanguage = 20;
   *num_languages = 0;
+  if (text_bytes)
+    *text_bytes = text_bytes_tmp;
   COMPILE_ASSERT(arraysize(language3) == arraysize(percent3),
                  language3_and_percent3_should_be_of_the_same_size);
   for (int i = 0; i < arraysize(language3); ++i) {

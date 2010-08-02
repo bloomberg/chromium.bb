@@ -34,7 +34,7 @@ Language DetectLanguageOfUnicodeText(
     const CompactLangDet::DetectionTables* detection_tables,
     const UChar* text, bool is_plain_text,
     bool* is_reliable, int* num_languages,
-    int* error_code);
+    int* error_code, int* text_bytes);
 
 
 #endif  // ENCODINGS_COMPACT_LANG_DET_WIN_CLD_UNICODETEXT_H_

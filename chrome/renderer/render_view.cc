@@ -371,18 +371,17 @@ static bool CrossesExtensionExtents(WebFrame* frame, const GURL& new_url) {
 // Note this only works on Windows at this time.  It always returns 'unknown'
 // on other platforms.
 static std::string DetermineTextLanguage(const string16& text) {
-  // Text with less than 100 bytes will probably not provide good results.
-  // Report it as unknown language.
-  if (text.length() < 100)
-    return chrome::kUnknownLanguageCode;
-
   std::string language = chrome::kUnknownLanguageCode;
   int num_languages = 0;
+  int text_bytes = 0;
   bool is_reliable = false;
   Language cld_language =
       DetectLanguageOfUnicodeText(NULL, text.c_str(), true, &is_reliable,
-                                  &num_languages, NULL);
-  if (is_reliable && cld_language != NUM_LANGUAGES &&
+                                  &num_languages, NULL, &text_bytes);
+  // We don't trust the result if the CLD reports that the detection is not
+  // reliable, or if the actual text used to detect the language was less than
+  // 100 bytes (short texts can often lead to wrong results).
+  if (is_reliable && text_bytes >= 100 && cld_language != NUM_LANGUAGES &&
       cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
     // We should not use LanguageCode_ISO_639_1 because it does not cover all
     // the languages CLD can detect. As a result, it'll return the invalid
