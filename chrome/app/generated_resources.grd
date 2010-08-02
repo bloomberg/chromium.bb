@@ -3117,6 +3117,14 @@ each locale. -->
         There was an error while trying to store the client certificate. Error <ph name="ERROR_number">$1<ex>207</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_CERT_INVALID</ex></ph>).
       </message>
 
+      <!-- Certificate success infobar -->
+      <message name="IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL" desc="Label displayed in an infobar when the browser successfully imports a certificate">
+        Successfully stored client certificate issued by <ph name="ISSUER">$1<ex>VeriSign</ex></ph>.
+      </message>
+      <message name="IDS_ADD_CERT_SUCCESS_INFOBAR_BUTTON" desc="The label of the 'view' button on the infobar after a client certificate import; clicking opens a certificate viewer for the new certificate">
+        View
+      </message>
+
       <!-- Basic Auth Dialog -->
       <message name="IDS_LOGIN_DIALOG_TITLE" desc="String to be displayed in the title bar of the login prompt dialog">
         Authentication Required

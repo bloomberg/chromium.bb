@@ -22,21 +22,6 @@
 #include "net/base/ssl_cipher_suite_names.h"
 #include "net/base/x509_certificate.h"
 
-namespace {
-  // Returns a name that can be used to represent the issuer.  It tries in this
-  // order CN, O and OU and returns the first non-empty one found.
-  std::string GetIssuerName(const net::CertPrincipal& issuer) {
-    if (!issuer.common_name.empty())
-      return issuer.common_name;
-    if (!issuer.organization_names.empty())
-      return issuer.organization_names[0];
-    if (!issuer.organization_unit_names.empty())
-      return issuer.organization_unit_names[0];
-
-    return std::string();
-  }
-}
-
 PageInfoModel::PageInfoModel(Profile* profile,
                              const GURL& url,
                              const NavigationEntry::SSLStatus& ssl,
@@ -88,14 +73,14 @@ PageInfoModel::PageInfoModel(Profile* profile,
           IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV,
           UTF8ToUTF16(cert->subject().organization_names[0]),
           locality,
-          UTF8ToUTF16(GetIssuerName(cert->issuer()))));
+          UTF8ToUTF16(cert->issuer().GetDisplayName())));
     } else {
       // Non EV OK HTTPS.
       if (empty_subject_name)
         head_line.clear();  // Don't display any title.
       else
         head_line.assign(subject_name);
-      string16 issuer_name(UTF8ToUTF16(GetIssuerName(cert->issuer())));
+      string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
       if (issuer_name.empty()) {
         issuer_name.assign(l10n_util::GetStringUTF16(
             IDS_PAGE_INFO_SECURITY_TAB_UNKNOWN_PARTY));

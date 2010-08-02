@@ -19,13 +19,16 @@
 #include "net/http/http_response_headers.h"
 
 X509UserCertResourceHandler::X509UserCertResourceHandler(
-    ResourceDispatcherHost* host, URLRequest* request)
+    ResourceDispatcherHost* host, URLRequest* request,
+    int render_process_host_id, int render_view_id)
     : host_(host),
       request_(request),
       content_length_(0),
       buffer_(new DownloadBuffer),
       read_buffer_(NULL),
-      resource_buffer_(NULL) {
+      resource_buffer_(NULL),
+      render_process_host_id_(render_process_host_id),
+      render_view_id_(render_view_id) {
 }
 
 bool X509UserCertResourceHandler::OnUploadProgress(int request_id,
@@ -101,7 +104,8 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
       net::X509Certificate::CreateFromBytes(resource_buffer_->data(),
                                             content_length_);
   // The handler will run the UI and delete itself when it's finished.
-  new SSLAddCertHandler(request_, cert);
+  new SSLAddCertHandler(request_, cert, render_process_host_id_,
+                        render_view_id_);
   return true;
 }
 

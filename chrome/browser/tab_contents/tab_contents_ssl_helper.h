@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_TAB_CONTENTS_TAB_CONTENTS_SSL_HELPER_H_
 #pragma once
 
+#include <map>
+
+#include "base/linked_ptr.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
 class SSLClientAuthHandler;
@@ -19,9 +22,24 @@ class TabContentsSSLHelper : public RenderViewHostDelegate::SSL {
   // RenderViewHostDelegate::SSL implementation:
   virtual void ShowClientCertificateRequestDialog(
       scoped_refptr<SSLClientAuthHandler> handler);
+  virtual void OnVerifyClientCertificateError(
+      scoped_refptr<SSLAddCertHandler> handler, int error_code);
+  virtual void AskToAddClientCertificate(
+      scoped_refptr<SSLAddCertHandler> handler);
+  virtual void OnAddClientCertificateSuccess(
+      scoped_refptr<SSLAddCertHandler> handler);
+  virtual void OnAddClientCertificateError(
+      scoped_refptr<SSLAddCertHandler> handler, int error_code);
+  virtual void OnAddClientCertificateFinished(
+      scoped_refptr<SSLAddCertHandler> handler);
 
  private:
   TabContents* tab_contents_;
+
+  class SSLAddCertData;
+  std::map<int, linked_ptr<SSLAddCertData> > request_id_to_add_cert_data_;
+
+  SSLAddCertData* GetAddCertData(SSLAddCertHandler *handler);
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsSSLHelper);
 };

@@ -323,7 +323,8 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
     }
 
     X509UserCertResourceHandler* x509_cert_handler =
-        new X509UserCertResourceHandler(host_, request_);
+        new X509UserCertResourceHandler(host_, request_,
+                                        info->child_id(), info->route_id());
     UseAlternateResourceHandler(request_id, x509_cert_handler);
   }
 

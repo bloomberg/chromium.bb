@@ -19,7 +19,8 @@
 class X509UserCertResourceHandler : public ResourceHandler {
  public:
   X509UserCertResourceHandler(ResourceDispatcherHost* host,
-                              URLRequest* request);
+                              URLRequest* request,
+                              int render_process_host_id, int render_view_id);
 
   bool OnUploadProgress(int request_id, uint64 position, uint64 size);
 
@@ -61,6 +62,10 @@ class X509UserCertResourceHandler : public ResourceHandler {
   scoped_refptr<net::IOBuffer> read_buffer_;
   scoped_refptr<net::IOBuffer> resource_buffer_;  // Downloaded certificate.
   static const int kReadBufSize = 32768;
+  // The id of the |RenderProcessHost| which started the download.
+  int render_process_host_id_;
+  // The id of the |RenderView| which started the download.
+  int render_view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(X509UserCertResourceHandler);
 };

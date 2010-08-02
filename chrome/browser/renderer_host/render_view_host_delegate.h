@@ -40,6 +40,7 @@ class ResourceRedirectDetails;
 class ResourceRequestDetails;
 class SkBitmap;
 class SSLClientAuthHandler;
+class SSLAddCertHandler;
 class TabContents;
 struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
@@ -538,6 +539,33 @@ class RenderViewHostDelegate {
     // returning them to |handler|.
     virtual void ShowClientCertificateRequestDialog(
         scoped_refptr<SSLClientAuthHandler> handler) = 0;
+
+    // Called when |handler| encounters an error in verifying a
+    // received client certificate. Note that, because CAs often will
+    // not send us intermediate certificates, the verification we can
+    // do is minimal: we verify the certificate is parseable, that we
+    // have the corresponding private key, and that the certificate
+    // has not expired.
+    virtual void OnVerifyClientCertificateError(
+        scoped_refptr<SSLAddCertHandler> handler, int error_code) = 0;
+
+    // Called when |handler| requests the user's confirmation in adding a
+    // client certificate.
+    virtual void AskToAddClientCertificate(
+        scoped_refptr<SSLAddCertHandler> handler) = 0;
+
+    // Called when |handler| successfully adds a client certificate.
+    virtual void OnAddClientCertificateSuccess(
+        scoped_refptr<SSLAddCertHandler> handler) = 0;
+
+    // Called when |handler| encounters an error adding a client certificate.
+    virtual void OnAddClientCertificateError(
+        scoped_refptr<SSLAddCertHandler> handler, int error_code) = 0;
+
+    // Called when |handler| has completed, so the delegate may release any
+    // state accumulated.
+    virtual void OnAddClientCertificateFinished(
+        scoped_refptr<SSLAddCertHandler> handler) = 0;
 
    protected:
     virtual ~SSL() {}
