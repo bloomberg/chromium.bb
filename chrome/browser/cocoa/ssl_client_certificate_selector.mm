@@ -30,8 +30,6 @@
   scoped_nsobject<NSMutableArray> identities_;
   // The corresponding list of certificates.
   std::vector<scoped_refptr<net::X509Certificate> > certificates_;
-  // The panel we display.
-  scoped_nsobject<SFChooseIdentityPanel> panel_;
 }
 
 - (id)initWithHandler:(SSLClientAuthHandler*)handler
@@ -71,22 +69,28 @@ void ShowSSLClientCertificateSelector(
 - (void)sheetDidEnd:(NSWindow*)parent
          returnCode:(NSInteger)returnCode
             context:(void*)context {
-  net::X509Certificate* cert = NULL;
+  DCHECK(context);
+  SFChooseIdentityPanel* panel = static_cast<SFChooseIdentityPanel*>(context);
 
+  net::X509Certificate* cert = NULL;
   if (returnCode == NSFileHandlingPanelOKButton) {
-    NSUInteger index = [identities_ indexOfObject:(id)[panel_ identity]];
-    DCHECK(index != NSNotFound);
-    cert = certificates_[index];
+    NSUInteger index = [identities_ indexOfObject:(id)[panel identity]];
+    if (index != NSNotFound)
+      cert = certificates_[index];
+    else
+      NOTREACHED();
   }
 
   // Finally, tell the backend which identity (or none) the user selected.
   handler_->CertificateSelected(cert);
-  // Clean up. The retain occurred just before the sheet opened.
-  [self release];
+
+  // Now that the panel has closed, release it. Note that the autorelease is
+  // needed. After this callback returns, the panel is still accessed, so a
+  // normal release crashes.
+  [panel autorelease];
 }
 
 - (void)displayDialog:(gfx::NativeWindow)parent {
-  DCHECK(!panel_.get());
   // Create an array of CFIdentityRefs for the certificates:
   size_t numCerts = certRequestInfo_->client_certs.size();
   identities_.reset([[NSMutableArray alloc] initWithCapacity:numCerts]);
@@ -108,37 +112,39 @@ void ShowSSLClientCertificateSelector(
       ASCIIToUTF16(certRequestInfo_->host_and_port));
 
   // Create and set up a system choose-identity panel.
-  panel_.reset([[SFChooseIdentityPanel alloc] init]);
+  SFChooseIdentityPanel* panel = [[SFChooseIdentityPanel alloc] init];
   NSString* domain = base::SysUTF8ToNSString(
       "https://" + certRequestInfo_->host_and_port);
   // Setting the domain causes the dialog to record the preferred
   // identity in the system keychain.
-  [panel_ setDomain:domain];
-  [panel_ setInformativeText:message];
-  [panel_ setDefaultButtonTitle:l10n_util::GetNSString(IDS_OK)];
-  [panel_ setAlternateButtonTitle:l10n_util::GetNSString(IDS_CANCEL)];
+  [panel setDomain:domain];
+  [panel setInformativeText:message];
+  [panel setDefaultButtonTitle:l10n_util::GetNSString(IDS_OK)];
+  [panel setAlternateButtonTitle:l10n_util::GetNSString(IDS_CANCEL)];
   SecPolicyRef sslPolicy;
   if (net::X509Certificate::CreateSSLClientPolicy(&sslPolicy) == noErr) {
-    [panel_ setPolicies:(id)sslPolicy];
+    [panel setPolicies:(id)sslPolicy];
     CFRelease(sslPolicy);
   }
 
-  // Increase the retain count to keep |self| alive while the sheet
-  // runs. -sheetDidEnd:returnCode:context: will release the
-  // additional reference.
-  [self retain];
+  // Note: SFChooseIdentityPanel does not take a reference to itself while the
+  // sheet is open. Don't release the ownership claim until the sheet has ended
+  // in |-sheetDidEnd:returnCode:context:|.
   if (parent) {
-    // Open the cert panel as a sheet on the browser window.
-    [panel_ beginSheetForWindow:parent
-                  modalDelegate:self
-                 didEndSelector:@selector(sheetDidEnd:returnCode:context:)
-                    contextInfo:nil
+    // Open the cert panel as a sheet on the browser window. |panel| is passed
+    // to itself as contextInfo because the didEndSelector has the wrong
+    // signature; the NSWindow argument is the parent window. The panel also
+    // retains a reference to its delegate, so no self retain is needed.
+    [panel beginSheetForWindow:parent
+                 modalDelegate:self
+                didEndSelector:@selector(sheetDidEnd:returnCode:context:)
+                   contextInfo:panel
                     identities:identities_
                        message:title];
   } else {
     // No available browser window, so run independently as a (blocking) dialog.
-    int returnCode = [panel_ runModalForIdentities:identities_ message:title];
-    [self sheetDidEnd:panel_ returnCode:returnCode context:nil];
+    int returnCode = [panel runModalForIdentities:identities_ message:title];
+    [self sheetDidEnd:panel returnCode:returnCode context:panel];
   }
 }
 
