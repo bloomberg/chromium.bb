@@ -4,6 +4,7 @@
 
 #include "webkit/glue/plugins/webview_plugin.h"
 
+#include "base/histogram.h"
 #include "base/message_loop.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -12,6 +13,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 #if WEBKIT_USING_CG
@@ -27,24 +29,47 @@ using WebKit::WebDragOperationsMask;
 using WebKit::WebFrame;
 using WebKit::WebImage;
 using WebKit::WebInputEvent;
+using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
 using WebKit::WebPoint;
 using WebKit::WebRect;
 using WebKit::WebSize;
 using WebKit::WebURLError;
 using WebKit::WebURLRequest;
+using WebKit::WebURLResponse;
 using WebKit::WebVector;
 using WebKit::WebView;
 
 WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
     : delegate_(delegate),
-      container_(NULL) {
+      container_(NULL),
+      finished_loading_(false) {
   web_view_ = WebView::create(this, NULL);
   web_view_->initializeMainFrame(this);
 }
 
 WebViewPlugin::~WebViewPlugin() {
   web_view_->close();
+}
+
+void WebViewPlugin::ReplayReceivedData(WebPlugin* plugin) {
+  if (!response_.isNull()) {
+    plugin->didReceiveResponse(response_);
+    size_t total_bytes = 0;
+    for (std::list<std::string>::iterator it = data_.begin();
+        it != data_.end(); ++it) {
+      plugin->didReceiveData(it->c_str(), it->length());
+      total_bytes += it->length();
+    }
+    UMA_HISTOGRAM_MEMORY_KB("PluginDocument.Memory", (total_bytes / 1024));
+    UMA_HISTOGRAM_COUNTS("PluginDocument.NumChunks", data_.size());
+  }
+  if (finished_loading_) {
+    plugin->didFinishLoading();
+  }
+  if (error_.get()) {
+    plugin->didFailLoading(*error_);
+  }
 }
 
 bool WebViewPlugin::initialize(WebPluginContainer* container) {
@@ -103,6 +128,25 @@ bool WebViewPlugin::handleInputEvent(const WebInputEvent& event,
   bool handled = web_view_->handleInputEvent(event);
   cursor = current_cursor_;
   return handled;
+}
+
+void WebViewPlugin::didReceiveResponse(const WebURLResponse& response) {
+  DCHECK(response_.isNull());
+  response_ = response;
+}
+
+void WebViewPlugin::didReceiveData(const char* data, int data_length) {
+  data_.push_back(std::string(data, data_length));
+}
+
+void WebViewPlugin::didFinishLoading() {
+  DCHECK(!finished_loading_);
+  finished_loading_ = true;
+}
+
+void WebViewPlugin::didFailLoading(const WebURLError& error) {
+  DCHECK(!error_.get());
+  error_.reset(new WebURLError(error));
 }
 
 void WebViewPlugin::startDragging(const WebDragData&,

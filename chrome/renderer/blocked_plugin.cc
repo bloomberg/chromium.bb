@@ -82,6 +82,7 @@ void BlockedPlugin::LoadPlugin() {
                                          FilePath());
   if (new_plugin && new_plugin->initialize(container)) {
     container->setPlugin(new_plugin);
+    plugin_->ReplayReceivedData(new_plugin);
     container->invalidate();
     container->reportGeometry();
     plugin_->destroy();

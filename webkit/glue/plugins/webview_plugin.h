@@ -5,11 +5,14 @@
 #ifndef WEBKIT_GLUE_PLUGINS_WEBVIEW_PLUGIN_H_
 #define WEBKIT_GLUE_PLUGINS_WEBVIEW_PLUGIN_H_
 
+#include <list>
+
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 
 // This class implements the WebPlugin interface by forwarding drawing and
@@ -36,9 +39,14 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
 
   explicit WebViewPlugin(Delegate* delegate);
 
-  virtual WebKit::WebView* web_view() { return web_view_; }
+  WebKit::WebView* web_view() { return web_view_; }
 
-  virtual WebKit::WebPluginContainer* container() { return container_; }
+  WebKit::WebPluginContainer* container() { return container_; }
+
+  // When loading a plug-in document (i.e. a full page plug-in not embedded in
+  // another page), we save all data that has been received, and replay it with
+  // this method on the actual plug-in.
+  void ReplayReceivedData(WebKit::WebPlugin* plugin);
 
   // WebPlugin methods:
   virtual bool initialize(WebKit::WebPluginContainer*);
@@ -60,10 +68,10 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   virtual bool handleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo& cursor_info);
 
-  virtual void didReceiveResponse(const WebKit::WebURLResponse& response) { }
-  virtual void didReceiveData(const char* data, int data_length) { }
-  virtual void didFinishLoading() { }
-  virtual void didFailLoading(const WebKit::WebURLError& error) { }
+  virtual void didReceiveResponse(const WebKit::WebURLResponse& response);
+  virtual void didReceiveData(const char* data, int data_length);
+  virtual void didFinishLoading();
+  virtual void didFailLoading(const WebKit::WebURLError& error);
 
   // Called in response to WebPluginContainer::loadFrameRequest
   virtual void didFinishLoadingFrameRequest(
@@ -102,6 +110,11 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   WebKit::WebPluginContainer* container_;
   WebKit::WebView* web_view_;
   gfx::Rect rect_;
+
+  WebKit::WebURLResponse response_;
+  std::list<std::string> data_;
+  bool finished_loading_;
+  scoped_ptr<WebKit::WebURLError> error_;
 };
 
 #endif  // WEBKIT_GLUE_PLUGINS_WEBVIEW_PLUGIN_H_
