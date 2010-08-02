@@ -26,32 +26,26 @@ cr.define('options', function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
+      $('stop-sync').onclick = function(event) {
+        OptionsPage.showOverlay('stopSyncingOverlay');
+      };
+      $('sync-customize').onclick = function(event) {
+        OptionsPage.showPageByName('sync');
+      };
+      $('start-sync').onclick = function(event) {
+        //TODO(sargrass): Show start-sync subpage, after dhg done.
+      };
+
       // Listen to pref changes.
       Preferences.getInstance().addEventListener('sync.has_setup_completed',
           function(event) {
             if(event.value) {
               chrome.send('getSyncStatus');
-              $('text-when-synced').style.display = 'block';
-              $('button-when-synced').style.display = 'block';
-              $('stop-sync').onclick = function(event) {
-                OptionsPage.showOverlay('stopSyncingOverlay');
-              };
-
-              $('sync-customize').onclick = function(event) {
-                OptionsPage.showPageByName('sync');
-              };
-
-              $('text-when-not-synced').style.display = 'none';
-              $('button-when-not-synced').style.display = 'none';
+              $('synced-controls').classList.remove('hidden');
+              $('not-synced-controls').classList.add('hidden');
             } else {
-              $('text-when-not-synced').style.display = 'block';
-              $('button-when-not-synced').style.display = 'block';
-              $('start-sync').onclick = function(event) {
-                //TODO(sargrass): Show start-sync subpage, after dhg done.
-              };
-
-              $('text-when-synced').style.display = 'none';
-              $('button-when-synced').style.display = 'none';
+              $('synced-controls').classList.add('hidden');
+              $('not-synced-controls').classList.remove('hidden');
             }
           });
 

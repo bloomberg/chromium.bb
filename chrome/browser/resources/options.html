@@ -93,9 +93,9 @@ function load() {
     //     'languagePinyinPage'));
   }
 
-  OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.register(BrowserOptions.getInstance());
   OptionsPage.register(PersonalOptions.getInstance());
+  OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance());
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
@@ -147,7 +147,6 @@ window.onpopstate = function(e) {
   <link rel="stylesheet" href="options/chromeos_internet_options_page.css">
   <link rel="stylesheet" href="options/chromeos_language_options.css">
 </if>
-<link rel="stylesheet" href="options/personal_options.css">
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
 <div class="header">
