@@ -31,6 +31,8 @@ class FileSink {
         csc_buf_size_(0) {
   }
 
+  virtual ~FileSink() {}
+
   virtual void BufferReady(int size, uint8* buffer);
 
   // Initialize this object. Returns true if successful.

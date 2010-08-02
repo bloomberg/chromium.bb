@@ -374,6 +374,8 @@ class ServerMacroExTest {
  public:
   ServerMacroExTest() : unhandled_msgs_(0) {
   }
+  virtual ~ServerMacroExTest() {
+  }
   virtual bool OnMessageReceived(const IPC::Message& msg) {
     bool msg_is_ok = false;
     IPC_BEGIN_MESSAGE_MAP_EX(ServerMacroExTest, msg, msg_is_ok)

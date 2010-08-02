@@ -68,6 +68,9 @@ class SystemMonitor {
 
     // Notification that the system is resuming.
     virtual void OnResume() {}
+
+   protected:
+    virtual ~PowerObserver() {}
   };
 
   // Add a new observer.

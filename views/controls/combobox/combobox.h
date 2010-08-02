@@ -28,6 +28,9 @@ class Combobox : public View {
     virtual void ItemChanged(Combobox* combo_box,
                              int prev_index,
                              int new_index) = 0;
+
+   protected:
+    virtual ~Listener() {}
   };
 
   // |model| is not owned by the combo box.
