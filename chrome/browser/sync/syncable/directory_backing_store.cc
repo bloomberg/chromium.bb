@@ -185,6 +185,14 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
     sqlite_utils::scoped_sqlite_db_ptr scoped_handle(*handle);
     sqlite3_busy_timeout(scoped_handle.get(), std::numeric_limits<int>::max());
     {
+      string integrity_error;
+      bool is_ok = CheckIntegrity(scoped_handle.get(), &integrity_error);
+      if (!is_ok) {
+        LOG(ERROR) << "Integrity check failed: " << integrity_error;
+        return false;
+      }
+    }
+    {
       SQLStatement statement;
       statement.prepare(scoped_handle.get(), "PRAGMA fullfsync = 1");
       if (SQLITE_DONE != statement.step()) {
@@ -214,6 +222,22 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
     return true;
   }
   return false;
+}
+
+bool DirectoryBackingStore::CheckIntegrity(sqlite3* handle, string* error)
+    const {
+  SQLStatement statement;
+  statement.prepare(handle, "PRAGMA integrity_check(1)");
+  if (SQLITE_ROW != statement.step()) {
+    *error =  sqlite3_errmsg(handle);
+    return false;
+  }
+  string integrity_result = statement.column_text(0);
+  if (integrity_result != "ok") {
+    *error = integrity_result;
+    return false;
+  }
+  return true;
 }
 
 DirOpenResult DirectoryBackingStore::DoLoad(MetahandlesIndex* entry_bucket,
@@ -261,9 +285,8 @@ bool DirectoryBackingStore::BeginLoad() {
     return ret;
   // Something's gone wrong. Nuke the database and try again.
   LOG(ERROR) << "Sync database " << backing_filepath_.value()
-             << " corrupt. Deleting and recreating.";
-  file_util::Delete(backing_filepath_, false);
-  return OpenAndConfigureHandleHelper(&load_dbhandle_);
+             << " corrupt.";
+  return false;
 }
 
 void DirectoryBackingStore::EndLoad() {

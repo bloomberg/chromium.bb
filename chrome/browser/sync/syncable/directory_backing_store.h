@@ -146,6 +146,11 @@ class DirectoryBackingStore {
   static ModelType ModelIdToModelTypeEnum(const string& model_id);
   static string ModelTypeEnumToModelId(ModelType model_type);
 
+  // Runs an integrity check on the current database.  If the
+  // integrity check fails, false is returned and error is populated
+  // with an error message.
+  bool CheckIntegrity(sqlite3* handle, string* error) const;
+
   // Migration utilities.
   bool AddColumn(const ColumnSpec* column);
   bool RefreshColumns();

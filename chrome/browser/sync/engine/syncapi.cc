@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/base64.h"
+#include "base/histogram.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -1496,7 +1497,17 @@ bool SyncManager::SyncInternal::AuthenticateForUser(
   // We optimize by opening the directory before the "fresh" authentication
   // attempt completes so that we can immediately begin processing changes.
   if (!dir_manager()->Open(username_for_share())) {
-    DCHECK(false) << "Had last known user but could not open directory";
+    // TODO(tim): Cue a refresh if the db was corrupt.
+    if (observer_)
+      observer_->OnStopSyncingPermanently();
+
+#if defined(OS_WIN)
+      UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedWin", 1);
+#elif defined (OS_MACOSX)
+      UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedMac", 1);
+#else
+      UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedNotWinMac", 1);
+#endif
     return false;
   }
 

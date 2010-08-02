@@ -1019,7 +1019,8 @@ TEST_F(DirectoryBackingStoreTest, ModelTypeIds) {
   }
 }
 
-TEST_F(DirectoryBackingStoreTest, Corruption) {
+// TODO(tim): Disabled due to bug 48502.
+TEST_F(DirectoryBackingStoreTest, DISABLED_Corruption) {
   {
     scoped_ptr<DirectoryBackingStore> dbs(
         new DirectoryBackingStore(GetUsername(), GetDatabasePath()));
