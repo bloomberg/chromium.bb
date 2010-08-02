@@ -10,6 +10,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/basictypes.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -213,15 +214,19 @@ void EulaView::UpdateLocalizedStrings() {
   const StartupCustomizationDocument *customization =
       WizardController::default_controller()->GetCustomization();
   if (customization) {
-    const FilePath eula_page_path = customization->GetEULAPagePath(
-        g_browser_process->GetApplicationLocale());
+    std::string locale = g_browser_process->GetApplicationLocale();
+    FilePath eula_page_path = customization->GetEULAPagePath(locale);
+    if (eula_page_path.empty()) {
+      LOG(INFO) << "No eula found for locale: " << locale;
+      locale = customization->initial_locale();
+      eula_page_path = customization->GetEULAPagePath(locale);
+    }
     if (!eula_page_path.empty()) {
       const std::string page_path = std::string(chrome::kFileScheme) +
           chrome::kStandardSchemeSeparator + eula_page_path.value();
       LoadEulaView(oem_eula_view_, oem_eula_label_, GURL(page_path));
     } else {
-      LOG(ERROR) << "No eula found for locale: "
-                 << g_browser_process->GetApplicationLocale();
+      LOG(INFO) << "No eula found for locale: " << locale;
     }
   } else {
     LOG(ERROR) << "No manifest found.";
