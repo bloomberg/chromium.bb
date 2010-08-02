@@ -37,16 +37,6 @@ ExtensionMenuItem::~ExtensionMenuItem() {
   STLDeleteElements(&children_);
 }
 
-bool ExtensionMenuItem::RemoveChild(const Id& child_id) {
-  ExtensionMenuItem* child = ReleaseChild(child_id, true);
-  if (child) {
-    delete child;
-    return true;
-  } else {
-    return false;
-  }
-}
-
 ExtensionMenuItem* ExtensionMenuItem::ReleaseChild(const Id& child_id,
                                                    bool recursive) {
   for (List::iterator i = children_.begin(); i != children_.end(); ++i) {
@@ -251,23 +241,40 @@ bool ExtensionMenuManager::RemoveContextMenuItem(
   }
 
   bool result = false;
+  std::set<ExtensionMenuItem::Id> items_removed;
   ExtensionMenuItem::List& list = i->second;
   ExtensionMenuItem::List::iterator j;
   for (j = list.begin(); j < list.end(); ++j) {
-    // See if the current item is a match, or if one of its children was.
+    // See if the current top-level item is a match.
     if ((*j)->id() == id) {
+      items_removed = (*j)->RemoveAllDescendants();
+      items_removed.insert(id);
       delete *j;
       list.erase(j);
-      items_by_id_.erase(id);
       result = true;
       break;
-    } else if ((*j)->RemoveChild(id)) {
-      items_by_id_.erase(id);
-      result = true;
-      break;
+    } else {
+      // See if the item to remove was found as a descendant of the current
+      // top-level item.
+      ExtensionMenuItem* child = (*j)->ReleaseChild(id, true /* recursive */);
+      if (child) {
+        items_removed = child->RemoveAllDescendants();
+        items_removed.insert(id);
+        delete child;
+        result = true;
+        break;
+      }
     }
   }
   DCHECK(result);  // The check at the very top should have prevented this.
+
+  // Clear entries from the items_by_id_ map.
+  std::set<ExtensionMenuItem::Id>::iterator removed_iter;
+  for (removed_iter = items_removed.begin();
+       removed_iter != items_removed.end();
+       ++removed_iter) {
+    items_by_id_.erase(*removed_iter);
+  }
 
   if (list.empty())
     icon_manager_.RemoveIcon(extension_id);

@@ -152,6 +152,71 @@ TEST_F(ExtensionMenuManagerTest, ChildFunctions) {
   ASSERT_EQ(0, item2->child_count());
 }
 
+// Tests that deleting a parent properly removes descendants.
+TEST_F(ExtensionMenuManagerTest, DeleteParent) {
+  Extension* extension = AddExtension("1111");
+
+  // Set up 5 items to add.
+  ExtensionMenuItem* item1 = CreateTestItem(extension);
+  ExtensionMenuItem* item2 = CreateTestItem(extension);
+  ExtensionMenuItem* item3 = CreateTestItem(extension);
+  ExtensionMenuItem* item4 = CreateTestItem(extension);
+  ExtensionMenuItem* item5 = CreateTestItem(extension);
+  ExtensionMenuItem* item6 = CreateTestItem(extension);
+  ExtensionMenuItem::Id item1_id = item1->id();
+  ExtensionMenuItem::Id item2_id = item2->id();
+  ExtensionMenuItem::Id item3_id = item3->id();
+  ExtensionMenuItem::Id item4_id = item4->id();
+  ExtensionMenuItem::Id item5_id = item5->id();
+  ExtensionMenuItem::Id item6_id = item6->id();
+
+  // Add the items in the hierarchy
+  // item1 -> item2 -> item3 -> item4 -> item5 -> item6.
+  ASSERT_TRUE(manager_.AddContextItem(extension, item1));
+  ASSERT_TRUE(manager_.AddChildItem(item1_id, item2));
+  ASSERT_TRUE(manager_.AddChildItem(item2_id, item3));
+  ASSERT_TRUE(manager_.AddChildItem(item3_id, item4));
+  ASSERT_TRUE(manager_.AddChildItem(item4_id, item5));
+  ASSERT_TRUE(manager_.AddChildItem(item5_id, item6));
+  ASSERT_EQ(item1, manager_.GetItemById(item1_id));
+  ASSERT_EQ(item2, manager_.GetItemById(item2_id));
+  ASSERT_EQ(item3, manager_.GetItemById(item3_id));
+  ASSERT_EQ(item4, manager_.GetItemById(item4_id));
+  ASSERT_EQ(item5, manager_.GetItemById(item5_id));
+  ASSERT_EQ(item6, manager_.GetItemById(item6_id));
+  ASSERT_EQ(1u, manager_.MenuItems(extension->id())->size());
+  ASSERT_EQ(6u, manager_.items_by_id_.size());
+
+  // Remove item6 (a leaf node).
+  ASSERT_TRUE(manager_.RemoveContextMenuItem(item6_id));
+  ASSERT_EQ(item1, manager_.GetItemById(item1_id));
+  ASSERT_EQ(item2, manager_.GetItemById(item2_id));
+  ASSERT_EQ(item3, manager_.GetItemById(item3_id));
+  ASSERT_EQ(item4, manager_.GetItemById(item4_id));
+  ASSERT_EQ(item5, manager_.GetItemById(item5_id));
+  ASSERT_EQ(NULL, manager_.GetItemById(item6_id));
+  ASSERT_EQ(1u, manager_.MenuItems(extension->id())->size());
+  ASSERT_EQ(5u, manager_.items_by_id_.size());
+
+  // Remove item4 and make sure item5 is gone as well.
+  ASSERT_TRUE(manager_.RemoveContextMenuItem(item4_id));
+  ASSERT_EQ(item1, manager_.GetItemById(item1_id));
+  ASSERT_EQ(item2, manager_.GetItemById(item2_id));
+  ASSERT_EQ(item3, manager_.GetItemById(item3_id));
+  ASSERT_EQ(NULL, manager_.GetItemById(item4_id));
+  ASSERT_EQ(NULL, manager_.GetItemById(item5_id));
+  ASSERT_EQ(1u, manager_.MenuItems(extension->id())->size());
+  ASSERT_EQ(3u, manager_.items_by_id_.size());
+
+  // Now remove item1 and make sure item2 and item3 are gone as well.
+  ASSERT_TRUE(manager_.RemoveContextMenuItem(item1_id));
+  ASSERT_EQ(0u, manager_.MenuItems(extension->id())->size());
+  ASSERT_EQ(0u, manager_.items_by_id_.size());
+  ASSERT_EQ(NULL, manager_.GetItemById(item1_id));
+  ASSERT_EQ(NULL, manager_.GetItemById(item2_id));
+  ASSERT_EQ(NULL, manager_.GetItemById(item3_id));
+}
+
 // Tests changing parents.
 TEST_F(ExtensionMenuManagerTest, ChangeParent) {
   Extension* extension1 = AddExtension("1111");

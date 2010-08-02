@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
@@ -134,10 +135,6 @@ class ExtensionMenuItem {
   // Takes ownership of |item| and sets its parent_id_.
   void AddChild(ExtensionMenuItem* item);
 
-  // Removes child menu item with the given id, returning true if the item was
-  // found and removed, or false otherwise.
-  bool RemoveChild(const Id& child_id);
-
   // Takes the child item from this parent. The item is returned and the caller
   // then owns the pointer.
   ExtensionMenuItem* ReleaseChild(const Id& child_id, bool recursive);
@@ -247,6 +244,8 @@ class ExtensionMenuManager : public NotificationObserver {
   static bool HasAllowedScheme(const GURL& url);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ExtensionMenuManagerTest, DeleteParent);
+
   // This is a helper function which takes care of de-selecting any other radio
   // items in the same group (i.e. that are adjacent in the list).
   void RadioItemSelected(ExtensionMenuItem* item);
