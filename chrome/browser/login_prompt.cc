@@ -364,7 +364,10 @@ class LoginDialogTask : public Task {
   void Run() {
     TabContents* parent_contents = handler_->GetTabContentsForLogin();
     if (!parent_contents) {
-      // The request was probably cancelled.
+      // The request may have been cancelled, or it may be for a renderer
+      // not hosted by a tab (e.g. an extension). Cancel just in case
+      // (cancelling twice is a no-op).
+      handler_->CancelAuth();
       return;
     }
 
