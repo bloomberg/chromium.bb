@@ -1538,8 +1538,8 @@ llvm-tools-x8632-sb-configure() {
     PATH="/usr/bin:/bin" \
     AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
     AS="${NACL_TOOLCHAIN}/bin/nacl-as" \
-    CC="${NACL_TOOLCHAIN}/bin/nacl-gcc -DPNACL_TOOLCHAIN_SANDBOX=1 -m32 -O2 -static -I${NACL_TOOLCHAIN}/nacl/include" \
-    CXX="${NACL_TOOLCHAIN}/bin/nacl-g++ -DPNACL_TOOLCHAIN_SANDBOX=1 -m32 -O2 -static -I${NACL_TOOLCHAIN}/nacl/include" \
+    CC="${NACL_TOOLCHAIN}/bin/nacl-gcc -m32 -O2 -static -I${NACL_TOOLCHAIN}/nacl/include" \
+    CXX="${NACL_TOOLCHAIN}/bin/nacl-g++ -m32 -O2 -static -I${NACL_TOOLCHAIN}/nacl/include" \
     EMULATOR_FOR_BUILD="$(pwd)/scons-out/opt-linux-x86-32/staging/sel_ldr -d" \
     LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
     RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
@@ -1663,7 +1663,7 @@ binutils-x8632-sb-configure() {
     CXX="${NACL_TOOLCHAIN}/bin/nacl-g++" \
     LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
     RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
-    CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl/include" \
+    CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -I${NACL_TOOLCHAIN}/nacl/include" \
     LDFLAGS="-s" \
     LDFLAGS_FOR_BUILD="-L ." \
     ${srcdir}/binutils-2.20/configure \
@@ -1782,7 +1782,7 @@ binutils-x8664-sb-configure() {
     CXX="${NACL_TOOLCHAIN}/bin/nacl64-g++" \
     LD="${NACL_TOOLCHAIN}/bin/nacl64-ld" \
     RANLIB="${NACL_TOOLCHAIN}/bin/nacl64-ranlib" \
-    CFLAGS="-m64 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -DPNACL_TOOLCHAIN_SANDBOX -I${NACL_TOOLCHAIN}/nacl64/include" \
+    CFLAGS="-m64 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -I${NACL_TOOLCHAIN}/nacl64/include" \
     LDFLAGS="-s" \
     LDFLAGS_FOR_BUILD="-L." \
     ${srcdir}/binutils-2.20/configure \
