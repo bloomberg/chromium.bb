@@ -127,22 +127,19 @@ bool FirefoxProxySettings::ToProxyConfig(net::ProxyConfig* config) {
   if (!http_proxy().empty()) {
     config->proxy_rules().proxy_for_http = net::ProxyServer(
         net::ProxyServer::SCHEME_HTTP,
-        http_proxy(),
-        http_proxy_port());
+        net::HostPortPair(http_proxy(), http_proxy_port()));
   }
 
   if (!ftp_proxy().empty()) {
     config->proxy_rules().proxy_for_ftp = net::ProxyServer(
         net::ProxyServer::SCHEME_HTTP,
-        ftp_proxy(),
-        ftp_proxy_port());
+        net::HostPortPair(ftp_proxy(), ftp_proxy_port()));
   }
 
   if (!ssl_proxy().empty()) {
     config->proxy_rules().proxy_for_https = net::ProxyServer(
         net::ProxyServer::SCHEME_HTTP,
-        ssl_proxy(),
-        ssl_proxy_port());
+        net::HostPortPair(ssl_proxy(), ssl_proxy_port()));
   }
 
   if (!socks_host().empty()) {
@@ -151,8 +148,7 @@ bool FirefoxProxySettings::ToProxyConfig(net::ProxyConfig* config) {
 
     config->proxy_rules().socks_proxy = net::ProxyServer(
         proxy_scheme,
-        socks_host(),
-        socks_port());
+        net::HostPortPair(socks_host(), socks_port()));
   }
 
   config->proxy_rules().bypass_rules.ParseFromStringUsingSuffixMatching(
