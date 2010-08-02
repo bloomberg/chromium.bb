@@ -249,7 +249,7 @@ void InitPasswordFormFromStatement(PasswordForm* form, sql::Statement* s) {
 // See http://crbug.com/49332.
 string16 LimitDataSize(const string16& data) {
   if (data.size() > kMaxDataLength)
-    return data.substr(kMaxDataLength);
+    return data.substr(0, kMaxDataLength);
 
   return data;
 }
