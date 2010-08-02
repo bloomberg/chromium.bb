@@ -478,9 +478,9 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
 #if defined(OS_CHROMEOS)
   const std::string& profile =
-      browser_command_line.GetSwitchValueASCII(switches::kProfile);
+      browser_command_line.GetSwitchValueASCII(switches::kLoginProfile);
   if (!profile.empty())
-    command_line->AppendSwitchASCII(switches::kProfile, profile);
+    command_line->AppendSwitchASCII(switches::kLoginProfile, profile);
 #endif
 }
 

@@ -298,7 +298,6 @@ extern const char kLoginManager[];
 extern const char kLoginScreen[];
 extern const char kLoginScreenSize[];
 extern const char kTestLoadLibcros[];
-extern const char kProfile[];
 extern const char kLoginProfile[];
 extern const char kLoginUser[];
 extern const char kChromeosFrame[];

@@ -388,7 +388,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
     switches::kEnableGPUPlugin,
     switches::kUseGL,
 #if defined(OS_CHROMEOS)
-    switches::kProfile,
+    switches::kLoginProfile,
 #endif
   };
 

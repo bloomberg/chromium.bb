@@ -1031,10 +1031,6 @@ const char kLoginScreenSize[]               = "login-screen-size";
 // means the library could not be loaded correctly.
 const char kTestLoadLibcros[]               = "test-load-libcros";
 
-// TODO(davemoore) Delete this once chromeos has started using
-// login-profile as its arg.
-const char kProfile[]                       = "profile";
-
 // Specifies the profile to use once a chromeos user is logged in.
 const char kLoginProfile[]                  = "login-profile";
 

@@ -101,12 +101,8 @@ FilePath ProfileManager::GetCurrentProfileDir() {
   if (logged_in_) {
     FilePath profile_dir;
     // If the user has logged in, pick up the new profile.
-    // TODO(davemoore) Delete this once chromium os has started using
-    // "--login-profile" instead of "--profile".
     if (command_line.HasSwitch(switches::kLoginProfile)) {
       profile_dir = command_line.GetSwitchValuePath(switches::kLoginProfile);
-    } else if (command_line.HasSwitch(switches::kProfile)) {
-      profile_dir = command_line.GetSwitchValuePath(switches::kProfile);
     } else {
       // We should never be logged in with no profile dir.
       NOTREACHED();

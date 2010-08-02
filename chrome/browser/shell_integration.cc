@@ -32,9 +32,9 @@ std::string ShellIntegration::GetCommandLineArgumentsCommon(const GURL& url,
   }
 
 #if defined (OS_CHROMEOS)
-  std::wstring profile = cmd.GetSwitchValue(switches::kProfile);
+  std::wstring profile = cmd.GetSwitchValue(switches::kLoginProfile);
   if (!profile.empty()) {
-    arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kProfile) +
+    arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kLoginProfile) +
                    L"=\"" + profile + L"\" ";
   }
 #endif
