@@ -86,7 +86,9 @@ class ConnectionTesterTest : public PlatformTest {
   MessageLoop message_loop_;
 };
 
-TEST_F(ConnectionTesterTest, RunAllTests) {
+// Disabled sunce Mac Valgrind crashes with pure virtual member being called.
+// http://crbug.com/50950
+TEST_F(ConnectionTesterTest, DISABLED_RunAllTests) {
   scoped_refptr<net::HTTPTestServer> server =
       net::HTTPTestServer::CreateServer(L"net/data/url_request_unittest/");
 
