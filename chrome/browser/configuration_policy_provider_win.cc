@@ -13,14 +13,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-
-#if defined(GOOGLE_CHROME_BUILD)
-const wchar_t ConfigurationPolicyProviderWin::kPolicyRegistrySubKey[] =
-    L"SOFTWARE\\Policies\\Google\\Chrome";
-#else
-const wchar_t ConfigurationPolicyProviderWin::kPolicyRegistrySubKey[] =
-    L"SOFTWARE\\Policies\\Chromium";
-#endif
+#include "chrome/common/policy_constants.h"
 
 ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin() {
 }
@@ -30,7 +23,7 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
   DWORD value_size = 0;
   DWORD key_type = 0;
   scoped_array<uint8> buffer;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, kPolicyRegistrySubKey);
+  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
   if (hkcu_policy_key.ReadValue(value_name, 0, &value_size, &key_type)) {
     if (key_type != REG_SZ)
       return false;
@@ -42,7 +35,7 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
     memset(buffer.get(), 0, value_size + 2);
     hkcu_policy_key.ReadValue(value_name, buffer.get(), &value_size);
   } else {
-    RegKey hklm_policy_key(HKEY_CURRENT_USER, kPolicyRegistrySubKey);
+    RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
     if (hklm_policy_key.ReadValue(value_name, 0, &value_size, &key_type)) {
       if (key_type != REG_SZ)
         return false;
@@ -65,13 +58,13 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyBoolean(
     const wchar_t* value_name, bool* result) {
   DWORD value;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, kPolicyRegistrySubKey);
+  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
   if (hkcu_policy_key.ReadValueDW(value_name, &value)) {
     *result = value != 0;
     return true;
   }
 
-  RegKey hklm_policy_key(HKEY_CURRENT_USER, kPolicyRegistrySubKey);
+  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
   if (hklm_policy_key.ReadValueDW(value_name, &value)) {
     *result = value != 0;
     return true;
@@ -82,13 +75,13 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyBoolean(
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
     const wchar_t* value_name, uint32* result) {
   DWORD value;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, kPolicyRegistrySubKey);
+  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
   if (hkcu_policy_key.ReadValueDW(value_name, &value)) {
     *result = value;
     return true;
   }
 
-  RegKey hklm_policy_key(HKEY_CURRENT_USER, kPolicyRegistrySubKey);
+  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
   if (hklm_policy_key.ReadValueDW(value_name, &value)) {
     *result = value;
     return true;
@@ -134,4 +127,3 @@ bool ConfigurationPolicyProviderWin::Provide(
 
   return true;
 }
-

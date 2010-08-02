@@ -5,6 +5,7 @@
 #include "chrome/browser/configuration_policy_provider.h"
 
 #include "base/values.h"
+#include "chrome/common/policy_constants.h"
 
 namespace {
 
@@ -19,35 +20,35 @@ struct InternalPolicyValueMapEntry {
 
 const InternalPolicyValueMapEntry kPolicyValueMap[] = {
   { ConfigurationPolicyStore::kPolicyHomePage,
-      Value::TYPE_STRING, "HomepageLocation" },
+      Value::TYPE_STRING, policy::key::kHomepageLocation },
   { ConfigurationPolicyStore::kPolicyHomepageIsNewTabPage,
-      Value::TYPE_BOOLEAN, "HomepageIsNewTabPage" },
+      Value::TYPE_BOOLEAN, policy::key::kHomepageIsNewTabPage },
   { ConfigurationPolicyStore::kPolicyProxyServerMode,
-      Value::TYPE_INTEGER, "ProxyServerMode" },
+      Value::TYPE_INTEGER, policy::key::kProxyServerMode },
   { ConfigurationPolicyStore::kPolicyProxyServer,
-      Value::TYPE_STRING, "ProxyServer" },
+      Value::TYPE_STRING, policy::key::kProxyServer },
   { ConfigurationPolicyStore::kPolicyProxyPacUrl,
-      Value::TYPE_STRING, "ProxyPacUrl" },
+      Value::TYPE_STRING, policy::key::kProxyPacUrl },
   { ConfigurationPolicyStore::kPolicyProxyBypassList,
-       Value::TYPE_STRING, "ProxyBypassList" },
+      Value::TYPE_STRING, policy::key::kProxyBypassList },
   { ConfigurationPolicyStore::kPolicyAlternateErrorPagesEnabled,
-      Value::TYPE_BOOLEAN, "AlternateErrorPagesEnabled" },
+      Value::TYPE_BOOLEAN, policy::key::kAlternateErrorPagesEnabled },
   { ConfigurationPolicyStore::kPolicySearchSuggestEnabled,
-      Value::TYPE_BOOLEAN, "SearchSuggestEnabled" },
+      Value::TYPE_BOOLEAN, policy::key::kSearchSuggestEnabled },
   { ConfigurationPolicyStore::kPolicyDnsPrefetchingEnabled,
-      Value::TYPE_BOOLEAN, "DnsPrefetchingEnabled" },
+      Value::TYPE_BOOLEAN, policy::key::kDnsPrefetchingEnabled },
   { ConfigurationPolicyStore::kPolicySafeBrowsingEnabled,
-      Value::TYPE_BOOLEAN, "SafeBrowsingEnabled" },
+      Value::TYPE_BOOLEAN, policy::key::kSafeBrowsingEnabled },
   { ConfigurationPolicyStore::kPolicyMetricsReportingEnabled,
-      Value::TYPE_BOOLEAN, "MetricsReportingEnabled" },
+      Value::TYPE_BOOLEAN, policy::key::kMetricsReportingEnabled },
   { ConfigurationPolicyStore::kPolicyPasswordManagerEnabled,
-      Value::TYPE_BOOLEAN, "PasswordManagerEnabled" },
+      Value::TYPE_BOOLEAN, policy::key::kPasswordManagerEnabled },
   { ConfigurationPolicyStore::kPolicyDisabledPlugins,
-      Value::TYPE_STRING, "DisabledPluginsList" },
+      Value::TYPE_STRING, policy::key::kDisabledPluginsList },
   { ConfigurationPolicyStore::kPolicyApplicationLocale,
-      Value::TYPE_STRING, "ApplicationLocaleValue" },
+      Value::TYPE_STRING, policy::key::kApplicationLocaleValue },
   { ConfigurationPolicyStore::kPolicySyncDisabled,
-      Value::TYPE_BOOLEAN, "SyncDisabled" },
+      Value::TYPE_BOOLEAN, policy::key::kSyncDisabled },
 };
 
 }  // namespace

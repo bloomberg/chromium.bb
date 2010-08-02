@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/configuration_policy_provider_win.h"
 #include "chrome/browser/mock_configuration_policy_store.h"
+#include "chrome/common/policy_constants.h"
 #include "chrome/common/pref_names.h"
 
 namespace {
@@ -64,9 +65,7 @@ std::wstring NameForPolicy(ConfigurationPolicyStore::PolicyType policy) {
 void TestConfigurationPolicyProviderWin::SetHomepageRegistryValue(
     HKEY hive,
     const wchar_t* value) {
-  RegKey key(hive,
-      ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
-      KEY_ALL_ACCESS);
+  RegKey key(hive, policy::kRegistrySubKey, KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(
       NameForPolicy(ConfigurationPolicyStore::kPolicyHomePage).c_str(),
       value));
@@ -74,9 +73,7 @@ void TestConfigurationPolicyProviderWin::SetHomepageRegistryValue(
 
 void TestConfigurationPolicyProviderWin::SetHomepageRegistryValueWrongType(
     HKEY hive) {
-  RegKey key(hive,
-      ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
-      KEY_ALL_ACCESS);
+  RegKey key(hive, policy::kRegistrySubKey, KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(
       NameForPolicy(ConfigurationPolicyStore::kPolicyHomePage).c_str(),
       5));
@@ -86,8 +83,7 @@ void TestConfigurationPolicyProviderWin::SetBooleanPolicy(
     ConfigurationPolicyStore::PolicyType type,
     HKEY hive,
     bool value) {
-  RegKey key(hive, ConfigurationPolicyProviderWin::kPolicyRegistrySubKey,
-      KEY_ALL_ACCESS);
+  RegKey key(hive, policy::kRegistrySubKey, KEY_ALL_ACCESS);
   EXPECT_TRUE(key.WriteValue(NameForPolicy(type).c_str(), value));
 }
 
@@ -312,4 +308,3 @@ TEST_F(ConfigurationPolicyProviderWinTest,
     TestPolicyPasswordManagerEnabled) {
   TestBooleanPolicy(ConfigurationPolicyStore::kPolicyPasswordManagerEnabled);
 }
-

@@ -17,12 +17,14 @@
 #include "base/file_version_info.h"
 #include "base/registry.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/app/hard_error_handler_win.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/common/policy_constants.h"
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
@@ -385,6 +387,29 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
                                flags, exit_now);
 }
 
+// Determine whether configuration management allows loading the crash reporter.
+// Since the configuration management infrastructure is not initialized at this
+// point, we read the corresponding registry key directly. The return status
+// indicates whether policy data was successfully read. If it is true, |result|
+// contains the value set by policy.
+static bool MetricsReportingControlledByPolicy(bool* result) {
+  std::wstring key_name = UTF8ToWide(policy::key::kMetricsReportingEnabled);
+  DWORD value;
+  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
+  if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value)) {
+    *result = value != 0;
+    return true;
+  }
+
+  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
+  if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value)) {
+    *result = value != 0;
+    return true;
+  }
+
+  return false;
+}
+
 static DWORD __stdcall InitCrashReporterThread(void* param) {
   scoped_ptr<CrashReporterInfo> info(
       reinterpret_cast<CrashReporterInfo*>(param));
@@ -400,9 +425,16 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
     callback = &DumpDoneCallback;
   }
 
+  // Check whether configuration management controls crash reporting.
+  bool crash_reporting_enabled = true;
+  bool controlled_by_policy =
+      MetricsReportingControlledByPolicy(&crash_reporting_enabled);
+
   const CommandLine& command = *CommandLine::ForCurrentProcess();
-  bool use_crash_service = command.HasSwitch(switches::kNoErrorDialogs) ||
-      GetEnvironmentVariable(ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0);
+  bool use_crash_service = !controlled_by_policy &&
+      ((command.HasSwitch(switches::kNoErrorDialogs) ||
+      GetEnvironmentVariable(
+          ASCIIToWide(env_vars::kHeadless).c_str(), NULL, 0)));
   bool is_per_user_install =
       InstallUtil::IsPerUserInstall(info->dll_path.c_str());
 
@@ -412,10 +444,15 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
     pipe_name = kChromePipeName;
   } else {
     // We want to use the Google Update crash reporting. We need to check if the
-    // user allows it first.
-    if (!GoogleUpdateSettings::GetCollectStatsConsent()) {
-      // The user did not allow Google Update to send crashes, we need to use
-      // our default crash handler instead, but only for the browser process.
+    // user allows it first (in case the administrator didn't already decide
+    // via policy).
+    if (!controlled_by_policy)
+      crash_reporting_enabled = GoogleUpdateSettings::GetCollectStatsConsent();
+
+    if (!crash_reporting_enabled) {
+      // Configuration managed or the user did not allow Google Update to send
+      // crashes, we need to use our default crash handler instead, but only
+      // for the browser process.
       if (callback)
         InitDefaultCrashCallback();
       return 0;
