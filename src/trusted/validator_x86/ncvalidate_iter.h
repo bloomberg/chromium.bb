@@ -19,7 +19,9 @@
  *   -- vaddr is the starting virtual address associated with a section.
  *   -- size is the number of bytes in a section.
  *
- *   NaClValidatorState* state = NaClValidatorStateCreate(base, limit, 16);
+ *   NaClValidatorState* state =
+ *     NaClValidatorStateCreate(base, limit - base, 32, RegR15, 100,
+ *                              stderr);
  *   if (state == NULL) fail;
  *   for each section:
  *     NaClValidateSegment(maddr, vaddr, size, state);
@@ -39,10 +41,10 @@
  */
 extern Bool NACL_FLAGS_print_validator_messages;
 
-/* Returns true iff validator messages should be printed for the given
- * nacl_log level.
+/* When >= 0, only print this many errors before quiting. When
+ * < 0, print all errors.
  */
-Bool NaClPrintValidatorMessages(int level);
+extern int NACL_FLAGS_max_reported_errors;
 
 /* The model of a validator state. */
 typedef struct NaClValidatorState NaClValidatorState;
@@ -54,6 +56,8 @@ typedef struct NaClValidatorState NaClValidatorState;
  *   alignment: 16 or 32, specifying alignment.
  *   base_register - OperandKind defining value for base register (or
  *     RegUnknown if not defined).
+ *   max_reported_errors - If >= 0, report only the first max_reported_errors.
+ *     If negative, report all errors.
  *   quit_after_first_error - Don't report multiple validator errors
  *     (if possible).
  *   log_file - The file to log messages to.
@@ -65,7 +69,7 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
                                              const NaClMemorySize sz,
                                              const uint8_t alignment,
                                              const NaClOpKind base_register,
-                                             Bool quit_after_first_error,
+                                             int max_reported_errors,
                                              FILE* log_file);
 
 /* Returns the file that messages are being logged to. */

@@ -33,10 +33,10 @@ struct NaClValidatorState {
   NaClOpKind base_register;
   /* Holds if the validation is still valid. */
   Bool validates_ok;
-  /* Holds if we should quit validation quickly if an error occurs
-   * (preferably after first error).
+  /* If >= 0, holds how many errors can be reported. If negative,
+   * reports all errors.
    */
-  Bool quit_after_first_error;
+  int quit_after_error_count;
   /* Holds the local memory associated with validators to be applied to this
    * state.
    */

@@ -26,8 +26,6 @@ Bool NACL_FLAGS_print_timing = FALSE;
 
 int NACL_FLAGS_block_alignment = 32;
 
-Bool NACL_FLAGS_quit_on_error = FALSE;
-
 Bool NACL_FLAGS_warnings = FALSE;
 Bool NACL_FLAGS_errors = FALSE;
 Bool NACL_FLAGS_fatal = FALSE;
@@ -54,7 +52,7 @@ int NaClRunValidatorGrokFlags(int argc, const char* argv[]) {
         GrokBoolFlag("-errors", arg, &NACL_FLAGS_errors) ||
         GrokBoolFlag("-fatal", arg, &NACL_FLAGS_fatal) ||
         GrokIntFlag("-alignment", arg, &NACL_FLAGS_block_alignment) ||
-        GrokBoolFlag("--quit-on-error", arg, &NACL_FLAGS_quit_on_error) ||
+        GrokIntFlag("--max-errors", arg, &NACL_FLAGS_max_reported_errors) ||
         GrokBoolFlag("--identity_mask", arg, &NACL_FLAGS_identity_mask)) {
       continue;
     } else if (GrokBoolFlag("-write_sfi", arg, &write_sandbox)) {
@@ -152,7 +150,7 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
                                    data->num_bytes,
                                    (uint8_t) NACL_FLAGS_block_alignment,
                                    nacl_base_register,
-                                   NACL_FLAGS_quit_on_error,
+                                   NACL_FLAGS_max_reported_errors,
                                    stdout);
   if (NULL == state) {
     NaClValidatorMessage(LOG_FATAL, NULL, "Unable to create validator state");

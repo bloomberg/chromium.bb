@@ -391,7 +391,7 @@ def __AddNcvalSfiTests(test_readwrite):
       ext = 'val'
     golden_files = Glob(TESTDATA_DIR + '*.' + ext)
     for base in __GoldenBases(ext):
-      command = [ncval[0], '-use_iter', '-hex_text=-']
+      command = [ncval[0], '-use_iter', '-hex_text=-', '--max-errors=1000']
       if test_readwrite:
         command.append('-readwrite_sfi')
       else:

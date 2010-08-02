@@ -196,7 +196,7 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NaClValidatorStateCreate(vbase, vlimit - vbase,
                                     ncf->ncalign, nacl_base_register,
-                                    NACL_FLAGS_quit_on_error,
+                                    NACL_FLAGS_max_reported_errors,
                                     stderr);
   if (vstate == NULL) {
     NaClValidatorMessage(LOG_FATAL, vstate, "Unable to create validator state");
@@ -358,6 +358,7 @@ static int GrokFlags(int argc, const char* argv[]) {
 int main(int argc, const char *argv[]) {
   int result = 0;
   int i;
+
   argc = GrokFlags(argc, argv);
   if (FLAGS_use_iter) {
     argc = NaClRunValidatorGrokFlags(argc, argv);

@@ -18,11 +18,6 @@
 /* Flag holding the (default) block alignment to use. */
 extern int NACL_FLAGS_block_alignment;
 
-/* Define if we should print all validator error messages (rather
- * than quit after the first error).
- */
-extern Bool NACL_FLAGS_quit_on_error;
-
 /* Define the value for the base register (Default's to R15 in 64-bit mode). */
 extern NaClOpKind nacl_base_register;
 

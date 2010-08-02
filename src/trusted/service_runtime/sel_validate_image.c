@@ -55,9 +55,12 @@ int NaClValidateCode(struct NaClApp *nap, uintptr_t guest_addr,
   struct NaClValidatorState *vstate;
   int is_ok;
 
-  NACL_FLAGS_print_validator_messages = FALSE;
+ /* TODO(karl) Change the maximum errors from 0 to
+  * NACL_FLAGS_max_reported_errors, once test tests/signal_handler/crash.c
+  * is fixed.
+  */
   vstate = NaClValidatorStateCreate(guest_addr, size, nap->bundle_size,
-                                    RegR15, 1, stderr);
+                                    RegR15, 0, stderr);
   if (vstate == NULL) {
     return LOAD_BAD_FILE;
   }

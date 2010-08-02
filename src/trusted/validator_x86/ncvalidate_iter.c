@@ -30,10 +30,17 @@
 
 #include "native_client/src/shared/utils/debugging.h"
 
-Bool NACL_FLAGS_print_validator_messages = TRUE;
+/* When >= 0, only print that many errors before quiting. When
+ * < 0, print all errors.
+ */
+int NACL_FLAGS_max_reported_errors = 100;
 
-Bool NaClPrintValidatorMessages(int level) {
-  return NACL_FLAGS_print_validator_messages && (level <= NaClLogGetVerbosity());
+/* Returns true if an error message should be printed for the given level, in
+ * the current validator state.
+ */
+static Bool NaClPrintValidatorMessages(NaClValidatorState* state, int level) {
+  return (state->quit_after_error_count != 0) &&
+      (level <= NaClLogGetVerbosity());
 }
 
 FILE* NaClValidatorStateLogFile(NaClValidatorState* state) {
@@ -53,24 +60,30 @@ static const char *NaClLogLevelLabel(int level) {
   }
 }
 
+/* Records that an error message has just been reported. */
+static void NaClRecordErrorReported(NaClValidatorState* state, int level) {
+  if (((level == LOG_ERROR) || (level == LOG_FATAL)) &&
+      (state->quit_after_error_count > 0)) {
+    --(state->quit_after_error_count);
+    if (state->quit_after_error_count == 0) {
+      NaClLog(LOG_INFO,
+              "%sError limit reached. Validator quitting!\n",
+              NaClLogLevelLabel(LOG_INFO));
+    }
+  }
+}
+
 /* Records the number of error validator messages generated for the state.
  * Parameters:
  *   state - The validator state (may be NULL).
  *   level - The log level of the validator message.
  * Returns - Updated error level, based on state.
  */
-static INLINE int NaClRecordIfValidatorError(NaClValidatorState* state,
+static int NaClRecordIfValidatorError(NaClValidatorState* state,
                                              int level) {
-  switch (level) {
-    case LOG_ERROR:
-      /* Intentionally fall to next case, since if an error occurs, it doesn't
-       * validate as ok.
-       */
-    case LOG_FATAL:
-      if (state != NULL) state->validates_ok = FALSE;
-      break;
-    default:
-      break;
+  if (((level == LOG_ERROR) || (level == LOG_FATAL)) &&
+      (NULL != state)) {
+    state->validates_ok = FALSE;
   }
   return level;
 }
@@ -80,7 +93,7 @@ void NaClValidatorMessage(int level,
                           const char* format,
                           ...) {
   level = NaClRecordIfValidatorError(state, level);
-  if (NaClPrintValidatorMessages(level)) {
+  if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
 
     NaClLogLock();
@@ -89,6 +102,7 @@ void NaClValidatorMessage(int level,
     NaClLogV_mu(level, format, ap);
     va_end(ap);
     NaClLogUnlock();
+    NaClRecordErrorReported(state, level);
   }
 }
 
@@ -97,11 +111,12 @@ void NaClValidatorVarargMessage(int level,
                                 const char* format,
                                 va_list ap) {
   level = NaClRecordIfValidatorError(state, level);
-  if (NaClPrintValidatorMessages(level)) {
+  if (NaClPrintValidatorMessages(state, level)) {
     NaClLogLock();
     NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
     NaClLogV_mu(level, format, ap);
     NaClLogUnlock();
+    NaClRecordErrorReported(state, level);
   }
 }
 
@@ -111,17 +126,19 @@ void NaClValidatorPcAddressMessage(int level,
                                    const char* format,
                                    ...) {
   level = NaClRecordIfValidatorError(state, level);
-  if (NaClPrintValidatorMessages(level)) {
+  if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
 
     NaClLogLock();
-    NaClLog_mu(level, "VALIDATOR: At address %"NACL_PRIxNaClPcAddress":\n", addr);
+    NaClLog_mu(level, "VALIDATOR: At address %"NACL_PRIxNaClPcAddress":\n",
+               addr);
     NaClLogTagNext_mu();
     NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
     NaClLogV_mu(level, format, ap);
     va_end(ap);
     NaClLogUnlock();
+    NaClRecordErrorReported(state, level);
   }
 }
 
@@ -131,7 +148,7 @@ void NaClValidatorInstMessage(int level,
                               const char* format,
                               ...) {
   level = NaClRecordIfValidatorError(state, level);
-  if (NaClPrintValidatorMessages(level)) {
+  if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
 
     NaClLogLock();
@@ -146,11 +163,12 @@ void NaClValidatorInstMessage(int level,
     NaClLogV_mu(level, format, ap);
     va_end(ap);
     NaClLogUnlock();
+    NaClRecordErrorReported(state, level);
   }
 }
 
 Bool NaClValidatorQuit(NaClValidatorState* state) {
-  return state->quit_after_first_error && !state->validates_ok;
+  return !state->validates_ok && (state->quit_after_error_count == 0);
 }
 
 Bool NaClValidateQuit(NaClValidatorState* state) {
@@ -214,7 +232,7 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
                                              const NaClMemorySize sz,
                                              const uint8_t alignment,
                                              const NaClOpKind base_register,
-                                             Bool quit_after_first_error,
+                                             int max_reported_errors,
                                              FILE* log_file) {
   NaClValidatorState* state;
   NaClValidatorState* return_value = NULL;
@@ -242,7 +260,7 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
     GetCPUFeatures(&(state->cpu_features));
     state->base_register = base_register;
     state->validates_ok = TRUE;
-    state->quit_after_first_error = quit_after_first_error;
+    state->quit_after_error_count = max_reported_errors;
     state->number_validators = nacl_g_num_validators;
     for (i = 0; i < state->number_validators; ++i) {
       NaClValidatorDefinition* defn = &validators[i];
@@ -335,6 +353,10 @@ void NaClValidatorStateDestroy(NaClValidatorState* state) {
       defn->destroy_memory(state, defn_memory);
     }
   }
+  /* Flush the current log stream, to make sure messages are
+   * printed, then revert to old log stream, and delete state.
+   */
+  GioFileFlush(NaClLogGetGio());
   NaClLogSetGio(state->old_log_stream);
   free(state);
 }
