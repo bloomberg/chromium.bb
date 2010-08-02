@@ -249,12 +249,12 @@ void ExistingUserController::OnUserSelected(UserController* source) {
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   // WizardController takes care of deleting itself when done.
   WizardController* controller = new WizardController();
-  controller->Init(screen_name, background_bounds_);
-  controller->Show();
-
   // Give the background window to the controller.
   controller->OwnBackground(background_window_, background_view_);
   background_window_ = NULL;
+
+  controller->Init(screen_name, background_bounds_);
+  controller->Show();
 
   // And schedule us for deletion. We delay for a second as the window manager
   // is doing an animation with our windows.
