@@ -287,7 +287,7 @@ void FormManager::WebFormControlElementToFormField(
   // data.  The correct solution is to parse this data asynchronously.
   // See http://crbug.com/49332.
   if (value.size() > kMaxDataLength)
-    value = value.substr(kMaxDataLength);
+    value = value.substr(0, kMaxDataLength);
 
   field->set_value(value);
 }
