@@ -420,11 +420,13 @@ void AutomationResourceMessageFilter::SetCookiesForUrl(
             set_cookies_callback->render_process_id(),
             set_cookies_callback->render_view_id())));
 
-  DCHECK(automation_details_iter->second.filter != NULL);
+  if (automation_details_iter != filtered_render_views_.Get().end()) {
+    DCHECK(automation_details_iter->second.filter != NULL);
 
-  if (automation_details_iter->second.filter) {
-    automation_details_iter->second.filter->Send(
-        new AutomationMsg_SetCookieAsync(0, tab_handle, url, cookie_line));
+    if (automation_details_iter->second.filter) {
+      automation_details_iter->second.filter->Send(
+          new AutomationMsg_SetCookieAsync(0, tab_handle, url, cookie_line));
+    }
   }
 }
 
