@@ -1,7 +1,7 @@
-#!/usr/bin/python2.4
-#
-# Copyright 2009, Google Inc.
-# All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -33,6 +33,7 @@
 
 import optparse
 import os
+import platform
 import re
 import sys
 import croc_html
@@ -218,6 +219,10 @@ class Coverage(object):
     # Change path separators
     filename = filename.replace('\\', '/')
 
+    # Windows doesn't care about case sensitivity.
+    if platform.system() in ['Windows', 'Microsoft']:
+      filename = filename.lower()
+
     # If path is relative, make it absolute
     # TODO: Perhaps we should default to relative instead, and only understand
     # absolute to be files starting with '\', '/', or '[A-Za-z]:'?
@@ -226,6 +231,9 @@ class Coverage(object):
 
     # Replace alternate roots
     for root, alt_name in self.root_dirs:
+      # Windows doesn't care about case sensitivity.
+      if platform.system() in ['Windows', 'Microsoft']:
+        root = root.lower()
       filename = re.sub('^' + re.escape(root) + '(?=(/|$))',
                         alt_name, filename)
     return filename
