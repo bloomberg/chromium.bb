@@ -427,8 +427,8 @@ BuildAndRunBenchmarks() {
   if PickInputSize "$@"; then
     shift
   fi
-  BuildBenchmarks 0 "$@"
-  RunBenchmarks "$@"
+  BuildBenchmarks 0 ${setup} "$@"
+  RunBenchmarks ${setup} "$@"
 }
 
 #@
