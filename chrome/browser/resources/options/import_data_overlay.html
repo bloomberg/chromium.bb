@@ -4,8 +4,8 @@
     <span i18n-content="import_from_label"></span>
     <select id="supported-browsers"></select>
   </div>
-  <div>
-    <span i18n-content="import_description"></span>
+  <div id="checkboxList">
+    <span i18n-content="import_description"></span><br>
     <label>
       <input id="import-favorites" type="checkbox">
       <span i18n-content="import_favorites">
@@ -23,6 +23,8 @@
       <span i18n-content="import_history">
     </label><br>
   </div>
-  <button id="import-data-cancel" i18n-content="cancel"></button>
+  <span id="import-throbber"></span>
+  <button id="import-data-cancel" i18n-content="cancel"
+    onclick="ImportDataOverlay.dismiss();"></button>
   <button id="import-data-commit" i18n-content="import_commit"></button>
 </div>

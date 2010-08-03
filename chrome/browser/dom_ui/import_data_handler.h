@@ -9,7 +9,8 @@
 #include "chrome/browser/importer/importer.h"
 
 // Chrome personal stuff import data overlay UI handler.
-class ImportDataHandler : public OptionsPageUIHandler {
+class ImportDataHandler : public OptionsPageUIHandler,
+                          public ImporterHost::Observer {
  public:
   ImportDataHandler();
   virtual ~ImportDataHandler();
@@ -24,9 +25,17 @@ class ImportDataHandler : public OptionsPageUIHandler {
 
  private:
   void DetectSupportedBrowsers();
+  void ImportData(const Value* value);
 
-  // Utility class that does the actual import.
-  scoped_refptr<ImporterHost> importer_host_;
+  //Callback from ImporterHost. Close the Dialog.
+  virtual void ImportStarted();
+  virtual void ImportItemStarted(importer::ImportItem item);
+  virtual void ImportItemEnded(importer::ImportItem item);
+  virtual void ImportEnded();
+
+  // If non-null it means importing is in progress. ImporterHost takes care
+  // of deleting itself when done.import.
+  ImporterHost* importer_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportDataHandler);
 };
