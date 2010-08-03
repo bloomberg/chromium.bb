@@ -131,17 +131,17 @@
 
       <!-- The default value for |WebPreference::fixed_font_family| -->
       <message name="IDS_FIXED_FONT_FAMILY" use_name_for_id="true">
-        Ascender Sans Mono
+        Cousine
       </message>
 
       <!-- The default value for |WebPreference::serif_font_family| -->
       <message name="IDS_SERIF_FONT_FAMILY" use_name_for_id="true">
-        Ascender Serif
+        Tinos
       </message>
 
       <!-- The default value for |WebPreference::sans_serif_font_family| -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY" use_name_for_id="true">
-        Ascender Sans
+        Arimo
       </message>
 
       <!-- The default value for |WebPreference::cursive_font_family| -->
