@@ -432,6 +432,9 @@ Plugin::~Plugin() {
   // so we shut down here what we can and prevent attempts to shut down
   // other linked structures in Deallocate.
 
+  // We should not need to call ShutDownSubprocess() here.  In the
+  // NPAPI plugin, it should have already been called in
+  // NPP_Destroy().
   ShutDownSubprocess();
 
   PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void*>(this)));

@@ -156,6 +156,7 @@ class Plugin : public PortableHandle {
             char* argn[],
             char* argv[]);
   void LoadMethods();
+  void ShutDownSubprocess();
   ServiceRuntime* service_runtime_;
 
   bool receive_thread_running_;
@@ -185,8 +186,6 @@ class Plugin : public PortableHandle {
   int32_t video_update_mode_;
 
   nacl::DescWrapperFactory* wrapper_factory_;
-
-  void ShutDownSubprocess();
 
   static bool SendAsyncMessage(void* obj, SrpcParams* params,
                                nacl::DescWrapper** fds, int fds_count);

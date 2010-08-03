@@ -149,9 +149,7 @@ NPError PluginNpapi::Destroy(NPSavedData** save) {
   PLUGIN_PRINTF(("PluginNpapi::Destroy(%p, %p)\n", static_cast<void*>(this),
                  static_cast<void*>(save)));
 
-  if (service_runtime_ != NULL) {
-    service_runtime_->Shutdown();
-  }
+  ShutDownSubprocess();
 
   // This should be done after terminating the sel_ldr subprocess so
   // that we can be sure we will not block forever when waiting for
