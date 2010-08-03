@@ -17,6 +17,7 @@
 #include "base/registry.h"
 #include "base/scoped_handle_win.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install.h"

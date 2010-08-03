@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/platform_util.h"

@@ -5,6 +5,7 @@
 #include "app/l10n_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/browser/dom_ui/most_visited_handler.h"

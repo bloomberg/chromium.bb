@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/browser/status_icons/status_tray.h"
 #include "testing/gmock/include/gmock/gmock.h"

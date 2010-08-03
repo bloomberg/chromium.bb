@@ -25,6 +25,7 @@
 #include "base/string_number_conversions.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/common/chrome_constants.h"

@@ -15,6 +15,7 @@
 #include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 
 namespace {

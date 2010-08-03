@@ -8,6 +8,7 @@
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/path.h"
 #include "testing/gtest/include/gtest/gtest.h"

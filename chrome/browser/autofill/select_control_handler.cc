@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/form_group.h"
 #include "webkit/glue/form_field.h"
 

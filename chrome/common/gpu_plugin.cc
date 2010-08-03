@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "gpu/gpu_plugin/gpu_plugin.h"
 #include "webkit/glue/plugins/plugin_list.h"

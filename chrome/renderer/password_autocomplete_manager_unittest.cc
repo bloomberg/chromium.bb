@@ -4,6 +4,7 @@
 
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/renderer/password_autocomplete_manager.h"
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/configuration_policy_provider.h"
 #if defined(OS_WIN)

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 #include "chrome_frame/bho.h"
 #include "chrome_frame/exception_barrier.h"

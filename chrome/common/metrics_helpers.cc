@@ -18,7 +18,6 @@
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"  // TODO(brettw) remove when ASCIIToUTF16 moves.
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"
 #include "base/third_party/nspr/prtime.h"

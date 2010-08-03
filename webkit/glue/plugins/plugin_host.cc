@@ -13,6 +13,7 @@
 #include "base/sys_info.h"
 #endif
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/webkit_glue.h"

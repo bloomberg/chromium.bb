@@ -23,6 +23,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/tracked_objects.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"

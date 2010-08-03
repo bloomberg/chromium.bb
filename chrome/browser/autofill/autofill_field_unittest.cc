@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/file_path.h"
 #include "base/sys_info.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browser.h"

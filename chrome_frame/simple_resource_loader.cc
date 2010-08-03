@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 
 const wchar_t kLocalesDirName[] = L"Locales";

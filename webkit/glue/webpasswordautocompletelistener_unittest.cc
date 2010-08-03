@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/webpasswordautocompletelistener_impl.h"

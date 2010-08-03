@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/perftimer.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/libxml_utils.h"

@@ -8,8 +8,8 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"  // TODO(brettw) remove when ASCIIToUTF16 moves.
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/login_database.h"
 #include "chrome/common/chrome_paths.h"
 #include "webkit/glue/password_form.h"

@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"

@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

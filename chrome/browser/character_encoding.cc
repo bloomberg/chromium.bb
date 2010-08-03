@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "grit/generated_resources.h"
 #include "unicode/ucnv.h"

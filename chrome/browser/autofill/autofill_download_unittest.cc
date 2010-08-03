@@ -5,6 +5,7 @@
 #include <list>
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_download.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/testing_profile.h"

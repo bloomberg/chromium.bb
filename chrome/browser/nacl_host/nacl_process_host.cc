@@ -11,6 +11,7 @@
 #endif
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"

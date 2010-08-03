@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/platform_file.h"
 #include "base/shared_memory.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/database_util.h"
 #include "chrome/common/render_messages.h"

@@ -15,6 +15,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string16.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/autofill_type.h"

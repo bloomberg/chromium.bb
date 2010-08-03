@@ -11,6 +11,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"

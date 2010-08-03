@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/scoped_comptr_win.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/view_ids.h"

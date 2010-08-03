@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/pepper_devices.h"

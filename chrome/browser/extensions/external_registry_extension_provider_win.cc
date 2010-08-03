@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/registry.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/version.h"
 
 // The Registry hive where to look for external extensions.

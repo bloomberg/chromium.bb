@@ -17,6 +17,7 @@
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/install_util.h"

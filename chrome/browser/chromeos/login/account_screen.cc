@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/account_screen.h"
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/account_creation_view.h"

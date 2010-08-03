@@ -21,6 +21,7 @@
 #include "base/histogram.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"

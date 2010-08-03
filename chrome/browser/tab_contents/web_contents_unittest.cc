@@ -4,6 +4,7 @@
 
 #include "app/message_box_flags.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/network_message_observer.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "grit/generated_resources.h"

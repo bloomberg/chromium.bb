@@ -7,6 +7,7 @@
 #include <shlguid.h>
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/exception_barrier.h"

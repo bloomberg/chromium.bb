@@ -4,6 +4,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/views/status_icons/status_icon_win.h"
 #include "chrome/browser/views/status_icons/status_tray_win.h"
 #include "grit/browser_resources.h"

@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome_frame/bind_context_info.h"
 #include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/extra_system_apis.h"

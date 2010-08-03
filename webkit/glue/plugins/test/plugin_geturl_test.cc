@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 
 // url for "self".  The %22%22 is to make a statement for javascript to
 // evaluate and return.

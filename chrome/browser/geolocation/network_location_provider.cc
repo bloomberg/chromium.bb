@@ -5,6 +5,7 @@
 #include "chrome/browser/geolocation/network_location_provider.h"
 
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/geolocation/access_token_store.h"
 
 namespace {

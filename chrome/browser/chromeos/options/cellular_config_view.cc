@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/options/cellular_config_view.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "grit/generated_resources.h"

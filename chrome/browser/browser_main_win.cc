@@ -16,6 +16,7 @@
 #include "base/i18n/rtl.h"
 #include "base/nss_util.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/first_run/first_run.h"

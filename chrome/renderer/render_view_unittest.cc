@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/keyboard_codes.h"
 #include "base/shared_memory.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"

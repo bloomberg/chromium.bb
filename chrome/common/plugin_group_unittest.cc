@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "testing/gtest/include/gtest/gtest.h"

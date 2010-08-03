@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_types.h"

@@ -8,6 +8,7 @@
 #include "app/table_model_observer.h"
 #include "base/command_line.h"
 #include "base/stats_table.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"

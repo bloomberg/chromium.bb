@@ -13,6 +13,7 @@
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"

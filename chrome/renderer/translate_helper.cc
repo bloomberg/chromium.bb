@@ -5,6 +5,7 @@
 #include "chrome/renderer/translate_helper.h"
 
 #include "base/compiler_specific.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"

@@ -8,6 +8,7 @@
 #include "base/scoped_vector.h"
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
+#include "base/utf_string_conversions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"

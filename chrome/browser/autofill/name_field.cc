@@ -6,6 +6,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_type.h"
 
 NameField* NameField::Parse(std::vector<AutoFillField*>::const_iterator* iter,

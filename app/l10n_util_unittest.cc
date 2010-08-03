@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #if defined(OS_WIN)
 #include "base/win_util.h"
 #endif

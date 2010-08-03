@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_OPTIONS_UTIL_H_
 #pragma once
 
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 
 class ListValue;

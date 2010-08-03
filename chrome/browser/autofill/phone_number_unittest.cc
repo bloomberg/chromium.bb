@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/home_phone_number.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "testing/gtest/include/gtest/gtest.h"

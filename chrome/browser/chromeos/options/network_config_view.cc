@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/options/cellular_config_view.h"
 #include "chrome/browser/chromeos/options/ip_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"

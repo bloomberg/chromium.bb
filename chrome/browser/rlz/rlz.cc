@@ -19,6 +19,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autofill/autofill_common_unittest.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "webkit/glue/form_field.h"

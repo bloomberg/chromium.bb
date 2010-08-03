@@ -8,6 +8,7 @@
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome_frame/http_negotiate.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"

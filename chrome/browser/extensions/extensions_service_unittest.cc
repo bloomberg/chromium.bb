@@ -18,6 +18,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "base/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/crx_installer.h"

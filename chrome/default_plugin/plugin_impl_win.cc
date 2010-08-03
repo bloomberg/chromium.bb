@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/default_plugin/plugin_main.h"
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_strings.h"

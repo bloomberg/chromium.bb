@@ -19,6 +19,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread_local.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
