@@ -28,6 +28,8 @@ struct FormData {
   // A vector of all the input fields in the form.
   std::vector<FormField> fields;
 
+  FormData() : user_submitted(false) {}
+
   // Used by FormStructureTest.
   inline bool operator==(const FormData& form) const {
     return (name == form.name &&
