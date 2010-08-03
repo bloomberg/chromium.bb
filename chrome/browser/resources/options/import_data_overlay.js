@@ -92,7 +92,7 @@ cr.define('options', function() {
         var option = new Option(templateData.no_profile_found, 0);
         browserSelect.appendChild(option);
 
-        ImportDataOverlay.setImportingState(true);
+        ImportDataOverlay.setDisable(true);
       }
       else {
         for (var i = 0; i < browserCount; i++) {
@@ -100,7 +100,7 @@ cr.define('options', function() {
           var option = new Option(browser['name'], browser['index']);
           browserSelect.appendChild(option);
 
-        ImportDataOverlay.setImportingState(false);
+        ImportDataOverlay.setDisable(false);
         this.countCheckboxes_();
         }
       }
@@ -111,13 +111,17 @@ cr.define('options', function() {
     ImportDataOverlay.getInstance().updateSupportedBrowsers_(browsers);
   }
 
-  ImportDataOverlay.setImportingState = function(state) {
+  ImportDataOverlay.setDisable = function(state) {
     $('supported-browsers').disabled = state;
     $('import-favorites').disabled = state;
     $('import-search').disabled = state;
     $('import-passwords').disabled = state;
     $('import-history').disabled = state;
     $('import-data-commit').disabled = state;
+  }
+
+  ImportDataOverlay.setImportingState = function(state) {
+    ImportDataOverlay.setDisable(state);
     $('import-throbber').style.visibility = state ? "visible" : "hidden";
 
     function advanceThrobber() {

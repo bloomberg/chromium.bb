@@ -57,10 +57,6 @@ void PersonalOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString(L"autofill",
       l10n_util::GetString(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME));
-  localized_strings->SetString(L"autofill_enable",
-      l10n_util::GetString(IDS_OPTIONS_AUTOFILL_ENABLE));
-  localized_strings->SetString(L"autofill_disable",
-      l10n_util::GetString(IDS_OPTIONS_AUTOFILL_DISABLE));
   localized_strings->SetString(L"autofill_options",
       l10n_util::GetString(IDS_AUTOFILL_OPTIONS));
 
