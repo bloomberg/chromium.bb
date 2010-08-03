@@ -813,9 +813,12 @@ void AutocompleteController::Start(const std::wstring& text,
   // If we're interrupting an old query, and committing its result won't shrink
   // the visible set (which would probably re-expand soon, thus looking very
   // flickery), then go ahead and commit what we've got, in order to feel more
-  // responsive when the user is typing rapidly.
+  // responsive when the user is typing rapidly.  In this case it's important
+  // that we don't update the edit, as the user has already changed its contents
+  // and anything we might do with it (e.g. inline autocomplete) likely no
+  // longer applies.
   if (!minimal_changes && !done_ && (latest_result_.size() >= result_.size()))
-    CommitResult();
+    CommitResult(false);
 
   // If the timer is already running, it could fire shortly after starting this
   // query, when we're likely to only have the synchronous results back, thus
@@ -866,9 +869,14 @@ void AutocompleteController::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
   match.provider->DeleteMatch(match);  // This may synchronously call back to
                                        // OnProviderUpdate().
-  CommitResult();  // Ensure any new result gets committed immediately.  If it
-                   // was committed already or hasn't been modified, this is
-                   // harmless.
+  CommitResult(true);  // Ensure any new result gets committed immediately.  If
+                       // it was committed already or hasn't been modified, this
+                       // is harmless.
+}
+
+void AutocompleteController::CommitIfQueryHasNeverBeenCommitted() {
+  if (!have_committed_during_this_query_)
+    CommitResult(true);
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
@@ -917,15 +925,15 @@ void AutocompleteController::UpdateLatestResult(bool is_synchronous_pass) {
   // last commit, to minimize flicker.
   if (result_.empty() || (done_ && !have_committed_during_this_query_) ||
       delay_interval_has_passed_)
-    CommitResult();
+    CommitResult(true);
 }
 
 void AutocompleteController::DelayTimerFired() {
   delay_interval_has_passed_ = true;
-  CommitResult();
+  CommitResult(true);
 }
 
-void AutocompleteController::CommitResult() {
+void AutocompleteController::CommitResult(bool notify_default_match) {
   if (done_) {
     update_delay_timer_.Stop();
     delay_interval_has_passed_ = false;
@@ -943,13 +951,15 @@ void AutocompleteController::CommitResult() {
       NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
       Source<AutocompleteController>(this),
       Details<const AutocompleteResult>(&result_));
-  // This notification must be sent after the other so the popup has time to
-  // update its state before the edit calls into it.
-  // TODO(pkasting): Eliminate this ordering requirement.
-  NotificationService::current()->Notify(
-      NotificationType::AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED,
-      Source<AutocompleteController>(this),
-      Details<const AutocompleteResult>(&result_));
+  if (notify_default_match) {
+    // This notification must be sent after the other so the popup has time to
+    // update its state before the edit calls into it.
+    // TODO(pkasting): Eliminate this ordering requirement.
+    NotificationService::current()->Notify(
+        NotificationType::AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED,
+        Source<AutocompleteController>(this),
+        Details<const AutocompleteResult>(&result_));
+  }
   if (!done_)
     update_delay_timer_.Reset();
 }

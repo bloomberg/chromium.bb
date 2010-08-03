@@ -82,6 +82,9 @@ void AutocompletePopupModel::SetHoveredLine(size_t line) {
 
 void AutocompletePopupModel::SetSelectedLine(size_t line,
                                              bool reset_to_default) {
+  // We should at least be dealing with the results of the current query.
+  controller_->CommitIfQueryHasNeverBeenCommitted();
+
   const AutocompleteResult& result = controller_->result();
   CHECK(line < result.size());
   if (result.empty())
@@ -154,6 +157,10 @@ void AutocompletePopupModel::InfoForCurrentSelection(
   DCHECK(match != NULL);
   const AutocompleteResult* result;
   if (!controller_->done()) {
+    // NOTE: Using latest_result() is important here since not only could it
+    // contain newer results than result() for the current query, it could even
+    // refer to an entirely different query (e.g. if the user is typing rapidly
+    // and the controller is purposefully delaying updates to avoid flicker).
     result = &controller_->latest_result();
     // It's technically possible for |result| to be empty if no provider returns
     // a synchronous result but the query has not completed synchronously;

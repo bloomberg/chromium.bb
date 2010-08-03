@@ -123,9 +123,6 @@ class AutocompleteProviderTest : public testing::Test,
 void AutocompleteProviderTest::SetUp() {
   registrar_.Add(this, NotificationType::AUTOCOMPLETE_CONTROLLER_RESULT_UPDATED,
                  NotificationService::AllSources());
-  registrar_.Add(this,
-      NotificationType::AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED,
-      NotificationService::AllSources());
   ResetController(false);
 }
 

@@ -769,6 +769,10 @@ class AutocompleteController : public ACProviderListener {
   // no query is running.
   void DeleteMatch(const AutocompleteMatch& match);
 
+  // Commits the results for the current query if they've never been committed.
+  // This is used by the popup to ensure it's not showing an out-of-date query.
+  void CommitIfQueryHasNeverBeenCommitted();
+
   // Getters
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
@@ -791,7 +795,12 @@ class AutocompleteController : public ACProviderListener {
   void DelayTimerFired();
 
   // Copies |latest_result_| to |result_| and notifies observers of updates.
-  void CommitResult();
+  // |notify_default_match| should normally be true; if it's false, we don't
+  // send an AUTOCOMPLETE_CONTROLLER_DEFAULT_MATCH_UPDATED notification.  This
+  // is a hack to avoid updating the edit with out-of-date data.
+  // TODO(pkasting): Don't hardcode assumptions about who listens to these
+  // notificiations.
+  void CommitResult(bool notify_default_match);
 
   // Returns the matches from |provider| whose destination urls are not in
   // |latest_result_|.
