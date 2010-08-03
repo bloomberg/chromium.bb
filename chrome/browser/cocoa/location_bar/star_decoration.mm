@@ -14,9 +14,10 @@
 namespace {
 
 // The info-bubble point should look like it points to the point
-// between the star's lower tips.  Determined via Pixie.app
+// between the star's lower tips.  The popup should be where the
+// Omnibox popup ends up (2px below field).  Determined via Pixie.app
 // magnification.
-const CGFloat kStarPointYOffset = 4.0;
+const CGFloat kStarPointYOffset = 2.0;
 
 }  // namespace
 

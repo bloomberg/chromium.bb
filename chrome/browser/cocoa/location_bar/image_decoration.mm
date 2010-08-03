@@ -27,9 +27,12 @@ NSRect ImageDecoration::GetDrawRectInFrame(NSRect frame) {
   if (!image)
     return frame;
 
+  // Center the image within the frame.
   const CGFloat delta_height = NSHeight(frame) - [image size].height;
   const CGFloat y_inset = std::floor(delta_height / 2.0);
-  return NSInsetRect(frame, 0.0, y_inset);
+  const CGFloat delta_width = NSWidth(frame) - [image size].width;
+  const CGFloat x_inset = std::floor(delta_width / 2.0);
+  return NSInsetRect(frame, x_inset, y_inset);
 }
 
 CGFloat ImageDecoration::GetWidthForSpace(CGFloat width) {

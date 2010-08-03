@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #include "chrome/browser/autocomplete/autocomplete_popup_view_mac.h"
 
 #include "app/resource_bundle.h"
@@ -26,7 +28,7 @@ const int kEditFontAdjust = -1;
 
 // How much to adjust the cell sizing up from the default determined
 // by the font.
-const int kCellHeightAdjust = 7.0;
+const int kCellHeightAdjust = 6.0;
 
 // How to round off the popup's corners.  Goal is to match star and go
 // buttons.
@@ -43,7 +45,7 @@ const CGFloat kPopupAlpha = 240.0 / 255.0;
 const CGFloat kImageXOffset = 4.0;
 
 // How far to offset the text column from the left.
-const CGFloat kTextXOffset = 26.0;
+const CGFloat kTextXOffset = 27.0;
 
 // Animation duration when animating the popup window smaller.
 const NSTimeInterval kShrinkAnimationDuration = 0.1;
@@ -64,11 +66,6 @@ const CGFloat kFieldVisualInset = 1.0;
 // which has to be backed out to line the borders up with the field
 // borders.
 const CGFloat kWindowBorderWidth = 1.0;
-
-// |AutocompleteButtonCell| and |AutocompleteTextFieldCell| draw their
-// text somewhat differently.  The image needs to be adjusted slightly
-// downward to align with the text the same.
-const CGFloat kImageBaselineAdjust = 1.0;
 
 // Background colors for different states of the popup elements.
 NSColor* BackgroundColor() {
@@ -519,8 +516,8 @@ void AutocompletePopupViewMac::OpenURLForRow(int row, bool force_background) {
   if (image) {
     NSRect imageRect = cellFrame;
     imageRect.size = [image size];
-    imageRect.origin.y += kImageBaselineAdjust +
-        floor((NSHeight(cellFrame) - NSHeight(imageRect)) / 2);
+    imageRect.origin.y +=
+        std::floor((NSHeight(cellFrame) - NSHeight(imageRect)) / 2.0);
     imageRect.origin.x += kImageXOffset;
     [image drawInRect:imageRect
              fromRect:NSZeroRect  // Entire image

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #import "chrome/browser/cocoa/location_bar/page_action_decoration.h"
 
 #include "base/sys_string_conversions.h"
@@ -15,6 +17,16 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "skia/ext/skia_utils_mac.h"
+
+namespace {
+
+// Distance to offset the bubble pointer from the bottom of the max
+// icon area of the decoration.  This makes the popup's upper border
+// 2px away from the omnibox's lower border (matches omnibox popup
+// upper border).
+const CGFloat kBubblePointYOffset = 2.0;
+
+}  // namespace
 
 PageActionDecoration::PageActionDecoration(
     LocationBarViewMac* owner,
@@ -51,8 +63,14 @@ PageActionDecoration::PageActionDecoration(
 PageActionDecoration::~PageActionDecoration() {
 }
 
-// Overridden from LocationBarImageView. Either notify listeners or show a
-// popup depending on the Page Action.
+// Always |kPageActionIconMaxSize| wide.  |ImageDecoration| draws the
+// image centered.
+CGFloat PageActionDecoration::GetWidthForSpace(CGFloat width) {
+  return Extension::kPageActionIconMaxSize;
+}
+
+// Either notify listeners or show a popup depending on the Page
+// Action.
 bool PageActionDecoration::OnMousePressed(NSRect frame) {
   if (current_tab_id_ < 0) {
     NOTREACHED() << "No current tab.";
@@ -175,8 +193,19 @@ NSString* PageActionDecoration::GetToolTip() {
 }
 
 NSPoint PageActionDecoration::GetBubblePointInFrame(NSRect frame) {
-  frame = GetDrawRectInFrame(frame);
-  return NSMakePoint(NSMidX(frame), NSMaxY(frame));
+  // This is similar to |ImageDecoration::GetDrawRectInFrame()|,
+  // except that code centers the image, which can differ in size
+  // between actions.  This centers the maximum image size, so the
+  // point will consistently be at the same y position.  x position is
+  // easier (the middle of the centered image is the middle of the
+  // frame).
+  const CGFloat delta_height =
+      NSHeight(frame) - Extension::kPageActionIconMaxSize;
+  const CGFloat bottom_inset = std::ceil(delta_height / 2.0);
+
+  // Return a point just below the bottom of the maximal drawing area.
+  return NSMakePoint(NSMidX(frame),
+                     NSMaxY(frame) - bottom_inset + kBubblePointYOffset);
 }
 
 NSMenu* PageActionDecoration::GetMenu() {

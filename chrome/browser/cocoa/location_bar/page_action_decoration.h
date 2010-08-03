@@ -51,6 +51,7 @@ class PageActionDecoration : public ImageDecoration,
   NSPoint GetBubblePointInFrame(NSRect frame);
 
   // Overridden from |LocationBarDecoration|
+  virtual CGFloat GetWidthForSpace(CGFloat width);
   virtual bool AcceptsMousePress() { return true; }
   virtual bool OnMousePressed(NSRect frame);
   virtual NSString* GetToolTip();

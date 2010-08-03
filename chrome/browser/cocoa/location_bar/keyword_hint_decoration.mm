@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <cmath>
+
 #import "chrome/browser/cocoa/location_bar/keyword_hint_decoration.h"
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/image_utils.h"
 #include "grit/theme_resources.h"
@@ -16,15 +19,26 @@
 namespace {
 
 // How far to inset the hint text area from sides.
-const CGFloat kHintTextYInset = 5.0;
+const CGFloat kHintTextYInset = 4.0;
 
 // How far to inset the hint image from sides.  Lines baseline of text
 // in image with baseline of prefix and suffix.
-const CGFloat kHintImageYInset = 5.0;
+const CGFloat kHintImageYInset = 4.0;
+
+// Extra padding right and left of the image.
+const CGFloat kHintImagePadding = 1.0;
 
 // Maxmimum of the available space to allow the hint to take over.
 // Should leave enough so that the user has space to edit things.
 const CGFloat kHintAvailableRatio = 2.0 / 3.0;
+
+// Helper to convert |s| to an |NSString|, trimming whitespace at
+// ends.
+NSString* TrimAndConvert(const std::wstring& s) {
+  std::wstring output;
+  TrimWhitespace(s, TRIM_ALL, &output);
+  return base::SysWideToNSString(output);
+}
 
 }  // namespace
 
@@ -71,10 +85,10 @@ void KeywordHintDecoration::SetKeyword(const std::wstring& short_name,
   // Where to put the [tab] image.
   const size_t split = content_param_offsets.front();
 
-  hint_prefix_.reset(
-      [base::SysWideToNSString(keyword_hint.substr(0, split)) retain]);
-  hint_suffix_.reset(
-      [base::SysWideToNSString(keyword_hint.substr(split)) retain]);
+  // Trim the spaces from the edges (there is space in the image) and
+  // convert to |NSString|.
+  hint_prefix_.reset([TrimAndConvert(keyword_hint.substr(0, split)) retain]);
+  hint_suffix_.reset([TrimAndConvert(keyword_hint.substr(split)) retain]);
 }
 
 CGFloat KeywordHintDecoration::GetWidthForSpace(CGFloat width) {
@@ -88,10 +102,14 @@ CGFloat KeywordHintDecoration::GetWidthForSpace(CGFloat width) {
   if (width < image_width)
     return kOmittedWidth;
 
-  // Show the full hint if it won't take up too much space.
+  // Show the full hint if it won't take up too much space.  The image
+  // needs to be placed at a pixel boundary, round the text widths so
+  // that any partially-drawn pixels don't look too close (or too
+  // far).
   CGFloat full_width =
-      [hint_prefix_ sizeWithAttributes:attributes_].width +
-      image_width + [hint_suffix_ sizeWithAttributes:attributes_].width;
+      std::floor([hint_prefix_ sizeWithAttributes:attributes_].width + 0.5) +
+      kHintImagePadding + image_width + kHintImagePadding +
+      std::floor([hint_suffix_ sizeWithAttributes:attributes_].width + 0.5);
   if (full_width <= width * kHintAvailableRatio)
     return full_width;
 
@@ -105,28 +123,38 @@ void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   const bool draw_full = NSWidth(frame) > image_width;
 
   if (draw_full) {
-    NSRect prefixRect = NSInsetRect(frame, 0.0, kHintTextYInset);
-    prefixRect.size.width =
+    NSRect prefix_rect = NSInsetRect(frame, 0.0, kHintTextYInset);
+    const CGFloat prefix_width =
         [hint_prefix_ sizeWithAttributes:attributes_].width;
-    [hint_prefix_ drawInRect:prefixRect withAttributes:attributes_];
-    frame.origin.x += NSWidth(prefixRect);
-    frame.size.width -= NSWidth(prefixRect);
+    DCHECK_GE(NSWidth(prefix_rect), prefix_width);
+    [hint_prefix_ drawInRect:prefix_rect withAttributes:attributes_];
+
+    // The image should be drawn at a pixel boundary, round the prefix
+    // so that partial pixels aren't oddly close (or distant).
+    frame.origin.x += std::floor(prefix_width + 0.5) + kHintImagePadding;
+    frame.size.width -= std::floor(prefix_width + 0.5) + kHintImagePadding;
   }
 
-  NSRect imageRect = NSInsetRect(frame, 0.0, kHintImageYInset);
-  imageRect.size = [image size];
-  [image drawInRect:imageRect
+  NSRect image_rect = NSInsetRect(frame, 0.0, kHintImageYInset);
+  image_rect.size = [image size];
+  [image drawInRect:image_rect
             fromRect:NSZeroRect  // Entire image
            operation:NSCompositeSourceOver
             fraction:1.0
         neverFlipped:YES];
-  frame.origin.x += NSWidth(imageRect);
-  frame.size.width -= NSWidth(imageRect);
+  frame.origin.x += NSWidth(image_rect);
+  frame.size.width -= NSWidth(image_rect);
 
   if (draw_full) {
-    NSRect suffixRect = NSInsetRect(frame, 0.0, kHintTextYInset);
-    suffixRect.size.width =
+    NSRect suffix_rect = NSInsetRect(frame, 0.0, kHintTextYInset);
+    const CGFloat suffix_width =
         [hint_suffix_ sizeWithAttributes:attributes_].width;
-    [hint_suffix_ drawInRect:suffixRect withAttributes:attributes_];
+
+    // Right-justify the text within the remaining space, so it
+    // doesn't get too close to the image relative to a following
+    // decoration.
+    suffix_rect.origin.x = NSMaxX(suffix_rect) - suffix_width;
+    DCHECK_GE(NSWidth(suffix_rect), suffix_width);
+    [hint_suffix_ drawInRect:suffix_rect withAttributes:attributes_];
   }
 }
