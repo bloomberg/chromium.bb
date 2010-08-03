@@ -90,6 +90,10 @@ class IncludeNode(base.Node):
     grit.format.html_inline.InlineFile(filename, flat_filename, self)
     self._is_flattened = True
 
+  def GetHtmlResourceFilenames(self):
+    """Returns a set of all filenames inlined by this file."""
+    return grit.format.html_inline.GetResourceFilenames(self.FilenameToOpen())
+
   # static method
   def Construct(parent, name, type, file, translateable=True,
       filenameonly=False, relativepath=False):

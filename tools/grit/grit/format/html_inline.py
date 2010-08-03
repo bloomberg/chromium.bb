@@ -39,7 +39,7 @@ def ReadFile(input_filename):
   f.close()
   return file_contents
 
-def SrcInlineAsDataURL(src_match, base_path, distribution):
+def SrcInlineAsDataURL(src_match, base_path, distribution, inlined_files):
   """regex replace function.
 
   Takes a regex match for src="filename", attempts to read the file
@@ -64,6 +64,7 @@ def SrcInlineAsDataURL(src_match, base_path, distribution):
   filename = filename.replace('%DISTRIBUTION%', distribution)
   filepath = os.path.join(base_path, filename)
   mimetype = mimetypes.guess_type(filename)[0] or 'text/plain'
+  inlined_files.add(filepath)
   inline_data = base64.standard_b64encode(ReadFile(filepath))
 
   prefix = src_match.string[src_match.start():src_match.start('filename')-1]
@@ -80,6 +81,8 @@ def InlineFile(input_filename, output_filename, grd_node):
     input_filename: name of file to read in
     output_filename: name of file to be written to
     grd_node: html node from the grd file for this include tag
+  Returns:
+    a set of filenames of all the inlined files
   """
   input_filepath = os.path.dirname(input_filename)
 
@@ -89,9 +92,13 @@ def InlineFile(input_filename, output_filename, grd_node):
     if len(distribution) > 1 and distribution[0] == '_':
       distribution = distribution[1:].lower()
 
-  def SrcReplace(src_match, filepath=input_filepath):
+  # Keep track of all the files we inline.
+  inlined_files = set()
+
+  def SrcReplace(src_match, filepath=input_filepath,
+                 inlined_files=inlined_files):
     """Helper function to provide SrcInlineAsDataURL with the base file path"""
-    return SrcInlineAsDataURL(src_match, filepath, distribution)
+    return SrcInlineAsDataURL(src_match, filepath, distribution, inlined_files)
 
   def GetFilepath(src_match):
     filename = src_match.group('filename')
@@ -113,11 +120,12 @@ def InlineFile(input_filename, output_filename, grd_node):
       return ''
     return src_match.group('content')
 
-  def InlineFileContents(src_match, pattern):
+  def InlineFileContents(src_match, pattern, inlined_files=inlined_files):
     """Helper function to inline external script and css files"""
     filepath = GetFilepath(src_match)
     if filepath is None:
       return src_match.group(0)
+    inlined_files.add(filepath)
     return pattern % ReadFile(filepath)
 
   def InlineIncludeFiles(src_match):
@@ -133,7 +141,7 @@ def InlineFile(input_filename, output_filename, grd_node):
     filepath = os.path.dirname(css_filepath)
     return InlineCssBackgroundImages(text, filepath)
 
-  def InlineCssFile(src_match):
+  def InlineCssFile(src_match, inlined_files=inlined_files):
     """Helper function to inline external css files.
 
     Args:
@@ -146,6 +154,7 @@ def InlineFile(input_filename, output_filename, grd_node):
     if filepath is None:
       return src_match.group(0)
 
+    inlined_files.add(filepath)
     # When resolving CSS files we need to pass in the path so that relative URLs
     # can be resolved.
     return '<style>%s</style>' % InlineCssText(ReadFile(filepath), filepath)
@@ -190,17 +199,24 @@ def InlineFile(input_filename, output_filename, grd_node):
   flat_text = re.sub('<link rel="icon".+?href="(?P<filename>[^"\']*)"',
                      SrcReplace,
                      flat_text)
+  if output_filename:
+    out_file = open(output_filename, 'wb')
+    out_file.writelines(flat_text)
+    out_file.close()
+  return inlined_files
 
-  out_file = open(output_filename, 'wb')
-  out_file.writelines(flat_text)
-  out_file.close()
+
+def GetResourceFilenames(filename):
+  """For a grd file, returns a set of all the files that would be inline."""
+  return InlineFile(filename, None, None)
+
 
 def main():
   if len(sys.argv) <= 2:
     print "Flattens a HTML file by inlining its external resources.\n"
     print "html_inline.py inputfile outputfile"
   else:
-    InlineFile(sys.argv[1], sys.argv[2])
+    InlineFile(sys.argv[1], sys.argv[2], None)
 
 if __name__ == '__main__':
   main()

@@ -57,6 +57,9 @@ def Inputs(filename):
       # Only include files that we actually plan on using.
       if node.SatisfiesOutputCondition():
         files.append(node.FilenameToOpen())
+        # If it's a flattened node, grab inlined resources too.
+        if node.attrs['flattenhtml'] == 'true':
+          files.extend(node.GetHtmlResourceFilenames())
 
   # Add in the grit source files.  If one of these change, we want to re-run
   # grit.
