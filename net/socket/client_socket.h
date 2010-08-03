@@ -15,6 +15,26 @@ class BoundNetLog;
 
 class ClientSocket : public Socket {
  public:
+  ClientSocket();
+
+  // Destructor emits statistics for this socket's lifetime.
+  virtual ~ClientSocket();
+
+  // Set the annotation to indicate this socket was created for speculative
+  // reasons.  Note that if the socket was used before calling this method, then
+  // the call will be ignored (no annotation will be added).
+  void SetSubresourceSpeculation();
+  void SetOmniboxSpeculation();
+
+  // Establish values of was_ever_connected_ and was_used_to_transmit_data_.
+  // The argument indicates if the socket's state, as reported by a
+  // ClientSocketHandle::is_reused(), should show that the socket has already
+  // been used to transmit data.
+  // This is typically called when a transaction finishes, and
+  // ClientSocketHandle is being destroyed.  Calling at that point it allows us
+  // to aggregates the impact of that connect job into this instance.
+  void UpdateConnectivityState(bool is_reused);
+
   // Called to establish a connection.  Returns OK if the connection could be
   // established synchronously.  Otherwise, ERR_IO_PENDING is returned and the
   // given callback will run asynchronously when the connection is established
@@ -54,6 +74,24 @@ class ClientSocket : public Socket {
 
   // Gets the NetLog for this socket.
   virtual const BoundNetLog& NetLog() const = 0;
+
+ private:
+  // Publish histogram to help evaluate preconnection utilization.
+  void EmitPreconnectionHistograms() const;
+
+  // Indicate if any ClientSocketHandle that used this socket was connected as
+  // would be indicated by the IsConnected() method.  This variable set by a
+  // ClientSocketHandle before releasing this ClientSocket.
+  bool was_ever_connected_;
+
+  // Indicate if this socket was first created for speculative use, and identify
+  // the motivation.
+  bool omnibox_speculation_;
+  bool subresource_speculation_;
+
+  // Indicate if this socket was ever used. This state is set by a
+  // ClientSocketHandle before releasing this ClientSocket.
+  bool was_used_to_transmit_data_;
 };
 
 }  // namespace net

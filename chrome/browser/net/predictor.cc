@@ -149,6 +149,20 @@ void Predictor::PredictFrameSubresources(const GURL& url) {
   Referrers::iterator it = referrers_.find(url);
   if (referrers_.end() == it)
     return;
+  ChromeThread::PostTask(
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(this,
+                        &Predictor::PrepareFrameSubresources, url));
+}
+
+void Predictor::PrepareFrameSubresources(const GURL& url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(url.GetWithEmptyPath() == url);
+  Referrers::iterator it = referrers_.find(url);
+  if (referrers_.end() == it)
+    return;
+
   Referrer* referrer = &(it->second);
   referrer->IncrementUseCount();
   const UrlInfo::ResolutionMotivation motivation =
