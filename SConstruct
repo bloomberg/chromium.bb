@@ -196,6 +196,10 @@ pre_base_env = Environment(
     # Use workaround in special scons version.
     LIBS_STRICT = True,
     LIBS_DO_SUBST = True,
+
+    # Select where to find coverage tools.
+    COVERAGE_MCOV = '../third_party/lcov/bin/mcov',
+    COVERAGE_GENHTML = '../third_party/lcov/bin/genhtml',
 )
 
 # Scons normally wants to scrub the environment.  However, sometimes

@@ -16,6 +16,7 @@ vars = {
   "python_rev": "22967",
   "wix_rev": "153",
   "ppapi_rev": "126",
+  "lcov_rev": "54822",
 }
 
 deps = {
@@ -91,6 +92,14 @@ deps_os = {
     "third_party/NSIS":
       (Var("native_client_trunk") + "/src/third_party/NSIS@" +
        Var("tools_rev")),
+  },
+  "mac": {
+    "third_party/lcov":
+      Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
+  },
+  "unix": {
+    "third_party/lcov":
+      Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
   },
 }
 
