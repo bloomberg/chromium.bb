@@ -3569,18 +3569,6 @@
    fun:_ZN3net46HttpAuthHandlerNegotiateTest_DisableCname_Test8TestBodyEv
 }
 {
-   bug_49404c
-   Memcheck:Value4
-   fun:modp_b64_encode
-   fun:_ZN4base12Base64EncodeERKSsPSs
-   fun:_ZN3net14HttpAuthGSSAPI17GenerateAuthTokenEPKSbItN4base20string16_char_traitsESaItEES6_RKSbIwSt11char_traitsIwESaIwEEPSs
-   ...
-   fun:_ZN3net24HttpAuthHandlerNegotiate6DoLoopEi
-   fun:_ZN3net24HttpAuthHandlerNegotiate21GenerateAuthTokenImplEPKSbItN4base20string16_char_traitsESaItEES6_PKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPSs
-   fun:_ZN3net15HttpAuthHandler17GenerateAuthTokenEPKSbItN4base20string16_char_traitsESaItEES6_PKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPSs
-   fun:_ZN3net46HttpAuthHandlerNegotiateTest_DisableCname_Test8TestBodyEv
-}
-{
    bug_50056
    Memcheck:Leak
    fun:_Znw*
