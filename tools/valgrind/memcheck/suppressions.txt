@@ -3575,20 +3575,6 @@
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
 }
 {
-   bug_50484
-   Memcheck:Leak
-   ...
-   fun:_ZN15SyncSetupWizard*EP18ProfileSyncService
-   fun:_ZN18ProfileSyncService*
-   fun:_ZN22ProfileSync*
-   ...
-   fun:*GetProfileSyncServiceEv
-   fun:_ZN7Profile16IsSyncAccessibleEv
-   fun:_ZN7Browser31UpdateCommandsForFullscreenModeEb
-   fun:_ZN7Browser16InitCommandStateEv
-   fun:_ZN7Browser*ENS_4TypeEP7Profile
-}
-{
    bug_50630
    Memcheck:Value4
    fun:modp_b64_encode
