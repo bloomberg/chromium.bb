@@ -105,8 +105,6 @@ std::string GetCreditCardType(string16 number) {
       if (first_two_digits >= 51 && first_two_digits <= 55)
         return kMasterCard;
 
-      if (first_two_digits == 54 || first_two_digits == 55)
-
       if (first_digit == 3)
         return kJCBCard;
 
