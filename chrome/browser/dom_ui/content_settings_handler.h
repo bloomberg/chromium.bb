@@ -32,6 +32,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   void SetContentFilter(const Value* value);
   void SetAllowThirdPartyCookies(const Value* value);
   void RemoveExceptions(const Value* value);
+  void SetException(const Value* value);
 
   NotificationRegistrar notification_registrar_;
 

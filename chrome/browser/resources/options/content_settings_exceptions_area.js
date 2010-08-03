@@ -15,14 +15,9 @@ cr.define('options.contentSettings', function() {
    */
   function ExceptionsListItem(exception) {
     var el = cr.doc.createElement('li');
-    el.exceptionsPattern = exception[0];
+    el.dataItem = exception;
     el.__proto__ = ExceptionsListItem.prototype;
     el.decorate();
-
-    if (exception[1] == 'allow')
-      el.option_allow.selected = 'selected';
-    else if (exception[1] == 'block')
-      el.option_block.selected = 'selected';
 
     return el;
   }
@@ -36,28 +31,203 @@ cr.define('options.contentSettings', function() {
     decorate: function() {
       ListItem.prototype.decorate.call(this);
 
-      // TODO(estade): these should be plain text when the items are not
-      // actively being edited.
+      // Labels for display mode.
+      var patternLabel = cr.doc.createElement('span');
+      patternLabel.textContent = this.pattern;
+      this.appendChild(patternLabel);
+
+      var settingLabel = cr.doc.createElement('span');
+      settingLabel.textContent = this.settingForDisplay();
+      settingLabel.className = 'exceptionSetting';
+      this.appendChild(settingLabel);
+
+      // Elements for edit mode.
       var input = cr.doc.createElement('input');
       input.type = 'text';
-      input.value = this.exceptionsPattern;
       this.appendChild(input);
-      input.className = 'exceptionInput';
+      input.className = 'exceptionInput hidden';
 
       var select = cr.doc.createElement('select');
-      var option_allow = cr.doc.createElement('option');
-      option_allow.textContent = templateData.allowException;
-      var option_block = cr.doc.createElement('option');
-      option_block.textContent = templateData.blockException;
-      select.appendChild(option_allow);
-      select.appendChild(option_block);
+      var optionAllow = cr.doc.createElement('option');
+      optionAllow.textContent = templateData.allowException;
+      var optionBlock = cr.doc.createElement('option');
+      optionBlock.textContent = templateData.blockException;
+      select.appendChild(optionAllow);
+      select.appendChild(optionBlock);
       this.appendChild(select);
-      select.className = 'exceptionSelect';
+      select.className = 'exceptionSetting hidden';
 
+      this.patternLabel = patternLabel;
+      this.settingLabel = settingLabel;
       this.input = input;
       this.select = select;
-      this.option_allow = option_allow;
-      this.option_block = option_block;
+      this.optionAllow = optionAllow;
+      this.optionBlock = optionBlock;
+
+      this.updateEditables();
+
+      // Handle events on the editable nodes.
+      var eventsToStop =
+          ['mousedown', 'mouseup', 'contextmenu', 'dblclick', 'paste'];
+      eventsToStop.forEach(function(type) {
+        input.addEventListener(type, function(e) {
+            e.stopPropagation();
+          });
+        }
+      );
+
+      var listItem = this;
+      // Handles enter and escape which trigger reset and commit respectively.
+      function handleKeydown(e) {
+        // Make sure that the tree does not handle the key.
+        e.stopPropagation();
+
+        // Calling list.focus blurs the input which will stop editing the list
+        // item.
+        switch (e.keyIdentifier) {
+          case 'U+001B':  // Esc
+            // Reset the inputs.
+            listItem.updateEditables();
+          case 'Enter':
+            if (listItem.parentNode)
+              listItem.parentNode.focus();
+        }
+      }
+
+      function handleBlur(e) {
+        // When the blur event happens we do not know who is getting focus so we
+        // delay this a bit since we want to know if the other input got focus
+        // before deciding if we should exit edit mode.
+        var doc = e.target.ownerDocument;
+        window.setTimeout(function() {
+          var activeElement = doc.activeElement;
+          if (!listItem.contains(activeElement)) {
+            listItem.editing = false;
+          }
+        }, 50);
+      }
+
+      input.addEventListener('keydown', handleKeydown);
+      input.addEventListener('blur', handleBlur);
+
+      select.addEventListener('keydown', handleKeydown);
+      select.addEventListener('blur', handleBlur);
+    },
+
+    /**
+     * The pattern (e.g., a URL) for the exception.
+     * @type {string}
+     */
+    get pattern() {
+      return this.dataItem[0];
+    },
+    set pattern(pattern) {
+      this.dataItem[0] = pattern;
+    },
+
+    /**
+     * The setting (allow/block) for the exception.
+     * @type {string}
+     */
+    get setting() {
+      return this.dataItem[1];
+    },
+    set setting(setting) {
+      this.dataItem[1] = setting;
+    },
+
+    /**
+     * Gets a human-readable setting string.
+     * @type {string}
+     */
+    settingForDisplay: function() {
+      var setting = this.setting;
+      if (setting == 'allow')
+        return templateData.allowException;
+      else if (setting == 'block')
+        return templateData.blockException;
+    },
+
+    /**
+     * Copy the data model values to the editable nodes.
+     */
+    updateEditables: function() {
+      if (!(this.pattern && this.setting))
+        return;
+
+      this.input.value = this.pattern;
+
+      if (this.setting == 'allow')
+        this.optionAllow.selected = true;
+      else if (this.setting == 'block')
+        this.optionBlock.selected = true;
+    },
+
+    /**
+     * Whether the user is currently able to edit the list item.
+     * @type {boolean}
+     */
+    get editing() {
+      return this.hasAttribute('editing');
+    },
+    set editing(editing) {
+      var oldEditing = this.editing;
+      if (oldEditing == editing)
+        return;
+
+      var listItem = this;
+      var pattern = this.pattern;
+      var setting = this.setting;
+      var patternLabel = this.patternLabel;
+      var settingLabel = this.settingLabel;
+      var input = this.input;
+      var select = this.select;
+      var optionAllow = this.optionAllow;
+      var optionBlock = this.optionBlock;
+
+      patternLabel.classList.toggle('hidden');
+      settingLabel.classList.toggle('hidden');
+      input.classList.toggle('hidden');
+      select.classList.toggle('hidden');
+
+      var doc = this.ownerDocument;
+      if (editing) {
+        this.setAttribute('editing', '');
+        cr.ui.limitInputWidth(input, this, 20);
+        input.focus();
+        input.select();
+      } else {
+        // Check that we have a valid pattern and if not we do not change then
+        // editing mode.
+        var newPattern = input.value;
+
+        // TODO(estade): check for pattern validity.
+        if (false) {
+          // In case the item was removed before getting here we should
+          // not alert.
+          if (listItem.parentNode) {
+            // TODO(estade): i18n
+            alert('invalid pattern');
+          }
+          input.focus();
+          input.select();
+          return;
+        }
+
+        this.pattern = patternLabel.textContent = newPattern;
+        if (optionAllow.selected)
+          this.setting = 'allow';
+        else if (optionBlock.selected)
+          this.setting = 'block';
+        settingLabel.textContent = this.settingForDisplay();
+
+        this.removeAttribute('editing');
+
+        if (pattern != this.pattern)
+          chrome.send('removeImageExceptions', [pattern]);
+
+        chrome.send('setImageException', [this.pattern, this.setting]);
+      }
     }
   };
 
@@ -107,7 +277,6 @@ cr.define('options.contentSettings', function() {
      * Removes all selected rows from browser's model.
      */
     removeSelectedRows: function() {
-      var selection = this.selectionModel;
       var removePatterns = [];
       var selectedItems = this.selectedItems;
       for (var i = 0; i < selectedItems.length; ++i) {
@@ -115,6 +284,15 @@ cr.define('options.contentSettings', function() {
       }
 
       chrome.send('removeImageExceptions', removePatterns);
+    },
+
+    /**
+     * Puts the selected row in editing mode.
+     */
+    editSelectedRow: function() {
+      var li = this.getListItem(this.selectedItem);
+      if (li)
+        li.editing = true;
     }
   };
 
@@ -130,17 +308,27 @@ cr.define('options.contentSettings', function() {
       addRow.textContent = templateData.addExceptionRow;
       this.appendChild(addRow);
 
+      // TODO(estade): disable "Edit" when other than exactly 1 row is
+      // highlighted.
+      var editRow = cr.doc.createElement('button');
+      editRow.textContent = templateData.editExceptionRow;
+      this.appendChild(editRow);
+
       // TODO(estade): disable "Remove" when no row is highlighted.
       var removeRow = cr.doc.createElement('button');
       removeRow.textContent = templateData.removeExceptionRow;
       this.appendChild(removeRow);
 
-      removeRow.onclick = function(event) {
-        imagesExceptionsList.removeSelectedRows();
-      };
-
       addRow.onclick = function(event) {
         // TODO(estade): implement this.
+      };
+
+      editRow.onclick = function(event) {
+        imagesExceptionsList.editSelectedRow();
+      };
+
+      removeRow.onclick = function(event) {
+        imagesExceptionsList.removeSelectedRows();
       };
     }
   };

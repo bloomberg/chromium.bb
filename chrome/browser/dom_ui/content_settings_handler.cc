@@ -115,6 +115,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetString(IDS_EXCEPTIONS_ADD_BUTTON));
   localized_strings->SetString(L"removeExceptionRow",
       l10n_util::GetString(IDS_EXCEPTIONS_REMOVE_BUTTON));
+  localized_strings->SetString(L"editExceptionRow",
+      l10n_util::GetString(IDS_EXCEPTIONS_EDIT_BUTTON));
 
   // Cookies filter.
   localized_strings->SetString(L"cookies_tab_label",
@@ -284,6 +286,9 @@ void ContentSettingsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("removeImageExceptions",
       NewCallback(this,
                   &ContentSettingsHandler::RemoveExceptions));
+  dom_ui_->RegisterMessageCallback("setImageException",
+      NewCallback(this,
+                  &ContentSettingsHandler::SetException));
 }
 
 void ContentSettingsHandler::SetContentFilter(const Value* value) {
@@ -323,4 +328,22 @@ void ContentSettingsHandler::RemoveExceptions(const Value* value) {
                                     CONTENT_SETTINGS_TYPE_IMAGES,
                                     CONTENT_SETTING_DEFAULT);
   }
+}
+
+// TODO(estade): generalize this function to work on all content settings types
+// rather than just images.
+void ContentSettingsHandler::SetException(const Value* value) {
+  const ListValue* list_value = static_cast<const ListValue*>(value);
+  std::string pattern;
+  bool rv = list_value->GetString(0, &pattern);
+  DCHECK(rv);
+  std::string setting;
+  rv = list_value->GetString(1, &setting);
+  DCHECK(rv);
+
+  HostContentSettingsMap* settings_map =
+      dom_ui_->GetProfile()->GetHostContentSettingsMap();
+  settings_map->SetContentSetting(HostContentSettingsMap::Pattern(pattern),
+                                  CONTENT_SETTINGS_TYPE_IMAGES,
+                                  ContentSettingFromString(setting));
 }
