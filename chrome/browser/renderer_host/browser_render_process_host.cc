@@ -567,6 +567,7 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableExperimentalWebGL,
     switches::kEnableGLSLTranslator,
     switches::kInProcessWebGL,
+    switches::kEnableAcceleratedCompositing,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,
