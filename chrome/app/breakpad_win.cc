@@ -526,7 +526,7 @@ void InitCrashReporterWithDllPath(const std::wstring& dll_path) {
     // Query the custom_info now because if we do it in the thread it's going to
     // fail in the sandbox. The thread will delete this object.
     CrashReporterInfo* info(new CrashReporterInfo);
-    info->process_type = command.GetSwitchValue(switches::kProcessType);
+    info->process_type = command.GetSwitchValueNative(switches::kProcessType);
     if (info->process_type.empty())
       info->process_type = L"browser";
 

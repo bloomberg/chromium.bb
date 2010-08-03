@@ -752,8 +752,8 @@ void InitCrashReporter() {
     if (!parsed_command_line.HasSwitch(switches::kEnableCrashReporter))
       return;
     // Get the guid and linux distro from the command line switch.
-    std::string switch_value = WideToASCII(
-        parsed_command_line.GetSwitchValue(switches::kEnableCrashReporter));
+    std::string switch_value =
+        parsed_command_line.GetSwitchValueASCII(switches::kEnableCrashReporter);
     size_t separator = switch_value.find(",");
     if (separator != std::string::npos) {
       google_update::posix_guid = switch_value.substr(0, separator);

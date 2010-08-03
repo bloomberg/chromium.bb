@@ -168,10 +168,11 @@ void InitCrashProcessInfo() {
 
   // Determine the process type.
   NSString* process_type = @"browser";
-  std::wstring process_type_switch =
-      CommandLine::ForCurrentProcess()->GetSwitchValue(switches::kProcessType);
+  std::string process_type_switch =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
   if (!process_type_switch.empty()) {
-    process_type = base::SysWideToNSString(process_type_switch);
+    process_type = base::SysUTF8ToNSString(process_type_switch);
   }
 
   // Store process type in crash dump.
