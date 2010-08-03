@@ -2,7 +2,10 @@
 <head>
 <style type="text/css">
   body,td,div,p,a,font,span {font-family: arial,sans-serif;}
-  body { background-color:#ffffff }
+  body {
+    background-color:#ffffff;
+    -webkit-user-select: none;
+  }
   A:link {color:#0000cc; }
   A:visited { color:#551a8b; }
   A:active { color:#ff0000; }
@@ -76,15 +79,29 @@
     height: 5px;
   }
   #top_blurb {
-    text-align: justify;
+    font-size: 11pt;
+    line-height: 1.5em;
   }
-  input[type='button'] {
-    min-width: 87px;
-    min-height: 26px;
-  }
+  input[type='button'],
   input[type='submit'] {
     min-width: 87px;
     min-height: 26px;
+  }
+  #top_blurb_error {
+    display: block;
+    margin-bottom: 10px;
+    margin-right: auto;
+    margin-left: auto;
+    width: 70%;
+    text-align: center;
+    padding: 4px 10px;
+    background-color: #eeb939;
+    -webkit-border-radius: 4px;
+    font-weight: bold;
+    font-size: 11pt;
+  }
+  #content_table {
+   padding: 2px;
   }
 </style>
 </head>
@@ -170,9 +187,7 @@
 
       // The captcha takes up lots of space, so make room.
       setElementDisplay("top_blurb", "none");
-      setElementDisplay("top_blurb_error", "none");
       setElementDisplay("createaccountdiv", "none");
-      setElementDisplay("topspacer", "none");
       var gaiaTable = document.getElementById('gaia_table');
       gaiaTable.cellPadding = 0;
       gaiaTable.cellSpacing = 1;
@@ -251,8 +266,7 @@
     function setBlurbError() {
       if (g_is_captcha_challenge_active)
         return;  // No blurb in captcha challenge mode.
-      document.getElementById("top_blurb").style.display = "none";
-      document.getElementById("top_blurb_error").style.display = "block";
+      document.getElementById("top_blurb_error").style.visibility = "visible";
       document.getElementById('Email').disabled = false;
       document.getElementById('Passwd').disabled = false;
     }
@@ -296,13 +310,10 @@
                             font-style: italic; }
   </style>
   <div id="top_blurb">
-    <p><font size="-1"><span i18n-content="introduction"></span></font></p>
+    <span i18n-content="introduction"></span>
   </div>
-  <div id="top_blurb_error" style="display:none">
-    <p><font size="-1">
-      <span i18n-content="settingupsync"></span><br/><br/>
-      <b><span i18n-content="errorsigningin"></span></b>
-    </font></p>
+  <div id="top_blurb_error" style="visibility:hidden">
+      <span i18n-content="errorsigningin"></span>
   </div>
 <form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;">
 <div id="gaia_loginbox">
@@ -314,9 +325,6 @@
       <div>
         <table id="gaia_table" align="center" border="0" cellpadding="1"
                cellspacing="0">
-          <tr>
-            <td id="topspacer" class="toppageverticalspace" colspan="2"></td>
-          </tr>
           <tr>
             <td colspan="2" align="center">
               <table>
@@ -453,6 +461,9 @@
                   <td class="noverticalpadding">
                     <input id="signIn" type="submit" class="gaia le button"
                            name="signIn" i18n-values="value:signin"/>
+                    <input type="button" name="cancel" i18n-values="value:cancel"
+                           onclick="CloseDialog();" >
+
                   </td>
                 </tr>
               </table>
@@ -487,12 +498,6 @@
 </tr>
 <tr>
   <td class="cancelspacenocaptcha" id="cancelspacer" colspan="2">
-  </td>
-</tr>
-<tr>
-  <td class="endaligned noverticalpadding" colspan="2" style="vertical-align: bottom">
-  <input type="button" name="cancel" i18n-values="value:cancel"
-         onclick="CloseDialog();" style="width:85">
   </td>
 </tr>
 </table>

@@ -3,27 +3,26 @@
 <title></title>
 <style type="text/css">
 body {
-   line-height: 1.8em;
+   line-height: 1.5em;
    background: #FFFFFF;
    margin: 10px 15px;
+   font-size: 11pt;
 }
 html[os='mac'] body {
-  line-height: 1.8em;
+  line-height: 1.5em;
   margin: 15px 20px;
   background: #FFFFFF;
 }
-html[os='mac'] form {
-  font-size: 110%;
-}
-html[os='linux'] form {
-  font-size: 120%;
+form {
+  -webkit-user-select: none;
 }
 .sync-header {
   font-size: 1.2em;
   font-weight: bold;
+  margin-bottom: 10px;
 }
 .sync-select-customization {
-  margin-top: 5px;
+  margin-top: 10px;
 }
 #chooseDataTypesRadio {
   vertical-align: top;
@@ -264,7 +263,7 @@ html[os='mac'] input[type='submit'] {
 
 </script>
 </head>
-<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
+<body i18n-values=".style.fontFamily:fontfamily"
       onload="initializeChooseDataTypesDialog();">
 <form id="chooseDataTypesForm" 
       onSubmit="sendChooseDataTypesAndClose(); return false;">
