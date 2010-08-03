@@ -219,6 +219,9 @@ void MemoryDetails::UpdateHistograms() {
       case ChildProcessInfo::NACL_BROKER_PROCESS:
         UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClientBroker", sample);
         break;
+      case ChildProcessInfo::GPU_PROCESS:
+        UMA_HISTOGRAM_MEMORY_KB("Memory.Gpu", sample);
+        break;
       default:
         NOTREACHED();
     }
