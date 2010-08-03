@@ -143,8 +143,8 @@ readonly REPO_BINUTILS="binutils.nacl-llvm-branches"
 # when running this script:
 # CC=$(readlink -f tools/llvm/mygcc32) \
 # CXX=$(readlink -f tools/llvm/myg++32) \
-# tools/llvm/untrusted-toolchain-creator.sh
-
+# tools/llvm/utman.sh untrusted_sdk <file>
+# NOTE: this has not been tried in a while and may no longer work
 CC=${CC:-}
 # TODO(espindola): This should be ${CXX:-}, but llvm-gcc's configure has a
 # bug that brakes the build if we do that.
@@ -157,7 +157,6 @@ readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-nm
 readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ranlib
 readonly ILLEGAL_TOOL=${DRIVER_INSTALL_DIR}/llvm-fake-illegal
 
-# NOTE: this tools.sh defines: LD_FOR_TARGET, CC_FOR_TARGET, CXX_FOR_TARGET, ...
 setup-tools-common() {
   AR_FOR_SFI_TARGET="${CROSS_TARGET_AR}"
   NM_FOR_SFI_TARGET="${CROSS_TARGET_NM}"
