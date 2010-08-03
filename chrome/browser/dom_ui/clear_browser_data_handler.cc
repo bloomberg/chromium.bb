@@ -109,7 +109,8 @@ void ClearBrowserDataHandler::HandleClearBrowserData(const Value* value) {
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
 
   FundamentalValue state(true);
-  dom_ui_->CallJavascriptFunction(L"clearBrowserDataSetClearingState", state);
+  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.setClearingState",
+                                  state);
 
   // BrowsingDataRemover deletes itself when done.
   remover_ = new BrowsingDataRemover(profile,
@@ -124,6 +125,6 @@ void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
   // itself after we return.
   remover_ = NULL;
   DCHECK(dom_ui_);
-  dom_ui_->CallJavascriptFunction(L"clearBrowserDataDismiss");
+  dom_ui_->CallJavascriptFunction(L"ClearBrowserDataOverlay.dismiss");
 }
 

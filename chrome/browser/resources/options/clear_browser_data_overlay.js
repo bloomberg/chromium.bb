@@ -46,7 +46,7 @@ cr.define('options', function() {
   //
   // Chrome callbacks
   //
-  function clearBrowserDataSetClearingState(state) {
+  ClearBrowserDataOverlay.setClearingState = function(state) {
     $('deleteBrowsingHistoryCheckbox').disabled = state;
     $('deleteDownloadHistoryCheckbox').disabled = state;
     $('deleteCacheCheckbox').disabled = state;
@@ -73,9 +73,9 @@ cr.define('options', function() {
     }
   }
 
-  function clearBrowserDataDismiss() {
+  ClearBrowserDataOverlay.dismiss = function() {
     OptionsPage.clearOverlays();
-    clearBrowserDataSetClearingState(false);
+    setClearingState(false);
   }
 
   // Export
