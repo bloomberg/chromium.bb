@@ -3834,3 +3834,39 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_51057_a
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net22HttpNetworkTransaction16DoInitConnectionEv
+   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
+   fun:_ZN3net22HttpNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net9HttpCache11Transaction13DoSendRequestEv
+   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
+   fun:_ZN3net9HttpCache11Transaction12OnIOCompleteEi
+   fun:_Z16DispatchToMethodIN3net9HttpCache11TransactionEMS2_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplIN3net9HttpCache11TransactionEMS2_FviE6Tuple1IiEE13RunWithParamsERKS6_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN3net9HttpCache8WorkItem17NotifyTransactionEiPNS0_11ActiveEntryE
+   fun:_ZN3net9HttpCache16OnBackendCreatedEiPNS0_9PendingOpE
+   fun:_ZN3net9HttpCache12OnIOCompleteEiPNS0_9PendingOpE
+   fun:_ZN3net9HttpCache15BackendCallback13RunWithParamsERK6Tuple1IiE
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+}
+{
+   bug_51057_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net9HttpCache24GetBackendForTransactionEPNS0_11TransactionE
+   fun:_ZN3net9HttpCache11Transaction12DoGetBackendEv
+   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
+   fun:_ZN3net9HttpCache11Transaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN17URLRequestHttpJob16StartTransactionEv
+   fun:_ZN17URLRequestHttpJob24OnCanGetCookiesCompletedEi
+   fun:_ZN17URLRequestHttpJob23AddCookieHeaderAndStartEv
+   fun:_ZN17URLRequestHttpJob5StartEv
+   fun:_ZN10URLRequest8StartJobEP13URLRequestJob
+   fun:_ZN10URLRequest5StartEv
+   fun:_ZN10URLFetcher4Core15StartURLRequestEv
+}
