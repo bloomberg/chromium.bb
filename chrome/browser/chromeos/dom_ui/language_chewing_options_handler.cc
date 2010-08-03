@@ -25,13 +25,13 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Language Chewing page - ChromeOS
-  for (size_t i = 0; i < arraysize(chromeos::kChewingBooleanPrefs); ++i) {
+  for (size_t i = 0; i < chromeos::kNumChewingBooleanPrefs; ++i) {
     localized_strings->SetString(
         GetI18nContentValue(chromeos::kChewingBooleanPrefs[i]),
         l10n_util::GetString(chromeos::kChewingBooleanPrefs[i].message_id));
   }
 
-  for (size_t i = 0; i < arraysize(chromeos::kChewingIntegerPrefs); ++i) {
+  for (size_t i = 0; i < chromeos::kNumChewingIntegerPrefs; ++i) {
     const chromeos::LanguageIntegerRangePreference& preference =
         chromeos::kChewingIntegerPrefs[i];
     localized_strings->SetString(
@@ -45,7 +45,7 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
         UTF8ToWide(base::IntToString(preference.max_pref_value)));
   }
 
-  for (size_t i = 0; i < arraysize(chromeos::kChewingMultipleChoicePrefs);
+  for (size_t i = 0; i < chromeos::kNumChewingMultipleChoicePrefs;
        ++i) {
     const chromeos::LanguageMultipleChoicePreference<const char*>& preference =
         chromeos::kChewingMultipleChoicePrefs[i];

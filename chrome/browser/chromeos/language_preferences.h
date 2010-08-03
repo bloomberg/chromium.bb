@@ -84,7 +84,7 @@ const LanguageBooleanPrefs kChewingBooleanPrefs[] = {
   { prefs::kLanguageChewingSpaceAsSelection, true, "spaceAsSelection",
     IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_SPACE_AS_SELECTION},
 };
-const size_t kNumChewingBooleanPrefs = ARRAYSIZE_UNSAFE(kChewingBooleanPrefs);
+const size_t kNumChewingBooleanPrefs = arraysize(kChewingBooleanPrefs);
 
 const LanguageIntegerRangePreference kChewingIntegerPrefs[] = {
   { prefs::kLanguageChewingMaxChiSymbolLen, 20, 8, 40, "maxChiSymbolLen",
@@ -92,7 +92,7 @@ const LanguageIntegerRangePreference kChewingIntegerPrefs[] = {
   { prefs::kLanguageChewingCandPerPage, 10, 8, 10, "candPerPage",
     IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTING_CAND_PER_PAGE},
 };
-const size_t kNumChewingIntegerPrefs = ARRAYSIZE_UNSAFE(kChewingIntegerPrefs);
+const size_t kNumChewingIntegerPrefs = arraysize(kChewingIntegerPrefs);
 
 // Temporary solution for crosbug.com/2636. We'll implement a complete dialog
 // using DOMUI later.
@@ -226,7 +226,7 @@ const LanguageBooleanPrefs kPinyinBooleanPrefs[] = {
   // TODO(yusukes): Support PINYIN_{INCOMPLETE,CORRECT,FUZZY}_... prefs (32
   // additional boolean prefs.)
 };
-const size_t kNumPinyinBooleanPrefs = ARRAYSIZE_UNSAFE(kPinyinBooleanPrefs);
+const size_t kNumPinyinBooleanPrefs = arraysize(kPinyinBooleanPrefs);
 // TODO(yusukes): Support HalfWidthPuncts and IncompletePinyin prefs if needed.
 
 const LanguageMultipleChoicePreference<int> kPinyinDoublePinyinSchema = {
@@ -300,7 +300,7 @@ const LanguageBooleanPrefs kMozcBooleanPrefs[] = {
     IDS_MOZC(USE_DICTIONARY_SUGGEST)
   },
 };
-const size_t kNumMozcBooleanPrefs = ARRAYSIZE_UNSAFE(kMozcBooleanPrefs);
+const size_t kNumMozcBooleanPrefs = arraysize(kMozcBooleanPrefs);
 
 const LanguageMultipleChoicePreference<const char*>
     kMozcMultipleChoicePrefs[] = {
@@ -412,7 +412,7 @@ const LanguageIntegerRangePreference kMozcIntegerPrefs[] = {
   { prefs::kLanguageMozcSuggestionsSize, 3, 1, 9, "suggestions_size",
     IDS_MOZC(SUGGESTIONS_SIZE)},
 };
-const size_t kNumMozcIntegerPrefs = ARRAYSIZE_UNSAFE(kMozcIntegerPrefs);
+const size_t kNumMozcIntegerPrefs = arraysize(kMozcIntegerPrefs);
 
 #undef IDS_MOZC
 
