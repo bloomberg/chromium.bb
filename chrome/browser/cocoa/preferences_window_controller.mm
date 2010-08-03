@@ -1060,10 +1060,13 @@ enum { kHomepageNewTabPage, kHomepageURL };
 // appropriate user metric.
 - (void)setNewTabPageIsHomePageIndex:(NSInteger)index {
   bool useNewTabPage = index == kHomepageNewTabPage ? true : false;
-  if (useNewTabPage)
+  if (useNewTabPage) {
     [self recordUserAction:UserMetricsAction("Options_Homepage_UseNewTab")];
-  else
+  } else {
     [self recordUserAction:UserMetricsAction("Options_Homepage_UseURL")];
+    if ([self isHomepageNewTabUIURL])
+      homepage_.SetValueIfNotManaged(std::string());
+  }
   newTabPageIsHomePage_.SetValueIfNotManaged(useNewTabPage);
 }
 
