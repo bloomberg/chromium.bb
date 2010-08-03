@@ -95,6 +95,7 @@ class ContentSettingBubbleContents : public views::View,
   views::Link* manage_link_;
   views::Link* clear_link_;
   views::Link* info_link_;
+  views::Link* load_plugins_link_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };

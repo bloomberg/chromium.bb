@@ -765,6 +765,7 @@ class RenderView : public RenderWidget,
                                        const std::string& origin,
                                        const std::string& target);
   void OnInstallMissingPlugin();
+  void OnLoadBlockedPlugins();
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
   void OnMoveOrResizeStarted();

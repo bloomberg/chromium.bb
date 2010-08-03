@@ -652,6 +652,10 @@ void RenderViewHost::InstallMissingPlugin() {
   Send(new ViewMsg_InstallMissingPlugin(routing_id()));
 }
 
+void RenderViewHost::LoadBlockedPlugins() {
+  Send(new ViewMsg_LoadBlockedPlugins(routing_id()));
+}
+
 void RenderViewHost::FilesSelectedInChooser(
     const std::vector<FilePath>& files) {
   // Grant the security access requested to the given files.

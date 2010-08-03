@@ -65,6 +65,11 @@ class TabSpecificContentSettings
   // Returns a CookiesTreeModel object for the recoreded blocked cookies.
   CookiesTreeModel* GetBlockedCookiesTreeModel();
 
+  bool load_plugins_link_enabled() { return load_plugins_link_enabled_; }
+  void set_load_plugins_link_enabled(bool enabled) {
+    load_plugins_link_enabled_ = enabled;
+  }
+
   // RenderViewHostDelegate::ContentSettings implementation.
   virtual void OnContentBlocked(ContentSettingsType type);
   virtual void OnCookieAccessed(const GURL& url,
@@ -121,6 +126,9 @@ class TabSpecificContentSettings
 
   // Manages information about Geolocation API usage in this page.
   GeolocationSettingsState geolocation_settings_state_;
+
+  // Stores whether the user can load blocked plugins on this page.
+  bool load_plugins_link_enabled_;
 
   Delegate* delegate_;
 

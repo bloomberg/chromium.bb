@@ -9,6 +9,7 @@
 #include "base/file_path.h"
 #include "base/string_piece.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
@@ -57,6 +58,10 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
 
   web_view->mainFrame()->loadHTMLString(htmlData,
                                         GURL(kBlockedPluginDataURL));
+
+  registrar_.Add(this,
+                 NotificationType::SHOULD_LOAD_PLUGINS,
+                 NotificationService::AllSources());
 }
 
 void BlockedPlugin::BindWebFrame(WebFrame* frame) {
@@ -66,6 +71,16 @@ void BlockedPlugin::BindWebFrame(WebFrame* frame) {
 
 void BlockedPlugin::WillDestroyPlugin() {
   delete this;
+}
+
+void BlockedPlugin::Observe(NotificationType type,
+                            const NotificationSource& source,
+                            const NotificationDetails& details) {
+  if (type == NotificationType::SHOULD_LOAD_PLUGINS) {
+    LoadPlugin();
+  } else {
+    NOTREACHED();
+  }
 }
 
 void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {

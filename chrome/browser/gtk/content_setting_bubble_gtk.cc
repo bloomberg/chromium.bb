@@ -197,6 +197,22 @@ void ContentSettingBubbleGtk::BuildBubble() {
                        FALSE, FALSE, 0);
   }
 
+  if (!content.load_plugins_link_title.empty()) {
+    GtkWidget* load_plugins_link_box = gtk_hbox_new(FALSE, 0);
+    GtkWidget* load_plugins_link = gtk_chrome_link_button_new(
+        content.load_plugins_link_title.c_str());
+    gtk_widget_set_sensitive(load_plugins_link,
+                             content.load_plugins_link_enabled);
+    g_signal_connect(load_plugins_link, "clicked",
+                     G_CALLBACK(OnLoadPluginsLinkClickedThunk), this);
+    gtk_box_pack_start(GTK_BOX(load_plugins_link_box), load_plugins_link,
+                       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bubble_content), load_plugins_link_box,
+                       FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(bubble_content), gtk_hseparator_new(),
+                       FALSE, FALSE, 0);
+  }
+
   GtkWidget* bottom_box = gtk_hbox_new(FALSE, 0);
 
   GtkWidget* manage_link =
@@ -279,5 +295,10 @@ void ContentSettingBubbleGtk::OnClearLinkClicked(GtkWidget* button) {
 
 void ContentSettingBubbleGtk::OnInfoLinkClicked(GtkWidget* button) {
   content_setting_bubble_model_->OnInfoLinkClicked();
+  Close();
+}
+
+void ContentSettingBubbleGtk::OnLoadPluginsLinkClicked(GtkWidget* button) {
+  content_setting_bubble_model_->OnLoadPluginsLinkClicked();
   Close();
 }

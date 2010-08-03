@@ -60,6 +60,7 @@ class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnManageLinkClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnClearLinkClicked);
   CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnInfoLinkClicked);
+  CHROMEGTK_CALLBACK_0(ContentSettingBubbleGtk, void, OnLoadPluginsLinkClicked);
 
   // We position the bubble near this widget.
   GtkWidget* anchor_;
@@ -88,6 +89,8 @@ class ContentSettingBubbleGtk : public InfoBubbleGtkDelegate,
 
   typedef std::vector<GtkWidget*> RadioGroupGtk;
   RadioGroupGtk radio_group_gtk_;
+
+  GtkWidget* load_plugins_link_;
 };
 
 #endif  // CHROME_BROWSER_GTK_CONTENT_SETTING_BUBBLE_GTK_H_

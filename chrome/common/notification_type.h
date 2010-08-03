@@ -549,6 +549,10 @@ class NotificationType {
     // interception.  No details are expected.
     CHROME_PLUGIN_UNLOADED,
 
+    // This is sent in the RenderView when previously blocked plugins on a page
+    // should be loaded. The source is the RenderView. No details are expected.
+    SHOULD_LOAD_PLUGINS,
+
     // This is sent when a login prompt is shown.  The source is the
     // Source<NavigationController> for the tab in which the prompt is shown.
     // Details are a LoginNotificationDetails which provide the LoginHandler

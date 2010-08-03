@@ -509,6 +509,9 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
                        bool /* reload_pages */)
 
+  // Tells the render view to load all blocked plugins.
+  IPC_MESSAGE_ROUTED0(ViewMsg_LoadBlockedPlugins)
+
   IPC_MESSAGE_ROUTED1(ViewMsg_RunFileChooserResponse,
                       std::vector<FilePath> /* selected files */)
 

@@ -2376,6 +2376,9 @@ each locale. -->
       <message name="IDS_BLOCKED_PLUGINS_LINK" desc="Link to plug-ins section of content blocking management dialog, displayed in bubble when a page tries to display plug-ins.">
         Manage plug-in blocking...
       </message>
+      <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plug-ins.">
+        Load all plug-ins on this page
+      </message>
 
       <!-- SSL error strings -->
       <message name="IDS_SEVERAL_SSL_ERRORS" desc="Bubble info header text when there is more than 1 error">

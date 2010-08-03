@@ -61,6 +61,8 @@ class ContentSettingBubbleModel : public NotificationObserver {
     std::string manage_link;
     std::string clear_link;
     std::string info_link;
+    std::string load_plugins_link_title;
+    bool load_plugins_link_enabled;
   };
 
   const BubbleContent& bubble_content() const { return bubble_content_; }
@@ -75,6 +77,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   virtual void OnManageLinkClicked() {}
   virtual void OnClearLinkClicked() {}
   virtual void OnInfoLinkClicked() {}
+  virtual void OnLoadPluginsLinkClicked() {}
 
  protected:
   ContentSettingBubbleModel(TabContents* tab_contents, Profile* profile,
@@ -101,6 +104,12 @@ class ContentSettingBubbleModel : public NotificationObserver {
   }
   void set_info_link(const std::string& link) {
     bubble_content_.info_link = link;
+  }
+  void set_load_plugins_link_title(const std::string& title) {
+    bubble_content_.load_plugins_link_title = title;
+  }
+  void set_load_plugins_link_enabled(bool enabled) {
+    bubble_content_.load_plugins_link_enabled = enabled;
   }
 
  private:

@@ -345,6 +345,9 @@ class RenderViewHost : public RenderWidgetHost {
   // missing plugin. Called by PluginInstaller.
   void InstallMissingPlugin();
 
+  // Load all blocked plugins in the RenderView.
+  void LoadBlockedPlugins();
+
   // Get all savable resource links from current webpage, include main
   // frame and sub-frame.
   void GetAllSavableResourceLinksForCurrentPage(const GURL& page_url);

@@ -11,6 +11,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/chrome_switches.h"
@@ -177,6 +178,37 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
   }
 };
 
+class ContentSettingPluginBubbleModel : public ContentSettingSingleRadioGroup {
+ public:
+  ContentSettingPluginBubbleModel(TabContents* tab_contents, Profile* profile,
+                                  ContentSettingsType content_type)
+      : ContentSettingSingleRadioGroup(tab_contents, profile, content_type) {
+    DCHECK_EQ(content_type, CONTENT_SETTINGS_TYPE_PLUGINS);
+    SetLoadPluginsLinkTitle();
+  }
+
+ private:
+  void SetLoadPluginsLinkTitle() {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableClickToPlay)) {
+      set_load_plugins_link_title(
+          l10n_util::GetStringUTF8(IDS_BLOCKED_PLUGINS_LOAD_ALL));
+     }
+   }
+
+  virtual void OnLoadPluginsLinkClicked() {
+    DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+         switches::kEnableClickToPlay));
+    if (tab_contents()) {
+      tab_contents()->render_view_host()->LoadBlockedPlugins();
+    }
+    set_load_plugins_link_enabled(false);
+    TabSpecificContentSettings* settings =
+        tab_contents()->GetTabSpecificContentSettings();
+    settings->set_load_plugins_link_enabled(false);
+  }
+};
+
 class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
  public:
   ContentSettingPopupBubbleModel(TabContents* tab_contents, Profile* profile,
@@ -304,6 +336,10 @@ ContentSettingBubbleModel*
     return new ContentSettingDomainListBubbleModel(tab_contents, profile,
                                                    content_type);
   }
+  if (content_type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    return new ContentSettingPluginBubbleModel(tab_contents, profile,
+                                               content_type);
+  }
   return new ContentSettingSingleRadioGroup(tab_contents, profile,
                                             content_type);
 }
@@ -313,6 +349,13 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(
     ContentSettingsType content_type)
     : tab_contents_(tab_contents), profile_(profile),
       content_type_(content_type) {
+  if (tab_contents) {
+    TabSpecificContentSettings* settings =
+        tab_contents->GetTabSpecificContentSettings();
+    set_load_plugins_link_enabled(settings->load_plugins_link_enabled());
+  } else {
+    set_load_plugins_link_enabled(true);
+  }
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
                  Source<TabContents>(tab_contents));
 }

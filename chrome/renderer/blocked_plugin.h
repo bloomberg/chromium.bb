@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_BLOCKED_PLUGIN_H_
 #pragma once
 
+#include "chrome/common/notification_registrar.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/glue/plugins/webview_plugin.h"
@@ -13,7 +14,8 @@
 class RenderView;
 
 class BlockedPlugin : public CppBoundClass,
-                      public WebViewPlugin::Delegate {
+                      public WebViewPlugin::Delegate,
+                      public NotificationObserver {
  public:
   BlockedPlugin(RenderView* render_view,
                 WebKit::WebFrame* frame,
@@ -28,6 +30,11 @@ class BlockedPlugin : public CppBoundClass,
   virtual void BindWebFrame(WebKit::WebFrame* frame);
   virtual void WillDestroyPlugin();
 
+  // NotificationObserver methods:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
  private:
   virtual ~BlockedPlugin() { }
 
@@ -35,6 +42,8 @@ class BlockedPlugin : public CppBoundClass,
   WebKit::WebFrame* frame_;
   WebKit::WebPluginParams plugin_params_;
   WebViewPlugin* plugin_;
+
+  NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_RENDERER_BLOCKED_PLUGIN_H_

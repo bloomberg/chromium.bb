@@ -29,6 +29,7 @@ typedef std::map<NSButton*, int> PopupLinks;
 
   IBOutlet NSButton* manageButton_;
   IBOutlet NSButton* doneButton_;
+  IBOutlet NSButton* loadAllPluginsButton_;
 
   // The container for the bubble contents of the geolocation bubble.
   IBOutlet NSView* contentsContainer_;
@@ -58,5 +59,8 @@ typedef std::map<NSButton*, int> PopupLinks;
 
 // Callback for "info" link.
 - (IBAction)showMoreInfo:(id)sender;
+
+// Callback for "load all plugins" button.
+- (IBAction)loadAllPlugins:(id)sender;
 
 @end

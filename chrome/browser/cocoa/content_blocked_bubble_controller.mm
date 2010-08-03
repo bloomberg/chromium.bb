@@ -46,6 +46,10 @@ const int kGeoLabelHeight = 14;
 // Height of the "Clear" button in the geolocation bubble.
 const int kGeoClearButtonHeight = 17;
 
+// Padding between radio buttons and "Load all plugins" button
+// in the plugin bubble.
+const int kLoadAllPluginsButtonVerticalPadding = 8;
+
 // General padding between elements in the geolocation bubble.
 const int kGeoPadding = 8;
 
@@ -87,6 +91,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 - (void)initializeRadioGroup;
 - (void)initializePopupList;
 - (void)initializeGeoLists;
+- (void)sizeToFitLoadPluginsButton;
 - (void)sizeToFitManageDoneButtons;
 - (void)removeInfoButton;
 - (void)popupLinkClicked:(id)sender;
@@ -345,6 +350,36 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [contentsContainer_ setFrame:containerFrame];
 }
 
+- (void)sizeToFitLoadPluginsButton {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClickToPlay)) {
+    const ContentSettingBubbleModel::BubbleContent& content =
+        contentSettingBubbleModel_->bubble_content();
+    [loadAllPluginsButton_ setEnabled:content.load_plugins_link_enabled];
+
+    // Resize horizontally to fit button if necessary.
+    NSRect windowFrame = [[self window] frame];
+    int widthNeeded = NSWidth([loadAllPluginsButton_ frame]) +
+        2 * NSMinX([loadAllPluginsButton_ frame]);
+    if (NSWidth(windowFrame) < widthNeeded) {
+      windowFrame.size.width = widthNeeded;
+      [[self window] setFrame:windowFrame display:NO];
+    }
+  } else {
+    // Remove button and resize vertically.
+    int deltaY = kLoadAllPluginsButtonVerticalPadding +
+        NSHeight([loadAllPluginsButton_ frame]);
+    [loadAllPluginsButton_ removeFromSuperview];
+    NSRect frame = [[self window] frame];
+    frame.size.height -= deltaY;
+    [[self window] setFrame:frame display:NO];
+    NSPoint radioOrigin = [allowBlockRadioGroup_ frame].origin;
+    radioOrigin.y -= deltaY;
+    [allowBlockRadioGroup_ setFrameOrigin:radioOrigin];
+    [allowBlockRadioGroup_ setNeedsDisplay];
+  }
+}
+
 - (void)sizeToFitManageDoneButtons {
   CGFloat actualWidth = NSWidth([[[self window] contentView] frame]);
   CGFloat requiredWidth = NSMaxX([manageButton_ frame]) + kManageDonePadding +
@@ -381,16 +416,18 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [self sizeToFitManageDoneButtons];
 
   [self initializeTitle];
-  if (contentSettingBubbleModel_->content_type() ==
-      CONTENT_SETTINGS_TYPE_COOKIES)
+
+  ContentSettingsType type = contentSettingBubbleModel_->content_type();
+  if (type == CONTENT_SETTINGS_TYPE_PLUGINS)
+    [self sizeToFitLoadPluginsButton];
+  if (type == CONTENT_SETTINGS_TYPE_COOKIES)
     [self removeInfoButton];
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib
     [self initializeRadioGroup];
-  if (contentSettingBubbleModel_->content_type() ==
-      CONTENT_SETTINGS_TYPE_POPUPS)
+
+  if (type == CONTENT_SETTINGS_TYPE_POPUPS)
     [self initializePopupList];
-  if (contentSettingBubbleModel_->content_type() ==
-      CONTENT_SETTINGS_TYPE_GEOLOCATION)
+  if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION)
     [self initializeGeoLists];
 }
 
@@ -413,6 +450,11 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
 - (IBAction)showMoreInfo:(id)sender {
   contentSettingBubbleModel_->OnInfoLinkClicked();
+  [self close];
+}
+
+- (IBAction)loadAllPlugins:(id)sender {
+  contentSettingBubbleModel_->OnLoadPluginsLinkClicked();
   [self close];
 }
 

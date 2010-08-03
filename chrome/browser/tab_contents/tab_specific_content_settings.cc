@@ -102,6 +102,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(
     : allowed_local_shared_objects_(profile),
       blocked_local_shared_objects_(profile),
       geolocation_settings_state_(profile),
+      load_plugins_link_enabled_(true),
       delegate_(NULL) {
   ClearBlockedContentSettings();
   delegate_ = delegate;
@@ -110,6 +111,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(
 void TabSpecificContentSettings::ClearBlockedContentSettings() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i)
     content_blocked_[i] = false;
+  load_plugins_link_enabled_ = true;
   blocked_local_shared_objects_.Reset();
   allowed_local_shared_objects_.Reset();
   if (delegate_)
