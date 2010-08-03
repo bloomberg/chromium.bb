@@ -56,6 +56,16 @@ void UpdateObserver::UpdateStatusChanged(UpdateLibrary* library) {
     case UPDATE_STATUS_UPDATED_NEED_REBOOT:
       notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED), true);
       break;
+    case UPDATE_STATUS_REPORTING_ERROR_EVENT:
+      // If the update engine encounters an error and we have already
+      // notified the user of the update progress, show an error
+      // notification. Don't show anything otherwise -- for example,
+      // in cases where the update engine encounters an error while
+      // checking for an update.
+      if (notification_.visible()) {
+        notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_ERROR), true);
+      }
+      break;
     default:
       notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_ERROR), true);
       break;
