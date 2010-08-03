@@ -5,92 +5,40 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(AppendExtensionIfNeeded, EndingInPeriod_ExtensionAppended) {
-  const std::wstring filename = L"sample.txt.";
-  const std::wstring filter_selected = L"*.txt";
-  const std::wstring suggested_ext = L"txt";
+TEST(ShellDialogsWin, AppendExtensionIfNeeded) {
+  struct AppendExtensionTestCase {
+    wchar_t* filename;
+    wchar_t* filter_selected;
+    wchar_t* suggested_ext;
+    wchar_t* expected_filename;
+  } test_cases[] = {
+    // Known extensions, with or without associated MIME types, should not get
+    // an extension appended.
+    { L"sample.html",    L"*.txt",     L"txt",     L"sample.html" },
+    { L"sample.reg",     L"*.txt",     L"txt",     L"sample.reg" },
 
-  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
-      filter_selected, suggested_ext);
+    // An unknown extension, or no extension, should get the default extension
+    // appended.
+    { L"sample.unknown", L"*.txt",     L"txt",     L"sample.unknown.txt" },
+    { L"sample",         L"*.txt",     L"txt",     L"sample.txt" },
+    // ...unless the unknown and default extensions match.
+    { L"sample.unknown", L"*.unknown", L"unknown", L"sample.unknown" },
 
-  ASSERT_EQ(L"sample.txt.txt", actual_filename);
-}
+    // The extension alone should be treated like a filename with no extension.
+    { L"txt",            L"*.txt",     L"txt",     L"txt.txt" },
 
-TEST(AppendExtensionIfNeeded, UnknownMimeType_ExtensionAppended) {
-  const std::wstring filename = L"sample.unknown-mime-type";
-  const std::wstring filter_selected = L"*.txt";
-  const std::wstring suggested_ext = L"txt";
+    // Trailing dots should cause us to append an extension.
+    { L"sample.txt.",    L"*.txt",     L"txt",     L"sample.txt.txt" },
+    { L"...",            L"*.txt",     L"txt",     L"...txt" },
 
-  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
-      filter_selected, suggested_ext);
+    // If the filter is changed to "All files", we allow any filename.
+    { L"sample.unknown", L"*.*",       L"",        L"sample.unknown" },
+  };
 
-  ASSERT_EQ(L"sample.unknown-mime-type.txt", actual_filename);
-}
-
-TEST(AppendExtensionIfNeeded, RecognizableMimeType_NoExtensionAppended) {
-  const std::wstring filename = L"sample.html";
-  const std::wstring filter_selected = L"*.txt";
-  const std::wstring suggested_ext = L"txt";
-
-  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
-      filter_selected, suggested_ext);
-
-  ASSERT_EQ(L"sample.html", actual_filename);
-}
-
-TEST(AppendExtensionIfNeeded, OnlyPeriods_ExtensionAppended) {
-  const std::wstring filename = L"...";
-  const std::wstring filter_selected = L"*.txt";
-  const std::wstring suggested_ext = L"txt";
-
-  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
-      filter_selected, suggested_ext);
-
-  ASSERT_EQ(L"...txt", actual_filename);
-}
-
-TEST(AppendExtensionIfNeeded, EqualToExtension_ExtensionAppended) {
-  const std::wstring filename = L"txt";
-  const std::wstring filter_selected = L"*.txt";
-  const std::wstring suggested_ext = L"txt";
-
-  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
-      filter_selected, suggested_ext);
-
-  ASSERT_EQ(L"txt.txt", actual_filename);
-}
-
-TEST(AppendExtensionIfNeeded, AllFilesFilter_NoExtensionAppended) {
-  const std::wstring filename = L"sample.unknown-mime-type";
-  const std::wstring filter_selected = L"*.*";
-  const std::wstring suggested_ext;
-
-  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
-      filter_selected, suggested_ext);
-
-  ASSERT_EQ(L"sample.unknown-mime-type", actual_filename);
-}
-
-TEST(AppendExtensionIfNeeded, StripsDotsForUnknownSelectedMimeType) {
-  const std::wstring filename = L"product";
-  const std::wstring filter_selected = L"*.unknown-extension.";
-  const std::wstring suggested_ext = L"html";
-
-  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
-      filter_selected, suggested_ext);
-
-  ASSERT_EQ(L"product.html", actual_filename);
-}
-
-TEST(AppendExtensionIfNeeded, EqualToExtension_NoDoubleExtension) {
-  // Make sure we don't add a duplicate extension like .tbl.tbl for
-  // files that the system doesn't have a mime type for.
-  const std::wstring filename = L"product.tbl";
-  const std::wstring filter_selected = L"*.tbl";
-  const std::wstring suggested_ext = L"tbl";
-
-  const std::wstring actual_filename = AppendExtensionIfNeeded(filename,
-      filter_selected, suggested_ext);
-
-  ASSERT_EQ(L"product.tbl", actual_filename);
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    EXPECT_EQ(std::wstring(test_cases[i].expected_filename),
+              AppendExtensionIfNeeded(test_cases[i].filename,
+                                      test_cases[i].filter_selected,
+                                      test_cases[i].suggested_ext));
+  }
 }

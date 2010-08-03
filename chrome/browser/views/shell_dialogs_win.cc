@@ -23,7 +23,6 @@
 #include "gfx/font.h"
 #include "grit/app_strings.h"
 #include "grit/generated_resources.h"
-#include "net/base/mime_util.h"
 
 // This function takes the output of a SaveAs dialog: a filename, a filter and
 // the extension originally suggested to the user (shown in the dialog box) and
@@ -43,11 +42,13 @@ std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
 
   // If we wanted a specific extension, but the user's filename deleted it or
   // changed it to something that the system doesn't understand, re-append.
-  std::string selected_mime_type;
-  std::wstring file_extension = file_util::GetFileExtensionFromPath(filename);
+  // Careful: Checking net::GetMimeTypeFromExtension() will only find
+  // extensions with a known MIME type, which many "known" extensions on Windows
+  // don't have.  So we check directly for the "known extension" registry key.
+  std::wstring file_extension(file_util::GetFileExtensionFromPath(filename));
+  std::wstring key(L"." + file_extension);
   if (!(filter_selected.empty() || filter_selected == L"*.*") &&
-      !net::GetMimeTypeFromExtension(
-          file_extension, &selected_mime_type) &&
+      !RegKey(HKEY_CLASSES_ROOT, key.c_str()).Valid() &&
       file_extension != suggested_ext) {
     if (return_value[return_value.length() - 1] != L'.')
       return_value.append(L".");
