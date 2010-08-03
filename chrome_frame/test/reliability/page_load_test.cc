@@ -32,6 +32,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
 #include "base/registry.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
 #include "base/time.h"
@@ -396,7 +397,7 @@ class PageLoadTest : public testing::Test {
   FilePath ConstructSavedDebugLogPath(const FilePath& debug_log_path,
                                       int index) {
     std::string suffix("_");
-    suffix.append(IntToString(index));
+    suffix.append(base::IntToString(index));
     return debug_log_path.InsertBeforeExtensionASCII(suffix);
   }
 
@@ -561,14 +562,14 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kStartIndexSwitch)) {
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kStartIndexSwitch)), &g_start_index));
     ASSERT_GT(g_start_index, 0);
   }
 
   if (parsed_command_line.HasSwitch(kEndIndexSwitch)) {
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kEndIndexSwitch)), &g_end_index));
     ASSERT_GT(g_end_index, 0);
   }
@@ -580,7 +581,7 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kIterationSwitch)) {
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kIterationSwitch)), &g_iterations));
     ASSERT_GT(g_iterations, 0);
   }
@@ -596,7 +597,7 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kTimeoutSwitch)) {
     ASSERT_TRUE(
-        StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
+        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
             kTimeoutSwitch)), &g_timeout_ms));
     ASSERT_GT(g_timeout_ms, 0);
   }
