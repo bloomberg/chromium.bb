@@ -30,15 +30,16 @@
 
 Import('env')
 
-
-# Don't use -lnosys on ARM - it's automagically included and will spoil
+# Don't use -lnosys on pnacl - it's automagically included and will spoil
 # things if included before -lc
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if ARGUMENTS.get('bitcode'):
   extra_libs = ['pthread']
 else:
   extra_libs = ['pthread', 'nosys']
 
-env.ComponentProgram('file.nexe', 'file.cc', EXTRA_LIBS=extra_libs)
+env.ComponentProgram('file.nexe',
+                     'file.cc',
+                     EXTRA_LIBS=extra_libs)
 
 # TODO: add tests back in
 # NOTE: this smoke tests currently fails in "test17"

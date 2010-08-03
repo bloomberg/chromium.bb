@@ -37,19 +37,22 @@ nexe = env.ComponentProgram('voronoi.nexe',
                             ['voronoi.cc'],
                             EXTRA_LIBS=['av', 'srpc', 'm', 'pthread'])
 
-
-# TODO(robertm): this may already work
+TESTS=['small_tests']
 if env['TARGET_ARCHITECTURE'] == 'arm':
-  Return()
+  TESTS=[]
 
 node = env.CommandSelLdrTestNacl(
     'voronoi_test.out',
     command=[env.File('voronoi.nexe'), '-- -t -d'],
     stdout_golden=env.File('voronoi.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_voronoi')
+env.AddNodeToTestSuite(node, TESTS, 'run_voronoi')
 
 env.Publish('voronoi.nexe', 'run', ['voronoi.html',])
+
+# TODO(robertm): enable this ASAP
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
 
 node = env.DemoSelLdrNacl('demo_voronoi', nexe, args=['-m4', '-d'])
 # Note: Make this available from top level

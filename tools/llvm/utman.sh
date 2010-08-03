@@ -65,7 +65,6 @@ readonly PATCH_DIR=$(pwd)/tools/patches
 
 readonly BFD_PLUGIN_DIR=${INSTALL_DIR}/lib/bfd-plugins
 
-
 readonly MAKE_OPTS="-j${UTMAN_CONCURRENCY} VERBOSE=1"
 
 # For speculative build status output. ( see status function )
@@ -2498,11 +2497,13 @@ else
                        sdl=none
                        naclsdk_validate=0
                        sysinfo=
-                       bitcode=1)
+                       bitcode=1
+                       -j${UTMAN_CONCURRENCY})
 
   readonly SCONS_ARGS_SEL_LDR=(sdl=none
                                naclsdk_validate=0
-                               sysinfo=)
+                               sysinfo=
+                               -j${UTMAN_CONCURRENCY})
 fi
 
 #@ show-tests            - see what tests can be run

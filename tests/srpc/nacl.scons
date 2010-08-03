@@ -125,8 +125,8 @@ if trusted and trusted.Bit('linux'):
 
 # TODO: this may be a threading issue
 TEST_SUITES = ['small_tests']
-if env['TARGET_ARCHITECTURE'] == 'arm':
-  TEST_SUITES = ['small_tests_arm_broken']
+if ARGUMENTS.get('bitcode'):
+  TEST_SUITES = []
 
 node = env.CommandSelLdrTestNacl(
     'srpc_bad_service.out',

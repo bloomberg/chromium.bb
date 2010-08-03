@@ -47,10 +47,6 @@ env.Replace(LIBS=[],
 
 env.Append(CFLAGS='-Wno-long-long')
 
-# TODO(robertm): fix this. The regualar version of 'barebones_regs
-#                triggers a well-known llvm bug
-if env['BUILD_ARCHITECTURE'] == 'arm':
-  env.Append(CPPDEFINES='SMALL_REGS_TEST')
 
 # NOTE: the x86 linker wants _start() to be the very first function
 FAKE_STARTUP = env.ComponentObject('fake_startup', 'fake_startup.c')
@@ -98,5 +94,6 @@ if env['BUILD_ARCHITECTURE'] == 'arm' and not ARGUMENTS.get('bitcode'):
       'gold-barebones_hello_world.out',
       command=[env.File(nexe)],
       exit_status='55',)
-  env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'],
-                         'run_old-barebones_hello_world_test')
+  env.AddNodeToTestSuite(node,
+                         ['small_tests', 'sel_ldr_tests'],
+                         'run_gold-barebones_hello_world_test')

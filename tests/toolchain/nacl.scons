@@ -5,9 +5,10 @@
 
 Import('env')
 
-# TODO(cbiffle): enable this for ARM
-# NOTE: the arm linker does not understand '-Wl,-whole-archive'
-if env['BUILD_ARCHITECTURE'] == 'arm':
+
+# TODO(cbiffle): enable this for pnacl
+# NOTE: the pnacl linker does not understand '-Wl,-whole-archive'
+if ARGUMENTS.get('bitcode'):
   Return()
 
 # force inclusion of entire library, so that we can validate it
