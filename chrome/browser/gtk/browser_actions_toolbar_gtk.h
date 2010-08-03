@@ -18,9 +18,9 @@
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/overflow_button.h"
+#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/owned_widget_gtk.h"
 
 class Browser;
 class BrowserActionButton;

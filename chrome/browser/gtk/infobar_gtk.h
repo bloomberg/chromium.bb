@@ -9,11 +9,11 @@
 #include "app/gtk_signal.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/owned_widget_gtk.h"
 
 class CustomDrawButton;
 class GtkThemeProvider;

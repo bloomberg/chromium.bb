@@ -10,8 +10,8 @@
 
 #include <string>
 
+#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/common/edit_command.h"
-#include "chrome/common/owned_widget_gtk.h"
 
 struct NativeWebKeyboardEvent;
 

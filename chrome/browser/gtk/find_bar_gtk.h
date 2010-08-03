@@ -12,10 +12,10 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/gtk/focus_store_gtk.h"
+#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/gtk/slide_animator_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/owned_widget_gtk.h"
 #include "gfx/point.h"
 
 class Browser;

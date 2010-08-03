@@ -16,9 +16,9 @@
 #include "base/time.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/icon_manager.h"
+#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/owned_widget_gtk.h"
 
 class BaseDownloadItemModel;
 class DownloadShelfContextMenuGtk;

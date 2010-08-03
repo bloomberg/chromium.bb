@@ -19,11 +19,11 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/gtk/bookmark_bar_instructions_gtk.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
+#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/owned_widget_gtk.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
 

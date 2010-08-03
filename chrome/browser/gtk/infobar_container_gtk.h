@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/owned_widget_gtk.h"
 
 class InfoBarDelegate;
 class Profile;

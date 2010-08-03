@@ -14,8 +14,8 @@
 
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/common/owned_widget_gtk.h"
 #include "gfx/native_widget_types.h"
 #include "webkit/glue/plugins/gtk_plugin_container_manager.h"
 #include "webkit/glue/webcursor.h"
