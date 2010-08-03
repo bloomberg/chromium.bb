@@ -3517,6 +3517,8 @@
                 ['include', '^browser/gtk/nine_box.cc'],
                 ['include', '^browser/gtk/nine_box.h'],
                 ['include', '^browser/gtk/options/'],
+                ['include', '^browser/gtk/owned_widget_gtk.cc'],
+                ['include', '^browser/gtk/owned_widget_gtk.h'],
                 ['include', '^browser/gtk/popup_blocked_animation_gtk.cc'],
                 ['include', '^browser/gtk/repost_form_warning_gtk.cc'],
                 ['include', '^browser/gtk/repost_form_warning_gtk.h'],
