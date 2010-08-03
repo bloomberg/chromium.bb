@@ -3647,38 +3647,6 @@
    fun:_ZN7WebCore14DocumentWriter27endIfNotLoadingMainResourceEv
 }
 {
-   bug_50729
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11NewCallbackI19DownloadsDOMHandlerSt6vectorIP12DownloadItemSaIS3_EEEPN9Callback1IT0_E4TypeEPT_MSB_FvS7_E
-   fun:_ZN19DownloadsDOMHandler12ModelChangedEv
-   fun:_ZN15DownloadManager11AddObserverEPNS_8ObserverE
-   fun:_ZN19DownloadsDOMHandler4InitEv
-   fun:_ZN11DownloadsUIC1EP11TabContents
-   fun:_Z8NewDOMUII11DownloadsUIEP5DOMUIP11TabContentsRK4GURL
-   fun:_ZN12DOMUIFactory17CreateDOMUIForURLEP11TabContentsRK4GURL
-   fun:_ZN11TabContents27CreateDOMUIForRenderManagerERK4GURL
-   fun:_ZN21RenderViewHostManager30UpdateRendererStateForNavigateERK15NavigationEntry
-   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
-   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
-   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
-   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
-   fun:_ZN20NavigationController7LoadURLERK4GURLS2_j
-   fun:_ZNK7Browser23CreateTabContentsForURLERK4GURLS2_P7ProfilejbP12SiteInstance
-   fun:_ZN7Browser13AddTabWithURLERK4GURLS2_jiiP12SiteInstanceRKSs
-   fun:_ZN7Browser16ShowSingletonTabERK4GURL
-   fun:_ZN7Browser16ShowDownloadsTabEv
-   fun:_ZN7Browser29ExecuteCommandWithDispositionEi21WindowOpenDisposition
-   fun:_ZN7Browser14ExecuteCommandEi
-   fun:_ZN18AutomationProvider21ExecuteBrowserCommandEiiPN3IPC7MessageE
-}
-{
-   bug_50745
-   Memcheck:Leak
-   ...
-   fun:_ZN19DownloadsDOMHandler12ModelChangedEv
-}
-{
    bug_50766
    Memcheck:Cond
    fun:_ZN3WTF9HashTableIyyNS_17IdentityExtractorIyEEN7WebCore12LinkHashHashENS_10HashTraitsIyEES6_E3addIyyNS_22IdentityHashTranslatorIyyS4_EEEESt4pairINS_17HashTableIteratorIyyS2_S4_S6_S6_EEbERKT_RKT0_

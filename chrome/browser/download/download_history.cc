@@ -144,6 +144,7 @@ void DownloadHistory::OnSearchDownloadsComplete(HistoryService::Handle handle,
   }
 
   callback->RunWithParams(MakeTuple(download_items));
+  delete callback;
 }
 
 int64 DownloadHistory::GetNextFakeDbHandle() {
