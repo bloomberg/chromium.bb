@@ -154,7 +154,8 @@ void AutocompleteEditModel::GetDataForURLExport(GURL* url,
   AutocompleteMatch match;
   GetInfoForCurrentText(&match, NULL);
   *url = match.destination_url;
-  if (UTF8ToWide(url->possibly_invalid_spec()) == permanent_text_) {
+  if (*url == URLFixerUpper::FixupURL(WideToUTF8(permanent_text_),
+                                      std::string())) {
     *title = controller_->GetTitle();
     *favicon = controller_->GetFavIcon();
   }
@@ -297,7 +298,8 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
   if (!match.destination_url.is_valid())
     return;
 
-  if (UTF8ToWide(match.destination_url.spec()) == permanent_text_) {
+  if (match.destination_url ==
+      URLFixerUpper::FixupURL(WideToUTF8(permanent_text_), std::string())) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
     // user_input_in_progress_, but it seems better to treat "edits" that end
