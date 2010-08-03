@@ -53,7 +53,6 @@ void DoubleYUVToRGB32Row(const uint8* y_buf,
 // Handles arbitrary scaling up or down.
 // Mirroring is supported, but not 90 or 270 degree rotation.
 // Chroma is under sampled every 2 pixels for performance.
-// This is the slowest of the scalers.
 void ScaleYUVToRGB32Row(const uint8* y_buf,
                         const uint8* u_buf,
                         const uint8* v_buf,
@@ -61,6 +60,10 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,
                         int width,
                         int source_dx);
 
+// Handles arbitrary scaling up or down with bilinear filtering.
+// Mirroring is supported, but not 90 or 270 degree rotation.
+// Chroma is under sampled every 2 pixels for performance.
+// This is the slowest of the scalers.
 void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               const uint8* u_buf,
                               const uint8* v_buf,

@@ -528,20 +528,12 @@ int main(int argc, const char** argv) {
     sum += decode_times[i];
   }
 
-  // Print our results.
-  log_out->setf(std::ios::fixed);
-  log_out->precision(2);
-  *log_out << std::endl;
-  *log_out << "     Frames:" << std::setw(11) << frames
-           << std::endl;
-  *log_out << "      Total:" << std::setw(11) << total.InMillisecondsF()
-           << " ms" << std::endl;
-  *log_out << "  Summation:" << std::setw(11) << sum
-           << " ms" << std::endl;
-
+  double average = 0;
+  double stddev = 0;
+  double fps = 0;
   if (frames > 0) {
     // Calculate the average time per frame.
-    double average = sum / frames;
+    average = sum / frames;
 
     // Calculate the sum of the squared differences.
     // Standard deviation will only be accurate if no threads are used.
@@ -553,13 +545,28 @@ int main(int argc, const char** argv) {
     }
 
     // Calculate the standard deviation (jitter).
-    double stddev = sqrt(squared_sum / frames);
+    stddev = sqrt(squared_sum / frames);
 
-    *log_out << "    Average:" << std::setw(11) << average
-             << " ms" << std::endl;
-    *log_out << "     StdDev:" << std::setw(11) << stddev
-             << " ms" << std::endl;
+    // Calculate frames per second.
+    fps = frames * 1000.0 / sum;
   }
+
+  // Print our results.
+  log_out->setf(std::ios::fixed);
+  log_out->precision(2);
+  *log_out << std::endl;
+  *log_out << "     Frames:" << std::setw(11) << frames
+           << std::endl;
+  *log_out << "      Total:" << std::setw(11) << total.InMillisecondsF()
+           << " ms" << std::endl;
+  *log_out << "  Summation:" << std::setw(11) << sum
+           << " ms" << std::endl;
+  *log_out << "    Average:" << std::setw(11) << average
+           << " ms" << std::endl;
+  *log_out << "     StdDev:" << std::setw(11) << stddev
+           << " ms" << std::endl;
+  *log_out << "        FPS:" << std::setw(11) << fps
+           << std::endl;
   if (hash_djb2) {
     *log_out << "  DJB2 Hash:" << std::setw(11) << hash_value
              << "  " << in_path.value() << std::endl;
