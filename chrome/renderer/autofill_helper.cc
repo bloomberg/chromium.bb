@@ -167,6 +167,10 @@ void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
   } else if (form_manager_.FormWithNodeIsAutoFilled(node) || !unique_id) {
     // User selected an Autocomplete entry, so we fill directly.
     WebInputElement element = node.toConst<WebInputElement>();
+
+    // Set the suggested value to update input element value immediately in UI.
+    // The |setValue| call has update delayed until element loses focus.
+    element.setSuggestedValue(value);
     element.setValue(value);
 
     WebFrame* webframe = node.document().frame();
