@@ -33,7 +33,8 @@ void SignalHandler(int value) {
 namespace plugin {
 
 SrpcClient::SrpcClient()
-    : browser_interface_(NULL) {
+    : srpc_channel_initialised_(false),
+      browser_interface_(NULL) {
   PLUGIN_PRINTF(("SrpcClient::SrpcClient(%p)\n",
                  static_cast<void*>(this)));
 }
@@ -48,6 +49,7 @@ bool SrpcClient::Init(BrowserInterface* browser_interface,
   if (!NaClSrpcClientCtor(&srpc_channel_, socket->wrapper()->desc())) {
     return false;
   }
+  srpc_channel_initialised_ = true;
   browser_interface_ = browser_interface;
   PLUGIN_PRINTF(("SrpcClient::SrpcClient: Ctor worked\n"));
   // Record the method names in a convenient way for later dispatches.
@@ -60,7 +62,9 @@ SrpcClient::~SrpcClient() {
   PLUGIN_PRINTF(("SrpcClient::~SrpcClient(%p)\n", static_cast<void*>(this)));
   PLUGIN_PRINTF(("SrpcClient::~SrpcClient: destroying the channel\n"));
   // And delete the connection.
-  NaClSrpcDtor(&srpc_channel_);
+  if (srpc_channel_initialised_) {
+    NaClSrpcDtor(&srpc_channel_);
+  }
   PLUGIN_PRINTF(("SrpcClient::~SrpcClient: done\n"));
 }
 

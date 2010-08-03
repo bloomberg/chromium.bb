@@ -452,8 +452,20 @@ bool WindowGetProperty(NPObject* npobj, NPIdentifier property_name,
   }
 }
 
+bool WindowInvoke(NPObject* npobj, NPIdentifier method_name,
+                  const NPVariant* args, uint32_t arg_count,
+                  NPVariant* result) {
+  UNREFERENCED_PARAMETER(npobj);
+  UNREFERENCED_PARAMETER(method_name);
+  UNREFERENCED_PARAMETER(args);
+  UNREFERENCED_PARAMETER(arg_count);
+  UNREFERENCED_PARAMETER(result);
+  return false;
+}
+
 NPObject* MakeWindowObject() {
   static NPClass npclass;
+  npclass.invoke = WindowInvoke;
   npclass.getProperty = WindowGetProperty;
   return fb_NPN_CreateObject(NULL, &npclass);
 }
@@ -596,6 +608,32 @@ void TestHelloWorldMethod(const char* nexe_url, bool reverse_deallocate) {
   AssertStringsEqual(actual, "hello, world.");
   fb_NPN_ReleaseVariantValue(&result);
   DestroyPluginInstance(plugin_instance, reverse_deallocate);
+}
+
+// This tests for a plugin bug that caused a crash,
+// http://code.google.com/p/nativeclient/issues/detail?id=672.
+// Test running an executable that does not act as an SRPC server.
+void TestMissingSrpcInit() {
+  printf("Test failure to init SRPC...\n");
+  const char* nexe_url = "http://localhost/hello_world.nexe";
+
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPP plugin_instance = new NPP_t;
+  CheckRetval(plugin_funcs.newp(mime_type, plugin_instance, NP_EMBED,
+                                0, NULL, NULL, NULL));
+
+  NPObject* plugin_obj;
+  CheckRetval(plugin_funcs.getvalue(plugin_instance,
+                                    NPPVpluginScriptableNPObject, &plugin_obj));
+  NPVariant url;
+  STRINGZ_TO_NPVARIANT(nexe_url, url);
+  bool is_ok = fb_NPN_SetProperty(plugin_instance, plugin_obj,
+                                  fb_NPN_GetStringIdentifier("src"), &url);
+  CHECK(is_ok);
+  fb_NPN_ReleaseObject(plugin_obj);
+  RunQueuedCallbacks(plugin_instance);
+
+  DestroyPluginInstance(plugin_instance, false);
 }
 
 void TestAsyncMessages() {
@@ -767,6 +805,8 @@ int main(int argc, char** argv) {
 
   printf("Test running npapi_hw...\n");
   TestHelloWorldMethod("http://localhost/npapi_hw.nexe", true);
+
+  TestMissingSrpcInit();
 
   TestAsyncMessages();
 

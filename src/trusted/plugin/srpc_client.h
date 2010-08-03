@@ -43,6 +43,7 @@ class SrpcClient {
   typedef std::map<uintptr_t, MethodInfo*> Methods;
   Methods methods_;
   NaClSrpcChannel srpc_channel_;
+  bool srpc_channel_initialised_;
   BrowserInterface* browser_interface_;
 };
 
