@@ -568,17 +568,6 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
 
   pango_layout_set_height(layout_, kHeightPerResult * PANGO_SCALE);
 
-  // An offset to align text in gtk mode. The hard coded constants in this file
-  // are all created for the chrome-theme. In an effort to make this look good
-  // on the majority of gtk themes, we shrink the popup by one pixel on each
-  // side and push it downwards a bit so there's space between the drawn
-  // location bar and the popup so we don't touch it (contrast with
-  // chrome-theme where that's exactly what we want). Because of that, we need
-  // to shift the content inside the popup by one pixel.
-  int gtk_offset = 0;
-  if (theme_provider_->UseGtkTheme())
-    gtk_offset = kGtkHorizontalOffset;
-
   for (size_t i = 0; i < result.size(); ++i) {
     gfx::Rect line_rect = GetRectForLine(i, window_rect.width());
     // Only repaint and layout damaged lines.
@@ -597,8 +586,8 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
                          line_rect.width(), line_rect.height());
     }
 
-    int icon_start_x = ltr ? (kIconLeftPadding - gtk_offset) :
-        (line_rect.width() - kIconLeftPadding - kIconWidth + gtk_offset);
+    int icon_start_x = ltr ? (kIconLeftPadding) :
+        (line_rect.width() - kIconLeftPadding - kIconWidth);
     // Draw the icon for this result.
     DrawFullPixbuf(drawable, gc,
                    IconForMatch(match, is_selected),
