@@ -39,12 +39,8 @@
 #ifndef O3D_IMPORT_CROSS_RAW_DATA_H_
 #define O3D_IMPORT_CROSS_RAW_DATA_H_
 
-#include "base/file_path.h"
 #include "base/scoped_ptr.h"
-#include "core/cross/error.h"
 #include "core/cross/param_object.h"
-#include "core/cross/param.h"
-#include "core/cross/types.h"
 
 namespace o3d {
 
@@ -83,30 +79,24 @@ class RawData : public ParamObject {
   const String& uri() const { return uri_; }
   void set_uri(const String& uri) { uri_ = uri; }
 
-  // If the data is still around
-  // (ie, Discard has not been called), then, if it has not been written
-  // to a temp file write it to a temp file
-  void Flush();
+  // Historically this wrote the data out to a temp file and deleted it from
+  // memory, but that functionality was removed due to security concerns. In any
+  // event, a RawData object that is big enough to be worth removing from memory
+  // will occupy multiple complete pages which won't be in the process's working
+  // set, so the OS will eventually remove it from the physical memory anyway
+  // and bring it back in when we next access it.
+  void Flush() {}
 
-  // calls Flush() if necessary and returns the path to the temp file
-  // if Discard() has already been called then returns an "empty" FilePath
-  const FilePath& GetTempFilePath();
-
-  // deletes the data which means IF the data is in memory it is
-  // freed. If there is a temp file it is deleted.
+  // deletes the data
   void Discard();
 
   bool IsOffsetLengthValid(size_t offset, size_t length) const;
 
  private:
   String uri_;
-  mutable scoped_array<uint8> data_;
+  scoped_array<uint8> data_;
   size_t length_;
-  FilePath temp_filepath_;
   bool allow_string_value_;
-
-  // Deletes temp file if it exists
-  void DeleteTempFile();
 
   RawData(ServiceLocator* service_locator,
           const String &uri,
@@ -121,10 +111,6 @@ class RawData : public ParamObject {
 
   friend class IClassManager;
   friend class Pack;
-
-  // Returns |true| on success
-  bool GetTempFilePathFromURI(const String &uri,
-                              FilePath *temp_fullpath);
 
   O3D_DECL_CLASS(RawData, ParamObject)
   DISALLOW_COPY_AND_ASSIGN(RawData);

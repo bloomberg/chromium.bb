@@ -34,19 +34,12 @@
 // by the progressive streaming archive system
 
 #include "import/cross/raw_data.h"
-#include "base/file_util.h"
-#include "utils/cross/file_path_utils.h"
+
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "core/cross/error.h"
 #include "utils/cross/dataurl.h"
-
-#ifdef OS_MACOSX
-#include <CoreFoundation/CoreFoundation.h>
-#endif
-
-#ifdef OS_WIN
-#include <rpc.h>
-#endif
+#include "utils/cross/file_path_utils.h"
 
 using file_util::OpenFile;
 using file_util::CloseFile;
@@ -167,31 +160,10 @@ const uint8 *RawData::GetData() const {
   // Return data immediately if we have it
   if (data_.get()) {
     return data_.get();
-  }
-
-  // We need to load the data from the cache file
-  if (temp_filepath_.empty()) {
+  } else {
     DLOG(ERROR) << "cannot retrieve data object - it has been released";
     return NULL;
   }
-
-  FILE *tempfile = file_util::OpenFile(temp_filepath_, "rb");
-  if (!tempfile) {
-    DLOG(ERROR) << "cached data file cannot be opened";
-    return NULL;
-  }
-
-  data_.reset(new uint8[length_]);
-  size_t bytes_read = fread(data_.get(), 1, length_, tempfile);
-
-  if (bytes_read != length_) {
-    DLOG(ERROR) << "error reading cached data file";
-    data_.reset();
-  }
-
-  file_util::CloseFile(tempfile);
-
-  return data_.get();
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -299,38 +271,8 @@ String RawData::StringValue() const {
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void RawData::Flush() {
-  // Only create the temp file if it doesn't already exist
-  if (data_.get() && temp_filepath_.empty()) {
-    if (GetTempFilePathFromURI(uri_, &temp_filepath_)) {
-      FILE *tempfile = file_util::OpenFile(temp_filepath_, "wb");
-
-      if (tempfile) {
-        if (GetLength() != fwrite(data_.get(), 1, GetLength(), tempfile)) {
-          DLOG(ERROR) << "error writing cached data file";
-        }
-        file_util::CloseFile(tempfile);
-
-        // Now that the data is cached, free it
-        data_.reset();
-      } else {
-        DLOG(ERROR) << "error creating cached data file";
-        temp_filepath_ = FilePath();
-      }
-    }
-  }
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-const FilePath& RawData::GetTempFilePath() {
-  Flush();  // writes temp file if it's not already written
-  return temp_filepath_;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void RawData::Discard() {
   data_.reset();
-  DeleteTempFile();
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -343,98 +285,6 @@ bool RawData::IsOffsetLengthValid(size_t offset, size_t length) const {
     O3D_ERROR(service_locator()) << "illegal data offset or size";
     return false;
   }
-  return true;
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void RawData::DeleteTempFile() {
-  if (!temp_filepath_.empty()) {
-    file_util::Delete(temp_filepath_, false);
-    temp_filepath_ = FilePath();
-  }
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-static String GetUUIDString() {
-#ifdef OS_WIN
-  // now generate a GUID
-  UUID guid = {0};
-  UuidCreate(&guid);
-
-  // and format into a wide-string
-  char guid_string[37];
-#if defined(OS_WIN)
-#define snprintf _snprintf
-#endif
-  snprintf(
-      guid_string, sizeof(guid_string) / sizeof(guid_string[0]),
-      "%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-      guid.Data1, guid.Data2, guid.Data3,
-      guid.Data4[0], guid.Data4[1], guid.Data4[2],
-      guid.Data4[3], guid.Data4[4], guid.Data4[5],
-      guid.Data4[6], guid.Data4[7]);
-
-  return guid_string;
-#endif
-
-#ifdef OS_MACOSX
-  CFUUIDRef uuid = CFUUIDCreate(NULL);
-  CFStringRef uuid_string_ref = CFUUIDCreateString(NULL, uuid);
-  CFRelease(uuid);
-
-  char uuid_string[64];
-  uuid_string[0] = 0;  // null-terminate, in case CFStringGetCString() fails
-  CFStringGetCString(uuid_string_ref,
-                     uuid_string,
-                     sizeof(uuid_string),
-                     kCFStringEncodingUTF8);
-  CFRelease(uuid_string_ref);
-
-
-  return uuid_string;
-#endif
-
-#ifdef OS_LINUX
-  static unsigned int index = 0;
-  char uuid[18] = {0};
-  unsigned int pid = getpid();
-  snprintf(uuid, 18, "%08x-%08x", pid, index++);
-  return String(uuid);
-#endif
-}
-
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-bool RawData::GetTempFilePathFromURI(const String &uri,
-                                     FilePath *temp_fullpath) {
-  if (!temp_fullpath) return false;
-
-  // We use a UUID here to avoid any possible collisions with other tempfiles
-  // which have been or will be written sharing the same basic name
-
-  FilePath temp_path;
-  if (!file_util::GetTempDir(&temp_path)) {
-    return false;
-  }
-
-  String uuid_string = GetUUIDString();
-
-  // format the temp file basename
-  String filename;
-
-  // try to retain the original file suffix (.jpg, etc.)
-  std::string::size_type dot_position = uri.rfind('.');
-  if (dot_position != std::string::npos) {
-    filename = uuid_string + uri.substr(dot_position);
-  } else {
-    filename = uuid_string;
-  }
-
-  // Construct the full pathname
-  FilePath fullpath = temp_path;
-  fullpath = fullpath.AppendASCII(filename);
-
-  if (temp_fullpath) *temp_fullpath = fullpath;
-
   return true;
 }
 
