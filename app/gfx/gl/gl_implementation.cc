@@ -13,10 +13,6 @@
 
 namespace gfx {
 namespace {
-struct NamePair {
-  std::wstring name;
-  GLImplementation implemention;
-};
 
 typedef std::vector<base::NativeLibrary> LibraryArray;
 
@@ -36,15 +32,18 @@ void CleanupNativeLibraries(void* unused) {
 }
 }
 
-GLImplementation GetNamedGLImplementation(const std::wstring& name) {
-  static const NamePair name_pairs[] = {
-    { L"desktop", kGLImplementationDesktopGL },
-    { L"osmesa", kGLImplementationOSMesaGL },
-    { L"egl", kGLImplementationEGLGLES2 },
-    { L"mock", kGLImplementationMockGL }
+GLImplementation GetNamedGLImplementation(const std::string& name) {
+  static const struct {
+    const char* name;
+    GLImplementation implemention;
+  } name_pairs[] = {
+    { "desktop", kGLImplementationDesktopGL },
+    { "osmesa", kGLImplementationOSMesaGL },
+    { "egl", kGLImplementationEGLGLES2 },
+    { "mock", kGLImplementationMockGL }
   };
 
-  for (size_t i = 0; i < arraysize(name_pairs); ++i) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(name_pairs); ++i) {
     if (name == name_pairs[i].name)
       return name_pairs[i].implemention;
   }
@@ -56,8 +55,8 @@ bool InitializeBestGLBindings(
     const GLImplementation* allowed_implementations_begin,
     const GLImplementation* allowed_implementations_end) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseGL)) {
-    std::wstring requested_implementation_name =
-        CommandLine::ForCurrentProcess()->GetSwitchValue(switches::kUseGL);
+    std::string requested_implementation_name =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switches::kUseGL);
     GLImplementation requested_implementation =
         GetNamedGLImplementation(requested_implementation_name);
     if (std::find(allowed_implementations_begin,
