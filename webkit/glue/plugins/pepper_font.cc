@@ -36,11 +36,16 @@ bool IsPPFontDescriptionValid(const PP_FontDescription& desc) {
   if (desc.face.type != PP_VARTYPE_STRING && desc.face.type != PP_VARTYPE_VOID)
     return false;
 
+  // Check enum ranges.
   if (static_cast<int>(desc.family) < PP_FONTFAMILY_DEFAULT ||
       static_cast<int>(desc.family) > PP_FONTFAMILY_MONOSPACE)
     return false;
   if (static_cast<int>(desc.weight) < PP_FONTWEIGHT_100 ||
       static_cast<int>(desc.weight) > PP_FONTWEIGHT_900)
+    return false;
+
+  // Check for excessive sizes which may cause layout to get confused.
+  if (desc.size > 200)
     return false;
 
   return true;
