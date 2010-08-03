@@ -250,12 +250,12 @@ static void icuRegexpFunc(sqlite3_context *p, int nArg, sqlite3_value **apArg){
   UErrorCode status = U_ZERO_ERROR;
   URegularExpression *pExpr;
   UBool res;
-  const UChar *zString;
+  const UChar *zString = sqlite3_value_text16(apArg[1]);
 
   /* If the left hand side of the regexp operator is NULL, 
   ** then the result is also NULL. 
   */
-  if( nArg<2 || !(zString=sqlite3_value_text16(apArg[1])) ){
+  if( !zString ){
     return;
   }
 
@@ -459,7 +459,7 @@ int sqlite3IcuInit(sqlite3 *db){
     void *pContext;                           /* sqlite3_user_data() context */
     void (*xFunc)(sqlite3_context*,int,sqlite3_value**);
   } scalars[] = {
-    {"regexp",-1, SQLITE_ANY,          0, icuRegexpFunc},
+    {"regexp", 2, SQLITE_ANY,          0, icuRegexpFunc},
 
     {"lower",  1, SQLITE_UTF16,        0, icuCaseFunc16},
     {"lower",  2, SQLITE_UTF16,        0, icuCaseFunc16},

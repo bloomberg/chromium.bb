@@ -1,17 +1,14 @@
---- ext/icu/icu.c.orig	2009-12-16 15:43:51.000000000 -0800
-+++ ext/icu/icu.c	2009-12-15 15:23:34.000000000 -0800
-@@ -250,12 +250,12 @@
-   UErrorCode status = U_ZERO_ERROR;
-   URegularExpression *pExpr;
-   UBool res;
--  const UChar *zString = sqlite3_value_text16(apArg[1]);
-+  const UChar *zString;
+This is a backport of upstream fix http://www.sqlite.org/src/ci/c34cf23efb,
+which was released in SQLite 3.6.22.
+===============================================================================
+--- ext/icu/icu.c.orig	2010-07-30 13:40:12.000000000 -0700
++++ ext/icu/icu.c	2010-07-30 13:40:31.000000000 -0700
+@@ -459,7 +459,7 @@
+     void *pContext;                           /* sqlite3_user_data() context */
+     void (*xFunc)(sqlite3_context*,int,sqlite3_value**);
+   } scalars[] = {
+-    {"regexp",-1, SQLITE_ANY,          0, icuRegexpFunc},
++    {"regexp", 2, SQLITE_ANY,          0, icuRegexpFunc},
  
-   /* If the left hand side of the regexp operator is NULL, 
-   ** then the result is also NULL. 
-   */
--  if( !zString ){
-+  if( nArg<2 || !(zString=sqlite3_value_text16(apArg[1])) ){
-     return;
-   }
- 
+     {"lower",  1, SQLITE_UTF16,        0, icuCaseFunc16},
+     {"lower",  2, SQLITE_UTF16,        0, icuCaseFunc16},
