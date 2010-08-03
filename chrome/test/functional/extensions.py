@@ -9,9 +9,9 @@ browser crashes while visiting a list of urls.
 
 Usage: python extensions.py -v
 
-Note: This assumes that there is a directory of extensions called 'extensions'
-and that there is a file of newline-separated urls to visit called 'urls.txt'
-in the same directory as the script.
+Note: This assumes that there is a directory of extensions called
+'extensions-tool' and that there is a file of newline-separated urls to visit
+called 'urls.txt' in the data directory.
 """
 
 import glob
@@ -25,9 +25,6 @@ import pyauto
 
 class ExtensionsTest(pyauto.PyUITest):
   """Test of extensions."""
-  # TODO: provide a way in pyauto to pass args to a test and take these as args
-  extensions_dir_ = 'extensions'  # The directory of extensions
-  urls_file_ = 'urls.txt'         # The file which holds a list of urls to visit
 
   def Debug(self):
     """Test method for experimentation.
@@ -99,18 +96,22 @@ class ExtensionsTest(pyauto.PyUITest):
 
   def testExtensionCrashes(self):
     """Add top extensions; confirm browser stays up when visiting top urls"""
-    self.assertTrue(os.path.exists(self.extensions_dir_),
-             'The dir "%s" must exist' % os.path.abspath(self.extensions_dir_))
-    self.assertTrue(os.path.exists(self.urls_file_),
-             'The file "%s" must exist' % os.path.abspath(self.urls_file_))
+    # TODO: provide a way in pyauto to pass args to a test - take these as args
+    extensions_dir = os.path.join(self.DataDir(), 'extensions-tool')
+    urls_file = os.path.join(self.DataDir(), 'urls.txt')
+
+    assert(os.path.exists(extensions_dir),
+           'The dir "%s" must exist' % os.path.abspath(extensions_dir))
+    assert(os.path.exists(urls_file),
+           'The file "%s" must exist' % os.path.abspath(urls_file))
 
     num_urls_to_visit = 100
     extensions_group_size = 20
 
     top_urls = [l.rstrip() for l in
-                open(self.urls_file_).readlines()[:num_urls_to_visit]]
+                open(urls_file).readlines()[:num_urls_to_visit]]
 
-    failed_extensions = glob.glob(os.path.join(self.extensions_dir_, '*.crx'))
+    failed_extensions = glob.glob(os.path.join(extensions_dir, '*.crx'))
     group_size = extensions_group_size
 
     while(group_size and failed_extensions):
