@@ -675,17 +675,6 @@ void BrowserView::Show() {
   RestoreFocus();
 
   frame_->GetWindow()->Show();
-
-  // The following block also appears in BrowserWindowGtk::Show().
-#if !defined(OS_WIN)
-  // The Browser associated with this browser window must become the active
-  // browser at the time Show() is called. This is the natural behavior under
-  // Windows, but gtk_widget_show won't show the widget (and therefore won't
-  // call OnFocusIn()) until we return to the runloop. Therefore any calls to
-  // BrowserList::GetLastActive() (for example, in bookmark_util), will return
-  // the previous browser instead if we don't explicitly set it here.
-  BrowserList::SetLastActive(browser());
-#endif
 }
 
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
