@@ -38,6 +38,9 @@ void HttpListenSocket::Accept() {
   } else {
     scoped_refptr<HttpListenSocket> sock =
         new HttpListenSocket(conn, delegate_);
+#if defined(OS_POSIX)
+      sock->WatchSocket(WAITING_READ);
+#endif
     // it's up to the delegate to AddRef if it wants to keep it around
     DidAccept(this, sock);
   }
