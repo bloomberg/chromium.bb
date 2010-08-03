@@ -1761,6 +1761,7 @@ windows_coverage_env['LINKCOM'] = windows_coverage_env.Action([
     '$COVERAGE_VSINSTR /COVERAGE ${TARGET}'])
 windows_coverage_env.FilterOut(BUILD_GROUPS = ['default'])
 windows_coverage_env.Append(LINKFLAGS = ['/NODEFAULTLIB:msvcrt'])
+AddDualLibrary(windows_coverage_env)
 environment_list.append(windows_coverage_env)
 
 # TODO(bradnelson): this test current doesn't interact well with coverage.
@@ -1778,6 +1779,7 @@ mac_coverage_env = mac_env.Clone(
     LIBS_STRICT = False,
 )
 mac_coverage_env.FilterOut(BUILD_GROUPS = ['default'])
+AddDualLibrary(mac_coverage_env)
 environment_list.append(mac_coverage_env)
 
 linux_coverage_env = linux_debug_env.Clone(
@@ -1790,6 +1792,7 @@ linux_coverage_env = linux_debug_env.Clone(
 )
 linux_coverage_env.FilterOut(BUILD_GROUPS = ['default'])
 linux_coverage_env['OPTIONAL_COVERAGE_LIBS'] = '$COVERAGE_LIBS'
+AddDualLibrary(linux_coverage_env)
 environment_list.append(linux_coverage_env)
 
 # ----------------------------------------------------------
