@@ -3762,18 +3762,17 @@
    bug_50936
    Memcheck:Leak
    fun:_Znw*
-   fun:*
+   ...
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
-   fun:*FactoryForOffTheRecordC1EP7Profile
+   fun:*FactoryForOffTheRecordC*EP7Profile
    fun:_ZN29ChromeURLRequestContextGetter18CreateOffTheRecordEP7Profile
-   fun:_ZN23OffTheRecordProfileImplC1EP7Profile
+   fun:_ZN23OffTheRecordProfileImpl*Profile
    fun:_ZN7Profile25CreateOffTheRecordProfileEv
    fun:_ZN11ProfileImpl22GetOffTheRecordProfileEv
    fun:_ZN7Browser18NewIncognitoWindowEv
    fun:_ZN7Browser29ExecuteCommandWithDispositionEi21WindowOpenDisposition
    fun:_ZN7Browser14ExecuteCommandEi
-   fun:_ZN18AutomationProvider21ExecuteBrowserCommandEiiPN3IPC7MessageE
-   fun:_Z16DispatchToMethodI18AutomationProviderMS0_FviiPN3IPC7MessageEEiiRS2_EvPT_T0_RK6Tuple2IT1_T2_EP6Tuple1IT3_E
+   ...
    fun:_ZN3IPC16MessageWithReplyI6Tuple2IiiE6Tuple1IRbEE18DispatchDelayReplyI18AutomationProviderMS8_FviiPNS_7MessageEEEEbPKS9_PT_T0_
    fun:_ZN18AutomationProvider17OnMessageReceivedERKN3IPC7MessageE
    fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
