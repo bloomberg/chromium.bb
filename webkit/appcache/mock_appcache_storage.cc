@@ -189,7 +189,7 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
   Delegate* delegate = delegate_ref->delegate;
   if (simulate_store_group_and_newest_cache_failure_) {
     if (delegate)
-      delegate->OnGroupAndNewestCacheStored(group, newest_cache, false);
+      delegate->OnGroupAndNewestCacheStored(group, newest_cache, false, false);
     return;
   }
 
@@ -206,7 +206,7 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
   }
 
   if (delegate)
-    delegate->OnGroupAndNewestCacheStored(group, newest_cache, true);
+    delegate->OnGroupAndNewestCacheStored(group, newest_cache, true, false);
 }
 
 namespace {
@@ -434,8 +434,8 @@ bool MockAppCacheStorage::ShouldGroupLoadAppearAsync(
   // The LoadGroup interface implies also loading the newest cache, so
   // if loading the newest cache should appear async, so too must the
   // loading of this group.
-  if (ShouldCacheLoadAppearAsync(group->newest_complete_cache()))
-    return true;
+  if (!ShouldCacheLoadAppearAsync(group->newest_complete_cache()))
+    return false;
 
 
   // If any of the old caches are "in use", then the group must also

@@ -51,6 +51,9 @@ class AppCache : public base::RefCounted<AppCache> {
   // is added, false if the flags are merged into an existing entry.
   bool AddOrModifyEntry(const GURL& url, const AppCacheEntry& entry);
 
+  // Removes an entry from the EntryMap, the URL must be in the set.
+  void RemoveEntry(const GURL& url);
+
   // Do not store the returned object as it could be deleted anytime.
   AppCacheEntry* GetEntry(const GURL& url);
 

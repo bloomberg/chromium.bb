@@ -92,7 +92,8 @@ class AppCacheStorageImplTest : public testing::Test {
     }
 
     void OnGroupAndNewestCacheStored(
-        AppCacheGroup* group, AppCache* newest_cache, bool success) {
+        AppCacheGroup* group, AppCache* newest_cache, bool success,
+        bool would_exceed_quota) {
       stored_group_ = group;
       stored_group_success_ = success;
       test_->ScheduleNextTask();

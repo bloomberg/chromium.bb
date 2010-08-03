@@ -104,7 +104,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void OnResponseInfoLoaded(AppCacheResponseInfo* response_info,
                             int64 response_id);
   void OnGroupAndNewestCacheStored(AppCacheGroup* group, AppCache* newest_cache,
-                                   bool success);
+                                   bool success, bool would_exceed_quota);
   void OnGroupMadeObsolete(AppCacheGroup* group, bool success);
 
   // Methods for AppCacheHost::Observer.
@@ -262,6 +262,10 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   scoped_refptr<net::IOBuffer> read_manifest_buffer_;
   std::string loaded_manifest_data_;
   scoped_ptr<AppCacheResponseReader> manifest_response_reader_;
+
+  // New master entries added to the cache by this job, used to cleanup
+  // in error conditions.
+  std::vector<GURL> added_master_entries_;
 
   // Response ids stored by this update job, used to cleanup in
   // error conditions.

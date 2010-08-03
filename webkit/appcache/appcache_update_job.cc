@@ -698,7 +698,9 @@ void AppCacheUpdateJob::HandleMasterEntryFetchCompleted(URLRequest* request) {
     AppCacheEntry master_entry(AppCacheEntry::MASTER,
                                info->response_writer_->response_id(),
                                info->response_writer_->amount_written());
-    if (!cache->AddOrModifyEntry(url, master_entry))
+    if (cache->AddOrModifyEntry(url, master_entry))
+      added_master_entries_.push_back(url);
+    else
       duplicate_response_ids_.push_back(master_entry.response_id());
 
     // In no-update case, associate host with the newest cache.
@@ -820,7 +822,8 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
 
 void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
                                                     AppCache* newest_cache,
-                                                    bool success) {
+                                                    bool success,
+                                                    bool would_exceed_quota) {
   DCHECK(stored_state_ == STORING);
   if (success) {
     stored_state_ = STORED;
@@ -831,7 +834,10 @@ void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
     if (newest_cache != group->newest_complete_cache())
       inprogress_cache_ = newest_cache;
 
-    HandleCacheFailure("Failed to commit new cache to storage");
+    std::string message("Failed to commit new cache to storage");
+    if (would_exceed_quota)
+      message.append(", would exceed quota");
+    HandleCacheFailure(message);
   }
 }
 
@@ -1028,6 +1034,10 @@ void AppCacheUpdateJob::CancelAllUrlFetches() {
 }
 
 bool AppCacheUpdateJob::ShouldSkipUrlFetch(const AppCacheEntry& entry) {
+  // 6.6.4 Step 17
+  // If the resource URL being processed was flagged as neither an
+  // "explicit entry" nor or a "fallback entry", then the user agent
+  // may skip this URL.
   if (entry.IsExplicit() || entry.IsFallback()) {
     return false;
   }
@@ -1213,7 +1223,6 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
                                                http_info->response_time,
                                                base::Time::Now()) ||
         http_info->headers->EnumerateHeader(&iter, name, &value)) {
-      // TODO(michaeln): Make a conditional request when we can in this case.
       LoadFromNewestCacheFailed(url, response_info);
     } else {
       DCHECK(group_->newest_complete_cache());
@@ -1355,8 +1364,15 @@ void AppCacheUpdateJob::ClearPendingMasterEntries() {
 void AppCacheUpdateJob::DiscardInprogressCache() {
   service_->storage()->DoomResponses(manifest_url_, stored_response_ids_);
 
-  if (!inprogress_cache_)
+  if (!inprogress_cache_) {
+    // We have to undo the changes we made, if any, to the existing cache.
+    for (std::vector<GURL>::iterator iter = added_master_entries_.begin();
+         iter != added_master_entries_.end(); ++iter) {
+      DCHECK(group_->newest_complete_cache());
+      group_->newest_complete_cache()->RemoveEntry(*iter);
+    }
     return;
+  }
 
   AppCache::AppCacheHosts& hosts = inprogress_cache_->associated_hosts();
   while (!hosts.empty())

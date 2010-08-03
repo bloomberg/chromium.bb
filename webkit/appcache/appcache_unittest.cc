@@ -32,26 +32,48 @@ TEST(AppCacheTest, CleanupUnusedCache) {
   host2.AssociateCache(NULL);
 }
 
-TEST(AppCacheTest, AddModifyEntry) {
+TEST(AppCacheTest, AddModifyRemoveEntry) {
   MockAppCacheService service;
   scoped_refptr<AppCache> cache = new AppCache(&service, 111);
 
-  const GURL kUrl1("http://foo.com");
-  AppCacheEntry entry1(AppCacheEntry::MASTER);
-  cache->AddEntry(kUrl1, entry1);
-  EXPECT_EQ(entry1.types(), cache->GetEntry(kUrl1)->types());
+  EXPECT_TRUE(cache->entries().empty());
+  EXPECT_EQ(0L, cache->cache_size());
 
-  const GURL kUrl2("http://bar.com");
-  AppCacheEntry entry2(AppCacheEntry::FALLBACK);
-  EXPECT_TRUE(cache->AddOrModifyEntry(kUrl2, entry2));
-  EXPECT_EQ(entry2.types(), cache->GetEntry(kUrl2)->types());
+  const GURL kFooUrl("http://foo.com");
+  const int64 kFooResponseId = 1;
+  const int64 kFooSize = 100;
+  AppCacheEntry entry1(AppCacheEntry::MASTER, kFooResponseId, kFooSize);
+  cache->AddEntry(kFooUrl, entry1);
+  EXPECT_EQ(entry1.types(), cache->GetEntry(kFooUrl)->types());
+  EXPECT_EQ(1UL, cache->entries().size());
+  EXPECT_EQ(kFooSize, cache->cache_size());
+
+  const GURL kBarUrl("http://bar.com");
+  const int64 kBarResponseId = 2;
+  const int64 kBarSize = 200;
+  AppCacheEntry entry2(AppCacheEntry::FALLBACK, kBarResponseId, kBarSize);
+  EXPECT_TRUE(cache->AddOrModifyEntry(kBarUrl, entry2));
+  EXPECT_EQ(entry2.types(), cache->GetEntry(kBarUrl)->types());
+  EXPECT_EQ(2UL, cache->entries().size());
+  EXPECT_EQ(kFooSize + kBarSize, cache->cache_size());
 
   // Expected to return false when an existing entry is modified.
   AppCacheEntry entry3(AppCacheEntry::EXPLICIT);
-  EXPECT_FALSE(cache->AddOrModifyEntry(kUrl1, entry3));
+  EXPECT_FALSE(cache->AddOrModifyEntry(kFooUrl, entry3));
   EXPECT_EQ((AppCacheEntry::MASTER | AppCacheEntry::EXPLICIT),
-            cache->GetEntry(kUrl1)->types());
-  EXPECT_EQ(entry2.types(), cache->GetEntry(kUrl2)->types());  // unchanged
+            cache->GetEntry(kFooUrl)->types());
+  // Only the type should be modified.
+  EXPECT_EQ(kFooResponseId, cache->GetEntry(kFooUrl)->response_id());
+  EXPECT_EQ(kFooSize, cache->GetEntry(kFooUrl)->response_size());
+  EXPECT_EQ(kFooSize + kBarSize, cache->cache_size());
+
+  EXPECT_EQ(entry2.types(), cache->GetEntry(kBarUrl)->types());  // unchanged
+
+  cache->RemoveEntry(kBarUrl);
+  EXPECT_EQ(kFooSize, cache->cache_size());
+  cache->RemoveEntry(kFooUrl);
+  EXPECT_EQ(0L, cache->cache_size());
+  EXPECT_TRUE(cache->entries().empty());
 }
 
 TEST(AppCacheTest, InitializeWithManifest) {

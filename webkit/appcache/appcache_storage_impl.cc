@@ -401,13 +401,14 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> cache_;
   bool success_;
+  bool would_exceed_quota_;
   std::vector<int64> newly_deletable_response_ids_;
 };
 
 AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
     AppCacheStorageImpl* storage, AppCacheGroup* group, AppCache* newest_cache)
     : StoreOrLoadTask(storage), group_(group), cache_(newest_cache),
-      success_(false) {
+      success_(false), would_exceed_quota_(false) {
   group_record_.group_id = group->group_id();
   group_record_.manifest_url = group->manifest_url();
   group_record_.origin = group_record_.manifest_url.GetOrigin();
@@ -479,10 +480,19 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
       database_->InsertCache(&cache_record_) &&
       database_->InsertEntryRecords(entry_records_) &&
       database_->InsertFallbackNameSpaceRecords(fallback_namespace_records_)&&
-      database_->InsertOnlineWhiteListRecords(online_whitelist_records_) &&
-      (database_->GetOriginUsage(group_record_.origin) <=
-       database_->GetOriginQuota(group_record_.origin)) &&
-      transaction.Commit();
+      database_->InsertOnlineWhiteListRecords(online_whitelist_records_);
+
+  if (!success_)
+    return;
+
+  if (database_->GetOriginUsage(group_record_.origin) >
+      database_->GetOriginQuota(group_record_.origin)) {
+    would_exceed_quota_ = true;
+    success_ = false;
+    return;
+  }
+
+  success_ = transaction.Commit();
 }
 
 void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
@@ -496,7 +506,8 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
     group_->AddNewlyDeletableResponseIds(&newly_deletable_response_ids_);
   }
   FOR_EACH_DELEGATE(delegates_,
-                    OnGroupAndNewestCacheStored(group_, cache_, success_));
+                    OnGroupAndNewestCacheStored(group_, cache_, success_,
+                                                would_exceed_quota_));
   group_ = NULL;
   cache_ = NULL;
 }
