@@ -260,6 +260,8 @@ var chrome = chrome || {};
       "experimental.popup",
       "experimental.processes",
       "experimental.rlz",
+      "experimental.webNavigation",
+      "experimental.webRequest",
       "history",
       "idle",
       "pageAction",

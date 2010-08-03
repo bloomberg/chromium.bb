@@ -2990,6 +2990,230 @@
     "events": []
   },
   {
+    "namespace": "experimental.webNavigation",
+    "types": [],
+    "functions": [],
+    "events": [
+      {
+        "name": "onBeforeNavigate",
+        "type": "function",
+        "description": "Fires when a navigation is about to occur.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation is about to occur."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe. Frame IDs are unique within a tab."},
+              "requestId": {"type": "integer", "description": "The ID of the request to retrieve the document of this navigation. Note that this event is fired prior to the corresponding chrome.experimental.webRequest.onBeforeRequest."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to start the navigation, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onCommitted",
+        "type": "function",
+        "description": "Fires when a navigation is committed. The document (and the resources it refers to, such as images and subframes) might still be downloading, but at least part of the document has been received from the server and the browser has decided to switch to the new document.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."},
+              "transitionType": {"type": "string", "enum": ["link", "user_browser", "redirect_meta_refresh", "redirect_onload", "forward_back", "redirect_javascript", "new_window", "reload", "other"], "description": "Cause of the navigation. Set to null for subframe navigations."},
+              "timeStamp": {"type": "number", "description": "The time when the navigation was committed, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onDOMContentLoaded",
+        "type": "function",
+        "description": "Fires when the page's DOM is fully constructed, but the referenced resources may not finish loading.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."},
+              "timeStamp": {"type": "number", "description": "The time when the page's DOM was fully constructed, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onCompleted",
+        "type": "function",
+        "description": "Fires when a document, including the resources it refers to, is completely loaded and initialized.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."},
+              "timeStamp": {"type": "number", "description": "The time when the document finished loading, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onErrorOccurred",
+        "type": "function",
+        "description": "Fires when an error occurs.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the navigation occurs."},
+              "url": {"type": "string"},
+              "frameId": {"type": "integer", "description": "0 indicates the navigation happens in the tab content window; positive value indicates navigation in a subframe."},
+              "error": {"type": "string", "description": "The error description."},
+              "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onBeforeRetarget",
+        "type": "function",
+        "description": "Fires when a new window, or a new tab in an existing window, is about to be created to host a navigation.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "sourceTabId": {"type": "integer", "description": "The ID of the tab in which the navigation is triggered."},
+              "sourceUrl": {"type": "string", "description": "The URL of the document that is opening the new window."},
+              "targetUrl": {"type": "string", "description": "The URL to be opened in the new window."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to create a new view, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "experimental.webRequest",
+    "types": [],
+    "functions": [],
+    "events": [
+      {
+        "name": "onBeforeRequest",
+        "type": "function",
+        "description": "Fires when a request is about to occur.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "integer", "description": "The ID of the request. Request IDs are unique within a browser session. As a result, they could be used to relate different events of the same request."},
+              "url": {"type": "string"},
+              "method": {"type": "string", "description": "Standard HTTP method."},
+              "tabId": {"type": "integer", "description": "The ID of the tab in which the request takes place. Set to null if the request isn't related to a tab."},
+              "type": {"type": "string", "enum": ["main_frame", "sub_frame", "stylesheet", "script", "image", "object", "other"], "description": "How the requested resource will be used."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the request, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onRequestSent",
+        "type": "function",
+        "description": "Fires when a request is sent to the server.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "url": {"type": "string"},
+              "ip": {"type": "string", "description": "The server IP address that is actually connected to. Note that it may be a literal IPv6 address."},
+              "timeStamp": {"type": "number", "description": "The time when the browser finished sending the request, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onHeadersReceived",
+        "type": "function",
+        "description": "Fires when the status line and response headers are received after a request is sent to the server.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "url": {"type": "string"},
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
+              "timeStamp": {"type": "number", "description": "The time when the status line and response headers were received, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onBeforeRedirect",
+        "type": "function",
+        "description": "Fires when a server initiated redirect is about to occur.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "url": {"type": "string", "description": "The URL of the current request."},
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
+              "redirectUrl": {"type": "string", "description": "The new URL."},
+              "timeStamp": {"type": "number", "description": "The time when the browser was about to make the redirect, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onCompleted",
+        "type": "function",
+        "description": "Fires when a request is completed.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "url": {"type": "string", "description": "The URL of the current request."},
+              "statusCode": {"type": "integer", "description": "Standard HTTP status code returned by the server."},
+              "timeStamp": {"type": "number", "description": "The time when the response was received completely, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      },
+      {
+        "name": "onErrorOccurred",
+        "type": "function",
+        "description": "Fires when an error occurs.",
+        "parameters": [
+          {
+            "type": "object",
+            "name": "details",
+            "properties": {
+              "requestId": {"type": "integer", "description": "The ID of the request."},
+              "url": {"type": "string", "description": "The URL of the current request."},
+              "error": {"type": "string", "description": "The error description."},
+              "timeStamp": {"type": "number", "description": "The time when the error occurred, in milliseconds since the epoch."}
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "test",
     "nodoc": true,
     "types": [],

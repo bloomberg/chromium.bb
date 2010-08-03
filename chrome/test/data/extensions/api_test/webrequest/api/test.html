@@ -1,0 +1,15 @@
+<script>
+chrome.experimental.webRequest.onBeforeRequest.addListener(
+    function(details) {});
+chrome.experimental.webRequest.onRequestSent.addListener(
+    function(details) {});
+chrome.experimental.webRequest.onHeadersReceived.addListener(
+    function(details) {});
+chrome.experimental.webRequest.onBeforeRedirect.addListener(
+    function(details) {});
+chrome.experimental.webRequest.onCompleted.addListener(
+    function(details) {});
+chrome.experimental.webRequest.onErrorOccurred.addListener(
+    function(details) {});
+chrome.test.notifyPass();
+</script>

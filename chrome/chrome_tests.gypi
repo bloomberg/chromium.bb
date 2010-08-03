@@ -1585,6 +1585,8 @@
         'browser/extensions/extension_test_message_listener.h',
         'browser/extensions/extension_toolbar_model_browsertest.cc',
         'browser/extensions/extension_toolstrip_apitest.cc',
+        'browser/extensions/extension_webnavigation_apitest.cc',
+        'browser/extensions/extension_webrequest_apitest.cc',
         'browser/extensions/extension_websocket_apitest.cc',
         'browser/extensions/fragment_navigation_apitest.cc',
         'browser/extensions/isolated_world_apitest.cc',
