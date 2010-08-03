@@ -52,6 +52,10 @@ InputMethodLibraryImpl::InputMethodLibraryImpl()
       previous_input_method_("", "", "", ""),
       current_input_method_("", "", "", ""),
       ime_running_(false),
+      ime_connected_(false),
+      defer_ime_startup_(false),
+      active_input_method_(kHardwareKeyboardLayout),
+      need_input_method_set_(false),
       ime_handle_(0),
       candidate_window_handle_(0) {
   scoped_ptr<InputMethodDescriptors> input_method_descriptors(
@@ -60,7 +64,7 @@ InputMethodLibraryImpl::InputMethodLibraryImpl()
 }
 
 InputMethodLibraryImpl::~InputMethodLibraryImpl() {
-  StopIme();
+  StopInputMethodProcesses();
 }
 
 InputMethodLibraryImpl::Observer::~Observer() {
@@ -108,7 +112,11 @@ InputMethodLibraryImpl::GetSupportedInputMethods() {
 
 void InputMethodLibraryImpl::ChangeInputMethod(
     const std::string& input_method_id) {
+  active_input_method_ = input_method_id;
   if (EnsureLoadedAndStarted()) {
+    if (input_method_id != kHardwareKeyboardLayout) {
+      StartInputMethodProcesses();
+    }
     chromeos::ChangeInputMethod(
         input_method_status_connection_, input_method_id.c_str());
   }
@@ -150,10 +158,11 @@ bool InputMethodLibraryImpl::SetImeConfig(
   MaybeUpdateImeState(section, config_name, value);
 
   const ConfigKeyType key = std::make_pair(section, config_name);
-  pending_config_requests_.erase(key);
-  pending_config_requests_.insert(std::make_pair(key, value));
   current_config_values_[key] = value;
-  FlushImeConfig();
+  if (ime_connected_) {
+    pending_config_requests_[key] = value;
+    FlushImeConfig();
+  }
   return pending_config_requests_.empty();
 }
 
@@ -165,9 +174,9 @@ void InputMethodLibraryImpl::MaybeUpdateImeState(
       if (value.type == ImeConfigValue::kValueTypeStringList &&
           value.string_list_value.size() == 1 &&
           value.string_list_value[0] == kHardwareKeyboardLayout) {
-        StopIme();
-      } else {
-        StartIme();
+        StopInputMethodProcesses();
+      } else if (!defer_ime_startup_) {
+        StartInputMethodProcesses();
       }
       chromeos::SetActiveInputMethods(input_method_status_connection_, value);
     }
@@ -176,6 +185,7 @@ void InputMethodLibraryImpl::MaybeUpdateImeState(
 
 void InputMethodLibraryImpl::FlushImeConfig() {
   bool active_input_methods_are_changed = false;
+  bool completed = false;
   if (EnsureLoadedAndStarted()) {
     InputMethodConfigRequests::iterator iter = pending_config_requests_.begin();
     while (iter != pending_config_requests_.end()) {
@@ -184,26 +194,41 @@ void InputMethodLibraryImpl::FlushImeConfig() {
       const ImeConfigValue& value = iter->second;
       if (chromeos::SetImeConfig(input_method_status_connection_,
                                  section.c_str(), config_name.c_str(), value)) {
-        // Successfully sent. Remove the command and proceed to the next one.
-        pending_config_requests_.erase(iter++);
         // Check if it's a change in active input methods.
         if (config_name == kPreloadEnginesConfigName) {
           active_input_methods_are_changed = true;
         }
+        // Successfully sent. Remove the command and proceed to the next one.
+        pending_config_requests_.erase(iter++);
       } else {
-//        LOG(ERROR) << "chromeos::SetImeConfig failed. Will retry later: "
-//                   << section << "/" << config_name;
-        ++iter;  // Do not remove the command.
+        // If SetImeConfig() fails, subsequent calls will likely fail.
+        break;
       }
     }
     if (pending_config_requests_.empty()) {
-      timer_.Stop();  // no-op if it's not running.
+      // Calls to ChangeInputMethod() will fail if the input method has not yet
+      // been added to preload_engines.  As such, the call is deferred until
+      // after all config values have been sent to the IME process.
+      if (need_input_method_set_) {
+        if (chromeos::ChangeInputMethod(input_method_status_connection_,
+                                        active_input_method_.c_str())) {
+          need_input_method_set_ = false;
+          completed = true;
+          active_input_methods_are_changed = true;
+        }
+      } else {
+        completed = true;
+      }
     }
+  }
+
+  if (completed) {
+    timer_.Stop();  // no-op if it's not running.
   } else {
     if (!timer_.IsRunning()) {
-      static const int64 kTimerIntervalInSec = 1;
-      timer_.Start(base::TimeDelta::FromSeconds(kTimerIntervalInSec), this,
-                   &InputMethodLibraryImpl::FlushImeConfig);
+      static const int64 kTimerIntervalInMsec = 100;
+      timer_.Start(base::TimeDelta::FromMilliseconds(kTimerIntervalInMsec),
+                   this, &InputMethodLibraryImpl::FlushImeConfig);
     }
   }
   if (active_input_methods_are_changed) {
@@ -240,11 +265,21 @@ void InputMethodLibraryImpl::ConnectionChangeHandler(void* object,
                                                      bool connected) {
   InputMethodLibraryImpl* input_method_library =
       static_cast<InputMethodLibraryImpl*>(object);
+  input_method_library->ime_connected_ = connected;
   if (connected) {
+    input_method_library->pending_config_requests_.clear();
     input_method_library->pending_config_requests_.insert(
         input_method_library->current_config_values_.begin(),
         input_method_library->current_config_values_.end());
+    // When the IME process starts up, the hardware layout will be the current
+    // method.  If this is not correct, we'll need to explicitly change it.
+    if (input_method_library->active_input_method_ != kHardwareKeyboardLayout) {
+      input_method_library->need_input_method_set_ = true;
+    }
     input_method_library->FlushImeConfig();
+  } else {
+    // Stop attempting to resend config data, since it will continue to fail.
+    input_method_library->timer_.Stop();  // no-op if it's not running.
   }
 }
 
@@ -321,7 +356,7 @@ void InputMethodLibraryImpl::UpdateProperty(const ImePropertyList& prop_list) {
   FOR_EACH_OBSERVER(Observer, observers_, ImePropertiesChanged(this));
 }
 
-void InputMethodLibraryImpl::StartIme() {
+void InputMethodLibraryImpl::StartInputMethodProcesses() {
   ime_running_ = true;
   MaybeLaunchIme();
 }
@@ -391,7 +426,7 @@ void InputMethodLibraryImpl::MaybeLaunchIme() {
   }
 }
 
-void InputMethodLibraryImpl::StopIme() {
+void InputMethodLibraryImpl::StopInputMethodProcesses() {
   ime_running_ = false;
   if (ime_handle_) {
     kill(ime_handle_, SIGTERM);
@@ -401,6 +436,10 @@ void InputMethodLibraryImpl::StopIme() {
     kill(candidate_window_handle_, SIGTERM);
     candidate_window_handle_ = 0;
   }
+}
+
+void InputMethodLibraryImpl::SetDeferImeStartup(bool defer) {
+  defer_ime_startup_ = defer;
 }
 
 // static

@@ -17,6 +17,7 @@
 #include "base/file_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
@@ -735,6 +736,10 @@ void ShowLoginWizard(const std::string& first_screen_name,
                      const gfx::Size& size) {
   LOG(INFO) << "showing login screen: " << first_screen_name;
 
+  // The login screen will enable alternate keyboard layouts, but we don't want
+  // to start the IME process unless one is selected.
+  chromeos::CrosLibrary::Get()->GetInputMethodLibrary()->
+      SetDeferImeStartup(true);
   // Tell the window manager that the user isn't logged in.
   chromeos::WmIpc::instance()->SetLoggedInProperty(false);
 

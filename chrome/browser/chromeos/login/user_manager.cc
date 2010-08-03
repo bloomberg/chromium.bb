@@ -16,6 +16,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -248,6 +250,8 @@ void UserManager::NotifyOnLogin() {
       Source<UserManager>(this),
       Details<const User>(&logged_in_user_));
 
+  chromeos::CrosLibrary::Get()->GetInputMethodLibrary()->
+      SetDeferImeStartup(false);
   // Let the window manager know that we're logged in now.
   WmIpc::instance()->SetLoggedInProperty(true);
 }

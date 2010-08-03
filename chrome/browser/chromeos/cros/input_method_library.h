@@ -81,11 +81,15 @@ class InputMethodLibrary {
                             const char* config_name,
                             const ImeConfigValue& value) = 0;
 
-  // Start the IME process.
-  virtual void StartIme() = 0;
+  // Sets the IME state to enabled, and launches its processes if needed.
+  virtual void StartInputMethodProcesses() = 0;
 
-  // Shutdown the IME process.
-  virtual void StopIme() = 0;
+  // Disables the IME, and kills the processes if they are running.
+  virtual void StopInputMethodProcesses() = 0;
+
+  // Controls whether the IME process is started when preload engines are
+  // specificed, or defered until a non-default method is activated.
+  virtual void SetDeferImeStartup(bool defer) = 0;
 
   virtual const InputMethodDescriptor& previous_input_method() const = 0;
   virtual const InputMethodDescriptor& current_input_method() const = 0;
@@ -128,8 +132,9 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     return current_ime_properties_;
   }
 
-  virtual void StartIme();
-  virtual void StopIme();
+  virtual void StartInputMethodProcesses();
+  virtual void StopInputMethodProcesses();
+  virtual void SetDeferImeStartup(bool defer);
 
  private:
   // This method is called when there's a change in input method status.
@@ -215,6 +220,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   base::OneShotTimer<InputMethodLibraryImpl> timer_;
 
   bool ime_running_;
+  bool ime_connected_;
+  bool defer_ime_startup_;
+  std::string active_input_method_;
+  bool need_input_method_set_;
 
   int ime_handle_;
   int candidate_window_handle_;

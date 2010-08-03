@@ -238,6 +238,9 @@ void CrosMock::SetInputMethodLibraryStatusAreaExpectations() {
   EXPECT_CALL(*mock_input_method_library_, RemoveObserver(_))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*mock_input_method_library_, SetDeferImeStartup(_))
+      .Times(AnyNumber())
+      .RetiresOnSaturation();
 }
 
 void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
