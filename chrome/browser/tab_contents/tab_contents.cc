@@ -389,6 +389,11 @@ TabContents::~TabContents() {
   if (blocked_popups_)
     blocked_popups_->Destroy();
 
+  // There may be pending file dialogs, we need to tell them that we've gone
+  // away so they don't try and call back to us.
+  if (select_file_dialog_.get())
+    select_file_dialog_->ListenerDestroyed();
+
   // Notify any observer that have a reference on this tab contents.
   NotificationService::current()->Notify(
       NotificationType::TAB_CONTENTS_DESTROYED,
