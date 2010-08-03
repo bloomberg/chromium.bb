@@ -1040,9 +1040,26 @@ gcc-stage1-make() {
 
   ts-touch-open "${objdir}"
 
+  local ar
+  local ranlib
+  case ${target} in
+      arm-*)
+          ar=${CROSS_TARGET_AR}
+          ranlib=${CROSS_TARGET_RANLIB}
+          ;;
+      i686-*)
+          ar="${INSTALL_ROOT}/../linux_x86/bin/nacl-ar"
+          ranlib="${INSTALL_ROOT}/../linux_x86/bin/nacl-ranlib"
+          ;;
+      x86_64-*)
+          ar="${INSTALL_ROOT}/../linux_x86/bin/nacl64-ar"
+          ranlib="${INSTALL_ROOT}/../linux_x86/bin/nacl64-ranlib"
+          ;;
+  esac
+
   mkdir -p "${objdir}/dummy-bin"
-  ln -s ${CROSS_TARGET_AR} "${objdir}/dummy-bin/${target}-ar"
-  ln -s ${CROSS_TARGET_RANLIB} "${objdir}/dummy-bin/${target}-ranlib"
+  ln -s ${ar} "${objdir}/dummy-bin/${target}-ar"
+  ln -s ${ranlib} "${objdir}/dummy-bin/${target}-ranlib"
 
   # NOTE: we add ${INSTALL_DIR}/bin to PATH
   RunWithLog llvm-pregcc-${target}.make \
@@ -2326,8 +2343,9 @@ organize-native-code() {
 
   StepBanner "PNaCl" "x86-64 native code: ${PNACL_X8664_ROOT}"
   mkdir -p ${PNACL_X8664_ROOT}
-  cp -f ${x86_src}/lib/gcc/nacl64/4.4.3/libgcc.a \
-    ${x86_src}/nacl64/lib/crt*.o \
+  cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}/libgcc.a \
+    ${PNACL_X8664_ROOT}
+  cp -f ${x86_src}/nacl64/lib/crt*.o \
     ${x86_src}/nacl64/lib/libcrt*.a \
     ${x86_src}/nacl64/lib/intrinsics.o \
     ${PNACL_X8664_ROOT}
