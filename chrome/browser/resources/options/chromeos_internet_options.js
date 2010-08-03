@@ -32,29 +32,12 @@ cr.define('options', function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      options.internet.NetworkList.decorate($('wiredList'));
+      options.internet.NetworkElement.decorate($('wiredList'));
       $('wiredList').load(templateData.wiredList);
-      options.internet.NetworkList.decorate($('wirelessList'));
+      options.internet.NetworkElement.decorate($('wirelessList'));
       $('wirelessList').load(templateData.wirelessList);
-      options.internet.NetworkList.decorate($('rememberedList'));
+      options.internet.NetworkElement.decorate($('rememberedList'));
       $('rememberedList').load(templateData.rememberedList);
-
-      this.addEventListener('visibleChange', this.handleVisibleChange_);
-    },
-
-    networkListInitalized_: false,
-
-    /**
-     * Handler for OptionsPage's visible property change event.
-     * @param {Event} e Property change event.
-     */
-    handleVisibleChange_ : function(e) {
-      if (!this.networkListInitalized_ && this.visible) {
-        this.networkListInitalized_ = true;
-        $('wiredList').redraw();
-        $('wirelessList').redraw();
-        $('rememberedList').redraw();
-      }
     }
   };
 
