@@ -640,7 +640,10 @@ void AdjustUIFont(LOGFONT* logfont) {
 }
 
 int GetMinimumFontSize() {
-  return StringToInt(l10n_util::GetString(IDS_MINIMUM_UI_FONT_SIZE).c_str());
+  int min_font_size;
+  base::StringToInt(l10n_util::GetStringUTF16(IDS_MINIMUM_UI_FONT_SIZE),
+                    &min_font_size);
+  return min_font_size;
 }
 
 #endif
@@ -871,8 +874,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
       parsed_command_line.GetSwitchValueASCII(switches::kTryChromeAgain);
   if (!try_chrome.empty()) {
 #if defined(OS_WIN)
-    Upgrade::TryResult answer =
-        Upgrade::ShowTryChromeDialog(StringToInt(try_chrome));
+    int try_chrome_int;
+    base::StringToInt(try_chrome, &try_chrome_int);
+    Upgrade::TryResult answer = Upgrade::ShowTryChromeDialog(try_chrome_int);
     if (answer == Upgrade::TD_NOT_NOW)
       return ResultCodes::NORMAL_EXIT_CANCEL;
     if (answer == Upgrade::TD_UNINSTALL_CHROME)
