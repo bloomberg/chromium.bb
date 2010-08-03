@@ -71,7 +71,7 @@ void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
           prefs::kGeolocationAccessToken);
   access_token_dictionary->SetWithoutPathExpansion(
       UTF8ToWide(server_url.spec()),
-      Value::CreateStringValueFromUTF16(token));
+      Value::CreateStringValue(token));
 }
 
 void ChromePrefsAccessTokenStore::SaveAccessToken(

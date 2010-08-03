@@ -104,7 +104,7 @@ bool ConfigurationPolicyProviderWin::Provide(
         if (GetRegistryPolicyString(name.c_str(), &string_value)) {
           store->Apply(
               current->policy_type,
-              Value::CreateStringValueFromUTF16(string_value));
+              Value::CreateStringValue(string_value));
         }
         break;
       case Value::TYPE_BOOLEAN:

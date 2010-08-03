@@ -287,7 +287,7 @@ bool ConfigurationPolicyPrefStore::ApplyPluginPolicy(PolicyType policy,
                                                      Value* value) {
   if (policy == kPolicyDisabledPlugins) {
     string16 plugin_list;
-    if (value->GetAsUTF16(&plugin_list)) {
+    if (value->GetAsString(&plugin_list)) {
       std::vector<string16> plugin_names;
       // Change commas into tabs so that we can change escaped
       // tabs back into commas, leaving non-escaped commas as tabs
@@ -304,7 +304,7 @@ bool ConfigurationPolicyPrefStore::ApplyPluginPolicy(PolicyType policy,
       for (std::vector<string16>::const_iterator i(plugin_names.begin());
            i != plugin_names.end(); ++i) {
         if (!i->empty()) {
-          list->Append(Value::CreateStringValueFromUTF16(*i));
+          list->Append(Value::CreateStringValue(*i));
           added_plugin = true;
         }
       }

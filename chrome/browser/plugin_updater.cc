@@ -173,7 +173,7 @@ void DisablePluginGroupsFromPrefs(Profile* profile) {
     for (ListValue::const_iterator current(plugin_blacklist->begin());
          current != end; ++current) {
       string16 plugin_name;
-      if ((*current)->GetAsUTF16(&plugin_name)) {
+      if ((*current)->GetAsString(&plugin_name)) {
         policy_disabled_plugins.insert(plugin_name);
       }
     }

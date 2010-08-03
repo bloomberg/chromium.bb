@@ -222,7 +222,7 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const Value* value) {
       continue;
     const StringValue* string_value = static_cast<const StringValue*>(*v);
     string16 string16_value;
-    if (!string_value->GetAsUTF16(&string16_value))
+    if (!string_value->GetAsString(&string16_value))
       continue;
     urls.insert(GURL(string16_value));
   }
@@ -311,7 +311,7 @@ void BrowsingHistoryHandler::ExtractSearchHistoryArguments(const Value* value,
         list_member->GetType() == Value::TYPE_STRING) {
       const StringValue* string_value =
         static_cast<const StringValue*>(list_member);
-      string_value->GetAsUTF16(query);
+      string_value->GetAsString(query);
     }
 
     // Get search month.
@@ -320,7 +320,7 @@ void BrowsingHistoryHandler::ExtractSearchHistoryArguments(const Value* value,
       const StringValue* string_value =
         static_cast<const StringValue*>(list_member);
       string16 string16_value;
-      string_value->GetAsUTF16(&string16_value);
+      string_value->GetAsString(&string16_value);
       base::StringToInt(string16_value, month);
     }
   }
