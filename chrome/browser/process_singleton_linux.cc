@@ -548,8 +548,7 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
     // Run the browser startup sequence again, with the command line of the
     // signalling process.
     FilePath current_dir_file_path(current_dir);
-    BrowserInit::ProcessCommandLine(parsed_command_line,
-                                    current_dir_file_path.ToWStringHack(),
+    BrowserInit::ProcessCommandLine(parsed_command_line, current_dir_file_path,
                                     false, profile, NULL);
   }
 

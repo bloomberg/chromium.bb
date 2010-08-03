@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/environment.h"
 #include "base/event_recorder.h"
+#include "base/file_path.h"
 #include "base/histogram.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
@@ -375,10 +376,11 @@ bool BrowserInit::InProcessStartup() {
   return in_startup;
 }
 
-bool BrowserInit::LaunchBrowser(
-    const CommandLine& command_line, Profile* profile,
-    const std::wstring& cur_dir, bool process_startup,
-    int* return_code) {
+bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
+                                Profile* profile,
+                                const FilePath& cur_dir,
+                                bool process_startup,
+                                int* return_code) {
   in_startup = process_startup;
   DCHECK(profile);
 
@@ -467,7 +469,7 @@ bool BrowserInit::LaunchBrowser(
 // LaunchWithProfile ----------------------------------------------------------
 
 BrowserInit::LaunchWithProfile::LaunchWithProfile(
-    const std::wstring& cur_dir,
+    const FilePath& cur_dir,
     const CommandLine& command_line)
         : cur_dir_(cur_dir),
           command_line_(command_line),
@@ -476,13 +478,16 @@ BrowserInit::LaunchWithProfile::LaunchWithProfile(
 }
 
 BrowserInit::LaunchWithProfile::LaunchWithProfile(
-    const std::wstring& cur_dir,
+    const FilePath& cur_dir,
     const CommandLine& command_line,
     BrowserInit* browser_init)
         : cur_dir_(cur_dir),
           command_line_(command_line),
           profile_(NULL),
           browser_init_(browser_init) {
+}
+
+BrowserInit::LaunchWithProfile::~LaunchWithProfile() {
 }
 
 bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
@@ -829,7 +834,6 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
 std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
     Profile* profile) {
   std::vector<GURL> urls;
-  FilePath cur_dir = FilePath::FromWStringHack(cur_dir_);
   const std::vector<CommandLine::StringType>& params = command_line_.args();
 
   for (size_t i = 0; i < params.size(); ++i) {
@@ -840,7 +844,7 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
           profile->GetTemplateURLModel()->GetDefaultSearchProvider();
       if (!default_provider || !default_provider->url()) {
         // No search provider available. Just treat this as regular URL.
-        urls.push_back(URLFixerUpper::FixupRelativeFile(cur_dir, param));
+        urls.push_back(URLFixerUpper::FixupRelativeFile(cur_dir_, param));
         continue;
       }
       const TemplateURLRef* search_url = default_provider->url();
@@ -851,7 +855,7 @@ std::vector<GURL> BrowserInit::LaunchWithProfile::GetURLsFromCommandLine(
           TemplateURLRef::NO_SUGGESTIONS_AVAILABLE, std::wstring())));
     } else {
       // This will create a file URL or a regular URL.
-      GURL url(URLFixerUpper::FixupRelativeFile(cur_dir, param));
+      GURL url(URLFixerUpper::FixupRelativeFile(cur_dir_, param));
       // Exclude dangerous schemes.
       if (url.is_valid()) {
         ChildProcessSecurityPolicy *policy =
@@ -920,7 +924,7 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
 }
 
 bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
-                                     const std::wstring& cur_dir,
+                                     const FilePath& cur_dir,
                                      bool process_startup,
                                      Profile* profile,
                                      int* return_code,

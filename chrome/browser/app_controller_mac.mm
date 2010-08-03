@@ -8,6 +8,7 @@
 #include "app/l10n_util_mac.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/mac_util.h"
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
@@ -903,7 +904,7 @@ void RecordLastRunAppBundlePath() {
   }
 
   CommandLine dummy(CommandLine::ARGUMENTS_ONLY);
-  BrowserInit::LaunchWithProfile launch(std::wstring(), dummy);
+  BrowserInit::LaunchWithProfile launch(FilePath(), dummy);
   launch.OpenURLsInBrowser(browser, false, urls);
 }
 

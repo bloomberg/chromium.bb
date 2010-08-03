@@ -14,6 +14,7 @@
 #include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/field_trial.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/scoped_nsautorelease_pool.h"
@@ -1266,7 +1267,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   } else {
     // We are in regular browser boot sequence. Open initial stabs and enter
     // the main message loop.
-    if (browser_init.Start(parsed_command_line, std::wstring(), profile,
+    if (browser_init.Start(parsed_command_line, FilePath(), profile,
                            &result_code)) {
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
       // Initialize autoupdate timer. Timer callback costs basically nothing

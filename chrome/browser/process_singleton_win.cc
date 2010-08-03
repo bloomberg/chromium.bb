@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "app/win_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_handle.h"
@@ -251,8 +252,8 @@ LRESULT ProcessSingleton::OnCopyData(HWND hwnd, const COPYDATASTRUCT* cds) {
     }
 
     // Get current directory.
-    const std::wstring cur_dir =
-      msg.substr(first_null + 1, second_null - first_null);
+    const FilePath cur_dir(msg.substr(first_null + 1,
+                                      second_null - first_null));
 
     const std::wstring::size_type third_null =
         msg.find_first_of(L'\0', second_null + 1);
