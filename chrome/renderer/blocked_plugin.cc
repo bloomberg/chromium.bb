@@ -78,8 +78,8 @@ void BlockedPlugin::LoadPlugin() {
   WebPlugin* new_plugin =
       render_view_->CreatePluginInternal(frame_,
                                          plugin_params_,
-                                         std::string(),
-                                         FilePath());
+                                         NULL,
+                                         std::string());
   if (new_plugin && new_plugin->initialize(container)) {
     container->setPlugin(new_plugin);
     plugin_->ReplayReceivedData(new_plugin);

@@ -366,7 +366,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFont, OnPreCacheFont)
 #endif
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetPlugins, OnGetPlugins)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginPath, OnGetPluginPath)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_GetPluginInfo, OnGetPluginInfo)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DownloadUrl, OnDownloadUrl)
       IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_ContextMenu,
                                   OnReceiveContextMenuMsg(msg))
@@ -692,13 +692,22 @@ void ResourceMessageFilter::OnGetPluginsOnFileThread(
       NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
-void ResourceMessageFilter::OnGetPluginPath(const GURL& url,
+void ResourceMessageFilter::OnGetPluginInfo(const GURL& url,
                                             const GURL& policy_url,
                                             const std::string& mime_type,
-                                            FilePath* filename,
-                                            std::string* url_mime_type) {
-  *filename = plugin_service_->GetPluginPath(
-      url, policy_url, mime_type, url_mime_type);
+                                            bool* found,
+                                            WebPluginInfo* info,
+                                            std::string* actual_mime_type) {
+  bool allow_wildcard = true;
+  *found = NPAPI::PluginList::Singleton()->GetPluginInfo(url,
+                                                         mime_type,
+                                                         allow_wildcard,
+                                                         info,
+                                                         actual_mime_type);
+  if (*found) {
+    info->enabled = info->enabled &&
+        plugin_service_->PrivatePluginAllowedForURL(info->path, policy_url);
+  }
 }
 
 void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,

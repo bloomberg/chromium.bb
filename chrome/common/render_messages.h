@@ -1307,6 +1307,7 @@ struct ParamTraits<WebPluginInfo> {
     WriteParam(m, p.version);
     WriteParam(m, p.desc);
     WriteParam(m, p.mime_types);
+    WriteParam(m, p.enabled);
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
     return
@@ -1314,7 +1315,8 @@ struct ParamTraits<WebPluginInfo> {
       ReadParam(m, iter, &r->path) &&
       ReadParam(m, iter, &r->version) &&
       ReadParam(m, iter, &r->desc) &&
-      ReadParam(m, iter, &r->mime_types);
+      ReadParam(m, iter, &r->mime_types) &&
+      ReadParam(m, iter, &r->enabled);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -1328,6 +1330,8 @@ struct ParamTraits<WebPluginInfo> {
     LogParam(p.desc, l);
     l->append(L", ");
     LogParam(p.mime_types, l);
+    l->append(L", ");
+    LogParam(p.enabled, l);
     l->append(L")");
   }
 };

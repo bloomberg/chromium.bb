@@ -2199,23 +2199,30 @@ void RenderView::runModal() {
 
 WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                     const WebPluginParams& params) {
-  FilePath path;
+  bool found = false;
+  WebPluginInfo info;
+  GURL url(params.url);
+  std::string mime_type(params.mimeType.utf8());
   std::string actual_mime_type;
-  render_thread_->Send(new ViewHostMsg_GetPluginPath(
-      params.url, frame->top()->url(), params.mimeType.utf8(), &path,
+  Send(new ViewHostMsg_GetPluginInfo(url,
+                                     frame->top()->url(),
+                                     mime_type,
+                                     &found,
+                                     &info,
       &actual_mime_type));
-  if (path.value().empty())
+
+  if (!found || !info.enabled)
     return NULL;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableClickToPlay)) {
     if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS) &&
-        path.value() != kDefaultPluginLibraryName) {
+      info.path.value() != kDefaultPluginLibraryName) {
       didNotAllowPlugins(frame);
       return CreatePluginPlaceholder(frame, params);
     }
   }
-  return CreatePluginInternal(frame, params, actual_mime_type, path);
+  return CreatePluginInternal(frame, params, &info, actual_mime_type);
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -3674,23 +3681,29 @@ void RenderView::ClearBlockedContentSettings() {
 
 WebPlugin* RenderView::CreatePluginInternal(WebFrame* frame,
                                             const WebPluginParams& params,
-                                            const std::string& mime_type,
-                                            const FilePath& plugin_path) {
-  FilePath path(plugin_path);
+                                            WebPluginInfo* plugin_info,
+                                            const std::string& mime_type) {
   std::string actual_mime_type(mime_type);
-  if (path.value().empty()) {
-    render_thread_->Send(new ViewHostMsg_GetPluginPath(
-        params.url, frame->top()->url(), params.mimeType.utf8(), &path,
-        &actual_mime_type));
+  WebPluginInfo info;
+  if (plugin_info != NULL) {
+    info = *plugin_info;
+  } else {
+    bool found;
+    std::string actual_mime_type(mime_type);
+    Send(new ViewHostMsg_GetPluginInfo(
+        params.url, frame->top()->url(), params.mimeType.utf8(), &found,
+        &info, &actual_mime_type));
+    if (!found)
+      info.enabled = false;
   }
-  if (path.value().empty())
+  if (!info.enabled)
     return NULL;
 
   if (actual_mime_type.empty())
     actual_mime_type = params.mimeType.utf8();
 
   scoped_refptr<pepper::PluginModule> pepper_module =
-      PepperPluginRegistry::GetInstance()->GetModule(path);
+      PepperPluginRegistry::GetInstance()->GetModule(info.path);
   if (pepper_module) {
     WebPlugin* plugin = new pepper::WebPluginImpl(pepper_module, params,
                                                   pepper_delegate_.AsWeakPtr());
@@ -3702,14 +3715,14 @@ WebPlugin* RenderView::CreatePluginInternal(WebFrame* frame,
       // hardcode this for the PDF plugin path.
       FilePath pdf_path;
       PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-      if (path == pdf_path)
+      if (info.path == pdf_path)
         Send(new ViewHostMsg_SetDisplayingPDFContent(routing_id_));
     }
     return plugin;
   }
 
-  return new webkit_glue::WebPluginImpl(frame, params, path, actual_mime_type,
-                                        AsWeakPtr());
+  return new webkit_glue::WebPluginImpl(frame, params, info.path,
+                                        actual_mime_type, AsWeakPtr());
 }
 
 WebPlugin* RenderView::CreatePluginPlaceholder(WebFrame* frame,

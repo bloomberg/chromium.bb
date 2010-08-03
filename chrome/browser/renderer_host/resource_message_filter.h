@@ -170,10 +170,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 #endif
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
   void OnGetPluginsOnFileThread(bool refresh, IPC::Message* reply_msg);
-  void OnGetPluginPath(const GURL& url,
+  void OnGetPluginInfo(const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,
-                       FilePath* filename,
+                       bool* found,
+                       WebPluginInfo* info,
                        std::string* actual_mime_type);
   void OnOpenChannelToPlugin(const GURL& url,
                              const std::string& mime_type,

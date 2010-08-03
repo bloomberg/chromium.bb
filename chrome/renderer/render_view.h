@@ -275,8 +275,8 @@ class RenderView : public RenderWidget,
   WebKit::WebPlugin* CreatePluginInternal(
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params,
-      const std::string& mime_type,
-      const FilePath& plugin_path);
+      WebPluginInfo* plugin_info,
+      const std::string& mime_type);
 
   // Asks the browser for the CPBrowsingContext associated with this renderer.
   // This is an opaque identifier associated with the renderer for sending

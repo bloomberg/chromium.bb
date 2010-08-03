@@ -83,13 +83,9 @@ class PluginService
                            const std::wstring& locale,
                            IPC::Message* reply_msg);
 
-  // Get the path to the plugin specified.  policy_url is the URL of the page
-  // requesting the plugin, so we can verify whether the plugin is allowed
-  // on that page.
-  FilePath GetPluginPath(const GURL& url,
-                         const GURL& policy_url,
-                         const std::string& mime_type,
-                         std::string* actual_mime_type);
+  // Returns true if the given plugin is allowed to be used by a page with
+  // the given URL.
+  bool PrivatePluginAllowedForURL(const FilePath& plugin_path, const GURL& url);
 
   // The UI thread's message loop
   MessageLoop* main_message_loop() { return main_message_loop_; }
@@ -114,10 +110,6 @@ class PluginService
   // NotificationObserver implementation
   virtual void Observe(NotificationType type, const NotificationSource& source,
                        const NotificationDetails& details);
-
-  // Returns true if the given plugin is allowed to be used by a page with
-  // the given URL.
-  bool PluginAllowedForURL(const FilePath& plugin_path, const GURL& url);
 
   void RegisterPepperPlugins();
 

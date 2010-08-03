@@ -1242,14 +1242,15 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               bool /* refresh*/,
                               std::vector<WebPluginInfo> /* plugins */)
 
-  // Returns a path to a plugin for the given url and mime type.  If there's
-  // no plugin, an empty string is returned.
-  IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_GetPluginPath,
+  // Return information about a plugin for the given URL and MIME type. If there
+  // is no matching plugin, |found| is set to false.
+  IPC_SYNC_MESSAGE_CONTROL3_3(ViewHostMsg_GetPluginInfo,
                               GURL /* url */,
                               GURL /* policy_url */,
                               std::string /* mime_type */,
-                              FilePath /* filename */,
-                              std::string /* actual mime type for url */)
+                              bool /* found */,
+                              WebPluginInfo /* plugin info */,
+                              std::string /* actual_mime_type */)
 
   // Requests spellcheck for a word.
   IPC_SYNC_MESSAGE_ROUTED2_2(ViewHostMsg_SpellCheck,
