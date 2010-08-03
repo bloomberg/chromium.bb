@@ -3406,6 +3406,22 @@
    fun:sqlite3EndTable
 }
 {
+   bug_47331_part_3
+   Memcheck:Leak
+   fun:malloc
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   fun:sqlite3_malloc
+   fun:pcache1ResizeHash
+   fun:pcache1Fetch
+   fun:sqlite3PcacheFetch
+   fun:sqlite3PagerAcquire2
+   fun:sqlite3PagerAcquire
+   fun:btreeGetPage
+}
+{
    bug_47950
    Memcheck:Leak
    fun:_Znw*
