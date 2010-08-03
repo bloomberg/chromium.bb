@@ -15,14 +15,19 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_piece.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/weak_ptr.h"
 #include "grit/webkit_chromium_resources.h"
+#include "net/base/escape.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
@@ -387,6 +392,51 @@ bool SetCurrentDirectoryForFileURL(const WebKit::WebURL& fileUrl) {
   FilePath localPath;
   return net::FileURLToFilePath(fileUrl, &localPath)
       && file_util::SetCurrentDirectory(localPath.DirName());
+}
+
+int64 GetCurrentTimeInMillisecond() {
+  return base::TimeTicks::Now().ToInternalValue()
+      / base::Time::kMicrosecondsPerMillisecond;
+}
+
+std::string EscapePath(const std::string& path) {
+  return ::EscapePath(path);
+}
+
+std::string MakeURLErrorDescription(const WebKit::WebURLError& error) {
+  std::string domain = error.domain.utf8();
+  int code = error.reason;
+
+  if (domain == net::kErrorDomain) {
+    domain = "NSURLErrorDomain";
+    switch (error.reason) {
+    case net::ERR_ABORTED:
+      code = -999;
+      break;
+    case net::ERR_UNSAFE_PORT:
+      // Our unsafe port checking happens at the network stack level, but we
+      // make this translation here to match the behavior of stock WebKit.
+      domain = "WebKitErrorDomain";
+      code = 103;
+      break;
+    case net::ERR_ADDRESS_INVALID:
+    case net::ERR_ADDRESS_UNREACHABLE:
+      code = -1004;
+      break;
+    }
+  } else
+    DLOG(WARNING) << "Unknown error domain";
+
+  return StringPrintf("<NSError domain %s, code %d, failing URL \"%s\">",
+      domain.c_str(), code, error.unreachableURL.spec().data());
+}
+
+WebKit::WebURLError CreateCancelledError(const WebKit::WebURLRequest& request) {
+  WebKit::WebURLError error;
+  error.domain = WebKit::WebString::fromUTF8(net::kErrorDomain);
+  error.reason = net::ERR_ABORTED;
+  error.unreachableURL = request.url();
+  return error;
 }
 
 // Bridge for SimpleDatabaseSystem

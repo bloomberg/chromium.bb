@@ -23,8 +23,10 @@ class WebPlugin;
 class WebString;
 class WebThemeEngine;
 class WebURL;
+class WebURLRequest;
 class WebURLResponse;
 struct WebPluginParams;
+struct WebURLError;
 }
 
 // This package provides functions used by DumpRenderTree/chromium.
@@ -117,6 +119,17 @@ WebKit::WebURL RewriteLayoutTestsURL(const std::string& utf8_url);
 
 // Set the directory of specified file: URL as the current working directory.
 bool SetCurrentDirectoryForFileURL(const WebKit::WebURL& fileUrl);
+
+// -------- Time
+int64 GetCurrentTimeInMillisecond();
+
+// -------- Net
+// A wrapper of net::EscapePath().
+std::string EscapePath(const std::string& path);
+// Make an error description for layout tests.
+std::string MakeURLErrorDescription(const WebKit::WebURLError& error);
+// Creates WebURLError for an aborted request.
+WebKit::WebURLError CreateCancelledError(const WebKit::WebURLRequest& request);
 
 // - Database
 void SetDatabaseQuota(int quota);
