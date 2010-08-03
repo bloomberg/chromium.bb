@@ -29,6 +29,22 @@ class ExtensionsTest(pyauto.PyUITest):
   extensions_dir_ = 'extensions'  # The directory of extensions
   urls_file_ = 'urls.txt'         # The file which holds a list of urls to visit
 
+  def Debug(self):
+    """Test method for experimentation.
+
+    This method is not run automatically.
+    """
+    while True:
+      raw_input('Interact with the browser and hit <enter> to dump history.. ')
+      print '*' * 20
+      extensions = self.GetExtensionsInfo()
+      import pprint
+      pp = pprint.PrettyPrinter(indent=2)
+      pp.pprint(extensions)
+
+  def _GetInstalledExtensionIds(self):
+    return [extension['id'] for extension in self.GetExtensionsInfo()]
+
   def _ReturnCrashingExtensions(self, extensions, group_size, top_urls):
     """Install the given extensions in groups of group_size and return the
        group of extensions that crashes (if any).
@@ -44,6 +60,7 @@ class ExtensionsTest(pyauto.PyUITest):
     curr_extension = 0
     num_extensions = len(extensions)
     self.RestartBrowser()
+    orig_extension_ids = self._GetInstalledExtensionIds()
 
     while curr_extension < num_extensions:
       logging.debug('New group of %d extensions.' % group_size)
@@ -68,6 +85,12 @@ class ExtensionsTest(pyauto.PyUITest):
       else:
         if not num_browser_windows:
           return _LogAndReturnCrashing()
+        else:
+          # Uninstall all extensions that aren't installed by default.
+          new_extension_ids = [id for id in self._GetInstalledExtensionIds()
+                               if id not in orig_extension_ids]
+          for extension_id in new_extension_ids:
+            self.UninstallExtensionById(extension_id)
 
       curr_extension = group_end
 

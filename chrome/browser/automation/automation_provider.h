@@ -507,6 +507,18 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                     DictionaryValue* args,
                     IPC::Message* reply_message);
 
+  // Get info about all intalled extensions.
+  // Uses the JSON interface for input/output.
+  void GetExtensionsInfo(Browser* browser,
+                         DictionaryValue* args,
+                         IPC::Message* reply_message);
+
+  // Uninstalls the extension with the given id.
+  // Uses the JSON interface for input/output.
+  void UninstallExtensionById(Browser* browser,
+                              DictionaryValue* args,
+                              IPC::Message* reply_message);
+
   // Returns information about translation for a given tab. Includes
   // information about the translate bar if it is showing.
   void GetTranslateInfo(Browser* browser,

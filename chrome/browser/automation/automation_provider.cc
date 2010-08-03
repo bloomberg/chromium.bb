@@ -2913,6 +2913,61 @@ void AutomationProvider::GetThemeInfo(Browser* browser,
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
+// Sample json input: { "command": "GetExtensionsInfo" }
+// See GetExtensionsInfo() in chrome/test/pyautolib/pyauto.py for sample json
+// output.
+void AutomationProvider::GetExtensionsInfo(Browser* browser,
+                                           DictionaryValue* args,
+                                           IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  ExtensionsService* service = profile()->GetExtensionsService();
+  if (!service) {
+    reply.SendError("No extensions service.");
+  }
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  ListValue* extensions_values = new ListValue;
+  const ExtensionList* extensions = service->extensions();
+  for (ExtensionList::const_iterator it = extensions->begin();
+       it != extensions->end(); ++it) {
+    const Extension* extension = *it;
+    DictionaryValue* extension_value = new DictionaryValue;
+    extension_value->SetString(L"id", extension->id());
+    extension_value->SetString(L"version", extension->VersionString());
+    extension_value->SetString(L"name", extension->name());
+    extension_value->SetString(L"public_key", extension->public_key());
+    extension_value->SetString(L"description", extension->description());
+    extension_value->SetString(L"background_url",
+                               extension->background_url().spec());
+    extension_value->SetString(L"options_url",
+                               extension->options_url().spec());
+    extensions_values->Append(extension_value);
+  }
+  return_value->Set(L"extensions", extensions_values);
+  reply.SendSuccess(return_value.get());
+}
+
+// See UninstallExtensionById() in chrome/test/pyautolib/pyauto.py for sample
+// json input.
+// Sample json output: {}
+void AutomationProvider::UninstallExtensionById(Browser* browser,
+                                                DictionaryValue* args,
+                                                IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+  std::string id;
+  if (!args->GetString(L"id", &id)) {
+    reply.SendError("Must include string id.");
+    return;
+  }
+  ExtensionsService* service = profile()->GetExtensionsService();
+  if (!service) {
+    reply.SendError("No extensions service.");
+    return;
+  }
+  ExtensionUnloadNotificationObserver observer;
+  service->UninstallExtension(id, false);
+  reply.SendSuccess(NULL);
+}
+
 // Sample json input:
 //    { "command": "GetAutoFillProfile" }
 // Refer to GetAutoFillProfile() in chrome/test/pyautolib/pyauto.py for sample
@@ -3242,6 +3297,11 @@ void AutomationProvider::SendJSONRequest(int handle,
 
   // SetTheme() implemented using InstallExtension().
   handler_map["GetThemeInfo"] = &AutomationProvider::GetThemeInfo;
+
+  // InstallExtension() present in pyauto.py.
+  handler_map["GetExtensionsInfo"] = &AutomationProvider::GetExtensionsInfo;
+  handler_map["UninstallExtensionById"] =
+      &AutomationProvider::UninstallExtensionById;
 
   handler_map["SelectTranslateOption"] =
       &AutomationProvider::SelectTranslateOption;

@@ -720,6 +720,46 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
+  def GetExtensionsInfo(self):
+    """Returns information about all installed extensions.
+
+    Returns:
+      A list of dictionaries representing each of the installed extensions.
+      Example:
+      [ { u'background_url': u'',
+          u'description': u'Bookmark Manager',
+          u'id': u'eemcgdkfndhakfknompkggombfjjjeno',
+          u'name': u'Bookmark Manager',
+          u'options_url': u'',
+          u'version': u'0.1' },
+        { u'background_url': u'chrome-extension://\
+                               lkdedmbpkaiahjjibfdmpoefffnbdkli/\
+                               background.html',
+          u'description': u'Extension which lets you read your Facebook news \
+                            feed and wall. You can also post status updates.',
+          u'id': u'lkdedmbpkaiahjjibfdmpoefffnbdkli',
+          u'name': u'Facebook for Google Chrome',
+          u'options_url': u'',
+          u'version': u'2.0.9' } ]
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'GetExtensionsInfo'
+    }
+    return self._GetResultFromJSONRequest(cmd_dict)['extensions']
+
+  def UninstallExtensionById(self, id):
+    """Uninstall the extension with the given id.
+
+    Args:
+      id: The string id of the extension. It can be retrieved through the
+          GetExtensionsInfo call above.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'UninstallExtensionById',
+      'id': id
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
+
   def SelectTranslateOption(self, option, tab_index=0, window_index=0):
     """Selects one of the options in the drop-down menu for the translate bar.
 
