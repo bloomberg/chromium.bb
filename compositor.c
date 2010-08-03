@@ -38,7 +38,7 @@
 #include <EGL/eglext.h>
 
 #include "wayland.h"
-#include "wayland-protocol.h"
+#include "wayland-server-protocol.h"
 #include "cairo-util.h"
 #include "compositor.h"
 
@@ -425,8 +425,8 @@ surface_destroy(struct wl_client *client,
 static void
 surface_attach(struct wl_client *client,
 	       struct wl_surface *surface, uint32_t name, 
-	       uint32_t width, uint32_t height, uint32_t stride,
-	       struct wl_object *visual)
+	       int32_t width, int32_t height, uint32_t stride,
+	       struct wl_visual *visual)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
@@ -441,11 +441,11 @@ surface_attach(struct wl_client *client,
 	es->width = width;
 	es->height = height;
 
-	if (visual == &ec->argb_visual.base)
+	if (visual == &ec->argb_visual)
 		es->visual = &ec->argb_visual;
-	else if (visual == &ec->premultiplied_argb_visual.base)
+	else if (visual == &ec->premultiplied_argb_visual)
 		es->visual = &ec->premultiplied_argb_visual;
-	else if (visual == &ec->rgb_visual.base)
+	else if (visual == &ec->rgb_visual)
 		es->visual = &ec->rgb_visual;
 	else
 		/* FIXME: Smack client with an exception event */;
@@ -559,13 +559,13 @@ wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
 	    (!surface || device->keyboard_focus->base.client != surface->base.client))
 		wl_surface_post_event(&device->keyboard_focus->base,
 				      &device->base,
-				      WL_INPUT_KEYBOARD_FOCUS,
+				      WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				      time, NULL, &device->keys);
 
 	if (surface)
 		wl_surface_post_event(&surface->base,
 				      &device->base,
-				      WL_INPUT_KEYBOARD_FOCUS,
+				      WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				      time, &surface->base, &device->keys);
 
 	device->keyboard_focus = surface;
@@ -583,12 +583,12 @@ wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
 	    (!surface || device->pointer_focus->base.client != surface->base.client))
 		wl_surface_post_event(&device->pointer_focus->base,
 				      &device->base,
-				      WL_INPUT_POINTER_FOCUS,
+				      WL_INPUT_DEVICE_POINTER_FOCUS,
 				      time, NULL);
 	if (surface)
 		wl_surface_post_event(&surface->base,
 				      &device->base,
-				      WL_INPUT_POINTER_FOCUS,
+				      WL_INPUT_DEVICE_POINTER_FOCUS,
 				      time, &surface->base);
 
 	device->pointer_focus = surface;
@@ -644,7 +644,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 
 	if (es)
 		wl_surface_post_event(&es->base, &device->base,
-				      WL_INPUT_MOTION, time, x, y, sx, sy);
+				      WL_INPUT_DEVICE_MOTION, time, x, y, sx, sy);
 
 	wlsc_matrix_init(&device->sprite->matrix);
 	wlsc_matrix_scale(&device->sprite->matrix, 64, 64, 1);
@@ -675,7 +675,7 @@ notify_button(struct wlsc_input_device *device,
 
 		/* FIXME: Swallow click on raise? */
 		wl_surface_post_event(&surface->base, &device->base,
-				      WL_INPUT_BUTTON, time, button, state);
+				      WL_INPUT_DEVICE_BUTTON, time, button, state);
 
 		wlsc_compositor_schedule_repaint(compositor);
 	}
@@ -730,7 +730,7 @@ notify_key(struct wlsc_input_device *device,
 	if (device->keyboard_focus != NULL)
 		wl_surface_post_event(&device->keyboard_focus->base,
 				      &device->base,
-				      WL_INPUT_KEY, time, key, state);
+				      WL_INPUT_DEVICE_KEY, time, key, state);
 }
 
 static uint32_t

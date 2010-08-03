@@ -29,6 +29,7 @@ extern "C" {
 
 #include <stdint.h>
 #include "wayland-util.h"
+#include "wayland-server-protocol.h"
 
 enum {
 	WL_EVENT_READABLE = 0x01,
@@ -97,27 +98,6 @@ struct wl_surface {
 	struct wl_object base;
 	struct wl_client *client;
 	struct wl_list link;
-};
-
-struct wl_compositor_interface {
-	void (*create_surface)(struct wl_client *client,
-			       struct wl_compositor *compositor, uint32_t id);
-	void (*commit)(struct wl_client *client,
-		       struct wl_compositor *compositor, uint32_t key);
-};
-
-struct wl_surface_interface {
-	void (*destroy)(struct wl_client *client,
-			struct wl_surface *surface);
-	void (*attach)(struct wl_client *client,
-		       struct wl_surface *surface, uint32_t name, 
-		       uint32_t width, uint32_t height, uint32_t stride,
-		       struct wl_object *visual);
-	void (*map)(struct wl_client *client,
-		    struct wl_surface *surface,
-		    int32_t x, int32_t y, int32_t width, int32_t height);
-	void (*damage)(struct wl_client *client, struct wl_surface *surface,
-		       int32_t x, int32_t y, int32_t width, int32_t height);
 };
 
 void

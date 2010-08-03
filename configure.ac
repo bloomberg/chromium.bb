@@ -14,5 +14,16 @@ if test $CC = gcc; then
 fi
 AC_SUBST(GCC_CFLAGS)
 
+EXPAT_LIB=""
+AC_ARG_WITH(expat, [  --with-expat=<dir>      Use expat from here],
+		   [ expat=$withval
+		     CPPFLAGS="$CPPFLAGS -I$withval/include"
+		     LDFLAGS="$LDFLAGS -L$withval/lib" ] )
+AC_CHECK_HEADERS(expat.h, [AC_DEFINE(HAVE_EXPAT_H)], 
+		 [AC_MSG_ERROR([Can't find expat.h. Please install expat.])])
+AC_CHECK_LIB(expat, XML_ParserCreate, [EXPAT_LIBS="-lexpat"],
+	     [AC_MSG_ERROR([Can't find expat library. Please install expat.])])
+AC_SUBST(EXPAT_LIBS)
+
 AC_CONFIG_FILES([config.mk wayland-server.pc wayland.pc])
 AC_OUTPUT

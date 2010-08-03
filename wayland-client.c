@@ -33,7 +33,7 @@
 #include <assert.h>
 #include <sys/poll.h>
 
-#include "wayland-protocol.h"
+#include "wayland-client-protocol.h"
 #include "connection.h"
 #include "wayland-util.h"
 #include "wayland-client.h"
@@ -333,19 +333,6 @@ display_handle_range(void *data,
 {
 	display->next_range = range;
 }
-
-struct wl_display_listener {
-	void (*invalid_object)(void *data,
-			       struct wl_display *display, uint32_t id);
-	void (*invalid_method)(void *data, struct wl_display *display,
-			       uint32_t id, uint32_t opcode);
-	void (*no_memory)(void *data,
-			  struct wl_display *display);
-	void (*global)(void *data, struct wl_display *display,
-		       uint32_t id, const char *interface, uint32_t version);
-	void (*range)(void *data,
-		      struct wl_display *display, uint32_t range);
-};
 
 static const struct wl_display_listener display_listener = {
 	display_handle_invalid_object,

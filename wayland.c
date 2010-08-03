@@ -34,8 +34,8 @@
 #include <assert.h>
 #include <ffi.h>
 
-#include "wayland-protocol.h"
 #include "wayland.h"
+#include "wayland-server-protocol.h"
 #include "connection.h"
 
 struct wl_client {

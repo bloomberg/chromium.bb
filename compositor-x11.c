@@ -38,7 +38,6 @@
 #include <EGL/eglext.h>
 
 #include "wayland.h"
-#include "wayland-protocol.h"
 #include "compositor.h"
 
 #define ARRAY_SIZE(array) (sizeof(array) / sizeof(array[0]))

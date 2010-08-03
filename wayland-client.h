@@ -24,15 +24,11 @@
 #define _WAYLAND_CLIENT_H
 
 #include "wayland-util.h"
+#include "wayland-client-protocol.h"
 
 #ifdef  __cplusplus
 extern "C" {
 #endif
-
-struct wl_object;
-struct wl_display;
-struct wl_surface;
-struct wl_visual;
 
 #define WL_DISPLAY_READABLE 0x01
 #define WL_DISPLAY_WRITABLE 0x02
@@ -70,18 +66,6 @@ wl_display_get_premultiplied_argb_visual(struct wl_display *display);
 struct wl_visual *
 wl_display_get_rgb_visual(struct wl_display *display);
 
-struct wl_compositor_listener {
-	void (*device)(void *data,
-		       struct wl_compositor *compositor,
-		       const char *device);
-	void (*acknowledge)(void *data,
-			    struct wl_compositor *compositor,
-			    uint32_t key, uint32_t frame);
-	void (*frame)(void *data,
-		      struct wl_compositor *compositor,
-		      uint32_t frame, uint32_t timestamp);
-};
-
 struct wl_surface *
 wl_compositor_create_surface(struct wl_compositor *compositor);
 void
@@ -104,42 +88,10 @@ void wl_surface_damage(struct wl_surface *surface,
 void wl_surface_set_user_data(struct wl_surface *surface, void *user_data);
 void *wl_surface_get_user_data(struct wl_surface *surface);
 
-struct wl_output;
-struct wl_output_listener {
-	void (*geometry)(void *data,
-			 struct wl_output *output,
-			 int32_t width, int32_t height);
-};
-
 int
 wl_output_add_listener(struct wl_output *output,
 		       const struct wl_output_listener *listener,
 		       void *data);
-
-struct wl_input_device;
-struct wl_input_device_listener {
-	void (*motion)(void *data,
-		       struct wl_input_device *input_device,
-		       uint32_t time,
-		       int32_t x, int32_t y, int32_t sx, int32_t sy);
-	void (*button)(void *data,
-		       struct wl_input_device *input_device,
-		       uint32_t time,
-		       uint32_t button, uint32_t state);
-	void (*key)(void *data,
-		    struct wl_input_device *input_device,
-		    uint32_t time,
-		    uint32_t button, uint32_t state);
-	void (*pointer_focus)(void *data,
-			      struct wl_input_device *input_device,
-			      uint32_t time,
-			      struct wl_surface *surface);
-	void (*keyboard_focus)(void *data,
-			       struct wl_input_device *input_device,
-			       uint32_t time,
-			       struct wl_surface *surface,
-			       struct wl_array *keys);
-};
 
 int
 wl_input_device_add_listener(struct wl_input_device *input_device,

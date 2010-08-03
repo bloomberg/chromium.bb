@@ -3,22 +3,34 @@ include config.mk
 subdirs = clients spec
 libs = libwayland-server.so libwayland.so
 
-all : $(libs) compositor subdirs-all
+all : $(libs) compositor subdirs-all scanner
 
 libwayland-server.so :				\
+	wayland-protocol.o			\
 	wayland.o				\
 	event-loop.o				\
 	connection.o				\
 	wayland-util.o				\
-	wayland-hash.o				\
-	wayland-protocol.o
+	wayland-hash.o
 
 libwayland.so :					\
+	wayland-protocol.o			\
 	wayland-client.o			\
 	connection.o				\
 	wayland-util.o				\
-	wayland-hash.o				\
-	wayland-protocol.o
+	wayland-hash.o
+
+wayland.o : wayland-server-protocol.h
+wayland-client.o : wayland-client-protocol.h
+
+wayland-protocol.c : protocol.xml scanner
+	./scanner code < $< > $@
+
+wayland-server-protocol.h : protocol.xml scanner
+	./scanner server-header < $< > $@
+
+wayland-client-protocol.h : protocol.xml scanner
+	./scanner client-header < $< > $@
 
 $(libs) : CFLAGS += -fPIC $(FFI_CFLAGS)
 $(libs) : LDLIBS += $(FFI_LIBS)
@@ -35,6 +47,12 @@ compositor :					\
 compositor : CFLAGS += $(COMPOSITOR_CFLAGS)
 compositor : LDLIBS += ./libwayland-server.so $(COMPOSITOR_LIBS) -rdynamic -lrt -lEGL -lm
 
+scanner :					\
+	scanner.o				\
+	wayland-util.o
+
+scanner : LDLIBS += $(EXPAT_LIBS)
+
 subdirs-all subdirs-clean :
 	for f in $(subdirs); do $(MAKE) -C $$f $(@:subdirs-%=%); done
 
@@ -46,7 +64,9 @@ install : $(libs) compositor
 	install 70-wayland.rules ${udev_rules_dir}
 
 clean : subdirs-clean
-	rm -f compositor *.o *.so
+	rm -f compositor scanner *.o *.so
+	rm -f wayland-protocol.c \
+		wayland-server-protocol.h wayland-client-protocol.h
 
 config.mk : config.mk.in
 	./config.status

@@ -34,7 +34,6 @@
 #include <EGL/eglext.h>
 
 #include "wayland.h"
-#include "wayland-protocol.h"
 #include "compositor.h"
 
 struct drm_compositor {

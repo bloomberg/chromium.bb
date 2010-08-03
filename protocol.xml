@@ -1,0 +1,137 @@
+<protocol>
+
+  <interface name="display" version="1">
+    <event name="invalid_object">
+      <arg name="object_id" type="uint"/>
+    </event>
+
+    <event name="invalid_method">
+      <arg name="object_id" type="uint"/>
+      <arg name="opcode" type="uint"/>
+    </event>
+
+    <event name="no_memory"/>
+
+    <event name="global">
+      <arg name="id" type="new_id"/>
+      <arg name="name" type="string"/>
+      <arg name="version" type="uint"/>
+    </event>
+
+    <event name="range">
+      <arg name="base" type="uint"/>
+    </event>
+  </interface>
+
+  <interface name="compositor" version="1">
+    <request name="create_surface">
+      <arg name="id" type="new_id"/>
+    </request>
+
+    <request name="commit">
+      <arg name="key" type="uint"/>
+    </request>
+
+    <event name="device">
+      <arg name="name" type="string"/>
+    </event>
+
+    <event name="acknowledge">
+      <arg name="key" type="uint"/>
+      <arg name="frame" type="uint"/>
+    </event>
+
+    <event name="frame">
+      <arg name="frame" type="uint"/>
+      <arg name="timestamp" type="uint"/>
+    </event>
+  </interface>
+
+  <interface name="shell" version="1">
+    <request name="move">
+      <arg name="time" type="uint"/>
+    </request>
+
+    <request name="resize">
+      <arg name="time" type="uint"/>
+      <arg name="edges" type="uint"/>
+    </request>
+
+    <event name="configure">
+      <arg name="surface" type="surface"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </event>
+  </interface>
+
+  <interface name="surface" version="1">
+    <request name="destroy"/>
+
+    <request name="attach">
+      <arg name="name" type="uint"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="stride" type="uint"/>
+      <arg name="visual" type="visual"/>
+    </request>
+
+    <request name="map">
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+
+    <request name="damage">
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </request>
+  </interface>
+
+  <interface name="input_device" version="1">
+    <event name="motion">
+      <arg name="time" type="uint"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="surface_x" type="int"/>
+      <arg name="surface_y" type="int"/>
+    </event>
+
+    <event name="button">
+      <arg name="time" type="uint"/>
+      <arg name="button" type="uint"/>
+      <arg name="state" type="uint"/>
+    </event>
+
+    <event name="key">
+      <arg name="time" type="uint"/>
+      <arg name="key" type="uint"/>
+      <arg name="state" type="uint"/>
+    </event>
+
+    <event name="pointer_focus">
+      <arg name="time" type="uint"/>
+      <arg name="surface" type="surface"/>
+    </event>
+
+    <event name="keyboard_focus">
+      <arg name="time" type="uint"/>
+      <arg name="surface" type="surface"/>
+      <arg name="keys" type="array"/>
+    </event>
+  </interface>
+
+  <interface name="output" version="1">
+    <event name="geometry">
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+    </event>
+  </interface>
+
+  <interface name="visual" version="1">
+
+</protocol>
