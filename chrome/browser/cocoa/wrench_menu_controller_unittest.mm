@@ -81,18 +81,4 @@ TEST_F(WrenchMenuControllerTest, DispatchSimple) {
   [controller() dispatchWrenchMenuCommand:button.get()];
 }
 
-TEST_F(WrenchMenuControllerTest, DispatchSegmentedControl) {
-  // Set fake model to test dispatching.
-  EXPECT_CALL(fake_model_, ExecuteCommand(IDC_CUT));
-  [controller() setModel:&fake_model_];
-
-  scoped_nsobject<NSSegmentedControl> control(
-      [[NSSegmentedControl alloc] init]);
-  [control setSegmentCount:2];
-  [[control cell] setTag:IDC_CUT forSegment:0];
-  [[control cell] setSelectedSegment:0];
-
-  [controller() dispatchWrenchMenuCommand:control.get()];
-}
-
 }  // namespace

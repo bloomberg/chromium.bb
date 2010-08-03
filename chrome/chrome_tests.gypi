@@ -859,6 +859,8 @@
         'browser/cocoa/location_bar/selected_keyword_decoration_unittest.mm',
         'browser/cocoa/menu_button_unittest.mm',
         'browser/cocoa/menu_controller_unittest.mm',
+        'browser/cocoa/menu_tracked_button_unittest.mm',
+        'browser/cocoa/menu_tracked_root_view_unittest.mm',
         'browser/cocoa/notifications/balloon_controller_unittest.mm',
         'browser/cocoa/nsimage_cache_unittest.mm',
         'browser/cocoa/nsmenuitem_additions_unittest.mm',

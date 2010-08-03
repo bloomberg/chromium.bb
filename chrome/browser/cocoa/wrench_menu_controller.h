@@ -11,6 +11,7 @@
 #import "base/cocoa_protocols_mac.h"
 #import "chrome/browser/cocoa/menu_controller.h"
 
+@class MenuTrackedRootView;
 @class ToolbarController;
 class WrenchMenuModel;
 
@@ -23,10 +24,12 @@ class WrenchMenuModel;
 // This object is instantiated in Toolbar.xib and is configured by the
 // ToolbarController.
 @interface WrenchMenuController : MenuController<NSMenuDelegate> {
-  IBOutlet NSView* editItem_;
-  IBOutlet NSSegmentedControl* editControl_;
+  IBOutlet MenuTrackedRootView* editItem_;
+  IBOutlet NSButton* editCut_;
+  IBOutlet NSButton* editCopy_;
+  IBOutlet NSButton* editPaste_;
 
-  IBOutlet NSView* zoomItem_;
+  IBOutlet MenuTrackedRootView* zoomItem_;
   IBOutlet NSButton* zoomPlus_;
   IBOutlet NSButton* zoomDisplay_;
   IBOutlet NSButton* zoomMinus_;

@@ -9,6 +9,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#import "chrome/browser/cocoa/menu_tracked_root_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/wrench_menu_model.h"
 
@@ -48,10 +49,12 @@
     case IDC_EDIT_MENU:
       DCHECK(editItem_);
       [customItem setView:editItem_];
+      [editItem_ setMenuItem:customItem];
       break;
     case IDC_ZOOM_MENU:
       DCHECK(zoomItem_);
       [customItem setView:zoomItem_];
+      [zoomItem_ setMenuItem:customItem];
       break;
     default:
       NOTREACHED();
@@ -73,10 +76,10 @@
   NSString* title = base::SysUTF16ToNSString(
       [self wrenchMenuModel]->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY));
   [[zoomItem_ viewWithTag:IDC_ZOOM_PERCENT_DISPLAY] setTitle:title];
+
   bool plusEnabled = [self wrenchMenuModel]->IsCommandIdEnabled(IDC_ZOOM_PLUS);
   bool minusEnabled = [self wrenchMenuModel]->IsCommandIdEnabled(
       IDC_ZOOM_MINUS);
-
   [zoomPlus_ setEnabled:plusEnabled];
   [zoomMinus_ setEnabled:minusEnabled];
 
@@ -92,12 +95,6 @@
 // NSCarbonMenuWindow; this screws up the typical |-commandDispatch:| system.
 - (IBAction)dispatchWrenchMenuCommand:(id)sender {
   NSInteger tag = [sender tag];
-
-  // NSSegmentedControls (used for the Edit item) need a little help to get the
-  // command_id of the pressed item.
-  if ([sender isKindOfClass:[NSSegmentedControl class]])
-    tag = [[sender cell] tagForSegment:[sender selectedSegment]];
-
   // The custom views within the Wrench menu are abnormal and keep the menu open
   // after a target-action. Close the menu manually.
   // TODO(rsesek): It'd be great if the zoom buttons didn't have to close the
@@ -127,28 +124,44 @@
 // Fit the localized strings into the Cut/Copy/Paste control, then resize the
 // whole menu item accordingly.
 - (void)adjustPositioning {
+  const CGFloat kButtonPadding = 12;
+  CGFloat delta = 0;
+
+  // Go through the three buttons from right-to-left, adjusting the size to fit
+  // the localized strings while keeping them all aligned on their horizontal
+  // edges.
+  const size_t kAdjustViewCount = 3;
+  NSButton* views[kAdjustViewCount] = { editPaste_, editCopy_, editCut_ };
+  for (size_t i = 0; i < kAdjustViewCount; ++i) {
+    NSButton* button = views[i];
+    CGFloat originalWidth = NSWidth([button frame]);
+
+    // Do not let |-sizeToFit| change the height of the button.
+    NSSize size = [button frame].size;
+    [button sizeToFit];
+    size.width = [button frame].size.width + kButtonPadding;
+    [button setFrameSize:size];
+
+    CGFloat newWidth = size.width;
+    delta += newWidth - originalWidth;
+
+    NSRect frame = [button frame];
+    frame.origin.x -= delta;
+    [button setFrame:frame];
+  }
+
+  // Resize the menu item by the total amound the buttons changed so that the
+  // spacing between the buttons and the title remains the same.
   NSRect itemFrame = [editItem_ frame];
-  NSRect controlFrame = [editControl_ frame];
-
-  CGFloat originalControlWidth = NSWidth(controlFrame);
-  // Maintain the carefully pixel-pushed gap between the edge of the menu and
-  // the rightmost control.
-  CGFloat edge = NSWidth(itemFrame) -
-      (controlFrame.origin.x + originalControlWidth);
-
-  // Resize the edit segmented control to fit the localized strings.
-  [editControl_ sizeToFit];
-  controlFrame = [editControl_ frame];
-  CGFloat resizeAmount = NSWidth(controlFrame) - originalControlWidth;
-
-  // Adjust the size of the entire menu item to account for changes in the size
-  // of the segmented control.
-  itemFrame.size.width += resizeAmount;
+  itemFrame.size.width += delta;
   [editItem_ setFrame:itemFrame];
 
-  // Keep the spacing between the right edges of the menu and the control.
-  controlFrame.origin.x = NSWidth(itemFrame) - edge - NSWidth(controlFrame);
-  [editControl_ setFrame:controlFrame];
+  // Also resize the superview of the buttons, which is an NSView used to slide
+  // when the item title is too big and GTM resizes it.
+  NSRect parentFrame = [[editCut_ superview] frame];
+  parentFrame.size.width += delta;
+  parentFrame.origin.x -= delta;
+  [[editCut_ superview] setFrame:parentFrame];
 }
 
 @end  // @implementation WrenchMenuController
