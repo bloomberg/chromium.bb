@@ -128,6 +128,7 @@ fi
 
 ensure_installed '/usr/lib32' 'ia32-libs'
 ensure_installed '/usr/lib32/libncurses.a' 'lib32ncurses5-dev'
+ensure_installed '/usr/lib/gcc/x86_64-linux-gnu/4.4/32/libstdc++.so' 'g++-multilib'
 
 # now check for symlinks
 
