@@ -302,19 +302,8 @@ bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
 }
 
 bool Plugin::SetSrcPropertyImpl(const nacl::string& url) {
-  if (NULL != service_runtime_) {
-    PLUGIN_PRINTF(("Plugin::SetProperty: unloading previous\n"));
-    // Plugin owns socket_address_ and socket_, so when we change to a new
-    // socket we need to give up ownership of the old one.
-    socket_address_->Unref();
-    socket_address_ = NULL;
-    socket_->Unref();
-    socket_ = NULL;
-    service_runtime_->Shutdown();
-    delete service_runtime_;
-    service_runtime_ = NULL;
-    ShutDownReceiveThread();
-  }
+  PLUGIN_PRINTF(("Plugin::SetProperty: unloading previous\n"));
+  ShutDownSubprocess();
   return RequestNaClModule(url);
 }
 
@@ -416,7 +405,20 @@ void Plugin::Invalidate() {
   socket_ = NULL;
 }
 
-void Plugin::ShutDownReceiveThread() {
+void Plugin::ShutDownSubprocess() {
+  if (socket_address_ != NULL) {
+    socket_address_->Unref();
+    socket_address_ = NULL;
+  }
+  if (socket_ != NULL) {
+    socket_->Unref();
+    socket_ = NULL;
+  }
+  if (service_runtime_ != NULL) {
+    service_runtime_->Shutdown();
+    delete service_runtime_;
+    service_runtime_ = NULL;
+  }
   if (receive_thread_running_) {
     NaClThreadJoin(&receive_thread_);
     receive_thread_running_ = false;
@@ -430,24 +432,8 @@ Plugin::~Plugin() {
   // so we shut down here what we can and prevent attempts to shut down
   // other linked structures in Deallocate.
 
-  // Free the socket address for this plugin, if any.
-  if (NULL != socket_address_) {
-    PLUGIN_PRINTF(("Plugin::~Plugin: unloading\n"));
-    // Deallocating a plugin releases ownership of the socket address.
-    socket_address_->Unref();
-  }
-  // Free the connected socket for this plugin, if any.
-  if (NULL != socket_) {
-    PLUGIN_PRINTF(("Plugin::~Plugin: unloading\n"));
-    // Deallocating a plugin releases ownership of the socket.
-    socket_->Unref();
-  }
-  // Clear the pointers to the connected socket and service runtime interface.
-  socket_address_ = NULL;
-  socket_ = NULL;
-  delete service_runtime_;
-  service_runtime_ = NULL;
-  ShutDownReceiveThread();
+  ShutDownSubprocess();
+
   PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void*>(this)));
   free(local_url_);
   free(logical_url_);

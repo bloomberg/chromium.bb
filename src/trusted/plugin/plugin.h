@@ -186,7 +186,7 @@ class Plugin : public PortableHandle {
 
   nacl::DescWrapperFactory* wrapper_factory_;
 
-  void ShutDownReceiveThread();
+  void ShutDownSubprocess();
 
   static bool SendAsyncMessage(void* obj, SrpcParams* params,
                                nacl::DescWrapper** fds, int fds_count);

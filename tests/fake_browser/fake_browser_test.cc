@@ -630,6 +630,13 @@ void TestMissingSrpcInit() {
   bool is_ok = fb_NPN_SetProperty(plugin_instance, plugin_obj,
                                   fb_NPN_GetStringIdentifier("src"), &url);
   CHECK(is_ok);
+  RunQueuedCallbacks(plugin_instance);
+
+  // Try launching another process.  This also tests for a bug that
+  // caused a crash.
+  is_ok = fb_NPN_SetProperty(plugin_instance, plugin_obj,
+                             fb_NPN_GetStringIdentifier("src"), &url);
+  CHECK(is_ok);
   fb_NPN_ReleaseObject(plugin_obj);
   RunQueuedCallbacks(plugin_instance);
 
