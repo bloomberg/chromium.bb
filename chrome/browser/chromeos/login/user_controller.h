@@ -27,6 +27,7 @@ class WidgetGtk;
 namespace chromeos {
 
 class UserView;
+class ExistingUserView;
 
 // UserController manages the set of windows needed to login a single existing
 // user or first time login for a new user. ExistingUserController creates
@@ -179,12 +180,6 @@ class UserController : public views::ButtonListener,
 
   Delegate* delegate_;
 
-  // For editing the password.
-  views::Textfield* password_field_;
-
-  // Button to start login.
-  views::NativeButton* submit_button_;
-
   // A window is used to represent the individual chunks.
   views::WidgetGtk* controls_window_;
   views::WidgetGtk* image_window_;
@@ -197,6 +192,9 @@ class UserController : public views::ButtonListener,
 
   // View that is used for new user login.
   NewUserView* new_user_view_;
+
+  // View that is used for existing user login.
+  ExistingUserView* existing_user_view_;
 
   // Views that show display name of the user.
   views::Label* label_view_;

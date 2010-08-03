@@ -229,4 +229,8 @@ void UserView::ExecuteCommand(int command_id) {
   }
 }
 
+void UserView::OnLocaleChanged() {
+  BuildMenu();
+}
+
 }  // namespace chromeos

@@ -53,6 +53,7 @@ class UserView : public views::View,
 
   // view::View overrides.
   virtual gfx::Size GetPreferredSize();
+  virtual void OnLocaleChanged();
 
   // Sets the user's image.
   void SetImage(const SkBitmap& image);

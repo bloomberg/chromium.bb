@@ -463,6 +463,8 @@
         'browser/chromeos/login/eula_view.h',
         'browser/chromeos/login/existing_user_controller.cc',
         'browser/chromeos/login/existing_user_controller.h',
+        'browser/chromeos/login/existing_user_view.cc',
+        'browser/chromeos/login/existing_user_view.h',
         'browser/chromeos/login/image_decoder.cc',
         'browser/chromeos/login/image_decoder.h',
         'browser/chromeos/login/image_downloader.cc',
