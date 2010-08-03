@@ -325,6 +325,12 @@ void AccessibilityEventRouterGtk::StopListening() {
 
 void AccessibilityEventRouterGtk::DispatchAccessibilityNotification(
     GtkWidget* widget, NotificationType type) {
+  // If there's no message loop, we must be about to shutdown or we're
+  // running inside a test; either way, there's no reason to do any
+  // further processing.
+  if (!MessageLoop::current())
+    return;
+
   if (!listening_)
     return;
 
@@ -405,6 +411,9 @@ void AccessibilityEventRouterGtk::DispatchAccessibilityNotification(
 
 void AccessibilityEventRouterGtk::PostDispatchAccessibilityNotification(
     GtkWidget* widget, NotificationType type) {
+  if (!MessageLoop::current())
+    return;
+
   MessageLoop::current()->PostTask(
       FROM_HERE, method_factory_.NewRunnableMethod(
           &AccessibilityEventRouterGtk::DispatchAccessibilityNotification,
