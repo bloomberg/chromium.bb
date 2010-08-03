@@ -1,2 +1,2 @@
 # Very slow under Valgrind, (see <http://crbug.com/37289>).
-KeygenHandlerTest.FLAKY_SmokeTest
+KeygenHandlerTest.SmokeTest
