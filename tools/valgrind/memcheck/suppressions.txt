@@ -3849,7 +3849,6 @@
    fun:_ZN11MessageLoop7RunTaskEP4Task
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base16MessagePumpForUI14HandleDispatchEv
 }
 {
    bug_51076
