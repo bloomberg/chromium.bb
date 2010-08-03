@@ -368,8 +368,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
 // is already running.
 // The test fails on linux and should be related to Webkit patch
 // http://trac.webkit.org/changeset/64124/trunk.
-// See http://crbug.com/50416
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseWhenScriptIsRunning) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
