@@ -42,7 +42,7 @@ const int kButtonSize = 29;
 // The padding between browser action buttons. Visually, the actual number of
 // "empty" (non-drawing) pixels is this value + 2 when adjacent browser icons
 // use their maximum allowed size.
-const int kButtonPadding = 3;
+const int kButtonPadding = 1;
 
 // The padding to the right of the browser action buttons (between the buttons
 // and the separator, or chevron if it's showing).
@@ -51,6 +51,9 @@ const int kPaddingToRightOfButtons = 5;
 // The padding to the left, top and bottom of the browser actions toolbar
 // separator.
 const int kSeparatorPadding = 2;
+
+// Width of the invisible gripper for resizing the toolbar.
+const int kResizeGripperWidth = 4;
 
 const char* kDragTarget = "application/x-chrome-browseraction";
 
@@ -357,6 +360,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
     return;
 
   GtkWidget* gripper = gtk_button_new();
+  gtk_widget_set_size_request(gripper, kResizeGripperWidth, -1);
   GTK_WIDGET_UNSET_FLAGS(gripper, GTK_CAN_FOCUS);
   gtk_widget_add_events(gripper, GDK_POINTER_MOTION_MASK);
   signals_.Connect(gripper, "motion-notify-event",
@@ -374,15 +378,15 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   signals_.Connect(overflow_button_.widget(), "button-press-event",
                    G_CALLBACK(OnOverflowButtonPressThunk), this);
 
-  // Add some blank space on the right of the browser action buttons.
-  GtkWidget* spacer = gtk_alignment_new(0, 0, 1, 1);
-  gtk_widget_set_size_request(spacer, kPaddingToRightOfButtons, -1);
+  overflow_spacer_ = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(overflow_spacer_), 0, 0,
+                            kPaddingToRightOfButtons, 0);
+  gtk_container_add(GTK_CONTAINER(overflow_spacer_), overflow_button_.widget());
+  gtk_widget_show(overflow_button_.widget());
 
   gtk_box_pack_start(GTK_BOX(hbox_.get()), gripper, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), button_hbox_.get(), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), spacer, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), overflow_button_.widget(),
-                     FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), overflow_spacer_, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), separator_, FALSE, FALSE, 0);
 
   model_ = extension_service->toolbar_model();
@@ -540,7 +544,7 @@ void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
     return;
 
   // Animate the addition if we are showing all browser action buttons.
-  if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
+  if (!GTK_WIDGET_VISIBLE(overflow_spacer_)) {
     AnimateToShowNIcons(button_count());
     model_->SetVisibleIconCount(button_count());
   }
@@ -556,7 +560,7 @@ void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
 
   RemoveButtonForExtension(extension);
 
-  if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
+  if (!GTK_WIDGET_VISIBLE(overflow_spacer_)) {
     AnimateToShowNIcons(button_count());
     model_->SetVisibleIconCount(button_count());
   }
@@ -649,13 +653,13 @@ void BrowserActionsToolbarGtk::UpdateChevronVisibility() {
           GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()));
 
   if (button_count() > showing_icon_count) {
-    if (!GTK_WIDGET_VISIBLE(overflow_button_.widget())) {
+    if (!GTK_WIDGET_VISIBLE(overflow_spacer_)) {
       if (drag_button_) {
         // During drags, when the overflow chevron shows for the first time,
         // take that much space away from |button_hbox_| to make the drag look
         // smoother.
         GtkRequisition req;
-        gtk_widget_size_request(overflow_button_.widget(), &req);
+        gtk_widget_size_request(overflow_spacer_, &req);
         gint overflow_width = req.width;
         gtk_widget_size_request(button_hbox_.get(), &req);
         gint button_hbox_width = req.width;
@@ -663,10 +667,10 @@ void BrowserActionsToolbarGtk::UpdateChevronVisibility() {
         gtk_widget_set_size_request(button_hbox_.get(), button_hbox_width, -1);
       }
 
-      gtk_widget_show(overflow_button_.widget());
+      gtk_widget_show(overflow_spacer_);
     }
   } else {
-    gtk_widget_hide(overflow_button_.widget());
+    gtk_widget_hide(overflow_spacer_);
   }
 }
 

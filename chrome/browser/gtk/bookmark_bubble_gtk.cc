@@ -42,11 +42,6 @@ void BookmarkBubbleGtk::Show(GtkWidget* anchor,
                              Profile* profile,
                              const GURL& url,
                              bool newly_bookmarked) {
-  // TODO(deanm): The Views code deals with the possibility of a bubble already
-  // being open, and then it just does nothing.  I am not sure how this could
-  // happen with the style of our GTK bubble since it has a grab.  I would also
-  // think that closing the previous bubble and opening the new one would make
-  // more sense, but I guess then you would commit the bubble's changes.
   DCHECK(!g_bubble);
   g_bubble = new BookmarkBubbleGtk(anchor, profile, url, newly_bookmarked);
 }

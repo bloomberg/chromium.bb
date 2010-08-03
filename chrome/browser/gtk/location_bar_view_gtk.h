@@ -332,12 +332,6 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* star_image_;
   bool starred_;
 
-  // SSL state.
-  GtkWidget* security_icon_event_box_;
-  GtkWidget* ev_secure_icon_image_;
-  GtkWidget* secure_icon_image_;
-  GtkWidget* security_warning_icon_image_;
-  GtkWidget* security_error_icon_image_;
   // An icon to the left of the address bar.
   GtkWidget* site_type_alignment_;
   GtkWidget* site_type_event_box_;

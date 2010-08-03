@@ -57,10 +57,10 @@ const int kIconWidth = 17;
 const int kIconTopPadding = 2;
 
 // Space between the left edge (including the border) and the text.
-const int kIconLeftPadding = 5 + kBorderThickness;
+const int kIconLeftPadding = 3 + kBorderThickness;
 
 // Space between the image and the text.
-const int kIconRightPadding = 7;
+const int kIconRightPadding = 5;
 
 // Space between the left edge (including the border) and the text.
 const int kIconAreaWidth =
@@ -74,11 +74,8 @@ const int kRightPadding = 3;
 // the total width.
 const float kContentWidthPercentage = 0.7;
 
-// How much to offset the popup from the bottom of the location bar in gtk mode.
-const int kGtkVerticalOffset = 3;
-
-// How much we shrink the popup on the left/right in gtk mode.
-const int kGtkHorizontalOffset = 1;
+// How much to offset the popup from the bottom of the location bar.
+const int kVerticalOffset = 3;
 
 // UTF-8 Left-to-right embedding.
 const char* kLRE = "\xe2\x80\xaa";
@@ -421,27 +418,12 @@ void AutocompletePopupViewGtk::Show(size_t num_results) {
   gint origin_x, origin_y;
   gdk_window_get_origin(location_bar_->window, &origin_x, &origin_y);
   GtkAllocation allocation = location_bar_->allocation;
-  int vertical_offset = 0;
-  int horizontal_offset = 0;
-  if (theme_provider_->UseGtkTheme()) {
-    // Shrink the popup by 1 pixel on both sides in gtk mode. The darkest line
-    // is usually one pixel in, and is almost always +/-1 pixel from this,
-    // meaning the vertical offset will hide (hopefully) problems when this is
-    // wrong.
-    horizontal_offset = kGtkHorizontalOffset;
 
-    // We offset the the popup from the bottom of the location bar in gtk
-    // mode. The background color between the bottom of the location bar and
-    // the popup helps hide the fact that we can't really reliably match what
-    // the user would otherwise preceive as the left/right edges of the
-    // location bar.
-    vertical_offset = kGtkVerticalOffset;
-  }
-
+  int horizontal_offset = 1;
   gtk_window_move(GTK_WINDOW(window_),
       origin_x + allocation.x - kBorderThickness + horizontal_offset,
       origin_y + allocation.y + allocation.height - kBorderThickness - 1 +
-          vertical_offset);
+          kVerticalOffset);
   gtk_widget_set_size_request(window_,
       allocation.width + (kBorderThickness * 2) - (horizontal_offset * 2),
       (num_results * kHeightPerResult) + (kBorderThickness * 2));

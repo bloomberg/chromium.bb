@@ -172,6 +172,8 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   OverflowButton overflow_button_;
   scoped_ptr<MenuGtk> overflow_menu_;
   scoped_ptr<menus::SimpleMenuModel> overflow_menu_model_;
+  // A widget for adding extra padding to the left of the overflow button.
+  GtkWidget* overflow_spacer_;
 
   // The vertical separator between the overflow button and the page/app menus.
   GtkWidget* separator_;

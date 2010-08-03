@@ -64,7 +64,7 @@ const int kNTPRoundedness = 3;
 // The height of the bar when it is "hidden". It is usually not completely
 // hidden because even when it is closed it forms the bottom few pixels of
 // the toolbar.
-const int kBookmarkBarMinimumHeight = 4;
+const int kBookmarkBarMinimumHeight = 3;
 
 // Left-padding for the instructional text.
 const int kInstructionsPadding = 6;

@@ -76,10 +76,10 @@ const int kFirstRunBubbleTopMargin = 5;
 // We don't want to edit control's text to be right against the edge,
 // as well the tab to search box and other widgets need to have the padding on
 // top and bottom to avoid drawing larger than the location bar space.
-const int kHboxBorder = 4;
+const int kHboxBorder = 2;
 
 // Padding between the elements in the bar.
-const int kInnerPadding = 4;
+const int kInnerPadding = 2;
 
 // Padding between the right of the star and the edge of the URL entry.
 const int kStarRightPadding = 2;
@@ -118,11 +118,6 @@ const GdkColor LocationBarViewGtk::kBackgroundColor =
 LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
     : star_image_(NULL),
       starred_(false),
-      security_icon_event_box_(NULL),
-      ev_secure_icon_image_(NULL),
-      secure_icon_image_(NULL),
-      security_warning_icon_image_(NULL),
-      security_error_icon_image_(NULL),
       site_type_alignment_(NULL),
       site_type_event_box_(NULL),
       location_icon_image_(NULL),
@@ -267,11 +262,11 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
     gtk_box_pack_end(GTK_BOX(hbox_.get()), star_.get(), FALSE, FALSE, 0);
   }
 
-  content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
+  content_setting_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding + 1));
   gtk_widget_set_name(content_setting_hbox_.get(),
                       "chrome-content-setting-hbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), content_setting_hbox_.get(),
-                   FALSE, FALSE, 0);
+                   FALSE, FALSE, 1);
 
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentSettingImageViewGtk* content_setting_view =
@@ -304,7 +299,11 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
 void LocationBarViewGtk::BuildSiteTypeArea() {
   location_icon_image_ = gtk_image_new();
   gtk_widget_set_name(location_icon_image_, "chrome-location-icon");
-  gtk_widget_show(location_icon_image_);
+
+  GtkWidget* icon_alignment = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding(GTK_ALIGNMENT(icon_alignment), 0, 0, 2, 0);
+  gtk_container_add(GTK_CONTAINER(icon_alignment), location_icon_image_);
+  gtk_widget_show_all(icon_alignment);
 
   security_info_label_ = gtk_label_new(NULL);
   gtk_label_set_ellipsize(GTK_LABEL(security_info_label_),
@@ -314,11 +313,11 @@ void LocationBarViewGtk::BuildSiteTypeArea() {
   gtk_widget_set_name(security_info_label_,
                       "chrome-location-bar-security-info-label");
 
-  GtkWidget* site_type_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(site_type_hbox), location_icon_image_,
+  GtkWidget* site_type_hbox = gtk_hbox_new(FALSE, 2);
+  gtk_box_pack_start(GTK_BOX(site_type_hbox), icon_alignment,
                      FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(site_type_hbox), security_info_label_,
-                     FALSE, FALSE, kCornerSize);
+                     FALSE, FALSE, 1);
 
   site_type_event_box_ = gtk_event_box_new();
   gtk_widget_modify_bg(site_type_event_box_, GTK_STATE_NORMAL,
@@ -341,7 +340,7 @@ void LocationBarViewGtk::BuildSiteTypeArea() {
   // Put the event box in an alignment to get the padding correct.
   site_type_alignment_ = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(site_type_alignment_),
-                            0, 0, 1, 0);
+                            1, 1, 0, 0);
   gtk_container_add(GTK_CONTAINER(site_type_alignment_),
                     site_type_event_box_);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), site_type_alignment_,
@@ -724,8 +723,8 @@ void LocationBarViewGtk::Observe(NotificationType type,
                             &kHintTextColor);
 
     // Until we switch to vector graphics, force the font size of labels.
-    gtk_util::ForceFontSizePixels(security_info_label_,
-        browser_defaults::kAutocompleteEditFontPixelSize);
+    // 12.1px = 9pt @ 96dpi
+    gtk_util::ForceFontSizePixels(security_info_label_, 12.1);
     gtk_util::ForceFontSizePixels(tab_to_search_full_label_,
         browser_defaults::kAutocompleteEditFontPixelSize);
     gtk_util::ForceFontSizePixels(tab_to_search_partial_label_,

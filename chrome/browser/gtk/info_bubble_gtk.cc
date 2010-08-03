@@ -19,14 +19,15 @@
 namespace {
 
 // The height of the arrow, and the width will be about twice the height.
-const int kArrowSize = 5;
+const int kArrowSize = 8;
 
-// Number of pixels to the start of the arrow from the edge of the window.
-const int kArrowX = 13;
+// Number of pixels to the middle of the arrow from the close edge of the
+// window.
+const int kArrowX = 18;
 
 // Number of pixels between the tip of the arrow and the region we're
 // pointing to.
-const int kArrowToContentPadding = -6;
+const int kArrowToContentPadding = -4;
 
 // We draw flat diagonal corners, each corner is an NxN square.
 const int kCornerSize = 3;

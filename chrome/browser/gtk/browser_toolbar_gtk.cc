@@ -56,17 +56,21 @@
 
 namespace {
 
+// Padding on left and right of the left toolbar buttons (back, forward, reload,
+// etc.).
+const int kToolbarLeftAreaPadding = 4;
+
 // Height of the toolbar in pixels (not counting padding).
 const int kToolbarHeight = 29;
 
 // Padding within the toolbar above the buttons and location bar.
-const int kTopPadding = 4;
+const int kTopBottomPadding = 3;
 
 // Height of the toolbar in pixels when we only show the location bar.
 const int kToolbarHeightLocationBarOnly = kToolbarHeight - 2;
 
 // Interior spacing between toolbar widgets.
-const int kToolbarWidgetSpacing = 2;
+const int kToolbarWidgetSpacing = 1;
 
 // Amount of rounding on top corners of toolbar. Only used in Gtk theme mode.
 const int kToolbarCornerSize = 3;
@@ -152,23 +156,19 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_container_add(GTK_CONTAINER(event_box_), alignment_);
   gtk_container_add(GTK_CONTAINER(alignment_), toolbar_);
 
-  toolbar_left_ = gtk_hbox_new(FALSE, 0);
+  toolbar_left_ = gtk_hbox_new(FALSE, kToolbarWidgetSpacing);
 
-  GtkWidget* back_forward_hbox_ = gtk_hbox_new(FALSE, 0);
   back_.reset(new BackForwardButtonGtk(browser_, false));
   g_signal_connect(back_->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
-  gtk_box_pack_start(GTK_BOX(back_forward_hbox_), back_->widget(), FALSE,
+  gtk_box_pack_start(GTK_BOX(toolbar_left_), back_->widget(), FALSE,
                      FALSE, 0);
 
   forward_.reset(new BackForwardButtonGtk(browser_, true));
   g_signal_connect(forward_->widget(), "clicked",
                    G_CALLBACK(OnButtonClickThunk), this);
-  gtk_box_pack_start(GTK_BOX(back_forward_hbox_), forward_->widget(), FALSE,
+  gtk_box_pack_start(GTK_BOX(toolbar_left_), forward_->widget(), FALSE,
                      FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(toolbar_left_), back_forward_hbox_, FALSE,
-                     FALSE, kToolbarWidgetSpacing);
 
   reload_.reset(new ReloadButtonGtk(location_bar_.get(), browser_));
   gtk_box_pack_start(GTK_BOX(toolbar_left_), reload_->widget(), FALSE, FALSE,
@@ -185,7 +185,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
                      kToolbarWidgetSpacing);
   gtk_util::SetButtonTriggersNavigation(home_->widget());
 
-  gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_left_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_left_, FALSE, FALSE,
+                     kToolbarLeftAreaPadding);
 
   location_hbox_ = gtk_hbox_new(FALSE, 0);
   location_bar_->Init(ShouldOnlyShowLocation());
@@ -195,7 +196,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   g_signal_connect(location_hbox_, "expose-event",
                    G_CALLBACK(OnLocationHboxExposeThunk), this);
   gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox_, TRUE, TRUE,
-      kToolbarWidgetSpacing + (ShouldOnlyShowLocation() ? 1 : 0));
+      ShouldOnlyShowLocation() ? 1 : 0);
 
   toolbar_right_ = gtk_hbox_new(FALSE, 0);
 
@@ -274,8 +275,8 @@ LocationBar* BrowserToolbarGtk::GetLocationBar() const {
 void BrowserToolbarGtk::UpdateForBookmarkBarVisibility(
     bool show_bottom_padding) {
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_),
-      ShouldOnlyShowLocation() ? 0 : kTopPadding,
-      !show_bottom_padding || ShouldOnlyShowLocation() ? 0 : kTopPadding,
+      ShouldOnlyShowLocation() ? 0 : kTopBottomPadding,
+      !show_bottom_padding || ShouldOnlyShowLocation() ? 0 : kTopBottomPadding,
       0, 0);
 }
 
