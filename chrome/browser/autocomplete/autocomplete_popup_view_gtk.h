@@ -18,7 +18,7 @@
 
 class AutocompleteEditModel;
 class AutocompleteEditView;
-class AutocompleteMatch;
+struct AutocompleteMatch;
 class AutocompletePopupModel;
 class GtkThemeProvider;
 class Profile;
