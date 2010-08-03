@@ -26,8 +26,6 @@ extern NSString* const kBrowserActionButtonDraggingNotification;
 // Fired when the user drops the button.
 extern NSString* const kBrowserActionButtonDragEndNotification;
 
-extern const CGFloat kBrowserActionWidth;
-
 @interface BrowserActionButton : NSButton {
  @private
   // Bridge to proxy Chrome notifications to the Obj-C class as well as load the
@@ -58,9 +56,10 @@ extern const CGFloat kBrowserActionWidth;
   BOOL dragCouldStart_;
 }
 
-- (id)initWithExtension:(Extension*)extension
-                profile:(Profile*)profile
-                  tabId:(int)tabId;
+- (id)initWithFrame:(NSRect)frame
+          extension:(Extension*)extension
+            profile:(Profile*)profile
+              tabId:(int)tabId;
 
 - (void)setFrame:(NSRect)frameRect animate:(BOOL)animate;
 

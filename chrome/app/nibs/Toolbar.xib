@@ -44,7 +44,7 @@
 					<object class="NSCustomView" id="421615633">
 						<reference key="NSNextResponder" ref="928520650"/>
 						<int key="NSvFlags">-2147483383</int>
-						<string key="NSFrame">{{570, -2}, {1, 35}}</string>
+						<string key="NSFrame">{{572, -2}, {2, 35}}</string>
 						<reference key="NSSuperview" ref="928520650"/>
 						<string key="NSClassName">BrowserActionsContainerView</string>
 					</object>

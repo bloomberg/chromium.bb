@@ -22,9 +22,6 @@ class ExtensionsServiceObserverBridge;
 class PrefService;
 class Profile;
 
-// The padding between browser action buttons.
-extern const CGFloat kBrowserActionButtonPadding;
-
 // Sent when the visibility of the Browser Actions changes.
 extern NSString* const kBrowserActionVisibilityChangedNotification;
 

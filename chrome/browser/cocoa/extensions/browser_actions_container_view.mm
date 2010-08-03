@@ -19,13 +19,8 @@ NSString* const kBrowserActionGrippyDragFinishedNotification =
 
 namespace {
 const CGFloat kAnimationDuration = 0.2;
-const CGFloat kGrippyWidth = 8.0;
-const CGFloat kLowerPadding = 6.0;
+const CGFloat kGrippyWidth = 4.0;
 const CGFloat kMinimumContainerWidth = 10.0;
-const CGFloat kRightBorderXOffset = -1.0;
-const CGFloat kRightBorderWidth = 1.0;
-const CGFloat kRightBorderGrayscale = 0.5;
-const CGFloat kUpperPadding = 9.0;
 }  // namespace
 
 @interface BrowserActionsContainerView(Private)
@@ -55,24 +50,6 @@ const CGFloat kUpperPadding = 9.0;
     [self setHidden:YES];
   }
   return self;
-}
-
-- (void)drawRect:(NSRect)dirtyRect {
-  NSRect bounds = [self bounds];
-  NSColor* middleColor =
-     [NSColor colorWithCalibratedWhite:kRightBorderGrayscale alpha:1.0];
-  NSColor* endPointColor =
-     [NSColor colorWithCalibratedWhite:kRightBorderGrayscale alpha:0.0];
-  scoped_nsobject<NSGradient> borderGradient([[NSGradient alloc]
-     initWithColorsAndLocations:endPointColor, (CGFloat)0.0,
-                                middleColor, (CGFloat)0.5,
-                                endPointColor, (CGFloat)1.0,
-                                nil]);
-  CGFloat xPos = bounds.origin.x + bounds.size.width - kRightBorderWidth +
-     kRightBorderXOffset;
-  NSRect borderRect = NSMakeRect(xPos, kLowerPadding, kRightBorderWidth,
-     bounds.size.height - kUpperPadding);
-  [borderGradient drawInRect:borderRect angle:90.0];
 }
 
 - (void)setResizable:(BOOL)resizable {

@@ -35,15 +35,6 @@ NSString* const kBrowserActionButtonDragEndNotification =
 
 static const CGFloat kBrowserActionBadgeOriginYOffset = 5;
 
-// Since the container is the maximum height of the toolbar, we have to move the
-// buttons up by this amount in order to have them look vertically centered
-// within the toolbar.
-static const CGFloat kBrowserActionOriginYOffset = 6.0;
-
-// The size of each button on the toolbar.
-static const CGFloat kBrowserActionHeight = 27;
-const CGFloat kBrowserActionWidth = 29;
-
 namespace {
 const CGFloat kAnimationDuration = 0.2;
 const CGFloat kShadowOffset = 2.0;
@@ -121,13 +112,10 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
   return [BrowserActionCell class];
 }
 
-- (id)initWithExtension:(Extension*)extension
-                profile:(Profile*)profile
-                  tabId:(int)tabId {
-  NSRect frame = NSMakeRect(0.0,
-                            kBrowserActionOriginYOffset,
-                            kBrowserActionWidth,
-                            kBrowserActionHeight);
+- (id)initWithFrame:(NSRect)frame
+          extension:(Extension*)extension
+            profile:(Profile*)profile
+              tabId:(int)tabId {
   if ((self = [super initWithFrame:frame])) {
     BrowserActionCell* cell = [[[BrowserActionCell alloc] init] autorelease];
     // [NSButton setCell:] warns to NOT use setCell: other than in the
@@ -280,7 +268,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 }
 
 - (NSImage*)compositedImage {
-  NSRect bounds = NSMakeRect(0, 0, kBrowserActionWidth, kBrowserActionHeight);
+  NSRect bounds = [self bounds];
   NSImage* image = [[[NSImage alloc] initWithSize:bounds.size] autorelease];
   [image lockFocus];
 

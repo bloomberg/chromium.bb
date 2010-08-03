@@ -246,6 +246,7 @@
                 'app/nibs/Toolbar.xib',
                 'app/theme/back_Template.pdf',
                 'app/theme/balloon_wrench.pdf',
+                'app/theme/browser_actions_overflow_Template.pdf',
                 'app/theme/chevron.pdf',
                 'app/theme/find_next_Template.pdf',
                 'app/theme/find_prev_Template.pdf',
