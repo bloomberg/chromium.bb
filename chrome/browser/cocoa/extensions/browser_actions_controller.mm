@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
+#import "chrome/browser/cocoa/extensions/chevron_menu_button.h"
 #import "chrome/browser/cocoa/menu_button.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -775,7 +776,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     return;
 
   if (!chevronMenuButton_.get()) {
-    chevronMenuButton_.reset([[MenuButton alloc] init]);
+    chevronMenuButton_.reset([[ChevronMenuButton alloc] init]);
     [chevronMenuButton_ setBordered:NO];
     [chevronMenuButton_ setShowsBorderOnlyWhileMouseInside:YES];
     NSImage* chevronImage = nsimage_cache::ImageNamed(kOverflowChevronsName);
