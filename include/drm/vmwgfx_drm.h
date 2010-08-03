@@ -50,6 +50,8 @@
 #define DRM_VMW_EXECBUF              12
 #define DRM_VMW_FIFO_DEBUG           13
 #define DRM_VMW_FENCE_WAIT           14
+/* guarded by minor version >= 2 */
+#define DRM_VMW_UPDATE_LAYOUT        15
 
 
 /*************************************************************************/
@@ -84,6 +86,49 @@ struct drm_vmw_getparam_arg {
 	uint64_t value;
 	uint32_t param;
 	uint32_t pad64;
+};
+
+/*************************************************************************/
+/**
+ * DRM_VMW_EXTENSION - Query device extensions.
+ */
+
+/**
+ * struct drm_vmw_extension_rep
+ *
+ * @exists: The queried extension exists.
+ * @driver_ioctl_offset: Ioctl number of the first ioctl in the extension.
+ * @driver_sarea_offset: Offset to any space in the DRI SAREA
+ * used by the extension.
+ * @major: Major version number of the extension.
+ * @minor: Minor version number of the extension.
+ * @pl: Patch level version number of the extension.
+ *
+ * Output argument to the DRM_VMW_EXTENSION Ioctl.
+ */
+
+struct drm_vmw_extension_rep {
+	int32_t exists;
+	uint32_t driver_ioctl_offset;
+	uint32_t driver_sarea_offset;
+	uint32_t major;
+	uint32_t minor;
+	uint32_t pl;
+	uint32_t pad64;
+};
+
+/**
+ * union drm_vmw_extension_arg
+ *
+ * @extension - Ascii name of the extension to be queried. //In
+ * @rep - Reply as defined above. //Out
+ *
+ * Argument to the DRM_VMW_EXTENSION Ioctl.
+ */
+
+union drm_vmw_extension_arg {
+	char extension[DRM_VMW_EXT_NAME_LEN];
+	struct drm_vmw_extension_rep rep;
 };
 
 /*************************************************************************/
@@ -541,5 +586,29 @@ struct drm_vmw_stream_arg {
  * Return a single stream that was claimed by this process. Also makes
  * sure that the stream has been stopped.
  */
+
+/*************************************************************************/
+/**
+ * DRM_VMW_UPDATE_LAYOUT - Update layout
+ *
+ * Updates the prefered modes and connection status for connectors. The
+ * command conisits of one drm_vmw_update_layout_arg pointing out a array
+ * of num_outputs drm_vmw_rect's.
+ */
+
+/**
+ * struct drm_vmw_update_layout_arg
+ *
+ * @num_outputs: number of active
+ * @rects: pointer to array of drm_vmw_rect
+ *
+ * Input argument to the DRM_VMW_UPDATE_LAYOUT Ioctl.
+ */
+
+struct drm_vmw_update_layout_arg {
+	uint32_t num_outputs;
+	uint32_t pad64;
+	uint64_t rects;
+};
 
 #endif
