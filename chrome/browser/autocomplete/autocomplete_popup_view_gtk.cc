@@ -622,8 +622,8 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
         line_rect.y() + ((kHeightPerResult - actual_content_height) / 2));
 
     gdk_draw_layout(drawable, gc,
-                    ltr ? (kIconAreaWidth - gtk_offset) :
-                        (text_width - actual_content_width + gtk_offset),
+                    ltr ? (kIconAreaWidth) :
+                        (text_width - actual_content_width),
                     content_y, layout_);
 
     if (has_description) {
@@ -638,8 +638,8 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
       gint actual_description_width;
       pango_layout_get_size(layout_, &actual_description_width, NULL);
       gdk_draw_layout(drawable, gc, ltr ?
-                          (kIconAreaWidth - gtk_offset + actual_content_width) :
-                          (text_width - actual_content_width + gtk_offset -
+                          (kIconAreaWidth - actual_content_width) :
+                          (text_width - actual_content_width -
                            (actual_description_width / PANGO_SCALE)),
                       content_y, layout_);
     }
