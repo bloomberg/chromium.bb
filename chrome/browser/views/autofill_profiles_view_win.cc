@@ -1050,8 +1050,8 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   combo_box_billing_ = new views::Combobox(billing_model_);
   combo_box_billing_->set_listener(this);
   int billing_id = -1;
-  if (base::StringToInt(temporary_info_.credit_card.billing_address(),
-                        &billing_id))
+  if (base::StringToInt(WideToUTF16Hack(
+          temporary_info_.credit_card.billing_address()), &billing_id))
     combo_box_billing_->SetSelectedItem(billing_model_->GetIndex(billing_id));
   billing_model_->UsedWithComboBox(combo_box_billing_);
 

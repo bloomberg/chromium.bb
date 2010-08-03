@@ -592,13 +592,15 @@ bool DecodeImportParams(const std::wstring& encoded,
   if (v.size() != 3)
     return false;
 
-  if (!base::StringToInt(v[0], browser_type))
+  if (!base::StringToInt(WideToUTF16Hack(v[0]), browser_type))
     return false;
 
-  if (!base::StringToInt(v[1], options))
+  if (!base::StringToInt(WideToUTF16Hack(v[1]), options))
     return false;
 
-  *window = reinterpret_cast<HWND>(base::StringToInt64(v[2]));
+  int64 window_int;
+  base::StringToInt64(WideToUTF16Hack(v[2]), &window_int);
+  *window = reinterpret_cast<HWND>(window_int);
   return true;
 }
 
