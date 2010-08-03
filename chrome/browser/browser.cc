@@ -2819,7 +2819,7 @@ int Browser::GetExtraRenderViewHeight() const {
   return window_->GetExtraRenderViewHeight();
 }
 
-void Browser::OnStartDownload(DownloadItem* download) {
+void Browser::OnStartDownload(DownloadItem* download, TabContents* tab) {
   if (!window())
     return;
 
@@ -2857,6 +2857,12 @@ void Browser::OnStartDownload(DownloadItem* download) {
     DownloadStartedAnimation::Show(current_tab);
   }
 #endif
+
+  // If the download occurs in a new tab, close it
+  if (tab->controller().IsInitialNavigation() &&
+      GetConstrainingContents(tab) == tab && tab_count() > 1) {
+    CloseContents(tab);
+  }
 }
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,

@@ -83,7 +83,8 @@ bool TabContentsDelegate::CanDownload(int request_id) {
   return true;
 }
 
-void TabContentsDelegate::OnStartDownload(DownloadItem* download) {
+void TabContentsDelegate::OnStartDownload(DownloadItem* download,
+                                          TabContents* tab) {
 }
 
 bool TabContentsDelegate::HandleContextMenu(const ContextMenuParams& params) {

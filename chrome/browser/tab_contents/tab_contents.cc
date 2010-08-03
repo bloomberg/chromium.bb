@@ -1144,12 +1144,8 @@ void TabContents::OnStartDownload(DownloadItem* download) {
   // Download in a constrained popup is shown in the tab that opened it.
   TabContents* tab_contents = delegate()->GetConstrainingContents(this);
 
-  if (tab_contents && tab_contents->delegate()) {
-    tab_contents->delegate()->OnStartDownload(download);
-    // If the download occurs in a new tab, close it
-    if (controller_.IsInitialNavigation() && (tab_contents == this))
-      delegate()->CloseContents(this);
-  }
+  if (tab_contents && tab_contents->delegate())
+    tab_contents->delegate()->OnStartDownload(download, this);
 }
 
 void TabContents::WillClose(ConstrainedWindow* window) {

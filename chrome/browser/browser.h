@@ -719,7 +719,7 @@ class Browser : public TabStripModelDelegate,
   virtual void SetFocusToLocationBar(bool select_all);
   virtual void RenderWidgetShowing();
   virtual int GetExtraRenderViewHeight() const;
-  virtual void OnStartDownload(DownloadItem* download);
+  virtual void OnStartDownload(DownloadItem* download, TabContents* tab);
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile);
   virtual void ShowPageInfo(Profile* profile,

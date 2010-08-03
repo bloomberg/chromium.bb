@@ -492,6 +492,26 @@ TEST_F(DownloadTest, DISABLED_CloseNewTab3) {
   CheckDownload(file);
 }
 
+TEST_F(DownloadTest, DISABLED_DontCloseNewWindow) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+  int window_count = 0;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  ASSERT_EQ(1, window_count);
+  EXPECT_EQ(1, GetTabCount());
+
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+
+  FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
+  ASSERT_TRUE(tab_proxy->NavigateToURLAsyncWithDisposition(
+      URLRequestMockHTTPJob::GetMockUrl(file), NEW_WINDOW));
+
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
+
+  CheckDownload(file);
+}
+
 // http://crbug.com/50060
 #if defined(OS_MACOSX)
 #define MAYBE_NewWindow DISABLED_NewWindow

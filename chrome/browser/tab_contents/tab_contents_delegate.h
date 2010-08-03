@@ -195,7 +195,7 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
 
   virtual bool CanDownload(int request_id);
 
-  virtual void OnStartDownload(DownloadItem* download);
+  virtual void OnStartDownload(DownloadItem* download, TabContents* tab);
 
   // Returns true if the context menu operation was handled by the delegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params);
