@@ -3895,3 +3895,29 @@
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base16MessagePumpForUI14HandleDispatchEv
 }
+{
+   bug_51076
+   Memcheck:Leak
+   fun:malloc
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:g_object_init
+   fun:g_type_create_instance
+   fun:g_object_constructor
+   fun:g_object_newv
+   fun:g_object_new_valist
+   fun:g_object_new
+   fun:gtk_views_fixed_new
+   fun:_ZN5views9WidgetGtk15CreateGtkWidgetEP10_GtkWidgetRKN3gfx4RectE
+   fun:_ZN5views9WidgetGtk4InitEP10_GtkWidgetRKN3gfx4RectE
+   fun:_ZN17StatusBubbleViews4InitEv
+   fun:_ZN17StatusBubbleViews6SetURLERK4GURLRKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN7Browser15UpdateTargetURLEP11TabContentsRK4GURL
+   fun:_ZN11TabContents15UpdateTargetURLEiRK4GURL
+   fun:_ZN11TabContents30DidNavigateMainFramePostCommitERKN20NavigationController20LoadCommittedDetailsERK32ViewHostMsg_FrameNavigate_Params
+   fun:_ZN11TabContents11DidNavigateEP14RenderViewHostRK32ViewHostMsg_FrameNavigate_Params
+   fun:_ZN14RenderViewHost13OnMsgNavigateERKN3IPC7MessageE
+   fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
+}
