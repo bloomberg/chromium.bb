@@ -233,7 +233,7 @@ void LoginUtils::DoBrowserLaunch(Profile* profile) {
   int return_code;
   browser_init.LaunchBrowser(*CommandLine::ForCurrentProcess(),
                              profile,
-                             std::wstring(),
+                             FilePath(),
                              true,
                              &return_code);
 }
