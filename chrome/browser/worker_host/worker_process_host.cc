@@ -110,49 +110,20 @@ bool WorkerProcessHost::Init() {
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id());
   SetCrashReporterCommandLine(cmd_line);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableNativeWebWorkers)) {
-    cmd_line->AppendSwitch(switches::kEnableNativeWebWorkers);
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebWorkerShareProcesses)) {
-    cmd_line->AppendSwitch(switches::kWebWorkerShareProcesses);
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableApplicationCache)) {
-    cmd_line->AppendSwitch(switches::kDisableApplicationCache);
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDatabases)) {
-    cmd_line->AppendSwitch(switches::kDisableDatabases);
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableLogging)) {
-    cmd_line->AppendSwitch(switches::kEnableLogging);
-  }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLoggingLevel)) {
-    const std::string level =
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kLoggingLevel);
-    cmd_line->AppendSwitchASCII(switches::kLoggingLevel, level);
-  }
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableWebSockets)) {
-    cmd_line->AppendSwitch(switches::kDisableWebSockets);
-  }
-
+  static const char* const kSwitchNames[] = {
+    switches::kEnableNativeWebWorkers,
+    switches::kWebWorkerShareProcesses,
+    switches::kDisableApplicationCache,
+    switches::kDisableDatabases,
+    switches::kEnableLogging,
+    switches::kLoggingLevel,
+    switches::kDisableWebSockets,
 #if defined(OS_WIN)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDesktopNotifications)) {
-    cmd_line->AppendSwitch(switches::kDisableDesktopNotifications);
-  }
+    switches::kDisableDesktopNotifications,
 #endif
+  };
+  cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(), kSwitchNames,
+                             arraysize(kSwitchNames));
 
 #if defined(OS_POSIX)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
