@@ -123,7 +123,7 @@ readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
 readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 
 # Current milestones within each Hg repo:
-readonly LLVM_REV=05c6c6abba4e
+readonly LLVM_REV=d8bd7bd01fd1
 readonly LLVM_GCC_REV=3eec4354e37b
 readonly NEWLIB_REV=c74ed6d22b4f
 readonly BINUTILS_REV=1675524d3abe
@@ -624,6 +624,7 @@ everything() {
   gcc-stage1-sysroot
   gcc-stage1 ${CROSS_TARGET_ARM}
   gcc-stage1 ${CROSS_TARGET_X86_32}
+  gcc-stage1 ${CROSS_TARGET_X86_64}
 
   rebuild-pnacl-libs
 
@@ -1000,6 +1001,7 @@ gcc-stage1-configure() {
                --disable-decimal-float \
                --disable-libssp \
                --disable-libgomp \
+               --disable-multilib \
                --enable-languages=c,c++ \
                --disable-threads \
                --disable-libstdcxx-pch \
