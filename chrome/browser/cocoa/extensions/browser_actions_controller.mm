@@ -57,6 +57,10 @@ const CGFloat kBrowserActionButtonPadding = 2.0;
 // pixel of internal padding, this needs an extra pixel.
 const CGFloat kBrowserActionLeftPadding = kBrowserActionButtonPadding + 1.0;
 
+// How far to inset from the bottom of the view to get the top border
+// of the popup 2px below the bottom of the Omnibox.
+const CGFloat kBrowserActionBubbleYOffset = 3.0;
+
 }  // namespace
 
 @interface BrowserActionsController(Private)
@@ -374,24 +378,20 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 - (NSPoint)popupPointForBrowserAction:(Extension*)extension {
   if (!extension->browser_action())
     return NSZeroPoint;
-  BrowserActionButton* button = [self buttonForExtension:extension];
+
+  NSButton* button = [self buttonForExtension:extension];
   if (!button)
     return NSZeroPoint;
 
-  NSView* view = button;
-  BOOL isHidden = [hiddenButtons_ containsObject:button];
-  if (isHidden)
-    view = chevronMenuButton_.get();
+  if ([hiddenButtons_ containsObject:button])
+    button = chevronMenuButton_.get();
 
-  NSPoint arrowPoint = [view frame].origin;
-  // Adjust the anchor point to be at the center of the browser action button
-  // or chevron.
-  arrowPoint.x += NSWidth([view frame]) / 2;
-  // Move the arrow up a bit in the case that it's pointing to the chevron.
-  if (isHidden)
-    arrowPoint.y += NSHeight([view frame]) / 4;
-
-  return [[view superview] convertPoint:arrowPoint toView:nil];
+  // Anchor point just above the center of the bottom.
+  const NSRect bounds = [button bounds];
+  DCHECK([button isFlipped]);
+  NSPoint anchor = NSMakePoint(NSMidX(bounds),
+                               NSMaxY(bounds) - kBrowserActionBubbleYOffset);
+  return [button convertPoint:anchor toView:nil];
 }
 
 - (BOOL)chevronIsHidden {

@@ -17,6 +17,14 @@
 #include "chrome/common/pref_names.h"
 #include "net/base/net_util.h"
 
+namespace {
+
+// How far to offset up from the bottom of the view to get the top
+// border of the popup 2px below the bottom of the Omnibox.
+const CGFloat kPopupPointYOffset = 2.0;
+
+}  // namespace
+
 ContentSettingDecoration::ContentSettingDecoration(
     ContentSettingsType settings_type,
     LocationBarViewMac* owner,
@@ -45,6 +53,12 @@ void ContentSettingDecoration::UpdateFromTabContents(
   }
 }
 
+NSPoint ContentSettingDecoration::GetBubblePointInFrame(NSRect frame) {
+  const NSRect draw_frame = GetDrawRectInFrame(frame);
+  return NSMakePoint(NSMidX(draw_frame),
+                     NSMaxY(draw_frame) - kPopupPointYOffset);
+}
+
 bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   // Get host. This should be shared on linux/win/osx medium-term.
   TabContents* tabContents =
@@ -61,10 +75,11 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
 
   // Find point for bubble's arrow in screen coordinates.
   // TODO(shess): |owner_| is only being used to fetch |field|.
-  // Consider passing in |control_view|.
+  // Consider passing in |control_view|.  Or refactoring to be
+  // consistent with other decorations (which don't currently bring up
+  // their bubble directly).
   AutocompleteTextField* field = owner_->GetAutocompleteTextField();
-  frame = GetDrawRectInFrame(frame);
-  NSPoint anchor = NSMakePoint(NSMidX(frame) + 1, NSMaxY(frame));
+  NSPoint anchor = GetBubblePointInFrame(frame);
   anchor = [field convertPoint:anchor toView:nil];
   anchor = [[field window] convertBaseToScreen:anchor];
 

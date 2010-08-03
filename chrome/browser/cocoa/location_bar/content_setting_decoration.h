@@ -34,6 +34,11 @@ class ContentSettingDecoration : public ImageDecoration {
   virtual NSString* GetToolTip();
 
  private:
+  // Helper to get where the bubble point should land.  Similar to
+  // |PageActionDecoration| or |StarDecoration| (|LocationBarViewMac|
+  // calls those).
+  NSPoint GetBubblePointInFrame(NSRect frame);
+
   void SetToolTip(NSString* tooltip);
 
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;
