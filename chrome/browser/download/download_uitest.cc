@@ -535,7 +535,7 @@ TEST_F(DownloadTest, MAYBE_NewWindow) {
   ASSERT_TRUE(tab_proxy->NavigateToURLAsyncWithDisposition(
     URLRequestMockHTTPJob::GetMockUrl(file), NEW_WINDOW));
 
-  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(1));
+  ASSERT_TRUE(automation()->WaitForWindowCountToBecome(2));
 
   CheckDownload(file);
 }
