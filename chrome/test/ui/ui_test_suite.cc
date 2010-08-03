@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_number_conversions.h"
@@ -114,7 +114,7 @@ void UITestSuite::SuppressErrorDialogs() {
 
 #if defined(OS_WIN)
 void UITestSuite::LoadCrashService() {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasEnv(env_vars::kHeadless))
     return;
 

@@ -9,7 +9,7 @@
 #include "app/gtk_signal.h"
 #include "app/gtk_util.h"
 #include "base/file_util.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/process_util.h"
 #include "base/string_tokenizer.h"
 #include "base/xdg_util.h"
@@ -81,11 +81,11 @@ static void StartProxyConfigUtil(const ProxyConfigCommand& command) {
 
 void AdvancedOptionsUtilities::ShowNetworkProxySettings(
       TabContents* tab_contents) {
-  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
 
   ProxyConfigCommand command;
   bool found_command = false;
-  switch (base::GetDesktopEnvironment(env_getter.get())) {
+  switch (base::GetDesktopEnvironment(env.get())) {
     case base::DESKTOP_ENVIRONMENT_GNOME: {
       size_t index;
       ProxyConfigCommand commands[2];
@@ -115,7 +115,7 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
   if (found_command) {
     StartProxyConfigUtil(command);
   } else {
-    const char* name = base::GetDesktopEnvironmentName(env_getter.get());
+    const char* name = base::GetDesktopEnvironmentName(env.get());
     if (name)
       LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
     tab_contents->OpenURL(GURL(kLinuxProxyConfigUrl), GURL(),

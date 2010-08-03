@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/logging_chrome.h"
@@ -25,7 +25,7 @@ class ChromeLoggingTest : public testing::Test {
   // Stores the current value of the log file name environment
   // variable and sets the variable to new_value.
   void SaveEnvironmentVariable(std::string new_value) {
-    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    scoped_ptr<base::Environment> env(base::Environment::Create());
     if (!env->GetEnv(env_vars::kLogFileName, &environment_filename_))
       environment_filename_ = "";
 
@@ -35,7 +35,7 @@ class ChromeLoggingTest : public testing::Test {
   // Restores the value of the log file nave environment variable
   // previously saved by SaveEnvironmentVariable().
   void RestoreEnvironmentVariable() {
-    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    scoped_ptr<base::Environment> env(base::Environment::Create());
     env->SetEnv(env_vars::kLogFileName, environment_filename_);
   }
 

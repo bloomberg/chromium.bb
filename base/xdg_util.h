@@ -14,20 +14,20 @@ class FilePath;
 
 namespace base {
 
-class EnvVarGetter;
+class Environment;
 
 // Utility function for getting XDG directories.
 // |env_name| is the name of an environment variable that we want to use to get
 // a directory path. |fallback_dir| is the directory relative to $HOME that we
 // use if |env_name| cannot be found or is empty. |fallback_dir| may be NULL.
 // Examples of |env_name| are XDG_CONFIG_HOME and XDG_DATA_HOME.
-FilePath GetXDGDirectory(EnvVarGetter* env, const char* env_name,
+FilePath GetXDGDirectory(Environment* env, const char* env_name,
                          const char* fallback_dir);
 
 // Wrapper around xdg_user_dir_lookup() from src/base/third_party/xdg-user-dirs
 // This looks up "well known" user directories like the desktop and music
 // folder. Examples of |dir_name| are DESKTOP and MUSIC.
-FilePath GetXDGUserDirectory(EnvVarGetter* env, const char* dir_name,
+FilePath GetXDGUserDirectory(Environment* env, const char* dir_name,
                              const char* fallback_dir);
 
 enum DesktopEnvironment {
@@ -44,13 +44,13 @@ enum DesktopEnvironment {
 // of which desktop environment we're using.  We use this to know when
 // to attempt to use preferences from the desktop environment --
 // proxy settings, password manager, etc.
-DesktopEnvironment GetDesktopEnvironment(EnvVarGetter* env);
+DesktopEnvironment GetDesktopEnvironment(Environment* env);
 
 // Return a string representation of the given desktop environment.
 // May return NULL in the case of DESKTOP_ENVIRONMENT_OTHER.
 const char* GetDesktopEnvironmentName(DesktopEnvironment env);
 // Convenience wrapper that calls GetDesktopEnvironment() first.
-const char* GetDesktopEnvironmentName(EnvVarGetter* env);
+const char* GetDesktopEnvironmentName(Environment* env);
 
 }  // namespace base
 

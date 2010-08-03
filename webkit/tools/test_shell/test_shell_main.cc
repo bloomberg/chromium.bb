@@ -5,7 +5,7 @@
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/event_recorder.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
   // directly, its constructor sets up some necessary state.
   MessageLoopForUI main_message_loop;
 
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   bool suppress_error_dialogs = (
        env->HasEnv("CHROME_HEADLESS") ||
        parsed_command_line.HasSwitch(test_shell::kNoErrorDialogs) ||

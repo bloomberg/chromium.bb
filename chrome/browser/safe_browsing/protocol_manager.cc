@@ -5,7 +5,7 @@
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 
 #include "base/base64.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/file_version_info.h"
 #include "base/histogram.h"
 #include "base/logging.h"
@@ -418,7 +418,7 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
 
 void SafeBrowsingProtocolManager::Initialize() {
   // Don't want to hit the safe browsing servers on build/chrome bots.
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasEnv(env_vars::kHeadless))
     return;
 

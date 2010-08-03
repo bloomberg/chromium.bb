@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_ENV_VAR_H_
-#define BASE_ENV_VAR_H_
+#ifndef BASE_ENVIRONMENT_H_
+#define BASE_ENVIRONMENT_H_
 #pragma once
 
 #include <string>
@@ -20,13 +20,13 @@ extern const char kHome[];
 
 }  // namespace env_vars
 
-class EnvVarGetter {
+class Environment {
  public:
-  virtual ~EnvVarGetter();
+  virtual ~Environment();
 
   // Static factory method that returns the implementation that provide the
   // appropriate platform-specific instance.
-  static EnvVarGetter* Create();
+  static Environment* Create();
 
   // Gets an environment variable's value and stores it in |result|.
   // Returns false if the key is unset.
@@ -45,4 +45,4 @@ class EnvVarGetter {
 
 }  // namespace base
 
-#endif  // BASE_ENV_VAR_H_
+#endif  // BASE_ENVIRONMENT_H_

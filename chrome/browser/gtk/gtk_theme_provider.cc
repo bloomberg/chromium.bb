@@ -10,7 +10,7 @@
 
 #include "app/gtk_signal_registrar.h"
 #include "app/resource_bundle.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/stl_util-inl.h"
 #include "base/xdg_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -563,9 +563,9 @@ GdkPixbuf* GtkThemeProvider::GetDefaultFavicon(bool native) {
 
 // static
 bool GtkThemeProvider::DefaultUsesSystemTheme() {
-  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
 
-  switch (base::GetDesktopEnvironment(env_getter.get())) {
+  switch (base::GetDesktopEnvironment(env.get())) {
     case base::DESKTOP_ENVIRONMENT_GNOME:
     case base::DESKTOP_ENVIRONMENT_XFCE:
       return true;

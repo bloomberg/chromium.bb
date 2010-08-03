@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@
 // use NSS for crypto or certificate verification, and we don't use the NSS
 // certificate and key databases.
 #if defined(USE_NSS)
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #endif  // defined(USE_NSS)
@@ -80,7 +80,7 @@ void UseLocalCacheOfNSSDatabaseIfNFS(const FilePath& database_dir) {
   struct statfs buf;
   if (statfs(database_dir.value().c_str(), &buf) == 0) {
     if (buf.f_type == NFS_SUPER_MAGIC) {
-      scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+      scoped_ptr<base::Environment> env(base::Environment::Create());
       const char* use_cache_env_var = "NSS_SDB_USE_CACHE";
       if (!env->HasEnv(use_cache_env_var))
         env->SetEnv(use_cache_env_var, "yes");

@@ -21,7 +21,7 @@
 #if defined(OS_WIN)
 #include "chrome/installer/util/browser_distribution.h"
 #elif defined(OS_LINUX)
-#include "base/env_var.h"
+#include "base/environment.h"
 #endif  // defined(OS_LINUX)
 
 #define FPL FILE_PATH_LITERAL
@@ -30,9 +30,9 @@
 namespace {
 
 // Provides mock environment variables values based on a stored map.
-class MockEnvVarGetter : public base::EnvVarGetter {
+class MockEnvironment : public base::Environment {
  public:
-  MockEnvVarGetter() {}
+  MockEnvironment() {}
 
   void Set(const std::string& name, const std::string& value) {
     variables_[name] = value;
@@ -60,7 +60,7 @@ class MockEnvVarGetter : public base::EnvVarGetter {
  private:
   std::map<std::string, std::string> variables_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockEnvVarGetter);
+  DISALLOW_COPY_AND_ASSIGN(MockEnvironment);
 };
 
 }  // namespace
@@ -82,13 +82,13 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-    MockEnvVarGetter env_getter;
-    env_getter.Set("XDG_DATA_HOME", temp_dir.path().value());
+    MockEnvironment env;
+    env.Set("XDG_DATA_HOME", temp_dir.path().value());
     ASSERT_TRUE(file_util::WriteFile(
         temp_dir.path().AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
     std::string contents;
-    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env_getter,
+    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env,
                                                              &contents));
     EXPECT_EQ(kTestData1, contents);
   }
@@ -97,8 +97,8 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-    MockEnvVarGetter env_getter;
-    env_getter.Set("XDG_DATA_DIRS", temp_dir.path().value());
+    MockEnvironment env;
+    env.Set("XDG_DATA_DIRS", temp_dir.path().value());
     ASSERT_TRUE(file_util::CreateDirectory(
         temp_dir.path().AppendASCII("applications")));
     ASSERT_TRUE(file_util::WriteFile(
@@ -106,7 +106,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
             .AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
     std::string contents;
-    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env_getter,
+    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env,
                                                              &contents));
     EXPECT_EQ(kTestData2, contents);
   }
@@ -115,8 +115,8 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
     ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-    MockEnvVarGetter env_getter;
-    env_getter.Set("XDG_DATA_DIRS", temp_dir.path().value() + ":" +
+    MockEnvironment env;
+    env.Set("XDG_DATA_DIRS", temp_dir.path().value() + ":" +
                    temp_dir.path().AppendASCII("applications").value());
     ASSERT_TRUE(file_util::CreateDirectory(
         temp_dir.path().AppendASCII("applications")));
@@ -128,7 +128,7 @@ TEST(ShellIntegrationTest, GetDesktopShortcutTemplate) {
             .AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
     std::string contents;
-    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env_getter,
+    ASSERT_TRUE(ShellIntegration::GetDesktopShortcutTemplate(&env,
                                                              &contents));
     EXPECT_EQ(kTestData1, contents);
   }

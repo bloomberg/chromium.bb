@@ -4,7 +4,7 @@
 
 #include "base/xdg_util.h"
 
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +15,7 @@ using ::testing::StrEq;
 
 namespace {
 
-class MockEnvVarGetter : public base::EnvVarGetter {
+class MockEnvironment : public base::Environment {
  public:
   MOCK_METHOD2(GetEnv, bool(const char*, std::string* result));
   MOCK_METHOD2(SetEnv, bool(const char*, const std::string& new_value));
@@ -30,7 +30,7 @@ const char* kXFCE = "xfce";
 }  // namespace
 
 TEST(XDGUtilTest, GetDesktopEnvironmentGnome) {
-  MockEnvVarGetter getter;
+  MockEnvironment getter;
   EXPECT_CALL(getter, GetEnv(_, _)).WillRepeatedly(Return(false));
   EXPECT_CALL(getter, GetEnv(StrEq("DESKTOP_SESSION"), _))
       .WillOnce(DoAll(SetArgumentPointee<1>(kGnome), Return(true)));
@@ -40,7 +40,7 @@ TEST(XDGUtilTest, GetDesktopEnvironmentGnome) {
 }
 
 TEST(XDGUtilTest, GetDesktopEnvironmentKDE4) {
-  MockEnvVarGetter getter;
+  MockEnvironment getter;
   EXPECT_CALL(getter, GetEnv(_, _)).WillRepeatedly(Return(false));
   EXPECT_CALL(getter, GetEnv(StrEq("DESKTOP_SESSION"), _))
       .WillOnce(DoAll(SetArgumentPointee<1>(kKDE4), Return(true)));
@@ -50,7 +50,7 @@ TEST(XDGUtilTest, GetDesktopEnvironmentKDE4) {
 }
 
 TEST(XDGUtilTest, GetDesktopEnvironmentKDE3) {
-  MockEnvVarGetter getter;
+  MockEnvironment getter;
   EXPECT_CALL(getter, GetEnv(_, _)).WillRepeatedly(Return(false));
   EXPECT_CALL(getter, GetEnv(StrEq("DESKTOP_SESSION"), _))
       .WillOnce(DoAll(SetArgumentPointee<1>(kKDE), Return(true)));
@@ -60,7 +60,7 @@ TEST(XDGUtilTest, GetDesktopEnvironmentKDE3) {
 }
 
 TEST(XDGUtilTest, GetDesktopEnvironmentXFCE) {
-  MockEnvVarGetter getter;
+  MockEnvironment getter;
   EXPECT_CALL(getter, GetEnv(_, _)).WillRepeatedly(Return(false));
   EXPECT_CALL(getter, GetEnv(StrEq("DESKTOP_SESSION"), _))
       .WillOnce(DoAll(SetArgumentPointee<1>(kXFCE), Return(true)));

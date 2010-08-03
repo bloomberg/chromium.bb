@@ -15,7 +15,7 @@
 #include "app/test/data/resource.h"
 #endif
 #include "base/basictypes.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/stl_util-inl.h"
@@ -139,7 +139,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
   icu::Locale locale = icu::Locale::getDefault();
 
 #if defined(OS_POSIX) && !defined(OS_CHROMEOS)
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
 
   // Test the support of LANGUAGE environment variable.
   SetICUDefaultLocale("en-US");

@@ -4,7 +4,7 @@
 
 #include "chrome/test/ui/ui_test.h"
 
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "build/build_config.h"
 
 class LocaleTestsBase : public UITest {
@@ -15,7 +15,7 @@ class LocaleTestsBase : public UITest {
  protected:
   void RestoreLcAllEnvironment() {
 #if defined(OS_LINUX)
-    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    scoped_ptr<base::Environment> env(base::Environment::Create());
     if (old_lc_all_) {
       env->SetEnv("LC_ALL", old_lc_all_);
     } else {

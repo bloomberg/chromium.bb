@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
@@ -131,7 +131,7 @@ AutomatedUITest::AutomatedUITest()
       base::StringToInt(str, &post_action_delay_);
     }
   }
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasEnv(env_vars::kHeadless))
     logging::SetLogReportHandler(SilentRuntimeReportHandler);
 }

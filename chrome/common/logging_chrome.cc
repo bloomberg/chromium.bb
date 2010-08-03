@@ -33,7 +33,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug_util.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -197,7 +197,7 @@ void InitChromeLogging(const CommandLine& command_line,
   // headless mode to be configured either by the Environment
   // Variable or by the Command Line Switch.  This is for
   // automated test purposes.
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasEnv(env_vars::kHeadless) ||
       command_line.HasSwitch(switches::kNoErrorDialogs))
     SuppressDialogs();
@@ -240,7 +240,7 @@ void CleanupChromeLogging() {
 
 FilePath GetLogFileName() {
   std::string filename;
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->GetEnv(env_vars::kLogFileName, &filename) && !filename.empty()) {
 #if defined(OS_WIN)
     return FilePath(UTF8ToWide(filename).c_str());

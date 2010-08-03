@@ -14,7 +14,7 @@
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -421,11 +421,11 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
   section->UserMetricsRecordAction(UserMetricsAction("Options_ChangeProxies"),
                                    NULL);
 
-  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
 
   ProxyConfigCommand command;
   bool found_command = false;
-  switch (base::GetDesktopEnvironment(env_getter.get())) {
+  switch (base::GetDesktopEnvironment(env.get())) {
     case base::DESKTOP_ENVIRONMENT_GNOME: {
       size_t index;
       ProxyConfigCommand commands[2];
@@ -455,7 +455,7 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
   if (found_command) {
     StartProxyConfigUtil(command);
   } else {
-    const char* name = base::GetDesktopEnvironmentName(env_getter.get());
+    const char* name = base::GetDesktopEnvironmentName(env.get());
     if (name)
       LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
     BrowserList::GetLastActive()->

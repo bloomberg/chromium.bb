@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
@@ -70,7 +70,7 @@ class ShutdownTest : public UITest {
                        UITest::ShutdownType shutdown_type) {
     const int kNumCyclesMax = 20;
     int numCycles = kNumCyclesMax;
-    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string numCyclesEnv;
     if (env->GetEnv(env_vars::kStartupTestsNumCycles, &numCyclesEnv) &&
         base::StringToInt(numCyclesEnv, &numCycles)) {

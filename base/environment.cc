@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/env_var.h"
+#include "base/environment.h"
 
 #if defined(OS_POSIX)
 #include <stdlib.h>
@@ -19,7 +19,7 @@
 
 namespace {
 
-class EnvVarGetterImpl : public base::EnvVarGetter {
+class EnvironmentImpl : public base::Environment {
  public:
   virtual bool GetEnv(const char* variable_name, std::string* result) {
     if (GetEnvImpl(variable_name, result))
@@ -112,14 +112,14 @@ const char kHome[] = "HOME";
 
 }  // namespace env_vars
 
-EnvVarGetter::~EnvVarGetter() {}
+Environment::~Environment() {}
 
 // static
-EnvVarGetter* EnvVarGetter::Create() {
-  return new EnvVarGetterImpl();
+Environment* Environment::Create() {
+  return new EnvironmentImpl();
 }
 
-bool EnvVarGetter::HasEnv(const char* variable_name) {
+bool Environment::HasEnv(const char* variable_name) {
   return GetEnv(variable_name, NULL);
 }
 

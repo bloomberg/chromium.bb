@@ -6,7 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -863,8 +863,8 @@ void ProfileImpl::CreatePasswordStore() {
   } else if (store_type == L"gnome") {
     desktop_env = base::DESKTOP_ENVIRONMENT_GNOME;
   } else if (store_type == L"detect") {
-    scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
-    desktop_env = base::GetDesktopEnvironment(env_getter.get());
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    desktop_env = base::GetDesktopEnvironment(env.get());
     LOG(INFO) << "Password storage detected desktop environment: " <<
               base::GetDesktopEnvironmentName(desktop_env);
   } else {

@@ -8,7 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/event_recorder.h"
 #include "base/histogram.h"
 #include "base/path_service.h"
@@ -312,7 +312,7 @@ LaunchMode GetLaunchShortcutKind() {
     // The windows quick launch path is not localized.
     if (shortcut.find(L"\\Quick Launch\\") != std::wstring::npos)
       return LM_SHORTCUT_QUICKLAUNCH;
-    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string appdata_path;
     env->GetEnv("USERPROFILE", &appdata_path);
     if (!appdata_path.empty() &&

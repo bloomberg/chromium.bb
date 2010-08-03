@@ -33,7 +33,7 @@
 #include "webkit/glue/dom_operations.h"
 
 #if defined(OS_LINUX)
-#include "base/env_var.h"
+#include "base/environment.h"
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
@@ -259,10 +259,10 @@ bool CreateShortcutTask::CreateShortcut() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
 #if defined(OS_LINUX)
-  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::string shortcut_template;
-  if (!ShellIntegration::GetDesktopShortcutTemplate(env_getter.get(),
+  if (!ShellIntegration::GetDesktopShortcutTemplate(env.get(),
                                                     &shortcut_template)) {
     return false;
   }

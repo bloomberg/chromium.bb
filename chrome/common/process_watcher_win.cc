@@ -5,7 +5,7 @@
 #include "chrome/common/process_watcher.h"
 
 #include "base/scoped_ptr.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/message_loop.h"
 #include "base/object_watcher.h"
 #include "chrome/common/env_vars.h"
@@ -49,7 +49,7 @@ class TimerExpiredTask : public Task, public base::ObjectWatcher::Delegate {
 
  private:
   void KillProcess() {
-    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    scoped_ptr<base::Environment> env(base::Environment::Create());
     if (env->HasEnv(env_vars::kHeadless)) {
      // If running the distributed tests, give the renderer a little time
      // to figure out that the channel is shutdown and unwind.

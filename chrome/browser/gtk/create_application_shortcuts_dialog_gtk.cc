@@ -8,7 +8,7 @@
 
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/gtk/gtk_util.h"
 #include "chrome/browser/shell_integration.h"
@@ -187,10 +187,10 @@ void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
-  scoped_ptr<base::EnvVarGetter> env_getter(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::string shortcut_template;
-  if (ShellIntegration::GetDesktopShortcutTemplate(env_getter.get(),
+  if (ShellIntegration::GetDesktopShortcutTemplate(env.get(),
                                                    &shortcut_template)) {
     ShellIntegration::CreateDesktopShortcut(shortcut_info,
                                             shortcut_template);

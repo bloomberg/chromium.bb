@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/scoped_ptr.h"
@@ -29,7 +29,7 @@ static const int kRouteId = 200;
 static const int kStreamId = 50;
 
 static bool IsRunningHeadless() {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   if (env->HasEnv("CHROME_HEADLESS"))
     return true;
   return false;

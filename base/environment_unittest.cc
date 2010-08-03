@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-typedef PlatformTest EnvVarTest;
+typedef PlatformTest EnvironmentTest;
 
-TEST_F(EnvVarTest, GetEnvVar) {
+TEST_F(EnvironmentTest, GetEnvVar) {
   // Every setup should have non-empty PATH...
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string env_value;
   EXPECT_TRUE(env->GetEnv("PATH", &env_value));
   EXPECT_NE(env_value, "");
 }
 
-TEST_F(EnvVarTest, HasEnvVar) {
+TEST_F(EnvironmentTest, HasEnvVar) {
   // Every setup should have PATH...
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   EXPECT_TRUE(env->HasEnv("PATH"));
 }
 
-TEST_F(EnvVarTest, SetEnvVar) {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+TEST_F(EnvironmentTest, SetEnvVar) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
 
   const char kFooUpper[] = "FOO";
   const char kFooLower[] = "foo";
@@ -38,8 +38,8 @@ TEST_F(EnvVarTest, SetEnvVar) {
   EXPECT_EQ(var_value, kFooLower);
 }
 
-TEST_F(EnvVarTest, UnSetEnvVar) {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+TEST_F(EnvironmentTest, UnSetEnvVar) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
 
   const char kFooUpper[] = "FOO";
   const char kFooLower[] = "foo";

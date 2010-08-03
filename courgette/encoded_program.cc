@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -266,7 +266,7 @@ enum FieldSelect {
 static FieldSelect GetFieldSelect() {
 #if 1
   // TODO(sra): Use better configuration.
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string s;
   env->GetEnv("A_FIELDS", &s);
   if (!s.empty()) {

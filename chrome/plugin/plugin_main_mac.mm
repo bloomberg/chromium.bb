@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/chrome_application_mac.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/common/plugin_carbon_interpose_constants_mac.h"
@@ -11,7 +11,7 @@
 
 #if !defined(__LP64__)
 void TrimInterposeEnvironment() {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::string interpose_list;
   if (!env->GetEnv(plugin_interpose_strings::kDYLDInsertLibrariesKey,

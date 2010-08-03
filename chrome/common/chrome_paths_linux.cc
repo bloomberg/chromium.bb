@@ -4,7 +4,7 @@
 
 #include "chrome/common/chrome_paths_internal.h"
 
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/scoped_ptr.h"
 #include "base/xdg_util.h"
@@ -17,7 +17,7 @@ namespace chrome {
 // ~/.config/google-chrome/ for official builds.
 // (This also helps us sidestep issues with other apps grabbing ~/.chromium .)
 bool GetDefaultUserDataDirectory(FilePath* result) {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   FilePath config_dir(
       base::GetXDGDirectory(env.get(), "XDG_CONFIG_HOME", ".config"));
 #if defined(GOOGLE_CHROME_BUILD)
@@ -29,7 +29,7 @@ bool GetDefaultUserDataDirectory(FilePath* result) {
 }
 
 bool GetChromeFrameUserDataDirectory(FilePath* result) {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   FilePath config_dir(
       base::GetXDGDirectory(env.get(), "XDG_CONFIG_HOME", ".config"));
 #if defined(GOOGLE_CHROME_BUILD)
@@ -41,7 +41,7 @@ bool GetChromeFrameUserDataDirectory(FilePath* result) {
 }
 
 bool GetUserDocumentsDirectory(FilePath* result) {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   *result = base::GetXDGUserDirectory(env.get(), "DOCUMENTS", "Documents");
   return true;
 }
@@ -49,7 +49,7 @@ bool GetUserDocumentsDirectory(FilePath* result) {
 // We respect the user's preferred download location, unless it is
 // ~ or their desktop directory, in which case we default to ~/Downloads.
 bool GetUserDownloadsDirectory(FilePath* result) {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   *result = base::GetXDGUserDirectory(env.get(), "DOWNLOAD", "Downloads");
 
   FilePath home = file_util::GetHomeDir();
@@ -68,7 +68,7 @@ bool GetUserDownloadsDirectory(FilePath* result) {
 }
 
 bool GetUserDesktop(FilePath* result) {
-  scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+  scoped_ptr<base::Environment> env(base::Environment::Create());
   *result = base::GetXDGUserDirectory(env.get(), "DESKTOP", "Desktop");
   return true;
 }

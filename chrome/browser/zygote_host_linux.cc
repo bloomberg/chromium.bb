@@ -11,7 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
-#include "base/env_var.h"
+#include "base/environment.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -40,7 +40,7 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
     if (!saved_envvar)
       continue;
 
-    scoped_ptr<base::EnvVarGetter> env(base::EnvVarGetter::Create());
+    scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string value;
     if (env->GetEnv(envvar, &value))
       env->SetEnv(saved_envvar, value);
