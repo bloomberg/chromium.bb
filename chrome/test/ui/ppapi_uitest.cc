@@ -103,7 +103,8 @@ TEST_F(PPAPITest, URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
-TEST_F(PPAPITest, PaintAgggregator) {
+// Flaky, http://crbug.com/51012
+TEST_F(PPAPITest, FLAKY_PaintAggregator) {
   RunTestViaHTTP("PaintAggregator");
 }
 
