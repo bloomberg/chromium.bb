@@ -62,6 +62,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/main_function_params.h"
@@ -801,14 +802,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // tabs.
   g_browser_process->tab_closeable_state_watcher();
 
-#if defined(USE_LINUX_BREAKPAD)
-  // Needs to be called after we have chrome::DIR_USER_DATA and
-  // g_browser_process.
-  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-      new GetLinuxDistroTask());
-  InitCrashReporter();
-#endif
-
   // The broker service initialization needs to run early because it will
   // initialize the sandbox broker, which requires the process to swap its
   // window station. During this time all the UI will be broken. This has to
@@ -817,6 +810,29 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   PrefService* local_state = InitializeLocalState(parsed_command_line,
                                                   is_first_run);
+
+#if defined(USE_LINUX_BREAKPAD)
+  // Needs to be called after we have chrome::DIR_USER_DATA and
+  // g_browser_process.
+  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
+      new GetLinuxDistroTask());
+
+  // Check whether we should initialize the crash reporter. It may be disabled
+  // through configuration policy or user preference. The kHeadless environment
+  // variable overrides the decision, but only if the crash service is under
+  // control of the user.
+  const PrefService::Preference* metrics_reporting_enabled =
+      local_state->FindPreference(prefs::kMetricsReportingEnabled);
+  CHECK(metrics_reporting_enabled);
+  bool breakpad_enabled =
+      local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+  if (!breakpad_enabled && metrics_reporting_enabled->IsUserModifiable()) {
+    breakpad_enabled = (getenv(env_vars::kHeadless) != NULL) ||
+        parsed_command_line.HasSwitch(switches::kEnableCrashReporter);
+  }
+  if (breakpad_enabled)
+    InitCrashReporter();
+#endif
 
   InitializeToolkit();  // Must happen before we try to display any UI.
 

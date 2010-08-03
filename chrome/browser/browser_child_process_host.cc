@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/env_vars.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/pref_names.h"
@@ -32,16 +31,6 @@
 #if defined(OS_LINUX)
 #include "base/linux_util.h"
 #endif  // OS_LINUX
-
-#if defined(OS_POSIX)
-// This is defined in chrome/browser/google_update_settings_posix.cc.  It's the
-// static string containing the user's unique GUID.  We send this in the crash
-// report.
-namespace google_update {
-extern std::string posix_guid;
-}  // namespace google_update
-#endif  // OS_POSIX
-
 
 namespace {
 
@@ -90,12 +79,11 @@ BrowserChildProcessHost::~BrowserChildProcessHost() {
 void BrowserChildProcessHost::SetCrashReporterCommandLine(
     CommandLine* command_line) {
 #if defined(USE_LINUX_BREAKPAD)
-  const bool unattended = (getenv(env_vars::kHeadless) != NULL);
-  if (unattended || GoogleUpdateSettings::GetCollectStatsConsent()) {
+  if (IsCrashReporterEnabled()) {
+    std::string client_id =
+        g_browser_process->local_state()->GetString(prefs::kMetricsClientID);
     command_line->AppendSwitchASCII(switches::kEnableCrashReporter,
-                                    google_update::posix_guid +
-                                    "," +
-                                    base::GetLinuxDistro());
+                                    client_id + "," + base::GetLinuxDistro());
   }
 #elif defined(OS_MACOSX)
   if (IsCrashReporterEnabled()) {

@@ -739,11 +739,8 @@ void InitCrashReporter() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
-  const bool unattended = (getenv(env_vars::kHeadless) != NULL);
   if (process_type.empty()) {
-    if (!(unattended || GoogleUpdateSettings::GetCollectStatsConsent()))
-      return;
-    EnableCrashDumping(unattended);
+    EnableCrashDumping(getenv(env_vars::kHeadless) != NULL);
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kPluginProcess ||
              process_type == switches::kZygoteProcess) {
