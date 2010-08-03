@@ -3877,11 +3877,3 @@
    fun:_ZN14RenderViewHost13OnMsgNavigateERKN3IPC7MessageE
    fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
 }
-{
-   bug_51079
-   Memcheck:Cond
-   ...
-   fun:_ZN9Histogram3AddEi
-   fun:_ZNK3net12ClientSocket27EmitPreconnectionHistogramsEv
-   fun:_ZN3net12ClientSocketD2Ev
-}
