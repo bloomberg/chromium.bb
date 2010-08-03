@@ -2216,13 +2216,12 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   if (!found || !info.enabled)
     return NULL;
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableClickToPlay)) {
-    if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS) &&
+  if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS) &&
       info.path.value() != kDefaultPluginLibraryName) {
-      didNotAllowPlugins(frame);
-      return CreatePluginPlaceholder(frame, params);
-    }
+    DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableClickToPlay));
+    didNotAllowPlugins(frame);
+    return CreatePluginPlaceholder(frame, params);
   }
   return CreatePluginInternal(frame, params, &info, actual_mime_type);
 }
