@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/registry.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "chrome/common/result_codes.h"
@@ -38,7 +39,7 @@ namespace {
 void CloseAllChromeProcesses() {
   for (int j = 0; j < 4; ++j) {
     std::wstring wnd_class(L"Chrome_WidgetWin_");
-    wnd_class.append(IntToWString(j));
+    wnd_class.append(base::IntToString16(j));
     HWND window = FindWindowEx(NULL, NULL, wnd_class.c_str(), NULL);
     while (window) {
       HWND tmpWnd = window;

@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "googleurl/src/gurl.h"
@@ -883,7 +884,7 @@ void SlaveSM::Fail() {
 HANDLE CreateServer(std::wstring* pipe_number) {
   std::wstring pipe_name(kPipePrefix);
   srand(static_cast<int>(base::Time::Now().ToInternalValue()));
-  *pipe_number = IntToWString(rand());
+  *pipe_number = base::IntToString16(rand());
   pipe_name.append(*pipe_number);
 
   DWORD mode = PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE |

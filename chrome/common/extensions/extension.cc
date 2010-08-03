@@ -213,7 +213,7 @@ bool Extension::GenerateId(const std::string& input, std::string* output) {
   SHA256_Update(&ctx, ubuf, input.length());
   uint8 hash[Extension::kIdSize];
   SHA256_End(&ctx, hash, NULL, sizeof(hash));
-  *output = StringToLowerASCII(HexEncode(hash, sizeof(hash)));
+  *output = StringToLowerASCII(base::HexEncode(hash, sizeof(hash)));
   ConvertHexadecimalToIDAlphabet(output);
 
   return true;

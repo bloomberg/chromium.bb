@@ -24,6 +24,7 @@
 #include "base/process_util.h"
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_constants.h"
@@ -591,13 +592,13 @@ bool DecodeImportParams(const std::wstring& encoded,
   if (v.size() != 3)
     return false;
 
-  if (!StringToInt(v[0], browser_type))
+  if (!base::StringToInt(v[0], browser_type))
     return false;
 
-  if (!StringToInt(v[1], options))
+  if (!base::StringToInt(v[1], options))
     return false;
 
-  *window = reinterpret_cast<HWND>(StringToInt64(v[2]));
+  *window = reinterpret_cast<HWND>(base::StringToInt64(v[2]));
   return true;
 }
 

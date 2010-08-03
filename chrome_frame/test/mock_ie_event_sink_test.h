@@ -9,6 +9,7 @@
 #include <atlcom.h>
 #include <string>
 
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/ie_event_sink.h"
@@ -213,7 +214,7 @@ class MockIEEventSinkTest {
     DCHECK_LT(index, 5);
     std::wstring base_name = L"anchor.html";
     if (index > 0)
-      base_name += std::wstring(L"#a") + IntToWString(index);
+      base_name += std::wstring(L"#a") + base::IntToString16(index);
     return GetTestUrl(base_name);
   }
 

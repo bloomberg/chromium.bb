@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -336,8 +337,9 @@ bool PluginDatabaseHandler::ReadPluginInfo(_xmlNode* plugin_node,
         plugin_download_url_for_display_node->children;
     if (url_for_display_val) {
       int url_for_display = 0;
-      StringToInt(reinterpret_cast<const char*>(url_for_display_val->content),
-                  &url_for_display);
+      base::StringToInt(
+          reinterpret_cast<const char*>(url_for_display_val->content),
+          &url_for_display);
       if (url_for_display != 0)
         plugin_detail->download_url_for_display = true;
     }

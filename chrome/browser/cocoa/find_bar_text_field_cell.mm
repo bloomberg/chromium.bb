@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "grit/generated_resources.h"
@@ -65,9 +66,10 @@ CGFloat WidthForResults(NSAttributedString* resultsString) {
 
 - (void)setActiveMatch:(NSInteger)current of:(NSInteger)total {
   NSString* results =
-      base::SysWideToNSString(l10n_util::GetStringF(IDS_FIND_IN_PAGE_COUNT,
-                                                    IntToWString(current),
-                                                    IntToWString(total)));
+      base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+          IDS_FIND_IN_PAGE_COUNT,
+          base::IntToString16(current),
+          base::IntToString16(total)));
   resultsString_.reset([[NSAttributedString alloc]
                          initWithString:results
                          attributes:[self resultsAttributes:(total > 0)]]);

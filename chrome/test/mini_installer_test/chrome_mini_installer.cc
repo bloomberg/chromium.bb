@@ -9,6 +9,7 @@
 #include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/registry.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -633,10 +634,13 @@ void ChromeMiniInstaller::LaunchBrowser(const std::wstring& launch_path,
 bool ChromeMiniInstaller::VerifyOverInstall(
     const std::wstring& value_before_overinstall,
     const std::wstring& value_after_overinstall) {
-  int64 reg_key_value_before_overinstall =  StringToInt64(
-                                                 value_before_overinstall);
-  int64 reg_key_value_after_overinstall =  StringToInt64(
-                                                 value_after_overinstall);
+  int64 reg_key_value_before_overinstall;
+  base::StringToInt64(value_before_overinstall,
+                      &reg_key_value_before_overinstall);
+  int64 reg_key_value_after_overinstall;
+  base::StringToInt64(value_after_overinstall,
+                      &reg_key_value_after_overinstall);
+
   // Compare to see if the version is less.
   printf("Reg Key value before overinstall is%ls\n",
           value_before_overinstall.c_str());

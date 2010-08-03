@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/process_util.h"
 #include "base/registry.h"
 #include "base/scoped_handle_win.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
@@ -521,7 +522,9 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     // Launch the inactive user toast experiment.
     std::wstring flavor =
         cmd_line.GetSwitchValue(installer_util::switches::kInactiveUserToast);
-    dist->InactiveUserToastExperiment(StringToInt(flavor),
+    int flavor_int;
+    base::StringToInt(flavor, &flavor_int);
+    dist->InactiveUserToastExperiment(flavor_int,
         cmd_line.HasSwitch(installer_util::switches::kSystemLevelToast));
     return true;
   } else if (cmd_line.HasSwitch(installer_util::switches::kSystemLevelToast)) {

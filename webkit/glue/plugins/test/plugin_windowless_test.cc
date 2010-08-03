@@ -1,8 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #define STRSAFE_NO_DEPRECATE
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "webkit/glue/plugins/test/plugin_windowless_test.h"
 #include "webkit/glue/plugins/test/plugin_client.h"
@@ -151,9 +152,9 @@ void WindowlessPluginTest::MultipleInstanceSyncCalls(NPNetscapeFuncs* browser) {
 #if defined(OS_MACOSX)
 std::string StringForPoint(int x, int y) {
   std::string point_string("(");
-  point_string.append(IntToString(x));
+  point_string.append(base::IntToString(x));
   point_string.append(", ");
-  point_string.append(IntToString(y));
+  point_string.append(base::IntToString(y));
   point_string.append(")");
   return point_string;
 }

@@ -63,12 +63,12 @@ void UITestSuite::Initialize() {
   std::wstring batch_count_str =
       parsed_command_line.GetSwitchValue(UITestSuite::kBatchCount);
   if (!batch_count_str.empty()) {
-    batch_count = StringToInt(WideToUTF16Hack(batch_count_str));
+    base::StringToInt(WideToUTF16Hack(batch_count_str), &batch_count);
   }
   std::wstring batch_index_str =
       parsed_command_line.GetSwitchValue(UITestSuite::kBatchIndex);
   if (!batch_index_str.empty()) {
-    batch_index = StringToInt(WideToUTF16Hack(batch_index_str));
+    base::StringToInt(WideToUTF16Hack(batch_index_str), &batch_index);
   }
   if (batch_count > 0 && batch_index >= 0 && batch_index < batch_count) {
     // Running UI test in parallel. Gtest supports running tests in shards,

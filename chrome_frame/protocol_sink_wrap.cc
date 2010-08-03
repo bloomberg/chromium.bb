@@ -189,7 +189,9 @@ ScopedComPtr<IBindCtx> BindCtxFromIBindInfo(IInternetBindInfo* bind_info) {
   bind_info->GetBindString(BINDSTRING_PTR_BIND_CONTEXT, &bind_ctx_string, 1,
                            &count);
   if (bind_ctx_string) {
-    IBindCtx* pbc = reinterpret_cast<IBindCtx*>(StringToInt(bind_ctx_string));
+    int bind_ctx_int;
+    base::StringToInt(bind_ctx_string, &bind_ctx_int);
+    IBindCtx* pbc = reinterpret_cast<IBindCtx*>(bind_ctx_int);
     bind_ctx.Attach(pbc);
     CoTaskMemFree(bind_ctx_string);
   }

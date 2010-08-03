@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/rand_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -298,7 +299,7 @@ void PrintSystemCUPS::EnumeratePrinters(PrinterList* printer_list) {
     const char* state = cupsGetOption(kCUPSPrinterStateOpt,
         printer.num_options, printer.options);
     if (state != NULL)
-      StringToInt(state, &printer_info.printer_status);
+      base::StringToInt(state, &printer_info.printer_status);
 
     // Store printer options.
     for (int opt_index = 0; opt_index < printer.num_options; opt_index++) {
@@ -467,7 +468,7 @@ std::string PrintSystem::GenerateProxyId() {
   // unique for this user. Rand may return the same number. We'll need to change
   // this in the future.
   std::string id("CP_PROXY_");
-  id += Uint64ToString(base::RandUint64());
+  id += base::Uint64ToString(base::RandUint64());
   return id;
 }
 

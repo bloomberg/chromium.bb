@@ -16,6 +16,7 @@
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_variant_win.h"
+#include "base/string_number_conversions.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/thread_local.h"
@@ -1070,7 +1071,7 @@ int GetHttpResponseStatusFromBinding(IBinding* binding) {
     DWORD reserved = 0;
     if (SUCCEEDED(info->QueryInfo(HTTP_QUERY_STATUS_CODE, status, &buf_size,
                                   &flags, &reserved))) {
-      http_status = StringToInt(status);
+      base::StringToInt(status, &http_status);
     } else {
       NOTREACHED() << "Failed to get HTTP status";
     }

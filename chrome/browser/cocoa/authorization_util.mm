@@ -13,6 +13,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/logging.h"
 #import "base/mac_util.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/cocoa/scoped_authorizationref.h"
 
@@ -118,7 +119,7 @@ OSStatus ExecuteWithPrivilegesAndGetPID(AuthorizationRef authorization,
       --line_length;
     }
     std::string line(line_c, line_length);
-    if (!StringToInt(line, &line_pid)) {
+    if (!base::StringToInt(line, &line_pid)) {
       // StringToInt may have set line_pid to something, but if the conversion
       // was imperfect, use -1.
       LOG(ERROR) << "ExecuteWithPrivilegesAndGetPid: funny line: " << line;

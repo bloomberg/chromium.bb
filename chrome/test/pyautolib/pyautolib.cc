@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/automation/extension_proxy.h"
@@ -10,6 +11,11 @@
 #include "chrome/test/pyautolib/pyautolib.h"
 #include "googleurl/src/gurl.h"
 
+static int64 StringToId(const std::wstring& str) {
+  int64 id;
+  base::StringToInt64(WideToUTF8(str), &id);
+  return id;
+}
 
 // PyUITestSuiteBase
 PyUITestSuiteBase::PyUITestSuiteBase(int argc, char** argv)
@@ -209,28 +215,27 @@ std::string PyUITestBase::_GetBookmarksAsJSON() {
 }
 
 bool PyUITestBase::AddBookmarkGroup(std::wstring& parent_id, int index,
-                                     std::wstring& title) {
+                                    std::wstring& title) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
 
-  return browser_proxy->AddBookmarkGroup(StringToInt64(WideToUTF16(parent_id)),
-                                         index, title);
+  return browser_proxy->AddBookmarkGroup(StringToId(parent_id), index, title);
 }
 
 bool PyUITestBase::AddBookmarkURL(std::wstring& parent_id, int index,
-                                   std::wstring& title, std::wstring& url) {
+                                  std::wstring& title, std::wstring& url) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(0);  // Window doesn't matter.
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
 
-  return browser_proxy->AddBookmarkURL(StringToInt64(WideToUTF16(parent_id)),
+  return browser_proxy->AddBookmarkURL(StringToId(parent_id),
                                        index, title,
-                                       GURL(WideToUTF16(url)));
+                                       GURL(WideToUTF8(url)));
 }
 
 bool PyUITestBase::ReparentBookmark(
@@ -241,10 +246,9 @@ bool PyUITestBase::ReparentBookmark(
   if (!browser_proxy.get())
     return false;
 
-  return browser_proxy->ReparentBookmark(
-      StringToInt64(WideToUTF16(id)),
-      StringToInt64(WideToUTF16(new_parent_id)),
-      index);
+  return browser_proxy->ReparentBookmark(StringToId(id),
+                                         StringToId(new_parent_id),
+                                         index);
 }
 
 bool PyUITestBase::SetBookmarkTitle(std::wstring& id, std::wstring& title) {
@@ -254,8 +258,7 @@ bool PyUITestBase::SetBookmarkTitle(std::wstring& id, std::wstring& title) {
   if (!browser_proxy.get())
     return false;
 
-  return browser_proxy->SetBookmarkTitle(StringToInt64(WideToUTF16(id)),
-                                         title);
+  return browser_proxy->SetBookmarkTitle(StringToId(id), title);
 }
 
 bool PyUITestBase::SetBookmarkURL(std::wstring& id, std::wstring& url) {
@@ -265,8 +268,7 @@ bool PyUITestBase::SetBookmarkURL(std::wstring& id, std::wstring& url) {
   if (!browser_proxy.get())
     return false;
 
-  return browser_proxy->SetBookmarkURL(StringToInt64(WideToUTF16(id)),
-                                       GURL(WideToUTF16(url)));
+  return browser_proxy->SetBookmarkURL(StringToId(id), GURL(WideToUTF8(url)));
 }
 
 bool PyUITestBase::RemoveBookmark(std::wstring& id) {
@@ -276,7 +278,7 @@ bool PyUITestBase::RemoveBookmark(std::wstring& id) {
   if (!browser_proxy.get())
     return false;
 
-  return browser_proxy->RemoveBookmark(StringToInt64(WideToUTF16(id)));
+  return browser_proxy->RemoveBookmark(StringToId(id));
 }
 
 scoped_refptr<BrowserProxy> PyUITestBase::GetBrowserWindow(int window_index) {
@@ -284,7 +286,7 @@ scoped_refptr<BrowserProxy> PyUITestBase::GetBrowserWindow(int window_index) {
 }
 
 std::string PyUITestBase::_SendJSONRequest(int window_index,
-                                            std::string& request) {
+                                           std::string& request) {
   scoped_refptr<BrowserProxy> browser_proxy =
       automation()->GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());

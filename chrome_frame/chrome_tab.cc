@@ -18,6 +18,7 @@
 #include "base/logging_win.h"
 #include "base/path_service.h"
 #include "base/registry.h"
+#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -99,7 +100,7 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
     if (SUCCEEDED(hr)) {
       SYSTEMTIME local_time;
       ::GetSystemTime(&local_time);
-      std::string hex(HexEncode(&local_time, sizeof(local_time)));
+      std::string hex(base::HexEncode(&local_time, sizeof(local_time)));
       base::StringPiece sp_hex(hex);
       hr = registrar->AddReplacement(L"SYSTIME",
                                      base::SysNativeMBToWide(sp_hex).c_str());
