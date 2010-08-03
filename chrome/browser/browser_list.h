@@ -53,11 +53,8 @@ class BrowserList {
   // most recently open Browser's window was closed, returns the first Browser
   // in the list.  If no Browsers exist, returns NULL.
   //
-  // WARNING: this is NULL until a browser becomes active. If during startup
-  // a browser does not become active (perhaps the user launches Chrome, then
-  // clicks on another app before the first browser window appears) then this
-  // returns NULL.
-  // WARNING #2: this will always be NULL in unit tests run on the bots.
+  // WARNING: This is NULL until a browser becomes active.  That should happen
+  // during launch; see comment in BrowserInit::LaunchWithProfile::Launch().
   static Browser* GetLastActive();
 
   // Identical in behavior to GetLastActive(), except that the most recently
