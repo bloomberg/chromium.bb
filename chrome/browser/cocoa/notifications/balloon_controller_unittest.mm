@@ -99,7 +99,6 @@ TEST_F(BalloonControllerTest, SizesTest) {
   BalloonController* controller =
       [[TestBalloonController alloc] initWithBalloon:balloon.get()];
 
-  [controller initWithBalloon:balloon.get()];
   [controller showWindow:nil];
 
   EXPECT_TRUE([controller desiredTotalWidth] > 100);
