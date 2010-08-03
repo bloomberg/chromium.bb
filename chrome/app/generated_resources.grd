@@ -749,6 +749,9 @@ each locale. -->
         <message name="IDS_ZOOM_PLUS2" desc="The text label of the Make Text Larger menu item in the merged menu">
           +
         </message>
+        <message name="IDS_ACCNAME_ZOOM_PLUS2" desc="The accessible description of the Make Text Larger menu item in the merged menu">
+          Make Text Larger
+        </message>
         <message name="IDS_ZOOM_NORMAL" desc="The text label of the Make Text Normal Size menu item">
           &amp;Normal
         </message>
@@ -757,6 +760,9 @@ each locale. -->
         </message>
         <message name="IDS_ZOOM_MINUS2" desc="The text label of the Make Text Smaller menu item in the merged menu">
           -
+        </message>
+        <message name="IDS_ACCNAME_ZOOM_MINUS2" desc="The accessible description of the Make Text Smaller menu item in the merged menu">
+          Make Text Smaller
         </message>
         <message name="IDS_ZOOM_PERCENT" desc="Current pages zoom factor; shown in merged menu">
         <ph name="VALUE">$1<ex>100</ex></ph>%
@@ -973,6 +979,9 @@ each locale. -->
         </message>
         <message name="IDS_FULLSCREEN" desc="Switches into fullscreen mode">
           &amp;Full screen
+        </message>
+        <message name="IDS_ACCNAME_FULLSCREEN" desc="The accessible name of the fullscreen button in the new merged menu">
+          Full screen
         </message>
         <message name="IDS_CLEAR_BROWSING_DATA" desc="The text label for the menu item for clearing of browsing data">
           &amp;Clear browsing data...

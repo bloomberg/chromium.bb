@@ -364,6 +364,8 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     decrement_button_ = CreateAndConfigureButton(
         this, this, IDS_ZOOM_MINUS2, MenuButtonBackground::LEFT_BUTTON,
         menu_model, decrement_index, NULL);
+    decrement_button_->SetAccessibleName(
+        l10n_util::GetString(IDS_ACCNAME_ZOOM_MINUS2));
 
     zoom_label_ = new Label(l10n_util::GetStringF(IDS_ZOOM_PERCENT, L"100"));
     zoom_label_->SetColor(MenuConfig::instance().text_color);
@@ -379,6 +381,8 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
     increment_button_ = CreateAndConfigureButton(
         this, this, IDS_ZOOM_PLUS2, MenuButtonBackground::RIGHT_BUTTON,
         menu_model, increment_index, NULL);
+    increment_button_->SetAccessibleName(
+        l10n_util::GetString(IDS_ACCNAME_ZOOM_PLUS2));
 
     center_bg->SetOtherButtons(decrement_button_, increment_button_);
 
@@ -396,6 +400,8 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
         0, kHorizontalPadding, 0, kHorizontalPadding));
     fullscreen_button_->set_background(
         new MenuButtonBackground(MenuButtonBackground::SINGLE_BUTTON));
+    fullscreen_button_->SetAccessibleName(
+        l10n_util::GetString(IDS_ACCNAME_FULLSCREEN));
     AddChildView(fullscreen_button_);
 
     UpdateZoomControls();
