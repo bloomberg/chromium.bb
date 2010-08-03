@@ -32,6 +32,14 @@ function ChromeExOAuth(url_request_token, url_auth_token, url_access_token,
   this.key_token_secret = "oauth_token_secret";
   this.callback_page = opt_args && opt_args['callback_page'] ||
       "chrome_ex_oauth.html";
+  this.auth_params = {};
+  if (opt_args && opt_args['auth_params']) {
+    for (key in opt_args['auth_params']) {
+      if (opt_args['auth_params'].hasOwnProperty(key)) {
+        this.auth_params[key] = opt_args['auth_params'][key];
+      }
+    }
+  }
 };
 
 /*******************************************************************************
@@ -51,6 +59,9 @@ function ChromeExOAuth(url_request_token, url_auth_token, url_access_token,
  *         "consumer_secret" {String} OAuth consumer secret.
  *         "scope" {String} OAuth access scope.
  *         "app_name" {String} Application name.
+ *         "auth_params" {Object} Additional parameters to pass to the
+ *             Authorization token URL.  For an example, 'hd', 'hl', 'btmpl':
+ *             http://code.google.com/apis/accounts/docs/OAuth_ref.html#GetAuth
  * @return {ChromeExOAuth} An initialized ChromeExOAuth object.
  */
 ChromeExOAuth.initBackgroundPage = function(oauth_config) {
@@ -60,11 +71,14 @@ ChromeExOAuth.initBackgroundPage = function(oauth_config) {
   window.chromeExOAuthRequestingAccess = false;
 
   var url_match = chrome.extension.getURL(window.chromeExOAuth.callback_page);
+  var tabs = {};
   chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     if (changeInfo.url &&
         changeInfo.url.substr(0, url_match.length) === url_match &&
+        changeInfo.url != tabs[tabId] &&
         window.chromeExOAuthRequestingAccess == false) {
-      chrome.tabs.create({ 'url' : changeInfo.url }, function() {
+      chrome.tabs.create({ 'url' : changeInfo.url }, function(tab) {
+        tabs[tab.id] = tab.url;
         chrome.tabs.remove(tabId);
       });
     }
@@ -222,6 +236,9 @@ ChromeExOAuth.prototype.getAuthorizationHeader = function(url, method,
  *         "consumer_secret" {String} OAuth consumer secret.
  *         "scope" {String} OAuth access scope.
  *         "app_name" {String} Application name.
+ *         "auth_params" {Object} Additional parameters to pass to the
+ *             Authorization token URL.  For an example, 'hd', 'hl', 'btmpl':
+ *             http://code.google.com/apis/accounts/docs/OAuth_ref.html#GetAuth
  * @return {ChromeExOAuth} An initialized ChromeExOAuth object.
  */
 ChromeExOAuth.fromConfig = function(oauth_config) {
@@ -233,7 +250,8 @@ ChromeExOAuth.fromConfig = function(oauth_config) {
     oauth_config['consumer_secret'],
     oauth_config['scope'],
     {
-      'app_name' : oauth_config['app_name']
+      'app_name' : oauth_config['app_name'],
+      'auth_params' : oauth_config['auth_params']
     }
   );
 };
@@ -498,6 +516,11 @@ ChromeExOAuth.prototype.onRequestToken = function(callback, xhr) {
       this.setTokenSecret(params['oauth_token_secret']);
       var url = ChromeExOAuth.addURLParam(this.url_auth_token,
                                           "oauth_token", token);
+      for (var key in this.auth_params) {
+        if (this.auth_params.hasOwnProperty(key)) {
+          url = ChromeExOAuth.addURLParam(url, key, this.auth_params[key]);
+        }
+      }
       callback(url);
     } else {
       throw new Error("Fetching request token failed. Status " + xhr.status);

@@ -1,6 +1,6 @@
 {
   "name": "Google Document List Viewer",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "icons": {
     "48": "img/docs_spreadsheets-48.gif",
     "128": "img/docs_spreadsheets-128.gif"
