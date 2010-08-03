@@ -63,6 +63,7 @@
 #include "base/rand_util.h"
 #include "base/scoped_ptr.h"
 #include "base/sha2.h"
+#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/bloom_filter.h"
@@ -260,7 +261,7 @@ void CalculateBloomFilterFalsePositives(
     if (use_weights) {
       std::string::size_type pos = url.find_last_of(",");
       if (pos != std::string::npos) {
-        weight = StringToInt(std::string(url, pos + 1));
+        base::StringToInt(std::string(url, pos + 1), &weight);
         url = url.substr(0, pos);
       }
     }
@@ -314,14 +315,16 @@ TEST(SafeBrowsingBloomFilter, FalsePositives) {
 
   int start = BloomFilter::kBloomFilterSizeRatio;
   if (CommandLine::ForCurrentProcess()->HasSwitch(kFilterStart)) {
-    start = StringToInt(
-        CommandLine::ForCurrentProcess()->GetSwitchValue(kFilterStart));
+    base::StringToInt(
+        CommandLine::ForCurrentProcess()->GetSwitchValue(kFilterStart),
+        &start);
   }
 
   int steps = 1;
   if (CommandLine::ForCurrentProcess()->HasSwitch(kFilterSteps)) {
-    steps = StringToInt(
-        CommandLine::ForCurrentProcess()->GetSwitchValue(kFilterSteps));
+    base::StringToInt(
+        CommandLine::ForCurrentProcess()->GetSwitchValue(kFilterSteps),
+        &steps);
   }
 
   int stop = start + steps;
@@ -340,8 +343,9 @@ TEST(SafeBrowsingBloomFilter, HashTime) {
 
   int num_checks = kNumHashChecks;
   if (CommandLine::ForCurrentProcess()->HasSwitch(kFilterNumChecks)) {
-    num_checks = StringToInt(
-      CommandLine::ForCurrentProcess()->GetSwitchValue(kFilterNumChecks));
+    base::StringToInt(
+        CommandLine::ForCurrentProcess()->GetSwitchValue(kFilterNumChecks),
+        &num_checks);
   }
 
   // Populate the bloom filter and measure the time.
