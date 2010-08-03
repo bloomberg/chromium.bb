@@ -46,3 +46,5 @@ BUG50637 : fast/dom/prototype-inheritance.html = FAIL
 
 BUG50816 MAC : fast/forms/search-transformed.html = FAIL
 BUG50825 LINUX : svg/custom/massive-coordinates.svg = FAIL
+
+BUG51036 : fast/events/special-key-events-in-input-text.html = FAIL
