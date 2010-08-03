@@ -193,6 +193,9 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // former registers for notifications.
   tab_closeable_state_watcher_.reset();
 
+  // Destroy NotificationUIManager before NotificationService is shut down.
+  notification_ui_manager_.reset();
+
   // Now OK to destroy NotificationService.
   main_notification_service_.reset();
 
