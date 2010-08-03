@@ -6,13 +6,14 @@
 
 #include "base/singleton.h"
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/mock_cros_settings.h"
+#include "chrome/browser/chromeos/cros_settings_provider.h"
+#include "chrome/browser/chromeos/cros_settings_provider_user.h"
 
 namespace chromeos {
 
 CrosSettings* CrosSettings::Get() {
   // TODO(xiyaun): Use real stuff when underlying libcros is ready.
-  return Singleton<MockCrosSettings>::get();
+  return Singleton<CrosSettings>::get();
 }
 
 bool CrosSettings::IsCrosSettings(const std::wstring& path) {
@@ -45,6 +46,48 @@ bool CrosSettings::GetBoolean(const std::wstring& path,
   return value->GetAsBoolean(bool_value);
 }
 
+bool CrosSettings::AddProvider(CrosSettingsProvider* provider) {
+  providers_.push_back(provider);
+  return true;
+}
+
+bool CrosSettings::RemoveProvider(CrosSettingsProvider* provider) {
+  std::vector<CrosSettingsProvider*>::iterator it =
+      std::find(providers_.begin(), providers_.end(), provider);
+  if (it != providers_.end()) {
+    providers_.erase(it);
+    return true;
+  }
+  return false;
+}
+
+CrosSettingsProvider* CrosSettings::GetProvider(
+    const std::wstring& path) const {
+  for (size_t i = 0; i < providers_.size(); ++i) {
+    if (providers_[i]->HandlesSetting(path)){
+      return providers_[i];
+    }
+  }
+  return NULL;
+}
+
+void CrosSettings::Set(const std::wstring& path, Value* in_value) {
+  CrosSettingsProvider* provider;
+  provider = GetProvider(path);
+  if (provider) {
+    provider->Set(path, in_value);
+  }
+}
+
+bool CrosSettings::Get(const std::wstring& path, Value** out_value) const {
+  CrosSettingsProvider* provider;
+  provider = GetProvider(path);
+  if (provider) {
+    return provider->Get(path, out_value);
+  }
+  return false;
+}
+
 bool CrosSettings::GetInteger(const std::wstring& path,
                               int* out_value) const {
   Value* value;
@@ -70,6 +113,17 @@ bool CrosSettings::GetString(const std::wstring& path,
     return false;
 
   return value->GetAsString(out_value);
+}
+
+CrosSettings::CrosSettings() {
+  UserCrosSettingsProvider* user = new UserCrosSettingsProvider();
+  AddProvider(user);
+}
+
+CrosSettings::~CrosSettings() {
+  for (size_t i = 0; i < providers_.size(); ++i) {
+    delete providers_[i];
+  }
 }
 
 }  // namespace chromeos

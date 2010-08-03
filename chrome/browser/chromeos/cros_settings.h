@@ -7,11 +7,15 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include "base/singleton.h"
 #include "base/values.h"
 
 #include "chrome/browser/chromeos/cros_settings_names.h"
 
 namespace chromeos {
+
+class CrosSettingsProvider;
 
 // A class manages per-device/global settings.
 class CrosSettings {
@@ -24,11 +28,11 @@ class CrosSettings {
 
   // Sets |in_value| to given |path| in cros settings.
   // Note that this takes ownership of |in_value|.
-  virtual void Set(const std::wstring& path, Value* in_value) = 0;
+  void Set(const std::wstring& path, Value* in_value);
 
   // Gets settings value of given |path| to |out_value|.
   // Note that |out_value| is still owned by this class.
-  virtual bool Get(const std::wstring& path, Value** out_value) const = 0;
+  bool Get(const std::wstring& path, Value** out_value) const;
 
   // Convenience forms of Set().  These methods will replace any existing
   // value at that path, even if it has a different type.
@@ -45,8 +49,18 @@ class CrosSettings {
   bool GetReal(const std::wstring& path, double* out_value) const;
   bool GetString(const std::wstring& path, std::string* out_value) const;
 
- protected:
-  virtual ~CrosSettings() {}
+ private:
+  // adding/removing of providers
+  bool AddProvider(CrosSettingsProvider* provider);
+  bool RemoveProvider(CrosSettingsProvider* provider);
+
+  std::vector<CrosSettingsProvider*> providers_;
+
+  CrosSettings();
+  ~CrosSettings();
+  CrosSettingsProvider* GetProvider(const std::wstring& path) const;
+  friend struct DefaultSingletonTraits<CrosSettings>;
+  DISALLOW_COPY_AND_ASSIGN(CrosSettings);
 };
 
 }  // namespace chromeos
