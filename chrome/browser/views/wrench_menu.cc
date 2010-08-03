@@ -88,9 +88,9 @@ class MenuButtonBorder : public views::Border {
   }
 
   virtual void GetInsets(gfx::Insets* insets) const {
-    insets->Set(MenuConfig::instance().item_no_icon_top_margin,
+    insets->Set(MenuConfig::instance().item_top_margin,
                 kHorizontalPadding,
-                MenuConfig::instance().item_no_icon_bottom_margin,
+                MenuConfig::instance().item_bottom_margin,
                 kHorizontalPadding);
   }
 

@@ -85,7 +85,8 @@ MenuConfig* MenuConfig::Create() {
           TS_TRUE, &separator_size) == S_OK) {
     config->separator_height = separator_size.cy;
   } else {
-    config->separator_height = GetSystemMetrics(SM_CYMENU) / 2;
+    // -1 makes separator centered.
+    config->separator_height = GetSystemMetrics(SM_CYMENU) / 2 - 1;
   }
 
   ReleaseDC(NULL, dc);

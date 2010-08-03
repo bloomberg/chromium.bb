@@ -19,8 +19,11 @@ void MenuSeparator::Paint(gfx::Canvas* canvas) {
   const MenuConfig& config = MenuConfig::instance();
   // The gutter is rendered before the background.
   int start_x = 0;
-  int start_y = height() / 3;
+  int start_y = height() / 3 + 1;  // +1 makes separator centered.
   HDC dc = canvas->BeginPlatformPaint();
+  const gfx::NativeTheme* theme = gfx::NativeTheme::instance();
+  // Delta is needed for non-classic to move separator up slightly.
+  int delta = theme->IsClassicTheme(gfx::NativeTheme::MENU) ? 0 : 1;
   if (config.render_gutter) {
     // If render_gutter is true, we're on Vista and need to render the
     // gutter, then indent the separator from the gutter.
@@ -28,13 +31,13 @@ void MenuSeparator::Paint(gfx::Canvas* canvas) {
                            config.gutter_to_label - config.gutter_width, 0, 0,
                            height() };
     gutter_bounds.right = gutter_bounds.left + config.gutter_width;
-    gfx::NativeTheme::instance()->PaintMenuGutter(dc, MENU_POPUPGUTTER,
-                                                  MPI_NORMAL, &gutter_bounds);
+    theme->PaintMenuGutter(dc, MENU_POPUPGUTTER, MPI_NORMAL, &gutter_bounds);
     start_x = gutter_bounds.left + config.gutter_width;
-    start_y = 0;
+    start_y = -delta;
   }
-  RECT separator_bounds = { start_x, start_y, width(), height() };
-  gfx::NativeTheme::instance()->PaintMenuSeparator(
+
+  RECT separator_bounds = { start_x, start_y, width(), height() - delta };
+  theme->PaintMenuSeparator(
       dc, MENU_POPUPSEPARATOR, MPI_NORMAL, &separator_bounds);
   canvas->EndPlatformPaint();
 }
