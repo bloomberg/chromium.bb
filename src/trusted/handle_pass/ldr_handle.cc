@@ -43,7 +43,7 @@ int NaClHandlePassLdrCtor(struct NaClDesc* socket_address,
   NaClHandlePassSetLookupMode(HANDLE_PASS_CLIENT_PROCESS);
 
   // Connect to the given socket address.
-  if (0 == (socket_address->vtbl->ConnectAddr)(socket_address, &lookup_desc)) {
+  if (0 != (socket_address->vtbl->ConnectAddr)(socket_address, &lookup_desc)) {
     return 0;
   }
   // Create an SRPC client for lookup requests.
