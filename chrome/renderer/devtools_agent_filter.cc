@@ -11,14 +11,9 @@
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageTransport.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "webkit/glue/devtools_message_data.h"
 
 using WebKit::WebDevToolsAgent;
-using WebKit::WebDevToolsMessageData;
-using WebKit::WebDevToolsMessageTransport;
 using WebKit::WebString;
 
 // static
@@ -52,7 +47,6 @@ bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DebuggerCommand, OnDebuggerCommand)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DebuggerPauseScript,
                         OnDebuggerPauseScript)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_RpcMessage, OnRpcMessage)
     IPC_MESSAGE_UNHANDLED(message_handled_ = false)
   IPC_END_MESSAGE_MAP()
   return message_handled_;
@@ -65,30 +59,4 @@ void DevToolsAgentFilter::OnDebuggerCommand(const std::string& command) {
 
 void DevToolsAgentFilter::OnDebuggerPauseScript() {
   WebDevToolsAgent::debuggerPauseScript();
-}
-
-namespace {
-
-class WebDevToolsMessageTransportImpl : public WebDevToolsMessageTransport {
- public:
-  void sendMessageToFrontendOnIOThread(const WebDevToolsMessageData& data) {
-    DevToolsAgentFilter::SendRpcMessage(DevToolsMessageData(data));
-  }
-};
-
-}  // namespace
-
-void DevToolsAgentFilter::OnRpcMessage(const DevToolsMessageData& data) {
-  WebDevToolsMessageTransportImpl transport;
-  message_handled_ = WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(
-      &transport,
-      data.ToWebDevToolsMessageData());
-}
-
-// static
-void DevToolsAgentFilter::SendRpcMessage(const DevToolsMessageData& data) {
-  IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
-      current_routing_id_,
-      DevToolsClientMsg_RpcMessage(data));
-  channel_->Send(m);
 }

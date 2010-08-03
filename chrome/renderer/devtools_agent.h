@@ -39,8 +39,9 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // WebDevToolsAgentClient implementation
-  virtual void sendMessageToFrontend(
-      const WebKit::WebDevToolsMessageData& data);
+  virtual void sendMessageToInspectorFrontend(const WebKit::WebString& data);
+  virtual void sendDebuggerOutput(const WebKit::WebString& data);
+  virtual void sendDispatchToAPU(const WebKit::WebString& data);
 
   virtual int hostIdentifier();
   virtual void forceRepaint();
@@ -65,7 +66,7 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
 
   void OnAttach(const std::vector<std::string>& runtime_features);
   void OnDetach();
-  void OnRpcMessage(const DevToolsMessageData& data);
+  void OnDispatchOnInspectorBackend(const std::string& message);
   void OnInspectElement(int x, int y);
   void OnSetApuAgentEnabled(bool enabled);
 

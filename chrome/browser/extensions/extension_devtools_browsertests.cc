@@ -80,11 +80,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
   // Test onPageEvent event.
   result = false;
 
-  DevToolsMessageData message_data;
-  message_data.class_name = "ApuAgentDelegate";
-  message_data.method_name = "dispatchToApu";
-  message_data.arguments.push_back("");
-  DevToolsClientMsg_RpcMessage pageEventMessage(message_data);
+  DevToolsClientMsg_DispatchToAPU pageEventMessage("");
   devtools_client_host->SendMessageToClient(pageEventMessage);
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testReceivePageEvent()", &result);

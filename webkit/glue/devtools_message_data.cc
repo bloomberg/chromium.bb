@@ -5,11 +5,9 @@
 #include "webkit/glue/devtools_message_data.h"
 
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
-using WebKit::WebDevToolsMessageData;
 using WebKit::WebString;
-using WebKit::WebVector;
 
 DevToolsMessageData::DevToolsMessageData(const WebDevToolsMessageData& data)
     : class_name(data.className.utf8()),

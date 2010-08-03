@@ -73,22 +73,16 @@ void ExtensionDevToolsBridge::InspectedTabClosing() {
 
 void ExtensionDevToolsBridge::SendMessageToClient(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(ExtensionDevToolsBridge, msg)
-    IPC_MESSAGE_HANDLER(DevToolsClientMsg_RpcMessage, OnRpcMessage);
+    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchToAPU, OnDispatchToAPU);
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
 
-static const char kApuAgentClassName[] = "ApuAgentDelegate";
-static const char kApuPageEventMessageName[] = "dispatchToApu";
-
-void ExtensionDevToolsBridge::OnRpcMessage(const DevToolsMessageData& data) {
+void ExtensionDevToolsBridge::OnDispatchToAPU(const std::string& data) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
-  if (data.class_name == kApuAgentClassName
-      && data.method_name == kApuPageEventMessageName) {
-    std::string json = StringPrintf("[%s]", data.arguments[0].c_str());
-    profile_->GetExtensionMessageService()->DispatchEventToRenderers(
-        on_page_event_name_, json, profile_->IsOffTheRecord(), GURL());
-  }
+  std::string json = StringPrintf("[%s]", data.c_str());
+  profile_->GetExtensionMessageService()->DispatchEventToRenderers(
+      on_page_event_name_, json, profile_->IsOffTheRecord(), GURL());
 }
 

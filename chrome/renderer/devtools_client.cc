@@ -12,7 +12,6 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsFrontend.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebDevToolsFrontend;
@@ -42,16 +41,16 @@ bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DevToolsClient, message)
-    IPC_MESSAGE_HANDLER(DevToolsClientMsg_RpcMessage, OnRpcMessage)
+    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                        OnDispatchOnInspectorFrontend)
     IPC_MESSAGE_UNHANDLED(handled = false);
   IPC_END_MESSAGE_MAP()
 
   return handled;
 }
 
-void DevToolsClient::sendMessageToAgent(
-      const WebKit::WebDevToolsMessageData& data) {
-  Send(DevToolsAgentMsg_RpcMessage(DevToolsMessageData(data)));
+void DevToolsClient::sendMessageToBackend(const WebString& message)  {
+  Send(DevToolsAgentMsg_DispatchOnInspectorBackend(message.utf8()));
 }
 
 void DevToolsClient::sendDebuggerCommandToAgent(const WebString& command) {
@@ -82,9 +81,10 @@ void DevToolsClient::requestUndockWindow() {
       render_view_->routing_id()));
 }
 
-void DevToolsClient::OnRpcMessage(const DevToolsMessageData& data) {
-  web_tools_frontend_->dispatchMessageFromAgent(
-      data.ToWebDevToolsMessageData());
+void DevToolsClient::OnDispatchOnInspectorFrontend(
+    const std::string& message) {
+      web_tools_frontend_->dispatchOnInspectorFrontend(
+          WebString::fromUTF8(message));
 }
 
 bool DevToolsClient::shouldHideScriptsPanel() {

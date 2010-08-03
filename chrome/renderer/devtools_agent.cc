@@ -12,7 +12,6 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/webkit_chromium_resources.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
@@ -80,7 +79,8 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(DevToolsAgent, message)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Attach, OnAttach)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Detach, OnDetach)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_RpcMessage, OnRpcMessage)
+    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
+                        OnDispatchOnInspectorBackend)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_InspectElement, OnInspectElement)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_SetApuAgentEnabled,
                         OnSetApuAgentEnabled)
@@ -89,11 +89,25 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DevToolsAgent::sendMessageToFrontend(
-    const WebKit::WebDevToolsMessageData& data) {
+void DevToolsAgent::sendMessageToInspectorFrontend(
+    const WebKit::WebString& message) {
   IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
       routing_id_,
-      DevToolsClientMsg_RpcMessage(DevToolsMessageData(data)));
+      DevToolsClientMsg_DispatchOnInspectorFrontend(message.utf8()));
+  render_view_->Send(m);
+}
+
+void DevToolsAgent::sendDebuggerOutput(const WebKit::WebString& data) {
+  IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
+      routing_id_,
+      DevToolsClientMsg_DebuggerOutput(data.utf8()));
+  render_view_->Send(m);
+}
+
+void DevToolsAgent::sendDispatchToAPU(const WebKit::WebString& data) {
+  IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
+      routing_id_,
+      DevToolsClientMsg_DispatchToAPU(data.utf8()));
   render_view_->Send(m);
 }
 
@@ -169,11 +183,10 @@ void DevToolsAgent::OnDetach() {
   }
 }
 
-void DevToolsAgent::OnRpcMessage(const DevToolsMessageData& data) {
+void DevToolsAgent::OnDispatchOnInspectorBackend(const std::string& message) {
   WebDevToolsAgent* web_agent = GetWebAgent();
-  if (web_agent) {
-    web_agent->dispatchMessageFromFrontend(data.ToWebDevToolsMessageData());
-  }
+  if (web_agent)
+    web_agent->dispatchOnInspectorBackend(WebString::fromUTF8(message));
 }
 
 void DevToolsAgent::OnInspectElement(int x, int y) {

@@ -29,8 +29,8 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
   void SetWebView(WebKit::WebView* web_view);
 
   // WebDevToolsAgentClient implementation.
-  virtual void sendMessageToFrontend(
-      const WebKit::WebDevToolsMessageData& data);
+  virtual void sendMessageToInspectorFrontend(
+      const WebKit::WebString& data);
   virtual int hostIdentifier() { return routing_id_; }
   virtual void forceRepaint();
   virtual void runtimeFeatureStateChanged(const WebKit::WebString& feature,

@@ -49,8 +49,8 @@ TestShellDevToolsClient::~TestShellDevToolsClient() {
     dev_tools_agent_->detach(this);
 }
 
-void TestShellDevToolsClient::sendMessageToAgent(
-     const WebDevToolsMessageData& data) {
+void TestShellDevToolsClient::sendMessageToBackend(
+     const WebString& data) {
   if (dev_tools_agent_)
     dev_tools_agent_->AsyncCall(TestShellDevToolsCallArgs(data));
 }
@@ -85,7 +85,7 @@ void TestShellDevToolsClient::AsyncCall(const TestShellDevToolsCallArgs &args) {
 }
 
 void TestShellDevToolsClient::Call(const TestShellDevToolsCallArgs &args) {
-  web_tools_frontend_->dispatchMessageFromAgent(args.data_);
+  web_tools_frontend_->dispatchOnInspectorFrontend(args.data_);
   if (TestShellDevToolsCallArgs::calls_count() == 1)
     all_messages_processed();
 }

@@ -71,8 +71,8 @@ void TestShellDevToolsAgent::SetWebView(WebKit::WebView* web_view) {
   web_view_ = web_view;
 }
 
-void TestShellDevToolsAgent::sendMessageToFrontend(
-       const WebDevToolsMessageData& data) {
+void TestShellDevToolsAgent::sendMessageToInspectorFrontend(
+       const WebString& data) {
   if (dev_tools_client_)
     dev_tools_client_->AsyncCall(TestShellDevToolsCallArgs(data));
 }
@@ -119,7 +119,7 @@ void TestShellDevToolsAgent::AsyncCall(const TestShellDevToolsCallArgs &args) {
 void TestShellDevToolsAgent::Call(const TestShellDevToolsCallArgs &args) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent)
-    web_agent->dispatchMessageFromFrontend(args.data_);
+    web_agent->dispatchOnInspectorBackend(args.data_);
   if (TestShellDevToolsCallArgs::calls_count() == 1 && dev_tools_client_)
     dev_tools_client_->all_messages_processed();
 }

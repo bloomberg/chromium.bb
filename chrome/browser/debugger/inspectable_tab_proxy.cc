@@ -29,29 +29,16 @@ void DevToolsClientHostImpl::Close() {
 
 void DevToolsClientHostImpl::SendMessageToClient(
     const IPC::Message& msg) {
+  // TODO(prybin): Restore FrameNavigate.
   IPC_BEGIN_MESSAGE_MAP(DevToolsClientHostImpl, msg)
-    IPC_MESSAGE_HANDLER(DevToolsClientMsg_RpcMessage, OnRpcMessage);
+    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DebuggerOutput, OnDebuggerOutput);
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
 
-void DevToolsClientHostImpl::OnRpcMessage(const DevToolsMessageData& data) {
-  static const std::string kDebuggerAgentDelegate = "DebuggerAgentDelegate";
-  static const std::string kToolsAgentDelegate = "ToolsAgentDelegate";
-  static const std::string kDebuggerOutput = "debuggerOutput";
-  static const std::string kFrameNavigate = "frameNavigate";
 
-  if (data.class_name == kDebuggerAgentDelegate &&
-      data.method_name == kDebuggerOutput) {
-    DebuggerOutput(data.arguments[0]);
-  } else if (data.class_name == kToolsAgentDelegate &&
-             data.method_name == kFrameNavigate) {
-    FrameNavigate(data.arguments[0]);
-  }
-}
-
-void DevToolsClientHostImpl::DebuggerOutput(const std::string& msg) {
-  service_->DebuggerOutput(id_, msg);
+void DevToolsClientHostImpl::OnDebuggerOutput(const std::string& data) {
+  service_->DebuggerOutput(id_, data);
 }
 
 void DevToolsClientHostImpl::FrameNavigate(const std::string& url) {

@@ -47,7 +47,8 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 
   virtual void SendMessageToClient(const IPC::Message& msg) {
     IPC_BEGIN_MESSAGE_MAP(DevToolsClientHostImpl, msg)
-      IPC_MESSAGE_HANDLER(DevToolsClientMsg_RpcMessage, OnRpcMessage);
+      IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                          OnDispatchOnInspectorFrontend);
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP()
   }
@@ -57,17 +58,9 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   }
  private:
   // Message handling routines
-  void OnRpcMessage(const DevToolsMessageData& data) {
+  void OnDispatchOnInspectorFrontend(const std::string& data) {
     std::string message;
-    message += "devtools$$dispatch(\"" + data.class_name + "\", \"" +
-        data.method_name + "\"";
-    for (std::vector<std::string>::const_iterator it = data.arguments.begin();
-         it != data.arguments.end(); ++it) {
-      std::string param = *it;
-      if (!param.empty())
-        message += ", " + param;
-    }
-    message += ")";
+    message += "devtools$$dispatch(\"" + data + "\")";
     socket_->SendOverWebSocket(message);
   }
   HttpListenSocket* socket_;
@@ -251,15 +244,9 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
   if (it == socket_to_client_host_ui_.end())
     return;
 
-  // TODO(pfeldman): Replace with proper parsing / dispatching.
-  DevToolsMessageData message_data;
-  message_data.class_name = "ToolsAgent";
-  message_data.method_name = "dispatchOnInspectorController";
-  message_data.arguments.push_back(data);
-
   DevToolsManager* manager = DevToolsManager::GetInstance();
   manager->ForwardToDevToolsAgent(it->second,
-      DevToolsAgentMsg_RpcMessage(DevToolsMessageData(message_data)));
+      DevToolsAgentMsg_DispatchOnInspectorBackend(data));
 }
 
 void DevToolsHttpProtocolHandler::OnCloseUI(HttpListenSocket* socket) {

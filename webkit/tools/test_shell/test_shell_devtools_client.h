@@ -28,7 +28,7 @@ class TestShellDevToolsClient: public WebKit::WebDevToolsFrontendClient {
   virtual ~TestShellDevToolsClient();
 
   // WebDevToolsFrontendClient implementation
-  virtual void sendMessageToAgent(const WebKit::WebDevToolsMessageData& data);
+  virtual void sendMessageToBackend(const WebKit::WebString& data);
   virtual void sendDebuggerCommandToAgent(const WebKit::WebString& command);
 
   virtual void activateWindow();

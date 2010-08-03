@@ -39,7 +39,6 @@ class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
   // handle debug messages even when v8 is stopped.
   void OnDebuggerCommand(const std::string& command);
   void OnDebuggerPauseScript();
-  void OnRpcMessage(const DevToolsMessageData& data);
 
   bool message_handled_;
 
