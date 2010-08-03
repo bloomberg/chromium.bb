@@ -1427,10 +1427,7 @@
    fun:_internal_class_createInstance
    fun:+[NSObject allocWithZone:]
    fun:+[NSObject alloc]
-   fun:-[MenuController addItemToMenu:atIndex:fromModel:modelIndex:]
-   fun:-[MenuController menuFromModel:]
-   fun:-[MenuController menu]
-   fun:-[MenuController initWithModel:useWithPopUpButtonCell:]
+   ...
    fun:-[BalloonController initWithBalloon:]
    fun:_ZN12_GLOBAL__N_*BalloonControllerTest_ShowAndCloseTest_Test8TestBodyEv
 }
