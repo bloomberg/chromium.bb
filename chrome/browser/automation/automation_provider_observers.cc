@@ -100,17 +100,17 @@ DictionaryValue* InitialLoadObserver::GetTimingInformation() const {
     DictionaryValue* item = new DictionaryValue;
     base::TimeDelta delta_start = it->second.start_time() - init_time_;
 
-    item->SetReal(L"load_start_ms", delta_start.InMillisecondsF());
+    item->SetReal("load_start_ms", delta_start.InMillisecondsF());
     if (it->second.stop_time().is_null()) {
-      item->Set(L"load_stop_ms", Value::CreateNullValue());
+      item->Set("load_stop_ms", Value::CreateNullValue());
     } else {
       base::TimeDelta delta_stop = it->second.stop_time() - init_time_;
-      item->SetReal(L"load_stop_ms", delta_stop.InMillisecondsF());
+      item->SetReal("load_stop_ms", delta_stop.InMillisecondsF());
     }
     items->Append(item);
   }
   DictionaryValue* return_value = new DictionaryValue;
-  return_value->Set(L"tabs", items);
+  return_value->Set("tabs", items);
   return return_value;
 }
 
@@ -950,7 +950,7 @@ void PageTranslatedObserver::Observe(NotificationType type,
       Details<PageTranslatedDetails>(details).ptr();
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetBoolean(
-      L"translation_success",
+      "translation_success",
       translated_details->error_type == TranslateErrors::NONE);
   reply.SendSuccess(return_value.get());
   delete this;
@@ -973,15 +973,15 @@ void TabLanguageDeterminedObserver::Observe(
   DCHECK(type == NotificationType::TAB_LANGUAGE_DETERMINED);
 
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  return_value->SetBoolean(L"page_translated",
+  return_value->SetBoolean("page_translated",
                            tab_contents_->language_state().IsPageTranslated());
   return_value->SetBoolean(
-      L"can_translate_page", TranslatePrefs::CanTranslate(
+      "can_translate_page", TranslatePrefs::CanTranslate(
           automation_->profile()->GetPrefs(),
           tab_contents_->language_state().original_language(),
           tab_contents_->GetURL()));
   return_value->SetString(
-      L"original_language",
+      "original_language",
       tab_contents_->language_state().original_language());
   if (translate_bar_) {
     DictionaryValue* bar_info = new DictionaryValue;
@@ -995,12 +995,12 @@ void TabLanguageDeterminedObserver::Observe(
     type_to_string[TranslateInfoBarDelegate::TRANSLATION_ERROR] =
         "TRANSLATION_ERROR";
 
-    bar_info->SetString(L"bar_state", type_to_string[translate_bar_->type()]);
-    bar_info->SetString(L"target_lang_code",
+    bar_info->SetString("bar_state", type_to_string[translate_bar_->type()]);
+    bar_info->SetString("target_lang_code",
                         translate_bar_->GetTargetLanguageCode());
-    bar_info->SetString(L"original_lang_code",
+    bar_info->SetString("original_lang_code",
                         translate_bar_->GetOriginalLanguageCode());
-    return_value->Set(L"translate_bar", bar_info);
+    return_value->Set("translate_bar", bar_info);
   }
   AutomationJSONReply(automation_, reply_message_)
       .SendSuccess(return_value.get());
@@ -1069,18 +1069,18 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
   for (size_t i = 0; i < results->size(); ++i) {
     DictionaryValue* page_value = new DictionaryValue;
     history::URLResult const &page = (*results)[i];
-    page_value->SetStringFromUTF16(L"title", page.title());
-    page_value->SetString(L"url", page.url().spec());
-    page_value->SetReal(L"time",
+    page_value->SetString("title", page.title());
+    page_value->SetString("url", page.url().spec());
+    page_value->SetReal("time",
                         static_cast<double>(page.visit_time().ToDoubleT()));
-    page_value->SetStringFromUTF16(L"snippet", page.snippet().text());
+    page_value->SetString("snippet", page.snippet().text());
     page_value->SetBoolean(
-        L"starred",
+        "starred",
         provider_->profile()->GetBookmarkModel()->IsBookmarked(page.url()));
     history_list->Append(page_value);
   }
 
-  return_value->Set(L"history", history_list);
+  return_value->Set("history", history_list);
   // Return history info.
   AutomationJSONReply reply(provider_, reply_message_);
   reply.SendSuccess(return_value.get());
@@ -1102,27 +1102,24 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
           result.begin(); it != result.end(); ++it) {
     DictionaryValue* password_val = new DictionaryValue;
     webkit_glue::PasswordForm* password_form = *it;
-    password_val->SetStringFromUTF16(L"username_value",
-                                     password_form->username_value);
-    password_val->SetStringFromUTF16(L"password_value",
-                                     password_form->password_value);
-    password_val->SetString(L"signon_realm", password_form->signon_realm);
+    password_val->SetString("username_value", password_form->username_value);
+    password_val->SetString("password_value", password_form->password_value);
+    password_val->SetString("signon_realm", password_form->signon_realm);
     password_val->SetReal(
-        L"time", static_cast<double>(
-            password_form->date_created.ToDoubleT()));
-    password_val->SetString(L"origin_url", password_form->origin.spec());
-    password_val->SetStringFromUTF16(L"username_element",
-                                     password_form->username_element);
-    password_val->SetStringFromUTF16(L"password_element",
-                                     password_form->password_element);
-    password_val->SetStringFromUTF16(L"submit_element",
+        "time", static_cast<double>(password_form->date_created.ToDoubleT()));
+    password_val->SetString("origin_url", password_form->origin.spec());
+    password_val->SetString("username_element",
+                            password_form->username_element);
+    password_val->SetString("password_element",
+                            password_form->password_element);
+    password_val->SetString("submit_element",
                                      password_form->submit_element);
-    password_val->SetString(L"action_target", password_form->action.spec());
-    password_val->SetBoolean(L"blacklist", password_form->blacklisted_by_user);
+    password_val->SetString("action_target", password_form->action.spec());
+    password_val->SetBoolean("blacklist", password_form->blacklisted_by_user);
     passwords->Append(password_val);
   }
 
-  return_value->Set(L"passwords", passwords);
+  return_value->Set("passwords", passwords);
   AutomationJSONReply(provider_, reply_message_).SendSuccess(
       return_value.get());
   delete this;

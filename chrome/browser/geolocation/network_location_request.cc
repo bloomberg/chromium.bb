@@ -244,7 +244,7 @@ void AddString(const std::wstring& property_name,
                DictionaryValue* object) {
   DCHECK(object);
   if (!value.empty()) {
-    object->SetStringFromUTF16(property_name, value);
+    object->SetString(property_name, value);
   }
 }
 

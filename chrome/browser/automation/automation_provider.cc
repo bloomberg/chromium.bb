@@ -1577,7 +1577,7 @@ void AutomationProvider::AddBookmarkGroup(int handle,
       DCHECK(parent);
       if (parent) {
         const BookmarkNode* child = model->AddGroup(parent, index,
-                                                    WideToUTF16(title));
+                                                    WideToUTF16Hack(title));
         DCHECK(child);
         if (child)
           *success = true;
@@ -1603,7 +1603,7 @@ void AutomationProvider::AddBookmarkURL(int handle,
       DCHECK(parent);
       if (parent) {
         const BookmarkNode* child = model->AddURL(parent, index,
-                                                  WideToUTF16(title), url);
+                                                  WideToUTF16Hack(title), url);
         DCHECK(child);
         if (child)
           *success = true;
@@ -1652,7 +1652,7 @@ void AutomationProvider::SetBookmarkTitle(int handle,
       const BookmarkNode* node = model->GetNodeByID(id);
       DCHECK(node);
       if (node) {
-        model->SetTitle(node, WideToUTF16(title));
+        model->SetTitle(node, WideToUTF16Hack(title));
         *success = true;
       }
     }
@@ -1716,13 +1716,13 @@ void AutomationProvider::SetWindowDimensions(Browser* browser,
                                              IPC::Message* reply_message) {
   gfx::Rect rect = browser->window()->GetRestoredBounds();
   int x, y, width, height;
-  if (args->GetInteger(L"x", &x))
+  if (args->GetInteger("x", &x))
     rect.set_x(x);
-  if (args->GetInteger(L"y", &y))
+  if (args->GetInteger("y", &y))
     rect.set_y(y);
-  if (args->GetInteger(L"width", &width))
+  if (args->GetInteger("width", &width))
     rect.set_width(width);
-  if (args->GetInteger(L"height", &height))
+  if (args->GetInteger("height", &height))
     rect.set_height(height);
   browser->window()->SetBounds(rect);
   AutomationJSONReply(this, reply_message).SendSuccess(NULL);
@@ -1739,11 +1739,13 @@ ListValue* AutomationProvider::GetInfobarsInfo(TabContents* tc) {
     if (infobar->AsConfirmInfoBarDelegate()) {
       // Also covers ThemeInstalledInfoBarDelegate and
       // CrashedExtensionInfoBarDelegate.
-      infobar_item->SetString(L"type", "confirm_infobar");
+      infobar_item->SetString("type", "confirm_infobar");
       ConfirmInfoBarDelegate* confirm_infobar =
         infobar->AsConfirmInfoBarDelegate();
-      infobar_item->SetString(L"text", confirm_infobar->GetMessageText());
-      infobar_item->SetString(L"link_text", confirm_infobar->GetLinkText());
+      infobar_item->SetString("text",
+          WideToUTF16Hack(confirm_infobar->GetMessageText()));
+      infobar_item->SetString("link_text",
+                              WideToUTF16Hack(confirm_infobar->GetLinkText()));
       ListValue* buttons_list = new ListValue;
       int buttons = confirm_infobar->GetButtons();
       if (ConfirmInfoBarDelegate::BUTTON_OK & buttons) {
@@ -1758,28 +1760,30 @@ ListValue* AutomationProvider::GetInfobarsInfo(TabContents* tc) {
               ConfirmInfoBarDelegate::BUTTON_CANCEL));
         buttons_list->Append(button_label);
       }
-      infobar_item->Set(L"buttons", buttons_list);
+      infobar_item->Set("buttons", buttons_list);
     } else if (infobar->AsAlertInfoBarDelegate()) {
-      infobar_item->SetString(L"type", "alert_infobar");
+      infobar_item->SetString("type", "alert_infobar");
       AlertInfoBarDelegate* alert_infobar =
         infobar->AsAlertInfoBarDelegate();
-      infobar_item->SetString(L"text", alert_infobar->GetMessageText());
+      infobar_item->SetString("text",
+                              WideToUTF16Hack(alert_infobar->GetMessageText()));
     } else if (infobar->AsLinkInfoBarDelegate()) {
-      infobar_item->SetString(L"type", "link_infobar");
+      infobar_item->SetString("type", "link_infobar");
       LinkInfoBarDelegate* link_infobar = infobar->AsLinkInfoBarDelegate();
-      infobar_item->SetString(L"link_text", link_infobar->GetLinkText());
+      infobar_item->SetString("link_text",
+                              WideToUTF16Hack(link_infobar->GetLinkText()));
     } else if (infobar->AsTranslateInfoBarDelegate()) {
-      infobar_item->SetString(L"type", "translate_infobar");
+      infobar_item->SetString("type", "translate_infobar");
       TranslateInfoBarDelegate* translate_infobar =
           infobar->AsTranslateInfoBarDelegate();
-      infobar_item->SetString(L"original_lang_code",
+      infobar_item->SetString("original_lang_code",
                               translate_infobar->GetOriginalLanguageCode());
-      infobar_item->SetString(L"target_lang_code",
+      infobar_item->SetString("target_lang_code",
                               translate_infobar->GetTargetLanguageCode());
     } else if (infobar->AsExtensionInfoBarDelegate()) {
-      infobar_item->SetString(L"type", "extension_infobar");
+      infobar_item->SetString("type", "extension_infobar");
     } else {
-      infobar_item->SetString(L"type", "unknown_infobar");
+      infobar_item->SetString("type", "unknown_infobar");
     }
     infobars->Append(infobar_item);
   }
@@ -1795,8 +1799,8 @@ void AutomationProvider::WaitForInfobarCount(Browser* browser,
                                         IPC::Message* reply_message) {
   int tab_index;
   int count;
-  if (!args->GetInteger(L"count", &count) || count < 0 ||
-      !args->GetInteger(L"tab_index", &tab_index) || tab_index < 0) {
+  if (!args->GetInteger("count", &count) || count < 0 ||
+      !args->GetInteger("tab_index", &tab_index) || tab_index < 0) {
     AutomationJSONReply(this, reply_message).SendError(
         "Missing or invalid args: 'count', 'tab_index'.");
     return;
@@ -1819,9 +1823,9 @@ void AutomationProvider::PerformActionOnInfobar(Browser* browser,
   int tab_index;
   int infobar_index;
   std::string action;
-  if (!args->GetInteger(L"tab_index", &tab_index) ||
-      !args->GetInteger(L"infobar_index", &infobar_index) ||
-      !args->GetString(L"action", &action)) {
+  if (!args->GetInteger("tab_index", &tab_index) ||
+      !args->GetInteger("infobar_index", &infobar_index) ||
+      !args->GetString("action", &action)) {
     reply.SendError("Invalid or missing args");
     return;
   }
@@ -1884,10 +1888,11 @@ class GetChildProcessHostInfoTask : public Task {
       }
       ChildProcessInfo* info = *iter;
       DictionaryValue* item = new DictionaryValue;
-      item->SetString(L"name", info->name());
-      item->SetString(L"type",
-                      ChildProcessInfo::GetTypeNameInEnglish(info->type()));
-      item->SetInteger(L"pid", base::GetProcId(info->handle()));
+      item->SetString("name", WideToUTF16Hack(info->name()));
+      item->SetString("type",
+                      WideToUTF16Hack(ChildProcessInfo::GetTypeNameInEnglish(
+                          info->type())));
+      item->SetInteger("pid", base::GetProcId(info->handle()));
       child_processes_->Append(item);
     }
     event_->Signal();
@@ -1909,16 +1914,16 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
                                         DictionaryValue* args,
                                         IPC::Message* reply_message) {
   DictionaryValue* properties = new DictionaryValue;
-  properties->SetString(L"ChromeVersion", chrome::kChromeVersion);
-  properties->SetString(L"BrowserProcessExecutableName",
-                        chrome::kBrowserProcessExecutableName);
-  properties->SetString(L"HelperProcessExecutableName",
-                        chrome::kHelperProcessExecutableName);
-  properties->SetString(L"BrowserProcessExecutablePath",
-                        chrome::kBrowserProcessExecutablePath);
-  properties->SetString(L"HelperProcessExecutablePath",
+  properties->SetString("ChromeVersion", chrome::kChromeVersion);
+  properties->SetString("BrowserProcessExecutableName",
+                        WideToUTF16Hack(chrome::kBrowserProcessExecutableName));
+  properties->SetString("HelperProcessExecutableName",
+                        WideToUTF16Hack(chrome::kHelperProcessExecutableName));
+  properties->SetString("BrowserProcessExecutablePath",
+                        WideToUTF16Hack(chrome::kBrowserProcessExecutablePath));
+  properties->SetString("HelperProcessExecutablePath",
                         chrome::kHelperProcessExecutablePath);
-  properties->SetString(L"command_line_string",
+  properties->SetString("command_line_string",
       CommandLine::ForCurrentProcess()->command_line_string());
 
   std::string branding;
@@ -1929,12 +1934,12 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
 #else
   branding = "Unknown Branding";
 #endif
-  properties->SetString(L"branding", branding);
+  properties->SetString("branding", branding);
 
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  return_value->Set(L"properties", properties);
+  return_value->Set("properties", properties);
 
-  return_value->SetInteger(L"browser_pid", base::GetCurrentProcId());
+  return_value->SetInteger("browser_pid", base::GetCurrentProcId());
   // Add info about all windows in a list of dictionaries, one dictionary
   // item per window.
   ListValue* windows = new ListValue;
@@ -1944,17 +1949,17 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
        ++it, ++windex) {
     DictionaryValue* browser_item = new DictionaryValue;
     browser = *it;
-    browser_item->SetInteger(L"index", windex);
+    browser_item->SetInteger("index", windex);
     // Window properties
     gfx::Rect rect = browser->window()->GetRestoredBounds();
-    browser_item->SetInteger(L"x", rect.x());
-    browser_item->SetInteger(L"y", rect.y());
-    browser_item->SetInteger(L"width", rect.width());
-    browser_item->SetInteger(L"height", rect.height());
-    browser_item->SetBoolean(L"fullscreen",
+    browser_item->SetInteger("x", rect.x());
+    browser_item->SetInteger("y", rect.y());
+    browser_item->SetInteger("width", rect.width());
+    browser_item->SetInteger("height", rect.height());
+    browser_item->SetBoolean("fullscreen",
                              browser->window()->IsFullscreen());
-    browser_item->SetInteger(L"selected_tab", browser->selected_index());
-    browser_item->SetBoolean(L"incognito",
+    browser_item->SetInteger("selected_tab", browser->selected_index());
+    browser_item->SetBoolean("incognito",
                              browser->profile()->IsOffTheRecord());
     // For each window, add info about all tabs in a list of dictionaries,
     // one dictionary item per tab.
@@ -1962,20 +1967,20 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
     for (int i = 0; i < browser->tab_count(); ++i) {
       TabContents* tc = browser->GetTabContentsAt(i);
       DictionaryValue* tab = new DictionaryValue;
-      tab->SetInteger(L"index", i);
-      tab->SetString(L"url", tc->GetURL().spec());
-      tab->SetInteger(L"renderer_pid",
+      tab->SetInteger("index", i);
+      tab->SetString("url", tc->GetURL().spec());
+      tab->SetInteger("renderer_pid",
                       base::GetProcId(tc->GetRenderProcessHost()->GetHandle()));
-      tab->Set(L"infobars", GetInfobarsInfo(tc));
+      tab->Set("infobars", GetInfobarsInfo(tc));
       tabs->Append(tab);
     }
-    browser_item->Set(L"tabs", tabs);
+    browser_item->Set("tabs", tabs);
 
     windows->Append(browser_item);
   }
-  return_value->Set(L"windows", windows);
+  return_value->Set("windows", windows);
 
-  return_value->SetString(L"child_process_path",
+  return_value->SetString("child_process_path",
                           ChildProcessHost::GetChildPath(true).value());
   // Child processes are the processes for plugins and other workers.
   // Add all child processes in a list of dictionaries, one dictionary item
@@ -1987,7 +1992,7 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
       ChromeThread::IO, FROM_HERE,
       new GetChildProcessHostInfoTask(&event, child_processes)));
   event.Wait();
-  return_value->Set(L"child_processes", child_processes);
+  return_value->Set("child_processes", child_processes);
 
   // Add all extension processes in a list of dictionaries, one dictionary
   // item per extension process.
@@ -2004,14 +2009,14 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
       if (!ex_host->IsRenderViewLive())
         continue;
       DictionaryValue* item = new DictionaryValue;
-      item->SetString(L"name", ex_host->extension()->name());
+      item->SetString("name", ex_host->extension()->name());
       item->SetInteger(
-          L"pid",
+          "pid",
           base::GetProcId(ex_host->render_process_host()->GetHandle()));
       extension_processes->Append(item);
     }
   }
-  return_value->Set(L"extension_processes", extension_processes);
+  return_value->Set("extension_processes", extension_processes);
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
@@ -2050,7 +2055,7 @@ void AutomationProvider::AddHistoryItem(Browser* browser,
                                         DictionaryValue* args,
                                         IPC::Message* reply_message) {
   DictionaryValue* item = NULL;
-  args->GetDictionary(L"item", &item);
+  args->GetDictionary("item", &item);
   string16 url_text;
   string16 title;
   base::Time time = base::Time::Now();
@@ -2064,9 +2069,9 @@ void AutomationProvider::AddHistoryItem(Browser* browser,
   item->GetString("title", &title);  // Don't care if it fails.
   int it;
   double dt;
-  if (item->GetInteger(L"time", &it))
+  if (item->GetInteger("time", &it))
     time = base::Time::FromTimeT(it);
-  else if (item->GetReal(L"time", &dt))
+  else if (item->GetReal("time", &dt))
     time = base::Time::FromDoubleT(dt);
 
   // Ideas for "dummy" values (e.g. id_scope) came from
@@ -2118,25 +2123,25 @@ void AutomationProvider::GetDownloadsInfo(Browser* browser,
        it != downloads.end();
        it++) {  // Fill info about each download item.
     DictionaryValue* dl_item_value = new DictionaryValue;
-    dl_item_value->SetInteger(L"id", static_cast<int>((*it)->id()));
-    dl_item_value->SetString(L"url", (*it)->url().spec());
-    dl_item_value->SetString(L"referrer_url", (*it)->referrer_url().spec());
-    dl_item_value->SetString(L"file_name", (*it)->GetFileName().value());
-    dl_item_value->SetString(L"full_path", (*it)->full_path().value());
-    dl_item_value->SetBoolean(L"is_paused", (*it)->is_paused());
-    dl_item_value->SetBoolean(L"open_when_complete",
+    dl_item_value->SetInteger("id", static_cast<int>((*it)->id()));
+    dl_item_value->SetString("url", (*it)->url().spec());
+    dl_item_value->SetString("referrer_url", (*it)->referrer_url().spec());
+    dl_item_value->SetString("file_name", (*it)->GetFileName().value());
+    dl_item_value->SetString("full_path", (*it)->full_path().value());
+    dl_item_value->SetBoolean("is_paused", (*it)->is_paused());
+    dl_item_value->SetBoolean("open_when_complete",
                               (*it)->open_when_complete());
-    dl_item_value->SetBoolean(L"is_extension_install",
+    dl_item_value->SetBoolean("is_extension_install",
                               (*it)->is_extension_install());
-    dl_item_value->SetBoolean(L"is_temporary", (*it)->is_temporary());
-    dl_item_value->SetBoolean(L"is_otr", (*it)->is_otr());  // off-the-record
-    dl_item_value->SetString(L"state", state_to_string[(*it)->state()]);
-    dl_item_value->SetString(L"safety_state",
+    dl_item_value->SetBoolean("is_temporary", (*it)->is_temporary());
+    dl_item_value->SetBoolean("is_otr", (*it)->is_otr());  // off-the-record
+    dl_item_value->SetString("state", state_to_string[(*it)->state()]);
+    dl_item_value->SetString("safety_state",
                              safety_state_to_string[(*it)->safety_state()]);
-    dl_item_value->SetInteger(L"PercentComplete", (*it)->PercentComplete());
+    dl_item_value->SetInteger("PercentComplete", (*it)->PercentComplete());
     list_of_downloads->Append(dl_item_value);
   }
-  return_value->Set(L"downloads", list_of_downloads);
+  return_value->Set("downloads", list_of_downloads);
 
   reply.SendSuccess(return_value.get());
   // All value objects allocated above are owned by |return_value|
@@ -2186,7 +2191,7 @@ void AutomationProvider::GetPrefsInfo(Browser* browser,
     items->Set((*it)->name(), (*it)->GetValue()->DeepCopy());
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  return_value->Set(L"prefs", items);  // return_value owns items.
+  return_value->Set("prefs", items);  // return_value owns items.
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
@@ -2197,7 +2202,7 @@ void AutomationProvider::SetPrefs(Browser* browser,
   std::wstring path;
   Value* val;
   AutomationJSONReply reply(this, reply_message);
-  if (args->GetString(L"path", &path) && args->Get(L"value", &val)) {
+  if (args->GetString(L"path", &path) && args->Get("value", &val)) {
     PrefService* pref_service = profile_->GetPrefs();
     const PrefService::Preference* pref =
         pref_service->FindPreference(path.c_str());
@@ -2236,22 +2241,22 @@ void AutomationProvider::GetOmniboxInfo(Browser* browser,
        i != result.end(); ++i) {
     const AutocompleteMatch& match = *i;
     DictionaryValue* item = new DictionaryValue;  // owned by return_value
-    item->SetString(L"type", AutocompleteMatch::TypeToString(match.type));
-    item->SetBoolean(L"starred", match.starred);
-    item->SetString(L"destination_url", match.destination_url.spec());
-    item->SetString(L"contents", match.contents);
-    item->SetString(L"description", match.description);
+    item->SetString("type", AutocompleteMatch::TypeToString(match.type));
+    item->SetBoolean("starred", match.starred);
+    item->SetString("destination_url", match.destination_url.spec());
+    item->SetString("contents", WideToUTF16Hack(match.contents));
+    item->SetString("description", WideToUTF16Hack(match.description));
     matches->Append(item);
   }
-  return_value->Set(L"matches", matches);
+  return_value->Set("matches", matches);
 
   // Fill up other properties.
   DictionaryValue* properties = new DictionaryValue;  // owned by return_value
-  properties->SetBoolean(L"has_focus", model->has_focus());
-  properties->SetBoolean(L"query_in_progress", model->query_in_progress());
-  properties->SetString(L"keyword", model->keyword());
-  properties->SetString(L"text", edit_view->GetText());
-  return_value->Set(L"properties", properties);
+  properties->SetBoolean("has_focus", model->has_focus());
+  properties->SetBoolean("query_in_progress", model->query_in_progress());
+  properties->SetString("keyword", WideToUTF16Hack(model->keyword()));
+  properties->SetString("text", WideToUTF16Hack(edit_view->GetText()));
+  return_value->Set("properties", properties);
 
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
@@ -2285,7 +2290,7 @@ void AutomationProvider::OmniboxMovePopupSelection(
     IPC::Message* reply_message) {
   int count;
   AutomationJSONReply reply(this, reply_message);
-  if (!args->GetInteger(L"count", &count)) {
+  if (!args->GetInteger("count", &count)) {
     reply.SendError("count missing");
     return;
   }
@@ -2337,11 +2342,11 @@ void AutomationProvider::GetPluginsInfo(Browser* browser,
        it != plugins.end();
        ++it) {
     DictionaryValue* item = new DictionaryValue;
-    item->SetStringFromUTF16(L"name", it->name);
-    item->SetString(L"path", it->path.value());
-    item->SetStringFromUTF16(L"version", it->version);
-    item->SetStringFromUTF16(L"desc", it->desc);
-    item->SetBoolean(L"enabled", it->enabled);
+    item->SetString("name", it->name);
+    item->SetString("path", it->path.value());
+    item->SetString("version", it->version);
+    item->SetString("desc", it->desc);
+    item->SetBoolean("enabled", it->enabled);
     // Add info about mime types.
     ListValue* mime_types = new ListValue();
     for (std::vector<WebPluginMimeType>::const_iterator type_it =
@@ -2349,8 +2354,8 @@ void AutomationProvider::GetPluginsInfo(Browser* browser,
          type_it != it->mime_types.end();
          ++type_it) {
       DictionaryValue* mime_type = new DictionaryValue();
-      mime_type->SetString(L"mimeType", type_it->mime_type);
-      mime_type->SetStringFromUTF16(L"description", type_it->description);
+      mime_type->SetString("mimeType", type_it->mime_type);
+      mime_type->SetString("description", type_it->description);
 
       ListValue* file_extensions = new ListValue();
       for (std::vector<std::string>::const_iterator ext_it =
@@ -2359,15 +2364,15 @@ void AutomationProvider::GetPluginsInfo(Browser* browser,
            ++ext_it) {
         file_extensions->Append(new StringValue(*ext_it));
       }
-      mime_type->Set(L"fileExtensions", file_extensions);
+      mime_type->Set("fileExtensions", file_extensions);
 
       mime_types->Append(mime_type);
     }
-    item->Set(L"mimeTypes", mime_types);
+    item->Set("mimeTypes", mime_types);
     items->Append(item);
   }
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  return_value->Set(L"plugins", items);  // return_value owns items.
+  return_value->Set("plugins", items);  // return_value owns items.
 
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
@@ -2380,7 +2385,7 @@ void AutomationProvider::EnablePlugin(Browser* browser,
                                       IPC::Message* reply_message) {
   FilePath::StringType path;
   AutomationJSONReply reply(this, reply_message);
-  if (!args->GetString(L"path", &path)) {
+  if (!args->GetString("path", &path)) {
     reply.SendError("path not specified.");
     return;
   } else if (!NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(path))) {
@@ -2399,7 +2404,7 @@ void AutomationProvider::DisablePlugin(Browser* browser,
                                        IPC::Message* reply_message) {
   FilePath::StringType path;
   AutomationJSONReply reply(this, reply_message);
-  if (!args->GetString(L"path", &path)) {
+  if (!args->GetString("path", &path)) {
     reply.SendError("path not specified.");
     return;
   } else if (!NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(path))) {
@@ -2424,8 +2429,8 @@ void AutomationProvider::SaveTabContents(Browser* browser,
   FilePath::StringType parent_directory;
   TabContents* tab_contents = NULL;
 
-  if (!args->GetInteger(L"tab_index", &tab_index) ||
-      !args->GetString(L"filename", &filename)) {
+  if (!args->GetInteger("tab_index", &tab_index) ||
+      !args->GetString("filename", &filename)) {
     AutomationJSONReply(this, reply_message).SendError(
         "tab_index or filename param missing");
     return;
@@ -2473,8 +2478,8 @@ void AutomationProvider::ImportSettings(Browser* browser,
   bool first_run;
 
   if (!args->GetString(L"import_from", &browser_name) ||
-      !args->GetBoolean(L"first_run", &first_run) ||
-      !args->GetList(L"import_items", &import_items_list)) {
+      !args->GetBoolean("first_run", &first_run) ||
+      !args->GetList("import_items", &import_items_list)) {
     AutomationJSONReply(this, reply_message).SendError(
         "Incorrect type for one or more of the arguments.");
     return;
@@ -2530,9 +2535,9 @@ webkit_glue::PasswordForm GetPasswordFormFromDict(
   base::Time time = base::Time::Now();
   int it;
   double dt;
-  if (password_dict.GetInteger(L"time", &it))
+  if (password_dict.GetInteger("time", &it))
     time = base::Time::FromTimeT(it);
-  else if (password_dict.GetReal(L"time", &dt))
+  else if (password_dict.GetReal("time", &dt))
     time = base::Time::FromDoubleT(dt);
 
   std::string signon_realm;
@@ -2549,15 +2554,15 @@ webkit_glue::PasswordForm GetPasswordFormFromDict(
 
   // We don't care if any of these fail - they are either optional or checked
   // before this function is called.
-  password_dict.GetString(L"signon_realm", &signon_realm);
-  password_dict.GetStringAsUTF16(L"username_value", &username_value);
-  password_dict.GetStringAsUTF16(L"password_value", &password_value);
-  password_dict.GetStringAsUTF16(L"origin_url", &origin_url_text);
-  password_dict.GetStringAsUTF16(L"username_element", &username_element);
-  password_dict.GetStringAsUTF16(L"password_element", &password_element);
-  password_dict.GetStringAsUTF16(L"submit_element", &submit_element);
-  password_dict.GetStringAsUTF16(L"action_target", &action_target_text);
-  password_dict.GetBoolean(L"blacklist", &blacklist);
+  password_dict.GetString("signon_realm", &signon_realm);
+  password_dict.GetStringAsUTF16("username_value", &username_value);
+  password_dict.GetStringAsUTF16("password_value", &password_value);
+  password_dict.GetStringAsUTF16("origin_url", &origin_url_text);
+  password_dict.GetStringAsUTF16("username_element", &username_element);
+  password_dict.GetStringAsUTF16("password_element", &password_element);
+  password_dict.GetStringAsUTF16("submit_element", &submit_element);
+  password_dict.GetStringAsUTF16("action_target", &action_target_text);
+  password_dict.GetBoolean("blacklist", &blacklist);
 
   GURL origin_gurl(origin_url_text);
   GURL action_target(action_target_text);
@@ -2588,14 +2593,14 @@ void AutomationProvider::AddSavedPassword(Browser* browser,
   AutomationJSONReply reply(this, reply_message);
   DictionaryValue* password_dict = NULL;
 
-  if (!args->GetDictionary(L"password", &password_dict)) {
+  if (!args->GetDictionary("password", &password_dict)) {
     reply.SendError("Password must be a dictionary.");
     return;
   }
 
   // The signon realm is effectively the primary key and must be included.
   // Check here before calling GetPasswordFormFromDict.
-  if (!password_dict->HasKey(L"signon_realm")) {
+  if (!password_dict->HasKey("signon_realm")) {
     reply.SendError("Password must include signon_realm.");
     return;
   }
@@ -2613,9 +2618,9 @@ void AutomationProvider::AddSavedPassword(Browser* browser,
   // It will be null if it's accessed in an incognito window.
   if (password_store != NULL) {
     password_store->AddLogin(new_password);
-    return_value->SetBoolean(L"password_added", true);
+    return_value->SetBoolean("password_added", true);
   } else {
-    return_value->SetBoolean(L"password_added", false);
+    return_value->SetBoolean("password_added", false);
   }
 
   reply.SendSuccess(return_value.get());
@@ -2630,14 +2635,14 @@ void AutomationProvider::RemoveSavedPassword(Browser* browser,
   AutomationJSONReply reply(this, reply_message);
   DictionaryValue* password_dict = NULL;
 
-  if (!args->GetDictionary(L"password", &password_dict)) {
+  if (!args->GetDictionary("password", &password_dict)) {
     reply.SendError("Password must be a dictionary.");
     return;
   }
 
   // The signon realm is effectively the primary key and must be included.
   // Check here before calling GetPasswordFormFromDict.
-  if (!password_dict->HasKey(L"signon_realm")) {
+  if (!password_dict->HasKey("signon_realm")) {
     reply.SendError("Password must include signon_realm.");
     return;
   }
@@ -2691,8 +2696,8 @@ void AutomationProvider::ClearBrowsingData(Browser* browser,
 
   std::string time_period;
   ListValue* to_remove;
-  if (!args->GetString(L"time_period", &time_period) ||
-      !args->GetList(L"to_remove", &to_remove)) {
+  if (!args->GetString("time_period", &time_period) ||
+      !args->GetList("to_remove", &to_remove)) {
     AutomationJSONReply(this, reply_message).SendError(
         "time_period must be a string and to_remove a list.");
     return;
@@ -2735,7 +2740,7 @@ namespace {
                                       const DictionaryValue* args,
                                       std::string* error_message) {
     int tab_index;
-    if (!args->GetInteger(L"tab_index", &tab_index)) {
+    if (!args->GetInteger("tab_index", &tab_index)) {
       *error_message = "Must include tab_index.";
       return NULL;
     }
@@ -2815,7 +2820,7 @@ void AutomationProvider::SelectTranslateOption(Browser* browser,
     return;
   }
 
-  if (!args->GetString(L"option", &option)) {
+  if (!args->GetString("option", &option)) {
     AutomationJSONReply(this, reply_message).SendError("Must include option");
     return;
   }
@@ -2878,10 +2883,10 @@ void AutomationProvider::WaitUntilTranslateComplete(
       GetTranslateInfoBarDelegate(tab_contents);
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   if (!translate_bar) {
-    return_value->SetBoolean(L"translation_success", false);
+    return_value->SetBoolean("translation_success", false);
   } else {
     return_value->SetBoolean(
-        L"translation_success",
+        "translation_success",
         translate_bar->type() == TranslateInfoBarDelegate::AFTER_TRANSLATE);
   }
   reply.SendSuccess(return_value.get());
@@ -2895,10 +2900,10 @@ void AutomationProvider::GetThemeInfo(Browser* browser,
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   Extension* theme = browser->profile()->GetTheme();
   if (theme) {
-    return_value->SetString(L"name", theme->name());
-    return_value->Set(L"images", theme->GetThemeImages()->DeepCopy());
-    return_value->Set(L"colors", theme->GetThemeColors()->DeepCopy());
-    return_value->Set(L"tints", theme->GetThemeTints()->DeepCopy());
+    return_value->SetString("name", theme->name());
+    return_value->Set("images", theme->GetThemeImages()->DeepCopy());
+    return_value->Set("colors", theme->GetThemeColors()->DeepCopy());
+    return_value->Set("tints", theme->GetThemeTints()->DeepCopy());
   }
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
@@ -2921,18 +2926,18 @@ void AutomationProvider::GetExtensionsInfo(Browser* browser,
        it != extensions->end(); ++it) {
     const Extension* extension = *it;
     DictionaryValue* extension_value = new DictionaryValue;
-    extension_value->SetString(L"id", extension->id());
-    extension_value->SetString(L"version", extension->VersionString());
-    extension_value->SetString(L"name", extension->name());
-    extension_value->SetString(L"public_key", extension->public_key());
-    extension_value->SetString(L"description", extension->description());
-    extension_value->SetString(L"background_url",
+    extension_value->SetString("id", extension->id());
+    extension_value->SetString("version", extension->VersionString());
+    extension_value->SetString("name", extension->name());
+    extension_value->SetString("public_key", extension->public_key());
+    extension_value->SetString("description", extension->description());
+    extension_value->SetString("background_url",
                                extension->background_url().spec());
-    extension_value->SetString(L"options_url",
+    extension_value->SetString("options_url",
                                extension->options_url().spec());
     extensions_values->Append(extension_value);
   }
-  return_value->Set(L"extensions", extensions_values);
+  return_value->Set("extensions", extensions_values);
   reply.SendSuccess(return_value.get());
 }
 
@@ -2944,7 +2949,7 @@ void AutomationProvider::UninstallExtensionById(Browser* browser,
                                                 IPC::Message* reply_message) {
   AutomationJSONReply reply(this, reply_message);
   std::string id;
-  if (!args->GetString(L"id", &id)) {
+  if (!args->GetString("id", &id)) {
     reply.SendError("Must include string id.");
     return;
   }
@@ -2967,7 +2972,7 @@ void AutomationProvider::GetAutoFillProfile(Browser* browser,
                                             IPC::Message* reply_message) {
   // Get the AutoFillProfiles currently in the database.
   int tab_index = 0;
-  args->GetInteger(L"tab_index", &tab_index);
+  args->GetInteger("tab_index", &tab_index);
   TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
   AutomationJSONReply reply(this, reply_message);
 
@@ -2983,8 +2988,8 @@ void AutomationProvider::GetAutoFillProfile(Browser* browser,
 
       scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
-      return_value->Set(L"profiles", profiles);
-      return_value->Set(L"credit_cards", cards);
+      return_value->Set("profiles", profiles);
+      return_value->Set("credit_cards", cards);
       reply.SendSuccess(return_value.get());
     } else {
       reply.SendError("No PersonalDataManager.");
@@ -3005,8 +3010,8 @@ void AutomationProvider::FillAutoFillProfile(Browser* browser,
   AutomationJSONReply reply(this, reply_message);
   ListValue* profiles = NULL;
   ListValue* cards = NULL;
-  args->GetList(L"profiles", &profiles);
-  args->GetList(L"credit_cards", &cards);
+  args->GetList("profiles", &profiles);
+  args->GetList("credit_cards", &cards);
   std::string error_mesg;
 
   std::vector<AutoFillProfile> autofill_profiles;
@@ -3026,7 +3031,7 @@ void AutomationProvider::FillAutoFillProfile(Browser* browser,
 
   // Save the AutoFillProfiles.
   int tab_index = 0;
-  args->GetInteger(L"tab_index", &tab_index);
+  args->GetInteger("tab_index", &tab_index);
   TabContents* tab_contents = browser->GetTabContentsAt(tab_index);
 
   if (tab_contents) {
@@ -3059,14 +3064,14 @@ ListValue* AutomationProvider::GetListFromAutoFillProfiles(
        it != autofill_profiles.end(); ++it) {
     AutoFillProfile* profile = *it;
     DictionaryValue* profile_info = new DictionaryValue;
-    profile_info->SetStringFromUTF16(L"label", profile->Label());
+    profile_info->SetString("label", profile->Label());
     // For each of the types, if it has a value, add it to the dictionary.
     for (std::map<AutoFillFieldType, std::wstring>::iterator
          type_it = autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
       string16 value = profile->GetFieldText(AutoFillType(type_it->first));
       if (value.length()) {  // If there was something stored for that value.
-        profile_info->SetStringFromUTF16(type_it->second, value);
+        profile_info->SetString(type_it->second, value);
       }
     }
     profiles->Append(profile_info);
@@ -3087,7 +3092,7 @@ ListValue* AutomationProvider::GetListFromCreditCards(
        it != credit_cards.end(); ++it) {
     CreditCard* card = *it;
     DictionaryValue* card_info = new DictionaryValue;
-    card_info->SetStringFromUTF16(L"label", card->Label());
+    card_info->SetString("label", card->Label());
     // For each of the types, if it has a value, add it to the dictionary.
     for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
         credit_card_type_to_string.begin();
@@ -3095,7 +3100,7 @@ ListValue* AutomationProvider::GetListFromCreditCards(
       string16 value = card->GetFieldText(AutoFillType(type_it->first));
       // If there was something stored for that value.
       if (value.length()) {
-        card_info->SetStringFromUTF16(type_it->second, value);
+        card_info->SetString(type_it->second, value);
       }
     }
     cards->Append(card_info);

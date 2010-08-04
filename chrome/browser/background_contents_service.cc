@@ -34,8 +34,8 @@
 //       <appid_2>: { "url": <url2>, "name": <frame_name> },
 //         ... etc ...
 //    }
-const wchar_t kUrlKey[] = L"url";
-const wchar_t kFrameNameKey[] = L"name";
+const char kUrlKey[] = "url";
+const char kFrameNameKey[] = "name";
 
 BackgroundContentsService::BackgroundContentsService(
     Profile* profile, const CommandLine* command_line)
@@ -220,7 +220,7 @@ void BackgroundContentsService::RegisterBackgroundContents(
   // No entry for this application yet, so add one.
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(kUrlKey, background_contents->GetURL().spec());
-  dict->SetStringFromUTF16(kFrameNameKey, contents_map_[appid].frame_name);
+  dict->SetString(kFrameNameKey, contents_map_[appid].frame_name);
   pref->SetWithoutPathExpansion(UTF16ToWide(appid), dict);
   prefs_->ScheduleSavePersistentPrefs();
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,13 +117,12 @@ DOMMessageHandler* DOMMessageHandler::Attach(DOMUI* dom_ui) {
 void DOMMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
                                        string16 title,
                                        const GURL& gurl) {
-  string16 url16 = UTF8ToUTF16(gurl.spec());
-  dictionary->SetStringFromUTF16(L"url", url16);
+  dictionary->SetString("url", gurl.spec());
 
   bool using_url_as_the_title = false;
   if (title.empty()) {
     using_url_as_the_title = true;
-    title = url16;
+    title = UTF8ToUTF16(gurl.spec());
   }
 
   // Since the title can contain BiDi text, we need to mark the text as either
@@ -140,7 +139,7 @@ void DOMMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
       DCHECK(success ? (title != title_to_set) : (title == title_to_set));
     }
   }
-  dictionary->SetStringFromUTF16(L"title", title_to_set);
+  dictionary->SetString("title", title_to_set);
 }
 
 bool DOMMessageHandler::ExtractIntegerValue(const Value* value, int* out_int) {

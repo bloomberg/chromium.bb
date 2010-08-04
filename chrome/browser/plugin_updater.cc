@@ -44,10 +44,10 @@ static void GetPluginGroups(
 static DictionaryValue* CreatePluginFileSummary(
     const WebPluginInfo& plugin) {
   DictionaryValue* data = new DictionaryValue();
-  data->SetString(L"path", plugin.path.value());
-  data->SetStringFromUTF16(L"name", plugin.name);
-  data->SetStringFromUTF16(L"version", plugin.version);
-  data->SetBoolean(L"enabled", plugin.enabled);
+  data->SetString("path", plugin.path.value());
+  data->SetString("name", plugin.name);
+  data->SetString("version", plugin.version);
+  data->SetBoolean("enabled", plugin.enabled);
   return data;
 }
 
@@ -129,12 +129,12 @@ void DisablePluginGroupsFromPrefs(Profile* profile) {
       DictionaryValue* plugin = static_cast<DictionaryValue*>(*it);
       string16 group_name;
       bool enabled = true;
-      plugin->GetBoolean(L"enabled", &enabled);
+      plugin->GetBoolean("enabled", &enabled);
 
       FilePath::StringType path;
       // The plugin list constains all the plugin files in addition to the
       // plugin groups.
-      if (plugin->GetString(L"path", &path)) {
+      if (plugin->GetString("path", &path)) {
         // Files have a path attribute, groups don't.
         FilePath plugin_path(path);
         if (update_internal_dir &&
@@ -144,19 +144,19 @@ void DisablePluginGroupsFromPrefs(Profile* profile) {
           // looks internal, update its path in the prefs.
           plugin_path = cur_internal_dir.Append(plugin_path.BaseName());
           path = plugin_path.value();
-          plugin->SetString(L"path", path);
+          plugin->SetString("path", path);
         }
 
         if (FilePath::CompareIgnoreCase(path, pdf_path_str) == 0) {
           found_internal_pdf = true;
           if (!enabled && force_enable_internal_pdf) {
             enabled = true;
-            plugin->SetBoolean(L"enabled", true);
+            plugin->SetBoolean("enabled", true);
           }
         }
         if (!enabled)
           NPAPI::PluginList::Singleton()->DisablePlugin(plugin_path);
-      } else if (!enabled && plugin->GetStringAsUTF16(L"name", &group_name)) {
+      } else if (!enabled && plugin->GetStringAsUTF16("name", &group_name)) {
         // Otherwise this is a list of groups.
         EnablePluginGroup(false, group_name);
       }

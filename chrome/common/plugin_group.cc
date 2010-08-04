@@ -252,25 +252,24 @@ void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
 
 DictionaryValue* PluginGroup::GetSummary() const {
   DictionaryValue* result = new DictionaryValue();
-  result->SetStringFromUTF16(L"name", group_name_);
-  result->SetBoolean(L"enabled", enabled_);
+  result->SetString("name", group_name_);
+  result->SetBoolean("enabled", enabled_);
   return result;
 }
 
 DictionaryValue* PluginGroup::GetDataForUI() const {
   DictionaryValue* result = new DictionaryValue();
-  result->SetStringFromUTF16(L"name", group_name_);
-  result->SetStringFromUTF16(L"description", description_);
-  result->SetString(L"version", max_version_->GetString());
-  result->SetString(L"update_url", update_url_);
-  result->SetBoolean(L"critical", IsVulnerable());
+  result->SetString("name", group_name_);
+  result->SetString("description", description_);
+  result->SetString("version", max_version_->GetString());
+  result->SetString("update_url", update_url_);
+  result->SetBoolean("critical", IsVulnerable());
 
   bool group_disabled_by_policy = IsPluginNameDisabledByPolicy(group_name_);
   if (group_disabled_by_policy) {
-    result->SetString(L"enabledMode", L"disabledByPolicy");
+    result->SetString("enabledMode", "disabledByPolicy");
   } else {
-    result->SetString(L"enabledMode",
-                      enabled_ ? L"enabled" : L"disabledByUser");
+    result->SetString("enabledMode", enabled_ ? "enabled" : "disabledByUser");
   }
 
   ListValue* plugin_files = new ListValue();
@@ -278,19 +277,19 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
     const WebPluginInfo& web_plugin = web_plugin_infos_[i];
     int priority = web_plugin_positions_[i];
     DictionaryValue* plugin_file = new DictionaryValue();
-    plugin_file->SetStringFromUTF16(L"name", web_plugin.name);
-    plugin_file->SetStringFromUTF16(L"description", web_plugin.desc);
-    plugin_file->SetString(L"path", web_plugin.path.value());
-    plugin_file->SetStringFromUTF16(L"version", web_plugin.version);
+    plugin_file->SetString("name", web_plugin.name);
+    plugin_file->SetString("description", web_plugin.desc);
+    plugin_file->SetString("path", web_plugin.path.value());
+    plugin_file->SetString("version", web_plugin.version);
     bool plugin_disabled_by_policy = group_disabled_by_policy ||
         IsPluginNameDisabledByPolicy(web_plugin.name);
     if (plugin_disabled_by_policy) {
-      result->SetString(L"enabledMode", L"disabledByPolicy");
+      result->SetString("enabledMode", "disabledByPolicy");
     } else {
-      result->SetString(L"enabledMode",
-                        web_plugin.enabled ? L"enabled" : L"disabledByUser");
+      result->SetString("enabledMode",
+                        web_plugin.enabled ? "enabled" : "disabledByUser");
     }
-    plugin_file->SetInteger(L"priority", priority);
+    plugin_file->SetInteger("priority", priority);
 
     ListValue* mime_types = new ListValue();
     for (std::vector<WebPluginMimeType>::const_iterator type_it =
@@ -298,8 +297,8 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
          type_it != web_plugin.mime_types.end();
          ++type_it) {
       DictionaryValue* mime_type = new DictionaryValue();
-      mime_type->SetString(L"mimeType", type_it->mime_type);
-      mime_type->SetStringFromUTF16(L"description", type_it->description);
+      mime_type->SetString("mimeType", type_it->mime_type);
+      mime_type->SetString("description", type_it->description);
 
       ListValue* file_extensions = new ListValue();
       for (std::vector<std::string>::const_iterator ext_it =
@@ -308,15 +307,15 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
            ++ext_it) {
         file_extensions->Append(new StringValue(*ext_it));
       }
-      mime_type->Set(L"fileExtensions", file_extensions);
+      mime_type->Set("fileExtensions", file_extensions);
 
       mime_types->Append(mime_type);
     }
-    plugin_file->Set(L"mimeTypes", mime_types);
+    plugin_file->Set("mimeTypes", mime_types);
 
     plugin_files->Append(plugin_file);
   }
-  result->Set(L"plugin_files", plugin_files);
+  result->Set("plugin_files", plugin_files);
 
   return result;
 }

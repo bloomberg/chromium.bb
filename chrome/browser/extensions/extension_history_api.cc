@@ -30,7 +30,7 @@ void GetHistoryItemDictionary(const history::URLRow& row,
                               DictionaryValue* value) {
   value->SetString(keys::kIdKey, base::Int64ToString(row.id()));
   value->SetString(keys::kUrlKey, row.url().spec());
-  value->SetStringFromUTF16(keys::kTitleKey, row.title());
+  value->SetString(keys::kTitleKey, row.title());
   value->SetReal(keys::kLastVisitdKey, MilliSecondsFromTime(row.last_visit()));
   value->SetInteger(keys::kTypedCountKey, row.typed_count());
   value->SetInteger(keys::kVisitCountKey, row.visit_count());

@@ -89,21 +89,21 @@ Value* EntryToDictionaryValue(net::NetLog::EventType type,
 
   // Set the entry time. (Note that we send it as a string since integers
   // might overflow).
-  entry_dict->SetString(L"time", TickCountToString(time));
+  entry_dict->SetString("time", TickCountToString(time));
 
   // Set the entry source.
   DictionaryValue* source_dict = new DictionaryValue();
-  source_dict->SetInteger(L"id", source.id);
-  source_dict->SetInteger(L"type", static_cast<int>(source.type));
-  entry_dict->Set(L"source", source_dict);
+  source_dict->SetInteger("id", source.id);
+  source_dict->SetInteger("type", static_cast<int>(source.type));
+  entry_dict->Set("source", source_dict);
 
   // Set the event info.
-  entry_dict->SetInteger(L"type", static_cast<int>(type));
-  entry_dict->SetInteger(L"phase", static_cast<int>(phase));
+  entry_dict->SetInteger("type", static_cast<int>(type));
+  entry_dict->SetInteger("phase", static_cast<int>(phase));
 
   // Set the event-specific parameters.
   if (params)
-    entry_dict->Set(L"params", params->ToValue());
+    entry_dict->Set("params", params->ToValue());
 
   return entry_dict;
 }
@@ -112,16 +112,14 @@ Value* ExperimentToValue(const ConnectionTester::Experiment& experiment) {
   DictionaryValue* dict = new DictionaryValue();
 
   if (experiment.url.is_valid())
-    dict->SetString(L"url", experiment.url.spec());
+    dict->SetString("url", experiment.url.spec());
 
-  dict->SetStringFromUTF16(
-      L"proxy_settings_experiment",
-      ConnectionTester::ProxySettingsExperimentDescription(
-          experiment.proxy_settings_experiment));
-  dict->SetStringFromUTF16(
-      L"host_resolver_experiment",
-      ConnectionTester::HostResolverExperimentDescription(
-          experiment.host_resolver_experiment));
+  dict->SetString("proxy_settings_experiment",
+                  ConnectionTester::ProxySettingsExperimentDescription(
+                      experiment.proxy_settings_experiment));
+  dict->SetString("host_resolver_experiment",
+                  ConnectionTester::HostResolverExperimentDescription(
+                      experiment.host_resolver_experiment));
   return dict;
 }
 
@@ -496,20 +494,19 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 
     } else {
       // We have everything we need to send the right values.
-      dict->SetString(L"version", version_info->file_version());
-      dict->SetString(L"cl", version_info->last_change());
-      dict->SetStringFromUTF16(L"version_mod",
-          platform_util::GetVersionStringModifier());
+      dict->SetString("version", WideToUTF16Hack(version_info->file_version()));
+      dict->SetString("cl", WideToUTF16Hack(version_info->last_change()));
+      dict->SetString("version_mod", platform_util::GetVersionStringModifier());
 
       if (version_info->is_official_build()) {
-        dict->SetString(L"official",
-            l10n_util::GetString(IDS_ABOUT_VERSION_OFFICIAL));
+        dict->SetString("official",
+            l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OFFICIAL));
       } else {
-        dict->SetString(L"official",
-            l10n_util::GetString(IDS_ABOUT_VERSION_UNOFFICIAL));
+        dict->SetString("official",
+            l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_UNOFFICIAL));
       }
 
-      dict->SetString(L"command_line",
+      dict->SetString("command_line",
           CommandLine::ForCurrentProcess()->command_line_string());
     }
 
@@ -548,9 +545,9 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   {
     DictionaryValue* dict = new DictionaryValue();
 
-    dict->SetInteger(L"PHASE_BEGIN", net::NetLog::PHASE_BEGIN);
-    dict->SetInteger(L"PHASE_END", net::NetLog::PHASE_END);
-    dict->SetInteger(L"PHASE_NONE", net::NetLog::PHASE_NONE);
+    dict->SetInteger("PHASE_BEGIN", net::NetLog::PHASE_BEGIN);
+    dict->SetInteger("PHASE_END", net::NetLog::PHASE_END);
+    dict->SetInteger("PHASE_NONE", net::NetLog::PHASE_NONE);
 
     CallJavascriptFunction(L"g_browser.receivedLogEventPhaseConstants", dict);
   }
@@ -643,8 +640,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
     const net::ProxyRetryInfo& retry_info = it->second;
 
     DictionaryValue* dict = new DictionaryValue();
-    dict->SetString(L"proxy_uri", proxy_uri);
-    dict->SetString(L"bad_until", TickCountToString(retry_info.bad_until));
+    dict->SetString("proxy_uri", proxy_uri);
+    dict->SetString("bad_until", TickCountToString(retry_info.bad_until));
 
     list->Append(dict);
   }
@@ -674,12 +671,12 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverCache(
 
   DictionaryValue* dict = new DictionaryValue();
 
-  dict->SetInteger(L"capacity", static_cast<int>(cache->max_entries()));
+  dict->SetInteger("capacity", static_cast<int>(cache->max_entries()));
   dict->SetInteger(
-      L"ttl_success_ms",
+      "ttl_success_ms",
       static_cast<int>(cache->success_entry_ttl().InMilliseconds()));
   dict->SetInteger(
-      L"ttl_failure_ms",
+      "ttl_failure_ms",
       static_cast<int>(cache->failure_entry_ttl().InMilliseconds()));
 
   ListValue* entry_list = new ListValue();
@@ -693,13 +690,13 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverCache(
 
     DictionaryValue* entry_dict = new DictionaryValue();
 
-    entry_dict->SetString(L"hostname", key.hostname);
-    entry_dict->SetInteger(L"address_family",
+    entry_dict->SetString("hostname", key.hostname);
+    entry_dict->SetInteger("address_family",
         static_cast<int>(key.address_family));
-    entry_dict->SetString(L"expiration", TickCountToString(entry->expiration));
+    entry_dict->SetString("expiration", TickCountToString(entry->expiration));
 
     if (entry->error != net::OK) {
-      entry_dict->SetInteger(L"error", entry->error);
+      entry_dict->SetInteger("error", entry->error);
     } else {
       // Append all of the resolved addresses.
       ListValue* address_list = new ListValue();
@@ -709,13 +706,13 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverCache(
             net::NetAddressToStringWithPort(current_address)));
         current_address = current_address->ai_next;
       }
-      entry_dict->Set(L"addresses", address_list);
+      entry_dict->Set("addresses", address_list);
     }
 
     entry_list->Append(entry_dict);
   }
 
-  dict->Set(L"entries", entry_list);
+  dict->Set("entries", entry_list);
 
   CallJavascriptFunction(L"g_browser.receivedHostResolverCache", dict);
 }
@@ -787,7 +784,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
     }
   }
 
-  info_dict->Set(L"stats", stats_dict);
+  info_dict->Set("stats", stats_dict);
 
   CallJavascriptFunction(L"g_browser.receivedHttpCacheInfo", info_dict);
 }
@@ -822,8 +819,8 @@ NetInternalsMessageHandler::IOThreadImpl::OnCompletedConnectionTestExperiment(
     int result) {
   DictionaryValue* dict = new DictionaryValue();
 
-  dict->Set(L"experiment", ExperimentToValue(experiment));
-  dict->SetInteger(L"result", result);
+  dict->Set("experiment", ExperimentToValue(experiment));
+  dict->SetInteger("result", result);
 
   CallJavascriptFunction(
       L"g_browser.receivedCompletedConnectionTestExperiment",

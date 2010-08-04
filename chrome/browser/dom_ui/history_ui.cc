@@ -54,40 +54,40 @@ void HistoryUIHTMLSource::StartDataRequest(const std::string& path,
                                            bool is_off_the_record,
                                            int request_id) {
   DictionaryValue localized_strings;
-  localized_strings.SetString(L"loading",
-      l10n_util::GetString(IDS_HISTORY_LOADING));
-  localized_strings.SetString(L"title",
-      l10n_util::GetString(IDS_HISTORY_TITLE));
-  localized_strings.SetString(L"loading",
-      l10n_util::GetString(IDS_HISTORY_LOADING));
-  localized_strings.SetString(L"newest",
-      l10n_util::GetString(IDS_HISTORY_NEWEST));
-  localized_strings.SetString(L"newer",
-      l10n_util::GetString(IDS_HISTORY_NEWER));
-  localized_strings.SetString(L"older",
-      l10n_util::GetString(IDS_HISTORY_OLDER));
-  localized_strings.SetString(L"searchresultsfor",
-      l10n_util::GetString(IDS_HISTORY_SEARCHRESULTSFOR));
-  localized_strings.SetString(L"history",
-      l10n_util::GetString(IDS_HISTORY_BROWSERESULTS));
-  localized_strings.SetString(L"cont",
-      l10n_util::GetString(IDS_HISTORY_CONTINUED));
-  localized_strings.SetString(L"searchbutton",
-      l10n_util::GetString(IDS_HISTORY_SEARCH_BUTTON));
-  localized_strings.SetString(L"noresults",
-      l10n_util::GetString(IDS_HISTORY_NO_RESULTS));
-  localized_strings.SetString(L"noitems",
-      l10n_util::GetString(IDS_HISTORY_NO_ITEMS));
-  localized_strings.SetString(L"edithistory",
-      l10n_util::GetString(IDS_HISTORY_START_EDITING_HISTORY));
-  localized_strings.SetString(L"doneediting",
-      l10n_util::GetString(IDS_HISTORY_STOP_EDITING_HISTORY));
-  localized_strings.SetString(L"removeselected",
-      l10n_util::GetString(IDS_HISTORY_REMOVE_SELECTED_ITEMS));
-  localized_strings.SetString(L"clearallhistory",
-      l10n_util::GetString(IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG));
-  localized_strings.SetString(L"deletewarning",
-      l10n_util::GetString(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING));
+  localized_strings.SetString("loading",
+      l10n_util::GetStringUTF16(IDS_HISTORY_LOADING));
+  localized_strings.SetString("title",
+      l10n_util::GetStringUTF16(IDS_HISTORY_TITLE));
+  localized_strings.SetString("loading",
+      l10n_util::GetStringUTF16(IDS_HISTORY_LOADING));
+  localized_strings.SetString("newest",
+      l10n_util::GetStringUTF16(IDS_HISTORY_NEWEST));
+  localized_strings.SetString("newer",
+      l10n_util::GetStringUTF16(IDS_HISTORY_NEWER));
+  localized_strings.SetString("older",
+      l10n_util::GetStringUTF16(IDS_HISTORY_OLDER));
+  localized_strings.SetString("searchresultsfor",
+      l10n_util::GetStringUTF16(IDS_HISTORY_SEARCHRESULTSFOR));
+  localized_strings.SetString("history",
+      l10n_util::GetStringUTF16(IDS_HISTORY_BROWSERESULTS));
+  localized_strings.SetString("cont",
+      l10n_util::GetStringUTF16(IDS_HISTORY_CONTINUED));
+  localized_strings.SetString("searchbutton",
+      l10n_util::GetStringUTF16(IDS_HISTORY_SEARCH_BUTTON));
+  localized_strings.SetString("noresults",
+      l10n_util::GetStringUTF16(IDS_HISTORY_NO_RESULTS));
+  localized_strings.SetString("noitems",
+      l10n_util::GetStringUTF16(IDS_HISTORY_NO_ITEMS));
+  localized_strings.SetString("edithistory",
+      l10n_util::GetStringUTF16(IDS_HISTORY_START_EDITING_HISTORY));
+  localized_strings.SetString("doneediting",
+      l10n_util::GetStringUTF16(IDS_HISTORY_STOP_EDITING_HISTORY));
+  localized_strings.SetString("removeselected",
+      l10n_util::GetStringUTF16(IDS_HISTORY_REMOVE_SELECTED_ITEMS));
+  localized_strings.SetString("clearallhistory",
+      l10n_util::GetStringUTF16(IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG));
+  localized_strings.SetString("deletewarning",
+      l10n_util::GetStringUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING));
 
   SetFontAndTextDirection(&localized_strings);
 
@@ -252,7 +252,7 @@ void BrowsingHistoryHandler::QueryComplete(
     SetURLAndTitle(page_value, page.title(), page.url());
 
     // Need to pass the time in epoch time (fastest JS conversion).
-    page_value->SetInteger(L"time",
+    page_value->SetInteger("time",
         static_cast<int>(page.visit_time().ToTimeT()));
 
     // Until we get some JS i18n infrastructure, we also need to
@@ -272,22 +272,22 @@ void BrowsingHistoryHandler::QueryComplete(
             IDS_HISTORY_DATE_WITH_RELATIVE_TIME,
             date_str, base::TimeFormatFriendlyDate(page.visit_time()));
       }
-      page_value->SetString(L"dateRelativeDay", date_str);
-      page_value->SetString(L"dateTimeOfDay",
-          base::TimeFormatTimeOfDay(page.visit_time()));
+      page_value->SetString("dateRelativeDay", WideToUTF16Hack(date_str));
+      page_value->SetString("dateTimeOfDay",
+          WideToUTF16Hack(base::TimeFormatTimeOfDay(page.visit_time())));
     } else {
-      page_value->SetString(L"dateShort",
-          base::TimeFormatShortDate(page.visit_time()));
-      page_value->SetStringFromUTF16(L"snippet", page.snippet().text());
+      page_value->SetString("dateShort",
+          WideToUTF16Hack(base::TimeFormatShortDate(page.visit_time())));
+      page_value->SetString("snippet", page.snippet().text());
     }
-    page_value->SetBoolean(L"starred",
+    page_value->SetBoolean("starred",
         dom_ui_->GetProfile()->GetBookmarkModel()->IsBookmarked(page.url()));
     results_value.Append(page_value);
   }
 
   DictionaryValue info_value;
-  info_value.SetStringFromUTF16(L"term", search_text_);
-  info_value.SetBoolean(L"finished", results->reached_beginning());
+  info_value.SetString("term", search_text_);
+  info_value.SetBoolean("finished", results->reached_beginning());
 
   dom_ui_->CallJavascriptFunction(L"historyResult", info_value, results_value);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -88,7 +88,7 @@ Value* BookmarkCodec::EncodeNode(const BookmarkNode* node) {
   std::string id = base::Int64ToString(node->id());
   value->SetString(kIdKey, id);
   const string16& title = node->GetTitleAsString16();
-  value->SetStringFromUTF16(kNameKey, title);
+  value->SetString(kNameKey, title);
   value->SetString(kDateAddedKey,
                    base::Int64ToString(node->date_added().ToInternalValue()));
   if (node->type() == BookmarkNode::URL) {
