@@ -3710,8 +3710,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN" desc="Text that signifies that the plug-in is currently disabled by a policy set by an administrator.">
         (Disabled by centrally-administered policy)
       </message>
-      <message name="IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY" desc="Text that indicates a plugin cannot be enabled because it has been disabled by a policy set by an administrator.">
-        Cannot enable plugins that are disabled by policy
+      <message name="IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY" desc="Text that indicates a plug-in cannot be enabled because it has been disabled by a policy set by an administrator.">
+        Cannot enable plug-ins that are disabled by policy
       </message>
       <message name="IDS_PLUGINS_DISABLED_RUNNING_PLUGIN" desc="Text that signifies that the plug-in is disabled but still running, and that it will be fully disabled after a browser restart.">
         (Still running; will be fully disabled after browser restart)
@@ -3743,13 +3743,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGINS_ENABLE" desc="The link for enabling a plug-in.">
         Enable
       </message>
-      <message name="IDS_PLUGINS_DOWNLOAD" desc="The link label to download the latest version of this plugin">
+      <message name="IDS_PLUGINS_DOWNLOAD" desc="The link label to download the latest version of this plug-in">
         Download Critical Security Update
       </message>
-      <message name="IDS_PLUGINS_NAME" desc="The label for the name of this plugin">
+      <message name="IDS_PLUGINS_NAME" desc="The label for the name of this plug-in">
         Name:
       </message>
-      <message name="IDS_PLUGINS_PRIORITY" desc="The label for the priority of this plugin in the list">
+      <message name="IDS_PLUGINS_PRIORITY" desc="The label for the priority of this plug-in in the list">
         Priority:
       </message>
 
