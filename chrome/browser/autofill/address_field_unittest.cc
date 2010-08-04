@@ -409,11 +409,9 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
   ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr1")) != field_type_map_.end());
   EXPECT_EQ(ADDRESS_HOME_LINE1, field_type_map_[ASCIIToUTF16("addr1")]);
-  ASSERT_FALSE(
+  ASSERT_TRUE(
       field_type_map_.find(ASCIIToUTF16("addr2")) != field_type_map_.end());
-  // The second line of the address should not match if |name| is set but
-  // |label| is empty.
-  EXPECT_NE(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
+  EXPECT_EQ(ADDRESS_HOME_LINE2, field_type_map_[ASCIIToUTF16("addr2")]);
 }
 
 TEST_F(AddressFieldTest, ParseCompany) {
