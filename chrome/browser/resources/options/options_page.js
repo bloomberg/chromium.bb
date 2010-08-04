@@ -76,8 +76,15 @@ cr.define('options', function() {
     pageNav.className = 'navbar-item';
     pageNav.setAttribute('pageName', page.name);
     pageNav.textContent = page.title;
+    pageNav.tabIndex = 0;
     pageNav.onclick = function(event) {
       OptionsPage.showPageByName(this.getAttribute('pageName'));
+    };
+    pageNav.onkeypress = function(event) {
+      // Enter or space
+      if (event.keyCode == 13 || event.keyCode == 32) {
+        OptionsPage.showPageByName(this.getAttribute('pageName'));
+      }
     };
     var navbar = $('navbar');
     navbar.appendChild(pageNav);
