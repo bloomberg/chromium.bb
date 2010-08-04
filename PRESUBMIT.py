@@ -10,6 +10,7 @@ for more details about the presubmit API built into gcl.
 
 _EXCLUDED_PATHS = (
     r"breakpad[\\\/].*",
+    r"net/tools/spdyshark/[\\\/].*",
     r"skia[\\\/].*",
     r"v8[\\\/].*",
 )
