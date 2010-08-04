@@ -76,7 +76,7 @@ const int kToolbarWidgetSpacing = 1;
 const int kToolbarCornerSize = 3;
 
 // The offset in pixels of the upgrade dot on the app menu.
-const int kUpgradeDotOffset = 11;
+const int kUpgradeDotOffset = 6;
 
 // The duration of the upgrade notification animation (actually the duration
 // of a half-throb).
@@ -111,7 +111,6 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
   upgrade_reminder_animation_.SetThrobDuration(kThrobDuration);
 
   ActiveWindowWatcherX::AddObserver(this);
-  MaybeShowUpgradeReminder();
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
@@ -125,7 +124,6 @@ BrowserToolbarGtk::~BrowserToolbarGtk() {
   offscreen_entry_.Destroy();
 
   wrench_menu_.reset();
-  wrench_menu_image_.Destroy();
 }
 
 void BrowserToolbarGtk::Init(Profile* profile,
@@ -216,10 +214,14 @@ void BrowserToolbarGtk::Init(Profile* profile,
   g_signal_connect(wrench_button, "button-press-event",
                    G_CALLBACK(OnMenuButtonPressEventThunk), this);
   GTK_WIDGET_UNSET_FLAGS(wrench_button, GTK_CAN_FOCUS);
-  g_signal_connect_after(wrench_button, "expose-event",
-                         G_CALLBACK(OnWrenchMenuImageExposeThunk), this);
-  gtk_box_pack_start(GTK_BOX(toolbar_), wrench_menu_button_->widget(),
-                     FALSE, FALSE, 4);
+
+  // Put the wrench button in a box so that we can paint the update notification
+  // over it.
+  GtkWidget* wrench_box = gtk_alignment_new(0, 0, 1, 1);
+  g_signal_connect_after(wrench_box, "expose-event",
+                         G_CALLBACK(OnWrenchMenuButtonExposeThunk), this);
+  gtk_container_add(GTK_CONTAINER(wrench_box), wrench_button);
+  gtk_box_pack_start(GTK_BOX(toolbar_), wrench_box, FALSE, FALSE, 4);
 
   wrench_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
   g_signal_connect(wrench_menu_->widget(), "show",
@@ -245,6 +247,8 @@ void BrowserToolbarGtk::Init(Profile* profile,
 
   SetViewIDs();
   theme_provider_->InitThemesFor(this);
+
+  MaybeShowUpgradeReminder();
 }
 
 void BrowserToolbarGtk::SetViewIDs() {
@@ -652,13 +656,13 @@ bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
 
 void BrowserToolbarGtk::AnimationEnded(const Animation* animation) {
   DCHECK_EQ(animation, &upgrade_reminder_animation_);
-  gtk_widget_queue_draw(wrench_menu_image_.get());
+  gtk_widget_queue_draw(wrench_menu_button_->widget()->parent);
 }
 
 void BrowserToolbarGtk::AnimationProgressed(const Animation* animation) {
   DCHECK_EQ(animation, &upgrade_reminder_animation_);
   if (UpgradeAnimationIsFaded())
-    gtk_widget_queue_draw(wrench_menu_image_.get());
+    gtk_widget_queue_draw(wrench_menu_button_->widget()->parent);
 }
 
 void BrowserToolbarGtk::AnimationCanceled(const Animation* animation) {
@@ -676,8 +680,8 @@ void BrowserToolbarGtk::OnWrenchMenuShow(GtkWidget* sender) {
   }
 }
 
-gboolean BrowserToolbarGtk::OnWrenchMenuImageExpose(GtkWidget* sender,
-                                                    GdkEventExpose* expose) {
+gboolean BrowserToolbarGtk::OnWrenchMenuButtonExpose(GtkWidget* sender,
+                                                     GdkEventExpose* expose) {
   if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
     return FALSE;
 
@@ -696,10 +700,11 @@ gboolean BrowserToolbarGtk::OnWrenchMenuImageExpose(GtkWidget* sender,
   int x_offset = base::i18n::IsRTL() ?
       sender->allocation.width - kUpgradeDotOffset - badge.width() :
       kUpgradeDotOffset;
+  int y_offset = sender->allocation.height / 2 + badge.height();
   canvas.DrawBitmapInt(
       badge,
       sender->allocation.x + x_offset,
-      sender->allocation.y + sender->allocation.height - badge.height());
+      sender->allocation.y + y_offset);
 
   return FALSE;
 }

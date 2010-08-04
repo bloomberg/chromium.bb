@@ -156,7 +156,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   CHROMEGTK_CALLBACK_0(BrowserToolbarGtk, void, OnWrenchMenuShow);
 
   // Used to draw the upgrade notification badge.
-  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnWrenchMenuImageExpose,
+  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnWrenchMenuButtonExpose,
                        GdkEventExpose*);
 
   // Updates preference-dependent state.
@@ -203,10 +203,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   scoped_ptr<ReloadButtonGtk> reload_;
   scoped_ptr<BrowserActionsToolbarGtk> actions_toolbar_;
   scoped_ptr<CustomDrawButton> wrench_menu_button_;
-
-  // Keep a pointer to the menu button image because we change it when the theme
-  // changes.
-  OwnedWidgetGtk wrench_menu_image_;
 
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
