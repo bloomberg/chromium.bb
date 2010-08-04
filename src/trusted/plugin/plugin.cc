@@ -562,10 +562,6 @@ bool Plugin::Load(nacl::string logical_url,
   return true;
 }
 
-bool Plugin::LogAtServiceRuntime(int severity, nacl::string msg) {
-  return service_runtime_->Log(severity, msg);
-}
-
 char* Plugin::LookupArgument(const char* key) {
   char** keys = argn();
   for (int ii = 0, len = argc(); ii < len; ++ii) {

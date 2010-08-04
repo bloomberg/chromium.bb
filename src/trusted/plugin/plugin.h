@@ -42,9 +42,6 @@ class Plugin : public PortableHandle {
             const char* local_url,
             plugin::StreamShmBuffer* buffer);
 
-  // Log a message by sending it to the service runtime.
-  bool LogAtServiceRuntime(int severity, nacl::string msg);
-
   // Returns the argument value for the specified key, or NULL if not found.
   // The callee retains ownership of the result.
   char* LookupArgument(const char* key);
