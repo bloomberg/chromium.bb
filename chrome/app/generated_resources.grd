@@ -7848,10 +7848,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Wired network
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK">
-        Wireless network
+        Wireless networks
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK">
-        Remembered network
+        Remembered networks
       </message>
       <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">
         Touchpad
