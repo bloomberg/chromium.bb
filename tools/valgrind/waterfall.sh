@@ -30,15 +30,17 @@ fetch_logs() {
   for S in $SLAVES
   do
     SLAVE_URL=$WATERFALL_PAGE/$S
-    echo -n "Fetching builds by slave $S"
+    SLAVE_NAME=$(echo $S | sed "s/%20/ /g" | sed "s/%28/(/g" | sed "s/%29/)/g")
+    echo -n "Fetching builds by slave '${SLAVE_NAME}'"
     wget $SLAVE_URL -O $LOGS_DIR/slave_${S} -q
-    LIST_OF_BUILDS=$(grep "<a href=\"\.\./builders/.*/builds/[0-9]\+" \
-                     $LOGS_DIR/slave_$S | \
-                     sed "s/.*\/builds\///" | sed "s/\".*//")
 
-    # TODO(timurrrr): probably we can speed up the 'fetch' step
-    # by skipping those builds/tests which succeeded.
-    # OTOH, we won't be able to check if some suppression is not used anymore.
+    # We speed up the 'fetch' step by skipping the builds/tests which succeeded.
+    # TODO(timurrrr): OTOH, we won't be able to check
+    # if some suppression is not used anymore.
+    LIST_OF_BUILDS=$(grep "<a href=\"\.\./builders/.*/builds/[0-9]\+.*failed" \
+                     $LOGS_DIR/slave_$S | grep -v "failed compile" | \
+                     sed "s/.*\/builds\///" | sed "s/\".*//" | head -n 2)
+
     for BUILD in $LIST_OF_BUILDS
     do
       BUILD_RESULTS="$LOGS_DIR/slave_${S}_build_${BUILD}"
