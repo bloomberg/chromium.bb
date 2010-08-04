@@ -200,7 +200,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   NSRect originalImportBookmarksRect_;  // Original, pre-resized field rect.
 
   // "Other bookmarks" button on the right side.
-  scoped_nsobject<NSButton> otherBookmarksButton_;
+  scoped_nsobject<BookmarkButton> otherBookmarksButton_;
 
   // We have a special menu for folder buttons.  This starts as a copy
   // of the bar menu.

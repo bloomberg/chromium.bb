@@ -204,7 +204,8 @@ const ProgramManager::ProgramInfo::UniformInfo*
   UniformInfo& info = uniform_infos_.back();
   info.element_locations.resize(size);
   info.element_locations[0] = location;
-  size_t num_texture_units = info.IsSampler() ? size : 0u;
+  DCHECK_GE(size, 0);
+  size_t num_texture_units = info.IsSampler() ? static_cast<size_t>(size) : 0u;
   info.texture_units.clear();
   info.texture_units.resize(num_texture_units, 0);
 

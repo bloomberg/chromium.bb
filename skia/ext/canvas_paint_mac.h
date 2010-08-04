@@ -85,7 +85,7 @@ class CanvasPaintT : public T {
     if (!T::initialize(rectangle_.size.width, rectangle_.size.height,
                        opaque, NULL)) {
       // Cause a deliberate crash;
-      *(char*) 0 = 0;
+      *(volatile char*) 0 = 0;
     }
 
     // Need to translate so that the dirty region appears at the origin of the

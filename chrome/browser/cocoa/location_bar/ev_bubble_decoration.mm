@@ -31,7 +31,7 @@ const float kMaxBubbleFraction = 0.5;
 // TODO(shess): This is ugly, find a better way.  Using it right now
 // so that I can crib from gtk and still be able to see that I'm using
 // the same values easily.
-const NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
+NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
   DCHECK_LE(rr, 255);
   DCHECK_LE(bb, 255);
   DCHECK_LE(gg, 255);

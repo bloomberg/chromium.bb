@@ -20,11 +20,11 @@ void TokenService::Initialize(
   talk_token_fetcher_.reset(new GaiaAuthenticator2(this, source_, getter));
 }
 
-const bool TokenService::AreCredentialsValid() const {
+bool TokenService::AreCredentialsValid() const {
   return !credentials_.lsid.empty() && !credentials_.sid.empty();
 }
 
-const bool TokenService::HasLsid() const {
+bool TokenService::HasLsid() const {
   return !credentials_.lsid.empty();
 }
 
@@ -44,7 +44,7 @@ void TokenService::StartFetchingTokens() {
 
 // Services dependent on a token will check if a token is available.
 // If it isn't, they'll go to sleep until they get a token event.
-const bool TokenService::HasTokenForService(const char* const service) const {
+bool TokenService::HasTokenForService(const char* const service) const {
   return token_map_.count(service) > 0;
 }
 

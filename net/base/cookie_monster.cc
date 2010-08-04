@@ -1614,7 +1614,7 @@ CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
     return NULL;
   std::string cookie_domain;
   if (!GetCookieDomainKeyWithString(url, parsed_domain, &cookie_domain))
-    return false;
+    return NULL;
 
   std::string parsed_path = ParsedCookie::ParseValueString(path);
   if (parsed_path != path)

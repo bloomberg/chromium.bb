@@ -275,8 +275,8 @@ void AutocompletePopupModel::Observe(NotificationType type,
 
   const AutocompleteResult* result =
       Details<const AutocompleteResult>(details).ptr();
-  selected_line_ = (result->default_match() == result->end()) ?
-      kNoMatch : (result->default_match() - result->begin());
+  selected_line_ = result->default_match() == result->end() ?
+      kNoMatch : static_cast<size_t>(result->default_match() - result->begin());
   // There had better not be a nonempty result set with no default match.
   CHECK((selected_line_ != kNoMatch) || result->empty());
   // If we're going to trim the window size to no longer include the hovered

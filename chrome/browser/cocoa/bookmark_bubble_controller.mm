@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
+
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"

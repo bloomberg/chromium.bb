@@ -16,10 +16,10 @@ static const CGFloat kDragImageOpacity = 0.7;
 
 namespace bookmark_button {
 
-const NSString* kPulseBookmarkButtonNotification =
+NSString* const kPulseBookmarkButtonNotification =
     @"PulseBookmarkButtonNotification";
-const NSString* kBookmarkKey = @"BookmarkKey";
-const NSString* kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
+NSString* const kBookmarkKey = @"BookmarkKey";
+NSString* const kBookmarkPulseFlagKey = @"BookmarkPulseFlagKey";
 
 };
 

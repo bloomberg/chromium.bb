@@ -9,9 +9,9 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
-const NSString* kWillEnterFullscreenNotification =
+NSString* const kWillEnterFullscreenNotification =
     @"WillEnterFullscreenNotification";
-const NSString* kWillLeaveFullscreenNotification =
+NSString* const kWillLeaveFullscreenNotification =
     @"WillLeaveFullscreenNotification";
 
 namespace {

@@ -174,7 +174,7 @@ class PluginInstallerImpl : public gfx::WindowImpl {
   }
 
   // Getter for the NPP instance member.
-  const NPP instance() const {
+  NPP instance() const {
     return instance_;
   }
 

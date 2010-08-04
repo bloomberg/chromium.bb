@@ -108,7 +108,6 @@ class PopupBlockedAnimationObserver : public NotificationObserver {
     [parentWindow addChildWindow:animation_ ordered:NSWindowAbove];
 
     // Start the animation from the center of the window.
-    NSRect contentFrame = [[animation_ contentView] frame];
     [animation_ setStartFrame:CGRectMake(0,
                                          imageHeight / 2,
                                          imageWidth,

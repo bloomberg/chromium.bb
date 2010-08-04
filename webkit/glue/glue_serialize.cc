@@ -191,7 +191,9 @@ inline WebString ReadString(const SerializeObject* obj) {
 
   // In version 2, the length field was the length in WebUChars.
   // In version 1 and 3 it is the length in bytes.
-  int bytes = ((obj->version == 2) ? length * sizeof(WebUChar) : length);
+  int bytes = length;
+  if (obj->version == 2)
+    bytes *= sizeof(WebUChar);
 
   const void* data;
   if (!ReadBytes(obj, &data, bytes))
