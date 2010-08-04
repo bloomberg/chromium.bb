@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/configuration_policy_pref_store.h"
 #include "chrome/browser/dummy_pref_store.h"
 #include "chrome/browser/pref_value_store.h"
-
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,22 +63,6 @@ namespace recommended_pref {
 
 class PrefValueStoreTest : public testing::Test {
  protected:
-  scoped_ptr<PrefValueStore> pref_value_store_;
-
-  // |PrefStore|s are owned by the |PrefValueStore|.
-  DummyPrefStore* enforced_pref_store_;
-  DummyPrefStore* extension_pref_store_;
-  DummyPrefStore* command_line_pref_store_;
-  DummyPrefStore* recommended_pref_store_;
-  DummyPrefStore* user_pref_store_;
-
-  // Preferences are owned by the individual |DummyPrefStores|.
-  DictionaryValue* enforced_prefs_;
-  DictionaryValue* extension_prefs_;
-  DictionaryValue* command_line_prefs_;
-  DictionaryValue* user_prefs_;
-  DictionaryValue* recommended_prefs_;
-
   virtual void SetUp() {
     // Create dummy user preferences.
     enforced_prefs_= CreateEnforcedPrefs();
@@ -100,11 +85,14 @@ class PrefValueStoreTest : public testing::Test {
     recommended_pref_store_->set_prefs(recommended_prefs_);
 
     // Create a new pref-value-store.
-    pref_value_store_.reset(new PrefValueStore(enforced_pref_store_,
-                                               extension_pref_store_,
-                                               command_line_pref_store_,
-                                               user_pref_store_,
-                                               recommended_pref_store_));
+    pref_value_store_ = new PrefValueStore(enforced_pref_store_,
+                                           extension_pref_store_,
+                                           command_line_pref_store_,
+                                           user_pref_store_,
+                                           recommended_pref_store_);
+
+    ui_thread_.reset(new ChromeThread(ChromeThread::UI, &loop_));
+    file_thread_.reset(new ChromeThread(ChromeThread::FILE, &loop_));
   }
 
   // Creates a new dictionary and stores some sample user preferences
@@ -124,6 +112,7 @@ class PrefValueStoreTest : public testing::Test {
   DictionaryValue* CreateEnforcedPrefs() {
     DictionaryValue* enforced_prefs = new DictionaryValue();
     enforced_prefs->SetString(prefs::kHomepage, enforced_pref::kHomepageValue);
+    expected_differing_paths_.push_back(WideToUTF8(prefs::kHomepage));
     return enforced_prefs;
   }
 
@@ -154,6 +143,14 @@ class PrefValueStoreTest : public testing::Test {
     recommended_prefs->SetBoolean(
         prefs::kRecommendedPref,
         recommended_pref::kRecommendedPrefValue);
+
+    // Expected differing paths must be added in lexicographic order
+    // to work properly
+    expected_differing_paths_.push_back("tabs");
+    expected_differing_paths_.push_back(WideToUTF8(prefs::kMaxTabs));
+    expected_differing_paths_.push_back("this");
+    expected_differing_paths_.push_back("this.pref");
+    expected_differing_paths_.push_back(WideToUTF8(prefs::kRecommendedPref));
     return recommended_prefs;  }
 
   DictionaryValue* CreateSampleDictValue() {
@@ -173,9 +170,38 @@ class PrefValueStoreTest : public testing::Test {
     return sample_list;
   }
 
-  virtual void TearDown() {}
-};
+  virtual void TearDown() {
+    loop_.RunAllPending();
+  }
 
+  MessageLoop loop_;
+
+  scoped_refptr<PrefValueStore> pref_value_store_;
+
+  // |PrefStore|s are owned by the |PrefValueStore|.
+  DummyPrefStore* enforced_pref_store_;
+  DummyPrefStore* extension_pref_store_;
+  DummyPrefStore* command_line_pref_store_;
+  DummyPrefStore* recommended_pref_store_;
+  DummyPrefStore* user_pref_store_;
+
+  // A vector of the preferences paths in the managed and recommended
+  // PrefStores that are set at the beginning of a test. Can be modified
+  // by the test to track changes that it makes to the preferences
+  // stored in the managed and recommended PrefStores.
+  std::vector<std::string> expected_differing_paths_;
+
+  // Preferences are owned by the individual |DummyPrefStores|.
+  DictionaryValue* enforced_prefs_;
+  DictionaryValue* extension_prefs_;
+  DictionaryValue* command_line_prefs_;
+  DictionaryValue* user_prefs_;
+  DictionaryValue* recommended_prefs_;
+
+ private:
+  scoped_ptr<ChromeThread> ui_thread_;
+  scoped_ptr<ChromeThread> file_thread_;
+};
 
 TEST_F(PrefValueStoreTest, IsReadOnly) {
   enforced_pref_store_->set_read_only(true);
@@ -426,4 +452,140 @@ TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
   ASSERT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kMissingPref));
+}
+
+class MockPolicyRefreshCallback {
+ public:
+  MockPolicyRefreshCallback() {}
+  MOCK_METHOD1(DoCallback, void(const std::vector<std::string>));
+};
+
+TEST_F(PrefValueStoreTest, TestPolicyRefresh) {
+  // pref_value_store_ is initialized by PrefValueStoreTest to have values
+  // in both it's managed and recommended store. By replacing them with
+  // dummy stores, all of the paths of the prefs originally managed and
+  // recommended stores should change.
+  MockPolicyRefreshCallback callback;
+  EXPECT_CALL(callback, DoCallback(_)).Times(0);
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          pref_value_store_.get(),
+          &PrefValueStore::RefreshPolicyPrefs,
+          new DummyPrefStore(),
+          new DummyPrefStore(),
+          NewCallback(&callback,
+                      &MockPolicyRefreshCallback::DoCallback)));
+  Mock::VerifyAndClearExpectations(&callback);
+  EXPECT_CALL(callback, DoCallback(expected_differing_paths_)).Times(1);
+  loop_.RunAllPending();
+}
+
+TEST_F(PrefValueStoreTest, TestRefreshPolicyPrefsCompletion) {
+  // Test changed preferences in managed store and removed
+  // preferences in the recommended store. In addition
+  // to "homepage", the other prefs that are set by default in
+  // the test class are removed by the DummyStore
+  scoped_ptr<DummyPrefStore> new_managed_store(new DummyPrefStore());
+  DictionaryValue* dict = new DictionaryValue();
+  dict->SetString(L"homepage", L"some other changed homepage");
+  new_managed_store->set_prefs(dict);
+  MockPolicyRefreshCallback callback;
+  EXPECT_CALL(callback, DoCallback(expected_differing_paths_)).Times(1);
+  pref_value_store_->RefreshPolicyPrefsCompletion(
+      new_managed_store.release(),
+      new DummyPrefStore(),
+      NewCallback(&callback,
+                  &MockPolicyRefreshCallback::DoCallback));
+
+  // Test properties that have been removed from the managed store.
+  // Homepage is still set in managed prefs.
+  expected_differing_paths_.clear();
+  expected_differing_paths_.push_back(std::string("homepage"));
+  MockPolicyRefreshCallback callback2;
+  EXPECT_CALL(callback2, DoCallback(expected_differing_paths_)).Times(1);
+  pref_value_store_->RefreshPolicyPrefsCompletion(
+      new DummyPrefStore(),
+      new DummyPrefStore(),
+      NewCallback(&callback2,
+                  &MockPolicyRefreshCallback::DoCallback));
+
+  // Test properties that are added to the recommended store.
+  scoped_ptr<DummyPrefStore>  new_recommended_store(new DummyPrefStore());
+  dict = new DictionaryValue();
+  dict->SetString(L"homepage", L"some other changed homepage 2");
+  new_recommended_store->set_prefs(dict);
+  expected_differing_paths_.clear();
+  expected_differing_paths_.push_back(std::string("homepage"));
+  MockPolicyRefreshCallback callback3;
+  EXPECT_CALL(callback3, DoCallback(expected_differing_paths_)).Times(1);
+  pref_value_store_->RefreshPolicyPrefsCompletion(
+      new DummyPrefStore(),
+      new_recommended_store.release(),
+      NewCallback(&callback3,
+                  &MockPolicyRefreshCallback::DoCallback));
+
+  // Test adding a multi-key path.
+  new_managed_store.reset(new DummyPrefStore());
+  dict = new DictionaryValue();
+  dict->SetString("segment1.segment2", "value");
+  new_managed_store->set_prefs(dict);
+  expected_differing_paths_.clear();
+  expected_differing_paths_.push_back(std::string("homepage"));
+  expected_differing_paths_.push_back(std::string("segment1"));
+  expected_differing_paths_.push_back(std::string("segment1.segment2"));
+  MockPolicyRefreshCallback callback4;
+  EXPECT_CALL(callback4, DoCallback(expected_differing_paths_)).Times(1);
+  pref_value_store_->RefreshPolicyPrefsCompletion(
+      new_managed_store.release(),
+      new DummyPrefStore(),
+      NewCallback(&callback4,
+                  &MockPolicyRefreshCallback::DoCallback));
+}
+
+TEST_F(PrefValueStoreTest, TestConcurrentPolicyRefresh) {
+  MockPolicyRefreshCallback callback1;
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          pref_value_store_.get(),
+          &PrefValueStore::RefreshPolicyPrefs,
+          new DummyPrefStore(),
+          new DummyPrefStore(),
+          NewCallback(&callback1,
+                      &MockPolicyRefreshCallback::DoCallback)));
+  EXPECT_CALL(callback1, DoCallback(_)).Times(0);
+
+  MockPolicyRefreshCallback callback2;
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          pref_value_store_.get(),
+          &PrefValueStore::RefreshPolicyPrefs,
+          new DummyPrefStore(),
+          new DummyPrefStore(),
+          NewCallback(&callback2,
+                      &MockPolicyRefreshCallback::DoCallback)));
+  EXPECT_CALL(callback2, DoCallback(_)).Times(0);
+
+  MockPolicyRefreshCallback callback3;
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          pref_value_store_.get(),
+          &PrefValueStore::RefreshPolicyPrefs,
+          new DummyPrefStore(),
+          new DummyPrefStore(),
+          NewCallback(&callback3,
+                      &MockPolicyRefreshCallback::DoCallback)));
+  EXPECT_CALL(callback3, DoCallback(_)).Times(0);
+  Mock::VerifyAndClearExpectations(&callback1);
+  Mock::VerifyAndClearExpectations(&callback2);
+  Mock::VerifyAndClearExpectations(&callback3);
+
+  EXPECT_CALL(callback1, DoCallback(expected_differing_paths_)).Times(1);
+  std::vector<std::string> no_differing_paths;
+  EXPECT_CALL(callback2, DoCallback(no_differing_paths)).Times(1);
+  EXPECT_CALL(callback3, DoCallback(no_differing_paths)).Times(1);
+  loop_.RunAllPending();
 }

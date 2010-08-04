@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_WIN_H_
 #pragma once
 
+#include "base/object_watcher.h"
+#include "base/scoped_ptr.h"
+#include "base/waitable_event.h"
 #include "chrome/browser/configuration_policy_store.h"
 #include "chrome/browser/configuration_policy_provider.h"
 
@@ -17,6 +20,23 @@
 // the latest version of the policy set by administrators.
 class ConfigurationPolicyProviderWin : public ConfigurationPolicyProvider {
  public:
+  // Keeps watch on Windows Group Policy notification event to trigger
+  // a policy reload when Group Policy changes.
+  class GroupPolicyChangeWatcher : public base::ObjectWatcher::Delegate {
+   public:
+    explicit GroupPolicyChangeWatcher(ConfigurationPolicyProvider* provider);
+    virtual ~GroupPolicyChangeWatcher() {}
+
+    virtual void OnObjectSignaled(HANDLE object);
+
+   private:
+    ConfigurationPolicyProvider* provider_;
+    base::WaitableEvent user_policy_changed_event_;
+    base::WaitableEvent machine_policy_changed_event_;
+    base::ObjectWatcher user_policy_watcher_;
+    base::ObjectWatcher machine_policy_watcher_;
+  };
+
   ConfigurationPolicyProviderWin();
   virtual ~ConfigurationPolicyProviderWin() { }
 
@@ -29,6 +49,8 @@ class ConfigurationPolicyProviderWin : public ConfigurationPolicyProvider {
   static const wchar_t kPolicyRegistrySubKey[];
 
  private:
+  scoped_ptr<GroupPolicyChangeWatcher> watcher_;
+
   // Methods to perfrom type-specific policy lookups in the registry.
   // HKLM is checked first, then HKCU.
   bool GetRegistryPolicyString(const wchar_t* value_name, string16* result);

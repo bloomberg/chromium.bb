@@ -6,6 +6,7 @@
 
 #include "base/values.h"
 #include "chrome/common/policy_constants.h"
+#include "chrome/common/notification_service.h"
 
 namespace {
 
@@ -70,3 +71,11 @@ const ConfigurationPolicyProvider::PolicyValueMap*
   }
   return mapping;
 }
+
+void ConfigurationPolicyProvider::NotifyStoreOfPolicyChange() {
+  NotificationService::current()->Notify(
+      NotificationType::POLICY_CHANGED,
+      Source<ConfigurationPolicyProvider>(this),
+      NotificationService::NoDetails());
+}
+

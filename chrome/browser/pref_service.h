@@ -9,22 +9,30 @@
 #pragma once
 
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/hash_tables.h"
 #include "base/non_thread_safe.h"
 #include "base/observer_list.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/pref_value_store.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_store.h"
 
-class NotificationObserver;
+class NotificationDetails;
+class NotificationSource;
+class NotificationType;
 class Preference;
 class Profile;
 class ScopedPrefUpdate;
 
-class PrefService : public NonThreadSafe {
+class PrefService : public NonThreadSafe,
+                    public NotificationObserver {
  public:
 
   // A helper class to store all the information associated with a preference.
@@ -254,13 +262,29 @@ class PrefService : public NonThreadSafe {
   // This should only be called from the constructor.
   void InitFromStorage();
 
+  // NotificationObserver methods:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // Called after a policy refresh to notify relevant preference observers.
+  // |changed_prefs_paths| is the vector of preference paths changed by the
+  // policy update. It is passed by value and not reference because
+  // this method is called asynchronously as a callback from another thread.
+  // Copying the vector guarantees that the vector's lifecycle spans the
+  // method's invocation.
+  void FireObserversForRefreshedManagedPrefs(
+      std::vector<std::string> changed_prefs_paths);
+
   // The value of a Preference can be:
   // managed, user defined, recommended or default.
   // The PrefValueStore manages enforced, user defined and recommended values
   // for Preferences. It returns the value of a Preference with the
   // highest priority, and allows to set user defined values for preferences
   // that are not managed.
-  scoped_ptr<PrefValueStore> pref_value_store_;
+  scoped_refptr<PrefValueStore> pref_value_store_;
+
+  NotificationRegistrar registrar_;
 
   // A set of all the registered Preference objects.
   PreferenceSet prefs_;

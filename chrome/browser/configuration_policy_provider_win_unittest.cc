@@ -113,6 +113,12 @@ class ConfigurationPolicyProviderWinTest : public testing::Test {
   void TestBooleanPolicy(ConfigurationPolicyStore::PolicyType type);
 
  private:
+  // A message loop must be declared and instantiated for these tests,
+  // because Windows policy provider create WaitableEvents and
+  // ObjectWatchers that require the tests to have a MessageLoop associated
+  // with the thread executing the tests.
+  MessageLoop loop_;
+
   // Keys are created for the lifetime of a test to contain
   // the sandboxed HKCU and HKLM hives, respectively.
   RegKey temp_hkcu_hive_key_;

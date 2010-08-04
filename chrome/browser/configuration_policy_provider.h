@@ -30,6 +30,11 @@ class ConfigurationPolicyProvider {
   // Returns true if the policy could be provided, otherwise false.
   virtual bool Provide(ConfigurationPolicyStore* store) = 0;
 
+  // Called by the subclass provider at any time to indicate that the currently
+  // applied policy is not longer current. A policy refresh will be initiated as
+  // soon as possible.
+  virtual void NotifyStoreOfPolicyChange();
+
  protected:
   // A structure mapping policies to their implementations by providers.
   struct PolicyValueMapEntry {

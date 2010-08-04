@@ -6,11 +6,18 @@
 #define CHROME_BROWSER_PREF_VALUE_STORE_H_
 #pragma once
 
+#include <string>
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
+#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/common/pref_store.h"
 
 class PrefStore;
@@ -27,7 +34,9 @@ class PrefStore;
 // Otherwise user-defined values have a higher precedence than recommended
 // values. Recommended preference values are set by a third person
 // (like an admin).
-class PrefValueStore {
+// Unless otherwise explicitly noted, all of the methods of this class must
+// be called on the UI thread.
+class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
  public:
   // In decreasing order of precedence:
   //   |managed_prefs| contains all managed (policy) preference values.
@@ -101,7 +110,28 @@ class PrefValueStore {
   // there is no higher-priority source controlling it.
   bool PrefValueUserModifiable(const wchar_t* name);
 
+  // Signature of callback triggered after policy refresh. Parameter is not
+  // passed as reference to prevent passing along a pointer to a set whose
+  // lifecycle is managed in another thread.
+  typedef Callback1<std::vector<std::string> >::Type* AfterRefreshCallback;
+
+  // Called as a result of a notification of policy change. Triggers a
+  // reload of managed preferences from policy. Caller must pass in
+  // new, uninitialized managed and recommended PrefStores in
+  // |managed_pref_store| and |recommended_pref_store| respectively, since
+  // PrefValueStore doesn't know about policy-specific PrefStores.
+  // |callback| is called with the set of preferences changed by the policy
+  // refresh. |callback| is called the caller's thread as a Task
+  // after RefreshPolicyPrefs has returned.
+  void RefreshPolicyPrefs(PrefStore* managed_pref_store,
+                          PrefStore* recommended_pref_store,
+                          AfterRefreshCallback callback);
+
  private:
+  friend class PrefValueStoreTest;
+  FRIEND_TEST_ALL_PREFIXES(PrefValueStoreTest,
+                           TestRefreshPolicyPrefsCompletion);
+
   // PrefStores must be listed here in order from highest to lowest priority.
   enum PrefStoreType {
     // Not associated with an actual PrefStore but used as invalid marker, e.g.
@@ -123,6 +153,20 @@ class PrefValueStore {
   // Preference identified by |name|. If none of the sources has a value,
   // INVALID is returned.
   PrefStoreType ControllingPrefStoreForPref(const wchar_t* name);
+
+  // Called during policy refresh after ReadPrefs completes on the thread
+  // that initiated the policy refresh.
+  void RefreshPolicyPrefsCompletion(
+      PrefStore* new_managed_pref_store,
+      PrefStore* new_recommended_pref_store,
+      AfterRefreshCallback callback);
+
+  // Called during policy refresh to do the ReadPrefs on the FILE thread.
+  void RefreshPolicyPrefsOnFileThread(
+      ChromeThread::ID calling_thread_id,
+      PrefStore* new_managed_pref_store,
+      PrefStore* new_recommended_pref_store,
+      AfterRefreshCallback callback);
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
 };

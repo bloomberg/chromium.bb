@@ -1118,6 +1118,11 @@ class NotificationType {
     // |webkit_glue::PasswordForm|s that were affected.
     LOGINS_CHANGED,
 
+    // Configuration Policy ----------------------------------------------------
+    // This notification is sent whenever the administrator changes policy.
+    // The detail of this notification is not used.
+    POLICY_CHANGED,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

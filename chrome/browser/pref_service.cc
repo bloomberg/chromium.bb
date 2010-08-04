@@ -119,6 +119,9 @@ PrefService* PrefService::CreateUserPrefService(
 PrefService::PrefService(PrefValueStore* pref_value_store)
     : pref_value_store_(pref_value_store) {
   InitFromStorage();
+  registrar_.Add(this,
+                 NotificationType(NotificationType::POLICY_CHANGED),
+                 NotificationService::AllSources());
 }
 
 PrefService::~PrefService() {
@@ -826,6 +829,38 @@ bool PrefService::Preference::IsUserControlled() const {
   return pref_value_store_->PrefValueFromUserStore(name_.c_str());
 }
 
+void PrefService::FireObserversForRefreshedManagedPrefs(
+    std::vector<std::string> changed_prefs_paths) {
+  DCHECK(CalledOnValidThread());
+  std::vector<std::string>::const_iterator current;
+  for (current = changed_prefs_paths.begin();
+       current != changed_prefs_paths.end();
+       ++current) {
+    FireObservers(UTF8ToWide(current->data()).data());
+  }
+}
+
 bool PrefService::Preference::IsUserModifiable() const {
   return pref_value_store_->PrefValueUserModifiable(name_.c_str());
+}
+
+void PrefService::Observe(NotificationType type,
+                          const NotificationSource& source,
+                          const NotificationDetails& details) {
+  if (type == NotificationType::POLICY_CHANGED) {
+      PrefValueStore::AfterRefreshCallback callback =
+          NewCallback(this,
+                      &PrefService::FireObserversForRefreshedManagedPrefs);
+      // The notification of the policy refresh can come from any thread,
+      // but the manipulation of the PrefValueStore must happen on the UI
+      // thread, thus the policy refresh must be explicitly started on it.
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(
+              pref_value_store_.get(),
+              &PrefValueStore::RefreshPolicyPrefs,
+              ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore(),
+              ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(),
+              callback));
+  }
 }

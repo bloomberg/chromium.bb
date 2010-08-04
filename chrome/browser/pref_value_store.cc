@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/pref_value_store.h"
+#include "chrome/common/notification_service.h"
 
 PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
                                PrefStore* extension_prefs,
@@ -113,7 +114,7 @@ bool PrefValueStore::PrefValueUserModifiable(const wchar_t* name) {
 }
 
 bool PrefValueStore::PrefValueInStore(const wchar_t* name, PrefStoreType type) {
-  if (pref_stores_[type].get() == NULL) {
+  if (!pref_stores_[type].get()) {
     // No store of that type set, so this pref can't be in it.
     return false;
   }
@@ -128,4 +129,85 @@ PrefValueStore::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
       return static_cast<PrefStoreType>(i);
   }
   return INVALID;
+}
+
+void PrefValueStore::RefreshPolicyPrefsCompletion(
+    PrefStore* new_managed_pref_store,
+    PrefStore* new_recommended_pref_store,
+    AfterRefreshCallback callback) {
+
+  DictionaryValue* managed_prefs_before(pref_stores_[MANAGED]->prefs());
+  DictionaryValue* managed_prefs_after(new_managed_pref_store->prefs());
+  DictionaryValue* recommended_prefs_before(pref_stores_[RECOMMENDED]->prefs());
+  DictionaryValue* recommended_prefs_after(new_recommended_pref_store->prefs());
+
+  std::vector<std::string> changed_managed_paths;
+  managed_prefs_before->GetDifferingPaths(managed_prefs_after,
+                                          &changed_managed_paths);
+
+  std::vector<std::string> changed_recommended_paths;
+  recommended_prefs_before->GetDifferingPaths(recommended_prefs_after,
+                                              &changed_recommended_paths);
+
+  std::vector<std::string> changed_paths(changed_managed_paths.size() +
+                                         changed_recommended_paths.size());
+  std::vector<std::string>::iterator last_insert =
+      std::merge(changed_managed_paths.begin(),
+                 changed_managed_paths.end(),
+                 changed_recommended_paths.begin(),
+                 changed_recommended_paths.end(),
+                 changed_paths.begin());
+  changed_paths.resize(last_insert - changed_paths.begin());
+
+  pref_stores_[MANAGED].reset(new_managed_pref_store);
+  pref_stores_[RECOMMENDED].reset(new_recommended_pref_store);
+  callback->Run(changed_paths);
+}
+
+void PrefValueStore::RefreshPolicyPrefsOnFileThread(
+    ChromeThread::ID calling_thread_id,
+    PrefStore* new_managed_pref_store,
+    PrefStore* new_recommended_pref_store,
+    AfterRefreshCallback callback) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  scoped_ptr<PrefStore> managed_pref_store(new_managed_pref_store);
+  scoped_ptr<PrefStore> recommended_pref_store(new_recommended_pref_store);
+
+  PrefStore::PrefReadError read_error = new_managed_pref_store->ReadPrefs();
+  if (read_error != PrefStore::PREF_READ_ERROR_NONE) {
+    LOG(ERROR) << "refresh of managed policy failed: PrefReadError = "
+               << read_error;
+    return;
+  }
+
+  read_error = new_recommended_pref_store->ReadPrefs();
+  if (read_error != PrefStore::PREF_READ_ERROR_NONE) {
+    LOG(ERROR) << "refresh of recommended policy failed: PrefReadError = "
+               << read_error;
+    return;
+  }
+
+  ChromeThread::PostTask(
+      calling_thread_id, FROM_HERE,
+      NewRunnableMethod(this,
+                        &PrefValueStore::RefreshPolicyPrefsCompletion,
+                        managed_pref_store.release(),
+                        recommended_pref_store.release(),
+                        callback));
+}
+
+void PrefValueStore::RefreshPolicyPrefs(
+    PrefStore* new_managed_pref_store,
+    PrefStore* new_recommended_pref_store,
+    AfterRefreshCallback callback) {
+  ChromeThread::ID current_thread_id;
+  CHECK(ChromeThread::GetCurrentThreadIdentifier(&current_thread_id));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &PrefValueStore::RefreshPolicyPrefsOnFileThread,
+                        current_thread_id,
+                        new_managed_pref_store,
+                        new_recommended_pref_store,
+                        callback));
 }
