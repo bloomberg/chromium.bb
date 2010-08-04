@@ -2585,6 +2585,8 @@
     #    GYP_DEFINES='coverage=1 enable_svg=0 fastbuild=1' gclient sync
     # (and, on MacOS, be sure to switch your SDK from "Base SDK" to "Mac OS X
     # 10.6")
+    # (but on Windows, don't set the fastbuild=1 because it removes the PDB
+    # generation which is necessary for code coverage.)
     ['coverage!=0',
       { 'targets': [
         {
