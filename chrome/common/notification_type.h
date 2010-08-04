@@ -892,6 +892,11 @@ class NotificationType {
     // session. The source is the profile.
     EXTENSION_OMNIBOX_INPUT_ENTERED,
 
+    // Sent when an extension changes a preference value. The source is the
+    // profile, and the details are an ExtensionPrefStore::ExtensionPrefDetails
+    // object.
+    EXTENSION_PREF_CHANGED,
+
     // Debugging ---------------------------------------------------------------
 
     // TODO(mpcomplete): Sent to diagnose a bug. Remove when fixed.

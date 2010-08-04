@@ -598,7 +598,8 @@ net::TransportSecurityState*
 
 PrefService* ProfileImpl::GetPrefs() {
   if (!prefs_.get()) {
-    prefs_.reset(PrefService::CreatePrefService(GetPrefFilePath()));
+    prefs_.reset(PrefService::CreatePrefService(GetPrefFilePath(),
+                                                GetOriginalProfile()));
 
     // The Profile class and ProfileManager class may read some prefs so
     // register known prefs as soon as possible.

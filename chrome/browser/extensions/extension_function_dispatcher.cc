@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_popup_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
+#include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_rlz_module.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
@@ -243,6 +244,9 @@ void FactoryRegistry::ResetFunctions() {
 
   // Omnibox.
   RegisterFunction<OmniboxSendSuggestionsFunction>();
+
+  // Proxies.
+  RegisterFunction<UseCustomProxySettingsFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

@@ -1578,6 +1578,7 @@
         'browser/extensions/extension_omnibox_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
         'browser/extensions/extension_popup_apitest.cc',
+        'browser/extensions/extension_proxy_apitest.cc',
         'browser/extensions/extension_processes_apitest.cc',
         'browser/extensions/extension_rlz_apitest.cc',
         'browser/extensions/extension_shelf_model_browsertest.cc',

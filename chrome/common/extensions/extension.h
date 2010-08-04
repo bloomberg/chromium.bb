@@ -104,6 +104,7 @@ class Extension {
   static const char* kHistoryPermission;
   static const char* kIdlePermission;
   static const char* kNotificationPermission;
+  static const char* kProxyPermission;
   static const char* kTabPermission;
   static const char* kUnlimitedStoragePermission;
   static const char* kNativeClientPermission;

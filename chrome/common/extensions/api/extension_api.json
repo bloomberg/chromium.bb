@@ -3285,6 +3285,51 @@
     ]
   },
   {
+    "namespace": "experimental.proxy",
+    "types": [
+      {
+        "id": "ProxyServer",
+        "type": "object",
+        "description": "An object encapsulating a single proxy server's specification.",
+        "properties": {
+          "scheme": {"type": "string", "optional": true, "enum": ["http", "socks", "socks4", "socks5"], "description": "The scheme (protocol) of the proxy server itself."},
+          "host": {"type": "string", "description": "The URI of the proxy server."},
+          "port": {"type": "integer", "optional": true, "description": "The port of the proxy server."}
+        }
+      },
+      {
+        "id": "ProxyRules",
+        "type": "object",
+        "description": "An object encapsulating the set of proxy rules for all protocols.",
+        "properties": {
+          "singleProxy": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for all per-URL requests (i.e., http, https, and ftp)."},
+          "proxyForHttp": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for HTTP requests."},
+          "proxyForHttps": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for HTTPS requests."},
+          "proxyForFtp": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for FTP requests."},
+          "socksProxy": {"$ref": "ProxyServer", "optional": true, "description": "The proxy server to be used for SOCKS requests."}
+        }
+      },
+      {
+        "id": "ProxyConfig",
+        "type": "object",
+        "description": "An object encapsulating a complete proxy configuration.",
+        "properties": {
+          "rules": {"$ref": "ProxyRules", "description": "The proxy rules describing this configuration."}
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "useCustomProxySettings",
+        "type": "function",
+        "description": "Apply the given proxy configuration.",
+        "parameters": [
+          {"name": "config", "$ref": "ProxyConfig"}
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "experimental.clipboard",
     "types": [],
     "functions": [

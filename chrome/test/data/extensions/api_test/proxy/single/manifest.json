@@ -1,0 +1,7 @@
+{
+  "name": "chrome.proxy",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.proxy API",
+  "background_page": "test.html",
+  "permissions": ["experimental", "proxy"]
+}

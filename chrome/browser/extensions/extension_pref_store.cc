@@ -6,28 +6,98 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_service.h"
 
-ExtensionPrefStore::ExtensionPrefStore(PrefService* pref_service)
-    : pref_service_(pref_service),
-      prefs_(new DictionaryValue()) {
+ExtensionPrefStore::ExtensionPrefStore(Profile* profile)
+    : prefs_(new DictionaryValue()),
+      profile_(profile) {
+  RegisterObservers();
 }
 
 ExtensionPrefStore::~ExtensionPrefStore() {
   STLDeleteElements(&extension_stack_);
+  notification_registrar_.RemoveAll();
+}
+
+void ExtensionPrefStore::InstallExtensionPref(Extension* extension,
+                                              const wchar_t* new_pref_path,
+                                              Value* new_pref_value) {
+  ExtensionStack::iterator i;
+  for (i = extension_stack_.begin(); i != extension_stack_.end(); ++i) {
+    if ((*i)->extension == extension)
+      break;
+  }
+
+  // If this extension is not already in the stack, add it. Otherwise, update
+  // or add the value of this preference, but don't change the extension's
+  // position in the stack. We store the extension even if this preference
+  // isn't registered with our PrefService, so that the ordering of extensions
+  // is consistent among all local-state and user ExtensionPrefStores.
+  PrefService* pref_service = GetPrefService();
+  // The pref_service may be NULL in unit testing.
+  bool is_registered_pref = (pref_service == NULL ||
+      pref_service->FindPreference(new_pref_path) != NULL);
+  PrefValueMap* pref_values;
+  if (i == extension_stack_.end()) {
+    pref_values = new PrefValueMap();
+    if (is_registered_pref)
+      (*pref_values)[new_pref_path] = new_pref_value;
+
+    ExtensionPrefs* extension_prefs = new ExtensionPrefs(extension,
+                                                         pref_values);
+    extension_stack_.push_front(extension_prefs);
+  } else if (is_registered_pref) {
+    pref_values = (*i)->pref_values;
+    delete (*pref_values)[new_pref_path];
+    (*pref_values)[new_pref_path] = new_pref_value;
+  }
+
+  // Apply the preference to our local |prefs_| store.
+  UpdateOnePref(new_pref_path);
+}
+
+void ExtensionPrefStore::UninstallExtension(Extension* extension) {
+  // Remove this extension from the stack.
+  for (ExtensionStack::iterator i = extension_stack_.begin();
+      i != extension_stack_.end(); ++i) {
+    if ((*i)->extension == extension) {
+      scoped_ptr<ExtensionPrefs> to_be_deleted(*i);
+      extension_stack_.erase(i);
+      UpdatePrefs(to_be_deleted->pref_values);
+      return;
+    }
+  }
+}
+
+void ExtensionPrefStore::GetExtensionIDs(std::vector<std::string>* result) {
+  for (ExtensionStack::iterator i = extension_stack_.begin();
+      i != extension_stack_.end(); ++i) {
+    (*result).push_back((*i)->extension->id());
+  }
 }
 
 // This could be sped up by keeping track of which extension currently controls
-// a given preference, among other optimizations. But we estimate that fewer
-// than 10 installed extensions will be trying to control any preferences, so
-// stick with this simpler algorithm until it causes a problem.
+// a given preference, among other optimizations. But probably fewer than 10
+// installed extensions will be trying to control any preferences, so stick
+// with this simpler algorithm until it causes a problem.
 void ExtensionPrefStore::UpdateOnePref(const wchar_t* path) {
-  // Query the PrefService to find the current value for this pref.
-  // pref_service_ might be null in unit tests.
   scoped_ptr<Value> old_value;
-  if (pref_service_) {
-    old_value.reset(
-        pref_service_->FindPreference(path)->GetValue()->DeepCopy());
+  PrefService* pref_service = GetPrefService();
+
+  // There are at least two PrefServices, one for local state and one for
+  // user prefs. (See browser_main.cc.) Different preferences are registered
+  // in each; if this one doesn't have the desired pref registered, we ignore
+  // it and let the other one handle it.
+  // The pref_service may be NULL in unit testing.
+  if (pref_service) {
+    const PrefService::Preference* pref = pref_service->FindPreference(path);
+    if (!pref)
+      return;
+    old_value.reset(pref->GetValue()->DeepCopy());
   }
 
   // DictionaryValue::Set complains if a key is overwritten with the same
@@ -43,8 +113,9 @@ void ExtensionPrefStore::UpdateOnePref(const wchar_t* path) {
       break;
     }
   }
-  if (pref_service_)
-    pref_service_->FireObserversIfChanged(path, old_value.get());
+
+  if (pref_service)
+    pref_service->FireObserversIfChanged(path, old_value.get());
 }
 
 void ExtensionPrefStore::UpdatePrefs(const PrefValueMap* pref_values) {
@@ -57,53 +128,55 @@ void ExtensionPrefStore::UpdatePrefs(const PrefValueMap* pref_values) {
   }
 }
 
-void ExtensionPrefStore::InstallExtensionPref(std::string extension_id,
-                                              const wchar_t* pref_path,
-                                              Value* pref_value) {
-  ExtensionStack::iterator i;
-  for (i = extension_stack_.begin(); i != extension_stack_.end(); ++i) {
-    if ((*i)->extension_id == extension_id)
-      break;
-  }
-
-  // If this extension is already in the stack, update or add the value of this
-  // preference, but don't change the extension's position in the stack.
-  // Otherwise, push the new extension onto the stack.
-  PrefValueMap* pref_values;
-  if (i != extension_stack_.end()) {
-    pref_values = (*i)->pref_values;
-    delete (*pref_values)[pref_path];
-    (*pref_values)[pref_path] = pref_value;
-  } else {
-    pref_values = new PrefValueMap();
-    (*pref_values)[pref_path] = pref_value;
-
-    ExtensionPrefs* extension_prefs = new ExtensionPrefs(extension_id,
-                                                         pref_values);
-    extension_stack_.push_front(extension_prefs);
-  }
-
-  // Look for an old value with the same type as the one we're modifying.
-  UpdateOnePref(pref_path);
+PrefService* ExtensionPrefStore::GetPrefService() {
+  if (profile_)
+    return profile_->GetPrefs();
+  return g_browser_process->local_state();
 }
 
-void ExtensionPrefStore::UninstallExtension(std::string extension_id) {
-  // Remove this extension from the stack.
-  for (ExtensionStack::iterator i = extension_stack_.begin();
-      i != extension_stack_.end(); ++i) {
-    if ((*i)->extension_id == extension_id) {
-      ExtensionPrefs* to_be_deleted = *i;
-      extension_stack_.erase(i);
-      UpdatePrefs(to_be_deleted->pref_values);
-      delete to_be_deleted;
-      return;
+void ExtensionPrefStore::RegisterObservers() {
+  notification_registrar_.Add(this,
+                              NotificationType::EXTENSION_PREF_CHANGED,
+                              NotificationService::AllSources());
+
+  notification_registrar_.Add(this,
+                              NotificationType::EXTENSION_UNLOADED,
+                              NotificationService::AllSources());
+}
+
+void ExtensionPrefStore::Observe(NotificationType type,
+                                 const NotificationSource& source,
+                                 const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::EXTENSION_PREF_CHANGED: {
+      Profile* extension_profile = Source<Profile>(source).ptr();
+      // The ExtensionPrefStore for the local state watches all profiles.
+      if (!profile_ || profile_ == extension_profile) {
+        ExtensionPrefStore::ExtensionPrefDetails* data =
+            Details<ExtensionPrefStore::ExtensionPrefDetails>(details).ptr();
+        InstallExtensionPref(data->first, data->second.first,
+            data->second.second);
+      }
+      break;
+    }
+    case NotificationType::EXTENSION_UNLOADED: {
+      Profile* extension_profile = Source<Profile>(source).ptr();
+      Extension* extension = Details<Extension>(details).ptr();
+      // The ExtensionPrefStore for the local state watches all profiles.
+      if (profile_ == NULL || profile_ == extension_profile)
+        UninstallExtension(extension);
+      break;
+    }
+    default: {
+      NOTREACHED();
     }
   }
 }
 
-void ExtensionPrefStore::GetExtensionIDs(std::vector<std::string>* result) {
-  for (ExtensionStack::iterator i = extension_stack_.begin();
-      i != extension_stack_.end(); ++i) {
-    (*result).push_back((*i)->extension_id);
-  }
+ExtensionPrefStore::ExtensionPrefs::ExtensionPrefs(Extension* extension,
+    PrefValueMap* values) : extension(extension), pref_values(values) {}
+
+ExtensionPrefStore::ExtensionPrefs::~ExtensionPrefs() {
+  STLDeleteValues(pref_values);
+  delete pref_values;
 }

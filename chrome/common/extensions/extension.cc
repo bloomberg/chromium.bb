@@ -126,6 +126,7 @@ const char* Extension::kGeolocationPermission = "geolocation";
 const char* Extension::kHistoryPermission = "history";
 const char* Extension::kIdlePermission = "idle";
 const char* Extension::kNotificationPermission = "notifications";
+const char* Extension::kProxyPermission = "proxy";
 const char* Extension::kTabPermission = "tabs";
 const char* Extension::kUnlimitedStoragePermission = "unlimited_storage";
 const char* Extension::kNativeClientPermission = "native_client";
@@ -140,6 +141,7 @@ const char* Extension::kPermissionNames[] = {
   Extension::kIdlePermission,
   Extension::kHistoryPermission,
   Extension::kNotificationPermission,
+  Extension::kProxyPermission,
   Extension::kTabPermission,
   Extension::kUnlimitedStoragePermission,
   Extension::kNativeClientPermission,
@@ -1708,6 +1710,10 @@ const std::set<std::string> Extension::GetEffectiveHostPermissions() const {
 }
 
 bool Extension::HasAccessToAllHosts() const {
+  // Proxies effectively grant access to every site.
+  if (HasApiPermission(kProxyPermission))
+    return true;
+
   for (URLPatternList::const_iterator host = host_permissions_.begin();
        host != host_permissions_.end(); ++host) {
     if (host->match_subdomains() && host->host().empty())

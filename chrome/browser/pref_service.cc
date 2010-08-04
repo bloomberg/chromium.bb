@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/command_line_pref_store.h"
 #include "chrome/browser/configuration_policy_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
@@ -80,11 +81,9 @@ void NotifyReadError(PrefService* pref, int message_id) {
 }  // namespace
 
 // static
-PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
-  // TODO(pamg): Reinstate extension pref store after Mstone6 branch, when its
-  // memory leaks are fixed and any extension API is using it.
-  // ExtensionPrefStore* extension_prefs = new ExtensionPrefStore(NULL);
-  ExtensionPrefStore* extension_prefs = NULL;
+PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
+                                            Profile* profile) {
+  ExtensionPrefStore* extension_prefs = new ExtensionPrefStore(profile);
   CommandLinePrefStore* command_line_prefs = new CommandLinePrefStore(
       CommandLine::ForCurrentProcess());
   PrefStore* local_prefs = new JsonPrefStore(
@@ -99,11 +98,7 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename) {
       local_prefs,
       ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore());
 
-  PrefService* pref_service = new PrefService(value_store);
-  // TODO(pamg): Uncomment when ExtensionPrefStore is reinstated.
-  // extension_prefs->SetPrefService(pref_service);
-
-  return pref_service;
+  return new PrefService(value_store);
 }
 
 // static

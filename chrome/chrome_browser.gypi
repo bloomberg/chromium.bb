@@ -1343,6 +1343,8 @@
         'browser/extensions/extension_processes_api_constants.h',
         'browser/extensions/extension_protocols.cc',
         'browser/extensions/extension_protocols.h',
+        'browser/extensions/extension_proxy_api.cc',
+        'browser/extensions/extension_proxy_api.h',
         'browser/extensions/extension_rlz_module.cc',
         'browser/extensions/extension_rlz_module.h',
         'browser/extensions/extension_shelf_model.cc',

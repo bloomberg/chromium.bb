@@ -7,21 +7,72 @@
 #include <string>
 #include <vector>
 
+#include "base/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/pref_value_store.h"
+#include "chrome/common/extensions/extension.h"
 
 namespace {
 
 class TestExtensionPrefStore : public ExtensionPrefStore {
  public:
-  TestExtensionPrefStore() : ExtensionPrefStore(NULL) {}
+  TestExtensionPrefStore() : ExtensionPrefStore(NULL),
+                             ext1(NULL),
+                             ext2(NULL),
+                             ext3(NULL),
+                             pref_service_(NULL) {
+    // Can't use ASSERT_TRUE here because a constructor can't return a value.
+    if (!temp_dir_.CreateUniqueTempDir()) {
+      ADD_FAILURE() << "Failed to create temp dir";
+      return;
+    }
+    DictionaryValue empty_dict;
+    std::string error;
+
+    ext1_scoped_.reset(new Extension(temp_dir_.path().AppendASCII("ext1")));
+    ext2_scoped_.reset(new Extension(temp_dir_.path().AppendASCII("ext2")));
+    ext3_scoped_.reset(new Extension(temp_dir_.path().AppendASCII("ext3")));
+
+    ext1 = ext1_scoped_.get();
+    ext2 = ext2_scoped_.get();
+    ext3 = ext3_scoped_.get();
+
+    EXPECT_FALSE(ext1->InitFromValue(empty_dict, false, &error));
+    EXPECT_FALSE(ext2->InitFromValue(empty_dict, false, &error));
+    EXPECT_FALSE(ext3->InitFromValue(empty_dict, false, &error));
+  }
 
   typedef std::vector<std::string> ExtensionIDs;
   void GetExtensionIDList(ExtensionIDs* result) {
     GetExtensionIDs(result);
   }
+
+  void SetPrefService(PrefService* pref_service) {
+    pref_service_ = pref_service;
+  }
+
+  // Overridden from ExtensionPrefStore.
+  virtual PrefService* GetPrefService() {
+    return pref_service_;
+  }
+
+  // Weak references, for convenience.
+  Extension* ext1;
+  Extension* ext2;
+  Extension* ext3;
+
+ private:
+  ScopedTempDir temp_dir_;
+
+  scoped_ptr<Extension> ext1_scoped_;
+  scoped_ptr<Extension> ext2_scoped_;
+  scoped_ptr<Extension> ext3_scoped_;
+
+  // Weak reference.
+  PrefService* pref_service_;
 };
 
 class MockPrefService : public PrefService {
@@ -49,12 +100,13 @@ static const wchar_t* kPref4 = L"path4";
 
 TEST(ExtensionPrefStoreTest, InstallOneExtension) {
   TestExtensionPrefStore eps;
-  eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val1"));
+  ASSERT_TRUE(eps.ext1 != NULL);
+  eps.InstallExtensionPref(eps.ext1, kPref1, Value::CreateStringValue("val1"));
 
   TestExtensionPrefStore::ExtensionIDs ids;
   eps.GetExtensionIDList(&ids);
   EXPECT_EQ(1u, ids.size());
-  EXPECT_EQ("id1", ids[0]);
+  EXPECT_EQ(eps.ext1->id(), ids[0]);
 
   DictionaryValue* prefs = eps.prefs();
   ASSERT_EQ(1u, prefs->size());
@@ -66,16 +118,17 @@ TEST(ExtensionPrefStoreTest, InstallOneExtension) {
 // Make sure the last-installed extension wins.
 TEST(ExtensionPrefStoreTest, InstallMultipleExtensions) {
   TestExtensionPrefStore eps;
-  eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val1"));
-  eps.InstallExtensionPref("id2", kPref1, Value::CreateStringValue("val2"));
-  eps.InstallExtensionPref("id3", kPref1, Value::CreateStringValue("val3"));
+  ASSERT_TRUE(eps.ext1 != NULL);
+  eps.InstallExtensionPref(eps.ext1, kPref1, Value::CreateStringValue("val1"));
+  eps.InstallExtensionPref(eps.ext2, kPref1, Value::CreateStringValue("val2"));
+  eps.InstallExtensionPref(eps.ext3, kPref1, Value::CreateStringValue("val3"));
 
   TestExtensionPrefStore::ExtensionIDs ids;
   eps.GetExtensionIDList(&ids);
   EXPECT_EQ(3u, ids.size());
-  EXPECT_EQ("id3", ids[0]);
-  EXPECT_EQ("id2", ids[1]);
-  EXPECT_EQ("id1", ids[2]);
+  EXPECT_EQ(eps.ext3->id(), ids[0]);
+  EXPECT_EQ(eps.ext2->id(), ids[1]);
+  EXPECT_EQ(eps.ext1->id(), ids[2]);
 
   DictionaryValue* prefs = eps.prefs();
   ASSERT_EQ(1u, prefs->size());
@@ -87,23 +140,24 @@ TEST(ExtensionPrefStoreTest, InstallMultipleExtensions) {
 // Make sure the last-installed extension wins for each preference.
 TEST(ExtensionPrefStoreTest, InstallOverwrittenExtensions) {
   TestExtensionPrefStore eps;
-  eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val1"));
-  eps.InstallExtensionPref("id2", kPref1, Value::CreateStringValue("val2"));
-  eps.InstallExtensionPref("id3", kPref1, Value::CreateStringValue("val3"));
+  ASSERT_TRUE(eps.ext1 != NULL);
+  eps.InstallExtensionPref(eps.ext1, kPref1, Value::CreateStringValue("val1"));
+  eps.InstallExtensionPref(eps.ext2, kPref1, Value::CreateStringValue("val2"));
+  eps.InstallExtensionPref(eps.ext3, kPref1, Value::CreateStringValue("val3"));
 
-  eps.InstallExtensionPref("id1", kPref2, Value::CreateStringValue("val4"));
-  eps.InstallExtensionPref("id2", kPref2, Value::CreateStringValue("val5"));
+  eps.InstallExtensionPref(eps.ext1, kPref2, Value::CreateStringValue("val4"));
+  eps.InstallExtensionPref(eps.ext2, kPref2, Value::CreateStringValue("val5"));
 
-  eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val6"));
-  eps.InstallExtensionPref("id1", kPref2, Value::CreateStringValue("val7"));
-  eps.InstallExtensionPref("id1", kPref3, Value::CreateStringValue("val8"));
+  eps.InstallExtensionPref(eps.ext1, kPref1, Value::CreateStringValue("val6"));
+  eps.InstallExtensionPref(eps.ext1, kPref2, Value::CreateStringValue("val7"));
+  eps.InstallExtensionPref(eps.ext1, kPref3, Value::CreateStringValue("val8"));
 
   TestExtensionPrefStore::ExtensionIDs ids;
   eps.GetExtensionIDList(&ids);
   EXPECT_EQ(3u, ids.size());
-  EXPECT_EQ("id3", ids[0]);
-  EXPECT_EQ("id2", ids[1]);
-  EXPECT_EQ("id1", ids[2]);
+  EXPECT_EQ(eps.ext3->id(), ids[0]);
+  EXPECT_EQ(eps.ext2->id(), ids[1]);
+  EXPECT_EQ(eps.ext1->id(), ids[2]);
 
   DictionaryValue* prefs = eps.prefs();
   ASSERT_EQ(3u, prefs->size());
@@ -120,22 +174,23 @@ TEST(ExtensionPrefStoreTest, InstallOverwrittenExtensions) {
 // the same or different preferences later.
 TEST(ExtensionPrefStoreTest, InstallInterleavedExtensions) {
   TestExtensionPrefStore eps;
-  eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val1"));
-  eps.InstallExtensionPref("id2", kPref2, Value::CreateStringValue("val2"));
-  eps.InstallExtensionPref("id3", kPref3, Value::CreateStringValue("val3"));
+  ASSERT_TRUE(eps.ext1 != NULL);
+  eps.InstallExtensionPref(eps.ext1, kPref1, Value::CreateStringValue("val1"));
+  eps.InstallExtensionPref(eps.ext2, kPref2, Value::CreateStringValue("val2"));
+  eps.InstallExtensionPref(eps.ext3, kPref3, Value::CreateStringValue("val3"));
 
-  eps.InstallExtensionPref("id3", kPref3, Value::CreateStringValue("val4"));
-  eps.InstallExtensionPref("id2", kPref3, Value::CreateStringValue("val5"));
-  eps.InstallExtensionPref("id1", kPref3, Value::CreateStringValue("val6"));
+  eps.InstallExtensionPref(eps.ext3, kPref3, Value::CreateStringValue("val4"));
+  eps.InstallExtensionPref(eps.ext2, kPref3, Value::CreateStringValue("val5"));
+  eps.InstallExtensionPref(eps.ext1, kPref3, Value::CreateStringValue("val6"));
 
-  eps.InstallExtensionPref("id3", kPref1, Value::CreateStringValue("val7"));
+  eps.InstallExtensionPref(eps.ext3, kPref1, Value::CreateStringValue("val7"));
 
   TestExtensionPrefStore::ExtensionIDs ids;
   eps.GetExtensionIDList(&ids);
   EXPECT_EQ(3u, ids.size());
-  EXPECT_EQ("id3", ids[0]);
-  EXPECT_EQ("id2", ids[1]);
-  EXPECT_EQ("id1", ids[2]);
+  EXPECT_EQ(eps.ext3->id(), ids[0]);
+  EXPECT_EQ(eps.ext2->id(), ids[1]);
+  EXPECT_EQ(eps.ext1->id(), ids[2]);
 
   DictionaryValue* prefs = eps.prefs();
   ASSERT_EQ(3u, prefs->size());
@@ -150,11 +205,12 @@ TEST(ExtensionPrefStoreTest, InstallInterleavedExtensions) {
 
 TEST(ExtensionPrefStoreTest, UninstallOnlyExtension) {
   TestExtensionPrefStore eps;
-  eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val1"));
-  eps.InstallExtensionPref("id1", kPref2, Value::CreateStringValue("val2"));
+  ASSERT_TRUE(eps.ext1 != NULL);
+  eps.InstallExtensionPref(eps.ext1, kPref1, Value::CreateStringValue("val1"));
+  eps.InstallExtensionPref(eps.ext1, kPref2, Value::CreateStringValue("val2"));
 
   // No need to check the state here; the Install* tests cover that.
-  eps.UninstallExtension("id1");
+  eps.UninstallExtension(eps.ext1);
 
   TestExtensionPrefStore::ExtensionIDs ids;
   eps.GetExtensionIDList(&ids);
@@ -172,18 +228,19 @@ TEST(ExtensionPrefStoreTest, UninstallOnlyExtension) {
 // Tests uninstalling an extension that wasn't winning for any preferences.
 TEST(ExtensionPrefStoreTest, UninstallIrrelevantExtension) {
   TestExtensionPrefStore eps;
-  eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val1"));
-  eps.InstallExtensionPref("id2", kPref1, Value::CreateStringValue("val2"));
+  ASSERT_TRUE(eps.ext1 != NULL);
+  eps.InstallExtensionPref(eps.ext1, kPref1, Value::CreateStringValue("val1"));
+  eps.InstallExtensionPref(eps.ext2, kPref1, Value::CreateStringValue("val2"));
 
-  eps.InstallExtensionPref("id1", kPref2, Value::CreateStringValue("val3"));
-  eps.InstallExtensionPref("id2", kPref2, Value::CreateStringValue("val4"));
+  eps.InstallExtensionPref(eps.ext1, kPref2, Value::CreateStringValue("val3"));
+  eps.InstallExtensionPref(eps.ext2, kPref2, Value::CreateStringValue("val4"));
 
-  eps.UninstallExtension("id1");
+  eps.UninstallExtension(eps.ext1);
 
   TestExtensionPrefStore::ExtensionIDs ids;
   eps.GetExtensionIDList(&ids);
   EXPECT_EQ(1u, ids.size());
-  EXPECT_EQ("id2", ids[0]);
+  EXPECT_EQ(eps.ext2->id(), ids[0]);
 
   DictionaryValue* prefs = eps.prefs();
   ASSERT_EQ(2u, prefs->size());
@@ -197,20 +254,21 @@ TEST(ExtensionPrefStoreTest, UninstallIrrelevantExtension) {
 // Tests uninstalling an extension that was winning for all preferences.
 TEST(ExtensionPrefStoreTest, UninstallExtensionFromTop) {
   TestExtensionPrefStore eps;
-  eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val1"));
-  eps.InstallExtensionPref("id2", kPref1, Value::CreateStringValue("val2"));
-  eps.InstallExtensionPref("id3", kPref1, Value::CreateStringValue("val3"));
+  ASSERT_TRUE(eps.ext1 != NULL);
+  eps.InstallExtensionPref(eps.ext1, kPref1, Value::CreateStringValue("val1"));
+  eps.InstallExtensionPref(eps.ext2, kPref1, Value::CreateStringValue("val2"));
+  eps.InstallExtensionPref(eps.ext3, kPref1, Value::CreateStringValue("val3"));
 
-  eps.InstallExtensionPref("id1", kPref2, Value::CreateStringValue("val4"));
-  eps.InstallExtensionPref("id3", kPref2, Value::CreateStringValue("val5"));
+  eps.InstallExtensionPref(eps.ext1, kPref2, Value::CreateStringValue("val4"));
+  eps.InstallExtensionPref(eps.ext3, kPref2, Value::CreateStringValue("val5"));
 
-  eps.UninstallExtension("id3");
+  eps.UninstallExtension(eps.ext3);
 
   TestExtensionPrefStore::ExtensionIDs ids;
   eps.GetExtensionIDList(&ids);
   EXPECT_EQ(2u, ids.size());
-  EXPECT_EQ("id2", ids[0]);
-  EXPECT_EQ("id1", ids[1]);
+  EXPECT_EQ(eps.ext2->id(), ids[0]);
+  EXPECT_EQ(eps.ext1->id(), ids[1]);
 
   DictionaryValue* prefs = eps.prefs();
   ASSERT_EQ(2u, prefs->size());
@@ -224,24 +282,25 @@ TEST(ExtensionPrefStoreTest, UninstallExtensionFromTop) {
 // Tests uninstalling an extension that was winning for only some preferences.
 TEST(ExtensionPrefStoreTest, UninstallExtensionFromMiddle) {
   TestExtensionPrefStore eps;
-  eps.InstallExtensionPref("id1", kPref1, Value::CreateStringValue("val1"));
-  eps.InstallExtensionPref("id2", kPref1, Value::CreateStringValue("val2"));
-  eps.InstallExtensionPref("id3", kPref1, Value::CreateStringValue("val3"));
+  ASSERT_TRUE(eps.ext1 != NULL);
+  eps.InstallExtensionPref(eps.ext1, kPref1, Value::CreateStringValue("val1"));
+  eps.InstallExtensionPref(eps.ext2, kPref1, Value::CreateStringValue("val2"));
+  eps.InstallExtensionPref(eps.ext3, kPref1, Value::CreateStringValue("val3"));
 
-  eps.InstallExtensionPref("id1", kPref2, Value::CreateStringValue("val4"));
-  eps.InstallExtensionPref("id2", kPref2, Value::CreateStringValue("val5"));
+  eps.InstallExtensionPref(eps.ext1, kPref2, Value::CreateStringValue("val4"));
+  eps.InstallExtensionPref(eps.ext2, kPref2, Value::CreateStringValue("val5"));
 
-  eps.InstallExtensionPref("id1", kPref3, Value::CreateStringValue("val6"));
+  eps.InstallExtensionPref(eps.ext1, kPref3, Value::CreateStringValue("val6"));
 
-  eps.InstallExtensionPref("id2", kPref4, Value::CreateStringValue("val7"));
+  eps.InstallExtensionPref(eps.ext2, kPref4, Value::CreateStringValue("val7"));
 
-  eps.UninstallExtension("id2");
+  eps.UninstallExtension(eps.ext2);
 
   TestExtensionPrefStore::ExtensionIDs ids;
   eps.GetExtensionIDList(&ids);
   EXPECT_EQ(2u, ids.size());
-  EXPECT_EQ("id3", ids[0]);
-  EXPECT_EQ("id1", ids[1]);
+  EXPECT_EQ(eps.ext3->id(), ids[0]);
+  EXPECT_EQ(eps.ext1->id(), ids[1]);
 
   DictionaryValue* prefs = eps.prefs();
   ASSERT_EQ(3u, prefs->size());
@@ -257,6 +316,7 @@ TEST(ExtensionPrefStoreTest, UninstallExtensionFromMiddle) {
 
 TEST(ExtensionPrefStoreTest, NotifyWhenNeeded) {
   TestExtensionPrefStore* eps = new TestExtensionPrefStore;
+  ASSERT_TRUE(eps->ext1 != NULL);
 
   // The PrefValueStore takes ownership of the PrefStores; in this case, that's
   // only an ExtensionPrefStore. Likewise, the PrefService takes ownership of
@@ -266,16 +326,16 @@ TEST(ExtensionPrefStoreTest, NotifyWhenNeeded) {
   eps->SetPrefService(pref_service.get());
   pref_service->RegisterStringPref(kPref1, std::string());
 
-  eps->InstallExtensionPref("abc", kPref1,
+  eps->InstallExtensionPref(eps->ext1, kPref1,
       Value::CreateStringValue("https://www.chromium.org"));
   EXPECT_TRUE(pref_service->fired_observers_);
-  eps->InstallExtensionPref("abc", kPref1,
+  eps->InstallExtensionPref(eps->ext1, kPref1,
       Value::CreateStringValue("https://www.chromium.org"));
   EXPECT_FALSE(pref_service->fired_observers_);
-  eps->InstallExtensionPref("abc", kPref1,
+  eps->InstallExtensionPref(eps->ext1, kPref1,
       Value::CreateStringValue("chrome://newtab"));
   EXPECT_TRUE(pref_service->fired_observers_);
 
-  eps->UninstallExtension("abc");
+  eps->UninstallExtension(eps->ext1);
   EXPECT_TRUE(pref_service->fired_observers_);
 }

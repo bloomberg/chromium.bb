@@ -21,6 +21,7 @@
 
 class NotificationObserver;
 class Preference;
+class Profile;
 class ScopedPrefUpdate;
 
 class PrefService : public NonThreadSafe {
@@ -94,8 +95,11 @@ class PrefService : public NonThreadSafe {
 
   // Factory method that creates a new instance of a |PrefService| with
   // all platform-applicable PrefStores (managed, extension, user, etc.).
-  // This is the usual way to create a new PrefService.
-  static PrefService* CreatePrefService(const FilePath& pref_filename);
+  // The |pref_filename| points to the user preference file. The |profile| is
+  // the one to which these preferences apply; it may be NULL if we're dealing
+  // with the local state. This is the usual way to create a new PrefService.
+  static PrefService* CreatePrefService(const FilePath& pref_filename,
+                                        Profile* profile);
 
   // Convenience factory method for use in unit tests. Creates a new
   // PrefService that uses a PrefValueStore with user preferences at the given
@@ -174,7 +178,8 @@ class PrefService : public NonThreadSafe {
   // Removes a user pref and restores the pref to its default value.
   void ClearPref(const wchar_t* path);
 
-  // If the path is valid (i.e., registered), update the pref value.
+  // If the path is valid (i.e., registered), update the pref value in the user
+  // prefs.
   void Set(const wchar_t* path, const Value& value);
   void SetBoolean(const wchar_t* path, bool value);
   void SetInteger(const wchar_t* path, int value);
