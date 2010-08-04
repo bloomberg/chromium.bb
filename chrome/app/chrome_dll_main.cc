@@ -332,11 +332,9 @@ void SetupCRT(const CommandLine& parsed_command_line) {
   // Enable the low fragmentation heap for the CRT heap. The heap is not changed
   // if the process is run under the debugger is enabled or if certain gflags
   // are set.
-  bool use_lfh = false;
-  if (parsed_command_line.HasSwitch(switches::kUseLowFragHeapCrt))
-    use_lfh = parsed_command_line.GetSwitchValue(switches::kUseLowFragHeapCrt)
-        != L"false";
-  if (use_lfh) {
+  if (parsed_command_line.HasSwitch(switches::kUseLowFragHeapCrt) &&
+      (parsed_command_line.GetSwitchValueASCII(switches::kUseLowFragHeapCrt)
+       != "false")) {
     void* crt_heap = reinterpret_cast<void*>(_get_heap_handle());
     ULONG enable_lfh = 2;
     HeapSetInformation(crt_heap, HeapCompatibilityInformation,
@@ -581,11 +579,11 @@ int ChromeMain(int argc, char** argv) {
   base::ProcessId browser_pid = base::GetCurrentProcId();
   if (SubprocessIsBrowserChild(process_type)) {
 #if defined(OS_WIN)
-    std::wstring channel_name =
-      parsed_command_line.GetSwitchValue(switches::kProcessChannelID);
+    std::string channel_name =
+        parsed_command_line.GetSwitchValueASCII(switches::kProcessChannelID);
 
     int browser_pid_int;
-    base::StringToInt(WideToUTF8(channel_name), &browser_pid_int);
+    base::StringToInt(channel_name, &browser_pid_int);
     browser_pid = static_cast<base::ProcessId>(browser_pid_int);
     DCHECK_NE(browser_pid, 0u);
 #elif defined(OS_MACOSX)
@@ -744,8 +742,8 @@ int ChromeMain(int argc, char** argv) {
     // via the preference prefs::kApplicationLocale. The browser process uses
     // the --lang flag to passe the value of the PrefService in here. Maybe this
     // value could be passed in a different way.
-    ResourceBundle::InitSharedInstance(
-        parsed_command_line.GetSwitchValue(switches::kLang));
+    ResourceBundle::InitSharedInstance(ASCIIToWide(
+        parsed_command_line.GetSwitchValueASCII(switches::kLang)));
 
 #if defined(OS_MACOSX)
     // Update the process name (need resources to get the strings, so

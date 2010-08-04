@@ -1235,8 +1235,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN) && !defined(GOOGLE_CHROME_BUILD)
   if (parsed_command_line.HasSwitch(switches::kDebugPrint)) {
-    printing::PrintedDocument::set_debug_dump_path(
-        parsed_command_line.GetSwitchValue(switches::kDebugPrint));
+    FilePath path =
+        parsed_command_line.GetSwitchValuePath(switches::kDebugPrint);
+    printing::PrintedDocument::set_debug_dump_path(path.value());
   }
 #endif
 

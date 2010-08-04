@@ -1031,8 +1031,8 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
   }
 
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {
-    std::wstring allowed_ports =
-      command_line.GetSwitchValue(switches::kExplicitlyAllowedPorts);
+    std::string allowed_ports =
+        command_line.GetSwitchValueASCII(switches::kExplicitlyAllowedPorts);
     net::SetExplicitlyAllowedPorts(allowed_ports);
   }
 
