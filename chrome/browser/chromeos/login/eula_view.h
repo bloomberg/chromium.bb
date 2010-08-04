@@ -113,6 +113,8 @@ class EulaView
 
   chromeos::ScreenObserver* observer_;
 
+  GURL oem_eula_page_;
+
   DISALLOW_COPY_AND_ASSIGN(EulaView);
 };
 

@@ -118,6 +118,32 @@ static void SetUpGridLayout(views::GridLayout* layout) {
   column_set->AddPaddingColumn(0, kLastButtonHorizontalMargin + kBorderSize);
 }
 
+// Convenience function. Returns URL of the OEM EULA page that should be
+// displayed using current locale and manifest. Returns empty URL otherwise.
+static GURL GetOemEulaPagePath() {
+  const StartupCustomizationDocument *customization =
+      WizardController::default_controller()->GetCustomization();
+  if (customization) {
+    std::string locale = g_browser_process->GetApplicationLocale();
+    FilePath eula_page_path = customization->GetEULAPagePath(locale);
+    if (eula_page_path.empty()) {
+      LOG(INFO) << "No eula found for locale: " << locale;
+      locale = customization->initial_locale();
+      eula_page_path = customization->GetEULAPagePath(locale);
+    }
+    if (!eula_page_path.empty()) {
+      const std::string page_path = std::string(chrome::kFileScheme) +
+          chrome::kStandardSchemeSeparator + eula_page_path.value();
+      return GURL(page_path);
+    } else {
+      LOG(INFO) << "No eula found for locale: " << locale;
+    }
+  } else {
+    LOG(ERROR) << "No manifest found.";
+  }
+  return GURL();
+}
+
 void EulaView::Init() {
   // Use rounded rect background.
   views::Painter* painter = CreateWizardPainter(
@@ -169,15 +195,18 @@ void EulaView::Init() {
   layout->AddView(oem_eula_label_, 1, 1,
                   views::GridLayout::LEADING, views::GridLayout::FILL);
 
-  layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
-  layout->StartRow(1, SINGLE_CONTROL_ROW);
-  box_view = new views::View();
-  box_view->set_border(views::Border::CreateSolidBorder(1, SK_ColorBLACK));
-  box_view->SetLayoutManager(new FillLayoutWithBorder());
-  layout->AddView(box_view);
+  oem_eula_page_ = GetOemEulaPagePath();
+  if (!oem_eula_page_.is_empty()) {
+    layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
+    layout->StartRow(1, SINGLE_CONTROL_ROW);
+    box_view = new views::View();
+    box_view->SetLayoutManager(new FillLayoutWithBorder());
+    box_view->set_border(views::Border::CreateSolidBorder(1, SK_ColorBLACK));
+    layout->AddView(box_view);
 
-  oem_eula_view_ = new DOMView();
-  box_view->AddChildView(oem_eula_view_);
+    oem_eula_view_ = new DOMView();
+    box_view->AddChildView(oem_eula_view_);
+  }
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, LAST_ROW);
@@ -211,26 +240,8 @@ void EulaView::UpdateLocalizedStrings() {
   LoadEulaView(google_eula_view_, google_eula_label_, GURL(kGoogleEulaUrl));
 
   // Load OEM EULA and its title.
-  const StartupCustomizationDocument *customization =
-      WizardController::default_controller()->GetCustomization();
-  if (customization) {
-    std::string locale = g_browser_process->GetApplicationLocale();
-    FilePath eula_page_path = customization->GetEULAPagePath(locale);
-    if (eula_page_path.empty()) {
-      LOG(INFO) << "No eula found for locale: " << locale;
-      locale = customization->initial_locale();
-      eula_page_path = customization->GetEULAPagePath(locale);
-    }
-    if (!eula_page_path.empty()) {
-      const std::string page_path = std::string(chrome::kFileScheme) +
-          chrome::kStandardSchemeSeparator + eula_page_path.value();
-      LoadEulaView(oem_eula_view_, oem_eula_label_, GURL(page_path));
-    } else {
-      LOG(INFO) << "No eula found for locale: " << locale;
-    }
-  } else {
-    LOG(ERROR) << "No manifest found.";
-  }
+  if (!oem_eula_page_.is_empty())
+    LoadEulaView(oem_eula_view_, oem_eula_label_, oem_eula_page_);
 
   // Load other labels from resources.
   usage_statistics_checkbox_->SetLabel(
