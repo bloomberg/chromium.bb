@@ -402,13 +402,16 @@ class AppCacheStorageImpl::StoreGroupAndCacheTask : public StoreOrLoadTask {
   scoped_refptr<AppCache> cache_;
   bool success_;
   bool would_exceed_quota_;
+  int64 quota_override_;
   std::vector<int64> newly_deletable_response_ids_;
 };
 
 AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
     AppCacheStorageImpl* storage, AppCacheGroup* group, AppCache* newest_cache)
     : StoreOrLoadTask(storage), group_(group), cache_(newest_cache),
-      success_(false), would_exceed_quota_(false) {
+      success_(false), would_exceed_quota_(false),
+      quota_override_(
+          storage->GetOriginQuotaInMemory(group->manifest_url().GetOrigin())) {
   group_record_.group_id = group->group_id();
   group_record_.manifest_url = group->manifest_url();
   group_record_.origin = group_record_.manifest_url.GetOrigin();
@@ -485,8 +488,11 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
   if (!success_)
     return;
 
-  if (database_->GetOriginUsage(group_record_.origin) >
-      database_->GetOriginQuota(group_record_.origin)) {
+  int64 quota = (quota_override_ >= 0) ?
+      quota_override_ :
+      database_->GetOriginQuota(group_record_.origin);
+
+  if (database_->GetOriginUsage(group_record_.origin) > quota) {
     would_exceed_quota_ = true;
     success_ = false;
     return;

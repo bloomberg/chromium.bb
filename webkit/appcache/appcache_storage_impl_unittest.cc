@@ -73,8 +73,9 @@ class AppCacheStorageImplTest : public testing::Test {
    public:
     explicit MockStorageDelegate(AppCacheStorageImplTest* test)
         : loaded_cache_id_(0), stored_group_success_(false),
-          obsoleted_success_(false), found_cache_id_(kNoCacheId),
-          found_blocked_by_policy_(false), test_(test) {
+          would_exceed_quota_(false), obsoleted_success_(false),
+          found_cache_id_(kNoCacheId), found_blocked_by_policy_(false),
+          test_(test) {
     }
 
     void OnCacheLoaded(AppCache* cache, int64 cache_id) {
@@ -96,6 +97,7 @@ class AppCacheStorageImplTest : public testing::Test {
         bool would_exceed_quota) {
       stored_group_ = group;
       stored_group_success_ = success;
+      would_exceed_quota_ = would_exceed_quota;
       test_->ScheduleNextTask();
     }
 
@@ -125,6 +127,7 @@ class AppCacheStorageImplTest : public testing::Test {
     scoped_refptr<AppCache> loaded_groups_newest_cache_;
     scoped_refptr<AppCacheGroup> stored_group_;
     bool stored_group_success_;
+    bool would_exceed_quota_;
     scoped_refptr<AppCacheGroup> obsoleted_group_;
     bool obsoleted_success_;
     GURL found_url_;
@@ -528,6 +531,51 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(AppCacheEntry::MASTER, entry_records[0].flags);
     EXPECT_EQ(1, entry_records[0].response_id);
     EXPECT_EQ(100, entry_records[0].response_size);
+
+    TestFinished();
+  }
+
+  // FailStoreGroup  --------------------------------------
+
+  void FailStoreGroup() {
+    // Store a group and its newest cache. Should complete asyncly.
+    PushNextTask(NewRunnableMethod(
+       this, &AppCacheStorageImplTest::Verify_FailStoreGroup));
+
+    // Set a low quota to force a failure.
+    const GURL kOrigin(kManifestUrl.GetOrigin());
+    EXPECT_EQ(-1L, storage()->GetOriginQuotaInMemory(kOrigin));
+    storage()->SetOriginQuotaInMemory(kManifestUrl.GetOrigin(), 0);
+    EXPECT_EQ(0L, storage()->GetOriginQuotaInMemory(kOrigin));
+
+    // Setup some preconditions. Create a group and newest cache that
+    // appear to be "unstored".
+    group_ = new AppCacheGroup(
+        service(), kManifestUrl, storage()->NewGroupId());
+    cache_ = new AppCache(service(), storage()->NewCacheId());
+    cache_->AddEntry(kManifestUrl,
+                     AppCacheEntry(AppCacheEntry::MANIFEST, 1, 1024));
+    // Hold a ref to the cache simulate the UpdateJob holding that ref,
+    // and hold a ref to the group to simulate the CacheHost holding that ref.
+
+    // Conduct the store test.
+    storage()->StoreGroupAndNewestCache(group_, cache_, delegate());
+    EXPECT_FALSE(delegate()->stored_group_success_);  // Expected to be async.
+  }
+
+  void Verify_FailStoreGroup() {
+    EXPECT_FALSE(delegate()->stored_group_success_);
+    EXPECT_TRUE(delegate()->would_exceed_quota_);
+
+    // Should not have been stored in the database.
+    AppCacheDatabase::GroupRecord group_record;
+    AppCacheDatabase::CacheRecord cache_record;
+    EXPECT_FALSE(database()->FindGroup(group_->group_id(), &group_record));
+    EXPECT_FALSE(database()->FindCache(cache_->cache_id(), &cache_record));
+
+    const GURL kOrigin(kManifestUrl.GetOrigin());
+    storage()->ResetOriginQuotaInMemory(kOrigin);
+    EXPECT_EQ(-1L, storage()->GetOriginQuotaInMemory(kOrigin));
 
     TestFinished();
   }
@@ -1004,6 +1052,10 @@ TEST_F(AppCacheStorageImplTest, StoreExistingGroup) {
 
 TEST_F(AppCacheStorageImplTest, StoreExistingGroupExistingCache) {
   RunTestOnIOThread(&AppCacheStorageImplTest::StoreExistingGroupExistingCache);
+}
+
+TEST_F(AppCacheStorageImplTest, FailStoreGroup) {
+  RunTestOnIOThread(&AppCacheStorageImplTest::FailStoreGroup);
 }
 
 TEST_F(AppCacheStorageImplTest, MakeGroupObsolete) {
