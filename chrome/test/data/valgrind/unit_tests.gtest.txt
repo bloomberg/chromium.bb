@@ -6,3 +6,5 @@ VisitedLinkRelayTest.Basics
 RenderViewTest.ImeComposition
 # Hangs sometimes; see http://crbug.com/24416
 DnsMasterTest.MassiveConcurrentLookupTest
+# Pure virtual method called: see http://crbug.com/50950
+ConnectionTesterTest.RunAllTests
