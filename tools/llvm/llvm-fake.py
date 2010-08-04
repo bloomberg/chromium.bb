@@ -205,8 +205,6 @@ LLVM_GCC = BASE_ARM + '/bin/arm-none-linux-gnueabi-gcc'
 
 LLC = BASE_ARM + '/bin/llc'
 
-LLVM_LINK = BASE_ARM + '/bin/llvm-link'
-
 LLVM_LD = BASE_ARM + '/bin/llvm-ld'
 
 OPT = BASE_ARM + '/bin/opt'
@@ -501,11 +499,6 @@ MAGIC_OBJS = set([
     ])
 
 
-DROP_ARGS = set([])
-
-
-NATIVE_ARGS = set(['-nostdlib'])
-
 def GenerateCombinedBitcodeFile(argv):
   """Run llvm-ld to produce a single bitcode file
   Returns:
@@ -527,8 +520,6 @@ def GenerateCombinedBitcodeFile(argv):
     if a in ['-o', '-T']:
       # combine two arg items into one arg
       last = a
-    elif a in DROP_ARGS:
-      pass
     elif a.endswith('.bc'):
        args_bit_ld.append(a)
        last_bitcode_pos = len(args_bit_ld)
@@ -539,7 +530,7 @@ def GenerateCombinedBitcodeFile(argv):
       else:
         args_bit_ld.append(a)
         last_bitcode_pos = len(args_bit_ld)
-    elif a in NATIVE_ARGS:
+    elif a == '-nostdlib':
       args_native_ld.append(a)
     elif a.startswith('-l'):
       args_bit_ld.append(a)
@@ -557,17 +548,17 @@ def GenerateCombinedBitcodeFile(argv):
   # NOTE: LLVM_LD automagically appends .bc to the output
   if '-nostdlib' not in argv:
     if last_bitcode_pos != None:
-        # Splice in the extra symbols.
-        args_bit_ld = ([PNACL_BITCODE_ROOT + "/nacl_startup.o"] +
-                       args_bit_ld[:last_bitcode_pos] +
-                       args_bit_ld[last_bitcode_pos:] +
-                       [# NOTE: bad things happen when '-lc' is not first
-                        '-lc',
-                        '-lnacl',
-                        '-lstdc++',
-                        '-lc',
-                        '-lnosys',
-                        ])
+      # Splice in the extra symbols.
+      args_bit_ld = ([PNACL_BITCODE_ROOT + "/nacl_startup.o"] +
+                     args_bit_ld[:last_bitcode_pos] +
+                     args_bit_ld[last_bitcode_pos:] +
+                     [# NOTE: bad things happen when '-lc' is not first
+                      '-lc',
+                      '-lnacl',
+                      '-lstdc++',
+                      '-lc',
+                      '-lnosys',
+                      ])
 
   # NOTE:.bc will be appended to the output name by LLVM_LD
   # NOTE:These are to insure that dependencies for libgcc.a are satified
@@ -599,11 +590,8 @@ def GenerateCombinedBitcodeFile(argv):
                      '-disable-internalize',
                      ]
 
-  Run([LLVM_LD] + args_bit_ld +
-       ['-o', output])
-
-
-
+  args_bit_ld += ['-o', output]
+  Run([LLVM_LD] +  args_bit_ld)
   return output, args_native_ld
 
 
