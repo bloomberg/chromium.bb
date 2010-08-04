@@ -126,7 +126,9 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     *scheme = parsed_scheme;
 
   if (parsed_scheme == L"file") {
-    // A user might or might not type a scheme when entering a file URL.
+    // A user might or might not type a scheme when entering a file URL.  In
+    // either case, |parsed_scheme| will tell us that this is a file URL, but
+    // |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
     return URL;
   }
 
@@ -236,26 +238,24 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         UNKNOWN : QUERY;
   }
 
-  // Presence of a port means this is likely a URL, if the port is really a port
-  // number.  If it's just garbage after a colon, this is a query.
+  // A port number is a good indicator that this is a URL.  However, it might
+  // also be a query like "1.66:1" that looks kind of like an IP address and
+  // port number. So here we only check for "port numbers" that are illegal and
+  // thus mean this can't be navigated to (e.g. "1.2.3.4:garbage"), and we save
+  // handling legal port numbers until after the "IP address" determination
+  // below.
   if (parts->port.is_nonempty()) {
     int port;
-    return (base::StringToInt(WideToUTF8(
-                text.substr(parts->port.begin, parts->port.len)), &port) &&
-            (port >= 0) && (port <= 65535)) ? URL : QUERY;
+    if (!base::StringToInt(WideToUTF8(
+            text.substr(parts->port.begin, parts->port.len)), &port) ||
+        (port < 0) || (port > 65535))
+      return QUERY;
   }
 
-  // Presence of a username could either indicate a URL or an email address
-  // ("user@mail.com").  E-mail addresses are likely queries so we only open
-  // this as a URL if the user explicitly typed a scheme.
-  if (parts->username.is_nonempty() && parts->scheme.is_nonempty())
-    return URL;
-
-  // Presence of a password means this is likely a URL.  Note that unless the
-  // user has typed an explicit "http://" or similar, we'll probably think that
-  // the username is some unknown scheme, and bail out in the scheme-handling
-  // code above.
-  if (parts->password.is_nonempty())
+  // Now that we've ruled out all schemes other than http or https and done a
+  // little more sanity checking, the presence of a scheme means this is likely
+  // a URL.
+  if (parts->scheme.is_nonempty())
     return URL;
 
   // See if the host is an IP address.
@@ -266,36 +266,48 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // it, unless they explicitly typed a scheme.  This is true even if the URL
     // appears to have a path: "1.2/45" is more likely a search (for the answer
     // to a math problem) than a URL.
-    if ((host_info.num_ipv4_components == 4) || parts->scheme.is_nonempty())
+    if (host_info.num_ipv4_components == 4)
       return URL;
     return desired_tld.empty() ? UNKNOWN : REQUESTED_URL;
   }
   if (host_info.family == url_canon::CanonHostInfo::IPV6)
     return URL;
 
+  // Now that we've ruled out invalid ports and queries that look like they have
+  // a port, the presence of a port means this is likely a URL.
+  if (parts->port.is_nonempty())
+    return URL;
+
+  // Presence of a password means this is likely a URL.  Note that unless the
+  // user has typed an explicit "http://" or similar, we'll probably think that
+  // the username is some unknown scheme, and bail out in the scheme-handling
+  // code above.
+  if (parts->password.is_nonempty())
+    return URL;
+
   // The host doesn't look like a number, so see if the user's given us a path.
   if (parts->path.is_nonempty()) {
     // Most inputs with paths are URLs, even ones without known registries (e.g.
-    // intranet URLs).  However, if the user didn't type a scheme, there's no
-    // known registry, and the path has a space, this is more likely a query
-    // with a slash in the first term (e.g. "ps/2 games") than a URL.  We can
-    // still open URLs with spaces in the path by escaping the space, and we
-    // will still inline autocomplete them if users have typed them in the past,
-    // but we default to searching since that's the common case.
-    return (!parts->scheme.is_nonempty() && (registry_length == 0) &&
+    // intranet URLs).  However, if there's no known registry and the path has
+    // a space, this is more likely a query with a slash in the first term
+    // (e.g. "ps/2 games") than a URL.  We can still open URLs with spaces in
+    // the path by escaping the space, and we will still inline autocomplete
+    // them if users have typed them in the past, but we default to searching
+    // since that's the common case.
+    return ((registry_length == 0) &&
             (text.substr(parts->path.begin, parts->path.len).find(' ') !=
                 std::wstring::npos)) ? UNKNOWN : URL;
   }
 
-  // If we reach here with a username, our input looks like "user@host"; this is
-  // the case mentioned above, where we think this is more likely an email
-  // address than an HTTP auth attempt, so search for it.
+  // If we reach here with a username, our input looks like "user@host".
+  // Because there is no scheme explicitly specified, we think this is more
+  // likely an email address than an HTTP auth attempt.  Hence, we search by
+  // default and let users correct us on a case-by-case basis.
   if (parts->username.is_nonempty())
     return UNKNOWN;
 
-  // We have a bare host string.  See if it has a known TLD or the user typed a
-  // scheme.  If so, it's probably a URL.
-  if (parts->scheme.is_nonempty() || (registry_length != 0))
+  // We have a bare host string.  If it has a known TLD, it's probably a URL.
+  if (registry_length != 0)
     return URL;
 
   // No TLD that we know about.  This could be:
