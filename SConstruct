@@ -1690,7 +1690,9 @@ environment_list.append(nacl_extra_sdk_env)
 # Contains all the headers to be installed
 sdk_headers = nacl_extra_sdk_env.Alias('extra_sdk_update_header', [])
 # Contains all the libraries and .o files to be installed
-nacl_extra_sdk_env.Alias('extra_sdk_update', [])
+libs_platform = nacl_extra_sdk_env.Alias('extra_sdk_libs_platform', [])
+libs = nacl_extra_sdk_env.Alias('extra_sdk_libs', [])
+nacl_extra_sdk_env.Alias('extra_sdk_update', [libs, libs_platform])
 
 
 # Add a header file to the toolchain.  By default, Native Client-specific
@@ -1729,7 +1731,11 @@ def AddLibraryToSdkHelper(env, nodes, is_lib, is_platform):
     n = env.ReplicatePublished(dir, nodes, 'link')
   else:
     n = env.Replicate(dir, nodes)
-  env.Alias('extra_sdk_update', n)
+
+  if is_platform:
+    env.Alias('extra_sdk_libs_platform', n)
+  else:
+    env.Alias('extra_sdk_libs', n)
   return n
 
 
