@@ -24,7 +24,7 @@ DevToolsClient::DevToolsClient(RenderView* view)
       WebDevToolsFrontend::create(
           view->webview(),
           this,
-          ASCIIToUTF16(command_line.GetSwitchValueASCII(switches::kLang))));
+          WideToUTF16Hack(command_line.GetSwitchValue(switches::kLang))));
 }
 
 DevToolsClient::~DevToolsClient() {

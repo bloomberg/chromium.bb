@@ -345,9 +345,8 @@ TEST(SafeBrowsingBloomFilter, HashTime) {
 
   int num_checks = kNumHashChecks;
   if (cmd_line.HasSwitch(kFilterNumChecks)) {
-    ASSERT_TRUE(
-        base::StringToInt(cmd_line.GetSwitchValueASCII(kFilterNumChecks),
-                          &num_checks));
+    ASSERT_TRUE(base::StringToInt(cmd_line.GetSwitchValue(kFilterNumChecks),
+                                  &num_checks));
   }
 
   // Populate the bloom filter and measure the time.

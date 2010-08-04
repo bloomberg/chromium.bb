@@ -165,9 +165,9 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
   }
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  FilePath path =
-      command_line.GetSwitchValuePath(switches::kPluginPath)
-;
+  FilePath path = FilePath::FromWStringHack(
+      command_line.GetSwitchValue(switches::kPluginPath));
+
 
   gfx::PluginWindowHandle parent = gfx::kNullPluginWindow;
 #if defined(OS_WIN)

@@ -5,7 +5,6 @@
 #include "chrome/installer/util/master_preferences.h"
 
 #include "base/file_util.h"
-#include "base/string_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/common/json_value_serializer.h"
@@ -106,10 +105,9 @@ bool GetDistroIntegerPreference(const DictionaryValue* prefs,
 DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
   DictionaryValue* prefs = NULL;
 #if defined(OS_WIN)
-  std::string installer_data =
-      WideToASCII(installer_util::switches::kInstallerData);
-  if (cmd_line.HasSwitch(installer_data)) {
-    FilePath prefs_path = cmd_line.GetSwitchValuePath(installer_data);
+  if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
+    FilePath prefs_path(
+        cmd_line.GetSwitchValue(installer_util::switches::kInstallerData));
     prefs = installer_util::ParseDistributionPreferences(prefs_path);
   }
 

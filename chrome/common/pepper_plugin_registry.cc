@@ -54,9 +54,8 @@ void PepperPluginRegistry::PreloadModules() {
 // static
 void PepperPluginRegistry::GetPluginInfoFromSwitch(
     std::vector<PepperPluginInfo>* plugins) {
-  const std::string value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kRegisterPepperPlugins);
+  const std::wstring& value = CommandLine::ForCurrentProcess()->GetSwitchValue(
+      switches::kRegisterPepperPlugins);
   if (value.empty())
     return;
 
@@ -65,31 +64,27 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
   // plugin-entry = <file-path> + ["#" + <name> + ["#" + <description>]] +
   //                *1( LWS + ";" + LWS + <mime-type> )
 
-  std::vector<std::string> modules;
+  std::vector<std::wstring> modules;
   SplitString(value, ',', &modules);
   for (size_t i = 0; i < modules.size(); ++i) {
-    std::vector<std::string> parts;
+    std::vector<std::wstring> parts;
     SplitString(modules[i], ';', &parts);
     if (parts.size() < 2) {
       DLOG(ERROR) << "Required mime-type not found";
       continue;
     }
 
-    std::vector<std::string> name_parts;
+    std::vector<std::wstring> name_parts;
     SplitString(parts[0], '#', &name_parts);
 
     PepperPluginInfo plugin;
-#if defined(OS_WIN)
-    plugin.path = FilePath(ASCIIToUTF16(name_parts[0]));
-#else
-    plugin.path = FilePath(name_parts[0]);
-#endif
+    plugin.path = FilePath::FromWStringHack(name_parts[0]);
     if (name_parts.size() > 1)
-      plugin.name = name_parts[1];
+      plugin.name = WideToUTF8(name_parts[1]);
     if (name_parts.size() > 2)
-      plugin.type_descriptions = name_parts[2];
+      plugin.type_descriptions = WideToUTF8(name_parts[2]);
     for (size_t j = 1; j < parts.size(); ++j)
-      plugin.mime_types.push_back(parts[j]);
+      plugin.mime_types.push_back(WideToASCII(parts[j]));
 
     plugins->push_back(plugin);
   }

@@ -11,7 +11,6 @@
 #include "base/logging.h"
 
 class CommandLine;
-class FilePath;
 
 namespace installer {
 
@@ -22,7 +21,7 @@ void InitInstallerLogging(const CommandLine& command_line);
 void EndInstallerLogging();
 
 // Returns the full path of the log file.
-FilePath GetLogFilePath(const CommandLine& command_line);
+std::wstring GetLogFilePath(const CommandLine& command_line);
 
 } // namespace installer
 

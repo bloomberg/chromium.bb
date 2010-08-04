@@ -200,7 +200,7 @@ bool CrashService::Initialize(const std::wstring& command_line) {
 
   // We can override the send reports quota with a command line switch.
   if (cmd_line.HasSwitch(kMaxReports))
-    max_reports = _wtoi(cmd_line.GetSwitchValueNative(kMaxReports).c_str());
+    max_reports = _wtoi(cmd_line.GetSwitchValue(kMaxReports).c_str());
 
   if (max_reports > 0) {
     // Create the http sender object.
@@ -252,7 +252,7 @@ bool CrashService::Initialize(const std::wstring& command_line) {
 
   reporter_tag_ = L"crash svc";
   if (cmd_line.HasSwitch(kReporterTag))
-    reporter_tag_ = cmd_line.GetSwitchValueNative(kReporterTag);
+    reporter_tag_ = cmd_line.GetSwitchValue(kReporterTag);
 
   // Log basic information.
   LOG(INFO) << "pipe name is " << pipe_name;

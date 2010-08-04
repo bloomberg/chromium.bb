@@ -53,8 +53,7 @@ class MiniInstallTest : public testing::Test {
     virtual void SetUp() {
       // Parse test command-line arguments.
       const CommandLine* cmd = CommandLine::ForCurrentProcess();
-      std::wstring build =
-          cmd->GetSwitchValueNative(switches::kInstallerTestBuild);
+      std::wstring build = cmd->GetSwitchValue(switches::kInstallerTestBuild);
       if (build.empty())
         build = L"latest";
       force_tests_ = cmd->HasSwitch(switches::kInstallerTestForce);

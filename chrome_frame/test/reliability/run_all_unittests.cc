@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
   int result = -1;
   if (cmd_line->HasSwitch(kRegisterDllFlag)) {
-    std::wstring dll_path = cmd_line->GetSwitchValueNative(kRegisterDllFlag);
+    std::wstring dll_path = cmd_line->GetSwitchValue(kRegisterDllFlag);
 
     // Run() must be called within the scope of the ScopedChromeFrameRegistrar
     // to ensure that the correct DLL remains registered during the tests.

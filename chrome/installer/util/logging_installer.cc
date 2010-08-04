@@ -29,7 +29,7 @@ void InitInstallerLogging(const CommandLine& command_line) {
     return;
   }
 
-  logging::InitLogging(GetLogFilePath(command_line).value().c_str(),
+  logging::InitLogging(GetLogFilePath(command_line).c_str(),
                        logging::LOG_ONLY_TO_FILE,
                        logging::LOCK_LOG_FILE,
                        logging::DELETE_OLD_LOG_FILE);
@@ -50,10 +50,10 @@ void EndInstallerLogging() {
   installer_logging_ = false;
 }
 
-FilePath GetLogFilePath(const CommandLine& command_line) {
+std::wstring GetLogFilePath(const CommandLine& command_line) {
   if (command_line.HasSwitch(
           WideToASCII(installer_util::switches::kLogFile))) {
-    return command_line.GetSwitchValuePath(
+    return command_line.GetSwitchValue(
         WideToASCII(installer_util::switches::kLogFile));
   }
 
@@ -65,11 +65,12 @@ FilePath GetLogFilePath(const CommandLine& command_line) {
   }
 
   FilePath log_path;
+
   if (PathService::Get(base::DIR_TEMP, &log_path)) {
     log_path = log_path.Append(log_filename);
-    return log_path;
+    return log_path.ToWStringHack();
   } else {
-    return FilePath(log_filename);
+    return log_filename;
   }
 }
 
