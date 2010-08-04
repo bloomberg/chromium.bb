@@ -361,6 +361,20 @@ HRESULT ProtData::Read(void* buffer, ULONG size, ULONG* size_read) {
   return read_fun_(protocol_, buffer, size, size_read);
 }
 
+// Attempt to detect ChromeFrame from HTTP headers when
+// BINDSTATUS_MIMETYPEAVAILABLE is received.
+// There are three possible outcomes: CHROME/OTHER/UNDETERMINED.
+// If UNDETERMINED we are going to sniff the content later in ReportData().
+//
+// With not-so-well-written software (mime filters/protocols/protocol patchers)
+// BINDSTATUS_MIMETYPEAVAILABLE might be fired multiple times with different
+// values for the same client.
+// If the renderer_type_ member is:
+// CHROME - 2nd (and any subsequent) BINDSTATUS_MIMETYPEAVAILABLE is ignored.
+// OTHER  - 2nd (and any subsequent) BINDSTATUS_MIMETYPEAVAILABLE is
+//          passed through.
+// UNDETERMINED - Try to detect ChromeFrame from HTTP headers (acts as if this
+//                is the first time BINDSTATUS_MIMETYPEAVAILABLE is received).
 HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
                                  ULONG status_code, LPCWSTR status_text) {
   switch (status_code) {
@@ -382,12 +396,12 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
     // TODO(stoyan): BINDSTATUS_RAWMIMETYPE
     case BINDSTATUS_MIMETYPEAVAILABLE:
     case BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE:
+      SaveSuggestedMimeType(status_text);
       // When Transaction is attached i.e. when existing BTS it terminated
       // and "converted" to BTO, events will be re-fired for the new sink,
       // but we may skip the renderer_type_ determination since it's already
       // done.
       if (renderer_type_ == UNDETERMINED) {
-        SaveSuggestedMimeType(status_text);
         // This may seem awkward. CBinding's implementation of IWinInetHttpInfo
         // will forward to CTransaction that will forward to the real protocol.
         // We may ask CTransaction (our protocol_ member) for IWinInetHttpInfo.
