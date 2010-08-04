@@ -875,21 +875,6 @@
    fun:_ZN19TestWebViewDelegate24UpdateSelectionClipboardEb
 }
 {
-   bug_10553
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7history14HistoryBackend8InitImplEv
-   fun:_ZN7history14HistoryBackend4InitEb
-   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvbEbEvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
    # See http://crbug.com/11139
    bug_11139
    Memcheck:Leak
@@ -3562,12 +3547,6 @@
 {
    bug_50304
    Memcheck:Leak
-   fun:_Znw*
-   fun:_ZNSs4_Rep9_S_createEjjRKSaIcE
-   fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
-   fun:_ZNSs7reserveEj
-   fun:_ZNSs6appendEjc
-   fun:_ZNK8FilePath6AppendERKSs
    ...
    fun:_ZN7history14HistoryBackend8InitImplEv
    fun:_ZN7history14HistoryBackend4InitEb
@@ -3805,7 +3784,7 @@
    fun:_ZN11MessageLoop6DoWorkEv
 }
 {
-   bug_51076
+   bug_51076_a
    Memcheck:Leak
    fun:malloc
    fun:malloc
@@ -3831,6 +3810,30 @@
    fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
 }
 {
+   bug_51076_b
+   Memcheck:Leak
+   fun:malloc
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:g_object_constructor
+   fun:g_object_newv
+   fun:g_object_new_valist
+   fun:g_object_new
+   fun:gtk_views_window_new
+   fun:_ZN5views9WidgetGtk15CreateGtkWidgetEP10_GtkWidgetRKN3gfx4RectE
+   fun:_ZN5views9WidgetGtk4InitEP10_GtkWidgetRKN3gfx4RectE
+   fun:_ZN17StatusBubbleViews4InitEv
+   fun:_ZN17StatusBubbleViews6SetURLERK4GURLRKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN7Browser15UpdateTargetURLEP11TabContentsRK4GURL
+   fun:_ZN11TabContents15UpdateTargetURLEiRK4GURL
+   fun:_ZN11TabContents30DidNavigateMainFramePostCommitERKN20NavigationController20LoadCommittedDetailsERK32ViewHostMsg_FrameNavigate_Params
+   fun:_ZN11TabContents11DidNavigateEP14RenderViewHostRK32ViewHostMsg_FrameNavigate_Params
+   fun:_ZN14RenderViewHost13OnMsgNavigateERKN3IPC7MessageE
+   fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
+}
+{
    bug_51133
    Memcheck:Leak
    fun:_Znw*
@@ -3841,6 +3844,20 @@
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_51153
+   Memcheck:Leak
+   ...
+   fun:_ZN7history14HistoryBackend16GetFavIconForURLE13scoped_refptrI17CancelableRequestI14CallbackRunnerI6Tuple5IibS1_I16RefCountedMemoryEb4GURLEEEERKS7_
+   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_Fv13scoped_refptrI17CancelableRequestI14CallbackRunnerI6Tuple5IibS2_I16RefCountedMemoryEb4GURLEEEERKS8_ESC_S8_EvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_Fv13scoped_refptrI17CancelableRequestI14CallbackRunnerI6Tuple5IibS2_I16RefCountedMemoryEb4GURLEEEERKS8_E6Tuple2ISC_S8_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
