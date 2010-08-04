@@ -378,7 +378,7 @@ bool TextureManager::ValidForTarget(
          width <= max_size &&
          height <= max_size &&
          depth <= max_size &&
-         (level == 0 ||
+         (level == 0 || npot_ok() ||
           (!GLES2Util::IsNPOT(width) &&
            !GLES2Util::IsNPOT(height) &&
            !GLES2Util::IsNPOT(depth))) &&

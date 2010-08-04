@@ -103,7 +103,7 @@ TEST_F(TextureManagerTest, MaxValues) {
             manager_.MaxSizeForTarget(GL_TEXTURE_CUBE_MAP));
 }
 
-TEST_F(TextureManagerTest, ValidForTexture) {
+TEST_F(TextureManagerTest, ValidForTarget) {
   // check 2d
   EXPECT_TRUE(manager_.ValidForTarget(
       GL_TEXTURE_2D, 0,
@@ -125,6 +125,14 @@ TEST_F(TextureManagerTest, ValidForTexture) {
   EXPECT_FALSE(manager_.ValidForTarget(
       GL_TEXTURE_2D, kMax2dLevels,
       kMaxTextureSize, 1, 2));
+  // Check NPOT width on level 0
+  EXPECT_TRUE(manager_.ValidForTarget(GL_TEXTURE_2D, 0, 5, 2, 1));
+  // Check NPOT height on level 0
+  EXPECT_TRUE(manager_.ValidForTarget(GL_TEXTURE_2D, 0, 2, 5, 1));
+  // Check NPOT width on level 1
+  EXPECT_FALSE(manager_.ValidForTarget(GL_TEXTURE_2D, 1, 5, 2, 1));
+  // Check NPOT height on level 1
+  EXPECT_FALSE(manager_.ValidForTarget(GL_TEXTURE_2D, 1, 2, 5, 1));
 
   // check cube
   EXPECT_TRUE(manager_.ValidForTarget(
@@ -145,6 +153,20 @@ TEST_F(TextureManagerTest, ValidForTexture) {
   EXPECT_FALSE(manager_.ValidForTarget(
       GL_TEXTURE_CUBE_MAP, kMaxCubeMapLevels,
       kMaxCubeMapTextureSize, 1, 2));
+}
+
+TEST_F(TextureManagerTest, ValidForTargetNPOT) {
+  TextureManager manager(
+      true, false, false, kMaxTextureSize, kMaxCubeMapTextureSize);
+  // Check NPOT width on level 0
+  EXPECT_TRUE(manager.ValidForTarget(GL_TEXTURE_2D, 0, 5, 2, 1));
+  // Check NPOT height on level 0
+  EXPECT_TRUE(manager.ValidForTarget(GL_TEXTURE_2D, 0, 2, 5, 1));
+  // Check NPOT width on level 1
+  EXPECT_TRUE(manager.ValidForTarget(GL_TEXTURE_2D, 1, 5, 2, 1));
+  // Check NPOT height on level 1
+  EXPECT_TRUE(manager.ValidForTarget(GL_TEXTURE_2D, 1, 2, 5, 1));
+  manager.Destroy(false);
 }
 
 class TextureInfoTest : public testing::Test {

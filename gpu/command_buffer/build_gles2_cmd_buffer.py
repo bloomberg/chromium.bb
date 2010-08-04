@@ -1060,6 +1060,7 @@ _FUNCTION_INFO = {
   },
   'CopyTexImage2D': {
     'decoder_func': 'DoCopyTexImage2D',
+    'unit_test': False,
   },
   'CopyTexSubImage2D': {
     'decoder_func': 'DoCopyTexSubImage2D',

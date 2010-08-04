@@ -4408,27 +4408,28 @@ error::Error GLES2DecoderImpl::DoTexImage2D(
     pixels = zero.get();
   }
 
+  GLenum gl_internal_format = internal_format;
   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
     if (format == GL_BGRA_EXT && internal_format == GL_BGRA_EXT) {
-      internal_format = GL_RGBA;
+      gl_internal_format = GL_RGBA;
     } else if (type == GL_FLOAT) {
       if (format == GL_RGBA) {
-        internal_format = GL_RGBA32F_ARB;
+        gl_internal_format = GL_RGBA32F_ARB;
       } else if (format == GL_RGB) {
-        internal_format = GL_RGB32F_ARB;
+        gl_internal_format = GL_RGB32F_ARB;
       }
     } else if (type == GL_HALF_FLOAT_OES) {
       if (format == GL_RGBA) {
-        internal_format = GL_RGBA16F_ARB;
+        gl_internal_format = GL_RGBA16F_ARB;
       } else if (format == GL_RGB) {
-        internal_format = GL_RGB16F_ARB;
+        gl_internal_format = GL_RGB16F_ARB;
       }
     }
   }
 
   CopyRealGLErrorsToWrapper();
   glTexImage2D(
-      target, level, internal_format, width, height, border, format, type,
+      target, level, gl_internal_format, width, height, border, format, type,
       pixels);
   GLenum error = glGetError();
   if (error == GL_NO_ERROR) {
@@ -4538,6 +4539,12 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
                "glCopyTexImage2D: unknown texture for target");
     return;
   }
+  if (!texture_manager()->ValidForTarget(target, level, width, height, 1) ||
+      border != 0) {
+    SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D: dimensions out of range");
+    return;
+  }
+
   // TODO(gman): Need to check that current FBO is compatible with
   // internal_format.
   // TODO(gman): Type needs to match format for FBO.
