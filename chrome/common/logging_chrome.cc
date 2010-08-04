@@ -58,6 +58,10 @@ static bool dialogs_are_suppressed_ = false;
 // InitChromeLogging() and the beginning of CleanupChromeLogging().
 static bool chrome_logging_initialized_ = false;
 
+// This should be true for exactly the period between the end of
+// InitChromeLogging() and the beginning of CleanupChromeLogging().
+static bool chrome_logging_redirected_ = false;
+
 #if defined(OS_WIN)
 // {7FE69228-633E-4f06-80C1-527FEA23E3A7}
 DEFINE_GUID(kChromeTraceProviderName,
@@ -161,6 +165,8 @@ FilePath TimestampLog(const FilePath& new_log_file, base::Time timestamp) {
 void RedirectChromeLogging(const FilePath& new_log_dir,
                            const CommandLine& command_line,
                            OldFileDeletionState delete_old_log_file) {
+  DCHECK(!chrome_logging_redirected_) <<
+    "Attempted to redirect logging when it was already initialized.";
   FilePath log_file_name = GetLogFileName().BaseName();
   FilePath new_log_path =
       TimestampLog(new_log_dir.Append(log_file_name), base::Time::Now());
@@ -168,6 +174,7 @@ void RedirectChromeLogging(const FilePath& new_log_dir,
               DetermineLogMode(command_line),
               logging::LOCK_LOG_FILE,
               delete_old_log_file);
+  chrome_logging_redirected_ = true;
 }
 #endif
 
@@ -236,6 +243,7 @@ void CleanupChromeLogging() {
   CloseLogFile();
 
   chrome_logging_initialized_ = false;
+  chrome_logging_redirected_ = false;
 }
 
 FilePath GetLogFileName() {

@@ -67,6 +67,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/jstemplate_builder.h"
+#include "chrome/common/logging_chrome.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
@@ -1035,6 +1036,18 @@ int BrowserMain(const MainFunctionParams& parameters) {
         parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
     LOG(INFO) << "Relaunching browser for user: " << username;
     chromeos::UserManager::Get()->UserLoggedIn(username);
+
+    // Redirect logs.
+    FilePath user_data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    // The default profile will have been changed because the ProfileManager
+    // will process the notification that the UserManager sends out.
+
+    logging::RedirectChromeLogging(
+        user_data_dir.Append(profile_manager->GetCurrentProfileDir()),
+        *(CommandLine::ForCurrentProcess()),
+        logging::DELETE_OLD_LOG_FILE);
   }
 #endif
 
