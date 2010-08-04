@@ -97,6 +97,9 @@ class BrowserActionButton : public NotificationObserver,
         IDR_BROWSER_ACTION_H,
         0,
         NULL));
+    alignment_.Own(gtk_alignment_new(0, 0, 1, 1));
+    gtk_container_add(GTK_CONTAINER(alignment_.get()), button());
+    gtk_widget_show(button());
 
     DCHECK(extension_->browser_action());
 
@@ -112,14 +115,14 @@ class BrowserActionButton : public NotificationObserver,
                          ImageLoadingTracker::DONT_CACHE);
     }
 
-    signals_.Connect(button_->widget(), "button-press-event",
+    signals_.Connect(button(), "button-press-event",
                      G_CALLBACK(OnButtonPress), this);
-    signals_.Connect(button_->widget(), "clicked",
+    signals_.Connect(button(), "clicked",
                      G_CALLBACK(OnClicked), this);
-    signals_.ConnectAfter(button_->widget(), "expose-event",
-                          G_CALLBACK(OnExposeEvent), this);
-    signals_.Connect(button_->widget(), "drag-begin",
+    signals_.Connect(button(), "drag-begin",
                      G_CALLBACK(&OnDragBegin), this);
+    signals_.ConnectAfter(widget(), "expose-event",
+                          G_CALLBACK(OnExposeEvent), this);
 
     registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
                    Source<ExtensionAction>(extension->browser_action()));
@@ -131,9 +134,13 @@ class BrowserActionButton : public NotificationObserver,
 
     if (default_icon_)
       g_object_unref(default_icon_);
+
+    alignment_.Destroy();
   }
 
-  GtkWidget* widget() { return button_->widget(); }
+  GtkWidget* button() { return button_->widget(); }
+
+  GtkWidget* widget() { return alignment_.get(); }
 
   Extension* extension() { return extension_; }
 
@@ -165,9 +172,9 @@ class BrowserActionButton : public NotificationObserver,
 
     std::string tooltip = extension_->browser_action()->GetTitle(tab_id);
     if (tooltip.empty())
-      gtk_widget_set_has_tooltip(button_->widget(), FALSE);
+      gtk_widget_set_has_tooltip(button(), FALSE);
     else
-      gtk_widget_set_tooltip_text(button_->widget(), tooltip.c_str());
+      gtk_widget_set_tooltip_text(button(), tooltip.c_str());
 
     SkBitmap image = extension_->browser_action()->GetIcon(tab_id);
     if (!image.isNull()) {
@@ -179,7 +186,7 @@ class BrowserActionButton : public NotificationObserver,
     } else if (default_icon_) {
       SetImage(default_icon_);
     }
-    gtk_widget_queue_draw(button_->widget());
+    gtk_widget_queue_draw(button());
   }
 
   SkBitmap GetIcon() {
@@ -247,7 +254,7 @@ class BrowserActionButton : public NotificationObserver,
   void SetImage(GdkPixbuf* image) {
     if (!image_) {
       image_ = gtk_image_new_from_pixbuf(image);
-      gtk_button_set_image(GTK_BUTTON(button_->widget()), image_);
+      gtk_button_set_image(GTK_BUTTON(button()), image_);
     } else {
       gtk_image_set_from_pixbuf(GTK_IMAGE(image_), image);
     }
@@ -308,6 +315,9 @@ class BrowserActionButton : public NotificationObserver,
 
   // The button for this browser action.
   scoped_ptr<CustomDrawButton> button_;
+
+  // The top level widget (parent of |button_|).
+  OwnedWidgetGtk alignment_;
 
   // The one image subwidget in |button_|. We keep this out so we don't alter
   // the widget hierarchy while changing the button image because changing the
@@ -503,12 +513,12 @@ void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
   extension_button_map_[extension->id()] = button;
 
   GtkTargetEntry drag_target = GetDragTargetEntry();
-  gtk_drag_source_set(button->widget(), GDK_BUTTON1_MASK, &drag_target, 1,
+  gtk_drag_source_set(button->button(), GDK_BUTTON1_MASK, &drag_target, 1,
                       GDK_ACTION_MOVE);
   // We ignore whether the drag was a "success" or "failure" in Gtk's opinion.
-  signals_.Connect(button->widget(), "drag-end",
+  signals_.Connect(button->button(), "drag-end",
                    G_CALLBACK(&OnDragEndThunk), this);
-  signals_.Connect(button->widget(), "drag-failed",
+  signals_.Connect(button->button(), "drag-failed",
                    G_CALLBACK(&OnDragFailedThunk), this);
 
   // Any time a browser action button is shown or hidden we have to update
