@@ -14,7 +14,7 @@
 namespace {
 
 // The scheme for which to use the proxy, not of the proxy URI itself.
-typedef enum {
+enum {
   SCHEME_ALL = 0,
   SCHEME_HTTP,
   SCHEME_HTTPS,
