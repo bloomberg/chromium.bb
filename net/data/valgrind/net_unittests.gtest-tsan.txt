@@ -1,3 +1,11 @@
 # These huge tests are flaky and sometimes crash the following tests.
 # See http://crbug.com/50346
 DiskCacheEntryTest.*HugeSparse*
+
+# SPDY tests tend to crash on both Mac and Windows.
+# See http://crbug.com/51144
+SpdyNetworkingTest/SpdyNetworkTransactionTest.SocketWriteReturnsZero*
+# See http://crbug.com/50918
+SpdyNetworkingTest/SpdyNetworkTransactionTest.CancelledTransactionSendRst*
+
+

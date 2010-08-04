@@ -22,3 +22,5 @@ DirectoryLister*
 
 # See http://crbug.com/44570
 HttpNetworkTransactionTest.StopsReading204
+# See http://crbug.com/51145
+HttpNetworkTransactionTest.Incomplete100ThenEOF
