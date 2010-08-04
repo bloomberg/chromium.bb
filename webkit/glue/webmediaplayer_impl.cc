@@ -4,6 +4,8 @@
 
 #include "webkit/glue/webmediaplayer_impl.h"
 
+#include <limits>
+
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "media/base/limits.h"
@@ -417,7 +419,10 @@ bool WebMediaPlayerImpl::seeking() const {
 float WebMediaPlayerImpl::duration() const {
   DCHECK(MessageLoop::current() == main_loop_);
 
-  return static_cast<float>(pipeline_->GetMediaDuration().InSecondsF());
+  base::TimeDelta duration = pipeline_->GetMediaDuration();
+  if (duration.InMicroseconds() == media::Limits::kMaxTimeInMicroseconds)
+    return std::numeric_limits<float>::infinity();
+  return static_cast<float>(duration.InSecondsF());
 }
 
 float WebMediaPlayerImpl::currentTime() const {
