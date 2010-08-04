@@ -176,3 +176,4 @@ ACTION_P2(DoDefaultUIActionInDocument, mock, matcher) {
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_MOCK_IE_EVENT_SINK_ACTIONS_H_
+

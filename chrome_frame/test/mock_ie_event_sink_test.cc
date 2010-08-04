@@ -170,3 +170,4 @@ std::wstring MockIEEventSinkTest::GetTestUrl(
 }
 
 }  // namespace chrome_frame_test
+

@@ -1370,3 +1370,4 @@ bool CanNavigateInFullTabMode(const ChromeFrameUrl& cf_url,
 
   return true;
 }
+

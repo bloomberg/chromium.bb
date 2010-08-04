@@ -232,3 +232,4 @@ END_SINK_MAP()
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_TEST_IE_EVENT_SINK_H_
+
