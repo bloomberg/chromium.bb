@@ -301,18 +301,18 @@ if sdl_mode != 'none' and sdl_mode != 'armlocal':
       sdl_dll += sdl_env.Replicate('.',
                                    '$SDL_DIR/lib64/libSDL-1.2.so.0')
       # add AddPluginPrerequisite if you build a 64-bit plugin
+
+VALIDATOR_LIBS = []
 if ((not env.get('COVERAGE_ENABLED') or not env.Bit('windows')) and
     env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']):
 
 
   if env['TARGET_ARCHITECTURE'] == 'x86':
-    VALIDATOR_LIBS = ['ncopcode_utils', 'ncvalidate']
+    VALIDATOR_LIBS += ['ncopcode_utils', 'ncvalidate']
     if env['TARGET_SUBARCH']=='64':
-      VALIDATOR_LIBS = VALIDATOR_LIBS + ['ncvalidate_sfi']
+      VALIDATOR_LIBS += ['ncvalidate_sfi']
   elif env['TARGET_ARCHITECTURE'] == 'arm':
-    VALIDATOR_LIBS = ['ncvalidate_arm_v2', 'arm_validator_core']
-  else:
-    VALIDATOR_LIBS = []
+    VALIDATOR_LIBS += ['ncvalidate_arm_v2', 'arm_validator_core']
 
   # NOTE: uses sdl_env
   SEL_LDR_NODE = sdl_env.ComponentProgram('sel_ldr',
