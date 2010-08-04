@@ -945,3 +945,21 @@
    ...
    fun:safe_browsing::PhishingDOMFeatureExtractorTest::SetUp
 }
+{
+   bug_51176_a
+   Heapcheck:Leak
+   fun:Callback1::Type* NewCallback
+   fun:PrefValueStoreTest_TestPolicyRefresh_Test::TestBody
+}
+{
+   bug_51176_b
+   Heapcheck:Leak
+   fun:Callback1::Type* NewCallback
+   fun:PrefValueStoreTest_TestRefreshPolicyPrefsCompletion_Test::TestBody
+}
+{
+   bug_51176_c
+   Heapcheck:Leak
+   fun:Callback1::Type* NewCallback
+   fun:PrefValueStoreTest_TestConcurrentPolicyRefresh_Test::TestBody
+}
