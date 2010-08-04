@@ -61,18 +61,21 @@ if env.Bit('linux'):
 
   env.ComponentLibrary('ncvalidate_arm_v2',
                        ['ncvalidate.cc'],
-                       LIBS=['arm_validator_core'])
+                       LIBS=['arm_validator_core',
+                             '${OPTIONAL_COVERAGE_LIBS}'])
 
   env_static = env.Clone()
   env_static.Append(LINKFLAGS='-static')
   ncval = env_static.ComponentProgram('arm-ncval-core',
                                       ['ncval.cc'],
                                       LIBS=['arm_validator_core',
-                                            'nchelper'])
+                                            'nchelper',
+                                            '${OPTIONAL_COVERAGE_LIBS}'])
 
   env.ComponentProgram('address_set_test_binary',
                        ['address_set_test.cc'],
-                       LIBS=['arm_validator_core'])
+                       LIBS=['arm_validator_core',
+                             '${OPTIONAL_COVERAGE_LIBS}'])
 
   address_set_test = env.Command(target='address_set_test.out',
                                  source=['address_set_test_binary'],
