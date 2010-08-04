@@ -35,11 +35,6 @@ UpdateRecommendedDialog::UpdateRecommendedDialog(GtkWindow* parent) {
 
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
-  // Create the content-holding vbox.
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_container_set_border_width(GTK_CONTAINER(vbox),
-                                 gtk_util::kContentAreaBorder);
-
   // Add the message text.
   std::string text(
       l10n_util::GetStringFUTF8(IDS_UPDATE_RECOMMENDED,
@@ -47,10 +42,7 @@ UpdateRecommendedDialog::UpdateRecommendedDialog(GtkWindow* parent) {
   GtkWidget* label = gtk_label_new(text.c_str());
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_widget_set_size_request(label, kMessageWidth, -1);
-  gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
-
-  // Add our vbox to the dialog.
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), vbox,
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), label,
                      FALSE, FALSE, 0);
 
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
