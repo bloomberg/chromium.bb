@@ -2569,9 +2569,7 @@ test-x86-32() {
 #@ test-x86-64           - run all x86-64 tests via pnacl toolchain
 #@ test-x86-64 <test>    - run a single x86-64 test via pnacl toolchain
 test-x86-64() {
-  # TODO(robertm): we cannot run the full suite because c++ derived bitcode
-  #                causes the x86-64 backend to crash
-  test-scons-common x86-64 smoke_tests "$@"
+  test-scons-common x86-64 "$@"
 }
 
 
