@@ -17,9 +17,8 @@ class MessageLoop;
 class Profile;
 
 namespace history {
-class HistoryBackend;
+  class HistoryBackend;
 }  // namespace history
-
 
 // How history autocomplete works
 // ==============================
@@ -180,69 +179,6 @@ class HistoryURLProvider : public AutocompleteProvider {
  private:
   ~HistoryURLProvider() {}
 
-  struct Prefix {
-    Prefix(std::wstring prefix, int num_components)
-        : prefix(prefix),
-          num_components(num_components) { }
-
-    std::wstring prefix;
-
-    // The number of "components" in the prefix.  The scheme is a component,
-    // and the initial "www." or "ftp." is a component.  So "http://foo.com"
-    // and "www.bar.com" each have one component, "ftp://ftp.ftp.com" has two,
-    // and "mysite.com" has none.  This is used to tell whether the user's
-    // input is an innermost match or not.  See comments in HistoryMatch.
-    int num_components;
-  };
-  typedef std::vector<Prefix> Prefixes;
-
-  // Used for intermediate history result operations.
-  struct HistoryMatch {
-    // Required for STL, we don't use this directly.
-    HistoryMatch()
-        : url_info(),
-          input_location(std::wstring::npos),
-          match_in_scheme(false),
-          innermost_match(true) {
-    }
-
-    HistoryMatch(const history::URLRow& url_info,
-                 size_t input_location,
-                 bool match_in_scheme,
-                 bool innermost_match)
-        : url_info(url_info),
-          input_location(input_location),
-          match_in_scheme(match_in_scheme),
-          innermost_match(innermost_match) {
-    }
-
-    bool operator==(const GURL& url) const {
-      return url_info.url() == url;
-    }
-
-    history::URLRow url_info;
-
-    // The offset of the user's input within the URL.
-    size_t input_location;
-
-    // Whether this is a match in the scheme.  This determines whether we'll go
-    // ahead and show a scheme on the URL even if the user didn't type one.
-    // If our best match was in the scheme, not showing the scheme is both
-    // confusing and, for inline autocomplete of the fill_into_edit, dangerous.
-    // (If the user types "h" and we match "http://foo/", we need to inline
-    // autocomplete that, not "foo/", which won't show anything at all, and
-    // will mislead the user into thinking the What You Typed match is what's
-    // selected.)
-    bool match_in_scheme;
-
-    // A match after any scheme/"www.", if the user input could match at both
-    // locations.  If the user types "w", an innermost match ("website.com") is
-    // better than a non-innermost match ("www.google.com").  If the user types
-    // "x", no scheme in our prefix list (or "www.") begins with x, so all
-    // matches are, vacuously,  "innermost matches".
-    bool innermost_match;
-  };
-  typedef std::deque<HistoryMatch> HistoryMatches;
 
   enum MatchType {
     NORMAL,
@@ -268,16 +204,8 @@ class HistoryURLProvider : public AutocompleteProvider {
   // return 0.
   static size_t TrimHttpPrefix(std::wstring* url);
 
-  // Returns true if |url| is just a host (e.g. "http://www.google.com/") and
-  // not some other subpage (e.g. "http://www.google.com/foo.html").
-  static bool IsHostOnly(const GURL& url);
-
-  // Acts like the > operator for URLInfo classes.
-  static bool CompareHistoryMatch(const HistoryMatch& a,
-                                  const HistoryMatch& b);
-
   // Returns the set of prefixes to use for prefixes_.
-  static Prefixes GetPrefixes();
+  static history::Prefixes GetPrefixes();
 
   // Determines the relevance for some input, given its type and which match it
   // is.  If |match_type| is NORMAL, |match_number| is a number
@@ -290,7 +218,7 @@ class HistoryURLProvider : public AutocompleteProvider {
   // Given the user's |input| and a |match| created from it, reduce the
   // match's URL to just a host.  If this host still matches the user input,
   // return it.  Returns the empty string on failure.
-  static GURL ConvertToHostOnly(const HistoryMatch& match,
+  static GURL ConvertToHostOnly(const history::HistoryMatch& match,
                                 const std::wstring& input);
 
   // See if a shorter version of the best match should be created, and if so
@@ -305,7 +233,7 @@ class HistoryURLProvider : public AutocompleteProvider {
       const HistoryURLProviderParams& params,
       bool have_what_you_typed_match,
       const AutocompleteMatch& what_you_typed_match,
-      HistoryMatches* matches);
+      history::HistoryMatches* matches);
 
   // Ensures that |matches| contains an entry for |info|, which may mean adding
   // a new such entry (using |input_location| and |match_in_scheme|).
@@ -317,7 +245,7 @@ class HistoryURLProvider : public AutocompleteProvider {
   static void EnsureMatchPresent(const history::URLRow& info,
                                  std::wstring::size_type input_location,
                                  bool match_in_scheme,
-                                 HistoryMatches* matches,
+                                 history::HistoryMatches* matches,
                                  bool promote);
 
   // Helper function that actually launches the two autocomplete passes.
@@ -330,8 +258,8 @@ class HistoryURLProvider : public AutocompleteProvider {
   // |prefix_suffix| (which may be empty) is appended to every attempted
   // prefix.  This is useful when you need to figure out the innermost match
   // for some user input in a URL.
-  const Prefix* BestPrefix(const GURL& text,
-                           const std::wstring& prefix_suffix) const;
+  const history::Prefix* BestPrefix(const GURL& text,
+                                    const std::wstring& prefix_suffix) const;
 
   // Returns a match corresponding to exactly what the user has typed.
   AutocompleteMatch SuggestExactInput(const AutocompleteInput& input,
@@ -346,25 +274,25 @@ class HistoryURLProvider : public AutocompleteProvider {
   bool FixupExactSuggestion(history::URLDatabase* db,
                             const AutocompleteInput& input,
                             AutocompleteMatch* match,
-                            HistoryMatches* matches) const;
+                            history::HistoryMatches* matches) const;
 
   // Determines if |match| is suitable for inline autocomplete, and promotes it
   // if so.
   bool PromoteMatchForInlineAutocomplete(HistoryURLProviderParams* params,
-                                         const HistoryMatch& match);
+                                         const history::HistoryMatch& match);
 
   // Sorts the given list of matches.
-  void SortMatches(HistoryMatches* matches) const;
+  void SortMatches(history::HistoryMatches* matches) const;
 
   // Removes results that have been rarely typed or visited, and not any time
   // recently.  The exact parameters for this heuristic can be found in the
   // function body.
-  void CullPoorMatches(HistoryMatches* matches) const;
+  void CullPoorMatches(history::HistoryMatches* matches) const;
 
   // Removes results that redirect to each other, leaving at most |max_results|
   // results.
   void CullRedirects(history::HistoryBackend* backend,
-                     HistoryMatches* matches,
+                     history::HistoryMatches* matches,
                      size_t max_results) const;
 
   // Helper function for CullRedirects, this removes all but the first
@@ -376,18 +304,19 @@ class HistoryURLProvider : public AutocompleteProvider {
   // is removed, the next item will be shifted, and this allows the caller to
   // pick up on the next one when this happens.
   size_t RemoveSubsequentMatchesOf(
-      HistoryMatches* matches,
+      history::HistoryMatches* matches,
       size_t source_index,
       const std::vector<GURL>& remove) const;
 
   // Converts a line from the database into an autocomplete match for display.
-  AutocompleteMatch HistoryMatchToACMatch(HistoryURLProviderParams* params,
-                                          const HistoryMatch& history_match,
-                                          MatchType match_type,
-                                          size_t match_number);
+  AutocompleteMatch HistoryMatchToACMatch(
+      HistoryURLProviderParams* params,
+      const history::HistoryMatch& history_match,
+      MatchType match_type,
+      size_t match_number);
 
   // Prefixes to try appending to user input when looking for a match.
-  const Prefixes prefixes_;
+  const history::Prefixes prefixes_;
 
   // Params for the current query.  The provider should not free this directly;
   // instead, it is passed as a parameter through the history backend, and the
