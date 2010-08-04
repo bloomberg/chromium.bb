@@ -83,11 +83,8 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   void Resolve(const GURL& url,
                UrlInfo::ResolutionMotivation motivation);
 
-  // Instigate pre-connection to any URLs, or pre-resolution of related host,
-  // that we predict will be needed after this navigation (typically
-  // more-embedded resources on a page).  This method will actually post a task
-  // to do the actual work, so as not to jump ahead of the frame navigation that
-  // instigated this activity.
+  // Instigate pre-connection to any URLs we predict will be needed after this
+  // navigation (typically more-embedded resources on a page).
   void PredictFrameSubresources(const GURL& url);
 
   // Record details of a navigation so that we can preresolve the host name
@@ -141,6 +138,8 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueueReorderTest);
   friend class WaitForResolutionHelper;  // For testing.
 
+  ~Predictor();
+
   class LookupRequest;
 
   // A simple priority queue for handling host names.
@@ -174,13 +173,6 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // of loading additional URLs.  The list of additional targets is held
   // in a Referrer instance, which is a value in this map.
   typedef std::map<GURL, Referrer> Referrers;
-
-  ~Predictor();
-
-  // Perform actual resolution or preconnection to subresources now.  This is
-  // an internal worker method that is reached via a post task from
-  // PredictFrameSubresources().
-  void PrepareFrameSubresources(const GURL& url);
 
   // Only for testing. Returns true if hostname has been successfully resolved
   // (name found).

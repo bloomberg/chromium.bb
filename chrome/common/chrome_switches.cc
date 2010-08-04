@@ -161,9 +161,6 @@ const char kDisableInternalFlash[]          = "disable-internal-flash";
 // This flag can be overidden by the "enable-ipv6" flag.
 const char kDisableIPv6[]                   = "disable-ipv6";
 
-// Disable speculative TCP/IP preconnection.
-const char kDisablePreconnect[]              = "disable-preconnect";
-
 // Don't execute JavaScript (browser JS like the new tab page still runs).
 const char kDisableJavaScript[]             = "disable-javascript";
 
