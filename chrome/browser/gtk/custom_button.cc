@@ -117,6 +117,10 @@ gboolean CustomDrawButtonBase::OnExpose(GtkWidget* widget,
 
   cairo_destroy(cairo_context);
 
+  GtkWidget* child = gtk_bin_get_child(GTK_BIN(widget));
+  if (child)
+    gtk_container_propagate_expose(GTK_CONTAINER(widget), child, e);
+
   return TRUE;
 }
 
@@ -182,9 +186,9 @@ void CustomDrawHoverController::Init(GtkWidget* widget) {
   DCHECK(widget_ == NULL);
   widget_ = widget;
   g_signal_connect(widget_, "enter-notify-event",
-                   G_CALLBACK(OnEnter), this);
+                   G_CALLBACK(OnEnterThunk), this);
   g_signal_connect(widget_, "leave-notify-event",
-                   G_CALLBACK(OnLeave), this);
+                   G_CALLBACK(OnLeaveThunk), this);
 }
 
 void CustomDrawHoverController::AnimationProgressed(
@@ -192,25 +196,21 @@ void CustomDrawHoverController::AnimationProgressed(
   gtk_widget_queue_draw(widget_);
 }
 
-// static
 gboolean CustomDrawHoverController::OnEnter(
     GtkWidget* widget,
-    GdkEventCrossing* event,
-    CustomDrawHoverController* controller) {
-  controller->slide_animation_.Show();
+    GdkEventCrossing* event) {
+  slide_animation_.Show();
   return FALSE;
 }
 
-// static
 gboolean CustomDrawHoverController::OnLeave(
     GtkWidget* widget,
-    GdkEventCrossing* event,
-    CustomDrawHoverController* controller) {
+    GdkEventCrossing* event) {
   // When the user is holding a mouse button, we don't want to animate.
   if (event->state & (GDK_BUTTON1_MASK | GDK_BUTTON2_MASK | GDK_BUTTON3_MASK))
-    controller->slide_animation_.Reset();
+    slide_animation_.Reset();
   else
-    controller->slide_animation_.Hide();
+    slide_animation_.Hide();
   return FALSE;
 }
 
@@ -221,9 +221,7 @@ CustomDrawButton::CustomDrawButton(int normal_id,
                                    int hover_id,
                                    int disabled_id)
     : button_base_(NULL, normal_id, pressed_id, hover_id, disabled_id),
-      theme_provider_(NULL),
-      gtk_stock_name_(NULL),
-      icon_size_(GTK_ICON_SIZE_INVALID) {
+      theme_provider_(NULL) {
   Init();
 
   // Initialize the theme stuff with no theme_provider.
@@ -239,9 +237,27 @@ CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
                                    GtkIconSize stock_size)
     : button_base_(theme_provider, normal_id, pressed_id, hover_id,
                    disabled_id),
-      theme_provider_(theme_provider),
-      gtk_stock_name_(stock_id),
-      icon_size_(stock_size) {
+      theme_provider_(theme_provider) {
+  native_widget_.Own(gtk_image_new_from_stock(stock_id, stock_size));
+
+  Init();
+
+  theme_provider_->InitThemesFor(this);
+  registrar_.Add(this,
+                 NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
+}
+
+CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
+                                   int normal_id,
+                                   int pressed_id,
+                                   int hover_id,
+                                   int disabled_id,
+                                   GtkWidget* native_widget)
+    : button_base_(theme_provider, normal_id, pressed_id, hover_id,
+                   disabled_id),
+      native_widget_(native_widget),
+      theme_provider_(theme_provider) {
   Init();
 
   theme_provider_->InitThemesFor(this);
@@ -252,13 +268,14 @@ CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
 
 CustomDrawButton::~CustomDrawButton() {
   widget_.Destroy();
+  native_widget_.Destroy();
 }
 
 void CustomDrawButton::Init() {
   widget_.Own(gtk_chrome_button_new());
   GTK_WIDGET_UNSET_FLAGS(widget(), GTK_CAN_FOCUS);
   g_signal_connect(widget(), "expose-event",
-                   G_CALLBACK(OnCustomExpose), this);
+                   G_CALLBACK(OnCustomExposeThunk), this);
   hover_controller_.Init(widget());
 }
 
@@ -285,16 +302,14 @@ void CustomDrawButton::SetBackground(SkColor color,
   button_base_.SetBackground(color, image, mask);
 }
 
-// static
-gboolean CustomDrawButton::OnCustomExpose(GtkWidget* widget,
-                                          GdkEventExpose* e,
-                                          CustomDrawButton* button) {
-  if (button->theme_provider_ && button->theme_provider_->UseGtkTheme()) {
+gboolean CustomDrawButton::OnCustomExpose(GtkWidget* sender,
+                                          GdkEventExpose* e) {
+  if (UseGtkTheme()) {
     // Continue processing this expose event.
     return FALSE;
   } else {
-    double hover_state = button->hover_controller_.GetCurrentValue();
-    return button->button_base_.OnExpose(widget, e, hover_state);
+    double hover_state = hover_controller_.GetCurrentValue();
+    return button_base_.OnExpose(sender, e, hover_state);
   }
 }
 
@@ -307,15 +322,14 @@ CustomDrawButton* CustomDrawButton::CloseButton(
 }
 
 void CustomDrawButton::SetBrowserTheme() {
-  bool use_gtk = theme_provider_ && theme_provider_->UseGtkTheme();
-
-  if (use_gtk && gtk_stock_name_) {
-    gtk_button_set_image(
-        GTK_BUTTON(widget()),
-        gtk_image_new_from_stock(gtk_stock_name_, icon_size_));
+  if (UseGtkTheme()) {
+    if (native_widget_.get())
+      gtk_button_set_image(GTK_BUTTON(widget()), native_widget_.get());
     gtk_widget_set_size_request(widget(), -1, -1);
     gtk_widget_set_app_paintable(widget(), FALSE);
   } else {
+    if (native_widget_.get())
+      gtk_button_set_image(GTK_BUTTON(widget()), NULL);
     gtk_widget_set_size_request(widget(), button_base_.Width(),
                                 button_base_.Height());
 
@@ -323,5 +337,9 @@ void CustomDrawButton::SetBrowserTheme() {
   }
 
   gtk_chrome_button_set_use_gtk_rendering(
-      GTK_CHROME_BUTTON(widget()), use_gtk);
+      GTK_CHROME_BUTTON(widget()), UseGtkTheme());
+}
+
+bool CustomDrawButton::UseGtkTheme() {
+  return theme_provider_ && theme_provider_->UseGtkTheme();
 }

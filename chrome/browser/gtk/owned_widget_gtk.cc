@@ -13,6 +13,9 @@ OwnedWidgetGtk::~OwnedWidgetGtk() {
 }
 
 void OwnedWidgetGtk::Own(GtkWidget* widget) {
+  if (!widget)
+    return;
+
   DCHECK(!widget_);
   // We want to make sure that Own() was called properly, right after the
   // widget was created. There should be a floating reference.

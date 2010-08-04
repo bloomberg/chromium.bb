@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "app/gtk_signal.h"
 #include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
@@ -114,10 +115,10 @@ class CustomDrawHoverController : public AnimationDelegate {
  private:
   virtual void AnimationProgressed(const Animation* animation);
 
-  static gboolean OnEnter(GtkWidget* widget, GdkEventCrossing* event,
-                          CustomDrawHoverController* controller);
-  static gboolean OnLeave(GtkWidget* widget, GdkEventCrossing* event,
-                          CustomDrawHoverController* controller);
+  CHROMEGTK_CALLBACK_1(CustomDrawHoverController, gboolean, OnEnter,
+                       GdkEventCrossing*);
+  CHROMEGTK_CALLBACK_1(CustomDrawHoverController, gboolean, OnLeave,
+                       GdkEventCrossing*);
 
   SlideAnimation slide_animation_;
   GtkWidget* widget_;
@@ -135,7 +136,8 @@ class CustomDrawButton : public NotificationObserver {
                    int hover_id,
                    int disabled_id);
 
-  // Same as above, but uses themed (and possibly tinted) images.
+  // Same as above, but uses themed (and possibly tinted) images. |stock_id| and
+  // |stock_size| are used for GTK+ theme mode.
   CustomDrawButton(GtkThemeProvider* theme_provider,
                    int normal_id,
                    int pressed_id,
@@ -143,6 +145,15 @@ class CustomDrawButton : public NotificationObserver {
                    int disabled_id,
                    const char* stock_id,
                    GtkIconSize stock_size);
+
+  // As above, but uses an arbitrary GtkImage rather than a stock icon. This
+  // constructor takes ownership of |native_widget|.
+  CustomDrawButton(GtkThemeProvider* theme_provider,
+                   int normal_id,
+                   int pressed_id,
+                   int hover_id,
+                   int disabled_id,
+                   GtkWidget* native_widget);
 
   ~CustomDrawButton();
 
@@ -187,10 +198,13 @@ class CustomDrawButton : public NotificationObserver {
   // Sets the button to themed or not.
   void SetBrowserTheme();
 
+  // Whether to use the GTK+ theme. For this to be true, we have to be in GTK+
+  // theme mode and we must have a valid stock icon resource.
+  bool UseGtkTheme();
+
   // Callback for custom button expose, used to draw the custom graphics.
-  static gboolean OnCustomExpose(GtkWidget* widget,
-                                 GdkEventExpose* e,
-                                 CustomDrawButton* obj);
+  CHROMEGTK_CALLBACK_1(CustomDrawButton, gboolean, OnCustomExpose,
+                       GdkEventExpose*);
 
   // The actual button widget.
   OwnedWidgetGtk widget_;
@@ -199,12 +213,11 @@ class CustomDrawButton : public NotificationObserver {
 
   CustomDrawHoverController hover_controller_;
 
+  // The widget to use when we are displaying in GTK+ theme mode.
+  OwnedWidgetGtk native_widget_;
+
   // Our theme provider.
   GtkThemeProvider* theme_provider_;
-
-  // The stock icon name and size.
-  const char* gtk_stock_name_;
-  GtkIconSize icon_size_;
 
   // Used to listen for theme change notifications.
   NotificationRegistrar registrar_;

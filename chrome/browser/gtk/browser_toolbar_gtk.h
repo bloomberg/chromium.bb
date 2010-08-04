@@ -73,7 +73,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
 
   ReloadButtonGtk* GetReloadButton() { return reload_.get(); }
 
-  GtkWidget* GetAppMenuButton() { return app_menu_button_.get(); }
+  GtkWidget* GetAppMenuButton() { return wrench_menu_button_->widget(); }
 
   BrowserActionsToolbarGtk* GetBrowserActionsToolbar() {
     return actions_toolbar_.get();
@@ -121,11 +121,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   virtual void ActiveWindowChanged(GdkWindow* active_window);
 
  private:
-  // Create a menu for the toolbar given the icon id and tooltip.  Returns the
-  // widget created.
-  GtkWidget* BuildToolbarMenuButton(const std::string& localized_tooltip,
-                                    OwnedWidgetGtk* owner);
-
   // Connect/Disconnect signals for dragging a url onto the home button.
   void SetUpDragForHomeButton(bool enable);
 
@@ -158,10 +153,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                        guint, guint);
 
   // Used to stop the upgrade notification animation.
-  CHROMEGTK_CALLBACK_0(BrowserToolbarGtk, void, OnAppMenuShow);
+  CHROMEGTK_CALLBACK_0(BrowserToolbarGtk, void, OnWrenchMenuShow);
 
   // Used to draw the upgrade notification badge.
-  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnAppMenuImageExpose,
+  CHROMEGTK_CALLBACK_1(BrowserToolbarGtk, gboolean, OnWrenchMenuImageExpose,
                        GdkEventExpose*);
 
   // Updates preference-dependent state.
@@ -195,7 +190,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // set their minimum sizes independently of |location_hbox_| which needs to
   // grow/shrink in GTK+ mode.
   GtkWidget* toolbar_left_;
-  GtkWidget* toolbar_right_;
 
   // Contains all the widgets of the location bar.
   GtkWidget* location_hbox_;
@@ -208,18 +202,18 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   scoped_ptr<CustomDrawButton> home_;
   scoped_ptr<ReloadButtonGtk> reload_;
   scoped_ptr<BrowserActionsToolbarGtk> actions_toolbar_;
-  OwnedWidgetGtk app_menu_button_;
+  scoped_ptr<CustomDrawButton> wrench_menu_button_;
 
   // Keep a pointer to the menu button image because we change it when the theme
   // changes.
-  OwnedWidgetGtk app_menu_image_;
+  OwnedWidgetGtk wrench_menu_image_;
 
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
 
   GtkThemeProvider* theme_provider_;
 
-  scoped_ptr<MenuGtk> app_menu_;
+  scoped_ptr<MenuGtk> wrench_menu_;
 
   WrenchMenuModel wrench_menu_model_;
 

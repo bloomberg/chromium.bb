@@ -586,7 +586,7 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
                          line_rect.width(), line_rect.height());
     }
 
-    int icon_start_x = ltr ? (kIconLeftPadding) :
+    int icon_start_x = ltr ? kIconLeftPadding :
         (line_rect.width() - kIconLeftPadding - kIconWidth);
     // Draw the icon for this result.
     DrawFullPixbuf(drawable, gc,
@@ -622,7 +622,7 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
         line_rect.y() + ((kHeightPerResult - actual_content_height) / 2));
 
     gdk_draw_layout(drawable, gc,
-                    ltr ? (kIconAreaWidth) :
+                    ltr ? kIconAreaWidth :
                         (text_width - actual_content_width),
                     content_y, layout_);
 
@@ -638,7 +638,7 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
       gint actual_description_width;
       pango_layout_get_size(layout_, &actual_description_width, NULL);
       gdk_draw_layout(drawable, gc, ltr ?
-                          (kIconAreaWidth - actual_content_width) :
+                          (kIconAreaWidth + actual_content_width) :
                           (text_width - actual_content_width -
                            (actual_description_width / PANGO_SCALE)),
                       content_y, layout_);

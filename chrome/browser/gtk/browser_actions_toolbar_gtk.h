@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "base/linked_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
+#include "chrome/browser/gtk/custom_button.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/gtk/overflow_button.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
@@ -34,7 +35,8 @@ typedef struct _GtkWidget GtkWidget;
 class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
                                  public AnimationDelegate,
                                  public MenuGtk::Delegate,
-                                 public menus::SimpleMenuModel::Delegate {
+                                 public menus::SimpleMenuModel::Delegate,
+                                 public NotificationObserver {
  public:
   explicit BrowserActionsToolbarGtk(Browser* browser);
   virtual ~BrowserActionsToolbarGtk();
@@ -55,6 +57,11 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
 
   // Update the display of all buttons.
   void Update();
+
+  // NotificationObserver implementation.
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details);
 
  private:
   friend class BrowserActionButton;
@@ -169,14 +176,16 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // Contains the browser action buttons.
   OwnedWidgetGtk button_hbox_;
 
-  OverflowButton overflow_button_;
+  // The overflow button for chrome theme mode.
+  scoped_ptr<CustomDrawButton> overflow_button_;
+  // The separator just next to the overflow button. Only shown in GTK+ theme
+  // mode. In Chrome theme mode, the overflow button has a separator built in.
+  GtkWidget* separator_;
   scoped_ptr<MenuGtk> overflow_menu_;
   scoped_ptr<menus::SimpleMenuModel> overflow_menu_model_;
+  GtkWidget* overflow_area_;
   // A widget for adding extra padding to the left of the overflow button.
-  GtkWidget* overflow_spacer_;
-
-  // The vertical separator between the overflow button and the page/app menus.
-  GtkWidget* separator_;
+  GtkWidget* overflow_alignment_;
 
   // The button that is currently being dragged, or NULL.
   BrowserActionButton* drag_button_;
@@ -199,6 +208,8 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   int start_width_;
 
   GtkSignalRegistrar signals_;
+
+  NotificationRegistrar registrar_;
 
   ScopedRunnableMethodFactory<BrowserActionsToolbarGtk> method_factory_;
 

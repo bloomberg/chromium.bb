@@ -124,9 +124,8 @@ BrowserToolbarGtk::~BrowserToolbarGtk() {
 
   offscreen_entry_.Destroy();
 
-  app_menu_.reset();
-  app_menu_button_.Destroy();
-  app_menu_image_.Destroy();
+  wrench_menu_.reset();
+  wrench_menu_image_.Destroy();
 }
 
 void BrowserToolbarGtk::Init(Profile* profile,
@@ -175,8 +174,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
                      0);
 
   home_.reset(new CustomDrawButton(GtkThemeProvider::GetFrom(profile_),
-      IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0, GTK_STOCK_HOME,
-      GTK_ICON_SIZE_SMALL_TOOLBAR));
+      IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0, NULL));
   gtk_widget_set_tooltip_text(home_->widget(),
       l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME).c_str());
   g_signal_connect(home_->widget(), "clicked",
@@ -198,35 +196,34 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_), location_hbox_, TRUE, TRUE,
       ShouldOnlyShowLocation() ? 1 : 0);
 
-  toolbar_right_ = gtk_hbox_new(FALSE, 0);
-
   if (!ShouldOnlyShowLocation()) {
     actions_toolbar_.reset(new BrowserActionsToolbarGtk(browser_));
-    gtk_box_pack_start(GTK_BOX(toolbar_right_), actions_toolbar_->widget(),
+    gtk_box_pack_start(GTK_BOX(toolbar_), actions_toolbar_->widget(),
                        FALSE, FALSE, 0);
   }
 
-  // We need another hbox for the menu buttons so we can place them together,
-  // but still have some padding to their collective left/right.
-  GtkWidget* menus_hbox = gtk_hbox_new(FALSE, 0);
-  GtkWidget* chrome_menu = BuildToolbarMenuButton(
+  wrench_menu_button_.reset(new CustomDrawButton(
+      GtkThemeProvider::GetFrom(profile_),
+      IDR_TOOLS, IDR_TOOLS_P, IDR_TOOLS_H, 0,
+      gtk_image_new_from_pixbuf(
+          theme_provider_->GetRTLEnabledPixbufNamed(IDR_TOOLS))));
+  GtkWidget* wrench_button = wrench_menu_button_->widget();
+
+  gtk_widget_set_tooltip_text(
+      wrench_button,
       l10n_util::GetStringFUTF8(IDS_APPMENU_TOOLTIP,
-          WideToUTF16(l10n_util::GetString(IDS_PRODUCT_NAME))),
-      &app_menu_button_);
-  app_menu_image_.Own(gtk_image_new_from_pixbuf(
-      theme_provider_->GetRTLEnabledPixbufNamed(IDR_TOOLS)));
-  gtk_container_add(GTK_CONTAINER(chrome_menu), app_menu_image_.get());
-  g_signal_connect_after(app_menu_image_.get(), "expose-event",
-                         G_CALLBACK(OnAppMenuImageExposeThunk), this);
+          WideToUTF16(l10n_util::GetString(IDS_PRODUCT_NAME))).c_str());
+  g_signal_connect(wrench_button, "button-press-event",
+                   G_CALLBACK(OnMenuButtonPressEventThunk), this);
+  GTK_WIDGET_UNSET_FLAGS(wrench_button, GTK_CAN_FOCUS);
+  g_signal_connect_after(wrench_button, "expose-event",
+                         G_CALLBACK(OnWrenchMenuImageExposeThunk), this);
+  gtk_box_pack_start(GTK_BOX(toolbar_), wrench_menu_button_->widget(),
+                     FALSE, FALSE, 4);
 
-  app_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
-  gtk_box_pack_start(GTK_BOX(menus_hbox), chrome_menu, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(toolbar_right_), menus_hbox, FALSE, FALSE,
-                     kToolbarWidgetSpacing);
-  g_signal_connect(app_menu_->widget(), "show",
-                   G_CALLBACK(OnAppMenuShowThunk), this);
-
-  gtk_box_pack_start(GTK_BOX(toolbar_), toolbar_right_, FALSE, FALSE, 0);
+  wrench_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
+  g_signal_connect(wrench_menu_->widget(), "show",
+                   G_CALLBACK(OnWrenchMenuShowThunk), this);
 
   if (ShouldOnlyShowLocation()) {
     gtk_widget_show(event_box_);
@@ -257,7 +254,7 @@ void BrowserToolbarGtk::SetViewIDs() {
   ViewIDUtil::SetID(reload_->widget(), VIEW_ID_RELOAD_BUTTON);
   ViewIDUtil::SetID(home_->widget(), VIEW_ID_HOME_BUTTON);
   ViewIDUtil::SetID(location_bar_->widget(), VIEW_ID_LOCATION_BAR);
-  ViewIDUtil::SetID(app_menu_button_.get(), VIEW_ID_APP_MENU);
+  ViewIDUtil::SetID(wrench_menu_button_->widget(), VIEW_ID_APP_MENU);
 }
 
 void BrowserToolbarGtk::Show() {
@@ -281,10 +278,9 @@ void BrowserToolbarGtk::UpdateForBookmarkBarVisibility(
 }
 
 void BrowserToolbarGtk::ShowAppMenu() {
-  app_menu_->Cancel();
-  gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(app_menu_button_.get()),
-                                    GTK_STATE_ACTIVE);
-  app_menu_->PopupAsFromKeyEvent(app_menu_button_.get());
+  wrench_menu_->Cancel();
+  wrench_menu_button_->SetPaintOverride(GTK_STATE_ACTIVE);
+  wrench_menu_->PopupAsFromKeyEvent(wrench_menu_button_->widget());
 }
 
 // CommandUpdater::CommandObserver ---------------------------------------------
@@ -321,9 +317,8 @@ void BrowserToolbarGtk::StoppedShowing() {
   // Without these calls, the hover state can get stuck since the leave-notify
   // event is not sent when clicking a button brings up the menu.
   gtk_chrome_button_set_hover_state(
-      GTK_CHROME_BUTTON(app_menu_button_.get()), 0.0);
-  gtk_chrome_button_unset_paint_state(
-      GTK_CHROME_BUTTON(app_menu_button_.get()));
+      GTK_CHROME_BUTTON(wrench_menu_button_->widget()), 0.0);
+  wrench_menu_button_->UnsetPaintOverride();
 }
 
 GtkIconSet* BrowserToolbarGtk::GetIconSetForId(int idr) {
@@ -380,11 +375,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     bool use_gtk = theme_provider_->UseGtkTheme();
     int border = use_gtk ? 0 : 2;
     gtk_container_set_border_width(
-        GTK_CONTAINER(app_menu_button_.get()), border);
-
-    // Update the menu button image.
-    gtk_image_set_from_pixbuf(GTK_IMAGE(app_menu_image_.get()),
-        theme_provider_->GetRTLEnabledPixbufNamed(IDR_TOOLS));
+        GTK_CONTAINER(wrench_menu_button_->widget()), border);
 
     // Force the height of the toolbar so we get the right amount of padding
     // above and below the location bar. We always force the size of the hboxes
@@ -394,7 +385,6 @@ void BrowserToolbarGtk::Observe(NotificationType type,
     int toolbar_height = ShouldOnlyShowLocation() ?
                          kToolbarHeightLocationBarOnly : kToolbarHeight;
     gtk_widget_set_size_request(toolbar_left_, -1, toolbar_height);
-    gtk_widget_set_size_request(toolbar_right_, -1, toolbar_height);
     gtk_widget_set_size_request(location_hbox_, -1,
                                 use_gtk ? -1 : toolbar_height);
 
@@ -430,20 +420,6 @@ void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
 }
 
 // BrowserToolbarGtk, private --------------------------------------------------
-
-GtkWidget* BrowserToolbarGtk::BuildToolbarMenuButton(
-    const std::string& localized_tooltip,
-    OwnedWidgetGtk* owner) {
-  GtkWidget* button = theme_provider_->BuildChromeButton();
-  owner->Own(button);
-
-  gtk_widget_set_tooltip_text(button, localized_tooltip.c_str());
-  g_signal_connect(button, "button-press-event",
-                   G_CALLBACK(OnMenuButtonPressEventThunk), this);
-  GTK_WIDGET_UNSET_FLAGS(button, GTK_CAN_FOCUS);
-
-  return button;
-}
 
 void BrowserToolbarGtk::SetUpDragForHomeButton(bool enable) {
   if (enable) {
@@ -618,9 +594,8 @@ gboolean BrowserToolbarGtk::OnMenuButtonPressEvent(GtkWidget* button,
   if (event->button != 1)
     return FALSE;
 
-  gtk_chrome_button_set_paint_state(GTK_CHROME_BUTTON(button),
-                                    GTK_STATE_ACTIVE);
-  app_menu_->Popup(button, reinterpret_cast<GdkEvent*>(event));
+  wrench_menu_button_->SetPaintOverride(GTK_STATE_ACTIVE);
+  wrench_menu_->Popup(button, reinterpret_cast<GdkEvent*>(event));
 
   return TRUE;
 }
@@ -677,13 +652,13 @@ bool BrowserToolbarGtk::ShouldOnlyShowLocation() const {
 
 void BrowserToolbarGtk::AnimationEnded(const Animation* animation) {
   DCHECK_EQ(animation, &upgrade_reminder_animation_);
-  gtk_widget_queue_draw(app_menu_image_.get());
+  gtk_widget_queue_draw(wrench_menu_image_.get());
 }
 
 void BrowserToolbarGtk::AnimationProgressed(const Animation* animation) {
   DCHECK_EQ(animation, &upgrade_reminder_animation_);
   if (UpgradeAnimationIsFaded())
-    gtk_widget_queue_draw(app_menu_image_.get());
+    gtk_widget_queue_draw(wrench_menu_image_.get());
 }
 
 void BrowserToolbarGtk::AnimationCanceled(const Animation* animation) {
@@ -694,15 +669,15 @@ void BrowserToolbarGtk::ActiveWindowChanged(GdkWindow* active_window) {
   MaybeShowUpgradeReminder();
 }
 
-void BrowserToolbarGtk::OnAppMenuShow(GtkWidget* sender) {
+void BrowserToolbarGtk::OnWrenchMenuShow(GtkWidget* sender) {
   if (upgrade_reminder_animation_.is_animating()) {
     upgrade_reminder_canceled_ = true;
     MaybeShowUpgradeReminder();
   }
 }
 
-gboolean BrowserToolbarGtk::OnAppMenuImageExpose(GtkWidget* sender,
-                                                 GdkEventExpose* expose) {
+gboolean BrowserToolbarGtk::OnWrenchMenuImageExpose(GtkWidget* sender,
+                                                    GdkEventExpose* expose) {
   if (!Singleton<UpgradeDetector>::get()->notify_upgrade())
     return FALSE;
 
