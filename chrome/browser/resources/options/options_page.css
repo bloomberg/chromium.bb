@@ -1,10 +1,17 @@
+body {
+  font-size: 100%;
+  -webkit-user-select: none;
+}
+
 #settings-title {
-  height: 30px;
-  -webkit-padding-end: 15px;
-  padding-top: 20px;
+  -webkit-padding-end: 24px;
+  padding-top: 1em;
+  padding-bottom: 1em;
   text-align: end;
-  font-size: 140%;
-  color: #c7c7c7;
+  font-size: 125%;
+  font-weight: normal;
+  color: #53627d;
+  margin: 0;
 }
 
 #main-content {
@@ -54,20 +61,23 @@ html[dir='rtl'] #close-overlay {
   padding: 30px;
 }
 
+#navbar {
+  margin: 0;
+}
+
 #navbar-container {
   background: -webkit-gradient(linear,
                                left top,
                                left bottom,
-                               from(rgba(255,255,255,0)),
-                               color-stop(0.7, rgba(255,255,255,0)),
-                               to(white)),
+                               from(rgba(234, 238, 243, 0)),
+                               to(#eaeef3)),
               -webkit-gradient(linear,
                                left top,
                                right top,
-                               from(white),
-                               color-stop(0.8, white),
-                               to(#f3f3f3));
-  -webkit-border-end: 1px solid #dbdbdb;
+                               from(#eaeef3),
+                               color-stop(0.97, #eaeef3),
+                               to(#d3d7db));
+  -webkit-border-end: 1px solid #c6c9ce;
   cursor: pointer;
   position: relative;
   width: 250px;
@@ -77,8 +87,8 @@ html[dir='rtl'] #navbar-container {
   background: -webkit-gradient(linear,
                                left top,
                                left bottom,
-                               from(rgba(255,255,255,0)),
-                               color-stop(0.7, rgba(255,255,255,0)),
+                               from(rgba(255, 255, 255, 0)),
+                               color-stop(0.7, rgba(255, 255, 255, 0)),
                                to(white)),
               -webkit-gradient(linear,
                                right top,
@@ -97,20 +107,30 @@ html[dir='rtl'] #navbar-container {
 }
 
 .navbar-item, .navbar-item2 {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  -webkit-padding-end: 20px;
+  padding: 0.5em 0;
+  -webkit-padding-end: 24px;
   text-align: end;
-  display: block
+  display: block;
+  color: #426dc9;
 }
 
 .navbar-item-selected {
-  background: -webkit-gradient(linear, left top, right top, from(white), to(#d6def3));
+  background: -webkit-gradient(linear,
+                               left top,
+                               right top,
+                               from(#eaeef3),
+                               color-stop(0.97, #b4c8ea),
+                               to(#a2b5b4));
   font-weight: bold;
+  color: black;
 }
 
 html[dir='rtl'] .navbar-item-selected {
-  background: -webkit-gradient(linear, right top, left top, from(white), to(#d6def3));
+  background: -webkit-gradient(linear,
+                               right top,
+                               left top,
+                               from(white),
+                               to(#d6def3));
 }
 
 .navbar-item-normal {
@@ -120,42 +140,46 @@ html[dir='rtl'] .navbar-item-selected {
 #mainview {
   -webkit-box-align: stretch;
   width: 600px;
-  padding: 10px;
+  padding: 0px 24px 24px;
   position: relative;
 }
 
 .page > h1 {
-  height: 30px;
-  -webkit-padding-end: 15px;
-  padding-top: 12px;
-  -webkit-padding-start: 15px;
-  font-size: 140%;
-  color: #7c90d8;
+  -webkit-padding-end: 24px;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #eeeeee;
+  -webkit-padding-start: 0;
+  font-size: 125%;
+  color: #54637f;
+  margin: 0;
 }
 
 section {
-  margin-top: 10px;
-  border-bottom: 1px solid #ededed;
-  padding-bottom: 10px;
   display: -webkit-box;
   -webkit-box-orient: horizontal;
+  border-bottom: 1px solid #eeeeee;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
 }
 
 section > h3 {
-  font-weight: bold;
-  width: 150px;
-  font-size: 75%;
-  -webkit-padding-start: 15px;
+  width: 100px;
+  font-weight: normal;
+  -webkit-padding-start: 0;
   vertical-align: top;
+  margin: 0;
+  font-size: 100%;
 }
 
 .option {
-  margin-top: 5px;
+  margin-top: 0;
 }
 
 .option-control-table, section > div:only-of-type {
-  margin-top: 5px;
   -webkit-padding-start: 10px;
+  border-spacing: 0px 0px;
 }
 
 .suboption {
@@ -178,7 +202,7 @@ section > div:only-of-type label {
 }
 
 input[type="checkbox"] {
-  margin-top: 6px;
+  margin-top: 0;
 }
 
 .link-button {

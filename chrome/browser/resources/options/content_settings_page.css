@@ -5,16 +5,31 @@ found in the LICENSE file.
 */
 
 #content-settings-nav-tabs .inactive-tab {
-  background-color: #FFFFFF;
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(white),
+                               to(#f3f3f3));
+  border-bottom: 1px solid #a0a0a0;
+  padding: 4px 8px;
 }
 
 #content-settings-nav-tabs .active-tab {
-  background-color: #DFDFDF;
+  background: white;
+  border: 1px solid #a0a0a0;
+  border-bottom: 0;
+  -webkit-border-top-left-radius: 3px;
+  -webkit-border-top-right-radius: 3px;
   font-weight: bold;
+}
+
+#content-settings-nav-tabs {
+  margin-bottom: 15px;
 }
 
 .content-settings-tab-contents {
   display: none;
+   -webkit-padding-start: 10px;
 }
 
 .active-tab-contents {
