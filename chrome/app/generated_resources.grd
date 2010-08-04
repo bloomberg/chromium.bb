@@ -4668,6 +4668,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_UPGRADE_SUCCESSFUL_NOVERSION" desc="Status label: Successfully upgraded">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> has been updated
       </message>
+      <message name="IDS_UPGRADE_SUCCESSFUL_RESTART" desc="Status label: Successfully updated">
+        Restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to finish updating to <ph name="VERSION">$2<ex>0.1.131</ex></ph>
+      </message>
+      <message name="IDS_UPGRADE_SUCCESSFUL_NOVERSION_RESTART" desc="Status label: Successfully updated">
+        Restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to finish updating
+      </message>
       <if expr="pp_ifdef('chromeos')">
       <message name="IDS_UPGRADE_ALREADY_UP_TO_DATE" desc="Status label: Already up to date">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is up to date
