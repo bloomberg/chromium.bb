@@ -2830,6 +2830,40 @@ void AutomationProvider::SelectTranslateOption(Browser* browser,
     new PageTranslatedObserver(this, reply_message, tab_contents);
     translate_bar->Translate();
     return;
+  } else if (option == "set_target_language") {
+    string16 target_language;
+    if (!args->GetString("target_language", &target_language)) {
+       AutomationJSONReply(this, reply_message).
+           SendError("Must include target_language string.");
+      return;
+    }
+    // Get the target language index based off of the language name.
+    int target_language_index = -1;
+    for (int i = 0; i < translate_bar->GetLanguageCount(); i++) {
+      if (translate_bar->GetLanguageDisplayableNameAt(i) == target_language) {
+        target_language_index = i;
+        break;
+      }
+    }
+    if (target_language_index == -1) {
+       AutomationJSONReply(this, reply_message)
+           .SendError("Invalid target language string.");
+       return;
+    }
+    // If the page has already been translated it will be translated again to
+    // the new language. The observer will wait until the page has been
+    // translated to reply.
+    if (translate_bar->type() == TranslateInfoBarDelegate::AFTER_TRANSLATE) {
+      new PageTranslatedObserver(this, reply_message, tab_contents);
+      translate_bar->SetTargetLanguage(target_language_index);
+      return;
+    }
+    // Otherwise just send the reply back immediately.
+    translate_bar->SetTargetLanguage(target_language_index);
+    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    return_value->SetBoolean("translation_success", true);
+    AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+    return;
   }
 
   AutomationJSONReply reply(this, reply_message);

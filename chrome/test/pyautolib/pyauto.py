@@ -720,6 +720,35 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
 
+  def ChangeTranslateToLanguage(self, new_language, tab_index=0,
+                                window_index=0):
+    """Set the target language to be a new language.
+
+    This is equivalent to selecting a different language from the 'to'
+    drop-down menu on the translate bar. If the page was already translated
+    before calling this function, this will trigger a re-translate to the
+    new language.
+
+    Args:
+      new_language: The new target language. The string should be equivalent
+                    to the text seen in the translate bar options.
+                    Example: 'English'.
+      tab_index: The tab index - default is 0.
+      window_index: The window index - default is 0.
+
+    Returns:
+      False, if a new translation was triggered and the translation failed.
+      True on success.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'SelectTranslateOption',
+      'tab_index': tab_index,
+      'option': 'set_target_language',
+      'target_language': new_language
+    }
+    return self._GetResultFromJSONRequest(
+        cmd_dict, windex=window_index)['translation_success']
+
   def GetExtensionsInfo(self):
     """Returns information about all installed extensions.
 
