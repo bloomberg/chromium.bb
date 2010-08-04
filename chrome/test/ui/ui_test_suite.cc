@@ -115,7 +115,7 @@ void UITestSuite::SuppressErrorDialogs() {
 #if defined(OS_WIN)
 void UITestSuite::LoadCrashService() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  if (env->HasEnv(env_vars::kHeadless))
+  if (env->HasVar(env_vars::kHeadless))
     return;
 
   if (base::GetProcessCount(L"crash_service.exe", NULL))

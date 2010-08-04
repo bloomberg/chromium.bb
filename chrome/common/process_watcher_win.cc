@@ -50,7 +50,7 @@ class TimerExpiredTask : public Task, public base::ObjectWatcher::Delegate {
  private:
   void KillProcess() {
     scoped_ptr<base::Environment> env(base::Environment::Create());
-    if (env->HasEnv(env_vars::kHeadless)) {
+    if (env->HasVar(env_vars::kHeadless)) {
      // If running the distributed tests, give the renderer a little time
      // to figure out that the channel is shutdown and unwind.
      if (WaitForSingleObject(process_, kWaitInterval) == WAIT_OBJECT_0) {

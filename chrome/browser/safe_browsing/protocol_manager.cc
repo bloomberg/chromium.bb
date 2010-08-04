@@ -419,7 +419,7 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
 void SafeBrowsingProtocolManager::Initialize() {
   // Don't want to hit the safe browsing servers on build/chrome bots.
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  if (env->HasEnv(env_vars::kHeadless))
+  if (env->HasVar(env_vars::kHeadless))
     return;
 
   ScheduleNextUpdate(false /* no back off */);

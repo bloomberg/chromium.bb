@@ -82,7 +82,7 @@ void UseLocalCacheOfNSSDatabaseIfNFS(const FilePath& database_dir) {
     if (buf.f_type == NFS_SUPER_MAGIC) {
       scoped_ptr<base::Environment> env(base::Environment::Create());
       const char* use_cache_env_var = "NSS_SDB_USE_CACHE";
-      if (!env->HasEnv(use_cache_env_var))
+      if (!env->HasVar(use_cache_env_var))
         env->SetEnv(use_cache_env_var, "yes");
     }
   }

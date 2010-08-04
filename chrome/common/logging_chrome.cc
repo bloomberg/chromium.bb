@@ -205,7 +205,7 @@ void InitChromeLogging(const CommandLine& command_line,
   // Variable or by the Command Line Switch.  This is for
   // automated test purposes.
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  if (env->HasEnv(env_vars::kHeadless) ||
+  if (env->HasVar(env_vars::kHeadless) ||
       command_line.HasSwitch(switches::kNoErrorDialogs))
     SuppressDialogs();
 
@@ -227,7 +227,7 @@ void InitChromeLogging(const CommandLine& command_line,
 
 #if defined(OS_WIN)
   // Enable trace control and transport through event tracing for Windows.
-  if (env->HasEnv(env_vars::kEtwLogging))
+  if (env->HasVar(env_vars::kEtwLogging))
     logging::LogEventProvider::Initialize(kChromeTraceProviderName);
 #endif
 

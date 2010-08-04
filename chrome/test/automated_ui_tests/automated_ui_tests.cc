@@ -132,7 +132,7 @@ AutomatedUITest::AutomatedUITest()
     }
   }
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  if (env->HasEnv(env_vars::kHeadless))
+  if (env->HasVar(env_vars::kHeadless))
     logging::SetLogReportHandler(SilentRuntimeReportHandler);
 }
 

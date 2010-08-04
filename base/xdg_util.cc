@@ -39,7 +39,7 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
       return DESKTOP_ENVIRONMENT_KDE4;
     } else if (desktop_session == "kde") {
       // This may mean KDE4 on newer systems, so we have to check.
-      if (env->HasEnv("KDE_SESSION_VERSION"))
+      if (env->HasVar("KDE_SESSION_VERSION"))
         return DESKTOP_ENVIRONMENT_KDE4;
       return DESKTOP_ENVIRONMENT_KDE3;
     } else if (desktop_session.find("xfce") != std::string::npos) {
@@ -49,10 +49,10 @@ DesktopEnvironment GetDesktopEnvironment(Environment* env) {
 
   // Fall back on some older environment variables.
   // Useful particularly in the DESKTOP_SESSION=default case.
-  if (env->HasEnv("GNOME_DESKTOP_SESSION_ID")) {
+  if (env->HasVar("GNOME_DESKTOP_SESSION_ID")) {
     return DESKTOP_ENVIRONMENT_GNOME;
-  } else if (env->HasEnv("KDE_FULL_SESSION")) {
-    if (env->HasEnv("KDE_SESSION_VERSION"))
+  } else if (env->HasVar("KDE_FULL_SESSION")) {
+    if (env->HasVar("KDE_SESSION_VERSION"))
       return DESKTOP_ENVIRONMENT_KDE4;
     return DESKTOP_ENVIRONMENT_KDE3;
   }

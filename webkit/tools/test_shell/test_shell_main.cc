@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
   bool suppress_error_dialogs = (
-       env->HasEnv("CHROME_HEADLESS") ||
+       env->HasVar("CHROME_HEADLESS") ||
        parsed_command_line.HasSwitch(test_shell::kNoErrorDialogs) ||
        parsed_command_line.HasSwitch(test_shell::kLayoutTests));
   bool layout_test_mode =
