@@ -36,12 +36,6 @@ def CopyOnto(source_dir, dest_dir):
                            "-t", dest_dir])
 
 
-def CopyOntoHardlink(source_dir, dest_dir):
-  for leafname in os.listdir(source_dir):
-    subprocess.check_call(["cp", "-a", "-l", os.path.join(source_dir, leafname),
-                           "-t", dest_dir])
-
-
 def RemoveTree(dir_path):
   if os.path.exists(dir_path):
     shutil.rmtree(dir_path)
@@ -136,3 +130,68 @@ class CopyTree(DirTree):
 
   def WriteTree(self, dest_path):
     CopyOnto(self._src_path, dest_path)
+
+
+# A tree snapshot represents a directory tree.  Directories are
+# represented as dictionaries, with FileSnapshot objects as the
+# leaves.  A FileSnapshot object represents an immutable file.
+#
+# Tree snapshots are useful for transforming directories in a
+# mostly-functional way.
+#
+# This structure means we copy the file listing into memory, but not
+# the files themselves.  This is OK because the trees we deal with do
+# not contain huge numbers of files.
+
+class FileSnapshot(object):
+
+  def CopyToPath(self, dest_path):
+    raise NotImplementedError()
+
+  def GetContents(self):
+    raise NotImplementedError()
+
+
+class FileSnapshotUsingHardLink(FileSnapshot):
+
+  def __init__(self, filename):
+    self._filename = filename
+
+  def CopyToPath(self, dest_path):
+    os.link(self._filename, dest_path)
+
+  def GetContents(self):
+    return ReadFile(self._filename)
+
+
+class FileSnapshotInMemory(FileSnapshot):
+
+  def __init__(self, data):
+    self._data = data
+
+  def CopyToPath(self, dest_path):
+    WriteFile(dest_path, self._data)
+
+  def GetContents(self):
+    return self._data
+
+
+def MakeSnapshotFromPath(filename):
+  if os.path.isfile(filename):
+    return FileSnapshotUsingHardLink(filename)
+  else:
+    dir_dict = {}
+    for leafname in os.listdir(filename):
+      dir_dict[leafname] = MakeSnapshotFromPath(
+          os.path.join(filename, leafname))
+    return dir_dict
+
+
+def WriteSnapshotToPath(snapshot, dest_path):
+  if isinstance(snapshot, FileSnapshot):
+    snapshot.CopyToPath(dest_path)
+  else:
+    if not os.path.exists(dest_path):
+      os.mkdir(dest_path)
+    for leafname, entry in snapshot.iteritems():
+      WriteSnapshotToPath(entry, os.path.join(dest_path, leafname))

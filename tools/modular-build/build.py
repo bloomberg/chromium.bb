@@ -10,6 +10,7 @@ import sys
 
 import dirtree
 import btarget
+import treemappers
 
 
 script_dir = os.path.abspath(os.path.dirname(__file__))
@@ -119,10 +120,10 @@ def GetTargets(src):
                             modules["nacl_src"])
   # newlib requires the NaCl headers to be copied into its source directory.
   # TODO(mseaborn): Fix newlib to not require this.
-  src["newlib2"] = btarget.UnionDir2(
+  src["newlib2"] = btarget.TreeMapper(
       "newlib2", os.path.join(top_dir, "newlib2"),
-      [("", src["newlib"], ""),
-       ("newlib/libc/sys/nacl", modules["nacl-headers"], "")])
+      treemappers.AddHeadersToNewlib,
+      [src["newlib"], modules["nacl-headers"]])
   AddAutoconfModule(
       "binutils", "binutils", deps=[],
       configure_opts=[
@@ -239,10 +240,12 @@ int main() {
       "wrappers",
       os.path.join(top_dir, "install", "wrappers"),
       dirtree.CopyTree(os.path.join(script_dir, "wrappers")))
-  modules["linker_scripts"] = btarget.UnionDir2(
+  # TODO(mseaborn): It would be better if installing linker scripts
+  # did not require an ad-hoc rule.
+  modules["linker_scripts"] = btarget.TreeMapper(
       "linker_scripts",
       os.path.join(top_dir, "install", "linker_scripts"),
-      [("nacl64/lib", src["glibc"], "nacl/dyn-link")])
+      treemappers.InstallLinkerScripts, [src["glibc"]])
 
   glibc_toolchain = MakeInstallPrefix(
       "glibc_toolchain",

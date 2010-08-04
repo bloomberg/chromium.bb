@@ -10,6 +10,7 @@ import stat
 import subprocess
 
 import dirtree
+import treemappers
 
 
 def Unrepr(x):
@@ -298,40 +299,19 @@ def SconsBuild(name, dest_dir, src_dir, prefix_obj, scons_args):
                      deps=[src_dir, prefix_obj])
 
 
-# This could be implemented in terms of UnionDir2(), but for clarity
-# and for comparison we write out the simpler definition.
-def UnionDir(name, dest_dir, input_trees):
+def TreeMapper(name, dest_dir, map_func, input_trees):
   def DoBuild():
+    result = map_func(*[dirtree.MakeSnapshotFromPath(input_tree.dest_path)
+                        for input_tree in input_trees])
     ResetDir(dest_dir)
-    for tree in input_trees:
-      dirtree.CopyOntoHardlink(tree.dest_path, dest_dir)
+    dirtree.WriteSnapshotToPath(result, dest_dir)
   return BuildTarget(name, dest_dir, DoBuild,
-                     args=["union_dir"], deps=input_trees)
+                     args=["tree_mapper", map_func.function_identity],
+                     deps=input_trees)
 
 
-# Combines input directories under different subdirs.
-# An element
-#   (dest_subdir, tree, src_subdir)
-# in input_trees means "take src_subdir from tree and install under
-# dest_subdir in the output".
-# This provides a general means of slicing and combining trees that is
-# not limited to unioning directories.
-# TODO(mseaborn): This means we should probably split it up into parts.
-def UnionDir2(name, dest_dir, input_trees):
-  def DoBuild():
-    ResetDir(dest_dir)
-    for dest_subdir, tree, src_subdir in input_trees:
-      dest_path = os.path.join(dest_dir, dest_subdir)
-      dirtree.MkdirP(dest_path)
-      dirtree.CopyOntoHardlink(os.path.join(tree.dest_path, src_subdir),
-                               dest_path)
-  return BuildTarget(
-      name, dest_dir, DoBuild,
-      args=["union_dir2"] +
-           [(dest_subdir, src_subdir)
-            for dest_subdir, tree, src_subdir in input_trees],
-      deps=[tree
-            for dest_subdir, tree, src_subdir in input_trees])
+def UnionDir(name, dest_dir, input_trees):
+  return TreeMapper(name, dest_dir, treemappers.UnionDir, input_trees)
 
 
 def TestModule(name, dest_dir, prefix_obj, code, compiler):

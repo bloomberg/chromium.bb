@@ -21,6 +21,14 @@ def PlanToString(targets):
   return stream.getvalue()
 
 
+def MapSnapshotToContents(tree):
+  if isinstance(tree, dirtree.FileSnapshot):
+    return tree.GetContents()
+  else:
+    return dict((key, MapSnapshotToContents(value))
+                 for key, value in tree.iteritems())
+
+
 class BuildTargetTests(TempDirTestCase):
 
   def test_src(self):
@@ -138,14 +146,13 @@ class BuildTargetTests(TempDirTestCase):
     tempdir = self.MakeTempDir()
     dir1 = btarget.SourceTarget("dir1", os.path.join(tempdir, "dir1"), tree1)
     dir2 = btarget.SourceTarget("dir2", os.path.join(tempdir, "dir2"), tree2)
-    dir3 = btarget.UnionDir2("dir3", os.path.join(tempdir, "dir3"),
-                             [("dest_subdir_a", dir1, ""),
-                              ("dest_subdir_b", dir2, "subdir_bar")])
+    dir3 = btarget.UnionDir("dir3", os.path.join(tempdir, "dir3"),
+                            [dir1, dir2])
     btarget.Rebuild([dir3], open(os.devnull, "w"))
-    assert os.path.exists(os.path.join(dir3.dest_path, "dest_subdir_a",
+    assert os.path.exists(os.path.join(dir3.dest_path,
                                        "subdir_foo", "myfile"))
-    assert os.path.exists(os.path.join(dir3.dest_path, "dest_subdir_b",
-                                       "urfile"))
+    assert os.path.exists(os.path.join(dir3.dest_path,
+                                       "subdir_bar", "urfile"))
 
   def test_tree_hash_function(self):
     # Check that the hash uses file and directory contents, not inode
@@ -169,6 +176,50 @@ class BuildTargetTests(TempDirTestCase):
       return btarget.HashTree(tempdir)
 
     self.assertEquals(GetHash(), GetHash())
+
+  def test_tree_mapper(self):
+    Dir = dirtree_test.Dir
+    File = dirtree_test.File
+
+    tree1 = Dir([("subdir_foo", Dir([("myfile", File("my file"))]))])
+    tree2 = Dir([("subdir_bar", Dir([("urfile", File("another file"))]))])
+
+    tempdir = self.MakeTempDir()
+    dir_in1 = btarget.SourceTarget(
+        "dir_in1", os.path.join(tempdir, "dir1"), tree1)
+    dir_in2 = btarget.SourceTarget(
+        "dir_in2", os.path.join(tempdir, "dir2"), tree2)
+
+    def MapperFunc(input1, input2):
+      return {"new_subdir": input1,
+              "urfile": input2["subdir_bar"]["urfile"]}
+    MapperFunc.function_identity = "12345"
+
+    dir_out = btarget.TreeMapper("dir_out", os.path.join(tempdir, "dir_out"),
+                                 MapperFunc, [dir_in1, dir_in2])
+    btarget.Rebuild([dir_out], open(os.devnull, "w"))
+    self.assertEquals(
+        MapSnapshotToContents(dirtree.MakeSnapshotFromPath(dir_out.dest_path)),
+        {"new_subdir": {"subdir_foo": {"myfile": "my file"}},
+         "urfile": "another file"})
+
+  def test_tree_mapper_changes(self):
+    def MapperFunc1():
+      return {"some_file": dirtree.FileSnapshotInMemory("Contents 1")}
+    MapperFunc1.function_identity = "AAAA"
+
+    def MapperFunc2():
+      return {"some_file": dirtree.FileSnapshotInMemory("Contents 2")}
+    MapperFunc2.function_identity = "BBBB"
+
+    tempdir = self.MakeTempDir()
+    target1 = btarget.TreeMapper("dir_out", os.path.join(tempdir, "dir_out"),
+                                 MapperFunc1, [])
+    btarget.Rebuild([target1], open(os.devnull, "w"))
+
+    target2 = btarget.TreeMapper("dir_out", os.path.join(tempdir, "dir_out"),
+                                 MapperFunc2, [])
+    self.assertEquals(target2.NeedsBuild(), True)
 
 
 if __name__ == "__main__":
