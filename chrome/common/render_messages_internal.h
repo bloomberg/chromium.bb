@@ -1393,7 +1393,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_OpenChannelToPlugin,
                               GURL /* url */,
                               std::string /* mime_type */,
-                              std::wstring /* locale */,
+                              std::string /* locale */,
                               IPC::ChannelHandle /* handle to channel */,
                               WebPluginInfo /* info */)
 

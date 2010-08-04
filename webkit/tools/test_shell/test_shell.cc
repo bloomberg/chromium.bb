@@ -790,8 +790,8 @@ bool IsProtocolSupportedForMedia(const GURL& url) {
   return false;
 }
 
-std::wstring GetWebKitLocale() {
-  return L"en-US";
+std::string GetWebKitLocale() {
+  return "en-US";
 }
 
 void CloseCurrentConnections() {

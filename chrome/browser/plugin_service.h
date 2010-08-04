@@ -80,7 +80,7 @@ class PluginService
   void OpenChannelToPlugin(ResourceMessageFilter* renderer_msg_filter,
                            const GURL& url,
                            const std::string& mime_type,
-                           const std::wstring& locale,
+                           const std::string& locale,
                            IPC::Message* reply_msg);
 
   // Returns true if the given plugin is allowed to be used by a page with

@@ -248,7 +248,7 @@ bool FindProxyForUrl(const GURL& url, std::string* proxy_list);
 
 // Returns the locale that this instance of webkit is running as.  This is of
 // the form language-country (e.g., en-US or pt-BR).
-std::wstring GetWebKitLocale();
+std::string GetWebKitLocale();
 
 // Close current connections.  Used for debugging.
 void CloseCurrentConnections();

@@ -29,13 +29,13 @@ bool IsPluginRunningInRendererProcess() {
   return !IsPluginProcess();
 }
 
-std::wstring GetWebKitLocale() {
+std::string GetWebKitLocale() {
   // The browser process should have passed the locale to the renderer via the
   // --lang command line flag.  In single process mode, this will return the
   // wrong value.  TODO(tc): Fix this for single process mode.
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  const std::wstring& lang =
-      parsed_command_line.GetSwitchValue(switches::kLang);
+  const std::string& lang =
+      parsed_command_line.GetSwitchValueASCII(switches::kLang);
   DCHECK(!lang.empty() ||
       (!parsed_command_line.HasSwitch(switches::kRendererProcess) &&
        !parsed_command_line.HasSwitch(switches::kPluginProcess)));

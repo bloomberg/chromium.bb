@@ -225,7 +225,7 @@ void RendererWebKitClientImpl::cacheMetadata(
 
 WebString RendererWebKitClientImpl::defaultLocale() {
   // TODO(darin): Eliminate this webkit_glue call.
-  return WideToUTF16(webkit_glue::GetWebKitLocale());
+  return ASCIIToUTF16(webkit_glue::GetWebKitLocale());
 }
 
 void RendererWebKitClientImpl::suddenTerminationChanged(bool enabled) {

@@ -440,8 +440,8 @@ int STDCALL CPB_GetBrowsingContextInfo(
     if (buf_size < sizeof(char*))
       return sizeof(char*);
 
-    std::wstring wretval = webkit_glue::GetWebKitLocale();
-    *static_cast<char**>(buf) = CPB_StringDup(CPB_Alloc, WideToUTF8(wretval));
+    std::string retval = webkit_glue::GetWebKitLocale();
+    *static_cast<char**>(buf) = CPB_StringDup(CPB_Alloc, retval);
     return CPERR_SUCCESS;
     }
   }

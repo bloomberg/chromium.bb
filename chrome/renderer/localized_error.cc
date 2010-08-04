@@ -226,7 +226,7 @@ void GetLocalizedErrorValues(const WebURLError& error,
     if (learn_more_url.is_valid()) {
       // Add the language parameter to the URL.
       std::string query = learn_more_url.query() + "&hl=" +
-          WideToASCII(webkit_glue::GetWebKitLocale());
+          webkit_glue::GetWebKitLocale();
       GURL::Replacements repl;
       repl.SetQueryStr(query);
       learn_more_url = learn_more_url.ReplaceComponents(repl);

@@ -226,7 +226,7 @@ void PluginService::OpenChannelToPlugin(
     ResourceMessageFilter* renderer_msg_filter,
     const GURL& url,
     const std::string& mime_type,
-    const std::wstring& locale,
+    const std::string& locale,
     IPC::Message* reply_msg) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   bool allow_wildcard = true;
