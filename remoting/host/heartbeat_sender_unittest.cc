@@ -72,6 +72,9 @@ class HeartbeatSenderTest : public testing::Test {
         NewRunnableMethod(config_updater.get(), &TestConfigUpdater::DoUpdate,
                           config_));
 
+    // Run the message loop to save new config.
+    message_loop_.RunAllPending();
+
     jingle_thread_.message_loop_ = &message_loop_;
 
     jingle_client_ = new MockJingleClient(&jingle_thread_);

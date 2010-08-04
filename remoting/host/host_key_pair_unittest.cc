@@ -52,6 +52,8 @@ TEST_F(HostKeyPairTest, SaveLoad) {
   exported_key.LoadFromString(kTestHostKeyPair);
   exported_key.Save(config_);
 
+  message_loop_.RunAllPending();
+
   HostKeyPair imported_key;
   imported_key.Load(config_);
 
