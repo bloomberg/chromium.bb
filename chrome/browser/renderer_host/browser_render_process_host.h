@@ -60,8 +60,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   ~BrowserRenderProcessHost();
 
   // RenderProcessHost implementation (public portion).
-  virtual bool Init(bool is_extensions_process,
-                    URLRequestContextGetter* request_context);
+  virtual bool Init(bool is_extensions_process);
   virtual int GetNextRoutingID();
   virtual void CancelResourceRequests(int render_widget_id);
   virtual void CrossSiteClosePageACK(const ViewMsg_ClosePage_Params& params);

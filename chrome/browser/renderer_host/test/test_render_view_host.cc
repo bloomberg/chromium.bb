@@ -50,8 +50,7 @@ TestRenderViewHost::~TestRenderViewHost() {
   delete view();
 }
 
-bool TestRenderViewHost::CreateRenderView(
-    URLRequestContextGetter* request_context, const string16& frame_name) {
+bool TestRenderViewHost::CreateRenderView(const string16& frame_name) {
   DCHECK(!render_view_created_);
   render_view_created_ = true;
   process()->ViewCreated();

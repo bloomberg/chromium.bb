@@ -27,6 +27,7 @@
 #include "chrome/common/window_container_type.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "net/base/cookie_store.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
@@ -87,8 +88,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                         PluginService* plugin_service,
                         printing::PrintJobManager* print_job_manager,
                         Profile* profile,
-                        RenderWidgetHelper* render_widget_helper,
-                        URLRequestContextGetter* request_context);
+                        RenderWidgetHelper* render_widget_helper);
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel);
@@ -494,6 +494,14 @@ class GetCookiesCompletion : public net::CompletionCallback {
     return render_view_id_;
   }
 
+  void set_cookie_store(net::CookieStore* cookie_store) {
+    cookie_store_ = cookie_store;
+  }
+
+  net::CookieStore* cookie_store() {
+    return cookie_store_.get();
+  }
+
  private:
   GURL url_;
   IPC::Message* reply_msg_;
@@ -502,6 +510,7 @@ class GetCookiesCompletion : public net::CompletionCallback {
   int render_process_id_;
   int render_view_id_;
   bool raw_cookies_;
+  scoped_refptr<net::CookieStore> cookie_store_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_HOST_RESOURCE_MESSAGE_FILTER_H_

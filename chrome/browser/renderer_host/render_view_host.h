@@ -109,8 +109,7 @@ class RenderViewHost : public RenderWidgetHost {
   // Set up the RenderView child process. Virtual because it is overridden by
   // TestRenderViewHost. If the |frame_name| parameter is non-empty, it is used
   // as the name of the new top-level frame.
-  virtual bool CreateRenderView(URLRequestContextGetter* request_context,
-                                const string16& frame_name);
+  virtual bool CreateRenderView(const string16& frame_name);
 
   // Returns true if the RenderView is active and has not crashed. Virtual
   // because it is overridden by TestRenderViewHost.

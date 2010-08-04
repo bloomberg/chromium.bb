@@ -1251,12 +1251,7 @@ void AutomationProvider::GetCookies(const GURL& url, int handle,
     NavigationController* tab = tab_tracker_->GetResource(handle);
 
     // Since we are running on the UI thread don't call GetURLRequestContext().
-    scoped_refptr<URLRequestContextGetter> request_context =
-        tab->tab_contents()->request_context();
-    if (!request_context.get())
-      request_context = tab->profile()->GetRequestContext();
-
-    *value = GetCookiesForURL(url, request_context.get());
+    *value = GetCookiesForURL(url, tab->profile()->GetRequestContext());
     *value_size = static_cast<int>(value->size());
   }
 }
@@ -1270,12 +1265,7 @@ void AutomationProvider::SetCookie(const GURL& url,
   if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
 
-    scoped_refptr<URLRequestContextGetter> request_context =
-        tab->tab_contents()->request_context();
-    if (!request_context.get())
-      request_context = tab->profile()->GetRequestContext();
-
-    if (SetCookieForURL(url, value, request_context.get()))
+    if (SetCookieForURL(url, value, tab->profile()->GetRequestContext()))
       *response_value = 1;
   }
 }

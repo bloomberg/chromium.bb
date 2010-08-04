@@ -14,6 +14,7 @@
 #include "base/platform_thread.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "net/base/completion_callback.h"
+#include "net/base/cookie_store.h"
 
 class URLRequestAutomationJob;
 class GURL;
@@ -41,12 +42,23 @@ class AutomationResourceMessageFilter
         is_pending_render_view(pending_view) {
     }
 
+    void set_cookie_store(net::CookieStore* cookie_store) {
+      cookie_store_ = cookie_store;
+    }
+
+    net::CookieStore* cookie_store() {
+      return cookie_store_.get();
+    }
+
     int tab_handle;
     int ref_count;
     scoped_refptr<AutomationResourceMessageFilter> filter;
     // Indicates whether network requests issued by this render view need to
     // be executed later.
     bool is_pending_render_view;
+
+    // The cookie store associated with this render view.
+    scoped_refptr<net::CookieStore> cookie_store_;
   };
 
   // Create the filter.
@@ -101,9 +113,13 @@ class AutomationResourceMessageFilter
 
   // Retrieves cookies for the url passed in from the external host. The
   // callback passed in is notified on success or failure asynchronously.
-  static void GetCookiesForUrl(int tab_handle, const GURL& url,
-                               net::CompletionCallback* callback,
-                               net::CookieStore* cookie_store);
+  // Returns true on success.
+  static bool GetCookiesForUrl(const GURL& url,
+                               net::CompletionCallback* callback);
+
+  // Sets cookies on the URL in the external host. Returns true on success.
+  static bool SetCookiesForUrl(const GURL& url, const std::string& cookie_line,
+                               net::CompletionCallback* callback);
 
   // This function gets invoked when we receive a response from the external
   // host for the cookie request sent in GetCookiesForUrl above. It sets the
@@ -112,10 +128,6 @@ class AutomationResourceMessageFilter
   // after the callback finishes executing.
   void OnGetCookiesHostResponse(int tab_handle, bool success, const GURL& url,
                                 const std::string& cookies, int cookie_id);
-
-  // Set cookies in the external host.
-  static void SetCookiesForUrl(int tab_handle, const GURL&url,
-    const std::string& cookie_line, net::CompletionCallback* callback);
 
  protected:
   // Retrieves the automation request id for the passed in chrome request

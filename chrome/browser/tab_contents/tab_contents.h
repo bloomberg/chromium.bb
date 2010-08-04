@@ -652,12 +652,6 @@ class TabContents : public PageNavigator,
   // times, subsequent calls are ignored.
   void OnCloseStarted();
 
-  // Getter/Setters for the url request context to be used for this tab.
-  void set_request_context(URLRequestContextGetter* context);
-  URLRequestContextGetter* request_context() const {
-    return request_context_.get();
-  }
-
   LanguageState& language_state() {
     return language_state_;
   }
@@ -1264,11 +1258,6 @@ class TabContents : public PageNavigator,
 
   // The time that we started to close the tab.
   base::TimeTicks tab_close_start_time_;
-
-  // Contextual information to be used for requests created here.
-  // Can be NULL in which case we defer to the request context from the
-  // profile
-  scoped_refptr<URLRequestContextGetter> request_context_;
 
   // Information about the language the page is in and has been translated to.
   LanguageState language_state_;

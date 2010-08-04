@@ -220,10 +220,6 @@ bool ExternalTabContainer::Reinitialize(
 
 void ExternalTabContainer::SetTabHandle(int handle) {
   tab_handle_ = handle;
-  if (automation_resource_message_filter_.get() &&
-      load_requests_via_automation_) {
-    InitializeAutomationRequestContext(tab_handle_);
-  }
 }
 
 void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {
@@ -884,17 +880,6 @@ bool ExternalTabContainer::OnGoToEntryOffset(int offset) {
   return true;
 }
 
-void ExternalTabContainer::InitializeAutomationRequestContext(
-    int tab_handle) {
-  request_context_ =
-      AutomationRequestContext::CreateAutomationURLRequestContextForTab(
-          tab_handle, tab_contents_->profile(),
-          automation_resource_message_filter_);
-
-  DCHECK(request_context_.get() != NULL);
-  tab_contents_->set_request_context(request_context_.get());
-}
-
 void ExternalTabContainer::LoadAccelerators() {
   HACCEL accelerator_table = AtlLoadAccelerators(IDR_CHROMEFRAME);
   DCHECK(accelerator_table);
@@ -933,8 +918,6 @@ void ExternalTabContainer::LoadAccelerators() {
 
 void ExternalTabContainer::OnReinitialize() {
   if (load_requests_via_automation_) {
-    InitializeAutomationRequestContext(tab_handle_);
-
     RenderViewHost* rvh = tab_contents_->render_view_host();
     if (rvh) {
       AutomationResourceMessageFilter::ResumePendingRenderView(

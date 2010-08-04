@@ -247,8 +247,7 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
       NotificationService::NoDetails());
 }
 
-bool BrowserRenderProcessHost::Init(bool is_extensions_process,
-                                    URLRequestContextGetter* request_context) {
+bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
   if (channel_.get())
@@ -271,8 +270,7 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
                                 PluginService::GetInstance(),
                                 g_browser_process->print_job_manager(),
                                 profile(),
-                                widget_helper_,
-                                request_context);
+                                widget_helper_);
 
   std::wstring renderer_prefix;
 #if defined(OS_POSIX)

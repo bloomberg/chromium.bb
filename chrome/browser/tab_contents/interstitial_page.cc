@@ -404,12 +404,7 @@ TabContentsView* InterstitialPage::CreateTabContentsView() {
   render_view_host_->set_view(view);
   render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);
 
-  scoped_refptr<URLRequestContextGetter> request_context =
-      tab()->request_context();
-  if (!request_context.get())
-    request_context = tab()->profile()->GetRequestContext();
-
-  render_view_host_->CreateRenderView(request_context.get(), string16());
+  render_view_host_->CreateRenderView(string16());
   view->SetSize(tab_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();

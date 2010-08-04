@@ -19,6 +19,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/worker_pool.h"
 #include "chrome/browser/appcache/appcache_dispatcher_host.h"
+#include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/child_process_security_policy.h"
@@ -201,8 +202,7 @@ ResourceMessageFilter::ResourceMessageFilter(
     PluginService* plugin_service,
     printing::PrintJobManager* print_job_manager,
     Profile* profile,
-    RenderWidgetHelper* render_widget_helper,
-    URLRequestContextGetter* request_context)
+    RenderWidgetHelper* render_widget_helper)
     : Receiver(RENDER_PROCESS, child_id),
       channel_(NULL),
       resource_dispatcher_host_(resource_dispatcher_host),
@@ -210,7 +210,6 @@ ResourceMessageFilter::ResourceMessageFilter(
       print_job_manager_(print_job_manager),
       profile_(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
-      request_context_(request_context),
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       extensions_message_service_(profile->GetExtensionMessageService()),
@@ -234,6 +233,8 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
           GeolocationDispatcherHost::New(
               this->id(), profile->GetGeolocationPermissionContext()))) {
+  request_context_ = profile_->GetRequestContext();
+
   DCHECK(request_context_);
   DCHECK(media_request_context_);
   DCHECK(audio_renderer_host_.get());
@@ -560,16 +561,22 @@ void ResourceMessageFilter::OnSetCookie(const IPC::Message& message,
   ChromeURLRequestContext* context = GetRequestContextForURL(url);
 
   SetCookieCompletion* callback =
-      new SetCookieCompletion(id(), message.routing_id(), url, cookie, context);
+      new SetCookieCompletion(id(), message.routing_id(), url, cookie,
+                              context);
 
-  int policy = net::OK;
-  if (context->cookie_policy()) {
-    policy = context->cookie_policy()->CanSetCookie(
-        url, first_party_for_cookies, cookie, callback);
-    if (policy == net::ERR_IO_PENDING)
-      return;
+  // If this render view is associated with an automation channel, aka
+  // ChromeFrame then we need to set cookies in the external host.
+  if (!AutomationResourceMessageFilter::SetCookiesForUrl(url, cookie,
+                                                         callback)) {
+    int policy = net::OK;
+    if (context->cookie_policy()) {
+      policy = context->cookie_policy()->CanSetCookie(
+          url, first_party_for_cookies, cookie, callback);
+      if (policy == net::ERR_IO_PENDING)
+        return;
+    }
+    callback->Run(policy);
   }
-  callback->Run(policy);
 }
 
 void ResourceMessageFilter::OnGetCookies(const GURL& url,
@@ -581,16 +588,20 @@ void ResourceMessageFilter::OnGetCookies(const GURL& url,
       new GetCookiesCompletion(id(), reply_msg->routing_id(), url, reply_msg,
                                this, context, false);
 
-  int policy = net::OK;
-  if (context->cookie_policy()) {
-    policy = context->cookie_policy()->CanGetCookies(
-        url, first_party_for_cookies, callback);
-    if (policy == net::ERR_IO_PENDING) {
-      Send(new ViewMsg_SignalCookiePromptEvent());
-      return;
+  // If this render view is associated with an automation channel, aka
+  // ChromeFrame then we need to retrieve cookies from the external host.
+  if (!AutomationResourceMessageFilter::GetCookiesForUrl(url, callback)) {
+    int policy = net::OK;
+    if (context->cookie_policy()) {
+      policy = context->cookie_policy()->CanGetCookies(
+          url, first_party_for_cookies, callback);
+      if (policy == net::ERR_IO_PENDING) {
+        Send(new ViewMsg_SignalCookiePromptEvent());
+        return;
+      }
     }
+    callback->Run(policy);
   }
-  callback->Run(policy);
 }
 
 void ResourceMessageFilter::OnGetRawCookies(
@@ -1627,6 +1638,7 @@ GetCookiesCompletion::GetCookiesCompletion(int render_process_id,
       render_process_id_(render_process_id),
       render_view_id_(render_view_id),
       raw_cookies_(raw_cookies) {
+  set_cookie_store(context_->cookie_store());
 }
 
 void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
@@ -1634,7 +1646,7 @@ void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
     int result = params.a;
     std::string cookies;
     if (result == net::OK)
-      cookies = context_->cookie_store()->GetCookies(url_);
+      cookies = cookie_store()->GetCookies(url_);
     ViewHostMsg_GetCookies::WriteReplyParams(reply_msg_, cookies);
     filter_->Send(reply_msg_);
     delete this;

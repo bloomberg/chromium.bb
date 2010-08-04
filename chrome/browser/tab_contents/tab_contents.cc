@@ -1359,10 +1359,6 @@ void TabContents::OnCloseStarted() {
     tab_close_start_time_ = base::TimeTicks::Now();
 }
 
-void TabContents::set_request_context(URLRequestContextGetter* context) {
-  request_context_ = context;
-}
-
 bool TabContents::ShouldAcceptDragAndDrop() const {
 #if defined(OS_CHROMEOS)
   // ChromeOS panels (pop-ups) do not take drag-n-drop.
@@ -2974,11 +2970,7 @@ bool TabContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host) {
   RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(render_view_host);
 
-  scoped_refptr<URLRequestContextGetter> request_context = request_context_;
-  if (!request_context.get())
-    request_context = profile()->GetRequestContext();
-
-  if (!render_view_host->CreateRenderView(request_context, string16()))
+  if (!render_view_host->CreateRenderView(string16()))
     return false;
 
   // Now that the RenderView has been created, we need to tell it its size.

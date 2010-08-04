@@ -10,7 +10,6 @@
 #include <map>
 #include "base/lazy_instance.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
-#include "chrome/browser/automation/automation_profile_impl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
@@ -219,9 +218,6 @@ class ExternalTabContainer : public TabContentsDelegate,
                           NavigationType::Type nav_type,
                           int relative_offset);
   void Navigate(const GURL& url, const GURL& referrer);
-
-  // Initializes the request context to be used for automation HTTP requests.
-  void InitializeAutomationRequestContext(int tab_handle);
 
  private:
   friend class base::RefCounted<ExternalTabContainer>;

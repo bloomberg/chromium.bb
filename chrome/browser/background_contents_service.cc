@@ -196,7 +196,7 @@ void BackgroundContentsService::CreateBackgroundContents(
   RenderViewHost* render_view_host = contents->render_view_host();
   // TODO(atwilson): Create RenderViews asynchronously to avoid increasing
   // startup latency (http://crbug.com/47236).
-  render_view_host->CreateRenderView(profile->GetRequestContext(), frame_name);
+  render_view_host->CreateRenderView(frame_name);
   render_view_host->NavigateToURL(url);
 }
 

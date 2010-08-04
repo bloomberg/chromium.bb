@@ -146,15 +146,14 @@ RenderViewHost::~RenderViewHost() {
       NotificationService::NoDetails());
 }
 
-bool RenderViewHost::CreateRenderView(
-    URLRequestContextGetter* request_context, const string16& frame_name) {
+bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
 
   // The process may (if we're sharing a process with another host that already
   // initialized it) or may not (we have our own process or the old process
   // crashed) have been initialized. Calling Init multiple times will be
   // ignored, so this is safe.
-  if (!process()->Init(is_extension_process_, request_context))
+  if (!process()->Init(is_extension_process_))
     return false;
   DCHECK(process()->HasConnection());
   DCHECK(process()->profile());

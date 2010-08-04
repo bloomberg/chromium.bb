@@ -18,7 +18,6 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/cookie_store.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_filter.h"
 
@@ -32,6 +31,57 @@ base::LazyInstance<AutomationResourceMessageFilter::CompletionCallbackMap>
 
 int AutomationResourceMessageFilter::unique_request_id_ = 1;
 int AutomationResourceMessageFilter::next_completion_callback_id_ = 0;
+
+// CookieStore specialization to enable fetching and setting cookies over the
+// automation channel. This cookie store is transient i.e. it maintains cookies
+// for the duration of the current request to set or get cookies from the
+// renderer.
+class AutomationCookieStore : public net::CookieStore {
+ public:
+  AutomationCookieStore(AutomationResourceMessageFilter* automation_client,
+                        int tab_handle)
+      : automation_client_(automation_client),
+        tab_handle_(tab_handle) {
+  }
+
+  virtual ~AutomationCookieStore() {
+    DLOG(INFO) << "In " << __FUNCTION__;
+  }
+
+  // CookieStore implementation.
+  virtual bool SetCookieWithOptions(const GURL& url,
+                                    const std::string& cookie_line,
+                                    const net::CookieOptions& options) {
+    // The cookie_string_ is available only once, i.e. once it is read by
+    // it is invalidated.
+    cookie_string_ = cookie_line;
+    return true;
+  }
+
+  virtual std::string GetCookiesWithOptions(const GURL& url,
+                                            const net::CookieOptions& options) {
+    return cookie_string_;
+  }
+
+  virtual void DeleteCookie(const GURL& url,
+                            const std::string& cookie_name) {
+    NOTREACHED() << "Should not get called for an automation profile";
+  }
+
+  virtual net::CookieMonster* GetCookieMonster() {
+    NOTREACHED() << "Should not get called for an automation profile";
+    return NULL;
+  }
+
+ protected:
+  scoped_refptr<AutomationResourceMessageFilter> automation_client_;
+  int tab_handle_;
+  std::string cookie_string_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutomationCookieStore);
+};
+
 
 AutomationResourceMessageFilter::AutomationResourceMessageFilter()
     : channel_(NULL) {
@@ -209,16 +259,22 @@ void AutomationResourceMessageFilter::RegisterRenderViewInIOThread(
     int renderer_pid, int renderer_id,
     int tab_handle, AutomationResourceMessageFilter* filter,
     bool pending_view) {
+  RendererId renderer_key(renderer_pid, renderer_id);
+
+  scoped_refptr<net::CookieStore> cookie_store =
+      new AutomationCookieStore(filter, tab_handle);
+
   RenderViewMap::iterator automation_details_iter(
-      filtered_render_views_.Get().find(RendererId(renderer_pid,
-                                                   renderer_id)));
+      filtered_render_views_.Get().find(renderer_key));
   if (automation_details_iter != filtered_render_views_.Get().end()) {
     DCHECK(automation_details_iter->second.ref_count > 0);
     automation_details_iter->second.ref_count++;
   } else {
-    filtered_render_views_.Get()[RendererId(renderer_pid, renderer_id)] =
+    filtered_render_views_.Get()[renderer_key] =
         AutomationDetails(tab_handle, filter, pending_view);
   }
+
+  filtered_render_views_.Get()[renderer_key].set_cookie_store(cookie_store);
 }
 
 // static
@@ -246,9 +302,10 @@ bool AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
     AutomationResourceMessageFilter* filter) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
+  RendererId renderer_key(renderer_pid, renderer_id);
+
   RenderViewMap::iterator automation_details_iter(
-      filtered_render_views_.Get().find(RendererId(renderer_pid,
-                                                   renderer_id)));
+      filtered_render_views_.Get().find(renderer_key));
 
   if (automation_details_iter == filtered_render_views_.Get().end()) {
     NOTREACHED() << "Failed to find pending view for renderer pid:"
@@ -260,12 +317,17 @@ bool AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
 
   DCHECK(automation_details_iter->second.is_pending_render_view);
 
+  scoped_refptr<net::CookieStore> cookie_store =
+      new AutomationCookieStore(filter, tab_handle);
+
   AutomationResourceMessageFilter* old_filter =
       automation_details_iter->second.filter;
   DCHECK(old_filter != NULL);
 
-  filtered_render_views_.Get()[RendererId(renderer_pid, renderer_id)] =
+  filtered_render_views_.Get()[renderer_key] =
       AutomationDetails(tab_handle, filter, false);
+
+  filtered_render_views_.Get()[renderer_key].set_cookie_store(cookie_store);
 
   ResumeJobsForPendingView(tab_handle, old_filter, filter);
   return true;
@@ -332,35 +394,34 @@ void AutomationResourceMessageFilter::OnRecordHistograms(
   }
 }
 
-void AutomationResourceMessageFilter::GetCookiesForUrl(
-    int tab_handle, const GURL& url, net::CompletionCallback* callback,
-    net::CookieStore* cookie_store) {
-  DCHECK(callback != NULL);
-  DCHECK(cookie_store != NULL);
-
+bool AutomationResourceMessageFilter::GetCookiesForUrl(
+    const GURL& url, net::CompletionCallback* callback) {
   GetCookiesCompletion* get_cookies_callback =
       static_cast<GetCookiesCompletion*>(callback);
 
+  RendererId renderer_key(get_cookies_callback->render_process_id(),
+      get_cookies_callback->render_view_id());
+
   RenderViewMap::iterator automation_details_iter(
-        filtered_render_views_.Get().find(RendererId(
-            get_cookies_callback->render_process_id(),
-            get_cookies_callback->render_view_id())));
+        filtered_render_views_.Get().find(renderer_key));
+
   if (automation_details_iter == filtered_render_views_.Get().end()) {
-    OnGetCookiesHostResponseInternal(tab_handle, false, url, "", callback,
-                                     cookie_store);
-    return;
+    return false;
   }
 
   DCHECK(automation_details_iter->second.filter != NULL);
+  DCHECK(automation_details_iter->second.cookie_store_.get() != NULL);
 
   int completion_callback_id = GetNextCompletionCallbackId();
   DCHECK(!ContainsKey(completion_callback_map_.Get(), completion_callback_id));
 
   CookieCompletionInfo cookie_info;
   cookie_info.completion_callback = callback;
-  cookie_info.cookie_store = cookie_store;
+  cookie_info.cookie_store = automation_details_iter->second.cookie_store_;
 
   completion_callback_map_.Get()[completion_callback_id] = cookie_info;
+
+  DCHECK(automation_details_iter->second.filter != NULL);
 
   if (automation_details_iter->second.filter) {
     automation_details_iter->second.filter->Send(
@@ -368,6 +429,7 @@ void AutomationResourceMessageFilter::GetCookiesForUrl(
             0, automation_details_iter->second.tab_handle, url,
             completion_callback_id));
   }
+  return true;
 }
 
 void AutomationResourceMessageFilter::OnGetCookiesHostResponse(
@@ -377,6 +439,7 @@ void AutomationResourceMessageFilter::OnGetCookiesHostResponse(
       completion_callback_map_.Get().find(cookie_id);
   if (index != completion_callback_map_.Get().end()) {
     net::CompletionCallback* callback = index->second.completion_callback;
+
     scoped_refptr<net::CookieStore> cookie_store = index->second.cookie_store;
 
     DCHECK(callback != NULL);
@@ -398,6 +461,11 @@ void AutomationResourceMessageFilter::OnGetCookiesHostResponseInternal(
   DCHECK(callback);
   DCHECK(cookie_store);
 
+  GetCookiesCompletion* get_cookies_callback =
+      static_cast<GetCookiesCompletion*>(callback);
+
+  get_cookies_callback->set_cookie_store(cookie_store);
+
   // Set the cookie in the cookie store so that the callback can read it.
   cookie_store->SetCookieWithOptions(url, cookies, net::CookieOptions());
 
@@ -409,8 +477,8 @@ void AutomationResourceMessageFilter::OnGetCookiesHostResponseInternal(
   cookie_store->SetCookieWithOptions(url, "", net::CookieOptions());
 }
 
-void AutomationResourceMessageFilter::SetCookiesForUrl(
-    int tab_handle, const GURL&url, const std::string& cookie_line,
+bool AutomationResourceMessageFilter::SetCookiesForUrl(
+    const GURL& url, const std::string& cookie_line,
     net::CompletionCallback* callback) {
   SetCookieCompletion* set_cookies_callback =
       static_cast<SetCookieCompletion*>(callback);
@@ -420,14 +488,19 @@ void AutomationResourceMessageFilter::SetCookiesForUrl(
             set_cookies_callback->render_process_id(),
             set_cookies_callback->render_view_id())));
 
-  if (automation_details_iter != filtered_render_views_.Get().end()) {
-    DCHECK(automation_details_iter->second.filter != NULL);
-
-    if (automation_details_iter->second.filter) {
-      automation_details_iter->second.filter->Send(
-          new AutomationMsg_SetCookieAsync(0, tab_handle, url, cookie_line));
-    }
+  if (automation_details_iter == filtered_render_views_.Get().end()) {
+    return false;
   }
+
+  DCHECK(automation_details_iter->second.filter != NULL);
+
+  if (automation_details_iter->second.filter) {
+    automation_details_iter->second.filter->Send(
+        new AutomationMsg_SetCookieAsync(
+            0, automation_details_iter->second.tab_handle, url, cookie_line));
+  }
+
+  return true;
 }
 
 // static
