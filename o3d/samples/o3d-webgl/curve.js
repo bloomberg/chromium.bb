@@ -584,7 +584,7 @@ o3d.Curve.prototype.addBezierKeys = function(values) {
         "addBezierKeys: expected multiple of 6 values got "+values.size());
     return;
   }
-  for (var ii = 0; ii < values.length; ii += kNumBezierKeyValues) {
+  for (var i = 0; i < values.length; i += kNumBezierKeyValues) {
     var newKey = this.createKey("BezierCurveKey");
     newKey.input = values[i];
     newKey.output = values[i+1];

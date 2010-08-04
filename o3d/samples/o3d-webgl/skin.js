@@ -211,14 +211,14 @@ o3d.SkinEval = function() {
    * The base matrix to subtract from the matrices before skinning.
    * @type {!Array<!Array<number>>}
    */
-  this.base = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
+  this.base = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
 
   /**
    * Temporary storage for matrix ops.
    * @type {!Array<!Array<number>>}
    * @private
    */
-  this.temp_matrix_ = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
+  this.temp_matrix_ = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
 
   /**
    * Array of matrices representing each bone.
@@ -487,7 +487,7 @@ o3d.SkinEval.prototype.updateBones_ = function() {
           + " is not a ParamMatrix4");
       return;
     }
-    this.bones_[ii] = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]];
+    this.bones_[ii] = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]];
     o3d.Transform.compose(param.value, inverse_bind_pose_array[ii],
                           this.bones_[ii]);
     o3d.Transform.compose(inverse_base, this.bones_[ii], this.bones_[ii]);

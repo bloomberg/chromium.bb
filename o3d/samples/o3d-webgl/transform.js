@@ -832,8 +832,12 @@ o3d.Transform.prototype.rotateZYX =
  */
 o3d.Transform.prototype.axisRotate =
     function(axis, angle) {
-  var m = this.localMatrix;
+  o3d.Transform.axisRotateMatrix(this.localMatrix, axis, angle);
+};
 
+o3d.Transform.axisRotateMatrix =
+    function(m, axis, angle, opt_target) {
+  opt_target = opt_target || m;
   var x = axis[0];
   var y = axis[1];
   var z = axis[2];
@@ -880,19 +884,19 @@ o3d.Transform.prototype.axisRotate =
   var m32 = m3[2];
   var m33 = m3[3];
 
-  m0.splice(0, 4,
+  opt_target[0].splice(0, 4,
       r00 * m00 + r01 * m10 + r02 * m20,
       r00 * m01 + r01 * m11 + r02 * m21,
       r00 * m02 + r01 * m12 + r02 * m22,
       r00 * m03 + r01 * m13 + r02 * m23);
 
-  m1.splice(0, 4,
+  opt_target[1].splice(0, 4,
       r10 * m00 + r11 * m10 + r12 * m20,
       r10 * m01 + r11 * m11 + r12 * m21,
       r10 * m02 + r11 * m12 + r12 * m22,
       r10 * m03 + r11 * m13 + r12 * m23);
 
-  m2.splice(0, 4,
+  opt_target[2].splice(0, 4,
       r20 * m00 + r21 * m10 + r22 * m20,
       r20 * m01 + r21 * m11 + r22 * m21,
       r20 * m02 + r21 * m12 + r22 * m22,
