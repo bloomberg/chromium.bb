@@ -43,14 +43,14 @@ const SkColor kBorderColor = SkColorSetRGB(205, 201, 201);
 // Command line switch for specifying url of the page.
 // TODO: nuke when we convert to the real app page. Also nuke code in
 // AddNewContents
-const wchar_t kURLSwitch[] = L"main-menu-url";
+const char kURLSwitch[] = "main-menu-url";
 
 // Returns the URL of the menu.
 static GURL GetMenuURL() {
-  std::wstring url_string =
-      CommandLine::ForCurrentProcess()->GetSwitchValue(kURLSwitch);
+  std::string url_string =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kURLSwitch);
   if (!url_string.empty())
-    return GURL(WideToUTF8(url_string));
+    return GURL(url_string);
   return GURL(chrome::kChromeUIAppLauncherURL);
 }
 

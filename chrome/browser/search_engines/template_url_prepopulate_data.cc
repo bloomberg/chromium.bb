@@ -2738,11 +2738,11 @@ int GetCurrentCountryID() {
 
 int GetCountryIDFromPrefs(PrefService* prefs) {
   // See if the user overrode the country on the command line.
-  const std::wstring country(
-    CommandLine::ForCurrentProcess()->GetSwitchValue(switches::kCountry));
+  const std::string country(
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kCountry));
   if (country.length() == 2)
-    return CountryCharsToCountryIDWithUpdate(static_cast<char>(country[0]),
-                                             static_cast<char>(country[1]));
+    return CountryCharsToCountryIDWithUpdate(country[0], country[1]);
 
   // Cache first run Country ID value in prefs, and use it afterwards.  This
   // ensures that just because the user moves around, we won't automatically

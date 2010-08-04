@@ -313,18 +313,18 @@ TEST(SafeBrowsingBloomFilter, FalsePositives) {
   FilePath data_dir = GetFullDataPath();
   ASSERT_TRUE(ReadDatabase(data_dir, &prefix_list));
 
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+
   int start = BloomFilter::kBloomFilterSizeRatio;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kFilterStart)) {
-    base::StringToInt(
-        CommandLine::ForCurrentProcess()->GetSwitchValue(kFilterStart),
-        &start);
+  if (cmd_line.HasSwitch(kFilterStart)) {
+    ASSERT_TRUE(base::StringToInt(cmd_line.GetSwitchValueASCII(kFilterStart),
+                                  &start));
   }
 
   int steps = 1;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kFilterSteps)) {
-    base::StringToInt(
-        CommandLine::ForCurrentProcess()->GetSwitchValue(kFilterSteps),
-        &steps);
+  if (cmd_line.HasSwitch(kFilterSteps)) {
+    ASSERT_TRUE(base::StringToInt(cmd_line.GetSwitchValueASCII(kFilterSteps),
+                                  &steps));
   }
 
   int stop = start + steps;
@@ -341,11 +341,12 @@ TEST(SafeBrowsingBloomFilter, HashTime) {
   FilePath data_dir = GetFullDataPath();
   ASSERT_TRUE(ReadDatabase(data_dir, &prefix_list));
 
+  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
+
   int num_checks = kNumHashChecks;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kFilterNumChecks)) {
-    base::StringToInt(
-        CommandLine::ForCurrentProcess()->GetSwitchValue(kFilterNumChecks),
-        &num_checks);
+  if (cmd_line.HasSwitch(kFilterNumChecks)) {
+    ASSERT_TRUE(base::StringToInt(cmd_line.GetSwitchValue(kFilterNumChecks),
+                                  &num_checks));
   }
 
   // Populate the bloom filter and measure the time.

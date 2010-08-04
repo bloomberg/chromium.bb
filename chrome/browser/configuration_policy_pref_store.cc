@@ -77,17 +77,17 @@ void ConfigurationPolicyPrefStore::ApplyProxySwitches() {
   if (command_line_->HasSwitch(switches::kProxyServer)) {
     has_explicit_proxy_config = true;
     prefs_->Set(prefs::kProxyServer, Value::CreateStringValue(
-        command_line_->GetSwitchValue(switches::kProxyServer)));
+        command_line_->GetSwitchValueASCII(switches::kProxyServer)));
   }
   if (command_line_->HasSwitch(switches::kProxyPacUrl)) {
     has_explicit_proxy_config = true;
     prefs_->Set(prefs::kProxyPacUrl, Value::CreateStringValue(
-        command_line_->GetSwitchValue(switches::kProxyPacUrl)));
+        command_line_->GetSwitchValueASCII(switches::kProxyPacUrl)));
   }
   if (command_line_->HasSwitch(switches::kProxyBypassList)) {
     has_explicit_proxy_config = true;
     prefs_->Set(prefs::kProxyBypassList, Value::CreateStringValue(
-        command_line_->GetSwitchValue(switches::kProxyBypassList)));
+        command_line_->GetSwitchValueASCII(switches::kProxyBypassList)));
   }
 
   // Warn about all the other proxy config switches we get if

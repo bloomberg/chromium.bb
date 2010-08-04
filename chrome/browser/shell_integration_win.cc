@@ -217,8 +217,9 @@ bool MigrateChromiumShortcutsTask::GetExpectedAppId(
 
   FilePath profile_path;
   if (command_line.HasSwitch(switches::kUserDataDir)) {
-    profile_path = FilePath(command_line.GetSwitchValue(
-        switches::kUserDataDir)).Append(chrome::kNotSignedInProfile);
+    profile_path =
+        command_line.GetSwitchValuePath(switches::kUserDataDir).Append(
+            chrome::kNotSignedInProfile);
   }
 
   std::wstring app_name;

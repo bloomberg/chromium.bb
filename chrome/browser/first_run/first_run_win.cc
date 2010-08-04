@@ -586,21 +586,21 @@ std::string EncodeImportParams(int browser_type, int options, HWND window) {
   return StringPrintf("%d@%d@%d", browser_type, options, window);
 }
 
-bool DecodeImportParams(const std::wstring& encoded,
+bool DecodeImportParams(const std::string& encoded,
                         int* browser_type, int* options, HWND* window) {
-  std::vector<std::wstring> v;
-  SplitString(encoded, L'@', &v);
-  if (v.size() != 3)
+  std::vector<std::string> parts;
+  SplitString(encoded, '@', &parts);
+  if (parts.size() != 3)
     return false;
 
-  if (!base::StringToInt(WideToUTF16Hack(v[0]), browser_type))
+  if (!base::StringToInt(parts[0], browser_type))
     return false;
 
-  if (!base::StringToInt(WideToUTF16Hack(v[1]), options))
+  if (!base::StringToInt(parts[1], options))
     return false;
 
   int64 window_int;
-  base::StringToInt64(WideToUTF16Hack(v[2]), &window_int);
+  base::StringToInt64(parts[2], &window_int);
   *window = reinterpret_cast<HWND>(window_int);
   return true;
 }
@@ -742,7 +742,7 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
 
 int FirstRun::ImportFromBrowser(Profile* profile,
                                 const CommandLine& cmdline) {
-  std::wstring import_info = cmdline.GetSwitchValue(switches::kImport);
+  std::string import_info = cmdline.GetSwitchValueASCII(switches::kImport);
   if (import_info.empty()) {
     NOTREACHED();
     return false;

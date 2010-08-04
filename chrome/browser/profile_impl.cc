@@ -120,11 +120,9 @@ void GetCacheParameters(ContextType type, FilePath* cache_path,
   DCHECK(max_size);
 
   // Override the cache location if specified by the user.
-  std::wstring user_path(CommandLine::ForCurrentProcess()->GetSwitchValue(
-                             switches::kDiskCacheDir));
-
-  if (!user_path.empty()) {
-    *cache_path = FilePath::FromWStringHack(user_path);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDiskCacheDir)) {
+    *cache_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+        switches::kDiskCacheDir);
   }
 
   const char* arg = kNormalContext == type ? switches::kDiskCacheSize :
@@ -856,13 +854,14 @@ void ProfileImpl::CreatePasswordStore() {
   // the desktop environment currently running, allowing GNOME Keyring in XFCE.
   // (In all cases we fall back on the default store in case of failure.)
   base::DesktopEnvironment desktop_env;
-  std::wstring store_type = CommandLine::ForCurrentProcess()->GetSwitchValue(
-      switches::kPasswordStore);
-  if (store_type == L"kwallet") {
+  std::string store_type =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kPasswordStore);
+  if (store_type == "kwallet") {
     desktop_env = base::DESKTOP_ENVIRONMENT_KDE4;
-  } else if (store_type == L"gnome") {
+  } else if (store_type == "gnome") {
     desktop_env = base::DESKTOP_ENVIRONMENT_GNOME;
-  } else if (store_type == L"detect") {
+  } else if (store_type == "detect") {
     scoped_ptr<base::Environment> env(base::Environment::Create());
     desktop_env = base::GetDesktopEnvironment(env.get());
     LOG(INFO) << "Password storage detected desktop environment: " <<
