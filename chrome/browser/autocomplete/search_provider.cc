@@ -716,7 +716,7 @@ void SearchProvider::AddMatchToMap(const std::wstring& query_string,
   // NOTE: Keep this ToLower() call in sync with url_database.cc.
   const std::pair<MatchMap::iterator, bool> i = map->insert(
       std::pair<std::wstring, AutocompleteMatch>(
-      l10n_util::ToLower(query_string), match));
+      UTF16ToWide(l10n_util::ToLower(WideToUTF16(query_string))), match));
   // NOTE: We purposefully do a direct relevance comparison here instead of
   // using AutocompleteMatch::MoreRelevant(), so that we'll prefer "items added
   // first" rather than "items alphabetically first" when the scores are equal.

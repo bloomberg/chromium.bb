@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas_skia.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
@@ -1537,7 +1538,7 @@ void MenuController::CloseSubmenu() {
 
 bool MenuController::SelectByChar(wchar_t character) {
   wchar_t char_array[1] = { character };
-  wchar_t key = l10n_util::ToLower(char_array)[0];
+  wchar_t key = UTF16ToWide(l10n_util::ToLower(WideToUTF16(char_array)))[0];
   MenuItemView* item = pending_state_.item;
   if (!item->HasSubmenu() || !item->GetSubmenu()->IsShowing())
     item = item->GetParentMenuItem();
@@ -1570,7 +1571,8 @@ bool MenuController::SelectByChar(wchar_t character) {
   for (int i = 0; i < menu_item_count; ++i) {
     MenuItemView* child = submenu->GetMenuItemAt(i);
     if (!child->GetMnemonic() && child->IsEnabled()) {
-      std::wstring lower_title = l10n_util::ToLower(child->GetTitle());
+      std::wstring lower_title = UTF16ToWide(
+          l10n_util::ToLower(WideToUTF16(child->GetTitle())));
       if (child == pending_state_.item)
         index_of_item = i;
       if (lower_title.length() && lower_title[0] == key) {

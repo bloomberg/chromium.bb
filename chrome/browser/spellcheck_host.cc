@@ -220,8 +220,9 @@ void SpellCheckHost::DownloadDictionary() {
   // Determine URL of file to download.
   static const char kDownloadServerUrl[] =
       "http://cache.pack.google.com/edgedl/chrome/dict/";
-  GURL url = GURL(std::string(kDownloadServerUrl) + WideToUTF8(
-      l10n_util::ToLower(bdict_file_path_.BaseName().ToWStringHack())));
+  GURL url = GURL(std::string(kDownloadServerUrl) +
+      StringToLowerASCII(WideToUTF8(
+          bdict_file_path_.BaseName().ToWStringHack())));
   fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
   fetcher_->set_request_context(request_context_getter_);
   tried_to_download_ = true;

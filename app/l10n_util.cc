@@ -718,12 +718,6 @@ std::wstring TruncateString(const std::wstring& string, size_t length) {
   return string.substr(0, index) + kElideString;
 }
 
-#if defined(WCHAR_T_IS_UTF32)
-std::wstring ToLower(const std::wstring& string) {
-  return UTF16ToWide(ToLower(WideToUTF16(string)));
-}
-#endif  // defined(WCHAR_T_IS_UTF32)
-
 string16 ToLower(const string16& string) {
   icu::UnicodeString lower_u_str(
       icu::UnicodeString(string.c_str()).toLower(icu::Locale::getDefault()));

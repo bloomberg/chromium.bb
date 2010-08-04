@@ -161,7 +161,7 @@ std::wstring TemplateURLModel::GenerateKeyword(const GURL& url,
 std::wstring TemplateURLModel::CleanUserInputKeyword(
     const std::wstring& keyword) {
   // Remove the scheme.
-  std::wstring result(l10n_util::ToLower(keyword));
+  std::wstring result(UTF16ToWide(l10n_util::ToLower(WideToUTF16(keyword))));
   url_parse::Component scheme_component;
   if (url_parse::ExtractScheme(WideToUTF8(keyword).c_str(),
                                static_cast<int>(keyword.length()),

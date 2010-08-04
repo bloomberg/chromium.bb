@@ -561,7 +561,7 @@ void TemplateURL::SetURL(const std::string& url,
 void TemplateURL::set_keyword(const std::wstring& keyword) {
   // Case sensitive keyword matching is confusing. As such, we force all
   // keywords to be lower case.
-  keyword_ = l10n_util::ToLower(keyword);
+  keyword_ = UTF16ToWide(l10n_util::ToLower(WideToUTF16(keyword)));
   autogenerate_keyword_ = false;
 }
 

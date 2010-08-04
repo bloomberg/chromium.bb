@@ -5,6 +5,7 @@
 #include "views/controls/menu/menu_item_view.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/canvas.h"
 #include "grit/app_strings.h"
 #include "views/controls/button/text_button.h"
@@ -316,7 +317,7 @@ wchar_t MenuItemView::GetMnemonic() {
     if (index != std::wstring::npos) {
       if (index + 1 != title.size() && title[index + 1] != '&') {
         wchar_t char_array[1] = { title[index + 1] };
-        return l10n_util::ToLower(char_array)[0];
+        return UTF16ToWide(l10n_util::ToLower(WideToUTF16(char_array)))[0];
       }
       index++;
     }
