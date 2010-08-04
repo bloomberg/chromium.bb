@@ -24,6 +24,7 @@
 <if expr="pp_ifdef('chromeos')">
   <script src="options/chromeos_internet_network_element.js"></script>
   <script src="options/chromeos_internet_options.js"></script>
+  <script src="options/chromeos_language_add_language_overlay.js"></script>
   <script src="options/chromeos_language_list.js"></script>
   <script src="options/chromeos_language_options.js"></script>
   <script src="options/chromeos_system_options.js"></script>
@@ -159,6 +160,9 @@ window.onpopstate = function(e) {
     <include src="options/font_settings_overlay.html">
     <include src="options/import_data_overlay.html">
     <include src="options/stop_syncing_overlay.html">
+    <if expr="pp_ifdef('chromeos')">
+       <include src="options/chromeos_language_add_language_overlay.html">
+    </if>
   </div>
 </div>
 <div id="main-content">

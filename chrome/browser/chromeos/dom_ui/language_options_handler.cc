@@ -45,15 +45,8 @@ void LanguageOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
           l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
 
-  // Build mappings of locale code (language code) to display name
-  // (ex. "en-US" => "English (United States)".
-  const std::vector<std::string>& locales = l10n_util::GetAvailableLocales();
-  for (size_t i = 0; i < locales.size(); ++i) {
-    localized_strings->SetString(UTF8ToWide(locales[i]),
-        chromeos::input_method::GetLanguageDisplayNameFromCode(locales[i]));
-  }
-
   localized_strings->Set(L"inputMethodList", GetInputMethodList());
+  localized_strings->Set(L"languageList", GetLanguageList());
 }
 
 ListValue* LanguageOptionsHandler::GetInputMethodList() {
@@ -79,4 +72,19 @@ ListValue* LanguageOptionsHandler::GetInputMethodList() {
   }
 
   return input_method_list;
+}
+
+ListValue* LanguageOptionsHandler::GetLanguageList() {
+  ListValue* language_list = new ListValue();
+
+  const std::vector<std::string>& locales = l10n_util::GetAvailableLocales();
+  for (size_t i = 0; i < locales.size(); ++i) {
+    DictionaryValue* dictionary = new DictionaryValue();
+    dictionary->SetString(L"code", UTF8ToWide(locales[i]));
+    dictionary->SetString(L"displayName",
+        chromeos::input_method::GetLanguageDisplayNameFromCode(locales[i]));
+    language_list->Append(dictionary);
+  }
+
+  return language_list;
 }

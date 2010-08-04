@@ -4,7 +4,9 @@
 
 cr.define('options', function() {
 
-  var OptionsPage = options.OptionsPage;
+  const OptionsPage = options.OptionsPage;
+  const AddLanguageOverlay = options.language.AddLanguageOverlay;
+  const LanguageList = options.language.LanguageList;
 
   /////////////////////////////////////////////////////////////////////////////
   // LanguageOptions class:
@@ -32,15 +34,31 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       var languageOptionsList = $('language-options-list');
-      options.language.LanguageList.decorate(languageOptionsList);
+      LanguageList.decorate(languageOptionsList);
 
       languageOptionsList.addEventListener('change',
           cr.bind(this.handleLanguageOptionsListChange_, this));
 
-       this.addEventListener('visibleChange',
+      this.addEventListener('visibleChange',
                             cr.bind(this.handleVisibleChange_, this));
 
       this.initializeInputMethodList_();
+
+      // Set up add button.
+      $('language-options-add-button').onclick = function(e) {
+        OptionsPage.showOverlay('addLanguageOverlay');
+      };
+      // Set up remove button.
+      $('language-options-remove-button').addEventListener('click',
+          cr.bind(this.handleRemoveButtonClick_, this));
+
+      // Setup add language overlay page.
+      OptionsPage.registerOverlay(AddLanguageOverlay.getInstance());
+
+      // Listen to user clicks on the add language list.
+      var addLanguageList = $('add-language-overlay-language-list');
+      addLanguageList.addEventListener('click',
+          cr.bind(this.handleAddLanguageListClick_, this));
     },
 
     languageListInitalized_: false,
@@ -82,18 +100,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Handler for OptionsPage's visible property change event.
-     * @param {Event} e Property change event.
-     * @private
-     */
-    handleVisibleChange_ : function(e) {
-      if (!this.languageListInitalized_ && this.visible) {
-        this.languageListInitalized_ = true;
-        $('language-options-list').redraw();
-      }
-    },
-
-    /**
      * Handler for languageOptionsList's change event.
      * @param {Event} e Change event.
      * @private
@@ -104,8 +110,9 @@ cr.define('options', function() {
       if (index == -1)
         return;
 
-      var languageCode = languageOptionsList.dataModel.item(index);
-      var languageDisplayName = localStrings.getString(languageCode);
+      var languageCode = languageOptionsList.getLanguageCodes()[index];
+      var languageDisplayName = LanguageList.getDisplayNameFromLanguageCode(
+          languageCode);
 
       $('language-options-language-name').textContent = languageDisplayName;
       // TODO(satorux): The button text should be changed to
@@ -123,6 +130,26 @@ cr.define('options', function() {
           labels[i].style.display = 'block';
         } else {
           labels[i].style.display = 'none';
+        }
+      }
+
+      // Change the visibility of the language list in the add language
+      // overlay. Languages that are already active will become invisible,
+      // so that users don't add the same language twice.
+      var languageCodes = languageOptionsList.getLanguageCodes();
+      var languageCodeSet = {};
+      for (var i = 0; i < languageCodes.length; i++) {
+        languageCodeSet[languageCodes[i]] = true;
+      }
+      var addLanguageList = $('add-language-overlay-language-list');
+      var lis = addLanguageList.querySelectorAll('li');
+      for (var i = 0; i < lis.length; i++) {
+        // The first child button knows the language code.
+        var button = lis[i].childNodes[0];
+        if (button.languageCode in languageCodeSet) {
+          lis[i].style.display = 'none';
+        } else {
+          lis[i].style.display = 'block';
         }
       }
     },
@@ -144,6 +171,63 @@ cr.define('options', function() {
      */
     handleCheckboxClick_ : function(e) {
       this.updatePreloadEnginesFromCheckboxes_();
+      this.savePreloadEnginesPref_();
+    },
+
+    /**
+     * Handles add language list's click event.
+     * @param {Event} e Click event.
+     */
+    handleAddLanguageListClick_ : function(e) {
+      var languageOptionsList = $('language-options-list');
+      languageOptionsList.addLanguage(e.target.languageCode);
+      OptionsPage.clearOverlays();
+    },
+
+    /**
+     * Handles remove button's click event.
+     * @param {Event} e Click event.
+     */
+    handleRemoveButtonClick_: function(e) {
+      var languageOptionsList = $('language-options-list');
+      var languageCode = languageOptionsList.getSelectedLanguageCode();
+      // Disable input methods associated with |languageCode|.
+      this.removePreloadEnginesByLanguageCode_(languageCode);
+      languageOptionsList.removeSelectedLanguage();
+    },
+
+    /**
+     * Removes preload engines associated with the given language code.
+     * @param {string} languageCode Language code (ex. "fr").
+     * @private
+     */
+    removePreloadEnginesByLanguageCode_: function(languageCode) {
+      // First create the set of engines to be removed.
+      var enginesToBeRemoved = {};
+      var inputMethodList = templateData.inputMethodList;
+      for (var i = 0; i < inputMethodList.length; i++) {
+        var inputMethod = inputMethodList[i];
+        if (inputMethod.languageCode == languageCode) {
+          enginesToBeRemoved[inputMethod.id] = true;
+        }
+      }
+
+      // Update the preload engine list with the to-be-removed set.
+      var newPreloadEngines = [];
+      for (var i = 0; i < this.preloadEngines_.length; i++) {
+        if (!this.preloadEngines_[i] in enginesToBeRemoved) {
+          newPreloadEngines.push(this.preloadEngines_[i]);
+        }
+      }
+      this.preloadEngines_ = newPreloadEngines;
+      this.savePreloadEnginesPref_();
+    },
+
+    /**
+     * Saves the preload engines preference.
+     * @private
+     */
+    savePreloadEnginesPref_: function() {
       Preferences.setStringPref(this.preloadEnginesPref,
                                 this.preloadEngines_.join(','));
     },
@@ -214,4 +298,3 @@ cr.define('options', function() {
   };
 
 });
-

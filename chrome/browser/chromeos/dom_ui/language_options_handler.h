@@ -24,6 +24,9 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   // Get the list of input methods.
   ListValue* GetInputMethodList();
 
+  // Get the list of languages.
+  ListValue* GetLanguageList();
+
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandler);
 };
 

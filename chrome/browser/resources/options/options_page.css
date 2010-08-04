@@ -180,3 +180,11 @@ section > div:only-of-type label {
 input[type="checkbox"] {
   margin-top: 6px;
 }
+
+.link-button {
+  background-color: transparent;
+  border: none;
+  color: blue;
+  cursor: pointer;
+  text-decoration: underline;
+}

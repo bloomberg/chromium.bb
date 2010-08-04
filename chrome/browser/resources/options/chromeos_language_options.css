@@ -61,3 +61,14 @@
   padding-top: 2px;
   padding-bottom: 2px;
 }
+
+#add-language-overlay-language-list {
+  -webkit-column-count: 2;
+  -webkit-column-gap: 20px;
+}
+
+#add-language-overlay-cancel-button {
+  /* Place the button in the center. */
+  display: block;
+  margin: auto;
+}
