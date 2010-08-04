@@ -393,20 +393,20 @@ void ExtensionMenuManager::ExecuteCommand(
 
   switch (params.media_type) {
     case WebKit::WebContextMenuData::MediaTypeImage:
-      properties->SetString(L"mediaType", "IMAGE");
+      properties->SetString(L"mediaType", "image");
       break;
     case WebKit::WebContextMenuData::MediaTypeVideo:
-      properties->SetString(L"mediaType", "VIDEO");
+      properties->SetString(L"mediaType", "video");
       break;
     case WebKit::WebContextMenuData::MediaTypeAudio:
-      properties->SetString(L"mediaType", "AUDIO");
+      properties->SetString(L"mediaType", "audio");
       break;
     default:  {}  // Do nothing.
   }
 
   AddURLProperty(properties, L"linkUrl", params.unfiltered_link_url);
   AddURLProperty(properties, L"srcUrl", params.src_url);
-  AddURLProperty(properties, L"mainFrameUrl", params.page_url);
+  AddURLProperty(properties, L"pageUrl", params.page_url);
   AddURLProperty(properties, L"frameUrl", params.frame_url);
 
   if (params.selection_text.length() > 0)

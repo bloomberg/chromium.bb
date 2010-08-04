@@ -448,10 +448,10 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
 
   std::string tmp;
   ASSERT_TRUE(info->GetString(L"mediaType", &tmp));
-  ASSERT_EQ("IMAGE", tmp);
+  ASSERT_EQ("image", tmp);
   ASSERT_TRUE(info->GetString(L"srcUrl", &tmp));
   ASSERT_EQ(params.src_url.spec(), tmp);
-  ASSERT_TRUE(info->GetString(L"mainFrameUrl", &tmp));
+  ASSERT_TRUE(info->GetString(L"pageUrl", &tmp));
   ASSERT_EQ(params.page_url.spec(), tmp);
 
   std::wstring wide_tmp;
