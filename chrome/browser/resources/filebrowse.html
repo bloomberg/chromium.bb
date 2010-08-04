@@ -577,6 +577,10 @@ function partial(fn, var_args) {
   };
 }
 
+function supportsPdf() {
+  return 'application/pdf' in navigator.mimeTypes;
+}
+
 var currentSavedPath = '';
 var currentNode = -1;
 var menus = [];
@@ -1260,7 +1264,7 @@ function showImage(path) {
   }
 }
 
-function showText(path) {
+function showPath(path) {
   chrome.send('openNewFullWindow', ['file://' + path]);
 }
 
@@ -1389,9 +1393,15 @@ function getFunctionForItem(path, id, isDirectory) {
   }
   if (pathIsHtmlFile(path)) {
     return function() {
-      showText(path);
+      showPath(path);
     }
   }
+  if (pathIsPdfFile(path) && supportsPdf()) {
+    return function() {
+      showPath(path);
+    }
+  }
+
   return getUnknownFileTypeHandler();
 }
 
@@ -1466,7 +1476,7 @@ function createNewItem(title, path, isDirectory) {
       menu.appendChild(flickritem);
       menu.appendChild(emailitem);
     }
-    if ((pathIsVideoFile(path) || pathIsAudioFile(path)) && 
+    if ((pathIsVideoFile(path) || pathIsAudioFile(path)) &&
          mediaPlayerEnabled) {
       var enqueueitem = document.createElement('div');
       enqueueitem.textContent = localStrings.getString('enqueue');

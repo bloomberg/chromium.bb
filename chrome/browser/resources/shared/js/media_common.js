@@ -17,3 +17,7 @@ function pathIsImageFile(path) {
 function pathIsHtmlFile(path) {
   return /\.(htm|html|txt)$/i.test(path);
 }
+
+function pathIsPdfFile(path) {
+  return /\.(pdf)$/i.test(path);
+}
