@@ -87,6 +87,9 @@ class UserController : public views::ButtonListener,
   // Resets password text and sets the enabled state of the password.
   void ClearAndEnablePassword();
 
+  // Called when user view is activated (OnUserSelected).
+  void ClearAndEnableFields();
+
   // Returns bounds of password field in screen coordinates.
   gfx::Rect GetScreenBounds() const;
 

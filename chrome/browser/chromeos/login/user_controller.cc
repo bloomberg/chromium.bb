@@ -177,6 +177,14 @@ void UserController::ClearAndEnablePassword() {
   }
 }
 
+void UserController::ClearAndEnableFields() {
+  if (is_guest_) {
+    new_user_view_->ClearAndEnableFields();
+  } else {
+    ClearAndEnablePassword();
+  }
+}
+
 void UserController::EnableNameTooltip(bool enable) {
   if (is_guest_)
     return;

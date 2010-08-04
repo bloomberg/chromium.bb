@@ -366,6 +366,15 @@ void NewUserView::ClearAndEnablePassword() {
   throbber_->Stop();
 }
 
+void NewUserView::ClearAndEnableFields() {
+  login_in_process_ = false;
+  EnableInputControls(true);
+  SetUsername(std::string());
+  SetPassword(std::string());
+  username_field_->RequestFocus();
+  throbber_->Stop();
+}
+
 gfx::Rect NewUserView::GetPasswordBounds() const {
   gfx::Rect screen_bounds(password_field_->bounds());
   gfx::Point origin(screen_bounds.origin());

@@ -70,6 +70,9 @@ class NewUserView : public views::View,
   // Resets password text and sets the enabled state of the password.
   void ClearAndEnablePassword();
 
+  // Resets password and username text and focuses on username.
+  void ClearAndEnableFields();
+
   // Stops throbber shown during login.
   void StopThrobber();
 

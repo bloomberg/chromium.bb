@@ -240,7 +240,7 @@ void ExistingUserController::OnUserSelected(UserController* source) {
   size_t new_selected_index = i - controllers_.begin();
   if (new_selected_index != selected_view_index_ &&
       selected_view_index_ != kNotSelected) {
-    controllers_[selected_view_index_]->ClearAndEnablePassword();
+    controllers_[selected_view_index_]->ClearAndEnableFields();
     ClearCaptchaState();
   }
   selected_view_index_ = new_selected_index;
