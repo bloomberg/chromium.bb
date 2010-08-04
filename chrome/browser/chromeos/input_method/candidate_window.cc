@@ -1053,7 +1053,7 @@ int main(int argc, char** argv) {
   // ResourceBundle code now ignores the --Lang flag.
   // In order to support the --Lang flag here the preference
   // prefs::kApplicationLocale must be read and passed instead of L"en-US".
-  ResourceBundle::InitSharedInstance(L"en-US");
+  ResourceBundle::InitSharedInstance("en-US");
 
   // Write logs to a file for debugging, if --logtofile=FILE_NAME is given.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

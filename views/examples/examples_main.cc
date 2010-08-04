@@ -59,7 +59,7 @@ void ExamplesMain::Run() {
 
   icu_util::Initialize();
 
-  ResourceBundle::InitSharedInstance(L"en-US");
+  ResourceBundle::InitSharedInstance("en-US");
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
 

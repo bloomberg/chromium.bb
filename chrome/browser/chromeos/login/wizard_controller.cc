@@ -829,7 +829,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
       locale = controller->GetCustomization()->initial_locale();
       LOG(INFO) << "initial locale: " << locale;
       if (!locale.empty()) {
-        ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
+        ResourceBundle::ReloadSharedInstance(locale);
       }
     }
   }

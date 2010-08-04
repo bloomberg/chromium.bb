@@ -201,7 +201,7 @@ void FakeExternalTab::Initialize() {
   DCHECK(res_mod);
   _AtlBaseModule.SetResourceInstance(res_mod);
 
-  ResourceBundle::InitSharedInstance(L"en-US");
+  ResourceBundle::InitSharedInstance("en-US");
 
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   cmd->AppendSwitch(switches::kDisableWebResources);

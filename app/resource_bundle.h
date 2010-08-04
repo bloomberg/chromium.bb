@@ -68,7 +68,7 @@ class ResourceBundle {
   // selected.
   // NOTE: Mac ignores this and always loads up resources for the language
   // defined by the Cocoa UI (ie-NSBundle does the langange work).
-  static std::string InitSharedInstance(const std::wstring& pref_locale);
+  static std::string InitSharedInstance(const std::string& pref_locale);
 
   // Changes the locale for an already-initialized ResourceBundle.  Future
   // calls to get strings will return the strings for this new locale.  This
@@ -76,7 +76,7 @@ class ResourceBundle {
   // on existing or future image resources, and thus does not use the lock to
   // guarantee thread-safety, since all string access is expected to happen on
   // the UI thread.
-  static std::string ReloadSharedInstance(const std::wstring& pref_locale);
+  static std::string ReloadSharedInstance(const std::string& pref_locale);
 
   // Registers additional data pack files with the global ResourceBundle.  When
   // looking for a DataResource, we will search these files after searching the
@@ -200,7 +200,7 @@ class ResourceBundle {
 
   // Try to load the locale specific strings from an external data module.
   // Returns the locale that is loaded.
-  std::string LoadLocaleResources(const std::wstring& pref_locale);
+  std::string LoadLocaleResources(const std::string& pref_locale);
 
   // Unload the locale specific strings and prepares to load new ones. See
   // comments for ReloadSharedInstance().

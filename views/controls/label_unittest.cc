@@ -550,7 +550,7 @@ TEST(LabelTest, DrawSingleLineStringInRTL) {
   Label label;
   label.SetFocusable(false);
 
-  std::string locale = l10n_util::GetApplicationLocale(std::wstring());
+  std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 
   std::wstring test_text(L"Here's a string with no returns.");
@@ -672,7 +672,7 @@ TEST(LabelTest, DrawMultiLineStringInRTL) {
   label.SetFocusable(false);
 
   // Test for RTL.
-  std::string locale = l10n_util::GetApplicationLocale(std::wstring());
+  std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 
   std::wstring test_text(L"Another string\nwith returns\n\n!");

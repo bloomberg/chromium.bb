@@ -96,7 +96,7 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     prefs->SavePersistentPrefs();
 
     // Switch the locale.
-    ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
+    ResourceBundle::ReloadSharedInstance(locale);
 
     // Enable the keyboard layouts that are necessary for the new locale.
     chromeos::input_method::EnableInputMethods(

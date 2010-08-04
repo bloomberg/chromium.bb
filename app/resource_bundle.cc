@@ -37,7 +37,7 @@ const SkColor ResourceBundle::toolbar_separator_color =
 
 /* static */
 std::string ResourceBundle::InitSharedInstance(
-    const std::wstring& pref_locale) {
+    const std::string& pref_locale) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle();
 
@@ -47,7 +47,7 @@ std::string ResourceBundle::InitSharedInstance(
 
 /* static */
 std::string ResourceBundle::ReloadSharedInstance(
-    const std::wstring& pref_locale) {
+    const std::string& pref_locale) {
   DCHECK(g_shared_instance_ != NULL) << "ResourceBundle not initialized";
 
   g_shared_instance_->UnloadLocaleResources();

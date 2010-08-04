@@ -60,7 +60,7 @@ class AppTestSuite : public TestSuite {
 
     // Force unittests to run using en-US so if we test against string
     // output, it'll pass regardless of the system language.
-    ResourceBundle::InitSharedInstance(L"en-US");
+    ResourceBundle::InitSharedInstance("en-US");
   }
 
   virtual void Shutdown() {

@@ -742,8 +742,8 @@ int ChromeMain(int argc, char** argv) {
     // via the preference prefs::kApplicationLocale. The browser process uses
     // the --lang flag to passe the value of the PrefService in here. Maybe this
     // value could be passed in a different way.
-    ResourceBundle::InitSharedInstance(ASCIIToWide(
-        parsed_command_line.GetSwitchValueASCII(switches::kLang)));
+    ResourceBundle::InitSharedInstance(
+        parsed_command_line.GetSwitchValueASCII(switches::kLang));
 
 #if defined(OS_MACOSX)
     // Update the process name (need resources to get the strings, so

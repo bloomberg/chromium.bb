@@ -25,7 +25,7 @@ namespace gfx {
 
 /* static */
 std::string ResourceBundle::InitSharedInstance(
-    const std::wstring& pref_locale) {
+    const std::string& pref_locale) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle();
   return std::string();

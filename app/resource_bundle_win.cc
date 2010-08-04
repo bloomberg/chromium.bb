@@ -55,7 +55,7 @@ void ResourceBundle::LoadCommonResources() {
 }
 
 std::string ResourceBundle::LoadLocaleResources(
-    const std::wstring& pref_locale) {
+    const std::string& pref_locale) {
   DCHECK(NULL == locale_resources_data_) << "locale dll already loaded";
   const std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   const FilePath& locale_path = GetLocaleFilePath(app_locale);

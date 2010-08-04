@@ -856,7 +856,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // On a POSIX OS other than ChromeOS, the parameter that is passed to the
     // method InitSharedInstance is ignored.
     std::string app_locale = ResourceBundle::InitSharedInstance(
-        ASCIIToWide(local_state->GetString(prefs::kApplicationLocale)));
+        local_state->GetString(prefs::kApplicationLocale));
     g_browser_process->SetApplicationLocale(app_locale);
 
     FilePath resources_pack_path;

@@ -352,7 +352,7 @@ TEST(ExtensionTest, InitFromValueValidNameInRTL) {
   GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
   gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
 #else
-  std::string locale = l10n_util::GetApplicationLocale(std::wstring());
+  std::string locale = l10n_util::GetApplicationLocale("");
   base::i18n::SetICUDefaultLocale("he");
 #endif
 
