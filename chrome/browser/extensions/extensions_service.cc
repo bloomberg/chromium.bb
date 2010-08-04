@@ -702,9 +702,14 @@ void ExtensionsService::SetIsIncognitoEnabled(Extension* extension,
                                               bool enabled) {
   extension_prefs_->SetIsIncognitoEnabled(extension->id(), enabled);
 
-  // Broadcast unloaded and loaded events to update browser state.
-  NotifyExtensionUnloaded(extension);
-  NotifyExtensionLoaded(extension);
+  // Broadcast unloaded and loaded events to update browser state. Only bother
+  // if the extension is actually enabled, since there is no UI otherwise.
+  bool is_enabled = std::find(extensions_.begin(), extensions_.end(),
+                              extension) != extensions_.end();
+  if (is_enabled) {
+    NotifyExtensionUnloaded(extension);
+    NotifyExtensionLoaded(extension);
+  }
 }
 
 bool ExtensionsService::AllowFileAccess(const Extension* extension) {
