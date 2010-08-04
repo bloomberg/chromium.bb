@@ -100,8 +100,9 @@ LRESULT ProcessSingletonSubclass::OnCopyData(HWND hwnd, HWND from_hwnd,
     std::wstring cmd_line(begin, static_cast<size_t>(end - begin));
 
     CommandLine parsed_command_line = CommandLine::FromString(cmd_line);
-    std::string channel_id(WideToASCII(parsed_command_line.GetSwitchValue(
-        switches::kAutomationClientChannelID)));
+    std::string channel_id =
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kAutomationClientChannelID));
     EXPECT_FALSE(channel_id.empty());
 
     delegate_->OnConnectAutomationProviderToChannel(channel_id);

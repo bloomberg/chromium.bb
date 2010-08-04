@@ -49,26 +49,26 @@ void UITestSuite::Initialize() {
       parsed_command_line.HasSwitch(switches::kSilentDumpOnDCHECK));
   UITest::set_disable_breakpad(
       parsed_command_line.HasSwitch(switches::kDisableBreakpad));
-  std::wstring test_timeout =
-      parsed_command_line.GetSwitchValue(UITestSuite::kTestTimeout);
+  std::string test_timeout =
+      parsed_command_line.GetSwitchValueASCII(UITestSuite::kTestTimeout);
   if (!test_timeout.empty()) {
     int timeout;
-    base::StringToInt(WideToUTF8(test_timeout), &timeout);
+    base::StringToInt(test_timeout, &timeout);
     UITest::set_test_timeout_ms(timeout);
   }
 
 #if defined(OS_WIN)
   int batch_count = 0;
   int batch_index = 0;
-  std::wstring batch_count_str =
-      parsed_command_line.GetSwitchValue(UITestSuite::kBatchCount);
+  std::string batch_count_str =
+      parsed_command_line.GetSwitchValueASCII(UITestSuite::kBatchCount);
   if (!batch_count_str.empty()) {
-    base::StringToInt(WideToUTF16Hack(batch_count_str), &batch_count);
+    base::StringToInt(batch_count_str, &batch_count);
   }
-  std::wstring batch_index_str =
-      parsed_command_line.GetSwitchValue(UITestSuite::kBatchIndex);
+  std::string batch_index_str =
+      parsed_command_line.GetSwitchValueASCII(UITestSuite::kBatchIndex);
   if (!batch_index_str.empty()) {
-    base::StringToInt(WideToUTF16Hack(batch_index_str), &batch_index);
+    base::StringToInt(batch_index_str, &batch_index);
   }
   if (batch_count > 0 && batch_index >= 0 && batch_index < batch_count) {
     // Running UI test in parallel. Gtest supports running tests in shards,

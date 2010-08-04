@@ -562,15 +562,17 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kStartIndexSwitch)) {
     ASSERT_TRUE(
-        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kStartIndexSwitch)), &g_start_index));
+        base::StringToInt(parsed_command_line.GetSwitchValue(
+                              kStartIndexSwitch),
+                          &g_start_index));
     ASSERT_GT(g_start_index, 0);
   }
 
   if (parsed_command_line.HasSwitch(kEndIndexSwitch)) {
     ASSERT_TRUE(
-        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kEndIndexSwitch)), &g_end_index));
+        base::StringToInt(parsed_command_line.GetSwitchValue(
+                              kEndIndexSwitch),
+                          &g_end_index));
     ASSERT_GT(g_end_index, 0);
   }
 
@@ -581,8 +583,9 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kIterationSwitch)) {
     ASSERT_TRUE(
-        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kIterationSwitch)), &g_iterations));
+        base::StringToInt(parsed_command_line.GetSwitchValue(
+                              kIterationSwitch),
+                          &g_iterations));
     ASSERT_GT(g_iterations, 0);
   }
 
@@ -597,8 +600,9 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   if (parsed_command_line.HasSwitch(kTimeoutSwitch)) {
     ASSERT_TRUE(
-        base::StringToInt(WideToUTF16(parsed_command_line.GetSwitchValue(
-            kTimeoutSwitch)), &g_timeout_ms));
+        base::StringToInt(parsed_command_line.GetSwitchValue(
+                              kTimeoutSwitch),
+                          &g_timeout_ms));
     ASSERT_GT(g_timeout_ms, 0);
   }
 

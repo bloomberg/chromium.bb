@@ -41,8 +41,8 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
   } else if (process_type == switches::kUtilityProcess) {
     // Utility process sandbox.
     sandbox_process_type = sandbox::SANDBOX_TYPE_UTILITY;
-    allowed_dir = FilePath::FromWStringHack(
-          command_line.GetSwitchValue(switches::kUtilityProcessAllowedDir));
+    allowed_dir =
+        command_line.GetSwitchValuePath(switches::kUtilityProcessAllowedDir);
   } else if (process_type == switches::kWorkerProcess) {
     // Worker process sandbox.
     sandbox_process_type = sandbox::SANDBOX_TYPE_WORKER;

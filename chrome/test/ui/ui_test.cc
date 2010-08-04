@@ -214,41 +214,41 @@ void UITestBase::TearDown() {
 void UITestBase::InitializeTimeouts() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(kUiTestTimeout)) {
-    std::wstring timeout_str = command_line.GetSwitchValue(kUiTestTimeout);
+    std::string timeout_str = command_line.GetSwitchValueASCII(kUiTestTimeout);
     int timeout;
-    base::StringToInt(WideToUTF8(timeout_str), &timeout);
+    base::StringToInt(timeout_str, &timeout);
     command_execution_timeout_ms_ = std::max(kCommandExecutionTimeout, timeout);
   }
 
   if (command_line.HasSwitch(kUiTestActionTimeout)) {
-    std::wstring act_str = command_line.GetSwitchValue(kUiTestActionTimeout);
+    std::string act_str =
+        command_line.GetSwitchValueASCII(kUiTestActionTimeout);
     int act_timeout;
-    base::StringToInt(WideToUTF8(act_str), &act_timeout);
+    base::StringToInt(act_str, &act_timeout);
     action_timeout_ms_ = std::max(kWaitForActionMsec, act_timeout);
   }
 
   if (command_line.HasSwitch(kUiTestActionMaxTimeout)) {
-    std::wstring action_max_str =
-        command_line.GetSwitchValue(kUiTestActionMaxTimeout);
+    std::string action_max_str =
+        command_line.GetSwitchValueASCII(kUiTestActionMaxTimeout);
     int max_timeout;
-    base::StringToInt(WideToUTF8(action_max_str), &max_timeout);
+    base::StringToInt(action_max_str, &max_timeout);
     action_max_timeout_ms_ = std::max(kWaitForActionMaxMsec, max_timeout);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kUiTestSleepTimeout)) {
-    std::wstring sleep_timeout_str =
-        CommandLine::ForCurrentProcess()->GetSwitchValue(kUiTestSleepTimeout);
+    std::string sleep_timeout_str =
+        command_line.GetSwitchValueASCII(kUiTestSleepTimeout);
     int sleep_timeout;
-    base::StringToInt(WideToUTF8(sleep_timeout_str), &sleep_timeout);
+    base::StringToInt(sleep_timeout_str, &sleep_timeout);
     sleep_timeout_ms_ = std::max(kWaitForActionMsec, sleep_timeout);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kUiTestTerminateTimeout)) {
-    std::wstring terminate_timeout_str =
-        CommandLine::ForCurrentProcess()->GetSwitchValue(
-            kUiTestTerminateTimeout);
+    std::string terminate_timeout_str =
+        command_line.GetSwitchValueASCII(kUiTestTerminateTimeout);
     int terminate_timeout;
-    base::StringToInt(WideToUTF8(terminate_timeout_str), &terminate_timeout);
+    base::StringToInt(terminate_timeout_str, &terminate_timeout);
     terminate_timeout_ms_ = std::max(kWaitForActionMsec, terminate_timeout);
   }
 }

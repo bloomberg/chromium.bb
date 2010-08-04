@@ -255,8 +255,8 @@ int RendererMain(const MainFunctionParams& parameters) {
   FieldTrialList field_trial;
   // Ensure any field trials in browser are reflected into renderer.
   if (parsed_command_line.HasSwitch(switches::kForceFieldTestNameAndValue)) {
-    std::string persistent(WideToASCII(parsed_command_line.GetSwitchValue(
-        switches::kForceFieldTestNameAndValue)));
+    std::string persistent = parsed_command_line.GetSwitchValueASCII(
+        switches::kForceFieldTestNameAndValue);
     bool ret = field_trial.StringAugmentsState(persistent);
     DCHECK(ret);
   }

@@ -94,7 +94,7 @@ int PluginMain(const MainFunctionParams& parameters) {
     // The command line might specify a test plugin to load.
     if (parsed_command_line.HasSwitch(switches::kTestSandbox)) {
       std::wstring test_plugin_name =
-          parsed_command_line.GetSwitchValue(switches::kTestSandbox);
+          parsed_command_line.GetSwitchValueNative(switches::kTestSandbox);
       sandbox_test_module = LoadLibrary(test_plugin_name.c_str());
       DCHECK(sandbox_test_module);
     }
