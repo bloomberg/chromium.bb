@@ -73,6 +73,7 @@
 #elif defined(OS_LINUX)
 #include "chrome/browser/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
+#include "views/window/window_gtk.h"
 #endif
 
 using base::TimeDelta;
@@ -1238,8 +1239,14 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 }
 
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+#if defined(OS_LINUX)
+  views::Window* window = GetWidget()->GetWindow();
+  if (window && event.os_event && !event.skip_in_browser)
+    static_cast<views::WindowGtk*>(window)->HandleKeyboardEvent(event.os_event);
+#else
   unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
                                                         GetFocusManager());
+#endif
 }
 
 // TODO(devint): http://b/issue?id=1117225 Cut, Copy, and Paste are always

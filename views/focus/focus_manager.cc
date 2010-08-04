@@ -81,9 +81,13 @@ FocusManager::~FocusManager() {
 }
 
 bool FocusManager::OnKeyEvent(const KeyEvent& event) {
+#if defined(OS_WIN)
   // If the focused view wants to process the key event as is, let it be.
+  // On Linux we always dispatch key events to the focused view first, so
+  // we should not do this check here. See also WidgetGtk::OnKeyEvent().
   if (focused_view_ && focused_view_->SkipDefaultKeyEventProcessing(event))
     return true;
+#endif
 
   // Intercept Tab related messages for focus traversal.
   // Note that we don't do focus traversal if the root window is not part of the

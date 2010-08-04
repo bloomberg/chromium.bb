@@ -99,7 +99,7 @@ TEST_F(AcceleratorHandlerGtkTest, TestHomepageAccelerator) {
   ASSERT_FALSE(menu_pressed_);
   ASSERT_FALSE(home_pressed_);
 
-  evt = CreateKeyEvent(GDK_KEY_PRESS, GDK_Menu, 0);
+  evt = CreateKeyEvent(GDK_KEY_PRESS, GDK_Alt_L, 0);
   EXPECT_TRUE(handler.Dispatch(reinterpret_cast<GdkEvent*>(&evt)));
 
   ASSERT_FALSE(menu_pressed_);
@@ -113,7 +113,7 @@ TEST_F(AcceleratorHandlerGtkTest, TestHomepageAccelerator) {
 
   evt = CreateKeyEvent(GDK_KEY_RELEASE, GDK_Home, GDK_MOD1_MASK);
   EXPECT_TRUE(handler.Dispatch(reinterpret_cast<GdkEvent*>(&evt)));
-  evt = CreateKeyEvent(GDK_KEY_RELEASE, GDK_Menu, 0);
+  evt = CreateKeyEvent(GDK_KEY_RELEASE, GDK_Alt_L, 0);
   EXPECT_TRUE(handler.Dispatch(reinterpret_cast<GdkEvent*>(&evt)));
 
   ASSERT_FALSE(menu_pressed_);
@@ -127,12 +127,12 @@ TEST_F(AcceleratorHandlerGtkTest, TestMenuAccelerator) {
 
   ASSERT_FALSE(menu_pressed_);
 
-  evt = CreateKeyEvent(GDK_KEY_PRESS, GDK_Menu, 0);
+  evt = CreateKeyEvent(GDK_KEY_PRESS, GDK_Alt_L, 0);
   EXPECT_TRUE(handler.Dispatch(reinterpret_cast<GdkEvent*>(&evt)));
 
   ASSERT_FALSE(menu_pressed_);
 
-  evt = CreateKeyEvent(GDK_KEY_RELEASE, GDK_Menu, 0);
+  evt = CreateKeyEvent(GDK_KEY_RELEASE, GDK_Alt_L, 0);
   EXPECT_TRUE(handler.Dispatch(reinterpret_cast<GdkEvent*>(&evt)));
 
   ASSERT_TRUE(menu_pressed_);

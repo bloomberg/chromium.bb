@@ -198,6 +198,10 @@ class WidgetGtk
   // Clears the focus on the native widget having the focus.
   virtual void ClearNativeFocus();
 
+  // Handles a keyboard event by sending it to our focus manager.
+  // Returns true if it's handled by the focus manager.
+  bool HandleKeyboardEvent(GdkEventKey* event);
+
  protected:
   // If widget containes another widget, translates event coordinates to the
   // contained widget's coordinates, else returns original event coordinates.
@@ -247,8 +251,7 @@ class WidgetGtk
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnButtonRelease, GdkEventButton*);
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnFocusIn, GdkEventFocus*);
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnFocusOut, GdkEventFocus*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnKeyPress, GdkEventKey*);
-  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnKeyRelease, GdkEventKey*);
+  CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnKeyEvent, GdkEventKey*);
   CHROMEGTK_CALLBACK_4(WidgetGtk, gboolean, OnQueryTooltip,
                        gint, gint, gboolean, GtkTooltip*);
   CHROMEGTK_CALLBACK_1(WidgetGtk, gboolean, OnScroll, GdkEventScroll*);
@@ -435,6 +438,9 @@ class WidgetGtk
   // If true, we enable the content widget's double buffering.
   // This is false by default.
   bool is_double_buffered_;
+
+  // Indicates if we should handle the upcoming Alt key release event.
+  bool should_handle_menu_key_release_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetGtk);
 };

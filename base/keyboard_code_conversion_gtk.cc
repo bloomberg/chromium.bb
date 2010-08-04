@@ -93,6 +93,7 @@ base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
     case GDK_Control_R:
       return VKEY_CONTROL;  // (11) CTRL key
     case GDK_Menu:
+      return VKEY_APPS;  // (5D) Applications key (Natural keyboard)
     case GDK_Alt_L:
     case GDK_Alt_R:
       return VKEY_MENU;  // (12) ALT key
@@ -265,7 +266,6 @@ base::KeyboardCode WindowsKeyCodeForGdkKeyCode(int keycode) {
     case GDK_Meta_R:
     case GDK_Super_R:
       return VKEY_RWIN; // (5C) Right Windows key (Natural keyboard)
-      // VKEY_APPS (5D) Applications key (Natural keyboard)
       // VKEY_SLEEP (5F) Computer Sleep key
       // VKEY_SEPARATOR (6C) Separator key
       // VKEY_SUBTRACT (6D) Subtract key
@@ -456,6 +456,8 @@ int GdkKeyCodeForWindowsKeyCode(base::KeyboardCode keycode, bool shift) {
     case VKEY_CONTROL:
       return GDK_Control_L;
     case VKEY_MENU:
+      return GDK_Alt_L;
+    case VKEY_APPS:
       return GDK_Menu;
 
     case VKEY_PAUSE:

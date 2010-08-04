@@ -132,6 +132,13 @@ void GtkIMContextWrapper::ProcessKeyEvent(GdkEventKey* event) {
 
   NativeWebKeyboardEvent wke(event);
 
+  // If the key event was handled by the input method, then we need to prevent
+  // RenderView::UnhandledKeyboardEvent() from processing it.
+  // Otherwise unexpected result may occur. For example if it's a
+  // Backspace key event, the browser may go back to previous page.
+  if (filtered)
+    wke.skip_in_browser = true;
+
   // Send filtered keydown event before sending IME result.
   if (event->type == GDK_KEY_PRESS && filtered)
     ProcessFilteredKeyPressEvent(&wke);
@@ -321,10 +328,6 @@ void GtkIMContextWrapper::ProcessFilteredKeyPressEvent(
     // keyidentifier must be updated accordingly, otherwise this key event may
     // still be processed by webkit.
     wke->setKeyIdentifierFromWindowsKeyCode();
-    // Prevent RenderView::UnhandledKeyboardEvent() from processing it.
-    // Otherwise unexpected result may occur. For example if it's a
-    // Backspace key event, the browser may go back to previous page.
-    wke->skip_in_browser = true;
   }
   host_view_->ForwardKeyboardEvent(*wke);
 }

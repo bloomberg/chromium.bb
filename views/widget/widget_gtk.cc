@@ -246,7 +246,8 @@ WidgetGtk::WidgetGtk(Type type)
       has_focus_(false),
       delegate_(NULL),
       always_on_top_(false),
-      is_double_buffered_(false) {
+      is_double_buffered_(false),
+      should_handle_menu_key_release_(false) {
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -546,9 +547,9 @@ void WidgetGtk::Init(GtkWidget* parent,
   // See views::Views::Focus and views::FocusManager::ClearNativeFocus
   // for more details.
   g_signal_connect(widget_, "key_press_event",
-                   G_CALLBACK(&OnKeyPressThunk), this);
+                   G_CALLBACK(&OnKeyEventThunk), this);
   g_signal_connect(widget_, "key_release_event",
-                   G_CALLBACK(&OnKeyReleaseThunk), this);
+                   G_CALLBACK(&OnKeyEventThunk), this);
 
   // Drag and drop.
   gtk_drag_dest_set(window_contents_, static_cast<GtkDestDefaults>(0),
@@ -861,6 +862,38 @@ void WidgetGtk::ClearNativeFocus() {
   gtk_window_set_focus(GTK_WINDOW(GetNativeView()), NULL);
 }
 
+bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
+  if (!focus_manager_)
+    return false;
+
+  KeyEvent key(event);
+  int key_code = key.GetKeyCode();
+  bool handled = false;
+
+  // Always reset |should_handle_menu_key_release_| unless we are handling a
+  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
+  // be activated when handling a VKEY_MENU key release event which is preceded
+  // by an unhandled VKEY_MENU key press event.
+  if (key_code != base::VKEY_MENU || event->type != GDK_KEY_RELEASE)
+    should_handle_menu_key_release_ = false;
+
+  if (event->type == GDK_KEY_PRESS) {
+    // VKEY_MENU is triggered by key release event.
+    if (key_code != base::VKEY_MENU)
+      handled = focus_manager_->OnKeyEvent(key);
+    else
+      should_handle_menu_key_release_ = true;
+  } else if (key_code == base::VKEY_MENU && should_handle_menu_key_release_ &&
+             (key.GetFlags() & ~Event::EF_ALT_DOWN) == 0) {
+    // Trigger VKEY_MENU when only this key is pressed and released, and both
+    // press and release events are not handled by others.
+    Accelerator accelerator(base::VKEY_MENU, false, false, false);
+    handled = focus_manager_->ProcessAccelerator(accelerator);
+  }
+
+  return handled;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, protected:
 
@@ -1088,6 +1121,8 @@ gboolean WidgetGtk::OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
     return false;  // This is the second focus-in event in a row, ignore it.
   has_focus_ = true;
 
+  should_handle_menu_key_release_ = false;
+
   if (type_ == TYPE_CHILD)
     return false;
 
@@ -1114,14 +1149,41 @@ gboolean WidgetGtk::OnFocusOut(GtkWidget* widget, GdkEventFocus* event) {
   return false;
 }
 
-gboolean WidgetGtk::OnKeyPress(GtkWidget* widget, GdkEventKey* event) {
-  KeyEvent key_event(event);
-  return root_view_->ProcessKeyEvent(key_event);
-}
+gboolean WidgetGtk::OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
+  KeyEvent key(event);
 
-gboolean WidgetGtk::OnKeyRelease(GtkWidget* widget, GdkEventKey* event) {
-  KeyEvent key_event(event);
-  return root_view_->ProcessKeyEvent(key_event);
+  // Always reset |should_handle_menu_key_release_| unless we are handling a
+  // VKEY_MENU key release event. It ensures that VKEY_MENU accelerator can only
+  // be activated when handling a VKEY_MENU key release event which is preceded
+  // by an unhandled VKEY_MENU key press event. See also HandleKeyboardEvent().
+  if (key.GetKeyCode() != base::VKEY_MENU || event->type != GDK_KEY_RELEASE)
+    should_handle_menu_key_release_ = false;
+
+  bool handled = false;
+
+  // Dispatch the key event to View hierarchy first.
+  handled = root_view_->ProcessKeyEvent(key);
+
+  // Dispatch the key event to native GtkWidget hierarchy.
+  // To prevent GtkWindow from handling the key event as a keybinding, we need
+  // to bypass GtkWindow's default key event handler and dispatch the event
+  // here.
+  if (!handled && GTK_IS_WINDOW(widget))
+    handled = gtk_window_propagate_key_event(GTK_WINDOW(widget), event);
+
+  // On Linux, in order to handle VKEY_MENU (Alt) accelerator key correctly and
+  // avoid issues like: http://crbug.com/40966 and http://crbug.com/49701, we
+  // should only send the key event to the focus manager if it's not handled by
+  // any View or native GtkWidget.
+  // The flow is different when the focus is in a RenderWidgetHostViewGtk, which
+  // always consumes the key event and send it back to us later by calling
+  // HandleKeyboardEvent() directly, if it's not handled by webkit.
+  if (!handled)
+    handled = HandleKeyboardEvent(event);
+
+  // Always return true for toplevel window to prevents GtkWindow's default key
+  // event handler.
+  return GTK_IS_WINDOW(widget) ? true : handled;
 }
 
 gboolean WidgetGtk::OnQueryTooltip(GtkWidget* widget,

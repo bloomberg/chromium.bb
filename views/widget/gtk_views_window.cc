@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <gtk/gtk.h>
+#include "views/event.h"
 #include "views/widget/gtk_views_window.h"
 #include "views/focus/focus_manager.h"
 
@@ -9,15 +11,16 @@ G_BEGIN_DECLS
 
 G_DEFINE_TYPE(GtkViewsWindow, gtk_views_window, GTK_TYPE_WINDOW)
 
-static void gtk_views_window_move_focus(GtkWindow *window,
+static void gtk_views_window_move_focus(GtkWindow* window,
                                         GtkDirectionType dir) {
   views::FocusManager* focus_manager =
       views::FocusManager::GetFocusManagerForNativeWindow(window);
   if (focus_manager) {
-    // We only support tab traversing by tab keys, so just ignore all other
-    // cases silently.
-    if (dir == GTK_DIR_TAB_BACKWARD || dir == GTK_DIR_TAB_FORWARD)
-      focus_manager->AdvanceFocus(dir == GTK_DIR_TAB_BACKWARD);
+    GdkEvent* key = gtk_get_current_event();
+    if (key && key->type == GDK_KEY_PRESS) {
+      views::KeyEvent key_event(reinterpret_cast<GdkEventKey*>(key));
+      focus_manager->OnKeyEvent(key_event);
+    }
   } else if (GTK_WINDOW_CLASS(gtk_views_window_parent_class)->move_focus) {
     GTK_WINDOW_CLASS(gtk_views_window_parent_class)->move_focus(window, dir);
   }

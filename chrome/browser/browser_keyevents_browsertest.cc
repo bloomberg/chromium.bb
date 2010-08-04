@@ -532,14 +532,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
 }
 #endif
 
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
-// See http://crbug.com/40037 for details.
-#define MAYBE_AccessKeys DISABLED_AccessKeys
-#else
-#define MAYBE_AccessKeys AccessKeys
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_AccessKeys) {
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
 #if defined(OS_MACOSX)
   // On Mac, access keys use ctrl+alt modifiers.
   static const KeyEventTestData kTestAccessA = {
@@ -890,5 +883,58 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
   EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestPageDown));
   EXPECT_NO_FATAL_FAILURE(CheckTextBoxValue(tab_index, L"A", L""));
 }
+
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
+IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FocusMenuBarByAltKey) {
+  static const KeyEventTestData kTestAltKey = {
+    base::VKEY_MENU, false, false, false, false,
+    false, false, false, false, 2,
+    { "D 18 0 false false true false",
+      "U 18 0 false false true false" }
+  };
+
+  static const KeyEventTestData kTestAltKeySuppress = {
+    base::VKEY_MENU, false, false, false, false,
+    true, false, false, false, 2,
+    { "D 18 0 false false true false",
+      "U 18 0 false false true false" }
+  };
+
+  static const KeyEventTestData kTestCtrlAltKey = {
+    base::VKEY_MENU, true, false, false, false,
+    false, false, false, false, 4,
+    { "D 17 0 true false false false",
+      "D 18 0 true false true false",
+      "U 18 0 true false true false",
+      "U 17 0 true false false false" }
+  };
+
+  net::HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
+
+  BringBrowserWindowToFront();
+  GURL url = server->TestServerPage(kTestingPage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
+  int tab_index = browser()->selected_index();
+  // Press and release Alt key to focus wrench menu button.
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAltKey));
+  EXPECT_TRUE(IsViewFocused(VIEW_ID_APP_MENU));
+
+  ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
+  // Alt key can be suppressed.
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestAltKeySuppress));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+
+  // Ctrl+Alt should have no effect.
+  EXPECT_NO_FATAL_FAILURE(TestKeyEvent(tab_index, kTestCtrlAltKey));
+  ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
+}
+#endif
 
 }  // namespace

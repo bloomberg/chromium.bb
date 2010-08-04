@@ -1485,6 +1485,10 @@ class MessageTrackingView : public View {
   DISALLOW_COPY_AND_ASSIGN(MessageTrackingView);
 };
 
+#if defined(OS_WIN)
+// This test is now Windows only. Linux Views port does not handle accelerator
+// keys in AcceleratorHandler anymore. The logic has been moved into
+// WidgetGtk::OnKeyEvent().
 // Tests that the keyup messages are eaten for accelerators.
 TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   FocusManager* focus_manager = GetFocusManager();
@@ -1553,15 +1557,12 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
   PostKeyUp(base::VKEY_0);
   MessageLoopForUI::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   MessageLoopForUI::current()->Run(&accelerator_handler);
-#if defined(OS_WIN)
-  // Linux eats only last accelerator's release event.
-  // See http://crbug.com/23383 for details.
   EXPECT_TRUE(mtv->keys_pressed().empty());
   EXPECT_TRUE(mtv->keys_released().empty());
-#endif
   EXPECT_TRUE(mtv->accelerator_pressed());
   mtv->Reset();
 }
+#endif
 
 #if defined(OS_WIN)
 // Test that the focus manager is created successfully for the first view
