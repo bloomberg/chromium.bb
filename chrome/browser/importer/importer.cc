@@ -123,7 +123,7 @@ void ImporterHost::ShowWarningDialog() {
     OnLockViewEnd(false);
   } else {
 #if defined(OS_WIN)
-    views::Window::CreateChromeWindow(GetActiveWindow(), gfx::Rect(),
+    views::Window::CreateChromeWindow(NULL, gfx::Rect(),
                                       new ImporterLockView(this))->Show();
 #elif defined(TOOLKIT_USES_GTK)
     ImportLockDialogGtk::Show(parent_window_, this);

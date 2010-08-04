@@ -54,7 +54,7 @@ std::wstring ImporterLockView::GetDialogButtonLabel(
 }
 
 bool ImporterLockView::IsModal() const {
-  return true;
+  return false;
 }
 
 std::wstring ImporterLockView::GetWindowTitle() const {
