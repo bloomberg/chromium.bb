@@ -22,6 +22,7 @@
 namespace chromeos {
 
 CrosLibrary::CrosLibrary() : library_loader_(NULL),
+                             use_stub_impl_(false),
                              loaded_(false),
                              load_error_(false),
                              test_api_(NULL) {
