@@ -18,7 +18,68 @@
 #include "gfx/size.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 
+#if defined(OS_MACOSX)
+// Parameters for the GpuHostMsg_AcceleratedSurfaceSetIOSurface
+// message, which has too many parameters to be sent with the
+// predefined IPC macros.
+struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params {
+  int32 renderer_id;
+  int32 render_view_id;
+  gfx::PluginWindowHandle window;
+  int32 width;
+  int32 height;
+  uint64 identifier;
+
+  GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params()
+      : renderer_id(0),
+        render_view_id(0),
+        window(NULL),
+        width(0),
+        height(0),
+        identifier(0) {
+  }
+};
+#endif
+
 namespace IPC {
+#if defined(OS_MACOSX)
+template <>
+struct ParamTraits<GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params> {
+  typedef GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.renderer_id);
+    WriteParam(m, p.render_view_id);
+    WriteParam(m, p.window);
+    WriteParam(m, p.width);
+    WriteParam(m, p.height);
+    WriteParam(m, p.identifier);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return ReadParam(m, iter, &p->renderer_id) &&
+        ReadParam(m, iter, &p->render_view_id) &&
+        ReadParam(m, iter, &p->window) &&
+        ReadParam(m, iter, &p->width) &&
+        ReadParam(m, iter, &p->height) &&
+        ReadParam(m, iter, &p->identifier);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.renderer_id, l);
+    l->append(L", ");
+    LogParam(p.render_view_id, l);
+    l->append(L", ");
+    LogParam(p.window, l);
+    l->append(L", ");
+    LogParam(p.width, l);
+    l->append(L", ");
+    LogParam(p.height, l);
+    l->append(L", ");
+    LogParam(p.identifier, l);
+    l->append(L")");
+  }
+};
+#endif
+
 template <>
 struct ParamTraits<GPUInfo> {
   typedef GPUInfo param_type;

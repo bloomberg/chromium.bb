@@ -10,6 +10,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/gpu_process_host_ui_shim.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
@@ -165,6 +167,11 @@ void GpuProcessHost::OnControlMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_SynchronizeReply, OnSynchronizeReply)
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GetViewXID, OnGetViewXID)
+#elif defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
+                        OnAcceleratedSurfaceSetIOSurface)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
+                        OnAcceleratedSurfaceBuffersSwapped)
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
@@ -194,6 +201,36 @@ void GpuProcessHost::OnGetViewXID(gfx::NativeViewId id, unsigned long* xid) {
     DLOG(ERROR) << "Can't find XID for view id " << id;
     *xid = 0;
   }
+}
+
+#elif defined(OS_MACOSX)
+void GpuProcessHost::OnAcceleratedSurfaceSetIOSurface(
+    const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params) {
+  RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
+                                                params.render_view_id);
+  if (!host)
+    return;
+  RenderWidgetHostView* view = host->view();
+  if (!view)
+    return;
+  view->AcceleratedSurfaceSetIOSurface(params.window,
+                                       params.width,
+                                       params.height,
+                                       params.identifier);
+}
+
+void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
+    int32 renderer_id,
+    int32 render_view_id,
+    gfx::PluginWindowHandle window) {
+  RenderViewHost* host = RenderViewHost::FromID(renderer_id,
+                                                render_view_id);
+  if (!host)
+    return;
+  RenderWidgetHostView* view = host->view();
+  if (!view)
+    return;
+  view->AcceleratedSurfaceBuffersSwapped(window);
 }
 #endif
 

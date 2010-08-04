@@ -613,11 +613,12 @@ void RenderWidgetHostViewMac::KillSelf() {
 }
 
 gfx::PluginWindowHandle
-RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque) {
+RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque,
+                                                        bool root) {
   // Make sure we have a layer for the plugin to draw into.
   [cocoa_view_ ensureAcceleratedPluginLayer];
 
-  return plugin_container_manager_.AllocateFakePluginWindowHandle(opaque);
+  return plugin_container_manager_.AllocateFakePluginWindowHandle(opaque, root);
 }
 
 void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
@@ -650,6 +651,12 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
   [cocoa_view_ drawAcceleratedPluginLayer];
+  if (GetRenderWidgetHost()->is_gpu_rendering_active()) {
+    // Additionally dirty the entire region of the view to make AppKit
+    // and Core Animation think that our CALayer needs to repaint
+    // itself.
+    [cocoa_view_ setNeedsDisplayInRect:[cocoa_view_ frame]];
+  }
 }
 
 void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstances(
@@ -664,7 +671,8 @@ void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstances(
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  plugin_container_manager_.Draw(context);
+  plugin_container_manager_.Draw(
+      context, GetRenderWidgetHost()->is_gpu_rendering_active());
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceContextChanged() {
@@ -1165,6 +1173,15 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     return;
   }
 
+  if (renderWidgetHostView_->render_widget_host_->is_gpu_rendering_active()) {
+    // In this mode the accelerated plugin layer is considered to be
+    // opaque. We do not want its contents to be blended with anything
+    // underneath it.
+    acceleratedPluginLayer_.get().opaque = YES;
+    [acceleratedPluginLayer_.get() setNeedsDisplay];
+    return;
+  }
+
   DCHECK(
       renderWidgetHostView_->render_widget_host_->process()->HasConnection());
   DCHECK(!renderWidgetHostView_->about_to_validate_and_paint_);
@@ -1278,6 +1295,11 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     if (renderWidgetHostView_->whiteout_start_time_.is_null())
       renderWidgetHostView_->whiteout_start_time_ = base::TimeTicks::Now();
   }
+
+  // If we get here then the accelerated plugin layer is not supposed
+  // to be considered opaque -- plugins overlay the browser's normal
+  // painting.
+  acceleratedPluginLayer_.get().opaque = NO;
 
   // This helps keep accelerated plugins' output in better sync with the
   // window as it resizes.

@@ -29,7 +29,9 @@ class GpuCommandBufferStub
                        GpuCommandBufferStub* parent,
                        const gfx::Size& size,
                        uint32 parent_texture_id,
-                       int32 route_id);
+                       int32 route_id,
+                       int32 renderer_id,
+                       int32 render_view_id);
 
   virtual ~GpuCommandBufferStub();
 
@@ -55,6 +57,11 @@ class GpuCommandBufferStub
                            uint32* size);
   void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
+#if defined(OS_MACOSX)
+  void OnSetWindowSize(const gfx::Size& size);
+  void SwapBuffersCallback();
+#endif
+
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
   // are destroyed. So a raw pointer is safe.
@@ -65,6 +72,11 @@ class GpuCommandBufferStub
   gfx::Size initial_size_;
   uint32 parent_texture_id_;
   int32 route_id_;
+
+  // The following two fields are used on Mac OS X to identify the window
+  // for the rendering results on the browser side.
+  int32 renderer_id_;
+  int32 render_view_id_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;
   scoped_ptr<gpu::GPUProcessor> processor_;

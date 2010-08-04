@@ -59,7 +59,14 @@ class Context : public base::SupportsWeakPtr<Context> {
 
   // Initialize a GGL context that can be used in association with a a GPU
   // channel acquired from a RenderWidget or RenderView.
-  bool Initialize(gfx::NativeViewId view, const gfx::Size& size);
+  bool Initialize(gfx::NativeViewId view,
+                  int render_view_id,
+                  const gfx::Size& size);
+
+#if defined(OS_MACOSX)
+  // Asynchronously resizes an onscreen frame buffer.
+  void ResizeOnscreen(const gfx::Size& size);
+#endif
 
   // Asynchronously resizes an offscreen frame buffer.
   void ResizeOffscreen(const gfx::Size& size);
@@ -114,7 +121,9 @@ Context::~Context() {
   Destroy();
 }
 
-bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
+bool Context::Initialize(gfx::NativeViewId view,
+                         int render_view_id,
+                         const gfx::Size& size) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
   if (channel_->state() != GpuChannelHost::CONNECTED)
@@ -134,7 +143,8 @@ bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
 
   // Create a proxy to a command buffer in the GPU process.
   if (view) {
-    command_buffer_ = channel_->CreateViewCommandBuffer(view);
+    command_buffer_ =
+        channel_->CreateViewCommandBuffer(view, render_view_id);
   } else {
     CommandBufferProxy* parent_command_buffer =
         parent_.get() ? parent_->command_buffer_ : NULL;
@@ -188,6 +198,13 @@ bool Context::Initialize(gfx::NativeViewId view, const gfx::Size& size) {
 
   return true;
 }
+
+#if defined(OS_MACOSX)
+void Context::ResizeOnscreen(const gfx::Size& size) {
+  DCHECK(size.width() > 0 && size.height() > 0);
+  command_buffer_->SetWindowSize(size);
+}
+#endif
 
 void Context::ResizeOffscreen(const gfx::Size& size) {
   DCHECK(size.width() > 0 && size.height() > 0);
@@ -264,10 +281,12 @@ void Context::DisableShaderTranslation() {
 
 #endif  // ENABLE_GPU
 
-Context* CreateViewContext(GpuChannelHost* channel, gfx::NativeViewId view) {
+Context* CreateViewContext(GpuChannelHost* channel,
+                           gfx::NativeViewId view,
+                           int render_view_id) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, NULL));
-  if (!context->Initialize(view, gfx::Size()))
+  if (!context->Initialize(view, render_view_id, gfx::Size()))
     return NULL;
 
   return context.release();
@@ -276,12 +295,20 @@ Context* CreateViewContext(GpuChannelHost* channel, gfx::NativeViewId view) {
 #endif
 }
 
+#if defined(OS_MACOSX)
+void ResizeOnscreenContext(Context* context, const gfx::Size& size) {
+#if defined(ENABLE_GPU)
+  context->ResizeOnscreen(size);
+#endif
+}
+#endif
+
 Context* CreateOffscreenContext(GpuChannelHost* channel,
                                 Context* parent,
                                 const gfx::Size& size) {
 #if defined(ENABLE_GPU)
   scoped_ptr<Context> context(new Context(channel, parent));
-  if (!context->Initialize(0, size))
+  if (!context->Initialize(0, 0, size))
     return NULL;
 
   return context.release();

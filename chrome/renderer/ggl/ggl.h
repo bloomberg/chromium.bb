@@ -37,7 +37,29 @@ bool Initialize();
 bool Terminate();
 
 // Create a GGL context that renders directly to a view.
-Context* CreateViewContext(GpuChannelHost* channel, gfx::NativeViewId view);
+//
+// NOTE: on Mac OS X, this entry point is only used to set up the
+// accelerated compositor's output. On this platform, we actually pass
+// a gfx::PluginWindowHandle in place of the gfx::NativeViewId,
+// because the facility to allocate a fake PluginWindowHandle is
+// already in place. We could add more entry points and messages to
+// allocate both fake PluginWindowHandles and NativeViewIds and map
+// from fake NativeViewIds to PluginWindowHandles, but this seems like
+// unnecessary complexity at the moment.
+//
+// The render_view_id is currently also only used on Mac OS X.
+// TODO(kbr): clean up the arguments to this function and make them
+// more cross-platform.
+Context* CreateViewContext(GpuChannelHost* channel,
+                           gfx::NativeViewId view,
+                           int render_view_id);
+
+#if defined(OS_MACOSX)
+// On Mac OS X only, view contexts actually behave like offscreen contexts, and
+// require an explicit resize operation which is slightly different from that
+// of offscreen contexts.
+void ResizeOnscreenContext(Context* context, const gfx::Size& size);
+#endif
 
 // Create a GGL context that renders to an offscreen frame buffer. If parent is
 // not NULL, that context can access a copy of the created

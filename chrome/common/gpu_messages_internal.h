@@ -103,6 +103,22 @@ IPC_BEGIN_MESSAGES(GpuHost)
   IPC_SYNC_MESSAGE_CONTROL1_1(GpuHostMsg_GetViewXID,
                               gfx::NativeViewId, /* view */
                               unsigned long /* xid */)
+#elif defined(OS_MACOSX)
+  // This message, used on Mac OS X 10.6 and later (where IOSurface is
+  // supported), is sent from the GPU process to the browser to indicate that a
+  // new backing store was allocated for the given "window" (fake
+  // PluginWindowHandle). The renderer ID and render view ID are needed in
+  // order to uniquely identify the RenderWidgetHostView on the browser side.
+  IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceSetIOSurface,
+                       GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params)
+
+  // This message notifies the browser process that the renderer
+  // swapped the buffers associated with the given "window", which
+  // should cause the browser to redraw the compositor's contents.
+  IPC_MESSAGE_CONTROL3(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
+                       int32, /* renderer_id */
+                       int32, /* render_view_id */
+                       gfx::PluginWindowHandle /* window */)
 #endif
 
 IPC_END_MESSAGES(GpuHost)
@@ -113,9 +129,12 @@ IPC_END_MESSAGES(GpuHost)
 IPC_BEGIN_MESSAGES(GpuChannel)
 
   // Tells the GPU process to create a new command buffer that renders directly
-  // to a native view. A corresponding GpuCommandBufferStub is created.
-  IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateViewCommandBuffer,
+  // to a native view. The |render_view_id| is currently needed only on Mac OS
+  // X in order to identify the window on the browser side into which the
+  // rendering results go. A corresponding GpuCommandBufferStub is created.
+  IPC_SYNC_MESSAGE_CONTROL2_1(GpuChannelMsg_CreateViewCommandBuffer,
                               gfx::NativeViewId, /* view */
+                              int32, /* render_view_id */
                               int32 /* route_id */)
 
   // Tells the GPU process to create a new command buffer that renders to an
@@ -171,7 +190,8 @@ IPC_BEGIN_MESSAGES(GpuCommandBuffer)
                       int32 /* put_offset */)
 
   // Return the current state of the command buffer following a request via
-  // an AsyncGetState or AsyncFlush message.
+  // an AsyncGetState or AsyncFlush message. (This message is sent from the
+  // GPU process to the renderer process.)
   IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_UpdateState,
                       gpu::CommandBuffer::State /* state */)
 
@@ -208,6 +228,13 @@ IPC_BEGIN_MESSAGES(GpuCommandBuffer)
   // browser. This message is currently used only on 10.6 and later.
   IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_SetWindowSize,
                       gfx::Size /* size */)
+
+  // This message is sent from the GPU process to the renderer process (and
+  // from there the browser process) that the buffers associated with the
+  // given "window" were swapped, which should cause the browser to redraw
+  // the various accelerated surfaces.
+  IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_AcceleratedSurfaceBuffersSwapped,
+                      gfx::PluginWindowHandle /* window */)
 #endif
 
 IPC_END_MESSAGES(GpuCommandBuffer)

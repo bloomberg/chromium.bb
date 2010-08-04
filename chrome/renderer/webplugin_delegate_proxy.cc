@@ -1399,7 +1399,7 @@ void WebPluginDelegateProxy::OnBindFakePluginWindowHandle(bool opaque) {
 bool WebPluginDelegateProxy::BindFakePluginWindowHandle(bool opaque) {
   gfx::PluginWindowHandle fake_window = NULL;
   if (render_view_)
-    fake_window = render_view_->AllocateFakePluginWindowHandle(opaque);
+    fake_window = render_view_->AllocateFakePluginWindowHandle(opaque, false);
   // If we aren't running on 10.6, this allocation will fail.
   if (!fake_window)
     return false;

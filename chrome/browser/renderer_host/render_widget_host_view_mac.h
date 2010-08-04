@@ -62,7 +62,8 @@ class RWHVMEditCommandHelper;
 
   NSWindow* lastWindow_;  // weak
 
-  // The Core Animation layer, if any, hosting the accelerated plugins' output.
+  // The Core Animation layer, if any, hosting the accelerated
+  // plugins' and accelerated compositor's output.
   scoped_nsobject<CALayer> acceleratedPluginLayer_;
 
   // Variables used by our implementaion of the NSTextInput protocol.
@@ -227,8 +228,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       const webkit_glue::WebAccessibility& tree);
   virtual void OnAccessibilityFocusChange(int acc_obj_id);
   virtual void OnAccessibilityObjectStateChange(int acc_obj_id);
-  // Methods associated with GPU-accelerated plug-in instances.
-  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque);
+  // Methods associated with GPU-accelerated plug-in instances and the
+  // accelerated compositor.
+  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,
+                                                                 bool root);
   virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
   virtual void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
                                               int32 width,

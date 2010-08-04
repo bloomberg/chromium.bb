@@ -51,8 +51,6 @@ bool GPUProcessor::Initialize(gfx::PluginWindowHandle window,
                           size,
                           parent_decoder,
                           parent_texture_id);
-
-  return true;
 }
 
 void GPUProcessor::Destroy() {

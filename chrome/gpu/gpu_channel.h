@@ -64,6 +64,7 @@ class GpuChannel : public IPC::Channel::Listener,
 
   // Message handlers.
   void OnCreateViewCommandBuffer(gfx::NativeViewId view,
+                                 int32 render_view_id,
                                  int32* route_id);
   void OnCreateOffscreenCommandBuffer(int32 parent_route_id,
                                       const gfx::Size& size,

@@ -28,10 +28,16 @@ class AcceleratedSurfaceContainerManagerMac {
 
   // Allocates a new "fake" PluginWindowHandle, which is used as the
   // key for the other operations.
-  gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque);
+  gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,
+                                                         bool root);
 
   // Destroys a fake PluginWindowHandle and associated storage.
   void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle id);
+
+  // Indicates whether a "root" PluginWindowHandle has been allocated,
+  // which means that we are using accelerated compositing and should
+  // short-circuit the normal drawing process.
+  bool HasRootContainer();
 
   // Sets the size and backing store of the plugin instance.  There are two
   // versions: the IOSurface version is used on systems where the IOSurface
@@ -52,7 +58,8 @@ class AcceleratedSurfaceContainerManagerMac {
 
   // Draws all of the managed plugin containers into the given OpenGL
   // context, which must already be current.
-  void Draw(CGLContextObj context);
+  void Draw(CGLContextObj context,
+            bool draw_root_container);
 
   // Causes the next Draw call on each container to trigger a texture upload.
   // Should be called any time the drawing context has changed.
@@ -72,6 +79,17 @@ class AcceleratedSurfaceContainerManagerMac {
   typedef std::map<gfx::PluginWindowHandle, AcceleratedSurfaceContainerMac*>
       PluginWindowToContainerMap;
   PluginWindowToContainerMap plugin_window_to_container_map_;
+
+  // The "root" container, which is only used to draw the output of
+  // the accelerated compositor if it is active. Currently,
+  // accelerated plugins (Core Animation and Pepper 3D) are drawn on
+  // top of the page's contents rather than transformed and composited
+  // with the rest of the page. At some point we would like them to be
+  // treated uniformly with other page elements; when this is done,
+  // the separate treatment of the root container can go away because
+  // there will only be one container active when the accelerated
+  // compositor is active.
+  AcceleratedSurfaceContainerMac* root_container_;
 
   // A list of OpenGL textures waiting to be deleted
   std::vector<GLuint> textures_pending_deletion_;

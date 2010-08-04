@@ -7,6 +7,7 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "build/build_config.h"
+#include "chrome/common/child_thread.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
 #include "chrome/gpu/gpu_command_buffer_stub.h"
@@ -18,14 +19,18 @@ GpuCommandBufferStub::GpuCommandBufferStub(GpuChannel* channel,
                                            GpuCommandBufferStub* parent,
                                            const gfx::Size& size,
                                            uint32 parent_texture_id,
-                                           int32 route_id)
+                                           int32 route_id,
+                                           int32 renderer_id,
+                                           int32 render_view_id)
     : channel_(channel),
       handle_(handle),
       parent_(
           parent ? parent->AsWeakPtr() : base::WeakPtr<GpuCommandBufferStub>()),
       initial_size_(size),
       parent_texture_id_(parent_texture_id),
-      route_id_(route_id) {
+      route_id_(route_id),
+      renderer_id_(renderer_id),
+      render_view_id_(render_view_id) {
 }
 
 GpuCommandBufferStub::~GpuCommandBufferStub() {
@@ -49,6 +54,9 @@ void GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
                         OnGetTransferBuffer);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_ResizeOffscreenFrameBuffer,
                         OnResizeOffscreenFrameBuffer);
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SetWindowSize, OnSetWindowSize);
+#endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -86,6 +94,17 @@ void GpuCommandBufferStub::OnInitialize(
         // calling process.
         buffer.shared_memory->ShareToProcess(channel_->renderer_handle(),
                                              ring_buffer);
+#if defined(OS_MACOSX)
+        if (handle_) {
+          // This context conceptually puts its output directly on the
+          // screen, rendered by the accelerated plugin layer in
+          // RenderWidgetHostViewMac. Set up a pathway to notify the
+          // browser process when its contents change.
+          processor_->SetSwapBuffersCallback(
+              NewCallback(this,
+                          &GpuCommandBufferStub::SwapBuffersCallback));
+        }
+#endif
       } else {
         processor_.reset();
         command_buffer_.reset();
@@ -141,5 +160,36 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
 void GpuCommandBufferStub::OnResizeOffscreenFrameBuffer(const gfx::Size& size) {
   processor_->ResizeOffscreenFrameBuffer(size);
 }
+
+#if defined(OS_MACOSX)
+void GpuCommandBufferStub::OnSetWindowSize(const gfx::Size& size) {
+  ChildThread* gpu_thread = ChildThread::current();
+  // Try using the IOSurface version first.
+  uint64 new_backing_store = processor_->SetWindowSizeForIOSurface(size);
+  if (new_backing_store) {
+    GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params params;
+    params.renderer_id = renderer_id_;
+    params.render_view_id = render_view_id_;
+    params.window = handle_;
+    params.width = size.width();
+    params.height = size.height();
+    params.identifier = new_backing_store;
+    gpu_thread->Send(new GpuHostMsg_AcceleratedSurfaceSetIOSurface(params));
+  } else {
+    // TODO(kbr): figure out what to do here. It wouldn't be difficult
+    // to support the compositor on 10.5, but the performance would be
+    // questionable.
+    NOTREACHED();
+  }
+}
+
+void GpuCommandBufferStub::SwapBuffersCallback() {
+  ChildThread* gpu_thread = ChildThread::current();
+  gpu_thread->Send(
+      new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(renderer_id_,
+                                                      render_view_id_,
+                                                      handle_));
+}
+#endif  // defined(OS_MACOSX)
 
 #endif  // ENABLE_GPU

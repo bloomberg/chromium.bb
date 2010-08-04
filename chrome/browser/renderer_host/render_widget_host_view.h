@@ -197,7 +197,7 @@ class RenderWidgetHostView {
 
   // Methods associated with GPU-accelerated plug-in instances.
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle(
-      bool opaque) = 0;
+      bool opaque, bool root) = 0;
   virtual void DestroyFakePluginWindowHandle(
       gfx::PluginWindowHandle window) = 0;
   virtual void AcceleratedSurfaceSetIOSurface(

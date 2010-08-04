@@ -27,6 +27,10 @@ class WebGLES2ContextImpl : public WebKit::WebGLES2Context {
   virtual void resizeOffscreenContent(const WebKit::WebSize&);
   virtual unsigned getOffscreenContentParentTextureId();
 
+#if defined(OS_MACOSX)
+  virtual void resizeOnscreenContent(const WebKit::WebSize&);
+#endif
+
   ggl::Context* context() { return context_; }
 
  private:

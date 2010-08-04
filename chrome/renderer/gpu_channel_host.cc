@@ -68,14 +68,16 @@ bool GpuChannelHost::Send(IPC::Message* message) {
 }
 
 CommandBufferProxy* GpuChannelHost::CreateViewCommandBuffer(
-    gfx::NativeViewId view) {
+    gfx::NativeViewId view, int render_view_id) {
 #if defined(ENABLE_GPU)
   // An error occurred. Need to get the host again to reinitialize it.
   if (!channel_.get())
     return NULL;
 
   int32 route_id;
-  if (!Send(new GpuChannelMsg_CreateViewCommandBuffer(view, &route_id)) &&
+  if (!Send(new GpuChannelMsg_CreateViewCommandBuffer(view,
+                                                      render_view_id,
+                                                      &route_id)) &&
       route_id != MSG_ROUTING_NONE) {
     return NULL;
   }

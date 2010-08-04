@@ -287,7 +287,8 @@ class RenderView : public RenderWidget,
 #if defined(OS_MACOSX)
   // Helper routines for GPU plugin support. Used by the
   // WebPluginDelegateProxy, which has a pointer to the RenderView.
-  gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque);
+  gfx::PluginWindowHandle AllocateFakePluginWindowHandle(bool opaque,
+                                                         bool root);
   void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
   void AcceleratedSurfaceSetIOSurface(gfx::PluginWindowHandle window,
                                       int32 width,

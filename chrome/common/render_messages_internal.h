@@ -1994,9 +1994,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // PluginWindowHandle on the browser side which is used to identify
   // the plugin to the browser later when backing store is allocated
   // or reallocated. |opaque| indicates whether the plugin's output is
-  // considered to be opaque, as opposed to translucent.
-  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocateFakePluginWindowHandle,
+  // considered to be opaque, as opposed to translucent. This message
+  // is reused for rendering the accelerated compositor's output.
+  // |root| indicates whether the output is supposed to cover the
+  // entire window.
+  IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_AllocateFakePluginWindowHandle,
                              bool /* opaque */,
+                             bool /* root */,
                              gfx::PluginWindowHandle /* id */)
 
   // Destroys a fake window handle previously allocated using

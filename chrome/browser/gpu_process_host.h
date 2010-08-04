@@ -16,6 +16,7 @@
 #include "gfx/native_widget_types.h"
 
 class CommandBufferProxy;
+struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
 
 namespace IPC {
 struct ChannelHandle;
@@ -87,6 +88,12 @@ class GpuProcessHost : public BrowserChildProcessHost {
   void OnSynchronizeReply();
 #if defined(OS_LINUX)
   void OnGetViewXID(gfx::NativeViewId id, unsigned long* xid);
+#elif defined(OS_MACOSX)
+  void OnAcceleratedSurfaceSetIOSurface(
+      const GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params& params);
+  void OnAcceleratedSurfaceBuffersSwapped(int32 renderer_id,
+                                          int32 render_view_id,
+                                          gfx::PluginWindowHandle window);
 #endif
 
   void ReplyToRenderer(const IPC::ChannelHandle& channel,

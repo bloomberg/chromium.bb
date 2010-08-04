@@ -100,6 +100,7 @@ int GpuChannel::GenerateRouteID() {
 }
 
 void GpuChannel::OnCreateViewCommandBuffer(gfx::NativeViewId view_id,
+                                           int32 render_view_id,
                                            int32* route_id) {
   *route_id = 0;
 
@@ -124,6 +125,13 @@ void GpuChannel::OnCreateViewCommandBuffer(gfx::NativeViewId view_id,
   // alternative would be to add a socket/plug pair like with plugins but that
   // has issues with events and focus.
   gpu_thread->Send(new GpuHostMsg_GetViewXID(view_id, &handle));
+#elif defined(OS_MACOSX)
+  // On Mac OS X we currently pass a (fake) PluginWindowHandle for the
+  // NativeViewId. We could allocate fake NativeViewIds on the browser
+  // side as well, and map between those and PluginWindowHandles, but
+  // this seems excessive.
+  handle = static_cast<gfx::PluginWindowHandle>(
+      static_cast<intptr_t>(view_id));
 #else
   // TODO(apatrick): This needs to be something valid for mac and linux.
   // Offscreen rendering will work on these platforms but not rendering to the
@@ -133,7 +141,8 @@ void GpuChannel::OnCreateViewCommandBuffer(gfx::NativeViewId view_id,
 
   *route_id = GenerateRouteID();
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, handle, NULL, gfx::Size(), 0, *route_id));
+      this, handle, NULL, gfx::Size(), 0, *route_id,
+      renderer_id_, render_view_id));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #endif  // ENABLE_GPU
@@ -155,7 +164,8 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(int32 parent_route_id,
       parent_stub,
       size,
       parent_texture_id,
-      *route_id));
+      *route_id,
+      0, 0));
   router_.AddRoute(*route_id, stub.get());
   stubs_.AddWithID(stub.release(), *route_id);
 #else

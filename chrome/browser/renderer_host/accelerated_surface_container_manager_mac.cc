@@ -9,26 +9,37 @@
 #include "webkit/glue/plugins/webplugin.h"
 
 AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
-    : current_id_(0) {
+    : current_id_(0),
+      root_container_(NULL) {
 }
 
 gfx::PluginWindowHandle
 AcceleratedSurfaceContainerManagerMac::AllocateFakePluginWindowHandle(
-    bool opaque) {
+    bool opaque, bool root) {
   AcceleratedSurfaceContainerMac* container =
       new AcceleratedSurfaceContainerMac(this, opaque);
   gfx::PluginWindowHandle res =
       static_cast<gfx::PluginWindowHandle>(++current_id_);
   plugin_window_to_container_map_.insert(std::make_pair(res, container));
+  if (root) {
+    root_container_ = container;
+  }
   return res;
 }
 
 void AcceleratedSurfaceContainerManagerMac::DestroyFakePluginWindowHandle(
     gfx::PluginWindowHandle id) {
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
-  if (container)
+  if (container) {
+    if (container == root_container_)
+      root_container_ = NULL;
     delete container;
+  }
   plugin_window_to_container_map_.erase(id);
+}
+
+bool AcceleratedSurfaceContainerManagerMac::HasRootContainer() {
+  return root_container_ != NULL;
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetSizeAndIOSurface(
@@ -37,8 +48,20 @@ void AcceleratedSurfaceContainerManagerMac::SetSizeAndIOSurface(
     int32 height,
     uint64 io_surface_identifier) {
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
-  if (container)
+  if (container) {
     container->SetSizeAndIOSurface(width, height, io_surface_identifier);
+    if (container == root_container_) {
+      // Fake up a WebPluginGeometry for the root window to set the
+      // container's size; we will never get a notification from the
+      // browser about the root window, only plugins.
+      webkit_glue::WebPluginGeometry geom;
+      gfx::Rect rect(0, 0, width, height);
+      geom.window_rect = rect;
+      geom.clip_rect = rect;
+      geom.visible = true;
+      container->MoveTo(geom);
+    }
+  }
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetSizeAndTransportDIB(
@@ -58,7 +81,8 @@ void AcceleratedSurfaceContainerManagerMac::MovePluginContainer(
     container->MoveTo(move);
 }
 
-void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context) {
+void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context,
+                                                 bool draw_root_container) {
   // Clean up old texture objects. This is essentially a pre-emptive
   // cleanup, as the resources will be released when the OpenGL
   // context associated with the CAOpenGLLayer is destroyed. However,
@@ -85,11 +109,18 @@ void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context) {
 
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
+  // Draw the root container, if any, first.
+  if (draw_root_container && root_container_) {
+    root_container_->Draw(context);
+  }
+
   for (PluginWindowToContainerMap::const_iterator i =
           plugin_window_to_container_map_.begin();
        i != plugin_window_to_container_map_.end(); ++i) {
     AcceleratedSurfaceContainerMac* container = i->second;
-    container->Draw(context);
+    if (container != root_container_) {
+      container->Draw(context);
+    }
   }
 
   // Unbind any texture from the texture target to ensure that the
