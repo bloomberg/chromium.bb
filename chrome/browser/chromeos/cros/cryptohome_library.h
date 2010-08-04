@@ -49,36 +49,8 @@ class CryptohomeLibrary {
   // Asks cryptohomed for the system salt.
   virtual CryptohomeBlob GetSystemSalt() = 0;
 
-};
-
-// This class handles the interaction with the ChromeOS cryptohome library APIs.
-class CryptohomeLibraryImpl : public CryptohomeLibrary {
- public:
-  CryptohomeLibraryImpl() {}
-  virtual ~CryptohomeLibraryImpl() {}
-
-  // CryptohomeLibrary overrides.
-  virtual bool Mount(const std::string& user_email,
-                     const std::string& passhash,
-                     int* error_code);
-
-  virtual bool MountForBwsi(int* error_code);
-
-  virtual bool CheckKey(const std::string& user_email,
-                        const std::string& passhash);
-
-  virtual bool MigrateKey(const std::string& user_email,
-                          const std::string& old_hash,
-                          const std::string& new_hash);
-
-  virtual bool Remove(const std::string& user_email);
-
-  virtual bool IsMounted();
-
-  virtual CryptohomeBlob GetSystemSalt();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CryptohomeLibraryImpl);
+  // Get library implementation.
+  static CryptohomeLibrary* GetImpl(bool stub);
 };
 
 }  // namespace chromeos

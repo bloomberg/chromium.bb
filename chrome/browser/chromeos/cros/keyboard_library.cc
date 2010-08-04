@@ -9,41 +9,85 @@
 
 namespace chromeos {
 
-std::string KeyboardLibraryImpl::GetCurrentKeyboardLayoutName() const {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    return chromeos::GetCurrentKeyboardLayoutName();
-  }
-  return "";
-}
+class KeyboardLibraryImpl : public KeyboardLibrary {
+ public:
+  KeyboardLibraryImpl() {}
+  virtual ~KeyboardLibraryImpl() {}
 
-bool KeyboardLibraryImpl::SetCurrentKeyboardLayoutByName(
-    const std::string& layout_name) {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    return chromeos::SetCurrentKeyboardLayoutByName(layout_name);
+  std::string GetCurrentKeyboardLayoutName() const {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::GetCurrentKeyboardLayoutName();
+    }
+    return "";
   }
-  return false;
-}
 
-bool KeyboardLibraryImpl::RemapModifierKeys(const ModifierMap& modifier_map) {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    return chromeos::RemapModifierKeys(modifier_map);
+  bool SetCurrentKeyboardLayoutByName(const std::string& layout_name) {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::SetCurrentKeyboardLayoutByName(layout_name);
+    }
+    return false;
   }
-  return false;
-}
 
-bool KeyboardLibraryImpl::GetKeyboardLayoutPerWindow(
-    bool* is_per_window) const {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    return chromeos::GetKeyboardLayoutPerWindow(is_per_window);
+  bool RemapModifierKeys(const ModifierMap& modifier_map) {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::RemapModifierKeys(modifier_map);
+    }
+    return false;
   }
-  return false;
-}
 
-bool KeyboardLibraryImpl::SetKeyboardLayoutPerWindow(bool is_per_window) {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    return chromeos::SetKeyboardLayoutPerWindow(is_per_window);
+  bool GetKeyboardLayoutPerWindow(bool* is_per_window) const {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::GetKeyboardLayoutPerWindow(is_per_window);
+    }
+    return false;
   }
-  return false;
+
+  bool SetKeyboardLayoutPerWindow(bool is_per_window) {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::SetKeyboardLayoutPerWindow(is_per_window);
+    }
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KeyboardLibraryImpl);
+};
+
+class KeyboardLibraryStubImpl : public KeyboardLibrary {
+ public:
+  KeyboardLibraryStubImpl() {}
+  virtual ~KeyboardLibraryStubImpl() {}
+
+  std::string GetCurrentKeyboardLayoutName() const {
+    return "";
+  }
+
+  bool SetCurrentKeyboardLayoutByName(const std::string& layout_name) {
+    return false;
+  }
+
+  bool RemapModifierKeys(const ModifierMap& modifier_map) {
+    return false;
+  }
+
+  bool GetKeyboardLayoutPerWindow(bool* is_per_window) const {
+    return false;
+  }
+
+  bool SetKeyboardLayoutPerWindow(bool is_per_window) {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KeyboardLibraryStubImpl);
+};
+
+// static
+KeyboardLibrary* KeyboardLibrary::GetImpl(bool stub) {
+  if (stub)
+    return new KeyboardLibraryStubImpl();
+  else
+    return new KeyboardLibraryImpl();
 }
 
 }  // namespace chromeos

@@ -38,22 +38,9 @@ class KeyboardLibrary {
   // is given, the same keyboard layout will be shared for all applications.
   // Returns true on success.
   virtual bool SetKeyboardLayoutPerWindow(bool is_per_window) = 0;
-};
 
-class KeyboardLibraryImpl : public KeyboardLibrary {
- public:
-  KeyboardLibraryImpl() {}
-  virtual ~KeyboardLibraryImpl() {}
-
-  // KeyboardLibrary overrides.
-  virtual std::string GetCurrentKeyboardLayoutName() const;
-  virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name);
-  virtual bool RemapModifierKeys(const ModifierMap& modifier_map);
-  virtual bool GetKeyboardLayoutPerWindow(bool* is_per_window) const;
-  virtual bool SetKeyboardLayoutPerWindow(bool is_per_window);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(KeyboardLibraryImpl);
+  // Get library implementation.
+  static KeyboardLibrary* GetImpl(bool stub);
 };
 
 }  // namespace chromeos

@@ -42,63 +42,9 @@ class PowerLibrary {
 
   // The amount of time until battery is full.
   virtual base::TimeDelta battery_time_to_full() const = 0;
-};
 
-
-// This class handles the interaction with the ChromeOS power library APIs.
-// Classes can add themselves as observers. Users can get an instance of this
-// library class like this: PowerLibrary::Get()
-class PowerLibraryImpl : public PowerLibrary {
- public:
-  PowerLibraryImpl();
-  virtual ~PowerLibraryImpl();
-
-  // PowerLibrary overrides.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-
-  // Whether or not the line power is connected.
-  virtual bool line_power_on() const;
-
-  // Whether or not the battery is fully charged..
-  virtual bool battery_fully_charged() const;
-
-  // The percentage (0-100) of remaining battery.
-  virtual double battery_percentage() const;
-
-  // Whether there is a battery present.
-  virtual bool battery_is_present() const;
-
-  // The amount of time until battery is empty.
-  virtual base::TimeDelta battery_time_to_empty() const;
-
-  // The amount of time until battery is full.
-  virtual base::TimeDelta battery_time_to_full() const;
-
- private:
-
-  // This method is called when there's a change in power status.
-  // This method is called on a background thread.
-  static void PowerStatusChangedHandler(void* object,
-                                        const chromeos::PowerStatus& status);
-
-  // This methods starts the monitoring of power changes.
-  void Init();
-
-  // Called by the handler to update the power status.
-  // This will notify all the Observers.
-  void UpdatePowerStatus(const chromeos::PowerStatus& status);
-
-  ObserverList<Observer> observers_;
-
-  // A reference to the battery power api, to allow callbacks when the battery
-  // status changes.
-  chromeos::PowerStatusConnection power_status_connection_;
-
-  // The latest power status.
-  chromeos::PowerStatus status_;
-
-  DISALLOW_COPY_AND_ASSIGN(PowerLibraryImpl);
+  // Get library implementation.
+  static PowerLibrary* GetImpl(bool stub);
 };
 
 }  // namespace chromeos

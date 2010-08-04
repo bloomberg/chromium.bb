@@ -59,51 +59,9 @@ class MountLibrary {
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual const DiskVector& disks() const = 0;
   virtual bool MountPath(const char* device_path) = 0;
-};
 
-// This class handles the interaction with the ChromeOS mount library APIs.
-// Classes can add themselves as observers. Users can get an instance of this
-// library class like this: MountLibrary::Get().
-class MountLibraryImpl : public MountLibrary {
- public:
-  MountLibraryImpl();
-  virtual ~MountLibraryImpl();
-
-  // MountLibrary overrides.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-  virtual const DiskVector& disks() const { return disks_; }
-  virtual bool MountPath(const char* device_path);
- private:
-  void ParseDisks(const MountStatus& status);
-
-  // This method is called when there's a change in mount status.
-  // This method is called the UI Thread.
-  static void MountStatusChangedHandler(void* object,
-                                        const MountStatus& status,
-                                        MountEventType evt,
-                                        const char* path);
-
-  // This methods starts the monitoring of mount changes.
-  // It should be called on the UI Thread.
-  void Init();
-
-  // Called by the handler to update the mount status.
-  // This will notify all the Observers.
-  void UpdateMountStatus(const MountStatus& status,
-                         MountEventType evt,
-                         const std::string& path);
-
-  ObserverList<Observer> observers_;
-
-  // A reference to the  mount api, to allow callbacks when the mount
-  // status changes.
-  MountStatusConnection mount_status_connection_;
-
-  // The list of disks found.
-  DiskVector disks_;
-
-  DISALLOW_COPY_AND_ASSIGN(MountLibraryImpl);
+  // Get library implementation.
+  static MountLibrary* GetImpl(bool stub);
 };
 
 }  // namespace chromeos

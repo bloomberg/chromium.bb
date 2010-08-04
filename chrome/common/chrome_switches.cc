@@ -1026,7 +1026,6 @@ const char kLoginManager[]                  = "login-manager";
 const char kLoginScreen[]                   = "login-screen";
 // Allows control over the initial login screen size. Pass width,height.
 const char kLoginScreenSize[]               = "login-screen-size";
-
 // Attempts to load libcros and validate it, then exits. A nonzero return code
 // means the library could not be loaded correctly.
 const char kTestLoadLibcros[]               = "test-load-libcros";
@@ -1036,6 +1035,8 @@ const char kLoginProfile[]                  = "login-profile";
 
 // Specifies the user which is already logged in.
 const char kLoginUser[]                     = "login-user";
+// Specifies a password to be used to login (along with login-user).
+const char kLoginPassword[]                 = "login-password";
 
 // Use the frame layout used in chromeos.
 const char kChromeosFrame[]                 = "chromeos-frame";
@@ -1047,6 +1048,9 @@ const char kChromeosLogToFile[]             = "logtofile";
 // Should completely disable extensions, sync and bookmarks.
 const char kBWSI[]                          = "bwsi";
 
+// Indicates that stub implementations of the libcros library should be used.
+// This is typically used to test the chromeos build of chrome on the desktop.
+const char kStubCros[]                      = "stub-cros";
 #endif
 
 #if defined(OS_LINUX)

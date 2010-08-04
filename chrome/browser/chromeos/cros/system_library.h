@@ -33,26 +33,9 @@ class SystemLibrary {
 
   // Sets the current timezone. |timezone| must be non-null.
   virtual void SetTimezone(const icu::TimeZone* timezone) = 0;
-};
 
-// This class handles the interaction with the ChromeOS syslogs APIs.
-class SystemLibraryImpl : public SystemLibrary {
- public:
-  SystemLibraryImpl();
-  virtual ~SystemLibraryImpl() {}
-
-  // NetworkLibrary overrides.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-
-  virtual const icu::TimeZone& GetTimezone();
-  virtual void SetTimezone(const icu::TimeZone*);
-
- private:
-  scoped_ptr<icu::TimeZone> timezone_;
-  ObserverList<Observer> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(SystemLibraryImpl);
+  // Get library implementation.
+  static SystemLibrary* GetImpl(bool stub);
 };
 
 }  // namespace chromeos

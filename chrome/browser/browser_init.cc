@@ -1038,8 +1038,10 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
 
 #if defined(OS_CHROMEOS)
   // The browser will be launched after the user logs in.
-  if (command_line.HasSwitch(switches::kLoginManager))
+  if (command_line.HasSwitch(switches::kLoginManager) ||
+      command_line.HasSwitch(switches::kLoginPassword)) {
     silent_launch = true;
+  }
 #endif
 
   // If we don't want to launch a new browser window or tab (in the case

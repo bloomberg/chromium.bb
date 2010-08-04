@@ -27,23 +27,9 @@ class SpeechSynthesisLibrary {
   // Starts the speech synthesis service and indicates through a callback if
   // it started successfully.
   virtual void InitTts(InitStatusCallback) = 0;
-};
 
-// This class handles the interaction with the ChromeOS login library APIs.
-class SpeechSynthesisLibraryImpl : public SpeechSynthesisLibrary {
- public:
-  SpeechSynthesisLibraryImpl() {}
-  virtual ~SpeechSynthesisLibraryImpl() {}
-
-  // SpeechSynthesisLibrary overrides.
-  virtual bool Speak(const char* text);
-  virtual bool SetSpeakProperties(const char* props);
-  virtual bool StopSpeaking();
-  virtual bool IsSpeaking();
-  virtual void InitTts(InitStatusCallback);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpeechSynthesisLibraryImpl);
+  // Get library implementation.
+  static SpeechSynthesisLibrary* GetImpl(bool stub);
 };
 
 }  // namespace chromeos

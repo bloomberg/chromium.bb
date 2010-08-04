@@ -19,19 +19,9 @@ class SyslogsLibrary {
 
   // System logs gathered for userfeedback
   virtual LogDictionaryType* GetSyslogs(FilePath* tmpfilename)  = 0;
-};
 
-
-// This class handles the interaction with the ChromeOS syslogs APIs.
-class SyslogsLibraryImpl : public SyslogsLibrary {
- public:
-  SyslogsLibraryImpl() {}
-  virtual ~SyslogsLibraryImpl() {}
-
-  virtual LogDictionaryType* GetSyslogs(FilePath* tmpfilename);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SyslogsLibraryImpl);
+  // Get library implementation.
+  static SyslogsLibrary* GetImpl(bool stub);
 };
 
 }  // namespace chromeos

@@ -32,22 +32,9 @@ class LoginLibrary {
   // This will tell the session manager to terminate the session for the user
   // indicated by |unique_id|.
   virtual bool StopSession(const std::string& unique_id /* unused */) = 0;
-};
 
-// This class handles the interaction with the ChromeOS login library APIs.
-class LoginLibraryImpl : public LoginLibrary {
- public:
-  LoginLibraryImpl() {}
-  virtual ~LoginLibraryImpl() {}
-
-  // LoginLibrary overrides.
-  virtual bool EmitLoginPromptReady();
-  virtual bool StartSession(const std::string& user_email,
-                            const std::string& unique_id /* unused */);
-  virtual bool StopSession(const std::string& unique_id /* unused */);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginLibraryImpl);
+  // Get library implementation.
+  static LoginLibrary* GetImpl(bool stub);
 };
 
 }  // namespace chromeos

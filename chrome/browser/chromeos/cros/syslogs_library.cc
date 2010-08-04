@@ -10,11 +10,38 @@
 
 namespace chromeos {
 
-LogDictionaryType* SyslogsLibraryImpl::GetSyslogs(FilePath* tmpfilename) {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    return chromeos::GetSystemLogs(tmpfilename);
+class SyslogsLibraryImpl : public SyslogsLibrary {
+ public:
+  SyslogsLibraryImpl() {}
+  virtual ~SyslogsLibraryImpl() {}
+
+  LogDictionaryType* GetSyslogs(FilePath* tmpfilename) {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::GetSystemLogs(tmpfilename);
+    }
+    return NULL;
   }
-  return NULL;
+};
+
+class SyslogsLibraryStubImpl : public SyslogsLibrary {
+ public:
+  SyslogsLibraryStubImpl() {}
+  virtual ~SyslogsLibraryStubImpl() {}
+
+  LogDictionaryType* GetSyslogs(FilePath* tmpfilename) {
+    return &log_dictionary_;
+  }
+
+ private:
+  LogDictionaryType log_dictionary_;
+};
+
+// static
+SyslogsLibrary* SyslogsLibrary::GetImpl(bool stub) {
+  if (stub)
+    return new SyslogsLibraryStubImpl();
+  else
+    return new SyslogsLibraryImpl();
 }
 
 }  // namespace chromeos

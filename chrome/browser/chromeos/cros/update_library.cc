@@ -9,74 +9,114 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
-// Allows InvokeLater without adding refcounting. This class is a Singleton and
-// won't be deleted until it's last InvokeLater is run.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::UpdateLibraryImpl);
-
 namespace chromeos {
 
-UpdateLibraryImpl::UpdateLibraryImpl()
+class UpdateLibraryImpl : public UpdateLibrary {
+ public:
+  UpdateLibraryImpl()
     : status_connection_(NULL) {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    Init();
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      Init();
+    }
   }
-}
 
-UpdateLibraryImpl::~UpdateLibraryImpl() {
-  if (status_connection_) {
-    DisconnectUpdateProgress(status_connection_);
+  ~UpdateLibraryImpl() {
+    if (status_connection_) {
+      DisconnectUpdateProgress(status_connection_);
+    }
   }
-}
 
-void UpdateLibraryImpl::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
+  void AddObserver(Observer* observer) {
+    observers_.AddObserver(observer);
+  }
 
-void UpdateLibraryImpl::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
+  void RemoveObserver(Observer* observer) {
+    observers_.RemoveObserver(observer);
+  }
 
-bool UpdateLibraryImpl::CheckForUpdate() {
-  if (!CrosLibrary::Get()->EnsureLoaded())
-    return false;
+  bool CheckForUpdate() {
+    if (!CrosLibrary::Get()->EnsureLoaded())
+      return false;
 
-  return InitiateUpdateCheck();
-}
+    return InitiateUpdateCheck();
+  }
 
-bool UpdateLibraryImpl::RebootAfterUpdate() {
-  if (!CrosLibrary::Get()->EnsureLoaded())
-    return false;
+  bool RebootAfterUpdate() {
+    if (!CrosLibrary::Get()->EnsureLoaded())
+      return false;
 
-  return RebootIfUpdated();
-}
+    return RebootIfUpdated();
+  }
 
-const UpdateLibrary::Status& UpdateLibraryImpl::status() const {
-  return status_;
-}
+  const UpdateLibrary::Status& status() const {
+    return status_;
+  }
+
+ private:
+  static void ChangedHandler(void* object,
+      const UpdateProgress& status) {
+    UpdateLibraryImpl* updater = static_cast<UpdateLibraryImpl*>(object);
+    updater->UpdateStatus(Status(status));
+  }
+
+  void Init() {
+    status_connection_ = MonitorUpdateStatus(&ChangedHandler, this);
+  }
+
+  void UpdateStatus(const Status& status) {
+    // Make sure we run on UI thread.
+    if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+      ChromeThread::PostTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &UpdateLibraryImpl::UpdateStatus, status));
+      return;
+    }
+
+    status_ = status;
+    FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(this));
+  }
+
+  ObserverList<Observer> observers_;
+
+  // A reference to the update api, to allow callbacks when the update
+  // status changes.
+  UpdateStatusConnection status_connection_;
+
+  // The latest power status.
+  Status status_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateLibraryImpl);
+};
+
+class UpdateLibraryStubImpl : public UpdateLibrary {
+ public:
+  UpdateLibraryStubImpl() {}
+  ~UpdateLibraryStubImpl() {}
+  void AddObserver(Observer* observer) {}
+  void RemoveObserver(Observer* observer) {}
+  bool CheckForUpdate() { return false; }
+  bool RebootAfterUpdate() { return false; }
+  const UpdateLibrary::Status& status() const {
+    return status_;
+  }
+
+ private:
+  Status status_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateLibraryStubImpl);
+};
 
 // static
-void UpdateLibraryImpl::ChangedHandler(void* object,
-    const UpdateProgress& status) {
-  UpdateLibraryImpl* updater = static_cast<UpdateLibraryImpl*>(object);
-  updater->UpdateStatus(Status(status));
-}
-
-void UpdateLibraryImpl::Init() {
-  status_connection_ = MonitorUpdateStatus(&ChangedHandler, this);
-}
-
-void UpdateLibraryImpl::UpdateStatus(const Status& status) {
-  // Make sure we run on UI thread.
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &UpdateLibraryImpl::UpdateStatus, status));
-    return;
-  }
-
-  status_ = status;
-  FOR_EACH_OBSERVER(Observer, observers_, UpdateStatusChanged(this));
+UpdateLibrary* UpdateLibrary::GetImpl(bool stub) {
+  if (stub)
+    return new UpdateLibraryStubImpl();
+  else
+    return new UpdateLibraryImpl();
 }
 
 }  // namespace chromeos
+
+// Allows InvokeLater without adding refcounting. This class is a Singleton and
+// won't be deleted until it's last InvokeLater is run.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::UpdateLibraryImpl);
 

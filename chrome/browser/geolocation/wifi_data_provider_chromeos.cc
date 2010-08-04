@@ -7,6 +7,7 @@
 #include "chrome/browser/geolocation/wifi_data_provider_chromeos.h"
 
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 
 namespace {
@@ -85,7 +86,7 @@ WifiDataProviderCommon::WlanApiInterface*
 WifiDataProviderCommon::WlanApiInterface*
     WifiDataProviderChromeOs::NewWlanApi() {
   if (network_library_ == NULL) {
-    network_library_.reset(new chromeos::NetworkLibraryImpl());
+    network_library_.reset(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
     // TODO(joth): Check net_lib loaded ok, if not return NULL.
   }
   return NewWlanApi(network_library_.get());

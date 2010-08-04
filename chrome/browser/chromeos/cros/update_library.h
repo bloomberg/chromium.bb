@@ -56,6 +56,8 @@ class UpdateLibrary {
     virtual void UpdateStatusChanged(UpdateLibrary* library) = 0;
   };
 
+//  static UpdateLibrary* GetStubImplementation();
+
   virtual ~UpdateLibrary() {}
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
@@ -67,44 +69,9 @@ class UpdateLibrary {
   virtual bool RebootAfterUpdate() = 0;
 
   virtual const Status& status() const = 0;
-};
 
-class UpdateLibraryImpl : public UpdateLibrary {
- public:
-  UpdateLibraryImpl();
-  virtual ~UpdateLibraryImpl();
-
-  // UpdateLibrary overrides.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
-
-  virtual bool CheckForUpdate();
-  virtual bool RebootAfterUpdate();
-  virtual const Status& status() const;
-
- private:
-
-  // This method is called when there's a change in status.
-  // This method is called on a background thread.
-  static void ChangedHandler(void* object, const UpdateProgress& status);
-
-  // This methods starts the monitoring of power changes.
-  void Init();
-
-  // Called by the handler to update the power status.
-  // This will notify all the Observers.
-  void UpdateStatus(const Status& status);
-
-  ObserverList<Observer> observers_;
-
-  // A reference to the update api, to allow callbacks when the update
-  // status changes.
-  UpdateStatusConnection status_connection_;
-
-  // The latest power status.
-  Status status_;
-
-  DISALLOW_COPY_AND_ASSIGN(UpdateLibraryImpl);
+  // Get library implementation.
+  static UpdateLibrary* GetImpl(bool stub);
 };
 
 }  // namespace chromeos

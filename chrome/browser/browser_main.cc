@@ -145,6 +145,8 @@
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/external_metrics.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/views/browser_dialogs.h"
@@ -681,6 +683,34 @@ void InitializeToolkit() {
 
 #if defined(OS_CHROMEOS)
 
+// Class is used to login using passed username and password.
+// The instance will be deleted upon success or failure.
+class StubLogin : public chromeos::LoginStatusConsumer {
+ public:
+  explicit StubLogin(std::string username, std::string password) {
+    authenticator_ = chromeos::LoginUtils::Get()->CreateAuthenticator(this);
+    authenticator_.get()->AuthenticateToLogin(
+        g_browser_process->profile_manager()->GetDefaultProfile(),
+        username,
+        password,
+        std::string(),
+        std::string());
+  }
+
+  void OnLoginFailure(const std::string& error) {
+    LOG(ERROR) << "Login Failure: " << error;
+    delete this;
+  }
+
+  void OnLoginSuccess(const std::string& username,
+      const GaiaAuthConsumer::ClientLoginResult& credentials) {
+    chromeos::LoginUtils::Get()->CompleteLogin(username, credentials);
+    delete this;
+  }
+
+  scoped_refptr<chromeos::Authenticator> authenticator_;
+};
+
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
     std::string first_screen =
@@ -702,6 +732,11 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line) {
       }
     }
     browser::ShowLoginWizard(first_screen, size);
+  } else if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
+      parsed_command_line.HasSwitch(switches::kLoginPassword)) {
+    new StubLogin(
+        parsed_command_line.GetSwitchValueASCII(switches::kLoginUser),
+        parsed_command_line.GetSwitchValueASCII(switches::kLoginPassword));
   }
 }
 
@@ -721,6 +756,12 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 #endif
 
 }  // namespace
+
+#if defined(OS_CHROMEOS)
+// Allows authenticator to be invoked without adding refcounting. The instances
+// will delete themselves upon completion.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(StubLogin);
+#endif
 
 #if defined(OS_WIN)
 #define DLLEXPORT __declspec(dllexport)
@@ -1023,6 +1064,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Profile creation ----------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
+  // Stub out chromeos implementations.
+  if (parsed_command_line.HasSwitch(switches::kStubCros))
+    chromeos::CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+
   // Initialize the screen locker now so that it can receive
   // LOGIN_USER_CHANGED notification from UserManager.
   chromeos::ScreenLocker::InitClass();

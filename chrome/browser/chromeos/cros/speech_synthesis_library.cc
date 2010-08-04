@@ -11,24 +11,55 @@
 
 namespace chromeos {
 
-bool SpeechSynthesisLibraryImpl::Speak(const char* text) {
-  return chromeos::Speak(text);
-}
+class SpeechSynthesisLibraryImpl : public SpeechSynthesisLibrary {
+ public:
+  SpeechSynthesisLibraryImpl() {}
+  virtual ~SpeechSynthesisLibraryImpl() {}
 
-bool SpeechSynthesisLibraryImpl::SetSpeakProperties(const char* props) {
-  return chromeos::SetSpeakProperties(props);
-}
+  bool Speak(const char* text) {
+    return chromeos::Speak(text);
+  }
 
-bool SpeechSynthesisLibraryImpl::StopSpeaking() {
-  return chromeos::StopSpeaking();
-}
+  bool SetSpeakProperties(const char* props) {
+    return chromeos::SetSpeakProperties(props);
+  }
 
-bool SpeechSynthesisLibraryImpl::IsSpeaking() {
-  return chromeos::IsSpeaking();
-}
+  bool StopSpeaking() {
+    return chromeos::StopSpeaking();
+  }
 
-void SpeechSynthesisLibraryImpl::InitTts(InitStatusCallback callback) {
-  chromeos::InitTts(callback);
+  bool IsSpeaking() {
+    return chromeos::IsSpeaking();
+  }
+
+  void InitTts(InitStatusCallback callback) {
+    chromeos::InitTts(callback);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpeechSynthesisLibraryImpl);
+};
+
+class SpeechSynthesisLibraryStubImpl : public SpeechSynthesisLibrary {
+ public:
+  SpeechSynthesisLibraryStubImpl() {}
+  virtual ~SpeechSynthesisLibraryStubImpl() {}
+  bool Speak(const char* text) { return true; }
+  bool SetSpeakProperties(const char* props) { return true; }
+  bool StopSpeaking() { return true; }
+  bool IsSpeaking() { return false; }
+  void InitTts(InitStatusCallback callback) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SpeechSynthesisLibraryStubImpl);
+};
+
+// static
+SpeechSynthesisLibrary* SpeechSynthesisLibrary::GetImpl(bool stub) {
+  if (stub)
+    return new SpeechSynthesisLibraryStubImpl();
+  else
+    return new SpeechSynthesisLibraryImpl();
 }
 
 }  // namespace chromeos

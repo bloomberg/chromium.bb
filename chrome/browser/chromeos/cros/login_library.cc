@@ -10,19 +10,50 @@
 
 namespace chromeos {
 
-bool LoginLibraryImpl::EmitLoginPromptReady() {
-  return chromeos::EmitLoginPromptReady();
-}
+class LoginLibraryImpl : public LoginLibrary {
+ public:
+  LoginLibraryImpl() {}
+  virtual ~LoginLibraryImpl() {}
 
-bool LoginLibraryImpl::StartSession(const std::string& user_email,
-                                const std::string& unique_id /* unused */) {
-  // only pass unique_id through once we use it for something.
-  return chromeos::StartSession(user_email.c_str(), "");
-}
+  bool EmitLoginPromptReady() {
+    return chromeos::EmitLoginPromptReady();
+  }
 
-bool LoginLibraryImpl::StopSession(const std::string& unique_id /* unused */) {
-  // only pass unique_id through once we use it for something.
-  return chromeos::StopSession("");
+  bool StartSession(const std::string& user_email,
+                    const std::string& unique_id /* unused */) {
+    // only pass unique_id through once we use it for something.
+    return chromeos::StartSession(user_email.c_str(), "");
+  }
+
+  bool StopSession(const std::string& unique_id /* unused */) {
+    // only pass unique_id through once we use it for something.
+    return chromeos::StopSession("");
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginLibraryImpl);
+};
+
+class LoginLibraryStubImpl : public LoginLibrary {
+ public:
+  LoginLibraryStubImpl() {}
+  virtual ~LoginLibraryStubImpl() {}
+
+  bool EmitLoginPromptReady() { return true; }
+  bool StartSession(const std::string& user_email,
+                    const std::string& unique_id /* unused */) { return true; }
+  bool StopSession(const std::string& unique_id /* unused */) { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginLibraryStubImpl);
+};
+
+// static
+LoginLibrary* LoginLibrary::GetImpl(bool stub) {
+  if (stub)
+    return new LoginLibraryStubImpl();
+  else
+    return new LoginLibraryImpl();
 }
 
 }  // namespace chromeos
