@@ -6,6 +6,8 @@
 #define VIEWS_CONTROLS_MENU_MENU_ITEM_VIEW_H_
 #pragma once
 
+#include <string>
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
@@ -53,6 +55,9 @@ class SubmenuView;
 class MenuItemView : public View {
  public:
   friend class MenuController;
+
+  // The menu item view's class name.
+  static const char kViewClassName[];
 
   // ID used to identify menu items.
   static const int kMenuItemViewID;
@@ -264,6 +269,8 @@ class MenuItemView : public View {
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
+
+  virtual std::string GetClassName() const;
 
  private:
   // Calculates all sizes that we can from the OS.

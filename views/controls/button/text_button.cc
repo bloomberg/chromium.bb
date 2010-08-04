@@ -34,6 +34,9 @@ const SkColor TextButton::kHoverColor = TextButton::kEnabledColor;
 // How long the hover fade animation should last.
 static const int kHoverAnimationDurationMs = 170;
 
+// static
+const char TextButton::kViewClassName[] = "views/TextButton";
+
 static int PrefixTypeToCanvasType(TextButton::PrefixType type) {
   switch (type) {
     case TextButton::PREFIX_HIDE:
@@ -203,6 +206,7 @@ TextButton::~TextButton() {
 
 void TextButton::SetText(const std::wstring& text) {
   text_ = text;
+  SetAccessibleName(text);
   UpdateTextSize();
 }
 
@@ -425,6 +429,10 @@ void TextButton::SetEnabled(bool enabled) {
   // changed by other functions like CustomButton::SetState().
   UpdateColor();
   SchedulePaint();
+}
+
+std::string TextButton::GetClassName() const {
+  return kViewClassName;
 }
 
 void TextButton::Paint(gfx::Canvas* canvas) {

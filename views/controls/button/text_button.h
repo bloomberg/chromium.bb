@@ -6,6 +6,8 @@
 #define VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_
 #pragma once
 
+#include <string>
+
 #include "gfx/font.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -72,6 +74,9 @@ class TextButtonBorder : public Border {
 ////////////////////////////////////////////////////////////////////////////////
 class TextButton : public CustomButton {
  public:
+  // The menu button's class name.
+  static const char kViewClassName[];
+
   // Enumeration of how the prefix ('&') character is processed. The default
   // is |PREFIX_NONE|.
   enum PrefixType {
@@ -152,6 +157,9 @@ class TextButton : public CustomButton {
   static const SkColor kHighlightColor;
   static const SkColor kDisabledColor;
   static const SkColor kHoverColor;
+
+  // Returns views/TextButton.
+  virtual std::string GetClassName() const;
 
  protected:
   SkBitmap icon() const { return icon_; }

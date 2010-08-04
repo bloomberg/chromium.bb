@@ -66,6 +66,9 @@ int MenuItemView::item_right_margin_;
 // static
 int MenuItemView::pref_menu_height_;
 
+// static
+const char MenuItemView::kViewClassName[] = "views/MenuItemView";
+
 MenuItemView::MenuItemView(MenuDelegate* delegate)
     : delegate_(delegate),
       controller_(NULL),
@@ -399,6 +402,10 @@ MenuItemView::MenuItemView(MenuItemView* parent,
       show_mnemonics_(false),
       has_icons_(false) {
   Init(parent, command, type, NULL);
+}
+
+std::string MenuItemView::GetClassName() const {
+  return kViewClassName;
 }
 
 // Calculates all sizes that we can from the OS.

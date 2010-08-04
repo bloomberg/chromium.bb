@@ -22,6 +22,9 @@ namespace views {
 // static
 const int SubmenuView::kSubmenuBorderSize = 3;
 
+// static
+const char SubmenuView::kViewClassName[] = "views/SubmenuView";
+
 SubmenuView::SubmenuView(MenuItemView* parent)
     : parent_menu_item_(parent),
       host_(NULL),
@@ -296,6 +299,10 @@ gfx::NativeWindow SubmenuView::native_window() const {
 void SubmenuView::MenuHostDestroyed() {
   host_ = NULL;
   GetMenuItem()->GetMenuController()->Cancel(MenuController::EXIT_DESTROYED);
+}
+
+std::string SubmenuView::GetClassName() const {
+  return kViewClassName;
 }
 
 void SubmenuView::PaintDropIndicator(gfx::Canvas* canvas,

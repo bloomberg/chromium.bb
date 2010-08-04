@@ -6,6 +6,8 @@
 #define VIEWS_CONTROLS_MENU_SUBMENU_VIEW_H_
 #pragma once
 
+#include <string>
+
 #include "views/controls/menu/menu_delegate.h"
 #include "views/view.h"
 
@@ -32,6 +34,9 @@ class MenuScrollViewContainer;
 // are provided that allow the user to see all the menu items.
 class SubmenuView : public View {
  public:
+  // The submenu's class name.
+  static const char kViewClassName[];
+
   // Creates a SubmenuView for the specified menu item.
   explicit SubmenuView(MenuItemView* parent);
   ~SubmenuView();
@@ -132,6 +137,9 @@ class SubmenuView : public View {
 
   // Padding around the edges of the submenu.
   static const int kSubmenuBorderSize;
+
+ protected:
+  virtual std::string GetClassName() const;
 
  private:
   // Paints the drop indicator. This is only invoked if item is non-NULL and
