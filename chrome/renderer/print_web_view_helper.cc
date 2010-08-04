@@ -179,7 +179,6 @@ void PrintWebViewHelper::Print(WebFrame* frame, bool script_initiated) {
           // If the settings are invalid, early quit.
           if (print_settings.params.dpi &&
               print_settings.params.document_cookie) {
-            UpdatePrintableSizeInPrintParameters(frame, &print_settings.params);
             if (print_settings.params.selection_only) {
               CopyAndPrint(print_settings, frame);
             } else {
@@ -311,13 +310,16 @@ void PrintWebViewHelper::PrintPageAsJPEG(
 #if defined(OS_MACOSX) || defined(OS_WIN)
 void PrintWebViewHelper::PrintPages(const ViewMsg_PrintPages_Params& params,
                                     WebFrame* frame) {
-  PrepareFrameAndViewForPrint prep_frame_view(params.params,
+  ViewMsg_Print_Params printParams = params.params;
+  UpdatePrintableSizeInPrintParameters(frame, &printParams);
+
+  PrepareFrameAndViewForPrint prep_frame_view(printParams,
                                               frame,
                                               frame->view());
   int page_count = prep_frame_view.GetExpectedPageCount();
 
   Send(new ViewHostMsg_DidGetPrintedPagesCount(routing_id(),
-                                               params.params.document_cookie,
+                                               printParams.document_cookie,
                                                page_count));
   if (!page_count)
     return;

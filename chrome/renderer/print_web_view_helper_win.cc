@@ -54,8 +54,8 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   int size_y = static_cast<int>(content_height_in_points *
                                 params.params.max_shrink);
   // Calculate the dpi adjustment.
-  float shrink = static_cast<float>(canvas_size.width()) /
-      params.params.printable_size.width();
+  float shrink = static_cast<float>(params.params.desired_dpi /
+                                    params.params.dpi);
 #if 0
   // TODO(maruel): This code is kept for testing until the 100% GDI drawing
   // code is stable. maruels use this code's output as a reference when the
