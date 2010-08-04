@@ -9,8 +9,7 @@
 namespace net {
 
 ClientSocket::ClientSocket()
-    : was_ever_connected_(false),
-      omnibox_speculation_(false),
+    : omnibox_speculation_(false),
       subresource_speculation_(false),
       was_used_to_transmit_data_(false) {}
 
