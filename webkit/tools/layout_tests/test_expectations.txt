@@ -4,3 +4,6 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+BUG51161 LINUX DEBUG : svg/W3C-SVG-1.1/masking-mask-01-b.svg = CRASH
+BUG51161 LINUX DEBUG : svg/clip-path/clip-path-text.svg = CRASH
