@@ -104,7 +104,8 @@ found in the LICENSE file.
 <ol>
 <li>Reproduce the network problem.</li>
 <li>Click this button:
-  <button id=exportToText style="font-size: 110%"><b>Dump to text</b> </button>
+  <button id=exportToText style="font-size: 110%"><b>Dump to text</b> </button><br>
+  (<input id=stripCookiesCheckbox type=checkbox checked=yes> Remove cookies)
 </li>
 
 <li>Copy-paste the data on this page to a text file.</li>
@@ -136,6 +137,8 @@ function toggleMoreExplanation() {
 <ul>
 <li>You can edit the log to obscure information if you like, but sometimes it
   is relevant to the bug.</li>
+<li>If you choose not to have cookies removed from the log, you must toggle
+  the checkbox before clicking the button.</li>
 </ul>
 <li>Ideally you would have this tool running <b>before</b> you reproduce the 
   bug.
@@ -154,7 +157,7 @@ function toggleMoreExplanation() {
 <li>Chrome keeps around a small buffer of network events for the
   <b>most recent</b> requests. That way if you open chrome://net-internals/
   <b>shortly after</b> encountering a problem, you can still find the relevant
-  data. </b>
+  data.
   These <b>passively captured</b> events are less accurate however, and will
   be prefixed in the log with <span style="font-family: monospace;">(P)</span>.
 </li>

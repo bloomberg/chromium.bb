@@ -41,7 +41,7 @@ function addSourceEntry_(node, sourceEntry) {
   addTextNode(nobr2, 'Start Time: ' + startDate.toLocaleString());
 
   var pre = addNode(div, 'pre');
-  addTextNode(pre, PrintSourceEntriesAsText(logEntries));
+  addTextNode(pre, PrintSourceEntriesAsText(logEntries, false));
 }
 
 function canCollapseBeginWithEnd(beginEntry) {
@@ -55,7 +55,7 @@ function canCollapseBeginWithEnd(beginEntry) {
              beginEntry.end.orig.wasPassivelyCaptured;
 }
 
-PrintSourceEntriesAsText = function(sourceEntries) {
+PrintSourceEntriesAsText = function(sourceEntries, doStripCookies) {
   var entries = LogGroupEntry.createArrayFrom(sourceEntries);
   if (entries.length == 0)
     return '';
@@ -110,7 +110,7 @@ PrintSourceEntriesAsText = function(sourceEntries) {
     // Output the extra parameters.
     if (entry.orig.params != undefined) {
       // Add a continuation row for each line of text from the extra parameters.
-      var extraParamsText = getTextForExtraParams(entry.orig);
+      var extraParamsText = getTextForExtraParams(entry.orig, doStripCookies);
       var extraParamsTextLines = extraParamsText.split('\n');
 
       for (var j = 0; j < extraParamsTextLines.length; ++j) {
@@ -133,21 +133,25 @@ PrintSourceEntriesAsText = function(sourceEntries) {
   return tablePrinter.toText();
 }
 
-function getTextForExtraParams(entry) {
+function getTextForExtraParams(entry, doStripCookies) {
   // Format the extra parameters (use a custom formatter for certain types,
   // but default to displaying as JSON).
   switch (entry.type) {
     case LogEventType.HTTP_TRANSACTION_SEND_REQUEST_HEADERS:
     case LogEventType.HTTP_TRANSACTION_SEND_TUNNEL_HEADERS:
-      return getTextForRequestHeadersExtraParam(entry);
+      return getTextForRequestHeadersExtraParam(entry, doStripCookies);
 
     case LogEventType.HTTP_TRANSACTION_READ_RESPONSE_HEADERS:
     case LogEventType.HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS:
-      return getTextForResponseHeadersExtraParam(entry);
+      return getTextForResponseHeadersExtraParam(entry, doStripCookies);
 
     default:
       var out = [];
       for (var k in entry.params) {
+        if (k == 'headers' && entry.params[k] instanceof Array) {
+          out.push(getTextForResponseHeadersExtraParam(entry, doStripCookies));
+          continue;
+        }
         var value = entry.params[k];
         var paramStr = ' --> ' + k + ' = ' + JSON.stringify(value);
 
@@ -211,17 +215,38 @@ function indentLines(start, lines) {
   return start + lines.join('\n' + makeRepeatedString(' ', start.length));
 }
 
-function getTextForRequestHeadersExtraParam(entry) {
+function stripCookie(line) {
+  var patterns = [/^set-cookie:/i, /^set-cookie2:/i, /^cookie:/i];
+  for (var i = 0; i < patterns.length; i++) {
+    var match = patterns[i].exec(line);
+    if (match != null)
+      return match + " [value was stripped]";
+  }
+  return line;
+}
+
+function stripCookies(headers) {
+  return headers.map(stripCookie);
+}
+
+function getTextForRequestHeadersExtraParam(entry, doStripCookies) {
   var params = entry.params;
 
   // Strip the trailing CRLF that params.line contains.
   var lineWithoutCRLF = params.line.replace(/\r\n$/g, '');
 
-  return indentLines(' --> ', [lineWithoutCRLF].concat(params.headers));
+  var headers = params.headers;
+  if (doStripCookies)
+    headers = stripCookies(headers);
+
+  return indentLines(' --> ', [lineWithoutCRLF].concat(headers));
 }
 
-function getTextForResponseHeadersExtraParam(entry) {
-  return indentLines(' --> ', entry.params.headers);
+function getTextForResponseHeadersExtraParam(entry, doStripCookies) {
+  var headers = entry.params.headers;
+  if (doStripCookies)
+    headers = stripCookies(headers);
+  return indentLines(' --> ', headers);
 }
 
 function getTextForEvent(entry) {
