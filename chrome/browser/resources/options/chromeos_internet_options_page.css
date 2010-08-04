@@ -8,12 +8,12 @@
 
 #internetPage > section > h3 {
   font-size: 100%;
+  width: auto;
 }
 
 .networks {
   -webkit-margin-start: 15px;
   padding: 2px;
-  width: 100%;
 }
 
 .network-item {
@@ -45,6 +45,7 @@
 .network-item-text {
   -webkit-padding-start: 30px;
   background: 0 50% no-repeat;
+  cursor: default;
   line-height: 100%;
   max-width: 320px;
   overflow: hidden;

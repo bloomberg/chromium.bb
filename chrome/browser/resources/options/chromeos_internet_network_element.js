@@ -41,10 +41,28 @@ cr.define('options.internet', function() {
       // Handle left button click
       if (e.button == 0) {
         var el = e.target;
+
+        // If click is on action buttons of a network item.
         if (el.buttonType && el.networkType && el.servicePath) {
           chrome.send('buttonClickCallback',
-              [String(el.networkType), String(el.servicePath),
-               String(el.buttonType)]);
+              [String(el.networkType), el.servicePath, el.buttonType]);
+        } else {
+          // If click is on a network item or its label, walk up the DOM tree
+          // to find the network item.
+          var item = el;
+          while (item && !item.data) {
+            item = item.parentNode;
+          }
+
+          if (item) {
+            var data = item.data;
+
+            // If clicked on other networks item.
+            if (data && data.servicePath == '?') {
+              chrome.send('buttonClickCallback',
+                  [String(data.networkType), data.servicePath, 'options']);
+            }
+          }
         }
       }
     }
@@ -86,18 +104,28 @@ cr.define('options.internet', function() {
 
     /** @inheritDoc */
     decorate: function() {
+      var isOtherNetworksItem = this.data.servicePath == '?';
+
       this.className = 'network-item';
       this.connected = this.data.connected;
 
       // textDiv holds icon, name and status text.
       var textDiv = this.ownerDocument.createElement('div');
       textDiv.className = 'network-item-text';
-      textDiv.style.backgroundImage = url(this.data.iconURL);
+      if (this.data.iconURL) {
+        textDiv.style.backgroundImage = url(this.data.iconURL);
+      }
 
       var nameEl = this.ownerDocument.createElement('div');
       nameEl.className = 'network-name-label';
       nameEl.textContent = this.data.networkName;
       textDiv.appendChild(nameEl);
+
+      if (isOtherNetworksItem) {
+        // No status and buttons for "Other..."
+        this.appendChild(textDiv);
+        return;
+      }
 
       var statusEl = this.ownerDocument.createElement('div');
       statusEl.className = 'network-status-label';

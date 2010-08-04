@@ -30,6 +30,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/window/window.h"
 
+static const char kOtherNetworksFakePath[] = "?";
+
 InternetOptionsHandler::InternetOptionsHandler() {
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->AddObserver(this);
 }
@@ -128,6 +130,9 @@ void InternetOptionsHandler::ButtonClickCallback(const Value* value) {
     chromeos::WifiNetwork network;
     if (command == "forget") {
       cros->ForgetWirelessNetwork(service_path);
+    } else if (service_path == kOtherNetworksFakePath) {
+      // Other wifi networks.
+      CreateModalPopup(new chromeos::NetworkConfigView());
     } else if (cros->FindWifiNetworkByPath(service_path, &network)) {
       if (command == "connect") {
         // Connect to wifi here. Open password page if appropriate.
@@ -207,7 +212,8 @@ ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
   // connecting
   network->Append(Value::CreateBooleanValue(connecting));
   // icon data url
-  network->Append(Value::CreateStringValue(ConvertSkBitmapToDataURL(icon)));
+  network->Append(Value::CreateStringValue(icon.isNull() ? "" :
+      ConvertSkBitmapToDataURL(icon)));
   // remembered
   network->Append(Value::CreateBooleanValue(remembered));
   return network;
@@ -279,6 +285,15 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         chromeos::TYPE_CELLULAR,
         false));
   }
+
+  list->Append(GetNetwork(
+      kOtherNetworksFakePath,
+      SkBitmap(),
+      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
+      false,
+      false,
+      chromeos::TYPE_WIFI,
+      false));
 
   return list;
 }
