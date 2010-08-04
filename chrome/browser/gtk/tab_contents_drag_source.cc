@@ -319,10 +319,13 @@ void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
                                 gdk_pixbuf_get_width(drag_pixbuf_),
                                 gdk_pixbuf_get_height(drag_pixbuf_));
 
-    GdkScreen* screen = gtk_widget_get_screen(drag_icon_);
-    GdkColormap* rgba = gdk_screen_get_rgba_colormap(screen);
-    if (rgba)
-      gtk_widget_set_colormap(drag_icon_, rgba);
+    // We only need to do this once.
+    if (!GTK_WIDGET_REALIZED(drag_icon_)) {
+      GdkScreen* screen = gtk_widget_get_screen(drag_icon_);
+      GdkColormap* rgba = gdk_screen_get_rgba_colormap(screen);
+      if (rgba)
+        gtk_widget_set_colormap(drag_icon_, rgba);
+    }
 
     gtk_drag_set_icon_widget(drag_context, drag_icon_,
                              image_offset_.x(), image_offset_.y());
