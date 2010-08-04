@@ -12,6 +12,8 @@ namespace chromeos {
 
 class CrosSettingsProvider {
  public:
+  virtual ~CrosSettingsProvider() {}
+
   // Sets |in_value| to given |path| in cros settings.
   // Note that this takes ownership of |in_value|.
   virtual void Set(const std::wstring& path, Value* in_value) = 0;

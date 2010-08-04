@@ -3869,32 +3869,3 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
-{
-   bug_51134_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos24UserCrosSettingsProviderC1Ev
-   fun:_ZN8chromeos12CrosSettingsC1Ev
-   fun:_ZN22DefaultSingletonTraitsIN8chromeos12CrosSettingsEE3NewEv
-}
-{
-   bug_51134_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsP5ValueEEE8allocateEjPKv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE11_M_get_nodeEv
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE14_M_create_nodeERKS4_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE9_M_insertEPSt18_Rb_tree_node_baseSC_RKS4_
-   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE16_M_insert_uniqueESt17_Rb_tree_iteratorIS4_ERKS4_
-   fun:_ZNSt3mapISsP5ValueSt4lessISsESaISt4pairIKSsS1_EEE6insertESt17_Rb_tree_iteratorIS6_ERKS6_
-   fun:_ZNSt3mapISsP5ValueSt4lessISsESaISt4pairIKSsS1_EEEixERS5_
-   fun:_ZN15DictionaryValue23SetWithoutPathExpansionERKSsP5Value
-   fun:_ZN15DictionaryValue3SetERKSsP5Value
-   fun:_ZN15DictionaryValue3SetERKSbIwSt11char_traitsIwESaIwEEP5Value
-   fun:_ZN8chromeos24UserCrosSettingsProvider3SetERKSbIwSt11char_traitsIwESaIwEEP5Value
-   fun:_ZN8chromeos24UserCrosSettingsProviderC1Ev
-   fun:_ZN8chromeos12CrosSettingsC1Ev
-   fun:_ZN22DefaultSingletonTraitsIN8chromeos12CrosSettingsEE3NewEv
-   fun:_ZN9SingletonIN8chromeos12CrosSettingsE22DefaultSingletonTraitsIS1_ES1_E3getEv
-   fun:_ZN8chromeos12CrosSettings3GetEv
-}
