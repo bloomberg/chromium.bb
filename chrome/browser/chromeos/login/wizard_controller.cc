@@ -59,6 +59,7 @@ const char kStartupCustomizationManifestPath[] =
 
 // URL where to fetch OEM services customization manifest from.
 // TODO(denisromanov): Change this to real URL when it becomes available.
+// http://crosbug.com/5123
 const char kServicesCustomizationManifestUrl[] =
     "file:///mnt/partner_partition/etc/chromeos/services_manifest.json";
 
@@ -90,13 +91,16 @@ class ContentView : public views::View {
         accel_image_screen_(views::Accelerator(base::VKEY_I,
                                                false, true, true)),
         accel_eula_screen_(views::Accelerator(base::VKEY_E,
-                                              false, true, true)) {
+                                              false, true, true)),
+        accel_register_screen_(views::Accelerator(base::VKEY_R,
+                                                  false, true, true)) {
     AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);
     AddAccelerator(accel_network_screen_);
     AddAccelerator(accel_update_screen_);
     AddAccelerator(accel_image_screen_);
     AddAccelerator(accel_eula_screen_);
+    AddAccelerator(accel_register_screen_);
   }
 
   ~ContentView() {
@@ -123,6 +127,8 @@ class ContentView : public views::View {
       controller->ShowUserImageScreen();
     } else if (accel == accel_eula_screen_) {
       controller->ShowEulaScreen();
+    } else if (accel == accel_register_screen_) {
+      controller->ShowRegistrationScreen();
     } else {
       return false;
     }
@@ -162,6 +168,7 @@ class ContentView : public views::View {
   views::Accelerator accel_update_screen_;
   views::Accelerator accel_image_screen_;
   views::Accelerator accel_eula_screen_;
+  views::Accelerator accel_register_screen_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
@@ -180,6 +187,26 @@ void DeleteWizardControllerAndLaunchBrowser(WizardController* controller) {
 void DeleteWizardControllerAndApplyCustomization(WizardController* controller) {
   controller->ApplyPartnerServicesCustomizations();
   delete controller;
+}
+
+const chromeos::StartupCustomizationDocument* LoadStartupManifest() {
+  // Load partner customization startup manifest if it is available.
+  FilePath startup_manifest_path(kStartupCustomizationManifestPath);
+  if (file_util::PathExists(startup_manifest_path)) {
+    scoped_ptr<chromeos::StartupCustomizationDocument> customization(
+        new chromeos::StartupCustomizationDocument());
+    bool manifest_loaded = customization->LoadManifestFromFile(
+        startup_manifest_path);
+    if (manifest_loaded) {
+      LOG(INFO) << "Startup manifest loaded successfully";
+      return customization.release();
+    } else {
+      LOG(ERROR) << "Error loading startup manifest. " <<
+          kStartupCustomizationManifestPath;
+    }
+  }
+
+  return NULL;
 }
 
 }  // namespace
@@ -231,7 +258,14 @@ WizardController::~WizardController() {
 
 void WizardController::Init(const std::string& first_screen_name,
                             const gfx::Rect& screen_bounds) {
+  LOG(INFO) << "Starting OOBE wizard with screen: " << first_screen_name;
   DCHECK(!contents_);
+
+  // When device is not registered yet we need to load startup manifest as well.
+  // In case of OOBE (network-EULA-update) manifest has been loaded in
+  // ShowLoginWizard().
+  if (IsOobeCompleted() && !IsDeviceRegistered())
+    SetCustomization(LoadStartupManifest());
 
   int offset_x = (screen_bounds.width() - kWizardScreenWidth) / 2;
   int offset_y = (screen_bounds.height() - kWizardScreenHeight) / 2;
@@ -380,11 +414,13 @@ chromeos::ExistingUserController* WizardController::ShowLoginScreen() {
 }
 
 void WizardController::ShowAccountScreen() {
+  LOG(INFO) << "Showing create account screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetAccountScreen());
 }
 
 void WizardController::ShowUpdateScreen() {
+  LOG(INFO) << "Showing update screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetUpdateScreen());
   // There is no special step for update.
@@ -392,18 +428,21 @@ void WizardController::ShowUpdateScreen() {
 }
 
 void WizardController::ShowUserImageScreen() {
+  LOG(INFO) << "Showing user image screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetUserImageScreen());
   background_view_->SetOobeProgress(chromeos::BackgroundView::PICTURE);
 }
 
 void WizardController::ShowEulaScreen() {
+  LOG(INFO) << "Showing EULA screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetEulaScreen());
   background_view_->SetOobeProgress(chromeos::BackgroundView::EULA);
 }
 
 void WizardController::ShowRegistrationScreen() {
+  LOG(INFO) << "Showing registration screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetRegistrationScreen());
   background_view_->SetOobeProgress(chromeos::BackgroundView::REGISTRATION);
@@ -550,8 +589,7 @@ void WizardController::OnUserImageSkipped() {
 
 void WizardController::OnRegistrationSuccess() {
   MarkDeviceRegistered();
-  // TODO(nkostylev): Registration screen should be shown on first sign in.
-  ShowLoginScreen();
+  ShowUserImageScreen();
 }
 
 void WizardController::OnRegistrationSkipped() {
@@ -648,7 +686,6 @@ void WizardController::ApplyPartnerServicesCustomizations() {
               << customization->initial_start_page_url();
   }
   // TODO(dpolukhin): apply customized apps, exts and support page.
-  MarkDeviceRegistered();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -775,34 +812,25 @@ void ShowLoginWizard(const std::string& first_screen_name,
   // Create and show the wizard.
   WizardController* controller = new WizardController();
 
-  // Load partner customization startup manifest if it is available.
-  FilePath startup_manifest_path(kStartupCustomizationManifestPath);
-  std::string locale;
-  if (file_util::PathExists(startup_manifest_path)) {
-    scoped_ptr<chromeos::StartupCustomizationDocument> customization(
-        new chromeos::StartupCustomizationDocument());
-    bool manifest_loaded = customization->LoadManifestFromFile(
-        FilePath(kStartupCustomizationManifestPath));
-    DCHECK(manifest_loaded) << kStartupCustomizationManifestPath;
-    if (manifest_loaded) {
-      LOG(INFO) << "startup manifest loaded successfully";
-      // Switch to initial locale if specified by customization
-      // and has not been set yet. We cannot call
-      // chromeos::LanguageSwitchMenu::SwitchLanguage here before
-      // EmitLoginPromptReady.
-      const std::string current_locale =
-          g_browser_process->local_state()->GetString(
-              prefs::kApplicationLocale);
-      LOG(INFO) << "current locale: " << current_locale;
-      if (current_locale.empty()) {
-        locale = customization->initial_locale();
-        LOG(INFO) << "initial locale: " << locale;
-        if (!locale.empty()) {
-          ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
-        }
-      }
+  // Load startup manifest.
+  controller->SetCustomization(LoadStartupManifest());
 
-      controller->SetCustomization(customization.release());
+  std::string locale;
+  if (controller->GetCustomization()) {
+    // Switch to initial locale if specified by customization
+    // and has not been set yet. We cannot call
+    // chromeos::LanguageSwitchMenu::SwitchLanguage here before
+    // EmitLoginPromptReady.
+    const std::string current_locale =
+        g_browser_process->local_state()->GetString(
+            prefs::kApplicationLocale);
+    LOG(INFO) << "current locale: " << current_locale;
+    if (current_locale.empty()) {
+      locale = controller->GetCustomization()->initial_locale();
+      LOG(INFO) << "initial locale: " << locale;
+      if (!locale.empty()) {
+        ResourceBundle::ReloadSharedInstance(UTF8ToWide(locale));
+      }
     }
   }
 
@@ -813,7 +841,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   if (chromeos::CrosLibrary::Get()->EnsureLoaded())
     chromeos::CrosLibrary::Get()->GetLoginLibrary()->EmitLoginPromptReady();
 
-  if (controller->GetCustomization() != NULL) {
+  if (controller->GetCustomization()) {
     if (!locale.empty())
       chromeos::LanguageSwitchMenu::SwitchLanguage(locale);
 
@@ -821,6 +849,8 @@ void ShowLoginWizard(const std::string& first_screen_name,
     const std::string timezone_name =
         controller->GetCustomization()->initial_timezone();
     LOG(INFO) << "initial time zone: " << timezone_name;
+    // Apply locale customizations only once so preserve whatever locale
+    // user has changed to during OOBE.
     if (!timezone_name.empty()) {
       icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
           icu::UnicodeString::fromUTF8(timezone_name));

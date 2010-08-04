@@ -105,9 +105,6 @@ class WizardController : public chromeos::ScreenObserver,
   // screen.
   WizardScreen* current_screen() const { return current_screen_; }
 
-  // True if WizardController is in OOBE mode.
-  bool is_oobe() { return is_out_of_box_; }
-
   // Overrides observer for testing.
   void set_observer(ScreenObserver* observer) { observer_ = observer; }
 

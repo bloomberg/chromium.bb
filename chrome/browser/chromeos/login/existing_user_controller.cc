@@ -114,7 +114,7 @@ void ExistingUserController::Init() {
         background_bounds_,
         &background_view_);
 
-    if (!WizardController::IsOobeCompleted()) {
+    if (!WizardController::IsDeviceRegistered()) {
       background_view_->SetOobeProgressBarVisible(true);
       background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
     }
@@ -249,6 +249,7 @@ void ExistingUserController::OnUserSelected(UserController* source) {
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
   // WizardController takes care of deleting itself when done.
   WizardController* controller = new WizardController();
+
   // Give the background window to the controller.
   controller->OwnBackground(background_window_, background_view_);
   background_window_ = NULL;
@@ -371,7 +372,9 @@ void ExistingUserController::OnLoginSuccess(const std::string& username,
     // For new user login don't launch browser until we pass image screen.
     LoginUtils::Get()->EnableBrowserLaunch(false);
     LoginUtils::Get()->CompleteLogin(username, credentials);
-    ActivateWizard(WizardController::kUserImageScreenName);
+    ActivateWizard(WizardController::IsDeviceRegistered() ?
+        WizardController::kUserImageScreenName :
+        WizardController::kRegistrationScreenName);
   } else {
     // Hide the login windows now.
     WmIpc::Message message(WM_IPC_MESSAGE_WM_HIDE_LOGIN);

@@ -105,10 +105,10 @@ void RegisterPageUIHTMLSource::StartDataRequest(const std::string& path,
                                                 bool is_off_the_record,
                                                 int request_id) {
   // Make sure that chrome://register is available only during
-  // OOBE wizard lifetime.
+  // OOBE wizard lifetime and when device has not been registered yet.
 #if defined(OS_CHROMEOS)
-  if (!WizardController::default_controller() &&
-      !WizardController::default_controller()->is_oobe()) {
+  if (!WizardController::default_controller() ||
+      WizardController::IsDeviceRegistered()) {
     scoped_refptr<RefCountedBytes> empty_bytes(new RefCountedBytes);
     SendResponse(request_id, empty_bytes);
     return;
@@ -169,6 +169,7 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const Value* value) {
     dom_ui_->CallJavascriptFunction(L"setRegistrationUrl", url_value);
   } else {
     LOG(ERROR) << "Startup manifest not defined.";
+    dom_ui_->CallJavascriptFunction(L"skipRegistration");
   }
 #endif
 }
@@ -181,6 +182,7 @@ void RegisterPageHandler::HandleGetUserInfo(const Value* value) {
                                          &RegisterPageHandler::OnVersion));
   } else {
     LOG(ERROR) << "Error loading cros library.";
+    dom_ui_->CallJavascriptFunction(L"skipRegistration");
   }
 #endif
 }
@@ -206,6 +208,8 @@ void RegisterPageHandler::SendUserInfo() {
         GetCustomization()->product_sku();
   } else {
     LOG(ERROR) << "Startup manifest not defined.";
+    dom_ui_->CallJavascriptFunction(L"skipRegistration");
+    return;
   }
 
   // Required info.
