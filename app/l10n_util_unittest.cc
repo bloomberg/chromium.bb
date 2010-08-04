@@ -165,7 +165,7 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   // Make sure the follow tests won't be affected by LANGUAGE environment
   // variable.
-  env->UnSetEnv("LANGUAGE");
+  env->UnSetVar("LANGUAGE");
 #endif  // defined(OS_POSIX) && !defined(OS_CHROMEOS)
 
   SetICUDefaultLocale("en-US");

@@ -46,7 +46,7 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
     if (env->GetEnv(envvar, &value))
       env->SetEnv(saved_envvar, value);
     else
-      env->UnSetEnv(saved_envvar);
+      env->UnSetVar(saved_envvar);
 
     free(saved_envvar);
   }

@@ -19,7 +19,7 @@ class MockEnvironment : public base::Environment {
  public:
   MOCK_METHOD2(GetEnv, bool(const char*, std::string* result));
   MOCK_METHOD2(SetEnv, bool(const char*, const std::string& new_value));
-  MOCK_METHOD1(UnSetEnv, bool(const char*));
+  MOCK_METHOD1(UnSetVar, bool(const char*));
 };
 
 const char* kGnome = "gnome";

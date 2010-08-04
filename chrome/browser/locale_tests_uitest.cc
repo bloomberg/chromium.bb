@@ -19,7 +19,7 @@ class LocaleTestsBase : public UITest {
     if (old_lc_all_) {
       env->SetEnv("LC_ALL", old_lc_all_);
     } else {
-      env->UnSetEnv("LC_ALL");
+      env->UnSetVar("LC_ALL");
     }
 #endif
   };

@@ -31,7 +31,7 @@ void TrimInterposeEnvironment() {
   if (suffix_offset == 0 &&
       strcmp(interpose_list.c_str(),
              plugin_interpose_strings::kInterposeLibraryPath) == 0) {
-    env->UnSetEnv(plugin_interpose_strings::kDYLDInsertLibrariesKey);
+    env->UnSetVar(plugin_interpose_strings::kDYLDInsertLibrariesKey);
   } else if (suffix_offset > 0 && interpose_list[suffix_offset - 1] == ':' &&
              strcmp(interpose_list.c_str() + suffix_offset,
                     plugin_interpose_strings::kInterposeLibraryPath) == 0) {

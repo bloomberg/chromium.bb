@@ -53,7 +53,7 @@ class MockEnvironment : public base::Environment {
     return false;
   }
 
-  virtual bool UnSetEnv(const char* variable_name) {
+  virtual bool UnSetVar(const char* variable_name) {
     ADD_FAILURE();
     return false;
   }
