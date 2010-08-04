@@ -264,6 +264,16 @@ cr.define('options.contentSettings', function() {
      */
     addException: function(entry) {
       this.dataModel.push(entry);
+
+      // When an empty row is added, put it into editing mode.
+      if (!entry[0] && !entry[1]) {
+        var index = this.dataModel.length - 1;
+        var sm = this.selectionModel;
+        sm.anchorIndex = sm.leadIndex = sm.selectedIndex = index;
+        this.scrollIndexIntoView(index);
+        var li = this.getListItemByIndex(index);
+        li.editing = true;
+      }
     },
 
     /**
@@ -303,24 +313,27 @@ cr.define('options.contentSettings', function() {
 
     decorate: function() {
       ExceptionsList.decorate($('imagesExceptionsList'));
+      this.boundHandleOnSelectionChange_ =
+          cr.bind(this.handleOnSelectionChange_, this);
+      imagesExceptionsList.selectionModel.addEventListener(
+          'change', this.boundHandleOnSelectionChange_);
 
       var addRow = cr.doc.createElement('button');
       addRow.textContent = templateData.addExceptionRow;
       this.appendChild(addRow);
 
-      // TODO(estade): disable "Edit" when other than exactly 1 row is
-      // highlighted.
       var editRow = cr.doc.createElement('button');
       editRow.textContent = templateData.editExceptionRow;
       this.appendChild(editRow);
+      this.editRow = editRow;
 
-      // TODO(estade): disable "Remove" when no row is highlighted.
       var removeRow = cr.doc.createElement('button');
       removeRow.textContent = templateData.removeExceptionRow;
       this.appendChild(removeRow);
+      this.removeRow = removeRow;
 
       addRow.onclick = function(event) {
-        // TODO(estade): implement this.
+        imagesExceptionsList.addException(['', '']);
       };
 
       editRow.onclick = function(event) {
@@ -330,7 +343,28 @@ cr.define('options.contentSettings', function() {
       removeRow.onclick = function(event) {
         imagesExceptionsList.removeSelectedRows();
       };
-    }
+
+      this.updateButtonSensitivity();
+    },
+
+    /**
+     * Update the enabled/disabled state of the editing buttons based on which
+     * rows are selected.
+     */
+    updateButtonSensitivity: function() {
+      var selectionSize = imagesExceptionsList.selectedItems.length;
+      this.editRow.disabled = selectionSize != 1;
+      this.removeRow.disabled = selectionSize == 0;
+    },
+
+    /**
+     * Callback from the selection model.
+     * @param {!cr.Event} ce Event with change info.
+     * @private
+     */
+    handleOnSelectionChange_: function(ce) {
+      this.updateButtonSensitivity();
+   },
   };
 
   return {
