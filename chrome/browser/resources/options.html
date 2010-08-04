@@ -48,6 +48,7 @@
 <script src="options/content_settings_ui.js"></script>
 <script src="options/font_settings_overlay.js"></script>
 <script src="options/import_data_overlay.js"></script>
+<script src="options/passwords_exceptions.js"></script>
 <script src="options/personal_options.js"></script>
 <script src="options/search_engine_manager.js"></script>
 <script src="options/stop_syncing_overlay.js"></script>
@@ -61,6 +62,7 @@ var ContentSettings = options.ContentSettings;
 var FontSettingsOverlay = options.FontSettingsOverlay;
 var ImportDataOverlay = options.ImportDataOverlay;
 var OptionsPage = options.OptionsPage;
+var PasswordsExceptions = options.PasswordsExceptions;
 var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
 var SearchEngineManager = options.SearchEngineManager;
@@ -98,6 +100,7 @@ function load() {
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.register(AdvancedOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance());
+  OptionsPage.registerSubPage(PasswordsExceptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance());
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
@@ -197,6 +200,7 @@ window.onpopstate = function(e) {
      <include src="options/advanced_options.html">
      <include src="options/browser_options.html">
      <include src="options/content_settings.html">
+     <include src="options/passwords_exceptions.html">
      <include src="options/personal_options.html">
      <include src="options/search_engine_manager.html">
      <include src="options/sync_options.html">

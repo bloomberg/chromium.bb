@@ -51,7 +51,7 @@ cr.define('options', function() {
 
 
       $('showpasswords').onclick = function(event) {
-        //TODO(sargrass): Show passwords dialog here.
+        OptionsPage.showPageByName('passwordsExceptions');
       };
 
       $('autofill_options').onclick = function(event) {

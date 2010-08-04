@@ -1132,6 +1132,8 @@
         'browser/dom_ui/core_options_handler.h',
         'browser/dom_ui/font_settings_handler.cc',
         'browser/dom_ui/font_settings_handler.h',
+        'browser/dom_ui/passwords_exceptions_handler.cc',
+        'browser/dom_ui/passwords_exceptions_handler.h',
         'browser/dom_ui/personal_options_handler.cc',
         'browser/dom_ui/personal_options_handler.h',
         'browser/dom_ui/sync_options_handler.cc',
