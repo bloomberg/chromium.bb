@@ -1,0 +1,14 @@
+{
+  "name": "Chromoting Client",
+  "version": "1.0",
+  "description": "Lists the hosts that the user can access.",
+  "browser_action": {
+    "default_icon": "icon.png",
+    "popup": "popup.html"
+  },
+  "permissions": [
+    "tabs",
+    "http://www-googleapis-test.sandbox.google.com/",
+    "https://www.google.com/accounts/"
+  ]
+}
