@@ -3830,3 +3830,17 @@
    fun:_ZN14RenderViewHost13OnMsgNavigateERKN3IPC7MessageE
    fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
 }
+{
+   bug_51133
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN18chrome_browser_net10Preconnect20PreconnectOnIOThreadERK4GURLNS_7UrlInfo20ResolutionMotivationE
+   fun:_Z18DispatchToFunctionIPFvRK4GURLN18chrome_browser_net7UrlInfo20ResolutionMotivationEES0_S5_EvT_RK6Tuple2IT0_T1_E
+   fun:_ZN16RunnableFunctionIPFvRK4GURLN18chrome_browser_net7UrlInfo20ResolutionMotivationEE6Tuple2IS0_S5_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
