@@ -37,7 +37,13 @@ void BrowserFrameChromeos::Init() {
       !browser_view()->ShouldShowWindowTitle()) {
     set_browser_frame_view(new NormalBrowserFrameView(this, browser_view()));
   }
+
   BrowserFrameGtk::Init();
+
+  if (!IsPanel()) {
+    // On chromeos we want windows to always render as active.
+    GetNonClientView()->DisableInactiveRendering(true);
+  }
 }
 
 bool BrowserFrameChromeos::IsMaximized() const {
