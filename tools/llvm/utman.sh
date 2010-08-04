@@ -2520,7 +2520,7 @@ scons-build-sel_ldr () {
 scons-clean-pnacl-build-dir () {
   local  platform=$1
   # NOTE: we expect to have differnt dirs for each platform soon
-  rm -rf scons-out/nacl-arm
+  rm -rf scons-out/nacl-arm-pnacl
 }
 
 scons-pnacl-build () {

@@ -1420,6 +1420,10 @@ nacl_env = pre_base_env.Clone(
     LINKFLAGS = ['${EXTRA_LINKFLAGS}']
 )
 
+if ARGUMENTS.get('bitcode'):
+  target_root = nacl_env.subst('${TARGET_ROOT}') + '-pnacl'
+  nacl_env.Replace(TARGET_ROOT=target_root)
+
 if ARGUMENTS.get('with_valgrind'):
   nacl_env.Append(CCFLAGS = ['-g'],
                   CPPDEFINES = [['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
@@ -1602,6 +1606,10 @@ nacl_extra_sdk_env = pre_base_env.Clone(
     # NOTE: simplify pathnames in archive
     ARFLAGS = 'rcf'
 )
+
+if ARGUMENTS.get('bitcode'):
+  target_root = nacl_extra_sdk_env.subst('${TARGET_ROOT}') + '-pnacl'
+  nacl_extra_sdk_env.Replace(TARGET_ROOT=target_root)
 
 # TODO(robertm): consider moving some of these flags to the naclsdk tool
 nacl_extra_sdk_env.Append(CCFLAGS=['-Wall',
@@ -1953,3 +1961,6 @@ BuildEnvironments(environment_list)
 
 # Change default to build everything, but not run tests.
 Default(['all_programs', 'all_bundles', 'all_test_programs', 'all_libraries'])
+
+# separate warnings from actual build output
+Banner('B U I L D - O U T P U T:')
