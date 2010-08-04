@@ -94,11 +94,11 @@ class ScopedPerfDatabase {
 };
 
 // Command line flags.
-const wchar_t kFilterVerbose[] = L"filter-verbose";
-const wchar_t kFilterStart[] = L"filter-start";
-const wchar_t kFilterSteps[] = L"filter-steps";
-const wchar_t kFilterCsv[] = L"filter-csv";
-const wchar_t kFilterNumChecks[] = L"filter-num-checks";
+const char kFilterVerbose[] = "filter-verbose";
+const char kFilterStart[] = "filter-start";
+const char kFilterSteps[] = "filter-steps";
+const char kFilterCsv[] = "filter-csv";
+const char kFilterNumChecks[] = "filter-num-checks";
 
 // Number of hash checks to make during performance testing.
 static const int kNumHashChecks = 10000000;
