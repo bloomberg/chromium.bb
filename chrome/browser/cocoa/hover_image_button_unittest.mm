@@ -20,7 +20,6 @@ class HoverImageButtonTest : public CocoaTest {
     NSRect content_frame = [[test_window() contentView] frame];
     scoped_nsobject<HoverImageButton> button(
         [[HoverImageButton alloc] initWithFrame:content_frame]);
-    NSRect frame = NSMakeRect(0, 0, 30, 30);
     button_ = button.get();
     [[test_window() contentView] addSubview:button_];
   }

@@ -121,7 +121,7 @@ const int kLotsOfNodesCount = 150;
 class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
   BrowserTestHelper helper_;
-  scoped_nsobject<BookmarkBarController> bar_;
+  scoped_nsobject<BookmarkBarControllerChildFolderRedirect> bar_;
   const BookmarkNode* folderA_;  // owned by model
   const BookmarkNode* longTitleNode_;  // owned by model
 

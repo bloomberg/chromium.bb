@@ -68,7 +68,7 @@ class MockBackgroundContents : public BackgroundContents {
         Details<BackgroundContentsOpenedDetails>(&details));
   }
 
-  virtual const void Navigate(GURL url) {
+  virtual void Navigate(GURL url) {
     url_ = url;
     NotificationService::current()->Notify(
         NotificationType::BACKGROUND_CONTENTS_NAVIGATED,
