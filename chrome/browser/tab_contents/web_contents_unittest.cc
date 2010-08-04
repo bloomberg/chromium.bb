@@ -761,7 +761,7 @@ TEST_F(TabContentsTest, WebKitPrefs) {
 #if defined(OS_MACOSX)
   const wchar_t kDefaultFont[] = L"Times";
 #elif defined(OS_CHROMEOS)
-  const wchar_t kDefaultFont[] = L"Ascender Serif";
+  const wchar_t kDefaultFont[] = L"Tinos";
 #else
   const wchar_t kDefaultFont[] = L"Times New Roman";
 #endif
