@@ -3456,7 +3456,7 @@
 {
   bug_48553
   Memcheck:Leak
-  fun:malloc
+  ...
   fun:malloc
   fun:pa_xmalloc
   obj:/usr/lib/libpulse.so.0.4.1
@@ -3537,7 +3537,7 @@
    Memcheck:Leak
    fun:malloc
    fun:realloc
-   fun:realloc
+   ...
    fun:min_heap_reserve
    fun:event_add
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
@@ -3684,29 +3684,11 @@
    fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
 }
 {
-   bug_50968_a
+   bug_50968
    Memcheck:Leak
    ...
-   fun:sqlite3Malloc
-   ...
-   fun:openDatabase
-   fun:sqlite3_open
-   fun:_ZN3sql10Connection12OpenInternalERKSs
-   fun:_ZN3sql10Connection4OpenERK8FilePath
-   fun:_ZN11WebDatabase4InitERK8FilePath
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
    fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodI14WebDataServiceMS0_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-}
-{
-   bug_50968_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
-   fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodI14WebDataServiceMS0_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
 }
 {
    bug_51055
@@ -3758,6 +3740,32 @@
    fun:_ZN10URLRequest8StartJobEP13URLRequestJob
    fun:_ZN10URLRequest5StartEv
    fun:_ZN10URLFetcher4Core15StartURLRequestEv
+}
+{
+   bug_51057_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsN3net8internal26ClientSocketPoolBaseHelper5GroupEEEE8allocateEjPKv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN3net8internal26ClientSocketPoolBaseHelper5GroupEESt10_Select1stIS6_ESt4lessISsESaIS6_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN3net8internal26ClientSocketPoolBaseHelper5GroupEESt10_Select1stIS6_ESt4lessISsESaIS6_EE14_M_create_nodeERKS6_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN3net8internal26ClientSocketPoolBaseHelper5GroupEESt10_Select1stIS6_ESt4lessISsESaIS6_EE9_M_insertEPSt18_Rb_tree_node_baseSE_RKS6_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsN3net8internal26ClientSocketPoolBaseHelper5GroupEESt10_Select1stIS6_ESt4lessISsESaIS6_EE16_M_insert_uniqueESt17_Rb_tree_iteratorIS6_ERKS6_
+   fun:_ZNSt3mapISsN3net8internal26ClientSocketPoolBaseHelper5GroupESt4lessISsESaISt4pairIKSsS3_EEE6insertESt17_Rb_tree_iteratorIS8_ERKS8_
+   fun:_ZNSt3mapISsN3net8internal26ClientSocketPoolBaseHelper5GroupESt4lessISsESaISt4pairIKSsS3_EEEixERS7_
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelper13RequestSocketERKSsPKNS1_7RequestE
+   fun:_ZN3net20ClientSocketPoolBaseINS_15TCPSocketParamsEE13RequestSocketERKSsRK13scoped_refptrIS1_ENS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net19TCPClientSocketPool13RequestSocketERKSsPKvNS_15RequestPriorityEPNS_18ClientSocketHandleEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net18ClientSocketHandle4InitINS_15TCPSocketParamsENS_19TCPClientSocketPoolEEEiRKSsRK13scoped_refptrIT_ENS_15RequestPriorityEP14CallbackRunnerI6Tuple1IiEERKS6_IT0_ERKNS_11BoundNetLogE
+   fun:_ZN3net22HttpNetworkTransaction16DoInitConnectionEv
+   fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
+   fun:_ZN3net22HttpNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEERKNS_11BoundNetLogE
+   fun:_ZN3net9HttpCache11Transaction13DoSendRequestEv
+   fun:_ZN3net9HttpCache11Transaction6DoLoopEi
+   fun:_ZN3net9HttpCache11Transaction12OnIOCompleteEi
+   fun:_Z16DispatchToMethodIN3net9HttpCache11TransactionEMS2_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplIN3net9HttpCache11TransactionEMS2_FviE6Tuple1IiEE13RunWithParamsERKS6_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN3net9HttpCache8WorkItem17NotifyTransactionEiPNS0_11ActiveEntryE
 }
 {
    bug_51058
@@ -3862,10 +3870,31 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_51134
+   bug_51134_a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN8chromeos24UserCrosSettingsProviderC1Ev
    fun:_ZN8chromeos12CrosSettingsC1Ev
    fun:_ZN22DefaultSingletonTraitsIN8chromeos12CrosSettingsEE3NewEv
+}
+{
+   bug_51134_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeISt4pairIKSsP5ValueEEE8allocateEjPKv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE14_M_create_nodeERKS4_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE9_M_insertEPSt18_Rb_tree_node_baseSC_RKS4_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsP5ValueESt10_Select1stIS4_ESt4lessISsESaIS4_EE16_M_insert_uniqueESt17_Rb_tree_iteratorIS4_ERKS4_
+   fun:_ZNSt3mapISsP5ValueSt4lessISsESaISt4pairIKSsS1_EEE6insertESt17_Rb_tree_iteratorIS6_ERKS6_
+   fun:_ZNSt3mapISsP5ValueSt4lessISsESaISt4pairIKSsS1_EEEixERS5_
+   fun:_ZN15DictionaryValue23SetWithoutPathExpansionERKSsP5Value
+   fun:_ZN15DictionaryValue3SetERKSsP5Value
+   fun:_ZN15DictionaryValue3SetERKSbIwSt11char_traitsIwESaIwEEP5Value
+   fun:_ZN8chromeos24UserCrosSettingsProvider3SetERKSbIwSt11char_traitsIwESaIwEEP5Value
+   fun:_ZN8chromeos24UserCrosSettingsProviderC1Ev
+   fun:_ZN8chromeos12CrosSettingsC1Ev
+   fun:_ZN22DefaultSingletonTraitsIN8chromeos12CrosSettingsEE3NewEv
+   fun:_ZN9SingletonIN8chromeos12CrosSettingsE22DefaultSingletonTraitsIS1_ES1_E3getEv
+   fun:_ZN8chromeos12CrosSettings3GetEv
 }
