@@ -183,11 +183,49 @@ def _SetEnvForX86Sdk(env, sdk_path):
     env.Replace(LINK="nacl-glibc-gcc")
     env.Replace(NACL_SDK_LIB=sdk_path + '/nacl64/lib')
 
+def _SetEnvForPnacl(env, mode):
+  assert mode in ['bc-arm', 'bc-x86-32', 'bc-x86-64']
+  # skip 'bc-' prefix
+  arch = mode[3:]
+  pnacl_sdk_root = '${MAIN_DIR}/toolchain/linux_arm-untrusted'
+  pnacl_sdk_lib = pnacl_sdk_root + '/libs-bitcode'
+  #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
+  pnacl_sdk_include = (pnacl_sdk_root +
+                       '/arm-newlib/arm-none-linux-gnueabi/include')
+  pnacl_sdk_ar = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                  '/bin/arm-none-linux-gnueabi-ar')
+  pnacl_sdk_nm = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                  '/bin/arm-none-linux-gnueabi-nm')
+  pnacl_sdk_ranlib = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                      '/bin/arm-none-linux-gnueabi-ranlib')
 
-def _SetEnvForArmSdk(env, sdk_path):
-  """Initialize environment according to target architecture."""
+  pnacl_sdk_cc = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                  '/llvm-fake-sfigcc')
+  pnacl_sdk_cxx = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                  '/llvm-fake-sfig++')
+  pnacl_sdk_ld =  (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
+                  '/llvm-fake-bcld')
+  # NOTE: XXX_flags start with space for easy concatenation
+  pnacl_sdk_cxx_flags = ' -emit-llvm'
+  pnacl_sdk_cc_flags = ' -emit-llvm  -std=gnu99'
+  pnacl_sdk_cc_native_flags = ' -std=gnu99 -arch %s' % arch
+  pnacl_sdk_ld_flags = ' -arch %s' % arch
+  env.Replace(# Replace header and lib paths.
+              NACL_SDK_INCLUDE=pnacl_sdk_include,
+              NACL_SDK_LIB=pnacl_sdk_lib,
+              # Replace the normal unix tools with the PNaCl ones.
+              CC=pnacl_sdk_cc + pnacl_sdk_cc_flags,
+              CXX=pnacl_sdk_cxx + pnacl_sdk_cxx_flags,
 
-  _SetEnvForSdkManually(env)
+              # NOTE: only in bitcode compilation scenarios where
+              #       CC compiles to bitcode and
+              #       CC_NATIVE compiles to native code
+              #       (CC_NATIVE had to handle both .c and .S files)
+              CC_NATIVE=pnacl_sdk_cc + pnacl_sdk_cc_native_flags,
+              LINK=pnacl_sdk_ld + pnacl_sdk_ld_flags,
+              AR=pnacl_sdk_ar,
+              RANLIB=pnacl_sdk_ranlib,
+              )
 
 
 def _SetEnvForSdkManually(env):
@@ -201,10 +239,10 @@ def _SetEnvForSdkManually(env):
               CC=GetEnvOrDummy('CC'),
               CXX=GetEnvOrDummy('CXX'),
               AR=GetEnvOrDummy('AR'),
-              # NOTE: only in bitcode compilation scenarios where
+              # NOTE: only used in bitcode compilation scenarios where
               #       CC compiles to bitcode and
               #       CC_NATIVE compiles to native code
-              #       (CC_NATIVE had to handle both .c and .S files)
+              #       (CC_NATIVE has to handle both .c and .S files)
               CC_NATIVE=GetEnvOrDummy('CC_NATIVE'),
               # NOTE: use g++ for linking so we can handle c AND c++
               LINK=GetEnvOrDummy('LINK'),
@@ -286,10 +324,20 @@ def generate(env):
   if sdk_mode == 'manual':
     _SetEnvForSdkManually(env)
   else:
+    # NOTE: temporary kludge until we properly use TARGET_ARCH
+    target_code = os.environ.get('TARGET_CODE')
+    if not target_code:
+      if (SCons.Script.ARGUMENTS.get('bitcode') or
+          env['TARGET_ARCHITECTURE'] == 'arm'):
+        target_code = 'bc-arm'
+
     if env['TARGET_ARCHITECTURE'] == 'x86':
       _SetEnvForX86Sdk(env, root)
-    elif env['TARGET_ARCHITECTURE'] == 'arm':
-      _SetEnvForArmSdk(env, root)
+    # TODO(robertm): this should be triggered by bitcode=1
+    #                and the mode should come in via
+    #                TARGET_ARCH
+    elif target_code:
+      _SetEnvForPnacl(env, target_code)
     else:
       print "ERROR: unknown TARGET_ARCHITECTURE: ", env['TARGET_ARCHITECTURE']
       assert 0

@@ -383,11 +383,22 @@ TARGET_NAME = GetPlatform('targetplatform')
 pre_base_env.Replace(TARGET_ARCHITECTURE = DecodePlatform(TARGET_NAME)['arch'])
 pre_base_env.Replace(TARGET_SUBARCH = DecodePlatform(TARGET_NAME)['subarch'])
 
-# TODO(robertm): hack for not breaking things while switching to pnacl TC
+# TODO(robertm): hacks for not breaking things while switching to pnacl TC
 #                This should be fixed by integrating pnacl more tightly
 #                with scons.
-if 'arm' == DecodePlatform(TARGET_NAME)['arch']:
-  ARGUMENTS['bitcode'] = 1
+if os.environ.get('TARGET_CODE') and not ARGUMENTS.get('bitcode'):
+    Banner("please update your scons invocations to include bitcode=1\n"
+           "execution continues in 10 sec")
+    ARGUMENTS['bitcode'] = 1
+    import time
+    time.sleep(10)
+
+if TARGET_NAME == 'arm' and not ARGUMENTS.get('bitcode'):
+    Banner("please update your scons invocations to include bitcode=1\n"
+           "execution continues in 10 sec")
+    ARGUMENTS['bitcode'] = 1
+    import time
+    time.sleep(10)
 
 # Determine where the object files go
 if BUILD_NAME == TARGET_NAME:
@@ -397,7 +408,7 @@ else:
                                                                 TARGET_NAME)
 pre_base_env.Replace(TARGET_ROOT=TARGET_ROOT)
 
-
+# TODO(robertm): eliminate this for the trust env
 def FixupArmEnvironment():
   """ Glean settings by invoking setup scripts and capturing environment."""
   nacl_dir = Dir('#/').abspath
@@ -405,8 +416,6 @@ def FixupArmEnvironment():
       '/bin/bash', '-c',
       'source ' + nacl_dir +
       '/tools/llvm/setup_arm_trusted_toolchain.sh && ' +
-      'source ' + nacl_dir +
-      '/tools/llvm/setup_arm_untrusted_toolchain.sh && ' +
       sys.executable + " -c 'import os ; print os.environ'"],
       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   (stdout, stderr) = p.communicate()
@@ -967,9 +976,6 @@ def CheckPlatformPreconditions():
   "Check and fail fast if platform-specific preconditions are unmet."
 
   if base_env['TARGET_ARCHITECTURE'] == 'arm':
-    assert os.getenv('ARM_CC'), (
-        "ARM_CC undefined.  Source tools/llvm/setup_arm_trusted_toolchain.sh "
-        "or define it explicitly.")
     if base_env['BUILD_ARCHITECTURE'] == 'x86':
       assert os.getenv('NACL_SDK_CC'), (
           "NACL_SDK_CC undefined. "
