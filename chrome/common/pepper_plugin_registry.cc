@@ -94,8 +94,10 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
 void PepperPluginRegistry::GetExtraPlugins(
     std::vector<PepperPluginInfo>* plugins) {
   FilePath path;
-  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path) &&
-      file_util::PathExists(path)) {
+  // We can't check for path existance here, since we are in the sandbox.
+  // If plugin is missing, it will later fail to
+  // load the library and the missing plugin message will be displayed.
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path)) {
     PepperPluginInfo pdf;
     pdf.path = path;
     pdf.name = "Chrome PDF Viewer";
