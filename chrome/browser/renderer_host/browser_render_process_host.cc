@@ -272,19 +272,19 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
                                 profile(),
                                 widget_helper_);
 
-  std::wstring renderer_prefix;
+  CommandLine::StringType renderer_prefix;
 #if defined(OS_POSIX)
   // A command prefix is something prepended to the command line of the spawned
   // process. It is supported only on POSIX systems.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   renderer_prefix =
-      browser_command_line.GetSwitchValue(switches::kRendererCmdPrefix);
+      browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
 #endif  // defined(OS_POSIX)
 
   // Find the renderer before creating the channel so if this fails early we
   // return without creating the channel.
-  FilePath renderer_path = ChildProcessHost::GetChildPath(
-      renderer_prefix.empty());
+  FilePath renderer_path =
+      ChildProcessHost::GetChildPath(renderer_prefix.empty());
   if (renderer_path.empty())
     return false;
 

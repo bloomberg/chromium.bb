@@ -1209,7 +1209,7 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   // commandline with a special prefix to invoke the special environment.
   const char* browser_wrapper = getenv("BROWSER_WRAPPER");
   if (browser_wrapper) {
-    command_line.PrependWrapper(ASCIIToWide(browser_wrapper));
+    command_line.PrependWrapper(browser_wrapper);
     LOG(INFO) << "BROWSER_WRAPPER was set, prefixing command_line with "
               << browser_wrapper;
   }

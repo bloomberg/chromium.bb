@@ -78,8 +78,8 @@ bool GpuProcessHost::Init() {
     return false;
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  std::wstring gpu_launcher =
-      browser_command_line.GetSwitchValue(switches::kGpuLauncher);
+  CommandLine::StringType gpu_launcher =
+      browser_command_line.GetSwitchValueNative(switches::kGpuLauncher);
 
   FilePath exe_path = ChildProcessHost::GetChildPath(gpu_launcher.empty());
   if (exe_path.empty())

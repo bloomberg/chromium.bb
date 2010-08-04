@@ -143,16 +143,15 @@ bool WorkerProcessHost::Init() {
     if (value.empty() || value == switches::kWorkerProcess) {
       // launches a new xterm, and runs the worker process in gdb, reading
       // optional commands from gdb_chrome file in the working directory.
-      cmd_line->PrependWrapper(L"xterm -e gdb -x gdb_chrome --args");
+      cmd_line->PrependWrapper("xterm -e gdb -x gdb_chrome --args");
     }
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kRendererCmdPrefix)) {
-    const std::wstring prefix =
-        CommandLine::ForCurrentProcess()->GetSwitchValue(
-            switches::kRendererCmdPrefix);
-    cmd_line->PrependWrapper(prefix);
+    cmd_line->PrependWrapper(
+        CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+            switches::kRendererCmdPrefix));
   }
 #endif
 

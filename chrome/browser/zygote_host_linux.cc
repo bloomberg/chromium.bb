@@ -81,9 +81,8 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
   if (browser_command_line.HasSwitch(switches::kZygoteCmdPrefix)) {
-    const std::wstring prefix =
-        browser_command_line.GetSwitchValue(switches::kZygoteCmdPrefix);
-    cmd_line.PrependWrapper(prefix);
+    cmd_line.PrependWrapper(
+        browser_command_line.GetSwitchValueNative(switches::kZygoteCmdPrefix));
   }
   // Append any switches from the browser process that need to be forwarded on
   // to the zygote/renderers.
@@ -113,7 +112,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
         (st.st_mode & S_ISUID) &&
         (st.st_mode & S_IXOTH)) {
       using_suid_sandbox_ = true;
-      cmd_line.PrependWrapper(ASCIIToWide(sandbox_binary_.c_str()));
+      cmd_line.PrependWrapper(sandbox_binary_);
 
       SaveSUIDUnsafeEnvironmentVariables();
     } else {

@@ -350,8 +350,8 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   // Build command line for plugin. When we have a plugin launcher, we can't
   // allow "self" on linux and we need the real file path.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  std::wstring plugin_launcher =
-      browser_command_line.GetSwitchValue(switches::kPluginLauncher);
+  CommandLine::StringType plugin_launcher =
+      browser_command_line.GetSwitchValueNative(switches::kPluginLauncher);
   FilePath exe_path = GetChildPath(plugin_launcher.empty());
   if (exe_path.empty())
     return false;

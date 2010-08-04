@@ -109,7 +109,7 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   if (has_cmd_prefix) {
     // launch the utility child process with some prefix (usually "xterm -e gdb
     // --args").
-    cmd_line->PrependWrapper(browser_command_line.GetSwitchValue(
+    cmd_line->PrependWrapper(browser_command_line.GetSwitchValueNative(
         switches::kUtilityCmdPrefix));
   }
 
