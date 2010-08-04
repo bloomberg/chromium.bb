@@ -6,25 +6,25 @@
 
 namespace extension_history_api_constants {
 
-const wchar_t kAllHistoryKey[] = L"allHistory";
-const wchar_t kEndTimeKey[] = L"endTime";
-const wchar_t kFavIconUrlKey[] = L"favIconUrl";
-const wchar_t kIdKey[] = L"id";
-const wchar_t kLastVisitdKey[] = L"lastVisitTime";
-const wchar_t kMaxResultsKey[] = L"maxResults";
-const wchar_t kNewKey[] = L"new";
-const wchar_t kReferringVisitId[] = L"referringVisitId";
-const wchar_t kRemovedKey[] = L"removed";
-const wchar_t kStartTimeKey[] = L"startTime";
-const wchar_t kTextKey[] = L"text";
-const wchar_t kTitleKey[] = L"title";
-const wchar_t kTypedCountKey[] = L"typedCount";
-const wchar_t kVisitCountKey[] = L"visitCount";
-const wchar_t kTransition[] = L"transition";
-const wchar_t kUrlKey[] = L"url";
-const wchar_t kUrlsKey[] = L"urls";
-const wchar_t kVisitId[] = L"visitId";
-const wchar_t kVisitTime[] = L"visitTime";
+const char kAllHistoryKey[] = "allHistory";
+const char kEndTimeKey[] = "endTime";
+const char kFavIconUrlKey[] = "favIconUrl";
+const char kIdKey[] = "id";
+const char kLastVisitdKey[] = "lastVisitTime";
+const char kMaxResultsKey[] = "maxResults";
+const char kNewKey[] = "new";
+const char kReferringVisitId[] = "referringVisitId";
+const char kRemovedKey[] = "removed";
+const char kStartTimeKey[] = "startTime";
+const char kTextKey[] = "text";
+const char kTitleKey[] = "title";
+const char kTypedCountKey[] = "typedCount";
+const char kVisitCountKey[] = "visitCount";
+const char kTransition[] = "transition";
+const char kUrlKey[] = "url";
+const char kUrlsKey[] = "urls";
+const char kVisitId[] = "visitId";
+const char kVisitTime[] = "visitTime";
 
 const char kOnVisited[] = "history.onVisited";
 const char kOnVisitRemoved[] = "history.onVisitRemoved";

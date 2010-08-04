@@ -73,18 +73,18 @@ class BookmarkCodec {
   bool ids_reassigned() const { return ids_reassigned_; }
 
   // Names of the various keys written to the Value.
-  static const wchar_t* kRootsKey;
-  static const wchar_t* kRootFolderNameKey;
-  static const wchar_t* kOtherBookmarkFolderNameKey;
-  static const wchar_t* kVersionKey;
-  static const wchar_t* kChecksumKey;
-  static const wchar_t* kIdKey;
-  static const wchar_t* kTypeKey;
-  static const wchar_t* kNameKey;
-  static const wchar_t* kDateAddedKey;
-  static const wchar_t* kURLKey;
-  static const wchar_t* kDateModifiedKey;
-  static const wchar_t* kChildrenKey;
+  static const char* kRootsKey;
+  static const char* kRootFolderNameKey;
+  static const char* kOtherBookmarkFolderNameKey;
+  static const char* kVersionKey;
+  static const char* kChecksumKey;
+  static const char* kIdKey;
+  static const char* kTypeKey;
+  static const char* kNameKey;
+  static const char* kDateAddedKey;
+  static const char* kURLKey;
+  static const char* kDateModifiedKey;
+  static const char* kChildrenKey;
 
   // Possible values for kTypeKey.
   static const char* kTypeURL;

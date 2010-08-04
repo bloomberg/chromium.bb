@@ -25,11 +25,11 @@ const char kDescriptionStylesLengthError[] =
     "Suggestion descriptionStyles contains an offset longer than the"
     " description text";
 
-const wchar_t kSuggestionContent[] = L"content";
-const wchar_t kSuggestionDescription[] = L"description";
-const wchar_t kSuggestionDescriptionStyles[] = L"descriptionStyles";
-const wchar_t kDescriptionStylesType[] = L"type";
-const wchar_t kDescriptionStylesOffset[] = L"offset";
+const char kSuggestionContent[] = "content";
+const char kSuggestionDescription[] = "description";
+const char kSuggestionDescriptionStyles[] = "descriptionStyles";
+const char kDescriptionStylesType[] = "type";
+const char kDescriptionStylesOffset[] = "offset";
 };  // namespace
 
 // static
@@ -101,9 +101,9 @@ bool OmniboxSendSuggestionsFunction::RunImpl() {
     DictionaryValue* suggestion_value;
     EXTENSION_FUNCTION_VALIDATE(suggestions_value->GetDictionary(
         i, &suggestion_value));
-    EXTENSION_FUNCTION_VALIDATE(suggestion_value->GetStringAsUTF16(
+    EXTENSION_FUNCTION_VALIDATE(suggestion_value->GetString(
         kSuggestionContent, &suggestion.content));
-    EXTENSION_FUNCTION_VALIDATE(suggestion_value->GetStringAsUTF16(
+    EXTENSION_FUNCTION_VALIDATE(suggestion_value->GetString(
         kSuggestionDescription, &suggestion.description));
 
     if (suggestion_value->HasKey(kSuggestionDescriptionStyles)) {

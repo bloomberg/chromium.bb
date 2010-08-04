@@ -177,35 +177,35 @@ class GeolocationNetworkProviderTest : public testing::Test {
     EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
     DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.get());
     std::string attr_value;
-    EXPECT_TRUE(dictionary->GetString(L"version", &attr_value));
+    EXPECT_TRUE(dictionary->GetString("version", &attr_value));
     EXPECT_EQ(attr_value, "1.1.0");
-    EXPECT_TRUE(dictionary->GetString(L"host", &attr_value));
+    EXPECT_TRUE(dictionary->GetString("host", &attr_value));
     EXPECT_EQ(attr_value, kTestHost);
     // Everything else is optional.
     ListValue* wifi_aps;
     *max_age_out = kint32min;
-    if (dictionary->GetList(L"wifi_towers", &wifi_aps)) {
+    if (dictionary->GetList("wifi_towers", &wifi_aps)) {
       int i = 0;
       for (ListValue::const_iterator it = wifi_aps->begin();
            it < wifi_aps->end(); ++it, ++i) {
         EXPECT_EQ(Value::TYPE_DICTIONARY, (*it)->GetType());
         DictionaryValue* ap = static_cast<DictionaryValue*>(*it);
         AccessPointData data;
-        ap->GetStringAsUTF16(L"mac_address", &data.mac_address);
-        ap->GetInteger(L"signal_strength", &data.radio_signal_strength);
+        ap->GetString("mac_address", &data.mac_address);
+        ap->GetInteger("signal_strength", &data.radio_signal_strength);
         int age = kint32min;
-        ap->GetInteger(L"age", &age);
+        ap->GetInteger("age", &age);
         if (age > *max_age_out)
           *max_age_out = age;
-        ap->GetInteger(L"channel", &data.channel);
-        ap->GetInteger(L"signal_to_noise", &data.signal_to_noise);
-        ap->GetStringAsUTF16(L"ssid", &data.ssid);
+        ap->GetInteger("channel", &data.channel);
+        ap->GetInteger("signal_to_noise", &data.signal_to_noise);
+        ap->GetString("ssid", &data.ssid);
         wifi_data_out->access_point_data.insert(data);
       }
     } else {
       wifi_data_out->access_point_data.clear();
     }
-    if (!dictionary->GetString(L"access_token", access_token_out))
+    if (!dictionary->GetString("access_token", access_token_out))
       access_token_out->clear();
   }
 

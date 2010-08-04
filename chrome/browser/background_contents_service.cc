@@ -147,7 +147,7 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
     string16 frame_name;
     std::string url;
     dict->GetString(kUrlKey, &url);
-    dict->GetStringAsUTF16(kFrameNameKey, &frame_name);
+    dict->GetString(kFrameNameKey, &frame_name);
     CreateBackgroundContents(profile,
                              GURL(url),
                              frame_name,

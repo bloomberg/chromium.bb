@@ -755,7 +755,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
   string16 url_str;
   if (value && value->GetType() == Value::TYPE_LIST) {
     const ListValue* list = static_cast<const ListValue*>(value);
-    list->GetStringAsUTF16(0, &url_str);
+    list->GetString(0, &url_str);
   }
 
   // Try to fix-up the user provided URL into something valid.

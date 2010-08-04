@@ -156,7 +156,7 @@ void DisablePluginGroupsFromPrefs(Profile* profile) {
         }
         if (!enabled)
           NPAPI::PluginList::Singleton()->DisablePlugin(plugin_path);
-      } else if (!enabled && plugin->GetStringAsUTF16("name", &group_name)) {
+      } else if (!enabled && plugin->GetString("name", &group_name)) {
         // Otherwise this is a list of groups.
         EnablePluginGroup(false, group_name);
       }

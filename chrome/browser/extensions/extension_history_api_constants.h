@@ -11,25 +11,25 @@
 namespace extension_history_api_constants {
 
 // Keys.
-extern const wchar_t kAllHistoryKey[];
-extern const wchar_t kEndTimeKey[];
-extern const wchar_t kFavIconUrlKey[];
-extern const wchar_t kIdKey[];
-extern const wchar_t kLastVisitdKey[];
-extern const wchar_t kMaxResultsKey[];
-extern const wchar_t kNewKey[];
-extern const wchar_t kReferringVisitId[];
-extern const wchar_t kRemovedKey[];
-extern const wchar_t kStartTimeKey[];
-extern const wchar_t kTextKey[];
-extern const wchar_t kTitleKey[];
-extern const wchar_t kTypedCountKey[];
-extern const wchar_t kVisitCountKey[];
-extern const wchar_t kTransition[];
-extern const wchar_t kUrlKey[];
-extern const wchar_t kUrlsKey[];
-extern const wchar_t kVisitId[];
-extern const wchar_t kVisitTime[];
+extern const char kAllHistoryKey[];
+extern const char kEndTimeKey[];
+extern const char kFavIconUrlKey[];
+extern const char kIdKey[];
+extern const char kLastVisitdKey[];
+extern const char kMaxResultsKey[];
+extern const char kNewKey[];
+extern const char kReferringVisitId[];
+extern const char kRemovedKey[];
+extern const char kStartTimeKey[];
+extern const char kTextKey[];
+extern const char kTitleKey[];
+extern const char kTypedCountKey[];
+extern const char kVisitCountKey[];
+extern const char kTransition[];
+extern const char kUrlKey[];
+extern const char kUrlsKey[];
+extern const char kVisitId[];
+extern const char kVisitTime[];
 
 // Events.
 extern const char kOnVisited[];

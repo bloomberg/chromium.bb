@@ -248,8 +248,7 @@ bool SearchHistoryFunction::RunAsyncImpl() {
 
   // Initialize the HistoryQuery
   string16 search_text;
-  EXTENSION_FUNCTION_VALIDATE(json->GetStringAsUTF16(keys::kTextKey,
-                                                     &search_text));
+  EXTENSION_FUNCTION_VALIDATE(json->GetString(keys::kTextKey, &search_text));
 
   history::QueryOptions options;
   options.SetRecentDayRange(1);

@@ -2555,13 +2555,13 @@ webkit_glue::PasswordForm GetPasswordFormFromDict(
   // We don't care if any of these fail - they are either optional or checked
   // before this function is called.
   password_dict.GetString("signon_realm", &signon_realm);
-  password_dict.GetStringAsUTF16("username_value", &username_value);
-  password_dict.GetStringAsUTF16("password_value", &password_value);
-  password_dict.GetStringAsUTF16("origin_url", &origin_url_text);
-  password_dict.GetStringAsUTF16("username_element", &username_element);
-  password_dict.GetStringAsUTF16("password_element", &password_element);
-  password_dict.GetStringAsUTF16("submit_element", &submit_element);
-  password_dict.GetStringAsUTF16("action_target", &action_target_text);
+  password_dict.GetString("username_value", &username_value);
+  password_dict.GetString("password_value", &password_value);
+  password_dict.GetString("origin_url", &origin_url_text);
+  password_dict.GetString("username_element", &username_element);
+  password_dict.GetString("password_element", &password_element);
+  password_dict.GetString("submit_element", &submit_element);
+  password_dict.GetString("action_target", &action_target_text);
   password_dict.GetBoolean("blacklist", &blacklist);
 
   GURL origin_gurl(origin_url_text);
@@ -3130,7 +3130,8 @@ std::vector<AutoFillProfile> AutomationProvider::GetAutoFillProfilesFromList(
          autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
       if (profile_info->HasKey(type_it->second)) {
-        if (profile_info->GetStringAsUTF16(type_it->second, &current_value)) {
+        if (profile_info->GetString(WideToUTF8(type_it->second),
+                                    &current_value)) {
           profile.SetInfo(AutoFillType(type_it->first), current_value);
         } else {
           *error_message= "All values must be strings";
@@ -3164,7 +3165,7 @@ std::vector<CreditCard> AutomationProvider::GetCreditCardsFromList(
         credit_card_type_to_string.begin();
         type_it != credit_card_type_to_string.end(); ++type_it) {
       if (card_info->HasKey(type_it->second)) {
-        if (card_info->GetStringAsUTF16(type_it->second, &current_value)) {
+        if (card_info->GetString(WideToUTF8(type_it->second), &current_value)) {
           card.SetInfo(AutoFillType(type_it->first), current_value);
         } else {
           *error_message= "All values must be strings";

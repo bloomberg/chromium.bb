@@ -16,18 +16,18 @@
 
 using base::Time;
 
-const wchar_t* BookmarkCodec::kRootsKey = L"roots";
-const wchar_t* BookmarkCodec::kRootFolderNameKey = L"bookmark_bar";
-const wchar_t* BookmarkCodec::kOtherBookmarkFolderNameKey = L"other";
-const wchar_t* BookmarkCodec::kVersionKey = L"version";
-const wchar_t* BookmarkCodec::kChecksumKey = L"checksum";
-const wchar_t* BookmarkCodec::kIdKey = L"id";
-const wchar_t* BookmarkCodec::kTypeKey = L"type";
-const wchar_t* BookmarkCodec::kNameKey = L"name";
-const wchar_t* BookmarkCodec::kDateAddedKey = L"date_added";
-const wchar_t* BookmarkCodec::kURLKey = L"url";
-const wchar_t* BookmarkCodec::kDateModifiedKey = L"date_modified";
-const wchar_t* BookmarkCodec::kChildrenKey = L"children";
+const char* BookmarkCodec::kRootsKey = "roots";
+const char* BookmarkCodec::kRootFolderNameKey = "bookmark_bar";
+const char* BookmarkCodec::kOtherBookmarkFolderNameKey = "other";
+const char* BookmarkCodec::kVersionKey = "version";
+const char* BookmarkCodec::kChecksumKey = "checksum";
+const char* BookmarkCodec::kIdKey = "id";
+const char* BookmarkCodec::kTypeKey = "type";
+const char* BookmarkCodec::kNameKey = "name";
+const char* BookmarkCodec::kDateAddedKey = "date_added";
+const char* BookmarkCodec::kURLKey = "url";
+const char* BookmarkCodec::kDateModifiedKey = "date_modified";
+const char* BookmarkCodec::kChildrenKey = "children";
 const char* BookmarkCodec::kTypeURL = "url";
 const char* BookmarkCodec::kTypeFolder = "folder";
 
@@ -204,7 +204,7 @@ bool BookmarkCodec::DecodeNode(const DictionaryValue& value,
   maximum_id_ = std::max(maximum_id_, id);
 
   string16 title;
-  value.GetStringAsUTF16(kNameKey, &title);
+  value.GetString(kNameKey, &title);
 
   std::string date_added_string;
   if (!value.GetString(kDateAddedKey, &date_added_string))

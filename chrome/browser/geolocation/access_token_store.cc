@@ -50,8 +50,8 @@ void ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread(
       GURL url(*it);
       if (!url.is_valid())
         continue;
-      token_dictionary->GetStringAsUTF16WithoutPathExpansion(
-          *it, &access_token_set[url]);
+      token_dictionary->GetStringWithoutPathExpansion(*it,
+                                                      &access_token_set[url]);
     }
   }
   request->ForwardResultAsync(MakeTuple(access_token_set));
