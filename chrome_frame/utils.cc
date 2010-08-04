@@ -1272,7 +1272,7 @@ bool ChromeFrameUrl::ParseAttachExternalTabUrl() {
   size_t attach_external_tab_start_pos =
       url_.find(kChromeAttachExternalTabPrefix);
   if (attach_external_tab_start_pos == std::wstring::npos) {
-    NOTREACHED() << "Invalid url:" << url_;
+    DLOG(ERROR) << "Invalid url:" << url_;
     return false;
   }
 
