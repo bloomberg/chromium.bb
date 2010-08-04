@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from collections import defaultdict
 import os
 import re
 import sys
@@ -13,7 +14,7 @@ import suppressions
 
 def ReadReportsFromFile(filename):
   input_file = file(filename, 'r')
-  ret = []
+  reports = []
   in_suppression = False
   cur_supp = []
   for line in input_file:
@@ -25,7 +26,7 @@ def ReadReportsFromFile(filename):
     if in_suppression:
       if line == "}":
         cur_supp += ["}"]
-        ret += ["\n".join(cur_supp)]
+        reports += ["\n".join(cur_supp)]
         in_suppression = False
         cur_supp = []
       else:
@@ -33,7 +34,7 @@ def ReadReportsFromFile(filename):
     elif line == "{":
       in_suppression = True
       cur_supp = ["{"]
-  return ret
+  return reports,line
 
 filenames = [
   "memcheck/suppressions.txt",
@@ -47,14 +48,16 @@ for f in filenames:
   supp_filename = os.path.join(suppressions_root, f)
   all_suppressions += suppressions.ReadSuppressionsFromFile(supp_filename)
 
-reports = []
+# all_reports is a map {report: list of urls containing this report}
+all_reports = defaultdict(list)
+
 for f in sys.argv[1:]:
-  reports += ReadReportsFromFile(f)
-reports = set(reports)
-# TODO(timurrrr): For each reports, keep a list of files containing it.
+  f_reports, url = ReadReportsFromFile(f)
+  for report in f_reports:
+    all_reports[report] += [url]
 
 reports_count = 0
-for r in reports:
+for r in all_reports:
   match = False
   for s in all_suppressions:
     if s.Match(r.split("\n")):
@@ -63,7 +66,10 @@ for r in reports:
   if not match:
     reports_count += 1
     print "==================================="
-    print "This report didn't match any suppressions:"
+    print "This report observed in:"
+    for url in all_reports[r]:
+      print "  %s" % url
+    print "didn't match any suppressions:"
     print r
     print "==================================="
 

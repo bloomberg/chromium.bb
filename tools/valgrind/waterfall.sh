@@ -54,6 +54,7 @@ fetch_logs() {
                     sed "s/\/steps//" | sed "s/\//_/g")
         echo -n "."
         wget $SLAVE_URL/builds/$TEST -O $LOGS_DIR/$REPORT_FILE -q
+        echo $SLAVE_URL/builds/$TEST >> $LOGS_DIR/$REPORT_FILE
       done
     done
     echo " DONE"
