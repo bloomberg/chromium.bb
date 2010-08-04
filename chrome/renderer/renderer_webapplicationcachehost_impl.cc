@@ -44,8 +44,10 @@ void RendererWebApplicationCacheHostImpl::OnContentBlocked(
 
 void RendererWebApplicationCacheHostImpl::OnCacheSelected(
     const appcache::AppCacheInfo& info) {
-  // TODO(jochen): Send a ViewHostMsg_AppCacheAccessed to the browser once this
-  // methods gets the manifest url passed.
+  if (!info.manifest_url.is_empty()) {
+    RenderThread::current()->Send(new ViewHostMsg_AppCacheAccessed(
+        routing_id_, info.manifest_url, false));
+  }
   WebApplicationCacheHostImpl::OnCacheSelected(info);
 }
 
