@@ -61,6 +61,7 @@
 #include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
+#include "chrome/renderer/speech_input_dispatcher.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "chrome/renderer/user_script_slave.h"
 #include "chrome/renderer/visitedlink_slave.h"
@@ -626,6 +627,10 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     return;
   if (geolocation_dispatcher_.get() &&
       geolocation_dispatcher_->OnMessageReceived(message)) {
+    return;
+  }
+  if (speech_input_dispatcher_.get() &&
+      speech_input_dispatcher_->OnMessageReceived(message)) {
     return;
   }
 
@@ -5256,6 +5261,13 @@ WebKit::WebGeolocationService* RenderView::geolocationService() {
   if (!geolocation_dispatcher_.get())
     geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
   return geolocation_dispatcher_.get();
+}
+
+WebKit::WebSpeechInputController* RenderView::speechInputController(
+    WebKit::WebSpeechInputListener* listener) {
+  if (!speech_input_dispatcher_.get())
+    speech_input_dispatcher_.reset(new SpeechInputDispatcher(this, listener));
+  return speech_input_dispatcher_.get();
 }
 
 bool RenderView::IsNonLocalTopLevelNavigation(

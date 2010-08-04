@@ -67,6 +67,7 @@ class PepperDeviceTest;
 class PrintWebViewHelper;
 class RenderViewVisitor;
 class SkBitmap;
+class SpeechInputDispatcher;
 class WebPluginDelegatePepper;
 class WebPluginDelegateProxy;
 struct ContextMenuMediaParams;
@@ -107,6 +108,8 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebNode;
 class WebPlugin;
+class WebSpeechInputController;
+class WebSpeechInputListener;
 class WebStorageNamespace;
 class WebURLRequest;
 class WebView;
@@ -414,6 +417,8 @@ class RenderView : public RenderWidget,
   virtual void didAcceptAutocompleteSuggestion(
       const WebKit::WebInputElement& element);
   virtual WebKit::WebGeolocationService* geolocationService();
+  virtual WebKit::WebSpeechInputController* speechInputController(
+      WebKit::WebSpeechInputListener* listener);
 
   // WebKit::WebFrameClient implementation -------------------------------------
 
@@ -1206,6 +1211,9 @@ class RenderView : public RenderWidget,
   // Handles accessibility requests into the renderer side, as well as
   // maintains the cache and other features of the accessibility tree.
   scoped_ptr<WebKit::WebAccessibilityCache> accessibility_;
+
+  // The speech dispatcher attached to this view, lazily initialized.
+  scoped_ptr<SpeechInputDispatcher> speech_input_dispatcher_;
 
   // Misc ----------------------------------------------------------------------
 

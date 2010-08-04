@@ -976,6 +976,19 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_AccessibilityDoDefaultAction,
                       int /* object id */)
 
+  // Relay a speech recognition result, either partial or final.
+  IPC_MESSAGE_ROUTED1(ViewMsg_SpeechInput_SetRecognitionResult,
+                      string16 /* result */)
+
+  // Indicate that speech recognizer has stopped recording and started
+  // recognition.
+  IPC_MESSAGE_ROUTED0(ViewMsg_SpeechInput_RecordingComplete)
+
+  // Indicate that speech recognizer has completed recognition. This will be
+  // the last message sent in response to a
+  // ViewHostMsg_SpeechInput_StartRecognition.
+  IPC_MESSAGE_ROUTED0(ViewMsg_SpeechInput_RecognitionComplete)
+
 IPC_END_MESSAGES(View)
 
 
@@ -2538,5 +2551,23 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Notifies the TabContents that the content being displayed is PDF.
   // This allows the browser to handle things such as zooming differently.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_SetDisplayingPDFContent)
+
+  // Requests the speech input service to start speech recognition on behalf of
+  // the given |render_view_id|.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_SpeechInput_StartRecognition,
+                       int /* render_view_id */)
+
+  // Requests the speech input service to cancel speech recognition on behalf of
+  // the given |render_view_id|. If speech recognition is not happening nor or
+  // is happening on behalf of some other render view, this call does nothing.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_SpeechInput_CancelRecognition,
+                       int /* render_view_id */)
+
+  // Requests the speech input service to stop audio recording on behalf of
+  // the given |render_view_id|. Any audio recorded so far will be fed to the
+  // speech recognizer. If speech recognition is not happening nor or is
+  // happening on behalf of some other render view, this call does nothing.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_SpeechInput_StopRecording,
+                       int /* render_view_id */)
 
 IPC_END_MESSAGES(ViewHost)

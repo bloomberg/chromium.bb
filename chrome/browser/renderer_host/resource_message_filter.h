@@ -62,6 +62,10 @@ class PrinterQuery;
 class PrintJobManager;
 }
 
+namespace speech_input {
+class SpeechInputDispatcherHost;
+}
+
 namespace webkit_glue {
 struct WebCookie;
 }
@@ -440,6 +444,10 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
+
+  // Used to handle speech input related messages.
+  scoped_refptr<speech_input::SpeechInputDispatcherHost>
+      speech_input_dispatcher_host_;
 
   // Used to handle geolocation-related messages.
   scoped_refptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;

@@ -50,6 +50,7 @@
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
+#include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
@@ -230,6 +231,8 @@ ResourceMessageFilter::ResourceMessageFilter(
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(speech_input_dispatcher_host_(
+          new speech_input::SpeechInputDispatcherHost(this->id()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
           GeolocationDispatcherHost::New(
               this->id(), profile->GetGeolocationPermissionContext()))) {
@@ -332,7 +335,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(
           msg, this, next_route_id_callback(), &msg_is_ok) ||
-      geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
+      geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      speech_input_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.
