@@ -1,0 +1,41 @@
+<html>
+  <head>
+    <title id="title">New Chromoting Session</title>
+  <script>
+    function set_listener() {
+      // This page should only get one request, and it should be
+      // from the chromoting extension asking for initial connection.
+      // Later we may need to create a more persistent channel for
+      // better UI communication. Then, we should probably switch
+      // to chrome.extension.connect().
+      chrome.extension.onRequest.addListener(
+        function(request, sender, sendResponse) {
+          console.log(sender.tab ?
+                      "from a content script:" + sender.tab.url :
+                      "from the extension");
+
+          // Kick off the connection. Hold on to your butts!
+          var chromoting = document.getElementById('chromoting');
+          if (typeof chromoting.connect === 'function') {
+            chromoting.connect(request.username, request.host_jid, request.xmpp_auth);
+          }
+
+          var connect_info = "On [" + request.host_jid + "] as [" + request.username + "]";
+          document.getElementById("title").innerText = connect_info;
+          document.getElementById("connectinfo").innerText = connect_info;
+
+          // Send an empty response since we have nothing to say.
+          sendResponse({});
+        });
+      }
+  </script>
+  </head>
+  <body onload="set_listener();">
+    Why hello there!  I'm your friendly Chromoting Tab.
+    <div id="connectinfo"></div>
+    <div id="plugin_div" style="border: black 1px dashed;">
+      <embed width="100%" height="100%" name="chromoting" id="chromoting"
+             src="about://none" type="pepper-application/x-chromoting">
+    </div>
+  </body>
+</html>

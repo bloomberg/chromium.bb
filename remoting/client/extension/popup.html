@@ -9,7 +9,7 @@ found in the LICENSE file.
     <script type="text/javascript" src="client.js"></script>
     <title>Get hosts</title>
   </head>
-  <body onload="init_params();">
+  <body onload="init_params();" style="width:250;">
 
     <div style="border: blue 1px dotted;">
     <form name="hostqueryform" action="" method="GET">
@@ -40,21 +40,9 @@ found in the LICENSE file.
 
     <br />
 
-    <div id="debug_div" style="border: red 1px solid;">
-    -- Debugging messages go here -- <br />
+    <div id="hostlist_div" style="border: blue 1px solid; display: none;">
     </div>
 
     <br />
-
-    <div id="hostlist_div" style="border: blue 1px solid;">
-    -- Hosts go here -- <br />
-    </div>
-
-    <br />
-
-    <div id="plugin_div" style="border: black 1px dashed;">
-      <embed width="100%" height="100%" name="chromoting" id="chromoting"
-             src="about://none" type="pepper-application/x-chromoting">
-    </div>
   </body>
 </html>

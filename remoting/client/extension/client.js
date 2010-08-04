@@ -58,7 +58,7 @@ function extract_auth_token(message) {
     }
   }
 
-  debug_output('Could not parse auth token in : "' + message + '"');
+  console.log('Could not parse auth token in : "' + message + '"');
   return 'bad_token';
 }
 
@@ -72,7 +72,7 @@ function do_gaia_login(username, password, service, done) {
     if (xhr.status = 200) {
       done(extract_auth_token(xhr.responseText));
     } else {
-      debug_output('Bad status on auth: ' + xhr.statusText);
+      console.log('Bad status on auth: ' + xhr.statusText);
     }
   };
 
@@ -106,15 +106,27 @@ function do_login(username, password, done) {
 function do_list_hosts() {
   var xhr = new XMLHttpRequest();
   var token = get_cookie('chromoting_auth');
+
+  // Unhide host list.
+  var hostlist_div = document.getElementById('hostlist_div');
+  hostlist_div.style.display = "block";
+
   xhr.onreadystatechange = function() {
+    if (xhr.readyState == 1) {
+      hostlist_div.appendChild(document.createTextNode('Finding..'));
+      hostlist_div.appendChild(document.createElement('br'));
+    }
     if (xhr.readyState != 4) {
       return;
     }
     if (xhr.status == 200) {
       parsed_response = JSON.parse(xhr.responseText);
-      create_host_links(parsed_response.data.items);
+      hostlist_div.appendChild(document.createTextNode('--Found Hosts--'));
+      hostlist_div.appendChild(document.createElement('br'));
+      append_host_links(parsed_response.data.items);
     } else {
-      debug_output('bad status on host list query: "' + xhr.status + ' ' + xhr.statusText);
+      console.log('bad status on host list query: "' + xhr.status + ' ' + xhr.statusText);
+      hostlist_div.appendChild(document.createTextNode('!! Failed !!.  :\'('));
     }
   };
 
@@ -124,19 +136,20 @@ function do_list_hosts() {
   xhr.send(null);
 }
 
-function create_host_links(hostlist) {
+function append_host_links(hostlist) {
 // A host link entry should look like:
 // - Host: <a onclick="open_chromoting_tab(host_jid); return false;">NAME (JID)</a> <br />
   var host;
   var host_link;
   var hostlist_div = document.getElementById('hostlist_div');
+
+  // Add the hosts.
   for(var i = 0; i < hostlist.length; ++i) {
     hostlist_div.appendChild(document.createTextNode('-*- Host: '));
     host = hostlist[i];
     host_link = document.createElement('a');
     // TODO(ajwong): Reenable once we figure out how to control a new tab.
-    //host_link.setAttribute('onclick', 'open_chromoting_tab(\'' + host.jabberId + '\'); return false;');
-    host_link.setAttribute('onclick', 'connect_in_popup(\'' + host.jabberId + '\'); return false;');
+    host_link.setAttribute('onclick', 'open_chromoting_tab(\'' + host.jabberId + '\'); return false;');
     host_link.setAttribute('href', 'javascript:void(0)');
     host_link.appendChild(document.createTextNode(host.hostName + ' (' + host.hostId  + ', ' + host.jabberId + ')'));
     hostlist_div.appendChild(host_link);
@@ -176,11 +189,7 @@ function set_auth_cookies(form) {
 }
 
 function connect(form) {
-  // TODO(ajwong): reenable once we figure out how to command the DOM in
-  // the opened tab.
-  //
-  // open_chromoting_tab(form.host_jid.value);
-  connect_in_popup(form.host_jid.value);
+  open_chromoting_tab(form.host_jid.value);
 }
 
 function debug_output(message) {
@@ -189,40 +198,31 @@ function debug_output(message) {
   debug_div.appendChild(document.createElement('br'));
 }
 
-function connect_in_popup(host_jid) {
-  var username = get_cookie('username');
-  var xmpp_auth = get_cookie('xmpp_auth');
-  debug_output("Attempt to connect with " +
-               "username='" + username + "'" +
-               " host_jid='" + host_jid + "'" +
-               " auth_token='" + xmpp_auth + "'");
-
-  document.getElementById('chromoting').connect(username, host_jid, xmpp_auth);
-}
-
 function open_chromoting_tab(host_jid) {
   var username = get_cookie('username');
   var xmpp_auth = get_cookie('xmpp_auth');
-  debug_output("Attempt to connect with " +
-               "username='" + username + "'" +
-               " host_jid='" + host_jid + "'" +
-               " auth_token='" + xmpp_auth + "'");
-
+  var new_tab_url = chrome.extension.getURL("chromoting_tab.html");
+  var request = {
+    username: get_cookie('username'),
+    xmpp_auth: get_cookie('xmpp_auth'),
+    host_jid: host_jid,
+  };
   var tab_args = {
-    url: "chrome://remoting",
+    url: new_tab_url,
   };
 
-  chrome.tabs.create(tab_args, function(tab) {
-    var details = {};
-    details.code = function() {
-      // TODO(ajwong): We need to punch a hole into the content script to
-      // make this work. See
-      //   http://code.google.com/chrome/extensions/content_scripts.html
-      var an_event = document.createEvent('Event');
-      an_event.initEvent('startPlugin', true, true);
+  console.log("Attempt to connect with " +
+              "username='" + request.username + "'" +
+              " host_jid='" + request.host_jid + "'" +
+              " auth_token='" + request.xmpp_auth + "'");
 
-      alert('hi');
-    }
-    chrome.tabs.executeScript(tab.id, details, function() { alert('done');});
+  chrome.tabs.create(tab_args, function(tab) {
+    console.log("We're trying now to send to " + tab.id);
+    // TODO(ajwong): This request does not always seem to make it through.
+    // I think there's a race condition sending to the view. Figure out how
+    // to correctly synchronize this call.
+    chrome.tabs.sendRequest(
+      tab.id, request,
+      function() {console.log('Tab finished conenct.')});
   });
 }
