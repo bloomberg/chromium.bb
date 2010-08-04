@@ -26,7 +26,7 @@
  * When true, check both uses and sets of memory. When false, only
  * check sets.
  */
-Bool NACL_FLAGS_read_sandbox = FALSE;
+Bool NACL_FLAGS_read_sandbox = TRUE;
 
 /* Returns true if the node corresponds to an expression set, or an
  * expression use if we are doing read sandboxing.
