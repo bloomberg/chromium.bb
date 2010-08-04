@@ -1,0 +1,80 @@
+<div class="page hidden" id="proxyPage">
+  <h1 i18n-content="proxyPage"></h1>
+  <section>
+    <h3 i18n-content="proxy_config_title"></h3>
+   <table class="option-control-table">
+    <tr><td>
+      <label><input type="radio" name="proxytype"
+          value=""><span
+          i18n-content="proxyDirectIternetConnection"></span>
+      </label>
+    </td></tr>
+    <tr><td>
+      <label><input type="radio" name="proxytype"
+          value=""><span
+          i18n-content="proxyManual"></span></label>
+    </td></tr>
+    <tr><td>
+      <label><input id="proxyAllProtocols"
+          type="checkbox"><span
+          i18n-content="sameProxyProtocols"></span></label><br>
+      <label><span
+          i18n-content="httpProxy"></span>
+        <input id="proxyHostName" type="text" size="30" disabled>
+      </label>
+      <label><span
+          i18n-content="proxyPort"></span>
+        <input id="proxyHostPort" type="text" size="5" disabled>
+      </label>
+      <br>
+      <label><span
+          i18n-content="secureHttpProxy"></span>
+        <input id="secureProxyHostName" type="text" size="30" disabled>
+      </label>
+      <label><span
+          i18n-content="proxyPort"></span>
+        <input id="secureProxyHostNamePort" type="text" size="5" disabled>
+      </label>
+      <br>
+      <label><span
+          i18n-content="ftpProxy"></span>
+        <input id="ftpProxy" type="text" size="30" disabled>
+      </label>
+      <label><span
+          i18n-content="proxyPort"></span>
+        <input id="ftpProxyPort" type="text" size="5" disabled>
+      </label>
+      <br>
+      <label><span
+          i18n-content="socksHost"></span>
+        <input id="socksHost" type="text" size="30" disabled>
+      </label>
+      <label><span
+          i18n-content="proxyPort"></span>
+        <input id="socksPort" type="text" size="5" disabled>
+      </label>
+      <br>
+    </td></tr>
+    <tr><td>
+      <label><input type="radio" name="proxytype"
+          value=""><span
+          i18n-content="proxyAutomatic"></span></label><br>
+      <label><span
+          i18n-content="proxyConfigUrl"></span>
+        <input id="proxyConfig" type="url" size="60" disabled>
+      </label>
+     </td></tr>
+    </table>
+  </section>
+  <section>
+    <h3 i18n-content="advanced_proxy_config"></h3>
+    <div class="option">
+         <td class="option-name"><list id="ignoredHostList"></list></td>
+       <br>     
+       <button id="addHost"
+               i18n-content="addHost"></button>
+       <button id="removeHost"
+               i18n-content="removeHost"></button>
+    </div>
+  </section>
+</div>

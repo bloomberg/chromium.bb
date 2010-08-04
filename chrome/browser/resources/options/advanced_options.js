@@ -50,6 +50,10 @@ var OptionsPage = options.OptionsPage;
         $('certificatesManageButton').onclick = function(event) {
           chrome.send('showManageSSLCertificates');
         };
+      } else {
+        $('proxiesConfigureButton').onclick = function(event) {
+          OptionsPage.showPageByName('proxy');
+        };
       }
 
       if (cr.isWindows) {
@@ -102,4 +106,3 @@ var OptionsPage = options.OptionsPage;
   };
 
 });
-

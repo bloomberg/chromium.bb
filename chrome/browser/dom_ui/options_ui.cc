@@ -58,6 +58,7 @@
 #include "chrome/browser/chromeos/dom_ui/language_mozc_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
 #include "chrome/browser/chromeos/dom_ui/language_pinyin_options_handler.h"
+#include "chrome/browser/chromeos/dom_ui/proxy_handler.h"
 #include "chrome/browser/chromeos/dom_ui/system_options_handler.h"
 #endif
 
@@ -149,6 +150,8 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings,
                           new LanguageMozcOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new LanguageOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new ProxyHandler());
+  AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new LanguagePinyinOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new SystemOptionsHandler());

@@ -5508,6 +5508,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_OPTIONS_ACCOUNTS_TAB_LABEL" desc="The title of the Accounts tab">
           Users
         </message>
+        <message name="IDS_OPTIONS_PROXY_TAB_LABEL" desc="The title of the proxy subtab">
+          Proxy
+        </message>
       </if>
       <message name="IDS_OPTIONS_GENERAL_TAB_LABEL" desc="The title of the Basics tab">
         Basics
@@ -8669,6 +8672,48 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_VERSION_FIELD_PREFIX" desc="Display the OS version to the user.">
         OS version
+      </message>
+      <message name="IDS_PROXY_CONFIG_TITLE" desc="The title of the basic proxy config.">
+        Proxy Configuration
+      </message>
+      <message name="IDS_PROXY_DIRECT_CONNECTION" desc="Radio used to tell it to just connect directly, not use a proxy.">
+        Direct internet connection
+      </message>
+      <message name="IDS_PROXY_MANUAL_CONFIG" desc="Radio used to tell it to configure manually.">
+        Manual proxy configuration
+      </message>
+      <message name="IDS_PROXY_SAME_FORALL" desc="Radio used to tell it to use the same proxy.">
+        Use the same proxy for all protocols
+      </message>
+      <message name="IDS_PROXY_HTTP_PROXY" desc="Label for the http proxy box.">
+        HTTP proxy
+      </message>
+      <message name="IDS_PROXY_HTTP_SECURE_HTTP_PROXY" desc="Label for the secure http proxy box.">
+        Secure HTTP proxy
+      </message>
+      <message name="IDS_PROXY_FTP_PROXY" desc="Label for the ftp proxy box.">
+        FTP proxy
+      </message>
+      <message name="IDS_PROXY_SOCKS_HOST" desc="Label for the socks host box.">
+        Socks Host
+      </message>
+      <message name="IDS_PROXY_AUTOMATIC" desc="Radio to select configuring from a URL.">
+        Automatic proxy configuration
+      </message>
+      <message name="IDS_PROXY_CONFIG_URL" desc="Label for the proxy config URL box.">
+        Autoconfiguration URL
+      </message>
+      <message name="IDS_PROXY_ADVANCED_CONFIG" desc="Label for the Advanced Proxy.">
+        Advanced Configuration
+      </message>
+      <message name="IDS_PROXY_ADD_HOST" desc="Label for the Add host button.">
+        Add
+      </message>
+      <message name="IDS_PROXY_REMOVE_HOST" desc="Label for the Remove host button.">
+        Remove
+      </message>
+      <message name="IDS_PROXY_PORT" desc="Label for the Port box.">
+        Port
       </message>
     </if>
     <if expr="pp_ifdef('chromeos') and lang == 'ja'">

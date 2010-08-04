@@ -112,6 +112,10 @@ function load() {
                                       'labsPage');
     OptionsPage.register(labsOptions);
     OptionsPage.registerSubPage(LanguageOptions.getInstance());
+    var proxy = new OptionsPage('proxy',
+                                localStrings.getString('proxyPage'),
+                                'proxyPage');
+    OptionsPage.registerSubPage(proxy);
   }
 
   var syncSettings = new OptionsPage('sync',
@@ -181,6 +185,7 @@ window.onpopstate = function(e) {
         <include src="options/chromeos_language_options.html">
         <include src="options/chromeos_labs.html">
         <include src="options/chromeos_accounts_options.html">
+        <include src="options/chromeos_proxy.html">
         <!-- TODO(mazda): include the following htmls once the language options
              dialog is ready.
              - options/chromeos_language_chewing_options.html
