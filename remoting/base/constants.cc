@@ -11,4 +11,6 @@ const char kChromotingBotJid[] = "remoting@bot.talk.google.com";
 // TODO(sergeyu): Use chromoting's own service name here instead of sync.
 const char kChromotingTokenServiceName[] = "chromiumsync";
 
+const char kChromotingXmlNamespace[] = "google:remoting";
+
 }  // namespace remoting

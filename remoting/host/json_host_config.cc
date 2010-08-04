@@ -17,6 +17,7 @@ JsonHostConfig::JsonHostConfig(
     const FilePath& filename,
     base::MessageLoopProxy* file_message_loop_proxy)
     : filename_(filename),
+      values_(new DictionaryValue()),
       message_loop_proxy_(file_message_loop_proxy) {
 }
 

@@ -12,6 +12,9 @@ extern const char kChromotingBotJid[];
 // Service name used for authentication.
 extern const char kChromotingTokenServiceName[];
 
+// Namespace used for chromoting XMPP stanzas.
+extern const char kChromotingXmlNamespace[];
+
 }  // namespace remoting
 
 #endif  // REMOTING_BASE_CONSTANTS_H_

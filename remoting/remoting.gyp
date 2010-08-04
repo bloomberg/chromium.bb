@@ -106,7 +106,7 @@
         }],
       ],  # end of 'conditions'
     },  # end of target 'chromoting_plugin'
-    
+
     {
       'target_name': 'chromoting_base',
       'type': '<(library)',
@@ -188,6 +188,8 @@
         'host/heartbeat_sender.h',
         'host/host_config.cc',
         'host/host_config.h',
+        'host/host_key_pair.cc',
+        'host/host_key_pair.h',
         'host/json_host_config.cc',
         'host/json_host_config.h',
       ],
@@ -365,9 +367,12 @@
         'host/client_connection_unittest.cc',
         'host/differ_unittest.cc',
         'host/differ_block_unittest.cc',
+        'host/heartbeat_sender_unittest.cc',
+        'host/host_key_pair_unittest.cc',
         'host/json_host_config_unittest.cc',
         'host/mock_objects.h',
         'host/session_manager_unittest.cc',
+        'host/test_key_pair.h',
         'jingle_glue/jingle_thread_unittest.cc',
         'jingle_glue/jingle_channel_unittest.cc',
         'jingle_glue/iq_request_unittest.cc',

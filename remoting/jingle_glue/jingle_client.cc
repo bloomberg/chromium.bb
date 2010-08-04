@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(ajwong): Check the initialization sentinels.  Can we base it off of
-// state_ instead of a member variable?  Also, we assign and read from a few of
-// the member variables on two threads.  We need to audit this for thread
-// safety.
+// TODO(ajwong): We assign and read from a few of the member variables on
+// two threads. We need to audit this for thread safety.
 
 #include "remoting/jingle_glue/jingle_client.h"
 
@@ -13,6 +11,7 @@
 #include "base/waitable_event.h"
 #include "base/message_loop.h"
 #include "remoting/jingle_glue/gaia_token_pre_xmpp_auth.h"
+#include "remoting/jingle_glue/iq_request.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/relay_port_allocator.h"
 #include "remoting/jingle_glue/xmpp_socket_adapter.h"
@@ -32,13 +31,13 @@ namespace remoting {
 JingleClient::JingleClient(JingleThread* thread)
     : client_(NULL),
       thread_(thread),
-      state_(START),
+      state_(CREATED),
       callback_(NULL) {
 }
 
 JingleClient::~JingleClient() {
   // JingleClient can be destroyed only after it's closed.
-  DCHECK(state_ == CLOSED);
+  DCHECK(state_ == CLOSED || state_ == CREATED);
 }
 
 void JingleClient::Init(
@@ -46,13 +45,13 @@ void JingleClient::Init(
     const std::string& auth_token_service, Callback* callback) {
   DCHECK_NE(username, "");
   DCHECK(callback != NULL);
-  DCHECK(callback_ == NULL);  // Init() can be called only once.
+  DCHECK(state_ == CREATED);
 
   callback_ = callback;
-
   message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleClient::DoInitialize,
                                    username, auth_token, auth_token_service));
+  state_ = INITIALIZED;
 }
 
 JingleChannel* JingleClient::Connect(const std::string& host_jid,
@@ -160,6 +159,10 @@ std::string JingleClient::GetFullJid() {
   return full_jid_;
 }
 
+IqRequest* JingleClient::CreateIqRequest() {
+  return new IqRequest(this);
+}
+
 MessageLoop* JingleClient::message_loop() {
   return thread_->message_loop();
 }
@@ -167,7 +170,7 @@ MessageLoop* JingleClient::message_loop() {
 void JingleClient::OnConnectionStateChanged(buzz::XmppEngine::State state) {
   switch (state) {
     case buzz::XmppEngine::STATE_START:
-      UpdateState(START);
+      UpdateState(INITIALIZED);
       break;
     case buzz::XmppEngine::STATE_OPENING:
       UpdateState(CONNECTING);

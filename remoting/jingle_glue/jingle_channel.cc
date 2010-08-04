@@ -45,6 +45,7 @@ void JingleChannel::Init(JingleThread* thread,
   thread_ = thread;
   stream_.reset(stream);
   stream_->SignalEvent.connect(&event_handler_, &EventHandler::OnStreamEvent);
+  jid_ = jid;
 
   // Initialize |state_|.
   switch (stream->GetState()) {
@@ -63,8 +64,6 @@ void JingleChannel::Init(JingleThread* thread,
     default:
       NOTREACHED();
   }
-
-  jid_ = jid;
 }
 
 void JingleChannel::Write(scoped_refptr<DataBuffer> data) {

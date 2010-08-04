@@ -30,11 +30,14 @@ class Session;
 
 namespace remoting {
 
+class IqRequest;
+
 class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
                      public sigslot::has_slots<> {
  public:
   enum State {
-    START,  // Initial state.
+    CREATED,  // Initial state.
+    INITIALIZED,
     CONNECTING,
     CONNECTED,
     CLOSED,
@@ -88,6 +91,10 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   // known yet, i.e. authentication hasn't finished.
   std::string GetFullJid();
 
+  // Creates new IqRequest for this client. Ownership for of the created object
+  // is transfered to the caller.
+  virtual IqRequest* CreateIqRequest();
+
   // Current state of the client.
   State state() { return state_; }
 
@@ -98,6 +105,8 @@ class JingleClient : public base::RefCountedThreadSafe<JingleClient>,
   MessageLoop* message_loop();
 
  private:
+  friend class HeartbeatSenderTest;
+
   void OnConnectionStateChanged(buzz::XmppEngine::State state);
 
   void OnIncomingTunnel(cricket::TunnelSessionClient* client, buzz::Jid jid,

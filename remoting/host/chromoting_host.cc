@@ -139,12 +139,13 @@ void ChromotingHost::OnStateChange(JingleClient* jingle_client,
     LOG(INFO) << "Host connected as "
               << jingle_client->GetFullJid() << "." << std::endl;
 
-    // Start heartbeating after we connected
-    heartbeat_sender_ = new HeartbeatSender();
-    heartbeat_sender_->Start(config_, jingle_client_.get());
+    // Start heartbeating after we've connected.
+    heartbeat_sender_->Start();
   } else if (state == JingleClient::CLOSED) {
     LOG(INFO) << "Host disconnected from talk network." << std::endl;
-    heartbeat_sender_ = NULL;
+
+    // Stop heartbeating.
+    heartbeat_sender_->Stop();
 
     // TODO(sergeyu): We should try reconnecting here instead of terminating
     // the host.
@@ -219,6 +220,12 @@ void ChromotingHost::DoStart(Task* shutdown_task) {
   jingle_client_ = new JingleClient(context_->jingle_thread());
   jingle_client_->Init(xmpp_login, xmpp_auth_token,
                        kChromotingTokenServiceName, this);
+
+  heartbeat_sender_ = new HeartbeatSender();
+  if (!heartbeat_sender_->Init(config_, jingle_client_.get())) {
+    LOG(ERROR) << "Failed to initialize HeartbeatSender.";
+    return;
+  }
 }
 
 void ChromotingHost::DoShutdown() {

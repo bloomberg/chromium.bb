@@ -14,7 +14,7 @@
 namespace remoting {
 
 namespace {
-const char *kTestConfig =
+const char* kTestConfig =
 "{\n"
 "  \"xmpp_login\" : \"test@gmail.com\",\n"
 "  \"xmpp_auth_token\" : \"TEST_AUTH_TOKEN\",\n"

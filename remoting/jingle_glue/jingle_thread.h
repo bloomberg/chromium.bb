@@ -54,6 +54,8 @@ class JingleThread : public talk_base::Thread,
   TaskPump* task_pump() { return task_pump_; }
 
  private:
+  friend class HeartbeatSenderTest;
+
   virtual void OnMessage(talk_base::Message* msg);
 
   void PumpAuxiliaryLoops();
