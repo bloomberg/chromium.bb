@@ -10,20 +10,23 @@
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace browser_sync {
+namespace {
+
 TEST(NigoriTest, Parameters) {
-  browser_sync::Nigori nigori("example.com");
-  EXPECT_TRUE(nigori.Init("username", "password"));
+  Nigori nigori;
+  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
   EXPECT_STREQ("example.com", nigori.hostname().c_str());
   EXPECT_STREQ("username", nigori.username().c_str());
   EXPECT_STREQ("password", nigori.password().c_str());
 }
 
 TEST(NigoriTest, Permute) {
-  browser_sync::Nigori nigori("example.com");
-  EXPECT_TRUE(nigori.Init("username", "password"));
+  Nigori nigori;
+  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
   std::string permuted;
-  EXPECT_TRUE(nigori.Permute(browser_sync::Nigori::Password, "test name",
+  EXPECT_TRUE(nigori.Permute(Nigori::Password, "test name",
                              &permuted));
 
   std::string expected =
@@ -33,19 +36,19 @@ TEST(NigoriTest, Permute) {
 }
 
 TEST(NigoriTest, PermuteIsConstant) {
-  browser_sync::Nigori nigori1("example.com");
-  EXPECT_TRUE(nigori1.Init("username", "password"));
+  Nigori nigori1;
+  EXPECT_TRUE(nigori1.InitByDerivation("example.com", "username", "password"));
 
   std::string permuted1;
-  EXPECT_TRUE(nigori1.Permute(browser_sync::Nigori::Password,
+  EXPECT_TRUE(nigori1.Permute(Nigori::Password,
                               "name",
                               &permuted1));
 
-  browser_sync::Nigori nigori2("example.com");
-  EXPECT_TRUE(nigori2.Init("username", "password"));
+  Nigori nigori2;
+  EXPECT_TRUE(nigori2.InitByDerivation("example.com", "username", "password"));
 
   std::string permuted2;
-  EXPECT_TRUE(nigori2.Permute(browser_sync::Nigori::Password,
+  EXPECT_TRUE(nigori2.Permute(Nigori::Password,
                               "name",
                               &permuted2));
 
@@ -54,8 +57,8 @@ TEST(NigoriTest, PermuteIsConstant) {
 }
 
 TEST(NigoriTest, EncryptDifferentIv) {
-  browser_sync::Nigori nigori("example.com");
-  EXPECT_TRUE(nigori.Init("username", "password"));
+  Nigori nigori;
+  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
   std::string plaintext("value");
 
@@ -69,8 +72,8 @@ TEST(NigoriTest, EncryptDifferentIv) {
 }
 
 TEST(NigoriTest, Decrypt) {
-  browser_sync::Nigori nigori("example.com");
-  EXPECT_TRUE(nigori.Init("username", "password"));
+  Nigori nigori;
+  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
   std::string encrypted =
       "e7+JyS6ibj6F5qqvpseukNRTZ+oBpu5iuv2VYjOfrH1dNiFLNf7Ov0"
@@ -84,8 +87,8 @@ TEST(NigoriTest, Decrypt) {
 }
 
 TEST(NigoriTest, EncryptDecrypt) {
-  browser_sync::Nigori nigori("example.com");
-  EXPECT_TRUE(nigori.Init("username", "password"));
+  Nigori nigori;
+  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
   std::string plaintext("value");
 
@@ -99,8 +102,8 @@ TEST(NigoriTest, EncryptDecrypt) {
 }
 
 TEST(NigoriTest, CorruptedIv) {
-  browser_sync::Nigori nigori("example.com");
-  EXPECT_TRUE(nigori.Init("username", "password"));
+  Nigori nigori;
+  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
   std::string plaintext("test");
 
@@ -117,8 +120,8 @@ TEST(NigoriTest, CorruptedIv) {
 }
 
 TEST(NigoriTest, CorruptedCiphertext) {
-  browser_sync::Nigori nigori("example.com");
-  EXPECT_TRUE(nigori.Init("username", "password"));
+  Nigori nigori;
+  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
 
   std::string plaintext("test");
 
@@ -126,11 +129,44 @@ TEST(NigoriTest, CorruptedCiphertext) {
   EXPECT_TRUE(nigori.Encrypt(plaintext, &encrypted));
 
   // Corrput the ciphertext by changing one of its bytes.
-  encrypted[browser_sync::Nigori::kIvSize + 10] =
-      (encrypted[browser_sync::Nigori::kIvSize + 10] == 'a' ? 'b' : 'a');
+  encrypted[Nigori::kIvSize + 10] =
+      (encrypted[Nigori::kIvSize + 10] == 'a' ? 'b' : 'a');
 
   std::string decrypted;
   EXPECT_FALSE(nigori.Decrypt(encrypted, &decrypted));
 
   EXPECT_NE(plaintext, decrypted);
 }
+
+TEST(NigoriTest, ExportImport) {
+  Nigori nigori1;
+  EXPECT_TRUE(nigori1.InitByDerivation("example.com", "username", "password"));
+
+  std::string user_key;
+  std::string encryption_key;
+  std::string mac_key;
+  EXPECT_TRUE(nigori1.ExportKeys(&user_key, &encryption_key, &mac_key));
+
+  Nigori nigori2;
+  EXPECT_TRUE(nigori2.InitByImport(user_key, encryption_key, mac_key));
+
+  std::string original("test");
+  std::string plaintext;
+  std::string ciphertext;
+
+  EXPECT_TRUE(nigori1.Encrypt(original, &ciphertext));
+  EXPECT_TRUE(nigori2.Decrypt(ciphertext, &plaintext));
+  EXPECT_EQ(original, plaintext);
+
+  EXPECT_TRUE(nigori2.Encrypt(original, &ciphertext));
+  EXPECT_TRUE(nigori1.Decrypt(ciphertext, &plaintext));
+  EXPECT_EQ(original, plaintext);
+
+  std::string permuted1, permuted2;
+  EXPECT_TRUE(nigori1.Permute(Nigori::Password, original, &permuted1));
+  EXPECT_TRUE(nigori2.Permute(Nigori::Password, original, &permuted2));
+  EXPECT_EQ(permuted1, permuted2);
+}
+
+}  // anonymous namespace
+}  // namespace browser_sync

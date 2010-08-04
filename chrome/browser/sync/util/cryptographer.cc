@@ -83,8 +83,10 @@ bool Cryptographer::AddKey(const KeyParams& params) {
   DCHECK(NULL == pending_keys_.get());
 
   // Create the new Nigori and make it the default encryptor.
-  scoped_ptr<Nigori> nigori(new Nigori(params.hostname));
-  if (!nigori->Init(params.username, params.password)) {
+  scoped_ptr<Nigori> nigori(new Nigori);
+  if (!nigori->InitByDerivation(params.hostname,
+                                params.username,
+                                params.password)) {
     NOTREACHED();  // Invalid username or password.
     return false;
   }
@@ -115,8 +117,10 @@ void Cryptographer::SetPendingKeys(const sync_pb::EncryptedData& encrypted) {
 }
 
 bool Cryptographer::DecryptPendingKeys(const KeyParams& params) {
-  Nigori nigori(params.hostname);
-  if (!nigori.Init(params.username, params.password)) {
+  Nigori nigori;
+  if (!nigori.InitByDerivation(params.hostname,
+                               params.username,
+                               params.password)) {
     NOTREACHED();
     return false;
   }
@@ -142,8 +146,10 @@ void Cryptographer::InstallKeys(const std::string& default_key_name,
     const sync_pb::NigoriKey key = bag.key(i);
     // Only use this key if we don't already know about it.
     if (nigoris_.end() == nigoris_.find(key.name())) {
-      scoped_ptr<Nigori> new_nigori(new Nigori(key.hostname()));
-      if (!new_nigori->Init(key.username(), key.password())) {
+      scoped_ptr<Nigori> new_nigori(new Nigori);
+      if (!new_nigori->InitByDerivation(key.hostname(),
+                                        key.username(),
+                                        key.password())) {
         NOTREACHED();
         continue;
       }

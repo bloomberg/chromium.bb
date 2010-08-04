@@ -61,19 +61,21 @@ class NigoriStream {
 // static
 const char Nigori::kSaltSalt[] = "saltsalt";
 
-Nigori::Nigori(const std::string& hostname)
-    : hostname_(hostname) {
+Nigori::Nigori() {
 }
 
 Nigori::~Nigori() {
 }
 
-bool Nigori::Init(const std::string& username, const std::string& password) {
+bool Nigori::InitByDerivation(const std::string& hostname,
+                              const std::string& username,
+                              const std::string& password) {
+  hostname_ = hostname;
   username_ = username;
   password_ = password;
 
   NigoriStream salt_password;
-  salt_password << username << hostname_;
+  salt_password << username << hostname;
 
   // Suser = PBKDF2(Username || Servername, "saltsalt", Nsalt, 8)
   scoped_ptr<SymmetricKey> user_salt(SymmetricKey::DeriveKeyFromPassword(
@@ -103,6 +105,22 @@ bool Nigori::Init(const std::string& username, const std::string& password) {
   DCHECK(mac_key_.get());
 
   return true;
+}
+
+bool Nigori::InitByImport(const std::string& user_key,
+                          const std::string& encryption_key,
+                          const std::string& mac_key) {
+  user_key_.reset(SymmetricKey::Import(SymmetricKey::AES, user_key));
+  DCHECK(user_key_.get());
+
+  encryption_key_.reset(SymmetricKey::Import(SymmetricKey::AES,
+                                             encryption_key));
+  DCHECK(encryption_key_.get());
+
+  mac_key_.reset(SymmetricKey::Import(SymmetricKey::HMAC_SHA1, mac_key));
+  DCHECK(mac_key_.get());
+
+  return user_key_.get() && encryption_key_.get() && mac_key_.get();
 }
 
 // Permute[Kenc,Kmac](type || name)
@@ -226,6 +244,18 @@ bool Nigori::Decrypt(const std::string& encrypted, std::string* value) const {
     return false;
 
   return true;
+}
+
+bool Nigori::ExportKeys(std::string* user_key,
+                        std::string* encryption_key,
+                        std::string* mac_key) const {
+  DCHECK(user_key);
+  DCHECK(encryption_key);
+  DCHECK(mac_key);
+
+  return user_key_->GetRawKey(user_key) &&
+      encryption_key_->GetRawKey(encryption_key) &&
+      mac_key_->GetRawKey(mac_key);
 }
 
 }  // namespace browser_sync
