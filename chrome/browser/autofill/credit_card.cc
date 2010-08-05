@@ -43,7 +43,7 @@ const char* kMasterCard = "masterCardCC";
 const char* kSoloCard = "soloCC";
 const char* kVisaCard = "visaCC";
 
-std::string GetCreditCardType(string16 number) {
+std::string GetCreditCardType(const string16& number) {
   // Credit card number specifications taken from:
   // http://en.wikipedia.org/wiki/Credit_card_numbers and
   // http://www.beachnet.com/~hstiles/cardtype.html
