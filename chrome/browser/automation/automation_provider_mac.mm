@@ -12,6 +12,8 @@
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/cocoa/tab_window_controller.h"
+#include "chrome/browser/view_ids.h"
+#import "chrome/browser/cocoa/browser_window_controller.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
@@ -53,11 +55,38 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
                                              bool screen_coordinates,
                                              bool* success,
                                              gfx::Rect* bounds) {
-  // AutomationProxyVisibleTest claims that this is used only by Chrome Views
-  // which we don't use on the Mac. Is this true?
-
   *success = false;
-  NOTIMPLEMENTED();
+
+  // At the moment we hard code the view ID used by WebDriver and do
+  // not support arbitrary view IDs.  suzhe is working on general view
+  // ID support for the Mac.
+  if (view_id != VIEW_ID_TAB_CONTAINER) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
+  NSWindow* window = window_tracker_->GetResource(handle);
+  if (!window)
+    return;
+
+  BrowserWindowController* controller = [window windowController];
+  DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
+  if (![controller isKindOfClass:[BrowserWindowController class]])
+    return;
+  NSView* tab = [controller selectedTabView];
+  if (!tab)
+    return;
+
+  NSPoint coords = NSZeroPoint;
+  if (screen_coordinates) {
+    coords = [window convertBaseToScreen:[tab convertPoint:NSZeroPoint
+                                                    toView:nil]];
+  } else {
+    coords = [tab convertPoint:NSZeroPoint toView:[window contentView]];
+  }
+  // Flip coordinate system
+  coords.y = [[window screen] frame].size.height - coords.y;
+  *success = true;
 }
 
 void AutomationProvider::ActivateWindow(int handle) { NOTIMPLEMENTED(); }
