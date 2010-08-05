@@ -42,12 +42,15 @@ PLATFORM_MAPPING = {
 
 
 def Retry(op, *args):
-  for i in range(0, 10):
-    try:
-      op(*args)
-      break
-    except OSError:
-      time.sleep(pow(2, i))
+  if sys.platform == 'win32':
+    for i in range(0, 10):
+      try:
+        op(*args)
+        break
+      except WindowsError:
+        time.sleep(pow(2, i))
+  else:
+    op(*args)
 
 
 def main(argv):
@@ -84,6 +87,23 @@ def main(argv):
       shutil.rmtree(dst)
     except OSError:
       pass
+    source_url_file = os.path.join(dst, 'SOURCE_URL')
+    if version != 'latest':
+      try:
+        fh = open(source_url_file, 'r')
+        old_url = fh.read()
+        fh.close()
+        if old_url == url:
+          return
+      except IOError:
+        pass
+
+    # Try to remove source url stamp (so failure triggers a retry).
+    try:
+      os.remove(source_url_file)
+    except OSError:
+      pass
+
     # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
     if 'arm' in flavor[0]:
       sync_tgz.SyncTgz(url, dst)
@@ -93,6 +113,11 @@ def main(argv):
       Retry(os.rename, os.path.join(dst_tmp, 'sdk', 'nacl-sdk'), dst)
       Retry(os.rmdir, os.path.join(dst_tmp, 'sdk'))
       Retry(os.rmdir, dst_tmp)
+
+    # Write out source url stamp.
+    fh = open(os.path.join(dst, 'SOURCE_URL'), 'w')
+    fh.write(url)
+    fh.close()
 
 
 if __name__ == '__main__':
