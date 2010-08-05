@@ -1167,9 +1167,24 @@ void ExtensionsService::Observe(NotificationType type,
     case NotificationType::EXTENSION_PROCESS_TERMINATED: {
       DCHECK_EQ(profile_, Source<Profile>(source).ptr());
 
+      ExtensionHost* host = Details<ExtensionHost>(details).ptr();
+
+      // TODO(rafaelw): Remove this check and ExtensionHost::recently_deleted().
+      // This is only here to help track down crbug.com/49114.
+      ExtensionHost::HostPointerList::iterator iter =
+          ExtensionHost::recently_deleted()->begin();
+      for (; iter != ExtensionHost::recently_deleted()->end(); iter++) {
+        if (*iter == host) {
+          CHECK(host->GetURL().spec().size() + 2 != 0);
+          break;
+        }
+      }
+      if (iter == ExtensionHost::recently_deleted()->end())
+        CHECK(host->GetURL().spec().size() + 1 != 0);
+
       // Unload the entire extension. We want it to be in a consistent state:
       // either fully working or not loaded at all, but never half-crashed.
-      UnloadExtension(Details<ExtensionHost>(details).ptr()->extension()->id());
+      UnloadExtension(host->extension()->id());
       break;
     }
 

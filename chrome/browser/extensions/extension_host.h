@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <list>
 
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
@@ -47,6 +48,9 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Enable DOM automation in created render view hosts.
   static void EnableDOMAutomation() { enable_dom_automation_ = true; }
+
+  typedef std::list<ExtensionHost*> HostPointerList;
+  static HostPointerList* recently_deleted();
 
   ExtensionHost(Extension* extension, SiteInstance* site_instance,
                 const GURL& url, ViewType::Type host_type);
