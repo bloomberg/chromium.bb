@@ -72,3 +72,16 @@
   display: block;
   margin: auto;
 }
+
+#add-language-overlay-page {
+  width: 800px;
+}
+
+#add-language-overlay-page button {
+  padding: 0px;
+}
+
+#add-language-overlay-page ul {
+  padding: 0px;
+  margin: 0px;
+}
