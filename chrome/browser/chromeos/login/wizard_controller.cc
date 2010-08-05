@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/account_screen.h"
+#include "chrome/browser/chromeos/login/apply_services_customization.h"
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/eula_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -56,12 +57,6 @@ const wchar_t kOobeComplete[] = L"OobeComplete";
 // Path to OEM partner startup customization manifest.
 const char kStartupCustomizationManifestPath[] =
     "/mnt/partner_partition/etc/chromeos/startup_manifest.json";
-
-// URL where to fetch OEM services customization manifest from.
-// TODO(denisromanov): Change this to real URL when it becomes available.
-// http://crosbug.com/5123
-const char kServicesCustomizationManifestUrl[] =
-    "file:///mnt/partner_partition/etc/chromeos/services_manifest.json";
 
 // Path to flag file indicating that OOBE was completed successfully.
 const char kOobeCompleteFlagFilePath[] =
@@ -182,11 +177,6 @@ void DeleteWizardControllerAndLaunchBrowser(WizardController* controller) {
       FROM_HERE,
       NewRunnableFunction(&chromeos::LoginUtils::DoBrowserLaunch,
                           ProfileManager::GetDefaultProfile()));
-}
-
-void DeleteWizardControllerAndApplyCustomization(WizardController* controller) {
-  controller->ApplyPartnerServicesCustomizations();
-  delete controller;
 }
 
 const chromeos::StartupCustomizationDocument* LoadStartupManifest() {
@@ -378,6 +368,9 @@ chromeos::ExistingUserController* WizardController::ShowLoginScreen() {
   SetStatusAreaVisible(true);
   background_view_->SetOobeProgress(chromeos::BackgroundView::SIGNIN);
 
+  // Initiate services customization.
+  chromeos::ApplyServicesCustomization::StartIfNeeded();
+
   // When run under automation test show plain login screen.
   if (!is_test_mode_ &&
       chromeos::CrosLibrary::Get()->EnsureLoaded() &&
@@ -395,16 +388,7 @@ chromeos::ExistingUserController* WizardController::ShowLoginScreen() {
     background_widget_ = NULL;
     background_view_ = NULL;
 
-    FilePath startup_manifest_path(kStartupCustomizationManifestPath);
-    if (file_util::PathExists(startup_manifest_path)) {
-      services_manifest_fetcher_.reset(new StringFetcher(
-          kServicesCustomizationManifestUrl));
-    }
-    ChromeThread::PostTask(
-        ChromeThread::UI,
-        FROM_HERE,
-        NewRunnableFunction(&DeleteWizardControllerAndApplyCustomization,
-                            this));
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 
     return controller;
   }
@@ -662,32 +646,6 @@ void WizardController::MarkDeviceRegistered() {
     file_util::CloseFile(oobe_flag_file);
 }
 
-void WizardController::ApplyPartnerServicesCustomizations() {
-  if (services_manifest_fetcher_.get() == NULL ||
-      services_manifest_fetcher_->result().empty()) {
-    return;
-  }
-  scoped_ptr<chromeos::ServicesCustomizationDocument> customization;
-  bool manifest_loaded;
-  customization.reset(new chromeos::ServicesCustomizationDocument());
-  manifest_loaded = customization->LoadManifestFromString(
-      services_manifest_fetcher_->result());
-  DCHECK(manifest_loaded) << "Customization manifest fetch error: "
-                          << services_manifest_fetcher_->result();
-  if (!manifest_loaded)
-    return;
-  LOG(INFO) << "partner services customizations manifest loaded successfully";
-  if (!customization->initial_start_page_url().empty()) {
-    // Append partner's start page url to command line so it gets opened
-    // on browser startup.
-    CommandLine::ForCurrentProcess()->AppendLooseValue(
-        UTF8ToWide(customization->initial_start_page_url()));
-    LOG(INFO) << "initial_start_page_url: "
-              << customization->initial_start_page_url();
-  }
-  // TODO(dpolukhin): apply customized apps, exts and support page.
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, chromeos::ScreenObserver overrides:
 void WizardController::OnExit(ExitCodes exit_code) {
@@ -806,6 +764,10 @@ void ShowLoginWizard(const std::string& first_screen_name,
         chromeos::UserManager::Get()->GetUsers();
     // ExistingUserController deletes itself.
     (new chromeos::ExistingUserController(users, screen_bounds))->Init();
+
+    // Initiate services customization.
+    chromeos::ApplyServicesCustomization::StartIfNeeded();
+
     return;
   }
 

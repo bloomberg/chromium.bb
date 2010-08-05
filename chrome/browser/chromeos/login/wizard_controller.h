@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "chrome/browser/chromeos/login/string_fetcher.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -119,9 +118,6 @@ class WizardController : public chromeos::ScreenObserver,
   // Registers OOBE preferences.
   static void RegisterPrefs(PrefService* local_state);
 
-  // Applies partner services customizations.
-  void ApplyPartnerServicesCustomizations();
-
   static const char kNetworkScreenName[];
   static const char kLoginScreenName[];
   static const char kAccountScreenName[];
@@ -219,9 +215,6 @@ class WizardController : public chromeos::ScreenObserver,
 
   // Partner startup customizations.
   scoped_ptr<const chromeos::StartupCustomizationDocument> customization_;
-
-  // Partner services manifest fetcher.
-  scoped_ptr<StringFetcher> services_manifest_fetcher_;
 
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorNetwork);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, ControlFlowErrorUpdate);
