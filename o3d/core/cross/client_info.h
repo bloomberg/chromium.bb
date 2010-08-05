@@ -75,6 +75,15 @@ class ClientInfo {
 #endif
   }
 
+  // Whether render in 2d Mode
+  bool render_2d() const {
+#if defined(RENDERER_CAIRO)
+    return true;
+#else
+    return false;
+#endif
+  }
+
   // Whether or not the underlying GPU supports non power of 2 textures.
   // NOTE: O3D always supports non power of 2 textures from a public API
   // point of view and massages the data underneath to make this work.

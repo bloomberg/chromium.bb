@@ -156,6 +156,11 @@ class ClientInfo {
     True if shaders need to be GLSL instead of Cg/HLSL.
   %]
   [getter] bool glsl;
+
+  %[
+    True if rendering in 2d mode
+  %]
+  [getter] bool render_2d;
 };
 
 %[

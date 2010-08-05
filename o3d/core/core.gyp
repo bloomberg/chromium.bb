@@ -470,6 +470,20 @@
             ],
           },
         ],
+        ['renderer == "cairo"',
+          {
+            'sources': [
+              'cross/cairo/install_check.cc',
+              'cross/cairo/renderer_cairo.cc',
+              'cross/cairo/renderer_cairo.h',
+              'cross/cairo/texture_cairo.cc',
+              'cross/cairo/texture_cairo.h',
+            ],
+            'dependencies': [
+              '../build/libs.gyp:cairo_libs',
+            ],
+          },
+        ],
       ],
     },
     {

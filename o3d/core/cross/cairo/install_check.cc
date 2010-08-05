@@ -1,5 +1,5 @@
 /*
- * Copyright 2009, Google Inc.
+ * Copyright 2010, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,53 +30,13 @@
  */
 
 
-// This include determines which renderer to include, based on the
-// compile options, so that this is the only place that needs to know
-// what all the choices are.
+#include "core/cross/install_check.h"
 
-#ifndef O3D_CORE_CROSS_RENDERER_PLATFORM_H_
-#define O3D_CORE_CROSS_RENDERER_PLATFORM_H_
+namespace o3d {
 
-#include <build/build_config.h>
-#if defined(OS_MACOSX)
-#include "core/cross/gl/gl_headers.h"
-#include <OpenGL/OpenGL.h>
-#include <AGL/agl.h>
-#elif defined(OS_LINUX)
-#if defined(RENDERER_GL)
-#include "core/cross/gl/gl_headers.h"
-#include <GL/glx.h>
-#elif defined(RENDERER_GLES2)
-#include "core/cross/gles2/gles2_headers.h"
-#endif
-#elif defined(OS_WIN) && defined(RENDERER_GL)
-#include "core/cross/gl/gl_headers.h"
-#include <gl/GL.h>
-#elif defined(OS_WIN) && defined(RENDERER_GLES2)
-#include "core/cross/gles2/gles2_headers.h"
-#include <gl/GL.h>
-#endif
+bool RendererInstallCheck(std::string *error) {
+  return true;
+}
 
-#if defined(OS_WIN)
-#include "core/win/display_window_win.h"
-#elif defined(OS_MACOSX)
-#include "core/mac/display_window_mac.h"
-#elif defined(OS_LINUX)
-#include "core/linux/display_window_linux.h"
-#else
-#error Platform not recognized.
-#endif
+}  // namespace o3d
 
-#if defined(RENDERER_D3D9) && defined(OS_WIN)
-#include "core/win/d3d9/renderer_d3d9.h"
-#elif defined(RENDERER_GL)
-#include "core/cross/gl/renderer_gl.h"
-#elif defined(RENDERER_GLES2)
-#include "core/cross/gles2/renderer_gles2.h"
-#elif defined(RENDERER_CAIRO)
-#include "core/cross/cairo/renderer_cairo.h"
-#else
-#error Renderer not recognized.
-#endif
-
-#endif  // O3D_CORE_CROSS_RENDERER_PLATFORM_H_

@@ -18,6 +18,34 @@
   ],
   'targets': [
     {
+      'target_name': 'cairo_libs',
+      'type': 'none',
+      'conditions': [
+        [ 'OS=="linux"',
+          {
+            'all_dependent_settings': {
+              'cflags': [
+                '<!@(pkg-config --cflags cairo)',
+              ],
+              'libraries': [
+                '-lcairo',
+              ],
+            },
+          },
+        ],
+        [ 'OS=="mac"',
+          {
+            #TODO(fransiskusx): Link to Cairo on Win/Mac as a static library
+          },
+        ],
+        [ 'OS=="win"',
+          {
+            #TODO(fransiskusx): Link to Cairo on Win/Mac as a static library,
+          },
+        ],
+      ],
+    },
+    {
       'target_name': 'gl_libs',
       'type': 'none',
       'all_dependent_settings': {

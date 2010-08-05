@@ -109,6 +109,13 @@
           ],
         },
       ],
+      ['renderer == "cairo"',
+        {
+          'defines': [
+            'RENDERER_CAIRO',
+          ],
+        },
+      ],
       ['renderer == "gles2"',
         {
           'defines': [

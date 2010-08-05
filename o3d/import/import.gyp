@@ -29,7 +29,6 @@
         '../../<(jpegdir)/libjpeg.gyp:libjpeg',
         '../../<(pngdir)/libpng.gyp:libpng',
         '../../<(zlibdir)/zlib.gyp:zlib',
-        '../build/libs.gyp:cg_libs',
         '../compiler/technique/technique.gyp:o3dTechnique',
       ],
       'sources': [
@@ -48,6 +47,16 @@
         'cross/targz_generator.h',
         'cross/zip_archive.cc',
         'cross/zip_archive.h',
+      ],
+
+      'conditions' :[
+         ['renderer != "cairo"',
+          {
+           'dependencies': [
+             '../build/libs.gyp:cg_libs',
+           ],
+          },
+        ],     
       ],
 
       'conditions' : [
