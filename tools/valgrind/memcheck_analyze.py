@@ -30,6 +30,7 @@ TheAddressTable = None
 _TOP_OF_STACK_POINTS = [
   # Don't show our testing framework.
   "testing::Test::Run()",
+  "_ZN7testing4Test3RunEv",
   # Also don't show the internals of libc/pthread.
   "start_thread"
 ]
@@ -263,10 +264,12 @@ class ValgrindError:
     # VG_MAX_SUPP_CALLERS, but we're probably fine with it as is.)
     # TODO(dkegel): add more boring callers
     newlen = 26;
-    try:
-      newlen = min(newlen, supplines.index("   fun:_ZN11MessageLoop3RunEv"))
-    except ValueError:
-      pass
+    for boring_caller in ["   fun:_ZN11MessageLoop3RunEv",
+                          "   fun:_ZN7testing4Test3RunEv"]:
+      try:
+        newlen = min(newlen, supplines.index(boring_caller))
+      except ValueError:
+        pass
     if (len(supplines) > newlen):
       supplines = supplines[0:newlen]
       supplines.append("}")
