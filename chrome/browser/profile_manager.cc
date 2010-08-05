@@ -71,12 +71,6 @@ ProfileManager::~ProfileManager() {
   for (const_iterator i(begin()); i != end(); ++i)
     delete *i;
   profiles_.clear();
-
-  // Get rid of available profile list
-  for (AvailableProfileVector::const_iterator i(available_profiles_.begin());
-       i != available_profiles_.end(); ++i)
-    delete *i;
-  available_profiles_.clear();
 }
 
 FilePath ProfileManager::GetDefaultProfileDir(
