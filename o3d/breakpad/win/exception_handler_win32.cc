@@ -198,7 +198,6 @@ static bool MinidumpCallback(const wchar_t *minidump_folder,
 
 
 void ExceptionManager::StartMonitoring() {
-#ifdef O3D_ENABLE_BREAKPAD
   if (exception_handler_) { return; }  // don't init more than once
 
   wchar_t temp_path[MAX_PATH];
@@ -208,5 +207,4 @@ void ExceptionManager::StartMonitoring() {
                                                              FilterCallback,
                                                              MinidumpCallback,
                                                              this, true);
-#endif
 }

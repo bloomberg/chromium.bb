@@ -40,18 +40,22 @@
 #define _MAKE_LONG_STRING(string) L ## string
 #define MAKE_LONG_STRING(string) _MAKE_LONG_STRING(string)
 
-#define PRODUCT_VERSION_STRING MAKE_LONG_STRING(QUOTEME(O3D_VERSION_NUMBER))
+#define PRODUCT_VERSION_STRING MAKE_LONG_STRING(QUOTEME(O3D_PLUGIN_VERSION))
 
-// !!@ CURRENTLY WE'RE HARDCODING (win32 firefox) HERE!!
 wchar_t *kCrashReportProductName = L"O3D";  // [naming]
 
 wchar_t *kCrashReportProductVersion =
-    PRODUCT_VERSION_STRING L" (win32 firefox)";
+    PRODUCT_VERSION_STRING L" (win32)";
 
 // Crash report uploading configuration (used by reporter.exe)
 
+#ifdef NDEBUG
 // production server
-wchar_t *kCrashReportUrl = L"http://www.google.com/cr/report";
+wchar_t *kCrashReportUrl = L"http://clients2.google.com/cr/report";
+#else
+// staging server
+wchar_t *kCrashReportUrl = L"http://clients2.google.com/cr/staging_report";
+#endif
 
 wchar_t *kCrashReportProductParam = L"prod";
 wchar_t *kCrashReportVersionParam = L"ver";
