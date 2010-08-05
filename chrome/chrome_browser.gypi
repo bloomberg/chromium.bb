@@ -231,6 +231,8 @@
         'browser/back_forward_menu_model.h',
         'browser/background_contents_service.h',
         'browser/background_contents_service.cc',
+        'browser/blocked_plugin_manager.cc',
+        'browser/blocked_plugin_manager.h',
         'browser/blocked_popup_container.cc',
         'browser/blocked_popup_container.h',
         'browser/bookmarks/bookmark_codec.cc',

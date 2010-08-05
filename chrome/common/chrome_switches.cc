@@ -64,6 +64,9 @@ const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";
 
+// Block non-sandboxed plugins.
+const char kBlockNonSandboxedPlugins[]      = "block-nonsandboxed-plugins";
+
 // Causes the browser process to throw an assertion on startup.
 const char kBrowserAssertTest[]             = "assert-test";
 

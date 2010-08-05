@@ -200,8 +200,8 @@ using WebKit::WebPageSerializer;
 using WebKit::WebPageSerializerClient;
 using WebKit::WebPlugin;
 using WebKit::WebPluginContainer;
-using WebKit::WebPluginParams;
 using WebKit::WebPluginDocument;
+using WebKit::WebPluginParams;
 using WebKit::WebPoint;
 using WebKit::WebPopupMenuInfo;
 using WebKit::WebRange;
@@ -547,6 +547,24 @@ void RenderView::UserMetricsRecordAction(const std::string& action) {
 
 void RenderView::PluginCrashed(const FilePath& plugin_path) {
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path));
+}
+
+WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
+                                           const WebPluginParams& params) {
+  WebPluginInfo info;
+  bool found;
+  std::string mime_type;
+  Send(new ViewHostMsg_GetPluginInfo(
+      params.url, frame->top()->url(), params.mimeType.utf8(), &found,
+      &info, &mime_type));
+  if (!found || !info.enabled)
+    return NULL;
+  scoped_refptr<pepper::PluginModule> pepper_module =
+      PepperPluginRegistry::GetInstance()->GetModule(info.path);
+  if (pepper_module)
+    return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
+  else
+    return CreateNPAPIPlugin(frame, params, info.path, mime_type);
 }
 
 #if defined(OS_MACOSX)
@@ -2210,26 +2228,35 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   bool found = false;
   WebPluginInfo info;
   GURL url(params.url);
-  std::string mime_type(params.mimeType.utf8());
   std::string actual_mime_type;
   Send(new ViewHostMsg_GetPluginInfo(url,
                                      frame->top()->url(),
-                                     mime_type,
+                                     params.mimeType.utf8(),
                                      &found,
                                      &info,
-      &actual_mime_type));
+                                     &actual_mime_type));
 
   if (!found || !info.enabled)
     return NULL;
 
-  if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS) &&
-      info.path.value() != kDefaultPluginLibraryName) {
-    DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableClickToPlay));
-    didNotAllowPlugins(frame);
-    return CreatePluginPlaceholder(frame, params);
+  if (info.path.value() != kDefaultPluginLibraryName) {
+    if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS)) {
+      DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClickToPlay));
+      didNotAllowPlugins(frame);
+      return CreatePluginPlaceholder(frame, params);
+    }
+    scoped_refptr<pepper::PluginModule> pepper_module =
+        PepperPluginRegistry::GetInstance()->GetModule(info.path);
+    if (pepper_module)
+      return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kBlockNonSandboxedPlugins)) {
+      Send(new ViewHostMsg_NonSandboxedPluginBlocked(routing_id_, info.name));
+      return CreatePluginPlaceholder(frame, params);
+    }
   }
-  return CreatePluginInternal(frame, params, &info, actual_mime_type);
+  return CreateNPAPIPlugin(frame, params, info.path, actual_mime_type);
 }
 
 WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
@@ -3686,49 +3713,35 @@ void RenderView::ClearBlockedContentSettings() {
     content_blocked_[i] = false;
 }
 
-WebPlugin* RenderView::CreatePluginInternal(WebFrame* frame,
-                                            const WebPluginParams& params,
-                                            WebPluginInfo* plugin_info,
-                                            const std::string& mime_type) {
-  std::string actual_mime_type(mime_type);
-  WebPluginInfo info;
-  if (plugin_info != NULL) {
-    info = *plugin_info;
-  } else {
-    bool found;
-    std::string actual_mime_type(mime_type);
-    Send(new ViewHostMsg_GetPluginInfo(
-        params.url, frame->top()->url(), params.mimeType.utf8(), &found,
-        &info, &actual_mime_type));
-    if (!found)
-      info.enabled = false;
+WebPlugin* RenderView::CreatePepperPlugin(WebFrame* frame,
+                                          const WebPluginParams& params,
+                                          const FilePath& path,
+                                          pepper::PluginModule* pepper_module) {
+  WebPlugin* plugin = new pepper::WebPluginImpl(pepper_module, params,
+                                                pepper_delegate_.AsWeakPtr());
+  if (plugin && !frame->parent() && frame->document().isPluginDocument()) {
+    // If this is a full-page plugin hosting the internal PDF plugin, we want
+    // to notify the browser so that it can treat things like zooming
+    // differently.
+    // TODO(sanjeevr): Use a Pepper interface to determine this rather than
+    // hardcode this for the PDF plugin path.
+    FilePath pdf_path;
+    PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
+    if (path == pdf_path)
+      Send(new ViewHostMsg_SetDisplayingPDFContent(routing_id_));
   }
-  if (!info.enabled)
-    return NULL;
+  return plugin;
+}
 
+WebPlugin* RenderView::CreateNPAPIPlugin(WebFrame* frame,
+                                         const WebPluginParams& params,
+                                         const FilePath& path,
+                                         const std::string& mime_type) {
+  std::string actual_mime_type(mime_type);
   if (actual_mime_type.empty())
     actual_mime_type = params.mimeType.utf8();
 
-  scoped_refptr<pepper::PluginModule> pepper_module =
-      PepperPluginRegistry::GetInstance()->GetModule(info.path);
-  if (pepper_module) {
-    WebPlugin* plugin = new pepper::WebPluginImpl(pepper_module, params,
-                                                  pepper_delegate_.AsWeakPtr());
-    if (plugin && !frame->parent() && frame->document().isPluginDocument()) {
-      // If this is a full-page plugin hosting the internal PDF plugin, we want
-      // to notify the browser so that it can treat things like zooming
-      // differently.
-      // TODO(sanjeevr): Use a Pepper interface to determine this rather than
-      // hardcode this for the PDF plugin path.
-      FilePath pdf_path;
-      PathService::Get(chrome::FILE_PDF_PLUGIN, &pdf_path);
-      if (info.path == pdf_path)
-        Send(new ViewHostMsg_SetDisplayingPDFContent(routing_id_));
-    }
-    return plugin;
-  }
-
-  return new webkit_glue::WebPluginImpl(frame, params, info.path,
+  return new webkit_glue::WebPluginImpl(frame, params, path,
                                         actual_mime_type, AsWeakPtr());
 }
 

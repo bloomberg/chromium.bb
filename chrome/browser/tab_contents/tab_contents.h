@@ -71,6 +71,7 @@ struct PasswordForm;
 
 class AutocompleteHistoryManager;
 class AutoFillManager;
+class BlockedPluginManager;
 class BlockedPopupContainer;
 class DOMUI;
 class DownloadItem;
@@ -897,6 +898,7 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::FavIcon* GetFavIconDelegate();
   virtual RenderViewHostDelegate::Autocomplete* GetAutocompleteDelegate();
   virtual RenderViewHostDelegate::AutoFill* GetAutoFillDelegate();
+  virtual RenderViewHostDelegate::BlockedPlugin* GetBlockedPluginDelegate();
   virtual RenderViewHostDelegate::SSL* GetSSLDelegate();
   virtual AutomationResourceRoutingDelegate*
       GetAutomationResourceRoutingDelegate();
@@ -1075,6 +1077,9 @@ class TabContents : public PageNavigator,
 
   // TabContentsSSLHelper, lazily created.
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
+
+  // BlockedPluginManager, lazily created.
+  scoped_ptr<BlockedPluginManager> blocked_plugin_manager_;
 
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;

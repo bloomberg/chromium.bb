@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
+#include "chrome/browser/blocked_plugin_manager.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/cross_site_request_manager.h"
@@ -797,6 +798,10 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                         OnUserMetricsRecordAction)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_NonSandboxedPluginBlocked,
+                        OnNonSandboxedPluginBlocked);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_BlockedPluginLoaded,
+                        OnBlockedPluginLoaded);
     IPC_MESSAGE_HANDLER(ViewHostMsg_CrashedPlugin, OnCrashedPlugin);
     IPC_MESSAGE_HANDLER(ViewHostMsg_SendCurrentPageAllSavableResourceLinks,
                         OnReceivedSavableResourceLinksForCurrentPage);
@@ -1528,6 +1533,22 @@ void RenderViewHost::OnMissingPluginStatus(int status) {
       delegate_->GetBrowserIntegrationDelegate();
   if (integration_delegate)
     integration_delegate->OnMissingPluginStatus(status);
+}
+
+void RenderViewHost::OnNonSandboxedPluginBlocked(const string16& name) {
+  RenderViewHostDelegate::BlockedPlugin* blocked_plugin_delegate =
+      delegate_->GetBlockedPluginDelegate();
+  if (blocked_plugin_delegate) {
+    blocked_plugin_delegate->OnNonSandboxedPluginBlocked(name);
+  }
+}
+
+void RenderViewHost::OnBlockedPluginLoaded() {
+  RenderViewHostDelegate::BlockedPlugin* blocked_plugin_delegate =
+      delegate_->GetBlockedPluginDelegate();
+  if (blocked_plugin_delegate) {
+    blocked_plugin_delegate->OnBlockedPluginLoaded();
+  }
 }
 
 void RenderViewHost::OnCrashedPlugin(const FilePath& plugin_path) {

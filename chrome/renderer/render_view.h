@@ -275,11 +275,8 @@ class RenderView : public RenderWidget,
   void OnPepperPluginDestroy(WebPluginDelegatePepper* pepper_plugin);
 
   // Create a new plugin without checking the content settings.
-  WebKit::WebPlugin* CreatePluginInternal(
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
-      WebPluginInfo* plugin_info,
-      const std::string& mime_type);
+  WebKit::WebPlugin* CreatePluginNoCheck(WebKit::WebFrame* frame,
+                                         const WebKit::WebPluginParams& params);
 
   // Asks the browser for the CPBrowsingContext associated with this renderer.
   // This is an opaque identifier associated with the renderer for sending
@@ -855,6 +852,18 @@ class RenderView : public RenderWidget,
   // Creates DevToolsClient and sets up JavaScript bindings for developer tools
   // UI that is going to be hosted by this RenderView.
   void CreateDevToolsClient();
+
+  // Create a new NPAPI plugin.
+  WebKit::WebPlugin* CreateNPAPIPlugin(WebKit::WebFrame* frame,
+                                       const WebKit::WebPluginParams& params,
+                                       const FilePath& path,
+                                       const std::string& mime_type);
+
+  // Create a new Pepper plugin.
+  WebKit::WebPlugin* CreatePepperPlugin(WebKit::WebFrame* frame,
+                                        const WebKit::WebPluginParams& params,
+                                        const FilePath& path,
+                                        pepper::PluginModule* pepper_module);
 
   // Create a new placeholder for a blocked plugin.
   WebKit::WebPlugin* CreatePluginPlaceholder(

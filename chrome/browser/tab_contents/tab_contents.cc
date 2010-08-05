@@ -21,6 +21,7 @@
 #include "base/time.h"
 #include "chrome/browser/autocomplete_history_manager.h"
 #include "chrome/browser/autofill/autofill_manager.h"
+#include "chrome/browser/blocked_plugin_manager.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
@@ -2180,6 +2181,12 @@ RenderViewHostDelegate::Autocomplete* TabContents::GetAutocompleteDelegate() {
 
 RenderViewHostDelegate::AutoFill* TabContents::GetAutoFillDelegate() {
   return GetAutoFillManager();
+}
+
+RenderViewHostDelegate::BlockedPlugin* TabContents::GetBlockedPluginDelegate() {
+  if (blocked_plugin_manager_.get() == NULL)
+    blocked_plugin_manager_.reset(new BlockedPluginManager(this));
+  return blocked_plugin_manager_.get();
 }
 
 RenderViewHostDelegate::SSL* TabContents::GetSSLDelegate() {

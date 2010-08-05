@@ -10,6 +10,7 @@
 #include "base/string_piece.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
@@ -91,15 +92,15 @@ void BlockedPlugin::LoadPlugin() {
   CHECK(plugin_);
   WebPluginContainer* container = plugin_->container();
   WebPlugin* new_plugin =
-      render_view_->CreatePluginInternal(frame_,
-                                         plugin_params_,
-                                         NULL,
-                                         std::string());
+      render_view_->CreatePluginNoCheck(frame_,
+                                        plugin_params_);
   if (new_plugin && new_plugin->initialize(container)) {
     container->setPlugin(new_plugin);
     plugin_->ReplayReceivedData(new_plugin);
     container->invalidate();
     container->reportGeometry();
     plugin_->destroy();
+    render_view_->Send(
+        new ViewHostMsg_BlockedPluginLoaded(render_view_->routing_id()));
   }
 }

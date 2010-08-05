@@ -6503,6 +6503,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGININSTALLER_PROBLEMSINSTALLING" desc="Infobar text for link to help center">
         Problems installing?
       </message>
+      <message name="IDS_PLUGIN_BLOCKED_PROMPT" desc="Info Bar message when a non-sandboxed plugin was blocked">
+        The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in was blocked on this site because it could access your computer directly.
+      </message>
       <message name="IDS_PLUGIN_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed plugin">
         The following plug-in has crashed: <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex></ph>
       </message>

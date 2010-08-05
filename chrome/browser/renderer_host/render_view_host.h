@@ -597,6 +597,8 @@ class RenderViewHost : public RenderWidgetHost {
 
   void OnUserMetricsRecordAction(const std::string& action);
   void OnMissingPluginStatus(int status);
+  void OnNonSandboxedPluginBlocked(const string16& name);
+  void OnBlockedPluginLoaded();
   void OnCrashedPlugin(const FilePath& plugin_path);
 
   void OnReceivedSavableResourceLinksForCurrentPage(
