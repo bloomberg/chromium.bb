@@ -3869,3 +3869,14 @@
    fun:_ZN8chromeos11CrosLibrary7TestApi16SetLibraryLoaderEPNS_13LibraryLoaderEb
    fun:_ZN8chromeos23GoogleAuthenticatorTest5SetUpEv
 }
+{
+   bug_51263
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos11CrosLibrary12EnsureLoadedEv
+   ...
+   fun:_ZN8chromeos11Preferences4InitEP11PrefService
+   fun:_ZN11ProfileImplC1ERK8FilePath
+   fun:_ZN7Profile13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
+}
