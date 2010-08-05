@@ -27,12 +27,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import SCons.Script
-
 Import('env')
 
 LINK_FLAGS_MULTILIB = ['-nostdlib']
-if env['BUILD_ARCHITECTURE'] == 'x86':
+
+if env['BUILD_ARCHITECTURE'] == 'x86' and not ARGUMENTS.get('bitcode'):
   if env['BUILD_SUBARCH'] == '32':
     LINK_FLAGS_MULTILIB.append('-m32')
   elif env['BUILD_SUBARCH'] == '64':

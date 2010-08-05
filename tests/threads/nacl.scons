@@ -10,7 +10,8 @@ Import('env')
 # NOTE: the default setting of 10k rounds is too slow on ARM
 TEST_SUITES = ['small_tests']
 EXTRA_ARGS = []
-if env['TARGET_ARCHITECTURE'] == 'arm':
+# TODO(robertm): research why the bitcode clause is necessary
+if env['TARGET_ARCHITECTURE'] == 'arm' or ARGUMENTS.get('bitcode'):
   TEST_SUITES = ['small_tests_arm_hw_only']
   EXTRA_ARGS = ['5000']
 

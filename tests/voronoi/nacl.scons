@@ -38,7 +38,8 @@ nexe = env.ComponentProgram('voronoi.nexe',
                             EXTRA_LIBS=['av', 'srpc', 'm', 'pthread'])
 
 TESTS=['small_tests']
-if env['TARGET_ARCHITECTURE'] == 'arm':
+# NOTE: this does not fail for all pnacl targets
+if ARGUMENTS.get('bitcode'):
   TESTS=[]
 
 node = env.CommandSelLdrTestNacl(

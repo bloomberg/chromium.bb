@@ -31,7 +31,7 @@
 Import('env')
 
 # TODO(robertm): otherwise we get a link error for __dso_handle
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if ARGUMENTS.get('bitcode'):
   Return()
 
 nexe = env.ComponentProgram('life.nexe',

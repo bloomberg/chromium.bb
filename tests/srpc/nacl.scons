@@ -99,7 +99,8 @@ env.Publish('srpc_bad_service.nexe', 'run', [])
 # NOTE: sel_universal launches sel_ldr internally and we do not have a
 # good hook to sneak in an emulator yet
 TEST_SUITES = ['small_tests']
-if env['TARGET_ARCHITECTURE'] == 'arm':
+# TODO(robertm): research why the bitcode clause is necessary
+if ARGUMENTS.get('bitcode'):
   TEST_SUITES = ['small_tests_arm_hw_only']
 
 node = env.CommandSelLdrTestNacl(
