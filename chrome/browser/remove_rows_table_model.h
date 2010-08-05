@@ -7,7 +7,6 @@
 #pragma once
 
 #include <set>
-#include <vector>
 
 #include "app/table_model.h"
 

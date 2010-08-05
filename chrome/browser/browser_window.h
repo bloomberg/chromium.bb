@@ -20,7 +20,6 @@ class LocationBar;
 class Profile;
 class StatusBubble;
 class TabContents;
-class TabContentsContainer;
 class TemplateURL;
 #if !defined(OS_MACOSX)
 class ToolbarView;

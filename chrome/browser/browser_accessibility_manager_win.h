@@ -18,8 +18,6 @@
 #include "webkit/glue/webaccessibility.h"
 
 class BrowserAccessibility;
-class RenderProcessHost;
-class RenderWidgetHost;
 
 class BrowserAccessibilityFactory {
  public:

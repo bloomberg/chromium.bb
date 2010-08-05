@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_thread.h"
 
 class FilePath;
+
 // This class lets you register interest in changes on a file. The delegate
 // will get called whenever the file is changed, including created or deleted.
 // WARNING: To be able to get create/delete notifications and to work cross

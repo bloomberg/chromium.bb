@@ -15,7 +15,6 @@
 #include "chrome/common/gpu_info.h"
 #include "gfx/native_widget_types.h"
 
-class CommandBufferProxy;
 struct GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params;
 
 namespace IPC {

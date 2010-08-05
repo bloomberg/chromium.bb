@@ -16,7 +16,6 @@
 class FindBarController;
 class FindBarTesting;
 class FindNotificationDetails;
-class TabContents;
 
 class FindBar {
  public:

@@ -11,8 +11,6 @@
 #include "base/basictypes.h"
 #include "chrome/browser/configuration_policy_store.h"
 
-class DictionaryValue;
-
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
 // etc.) should implement a subclass of this class.

@@ -8,8 +8,6 @@
 
 #include "app/menus/simple_menu_model.h"
 
-class Browser;
-
 // A menu model that builds the contents of the tab context menu. This menu has
 // only one level (no submenus). TabMenuModel caches local state from the
 // tab (such as the pinned state). To make sure the menu reflects the real state

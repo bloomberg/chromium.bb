@@ -17,14 +17,8 @@
 class Browser;
 class CommandLine;
 class GURL;
-class PrefService;
 class Profile;
 class TabContents;
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class ServicesCustomizationDocument;
-}
-#endif
 
 // class containing helpers for BrowserMain to spin up a new instance and
 // initialize the profile.

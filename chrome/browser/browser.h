@@ -31,12 +31,9 @@
 #include "gfx/rect.h"
 
 class BrowserWindow;
-class DebuggerWindow;
 class Extension;
 class ExtensionShelfModel;
 class FindBarController;
-class GoButton;
-class LocationBar;
 class PrefService;
 class Profile;
 class SkBitmap;

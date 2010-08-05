@@ -75,10 +75,6 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
-  virtual WebAppInstallerService* web_app_installer_service() {
-    return NULL;
-  }
-
   virtual IconManager* icon_manager() {
     return NULL;
   }

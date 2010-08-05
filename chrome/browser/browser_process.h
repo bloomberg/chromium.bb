@@ -30,10 +30,8 @@ class PrefService;
 class ProfileManager;
 class ResourceDispatcherHost;
 class StatusTrayManager;
-class SuspendController;
 class TabCloseableStateWatcher;
 class ThumbnailGenerator;
-class WebAppInstallerService;
 
 namespace base {
 class Thread;

@@ -21,7 +21,6 @@
 #include "chrome/common/visitedlink_common.h"
 
 class GURL;
-class MessageLoop;
 class Profile;
 
 // Controls the link coloring database. The master controls all writing to the

@@ -25,6 +25,10 @@ class NSAlert;
 class ExtensionHost;
 class JavaScriptMessageBoxClient;
 
+namespace IPC {
+class Message;
+}
+
 // A controller+model class for JavaScript alert, confirm, prompt, and
 // onbeforeunload dialog boxes.
 class JavaScriptAppModalDialog : public AppModalDialog,
