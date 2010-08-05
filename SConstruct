@@ -1425,7 +1425,7 @@ if ARGUMENTS.get('bitcode'):
   nacl_env.Replace(TARGET_ROOT=target_root)
 
 if ARGUMENTS.get('with_valgrind'):
-  nacl_env.Append(CCFLAGS = ['-g'],
+  nacl_env.Append(CCFLAGS = ['-g', '-Wno-overlength-strings'],
                   CPPDEFINES = [['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
                                 ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ]],
                   LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],

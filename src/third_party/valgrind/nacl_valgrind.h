@@ -1204,8 +1204,7 @@ typedef
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
          ".cfi_adjust_cfa_offset 0x80\n\t"                        \
-         __SANDBOX_RAX_ASM                                        \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
          ".cfi_adjust_cfa_offset -0x80\n\t"                       \
@@ -1226,9 +1225,8 @@ typedef
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
          ".cfi_adjust_cfa_offset 0x80\n\t"                        \
-         __SANDBOX_RAX_ASM                                        \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                                 \
          ".cfi_adjust_cfa_offset -0x80\n\t"                       \
@@ -1250,10 +1248,9 @@ typedef
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
          ".cfi_adjust_cfa_offset 0x80\n\t"                        \
-         __SANDBOX_RAX_ASM                                        \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
          ".cfi_adjust_cfa_offset -0x80\n\t"                       \
@@ -1276,11 +1273,10 @@ typedef
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
          ".cfi_adjust_cfa_offset 0x80\n\t"                        \
-         __SANDBOX_RAX_ASM                                        \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
          ".cfi_adjust_cfa_offset -0x80\n\t"                       \
@@ -1304,12 +1300,11 @@ typedef
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
          ".cfi_adjust_cfa_offset 0x80\n\t"                        \
-         __SANDBOX_RAX_ASM                                        \
-         "movq 32(%%rax), %%rcx\n\t"                              \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
          ".cfi_adjust_cfa_offset -0x80\n\t"                       \
@@ -1334,13 +1329,12 @@ typedef
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
          ".cfi_adjust_cfa_offset 0x80\n\t"                        \
-         __SANDBOX_RAX_ASM                                        \
-         "movq 40(%%rax), %%r8\n\t"                               \
-         "movq 32(%%rax), %%rcx\n\t"                              \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
+         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
          ".cfi_adjust_cfa_offset -0x80\n\t"                       \
@@ -1366,14 +1360,13 @@ typedef
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
          ".cfi_adjust_cfa_offset 0x80\n\t"                        \
-         __SANDBOX_RAX_ASM                                        \
-         "movq 48(%%rax), %%r9\n\t"                               \
-         "movq 40(%%rax), %%r8\n\t"                               \
-         "movq 32(%%rax), %%rcx\n\t"                              \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
+         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
+         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $128,%%r15\n\t"                   \
          ".cfi_adjust_cfa_offset -0x80\n\t"                       \
@@ -1400,16 +1393,15 @@ typedef
       _argvec[7] = (uint64_t)(arg7);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         __SANDBOX_RAX_ASM                                        \
-         "pushq 56(%%rax)\n\t"                                    \
+         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
          ".cfi_adjust_cfa_offset 0x88\n\t"                        \
-         "movq 48(%%rax), %%r9\n\t"                               \
-         "movq 40(%%rax), %%r8\n\t"                               \
-         "movq 32(%%rax), %%rcx\n\t"                              \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                        \
+         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                        \
+         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                       \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                       \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                       \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                        \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */     \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $136,%%r15\n\t"                   \
          ".cfi_adjust_cfa_offset -0x88\n\t"                        \
@@ -1437,17 +1429,16 @@ typedef
       _argvec[8] = (uint64_t)(arg8);                         \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         __SANDBOX_RAX_ASM                                        \
-         "pushq 64(%%rax)\n\t"                                    \
-         "pushq 56(%%rax)\n\t"                                    \
+         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
          ".cfi_adjust_cfa_offset 0x90\n\t"                        \
-         "movq 48(%%rax), %%r9\n\t"                               \
-         "movq 40(%%rax), %%r8\n\t"                               \
-         "movq 32(%%rax), %%rcx\n\t"                              \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
+         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
+         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $144,%%r15\n\t"                                 \
          ".cfi_adjust_cfa_offset -0x90\n\t"                       \
@@ -1477,17 +1468,16 @@ typedef
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
          ".cfi_adjust_cfa_offset 0x80\n\t"                        \
-         __SANDBOX_RAX_ASM                                        \
-         "pushq 72(%%rax)\n\t"                                    \
-         "pushq 64(%%rax)\n\t"                                    \
-         "pushq 56(%%rax)\n\t"                                    \
-         "movq 48(%%rax), %%r9\n\t"                               \
-         "movq 40(%%rax), %%r8\n\t"                               \
-         "movq 32(%%rax), %%rcx\n\t"                              \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
+         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
+         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
+         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $152,%%r15\n\t"                                 \
          ".cfi_adjust_cfa_offset -0x80\n\t"                       \
@@ -1517,19 +1507,18 @@ typedef
       _argvec[10] = (uint64_t)(arg10);                       \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         __SANDBOX_RAX_ASM                                        \
-         "pushq 80(%%rax)\n\t"                                    \
-         "pushq 72(%%rax)\n\t"                                    \
-         "pushq 64(%%rax)\n\t"                                    \
-         "pushq 56(%%rax)\n\t"                                    \
+         "pushq %%nacl:80(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
          ".cfi_adjust_cfa_offset 0xa0\n\t"                        \
-         "movq 48(%%rax), %%r9\n\t"                               \
-         "movq 40(%%rax), %%r8\n\t"                               \
-         "movq 32(%%rax), %%rcx\n\t"                              \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
+         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
+         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $160,%%r15\n\t"                                 \
          ".cfi_adjust_cfa_offset -0xa0\n\t"                       \
@@ -1560,20 +1549,19 @@ typedef
       _argvec[11] = (uint64_t)(arg11);                       \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         __SANDBOX_RAX_ASM                                        \
-         "pushq 88(%%rax)\n\t"                                    \
-         "pushq 80(%%rax)\n\t"                                    \
-         "pushq 72(%%rax)\n\t"                                    \
-         "pushq 64(%%rax)\n\t"                                    \
-         "pushq 56(%%rax)\n\t"                                    \
+         "pushq %%nacl:88(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:80(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
          ".cfi_adjust_cfa_offset 0xa8\n\t"                        \
-         "movq 48(%%rax), %%r9\n\t"                               \
-         "movq 40(%%rax), %%r8\n\t"                               \
-         "movq 32(%%rax), %%rcx\n\t"                              \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
+         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
+         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $168,%%r15\n\t"                                 \
          ".cfi_adjust_cfa_offset -0xa8\n\t"                       \
@@ -1605,21 +1593,20 @@ typedef
       _argvec[12] = (uint64_t)(arg12);                       \
       __asm__ volatile(                                           \
          "naclssp $128, %%r15\n\t"                                \
-         __SANDBOX_RAX_ASM                                        \
-         "pushq 96(%%rax)\n\t"                                    \
-         "pushq 88(%%rax)\n\t"                                    \
-         "pushq 80(%%rax)\n\t"                                    \
-         "pushq 72(%%rax)\n\t"                                    \
-         "pushq 64(%%rax)\n\t"                                    \
-         "pushq 56(%%rax)\n\t"                                    \
+         "pushq %%nacl:96(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:88(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:80(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:72(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:64(%%r15,%%rax)\n\t"                                    \
+         "pushq %%nacl:56(%%r15,%%rax)\n\t"                                    \
          ".cfi_adjust_cfa_offset 0xb0\n\t"                        \
-         "movq 48(%%rax), %%r9\n\t"                               \
-         "movq 40(%%rax), %%r8\n\t"                               \
-         "movq 32(%%rax), %%rcx\n\t"                              \
-         "movq 24(%%rax), %%rdx\n\t"                              \
-         "movq 16(%%rax), %%rsi\n\t"                              \
-         "movq 8(%%rax), %%rdi\n\t"                               \
-         "movq (%%rax), %%rax\n\t"  /* target->%rax */            \
+         "movq %%nacl:48(%%r15,%%rax), %%r9\n\t"                              \
+         "movq %%nacl:40(%%r15,%%rax), %%r8\n\t"                              \
+         "movq %%nacl:32(%%r15,%%rax), %%rcx\n\t"                              \
+         "movq %%nacl:24(%%r15,%%rax), %%rdx\n\t"                              \
+         "movq %%nacl:16(%%r15,%%rax), %%rsi\n\t"                              \
+         "movq %%nacl:8(%%r15,%%rax), %%rdi\n\t"                               \
+         "movq %%nacl:(%%r15,%%rax), %%rax\n\t"  /* target->%rax */            \
          VALGRIND_CALL_NOREDIR_RAX                                \
          "naclasp $176,%%r15\n\t"                                 \
          ".cfi_adjust_cfa_offset -0xb0\n\t"                       \
