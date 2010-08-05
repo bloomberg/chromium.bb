@@ -10,6 +10,7 @@
 #include <atlcom.h>
 #include <oleacc.h>
 
+#include <map>
 #include <vector>
 
 #include "chrome/browser/browser_accessibility_manager_win.h"

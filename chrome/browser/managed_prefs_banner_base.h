@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_MANAGED_PREFS_BANNER_BASE_H_
 #pragma once
 
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"

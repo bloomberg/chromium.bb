@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_IO_THREAD_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"

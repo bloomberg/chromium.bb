@@ -7,9 +7,9 @@
 #pragma once
 
 #include <map>
+#include <vector>
 
 #include "base/callback.h"
-
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 
 // Mock for BrowsingDataLocalStorageHelper.

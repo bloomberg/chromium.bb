@@ -11,6 +11,8 @@
 #define CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
 #pragma once
 
+#include <vector>
+
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
 // Takes ownership of TabContents that are unrequested popup windows.

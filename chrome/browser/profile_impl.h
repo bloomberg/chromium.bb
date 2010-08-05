@@ -8,7 +8,6 @@
 #define CHROME_BROWSER_PROFILE_IMPL_H_
 #pragma once
 
-#include <set>
 #include <string>
 
 #include "chrome/browser/profile.h"

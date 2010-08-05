@@ -7,7 +7,6 @@
 #pragma once
 
 #include <map>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"

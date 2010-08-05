@@ -8,7 +8,6 @@
 #define CHROME_BROWSER_PROFILE_MANAGER_H__
 #pragma once
 
-#include <map>
 #include <string>
 #include <vector>
 

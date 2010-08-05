@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_PLUGIN_UPDATER_H_
 #pragma once
 
-#include <set>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/linked_ptr.h"

@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_WRENCH_MENU_MODEL_H_
 #pragma once
 
-#include <set>
-#include <vector>
-
 #include "app/menus/button_menu_item_model.h"
 #include "app/menus/simple_menu_model.h"
 #include "base/ref_counted.h"

@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_MOCK_BROWSING_DATA_APPCACHE_HELPER_H_
 #pragma once
 
-#include <map>
-
 #include "base/callback.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POSSIBLE_URL_MODEL_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
