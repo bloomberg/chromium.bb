@@ -100,6 +100,7 @@ int NaClDescConnCapFdConnectAddr(struct NaClDesc *vself,
   connect_msg.msg_namelen = 0;
   connect_msg.msg_control = control_buf;
   connect_msg.msg_controllen = sizeof(control_buf);
+  connect_msg.msg_flags = 0;
 
   cmsg = CMSG_FIRSTHDR(&connect_msg);
   cmsg->cmsg_len = CMSG_LEN(sizeof(int));
@@ -108,6 +109,8 @@ int NaClDescConnCapFdConnectAddr(struct NaClDesc *vself,
   /* We use memcpy() rather than assignment through a cast to avoid
      strict-aliasing warnings */
   memcpy(CMSG_DATA(cmsg), &sock_pair[0], sizeof(int));
+  /* Set msg_controllen to the actual size of the cmsg. */
+  connect_msg.msg_controllen = cmsg->cmsg_len;
 
   sent = sendmsg(self->connect_fd, &connect_msg, 0);
   NaClClose(sock_pair[0]);
