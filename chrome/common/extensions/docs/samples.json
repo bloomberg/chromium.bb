@@ -102,6 +102,7 @@
     "chrome.browserAction.setBadgeText": "browserAction.html#method-setBadgeText", 
     "chrome.browserAction.setIcon": "browserAction.html#method-setIcon", 
     "chrome.experimental.omnibox.onInputEntered": "experimental.omnibox.html#event-onInputEntered", 
+    "chrome.experimental.proxy.useCustomProxySettings": "experimental.proxy.html#method-useCustomProxySettings", 
     "chrome.browserAction.setPopup": "browserAction.html#method-setPopup", 
     "chrome.bookmarks.onChildrenReordered": "bookmarks.html#event-onChildrenReordered", 
     "chrome.experimental.webRequest.onRequestSent": "experimental.webRequest.html#event-onRequestSent", 
@@ -529,7 +530,7 @@
       "description": "Demonstrates how to use OAuth to connect the Google Documents List Data API.", 
       "icon": "img\/docs_spreadsheets-128.gif", 
       "name": "Google Document List Viewer", 
-      "search_string": "GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE", 
+      "search_string": "GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE", 
       "source_files": [
         "chrome_ex_oauthsimple.js", 
         "chrome_ex_oauth.js", 
@@ -546,6 +547,8 @@
         "chrome.extension.getBackgroundPage", 
         "chrome.extension.getURL", 
         "chrome.tabs.create", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
         "chrome.tabs.onUpdated", 
         "chrome.tabs.remove"
       ], 
