@@ -20,7 +20,6 @@
 static const char kNpapiTestPluginName[] = "npapi_test_plugin.dll";
 #elif defined(OS_MACOSX)
 static const char kNpapiTestPluginName[] = "npapi_test_plugin.plugin";
-static const char kLayoutPluginName[] = "TestNetscapePlugIn.plugin";
 #elif defined(OS_LINUX)
 static const char kNpapiTestPluginName[] = "libnpapi_test_plugin.so";
 #endif
@@ -62,12 +61,6 @@ void NPAPITesterBase::SetUp() {
   UITest::SetUp();
 }
 
-void NPAPITesterBase::TearDown() {
-  // Tear down the UI test first so that the browser stops using the plugin
-  // files.
-  UITest::TearDown();
-}
-
 FilePath NPAPITesterBase::GetPluginsDirectory() {
   FilePath plugins_directory = browser_directory_.AppendASCII("plugins");
   return plugins_directory;
@@ -76,36 +69,14 @@ FilePath NPAPITesterBase::GetPluginsDirectory() {
 NPAPITester::NPAPITester() : NPAPITesterBase(kNpapiTestPluginName) {
 }
 
-void NPAPITester::SetUp() {
-#if defined(OS_MACOSX)
-  // TODO(stuartmorgan): Remove this whole subclass once the WebKit build is
-  // changed to copy the plugin into a plugins directory next to the app as
-  // is done on Linux and Windows.
-  FilePath layout_src = browser_directory_.AppendASCII(kLayoutPluginName);
-  ASSERT_TRUE(file_util::PathExists(layout_src));
-  FilePath plugins_directory = GetPluginsDirectory();
-  layout_plugin_path_ = plugins_directory.AppendASCII(kLayoutPluginName);
-  file_util::CreateDirectory(plugins_directory);
-  ASSERT_TRUE(file_util::CopyDirectory(layout_src, layout_plugin_path_, true));
-#endif
-
-  NPAPITesterBase::SetUp();
-}
-
-void NPAPITester::TearDown() {
-  // Tear down the base class first so that the browser stops using the plugin
-  // files.
-  NPAPITesterBase::TearDown();
-}
-
 // NPAPIVisiblePluginTester members.
 void NPAPIVisiblePluginTester::SetUp() {
   show_window_ = true;
-  NPAPITester::SetUp();
+  NPAPITesterBase::SetUp();
 }
 
 // NPAPIIncognitoTester members.
 void NPAPIIncognitoTester::SetUp() {
   launch_arguments_.AppendSwitch(switches::kIncognito);
-  NPAPITester::SetUp();
+  NPAPITesterBase::SetUp();
 }

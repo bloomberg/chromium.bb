@@ -22,7 +22,6 @@ class NPAPITesterBase : public UITest {
  protected:
   explicit NPAPITesterBase(const std::string& test_plugin_name);
   virtual void SetUp();
-  virtual void TearDown();
 
   FilePath GetPluginsDirectory();
 
@@ -35,13 +34,8 @@ class NPAPITesterBase : public UITest {
 class NPAPITester : public NPAPITesterBase {
  protected:
   NPAPITester();
-  virtual void SetUp();
-  virtual void TearDown();
 
  private:
-#if defined(OS_MACOSX)
-  FilePath layout_plugin_path_;
-#endif  // OS_MACOSX
 };
 
 // Helper class for NPAPI plugin UI tests, which need the browser window

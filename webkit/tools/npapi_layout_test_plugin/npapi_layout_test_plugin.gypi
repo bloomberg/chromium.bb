@@ -107,7 +107,7 @@
         ['OS=="mac"', {
           'copies': [
             {
-              'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/PlugIns/',
+              'destination': '<(PRODUCT_DIR)/plugins/',
               'files': ['<(PRODUCT_DIR)/TestNetscapePlugIn.plugin/'],
             },
           ]
