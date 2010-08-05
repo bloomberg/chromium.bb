@@ -879,8 +879,9 @@ bool WidgetGtk::HandleKeyboardEvent(GdkEventKey* event) {
 
   if (event->type == GDK_KEY_PRESS) {
     // VKEY_MENU is triggered by key release event.
+    // FocusManager::OnKeyEvent() returns false when the key has been consumed.
     if (key_code != base::VKEY_MENU)
-      handled = focus_manager_->OnKeyEvent(key);
+      handled = !focus_manager_->OnKeyEvent(key);
     else
       should_handle_menu_key_release_ = true;
   } else if (key_code == base::VKEY_MENU && should_handle_menu_key_release_ &&
