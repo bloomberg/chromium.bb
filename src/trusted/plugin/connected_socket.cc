@@ -22,7 +22,7 @@ namespace {
 PLUGIN_JMPBUF socket_env;
 
 void SignalHandler(int value) {
-  PLUGIN_PRINTF(("ConnectedSocket::SignalHandler()\n"));
+  PLUGIN_PRINTF(("ConnectedSocket::SignalHandler ()\n"));
 
   PLUGIN_LONGJMP(socket_env, value);
 }
@@ -38,7 +38,7 @@ bool ConnectedSocket::InvokeEx(uintptr_t method_id,
                                SrpcParams *params) {
   // All ConnectedSocket does for dynamic calls
   // is forward it to the SrpcClient object
-  PLUGIN_PRINTF(("ConnectedSocket::InvokeEx()\n"));
+  PLUGIN_PRINTF(("ConnectedSocket::InvokeEx ()\n"));
   if (srpc_client_)
     return srpc_client_->Invoke(method_id, params);
   return PortableHandle::InvokeEx(method_id, call_type, params);
@@ -68,7 +68,7 @@ void ConnectedSocket::StartJSObjectProxy(Plugin* plugin) {
 
 ConnectedSocket* ConnectedSocket::New(Plugin* plugin,
                                       nacl::DescWrapper* desc) {
-  PLUGIN_PRINTF(("ConnectedSocket::New()\n"));
+  PLUGIN_PRINTF(("ConnectedSocket::New ()\n"));
 
   ConnectedSocket* connected_socket = new(std::nothrow) ConnectedSocket();
 
@@ -88,11 +88,11 @@ bool ConnectedSocket::Init(Plugin* plugin,
   VideoScopedGlobalLock video_lock;
 
   if (!DescBasedHandle::Init(plugin, wrapper)) {
-    PLUGIN_PRINTF(("ConnectedSocket::Init - DescBasedHandle::Init failed\n"));
+    PLUGIN_PRINTF(("ConnectedSocket::Init (DescBasedHandle::Init failed)\n"));
     return false;
   }
 
-  PLUGIN_PRINTF(("ConnectedSocket::Init(%p, %p)\n",
+  PLUGIN_PRINTF(("ConnectedSocket::Init (plugin=%p, wrapper=%p)\n",
                  static_cast<void*>(plugin),
                  static_cast<void*>(wrapper)));
 
@@ -103,14 +103,14 @@ bool ConnectedSocket::Init(Plugin* plugin,
     // Return an error.
     // TODO(sehr): make sure that clients check for this as well.
     // BUG: This leaks socket.
-    PLUGIN_PRINTF(("ConnectedSocket::Init -- new failed.\n"));
+    PLUGIN_PRINTF(("ConnectedSocket::Init (new failed)\n"));
     return false;
   }
   if (!srpc_client_->Init(browser_interface(), this)) {
     delete srpc_client_;
     srpc_client_ = NULL;
     // BUG: This leaks socket.
-    PLUGIN_PRINTF(("ConnectedSocket::Init -- SrpcClient::Init failed.\n"));
+    PLUGIN_PRINTF(("ConnectedSocket::Init (SrpcClient::Init failed)\n"));
     return false;
   }
   return true;
@@ -118,12 +118,12 @@ bool ConnectedSocket::Init(Plugin* plugin,
 
 ConnectedSocket::ConnectedSocket()
   : srpc_client_(NULL) {
-  PLUGIN_PRINTF(("ConnectedSocket::ConnectedSocket(%p)\n",
+  PLUGIN_PRINTF(("ConnectedSocket::ConnectedSocket (this=%p)\n",
                  static_cast<void*>(this)));
 }
 
 ConnectedSocket::~ConnectedSocket() {
-  PLUGIN_PRINTF(("ConnectedSocket::~ConnectedSocket(%p)\n",
+  PLUGIN_PRINTF(("ConnectedSocket::~ConnectedSocket (this=%p)\n",
                  static_cast<void*>(this)));
 
   // Free the SRPC connection.

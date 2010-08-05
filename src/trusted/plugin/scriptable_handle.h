@@ -42,6 +42,7 @@ class ScriptableHandle {
   // Add a browser reference to this object.
   virtual ScriptableHandle* AddRef() = 0;
   // Remove a browser reference to this object.
+  // Delete the object when the ref count becomes 0.
   virtual void Unref() = 0;
 
  protected:

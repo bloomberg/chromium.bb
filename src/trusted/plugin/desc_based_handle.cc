@@ -37,7 +37,7 @@ bool Map(void* obj, plugin::SrpcParams* params) {
   if (NULL == shared_memory) {
     return false;
   }
-  PLUGIN_PRINTF(("ScriptableHandle::Invoke: new returned %p\n",
+  PLUGIN_PRINTF(("Map (shared_memory=%p)\n",
                  static_cast<void*>(shared_memory)));
   params->outs()[0]->tag = NACL_SRPC_ARG_TYPE_OBJECT;
   params->outs()[0]->u.oval = shared_memory;
@@ -48,14 +48,14 @@ bool Map(void* obj, plugin::SrpcParams* params) {
 
 namespace plugin {
 
-DescBasedHandle::DescBasedHandle(): plugin_(NULL),
-                                    wrapper_(NULL) {
-  PLUGIN_PRINTF(("DescBasedHandle::DescBasedHandle(%p)\n",
+DescBasedHandle::DescBasedHandle()
+    : plugin_(NULL), wrapper_(NULL) {
+  PLUGIN_PRINTF(("DescBasedHandle::DescBasedHandle (this=%p)\n",
                  static_cast<void*>(this)));
 }
 
 DescBasedHandle::~DescBasedHandle() {
-  PLUGIN_PRINTF(("DescBasedHandle::~DescBasedHandle(%p)\n",
+  PLUGIN_PRINTF(("DescBasedHandle::~DescBasedHandle (this=%p)\n",
                  static_cast<void*>(this)));
   if (NULL != wrapper_) {
     wrapper_->Delete();
@@ -65,7 +65,8 @@ DescBasedHandle::~DescBasedHandle() {
 
 DescBasedHandle* DescBasedHandle::New(Plugin* plugin,
                                       nacl::DescWrapper* wrapper) {
-  PLUGIN_PRINTF(("DescBasedHandle::New()\n"));
+  PLUGIN_PRINTF(("DescBasedHandle::New (plugin=%p)\n",
+                 static_cast<void*>(plugin)));
 
   DescBasedHandle* desc_based_handle = new(std::nothrow) DescBasedHandle();
 

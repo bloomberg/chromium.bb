@@ -33,7 +33,8 @@ bool RpcConnect(void* obj, plugin::SrpcParams *params) {
 namespace plugin {
 
 SocketAddress* SocketAddress::New(Plugin* plugin, nacl::DescWrapper* wrapper) {
-  PLUGIN_PRINTF(("SocketAddress::New()\n"));
+  PLUGIN_PRINTF(("SocketAddress::New (plugin=%p)\n",
+                 static_cast<void*>(plugin)));
   SocketAddress* socket_address = new(std::nothrow) SocketAddress();
   if (socket_address == NULL || !socket_address->Init(plugin, wrapper)) {
     delete socket_address;
@@ -56,31 +57,31 @@ void SocketAddress::LoadMethods() {
 }
 
 SocketAddress::SocketAddress() {
-  PLUGIN_PRINTF(("SocketAddress::SocketAddress(%p)\n",
+  PLUGIN_PRINTF(("SocketAddress::SocketAddress (this=%p)\n",
                  static_cast<void*>(this)));
 }
 
 SocketAddress::~SocketAddress() {
-  PLUGIN_PRINTF(("SocketAddress::~SocketAddress(%p)\n",
+  PLUGIN_PRINTF(("SocketAddress::~SocketAddress (this=%p)\n",
                  static_cast<void*>(this)));
 }
 
 // Returns a connected socket for the address.
 ScriptableHandle* SocketAddress::Connect() {
-  PLUGIN_PRINTF(("SocketAddress::Connect()\n"));
-  nacl::DescWrapper* con_desc = wrapper()->Connect();
-  if (NULL == con_desc) {
-    PLUGIN_PRINTF(("SocketAddress::Connect: connect failed\n"));
+  PLUGIN_PRINTF(("SocketAddress::Connect ()\n"));
+  nacl::DescWrapper* connect_desc = wrapper()->Connect();
+  if (NULL == connect_desc) {
+    PLUGIN_PRINTF(("SocketAddress::Connect (connect failed)\n"));
     return NULL;
   } else {
-    PLUGIN_PRINTF(("SocketAddress::Connect: take returned %p\n",
-                   static_cast<void*>(con_desc)));
+    PLUGIN_PRINTF(("SocketAddress::Connect (conect_desc=%p)\n",
+                   static_cast<void*>(connect_desc)));
     ConnectedSocket* portable_connected_socket =
-        ConnectedSocket::New(plugin(), con_desc);
+        ConnectedSocket::New(plugin(), connect_desc);
     ScriptableHandle* connected_socket =
         plugin()->browser_interface()->NewScriptableHandle(
             portable_connected_socket);
-    PLUGIN_PRINTF(("SocketAddress::Connect: CS returned %p\n",
+    PLUGIN_PRINTF(("SocketAddress::Connect (connected_socket=%p)\n",
                    static_cast<void*>(connected_socket)));
     return connected_socket;
   }

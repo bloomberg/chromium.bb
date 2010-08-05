@@ -5,7 +5,7 @@
  */
 
 
-// NPAPI Scriptable handle implementation.
+// Scriptable handle implementation.
 
 #include "native_client/src/trusted/plugin/scriptable_handle.h"
 
@@ -34,7 +34,7 @@ std::set<const plugin::ScriptableHandle*>* g_ValidHandles = 0;
 namespace plugin {
 
 ScriptableHandle::ScriptableHandle(PortableHandle* handle) : handle_(handle) {
-  PLUGIN_PRINTF(("ScriptableHandle::ScriptableHandle(%p, %p)\n",
+  PLUGIN_PRINTF(("ScriptableHandle::ScriptableHandle (this=%p, handle=%p)\n",
                  static_cast<void*>(this),
                  static_cast<void*>(handle)));
   // Initialize the set.
@@ -52,7 +52,7 @@ ScriptableHandle::ScriptableHandle(PortableHandle* handle) : handle_(handle) {
 }
 
 ScriptableHandle::~ScriptableHandle() {
-  PLUGIN_PRINTF(("ScriptableHandle::~ScriptableHandle(%p)\n",
+  PLUGIN_PRINTF(("ScriptableHandle::~ScriptableHandle (this=%p)\n",
                  static_cast<void*>(this)));
   // If the set was empty, just return.
   if (NULL == g_ValidHandles) {
@@ -68,15 +68,16 @@ ScriptableHandle::~ScriptableHandle() {
 
 // Check that an object is a validly created ScriptableHandle.
 bool ScriptableHandle::is_valid(const ScriptableHandle* handle) {
-  PLUGIN_PRINTF(("ScriptableHandle::is_valid(%p)\n",
+  PLUGIN_PRINTF(("ScriptableHandle::is_valid (handle=%p)\n",
                  static_cast<void*>(const_cast<ScriptableHandle*>(handle))));
   if (NULL == g_ValidHandles) {
-    PLUGIN_PRINTF(("ScriptableHandle::is_valid -- no set\n"));
+    PLUGIN_PRINTF(("ScriptableHandle::is_valid (return 0)\n"));
     return false;
   }
   size_t count =
       g_ValidHandles->count(static_cast<const ScriptableHandle*>(handle));
-  PLUGIN_PRINTF(("ScriptableHandle::is_valid(%p, count %"NACL_PRIuS")\n",
+  PLUGIN_PRINTF(("ScriptableHandle::is_valid (handle=%p, count=%"
+                 NACL_PRIuS")\n",
                  static_cast<void*>(const_cast<ScriptableHandle*>(handle)),
                  count));
   return 0 != count;

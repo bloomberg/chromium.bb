@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -109,6 +110,7 @@ bool GetNexesProperty(void* obj, plugin::SrpcParams* params) {
   UNREFERENCED_PARAMETER(params);
   // Note, "get" must be present in the method map for "set" to work.
   PLUGIN_PRINTF(("GetNexesProperty not yet implemented.\n"));
+  NACL_UNIMPLEMENTED();
   return false;
 }
 
@@ -123,17 +125,17 @@ bool GetSrcProperty(void* obj, plugin::SrpcParams* params) {
   plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
   if (plugin->logical_url() != NULL) {
     params->outs()[0]->u.sval = strdup(plugin->logical_url());
-    PLUGIN_PRINTF(("GetSrcProperty 'src' = %s\n", plugin->logical_url()));
+    PLUGIN_PRINTF(("GetSrcProperty ('src'='%s')\n", plugin->logical_url()));
     return true;
   } else {
     // (NULL is not an acceptable SRPC result.)
-    PLUGIN_PRINTF(("GetSrcProperty 'src' failed\n"));
+    PLUGIN_PRINTF(("GetSrcProperty ('src' failed)\n"));
     return false;
   }
 }
 
 bool SetSrcProperty(void* obj, plugin::SrpcParams* params) {
-  PLUGIN_PRINTF(("SetSrcProperty\n"));
+  PLUGIN_PRINTF(("SetSrcProperty ()\n"));
   return reinterpret_cast<plugin::Plugin*>(obj)->
       SetSrcPropertyImpl(params->ins()[0]->u.sval);
 }
@@ -175,7 +177,7 @@ bool SetVideoUpdateModeProperty(void* obj, plugin::SrpcParams* params) {
 }
 
 void SignalHandler(int value) {
-  PLUGIN_PRINTF(("Plugin::SignalHandler()\n"));
+  PLUGIN_PRINTF(("Plugin::SignalHandler ()\n"));
   PLUGIN_LONGJMP(g_LoaderEnv, value);
 }
 
@@ -239,6 +241,7 @@ bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
 static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 
 void Plugin::LoadMethods() {
+  PLUGIN_PRINTF(("Plugin::LoadMethods ()\n"));
   // Methods supported by Plugin.
   AddMethodCall(ShmFactory, "__shmFactory", "i", "h");
   AddMethodCall(DefaultSocketAddress, "__defaultSocketAddress", "", "h");
@@ -287,13 +290,15 @@ bool Plugin::InitParamsEx(uintptr_t method_id,
 
 
 bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
-  PLUGIN_PRINTF(("Plugin::SetNexesPropertyImpl: %s\n", nexes_attr));
+  PLUGIN_PRINTF(("Plugin::SetNexesPropertyImpl (nexes_attr='%s')\n",
+                 nexes_attr));
   nacl::string result;
   if (!GetNexeURL(nexes_attr, &result)) {
     // TODO(adonovan): Ideally we would print to the browser's
     // JavaScript console: alert popups are annoying, and no-one can
     // be expected to read stderr.
-    PLUGIN_PRINTF(("%s\n", result.c_str()));
+    PLUGIN_PRINTF(("Plugin::SetNexesPropertyImpl (result='%s')\n",
+                   result.c_str()));
     browser_interface()->Alert(instance_id(), result);
     return false;
   } else {
@@ -302,7 +307,7 @@ bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
 }
 
 bool Plugin::SetSrcPropertyImpl(const nacl::string& url) {
-  PLUGIN_PRINTF(("Plugin::SetProperty: unloading previous\n"));
+  PLUGIN_PRINTF(("Plugin::SetProperty (unloading previous)\n"));
   ShutDownSubprocess();
   return RequestNaClModule(url);
 }
@@ -312,7 +317,7 @@ bool Plugin::Init(BrowserInterface* browser_interface,
                   int argc,
                   char* argn[],
                   char* argv[]) {
-  PLUGIN_PRINTF(("Plugin::Init: instance_id=%p\n",
+  PLUGIN_PRINTF(("Plugin::Init (instance_id=%p)\n",
                  reinterpret_cast<void*>(instance_id)));
 
   browser_interface_ = browser_interface;
@@ -351,13 +356,13 @@ bool Plugin::Init(BrowserInterface* browser_interface,
   if (NULL == wrapper_factory_) {
     return false;
   }
-  PLUGIN_PRINTF(("Plugin::Init: wrapper_factory=%p\n",
+  PLUGIN_PRINTF(("Plugin::Init (wrapper_factory=%p)\n",
                  reinterpret_cast<void*>(wrapper_factory_)));
 
   // Check that the origin is allowed.
   origin_ = BrowserInterface::kUnknownURL;
   if (browser_interface_->GetOrigin(instance_id_, &origin_)) {
-    PLUGIN_PRINTF(("Plugin::Init: origin=%s\n", origin_.c_str()));
+    PLUGIN_PRINTF(("Plugin::Init (origin='%s')\n", origin_.c_str()));
     // Check that origin is in the list of permitted origins.
     origin_valid_ = nacl::OriginIsInWhitelist(origin_);
     // This implementation of same-origin policy does not take
@@ -377,7 +382,7 @@ bool Plugin::Init(BrowserInterface* browser_interface,
     }
   }
 
-  PLUGIN_PRINTF(("Plugin::Init: done\n"));
+  PLUGIN_PRINTF(("Plugin::Init (return 1)\n"));
   // Return success.
   return true;
 }
@@ -397,7 +402,7 @@ Plugin::Plugin()
     width_(0),
     video_update_mode_(kVideoUpdatePluginPaint),
     wrapper_factory_(NULL) {
-  PLUGIN_PRINTF(("Plugin::Plugin(%p)\n", static_cast<void*>(this)));
+  PLUGIN_PRINTF(("Plugin::Plugin (this=%p)\n", static_cast<void*>(this)));
 }
 
 void Plugin::Invalidate() {
@@ -426,7 +431,7 @@ void Plugin::ShutDownSubprocess() {
 }
 
 Plugin::~Plugin() {
-  PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void*>(this)));
+  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p)\n", static_cast<void*>(this)));
 
   // After invalidation, the browser does not respect reference counting,
   // so we shut down here what we can and prevent attempts to shut down
@@ -437,19 +442,17 @@ Plugin::~Plugin() {
   // NPP_Destroy().
   ShutDownSubprocess();
 
-  PLUGIN_PRINTF(("Plugin::~Plugin(%p)\n", static_cast<void*>(this)));
+  PLUGIN_PRINTF(("Plugin::~Plugin (this=%p)\n", static_cast<void*>(this)));
   free(local_url_);
   free(logical_url_);
 }
 
 void Plugin::set_local_url(const char* url) {
-  PLUGIN_PRINTF(("Plugin::set_local_url(%s)\n", url));
   if (local_url_ != NULL) free(local_url_);
   local_url_ = strdup(url);
 }
 
 void Plugin::set_logical_url(const char* url) {
-  PLUGIN_PRINTF(("Plugin::set_logical_url(%s)\n", url));
   if (logical_url_ != NULL) free(logical_url_);
   logical_url_ = strdup(url);
 }
@@ -462,28 +465,34 @@ bool Plugin::Load(nacl::string logical_url, const char* local_url) {
 bool Plugin::Load(nacl::string logical_url,
                   const char* local_url,
                   StreamShmBuffer* shmbufp) {
+  PLUGIN_PRINTF(("Plugin::Load (logical_url='%s')\n", logical_url.c_str()));
+  PLUGIN_PRINTF(("Plugin::Load (local_url='%s')\n", local_url));
+  PLUGIN_PRINTF(("Plugin::Load (shmbufp=%p)\n",
+                 reinterpret_cast<void*>(shmbufp)));
   BrowserInterface* browser_interface = this->browser_interface();
-
-  if (NULL == shmbufp) {
-    PLUGIN_PRINTF(("Plugin::Load(%s)\n", local_url));
-  } else {
-    PLUGIN_PRINTF(("Plugin::Load(%p)\n", reinterpret_cast<void*>(shmbufp)));
-  }
 
   // Save the origin and local_url.
   set_nacl_module_origin(nacl::UrlToOrigin(logical_url));
   set_logical_url(logical_url.c_str());
   set_local_url(local_url);
+  bool nacl_module_origin_valid =
+      nacl::OriginIsInWhitelist(nacl_module_origin());
+  PLUGIN_PRINTF(("Plugin::Load (origin='%s', origin_valid=%d)\n",
+                 origin_.c_str(), origin_valid_));
+  PLUGIN_PRINTF(("Plugin::Load "
+                 "(nacl_module_origin_='%s', nacl_module_origin_valid=%d)\n",
+                 nacl_module_origin_.c_str(), nacl_module_origin_valid));
   // If the page origin where the EMBED/OBJECT tag occurs is not in
   // the whitelist, refuse to load.  If the NaCl module's origin is
   // not in the whitelist, also refuse to load.
   // TODO(adonovan): JavaScript permits cross-origin loading, and so
   // does Chrome ; why don't we?
-  if (!origin_valid_ || !nacl::OriginIsInWhitelist(nacl_module_origin())) {
+  if (!origin_valid_ || !nacl_module_origin_valid) {
     nacl::string message = nacl::string("Load failed: NaCl module ") +
         logical_url + " does not come ""from a whitelisted source. "
         "See native_client/src/trusted/plugin/origin.cc for the list.";
     browser_interface->Alert(instance_id(), message.c_str());
+    PLUGIN_PRINTF(("Plugin::Load (return 0)"));
     return false;
   }
   // Catch any bad accesses, etc., while loading.
@@ -492,8 +501,6 @@ bool Plugin::Load(nacl::string logical_url,
   if (PLUGIN_SETJMP(g_LoaderEnv, 1)) {
     return false;
   }
-
-  PLUGIN_PRINTF(("Load: NaCl module from '%s'\n", local_url_));
 
   // Check ELF magic and ABI version compatibility.
   bool success = false;
@@ -514,15 +521,15 @@ bool Plugin::Load(nacl::string logical_url,
     }
   }
   if (!success) {
+    PLUGIN_PRINTF(("Plugin::Load (error_string='%s')\n", error_string.c_str()));
     browser_interface->Alert(instance_id(), error_string);
     return false;
   }
   // Load a file via a forked sel_ldr process.
   service_runtime_ = new(std::nothrow) ServiceRuntime(browser_interface, this);
   if (NULL == service_runtime_) {
-    PLUGIN_PRINTF((" ServiceRuntime Ctor failed\n"));
-    browser_interface->Alert(instance_id(),
-                             "ServiceRuntime Ctor failed");
+    PLUGIN_PRINTF(("Plugin::Load (ServiceRuntime Ctor failed)\n"));
+    browser_interface->Alert(instance_id(), "ServiceRuntime Ctor failed");
     return false;
   }
   bool service_runtime_started = false;
@@ -532,7 +539,7 @@ bool Plugin::Load(nacl::string logical_url,
     int32_t size;
     NaClDesc* raw_desc = shmbufp->shm(&size);
     if (NULL == raw_desc) {
-      PLUGIN_PRINTF((" extracting shm failed\n"));
+      PLUGIN_PRINTF(("Plugin::Load (extracting shm failed)\n"));
       return false;
     }
     nacl::DescWrapper* wrapped_shm =
@@ -542,18 +549,18 @@ bool Plugin::Load(nacl::string logical_url,
     // Start consumes the wrapped_shm.
   }
   if (!service_runtime_started) {
-    PLUGIN_PRINTF(("  Load: FAILED to start service runtime"));
+    PLUGIN_PRINTF(("Plugin::Load (failed to start service runtime)\n"));
     browser_interface->Alert(instance_id(),
                              "Load: FAILED to start service runtime");
     return false;
   }
 
-  PLUGIN_PRINTF(("  Load: started sel_ldr\n"));
+  PLUGIN_PRINTF(("Plugin::Load (started sel_ldr)\n"));
   socket_address_ = service_runtime_->default_socket_address();
-  PLUGIN_PRINTF(("  Load: established socket address %p\n",
-           static_cast<void*>(socket_address_)));
+  PLUGIN_PRINTF(("Plugin::Load (established socket address %p)\n",
+                 static_cast<void*>(socket_address_)));
   socket_ = service_runtime_->default_socket();
-  PLUGIN_PRINTF(("  Load: established socket %p\n",
+  PLUGIN_PRINTF(("Plugin::Load (established socket %p)\n",
                  static_cast<void*>(socket_)));
   // Plugin takes ownership of socket_ from service_runtime_,
   // so we do not need to call NPN_RetainObject.

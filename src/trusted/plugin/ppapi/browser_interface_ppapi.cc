@@ -14,6 +14,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/plugin/api_defines.h"
 #include "native_client/src/trusted/plugin/ppapi/scriptable_handle_ppapi.h"
+#include "native_client/src/trusted/plugin/ppapi/var_utils.h"
+
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/var.h"
 
@@ -79,15 +81,22 @@ bool BrowserInterfacePpapi::GetFullURL(InstanceIdentifier instance_id,
   *full_url = kUnknownURL;
   pp::Var window;
   if (!GetWindow(instance_id, &window)) {
+    PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (get window failed)\n"));
     return false;
   }
   pp::Var location = window.GetProperty("location");
+  PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (location=%s)\n",
+                 VarToString(location).c_str()));
   if (location.is_object()) {
     pp::Var href = location.GetProperty("href");
+    PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (href=%s)\n",
+                   VarToString(href).c_str()));
     if (href.is_string()) {
       *full_url = href.AsString();
     }
   }
+  PLUGIN_PRINTF(("BrowserInterfacePpapi::GetFullURL (full_url='%s')\n",
+                 full_url->c_str()));
   return (kUnknownURL != *full_url);
 }
 

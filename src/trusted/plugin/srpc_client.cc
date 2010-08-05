@@ -35,14 +35,14 @@ namespace plugin {
 SrpcClient::SrpcClient()
     : srpc_channel_initialised_(false),
       browser_interface_(NULL) {
-  PLUGIN_PRINTF(("SrpcClient::SrpcClient(%p)\n",
+  PLUGIN_PRINTF(("SrpcClient::SrpcClient (this=%p)\n",
                  static_cast<void*>(this)));
 }
 
 bool SrpcClient::Init(BrowserInterface* browser_interface,
                       ConnectedSocket* socket) {
-  PLUGIN_PRINTF(("SrpcClient::SrpcClient(%p, %p, %p)\n",
-                 static_cast<void*>(this),
+  PLUGIN_PRINTF(("SrpcClient::Init (this=%p, browser_interface=%p, socket=%p)"
+                 "\n", static_cast<void*>(this),
                  static_cast<void*>(browser_interface),
                  static_cast<void*>(socket)));
   // Open the channel to pass RPC information back and forth
@@ -51,21 +51,22 @@ bool SrpcClient::Init(BrowserInterface* browser_interface,
   }
   srpc_channel_initialised_ = true;
   browser_interface_ = browser_interface;
-  PLUGIN_PRINTF(("SrpcClient::SrpcClient: Ctor worked\n"));
+  PLUGIN_PRINTF(("SrpcClient::Init (Ctor worked)\n"));
   // Record the method names in a convenient way for later dispatches.
   GetMethods();
-  PLUGIN_PRINTF(("SrpcClient::SrpcClient: GetMethods worked\n"));
+  PLUGIN_PRINTF(("SrpcClient::Init (GetMethods worked)\n"));
   return true;
 }
 
 SrpcClient::~SrpcClient() {
-  PLUGIN_PRINTF(("SrpcClient::~SrpcClient(%p)\n", static_cast<void*>(this)));
-  PLUGIN_PRINTF(("SrpcClient::~SrpcClient: destroying the channel\n"));
+  PLUGIN_PRINTF(("SrpcClient::~SrpcClient (this=%p)\n",
+                 static_cast<void*>(this)));
+  PLUGIN_PRINTF(("SrpcClient::~SrpcClient (destroying the channel)\n"));
   // And delete the connection.
   if (srpc_channel_initialised_) {
     NaClSrpcDtor(&srpc_channel_);
   }
-  PLUGIN_PRINTF(("SrpcClient::~SrpcClient: done\n"));
+  PLUGIN_PRINTF(("SrpcClient::~SrpcClient (return)\n"));
 }
 
 void SrpcClient::StartJSObjectProxy(Plugin* plugin) {
@@ -74,7 +75,7 @@ void SrpcClient::StartJSObjectProxy(Plugin* plugin) {
   uintptr_t npapi_ident =
       browser_interface_->StringToIdentifier("NP_Initialize");
   if (methods_.find(npapi_ident) != methods_.end()) {
-    PLUGIN_PRINTF(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
+    PLUGIN_PRINTF(("SrpcClient::StartJSObjectProxy (is an NPAPI plugin)\n"));
     // Start up NPAPI interaction.
     plugin->StartProxiedExecution(&srpc_channel_);
   }
@@ -82,7 +83,8 @@ void SrpcClient::StartJSObjectProxy(Plugin* plugin) {
 }
 
 void SrpcClient::GetMethods() {
-  PLUGIN_PRINTF(("SrpcClient::GetMethods(%p)\n", static_cast<void*>(this)));
+  PLUGIN_PRINTF(("SrpcClient::GetMethods (this=%p)\n",
+                 static_cast<void*>(this)));
   if (NULL == srpc_channel_.client) {
     return;
   }
@@ -119,7 +121,7 @@ void SrpcClient::GetMethods() {
 }
 
 bool SrpcClient::HasMethod(uintptr_t method_id) {
-  PLUGIN_PRINTF(("SrpcClient::HasMethod(%p, %s)\n",
+  PLUGIN_PRINTF(("SrpcClient:: HasMethod(this=%p, method_name='%s')\n",
                  static_cast<void*>(this),
                  browser_interface_->IdentifierToString(method_id).c_str()));
   return NULL != methods_[method_id];
@@ -139,14 +141,14 @@ bool SrpcClient::Invoke(uintptr_t method_id,
   // case.  However, there are calls to Invoke from within the plugin itself,
   // and these could leave residual exceptions pending.  This seems to be
   // happening specifically with hard_shutdowns.
-  PLUGIN_PRINTF(("SrpcClient::Invoke(%p, %s, %p)\n",
+  PLUGIN_PRINTF(("SrpcClient::Invoke (this=%p, method_name='%s', params=%p)\n",
                  static_cast<void*>(this),
                  browser_interface_->IdentifierToString(method_id).c_str(),
                  static_cast<void*>(params)));
 
   // Ensure Invoke was called with an identifier that had a binding.
   if (NULL == methods_[method_id]) {
-    PLUGIN_PRINTF(("SrpcClient::Invoke: ident not in methods_\n"));
+    PLUGIN_PRINTF(("SrpcClient::Invoke (ident not in methods_)\n"));
     return false;
   }
 
@@ -154,20 +156,20 @@ bool SrpcClient::Invoke(uintptr_t method_id,
   ScopedCatchSignals sigcatcher(
       (ScopedCatchSignals::SigHandlerType) SignalHandler);
 
-  PLUGIN_PRINTF(("SrpcClient::Invoke: sending the rpc\n"));
+  PLUGIN_PRINTF(("SrpcClient::Invoke (sending the rpc)\n"));
   // Call the method
   NaClSrpcError err = NaClSrpcInvokeV(&srpc_channel_,
                                       methods_[method_id]->index(),
                                       params->ins(),
                                       params->outs());
-  PLUGIN_PRINTF(("SrpcClient::Invoke: got response %d\n", err));
+  PLUGIN_PRINTF(("SrpcClient::Invoke (response=%d)\n", err));
   if (NACL_SRPC_RESULT_OK != err) {
-    PLUGIN_PRINTF(("SrpcClient::Invoke: returned err %s\n",
+    PLUGIN_PRINTF(("SrpcClient::Invoke (err=%s)\n",
                    NaClSrpcErrorString(err)));
     return false;
   }
 
-  PLUGIN_PRINTF(("SrpcClient::Invoke: done\n"));
+  PLUGIN_PRINTF(("SrpcClient::Invoke (return 1)\n"));
   return true;
 }
 
