@@ -27,6 +27,8 @@
 #include "gfx/codec/png_codec.h"
 #include "net/base/mime_sniffer.h"
 #include "skia/ext/image_operations.h"
+#include "chrome/test/ui_test_utils.h"
+#include "net/base/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace keys = extension_manifest_keys;
@@ -731,85 +733,85 @@ static Extension* LoadManifest(const std::string& dir,
 
 TEST(ExtensionTest, EffectiveHostPermissions) {
   scoped_ptr<Extension> extension;
-  std::set<std::string> hosts;
+  ExtensionExtent hosts;
 
   extension.reset(LoadManifest("effective_host_permissions", "empty.json"));
-  EXPECT_EQ(0u, extension->GetEffectiveHostPermissions().size());
+  EXPECT_EQ(0u, extension->GetEffectiveHostPermissions().patterns().size());
   EXPECT_FALSE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions", "one_host.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(1u, hosts.size());
-  EXPECT_TRUE(hosts.find("www.google.com") != hosts.end());
+  EXPECT_EQ(1u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
   EXPECT_FALSE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "one_host_wildcard.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(1u, hosts.size());
-  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
+  EXPECT_EQ(1u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
   EXPECT_FALSE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "two_hosts.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(2u, hosts.size());
-  EXPECT_TRUE(hosts.find("www.google.com") != hosts.end());
-  EXPECT_TRUE(hosts.find("www.reddit.com") != hosts.end());
+  EXPECT_EQ(2u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.reddit.com")));
   EXPECT_FALSE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "duplicate_host.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(1u, hosts.size());
-  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
+  EXPECT_EQ(1u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
   EXPECT_FALSE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "https_not_considered.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(1u, hosts.size());
-  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
+  EXPECT_EQ(1u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
   EXPECT_FALSE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "two_content_scripts.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(3u, hosts.size());
-  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
-  EXPECT_TRUE(hosts.find("www.reddit.com") != hosts.end());
-  EXPECT_TRUE(hosts.find("news.ycombinator.com") != hosts.end());
+  EXPECT_EQ(3u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.reddit.com")));
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://news.ycombinator.com")));
   EXPECT_FALSE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "duplicate_content_script.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(2u, hosts.size());
-  EXPECT_TRUE(hosts.find("google.com") != hosts.end());
-  EXPECT_TRUE(hosts.find("www.reddit.com") != hosts.end());
+  EXPECT_EQ(3u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://google.com")));
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.reddit.com")));
   EXPECT_FALSE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "all_hosts.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(1u, hosts.size());
-  EXPECT_TRUE(hosts.find("") != hosts.end());
+  EXPECT_EQ(1u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://test/")));
   EXPECT_TRUE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "all_hosts2.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(2u, hosts.size());
-  EXPECT_TRUE(hosts.find("") != hosts.end());
-  EXPECT_TRUE(hosts.find("www.google.com") != hosts.end());
+  EXPECT_EQ(2u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://test/")));
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
   EXPECT_TRUE(extension->HasAccessToAllHosts());
 
   extension.reset(LoadManifest("effective_host_permissions",
                                "all_hosts3.json"));
   hosts = extension->GetEffectiveHostPermissions();
-  EXPECT_EQ(2u, hosts.size());
-  EXPECT_TRUE(hosts.find("") != hosts.end());
-  EXPECT_TRUE(hosts.find("www.google.com") != hosts.end());
+  EXPECT_EQ(2u, hosts.patterns().size());
+  EXPECT_TRUE(hosts.ContainsURL(GURL("https://test/")));
+  EXPECT_TRUE(hosts.ContainsURL(GURL("http://www.google.com")));
   EXPECT_TRUE(extension->HasAccessToAllHosts());
 }
 

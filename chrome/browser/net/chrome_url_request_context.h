@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -52,14 +53,18 @@ class ChromeURLRequestContext : public URLRequestContext {
     ExtensionInfo(const std::string& name, const FilePath& path,
                   const std::string& default_locale,
                   const ExtensionExtent& extent,
+                  const ExtensionExtent& effective_host_permissions,
                   const std::vector<std::string>& api_permissions)
         : name(name), path(path), default_locale(default_locale),
-          extent(extent), api_permissions(api_permissions) {
+          extent(extent),
+          effective_host_permissions(effective_host_permissions),
+          api_permissions(api_permissions) {
     }
     const std::string name;
-    FilePath path;
-    std::string default_locale;
-    ExtensionExtent extent;
+    const FilePath path;
+    const std::string default_locale;
+    const ExtensionExtent extent;
+    const ExtensionExtent effective_host_permissions;
     std::vector<std::string> api_permissions;
   };
 
@@ -77,6 +82,10 @@ class ChromeURLRequestContext : public URLRequestContext {
   // Returns an empty string if the extension with |id| doesn't have a default
   // locale.
   std::string GetDefaultLocaleForExtension(const std::string& id);
+
+  // Gets the effective host permissions for the extension with |id|.
+  ExtensionExtent
+      GetEffectiveHostPermissionsForExtension(const std::string& id);
 
   // Determine whether a URL has access to the specified extension permission.
   bool CheckURLAccessToExtensionPermission(const GURL& url,

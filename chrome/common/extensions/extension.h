@@ -281,7 +281,7 @@ class Extension {
   // Returns the set of hosts that the extension effectively has access to. This
   // is used in the permissions UI and is a combination of the hosts accessible
   // through content scripts and the hosts accessible through XHR.
-  const std::set<std::string> GetEffectiveHostPermissions() const;
+  const ExtensionExtent GetEffectiveHostPermissions() const;
 
   // Whether or not the extension is allowed permission for a URL pattern from
   // the manifest.  http, https, and chrome://favicon/ is allowed for all

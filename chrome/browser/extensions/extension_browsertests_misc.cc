@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/extensions/autoupdate_interceptor.h"
+#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
+#include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
@@ -173,6 +175,32 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Shelf) {
   EXPECT_NE(shelf->GetPreferredSize().height(), 0);
 }
 #endif  // defined(TOOLKIT_VIEWS)
+
+// Tests that extension resources can be loaded from origins which the
+// extension specifies in permissions but not from others.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(LoadExtension(test_data_dir_
+    .AppendASCII("origin_privileges").AppendASCII("extension")));
+
+  ui_test_utils::NavigateToURL(browser(),
+      GURL("http://a.com:1337/files/extensions/origin_privileges/index.html"));
+  std::string result;
+  ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(document.title)",
+      &result);
+  EXPECT_EQ(result, "Loaded");
+
+  ui_test_utils::NavigateToURL(browser(),
+      GURL("http://b.com:1337/files/extensions/origin_privileges/index.html"));
+  ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(document.title)",
+      &result);
+  EXPECT_EQ(result, "Image failed to load");
+}
 
 // Tests that we can load extension pages into the tab area and they can call
 // extension APIs.

@@ -800,6 +800,17 @@ std::string ChromeURLRequestContext::GetDefaultLocaleForExtension(
   return result;
 }
 
+ExtensionExtent
+    ChromeURLRequestContext::GetEffectiveHostPermissionsForExtension(
+        const std::string& id) {
+  ExtensionInfoMap::iterator iter = extension_info_.find(id);
+  ExtensionExtent result;
+  if (iter != extension_info_.end())
+    result = iter->second->effective_host_permissions;
+
+  return result;
+}
+
 bool ChromeURLRequestContext::CheckURLAccessToExtensionPermission(
     const GURL& url,
     const char* permission_name) {
@@ -964,6 +975,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
                   (*iter)->path(),
                   (*iter)->default_locale(),
                   (*iter)->web_extent(),
+                  (*iter)->GetEffectiveHostPermissions(),
                   (*iter)->api_permissions()));
     }
   }
