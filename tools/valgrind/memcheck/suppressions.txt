@@ -3856,3 +3856,16 @@
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
 }
+{
+   bug_51261a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos11CrosLibrary10GetTestApiEv
+   fun:_ZN8chromeos23GoogleAuthenticatorTest5SetUpEv
+}
+{
+   bug_51261b
+   Memcheck:Cond
+   fun:_ZN8chromeos11CrosLibrary7TestApi16SetLibraryLoaderEPNS_13LibraryLoaderEb
+   fun:_ZN8chromeos23GoogleAuthenticatorTest5SetUpEv
+}
