@@ -62,8 +62,9 @@ cr.define('options.language', function() {
      * @param {string} languageCode language code (ex. "fr").
      */
     addLanguage: function(languageCode) {
-      var dataModel = this.dataModel;
-      dataModel.push(languageCode);
+      this.dataModel.push(languageCode);
+      // Select the last item, which is the language added.
+      this.selectionModel.selectedIndex = this.dataModel.length - 1;
 
       this.updateBackend_();
     },
@@ -101,8 +102,6 @@ cr.define('options.language', function() {
         this.selectionModel.selectedIndex = Math.min(
             originalIndex,
             this.dataModel.length - 1);
-        var newLanguageCodes = this.dataModel.slice();
-        this.load_(newLanguageCodes);
         this.updateBackend_();
       }
     },
@@ -125,12 +124,22 @@ cr.define('options.language', function() {
      * @private
      */
     load_: function(languageCodes) {
+      // Preserve the original selected index. See comments below.
+      var originalSelectedIndex = (this.selectionModel ?
+                                   this.selectionModel.selectedIndex : -1);
       this.dataModel = new ArrayDataModel(languageCodes);
-      // Select the first item if it's not empty.
-      // TODO(satorux): Switch to a single item selection model that does
-      // not allow no selection, one it's ready: crbug.com/49893
-      if (this.dataModel.length > 0)
+      if (originalSelectedIndex >= 0 &&
+          originalSelectedIndex < this.dataModel.length) {
+        // Restore the original selected index if the selected index is
+        // valid after the data model is loaded. This is neeeded to keep
+        // the selected language after the languge is added or removed.
+        this.selectionModel.selectedIndex = originalSelectedIndex;
+      } else if (this.dataModel.length > 0){
+        // Otherwise, select the first item if it's not empty.
+        // TODO(satorux): Switch to a single item selection model that does
+        // not allow no selection, one it's ready: crbug.com/49893
         this.selectionModel.selectedIndex = 0;
+      }
     },
 
     /**
