@@ -3229,9 +3229,6 @@
    fun:_ZN9SingletonIN8chromeos11CrosLibraryE22DefaultSingletonTraitsIS1_ES1_E6OnExitEPv
    fun:_ZN4base13AtExitManager19ProcessCallbacksNowEv
    fun:_ZN4base13AtExitManagerD1Ev
-   fun:_ZN9TestSuiteD2Ev
-   fun:_ZN15ChromeTestSuiteD1Ev
-   fun:main
 }
 {
    bug_46560
@@ -3830,18 +3827,21 @@
    bug_51176_a
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN51PrefValueStoreTest_TestConcurrentPolicyRefresh_Test8TestBodyEv
 }
 {
    bug_51176_b
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN41PrefValueStoreTest_TestPolicyRefresh_Test8TestBodyEv
 }
 {
    bug_51176_c
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN56PrefValueStoreTest_TestRefreshPolicyPrefsCompletion_Test8TestBodyEv
 }
 {
