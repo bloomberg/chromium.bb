@@ -116,3 +116,7 @@ TEST_F(PPAPITest, Scrollbar) {
 #endif
   RunTest("Scrollbar");
 }
+
+TEST_F(PPAPITest, UrlUtil) {
+  RunTest("UrlUtil");
+}

@@ -203,6 +203,8 @@
         'plugins/pepper_url_request_info.h',
         'plugins/pepper_url_response_info.cc',
         'plugins/pepper_url_response_info.h',
+        'plugins/pepper_url_util.cc',
+        'plugins/pepper_url_util.h',
         'plugins/pepper_var.cc',
         'plugins/pepper_var.h',
         'plugins/pepper_webplugin_impl.cc',

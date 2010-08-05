@@ -27,6 +27,7 @@
 #include "third_party/ppapi/c/ppb_url_loader.h"
 #include "third_party/ppapi/c/ppb_url_request_info.h"
 #include "third_party/ppapi/c/ppb_url_response_info.h"
+#include "third_party/ppapi/c/ppb_url_util.h"
 #include "third_party/ppapi/c/ppb_var.h"
 #include "third_party/ppapi/c/ppb_widget.h"
 #include "third_party/ppapi/c/ppp.h"
@@ -51,6 +52,7 @@
 #include "webkit/glue/plugins/pepper_url_loader.h"
 #include "webkit/glue/plugins/pepper_url_request_info.h"
 #include "webkit/glue/plugins/pepper_url_response_info.h"
+#include "webkit/glue/plugins/pepper_url_util.h"
 #include "webkit/glue/plugins/pepper_var.h"
 #include "webkit/glue/plugins/pepper_widget.h"
 #include "webkit/glue/plugins/ppb_private.h"
@@ -192,6 +194,8 @@ const void* GetInterface(const char* name) {
     return Font::GetInterface();
   if (strcmp(name, PPB_FIND_INTERFACE) == 0)
     return PluginInstance::GetFindInterface();
+  if (strcmp(name, PPB_URLUTIL_INTERFACE) == 0)
+    return GetUrlUtilInterface();
   if (strcmp(name, PPB_PRIVATE_INTERFACE) == 0)
     return Private::GetInterface();
   if (strcmp(name, PPB_FILECHOOSER_INTERFACE) == 0)
