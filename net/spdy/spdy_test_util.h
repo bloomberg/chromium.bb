@@ -11,11 +11,15 @@
 #include "net/base/request_priority.h"
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_network_layer.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_session_pool.h"
+#include "net/url_request/url_request_context.h"
 
 namespace net {
 
@@ -109,6 +113,27 @@ spdy::SpdyFrame* ConstructSpdyPacket(const SpdyHeaderInfo& header_info,
                                      const char* const tail[],
                                      int tail_header_count);
 
+// Construct a generic SpdyControlFrame.
+spdy::SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
+                                           int extra_header_count,
+                                           bool compressed,
+                                           int stream_id,
+                                           RequestPriority request_priority,
+                                           spdy::SpdyControlType type,
+                                           spdy::SpdyControlFlags flags,
+                                           const char* const* kHeaders,
+                                           int kHeadersSize);
+spdy::SpdyFrame* ConstructSpdyControlFrame(const char* const extra_headers[],
+                                           int extra_header_count,
+                                           bool compressed,
+                                           int stream_id,
+                                           RequestPriority request_priority,
+                                           spdy::SpdyControlType type,
+                                           spdy::SpdyControlFlags flags,
+                                           const char* const* kHeaders,
+                                           int kHeadersSize,
+                                           int associated_stream_id);
+
 // Construct an expected SPDY reply string.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
@@ -169,6 +194,28 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
                                   int stream_id,
                                   RequestPriority request_priority);
 
+// Constructs a standard SPDY push SYN packet.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
+                                  int extra_header_count,
+                                  int stream_id,
+                                  int associated_stream_id);
+spdy::SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
+                                  int extra_header_count,
+                                  int stream_id,
+                                  int associated_stream_id,
+                                  const char* path);
+spdy::SpdyFrame* ConstructSpdyPush(const char* const extra_headers[],
+                                  int extra_header_count,
+                                  int stream_id,
+                                  int associated_stream_id,
+                                  const char* path,
+                                  const char* status,
+                                  const char* location,
+                                  const char* url);
+
 // Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
 // |extra_headers| are the extra header-value pairs, which typically
 // will vary the most between calls.
@@ -176,6 +223,13 @@ spdy::SpdyFrame* ConstructSpdyGet(const char* const extra_headers[],
 spdy::SpdyFrame* ConstructSpdyGetSynReply(const char* const extra_headers[],
                                           int extra_header_count,
                                           int stream_id);
+
+// Constructs a standard SPDY SYN_REPLY packet to match the SPDY GET.
+// |extra_headers| are the extra header-value pairs, which typically
+// will vary the most between calls.
+// Returns a SpdyFrame.
+spdy::SpdyFrame* ConstructSpdyGetSynReplyRedirect(int stream_id);
+
 
 // Constructs a standard SPDY POST SYN packet.
 // |extra_headers| are the extra header-value pairs, which typically
@@ -261,10 +315,44 @@ class SpdySessionDependencies {
 }
 };
 
+class SpdyURLRequestContext : public URLRequestContext {
+ public:
+  SpdyURLRequestContext() {
+    host_resolver_ = new MockHostResolver;
+    proxy_service_ = ProxyService::CreateNull();
+    spdy_session_pool_ = new SpdySessionPool();
+    ssl_config_service_ = new SSLConfigServiceDefaults;
+    http_auth_handler_factory_ = HttpAuthHandlerFactory::CreateDefault();
+    http_transaction_factory_ = new net::HttpCache(
+        new HttpNetworkLayer(&socket_factory_,
+                             host_resolver_,
+                             proxy_service_,
+                             ssl_config_service_,
+                             spdy_session_pool_.get(),
+                             http_auth_handler_factory_,
+                             network_delegate_,
+                             NULL),
+        net::HttpCache::DefaultBackend::InMemory(0));
+  }
+
+  MockClientSocketFactory& socket_factory() { return socket_factory_; }
+
+ protected:
+  virtual ~SpdyURLRequestContext() {
+    delete http_transaction_factory_;
+    delete http_auth_handler_factory_;
+  }
+
+ private:
+  MockClientSocketFactory socket_factory_;
+  scoped_refptr<SpdySessionPool> spdy_session_pool_;
+};
+
 // This creates a proxy for testing purposes.
 // |proxy| should be in the form "myproxy:70".
 ProxyService* SpdyCreateFixedProxyService(const std::string& proxy);
 
+const SpdyHeaderInfo make_spdy_header(spdy::SpdyControlType type);
 }  // namespace net
 
 #endif  // NET_SPDY_SPDY_TEST_UTIL_H_
