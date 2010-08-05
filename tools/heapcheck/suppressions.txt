@@ -940,9 +940,19 @@
    fun:sync_notifier::::ChromeSystemResourcesTest::ScheduleShouldNotRun
 }
 {
-   bug_50598
+   bug_50598_a
    Heapcheck:Leak
    ...
+   fun:RenderThread
+   fun:safe_browsing::PhishingDOMFeatureExtractorTest::SetUp
+}
+{
+   bug_50598_b
+   Heapcheck:Leak
+   fun:WaitableEvent
+   fun:ChildProcess
+   fun:RenderProcess
+   fun:MockRenderProcess
    fun:safe_browsing::PhishingDOMFeatureExtractorTest::SetUp
 }
 {
