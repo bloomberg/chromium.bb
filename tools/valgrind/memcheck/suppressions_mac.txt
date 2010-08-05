@@ -240,6 +240,7 @@
    # visible.  However, these contortions are ugly.  since the
    # needsDisplay region gets reset when the window is shown, it
    # really doesn't matter what we do with it before then.
+   Mac_NSIsEmptyRect_Cond
    Memcheck:Cond
    fun:NSIsEmptyRect
    fun:-[NSRegion isEmpty]
@@ -256,6 +257,7 @@
 }
 {
    # Same as above -- touching a region we'll throw away soon.
+   Mac_NSUnionRect_Cond
    Memcheck:Cond
    fun:NSUnionRect
    fun:-[NSRegion addRect:]
@@ -729,7 +731,6 @@
    fun:_class_resolveMethod
    fun:_class_lookupMethodAndLoadCache
    fun:objc_msgSend
-
    fun:_ZN15StatusBubbleMac9SetStatusERKSbIwSt11char_traitsIwESaIwEE
    fun:_ZN7Browser13TabSelectedAtEP11TabContentsS1_ib
    fun:_ZN13TabStripModel26ChangeSelectedContentsFromEP11TabContentsib
@@ -1010,7 +1011,6 @@
    fun:_decodeObject
    fun:-[NSResponder initWithCoder:]
    fun:-[NSView initWithCoder:]
-   fun:-[NSControl initWithCoder:]
 }
 {
    bug_40585
