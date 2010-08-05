@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/pref_member.h"
@@ -185,7 +186,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void ShowChooseDataTypes(gfx::NativeWindow parent_window);
 
   // Pretty-printed strings for a given StatusSummary.
-  static std::wstring BuildSyncStatusSummaryText(
+  static std::string BuildSyncStatusSummaryText(
       const browser_sync::SyncBackendHost::StatusSummary& summary);
 
   // Returns true if the SyncBackendHost has told us it's ready to accept
@@ -216,7 +217,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   const base::Time& last_synced_time() const { return last_synced_time_; }
 
   // Returns a user-friendly string form of last synced time (in minutes).
-  std::wstring GetLastSyncedTimeString() const;
+  string16 GetLastSyncedTimeString() const;
 
   // Returns the authenticated username of the sync user, or empty if none
   // exists. It will only exist if the authentication service provider (e.g

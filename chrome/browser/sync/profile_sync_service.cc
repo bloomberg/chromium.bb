@@ -15,6 +15,7 @@
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -555,37 +556,37 @@ bool ProfileSyncService::SetupInProgress() const {
   return !HasSyncSetupCompleted() && WizardIsVisible();
 }
 
-std::wstring ProfileSyncService::BuildSyncStatusSummaryText(
+std::string ProfileSyncService::BuildSyncStatusSummaryText(
   const sync_api::SyncManager::Status::Summary& summary) {
   switch (summary) {
     case sync_api::SyncManager::Status::OFFLINE:
-      return L"OFFLINE";
+      return "OFFLINE";
     case sync_api::SyncManager::Status::OFFLINE_UNSYNCED:
-      return L"OFFLINE_UNSYNCED";
+      return "OFFLINE_UNSYNCED";
     case sync_api::SyncManager::Status::SYNCING:
-      return L"SYNCING";
+      return "SYNCING";
     case sync_api::SyncManager::Status::READY:
-      return L"READY";
+      return "READY";
     case sync_api::SyncManager::Status::CONFLICT:
-      return L"CONFLICT";
+      return "CONFLICT";
     case sync_api::SyncManager::Status::OFFLINE_UNUSABLE:
-      return L"OFFLINE_UNUSABLE";
+      return "OFFLINE_UNUSABLE";
     case sync_api::SyncManager::Status::INVALID:  // fall through
     default:
-      return L"UNKNOWN";
+      return "UNKNOWN";
   }
 }
 
-std::wstring ProfileSyncService::GetLastSyncedTimeString() const {
+string16 ProfileSyncService::GetLastSyncedTimeString() const {
   if (last_synced_time_.is_null())
-    return l10n_util::GetString(IDS_SYNC_TIME_NEVER);
+    return l10n_util::GetStringUTF16(IDS_SYNC_TIME_NEVER);
 
   base::TimeDelta last_synced = base::Time::Now() - last_synced_time_;
 
   if (last_synced < base::TimeDelta::FromMinutes(1))
-    return l10n_util::GetString(IDS_SYNC_TIME_JUST_NOW);
+    return l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW);
 
-  return TimeFormat::TimeElapsed(last_synced);
+  return WideToUTF16Hack(TimeFormat::TimeElapsed(last_synced));
 }
 
 string16 ProfileSyncService::GetAuthenticatedUsername() const {

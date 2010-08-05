@@ -103,9 +103,9 @@ void PersonalOptionsHandler::SetSyncStatusUIString(const Value* value) {
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
   if(service != NULL && ProfileSyncService::IsSyncEnabled()) {
     scoped_ptr<Value> status_string(Value::CreateStringValue(
-        l10n_util::GetStringF(IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
-                              UTF16ToWide(service->GetAuthenticatedUsername()),
-                              service->GetLastSyncedTimeString())));
+        l10n_util::GetStringFUTF16(IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
+                                   service->GetAuthenticatedUsername(),
+                                   service->GetLastSyncedTimeString())));
 
     dom_ui_->CallJavascriptFunction(
         L"PersonalOptions.syncStatusCallback",

@@ -59,10 +59,9 @@ string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
   if (user_name.empty())
     return label;
 
-  return l10n_util::GetStringFUTF16(
-      IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
-      user_name,
-      WideToUTF16(service->GetLastSyncedTimeString()));
+  return l10n_util::GetStringFUTF16(IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
+                                    user_name,
+                                    service->GetLastSyncedTimeString());
 }
 
 // TODO(akalin): Write unit tests for these three functions below.

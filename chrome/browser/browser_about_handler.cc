@@ -421,15 +421,15 @@ std::string AboutStats() {
   // We maintain two lists - one for counters and one for timers.
   // Timers actually get stored on both lists.
   ListValue* counters;
-  if (!root.GetList(L"counters", &counters)) {
+  if (!root.GetList("counters", &counters)) {
     counters = new ListValue();
-    root.Set(L"counters", counters);
+    root.Set("counters", counters);
   }
 
   ListValue* timers;
-  if (!root.GetList(L"timers", &timers)) {
+  if (!root.GetList("timers", &timers)) {
     timers = new ListValue();
-    root.Set(L"timers", timers);
+    root.Set("timers", timers);
   }
 
   // NOTE: Counters start at index 1.
@@ -453,9 +453,8 @@ std::string AboutStats() {
          scan_index < counters->GetSize(); scan_index++) {
       DictionaryValue* dictionary;
       if (counters->GetDictionary(scan_index, &dictionary)) {
-        std::wstring scan_name;
-        if (dictionary->GetString(L"name", &scan_name) &&
-            WideToASCII(scan_name) == name) {
+        std::string scan_name;
+        if (dictionary->GetString("name", &scan_name) && scan_name == name) {
           counter = dictionary;
         }
       } else {
@@ -465,7 +464,7 @@ std::string AboutStats() {
 
     if (counter == NULL) {
       counter = new DictionaryValue();
-      counter->SetString(L"name", ASCIIToWide(name));
+      counter->SetString("name", name);
       counters->Append(counter);
     }
 
@@ -475,11 +474,11 @@ std::string AboutStats() {
           int new_value = table->GetRowValue(index);
           int prior_value = 0;
           int delta = 0;
-          if (counter->GetInteger(L"value", &prior_value)) {
+          if (counter->GetInteger("value", &prior_value)) {
             delta = new_value - prior_value;
           }
-          counter->SetInteger(L"value", new_value);
-          counter->SetInteger(L"delta", delta);
+          counter->SetInteger("value", new_value);
+          counter->SetInteger("delta", delta);
         }
         break;
       case 'm':
@@ -490,7 +489,7 @@ std::string AboutStats() {
       case 't':
         {
           int time = table->GetRowValue(index);
-          counter->SetInteger(L"time", time);
+          counter->SetInteger("time", time);
 
           // Store this on the timers list as well.
           timers->Append(counter);
@@ -603,8 +602,8 @@ std::string AboutSandbox() {
 #endif
 
 std::string AboutVersion(DictionaryValue* localized_strings) {
-  localized_strings->SetString(L"title",
-      l10n_util::GetString(IDS_ABOUT_VERSION_TITLE));
+  localized_strings->SetString("title",
+      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_TITLE));
   scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   if (version_info == NULL) {
     DLOG(ERROR) << "Unable to create FileVersionInfo object";
@@ -620,42 +619,46 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
   std::string js_engine = "JavaScriptCore";
 #endif
 
-  localized_strings->SetString(L"name",
-      l10n_util::GetString(IDS_PRODUCT_NAME));
-  localized_strings->SetString(L"version", version_info->file_version());
-  std::wstring mod = UTF16ToWide(platform_util::GetVersionStringModifier());
-  localized_strings->SetString(L"version_modifier", mod);
-  localized_strings->SetString(L"js_engine", js_engine);
-  localized_strings->SetString(L"js_version", js_version);
-  localized_strings->SetString(L"webkit_version", webkit_version);
-  localized_strings->SetString(L"company",
-      l10n_util::GetString(IDS_ABOUT_VERSION_COMPANY_NAME));
-  localized_strings->SetString(L"copyright",
-      l10n_util::GetString(IDS_ABOUT_VERSION_COPYRIGHT));
-  localized_strings->SetString(L"cl", version_info->last_change());
+  localized_strings->SetString("name",
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  localized_strings->SetString("version",
+      WideToUTF16Hack(version_info->file_version()));
+  localized_strings->SetString("version_modifier",
+      platform_util::GetVersionStringModifier());
+  localized_strings->SetString("js_engine", js_engine);
+  localized_strings->SetString("js_version", js_version);
+  localized_strings->SetString("webkit_version", webkit_version);
+  localized_strings->SetString("company",
+      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COMPANY_NAME));
+  localized_strings->SetString("copyright",
+      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT));
+  localized_strings->SetString("cl",
+      WideToUTF16Hack(version_info->last_change()));
   if (version_info->is_official_build()) {
-    localized_strings->SetString(L"official",
-      l10n_util::GetString(IDS_ABOUT_VERSION_OFFICIAL));
+    localized_strings->SetString("official",
+      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OFFICIAL));
   } else {
-    localized_strings->SetString(L"official",
-      l10n_util::GetString(IDS_ABOUT_VERSION_UNOFFICIAL));
+    localized_strings->SetString("official",
+      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_UNOFFICIAL));
   }
-  localized_strings->SetString(L"user_agent_name",
-      l10n_util::GetString(IDS_ABOUT_VERSION_USER_AGENT));
-  localized_strings->SetString(L"useragent", webkit_glue::GetUserAgent(GURL()));
-  localized_strings->SetString(L"command_line_name",
-      l10n_util::GetString(IDS_ABOUT_VERSION_COMMAND_LINE));
+  localized_strings->SetString("user_agent_name",
+      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_USER_AGENT));
+  localized_strings->SetString("useragent", webkit_glue::GetUserAgent(GURL()));
+  localized_strings->SetString("command_line_name",
+      l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COMMAND_LINE));
 
 #if defined(OS_WIN)
-  localized_strings->SetString(L"command_line",
-      CommandLine::ForCurrentProcess()->command_line_string());
+  localized_strings->SetString("command_line",
+      WideToUTF16(CommandLine::ForCurrentProcess()->command_line_string()));
 #elif defined(OS_POSIX)
   std::string command_line = "";
   typedef std::vector<std::string> ArgvList;
   const ArgvList& argv = CommandLine::ForCurrentProcess()->argv();
   for (ArgvList::const_iterator iter = argv.begin(); iter != argv.end(); iter++)
     command_line += " " + *iter;
-  localized_strings->SetString(L"command_line", command_line);
+  // TODO(viettrungluu): |command_line| could really have any encoding, whereas
+  // below we assumes it's UTF-8.
+  localized_strings->SetString("command_line", command_line);
 #endif
 
   base::StringPiece version_html(
@@ -666,33 +669,33 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
       version_html, localized_strings, "t" /* template root node id */);
 }
 
-static void AddBoolSyncDetail(ListValue* details, const std::wstring& stat_name,
+static void AddBoolSyncDetail(ListValue* details, const std::string& stat_name,
                               bool stat_value) {
   DictionaryValue* val = new DictionaryValue;
-  val->SetString(L"stat_name", stat_name);
-  val->SetBoolean(L"stat_value", stat_value);
+  val->SetString("stat_name", stat_name);
+  val->SetBoolean("stat_value", stat_value);
   details->Append(val);
 }
 
-static void AddIntSyncDetail(ListValue* details, const std::wstring& stat_name,
+static void AddIntSyncDetail(ListValue* details, const std::string& stat_name,
                              int64 stat_value) {
   DictionaryValue* val = new DictionaryValue;
-  val->SetString(L"stat_name", stat_name);
-  val->SetString(L"stat_value", UTF16ToWide(base::FormatNumber(stat_value)));
+  val->SetString("stat_name", stat_name);
+  val->SetString("stat_value", base::FormatNumber(stat_value));
   details->Append(val);
 }
 
-static std::wstring MakeSyncAuthErrorText(
+static std::string MakeSyncAuthErrorText(
     const GoogleServiceAuthError::State& state) {
   switch (state) {
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-      return L"INVALID_GAIA_CREDENTIALS";
+      return "INVALID_GAIA_CREDENTIALS";
     case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-      return L"USER_NOT_SIGNED_UP";
+      return "USER_NOT_SIGNED_UP";
     case GoogleServiceAuthError::CONNECTION_FAILED:
-      return L"CONNECTION_FAILED";
+      return "CONNECTION_FAILED";
     default:
-      return std::wstring();
+      return std::string();
   }
 }
 
@@ -706,63 +709,62 @@ std::string AboutSync() {
 
   DictionaryValue strings;
   if (!service || !service->HasSyncSetupCompleted()) {
-    strings.SetString(L"summary", L"SYNC DISABLED");
+    strings.SetString("summary", "SYNC DISABLED");
   } else {
     SyncManager::Status full_status(service->QueryDetailedSyncStatus());
 
-    strings.SetString(L"summary",
+    strings.SetString("summary",
         ProfileSyncService::BuildSyncStatusSummaryText(
             full_status.summary));
 
-    strings.Set(L"authenticated",
+    strings.Set("authenticated",
         new FundamentalValue(full_status.authenticated));
-    strings.SetString(L"auth_problem",
+    strings.SetString("auth_problem",
         MakeSyncAuthErrorText(service->GetAuthError().state()));
 
-    strings.SetString(L"time_since_sync", service->GetLastSyncedTimeString());
+    strings.SetString("time_since_sync", service->GetLastSyncedTimeString());
 
     ListValue* details = new ListValue();
-    strings.Set(L"details", details);
-    AddBoolSyncDetail(details, L"Server Up", full_status.server_up);
-    AddBoolSyncDetail(details, L"Server Reachable",
+    strings.Set("details", details);
+    AddBoolSyncDetail(details, "Server Up", full_status.server_up);
+    AddBoolSyncDetail(details, "Server Reachable",
                       full_status.server_reachable);
-    AddBoolSyncDetail(details, L"Server Broken", full_status.server_broken);
-    AddBoolSyncDetail(details, L"Notifications Enabled",
+    AddBoolSyncDetail(details, "Server Broken", full_status.server_broken);
+    AddBoolSyncDetail(details, "Notifications Enabled",
                       full_status.notifications_enabled);
-    AddIntSyncDetail(details, L"Notifications Received",
+    AddIntSyncDetail(details, "Notifications Received",
                      full_status.notifications_received);
-    AddIntSyncDetail(details, L"Notifications Sent",
+    AddIntSyncDetail(details, "Notifications Sent",
                      full_status.notifications_sent);
-    AddIntSyncDetail(details, L"Unsynced Count", full_status.unsynced_count);
-    AddIntSyncDetail(details, L"Conflicting Count",
+    AddIntSyncDetail(details, "Unsynced Count", full_status.unsynced_count);
+    AddIntSyncDetail(details, "Conflicting Count",
                      full_status.conflicting_count);
-    AddBoolSyncDetail(details, L"Syncing", full_status.syncing);
-    AddBoolSyncDetail(details, L"Initial Sync Ended",
+    AddBoolSyncDetail(details, "Syncing", full_status.syncing);
+    AddBoolSyncDetail(details, "Initial Sync Ended",
                       full_status.initial_sync_ended);
-    AddBoolSyncDetail(details, L"Syncer Stuck", full_status.syncer_stuck);
-    AddIntSyncDetail(details, L"Updates Available",
+    AddBoolSyncDetail(details, "Syncer Stuck", full_status.syncer_stuck);
+    AddIntSyncDetail(details, "Updates Available",
                      full_status.updates_available);
-    AddIntSyncDetail(details, L"Updates Received",
-                     full_status.updates_received);
-    AddBoolSyncDetail(details, L"Disk Full", full_status.disk_full);
-    AddBoolSyncDetail(details, L"Invalid Store", full_status.invalid_store);
-    AddIntSyncDetail(details, L"Max Consecutive Errors",
+    AddIntSyncDetail(details, "Updates Received", full_status.updates_received);
+    AddBoolSyncDetail(details, "Disk Full", full_status.disk_full);
+    AddBoolSyncDetail(details, "Invalid Store", full_status.invalid_store);
+    AddIntSyncDetail(details, "Max Consecutive Errors",
                      full_status.max_consecutive_errors);
 
     if (service->unrecoverable_error_detected()) {
-      strings.Set(L"unrecoverable_error_detected", new FundamentalValue(true));
-      strings.SetString(L"unrecoverable_error_message",
+      strings.Set("unrecoverable_error_detected", new FundamentalValue(true));
+      strings.SetString("unrecoverable_error_message",
                         service->unrecoverable_error_message());
       tracked_objects::Location loc(service->unrecoverable_error_location());
       std::string location_str;
       loc.Write(true, true, &location_str);
-      strings.SetString(L"unrecoverable_error_location", location_str);
+      strings.SetString("unrecoverable_error_location", location_str);
     }
 
     browser_sync::ModelSafeRoutingInfo routes;
     service->backend()->GetModelSafeRoutingInfo(&routes);
     ListValue* routing_info = new ListValue();
-    strings.Set(L"routing_info", routing_info);
+    strings.Set("routing_info", routing_info);
     browser_sync::ModelSafeRoutingInfo::const_iterator it = routes.begin();
     for (; it != routes.end(); ++it) {
       DictionaryValue* val = new DictionaryValue;
@@ -790,7 +792,7 @@ std::string AboutSys() {
     sys_info_.reset(syslogs_lib->GetSyslogs(new FilePath()));
   if (sys_info_.get()) {
      ListValue* details = new ListValue();
-     strings.Set(L"details", details);
+     strings.Set("details", details);
      chromeos::LogDictionaryType::iterator it;
 
      for (it = sys_info_.get()->begin(); it != sys_info_.get()->end(); ++it) {
@@ -920,16 +922,16 @@ void AboutMemoryHandler::BindProcessMetrics(DictionaryValue* data,
   DCHECK(data && info);
 
   // Bind metrics to dictionary.
-  data->SetInteger(L"ws_priv", static_cast<int>(info->working_set.priv));
-  data->SetInteger(L"ws_shareable",
+  data->SetInteger("ws_priv", static_cast<int>(info->working_set.priv));
+  data->SetInteger("ws_shareable",
     static_cast<int>(info->working_set.shareable));
-  data->SetInteger(L"ws_shared", static_cast<int>(info->working_set.shared));
-  data->SetInteger(L"comm_priv", static_cast<int>(info->committed.priv));
-  data->SetInteger(L"comm_map", static_cast<int>(info->committed.mapped));
-  data->SetInteger(L"comm_image", static_cast<int>(info->committed.image));
-  data->SetInteger(L"pid", info->pid);
-  data->SetString(L"version", info->version);
-  data->SetInteger(L"processes", info->num_processes);
+  data->SetInteger("ws_shared", static_cast<int>(info->working_set.shared));
+  data->SetInteger("comm_priv", static_cast<int>(info->committed.priv));
+  data->SetInteger("comm_map", static_cast<int>(info->committed.mapped));
+  data->SetInteger("comm_image", static_cast<int>(info->committed.image));
+  data->SetInteger("pid", info->pid);
+  data->SetString("version", WideToUTF16Hack(info->version));
+  data->SetInteger("processes", info->num_processes);
 }
 
 // Helper for AboutMemory to append memory usage information for all
@@ -946,9 +948,9 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
   std::wstring child_label(ChildProcessInfo::GetTypeNameInEnglish(info->type));
   if (info->is_diagnostics)
     child_label.append(L" (diagnostics)");
-  child->SetString(L"child_name", child_label);
+  child->SetString("child_name", WideToUTF16Hack(child_label));
   ListValue* titles = new ListValue();
-  child->Set(L"titles", titles);
+  child->Set("titles", titles);
   for (size_t i = 0; i < info->titles.size(); ++i)
     titles->Append(new StringValue(info->titles[i]));
 }
@@ -958,7 +960,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
   // the root of the JSON hierarchy for about:memory jstemplate
   DictionaryValue root;
   ListValue* browsers = new ListValue();
-  root.Set(L"browsers", browsers);
+  root.Set("browsers", browsers);
 
   const std::vector<ProcessData>& browser_processes = processes();
 
@@ -989,7 +991,8 @@ void AboutMemoryHandler::OnDetailsAvailable() {
     }
     DictionaryValue* browser_data = new DictionaryValue();
     browsers->Append(browser_data);
-    browser_data->SetString(L"name", browser_processes[index].name);
+    browser_data->SetString("name",
+                            WideToUTF16Hack(browser_processes[index].name));
 
     BindProcessMetrics(browser_data, &aggregate);
 
@@ -1012,12 +1015,12 @@ void AboutMemoryHandler::OnDetailsAvailable() {
 
   // Set the browser & renderer detailed process data.
   DictionaryValue* browser_data = new DictionaryValue();
-  root.Set(L"browzr_data", browser_data);
+  root.Set("browzr_data", browser_data);
   ListValue* child_data = new ListValue();
-  root.Set(L"child_data", child_data);
+  root.Set("child_data", child_data);
 
   ProcessData process = browser_processes[0];  // Chrome is the first browser.
-  root.SetString(L"current_browser_name", process.name);
+  root.SetString("current_browser_name", WideToUTF16Hack(process.name));
 
   for (size_t index = 0; index < process.processes.size(); index++) {
     if (process.processes[index].type == ChildProcessInfo::BROWSER_PROCESS)
@@ -1026,7 +1029,7 @@ void AboutMemoryHandler::OnDetailsAvailable() {
       AppendProcess(child_data, &process.processes[index]);
   }
 
-  root.SetBoolean(L"show_other_browsers",
+  root.SetBoolean("show_other_browsers",
       browser_defaults::kShowOtherBrowsersInAboutMemory);
 
   // Get about_memory.html
@@ -1056,10 +1059,10 @@ void ChromeOSAboutVersionHandler::OnVersion(
     chromeos::VersionLoader::Handle handle,
     std::string version) {
   DictionaryValue localized_strings;
-  localized_strings.SetString(L"os_name",
-                              l10n_util::GetString(IDS_PRODUCT_OS_NAME));
-  localized_strings.SetString(L"os_version", UTF8ToWide(version));
-  localized_strings.SetBoolean(L"is_chrome_os", true);
+  localized_strings.SetString("os_name",
+                              l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
+  localized_strings.SetString("os_version", version);
+  localized_strings.SetBoolean("is_chrome_os", true);
   source_->FinishDataRequest(AboutVersion(&localized_strings), request_id_);
 
   // CancelableRequestProvider isn't happy when it's deleted and servicing a
