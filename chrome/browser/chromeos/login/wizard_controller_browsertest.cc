@@ -105,6 +105,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
   virtual Browser* CreateBrowser(Profile* profile) {
     Browser* ret = WizardControllerTest::CreateBrowser(profile);
 
+    // Make sure that OOBE is run as an "official" build.
+    WizardController::default_controller()->is_official_build_ = true;
+
     // Set up the mocks for all screens.
     MOCK(mock_account_screen_, account_screen_, chromeos::AccountScreen);
     MOCK(mock_login_screen_, login_screen_, chromeos::LoginScreen);

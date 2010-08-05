@@ -30,9 +30,13 @@ class BackgroundView : public views::View, public StatusAreaHost {
  public:
   enum LoginStep {
     SELECT_NETWORK,
+#if defined(OFFICIAL_BUILD)
     EULA,
+#endif
     SIGNIN,
+#if defined(OFFICIAL_BUILD)
     REGISTRATION,
+#endif
     PICTURE
   };
 

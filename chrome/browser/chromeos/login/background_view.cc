@@ -201,9 +201,13 @@ void BackgroundView::InitInfoLabels() {
 void BackgroundView::InitProgressBar() {
   std::vector<int> steps;
   steps.push_back(IDS_OOBE_SELECT_NETWORK);
+#if defined(OFFICIAL_BUILD)
   steps.push_back(IDS_OOBE_EULA);
+#endif
   steps.push_back(IDS_OOBE_SIGNIN);
+#if defined(OFFICIAL_BUILD)
   steps.push_back(IDS_OOBE_REGISTRATION);
+#endif
   steps.push_back(IDS_OOBE_PICTURE);
   progress_bar_ = new OobeProgressBar(steps);
   AddChildView(progress_bar_);

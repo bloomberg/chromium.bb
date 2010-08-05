@@ -228,6 +228,11 @@ WizardController::WizardController()
       background_view_(NULL),
       contents_(NULL),
       current_screen_(NULL),
+#if defined(OFFICIAL_BUILD)
+      is_official_build_(true),
+#else
+      is_official_build_(false),
+#endif
       is_out_of_box_(false),
       is_test_mode_(false),
       observer_(NULL) {
@@ -422,14 +427,18 @@ void WizardController::ShowEulaScreen() {
   LOG(INFO) << "Showing EULA screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetEulaScreen());
+#if defined(OFFICIAL_BUILD)
   background_view_->SetOobeProgress(chromeos::BackgroundView::EULA);
+#endif
 }
 
 void WizardController::ShowRegistrationScreen() {
   LOG(INFO) << "Showing registration screen.";
   SetStatusAreaVisible(true);
   SetCurrentScreen(GetRegistrationScreen());
+#if defined(OFFICIAL_BUILD)
   background_view_->SetOobeProgress(chromeos::BackgroundView::REGISTRATION);
+#endif
 }
 
 void WizardController::SetStatusAreaVisible(bool visible) {
@@ -478,12 +487,11 @@ void WizardController::OnLoginCreateAccount() {
 }
 
 void WizardController::OnNetworkConnected() {
-  if (is_out_of_box_) {
+  if (is_official_build_) {
     ShowUpdateScreen();
     GetUpdateScreen()->StartUpdate();
   } else {
-    // TODO(nkostylev): Remove this path after accelerator is removed.
-    ShowLoginScreen();
+    OnOOBECompleted();
   }
 }
 
@@ -533,8 +541,7 @@ void WizardController::OnUpdateCompleted() {
 }
 
 void WizardController::OnEulaAccepted() {
-  MarkOobeCompleted();
-  ShowLoginScreen();
+  OnOOBECompleted();
 }
 
 void WizardController::OnUpdateErrorCheckingForUpdate() {
@@ -581,6 +588,11 @@ void WizardController::OnRegistrationSkipped() {
   OnRegistrationSuccess();
 }
 
+void WizardController::OnOOBECompleted() {
+  MarkOobeCompleted();
+  ShowLoginScreen();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, private:
 
@@ -620,7 +632,12 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
   } else if (first_screen_name == kEulaScreenName) {
     ShowEulaScreen();
   } else if (first_screen_name == kRegistrationScreenName) {
-    ShowRegistrationScreen();
+    if (is_official_build_) {
+      ShowRegistrationScreen();
+    } else {
+      // Just proceed to image screen.
+      OnRegistrationSuccess();
+    }
   } else if (first_screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();

@@ -146,6 +146,7 @@ class WizardController : public chromeos::ScreenObserver,
   void OnUserImageSkipped();
   void OnRegistrationSuccess();
   void OnRegistrationSkipped();
+  void OnOOBECompleted();
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);
@@ -199,6 +200,9 @@ class WizardController : public chromeos::ScreenObserver,
 
   std::string username_;
   std::string password_;
+
+  // True if running official BUILD.
+  bool is_official_build_;
 
   // True if full OOBE flow should be shown.
   bool is_out_of_box_;
