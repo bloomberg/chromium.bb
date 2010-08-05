@@ -100,6 +100,18 @@ cr.define('options', function() {
     },
 
     /**
+     * Handles OptionsPage's visible property change event.
+     * @param {Event} e Property change event.
+     * @private
+     */
+    handleVisibleChange_: function(e) {
+      if (!this.languageListInitalized_ && this.visible) {
+        this.languageListInitalized_ = true;
+        $('language-options-list').redraw();
+      }
+    },
+
+    /**
      * Handles languageOptionsList's change event.
      * @param {Event} e Change event.
      * @private
