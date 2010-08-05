@@ -75,6 +75,18 @@ wl_compositor_add_listener(struct wl_compositor *compostior,
 			   const struct wl_compositor_listener *listener,
 			   void *data);
 
+int
+wl_shell_add_listener(struct wl_shell *shell,
+		      const struct wl_shell_listener *listener,
+		      void *data);
+void
+wl_shell_move(struct wl_shell *shell,
+	      struct wl_surface *surface, struct wl_input_device *device,
+	      uint32_t time);
+void
+wl_shell_resize(struct wl_shell *shell,
+		struct wl_surface *surface, struct wl_input_device *device,
+		uint32_t time, uint32_t edges);
 
 void wl_surface_destroy(struct wl_surface *surface);
 void wl_surface_attach(struct wl_surface *surface, uint32_t name,

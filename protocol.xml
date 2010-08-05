@@ -49,15 +49,23 @@
 
   <interface name="shell" version="1">
     <request name="move">
+      <arg name="surface" type="surface"/>
+      <arg name="input_device" type="input_device"/>
       <arg name="time" type="uint"/>
     </request>
 
     <request name="resize">
+      <arg name="surface" type="surface"/>
+      <arg name="input_device" type="input_device"/>
       <arg name="time" type="uint"/>
+      <!-- edges is an enum, need to get the values in here -->
       <arg name="edges" type="uint"/>
     </request>
 
     <event name="configure">
+      <arg name="time" type="uint"/>
+      <!-- Same as edges except also move (16) -->
+      <arg name="type" type="uint"/>
       <arg name="surface" type="surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>

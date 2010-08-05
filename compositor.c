@@ -53,7 +53,6 @@ static const GOptionEntry option_entries[] = {
 	{ NULL }
 };
 
-				   
 static void
 wlsc_matrix_init(struct wlsc_matrix *matrix)
 {
@@ -347,6 +346,19 @@ wlsc_surface_lower(struct wlsc_surface *surface)
 	wl_list_insert(compositor->surface_list.prev, &surface->link);
 }
 
+static void
+wlsc_surface_update_matrix(struct wlsc_surface *es)
+{
+	wlsc_matrix_init(&es->matrix);
+	wlsc_matrix_scale(&es->matrix, es->width, es->height, 1);
+	wlsc_matrix_translate(&es->matrix, es->x, es->y, 0);
+
+	wlsc_matrix_init(&es->matrix_inv);
+	wlsc_matrix_translate(&es->matrix_inv, -es->x, -es->y, 0);
+	wlsc_matrix_scale(&es->matrix_inv,
+			  1.0 / es->width, 1.0 / es->height, 1);
+}
+
 void
 wlsc_compositor_finish_frame(struct wlsc_compositor *compositor, int msecs)
 {
@@ -424,7 +436,7 @@ surface_destroy(struct wl_client *client,
 
 static void
 surface_attach(struct wl_client *client,
-	       struct wl_surface *surface, uint32_t name, 
+	       struct wl_surface *surface, uint32_t name,
 	       int32_t width, int32_t height, uint32_t stride,
 	       struct wl_visual *visual)
 {
@@ -437,9 +449,6 @@ surface_attach(struct wl_client *client,
 		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
 		EGL_NONE
 	};
-
-	es->width = width;
-	es->height = height;
 
 	if (visual == &ec->argb_visual)
 		es->visual = &ec->argb_visual;
@@ -467,7 +476,6 @@ surface_attach(struct wl_client *client,
 				      EGL_DRM_IMAGE_MESA,
 				      (EGLClientBuffer) name, attribs);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
-	
 }
 
 static void
@@ -477,14 +485,12 @@ surface_map(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
-	wlsc_matrix_init(&es->matrix);
-	wlsc_matrix_scale(&es->matrix, width, height, 1);
-	wlsc_matrix_translate(&es->matrix, x, y, 0);
+	es->x = x;
+	es->y = y;
+	es->width = width;
+	es->height = height;
 
-	wlsc_matrix_init(&es->matrix_inv);
-	wlsc_matrix_translate(&es->matrix_inv, -x, -y, 0);
-	wlsc_matrix_scale(&es->matrix_inv, 1.0 / width, 1.0 / height, 1);
-
+	wlsc_surface_update_matrix(es);
 }
 
 static void
@@ -500,6 +506,49 @@ const static struct wl_surface_interface surface_interface = {
 	surface_attach,
 	surface_map,
 	surface_damage
+};
+
+static void
+shell_move(struct wl_client *client, struct wl_shell *shell,
+	   struct wl_surface *surface,
+	   struct wl_input_device *device, uint32_t time)
+{
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+
+	if (wd->grab == WLSC_DEVICE_GRAB_MOTION &&
+	    wd->grab_time == time &&
+	    &wd->pointer_focus->base == surface) {
+		wd->grab = WLSC_DEVICE_GRAB_MOVE;
+		wd->grab_dx = wd->pointer_focus->x - wd->grab_x;
+		wd->grab_dy = wd->pointer_focus->y - wd->grab_y;
+	}
+}
+
+static void
+shell_resize(struct wl_client *client, struct wl_shell *shell,
+	     struct wl_surface *surface,
+	     struct wl_input_device *device, uint32_t time, uint32_t edges)
+{
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+
+	if (edges == 0 || edges > 15 ||
+	    (edges & 3) == 3 || (edges & 12) == 12)
+		return;
+
+	if (wd->grab == WLSC_DEVICE_GRAB_MOTION &&
+	    wd->grab_time == time &&
+	    &wd->pointer_focus->base == surface) {
+		wd->grab = edges;
+		wd->grab_dx = wd->pointer_focus->x - wd->grab_x;
+		wd->grab_dy = wd->pointer_focus->y - wd->grab_y;
+		wd->grab_width = wd->pointer_focus->width;
+		wd->grab_height = wd->pointer_focus->height;
+	}
+}
+
+const static struct wl_shell_interface shell_interface = {
+	shell_move,
+	shell_resize
 };
 
 static void
@@ -600,10 +649,10 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 	struct wlsc_compositor *ec = device->ec;
 	struct wlsc_surface *es;
 
-	if (device->grab > 0) {
-		wlsc_surface_transform(device->grab_surface,
+	if (device->grab != WLSC_DEVICE_GRAB_NONE) {
+		wlsc_surface_transform(device->pointer_focus,
 				       device->x, device->y, sx, sy);
-		return device->grab_surface;
+		return device->pointer_focus;
 	}
 
 	wl_list_for_each(es, &ec->surface_list, link) {
@@ -623,7 +672,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	struct wlsc_compositor *ec = device->ec;
 	struct wlsc_output *output;
 	const int hotspot_x = 16, hotspot_y = 16;
-	int32_t sx, sy;
+	int32_t sx, sy, width, height;
 
 	/* FIXME: We need some multi head love here. */
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
@@ -638,13 +687,72 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 
 	device->x = x;
 	device->y = y;
-	es = pick_surface(device, &sx, &sy);
 
-	wlsc_input_device_set_pointer_focus(device, es, time);
+	switch (device->grab) {
+	case WLSC_DEVICE_GRAB_NONE:
+	case WLSC_DEVICE_GRAB_MOTION:
+		es = pick_surface(device, &sx, &sy);
 
-	if (es)
-		wl_surface_post_event(&es->base, &device->base,
-				      WL_INPUT_DEVICE_MOTION, time, x, y, sx, sy);
+		wlsc_input_device_set_pointer_focus(device, es, time);
+
+		if (es)
+			wl_surface_post_event(&es->base, &device->base,
+					      WL_INPUT_DEVICE_MOTION,
+					      time, x, y, sx, sy);
+		break;
+
+	case WLSC_DEVICE_GRAB_MOVE:
+		es = device->pointer_focus;
+		es->x = x + device->grab_dx;
+		es->y = y + device->grab_dy;;
+		wl_surface_post_event(&es->base, &ec->shell,
+				      WL_SHELL_CONFIGURE,
+				      time, device->grab,
+				      &es->base, es->x, es->y,
+				      es->width, es->height);
+
+		wlsc_surface_update_matrix(es);
+
+		break;
+
+	case WLSC_DEVICE_GRAB_RESIZE_TOP:
+	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM:
+	case WLSC_DEVICE_GRAB_RESIZE_LEFT:
+	case WLSC_DEVICE_GRAB_RESIZE_TOP_LEFT:
+	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM_LEFT:
+	case WLSC_DEVICE_GRAB_RESIZE_RIGHT:
+	case WLSC_DEVICE_GRAB_RESIZE_TOP_RIGHT:
+	case WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT:
+	case WLSC_DEVICE_GRAB_RESIZE_MASK:
+		es = device->pointer_focus;
+
+		if (device->grab & WLSC_DEVICE_GRAB_RESIZE_LEFT) {
+			sx = x + device->grab_dx;
+			width = device->grab_x - x + device->grab_width;
+		} else if (device->grab & WLSC_DEVICE_GRAB_RESIZE_RIGHT) {
+			sx = device->grab_x + device->grab_dx;
+			width = x - device->grab_x + device->grab_width;
+		} else {
+			sx = device->grab_x + device->grab_dx;
+			width = device->grab_width;
+		}
+
+		if (device->grab & WLSC_DEVICE_GRAB_RESIZE_TOP) {
+			sy = y + device->grab_dy;
+			height = device->grab_y - y + device->grab_height;
+		} else if (device->grab & WLSC_DEVICE_GRAB_RESIZE_BOTTOM) {
+			sy = device->grab_y + device->grab_dy;
+			height = y - device->grab_y + device->grab_height;
+		} else {
+			sy = device->grab_y + device->grab_dy;
+			height = device->grab_height;
+		}
+
+		wl_surface_post_event(&es->base, &ec->shell,
+				      WL_SHELL_CONFIGURE, time, device->grab,
+				      &es->base, sx, sy, width, height);
+		break;
+	}
 
 	wlsc_matrix_init(&device->sprite->matrix);
 	wlsc_matrix_scale(&device->sprite->matrix, 64, 64, 1);
@@ -663,19 +771,21 @@ notify_button(struct wlsc_input_device *device,
 
 	surface = device->pointer_focus;
 	if (surface) {
-		if (state) {
+		if (state && device->grab == WLSC_DEVICE_GRAB_NONE) {
 			wlsc_surface_raise(surface);
-			device->grab++;
-			device->grab_surface = surface;
+			device->grab = WLSC_DEVICE_GRAB_MOTION;
+			device->grab_time = time;
+			device->grab_x = device->x;
+			device->grab_y = device->y;
 			wlsc_input_device_set_keyboard_focus(device,
 							     surface, time);
 		} else {
-			device->grab--;
+			device->grab = WLSC_DEVICE_GRAB_NONE;
 		}
 
-		/* FIXME: Swallow click on raise? */
 		wl_surface_post_event(&surface->base, &device->base,
-				      WL_INPUT_DEVICE_BUTTON, time, button, state);
+				      WL_INPUT_DEVICE_BUTTON,
+				      time, button, state);
 
 		wlsc_compositor_schedule_repaint(compositor);
 	}
@@ -753,13 +863,10 @@ handle_surface_destroy(struct wlsc_listener *listener,
 	int32_t sx, sy;
 	uint32_t time = get_time();
 
-	if (device->grab_surface == surface) {
-		device->grab_surface = NULL;
-		device->grab = 0;
-	}
 	if (device->keyboard_focus == surface)
 		wlsc_input_device_set_keyboard_focus(device, NULL, time);
 	if (device->pointer_focus == surface) {
+		device->grab = WLSC_DEVICE_GRAB_NONE;
 		focus = pick_surface(device, &sx, &sy);
 		wlsc_input_device_set_pointer_focus(device, focus, time);
 		fprintf(stderr, "lost pointer focus surface, reverting to %p\n", focus);
@@ -955,6 +1062,12 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 	ec->wl_display = display;
 
 	wl_display_set_compositor(display, &ec->base, &compositor_interface); 
+
+	ec->shell.interface = &wl_shell_interface;
+	ec->shell.implementation = (void (**)(void)) &shell_interface;
+	wl_display_add_object(display, &ec->shell);
+	if (wl_display_add_global(display, &ec->shell, NULL))
+		return -1;
 
 	add_visuals(ec);
 

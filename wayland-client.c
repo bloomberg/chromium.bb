@@ -85,6 +85,10 @@ struct wl_output {
 	int32_t width, height;
 };
 
+struct wl_shell {
+	struct wl_proxy proxy;
+};
+
 struct wl_input_device {
 	struct wl_proxy proxy;
 };
@@ -229,6 +233,33 @@ wl_output_add_listener(struct wl_output *output,
 				     (void (**)(void)) listener, data);
 }
 
+WL_EXPORT int
+wl_shell_add_listener(struct wl_shell *shell,
+		      const struct wl_shell_listener *listener,
+		      void *data)
+{
+	return wl_proxy_add_listener(&shell->proxy,
+				     (void (**)(void)) listener, data);
+}
+
+WL_EXPORT void
+wl_shell_move(struct wl_shell *shell,
+	      struct wl_surface *surface, struct wl_input_device *device,
+	      uint32_t time)
+{
+	wl_proxy_marshal(&shell->proxy,
+			 WL_SHELL_MOVE, surface, device, time);
+}
+
+WL_EXPORT void
+wl_shell_resize(struct wl_shell *shell,
+		struct wl_surface *surface, struct wl_input_device *device,
+		uint32_t time, uint32_t edges)
+{
+	wl_proxy_marshal(&shell->proxy,
+			 WL_SHELL_RESIZE, surface, device, time, edges);
+}
+
 static void
 add_visual(struct wl_display *display, struct wl_global *global)
 {
@@ -325,6 +356,9 @@ display_handle_global(void *data,
 	else if (strcmp(global->interface, "input_device") == 0)
 		wl_proxy_create_for_global(display, global,
 					   &wl_input_device_interface);
+	else if (strcmp(global->interface, "shell") == 0)
+		wl_proxy_create_for_global(display, global,
+					   &wl_shell_interface);
 }
 
 static void

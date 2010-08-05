@@ -56,6 +56,22 @@ struct wlsc_output {
 	int32_t x, y, width, height;
 };
 
+/* These should be part of the protocol */
+enum wlsc_grab_type {
+	WLSC_DEVICE_GRAB_NONE = 0,
+	WLSC_DEVICE_GRAB_RESIZE_TOP = 1,
+	WLSC_DEVICE_GRAB_RESIZE_BOTTOM = 2,
+	WLSC_DEVICE_GRAB_RESIZE_LEFT = 4,
+	WLSC_DEVICE_GRAB_RESIZE_TOP_LEFT = 5,
+	WLSC_DEVICE_GRAB_RESIZE_BOTTOM_LEFT = 6,
+	WLSC_DEVICE_GRAB_RESIZE_RIGHT = 8,
+	WLSC_DEVICE_GRAB_RESIZE_TOP_RIGHT = 9,
+	WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT = 10,
+	WLSC_DEVICE_GRAB_RESIZE_MASK = 15,
+	WLSC_DEVICE_GRAB_MOVE = 16,
+	WLSC_DEVICE_GRAB_MOTION = 17
+};
+
 struct wlsc_input_device {
 	struct wl_object base;
 	int32_t x, y;
@@ -63,11 +79,15 @@ struct wlsc_input_device {
 	struct wlsc_surface *sprite;
 	struct wl_list link;
 
-	int grab;
-	struct wlsc_surface *grab_surface;
 	struct wlsc_surface *pointer_focus;
 	struct wlsc_surface *keyboard_focus;
 	struct wl_array keys;
+
+	enum wlsc_grab_type grab;
+	uint32_t grab_time;
+	int32_t grab_x, grab_y;
+	int32_t grab_width, grab_height;
+	int32_t grab_dx, grab_dy;
 
 	struct wlsc_listener listener;
 };
@@ -81,6 +101,9 @@ struct wlsc_compositor {
 	GLuint fbo, vbo;
 	GLuint proj_uniform, tex_uniform;
 	struct wl_display *wl_display;
+
+	/* We implement the shell interface. */
+	struct wl_object shell;
 
 	/* There can be more than one, but not right now... */
 	struct wlsc_input_device *input_device;
@@ -117,7 +140,7 @@ struct wlsc_surface {
 	struct wl_visual *visual;
 	GLuint texture;
 	EGLImageKHR image;
-	int width, height;
+	int32_t x, y, width, height;
 	struct wl_list link;
 	struct wlsc_matrix matrix;
 	struct wlsc_matrix matrix_inv;

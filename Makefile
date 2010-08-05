@@ -5,6 +5,13 @@ libs = libwayland-server.so libwayland.so
 
 all : $(libs) compositor subdirs-all scanner
 
+headers =					\
+	wayland-util.h				\
+	wayland-server-protocol.h		\
+	wayland.h				\
+	wayland-client-protocol.h		\
+	wayland-client.h \
+
 libwayland-server.so :				\
 	wayland-protocol.o			\
 	wayland.o				\
@@ -60,7 +67,7 @@ install : $(libs) compositor
 	install -d $(libdir) $(libdir)/pkgconfig ${udev_rules_dir}
 	install $(libs) $(libdir)
 	install wayland-server.pc wayland.pc $(libdir)/pkgconfig
-	install wayland-util.h wayland-client.h $(includedir)
+	install $(headers) $(includedir)
 	install 70-wayland.rules ${udev_rules_dir}
 
 clean : subdirs-clean

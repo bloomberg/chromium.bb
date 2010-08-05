@@ -52,6 +52,7 @@
 struct display {
 	struct wl_display *display;
 	struct wl_compositor *compositor;
+	struct wl_shell *shell;
 	struct wl_output *output;
 	struct rectangle screen_allocation;
 	EGLDisplay dpy;
@@ -71,12 +72,11 @@ struct window {
 	struct display *display;
 	struct wl_surface *surface;
 	const char *title;
-	struct rectangle allocation, saved_allocation, surface_allocation;
+	struct rectangle allocation, saved_allocation, pending_allocation;
+	int resize_edges;
 	int redraw_scheduled;
 	int minimum_width, minimum_height;
 	int margin;
-	int drag_x, drag_y;
-	int state;
 	int fullscreen;
 	int decoration;
 	struct input *grab_device;
@@ -195,16 +195,16 @@ window_attach_surface(struct window *window)
 	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
 	wl_surface_attach(window->surface,
 			  name,
-			  window->surface_allocation.width,
-			  window->surface_allocation.height,
+			  window->allocation.width,
+			  window->allocation.height,
 			  stride,
 			  visual);
 
 	wl_surface_map(window->surface,
-		       window->surface_allocation.x - window->margin,
-		       window->surface_allocation.y - window->margin,
-		       window->surface_allocation.width,
-		       window->surface_allocation.height);
+		       window->allocation.x,
+		       window->allocation.y,
+		       window->allocation.width,
+		       window->allocation.height);
 
 	wl_compositor_commit(window->display->compositor, 0);
 }
@@ -229,7 +229,6 @@ window_draw_decorations(struct window *window)
 
 	window->cairo_surface =
 		display_create_surface(window->display, &window->allocation);
-	window->surface_allocation = window->allocation;
 	width = window->allocation.width;
 	height = window->allocation.height;
 
@@ -274,7 +273,6 @@ window_draw_fullscreen(struct window *window)
 {
 	window->cairo_surface =
 		display_create_surface(window->display, &window->allocation);
-	window->surface_allocation = window->allocation;
 }
 
 void
@@ -315,61 +313,11 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 		     int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct input *input = data;
-	struct window *window = input->pointer_focus;
 
 	input->x = x;
 	input->y = y;
 	input->sx = sx;
 	input->sy = sy;
-
-	switch (window->state) {
-	case WINDOW_MOVING:
-		if (window->fullscreen)
-			break;
-		if (window->grab_device != input)
-			break;
-		window->allocation.x = window->drag_x + x;
-		window->allocation.y = window->drag_y + y;
-		wl_surface_map(window->surface,
-			       window->allocation.x - window->margin,
-			       window->allocation.y - window->margin,
-			       window->allocation.width,
-			       window->allocation.height);
-		wl_compositor_commit(window->display->compositor, 1);
-		break;
-
-	case WINDOW_RESIZING_TOP:
-	case WINDOW_RESIZING_BOTTOM:
-	case WINDOW_RESIZING_LEFT:
-	case WINDOW_RESIZING_RIGHT:
-	case WINDOW_RESIZING_TOP_LEFT:
-	case WINDOW_RESIZING_TOP_RIGHT:
-	case WINDOW_RESIZING_BOTTOM_LEFT:
-	case WINDOW_RESIZING_BOTTOM_RIGHT:
-		if (window->fullscreen)
-			break;
-		if (window->grab_device != input)
-			break;
-		if (window->state & WINDOW_RESIZING_LEFT) {
-			window->allocation.x = x - window->drag_x + window->saved_allocation.x;
-			window->allocation.width = window->drag_x - x + window->saved_allocation.width;
-		}
-		if (window->state & WINDOW_RESIZING_RIGHT)
-			window->allocation.width = x - window->drag_x + window->saved_allocation.width;
-		if (window->state & WINDOW_RESIZING_TOP) {
-			window->allocation.y = y - window->drag_y + window->saved_allocation.y;
-			window->allocation.height = window->drag_y - y + window->saved_allocation.height;
-		}
-		if (window->state & WINDOW_RESIZING_BOTTOM)
-			window->allocation.height = y - window->drag_y + window->saved_allocation.height;
-
-		if (window->resize_handler)
-			(*window->resize_handler)(window,
-						  window->user_data);
-		else if (window->redraw_handler)
-			window_schedule_redraw(window);
-		break;
-	}
 }
 
 static void window_handle_button(void *data, struct wl_input_device *input_device,
@@ -400,10 +348,8 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 	if (button == BTN_LEFT && state == 1) {
 		switch (hlocation | vlocation) {
 		case WINDOW_MOVING:
-			window->drag_x = window->allocation.x - input->x;
-			window->drag_y = window->allocation.y - input->y;
-			window->state = WINDOW_MOVING;
-			window->grab_device = input;
+			wl_shell_move(window->display->shell,
+				      window->surface, input_device, time);
 			break;
 		case WINDOW_RESIZING_TOP:
 		case WINDOW_RESIZING_BOTTOM:
@@ -413,19 +359,11 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 		case WINDOW_RESIZING_TOP_RIGHT:
 		case WINDOW_RESIZING_BOTTOM_LEFT:
 		case WINDOW_RESIZING_BOTTOM_RIGHT:
-			window->drag_x = input->x;
-			window->drag_y = input->y;
-			window->saved_allocation = window->allocation;
-			window->state = hlocation | vlocation;
-			window->grab_device = input;
-			break;
-		default:
-			window->state = WINDOW_STABLE;
+			wl_shell_resize(window->display->shell,
+					window->surface, input_device, time,
+					hlocation | vlocation);
 			break;
 		}
-	} else if (button == BTN_LEFT &&
-		   state == 0 && window->grab_device == input) {
-		window->state = WINDOW_STABLE;
 	}
 }
 
@@ -519,6 +457,34 @@ static const struct wl_input_device_listener input_device_listener = {
 	window_handle_keyboard_focus,
 };
 
+static void
+handle_configure(void *data, struct wl_shell *shell,
+		 uint32_t time, uint32_t edges,
+		 struct wl_surface *surface,
+		 int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	struct window *window = wl_surface_get_user_data(surface);
+
+	window->resize_edges = edges;
+	window->pending_allocation.x = x;
+	window->pending_allocation.y = y;
+	window->pending_allocation.width = width;
+	window->pending_allocation.height = height;
+
+	if (!(edges & 15))
+		return;
+
+	if (window->resize_handler)
+		(*window->resize_handler)(window,
+					  window->user_data);
+	else if (window->redraw_handler)
+		window_schedule_redraw(window);
+}
+
+static const struct wl_shell_listener shell_listener = {
+	handle_configure,
+};
+
 void
 window_get_child_rectangle(struct window *window,
 			   struct rectangle *rectangle)
@@ -542,12 +508,14 @@ window_set_child_size(struct window *window,
 	if (!window->fullscreen) {
 		width = rectangle->width + 20 + window->margin * 2;
 		height = rectangle->height + 60 + window->margin * 2;
-		if (window->state & WINDOW_RESIZING_LEFT)
-			window->allocation.x -=
-				width - window->allocation.width;
-		if (window->state & WINDOW_RESIZING_TOP)
-			window->allocation.y -=
-				height - window->allocation.height;
+
+		if (window->resize_edges & WINDOW_RESIZING_LEFT)
+			window->allocation.x +=
+				window->allocation.width - width;
+		if (window->resize_edges & WINDOW_RESIZING_TOP)
+			window->allocation.y +=
+				window->allocation.height - height;
+
 		window->allocation.width = width;
 		window->allocation.height = height;
 	}
@@ -582,8 +550,13 @@ idle_redraw(void *data)
 {
 	struct window *window = data;
 
+	if (window->resize_edges)
+		window->allocation = window->pending_allocation;
+
 	window->redraw_handler(window, window->user_data);
+
 	window->redraw_scheduled = 0;
+	window->resize_edges = 0;
 
 	return FALSE;
 }
@@ -696,7 +669,6 @@ window_create(struct display *display, const char *title,
 	window->allocation.height = height;
 	window->saved_allocation = window->allocation;
 	window->margin = 16;
-	window->state = WINDOW_STABLE;
 	window->decoration = 1;
 
 	wl_surface_set_user_data(window->surface, window);
@@ -809,6 +781,9 @@ display_handle_global(struct wl_display *display,
 		wl_output_add_listener(d->output, &output_listener, d);
 	} else if (wl_object_implements(object, "input_device", 1)) {
 		display_add_input(d, object);
+	} else if (wl_object_implements(object, "shell", 1)) {
+		d->shell = (struct wl_shell *) object;
+		wl_shell_add_listener(d->shell, &shell_listener, d);
 	}
 }
 
