@@ -19,7 +19,8 @@
 
 namespace chrome_browser_net {
 
-class Preconnect : public net::CompletionCallback {
+class Preconnect : public net::CompletionCallback,
+                   public base::RefCountedThreadSafe<Preconnect> {
  public:
   // Try to preconnect.  Typically motivated by OMNIBOX to reach search service.
   static void PreconnectOnUIThread(const GURL& url,
@@ -35,11 +36,15 @@ class Preconnect : public net::CompletionCallback {
   }
 
  private:
-  Preconnect() {}
+  friend class base::RefCountedThreadSafe<Preconnect>;
 
-  // Supply an instance that could have been used in an IO callback, but will
-  // never actually be used (because we reset the connection so quickly).
-  static Preconnect* callback_instance_;
+  explicit Preconnect(UrlInfo::ResolutionMotivation motivation)
+      : motivation_(motivation) {
+  }
+  ~Preconnect();
+
+  // Request actual connection.
+  void Connect(const GURL& url);
 
   // IO Callback which whould be performed when the connection is established.
   virtual void RunWithParams(const Tuple1<int>& params);
@@ -49,6 +54,15 @@ class Preconnect : public net::CompletionCallback {
   // be ignored (presumably because a user knows that the proxy won't be doing
   // much work anway).
   static bool preconnect_despite_proxy_;
+
+  // The handle holding the request. We need this so that we can mark the
+  // request as speculative when an actual socket is bound to it.
+  net::ClientSocketHandle handle_;
+
+  // Generally either LEARNED_REFERAL_MOTIVATED or OMNIBOX_MOTIVATED to indicate
+  // why we were trying to do a preconnection.
+  const UrlInfo::ResolutionMotivation motivation_;
+
 
   DISALLOW_COPY_AND_ASSIGN(Preconnect);
 };
