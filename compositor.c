@@ -783,9 +783,15 @@ notify_button(struct wlsc_input_device *device,
 			device->grab = WLSC_DEVICE_GRAB_NONE;
 		}
 
-		wl_surface_post_event(&surface->base, &device->base,
-				      WL_INPUT_DEVICE_BUTTON,
-				      time, button, state);
+		if (state && button == BTN_LEFT &&
+		    device->grab == WLSC_DEVICE_GRAB_MOTION &&
+		    (device->modifier_state & MODIFIER_SUPER))
+			shell_move(NULL, &compositor->shell,
+				   &surface->base, device, time);
+		else
+			wl_surface_post_event(&surface->base, &device->base,
+					      WL_INPUT_DEVICE_BUTTON,
+					      time, button, state);
 
 		wlsc_compositor_schedule_repaint(compositor);
 	}
@@ -795,11 +801,10 @@ void
 notify_key(struct wlsc_input_device *device,
 	   uint32_t time, uint32_t key, uint32_t state)
 {
-	struct wlsc_compositor *compositor = device->ec;
 	uint32_t *k, *end;
 	uint32_t modifier;
 
-	switch (key | compositor->modifier_state) {
+	switch (key | device->modifier_state) {
 	case KEY_BACKSPACE | MODIFIER_CTRL | MODIFIER_ALT:
 		kill(0, SIGTERM);
 		return;
@@ -816,15 +821,20 @@ notify_key(struct wlsc_input_device *device,
 		modifier = MODIFIER_ALT;
 		break;
 
+	case KEY_LEFTMETA:
+	case KEY_RIGHTMETA:
+		modifier = MODIFIER_SUPER;
+		break;
+
 	default:
 		modifier = 0;
 		break;
 	}
 
 	if (state)
-		compositor->modifier_state |= modifier;
+		device->modifier_state |= modifier;
 	else
-		compositor->modifier_state &= ~modifier;
+		device->modifier_state &= ~modifier;
 
 	end = device->keys.data + device->keys.size;
 	for (k = device->keys.data; k < end; k++) {

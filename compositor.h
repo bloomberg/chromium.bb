@@ -82,6 +82,7 @@ struct wlsc_input_device {
 	struct wlsc_surface *pointer_focus;
 	struct wlsc_surface *keyboard_focus;
 	struct wl_array keys;
+	uint32_t modifier_state;
 
 	enum wlsc_grab_type grab;
 	uint32_t grab_time;
@@ -121,7 +122,6 @@ struct wlsc_compositor {
 	struct timespec previous_swap;
 	uint32_t current_frame;
 
-	uint32_t modifier_state;
 	uint32_t focus;
 
 	void (*present)(struct wlsc_compositor *c);
@@ -129,6 +129,7 @@ struct wlsc_compositor {
 
 #define MODIFIER_CTRL	(1 << 8)
 #define MODIFIER_ALT	(1 << 9)
+#define MODIFIER_SUPER	(1 << 10)
 
 struct wlsc_vector {
 	GLfloat f[4];
