@@ -252,6 +252,9 @@ void UserManager::NotifyOnLogin() {
 
   chromeos::CrosLibrary::Get()->GetInputMethodLibrary()->
       SetDeferImeStartup(false);
+  // Shut down the IME so that it will reload the user's settings.
+  chromeos::CrosLibrary::Get()->GetInputMethodLibrary()->
+      StopInputMethodProcesses();
   // Let the window manager know that we're logged in now.
   WmIpc::instance()->SetLoggedInProperty(true);
 }
