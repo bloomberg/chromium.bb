@@ -154,6 +154,7 @@ class TabProxy {
   %feature("docstring", "Cancel authentication to a login prompt. ")
       CancelAuth;
   bool CancelAuth();
+
 };
 
 class PyUITestSuiteBase {
@@ -346,6 +347,22 @@ class PyUITestBase {
                         "Internal method.")
       _SendJSONRequest;
   std::string _SendJSONRequest(int window_index, std::string request);
+
+  %feature("docstring", "Execute a string of javascript in the specified "
+           "(window, tab, frame) and return a string.") ExecuteJavascript;
+  std::wstring ExecuteJavascript(const std::wstring& script,
+                                 int window_index=0,
+                                 int tab_index=0,
+                                 const std::wstring& frame_xpath="");
+
+  %feature("docstring", "Evaluate a javascript expression in the specified "
+           "(window, tab, frame) and return the specified DOM value "
+           "as a string. This is a wrapper around "
+           "window.domAutomationController.send().") GetDOMValue;
+  std::wstring GetDOMValue(const std::wstring& expr, 
+                           int window_index=0,
+                           int tab_index=0,
+                           const std::wstring& frame_xpath="");
 
   %feature("docstring", "Resets to the default theme. "
            "Returns true on success.") ResetToDefaultTheme;
