@@ -113,7 +113,7 @@ cr.define('options', function() {
       var languageCode = languageOptionsList.getLanguageCodes()[index];
       this.updateSelectedLanguageName_(languageCode);
       this.updateUiLanguageButton_(languageCode);
-      this.updateInputMethodList_();
+      this.updateInputMethodList_(languageCode);
       this.updateLanguageListInAddLanguageOverlay_();
     },
 
