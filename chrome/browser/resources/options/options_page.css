@@ -32,6 +32,9 @@ body {
   bottom: 0;
   z-index: 10;
   padding: 20px;
+  display: -webkit-box;
+  -webkit-box-align: start;
+  -webkit-box-pack: center;
 }
 
 #close-overlay {
@@ -51,11 +54,11 @@ html[dir='rtl'] #close-overlay {
   left: -20px;
 }
 
-#overlayview .button-strip {
+.overlay .button-strip {
   text-align: end;
 }
 
-#overlayview {
+.overlay > div {
   background: white;
   border-radius: 5px;
   padding: 30px;
