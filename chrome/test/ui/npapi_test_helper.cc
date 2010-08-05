@@ -45,11 +45,13 @@ void NPAPITesterBase::SetUp() {
   test_plugin_path_ = plugins_directory.AppendASCII(test_plugin_name_);
 
   file_util::CreateDirectory(plugins_directory);
-  if (!file_util::PathExists(test_plugin_path_)) {
-    ASSERT_TRUE(file_util::CopyDirectory(plugin_src, test_plugin_path_, true))
-        << "Copy failed from " << plugin_src.value()
-        << " to " << test_plugin_path_.value();
-  }
+#if defined(OS_WIN)
+  file_util::DieFileDie(test_plugin_path_, false);
+#endif
+  ASSERT_TRUE(file_util::CopyDirectory(plugin_src, test_plugin_path_, true))
+      << "Copy failed from " << plugin_src.value()
+      << " to " << test_plugin_path_.value();
+
 #if defined(OS_MACOSX)
   // The plugins directory isn't read by default on the Mac, so it needs to be
   // explicitly registered.
