@@ -54,7 +54,7 @@ TEST_F(PlatformThreadTest, TrivialTimesTen) {
 
 class FunctionTestThread : public TrivialThread {
  public:
-  FunctionTestThread() {}
+  FunctionTestThread() : thread_id_(0) {}
 
   virtual void ThreadMain() {
     thread_id_ = PlatformThread::CurrentId();
