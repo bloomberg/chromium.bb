@@ -599,12 +599,20 @@ spdy::SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
                                    arraysize(kStandardGetHeaders));
 }
 
-// Constructs a single SPDY data frame with the contents "hello!"
+// Constructs a single SPDY data frame with the default contents.
 spdy::SpdyFrame* ConstructSpdyBodyFrame(int stream_id, bool fin) {
   spdy::SpdyFramer framer;
-  return
-      framer.CreateDataFrame(stream_id, "hello!", 6,
-                             fin ? spdy::DATA_FLAG_FIN : spdy::DATA_FLAG_NONE);
+  return framer.CreateDataFrame(
+      stream_id, kUploadData, kUploadDataSize,
+      fin ? spdy::DATA_FLAG_FIN : spdy::DATA_FLAG_NONE);
+}
+
+// Constructs a single SPDY data frame with the given content.
+spdy::SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
+                                        uint32 len, bool fin) {
+  spdy::SpdyFramer framer;
+  return framer.CreateDataFrame(
+      stream_id, data, len, fin ? spdy::DATA_FLAG_FIN : spdy::DATA_FLAG_NONE);
 }
 
 // Construct an expected SPDY reply string.

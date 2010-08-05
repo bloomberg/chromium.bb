@@ -23,6 +23,12 @@
 
 namespace net {
 
+// Default upload data used by both, mock objects and framer when creating
+// data frames.
+const char kDefaultURL[] = "http://www.google.com";
+const char kUploadData[] = "hello!";
+const int kUploadDataSize = arraysize(kUploadData)-1;
+
 // NOTE: In GCC, on a Mac, this can't be in an anonymous namespace!
 // This struct holds information used to construct spdy control and data frames.
 struct SpdyHeaderInfo {
@@ -249,6 +255,10 @@ spdy::SpdyFrame* ConstructSpdyPostSynReply(const char* const extra_headers[],
 // Constructs a single SPDY data frame with the contents "hello!"
 spdy::SpdyFrame* ConstructSpdyBodyFrame(int stream_id,
                                         bool fin);
+
+// Constructs a single SPDY data frame with the given content.
+spdy::SpdyFrame* ConstructSpdyBodyFrame(int stream_id, const char* data,
+                                        uint32 len, bool fin);
 
 // Create an async MockWrite from the given SpdyFrame.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req);
