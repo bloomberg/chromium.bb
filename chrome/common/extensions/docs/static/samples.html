@@ -1,145 +1,115 @@
-<style>
-a img {
-  border:0;
-}
-</style>
+<link rel="stylesheet" href="css/samples.css" />
+<script jscontent="search_data"></script>
+<script src="js/sample_search.js"></script>
+<script src="js/samples.js"></script>
 
-<div id="pageData-showTOC" class="pageData">true</div>
+<script type="text/prerenderjs">
+  /**
+   * The following code is executed before the jstemplate in this file is
+   * rendered, meaning it can modify template data by changing the pageData
+   * window variable.  See api_page_generator.js for more information.
+   *
+   * Adds the samples manifest data + API modules.
+   */
+  pageData.samples = samples;
+  pageData.api_mapping = apiMapping;
+  pageData.api_modules = [];
+  schema.forEach(function(mod) {
+    if (mod.nodoc) {
+      return;
+    }
+    if (mod.namespace.indexOf('experimental') != -1) {
+      return;
+    }
+    pageData.api_modules.push('chrome.' + mod.namespace);
+  });
+  pageData.api_modules.push('chrome.experimental');
+  pageData.api_modules.sort();
 
-<p>
-This page shows some sample extensions,
-with links that let you install them
-and find their source code.
-Each sample also has links to the documentation
-for each feature used by the sample.
-</p>
+  var search_data = {};
+  samples.forEach(function(sample) {
+    search_data[sample.id] = sample.search_string;
 
-<p><b>Note:</b> To run these samples on Linux or Mac,
-you need to get on an early access release channel of Google Chrome.
-</p>
+    // Change the API calls data to be a mapping of calls to URLs for
+    // simpler template rendering.
+    var api_calls = sample.api_calls.slice();
+    sample.api_calls = [];
+    api_calls.sort();
+    for (var i = 0; i < api_calls.length; i++) {
+      sample.api_calls.push({
+          'call': api_calls[i],
+          'url': apiMapping[api_calls[i]]
+      });
+    }
 
-<ul>
-  <li> <b>Windows</b>: Use any release of Google Chrome</li>
-  <li> <b>Linux</b>: Subscribe to the <a href="http://www.google.com/landing/chrome/beta/">Beta channel</a> </li>
-  <li> <b>Mac</b>: Subscribe to the <a href="http://www.chromium.org/getting-involved/dev-channel#TOC-Mac">Dev channel</a> </li>
-</ul>
+    // Change the sample files list to be a mapping of relative paths to URLs
+    // for simpler template rendering.
+    var source_files = sample.source_files.slice();
+    sample.source_files = [];
+    source_files.sort();
+    for (var i = 0; i < source_files.length; i++) {
+      sample.source_files.push({
+          'file': source_files[i],
+          'url': 'http://src.chromium.org/viewvc/chrome/trunk' +
+                 '/src/chrome/common/extensions/docs/' + sample.path +
+                 source_files[i] + '?content-type=text/plain'
+      });
+    }
+  });
 
-<p>
-For more example code, see the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/" target="_blank">Chromium examples directory</a>.
-For tips on using the code viewer, see
-<a href="#viewsource">How to view the source code</a>.
-</p>
+  // The search data should be injected as executable JavaScript, so assign
+  // a template value which will store the data as a page global.
+  pageData.search_data = "var search_data = " +
+                         JSON.stringify(search_data); + ";";
+</script>
 
-<h2 id="featured">Sample extensions</h2>
+<div id="controls">
+  <div id="searchbox" class="controlbox">
+    <strong>Filter by keyword:</strong>
+    <input autofocus type="search" type="text" id="searchinput" placeholder="Type to search" onkeyup="filterSamples();" />
+    <a id="clearlink" href="javascript:void(0);" onclick="clearFilter();" style="display: none;">clear</a>
+  </div>
 
-<h3 id="gmail">Google Mail Checker</h3>
+  <div id="filterbox" class="controlbox">
+    <strong>Filter by API:</strong>
+    <span jseval="$total=api_modules.length">
+      <span jsselect="api_modules" >
+        <a href="javascript:void(0);" jsvalues="onclick:'setFilter(\'' + $this + '\', this)'" jscontent="$this"></a><span jsdisplay="$index != $total - 1">, </span>
+      </span>
+    </span>
+  </div>
+</div>
 
-<p>Adds a Google Mail button to the toolbar, displaying the number of unread messages in your inbox. Click the button to open your inbox.
+<div jsselect="samples" jsvalues="id:id" class="sample">
+  <img jsdisplay="icon != null" class="icon" jsvalues="src:path + icon" />
+  <img jsdisplay="icon == null" class="icon" src="images/sample-default-icon.png" />
+  <h2 class="name">
+    <a jscontent="name" jsvalues="href:'http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/' + path" target="_blank"></a>
+  </h2>
+  <p jsdisplay="features.length > 0" class="metadata features" jseval="$total=features.length">Uses
+    <span jsselect="features">
+      <strong jscontent="$this"></strong><span jsdisplay="$index < $total - 2 && $total > 2">, </span>
+      <span jsdisplay="$index == $total - 2 && $total > 1" > and</span>
+    </span>
+  </p>
+  <p jscontent="description"></p>
+  <div jsdisplay="api_calls.length > 0" class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li jsselect="api_calls">
+        <code><a jsvalues="href:$this.url" jscontent="$this.call"></a></code>
+      </li>
+    </ul>
+  </div>
+  <div jsdisplay="source_files.length > 0" class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li jsselect="source_files">
+        <code><a jsvalues="href:$this.url" jscontent="$this.file" target="_blank"></a></code>
+      </li>
+    </ul>
+  </div>
+</div>
 
-<p>Included with no charge is a swell animation when the number of unread items changes.
-
-<p><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dmihcahmgecmbnbcchbopgniflfhgnkff%26uc%26lang%3Den-US"><img src="images/google-mail-checker-capture.png" width="243" height="170" style="margin-bottom:0.5em"></a><br>
-<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dmihcahmgecmbnbcchbopgniflfhgnkff%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/">Source code</a></b>
-
-<br><br>
-<p>Features used:
-
-<ul>
-  <li><a href="browserAction.html">Browser action</a> (with canvas-based animation)
-  <li><a href="browserAction.html#badge">Badge</a>
-  <li><a href="background_pages.html">Background page</a>
-  <li><a href="xhr.html">Cross-origin XMLHttpRequest</a>
-  <li><a href="tabs.html">Tabs</a> module
-</ul>
-
-<br>
-
-<h3 id="subscribe_page_action">Subscribe in Feed Reader</h3>
-
-<p>Adds a small icon to the address bar when a web page contains a feed that can be subscribed to. When you click the icon, you'll see a preview of the feed and have the option to subscribe with the web-based reader of your choice.
-
-<p><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US"><img src="images/subscribe-cap1.png" style="margin-bottom:0.5em" width="342" height="165"></a>
-
-<p><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US"><img src="images/subscribe-cap2.png" style="margin-bottom:0.5em" width="566" height="327"></a><br>
-<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/subscribe_page_action/">Source code</a></b>
-
-<br><br>
-<p>Features used:
-
-<ul>
-  <li><a href="pageAction.html">Page action</a>
-  <li><a href="background_pages.html">Background page</a>
-  <li><a href="content_scripts.html">Content scripts</a>
-  <li><a href="messaging.html">Message passing</a>
-  <li><a href="xhr.html">Cross-origin XMLHttpRequest</a>
-</ul>
-
-<br>
-
-<h3 id="news">News Reader</h3>
-
-<p>Uses a popup to display the first 5 items from the "Google News - top news" RSS feed. The popup dynamically resizes itself to fit additional content.
-
-<p><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dmmdhomleggalggemanamhjdhafaabfdi%26uc%26lang%3Den-US"><img src="images/news.gif" style="margin-bottom:0.5em" width="475" height="346"></a><br>
-
-<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dmmdhomleggalggemanamhjdhafaabfdi%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">Source code</a></b>
-
-<br><br>
-<p>Features used:
-
-<ul>
-  <li><a href="browserAction.html">Browser action</a>
-  <li><a href="xhr.html">Cross-origin XMLHttpRequest</a>
-</ul>
-
-<br>
-<h2 id="otherExtensions">Other sample extensions</h2>
-<p>These samples use similar capabilities to the ones above, but to implement different features.</p>
-<dl>
-  <dt>Chromium buildbot monitor</dt>
-  <dd>Monitors the Chromium tree status <br />
-  <b><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dafmppjmdopaajlhgcddfhfhfgincjeih%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">Source code</a></b>
-  </dd>
-
-  <dt>Mappy</dt>
-  <dd>Lets you bring up a map for the first address on any web page <br />
-  <b><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Dobjeacibkcphiplbghlbmlbnihbbmfjl%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/mappy/">Source code</a></b>
-  </dd>
-
-  <dt>Email this page</dt>
-  <dd>Lets you share the current web page by sending it in an email <br />
-  <b><a href="https://clients2.google.com/service/update2/crx?response=redirect&x=id%3Ddbeoemfhkdniadbojeencpkgmobndpai%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/">Source code</a></b>
-  </dd>
-</dl>
-
-
-<h2 id="viewsource">How to view the source code</h2>
-
-<p>
-The source code links in this page take you to a directory
-(for example,
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/">examples/extensions/gmail</a>)
-that lists all the files in an extension.
-To view a file,
-first click its filename.
-If the page that comes up has an <b>as text</b> link,
-click that link to view the page's source code.
-</p>
-
-<p>
-To download the file,
-right-click the <b>download</b> link.
-You can also left-click the <b>download</b> link
-to view the source code for files such as
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/manifest.json">manifest.json</a>
-that have no <b>as text</b> link.
-</p>
-
-<p>
-We're working on a way to make it easier to look at the sample source code.
-If you'd like to track our progress,
-put a star by bug <a href="http://code.google.com/p/chromium/issues/detail?id=25247">25247</a>.
-</p>
+<div id="noresults" style="display:none">
+  Sorry, no results were found.
+</div>
 

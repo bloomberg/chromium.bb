@@ -1,0 +1,1237 @@
+{
+  "api": {
+    "chrome.experimental.webRequest.onHeadersReceived": "experimental.webRequest.html#event-onHeadersReceived", 
+    "chrome.browserAction.onClicked": "browserAction.html#event-onClicked", 
+    "chrome.history.getVisits": "history.html#method-getVisits", 
+    "chrome.bookmarks.onImportEnded": "bookmarks.html#event-onImportEnded", 
+    "chrome.history.search": "history.html#method-search", 
+    "chrome.experimental.omnibox.onInputCancelled": "experimental.omnibox.html#event-onInputCancelled", 
+    "chrome.bookmarks.remove": "bookmarks.html#method-remove", 
+    "chrome.experimental.webNavigation.onErrorOccurred": "experimental.webNavigation.html#event-onErrorOccurred", 
+    "chrome.history.deleteUrl": "history.html#method-deleteUrl", 
+    "chrome.experimental.omnibox.styleNone": "experimental.omnibox.html#method-styleNone", 
+    "chrome.bookmarks.onMoved": "bookmarks.html#event-onMoved", 
+    "chrome.browserAction.setBadgeBackgroundColor": "browserAction.html#method-setBadgeBackgroundColor", 
+    "chrome.pageAction.setTitle": "pageAction.html#method-setTitle", 
+    "chrome.bookmarks.onImportBegan": "bookmarks.html#event-onImportBegan", 
+    "chrome.experimental.omnibox.styleDim": "experimental.omnibox.html#method-styleDim", 
+    "chrome.experimental.processes.getProcessForTab": "experimental.processes.html#method-getProcessForTab", 
+    "chrome.bookmarks.getTree": "bookmarks.html#method-getTree", 
+    "chrome.experimental.infobars.show": "experimental.infobars.html#method-show", 
+    "chrome.windows.get": "windows.html#method-get", 
+    "chrome.extension.sendRequest": "extension.html#method-sendRequest", 
+    "chrome.windows.getAll": "windows.html#method-getAll", 
+    "chrome.tabs.captureVisibleTab": "tabs.html#method-captureVisibleTab", 
+    "chrome.idle.onStateChanged": "idle.html#event-onStateChanged", 
+    "chrome.i18n.getMessage": "i18n.html#method-getMessage", 
+    "chrome.bookmarks.import": "bookmarks.html#method-import", 
+    "chrome.extension.onConnect": "extension.html#event-onConnect", 
+    "chrome.bookmarks.removeTree": "bookmarks.html#method-removeTree", 
+    "chrome.bookmarks.get": "bookmarks.html#method-get", 
+    "chrome.bookmarks.getRecent": "bookmarks.html#method-getRecent", 
+    "chrome.history.onVisitRemoved": "history.html#event-onVisitRemoved", 
+    "chrome.windows.getCurrent": "windows.html#method-getCurrent", 
+    "chrome.bookmarks.onChanged": "bookmarks.html#event-onChanged", 
+    "chrome.tabs.detectLanguage": "tabs.html#method-detectLanguage", 
+    "chrome.windows.onRemoved": "windows.html#event-onRemoved", 
+    "chrome.experimental.clipboard.executePaste": "experimental.clipboard.html#method-executePaste", 
+    "chrome.experimental.webNavigation.onCompleted": "experimental.webNavigation.html#event-onCompleted", 
+    "chrome.tabs.update": "tabs.html#method-update", 
+    "chrome.history.deleteRange": "history.html#method-deleteRange", 
+    "chrome.tabs.connect": "tabs.html#method-connect", 
+    "chrome.cookies.set": "cookies.html#method-set", 
+    "chrome.experimental.webNavigation.onBeforeNavigate": "experimental.webNavigation.html#event-onBeforeNavigate", 
+    "chrome.pageAction.setIcon": "pageAction.html#method-setIcon", 
+    "chrome.experimental.clipboard.executeCopy": "experimental.clipboard.html#method-executeCopy", 
+    "chrome.bookmarks.move": "bookmarks.html#method-move", 
+    "chrome.experimental.webRequest.onBeforeRedirect": "experimental.webRequest.html#event-onBeforeRedirect", 
+    "chrome.tabs.getCurrent": "tabs.html#method-getCurrent", 
+    "chrome.browserAction.setTitle": "browserAction.html#method-setTitle", 
+    "chrome.contextMenus.remove": "contextMenus.html#method-remove", 
+    "chrome.experimental.omnibox.onInputStarted": "experimental.omnibox.html#event-onInputStarted", 
+    "chrome.experimental.webNavigation.onBeforeRetarget": "experimental.webNavigation.html#event-onBeforeRetarget", 
+    "chrome.tabs.create": "tabs.html#method-create", 
+    "chrome.cookies.get": "cookies.html#method-get", 
+    "chrome.experimental.webRequest.onBeforeRequest": "experimental.webRequest.html#event-onBeforeRequest", 
+    "chrome.windows.onCreated": "windows.html#event-onCreated", 
+    "chrome.experimental.webNavigation.onCommitted": "experimental.webNavigation.html#event-onCommitted", 
+    "chrome.bookmarks.create": "bookmarks.html#method-create", 
+    "chrome.tabs.onCreated": "tabs.html#event-onCreated", 
+    "chrome.cookies.getAllCookieStores": "cookies.html#method-getAllCookieStores", 
+    "chrome.tabs.get": "tabs.html#method-get", 
+    "chrome.extension.getViews": "extension.html#method-getViews", 
+    "chrome.i18n.getAcceptLanguages": "i18n.html#method-getAcceptLanguages", 
+    "chrome.experimental.omnibox.styleUrl": "experimental.omnibox.html#method-styleUrl", 
+    "chrome.experimental.webRequest.onCompleted": "experimental.webRequest.html#event-onCompleted", 
+    "chrome.bookmarks.onCreated": "bookmarks.html#event-onCreated", 
+    "chrome.pageAction.show": "pageAction.html#method-show", 
+    "chrome.bookmarks.search": "bookmarks.html#method-search", 
+    "chrome.extension.onRequest": "extension.html#event-onRequest", 
+    "chrome.extension.getBackgroundPage": "extension.html#method-getBackgroundPage", 
+    "chrome.pageAction.hide": "pageAction.html#method-hide", 
+    "chrome.experimental.omnibox.styleMatch": "experimental.omnibox.html#method-styleMatch", 
+    "chrome.tabs.executeScript": "tabs.html#method-executeScript", 
+    "chrome.cookies.remove": "cookies.html#method-remove", 
+    "chrome.extension.getExtensionTabs": "extension.html#method-getExtensionTabs", 
+    "chrome.tabs.onRemoved": "tabs.html#event-onRemoved", 
+    "chrome.tabs.insertCSS": "tabs.html#method-insertCSS", 
+    "chrome.bookmarks.getChildren": "bookmarks.html#method-getChildren", 
+    "chrome.pageAction.onClicked": "pageAction.html#event-onClicked", 
+    "chrome.windows.create": "windows.html#method-create", 
+    "chrome.extension.onConnectExternal": "extension.html#event-onConnectExternal", 
+    "chrome.cookies.getAll": "cookies.html#method-getAll", 
+    "chrome.extension.onRequestExternal": "extension.html#event-onRequestExternal", 
+    "chrome.bookmarks.onRemoved": "bookmarks.html#event-onRemoved", 
+    "chrome.contextMenus.update": "contextMenus.html#method-update", 
+    "chrome.bookmarks.export": "bookmarks.html#method-export", 
+    "chrome.experimental.clipboard.executeCut": "experimental.clipboard.html#method-executeCut", 
+    "chrome.windows.getLastFocused": "windows.html#method-getLastFocused", 
+    "chrome.tabs.onSelectionChanged": "tabs.html#event-onSelectionChanged", 
+    "chrome.cookies.onChanged": "cookies.html#event-onChanged", 
+    "chrome.windows.update": "windows.html#method-update", 
+    "chrome.extension.getURL": "extension.html#method-getURL", 
+    "chrome.idle.queryState": "idle.html#method-queryState", 
+    "chrome.experimental.omnibox.onInputChanged": "experimental.omnibox.html#event-onInputChanged", 
+    "chrome.experimental.webRequest.onErrorOccurred": "experimental.webRequest.html#event-onErrorOccurred", 
+    "chrome.tabs.onMoved": "tabs.html#event-onMoved", 
+    "chrome.experimental.omnibox.sendSuggestions": "experimental.omnibox.html#method-sendSuggestions", 
+    "chrome.bookmarks.update": "bookmarks.html#method-update", 
+    "chrome.contextMenus.removeAll": "contextMenus.html#method-removeAll", 
+    "chrome.windows.remove": "windows.html#method-remove", 
+    "chrome.tabs.sendRequest": "tabs.html#method-sendRequest", 
+    "chrome.browserAction.setBadgeText": "browserAction.html#method-setBadgeText", 
+    "chrome.browserAction.setIcon": "browserAction.html#method-setIcon", 
+    "chrome.experimental.omnibox.onInputEntered": "experimental.omnibox.html#event-onInputEntered", 
+    "chrome.browserAction.setPopup": "browserAction.html#method-setPopup", 
+    "chrome.bookmarks.onChildrenReordered": "bookmarks.html#event-onChildrenReordered", 
+    "chrome.experimental.webRequest.onRequestSent": "experimental.webRequest.html#event-onRequestSent", 
+    "chrome.extension.getToolstrips": "extension.html#method-getToolstrips", 
+    "chrome.history.onVisited": "history.html#event-onVisited", 
+    "chrome.tabs.onUpdated": "tabs.html#event-onUpdated", 
+    "chrome.history.deleteAll": "history.html#method-deleteAll", 
+    "chrome.experimental.webNavigation.onDOMContentLoaded": "experimental.webNavigation.html#event-onDOMContentLoaded", 
+    "chrome.tabs.getAllInWindow": "tabs.html#method-getAllInWindow", 
+    "chrome.contextMenus.create": "contextMenus.html#method-create", 
+    "chrome.tabs.getSelected": "tabs.html#method-getSelected", 
+    "chrome.tabs.onAttached": "tabs.html#event-onAttached", 
+    "chrome.tabs.remove": "tabs.html#method-remove", 
+    "chrome.tabs.onDetached": "tabs.html#event-onDetached", 
+    "chrome.extension.connect": "extension.html#method-connect", 
+    "chrome.tabs.move": "tabs.html#method-move", 
+    "chrome.windows.onFocusChanged": "windows.html#event-onFocusChanged", 
+    "chrome.pageAction.setPopup": "pageAction.html#method-setPopup", 
+    "chrome.history.addUrl": "history.html#method-addUrl"
+  }, 
+  "samples": [
+    {
+      "description": "", 
+      "icon": null, 
+      "name": "A browser action which changes its icon when clicked.", 
+      "search_string": "A BROWSER ACTION WHICH CHANGES ITS ICON WHEN CLICKED.  BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON", 
+      "source_files": [
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/browserAction\/set_icon_path\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.browserAction.setIcon"
+      ], 
+      "id": "121cca9e8942e456e3f25bbd16713b9bfe23e742", 
+      "protocols": [
+        "http:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "", 
+      "icon": null, 
+      "name": "A browser action with a popup that changes the page color.", 
+      "search_string": "A BROWSER ACTION WITH A POPUP THAT CHANGES THE PAGE COLOR.  BROWSER_ACTION POPUP TABS CHROME.TABS.EXECUTESCRIPT", 
+      "source_files": [
+        "manifest.json", 
+        "popup.html"
+      ], 
+      "path": "examples\/api\/browserAction\/set_page_color\/", 
+      "api_calls": [
+        "chrome.tabs.executeScript"
+      ], 
+      "id": "5da3e0ed090747eb6d5560e272c8bf17b7c0c2b6", 
+      "protocols": [
+        "http:\/\/", 
+        "https:\/\/"
+      ], 
+      "features": [
+        "browser_action", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "", 
+      "icon": null, 
+      "name": "A browser action with no icon that makes the page red", 
+      "search_string": "A BROWSER ACTION WITH NO ICON THAT MAKES THE PAGE RED  BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.TABS.EXECUTESCRIPT", 
+      "source_files": [
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/browserAction\/make_page_red\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.browserAction.setBadgeBackgroundColor", 
+        "chrome.browserAction.setBadgeText", 
+        "chrome.tabs.executeScript"
+      ], 
+      "id": "c394974bd87e01605a3cca3cad8a7109de5bbda1", 
+      "protocols": [
+        "http:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Returns accept languages of the browser", 
+      "icon": null, 
+      "name": "AcceptLanguage", 
+      "search_string": "ACCEPTLANGUAGE RETURNS ACCEPT LANGUAGES OF THE BROWSER BROWSER_ACTION POPUP CHROME.I18N.GETACCEPTLANGUAGES CHROME.I18N.GETMESSAGE", 
+      "source_files": [
+        "manifest.json", 
+        "popup.html", 
+        "_locales\/es\/messages.json", 
+        "_locales\/sr\/messages.json", 
+        "_locales\/en_US\/messages.json"
+      ], 
+      "path": "examples\/api\/i18n\/getMessage\/", 
+      "api_calls": [
+        "chrome.i18n.getAcceptLanguages", 
+        "chrome.i18n.getMessage"
+      ], 
+      "id": "c581cf06da17385735b64cc9077509ef13105518", 
+      "protocols": [], 
+      "features": [
+        "browser_action", 
+        "popup"
+      ]
+    }, 
+    {
+      "description": "This extension adds an animated browser action to the toolbar.", 
+      "icon": null, 
+      "name": "Animated Page Action", 
+      "search_string": "ANIMATED PAGE ACTION THIS EXTENSION ADDS AN ANIMATED BROWSER ACTION TO THE TOOLBAR. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.ONCLICKED CHROME.PAGEACTION.SETICON CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED", 
+      "source_files": [
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/pageAction\/set_icon\/", 
+      "api_calls": [
+        "chrome.pageAction.hide", 
+        "chrome.pageAction.onClicked", 
+        "chrome.pageAction.setIcon", 
+        "chrome.pageAction.setTitle", 
+        "chrome.pageAction.show", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.onSelectionChanged"
+      ], 
+      "id": "24d780762055a4f290ecb3ac69384fbaea3a7718", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "page_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "", 
+      "icon": null, 
+      "name": "Blank new tab page", 
+      "search_string": "BLANK NEW TAB PAGE  CHROME_URL_OVERRIDES", 
+      "source_files": [
+        "manifest.json", 
+        "blank.html"
+      ], 
+      "path": "examples\/api\/override\/blank_ntp\/", 
+      "api_calls": [], 
+      "id": "7cdb5ad608e5c2f224e0db28990b760dfbba5672", 
+      "protocols": [], 
+      "features": [
+        "chrome_url_overrides"
+      ]
+    }, 
+    {
+      "description": "Enjoy a more magical and immersive experience when browsing the web using the power of sound.", 
+      "icon": "icon.png", 
+      "name": "Chrome Sounds", 
+      "search_string": "CHROME SOUNDS ENJOY A MORE MAGICAL AND IMMERSIVE EXPERIENCE WHEN BROWSING THE WEB USING THE POWER OF SOUND. BACKGROUND_PAGE BOOKMARKS OPTIONS_PAGE TABS CHROME.BOOKMARKS.ONCREATED CHROME.BOOKMARKS.ONMOVED CHROME.BOOKMARKS.ONREMOVED CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.GET CHROME.TABS.ONATTACHED CHROME.TABS.ONCREATED CHROME.TABS.ONDETACHED CHROME.TABS.ONMOVED CHROME.TABS.ONREMOVED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.WINDOWS.ONCREATED CHROME.WINDOWS.ONFOCUSCHANGED CHROME.WINDOWS.ONREMOVED", 
+      "source_files": [
+        "manifest.json", 
+        "bg.html", 
+        "options.html", 
+        "bg.js", 
+        "content.js"
+      ], 
+      "path": "examples\/extensions\/fx\/", 
+      "api_calls": [
+        "chrome.bookmarks.onCreated", 
+        "chrome.bookmarks.onMoved", 
+        "chrome.bookmarks.onRemoved", 
+        "chrome.extension.getBackgroundPage", 
+        "chrome.extension.onRequest", 
+        "chrome.extension.sendRequest", 
+        "chrome.tabs.get", 
+        "chrome.tabs.onAttached", 
+        "chrome.tabs.onCreated", 
+        "chrome.tabs.onDetached", 
+        "chrome.tabs.onMoved", 
+        "chrome.tabs.onRemoved", 
+        "chrome.tabs.onSelectionChanged", 
+        "chrome.tabs.onUpdated", 
+        "chrome.windows.onCreated", 
+        "chrome.windows.onFocusChanged", 
+        "chrome.windows.onRemoved"
+      ], 
+      "id": "35911e7b2dc0145923ca43f499b5a61be52d30ec", 
+      "protocols": [
+        "http:\/\/", 
+        "https:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "bookmarks", 
+        "options_page", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.", 
+      "icon": "icon.png", 
+      "name": "Chromium Buildbot Monitor", 
+      "search_string": "CHROMIUM BUILDBOT MONITOR DISPLAYS THE STATUS OF THE CHROMIUM BUILDBOT IN THE TOOLBAR.  CLICK TO SEE MORE DETAILED STATUS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION POPUP CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE", 
+      "source_files": [
+        "manifest.json", 
+        "bg.html", 
+        "popup.html"
+      ], 
+      "path": "examples\/extensions\/buildbot\/", 
+      "api_calls": [
+        "chrome.browserAction.setBadgeBackgroundColor", 
+        "chrome.browserAction.setBadgeText", 
+        "chrome.browserAction.setTitle"
+      ], 
+      "id": "a3089c96b34036b3a0431124c25badd7f1c3d64a", 
+      "protocols": [
+        "http:\/\/", 
+        "http:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "popup"
+      ]
+    }, 
+    {
+      "description": "Add support to the omnibox to search the Chromium source code.", 
+      "icon": null, 
+      "name": "Chromium Search", 
+      "search_string": "CHROMIUM SEARCH ADD SUPPORT TO THE OMNIBOX TO SEARCH THE CHROMIUM SOURCE CODE. BACKGROUND_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED CHROME.EXPERIMENTAL.OMNIBOX.STYLEMATCH CHROME.EXPERIMENTAL.OMNIBOX.STYLENONE CHROME.EXPERIMENTAL.OMNIBOX.STYLEURL CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE", 
+      "source_files": [
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/extensions\/chrome_search\/", 
+      "api_calls": [
+        "chrome.experimental.omnibox.onInputChanged", 
+        "chrome.experimental.omnibox.onInputEntered", 
+        "chrome.experimental.omnibox.styleMatch", 
+        "chrome.experimental.omnibox.styleNone", 
+        "chrome.experimental.omnibox.styleUrl", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.update"
+      ], 
+      "id": "7dd4735797cd957876becbdad0f4b0e47cf4ac01", 
+      "protocols": [
+        "http:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "experimental", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Displays the language of a tab", 
+      "icon": null, 
+      "name": "CLD", 
+      "search_string": "CLD DISPLAYS THE LANGUAGE OF A TAB BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.TABS.DETECTLANGUAGE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED", 
+      "source_files": [
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/i18n\/cld\/", 
+      "api_calls": [
+        "chrome.browserAction.setBadgeText", 
+        "chrome.tabs.detectLanguage", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.onSelectionChanged", 
+        "chrome.tabs.onUpdated"
+      ], 
+      "id": "35c467a5623117e399afc1187bdcc25b1c74bc5d", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Shows some of the features of the Context Menus API", 
+      "icon": null, 
+      "name": "Context Menus Sample", 
+      "search_string": "CONTEXT MENUS SAMPLE SHOWS SOME OF THE FEATURES OF THE CONTEXT MENUS API BACKGROUND_PAGE CONTEXTMENUS CHROME.CONTEXTMENUS.CREATE", 
+      "source_files": [
+        "sample.js", 
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/contextMenus\/basic\/", 
+      "api_calls": [
+        "chrome.contextMenus.create"
+      ], 
+      "id": "16f1c9c9c20b78999b826f882c3d403d3c9f95ce", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "contextMenus"
+      ]
+    }, 
+    {
+      "description": "Testing Cookie API", 
+      "icon": "cookie.png", 
+      "name": "Cookie API Test Extension", 
+      "search_string": "COOKIE API TEST EXTENSION TESTING COOKIE API BACKGROUND_PAGE BROWSER_ACTION COOKIES TABS CHROME.BROWSERACTION.ONCLICKED CHROME.COOKIES.GET CHROME.COOKIES.GETALL CHROME.COOKIES.ONCHANGED CHROME.COOKIES.REMOVE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL", 
+      "source_files": [
+        "manifest.json", 
+        "background.html", 
+        "manager.html"
+      ], 
+      "path": "examples\/api\/cookies\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.cookies.get", 
+        "chrome.cookies.getAll", 
+        "chrome.cookies.onChanged", 
+        "chrome.cookies.remove", 
+        "chrome.extension.getURL", 
+        "chrome.tabs.create", 
+        "chrome.tabs.update", 
+        "chrome.windows.get", 
+        "chrome.windows.getAll"
+      ], 
+      "id": "17071198171ed3535a2ee9c129653378ad54b5ce", 
+      "protocols": [
+        "http:\/\/", 
+        "https:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "cookies", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Demonstrates a method to make a cross-domain XMLHttpRequest fetch from a content script.  This extension fetches the current trending topics from Twitter and inserts them in an overlay at the top of Google News.  Visit http:\/\/news.google.com to test this extension.", 
+      "icon": "sample-128.png", 
+      "name": "Cross-domain XMLHttpRequest from a content script", 
+      "search_string": "CROSS-DOMAIN XMLHTTPREQUEST FROM A CONTENT SCRIPT DEMONSTRATES A METHOD TO MAKE A CROSS-DOMAIN XMLHTTPREQUEST FETCH FROM A CONTENT SCRIPT.  THIS EXTENSION FETCHES THE CURRENT TRENDING TOPICS FROM TWITTER AND INSERTS THEM IN AN OVERLAY AT THE TOP OF GOOGLE NEWS.  VISIT HTTP:\/\/NEWS.GOOGLE.COM TO TEST THIS EXTENSION. BACKGROUND_PAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST", 
+      "source_files": [
+        "manifest.json", 
+        "contentscript.js", 
+        "background.html"
+      ], 
+      "path": "examples\/howto\/contentscript_xhr\/", 
+      "api_calls": [
+        "chrome.extension.onRequest", 
+        "chrome.extension.sendRequest"
+      ], 
+      "id": "e6f9db199c82114ef857a140c81a9c7c41469333", 
+      "protocols": [
+        "http:\/\/"
+      ], 
+      "features": [
+        "background_page"
+      ]
+    }, 
+    {
+      "description": "This extension adds an email button to the toolbar which allows you to email the page link using your default mail client or Gmail.", 
+      "icon": "mail_128x128.png", 
+      "name": "Email this page (by Google)", 
+      "search_string": "EMAIL THIS PAGE (BY GOOGLE) THIS EXTENSION ADDS AN EMAIL BUTTON TO THE TOOLBAR WHICH ALLOWS YOU TO EMAIL THE PAGE LINK USING YOUR DEFAULT MAIL CLIENT OR GMAIL. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.UPDATE", 
+      "source_files": [
+        "content_script.js", 
+        "manifest.json", 
+        "options.html", 
+        "background.html"
+      ], 
+      "path": "examples\/extensions\/email_this_page\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.extension.connect", 
+        "chrome.extension.onConnect", 
+        "chrome.tabs.create", 
+        "chrome.tabs.executeScript", 
+        "chrome.tabs.update"
+      ], 
+      "id": "2fecb2a1bd23df9839021833e86c87b58e43d788", 
+      "protocols": [
+        "http:\/\/", 
+        "https:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "options_page", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "A sample extension which uses Google Analytics to track usage.", 
+      "icon": "analytics-extension-icon-128.png", 
+      "name": "Event Tracking with Google Analytics", 
+      "search_string": "EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BACKGROUND_PAGE BROWSER_ACTION POPUP", 
+      "source_files": [
+        "manifest.json", 
+        "analytics.js", 
+        "popup.html", 
+        "background.html"
+      ], 
+      "path": "examples\/tutorials\/analytics\/", 
+      "api_calls": [], 
+      "id": "957d89c0464bcfad4b4755e8747cf9c4073d8289", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "popup"
+      ]
+    }, 
+    {
+      "description": "Demonstrates how to use OAuth to connect the Google Documents List Data API.", 
+      "icon": "img\/docs_spreadsheets-128.gif", 
+      "name": "Google Document List Viewer", 
+      "search_string": "GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE", 
+      "source_files": [
+        "chrome_ex_oauthsimple.js", 
+        "chrome_ex_oauth.js", 
+        "chrome_ex_oauth.html", 
+        "manifest.json", 
+        "options.html", 
+        "popup.html", 
+        "background.html", 
+        "js\/jquery-1.4.1.min.js"
+      ], 
+      "path": "examples\/extensions\/gdocs\/", 
+      "api_calls": [
+        "chrome.browserAction.setBadgeText", 
+        "chrome.extension.getBackgroundPage", 
+        "chrome.extension.getURL", 
+        "chrome.tabs.create", 
+        "chrome.tabs.onUpdated", 
+        "chrome.tabs.remove"
+      ], 
+      "id": "fad5d7059ba177d48e45d92e04da9e5ae4c2b8c2", 
+      "protocols": [
+        "https:\/\/", 
+        "https:\/\/", 
+        "https:\/\/", 
+        "https:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "options_page", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Displays the number of unread messages in your Google Mail inbox. You can also click the button to open your inbox.", 
+      "icon": "icon_128.png", 
+      "name": "Google Mail Checker", 
+      "search_string": "GOOGLE MAIL CHECKER DISPLAYS THE NUMBER OF UNREAD MESSAGES IN YOUR GOOGLE MAIL INBOX. YOU CAN ALSO CLICK THE BUTTON TO OPEN YOUR INBOX. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE", 
+      "source_files": [
+        "manifest.json", 
+        "options.html", 
+        "background.html", 
+        "_locales\/ro\/messages.json", 
+        "_locales\/sl\/messages.json", 
+        "_locales\/ar\/messages.json", 
+        "_locales\/he\/messages.json", 
+        "_locales\/es\/messages.json", 
+        "_locales\/sr\/messages.json", 
+        "_locales\/tr\/messages.json", 
+        "_locales\/th\/messages.json", 
+        "_locales\/en_GB\/messages.json", 
+        "_locales\/zh_CN\/messages.json", 
+        "_locales\/cs\/messages.json", 
+        "_locales\/fr\/messages.json", 
+        "_locales\/bg\/messages.json", 
+        "_locales\/pt_BR\/messages.json", 
+        "_locales\/nl\/messages.json", 
+        "_locales\/lt\/messages.json", 
+        "_locales\/ja\/messages.json", 
+        "_locales\/pl\/messages.json", 
+        "_locales\/hu\/messages.json", 
+        "_locales\/pt_PT\/messages.json", 
+        "_locales\/de\/messages.json", 
+        "_locales\/fil\/messages.json", 
+        "_locales\/sv\/messages.json", 
+        "_locales\/it\/messages.json", 
+        "_locales\/el\/messages.json", 
+        "_locales\/uk\/messages.json", 
+        "_locales\/fi\/messages.json", 
+        "_locales\/hr\/messages.json", 
+        "_locales\/vi\/messages.json", 
+        "_locales\/sk\/messages.json", 
+        "_locales\/nb\/messages.json", 
+        "_locales\/da\/messages.json", 
+        "_locales\/es_419\/messages.json", 
+        "_locales\/ca\/messages.json", 
+        "_locales\/zh_TW\/messages.json", 
+        "_locales\/hi\/messages.json", 
+        "_locales\/et\/messages.json", 
+        "_locales\/id\/messages.json", 
+        "_locales\/lv\/messages.json", 
+        "_locales\/ru\/messages.json", 
+        "_locales\/ko\/messages.json", 
+        "_locales\/en\/messages.json"
+      ], 
+      "path": "examples\/extensions\/gmail\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.browserAction.setBadgeBackgroundColor", 
+        "chrome.browserAction.setBadgeText", 
+        "chrome.browserAction.setIcon", 
+        "chrome.extension.getBackgroundPage", 
+        "chrome.i18n.getMessage", 
+        "chrome.tabs.create", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getAllInWindow", 
+        "chrome.tabs.onUpdated", 
+        "chrome.tabs.update"
+      ], 
+      "id": "2e0d2082771d5e26be91efaeae390874e738239b", 
+      "protocols": [
+        "http:\/\/", 
+        "https:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "options_page", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Find out when you have new waves and preview them fast.", 
+      "icon": "128.png", 
+      "name": "Google Wave Notifier", 
+      "search_string": "GOOGLE WAVE NOTIFIER FIND OUT WHEN YOU HAVE NEW WAVES AND PREVIEW THEM FAST. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE", 
+      "source_files": [
+        "chrome_ex_oauthsimple.js", 
+        "chrome_ex_oauth.js", 
+        "chrome_ex_oauth.html", 
+        "prettyload.js", 
+        "manifest.json", 
+        "options.html", 
+        "popup.html", 
+        "background.html"
+      ], 
+      "path": "examples\/extensions\/wave\/", 
+      "api_calls": [
+        "chrome.extension.getBackgroundPage", 
+        "chrome.extension.getURL", 
+        "chrome.tabs.create", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.onUpdated", 
+        "chrome.tabs.remove"
+      ], 
+      "id": "ceb116611b727f6c2ad560098bb9c3c4a4d830f9", 
+      "protocols": [
+        "https:\/\/", 
+        "http:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "options_page", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "The first extension that I made.", 
+      "icon": null, 
+      "name": "Hello World", 
+      "search_string": "HELLO WORLD THE FIRST EXTENSION THAT I MADE. BROWSER_ACTION POPUP", 
+      "source_files": [
+        "manifest.json", 
+        "popup.html"
+      ], 
+      "path": "examples\/tutorials\/getstarted\/", 
+      "api_calls": [], 
+      "id": "e3bd4e4ff791ae63a16f16072252be4a7fccf43e", 
+      "protocols": [
+        "http:\/\/"
+      ], 
+      "features": [
+        "browser_action", 
+        "popup"
+      ]
+    }, 
+    {
+      "description": "", 
+      "icon": null, 
+      "name": "iGoogle new tab page", 
+      "search_string": "IGOOGLE NEW TAB PAGE  CHROME_URL_OVERRIDES", 
+      "source_files": [
+        "manifest.json", 
+        "redirect.html"
+      ], 
+      "path": "examples\/api\/override\/override_igoogle\/", 
+      "api_calls": [], 
+      "id": "4663a9d47c09f43a46fadb09965d97ac4bb09d40", 
+      "protocols": [], 
+      "features": [
+        "chrome_url_overrides"
+      ]
+    }, 
+    {
+      "description": "Finds addresses in the web page you're on and pops up a map window.", 
+      "icon": "icon.png", 
+      "name": "Mappy", 
+      "search_string": "MAPPY FINDS ADDRESSES IN THE WEB PAGE YOURE ON AND POPS UP A MAP WINDOW. BACKGROUND_PAGE PAGE_ACTION POPUP TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.SENDREQUEST", 
+      "source_files": [
+        "manifest.json", 
+        "mappy_content_script.js", 
+        "popup.html", 
+        "background.html"
+      ], 
+      "path": "examples\/extensions\/mappy\/", 
+      "api_calls": [
+        "chrome.extension.getBackgroundPage", 
+        "chrome.extension.onRequest", 
+        "chrome.pageAction.hide", 
+        "chrome.pageAction.setTitle", 
+        "chrome.pageAction.show", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.onSelectionChanged", 
+        "chrome.tabs.onUpdated", 
+        "chrome.tabs.sendRequest"
+      ], 
+      "id": "be628092c6fd9d39a82a52ad443c4a9cb09e031b", 
+      "protocols": [
+        "http:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "page_action", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Merges all of the browser's windows into the current window", 
+      "icon": "merge_windows_128.png", 
+      "name": "Merge Windows", 
+      "search_string": "MERGE WINDOWS MERGES ALL OF THE BROWSERS WINDOWS INTO THE CURRENT WINDOW BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.MOVE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT", 
+      "source_files": [
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/windows\/merge_windows\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getAllInWindow", 
+        "chrome.tabs.move", 
+        "chrome.windows.get", 
+        "chrome.windows.getAll", 
+        "chrome.windows.getCurrent"
+      ], 
+      "id": "572f82c2738f6c9a1911778e4d41f712b03c25bc", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Times how long it takes to send a message to a content script and back.", 
+      "icon": null, 
+      "name": "Message Timer", 
+      "search_string": "MESSAGE TIMER TIMES HOW LONG IT TAKES TO SEND A MESSAGE TO A CONTENT SCRIPT AND BACK. BROWSER_ACTION POPUP TABS CHROME.EXTENSION.ONCONNECT CHROME.EXTENSION.ONREQUEST CHROME.TABS.CONNECT CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.SENDREQUEST", 
+      "source_files": [
+        "manifest.json", 
+        "page.js", 
+        "popup.html"
+      ], 
+      "path": "examples\/api\/messaging\/timer\/", 
+      "api_calls": [
+        "chrome.extension.onConnect", 
+        "chrome.extension.onRequest", 
+        "chrome.tabs.connect", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.sendRequest"
+      ], 
+      "id": "282fc112fa63a680c0cbc90dc0463e3780c46d46", 
+      "protocols": [], 
+      "features": [
+        "browser_action", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "A browser action with a popup dump of all bookmarks, including search, add, edit and delete.", 
+      "icon": null, 
+      "name": "My Bookmarks", 
+      "search_string": "MY BOOKMARKS A BROWSER ACTION WITH A POPUP DUMP OF ALL BOOKMARKS, INCLUDING SEARCH, ADD, EDIT AND DELETE. BOOKMARKS BROWSER_ACTION POPUP TABS CHROME.BOOKMARKS.CREATE CHROME.BOOKMARKS.GET CHROME.BOOKMARKS.GETTREE CHROME.BOOKMARKS.REMOVE CHROME.BOOKMARKS.UPDATE CHROME.TABS.CREATE", 
+      "source_files": [
+        "manifest.json", 
+        "popup.html"
+      ], 
+      "path": "examples\/api\/bookmarks\/basic\/", 
+      "api_calls": [
+        "chrome.bookmarks.create", 
+        "chrome.bookmarks.get", 
+        "chrome.bookmarks.getTree", 
+        "chrome.bookmarks.remove", 
+        "chrome.bookmarks.update", 
+        "chrome.tabs.create"
+      ], 
+      "id": "d3f041b48f31db1a86dfe05b6740086554ebba31", 
+      "protocols": [], 
+      "features": [
+        "bookmarks", 
+        "browser_action", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
+      "icon": "news_icon.png", 
+      "name": "News Reader", 
+      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE", 
+      "source_files": [
+        "feed.html", 
+        "manifest.json"
+      ], 
+      "path": "examples\/extensions\/news_a11y\/", 
+      "api_calls": [
+        "chrome.tabs.create"
+      ], 
+      "id": "a772f968a7e977f8bbf9d74f43c6daca57067d1e", 
+      "protocols": [
+        "http:\/\/"
+      ], 
+      "features": [
+        "browser_action", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
+      "icon": "news_icon.png", 
+      "name": "News Reader", 
+      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE", 
+      "source_files": [
+        "feed.html", 
+        "manifest.json"
+      ], 
+      "path": "examples\/extensions\/news\/", 
+      "api_calls": [
+        "chrome.tabs.create"
+      ], 
+      "id": "fc80727c5f0bd5ba6cad74e9ec2519cbfc34cdd3", 
+      "protocols": [
+        "http:\/\/"
+      ], 
+      "features": [
+        "browser_action", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
+      "icon": "news_icon.png", 
+      "name": "News Reader", 
+      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE", 
+      "source_files": [
+        "feed.html", 
+        "manifest.json", 
+        "_locales\/es\/messages.json", 
+        "_locales\/sr\/messages.json", 
+        "_locales\/en\/messages.json"
+      ], 
+      "path": "examples\/extensions\/news_i18n\/", 
+      "api_calls": [
+        "chrome.i18n.getMessage", 
+        "chrome.tabs.create"
+      ], 
+      "id": "e432a5c78298458aaa0f9c1c5b3fb010ffc2ed99", 
+      "protocols": [
+        "http:\/\/", 
+        "http:\/\/"
+      ], 
+      "features": [
+        "browser_action", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Shows off desktop notifications, which are \"toast\" windows that pop up on the desktop.", 
+      "icon": "128.png", 
+      "name": "Notification Demo", 
+      "search_string": "NOTIFICATION DEMO SHOWS OFF DESKTOP NOTIFICATIONS, WHICH ARE TOAST WINDOWS THAT POP UP ON THE DESKTOP. BACKGROUND_PAGE NOTIFICATIONS OPTIONS_PAGE TABS CHROME.TABS.CREATE", 
+      "source_files": [
+        "error.html", 
+        "manifest.json", 
+        "options.html", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/notifications\/", 
+      "api_calls": [
+        "chrome.tabs.create"
+      ], 
+      "id": "5ffc8fd27bfc21f5205c8c5fe8290222c95a7eb4", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "notifications", 
+        "options_page", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "", 
+      "icon": null, 
+      "name": "Omnibox Example", 
+      "search_string": "OMNIBOX EXAMPLE  BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED", 
+      "source_files": [
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/omnibox\/", 
+      "api_calls": [
+        "chrome.experimental.omnibox.onInputChanged", 
+        "chrome.experimental.omnibox.onInputEntered"
+      ], 
+      "id": "e22a739b78a7e5580d9318662390a79033f96d81", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "experimental"
+      ]
+    }, 
+    {
+      "description": "Shows a page action for HTML pages containing the word 'sandwich'", 
+      "icon": "sandwich-128.png", 
+      "name": "Page action by content", 
+      "search_string": "PAGE ACTION BY CONTENT SHOWS A PAGE ACTION FOR HTML PAGES CONTAINING THE WORD SANDWICH BACKGROUND_PAGE PAGE_ACTION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.PAGEACTION.SHOW", 
+      "source_files": [
+        "manifest.json", 
+        "contentscript.js", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/pageAction\/pageaction_by_content\/", 
+      "api_calls": [
+        "chrome.extension.onRequest", 
+        "chrome.extension.sendRequest", 
+        "chrome.pageAction.show"
+      ], 
+      "id": "24fb45f3b2192c163afb2399c3bdad91d837643e", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "page_action"
+      ]
+    }, 
+    {
+      "description": "Shows a page action for urls which have the letter 'g' in them.", 
+      "icon": "icon-128.png", 
+      "name": "Page action by URL", 
+      "search_string": "PAGE ACTION BY URL SHOWS A PAGE ACTION FOR URLS WHICH HAVE THE LETTER G IN THEM. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.SHOW CHROME.TABS.ONUPDATED", 
+      "source_files": [
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/pageAction\/pageaction_by_url\/", 
+      "api_calls": [
+        "chrome.pageAction.show", 
+        "chrome.tabs.onUpdated"
+      ], 
+      "id": "b42764aa301c7c340c9febcd492da962a453c8b6", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "page_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Chromium Page Benchmarker.", 
+      "icon": null, 
+      "name": "Page Benchmarker", 
+      "search_string": "PAGE BENCHMARKER CHROMIUM PAGE BENCHMARKER. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.CONNECT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETEXTENSIONTABS CHROME.EXTENSION.GETURL CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.GETSELECTED CHROME.TABS.REMOVE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT", 
+      "source_files": [
+        "script.js", 
+        "manifest.json", 
+        "options.html", 
+        "background.html", 
+        "jst\/jstemplate.js", 
+        "jst\/util.js", 
+        "jst\/jsevalcontext.js", 
+        "jst\/jstemplate_test.js"
+      ], 
+      "path": "examples\/extensions\/benchmark\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.browserAction.setBadgeBackgroundColor", 
+        "chrome.browserAction.setBadgeText", 
+        "chrome.browserAction.setTitle", 
+        "chrome.extension.connect", 
+        "chrome.extension.getBackgroundPage", 
+        "chrome.extension.getExtensionTabs", 
+        "chrome.extension.getURL", 
+        "chrome.extension.onConnect", 
+        "chrome.tabs.create", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getAllInWindow", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.remove", 
+        "chrome.tabs.update", 
+        "chrome.windows.get", 
+        "chrome.windows.getCurrent"
+      ], 
+      "id": "75e2de40348b5647d77b5f9c8dbdc43b868e87c8", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "options_page", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Adds a print button to the browser.", 
+      "icon": null, 
+      "name": "Print this page", 
+      "search_string": "PRINT THIS PAGE ADDS A PRINT BUTTON TO THE BROWSER. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.TABS.UPDATE", 
+      "source_files": [
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/browserAction\/print\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.tabs.update"
+      ], 
+      "id": "1ec0e2f3c645541d12dd49aa5ed6533f1203db58", 
+      "protocols": [
+        "http:\/\/", 
+        "https:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Uses OAuth to connect to Google's contacts service and display a list of your contacts.", 
+      "icon": "img\/icon-128.png", 
+      "name": "Sample - OAuth Contacts", 
+      "search_string": "SAMPLE - OAUTH CONTACTS USES OAUTH TO CONNECT TO GOOGLES CONTACTS SERVICE AND DISPLAY A LIST OF YOUR CONTACTS. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE", 
+      "source_files": [
+        "chrome_ex_oauthsimple.js", 
+        "chrome_ex_oauth.js", 
+        "chrome_ex_oauth.html", 
+        "manifest.json", 
+        "contacts.html", 
+        "background.html"
+      ], 
+      "path": "examples\/extensions\/oauth_contacts\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.browserAction.setIcon", 
+        "chrome.extension.getBackgroundPage", 
+        "chrome.extension.getURL", 
+        "chrome.tabs.create", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.onUpdated", 
+        "chrome.tabs.remove"
+      ], 
+      "id": "5d2f97358bcef171b2b012159836781a7b0ae813", 
+      "protocols": [
+        "http:\/\/", 
+        "https:\/\/", 
+        "https:\/\/", 
+        "https:\/\/"
+      ], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Adds a browser action showing which tabs share the current tab's process.", 
+      "icon": null, 
+      "name": "Show Tabs in Process", 
+      "search_string": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.EXPERIMENTAL.PROCESSES.GETPROCESSFORTAB CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE", 
+      "source_files": [
+        "manifest.json", 
+        "popup.html"
+      ], 
+      "path": "examples\/api\/processes\/show_tabs\/", 
+      "api_calls": [
+        "chrome.experimental.processes.getProcessForTab", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.update", 
+        "chrome.windows.get", 
+        "chrome.windows.getAll", 
+        "chrome.windows.getCurrent", 
+        "chrome.windows.update"
+      ], 
+      "id": "47ff142798c27febf4a2ada551c671feec26605c", 
+      "protocols": [], 
+      "features": [
+        "browser_action", 
+        "experimental", 
+        "popup", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Utility for working with the extension tabs api", 
+      "icon": null, 
+      "name": "Tab Inspector", 
+      "search_string": "TAB INSPECTOR UTILITY FOR WORKING WITH THE EXTENSION TABS API BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.GETSELECTED CHROME.TABS.MOVE CHROME.TABS.ONATTACHED CHROME.TABS.ONCREATED CHROME.TABS.ONDETACHED CHROME.TABS.ONMOVED CHROME.TABS.ONREMOVED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE CHROME.TABS.UPDATE CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.GETLASTFOCUSED CHROME.WINDOWS.ONCREATED CHROME.WINDOWS.ONFOCUSCHANGED CHROME.WINDOWS.ONREMOVED CHROME.WINDOWS.REMOVE CHROME.WINDOWS.UPDATE", 
+      "source_files": [
+        "jstemplate_compiled.js", 
+        "tabs_api.html", 
+        "manifest.json", 
+        "background.html"
+      ], 
+      "path": "examples\/api\/tabs\/inspector\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.extension.getURL", 
+        "chrome.tabs.create", 
+        "chrome.tabs.get", 
+        "chrome.tabs.getAllInWindow", 
+        "chrome.tabs.getSelected", 
+        "chrome.tabs.move", 
+        "chrome.tabs.onAttached", 
+        "chrome.tabs.onCreated", 
+        "chrome.tabs.onDetached", 
+        "chrome.tabs.onMoved", 
+        "chrome.tabs.onRemoved", 
+        "chrome.tabs.onSelectionChanged", 
+        "chrome.tabs.onUpdated", 
+        "chrome.tabs.remove", 
+        "chrome.tabs.update", 
+        "chrome.windows.create", 
+        "chrome.windows.get", 
+        "chrome.windows.getAll", 
+        "chrome.windows.getCurrent", 
+        "chrome.windows.getLastFocused", 
+        "chrome.windows.onCreated", 
+        "chrome.windows.onFocusChanged", 
+        "chrome.windows.onRemoved", 
+        "chrome.windows.remove", 
+        "chrome.windows.update"
+      ], 
+      "id": "39dcafbdebb05e43acd35b5db14f360bc023a8b5", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Demonstrate screenshot functionality in the chrome.tabs api.", 
+      "icon": null, 
+      "name": "Test Screenshot Extension", 
+      "search_string": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED", 
+      "source_files": [
+        "screenshot.js", 
+        "manifest.json", 
+        "background.html", 
+        "screenshot.html"
+      ], 
+      "path": "examples\/api\/tabs\/screenshot\/", 
+      "api_calls": [
+        "chrome.browserAction.onClicked", 
+        "chrome.extension.getURL", 
+        "chrome.extension.getViews", 
+        "chrome.tabs.captureVisibleTab", 
+        "chrome.tabs.create", 
+        "chrome.tabs.onUpdated"
+      ], 
+      "id": "b01d58ed12efa2a6b9ca152e19d15730cf1d84be", 
+      "protocols": [], 
+      "features": [
+        "background_page", 
+        "browser_action", 
+        "tabs"
+      ]
+    }, 
+    {
+      "description": "Reads your history, and shows the top ten pages you go to by typing the URL.", 
+      "icon": null, 
+      "name": "Typed URL History", 
+      "search_string": "TYPED URL HISTORY READS YOUR HISTORY, AND SHOWS THE TOP TEN PAGES YOU GO TO BY TYPING THE URL. BROWSER_ACTION HISTORY TABS CHROME.HISTORY.GETVISITS CHROME.HISTORY.SEARCH CHROME.TABS.CREATE", 
+      "source_files": [
+        "typedUrls.js", 
+        "typedUrls.html", 
+        "manifest.json"
+      ], 
+      "path": "examples\/api\/history\/showHistory\/", 
+      "api_calls": [
+        "chrome.history.getVisits", 
+        "chrome.history.search", 
+        "chrome.tabs.create"
+      ], 
+      "id": "99d24fe7b088c2380e0a158d70e9e5ae6c951165", 
+      "protocols": [], 
+      "features": [
+        "browser_action", 
+        "history", 
+        "tabs"
+      ]
+    }
+  ]
+}

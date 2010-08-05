@@ -15,8 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Samples - Google Chrome Extensions - Google Code</title></head>
-  <body>  <div id="gc-container" class="labs">
+  <title>Samples - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
       </div>
@@ -214,36 +213,18 @@
         <h1 class="page_title">Samples</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc">
+        <div id="toc" style="display: none; ">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#featured">Sample extensions</a>
+              <a>h2Name</a>
               <ol>
                 <li>
-                  <a href="#gmail">Google Mail Checker</a>
-                </li><li>
-                  <a href="#subscribe_page_action">Subscribe in Feed Reader</a>
-                </li><li>
-                  <a href="#news">News Reader</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#otherExtensions">Other sample extensions</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#viewsource">How to view the source code</a>
-              <ol>
-                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-              <li style="display: none; ">
+              <li>
                 <a href="#apiReference">API reference</a>
                 <ol>
                   <li>
@@ -290,150 +271,1923 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><style>
-a img {
-  border:0;
-}
-</style>
-
-<div id="pageData-showTOC" class="pageData">true</div>
-
-<p>
-This page shows some sample extensions,
-with links that let you install them
-and find their source code.
-Each sample also has links to the documentation
-for each feature used by the sample.
-</p>
-
-<p><b>Note:</b> To run these samples on Linux or Mac,
-you need to get on an early access release channel of Google Chrome.
-</p>
-
-<ul>
-  <li> <b>Windows</b>: Use any release of Google Chrome</li>
-  <li> <b>Linux</b>: Subscribe to the <a href="http://www.google.com/landing/chrome/beta/">Beta channel</a> </li>
-  <li> <b>Mac</b>: Subscribe to the <a href="http://www.chromium.org/getting-involved/dev-channel#TOC-Mac">Dev channel</a> </li>
-</ul>
-
-<p>
-For more example code, see the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/" target="_blank">Chromium examples directory</a>.
-For tips on using the code viewer, see
-<a href="#viewsource">How to view the source code</a>.
-</p>
-
-<h2 id="featured">Sample extensions</h2>
-
-<h3 id="gmail">Google Mail Checker</h3>
-
-<p>Adds a Google Mail button to the toolbar, displaying the number of unread messages in your inbox. Click the button to open your inbox.
-
-</p><p>Included with no charge is a swell animation when the number of unread items changes.
-
-</p><p><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmihcahmgecmbnbcchbopgniflfhgnkff%26uc%26lang%3Den-US"><img src="images/google-mail-checker-capture.png" width="243" height="170" style="margin-bottom:0.5em"></a><br>
-<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmihcahmgecmbnbcchbopgniflfhgnkff%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/">Source code</a></b>
-
-<br><br>
-</p><p>Features used:
-
-</p><ul>
-  <li><a href="browserAction.html">Browser action</a> (with canvas-based animation)
-  </li><li><a href="browserAction.html#badge">Badge</a>
-  </li><li><a href="background_pages.html">Background page</a>
-  </li><li><a href="xhr.html">Cross-origin XMLHttpRequest</a>
-  </li><li><a href="tabs.html">Tabs</a> module
-</li></ul>
-
-<br>
-
-<h3 id="subscribe_page_action">Subscribe in Feed Reader</h3>
-
-<p>Adds a small icon to the address bar when a web page contains a feed that can be subscribed to. When you click the icon, you'll see a preview of the feed and have the option to subscribe with the web-based reader of your choice.
-
-</p><p><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US"><img src="images/subscribe-cap1.png" style="margin-bottom:0.5em" width="342" height="165"></a>
-
-</p><p><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US"><img src="images/subscribe-cap2.png" style="margin-bottom:0.5em" width="566" height="327"></a><br>
-<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/subscribe_page_action/">Source code</a></b>
-
-<br><br>
-</p><p>Features used:
-
-</p><ul>
-  <li><a href="pageAction.html">Page action</a>
-  </li><li><a href="background_pages.html">Background page</a>
-  </li><li><a href="content_scripts.html">Content scripts</a>
-  </li><li><a href="messaging.html">Message passing</a>
-  </li><li><a href="xhr.html">Cross-origin XMLHttpRequest</a>
-</li></ul>
-
-<br>
-
-<h3 id="news">News Reader</h3>
-
-<p>Uses a popup to display the first 5 items from the "Google News - top news" RSS feed. The popup dynamically resizes itself to fit additional content.
-
-</p><p><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmmdhomleggalggemanamhjdhafaabfdi%26uc%26lang%3Den-US"><img src="images/news.gif" style="margin-bottom:0.5em" width="475" height="346"></a><br>
-
-<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmmdhomleggalggemanamhjdhafaabfdi%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">Source code</a></b>
-
-<br><br>
-</p><p>Features used:
-
-</p><ul>
-  <li><a href="browserAction.html">Browser action</a>
-  </li><li><a href="xhr.html">Cross-origin XMLHttpRequest</a>
-</li></ul>
-
-<br>
-<h2 id="otherExtensions">Other sample extensions</h2>
-<p>These samples use similar capabilities to the ones above, but to implement different features.</p>
-<dl>
-  <dt>Chromium buildbot monitor</dt>
-  <dd>Monitors the Chromium tree status <br>
-  <b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dafmppjmdopaajlhgcddfhfhfgincjeih%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">Source code</a></b>
-  </dd>
-
-  <dt>Mappy</dt>
-  <dd>Lets you bring up a map for the first address on any web page <br>
-  <b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dobjeacibkcphiplbghlbmlbnihbbmfjl%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/mappy/">Source code</a></b>
-  </dd>
-
-  <dt>Email this page</dt>
-  <dd>Lets you share the current web page by sending it in an email <br>
-  <b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Ddbeoemfhkdniadbojeencpkgmobndpai%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/">Source code</a></b>
-  </dd>
-</dl>
+        <div id="static"><link rel="stylesheet" href="css/samples.css">
+<script>var search_data = {"121cca9e8942e456e3f25bbd16713b9bfe23e742":"A BROWSER ACTION WHICH CHANGES ITS ICON WHEN CLICKED.  BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON","5da3e0ed090747eb6d5560e272c8bf17b7c0c2b6":"A BROWSER ACTION WITH A POPUP THAT CHANGES THE PAGE COLOR.  BROWSER_ACTION POPUP TABS CHROME.TABS.EXECUTESCRIPT","c394974bd87e01605a3cca3cad8a7109de5bbda1":"A BROWSER ACTION WITH NO ICON THAT MAKES THE PAGE RED  BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.TABS.EXECUTESCRIPT","c581cf06da17385735b64cc9077509ef13105518":"ACCEPTLANGUAGE RETURNS ACCEPT LANGUAGES OF THE BROWSER BROWSER_ACTION POPUP CHROME.I18N.GETACCEPTLANGUAGES CHROME.I18N.GETMESSAGE","24d780762055a4f290ecb3ac69384fbaea3a7718":"ANIMATED PAGE ACTION THIS EXTENSION ADDS AN ANIMATED BROWSER ACTION TO THE TOOLBAR. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.ONCLICKED CHROME.PAGEACTION.SETICON CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED","7cdb5ad608e5c2f224e0db28990b760dfbba5672":"BLANK NEW TAB PAGE  CHROME_URL_OVERRIDES","35911e7b2dc0145923ca43f499b5a61be52d30ec":"CHROME SOUNDS ENJOY A MORE MAGICAL AND IMMERSIVE EXPERIENCE WHEN BROWSING THE WEB USING THE POWER OF SOUND. BACKGROUND_PAGE BOOKMARKS OPTIONS_PAGE TABS CHROME.BOOKMARKS.ONCREATED CHROME.BOOKMARKS.ONMOVED CHROME.BOOKMARKS.ONREMOVED CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.GET CHROME.TABS.ONATTACHED CHROME.TABS.ONCREATED CHROME.TABS.ONDETACHED CHROME.TABS.ONMOVED CHROME.TABS.ONREMOVED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.WINDOWS.ONCREATED CHROME.WINDOWS.ONFOCUSCHANGED CHROME.WINDOWS.ONREMOVED","a3089c96b34036b3a0431124c25badd7f1c3d64a":"CHROMIUM BUILDBOT MONITOR DISPLAYS THE STATUS OF THE CHROMIUM BUILDBOT IN THE TOOLBAR.  CLICK TO SEE MORE DETAILED STATUS IN A POPUP. BACKGROUND_PAGE BROWSER_ACTION POPUP CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE","7dd4735797cd957876becbdad0f4b0e47cf4ac01":"CHROMIUM SEARCH ADD SUPPORT TO THE OMNIBOX TO SEARCH THE CHROMIUM SOURCE CODE. BACKGROUND_PAGE EXPERIMENTAL TABS CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED CHROME.EXPERIMENTAL.OMNIBOX.STYLEMATCH CHROME.EXPERIMENTAL.OMNIBOX.STYLENONE CHROME.EXPERIMENTAL.OMNIBOX.STYLEURL CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE","35c467a5623117e399afc1187bdcc25b1c74bc5d":"CLD DISPLAYS THE LANGUAGE OF A TAB BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.TABS.DETECTLANGUAGE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED","16f1c9c9c20b78999b826f882c3d403d3c9f95ce":"CONTEXT MENUS SAMPLE SHOWS SOME OF THE FEATURES OF THE CONTEXT MENUS API BACKGROUND_PAGE CONTEXTMENUS CHROME.CONTEXTMENUS.CREATE","17071198171ed3535a2ee9c129653378ad54b5ce":"COOKIE API TEST EXTENSION TESTING COOKIE API BACKGROUND_PAGE BROWSER_ACTION COOKIES TABS CHROME.BROWSERACTION.ONCLICKED CHROME.COOKIES.GET CHROME.COOKIES.GETALL CHROME.COOKIES.ONCHANGED CHROME.COOKIES.REMOVE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL","e6f9db199c82114ef857a140c81a9c7c41469333":"CROSS-DOMAIN XMLHTTPREQUEST FROM A CONTENT SCRIPT DEMONSTRATES A METHOD TO MAKE A CROSS-DOMAIN XMLHTTPREQUEST FETCH FROM A CONTENT SCRIPT.  THIS EXTENSION FETCHES THE CURRENT TRENDING TOPICS FROM TWITTER AND INSERTS THEM IN AN OVERLAY AT THE TOP OF GOOGLE NEWS.  VISIT HTTP://NEWS.GOOGLE.COM TO TEST THIS EXTENSION. BACKGROUND_PAGE CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST","2fecb2a1bd23df9839021833e86c87b58e43d788":"EMAIL THIS PAGE (BY GOOGLE) THIS EXTENSION ADDS AN EMAIL BUTTON TO THE TOOLBAR WHICH ALLOWS YOU TO EMAIL THE PAGE LINK USING YOUR DEFAULT MAIL CLIENT OR GMAIL. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.UPDATE","957d89c0464bcfad4b4755e8747cf9c4073d8289":"EVENT TRACKING WITH GOOGLE ANALYTICS A SAMPLE EXTENSION WHICH USES GOOGLE ANALYTICS TO TRACK USAGE. BACKGROUND_PAGE BROWSER_ACTION POPUP","fad5d7059ba177d48e45d92e04da9e5ae4c2b8c2":"GOOGLE DOCUMENT LIST VIEWER DEMONSTRATES HOW TO USE OAUTH TO CONNECT THE GOOGLE DOCUMENTS LIST DATA API. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.BROWSERACTION.SETBADGETEXT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE","2e0d2082771d5e26be91efaeae390874e738239b":"GOOGLE MAIL CHECKER DISPLAYS THE NUMBER OF UNREAD MESSAGES IN YOUR GOOGLE MAIL INBOX. YOU CAN ALSO CLICK THE BUTTON TO OPEN YOUR INBOX. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.ONUPDATED CHROME.TABS.UPDATE","ceb116611b727f6c2ad560098bb9c3c4a4d830f9":"GOOGLE WAVE NOTIFIER FIND OUT WHEN YOU HAVE NEW WAVES AND PREVIEW THEM FAST. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE POPUP TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE","e3bd4e4ff791ae63a16f16072252be4a7fccf43e":"HELLO WORLD THE FIRST EXTENSION THAT I MADE. BROWSER_ACTION POPUP","4663a9d47c09f43a46fadb09965d97ac4bb09d40":"IGOOGLE NEW TAB PAGE  CHROME_URL_OVERRIDES","be628092c6fd9d39a82a52ad443c4a9cb09e031b":"MAPPY FINDS ADDRESSES IN THE WEB PAGE YOURE ON AND POPS UP A MAP WINDOW. BACKGROUND_PAGE PAGE_ACTION POPUP TABS CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.ONREQUEST CHROME.PAGEACTION.HIDE CHROME.PAGEACTION.SETTITLE CHROME.PAGEACTION.SHOW CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.SENDREQUEST","572f82c2738f6c9a1911778e4d41f712b03c25bc":"MERGE WINDOWS MERGES ALL OF THE BROWSERS WINDOWS INTO THE CURRENT WINDOW BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.MOVE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT","282fc112fa63a680c0cbc90dc0463e3780c46d46":"MESSAGE TIMER TIMES HOW LONG IT TAKES TO SEND A MESSAGE TO A CONTENT SCRIPT AND BACK. BROWSER_ACTION POPUP TABS CHROME.EXTENSION.ONCONNECT CHROME.EXTENSION.ONREQUEST CHROME.TABS.CONNECT CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.SENDREQUEST","d3f041b48f31db1a86dfe05b6740086554ebba31":"MY BOOKMARKS A BROWSER ACTION WITH A POPUP DUMP OF ALL BOOKMARKS, INCLUDING SEARCH, ADD, EDIT AND DELETE. BOOKMARKS BROWSER_ACTION POPUP TABS CHROME.BOOKMARKS.CREATE CHROME.BOOKMARKS.GET CHROME.BOOKMARKS.GETTREE CHROME.BOOKMARKS.REMOVE CHROME.BOOKMARKS.UPDATE CHROME.TABS.CREATE","a772f968a7e977f8bbf9d74f43c6daca57067d1e":"NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE","fc80727c5f0bd5ba6cad74e9ec2519cbfc34cdd3":"NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE","e432a5c78298458aaa0f9c1c5b3fb010ffc2ed99":"NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE","5ffc8fd27bfc21f5205c8c5fe8290222c95a7eb4":"NOTIFICATION DEMO SHOWS OFF DESKTOP NOTIFICATIONS, WHICH ARE TOAST WINDOWS THAT POP UP ON THE DESKTOP. BACKGROUND_PAGE NOTIFICATIONS OPTIONS_PAGE TABS CHROME.TABS.CREATE","e22a739b78a7e5580d9318662390a79033f96d81":"OMNIBOX EXAMPLE  BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTCHANGED CHROME.EXPERIMENTAL.OMNIBOX.ONINPUTENTERED","24fb45f3b2192c163afb2399c3bdad91d837643e":"PAGE ACTION BY CONTENT SHOWS A PAGE ACTION FOR HTML PAGES CONTAINING THE WORD SANDWICH BACKGROUND_PAGE PAGE_ACTION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.PAGEACTION.SHOW","b42764aa301c7c340c9febcd492da962a453c8b6":"PAGE ACTION BY URL SHOWS A PAGE ACTION FOR URLS WHICH HAVE THE LETTER G IN THEM. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.SHOW CHROME.TABS.ONUPDATED","75e2de40348b5647d77b5f9c8dbdc43b868e87c8":"PAGE BENCHMARKER CHROMIUM PAGE BENCHMARKER. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.CONNECT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETEXTENSIONTABS CHROME.EXTENSION.GETURL CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.GETSELECTED CHROME.TABS.REMOVE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT","1ec0e2f3c645541d12dd49aa5ed6533f1203db58":"PRINT THIS PAGE ADDS A PRINT BUTTON TO THE BROWSER. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.TABS.UPDATE","5d2f97358bcef171b2b012159836781a7b0ae813":"SAMPLE - OAUTH CONTACTS USES OAUTH TO CONNECT TO GOOGLES CONTACTS SERVICE AND DISPLAY A LIST OF YOUR CONTACTS. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE","47ff142798c27febf4a2ada551c671feec26605c":"SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.EXPERIMENTAL.PROCESSES.GETPROCESSFORTAB CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE","39dcafbdebb05e43acd35b5db14f360bc023a8b5":"TAB INSPECTOR UTILITY FOR WORKING WITH THE EXTENSION TABS API BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.GETSELECTED CHROME.TABS.MOVE CHROME.TABS.ONATTACHED CHROME.TABS.ONCREATED CHROME.TABS.ONDETACHED CHROME.TABS.ONMOVED CHROME.TABS.ONREMOVED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE CHROME.TABS.UPDATE CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.GETLASTFOCUSED CHROME.WINDOWS.ONCREATED CHROME.WINDOWS.ONFOCUSCHANGED CHROME.WINDOWS.ONREMOVED CHROME.WINDOWS.REMOVE CHROME.WINDOWS.UPDATE","b01d58ed12efa2a6b9ca152e19d15730cf1d84be":"TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED","99d24fe7b088c2380e0a158d70e9e5ae6c951165":"TYPED URL HISTORY READS YOUR HISTORY, AND SHOWS THE TOP TEN PAGES YOU GO TO BY TYPING THE URL. BROWSER_ACTION HISTORY TABS CHROME.HISTORY.GETVISITS CHROME.HISTORY.SEARCH CHROME.TABS.CREATE"}</script>
+<script src="js/sample_search.js"></script>
+<script src="js/samples.js"></script>
 
 
-<h2 id="viewsource">How to view the source code</h2>
 
-<p>
-The source code links in this page take you to a directory
-(for example,
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/">examples/extensions/gmail</a>)
-that lists all the files in an extension.
-To view a file,
-first click its filename.
-If the page that comes up has an <b>as text</b> link,
-click that link to view the page's source code.
-</p>
+<div id="controls">
+  <div id="searchbox" class="controlbox">
+    <strong>Filter by keyword:</strong>
+    <input autofocus="" type="search" id="searchinput" placeholder="Type to search" onkeyup="filterSamples();">
+    <a id="clearlink" href="javascript:void(0);" onclick="clearFilter();" style="display: none;">clear</a>
+  </div>
 
-<p>
-To download the file,
-right-click the <b>download</b> link.
-You can also left-click the <b>download</b> link
-to view the source code for files such as
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/manifest.json">manifest.json</a>
-that have no <b>as text</b> link.
-</p>
+  <div id="filterbox" class="controlbox">
+    <strong>Filter by API:</strong>
+    <span>
+      <span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.bookmarks', this)">chrome.bookmarks</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.browserAction', this)">chrome.browserAction</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.contextMenus', this)">chrome.contextMenus</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.cookies', this)">chrome.cookies</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.experimental', this)">chrome.experimental</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.extension', this)">chrome.extension</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.history', this)">chrome.history</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.i18n', this)">chrome.i18n</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.idle', this)">chrome.idle</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.pageAction', this)">chrome.pageAction</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.tabs', this)">chrome.tabs</a><span>, </span>
+      </span><span>
+        <a href="javascript:void(0);" onclick="setFilter('chrome.windows', this)">chrome.windows</a><span style="display: none; ">, </span>
+      </span>
+    </span>
+  </div>
+</div>
 
-<p>
-We're working on a way to make it easier to look at the sample source code.
-If you'd like to track our progress,
-put a star by bug <a href="http://code.google.com/p/chromium/issues/detail?id=25247">25247</a>.
-</p>
+<div class="sample" id="121cca9e8942e456e3f25bbd16713b9bfe23e742">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/set_icon_path/">A browser action which changes its icon when clicked.</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p></p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setIcon">chrome.browserAction.setIcon</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/set_icon_path/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/set_icon_path/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="5da3e0ed090747eb6d5560e272c8bf17b7c0c2b6">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/set_page_color/">A browser action with a popup that changes the page color.</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p></p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="tabs.html#method-executeScript">chrome.tabs.executeScript</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/set_page_color/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/set_page_color/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="c394974bd87e01605a3cca3cad8a7109de5bbda1">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/make_page_red/">A browser action with no icon that makes the page red</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p></p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setBadgeBackgroundColor">chrome.browserAction.setBadgeBackgroundColor</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setBadgeText">chrome.browserAction.setBadgeText</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-executeScript">chrome.tabs.executeScript</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/make_page_red/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/make_page_red/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="c581cf06da17385735b64cc9077509ef13105518">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/getMessage/">AcceptLanguage</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Returns accept languages of the browser</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="i18n.html#method-getAcceptLanguages">chrome.i18n.getAcceptLanguages</a></code>
+      </li><li>
+        <code><a href="i18n.html#method-getMessage">chrome.i18n.getMessage</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/getMessage/_locales/en_US/messages.json?content-type=text/plain">_locales/en_US/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/getMessage/_locales/es/messages.json?content-type=text/plain">_locales/es/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/getMessage/_locales/sr/messages.json?content-type=text/plain">_locales/sr/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/getMessage/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/getMessage/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="24d780762055a4f290ecb3ac69384fbaea3a7718">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/set_icon/">Animated Page Action</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>page_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>This extension adds an animated browser action to the toolbar.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="pageAction.html#method-hide">chrome.pageAction.hide</a></code>
+      </li><li>
+        <code><a href="pageAction.html#event-onClicked">chrome.pageAction.onClicked</a></code>
+      </li><li>
+        <code><a href="pageAction.html#method-setIcon">chrome.pageAction.setIcon</a></code>
+      </li><li>
+        <code><a href="pageAction.html#method-setTitle">chrome.pageAction.setTitle</a></code>
+      </li><li>
+        <code><a href="pageAction.html#method-show">chrome.pageAction.show</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onSelectionChanged">chrome.tabs.onSelectionChanged</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/set_icon/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/set_icon/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="7cdb5ad608e5c2f224e0db28990b760dfbba5672">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/blank_ntp/">Blank new tab page</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>chrome_url_overrides</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p></p>
+  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a></a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/blank_ntp/blank.html?content-type=text/plain">blank.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/blank_ntp/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="35911e7b2dc0145923ca43f499b5a61be52d30ec">
+  <img class="icon" src="examples/extensions/fx/icon.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/fx/">Chrome Sounds</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>bookmarks</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>options_page</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Enjoy a more magical and immersive experience when browsing the web using the power of sound.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="bookmarks.html#event-onCreated">chrome.bookmarks.onCreated</a></code>
+      </li><li>
+        <code><a href="bookmarks.html#event-onMoved">chrome.bookmarks.onMoved</a></code>
+      </li><li>
+        <code><a href="bookmarks.html#event-onRemoved">chrome.bookmarks.onRemoved</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage</a></code>
+      </li><li>
+        <code><a href="extension.html#event-onRequest">chrome.extension.onRequest</a></code>
+      </li><li>
+        <code><a href="extension.html#method-sendRequest">chrome.extension.sendRequest</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onAttached">chrome.tabs.onAttached</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onCreated">chrome.tabs.onCreated</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onDetached">chrome.tabs.onDetached</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onMoved">chrome.tabs.onMoved</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onRemoved">chrome.tabs.onRemoved</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onSelectionChanged">chrome.tabs.onSelectionChanged</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li><li>
+        <code><a href="windows.html#event-onCreated">chrome.windows.onCreated</a></code>
+      </li><li>
+        <code><a href="windows.html#event-onFocusChanged">chrome.windows.onFocusChanged</a></code>
+      </li><li>
+        <code><a href="windows.html#event-onRemoved">chrome.windows.onRemoved</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/fx/bg.html?content-type=text/plain">bg.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/fx/bg.js?content-type=text/plain">bg.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/fx/content.js?content-type=text/plain">content.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/fx/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/fx/options.html?content-type=text/plain">options.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="a3089c96b34036b3a0431124c25badd7f1c3d64a">
+  <img class="icon" src="examples/extensions/buildbot/icon.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/buildbot/">Chromium Buildbot Monitor</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#method-setBadgeBackgroundColor">chrome.browserAction.setBadgeBackgroundColor</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setBadgeText">chrome.browserAction.setBadgeText</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setTitle">chrome.browserAction.setTitle</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/buildbot/bg.html?content-type=text/plain">bg.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/buildbot/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/buildbot/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="7dd4735797cd957876becbdad0f4b0e47cf4ac01">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/chrome_search/">Chromium Search</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>experimental</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Add support to the omnibox to search the Chromium source code.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="experimental.omnibox.html#event-onInputChanged">chrome.experimental.omnibox.onInputChanged</a></code>
+      </li><li>
+        <code><a href="experimental.omnibox.html#event-onInputEntered">chrome.experimental.omnibox.onInputEntered</a></code>
+      </li><li>
+        <code><a href="experimental.omnibox.html#method-styleMatch">chrome.experimental.omnibox.styleMatch</a></code>
+      </li><li>
+        <code><a href="experimental.omnibox.html#method-styleNone">chrome.experimental.omnibox.styleNone</a></code>
+      </li><li>
+        <code><a href="experimental.omnibox.html#method-styleUrl">chrome.experimental.omnibox.styleUrl</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-update">chrome.tabs.update</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/chrome_search/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/chrome_search/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="35c467a5623117e399afc1187bdcc25b1c74bc5d">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/cld/">CLD</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Displays the language of a tab</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#method-setBadgeText">chrome.browserAction.setBadgeText</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-detectLanguage">chrome.tabs.detectLanguage</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onSelectionChanged">chrome.tabs.onSelectionChanged</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/cld/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/i18n/cld/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="16f1c9c9c20b78999b826f882c3d403d3c9f95ce">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/contextMenus/basic/">Context Menus Sample</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>contextMenus</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Shows some of the features of the Context Menus API</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="contextMenus.html#method-create">chrome.contextMenus.create</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/contextMenus/basic/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/contextMenus/basic/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/contextMenus/basic/sample.js?content-type=text/plain">sample.js</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="17071198171ed3535a2ee9c129653378ad54b5ce">
+  <img class="icon" src="examples/api/cookies/cookie.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/cookies/">Cookie API Test Extension</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>cookies</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Testing Cookie API</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="cookies.html#method-get">chrome.cookies.get</a></code>
+      </li><li>
+        <code><a href="cookies.html#method-getAll">chrome.cookies.getAll</a></code>
+      </li><li>
+        <code><a href="cookies.html#event-onChanged">chrome.cookies.onChanged</a></code>
+      </li><li>
+        <code><a href="cookies.html#method-remove">chrome.cookies.remove</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getURL">chrome.extension.getURL</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-update">chrome.tabs.update</a></code>
+      </li><li>
+        <code><a href="windows.html#method-get">chrome.windows.get</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getAll">chrome.windows.getAll</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/cookies/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/cookies/manager.html?content-type=text/plain">manager.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/cookies/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="e6f9db199c82114ef857a140c81a9c7c41469333">
+  <img class="icon" src="examples/howto/contentscript_xhr/sample-128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/howto/contentscript_xhr/">Cross-domain XMLHttpRequest from a content script</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Demonstrates a method to make a cross-domain XMLHttpRequest fetch from a content script.  This extension fetches the current trending topics from Twitter and inserts them in an overlay at the top of Google News.  Visit http://news.google.com to test this extension.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="extension.html#event-onRequest">chrome.extension.onRequest</a></code>
+      </li><li>
+        <code><a href="extension.html#method-sendRequest">chrome.extension.sendRequest</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/howto/contentscript_xhr/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/howto/contentscript_xhr/contentscript.js?content-type=text/plain">contentscript.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/howto/contentscript_xhr/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="2fecb2a1bd23df9839021833e86c87b58e43d788">
+  <img class="icon" src="examples/extensions/email_this_page/mail_128x128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/">Email this page (by Google)</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>options_page</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>This extension adds an email button to the toolbar which allows you to email the page link using your default mail client or Gmail.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="extension.html#method-connect">chrome.extension.connect</a></code>
+      </li><li>
+        <code><a href="extension.html#event-onConnect">chrome.extension.onConnect</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-executeScript">chrome.tabs.executeScript</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-update">chrome.tabs.update</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/content_script.js?content-type=text/plain">content_script.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/options.html?content-type=text/plain">options.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="957d89c0464bcfad4b4755e8747cf9c4073d8289">
+  <img class="icon" src="examples/tutorials/analytics/analytics-extension-icon-128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/analytics/">Event Tracking with Google Analytics</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>A sample extension which uses Google Analytics to track usage.</p>
+  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a></a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/analytics/analytics.js?content-type=text/plain">analytics.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/analytics/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/analytics/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/analytics/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="fad5d7059ba177d48e45d92e04da9e5ae4c2b8c2">
+  <img class="icon" src="examples/extensions/gdocs/img/docs_spreadsheets-128.gif">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/">Google Document List Viewer</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>options_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Demonstrates how to use OAuth to connect the Google Documents List Data API.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#method-setBadgeText">chrome.browserAction.setBadgeText</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getURL">chrome.extension.getURL</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-remove">chrome.tabs.remove</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/chrome_ex_oauth.html?content-type=text/plain">chrome_ex_oauth.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/chrome_ex_oauth.js?content-type=text/plain">chrome_ex_oauth.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/chrome_ex_oauthsimple.js?content-type=text/plain">chrome_ex_oauthsimple.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/js/jquery-1.4.1.min.js?content-type=text/plain">js/jquery-1.4.1.min.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/options.html?content-type=text/plain">options.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gdocs/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="2e0d2082771d5e26be91efaeae390874e738239b">
+  <img class="icon" src="examples/extensions/gmail/icon_128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/">Google Mail Checker</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>options_page</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Displays the number of unread messages in your Google Mail inbox. You can also click the button to open your inbox.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setBadgeBackgroundColor">chrome.browserAction.setBadgeBackgroundColor</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setBadgeText">chrome.browserAction.setBadgeText</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setIcon">chrome.browserAction.setIcon</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage</a></code>
+      </li><li>
+        <code><a href="i18n.html#method-getMessage">chrome.i18n.getMessage</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getAllInWindow">chrome.tabs.getAllInWindow</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-update">chrome.tabs.update</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/ar/messages.json?content-type=text/plain">_locales/ar/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/bg/messages.json?content-type=text/plain">_locales/bg/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/ca/messages.json?content-type=text/plain">_locales/ca/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/cs/messages.json?content-type=text/plain">_locales/cs/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/da/messages.json?content-type=text/plain">_locales/da/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/de/messages.json?content-type=text/plain">_locales/de/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/el/messages.json?content-type=text/plain">_locales/el/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/en/messages.json?content-type=text/plain">_locales/en/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/en_GB/messages.json?content-type=text/plain">_locales/en_GB/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/es/messages.json?content-type=text/plain">_locales/es/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/es_419/messages.json?content-type=text/plain">_locales/es_419/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/et/messages.json?content-type=text/plain">_locales/et/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/fi/messages.json?content-type=text/plain">_locales/fi/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/fil/messages.json?content-type=text/plain">_locales/fil/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/fr/messages.json?content-type=text/plain">_locales/fr/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/he/messages.json?content-type=text/plain">_locales/he/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/hi/messages.json?content-type=text/plain">_locales/hi/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/hr/messages.json?content-type=text/plain">_locales/hr/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/hu/messages.json?content-type=text/plain">_locales/hu/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/id/messages.json?content-type=text/plain">_locales/id/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/it/messages.json?content-type=text/plain">_locales/it/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/ja/messages.json?content-type=text/plain">_locales/ja/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/ko/messages.json?content-type=text/plain">_locales/ko/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/lt/messages.json?content-type=text/plain">_locales/lt/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/lv/messages.json?content-type=text/plain">_locales/lv/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/nb/messages.json?content-type=text/plain">_locales/nb/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/nl/messages.json?content-type=text/plain">_locales/nl/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/pl/messages.json?content-type=text/plain">_locales/pl/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/pt_BR/messages.json?content-type=text/plain">_locales/pt_BR/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/pt_PT/messages.json?content-type=text/plain">_locales/pt_PT/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/ro/messages.json?content-type=text/plain">_locales/ro/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/ru/messages.json?content-type=text/plain">_locales/ru/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/sk/messages.json?content-type=text/plain">_locales/sk/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/sl/messages.json?content-type=text/plain">_locales/sl/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/sr/messages.json?content-type=text/plain">_locales/sr/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/sv/messages.json?content-type=text/plain">_locales/sv/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/th/messages.json?content-type=text/plain">_locales/th/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/tr/messages.json?content-type=text/plain">_locales/tr/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/uk/messages.json?content-type=text/plain">_locales/uk/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/vi/messages.json?content-type=text/plain">_locales/vi/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/zh_CN/messages.json?content-type=text/plain">_locales/zh_CN/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/_locales/zh_TW/messages.json?content-type=text/plain">_locales/zh_TW/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/options.html?content-type=text/plain">options.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="ceb116611b727f6c2ad560098bb9c3c4a4d830f9">
+  <img class="icon" src="examples/extensions/wave/128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/wave/">Google Wave Notifier</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>options_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Find out when you have new waves and preview them fast.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getURL">chrome.extension.getURL</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-remove">chrome.tabs.remove</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/wave/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/wave/chrome_ex_oauth.html?content-type=text/plain">chrome_ex_oauth.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/wave/chrome_ex_oauth.js?content-type=text/plain">chrome_ex_oauth.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/wave/chrome_ex_oauthsimple.js?content-type=text/plain">chrome_ex_oauthsimple.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/wave/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/wave/options.html?content-type=text/plain">options.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/wave/popup.html?content-type=text/plain">popup.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/wave/prettyload.js?content-type=text/plain">prettyload.js</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="e3bd4e4ff791ae63a16f16072252be4a7fccf43e">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/getstarted/">Hello World</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>The first extension that I made.</p>
+  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a></a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/getstarted/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/getstarted/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="4663a9d47c09f43a46fadb09965d97ac4bb09d40">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/override_igoogle/">iGoogle new tab page</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>chrome_url_overrides</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p></p>
+  <div class="apicalls" style="display: none; "><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a></a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/override_igoogle/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/override_igoogle/redirect.html?content-type=text/plain">redirect.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="be628092c6fd9d39a82a52ad443c4a9cb09e031b">
+  <img class="icon" src="examples/extensions/mappy/icon.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/mappy/">Mappy</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>page_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Finds addresses in the web page you're on and pops up a map window.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage</a></code>
+      </li><li>
+        <code><a href="extension.html#event-onRequest">chrome.extension.onRequest</a></code>
+      </li><li>
+        <code><a href="pageAction.html#method-hide">chrome.pageAction.hide</a></code>
+      </li><li>
+        <code><a href="pageAction.html#method-setTitle">chrome.pageAction.setTitle</a></code>
+      </li><li>
+        <code><a href="pageAction.html#method-show">chrome.pageAction.show</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onSelectionChanged">chrome.tabs.onSelectionChanged</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-sendRequest">chrome.tabs.sendRequest</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/mappy/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/mappy/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/mappy/mappy_content_script.js?content-type=text/plain">mappy_content_script.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/mappy/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="572f82c2738f6c9a1911778e4d41f712b03c25bc">
+  <img class="icon" src="examples/api/windows/merge_windows/merge_windows_128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/windows/merge_windows/">Merge Windows</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Merges all of the browser's windows into the current window</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getAllInWindow">chrome.tabs.getAllInWindow</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-move">chrome.tabs.move</a></code>
+      </li><li>
+        <code><a href="windows.html#method-get">chrome.windows.get</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getAll">chrome.windows.getAll</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getCurrent">chrome.windows.getCurrent</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/windows/merge_windows/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/windows/merge_windows/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="282fc112fa63a680c0cbc90dc0463e3780c46d46">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/messaging/timer/">Message Timer</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Times how long it takes to send a message to a content script and back.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="extension.html#event-onConnect">chrome.extension.onConnect</a></code>
+      </li><li>
+        <code><a href="extension.html#event-onRequest">chrome.extension.onRequest</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-connect">chrome.tabs.connect</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-sendRequest">chrome.tabs.sendRequest</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/messaging/timer/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/messaging/timer/page.js?content-type=text/plain">page.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/messaging/timer/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="d3f041b48f31db1a86dfe05b6740086554ebba31">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/bookmarks/basic/">My Bookmarks</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>bookmarks</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>A browser action with a popup dump of all bookmarks, including search, add, edit and delete.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="bookmarks.html#method-create">chrome.bookmarks.create</a></code>
+      </li><li>
+        <code><a href="bookmarks.html#method-get">chrome.bookmarks.get</a></code>
+      </li><li>
+        <code><a href="bookmarks.html#method-getTree">chrome.bookmarks.getTree</a></code>
+      </li><li>
+        <code><a href="bookmarks.html#method-remove">chrome.bookmarks.remove</a></code>
+      </li><li>
+        <code><a href="bookmarks.html#method-update">chrome.bookmarks.update</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/bookmarks/basic/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/bookmarks/basic/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="a772f968a7e977f8bbf9d74f43c6daca57067d1e">
+  <img class="icon" src="examples/extensions/news_a11y/news_icon.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_a11y/">News Reader</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_a11y/feed.html?content-type=text/plain">feed.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_a11y/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="fc80727c5f0bd5ba6cad74e9ec2519cbfc34cdd3">
+  <img class="icon" src="examples/extensions/news/news_icon.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">News Reader</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/feed.html?content-type=text/plain">feed.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="e432a5c78298458aaa0f9c1c5b3fb010ffc2ed99">
+  <img class="icon" src="examples/extensions/news_i18n/news_icon.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_i18n/">News Reader</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="i18n.html#method-getMessage">chrome.i18n.getMessage</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_i18n/_locales/en/messages.json?content-type=text/plain">_locales/en/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_i18n/_locales/es/messages.json?content-type=text/plain">_locales/es/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_i18n/_locales/sr/messages.json?content-type=text/plain">_locales/sr/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_i18n/feed.html?content-type=text/plain">feed.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news_i18n/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="5ffc8fd27bfc21f5205c8c5fe8290222c95a7eb4">
+  <img class="icon" src="examples/api/notifications/128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/">Notification Demo</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>notifications</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>options_page</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Shows off desktop notifications, which are "toast" windows that pop up on the desktop.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/error.html?content-type=text/plain">error.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/notifications/options.html?content-type=text/plain">options.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="e22a739b78a7e5580d9318662390a79033f96d81">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/">Omnibox Example</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>experimental</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p></p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="experimental.omnibox.html#event-onInputChanged">chrome.experimental.omnibox.onInputChanged</a></code>
+      </li><li>
+        <code><a href="experimental.omnibox.html#event-onInputEntered">chrome.experimental.omnibox.onInputEntered</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/omnibox/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="24fb45f3b2192c163afb2399c3bdad91d837643e">
+  <img class="icon" src="examples/api/pageAction/pageaction_by_content/sandwich-128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_content/">Page action by content</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>page_action</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Shows a page action for HTML pages containing the word 'sandwich'</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="extension.html#event-onRequest">chrome.extension.onRequest</a></code>
+      </li><li>
+        <code><a href="extension.html#method-sendRequest">chrome.extension.sendRequest</a></code>
+      </li><li>
+        <code><a href="pageAction.html#method-show">chrome.pageAction.show</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_content/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_content/contentscript.js?content-type=text/plain">contentscript.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_content/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="b42764aa301c7c340c9febcd492da962a453c8b6">
+  <img class="icon" src="examples/api/pageAction/pageaction_by_url/icon-128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_url/">Page action by URL</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>page_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Shows a page action for urls which have the letter 'g' in them.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="pageAction.html#method-show">chrome.pageAction.show</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_url/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/pageAction/pageaction_by_url/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="75e2de40348b5647d77b5f9c8dbdc43b868e87c8">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/">Page Benchmarker</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>options_page</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Chromium Page Benchmarker.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setBadgeBackgroundColor">chrome.browserAction.setBadgeBackgroundColor</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setBadgeText">chrome.browserAction.setBadgeText</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setTitle">chrome.browserAction.setTitle</a></code>
+      </li><li>
+        <code><a href="extension.html#method-connect">chrome.extension.connect</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getExtensionTabs">chrome.extension.getExtensionTabs</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getURL">chrome.extension.getURL</a></code>
+      </li><li>
+        <code><a href="extension.html#event-onConnect">chrome.extension.onConnect</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getAllInWindow">chrome.tabs.getAllInWindow</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-remove">chrome.tabs.remove</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-update">chrome.tabs.update</a></code>
+      </li><li>
+        <code><a href="windows.html#method-get">chrome.windows.get</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getCurrent">chrome.windows.getCurrent</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/jst/jsevalcontext.js?content-type=text/plain">jst/jsevalcontext.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/jst/jstemplate.js?content-type=text/plain">jst/jstemplate.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/jst/jstemplate_test.js?content-type=text/plain">jst/jstemplate_test.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/jst/util.js?content-type=text/plain">jst/util.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/options.html?content-type=text/plain">options.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/script.js?content-type=text/plain">script.js</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="1ec0e2f3c645541d12dd49aa5ed6533f1203db58">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/print/">Print this page</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Adds a print button to the browser.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-update">chrome.tabs.update</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/print/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/browserAction/print/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="5d2f97358bcef171b2b012159836781a7b0ae813">
+  <img class="icon" src="examples/extensions/oauth_contacts/img/icon-128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/">Sample - OAuth Contacts</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Uses OAuth to connect to Google's contacts service and display a list of your contacts.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setIcon">chrome.browserAction.setIcon</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getURL">chrome.extension.getURL</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-remove">chrome.tabs.remove</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/chrome_ex_oauth.html?content-type=text/plain">chrome_ex_oauth.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/chrome_ex_oauth.js?content-type=text/plain">chrome_ex_oauth.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/chrome_ex_oauthsimple.js?content-type=text/plain">chrome_ex_oauthsimple.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/contacts.html?content-type=text/plain">contacts.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/oauth_contacts/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="47ff142798c27febf4a2ada551c671feec26605c">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/processes/show_tabs/">Show Tabs in Process</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>experimental</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>popup</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Adds a browser action showing which tabs share the current tab's process.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="experimental.processes.html#method-getProcessForTab">chrome.experimental.processes.getProcessForTab</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-update">chrome.tabs.update</a></code>
+      </li><li>
+        <code><a href="windows.html#method-get">chrome.windows.get</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getAll">chrome.windows.getAll</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getCurrent">chrome.windows.getCurrent</a></code>
+      </li><li>
+        <code><a href="windows.html#method-update">chrome.windows.update</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/processes/show_tabs/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/processes/show_tabs/popup.html?content-type=text/plain">popup.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="39dcafbdebb05e43acd35b5db14f360bc023a8b5">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/inspector/">Tab Inspector</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Utility for working with the extension tabs api</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getURL">chrome.extension.getURL</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-get">chrome.tabs.get</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getAllInWindow">chrome.tabs.getAllInWindow</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-move">chrome.tabs.move</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onAttached">chrome.tabs.onAttached</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onCreated">chrome.tabs.onCreated</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onDetached">chrome.tabs.onDetached</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onMoved">chrome.tabs.onMoved</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onRemoved">chrome.tabs.onRemoved</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onSelectionChanged">chrome.tabs.onSelectionChanged</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-remove">chrome.tabs.remove</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-update">chrome.tabs.update</a></code>
+      </li><li>
+        <code><a href="windows.html#method-create">chrome.windows.create</a></code>
+      </li><li>
+        <code><a href="windows.html#method-get">chrome.windows.get</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getAll">chrome.windows.getAll</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getCurrent">chrome.windows.getCurrent</a></code>
+      </li><li>
+        <code><a href="windows.html#method-getLastFocused">chrome.windows.getLastFocused</a></code>
+      </li><li>
+        <code><a href="windows.html#event-onCreated">chrome.windows.onCreated</a></code>
+      </li><li>
+        <code><a href="windows.html#event-onFocusChanged">chrome.windows.onFocusChanged</a></code>
+      </li><li>
+        <code><a href="windows.html#event-onRemoved">chrome.windows.onRemoved</a></code>
+      </li><li>
+        <code><a href="windows.html#method-remove">chrome.windows.remove</a></code>
+      </li><li>
+        <code><a href="windows.html#method-update">chrome.windows.update</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/inspector/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/inspector/jstemplate_compiled.js?content-type=text/plain">jstemplate_compiled.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/inspector/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/inspector/tabs_api.html?content-type=text/plain">tabs_api.html</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="b01d58ed12efa2a6b9ca152e19d15730cf1d84be">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/screenshot/">Test Screenshot Extension</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Demonstrate screenshot functionality in the chrome.tabs api.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getURL">chrome.extension.getURL</a></code>
+      </li><li>
+        <code><a href="extension.html#method-getViews">chrome.extension.getViews</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-captureVisibleTab">chrome.tabs.captureVisibleTab</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li><li>
+        <code><a href="tabs.html#event-onUpdated">chrome.tabs.onUpdated</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/screenshot/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/screenshot/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/screenshot/screenshot.html?content-type=text/plain">screenshot.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/screenshot/screenshot.js?content-type=text/plain">screenshot.js</a></code>
+      </li>
+    </ul>
+  </div>
+</div><div class="sample" id="99d24fe7b088c2380e0a158d70e9e5ae6c951165">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/history/showHistory/">Typed URL History</a>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>browser_action</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>history</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>tabs</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Reads your history, and shows the top ten pages you go to by typing the URL.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="history.html#method-getVisits">chrome.history.getVisits</a></code>
+      </li><li>
+        <code><a href="history.html#method-search">chrome.history.search</a></code>
+      </li><li>
+        <code><a href="tabs.html#method-create">chrome.tabs.create</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/history/showHistory/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/history/showHistory/typedUrls.html?content-type=text/plain">typedUrls.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/history/showHistory/typedUrls.js?content-type=text/plain">typedUrls.js</a></code>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div id="noresults" style="display:none">
+  Sorry, no results were found.
+</div>
 
 </div>
 

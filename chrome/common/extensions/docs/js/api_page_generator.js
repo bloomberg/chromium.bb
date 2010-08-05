@@ -16,6 +16,7 @@
 
 var API_TEMPLATE = "template/api_template.html";
 var SCHEMA = "../api/extension_api.json";
+var SAMPLES = "samples.json";
 var REQUEST_TIMEOUT = 2000;
 
 function staticResource(name) { return "static/" + name + ".html"; }
@@ -29,6 +30,12 @@ var pageData = {};
 // The full extension api schema
 var schema;
 
+// List of Chrome extension samples.
+var samples;
+
+// Mappings of api calls to URLs
+var apiMapping;
+
 // The current module for this page (if this page is an api module);
 var module;
 
@@ -41,11 +48,6 @@ var pageName;
 // If this page is an apiModule, the name of the api module
 var apiModuleName;
 
-Array.prototype.each = function(f) {
-  for (var i = 0; i < this.length; i++) {
-    f(this[i], i);
-  }
-}
 
 // Visits each item in the list in-order. Stops when f returns any truthy
 // value and returns that node.
@@ -54,14 +56,6 @@ Array.prototype.select = function(f) {
     if (f(this[i], i))
       return this[i];
   }
-}
-
-Array.prototype.map = function(f) {
-  var retval = [];
-  for (var i = 0; i < this.length; i++) {
-    retval.push(f(this[i], i));
-  }
-  return retval;
 }
 
 // Assigns all keys & values of |obj2| to |obj1|.
@@ -114,10 +108,25 @@ function fetchSchema() {
   // and populate the templates.
   fetchContent(SCHEMA, function(schemaContent) {
     schema = JSON.parse(schemaContent);
-    renderTemplate();
-
+    if (pageName.toLowerCase() == "samples") {
+      fetchSamples();
+    } else {
+      renderTemplate();
+    }
   }, function(error) {
     alert("Failed to load " + SCHEMA);
+  });
+}
+
+function fetchSamples() {
+  // If we're rendering the samples directory, fetch the samples manifest.
+  fetchContent(SAMPLES, function(sampleManifest) {
+    var data = JSON.parse(sampleManifest);
+    samples = data.samples;
+    apiMapping = data.api;
+    renderTemplate();
+  }, function(error) {
+    renderTemplate();
   });
 }
 
@@ -167,7 +176,7 @@ function fetchContent(url, onSuccess, onError) {
 }
 
 function renderTemplate() {
-  schema.each(function(mod) {
+  schema.forEach(function(mod) {
     if (mod.namespace == pageBase) {
       // Do not render page for modules which are marked as "nodoc": true.
       if (mod.nodoc) {
@@ -180,11 +189,37 @@ function renderTemplate() {
     }
 
     if (mod.types) {
-      mod.types.each(function(type) {
+      mod.types.forEach(function(type) {
         typeModule[type.id] = mod;
       });
     }
   });
+
+  /**
+   * Special pages like the samples gallery may want to modify their template
+   * data to include additional information.  This hook allows a page template
+   * to specify code that runs in the context of the api_page_generator.js
+   * file before the jstemplate is rendered.
+   *
+   * To specify such code, the page template should include a script block with
+   * a type of "text/prerenderjs" containing the code to be executed.  Note that
+   * linking to an external file is not supported - code must be accessible
+   * via the script block's innerText property.
+   *
+   * Code that is run this way may modify the data sent to jstemplate by
+   * modifying the window.pageData variable.  This code will also have access
+   * to any methods declared in the api_page_generator.js file.  The code
+   * does not need to return any specific value to function.
+   *
+   * Note that code specified in this manner will be removed before the
+   * template is rendered, and will therefore not be exposed to the end user
+   * in the final rendered template.
+   */
+  var preRender = document.querySelector('script[type="text/prerenderjs"]');
+  if (preRender) {
+    preRender.parentElement.removeChild(preRender);
+    eval(preRender.innerText);
+  }
 
   // Render to template
   var input = new JsEvalContext(pageData);
@@ -210,7 +245,7 @@ function removeJsTemplateAttributes(root) {
   var nodes = root.getElementsByTagName("*");
   for (var i = 0; i < nodes.length; i++) {
     var n = nodes[i]
-    jsattributes.each(function(attributeName) {
+    jsattributes.forEach(function(attributeName) {
       n.removeAttribute(attributeName);
     });
   }
@@ -265,7 +300,8 @@ function selectCurrentPageOnLeftNav() {
 
 /*
  * Template Callout Functions
- * The jstProcess() will call out to these functions from within the page template
+ * The jstProcess() will call out to these functions from within the page
+ * template
  */
 
 function stableAPIs() {
@@ -275,7 +311,7 @@ function stableAPIs() {
     return module.namespace;
   }).sort();
 }
- 
+
 function experimentalAPIs() {
   return schema.filter(function(module) {
     return !module.nodoc && module.namespace.indexOf("experimental") == 0;
@@ -320,7 +356,7 @@ function getStaticTOC() {
   var retval = [];
   var lastH2;
 
-  staticHNodes.each(function(n, i) {
+  staticHNodes.forEach(function(n, i) {
     var anchorName = n.id || n.nodeName + "-" + i;
     if (!n.id) {
       var a = document.createElement('a');
@@ -407,7 +443,7 @@ function getTypeName(schema) {
 
   if (schema.choices) {
     var typeNames = [];
-    schema.choices.each(function(c) {
+    schema.choices.forEach(function(c) {
       typeNames.push(getTypeName(c));
     });
 
@@ -425,7 +461,7 @@ function getTypeName(schema) {
 
 function getSignatureString(parameters) {
   var retval = [];
-  parameters.each(function(param, i) {
+  parameters.forEach(function(param, i) {
     retval.push(getTypeName(param) + " " + param.name);
   });
 

@@ -21,12 +21,14 @@ _base_dir = os.path.normpath(_build_dir + "/..")
 _static_dir = _base_dir + "/static"
 _js_dir = _base_dir + "/js"
 _template_dir = _base_dir + "/template"
+_samples_dir = _base_dir + "/examples"
 _extension_api_dir = os.path.normpath(_base_dir + "/../api")
 
 _extension_api_json = _extension_api_dir + "/extension_api.json"
 _api_template_html = _template_dir + "/api_template.html"
 _page_shell_html = _template_dir + "/page_shell.html"
 _generator_html = _build_dir + "/generator.html"
+_samples_json = _base_dir + "/samples.json"
 
 _expected_output_preamble = "<!DOCTYPE html>"
 _expected_output_postamble = "</body></html>"
@@ -36,6 +38,9 @@ _expected_output_postamble = "</body></html>"
 sys.path.append(os.path.normpath(_base_dir +
                                    "/../../../../third_party"))
 import simplejson as json
+from directory import Sample
+from directory import ApiManifest
+from directory import SamplesManifest
 
 def RenderPage(name, test_shell):
   """
@@ -132,22 +137,6 @@ def FindTestShell():
                    "Searched: \n" + "\n".join(search_locations) + "\n" +
                    "To specify a path to test_shell use --test-shell-path")
 
-def GetAPIModuleNames():
-  try:
-    contents = open(_extension_api_json, 'r').read()
-  except IOError, msg:
-    raise Exception("Failed to read the file that defines the extensions API.  "
-                    "The specific error was: %s." % msg)
-
-  try:
-    extension_api = json.loads(contents, encoding="ASCII")
-  except ValueError, msg:
-    raise Exception("File %s has a syntax error: %s" %
-                    (_extension_api_json, msg))
-  # Exclude modules with a "nodoc" property.
-  return set(module['namespace'].encode() for module in extension_api
-             if "nodoc" not in module)
-
 def GetStaticFileNames():
   static_files = os.listdir(_static_dir)
   return set(os.path.splitext(file_name)[0]
@@ -162,6 +151,7 @@ def main():
 
   parser = OptionParser()
   parser.add_option("--test-shell-path", dest="test_shell_path")
+  parser.add_option("--page-name", dest="page_name")
   (options, args) = parser.parse_args()
 
   if (options.test_shell_path and os.path.isfile(options.test_shell_path)):
@@ -169,14 +159,29 @@ def main():
   else:
     test_shell = FindTestShell()
 
+  # Load the manifest of existing API Methods
+  api_manifest = ApiManifest(_extension_api_json)
+
   # Read static file names
   static_names = GetStaticFileNames()
 
   # Read module names
-  module_names = GetAPIModuleNames()
+  module_names = api_manifest.getModuleNames()
 
   # All pages to generate
   page_names = static_names | module_names
+
+  # Allow the user to render a single page if they want
+  if options.page_name:
+    if options.page_name in page_names:
+      page_names = [options.page_name]
+    else:
+      raise Exception("--page-name argument must be one of %s." %
+                      ', '.join(sorted(page_names)))
+
+  # Render a manifest file containing metadata about all the extension samples
+  samples_manifest = SamplesManifest(_samples_dir, _base_dir, api_manifest)
+  samples_manifest.writeToFile(_samples_json)
 
   modified_files = []
   for page in page_names:
