@@ -2904,26 +2904,28 @@ void AutomationProvider::WaitUntilTranslateComplete(
     return;
   }
 
-  // If the translation is still pending, the observer will wait
-  // for it to finish and then reply.
-  if (tab_contents->language_state().translation_pending()) {
-    new PageTranslatedObserver(this, reply_message, tab_contents);
-    return;
-  }
-  // Otherwise send back the success or failure of the attempted translation
-  // based on the translate bar state.
-  AutomationJSONReply reply(this, reply_message);
   TranslateInfoBarDelegate* translate_bar =
       GetTranslateInfoBarDelegate(tab_contents);
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+
   if (!translate_bar) {
-    return_value->SetBoolean("translation_success", false);
-  } else {
-    return_value->SetBoolean(
-        "translation_success",
-        translate_bar->type() == TranslateInfoBarDelegate::AFTER_TRANSLATE);
+    return_value->SetBoolean(L"translation_success", false);
+    AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
+    return;
   }
-  reply.SendSuccess(return_value.get());
+
+  // If the translation is still pending, the observer will wait
+  // for it to finish and then reply.
+  if (translate_bar->type() == TranslateInfoBarDelegate::TRANSLATING) {
+    new PageTranslatedObserver(this, reply_message, tab_contents);
+    return;
+  }
+
+  // Otherwise send back the success or failure of the attempted translation.
+  return_value->SetBoolean(
+      L"translation_success",
+      translate_bar->type() == TranslateInfoBarDelegate::AFTER_TRANSLATE);
+  AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
 
 // Sample json input: { "command": "GetThemeInfo" }

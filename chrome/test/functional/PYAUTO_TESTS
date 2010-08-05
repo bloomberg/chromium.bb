@@ -41,6 +41,10 @@
     'test_basic.SimpleTest.testCanOpenGoogle',
     'themes',
     'translate',
+    # This test fails due to crbug.com/35485
+    '-translate.TranslateTest.testTBarNeverVisibleOnErrorPage',
+    # This test fails due to crbug.com/50706
+    '-translate.TranslateTest.testToggleTranslateOption'
   ],
 
   'win': [
