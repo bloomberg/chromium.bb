@@ -36,17 +36,15 @@ def ReadReportsFromFile(filename):
       cur_supp = ["{"]
   return reports,line
 
-filenames = [
-  "memcheck/suppressions.txt",
-]
-# TODO(timurrrr): Support platform-specific suppressions
-
-all_suppressions = []
 suppressions_root = path_utils.ScriptDir()
 
-for f in filenames:
-  supp_filename = os.path.join(suppressions_root, f)
-  all_suppressions += suppressions.ReadSuppressionsFromFile(supp_filename)
+supp_filename = os.path.join(suppressions_root,
+                             "memcheck", "suppressions.txt")
+common_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
+
+supp_filename = os.path.join(suppressions_root,
+                             "memcheck", "suppressions_mac.txt")
+mac_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
 
 # all_reports is a map {report: list of urls containing this report}
 all_reports = defaultdict(list)
@@ -58,15 +56,22 @@ for f in sys.argv[1:]:
 
 reports_count = 0
 for r in all_reports:
+  if set([False]) == set([not re.search("%20Mac%20", url)\
+                         for url in all_reports[r]]):
+    # Include mac suppressions if the report is only present on Mac
+    cur_supp = common_suppressions + mac_suppressions
+  else:
+    cur_supp = common_suppressions
+
   match = False
-  for s in all_suppressions:
+  for s in cur_supp:
     if s.Match(r.split("\n")):
       match = True
       break
   if not match:
     reports_count += 1
     print "==================================="
-    print "This report observed in:"
+    print "This report observed at"
     for url in all_reports[r]:
       print "  %s" % url
     print "didn't match any suppressions:"
