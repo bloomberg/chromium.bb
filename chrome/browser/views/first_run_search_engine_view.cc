@@ -51,7 +51,8 @@ SearchEngineChoice::SearchEngineChoice(views::ButtonListener* listener,
                                        bool use_small_logos)
     : NativeButton(listener, l10n_util::GetString(IDS_FR_SEARCH_CHOOSE)),
       is_image_label_(false),
-      search_engine_(search_engine) {
+      search_engine_(search_engine),
+      slot_(0) {
   bool use_images = false;
 #if defined(GOOGLE_CHROME_BUILD)
   use_images = true;
