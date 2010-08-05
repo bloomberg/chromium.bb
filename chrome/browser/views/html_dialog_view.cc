@@ -11,6 +11,10 @@
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
+#if defined(OS_LINUX)
+#include "views/window/window_gtk.h"
+#endif
+
 namespace browser {
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
@@ -167,6 +171,10 @@ void HtmlDialogView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   // This allows stuff like F10, etc to work correctly.
   DefWindowProc(event.os_event.hwnd, event.os_event.message,
                   event.os_event.wParam, event.os_event.lParam);
+#elif defined(OS_LINUX)
+  views::WindowGtk* window_gtk = static_cast<views::WindowGtk*>(window());
+  if (event.os_event && !event.skip_in_browser)
+    window_gtk->HandleKeyboardEvent(event.os_event);
 #endif
 }
 

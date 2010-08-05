@@ -34,6 +34,7 @@
 #include "views/grid_layout.h"
 #include "views/layout_manager.h"
 #include "views/standard_layout.h"
+#include "views/widget/widget_gtk.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"
@@ -325,6 +326,12 @@ void EulaView::NavigationStateChanged(const TabContents* contents,
       Layout();
     }
   }
+}
+
+void EulaView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  views::Widget* widget = GetWidget();
+  if (widget && event.os_event && !event.skip_in_browser)
+    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(event.os_event);
 }
 
 }  // namespace chromeos

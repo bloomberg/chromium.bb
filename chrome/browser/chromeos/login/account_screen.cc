@@ -15,6 +15,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
+#include "views/widget/widget_gtk.h"
 
 namespace chromeos {
 
@@ -127,6 +128,12 @@ void AccountScreen::NavigationStateChanged(const TabContents* source,
     source->render_view_host()->ExecuteJavascriptInWebFrame(
         L"", ASCIIToWide(kCreateAccountJS));
   }
+}
+
+void AccountScreen::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  views::Widget* widget = view()->GetWidget();
+  if (widget && event.os_event && !event.skip_in_browser)
+    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(event.os_event);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

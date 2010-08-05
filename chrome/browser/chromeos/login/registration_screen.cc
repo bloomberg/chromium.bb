@@ -17,6 +17,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_about_job.h"
 #include "net/url_request/url_request_filter.h"
+#include "views/widget/widget_gtk.h"
 
 namespace chromeos {
 
@@ -118,6 +119,13 @@ void RegistrationScreen::OnPageLoadFailed(const std::string& url) {
     // OEM partner doesn't contain links to external URLs.
     LOG(WARNING) << "Navigate to unsupported url: " << url.spec();
   }
+}
+
+void RegistrationScreen::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  views::Widget* widget = view()->GetWidget();
+  if (widget && event.os_event && !event.skip_in_browser)
+    static_cast<views::WidgetGtk*>(widget)->HandleKeyboardEvent(event.os_event);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

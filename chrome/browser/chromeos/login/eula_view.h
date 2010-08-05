@@ -93,6 +93,7 @@ class EulaView
   // TabContentsDelegate implementation.
   virtual void NavigationStateChanged(const TabContents* contents,
                                       unsigned changed_flags);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // Loads specified URL to the specified DOMView and updates specified
   // label with its title.

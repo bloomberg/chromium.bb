@@ -53,6 +53,7 @@ class AccountScreen : public ViewScreen<AccountCreationView>,
   virtual void NavigationStateChanged(const TabContents* source,
                                       unsigned changed_flags);
   virtual void LoadingStateChanged(TabContents* source);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // WebPageScreen implementation:
   virtual void CloseScreen(ScreenObserver::ExitCodes code);

@@ -92,6 +92,7 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
                               const GURL& referrer,
                               WindowOpenDisposition disposition,
                               PageTransition::Type transition);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // WebPageScreen implementation:
   virtual void CloseScreen(ScreenObserver::ExitCodes code);
