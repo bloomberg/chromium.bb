@@ -14,11 +14,12 @@
 // Plugin Groups for Mac.
 // Plugins are listed here as soon as vulnerabilities and solutions
 // (new versions) are published.
-// TODO(panayiotis): Track Java as soon as it's supported on Chrome Mac.
 // TODO(panayiotis): Get the Real Player version on Mac, somehow.
 static const PluginGroupDefinition kGroupDefinitions[] = {
   { "Quicktime", "QuickTime Plug-in", "", "", "7.6.6",
     "http://www.apple.com/quicktime/download/" },
+  { "Java", "Java", "", "", "",
+    "http://support.apple.com/kb/HT1338" },
   { "Flash", "Shockwave Flash", "", "", "10.1.53",
     "http://get.adobe.com/flashplayer/" },
   { "Silverlight 3", "Silverlight", "0", "4", "3.0.50106.0",
