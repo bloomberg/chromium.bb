@@ -86,7 +86,7 @@ pattern by default) and shows the parsed result.
 If <option>--config</option> is given, config substitution is performed on the
 pattern before being displayed.
 If <option>--default</option> is given, default substitution is performed on the
-pattern before being displayed.
+pattern before being displayed.</para>
 <para>If any elements are specified, only those are printed.</para>
   </refsect1>
   <refsect1>
