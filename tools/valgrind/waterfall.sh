@@ -18,12 +18,12 @@ fetch_logs() {
 
   WATERFALL_PAGE="http://build.chromium.org/buildbot/memory/builders"
 
-  rm -rf $LOGS_DIR # Delete old logs
-  mkdir $LOGS_DIR
+  rm -rf "$LOGS_DIR" # Delete old logs
+  mkdir "$LOGS_DIR"
 
   echo "Fetching the list of builders..."
-  wget $WATERFALL_PAGE -O $LOGS_DIR/builders -q
-  SLAVES=$(grep "<a href=\"builders\/" $LOGS_DIR/builders | \
+  wget $WATERFALL_PAGE -O "$LOGS_DIR/builders" -q
+  SLAVES=$(grep "<a href=\"builders\/" "$LOGS_DIR/builders" | \
            sed "s/.*<a href=\"builders\///" | sed "s/\".*//" | \
            sort | uniq)
 
@@ -32,29 +32,29 @@ fetch_logs() {
     SLAVE_URL=$WATERFALL_PAGE/$S
     SLAVE_NAME=$(echo $S | sed "s/%20/ /g" | sed "s/%28/(/g" | sed "s/%29/)/g")
     echo -n "Fetching builds by slave '${SLAVE_NAME}'"
-    wget $SLAVE_URL -O $LOGS_DIR/slave_${S} -q
+    wget $SLAVE_URL -O "$LOGS_DIR/slave_${S}" -q
 
     # We speed up the 'fetch' step by skipping the builds/tests which succeeded.
     # TODO(timurrrr): OTOH, we won't be able to check
     # if some suppression is not used anymore.
     LIST_OF_BUILDS=$(grep "<a href=\"\.\./builders/.*/builds/[0-9]\+.*failed" \
-                     $LOGS_DIR/slave_$S | grep -v "failed compile" | \
+                     "$LOGS_DIR/slave_$S" | grep -v "failed compile" | \
                      sed "s/.*\/builds\///" | sed "s/\".*//" | head -n 2)
 
     for BUILD in $LIST_OF_BUILDS
     do
       BUILD_RESULTS="$LOGS_DIR/slave_${S}_build_${BUILD}"
-      wget $SLAVE_URL/builds/$BUILD -O $BUILD_RESULTS -q
+      wget $SLAVE_URL/builds/$BUILD -O "$BUILD_RESULTS" -q
       LIST_OF_TESTS=$(grep "<a href=\"[0-9]\+/steps/memory.*/logs/stdio\"" \
-                      $BUILD_RESULTS | \
+                      "$BUILD_RESULTS" | \
                       sed "s/.*a href=\"//" | sed "s/\".*//")
       for TEST in $LIST_OF_TESTS
       do
         REPORT_FILE=$(echo "report_${S}_$TEST" | sed "s/\/logs\/stdio//" | \
                     sed "s/\/steps//" | sed "s/\//_/g")
         echo -n "."
-        wget $SLAVE_URL/builds/$TEST -O $LOGS_DIR/$REPORT_FILE -q
-        echo $SLAVE_URL/builds/$TEST >> $LOGS_DIR/$REPORT_FILE
+        wget $SLAVE_URL/builds/$TEST -O "$LOGS_DIR/$REPORT_FILE" -q
+        echo $SLAVE_URL/builds/$TEST >> "$LOGS_DIR/$REPORT_FILE"
       done
     done
     echo " DONE"
@@ -64,7 +64,7 @@ fetch_logs() {
 
 match_suppressions() {
   PYTHONPATH=$THISDIR/../python/google \
-             python $THISDIR/test_suppressions.py $LOGS_DIR/report_*
+             python "$THISDIR/test_suppressions.py" "$LOGS_DIR/report_"*
 }
 
 if [ "$1" == "fetch" ]
