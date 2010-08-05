@@ -9,8 +9,8 @@ WebDropTargetTest.Data
 # Following tests fail on valgrind.
 # See http://crbug.com/30370.
 AutocompleteTextFieldEditorTest.CutCopyTest
-# See http://crbug.com/30375.
-DownloadUtilTest.AddFileToPasteboardTest
+# See http://crbug.com/21479.
+DownloadUtilMacTest.AddFileToPasteboardTest
 # See http://crbug.com/30378.
 FindPasteboardTest.ReadingFromPboardUpdatesFindText
 FindPasteboardTest.SendsNotificationWhenTextChanges

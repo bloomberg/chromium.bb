@@ -14,13 +14,13 @@
 
 namespace {
 
-class DownloadUtilTest : public CocoaTest {
+class DownloadUtilMacTest : public CocoaTest {
  public:
-  DownloadUtilTest() {
+  DownloadUtilMacTest() {
     pasteboard_ = [NSPasteboard pasteboardWithUniqueName];
   }
 
-  virtual ~DownloadUtilTest() {
+  virtual ~DownloadUtilMacTest() {
     [pasteboard_ releaseGlobally];
   }
 
@@ -31,7 +31,7 @@ class DownloadUtilTest : public CocoaTest {
 };
 
 // Ensure adding files to the pasteboard methods works as expected.
-TEST_F(DownloadUtilTest, AddFileToPasteboardTest) {
+TEST_F(DownloadUtilMacTest, AddFileToPasteboardTest) {
   // Get a download test file for addition to the pasteboard.
   FilePath testPath;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &testPath));
