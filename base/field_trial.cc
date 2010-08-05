@@ -19,6 +19,8 @@ const int FieldTrial::kAllRemainingProbability = -2;
 // static
 const char FieldTrialList::kPersistentStringSeparator('/');
 
+static const char kHistogramFieldTrialSeparator('_');
+
 //------------------------------------------------------------------------------
 // FieldTrial methods and members.
 
@@ -47,7 +49,7 @@ int FieldTrial::AppendGroup(const std::string& name,
     // This is the group that crossed the random line, so we do the assignment.
     group_ = next_group_number_;
     if (name.empty())
-      StringAppendF(&group_name_, "_%d", group_);
+      StringAppendF(&group_name_, "%d", group_);
     else
       group_name_ = name;
   }
@@ -58,6 +60,7 @@ int FieldTrial::AppendGroup(const std::string& name,
 std::string FieldTrial::MakeName(const std::string& name_prefix,
                                  const std::string& trial_name) {
   std::string big_string(name_prefix);
+  big_string.append(1, kHistogramFieldTrialSeparator);
   return big_string.append(FieldTrialList::FindFullName(trial_name));
 }
 

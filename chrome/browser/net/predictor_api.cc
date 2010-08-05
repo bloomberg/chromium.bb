@@ -603,7 +603,7 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
   trial_ = new FieldTrial("DnsImpact", kDivisor);
 
   // First option is to disable prefetching completely.
-  int disabled_prefetch = trial_->AppendGroup("_disabled_prefetch",
+  int disabled_prefetch = trial_->AppendGroup("disabled_prefetch",
                                               kProbabilityPerGroup);
 
 
@@ -615,27 +615,27 @@ PredictorInit::PredictorInit(PrefService* user_prefs,
   // Experiment 1:
   // Set congestion detection at 250, 500, or 750ms, rather than the 1 second
   // default.
-  int max_250ms_prefetch = trial_->AppendGroup("_max_250ms_queue_prefetch",
+  int max_250ms_prefetch = trial_->AppendGroup("max_250ms_queue_prefetch",
                                                kProbabilityPerGroup);
-  int max_500ms_prefetch = trial_->AppendGroup("_max_500ms_queue_prefetch",
+  int max_500ms_prefetch = trial_->AppendGroup("max_500ms_queue_prefetch",
                                                kProbabilityPerGroup);
-  int max_750ms_prefetch = trial_->AppendGroup("_max_750ms_queue_prefetch",
+  int max_750ms_prefetch = trial_->AppendGroup("max_750ms_queue_prefetch",
                                                kProbabilityPerGroup);
   // Set congestion detection at 2 seconds instead of the 1 second default.
-  int max_2s_prefetch = trial_->AppendGroup("_max_2s_queue_prefetch",
+  int max_2s_prefetch = trial_->AppendGroup("max_2s_queue_prefetch",
                                             kProbabilityPerGroup);
   // Experiment 2:
   // Set max simultaneous resoultions to 2, 4, or 6, and scale the congestion
   // limit proportionally (so we don't impact average probability of asserting
   // congesion very much).
   int max_2_concurrent_prefetch = trial_->AppendGroup(
-        "_max_2 concurrent_prefetch", kProbabilityPerGroup);
+      "max_2 concurrent_prefetch", kProbabilityPerGroup);
   int max_4_concurrent_prefetch = trial_->AppendGroup(
-        "_max_4 concurrent_prefetch", kProbabilityPerGroup);
+      "max_4 concurrent_prefetch", kProbabilityPerGroup);
   int max_6_concurrent_prefetch = trial_->AppendGroup(
-        "_max_6 concurrent_prefetch", kProbabilityPerGroup);
+      "max_6 concurrent_prefetch", kProbabilityPerGroup);
 
-  trial_->AppendGroup("_default_enabled_prefetch",
+  trial_->AppendGroup("default_enabled_prefetch",
       FieldTrial::kAllRemainingProbability);
 
   // We will register the incognito observer regardless of whether prefetching

@@ -28,7 +28,7 @@ void WebSocketExperimentRunner::Start() {
   DCHECK(!runner.get());
 
   scoped_refptr<FieldTrial> trial = new FieldTrial("WebSocketExperiment", 1000);
-  trial->AppendGroup("_active", 5);  // 0.5% in _active group.
+  trial->AppendGroup("active", 5);  // 0.5% in active group.
 
   bool run_experiment = (trial->group() != FieldTrial::kNotParticipating);
 #ifndef NDEBUG

@@ -34,8 +34,8 @@
 // // process teardown, courtesy of their automatic registration in
 // // FieldTrialList.
 // scoped_refptr<FieldTrial> trial = new FieldTrial("MemoryExperiment", 1000);
-// int group1 = trial->AppendGroup("_high_mem", 20);  // 2% in _high_mem group.
-// int group2 = trial->AppendGroup("_low_mem", 20);   // 2% in _low_mem group.
+// int group1 = trial->AppendGroup("high_mem", 20);  // 2% in high_mem group.
+// int group2 = trial->AppendGroup("low_mem", 20);   // 2% in low_mem group.
 // // Take action depending of which group we randomly land in.
 // if (trial->group() == group1)
 //   SetPruningAlgorithm(kType1);  // Sample setting of browser state.
@@ -125,7 +125,7 @@ class FieldTrial : public base::RefCounted<FieldTrial> {
   // This is empty of the trial is not in the experiment.
   const std::string name_;
 
-  // The maximu sum of all probabilities supplied, which corresponds to 100%.
+  // The maximum sum of all probabilities supplied, which corresponds to 100%.
   // This is the scaling factor used to adjust supplied probabilities.
   Probability divisor_;
 

@@ -187,19 +187,19 @@ void BrowserMainParts::ConnectionFieldTrial() {
   scoped_refptr<FieldTrial> connect_trial =
       new FieldTrial("ConnCountImpact", kConnectDivisor);
 
-  const int connect_5 = connect_trial->AppendGroup("_conn_count_5",
+  const int connect_5 = connect_trial->AppendGroup("conn_count_5",
                                                    kConnectProbability);
-  const int connect_7 = connect_trial->AppendGroup("_conn_count_7",
+  const int connect_7 = connect_trial->AppendGroup("conn_count_7",
                                                    kConnectProbability);
-  const int connect_8 = connect_trial->AppendGroup("_conn_count_8",
+  const int connect_8 = connect_trial->AppendGroup("conn_count_8",
                                                    kConnectProbability);
-  const int connect_9 = connect_trial->AppendGroup("_conn_count_9",
+  const int connect_9 = connect_trial->AppendGroup("conn_count_9",
                                                    kConnectProbability);
   // This (6) is the current default value. Having this group declared here
   // makes it straightforward to modify |kConnectProbability| such that the same
   // probability value will be assigned to all the other groups, while
   // preserving the remainder of the of probability space to the default value.
-  const int connect_6 = connect_trial->AppendGroup("_conn_count_6",
+  const int connect_6 = connect_trial->AppendGroup("conn_count_6",
       FieldTrial::kAllRemainingProbability);
 
   const int connect_trial_group = connect_trial->group();
@@ -233,13 +233,13 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
       new FieldTrial("IdleSktToImpact", kIdleSocketTimeoutDivisor);
 
   const int socket_timeout_5 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_5",
+      socket_timeout_trial->AppendGroup("idle_timeout_5",
                                         kSocketTimeoutProbability);
   const int socket_timeout_20 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_20",
+      socket_timeout_trial->AppendGroup("idle_timeout_20",
                                         kSocketTimeoutProbability);
   const int socket_timeout_60 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_60",
+      socket_timeout_trial->AppendGroup("idle_timeout_60",
                                         kSocketTimeoutProbability);
   // This (10 seconds) is the current default value. Declaring it at the end
   // allows for assigning the remainder of the probability space to it; which
@@ -247,7 +247,7 @@ void BrowserMainParts::SocketTimeoutFieldTrial() {
   // down the road if we see the need to, while the remaining groups are
   // are assigned an equal share of the probability space.
   const int socket_timeout_10 =
-      socket_timeout_trial->AppendGroup("_idle_timeout_10",
+      socket_timeout_trial->AppendGroup("idle_timeout_10",
                                         FieldTrial::kAllRemainingProbability);
 
   const int idle_to_trial_group = socket_timeout_trial->group();
@@ -336,10 +336,10 @@ void BrowserMainParts::SpdyFieldTrial() {
         new FieldTrial("SpdyImpact", kSpdyDivisor);
     // npn with only http support, no spdy.
     int npn_http_grp =
-        trial->AppendGroup("_npn_with_http", npnhttp_probability);
+        trial->AppendGroup("npn_with_http", npnhttp_probability);
     // npn with spdy support.
     int npn_spdy_grp =
-        trial->AppendGroup("_npn_with_spdy", npnspdy_probability);
+        trial->AppendGroup("npn_with_spdy", npnspdy_probability);
     int trial_grp = trial->group();
     if (trial_grp == npn_http_grp) {
       is_spdy_trial = true;
@@ -1262,9 +1262,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
     sdch_supported_domain =
         parsed_command_line.GetSwitchValueASCII(switches::kSdchFilter);
   } else {
-    sdch_trial->AppendGroup("_global_disable_sdch",
+    sdch_trial->AppendGroup("global_disable_sdch",
                             kSDCH_DISABLE_PROBABILITY);
-    int sdch_enabled = sdch_trial->AppendGroup("_global_enable_sdch",
+    int sdch_enabled = sdch_trial->AppendGroup("global_enable_sdch",
         FieldTrial::kAllRemainingProbability);
     if (sdch_enabled != sdch_trial->group())
       sdch_supported_domain = "never_enabled_sdch_for_any_domain";

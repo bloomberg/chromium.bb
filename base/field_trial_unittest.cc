@@ -26,9 +26,9 @@ TEST_F(FieldTrialTest, Registration) {
   EXPECT_FALSE(FieldTrialList::Find(name2));
 
   FieldTrial* trial1 = new FieldTrial(name1, 10);
-  EXPECT_EQ(trial1->group(), FieldTrial::kNotParticipating);
-  EXPECT_EQ(trial1->name(), name1);
-  EXPECT_EQ(trial1->group_name(), "");
+  EXPECT_EQ(FieldTrial::kNotParticipating, trial1->group());
+  EXPECT_EQ(name1, trial1->name());
+  EXPECT_EQ("", trial1->group_name());
 
   trial1->AppendGroup("", 7);
 
@@ -36,9 +36,9 @@ TEST_F(FieldTrialTest, Registration) {
   EXPECT_FALSE(FieldTrialList::Find(name2));
 
   FieldTrial* trial2 = new FieldTrial(name2, 10);
-  EXPECT_EQ(trial2->group(), FieldTrial::kNotParticipating);
-  EXPECT_EQ(trial2->name(), name2);
-  EXPECT_EQ(trial2->group_name(), "");
+  EXPECT_EQ(FieldTrial::kNotParticipating, trial2->group());
+  EXPECT_EQ(name2, trial2->name());
+  EXPECT_EQ("", trial2->group_name());
 
   trial2->AppendGroup("a first group", 7);
 
@@ -56,16 +56,16 @@ TEST_F(FieldTrialTest, AbsoluteProbabilities) {
     always_false[0] = i;
 
     FieldTrial* trial_true = new FieldTrial(always_true, 10);
-    const std::string winner = "_TheWinner";
+    const std::string winner = "TheWinner";
     int winner_group = trial_true->AppendGroup(winner, 10);
 
-    EXPECT_EQ(trial_true->group(), winner_group);
-    EXPECT_EQ(trial_true->group_name(), winner);
+    EXPECT_EQ(winner_group, trial_true->group());
+    EXPECT_EQ(winner, trial_true->group_name());
 
     FieldTrial* trial_false = new FieldTrial(always_false, 10);
     int loser_group = trial_false->AppendGroup("ALoser", 0);
 
-    EXPECT_NE(trial_false->group(), loser_group);
+    EXPECT_NE(loser_group, trial_false->group());
   }
 }
 
@@ -123,15 +123,15 @@ TEST_F(FieldTrialTest, OneWinner) {
     int might_win = trial->AppendGroup("", 1);
 
     if (trial->group() == might_win) {
-      EXPECT_EQ(winner_index, -2);
+      EXPECT_EQ(-2, winner_index);
       winner_index = might_win;
-      StringAppendF(&winner_name, "_%d", might_win);
+      StringAppendF(&winner_name, "%d", might_win);
       EXPECT_EQ(winner_name, trial->group_name());
     }
   }
   EXPECT_GE(winner_index, 0);
   EXPECT_EQ(trial->group(), winner_index);
-  EXPECT_EQ(winner_name, trial->group_name());
+  EXPECT_EQ(trial->group_name(), winner_name);
 }
 
 TEST_F(FieldTrialTest, Save) {
@@ -139,15 +139,15 @@ TEST_F(FieldTrialTest, Save) {
 
   FieldTrial* trial = new FieldTrial("Some name", 10);
   // There is no winner yet, so no textual group name is associated with trial.
-  EXPECT_EQ(trial->group_name(), "");
+  EXPECT_EQ("", trial->group_name());
   FieldTrialList::StatesToString(&save_string);
-  EXPECT_EQ(save_string, "");
+  EXPECT_EQ("", save_string);
   save_string.clear();
 
   // Create a winning group.
   trial->AppendGroup("Winner", 10);
   FieldTrialList::StatesToString(&save_string);
-  EXPECT_EQ(save_string, "Some name/Winner/");
+  EXPECT_EQ("Some name/Winner/", save_string);
   save_string.clear();
 
   // Create a second trial and winning group.
@@ -156,7 +156,7 @@ TEST_F(FieldTrialTest, Save) {
 
   FieldTrialList::StatesToString(&save_string);
   // We assume names are alphabetized... though this is not critical.
-  EXPECT_EQ(save_string, "Some name/Winner/xxx/yyyy/");
+  EXPECT_EQ("Some name/Winner/xxx/yyyy/", save_string);
 }
 
 TEST_F(FieldTrialTest, Restore) {
@@ -167,13 +167,13 @@ TEST_F(FieldTrialTest, Restore) {
 
   FieldTrial* trial = FieldTrialList::Find("Some_name");
   ASSERT_NE(static_cast<FieldTrial*>(NULL), trial);
-  EXPECT_EQ(trial->group_name(), "Winner");
-  EXPECT_EQ(trial->name(), "Some_name");
+  EXPECT_EQ("Winner", trial->group_name());
+  EXPECT_EQ("Some_name", trial->name());
 
   trial = FieldTrialList::Find("xxx");
   ASSERT_NE(static_cast<FieldTrial*>(NULL), trial);
-  EXPECT_EQ(trial->group_name(), "yyyy");
-  EXPECT_EQ(trial->name(), "xxx");
+  EXPECT_EQ("yyyy", trial->group_name());
+  EXPECT_EQ("xxx", trial->name());
 }
 
 TEST_F(FieldTrialTest, BogusRestore) {
@@ -195,4 +195,11 @@ TEST_F(FieldTrialTest, DuplicateRestore) {
 
   // But it is an error to try to change to a different winner.
   EXPECT_FALSE(FieldTrialList::StringAugmentsState("Some name/Loser/"));
+}
+
+TEST_F(FieldTrialTest, MakeName) {
+  FieldTrial* trial = new FieldTrial("Field Trial", 10);
+  trial->AppendGroup("Winner", 10);
+  EXPECT_EQ("Histogram_Winner",
+            FieldTrial::MakeName("Histogram", "Field Trial"));
 }

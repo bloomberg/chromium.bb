@@ -69,9 +69,9 @@ net::HostResolver* CreateGlobalHostResolver() {
         const FieldTrial::Probability kDivisor = 100;
         const FieldTrial::Probability kProbability = 50;  // 50% probability.
         FieldTrial* trial = new FieldTrial("IPv6_Probe", kDivisor);
-        int skip_group = trial->AppendGroup("_IPv6_probe_skipped",
+        int skip_group = trial->AppendGroup("IPv6_probe_skipped",
                                             kProbability);
-        trial->AppendGroup("_IPv6_probe_done",
+        trial->AppendGroup("IPv6_probe_done",
                            FieldTrial::kAllRemainingProbability);
         use_ipv6_probe = (trial->group() != skip_group);
 #endif
