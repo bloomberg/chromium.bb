@@ -720,6 +720,8 @@ void DraggedTabController::MoveAttachedTab(const gfx::Point& screen_point) {
 
   attached_tab_->SchedulePaint();
   attached_tab_->SetX(dragged_view_point.x());
+  attached_tab_->SetX(
+      attached_tabstrip_->MirroredLeftPointForRect(attached_tab_->bounds()));
   attached_tab_->SetY(dragged_view_point.y());
   attached_tab_->SchedulePaint();
 }
