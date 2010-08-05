@@ -125,6 +125,7 @@
     'buildtype%': '<(buildtype)',
     'library%': '<(library)',
     'component%': '<(component)',
+    'sysroot%': '<(sysroot)',
 
     'linux2%': 0,
       'conditions': [
