@@ -131,11 +131,19 @@ BOOL gNewNSMenuAPI;
     [button selectItemAtIndex:index];
     [button setFont:[NSFont menuFontOfSize:fontSize_]];
 
+    // Create a dummy view to associate the popup with, since the OS will use
+    // that view for positioning the menu.
+    NSView* dummyView = [[[NSView alloc] initWithFrame:bounds] autorelease];
+    [view addSubview:dummyView];
+    NSRect dummyBounds = [dummyView convertRect:bounds fromView:view];
+
     // Display the menu, and set a flag if a menu item was chosen.
-    [button performClickWithFrame:bounds inView:view];
+    [button performClickWithFrame:dummyBounds inView:dummyView];
 
     if ([self menuItemWasChosen])
       index_ = [button indexOfSelectedItem];
+
+    [dummyView removeFromSuperview];
   }
 }
 
