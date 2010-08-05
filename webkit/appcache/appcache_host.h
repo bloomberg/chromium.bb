@@ -202,6 +202,9 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   bool main_resource_blocked_;
   GURL blocked_manifest_url_;
 
+  // Tells if info about associated cache is pending. Info is pending
+  // when update job has not returned success yet.
+  bool associated_cache_info_pending_;
 
   // List of objects observing us.
   ObserverList<Observer> observers_;

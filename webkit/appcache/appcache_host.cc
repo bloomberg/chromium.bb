@@ -12,6 +12,24 @@
 
 namespace appcache {
 
+namespace {
+
+void FillCacheInfo(
+    const AppCache* cache, Status status, AppCacheInfo* info) {
+  DCHECK(cache);
+  info->cache_id = cache->cache_id();
+  info->status = status;
+  info->is_complete = cache->is_complete();
+  if (info->is_complete) {
+    info->manifest_url = cache->owning_group()->manifest_url();
+    info->last_update_time = cache->update_time();
+    info->creation_time = cache->owning_group()->creation_time();
+    info->size = cache->cache_size();
+  }
+}
+
+}  // Anonymous namespace
+
 AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
                            AppCacheService* service)
     : host_id_(host_id), parent_host_id_(kNoHostId), parent_process_id_(0),
@@ -20,7 +38,7 @@ AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
       frontend_(frontend), service_(service),
       pending_get_status_callback_(NULL), pending_start_update_callback_(NULL),
       pending_swap_cache_callback_(NULL), pending_callback_param_(NULL),
-      main_resource_blocked_(false) {
+      main_resource_blocked_(false), associated_cache_info_pending_(false) {
 }
 
 AppCacheHost::~AppCacheHost() {
@@ -396,6 +414,14 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
 
   group_being_updated_ = NULL;
   newest_cache_of_group_being_updated_ = NULL;
+
+  if (associated_cache_info_pending_ && associated_cache_.get() &&
+      associated_cache_->is_complete()) {
+    AppCacheInfo info;
+    FillCacheInfo(associated_cache_.get(), GetStatus(), &info);
+    associated_cache_info_pending_ = false;
+    frontend_->OnCacheSelected(host_id_, info);
+  }
 }
 
 void AppCacheHost::OnContentBlocked(AppCacheGroup* group) {
@@ -436,24 +462,13 @@ void AppCacheHost::AssociateCache(AppCache* cache) {
 
   associated_cache_ = cache;
   SetSwappableCache(cache ? cache->owning_group() : NULL);
+  associated_cache_info_pending_ = cache && !cache->is_complete();
   AppCacheInfo info;
   if (cache) {
     cache->AssociateHost(this);
-    info.cache_id = cache->cache_id();
-    info.status = GetStatus();
-    info.is_complete = cache->is_complete();
-    if (cache->is_complete()) {
-      // TODO(kkanetkar): Get manifest URL info for NULL owning_group().
-      info.manifest_url = cache->owning_group()->manifest_url();
-      info.last_update_time = cache->update_time();
-      info.creation_time = cache->owning_group()->creation_time();
-      info.size = cache->cache_size();
-    }
-    frontend_->OnCacheSelected(host_id_, info);
-  } else {
-    // No Cache.
-    frontend_->OnCacheSelected(host_id_, info);
+    FillCacheInfo(cache, GetStatus(), &info);
   }
+  frontend_->OnCacheSelected(host_id_, info);
 }
 
 }  // namespace appcache
