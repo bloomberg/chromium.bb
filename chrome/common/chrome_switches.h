@@ -96,7 +96,7 @@ extern const char kEnableAccelerated2dCanvas[];
 extern const char kEnableAeroPeekTabs[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableBenchmarking[];
-extern const char kEnableChromoting[];
+extern const char kEnableRemoting[];
 extern const char kEnableClickToPlay[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableCloudPrint[];

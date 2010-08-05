@@ -292,7 +292,7 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // This applies only when the process type is "service". Enables the
 // Chromoting Host Process within the service process.
-const char kEnableChromoting[]              = "enable-chromoting";
+const char kEnableRemoting[]              = "enable-remoting";
 
 // Enable click-to-play for blocked plugins.
 const char kEnableClickToPlay[]             = "enable-click-to-play";

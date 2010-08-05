@@ -62,7 +62,7 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
   scoped_refptr<remoting::JsonHostConfig> chromoting_config;
   scoped_ptr<remoting::ChromotingHostContext> chromoting_context;
   scoped_refptr<remoting::ChromotingHost> chromoting_host;
-  if (parameters.command_line_.HasSwitch(switches::kEnableChromoting)) {
+  if (parameters.command_line_.HasSwitch(switches::kEnableRemoting)) {
     chromoting_config = new remoting::JsonHostConfig(
         chromoting_config_path,
         service_process.file_thread()->message_loop_proxy());
@@ -94,4 +94,3 @@ int ServiceProcessMain(const MainFunctionParams& parameters) {
 
   return 0;
 }
-

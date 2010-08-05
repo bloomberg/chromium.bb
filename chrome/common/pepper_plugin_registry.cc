@@ -128,7 +128,7 @@ void PepperPluginRegistry::GetInternalPluginInfo(
 
 #if defined(ENABLE_REMOTING)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableChromoting)) {
+      switches::kEnableRemoting)) {
     InternalPluginInfo info;
     // Add the chromoting plugin.
     DCHECK(info.is_internal);
