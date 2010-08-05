@@ -18,9 +18,6 @@ class Browser;
 class BrowsingInstance;
 class Extension;
 class ExtensionHost;
-#if defined(TOOLKIT_VIEWS)
-class ExtensionView;
-#endif
 class GURL;
 class Profile;
 class RenderProcessHost;

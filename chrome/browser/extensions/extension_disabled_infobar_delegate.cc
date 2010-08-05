@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_install_ui.h"

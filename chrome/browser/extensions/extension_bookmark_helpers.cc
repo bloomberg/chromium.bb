@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/extension_bookmark_helpers.h"
 
 #include "base/string_number_conversions.h"
+#include "base/values.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 
 namespace keys = extension_bookmarks_module_constants;

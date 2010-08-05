@@ -13,11 +13,12 @@
 
 #include <string>
 
-#include "base/values.h"
 #include "net/base/cookie_monster.h"
 
 class Browser;
+class DictionaryValue;
 class Extension;
+class ListValue;
 class Profile;
 
 namespace extension_cookies_helpers {

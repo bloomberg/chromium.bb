@@ -11,14 +11,11 @@
 #include <string>
 
 #include "base/ref_counted.h"
-#include "base/values.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/common/notification_registrar.h"
 #include "net/base/file_stream.h"
 
-class BookmarkModel;
 class BookmarkNode;
-class DictionaryValue;
 class FilePath;
 class GURL;
 class Profile;

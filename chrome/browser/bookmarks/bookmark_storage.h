@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,6 @@
 class BookmarkModel;
 class BookmarkNode;
 class Profile;
-class Task;
-class Value;
 
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including

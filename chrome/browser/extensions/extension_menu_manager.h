@@ -23,7 +23,6 @@
 struct ContextMenuParams;
 
 class Extension;
-class ExtensionMessageService;
 class Profile;
 class SkBitmap;
 class TabContents;

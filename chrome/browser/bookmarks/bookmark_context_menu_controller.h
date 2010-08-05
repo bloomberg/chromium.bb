@@ -13,7 +13,6 @@
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "gfx/native_widget_types.h"
 
-class Browser;
 class PageNavigator;
 class Profile;
 

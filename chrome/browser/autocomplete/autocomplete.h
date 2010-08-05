@@ -148,7 +148,6 @@ class AutocompleteProvider;
 class AutocompleteResult;
 class AutocompleteController;
 class HistoryContentsProvider;
-class KeywordProvider;
 class Profile;
 class TemplateURL;
 

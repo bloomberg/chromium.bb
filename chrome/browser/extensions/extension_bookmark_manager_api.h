@@ -12,7 +12,6 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
 struct BookmarkDragData;
-class BookmarkNode;
 class ListValue;
 class Profile;
 class TabContents;

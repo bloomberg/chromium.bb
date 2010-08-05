@@ -24,12 +24,9 @@
 #endif
 #include "chrome/common/notification_registrar.h"
 
-
 class Browser;
 class Extension;
-class ExtensionProcessManager;
 class RenderProcessHost;
-class RenderWidgetHost;
 class RenderWidgetHostView;
 class TabContents;
 struct WebPreferences;

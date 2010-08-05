@@ -7,12 +7,10 @@
 #pragma once
 
 #include <vector>
-#include <deque>
 
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/history/history_types.h"
 
-class HistoryService;
 class MessageLoop;
 class Profile;
 

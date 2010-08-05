@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"

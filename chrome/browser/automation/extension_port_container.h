@@ -16,7 +16,6 @@ class AutomationProvider;
 class ExtensionMessageService;
 class GURL;
 class ListValue;
-class MessageLoop;
 class RenderViewHost;
 
 // This class represents an external port to an extension, opened

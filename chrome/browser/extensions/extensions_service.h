@@ -33,15 +33,12 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/extensions/extension.h"
 
-class Browser;
 class ExtensionsServiceBackend;
 class ExtensionToolbarModel;
 class ExtensionUpdater;
 class GURL;
 class PrefService;
 class Profile;
-class ResourceDispatcherHost;
-class SiteInstance;
 class Version;
 
 // A pending extension is an extension that hasn't been installed yet

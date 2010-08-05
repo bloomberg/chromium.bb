@@ -57,15 +57,10 @@ class LoginHandler;
 class MetricEventDurationObserver;
 class InitialLoadObserver;
 class NavigationControllerRestoredObserver;
-class TranslateInfoBarDelegate;
 struct AutocompleteMatchData;
 
 namespace gfx {
 class Point;
-}
-
-namespace webkit_glue {
-struct PasswordForm;
 }
 
 class AutomationProvider : public base::RefCounted<AutomationProvider>,

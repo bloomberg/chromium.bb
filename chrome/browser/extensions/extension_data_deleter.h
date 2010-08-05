@@ -15,7 +15,6 @@
 #include "googleurl/src/gurl.h"
 #include "webkit/database/database_tracker.h"
 
-class Extension;
 class Profile;
 
 // A helper class that takes care of removing local storage, databases and

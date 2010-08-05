@@ -25,7 +25,6 @@
 #include "webkit/glue/window_open_disposition.h"
 #include "views/controls/menu/menu_2.h"
 
-class AutocompletePopupModel;
 class Profile;
 class TabContents;
 namespace views {

@@ -24,7 +24,6 @@ class AutocompleteEditModel;
 class AutocompleteEditViewMac;
 @class NSImage;
 class Profile;
-class SkBitmap;
 
 // Implements AutocompletePopupView using a raw NSWindow containing an
 // NSTableView.

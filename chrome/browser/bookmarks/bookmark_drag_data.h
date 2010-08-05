@@ -17,7 +17,6 @@
 #include "app/os_exchange_data.h"
 #endif
 
-class BookmarkModel;
 class BookmarkNode;
 class Pickle;
 class Profile;

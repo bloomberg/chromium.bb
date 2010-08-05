@@ -10,9 +10,13 @@
 
 #include <string>
 
-#include "base/values.h"
-#include "ipc/ipc_message.h"
 #include "chrome/browser/automation/automation_provider.h"
+
+class Value;
+
+namespace IPC {
+class Message;
+}
 
 // Helper to ensure we always send a reply message for JSON automation requests.
 class AutomationJSONReply {
@@ -38,4 +42,3 @@ class AutomationJSONReply {
 };
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_JSON_H_
-

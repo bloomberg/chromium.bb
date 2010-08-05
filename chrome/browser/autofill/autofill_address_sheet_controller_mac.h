@@ -9,7 +9,6 @@
 #import <Cocoa/Cocoa.h>
 
 @class AutoFillAddressModel;
-@class AutoFillDialogController;
 class AutoFillProfile;
 
 // The sheet can be invoked in "Add" or "Edit" mode.  This dictates the caption

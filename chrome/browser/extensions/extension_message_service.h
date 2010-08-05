@@ -18,12 +18,10 @@
 #include "ipc/ipc_message.h"
 
 class GURL;
-class MessageLoop;
 class Profile;
 class RenderProcessHost;
 class ResourceMessageFilter;
 class TabContents;
-class URLRequestContext;
 
 // This class manages message and event passing between renderer processes.
 // It maintains a list of processes that are listening to events and a set of

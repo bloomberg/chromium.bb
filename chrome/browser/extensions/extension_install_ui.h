@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
@@ -18,11 +17,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Extension;
-class ExtensionsService;
 class MessageLoop;
 class Profile;
 class InfoBarDelegate;
-class SandboxedExtensionUnpacker;
 class TabContents;
 
 // Displays all the UI around extension installation and uninstallation.

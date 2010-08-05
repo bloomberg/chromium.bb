@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_cookies_helpers.h"
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_cookies_api_constants.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"

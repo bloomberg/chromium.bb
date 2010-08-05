@@ -10,8 +10,6 @@
 #include <atlcom.h>
 #include <oleacc.h>
 
-#include <map>
-
 #include "base/hash_tables.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
