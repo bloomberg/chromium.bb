@@ -20,12 +20,21 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
 
+  // DOMMessageHandler implementation.
+  virtual void RegisterMessages();
+
  private:
-  // Get the list of input methods.
+  // Gets the list of input methods. The return value will look like:
+  // [{'id': 'pinyin', 'displayName': 'Pinyin', 'languageCode': 'zh-CW'}, ...]
   ListValue* GetInputMethodList();
 
-  // Get the list of languages.
+  // Gets the list of languages. The return value will look like:
+  // [{'code': 'fr', 'displayName': 'French'}, ...]
   ListValue* GetLanguageList();
+
+  // Called when the UI language is changed.
+  // |value| will be the language code as string (ex. "fr").
+  void UiLanguageChangeCallback(const Value* value);
 
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandler);
 };

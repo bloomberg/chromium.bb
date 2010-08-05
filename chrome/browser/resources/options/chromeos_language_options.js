@@ -100,7 +100,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Handler for languageOptionsList's change event.
+     * Handles languageOptionsList's change event.
      * @param {Event} e Change event.
      * @private
      */
@@ -111,16 +111,59 @@ cr.define('options', function() {
         return;
 
       var languageCode = languageOptionsList.getLanguageCodes()[index];
+      this.updateSelectedLanguageName_(languageCode);
+      this.updateUiLanguageButton_(languageCode);
+      this.updateInputMethodList_();
+      this.updateLanguageListInAddLanguageOverlay_();
+    },
+
+    /**
+     * Updates the currently selected language name.
+     * @param {string} languageCode Language code (ex. "fr").
+     * @private
+     */
+    updateSelectedLanguageName_: function(languageCode) {
       var languageDisplayName = LanguageList.getDisplayNameFromLanguageCode(
           languageCode);
-
+      // Update the currently selected language name.
       $('language-options-language-name').textContent = languageDisplayName;
-      // TODO(satorux): The button text should be changed to
-      // 'is_displayed_in_this_language', depending on the current UI
-      // language.
-      $('language-options-ui-language-button').textContent = (
-          localStrings.getString('display_in_this_language'));
+    },
 
+    /**
+     * Updates the UI language button.
+     * @param {string} languageCode Language code (ex. "fr").
+     * @private
+     */
+    updateUiLanguageButton_: function(languageCode) {
+      var uiLanguageButton = $('language-options-ui-language-button');
+      // Check if the language code matches the current UI language.
+      if (languageCode == templateData.currentUiLanguageCode) {
+        // If it matches, the button just says that the UI language is
+        // currently in use.
+        uiLanguageButton.textContent =
+            localStrings.getString('is_displayed_in_this_language');
+        // Make it look like a text label.
+        uiLanguageButton.className = 'text-button';
+        // Remove the event listner.
+        uiLanguageButton.onclick = undefined;
+      } else {
+        // Otherwise, users can click on the button to change the UI language.
+        uiLanguageButton.textContent =
+            localStrings.getString('display_in_this_language');
+        uiLanguageButton.className = '';
+        // Send the change request to Chrome.
+        uiLanguageButton.onclick = function(e) {
+          chrome.send('uiLanguageChange', [languageCode]);
+        }
+      }
+    },
+
+    /**
+     * Updates the input method list.
+     * @param {string} languageCode Language code (ex. "fr").
+     * @private
+     */
+    updateInputMethodList_: function(languageCode) {
       // Change the visibility of the input method list. Input methods that
       // matches |languageCode| will become visible.
       var inputMethodList = $('language-options-input-method-list');
@@ -132,10 +175,18 @@ cr.define('options', function() {
           labels[i].style.display = 'none';
         }
       }
+    },
 
+    /**
+     * Updates the language list in the add language overlay.
+     * @param {string} languageCode Language code (ex. "fr").
+     * @private
+     */
+    updateLanguageListInAddLanguageOverlay_: function(languageCode) {
       // Change the visibility of the language list in the add language
       // overlay. Languages that are already active will become invisible,
       // so that users don't add the same language twice.
+      var languageOptionsList = $('language-options-list');
       var languageCodes = languageOptionsList.getLanguageCodes();
       var languageCodeSet = {};
       for (var i = 0; i < languageCodes.length; i++) {
@@ -290,6 +341,15 @@ cr.define('options', function() {
       }
       return filteredPreloadEngines;
     }
+  };
+
+  /**
+   * Chrome callback for when the UI language preference is saved.
+   */
+  LanguageOptions.uiLanguageSaved = function() {
+    // TODO(satorux): Show the message in a nicer way once we get a mock
+    // from UX.
+    alert(localStrings.getString('restart_required'));
   };
 
   // Export

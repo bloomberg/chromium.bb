@@ -5,11 +5,14 @@
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
 
 #include "app/l10n_util.h"
-#include "base/values.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -44,9 +47,21 @@ void LanguageOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringF(
           IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
           l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
+  localized_strings->SetString(L"restart_required",
+      l10n_util::GetString(IDS_OPTIONS_RESTART_REQUIRED));
 
+  // The followigns are resources, rather than local strings.
+  localized_strings->SetString(L"currentUiLanguageCode",
+      UTF8ToWide(g_browser_process->GetApplicationLocale()));
   localized_strings->Set(L"inputMethodList", GetInputMethodList());
   localized_strings->Set(L"languageList", GetLanguageList());
+}
+
+void LanguageOptionsHandler::RegisterMessages() {
+  DCHECK(dom_ui_);
+  dom_ui_->RegisterMessageCallback("uiLanguageChange",
+      NewCallback(this,
+                  &LanguageOptionsHandler::UiLanguageChangeCallback));
 }
 
 ListValue* LanguageOptionsHandler::GetInputMethodList() {
@@ -87,4 +102,26 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
   }
 
   return language_list;
+}
+
+void LanguageOptionsHandler::UiLanguageChangeCallback(
+    const Value* value) {
+  if (!value || !value->IsType(Value::TYPE_LIST)) {
+    NOTREACHED();
+    LOG(INFO) << "NOTREACHED";
+    return;
+  }
+  const ListValue* list_value = static_cast<const ListValue*>(value);
+  std::string language_code;
+  if (list_value->GetSize() != 1 ||
+      !list_value->GetString(0, &language_code)) {
+    NOTREACHED();
+    LOG(INFO) << "NOTREACHED";
+    return;
+  }
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(prefs::kApplicationLocale, language_code);
+  prefs->SavePersistentPrefs();
+  dom_ui_->CallJavascriptFunction(
+      L"options.LanguageOptions.uiLanguageSaved");
 }

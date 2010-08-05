@@ -212,3 +212,8 @@ input[type="checkbox"] {
   cursor: pointer;
   text-decoration: underline;
 }
+
+.text-button {
+  background-color: transparent;
+  border-color: transparent;
+}
