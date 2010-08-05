@@ -19,10 +19,12 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/add_startup_page_handler.h"
 #include "chrome/browser/dom_ui/advanced_options_handler.h"
+#include "chrome/browser/dom_ui/autofill_options_handler.h"
 #include "chrome/browser/dom_ui/browser_options_handler.h"
 #include "chrome/browser/dom_ui/clear_browser_data_handler.h"
 #include "chrome/browser/dom_ui/content_settings_handler.h"
 #include "chrome/browser/dom_ui/core_options_handler.h"
+#include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/font_settings_handler.h"
 #include "chrome/browser/dom_ui/import_data_handler.h"
 #include "chrome/browser/dom_ui/passwords_exceptions_handler.h"
@@ -30,7 +32,6 @@
 #include "chrome/browser/dom_ui/search_engine_manager_handler.h"
 #include "chrome/browser/dom_ui/stop_syncing_handler.h"
 #include "chrome/browser/dom_ui/sync_options_handler.h"
-#include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -130,6 +131,7 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
 
   AddOptionsPageUIHandler(localized_strings, new AddStartupPageHandler());
   AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings, new AutoFillOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
   AddOptionsPageUIHandler(localized_strings, new ContentSettingsHandler());

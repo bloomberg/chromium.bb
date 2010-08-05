@@ -1114,6 +1114,8 @@
         'browser/dom_operation_notification_details.h',
         'browser/dom_ui/app_launcher_handler.cc',
         'browser/dom_ui/app_launcher_handler.h',
+        'browser/dom_ui/autofill_options_handler.cc',
+        'browser/dom_ui/autofill_options_handler.h',
         'browser/dom_ui/bookmarks_ui.cc',
         'browser/dom_ui/bookmarks_ui.h',
         'browser/dom_ui/chrome_url_data_manager.cc',

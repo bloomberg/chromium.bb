@@ -55,7 +55,7 @@ cr.define('options', function() {
       };
 
       $('autofill_options').onclick = function(event) {
-        //TODO(sargrass): Show autofill dialog here.
+        OptionsPage.showPageByName('autoFillOptions');
       };
 
       $('import_data').onclick = function(event) {
