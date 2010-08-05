@@ -75,7 +75,7 @@ cr.define('options', function() {
 
   ClearBrowserDataOverlay.dismiss = function() {
     OptionsPage.clearOverlays();
-    setClearingState(false);
+    this.setClearingState(false);
   }
 
   // Export
