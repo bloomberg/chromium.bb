@@ -8,6 +8,9 @@
 
 #include <string>
 
+#if defined(USE_X11)
+#include "app/x11_util.h"
+#endif
 #include "app/surface/transport_dib.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
@@ -185,6 +188,10 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
 #if defined(USE_X11)
   scoped_ptr<TransportDIB> windowless_dib_;
   scoped_ptr<TransportDIB> background_dib_;
+  // If we can use SHM pixmaps for windowless plugin painting or not.
+  bool use_shm_pixmap_;
+  // The SHM pixmap for windowless plugin painting.
+  XID windowless_shm_pixmap_;
 #endif
 
 #endif

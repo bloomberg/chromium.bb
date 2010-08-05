@@ -27,6 +27,8 @@
 #endif
 
 #if defined(USE_X11)
+#include "app/x11_util.h"
+
 typedef struct _GdkDrawable GdkPixmap;
 #endif
 
@@ -181,6 +183,12 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void set_windowed_handle(gfx::PluginWindowHandle handle);
 #endif
 
+#if defined(USE_X11)
+  void SetWindowlessShmPixmap(XID shm_pixmap) {
+    windowless_shm_pixmap_ = shm_pixmap;
+  }
+#endif
+
  private:
   friend class DeleteTask<WebPluginDelegateImpl>;
   friend class webkit_glue::WebPluginDelegate;
@@ -292,6 +300,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #endif // OS_WIN
 
 #if defined(USE_X11)
+  // The SHM pixmap for a windowless plugin.
+  XID windowless_shm_pixmap_;
+
   // The pixmap we're drawing into, for a windowless plugin.
   GdkPixmap* pixmap_;
   double first_event_time_;

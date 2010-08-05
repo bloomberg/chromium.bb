@@ -32,6 +32,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
+#if defined(USE_X11)
+#include "app/x11_util_internal.h"
+#endif
+
 using WebKit::WebBindings;
 using webkit_glue::WebPluginResourceClient;
 
@@ -58,11 +62,36 @@ WebPluginProxy::WebPluginProxy(
       transparent_(false),
       host_render_view_routing_id_(host_render_view_routing_id),
       ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)) {
+#if defined(USE_X11)
+      windowless_shm_pixmap_ = None;
+      use_shm_pixmap_ = false;
+
+      // If the X server supports SHM pixmaps
+      // and the color depth and masks match,
+      // then consider using SHM pixmaps for windowless plugin painting.
+      Display* display = x11_util::GetXDisplay();
+      if (x11_util::QuerySharedMemorySupport(display) ==
+              x11_util::SHARED_MEMORY_PIXMAP &&
+          x11_util::BitsPerPixelForPixmapDepth(
+              display, DefaultDepth(display, 0)) == 32) {
+        Visual* vis = DefaultVisual(display, 0);
+
+        if (vis->red_mask == 0xff0000 &&
+            vis->green_mask == 0xff00 &&
+            vis->blue_mask == 0xff)
+          use_shm_pixmap_ = true;
+      }
+#endif
 }
 
 WebPluginProxy::~WebPluginProxy() {
   if (cp_browsing_context_)
     GetContextMap().erase(cp_browsing_context_);
+
+#if defined(USE_X11)
+  if (windowless_shm_pixmap_ != None)
+    XFreePixmap(x11_util::GetXDisplay(), windowless_shm_pixmap_);
+#endif
 }
 
 bool WebPluginProxy::Send(IPC::Message* msg) {
@@ -566,6 +595,26 @@ void WebPluginProxy::SetWindowlessBuffer(
     background_canvas_.reset(background_dib_->GetPlatformCanvas(width, height));
   } else {
     background_canvas_.reset();
+  }
+
+  // If SHM pixmaps support is available, create a SHM pixmap and
+  // pass it to the delegate for windowless plugin painting.
+  if (delegate_->IsWindowless() && use_shm_pixmap_ && windowless_dib_.get()) {
+    Display* display = x11_util::GetXDisplay();
+    XID root_window = x11_util::GetX11RootWindow();
+    XShmSegmentInfo shminfo = {0};
+
+    if (windowless_shm_pixmap_ != None)
+      XFreePixmap(display, windowless_shm_pixmap_);
+
+    shminfo.shmseg = windowless_dib_->MapToX(display);
+    // Create a shared memory pixmap based on the image buffer.
+    windowless_shm_pixmap_ = XShmCreatePixmap(display, root_window,
+                                              NULL, &shminfo,
+                                              width, height,
+                                              DefaultDepth(display, 0));
+
+    delegate_->SetWindowlessShmPixmap(windowless_shm_pixmap_);
   }
 }
 
