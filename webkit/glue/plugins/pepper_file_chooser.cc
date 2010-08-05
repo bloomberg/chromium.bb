@@ -4,12 +4,28 @@
 
 #include "webkit/glue/plugins/pepper_file_chooser.h"
 
+#include <string>
+#include <vector>
+
 #include "base/logging.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
+#include "webkit/glue/plugins/pepper_plugin_delegate.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 #include "webkit/glue/plugins/pepper_resource_tracker.h"
+#include "webkit/glue/webkit_glue.h"
+
+using WebKit::WebCString;
+using WebKit::WebFileChooserCompletion;
+using WebKit::WebFileChooserParams;
+using WebKit::WebString;
+using WebKit::WebVector;
 
 namespace pepper {
 
@@ -58,13 +74,36 @@ const PPB_FileChooser ppb_filechooser = {
   &GetNextChosenFile
 };
 
+class FileChooserCompletionImpl : public WebFileChooserCompletion {
+ public:
+  FileChooserCompletionImpl(pepper::FileChooser* file_chooser)
+      : file_chooser_(file_chooser) {
+    DCHECK(file_chooser_);
+  }
+
+  virtual ~FileChooserCompletionImpl() {}
+
+  virtual void didChooseFile(const WebVector<WebString>& file_names) {
+    std::vector<std::string> files;
+    for (size_t i = 0; i < file_names.size(); i++)
+      files.push_back(file_names[i].utf8().data());
+
+    file_chooser_->StoreChosenFiles(files);
+  }
+
+ private:
+  FileChooser* file_chooser_;
+};
+
 }  // namespace
 
 FileChooser::FileChooser(PluginInstance* instance,
                          const PP_FileChooserOptions* options)
     : Resource(instance->module()),
+      delegate_(instance->delegate()),
       mode_(options->mode),
-      accept_mime_types_(options->accept_mime_types) {
+      accept_mime_types_(options->accept_mime_types),
+      completion_callback_() {
 }
 
 FileChooser::~FileChooser() {
@@ -75,14 +114,42 @@ const PPB_FileChooser* FileChooser::GetInterface() {
   return &ppb_filechooser;
 }
 
+void FileChooser::StoreChosenFiles(const std::vector<std::string>& files) {
+  next_chosen_file_index_ = 0;
+  std::vector<std::string>::const_iterator end_it = files.end();
+  for (std::vector<std::string>::const_iterator it = files.begin();
+       it != end_it; it++)
+    chosen_files_.push_back(
+        new FileRef(module(), PP_FILESYSTEMTYPE_LOCALPERSISTENT, *it, ""));
+
+  if (!completion_callback_.func)
+    return;
+
+  PP_CompletionCallback callback = {0};
+  std::swap(callback, completion_callback_);
+  PP_RunCompletionCallback(&callback, 0);
+}
+
 int32_t FileChooser::Show(PP_CompletionCallback callback) {
-  NOTIMPLEMENTED();  // TODO(darin): Implement me!
-  return PP_ERROR_FAILED;
+  DCHECK((mode_ == PP_FILECHOOSERMODE_OPEN) ||
+         (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE));
+  DCHECK(!completion_callback_.func);
+  completion_callback_ = callback;
+
+  WebFileChooserParams params;
+  params.multiSelect = (mode_ == PP_FILECHOOSERMODE_OPENMULTIPLE);
+  params.acceptTypes = WebString::fromUTF8(accept_mime_types_);
+  params.directory = false;
+
+  return delegate_->RunFileChooser(
+      params, new FileChooserCompletionImpl(this));
 }
 
 scoped_refptr<FileRef> FileChooser::GetNextChosenFile() {
-  NOTIMPLEMENTED();  // TODO(darin): Implement me!
-  return NULL;
+  if (next_chosen_file_index_ >= chosen_files_.size())
+    return NULL;
+
+  return chosen_files_[next_chosen_file_index_++];
 }
 
 }  // namespace pepper

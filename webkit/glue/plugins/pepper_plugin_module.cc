@@ -38,6 +38,7 @@
 #include "webkit/glue/plugins/pepper_buffer.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_directory_reader.h"
+#include "webkit/glue/plugins/pepper_file_chooser.h"
 #include "webkit/glue/plugins/pepper_file_io.h"
 #include "webkit/glue/plugins/pepper_file_ref.h"
 #include "webkit/glue/plugins/pepper_file_system.h"
@@ -193,6 +194,9 @@ const void* GetInterface(const char* name) {
     return PluginInstance::GetFindInterface();
   if (strcmp(name, PPB_PRIVATE_INTERFACE) == 0)
     return Private::GetInterface();
+  if (strcmp(name, PPB_FILECHOOSER_INTERFACE) == 0)
+    return FileChooser::GetInterface();
+
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

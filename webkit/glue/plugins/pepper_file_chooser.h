@@ -6,12 +6,16 @@
 #define WEBKIT_GLUE_PLUGINS_PEPPER_FILE_CHOOSER_H_
 
 #include <string>
+#include <vector>
 
+#include "base/scoped_ptr.h"
+#include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/ppb_file_chooser.h"
 #include "webkit/glue/plugins/pepper_resource.h"
 
 namespace pepper {
 
+class PluginDelegate;
 class PluginInstance;
 
 class FileChooser : public Resource {
@@ -26,13 +30,20 @@ class FileChooser : public Resource {
   // Resource overrides.
   FileChooser* AsFileChooser() { return this; }
 
+  // Stores the list of selected files.
+  void StoreChosenFiles(const std::vector<std::string>& files);
+
   // PPB_FileChooser implementation.
   int32_t Show(PP_CompletionCallback callback);
   scoped_refptr<FileRef> GetNextChosenFile();
 
  private:
+  PluginDelegate* delegate_;
   PP_FileChooserMode mode_;
   std::string accept_mime_types_;
+  PP_CompletionCallback completion_callback_;
+  std::vector<scoped_refptr<FileRef> > chosen_files_;
+  size_t next_chosen_file_index_;
 };
 
 }  // namespace pepper

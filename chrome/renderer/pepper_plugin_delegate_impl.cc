@@ -10,6 +10,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/render_view.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "webkit/glue/plugins/pepper_plugin_instance.h"
 
 #if defined(OS_MACOSX)
@@ -274,3 +276,8 @@ pepper::PluginDelegate::PlatformAudio* PepperPluginDelegateImpl::CreateAudio(
   }
 }
 
+bool PepperPluginDelegateImpl::RunFileChooser(
+    const WebKit::WebFileChooserParams& params,
+    WebKit::WebFileChooserCompletion* chooser_completion) {
+  return render_view_->runFileChooser(params, chooser_completion);
+}

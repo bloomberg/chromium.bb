@@ -19,6 +19,11 @@ namespace pepper {
 class PluginInstance;
 }
 
+namespace WebKit {
+class WebFileChooserCompletion;
+struct WebFileChooserParams;
+}
+
 class PepperPluginDelegateImpl
     : public pepper::PluginDelegate,
       public base::SupportsWeakPtr<PepperPluginDelegateImpl> {
@@ -43,6 +48,9 @@ class PepperPluginDelegateImpl
                                             int total,
                                             bool final_result);
   virtual void DidChangeSelectedFindResult(int identifier, int index);
+  virtual bool RunFileChooser(
+      const WebKit::WebFileChooserParams& params,
+      WebKit::WebFileChooserCompletion* chooser_completion);
 
  private:
   // Pointer to the RenderView that owns us.

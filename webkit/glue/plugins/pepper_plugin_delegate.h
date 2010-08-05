@@ -5,6 +5,8 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 
+#include <string>
+
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "third_party/ppapi/c/pp_stdint.h"
@@ -13,6 +15,11 @@ class AudioMessageFilter;
 
 namespace skia {
 class PlatformCanvas;
+}
+
+namespace WebKit {
+class WebFileChooserCompletion;
+struct WebFileChooserParams;
 }
 
 namespace pepper {
@@ -88,6 +95,11 @@ class PluginDelegate {
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
                                      PlatformAudio::Client* client) = 0;
+
+  // Runs a file chooser.
+  virtual bool RunFileChooser(
+      const WebKit::WebFileChooserParams& params,
+      WebKit::WebFileChooserCompletion* chooser_completion) = 0;
 };
 
 }  // namespace pepper
