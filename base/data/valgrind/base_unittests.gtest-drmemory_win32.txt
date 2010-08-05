@@ -1,3 +1,7 @@
+# Dr. Memory crashes on some COM calls:
+# http://code.google.com/p/drmemory/issues/detail?id=21
+WMI*
+
 # TODO(timurrrr) investigate the failures and enable these tests one-by-one.
 RSA*
 GmockTest.*
