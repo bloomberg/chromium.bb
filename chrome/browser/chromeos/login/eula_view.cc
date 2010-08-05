@@ -17,6 +17,8 @@
 #include "chrome/browser/chromeos/login/network_screen_delegate.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/options_util.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -32,6 +34,10 @@
 #include "views/grid_layout.h"
 #include "views/layout_manager.h"
 #include "views/standard_layout.h"
+
+#if defined(USE_LINUX_BREAKPAD)
+#include "chrome/app/breakpad_linux.h"
+#endif
 
 namespace {
 
@@ -181,7 +187,8 @@ void EulaView::Init() {
   usage_statistics_checkbox_ = new views::Checkbox();
   usage_statistics_checkbox_->SetMultiLine(true);
   usage_statistics_checkbox_->SetChecked(
-      GoogleUpdateSettings::GetCollectStatsConsent());
+      g_browser_process->local_state()->GetBoolean(
+          prefs::kMetricsReportingEnabled));
   layout->AddView(usage_statistics_checkbox_);
 
   layout->StartRow(0, SINGLE_LINK_WITH_SHIFT_ROW);
@@ -270,8 +277,18 @@ void EulaView::OnLocaleChanged() {
 void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == continue_button_) {
     if (usage_statistics_checkbox_) {
-      GoogleUpdateSettings::SetCollectStatsConsent(
-        usage_statistics_checkbox_->checked());
+      const bool enable_reporting = usage_statistics_checkbox_->checked();
+      PrefService* prefs = g_browser_process->local_state();
+      if (prefs->GetBoolean(prefs::kMetricsReportingEnabled) !=
+          enable_reporting) {
+        prefs->SetBoolean(prefs::kMetricsReportingEnabled, enable_reporting);
+        prefs->SavePersistentPrefs();
+        OptionsUtil::ResolveMetricsReportingEnabled(enable_reporting);
+#if defined(USE_LINUX_BREAKPAD)
+        if (enable_reporting)
+          InitCrashReporter();
+#endif
+      }
     }
     observer_->OnExit(ScreenObserver::EULA_ACCEPTED);
   }
