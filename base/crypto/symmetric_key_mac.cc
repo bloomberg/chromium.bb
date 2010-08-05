@@ -10,7 +10,6 @@
 
 #include "base/crypto/cssm_init.h"
 #include "base/logging.h"
-#include "base/rand_util.h"
 
 namespace {
 

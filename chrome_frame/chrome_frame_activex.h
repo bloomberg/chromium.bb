@@ -13,9 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "base/scoped_bstr_win.h"
-#include "base/scoped_comptr_win.h"
-#include "base/scoped_variant_win.h"
 #include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/com_type_info_holder.h"
 #include "grit/chrome_frame_resources.h"

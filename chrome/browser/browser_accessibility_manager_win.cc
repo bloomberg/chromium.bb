@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browser_accessibility_manager_win.h"
 
-#include "base/scoped_comptr_win.h"
 #include "chrome/browser/browser_accessibility_win.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

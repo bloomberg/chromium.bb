@@ -19,7 +19,6 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/native_library.h"
-#include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_handle.h"
 #include "base/scoped_handle_win.h"

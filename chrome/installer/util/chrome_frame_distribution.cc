@@ -13,7 +13,6 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/registry.h"
 #include "base/string_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/google_update_constants.h"

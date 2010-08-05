@@ -15,7 +15,6 @@
 
 #include <string>
 
-#include "base/scoped_comptr_win.h"
 #include "chrome_tab.h"  // NOLINT
 #include "chrome_frame/delete_chrome_history.h"
 #include "chrome_frame/resource.h"
@@ -124,4 +123,3 @@ END_SINK_MAP()
 };
 
 #endif  // CHROME_FRAME_BHO_H_
-

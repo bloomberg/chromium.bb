@@ -36,10 +36,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
-#if defined(OS_WIN)
-#include "base/registry.h"
-#endif
-
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;

@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/md5.h"
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"

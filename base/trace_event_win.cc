@@ -4,7 +4,7 @@
 #include "base/trace_event_win.h"
 
 #include "base/atomicops.h"
-#include "base/logging_win.h"
+#include "base/logging.h"
 #include "base/singleton.h"
 #include <initguid.h>  // NOLINT
 

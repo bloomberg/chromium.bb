@@ -5,7 +5,6 @@
 #include <map>
 
 #include "base/file_util.h"
-#include "base/rand_util.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"

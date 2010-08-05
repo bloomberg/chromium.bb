@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/win_util.h"
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/interception.h"
 #include "sandbox/src/interceptors.h"

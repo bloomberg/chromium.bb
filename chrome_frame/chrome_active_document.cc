@@ -21,7 +21,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/registry.h"
 #include "base/scoped_variant_win.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"

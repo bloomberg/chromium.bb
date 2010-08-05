@@ -12,7 +12,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/scoped_comptr_win.h"
 #include "base/thread_local.h"
 #include "googleurl/src/gurl.h"
 #include "chrome_frame/utils.h"

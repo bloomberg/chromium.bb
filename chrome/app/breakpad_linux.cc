@@ -21,7 +21,6 @@
 #include "base/file_path.h"
 #include "base/global_descriptors_posix.h"
 #include "base/path_service.h"
-#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/directory_reader.h"

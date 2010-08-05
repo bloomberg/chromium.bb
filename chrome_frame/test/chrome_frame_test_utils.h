@@ -19,7 +19,6 @@
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/scoped_comptr_win.h"
-#include "base/scoped_variant_win.h"
 
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/test/simulate_input.h"

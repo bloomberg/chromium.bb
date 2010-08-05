@@ -44,7 +44,6 @@
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
 #elif defined(OS_POSIX) && !defined(OS_CHROMEOS)
-#include "base/xdg_util.h"
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
 #include "chrome/browser/password_manager/native_backend_kwallet_x.h"
 #include "chrome/browser/password_manager/password_store_x.h"
@@ -547,4 +546,3 @@ class OffTheRecordProfileImpl : public Profile,
 Profile *Profile::CreateOffTheRecordProfile() {
   return new OffTheRecordProfileImpl(this);
 }
-

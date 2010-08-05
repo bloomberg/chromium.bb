@@ -4,7 +4,6 @@
 
 #include "app/l10n_util.h"
 #include "base/file_util.h"
-#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
@@ -139,7 +138,8 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
 
     height += kPanelVertMargin;
 
-    return gfx::Size(width, std::max(height, icon_size_ + kPanelVertMargin * 2));
+    return gfx::Size(width,
+                     std::max(height, icon_size_ + kPanelVertMargin * 2));
   }
 
   virtual void Layout() {

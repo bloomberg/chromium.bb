@@ -9,7 +9,6 @@
 #include "app/resource_bundle.h"
 #include "app/win_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"

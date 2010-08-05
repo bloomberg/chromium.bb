@@ -15,9 +15,7 @@
 #include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
 #include "base/path_service.h"
-#include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
-#include "base/scoped_variant_win.h"
 
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_prefs.h"

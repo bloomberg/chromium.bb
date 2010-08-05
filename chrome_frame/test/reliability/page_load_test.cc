@@ -31,7 +31,6 @@
 #include "base/keyboard_codes.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/test/test_file_util.h"
@@ -628,4 +627,3 @@ void SetPageRange(const CommandLine& parsed_command_line) {
     }
   }
 }
-

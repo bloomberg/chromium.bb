@@ -111,8 +111,6 @@
 
 #include "app/l10n_util_win.h"
 #include "app/win_util.h"
-#include "base/registry.h"
-#include "base/win_util.h"
 #include "chrome/browser/browser_trial.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"

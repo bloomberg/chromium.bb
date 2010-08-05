@@ -16,7 +16,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_handle.h"
 #include "base/task.h"
-#include "base/win_util.h"
 #include "net/base/net_util.h"
 
 #include "chrome_frame/chrome_frame_automation.h"
@@ -368,4 +367,3 @@ TEST(HttpUtils, HasFrameBustingHeader) {
     "X-Frame-Options: SAMEORIGIN\r\n"
     "X-Frame-Options: ALLOWall\r\n"));
 }
-

@@ -22,10 +22,6 @@
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 #include "chrome/common/chrome_paths.h"
 
-#if defined(OS_WIN)
-#include "base/win_util.h"
-#endif
-
 namespace {
 // This is a minimalistic interface to wrap the platform console.  This will be
 // eventually replaced by a view that can be subclassed for each platform and

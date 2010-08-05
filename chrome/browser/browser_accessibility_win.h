@@ -12,7 +12,6 @@
 
 #include <vector>
 
-#include "base/scoped_comptr_win.h"
 #include "chrome/browser/browser_accessibility_manager_win.h"
 #include "ia2_api_all.h"  // Generated
 #include "webkit/glue/webaccessibility.h"

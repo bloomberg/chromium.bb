@@ -5,6 +5,7 @@
 #include <mshtmcid.h>
 #include <string>
 
+#include "base/scoped_variant_win.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
@@ -539,4 +540,3 @@ TEST_F(ContextMenuTest, DISABLED_BackForwardWithSwitch) {
 }
 
 }  // namespace chrome_frame_test
-

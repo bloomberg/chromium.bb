@@ -5,9 +5,6 @@
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#if defined(OS_WIN)
-#include "base/win_util.h"
-#endif
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"

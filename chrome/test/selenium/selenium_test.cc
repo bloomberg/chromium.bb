@@ -15,13 +15,16 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
+
+#ifdef SIMULATE_RUN
+#include "base/rand_util.h"
+#endif
 
 // Uncomment this to exercise this test without actually running the selenium
 // test, which can take a while to run.  This define is useful when modifying

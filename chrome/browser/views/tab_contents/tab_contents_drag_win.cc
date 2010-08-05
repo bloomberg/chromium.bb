@@ -13,7 +13,6 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/drag_download_file.h"

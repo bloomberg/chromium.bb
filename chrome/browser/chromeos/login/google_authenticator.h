@@ -13,7 +13,6 @@
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
-#include "base/sha2.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"

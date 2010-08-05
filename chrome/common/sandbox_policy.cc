@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
-#include "base/registry.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "chrome/common/child_process_info.h"

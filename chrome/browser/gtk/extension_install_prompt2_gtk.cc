@@ -5,7 +5,6 @@
 #include <gtk/gtk.h>
 
 #include "app/l10n_util.h"
-#include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"

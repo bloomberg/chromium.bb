@@ -23,7 +23,7 @@
 #include "base/registry.h"   // to find IE and firefox
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_handle.h"
-#include "base/scoped_comptr_win.h"
+#include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"

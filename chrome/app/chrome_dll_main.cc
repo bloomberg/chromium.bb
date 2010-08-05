@@ -91,7 +91,6 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win_util.h"
 #include "sandbox/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"
 #endif

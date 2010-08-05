@@ -5,10 +5,13 @@
 #include "chrome/browser/icon_loader.h"
 
 #include "base/message_loop.h"
-#include "base/mime_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#if defined(TOOLKIT_GTK)
+#include "base/mime_util.h"
+#endif
 
 IconLoader::IconLoader(const IconGroupID& group, IconSize size,
                        Delegate* delegate)

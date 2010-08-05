@@ -8,7 +8,6 @@
 #include "chrome_frame/protocol_sink_wrap.h"
 
 #include "base/logging.h"
-#include "base/registry.h"
 #include "base/scoped_bstr_win.h"
 #include "base/singleton.h"
 #include "base/string_util.h"

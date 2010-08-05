@@ -35,9 +35,7 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
-#if defined(OS_WIN)
-#include "base/registry.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "base/sys_string_conversions.h"
 #endif
 

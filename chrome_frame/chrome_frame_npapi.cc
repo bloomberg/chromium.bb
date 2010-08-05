@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/win_util.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/ff_privilege_check.h"
 #include "chrome_frame/np_utils.h"

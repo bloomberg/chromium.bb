@@ -9,9 +9,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/registry.h"
 #include "base/scoped_bstr_win.h"
-#include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "chrome_tab.h" // NOLINT
 #include "chrome_frame/crash_reporting/crash_metrics.h"
@@ -385,4 +383,3 @@ void PatchHelper::UnpatchIfNeeded() {
 
   state_ = UNKNOWN;
 }
-

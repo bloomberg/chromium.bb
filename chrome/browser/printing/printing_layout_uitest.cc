@@ -6,7 +6,6 @@
 #include "base/file_util.h"
 #include "base/simple_thread.h"
 #include "base/test/test_file_util.h"
-#include "base/win_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"

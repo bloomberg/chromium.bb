@@ -46,8 +46,6 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
-#include "base/registry.h"
-#include "base/win_util.h"
 #endif
 
 namespace {

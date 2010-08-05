@@ -8,7 +8,6 @@
 
 #include "base/lock.h"
 #include "base/logging.h"
-#include "base/win_util.h"
 #include "gfx/font.h"
 
 ResourceBundle* ResourceBundle::g_shared_instance_ = NULL;

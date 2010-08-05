@@ -13,7 +13,6 @@
 #include "app/win_util.h"
 #include "base/file_path.h"
 #include "base/path_service.h"
-#include "base/scoped_comptr_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/browser_distribution.h"
 

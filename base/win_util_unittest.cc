@@ -5,7 +5,6 @@
 #include <windows.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "base/registry.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
 

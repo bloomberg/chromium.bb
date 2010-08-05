@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/scoped_comptr_win.h"
-#include "base/win_util.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
@@ -706,4 +705,3 @@ TEST_P(FullTabNavigationTest, CF_UnloadEventTest) {
 }
 
 }  // namespace chrome_frame_test
-

@@ -11,7 +11,6 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "base/win_util.h"
 #include "gfx/font.h"
 #include "views/controls/listbox/listbox.h"
 #include "views/widget/widget.h"

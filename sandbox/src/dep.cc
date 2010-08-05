@@ -4,8 +4,9 @@
 
 #include "sandbox/src/dep.h"
 
+#include <windows.h>
+
 #include "base/logging.h"
-#include "base/win_util.h"
 
 namespace sandbox {
 
