@@ -1,0 +1,384 @@
+<!--
+Copyright 2010, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>
+Picking and IndexBuffers
+</title>
+<script type="text/javascript" src="../o3d-webgl/base.js"></script>
+<script type="text/javascript" src="../o3djs/base.js"></script>
+<script type="text/javascript" id="o3dscript">
+o3djs.base.o3d = o3d;
+o3djs.require('o3djs.webgl');
+o3djs.require('o3djs.math');
+o3djs.require('o3djs.rendergraph');
+o3djs.require('o3djs.primitives');
+o3djs.require('o3djs.material');
+o3djs.require('o3djs.picking');
+
+// global variables
+var g_o3dElement;
+var g_client;
+var g_o3d;
+var g_math;
+var g_pack;
+var g_viewInfo;
+var g_eyePosition = [0, 0, 10];
+var g_dataroot;
+var g_pickManager;
+
+/**
+ * Creates the client area.
+ */
+function initClient() {
+  window.g_finished = false;  // for selenium testing.
+  o3djs.webgl.makeClients(main);
+}
+
+/**
+ * Updates the span with the name of the shape that was picked, if anything.
+ * @param {event} e
+ */
+function pick(e) {
+  var worldRay = o3djs.picking.clientPositionToWorldRay(
+      e.x,
+      e.y,
+      g_viewInfo.drawContext,
+      g_client.width,
+      g_client.height);
+  var pickInfo = g_pickManager.pick(worldRay);
+  var picked = 'nothing';
+  if (pickInfo) {
+    picked = pickInfo.shapeInfo.shape.name;
+  }
+  document.getElementById('picked').innerHTML = picked;
+}
+
+/**
+ * Rotates the scene if key is one of 'wasd'.
+ * @param {event} event
+ */
+function rotateScene(event) {
+  // Ignore accelerator key messages.
+  if (event.metaKey)
+    return;
+
+  var keyChar = String.fromCharCode(o3djs.event.getEventKeyChar(event));
+  // Just in case they have capslock on.
+  keyChar = keyChar.toLowerCase();
+
+  var actionTaken = false;
+  var delta = 0.1;
+  switch(keyChar) {
+    case 'a':
+      g_dataroot.localMatrix =
+          g_math.matrix4.mul(g_dataroot.localMatrix,
+                             g_math.matrix4.rotationY(-delta));
+      actionTaken = true;
+      break;
+    case 'd':
+      g_dataroot.localMatrix =
+          g_math.matrix4.mul(g_dataroot.localMatrix,
+                             g_math.matrix4.rotationY(delta));
+      actionTaken = true;
+      break;
+    case 'w':
+      g_dataroot.localMatrix =
+          g_math.matrix4.mul(g_dataroot.localMatrix,
+                             g_math.matrix4.rotationX(-delta));
+      actionTaken = true;
+      break;
+    case 's':
+      g_dataroot.localMatrix =
+          g_math.matrix4.mul(g_dataroot.localMatrix,
+                             g_math.matrix4.rotationX(delta));
+      actionTaken = true;
+      break;
+  }
+  if (actionTaken) {
+    g_pickManager.update();
+  }
+}
+
+/**
+ * Initializes global variables, positions camera, draws shapes.
+ * @param {Array} clientElements Array of o3d object elements.
+ */
+function main(clientElements) {
+  // Init global variables.
+  initGlobals(clientElements);
+
+  // Set up the view and projection transformations.
+  initContext();
+
+  // Add the shapes to the transform heirarchy.
+  createShapes();
+
+  o3djs.event.addEventListener(g_o3dElement, 'mousedown', pick);
+  o3djs.event.addEventListener(g_o3dElement, 'keypress', rotateScene);
+
+  // Create the pick manager.
+  g_pickManager = o3djs.picking.createPickManager(g_client.root);
+  g_pickManager.update();
+
+  window.g_finished = true;  // for selenium testing.
+}
+
+/**
+ * Initializes global variables and libraries.
+ */
+function initGlobals(clientElements) {
+  g_o3dElement = clientElements[0];
+  window.g_client = g_client = g_o3dElement.client;
+  g_o3d = g_o3dElement.o3d;
+  g_math = o3djs.math;
+
+  // Create a pack to manage the objects created.
+  g_pack = g_client.createPack();
+
+	// Creates a transform to put our data on.
+  g_dataroot = g_pack.createObject('Transform');
+  g_dataroot.parent = g_client.root;
+  g_dataroot.rotateY(-0.3);
+
+  // Create the render graph for a view.
+  g_viewInfo = o3djs.rendergraph.createBasicView(
+      g_pack,
+      g_client.root,
+      g_client.renderGraphRoot);
+}
+/**
+ * Sets up reasonable view and projection matrices.
+ */
+function initContext() {
+  // Set up a perspective transformation for the projection.
+  g_viewInfo.drawContext.projection = g_math.matrix4.perspective(
+      g_math.degToRad(30), // 30 degree frustum.
+      g_o3dElement.clientWidth / g_o3dElement.clientHeight, // Aspect ratio.
+      1,                  // Near plane.
+      5000);              // Far plane.
+
+  // Set up our view transformation to look towards the world origin where the
+  // primitives are located.
+  g_viewInfo.drawContext.view = g_math.matrix4.lookAt(
+      g_eyePosition,   // eye
+      [0, 0, 0],    // target
+      [0, 1, 0]);  // up
+}
+
+/**
+ * Creates shapes using the primitives utility library, and adds them to the
+ * transform graph at the root node.
+ */
+function createShapes() {
+  var triangleFan = createShape(g_o3d.Primitive.TRIANGLEFAN);
+  triangleFan.name = 'triangle-fan';
+  var triangleStrip = createShape(g_o3d.Primitive.TRIANGLESTRIP);
+  triangleStrip.name = 'triangle-strip';
+  var triangleList = createShape(g_o3d.Primitive.TRIANGLELIST);
+  triangleList.name = 'triangle-list';
+  var noIndexBuffer = createShape(-1);
+  noIndexBuffer.name = 'bufferless';
+
+  // Add the shapes to the transforms.
+  var transformTable = [
+    {shape: noIndexBuffer, translation: [-0.5, 1.25, 0]},
+    {shape: triangleFan, translation: [-1.0, -1.0, 0]},
+    {shape: triangleStrip, translation: [1.0, -1.0, 0]},
+    {shape: triangleList, translation: [0, 0, 0]}
+  ];
+
+  for (var tt = 0; tt < transformTable.length; ++tt) {
+    var transform = g_pack.createObject('Transform');
+    transform.addShape(transformTable[tt].shape);
+    transform.translate(transformTable[tt].translation);
+    transform.parent = g_dataroot;
+  }
+}
+
+/**
+ * Creates a shape that uses the requested indexing type.
+ * @param {o3d.Primitive.Type} indexType
+ */
+function createShape(indexType) {
+	var material = g_pack.createObject('Material');
+  var effect = g_pack.createObject('Effect');
+  var shaderString = document.getElementById('shader').value;
+  effect.loadFromFXString(shaderString);
+  material.effect = effect;
+  material.drawList = g_viewInfo.performanceDrawList;
+  effect.createUniformParameters(material);
+
+  var shape = g_pack.createObject('Shape');
+  var primitive = g_pack.createObject('Primitive');
+  var streamBank = g_pack.createObject('StreamBank');
+
+  primitive.material = material;
+  primitive.owner = shape;
+  primitive.streamBank = streamBank;
+  primitive.primitiveType = indexType;
+  primitive.createDrawElement(g_pack, null);
+
+  var positionArray = [];
+
+  switch (indexType) {
+    case g_o3d.Primitive.TRIANGLEFAN:
+      positionArray = [
+        0.5, 0.0, 0.5, // 0
+        0.5, 0.0, -0.5, // 1
+        -0.5, 0.0, -0.5, // 2
+        -0.5, 0.0, 0.5, // 3
+        0.0, -1.0, 0.0 // 4
+      ];
+      indices = [4, 3, 2, 1, 0, 3]; // Square pyramid w/o the bottom.
+      primitive.numberPrimitives = 4;
+      primitive.numberVertices = 5;
+      break;
+    case g_o3d.Primitive.TRIANGLESTRIP:
+      positionArray = [
+        0.0, 0.0, 0.0, // 0
+        1.0, 0.0, 0.0, // 1
+        0.5, 0.0, -0.866, // 2
+        0.5, 0.866, -0.433 // 3
+      ];
+      indices = [0, 1, 3, 2, 0, 1]; // Triangular pyramid sort of shape.
+      primitive.numberPrimitives = 4;
+      primitive.numberVertices = 4;
+      break;
+    case g_o3d.Primitive.TRIANGLELIST:
+      positionArray = [
+        -0.5, -0.5,  0.5,  // vertex 0
+         0.5, -0.5,  0.5,  // vertex 1
+        -0.5,  0.5,  0.5,  // vertex 2
+         0.5,  0.5,  0.5,  // vertex 3
+        -0.5,  0.5, -0.5,  // vertex 4
+         0.5,  0.5, -0.5,  // vertex 5
+        -0.5, -0.5, -0.5,  // vertex 6
+         0.5, -0.5, -0.5   // vertex 7
+      ];
+      indices = [
+        0, 1, 2,  // face 1
+        2, 1, 3,
+        2, 3, 4,  // face 2
+        4, 3, 5,
+        4, 5, 6,  // face 3
+        6, 5, 7,
+        6, 7, 0,  // face 4
+        0, 7, 1,
+        1, 7, 3,  // face 5
+        3, 7, 5,
+        6, 0, 4,  // face 6
+        4, 0, 2
+      ];
+      primitive.numberPrimitives = 12;
+      primitive.numberVertices = 8;
+      break;
+    default:
+      // No index buffer. Vertex data contains triples of triangles.
+      positionArray = [
+        -0.5, -0.5,  0.5,
+        0.5, -0.5,  0.5,
+        -0.5,  0.5,  0.5,
+        0.5, -0.5,  0.5,
+        1.5, -0.5,  0.5,  // vertex 1
+        1.5,  0.5,  0.5  // vertex 3
+      ];
+      indices = null;
+      primitive.numberPrimitives = 2;
+      primitive.numberVertices = 6;
+      break;
+  }
+
+  // Create buffers containing the vertex data.
+  var positionsBuffer = g_pack.createObject('VertexBuffer');
+  var positionsField = positionsBuffer.createField('FloatField', 3);
+  positionsBuffer.set(positionArray);
+
+  if (indices) {
+    var indexBuffer = g_pack.createObject('IndexBuffer');
+    indexBuffer.set(indices);
+    primitive.indexBuffer = indexBuffer;
+  }
+
+  // Associate the positions Buffer with the StreamBank.
+  streamBank.setVertexStream(
+      g_o3d.Stream.POSITION, // semantic: This stream stores vertex positions
+      0,                     // semantic index: First (and only) position stream
+      positionsField,        // field: the field this stream uses.
+      0);                    // start_index: How many elements to skip in the
+                             //     field.
+  return shape;
+}
+</script>
+</head>
+<body onload="initClient()">
+<h1>More Picking</h1>
+<p>This example demonstrates picking with custom shapes that use a variety of
+index buffer formats. Back faces are culled (hidden) and cannot be picked.</p>
+<p>
+	You picked: <span id="picked" style="color: red;">nothing</span>
+</p>
+<p>Rotate in the scene with WASD.</p>
+<br/>
+<!-- Start of O3D plugin -->
+<div id="o3d" style="width: 600px; height: 600px;"></div>
+<!-- End of O3D plugin -->
+
+<textarea id="shader" style="display: none;">
+  attribute vec4 position;
+  uniform mat4 worldViewProjection;
+  varying vec4 pos;
+
+  /**
+   * The vertex shader simply transforms the input vertices to screen space.
+   */
+  void main() {
+    // Multiply the vertex positions by the worldViewProjection matrix to
+    // transform them to screen space.
+    gl_Position = worldViewProjection * position;
+    pos = position;
+  }
+
+  // #o3d SplitMarker
+  varying vec4 pos;
+
+  /**
+   * The fragment shader derives color based on the position.
+   */
+  void main() {
+    gl_FragColor = vec4(pos.xyz, 1.0);
+  }
+</textarea>
+</body>
+</html>

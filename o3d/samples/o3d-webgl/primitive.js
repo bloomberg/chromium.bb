@@ -333,6 +333,44 @@ o3d.Primitive.prototype.computeWireframeIndices_ = function() {
   }
 };
 
+/**
+ * Returns the three indices of the n-th triangle of this primitive. If the
+ * primitive has no index buffer, then the buffer is assumed to be [0 ... n-1].
+ * These indices can then be used to reference the vertex buffer and get the
+ * triangle vertices' positions.
+ *
+ * @param {number} n The number of the triangle we want. Zero-indexed.
+ * @return {!Array.<Number>} Array containing three indices that correspond to
+ *    the n-th triangle of this primitive.
+ * @private
+ */
+o3d.Primitive.prototype.computeTriangleIndices_ = function(n) {
+  var indices;
+  switch (this.primitiveType) {
+    case o3d.Primitive.TRIANGLESTRIP:
+      if (n % 2 == 0) {
+        indices = [n, n + 1, n + 2];
+      } else {
+        indices = [n + 1, n, n + 2];
+      }
+      break;
+    case o3d.Primitive.TRIANGLEFAN:
+      indices = [0, n + 1, n + 2];
+      break;
+    case o3d.Primitive.TRIANGLELIST:
+    default:
+      indices = [3 * n, 3 * n + 1, 3 * n + 2];
+      break;
+  }
+  if (this.indexBuffer) {
+    var buffer = this.indexBuffer.array_;
+    return [buffer[indices[0]],
+            buffer[indices[1]],
+            buffer[indices[2]]];
+  } else {
+    return indices;
+  }
+};
 
 /**
  * Computes the intersection of a ray in the coordinate system of
@@ -392,15 +430,27 @@ o3d.Primitive.prototype.intersectRay =
   // from the start the point with this variable.
   var min_distance = 0;
 
-  // Iterate through the indices three at a time.  Each triple of indices
-  // defines a triangle.  For each triangle, we test for intersection with
+  // Iterate through the indices and examine triples of indices that each
+  // define a triangle.  For each triangle, we test for intersection with
   // the ray.  We need to find the closest one to start, so we have to
   // check them all.
-  var a = indexBuffer.array_;
-  for (var i = 0; i < a.length / 3; ++i) {
-    // Indices of the triangle.
-    var t = 3 * i;
-    var indices = [a[t], a[t + 1], a[t + 2]];
+
+  var numIndices = indexBuffer ? indexBuffer.array_.length : numPoints;
+  switch (this.primitiveType) {
+    case o3d.Primitive.TRIANGLESTRIP:
+      numTriangles = numIndices - 2;
+      break;
+    case o3d.Primitive.TRIANGLEFAN:
+      numTriangles = numIndices - 2;
+      break;
+    case o3d.Primitive.TRIANGLELIST:
+    default:
+      numTriangles = numIndices / 3;
+      break;
+  }
+
+  for (var i = 0; i < numTriangles; ++i) {
+    var indices = this.computeTriangleIndices_(i);
 
     // Check if the current triangle is too far to one side of the ray
     // to intersect at all.  (This is what the orthogonal vectors are for)
