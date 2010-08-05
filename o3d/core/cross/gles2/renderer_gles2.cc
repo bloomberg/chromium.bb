@@ -1205,7 +1205,13 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
     return INITIALIZATION_ERROR;
   }
 
-  EGLContext egl_context = eglCreateContext(egl_display, config, NULL, NULL);
+  static const EGLint egl_context_attributes[] = {
+    EGL_CONTEXT_CLIENT_VERSION, 2,
+    EGL_NONE
+  };
+
+  EGLContext egl_context = eglCreateContext(egl_display, config, NULL,
+                                            egl_context_attributes);
   if (!egl_context) {
     DLOG(ERROR) << "eglCreateContext failed.";
     eglDestroySurface(egl_display, egl_surface);
