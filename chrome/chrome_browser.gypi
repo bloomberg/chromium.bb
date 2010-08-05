@@ -2027,8 +2027,6 @@
         'browser/options_window.h',
         'browser/page_info_model.cc',
         'browser/page_info_model.h',
-        'browser/page_state.cc',
-        'browser/page_state.h',
         'browser/parsers/metadata_parser.h',
         'browser/parsers/metadata_parser_factory.h',
         'browser/parsers/metadata_parser_filebase.cc',
