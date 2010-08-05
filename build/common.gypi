@@ -94,15 +94,8 @@
       # NOTE: adapted from them chrome common.gypi file for arm
       'armv7%': 0,
 
-      # Set Neon compilation flags (only meaningful if armv7==1).
-      'arm_neon%': 1,
-
       # Set Thumb compilation flags.
       'arm_thumb%': 0,
-
-      # Set ARM fpu compilation flags (only meaningful if armv7==1 and
-      # arm_neon==0).
-      'arm_fpu%': 'vfpv3',
 
       # The system root for cross-compiles. Default: none.
       'sysroot%': '',
@@ -125,7 +118,6 @@
     'buildtype%': '<(buildtype)',
     'library%': '<(library)',
     'component%': '<(component)',
-    'sysroot%': '<(sysroot)',
 
     'linux2%': 0,
       'conditions': [
@@ -418,59 +410,22 @@
               '-Wsign-compare'
             ],
           }],
-          ['sysroot!=""', {
-            'target_conditions': [
-              ['_toolset=="target"', {
-                'cflags': [
-                  '--sysroot=<(sysroot)',
-                ],
-                'ldflags': [
-                  '--sysroot=<(sysroot)',
-                ],
-              }]]
-          }],
           [ 'target_arch=="arm"', {
-              'target_conditions': [
-                ['_toolset=="target"', {
-                  'cflags_cc': [
-                    # The codesourcery arm-2009q3 toolchain warns at that the ABI
-                    # has changed whenever it encounters a varargs function. This
-                    # silences those warnings, as they are not helpful and
-                    # clutter legitimate warnings.
-                    '-Wno-abi',
-                  ],
-                  'conditions': [
-                    ['arm_thumb == 1', {
-                      'cflags': [
-                      '-mthumb',
-                      # TODO(piman): -Wa,-mimplicit-it=thumb is needed for
-                      # inline assembly that uses condition codes but it's
-                      # suboptimal. Better would be to #ifdef __thumb__ at the
-                      # right place and have a separate thumb path.
-                      '-Wa,-mimplicit-it=thumb',
-                      ]
-                    }],
-                    ['armv7==1', {
-                      'cflags': [
-                        '-march=armv7-a',
-                        '-mtune=cortex-a8',
-                        '-mfloat-abi=softfp',
-                      ],
-                      'conditions': [
-                        ['arm_neon==1', {
-                          'cflags': [ '-mfpu=neon', ],
-                        }, {
-                          'cflags': [ '-mfpu=<(arm_fpu)', ],
-                        }]
-                      ],
-                    }],
-                  ],
-                }],
-              ],
               'cflags': [
+                '-Wno-abi',
+                '-march=armv7-a',
+                '-mtune=cortex-a8',
+                '-mfpu=neon',
+                '-mfloat-abi=softfp',
                 '-fPIC',
                 '-fno-exceptions',
                 '-Wall',
+              ],
+              'cflags_cc': [
+                '--sysroot=<(sysroot)',
+              ],
+              'ldflags': [
+                '--sysroot=<(sysroot)',
               ],
             }, { # else: target_arch != "arm"
               'conditions': [
