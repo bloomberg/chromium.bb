@@ -142,10 +142,17 @@ TEST(InputMethodUtilTest, GetKeyboardLayoutName) {
 }
 
 TEST(InputMethodUtilTest, GetLanguageDisplayNameFromCode) {
-  EXPECT_EQ(L"French", GetLanguageDisplayNameFromCode("fr"));
+  EXPECT_EQ(L"Finnish", GetLanguageDisplayNameFromCode("fi"));
   // MaybeRewriteLanguageName() should be applied.
   EXPECT_EQ(l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS),
             GetLanguageDisplayNameFromCode("t"));
+}
+
+TEST(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {
+  EXPECT_EQ(L"suomi", GetLanguageNativeDisplayNameFromCode("fi"));
+  // MaybeRewriteLanguageName() should be applied.
+  EXPECT_EQ(l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS),
+            GetLanguageNativeDisplayNameFromCode("t"));
 }
 
 TEST(InputMethodUtilTest, SortLanguageCodesByNames) {

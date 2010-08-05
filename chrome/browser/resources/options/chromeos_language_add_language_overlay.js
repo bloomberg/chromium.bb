@@ -47,6 +47,10 @@ cr.define('options.language', function() {
         var button = document.createElement('button');
         button.className = 'link-button';
         button.textContent = language.displayName;
+        // If the native name is different, add it.
+        if (language.displayName != language.nativeDisplayName) {
+          button.textContent += ' - ' + language.nativeDisplayName;
+        }
         button.languageCode = language.code;
         // Listen to user clicks.
         button.addEventListener('click',

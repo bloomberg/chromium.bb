@@ -499,6 +499,13 @@ std::wstring GetLanguageDisplayNameFromCode(const std::string& language_code) {
           true)));
 }
 
+std::wstring GetLanguageNativeDisplayNameFromCode(
+    const std::string& language_code) {
+  return MaybeRewriteLanguageName(UTF16ToWide(
+      l10n_util::GetDisplayNameForLocale(
+          language_code, language_code, true)));
+}
+
 void SortLanguageCodesByNames(std::vector<std::string>* language_codes) {
   if (!g_browser_process) {
     return;

@@ -98,6 +98,9 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
     dictionary->SetString(L"code", UTF8ToWide(locales[i]));
     dictionary->SetString(L"displayName",
         chromeos::input_method::GetLanguageDisplayNameFromCode(locales[i]));
+    dictionary->SetString(L"nativeDisplayName",
+        chromeos::input_method::GetLanguageNativeDisplayNameFromCode(
+            locales[i]));
     language_list->Append(dictionary);
   }
 

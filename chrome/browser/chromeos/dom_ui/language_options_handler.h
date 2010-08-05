@@ -29,7 +29,8 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   ListValue* GetInputMethodList();
 
   // Gets the list of languages. The return value will look like:
-  // [{'code': 'fr', 'displayName': 'French'}, ...]
+  // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
+  //  ...]
   ListValue* GetLanguageList();
 
   // Called when the UI language is changed.
