@@ -442,6 +442,7 @@ surface_attach(struct wl_client *client,
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
+	EGLImageKHR image;
 	EGLint attribs[] = {
 		EGL_WIDTH,		0,
 		EGL_HEIGHT,		0,
@@ -450,14 +451,36 @@ surface_attach(struct wl_client *client,
 		EGL_NONE
 	};
 
+	attribs[1] = width;
+	attribs[3] = height;
+	attribs[5] = stride / 4;
+
+	image = eglCreateImageKHR(ec->display, ec->context,
+				  EGL_DRM_IMAGE_MESA,
+				  (EGLClientBuffer) name, attribs);
+	if (image == NULL) {
+		/* FIXME: Define a real exception event instead of
+		 * abusing this one */
+		wl_client_post_event(client, ec->wl_display,
+				     WL_DISPLAY_INVALID_OBJECT, 0);
+		fprintf(stderr, "failed to create image for name %d\n", name);
+		return;
+	}
+
 	if (visual == &ec->argb_visual)
 		es->visual = &ec->argb_visual;
 	else if (visual == &ec->premultiplied_argb_visual)
 		es->visual = &ec->premultiplied_argb_visual;
 	else if (visual == &ec->rgb_visual)
 		es->visual = &ec->rgb_visual;
-	else
-		/* FIXME: Smack client with an exception event */;
+	else {
+		/* FIXME: Define a real exception event instead of
+		 * abusing this one */
+		wl_client_post_event(client, ec->display,
+				     WL_DISPLAY_INVALID_OBJECT, 0);
+		fprintf(stderr, "invalid visual in surface_attach\n");
+		return;
+	}
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -468,13 +491,8 @@ surface_attach(struct wl_client *client,
 	if (es->image)
 		eglDestroyImageKHR(ec->display, es->image);
 
-	attribs[1] = width;
-	attribs[3] = height;
-	attribs[5] = stride / 4;
+	es->image = image;
 
-	es->image = eglCreateImageKHR(ec->display, ec->context,
-				      EGL_DRM_IMAGE_MESA,
-				      (EGLClientBuffer) name, attribs);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
 }
 

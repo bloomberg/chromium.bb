@@ -308,6 +308,7 @@ display_handle_invalid_object(void *data,
 			      struct wl_display *display, uint32_t id)
 {
 	fprintf(stderr, "sent request to invalid object\n");
+	abort();
 }
 			      
 static void
@@ -316,6 +317,7 @@ display_handle_invalid_method(void *data,
 			      uint32_t id, uint32_t opcode)
 {
 	fprintf(stderr, "sent invalid request opcode\n");
+	abort();
 }
 
 static void
@@ -323,6 +325,7 @@ display_handle_no_memory(void *data,
 			 struct wl_display *display)
 {
 	fprintf(stderr, "server out of memory\n");
+	abort();
 }
 
 static void

@@ -28,6 +28,7 @@
 #include <sys/uio.h>
 #include <ffi.h>
 #include <assert.h>
+#include <fcntl.h>
 
 #include "wayland-util.h"
 #include "connection.h"
@@ -69,6 +70,7 @@ wl_connection_create(int fd,
 void
 wl_connection_destroy(struct wl_connection *connection)
 {
+	close(connection->fd);
 	free(connection);
 }
 

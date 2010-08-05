@@ -65,9 +65,6 @@ struct wl_global {
 	struct wl_list link;
 };
 
-void
-wl_client_destroy(struct wl_client *client);
-
 WL_EXPORT void
 wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 		     uint32_t opcode, ...)
@@ -210,7 +207,7 @@ wl_object_destroy(struct wl_object *object)
 	interface->destroy(NULL, (struct wl_surface *) object);
 }
 
-void
+WL_EXPORT void
 wl_client_destroy(struct wl_client *client)
 {
 	struct wl_surface *surface;
