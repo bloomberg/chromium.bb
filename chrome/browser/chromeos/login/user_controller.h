@@ -124,6 +124,7 @@ class UserController : public views::ButtonListener,
     delegate_->AddStartUrl(start_url);
   }
   virtual void ClearErrors();
+  virtual void NavigateAway();
 
   // UserView::Delegate implementation:
   virtual void OnRemoveUser();

@@ -418,6 +418,10 @@ void UserController::ClearErrors() {
   delegate_->ClearErrors();
 }
 
+void UserController::NavigateAway() {
+  SelectUser(user_index() - 1);
+}
+
 void UserController::OnRemoveUser() {
   delegate_->RemoveUser(this);
 }

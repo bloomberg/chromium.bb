@@ -55,6 +55,9 @@ class NewUserView : public views::View,
 
     // User started typing so clear all error messages.
     virtual void ClearErrors() = 0;
+
+    // User tries to navigate away from NewUserView pod.
+    virtual void NavigateAway() = 0;
   };
 
   // If |need_border| is true, RoundedRect border and background are required.

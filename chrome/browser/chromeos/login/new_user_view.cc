@@ -396,10 +396,15 @@ bool NewUserView::HandleKeystroke(views::Textfield* s,
     Login();
     // Return true so that processing ends
     return true;
-  } else {
-    delegate_->ClearErrors();
-    return false;
+  } else if (keystroke.GetKeyboardCode() == base::VKEY_LEFT) {
+    if (s == username_field_ &&
+        username_field_->text().empty() &&
+        password_field_->text().empty()) {
+      delegate_->NavigateAway();
+      return true;
+    }
   }
+  delegate_->ClearErrors();
   // Return false so that processing does not end
   return false;
 }
