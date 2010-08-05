@@ -83,7 +83,7 @@ class SpeechInputBrowserTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, TestBasicRecognition) {
+IN_PROC_BROWSER_TEST_F(SpeechInputBrowserTest, DISABLED_TestBasicRecognition) {
   // Inject the fake manager factory so that the test result is returned to the
   // web page.
   SpeechInputDispatcherHost::set_manager_factory(&fakeManagerFactory);
