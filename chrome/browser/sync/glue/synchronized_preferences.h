@@ -95,7 +95,9 @@ static const wchar_t* kSynchronizedPreferences[] = {
   prefs::kWebKitUsesUniversalDetector,
 
   // Autofill dialog.
+#if defined(OS_MACOSX)
   prefs::kAutoFillAuxiliaryProfilesEnabled,
+#endif
 
   // Translate preferences.
   TranslatePrefs::kPrefTranslateLanguageBlacklist,
