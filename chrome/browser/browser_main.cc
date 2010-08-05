@@ -1199,15 +1199,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // pre-resolution, as well as TCP/IP connection pre-warming.
   // This also registers an observer to discard data when closing incognito
   // mode.
-  bool preconnect_enabled = true;  // Default status (easy to change!).
-  if (parsed_command_line.HasSwitch(switches::kDisablePreconnect))
-    preconnect_enabled = false;
-  else if (parsed_command_line.HasSwitch(switches::kEnablePreconnect))
-    preconnect_enabled = true;
   chrome_browser_net::PredictorInit dns_prefetch(
       user_prefs,
       local_state,
-      preconnect_enabled,
+      parsed_command_line.HasSwitch(switches::kEnablePreconnect),
       parsed_command_line.HasSwitch(switches::kPreconnectDespiteProxy));
 
 #if defined(OS_WIN)

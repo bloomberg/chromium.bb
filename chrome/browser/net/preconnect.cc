@@ -21,22 +21,18 @@ namespace chrome_browser_net {
 // static
 bool Preconnect::preconnect_despite_proxy_ = false;
 
-
-Preconnect::~Preconnect() {
-  if (!handle_.is_initialized())
-    return;
-  DCHECK(motivation_ == UrlInfo::LEARNED_REFERAL_MOTIVATED ||
-         motivation_ == UrlInfo::OMNIBOX_MOTIVATED);
-  if (motivation_ == UrlInfo::OMNIBOX_MOTIVATED)
-    handle_.socket()->SetOmniboxSpeculation();
-  else
-    handle_.socket()->SetSubresourceSpeculation();
-  handle_.Reset();
-}
+// We will deliberately leak this singular instance, which is used only for
+// callbacks.
+// static
+Preconnect* Preconnect::callback_instance_;
 
 // static
 void Preconnect::PreconnectOnUIThread(const GURL& url,
     UrlInfo::ResolutionMotivation motivation) {
+  // Try to do connection warming for this search provider.
+  URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
+  if (!getter)
+    return;
   // Prewarm connection to Search URL.
   ChromeThread::PostTask(
       ChromeThread::IO,
@@ -61,13 +57,6 @@ static void HistogramPreconnectStatus(ProxyStatus status) {
 // static
 void Preconnect::PreconnectOnIOThread(const GURL& url,
     UrlInfo::ResolutionMotivation motivation) {
-  scoped_refptr<Preconnect> preconnect = new Preconnect(motivation);
-  // TODO(jar): Should I use PostTask for LearnedSubresources to delay the
-  // preconnection a tad?
-  preconnect->Connect(url);
-}
-
-void Preconnect::Connect(const GURL& url) {
   URLRequestContextGetter* getter = Profile::GetDefaultRequestContext();
   if (!getter)
     return;
@@ -75,9 +64,6 @@ void Preconnect::Connect(const GURL& url) {
     LOG(DFATAL) << "This must be run only on the IO thread.";
     return;
   }
-
-  AddRef();  // Stay alive until socket is available.
-
   URLRequestContext* context = getter->GetURLRequestContext();
 
   if (preconnect_despite_proxy_) {
@@ -100,11 +86,15 @@ void Preconnect::Connect(const GURL& url) {
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation_,
+  UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation,
                             UrlInfo::MAX_MOTIVATED);
 
   net::HttpTransactionFactory* factory = context->http_transaction_factory();
   net::HttpNetworkSession* session = factory->GetSession();
+
+  net::ClientSocketHandle handle;
+  if (!callback_instance_)
+    callback_instance_ = new Preconnect;
 
   scoped_refptr<net::TCPSocketParams> tcp_params =
       new net::TCPSocketParams(url.host(), url.EffectiveIntPort(), net::LOW,
@@ -112,19 +102,6 @@ void Preconnect::Connect(const GURL& url) {
 
   net::HostPortPair endpoint(url.host(), url.EffectiveIntPort());
   std::string group_name = endpoint.ToString();
-
-  // It almost doesn't matter whether we use net::LOWEST or net::HIGHEST
-  // priority here, as we won't make a request, and will surrender the created
-  // socket to the pool as soon as we can.  However, we would like to mark the
-  // speculative socket as such, and IF we use a net::LOWEST priority, and if
-  // a navigation asked for a socket (after us) then it would get our socket,
-  // and we'd get its later-arriving socket, which might make us record that
-  // the speculation didn't help :-/.  By using net::HIGHEST, we ensure that
-  // a socket is given to us if "we asked first" and this allows us to mark it
-  // as speculative, and better detect stats (if it gets used).
-  // TODO(jar): histogram to see how often we accidentally use a previously-
-  // unused socket, when a previously used socket was available.
-  net::RequestPriority priority = net::HIGHEST;
 
   if (url.SchemeIs("https")) {
     group_name = StringPrintf("ssl/%s", group_name.c_str());
@@ -143,20 +120,21 @@ void Preconnect::Connect(const GURL& url) {
     const scoped_refptr<net::SSLClientSocketPool>& pool =
         session->ssl_socket_pool();
 
-    handle_.Init(group_name, ssl_params, priority, this, pool,
-                 net::BoundNetLog());
+    handle.Init(group_name, ssl_params, net::LOWEST, callback_instance_, pool,
+                net::BoundNetLog());
+    handle.Reset();
     return;
   }
 
   const scoped_refptr<net::TCPClientSocketPool>& pool =
       session->tcp_socket_pool();
-  handle_.Init(group_name, tcp_params, priority, this, pool,
-               net::BoundNetLog());
+  handle.Init(group_name, tcp_params, net::LOWEST, callback_instance_, pool,
+              net::BoundNetLog());
+  handle.Reset();
 }
 
 void Preconnect::RunWithParams(const Tuple1<int>& params) {
-  if (params.a < 0 && handle_.socket())
-    handle_.socket()->Disconnect();
-  Release();
+  // This will rarely be called, as we reset the connection just after creating.
+  NOTREACHED();
 }
 }  // chrome_browser_net

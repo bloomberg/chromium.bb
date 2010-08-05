@@ -61,7 +61,6 @@ extern const char kDisableGeolocation[];
 extern const char kDisableHangMonitor[];
 extern const char kDisableInternalFlash[];
 extern const char kDisableIPv6[];
-extern const char kDisablePreconnect[];
 extern const char kDisableJavaScript[];
 extern const char kDisableJava[];
 extern const char kDisableLocalStorage[];
