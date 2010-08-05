@@ -497,12 +497,6 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
 
   if (WebInputEvent::isMouseEventType(event.type) ||
       event.type == WebInputEvent::MouseWheel) {
-    // Ideally we would compute the content origin from the web event using the
-    // code below as a safety net for missed content area location changes.
-    // Because of <http://crbug.com/9996>, however, only globalX/Y are right if
-    // the page has been zoomed, so for now the coordinates we get aren't
-    // trustworthy enough to use for corrections.
-#if PLUGIN_SCALING_FIXED
     // Check our plugin location before we send the event to the plugin, just
     // in case we somehow missed a plugin frame change.
     const WebMouseEvent* mouse_event =
@@ -517,7 +511,6 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
                     << content_origin;
       SetContentAreaOrigin(content_origin);
     }
-#endif
 
     current_windowless_cursor_.GetCursorInfo(cursor_info);
   }
@@ -592,25 +585,6 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
       return false;
     }
   }
-
-#ifndef PLUGIN_SCALING_FIXED
-  // Because of <http://crbug.com/9996>, the non-global coordinates we get for
-  // zoomed pages are wrong. As a temporary hack around that bug, override the
-  // coordinates we are given with ones computed based on our knowledge of where
-  // the plugin is on screen. We only need to do this for Cocoa, since Carbon
-  // only uses the global coordinates.
-  if (instance()->event_model() == NPEventModelCocoa &&
-      (WebInputEvent::isMouseEventType(event.type) ||
-       event.type == WebInputEvent::MouseWheel)) {
-    const WebMouseEvent* mouse_event =
-        static_cast<const WebMouseEvent*>(&event);
-    NPCocoaEvent* cocoa_event = static_cast<NPCocoaEvent*>(plugin_event);
-    cocoa_event->data.mouse.pluginX =
-        mouse_event->globalX - content_area_origin_.x() - window_rect_.x();
-    cocoa_event->data.mouse.pluginY =
-        mouse_event->globalY - content_area_origin_.y() - window_rect_.y();
-  }
-#endif
 
   // Send the plugin the event.
   scoped_ptr<NPAPI::ScopedCurrentPluginEvent> event_scope(NULL);
