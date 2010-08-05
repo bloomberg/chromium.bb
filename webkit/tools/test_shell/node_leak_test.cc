@@ -41,11 +41,10 @@ class NodeLeakTest : public TestShellTest {
     }
 
     if (parsed_command_line.HasSwitch(test_shell::kTestShellTimeOut)) {
-      const std::wstring timeout_str = parsed_command_line.GetSwitchValue(
+      const std::string timeout_str = parsed_command_line.GetSwitchValueASCII(
           test_shell::kTestShellTimeOut);
       int timeout_ms;
-      if (base::StringToInt(WideToUTF8(timeout_str), &timeout_ms) &&
-          timeout_ms > 0)
+      if (base::StringToInt(timeout_str, &timeout_ms) && timeout_ms > 0)
         TestShell::SetFileTestTimeout(timeout_ms);
     }
 
@@ -64,8 +63,8 @@ class NodeLeakTest : public TestShellTest {
     SimpleResourceLoaderBridge::Shutdown();
   }
 
-  void NavigateToURL(const std::wstring& test_url) {
-    test_shell_->LoadURL(GURL(WideToUTF8(test_url)));
+  void NavigateToURL(const std::string& test_url) {
+    test_shell_->LoadURL(GURL(test_url));
     test_shell_->WaitTestFinished();
 
     // Depends on TestShellTests::TearDown to load blank page and
@@ -76,7 +75,7 @@ class NodeLeakTest : public TestShellTest {
 TEST_F(NodeLeakTest, TestURL) {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(kTestUrlSwitch))
-    NavigateToURL(parsed_command_line.GetSwitchValue(kTestUrlSwitch).c_str());
+    NavigateToURL(parsed_command_line.GetSwitchValueASCII(kTestUrlSwitch));
 }
 
 }  // namespace

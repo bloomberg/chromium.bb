@@ -179,7 +179,7 @@ void TestShell::InitializeTestShell(bool layout_test_mode,
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(test_shell::kCrashDumps)) {
     std::wstring dir(
-        parsed_command_line.GetSwitchValue(test_shell::kCrashDumps));
+        parsed_command_line.GetSwitchValueNative(test_shell::kCrashDumps));
     new google_breakpad::ExceptionHandler(dir, 0, &MinidumpCallback, 0, true);
   }
 }

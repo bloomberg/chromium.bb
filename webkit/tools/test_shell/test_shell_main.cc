@@ -204,10 +204,10 @@ int main(int argc, char* argv[]) {
 #endif
 
   if (parsed_command_line.HasSwitch(test_shell::kTestShellTimeOut)) {
-    const std::wstring timeout_str = parsed_command_line.GetSwitchValue(
+    const std::string timeout_str = parsed_command_line.GetSwitchValueASCII(
         test_shell::kTestShellTimeOut);
     int timeout_ms;
-    base::StringToInt(WideToUTF8(timeout_str), &timeout_ms);
+    base::StringToInt(timeout_str, &timeout_ms);
     if (timeout_ms > 0)
       TestShell::SetFileTestTimeout(timeout_ms);
   }
