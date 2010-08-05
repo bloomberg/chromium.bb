@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -67,10 +67,10 @@ match_suppressions() {
              python "$THISDIR/test_suppressions.py" "$LOGS_DIR/report_"*
 }
 
-if [ "$1" == "fetch" ]
+if [ "$1" = "fetch" ]
 then
   fetch_logs
-elif [ "$1" == "match" ]
+elif [ "$1" = "match" ]
 then
   match_suppressions
 else
