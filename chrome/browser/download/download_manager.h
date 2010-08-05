@@ -187,14 +187,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Tests if a file type should be opened automatically.
   bool ShouldOpenFileBasedOnExtension(const FilePath& path) const;
 
-  // Tests if we think the server means for this mime_type to be executable.
-  static bool IsExecutableMimeType(const std::string& mime_type);
-
   // Tests if a file is considered executable, based on its type.
   bool IsExecutableFile(const FilePath& path) const;
-
-  // Tests if a file type is considered executable.
-  static bool IsExecutableExtension(const FilePath::StringType& extension);
 
   // Resets the automatic open preference.
   void ResetAutoOpenFiles();
@@ -210,24 +204,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   virtual void FileSelected(const FilePath& path, int index, void* params);
   virtual void FileSelectionCanceled(void* params);
 
-  // Deletes the specified path on the file thread.
-  void DeleteDownload(const FilePath& path);
-
   // Called when the user has validated the download of a dangerous file.
   void DangerousDownloadValidated(DownloadItem* download);
-
-  // Used to make sure we have a safe file extension and filename for a
-  // download.  |file_name| can either be just the file name or it can be a
-  // full path to a file.
-  static void GenerateSafeFileName(const std::string& mime_type,
-                                   FilePath* file_name);
-
-  // Create a file name based on the response from the server.
-  static void GenerateFileName(const GURL& url,
-                               const std::string& content_disposition,
-                               const std::string& referrer_charset,
-                               const std::string& mime_type,
-                               FilePath* generated_name);
 
  private:
   // This class is used to let an incognito DownloadManager observe changes to
@@ -260,12 +238,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void OpenDownloadInShell(const DownloadItem* download,
                            gfx::NativeView parent_window);
 
-  // Opens downloaded Chrome extension file (*.crx).
-  void OpenChromeExtension(const FilePath& full_path,
-                           const GURL& download_url,
-                           const GURL& referrer_url,
-                           const std::string& original_mime_type);
-
   // Shutdown the download manager.  This call is needed only after Init.
   void Shutdown();
 
@@ -284,15 +256,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void ContinueStartDownload(DownloadCreateInfo* info,
                              const FilePath& target_path);
 
-  // Create an extension based on the file name and mime type.
-  static void GenerateExtension(const FilePath& file_name,
-                                const std::string& mime_type,
-                                FilePath::StringType* generated_extension);
-
-  // Create a file name based on the response from the server.
-  static void GenerateFileNameFromInfo(DownloadCreateInfo* info,
-                                       FilePath* generated_name);
-
   // Persist the automatic opening preference.
   void SaveAutoOpens();
 
@@ -300,12 +263,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void DownloadCancelledInternal(int download_id,
                                  int render_process_id,
                                  int request_id);
-
-  // Runs the pause on the IO thread.
-  static void OnPauseDownloadRequest(ResourceDispatcherHost* rdh,
-                                     int render_process_id,
-                                     int request_id,
-                                     bool pause);
 
   // Performs the last steps required when a download has been completed.
   // It is necessary to break down the flow when a download is finished as
@@ -327,9 +284,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                                 bool success,
                                 const FilePath& new_path,
                                 int new_path_uniquifier);
-
-  // Checks whether a file represents a risk if downloaded.
-  bool IsDangerous(const FilePath& file_name);
 
   // Updates the app icon about the overall download progress.
   // Marked virtual for testing.

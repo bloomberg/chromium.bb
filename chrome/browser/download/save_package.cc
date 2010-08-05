@@ -21,6 +21,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/save_file.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "chrome/browser/download/save_item.h"
@@ -1308,10 +1309,8 @@ void SavePackage::ContinueSave(SavePackageParam* param,
                                int index) {
   // Ensure the filename is safe.
   param->saved_main_file_path = final_name;
-  DownloadManager* dlm = tab_contents_->profile()->GetDownloadManager();
-  DCHECK(dlm);
-  dlm->GenerateSafeFileName(param->current_tab_mime_type,
-                            &param->saved_main_file_path);
+  download_util::GenerateSafeFileName(param->current_tab_mime_type,
+                                      &param->saved_main_file_path);
 
   // The option index is not zero-based.
   DCHECK(index > 0 && index < 3);

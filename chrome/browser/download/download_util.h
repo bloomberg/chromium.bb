@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "gfx/native_widget_types.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -25,12 +26,14 @@ class Canvas;
 class BaseDownloadItemModel;
 class DictionaryValue;
 class DownloadItem;
-class FilePath;
+class DownloadManager;
 class GURL;
+class Profile;
 class ResourceDispatcherHost;
 class SkBitmap;
 class URLRequestContextGetter;
 
+struct DownloadCreateInfo;
 struct DownloadSaveInfo;
 
 namespace download_util {
@@ -46,6 +49,32 @@ bool CreateTemporaryFileForDownload(FilePath* path);
 
 // Return true if the |download_path| is dangerous path.
 bool DownloadPathIsDangerous(const FilePath& download_path);
+
+// Create an extension based on the file name and mime type.
+void GenerateExtension(const FilePath& file_name,
+                       const std::string& mime_type,
+                       FilePath::StringType* generated_extension);
+
+// Create a file name based on the response from the server.
+void GenerateFileNameFromInfo(DownloadCreateInfo* info,
+                              FilePath* generated_name);
+
+// Create a file name based on the response from the server.
+void GenerateFileName(const GURL& url,
+                      const std::string& content_disposition,
+                      const std::string& referrer_charset,
+                      const std::string& mime_type,
+                      FilePath* generated_name);
+
+// Used to make sure we have a safe file extension and filename for a
+// download.  |file_name| can either be just the file name or it can be a
+// full path to a file.
+void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name);
+
+// Opens downloaded Chrome extension file (*.crx).
+void OpenChromeExtension(Profile* profile,
+                         DownloadManager* download_manager,
+                         const DownloadItem& download_item);
 
 // Download progress animations ------------------------------------------------
 
@@ -125,7 +154,10 @@ void DragDownload(const DownloadItem* download,
 // Executable file support -----------------------------------------------------
 
 // Determine if the specified extension is an executable extension.
-bool IsExecutableExtension(const std::string& extension);
+bool IsExecutableExtension(const FilePath::StringType& extension);
+
+// Tests if we think the server means for this mime_type to be executable.
+bool IsExecutableMimeType(const std::string& mime_type);
 
 // Helpers ---------------------------------------------------------------------
 

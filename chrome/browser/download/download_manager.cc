@@ -22,8 +22,6 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_util.h"
-#include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/history/download_types.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -53,14 +51,6 @@ namespace {
 // Used to sort download items based on descending start time.
 bool CompareStartTime(DownloadItem* first, DownloadItem* second) {
   return first->start_time() > second->start_time();
-}
-
-void DeleteDownloadedFile(const FilePath& path) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-
-  // Make sure we only delete files.
-  if (!file_util::DirectoryExists(path))
-    file_util::Delete(path, false);
 }
 
 }  // namespace
@@ -293,7 +283,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
 
   if (info->save_info.file_path.empty()) {
     FilePath generated_name;
-    GenerateFileNameFromInfo(info, &generated_name);
+    download_util::GenerateFileNameFromInfo(info, &generated_name);
 
     // Freeze the user's preference for showing a Save As dialog.  We're going
     // to bounce around a bunch of threads and we don't want to worry about race
@@ -328,7 +318,7 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     // Downloads can be marked as dangerous for two reasons:
     // a) They have a dangerous-looking filename
     // b) They are an extension that is not from the gallery
-    if (IsDangerous(info->suggested_path.BaseName()))
+    if (IsExecutableFile(info->suggested_path.BaseName()))
       info->is_dangerous = true;
     else if (info->is_extension_install &&
              !ExtensionsService::IsDownloadFromGallery(info->url,
@@ -594,10 +584,7 @@ void DownloadManager::ContinueDownloadFinished(DownloadItem* download) {
 
   // Handle chrome extensions explicitly and skip the shell execute.
   if (download->is_extension_install()) {
-    OpenChromeExtension(download->full_path(),
-                        download->url(),
-                        download->referrer_url(),
-                        download->original_mime_type());
+    download_util::OpenChromeExtension(profile_, this, *download);
     download->set_auto_opened(true);
   } else if (download->open_when_complete() ||
              ShouldOpenFileBasedOnExtension(download->full_path()) ||
@@ -713,6 +700,9 @@ void DownloadManager::DownloadCancelledInternal(int download_id,
           file_manager_, &DownloadFileManager::CancelDownload, download_id));
 }
 
+// DownloadManager is owned by RDH, no need for reference counting.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(ResourceDispatcherHost);
+
 void DownloadManager::PauseDownload(int32 download_id, bool pause) {
   DownloadMap::iterator it = in_progress_.find(download_id);
   if (it == in_progress_.end())
@@ -725,24 +715,11 @@ void DownloadManager::PauseDownload(int32 download_id, bool pause) {
   // Inform the ResourceDispatcherHost of the new pause state.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(&DownloadManager::OnPauseDownloadRequest,
-                          g_browser_process->resource_dispatcher_host(),
-                          download->render_process_id(),
-                          download->request_id(),
-                          pause));
-}
-
-// static
-void DownloadManager::OnPauseDownloadRequest(ResourceDispatcherHost* rdh,
-                                             int render_process_id,
-                                             int request_id,
-                                             bool pause) {
-  rdh->PauseRequest(render_process_id, request_id, pause);
-}
-
-bool DownloadManager::IsDangerous(const FilePath& file_name) {
-  // TODO(jcampan): Improve me.
-  return IsExecutableFile(file_name);
+      NewRunnableMethod(g_browser_process->resource_dispatcher_host(),
+                        &ResourceDispatcherHost::PauseRequest,
+                        download->render_process_id(),
+                        download->request_id(),
+                        pause));
 }
 
 void DownloadManager::UpdateAppIcon() {
@@ -768,7 +745,7 @@ void DownloadManager::UpdateAppIcon() {
 
   float progress = 0;
   if (progress_known && download_count)
-    progress = (float)received_bytes / total_bytes;
+    progress = static_cast<float>(received_bytes) / total_bytes;
 
   download_util::UpdateAppIconDownloadProgress(download_count,
                                                progress_known,
@@ -887,122 +864,6 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
                           request_context_getter_));
 }
 
-void DownloadManager::GenerateExtension(
-    const FilePath& file_name,
-    const std::string& mime_type,
-    FilePath::StringType* generated_extension) {
-  // We're worried about three things here:
-  //
-  // 1) Security.  Many sites let users upload content, such as buddy icons, to
-  //    their web sites.  We want to mitigate the case where an attacker
-  //    supplies a malicious executable with an executable file extension but an
-  //    honest site serves the content with a benign content type, such as
-  //    image/jpeg.
-  //
-  // 2) Usability.  If the site fails to provide a file extension, we want to
-  //    guess a reasonable file extension based on the content type.
-  //
-  // 3) Shell integration.  Some file extensions automatically integrate with
-  //    the shell.  We block these extensions to prevent a malicious web site
-  //    from integrating with the user's shell.
-
-  static const FilePath::CharType default_extension[] =
-      FILE_PATH_LITERAL("download");
-
-  // See if our file name already contains an extension.
-  FilePath::StringType extension = file_name.Extension();
-  if (!extension.empty())
-    extension.erase(extension.begin());  // Erase preceding '.'.
-
-#if defined(OS_WIN)
-  // Rename shell-integrated extensions.
-  if (win_util::IsShellIntegratedExtension(extension))
-    extension.assign(default_extension);
-#endif
-
-  std::string mime_type_from_extension;
-  net::GetMimeTypeFromFile(file_name,
-                           &mime_type_from_extension);
-  if (mime_type == mime_type_from_extension) {
-    // The hinted extension matches the mime type.  It looks like a winner.
-    generated_extension->swap(extension);
-    return;
-  }
-
-  if (IsExecutableExtension(extension) && !IsExecutableMimeType(mime_type)) {
-    // We want to be careful about executable extensions.  The worry here is
-    // that a trusted web site could be tricked into dropping an executable file
-    // on the user's filesystem.
-    if (!net::GetPreferredExtensionForMimeType(mime_type, &extension)) {
-      // We couldn't find a good extension for this content type.  Use a dummy
-      // extension instead.
-      extension.assign(default_extension);
-    }
-  }
-
-  if (extension.empty()) {
-    net::GetPreferredExtensionForMimeType(mime_type, &extension);
-  } else {
-    // Append extension generated from the mime type if:
-    // 1. New extension is not ".txt"
-    // 2. New extension is not the same as the already existing extension.
-    // 3. New extension is not executable. This action mitigates the case when
-    //    an executable is hidden in a benign file extension;
-    //    E.g. my-cat.jpg becomes my-cat.jpg.js if content type is
-    //         application/x-javascript.
-    // 4. New extension is not ".tar" for .tar.gz files. For misconfigured web
-    //    servers, i.e. bug 5772.
-    // 5. The original extension is not ".tgz" & the new extension is not "gz".
-    FilePath::StringType append_extension;
-    if (net::GetPreferredExtensionForMimeType(mime_type, &append_extension)) {
-      if (append_extension != FILE_PATH_LITERAL("txt") &&
-          append_extension != extension &&
-          !IsExecutableExtension(append_extension) &&
-          !(append_extension == FILE_PATH_LITERAL("gz") &&
-            extension == FILE_PATH_LITERAL("tgz")) &&
-          (append_extension != FILE_PATH_LITERAL("tar") ||
-           extension != FILE_PATH_LITERAL("tar.gz"))) {
-        extension += FILE_PATH_LITERAL(".");
-        extension += append_extension;
-      }
-    }
-  }
-
-  generated_extension->swap(extension);
-}
-
-void DownloadManager::GenerateFileNameFromInfo(DownloadCreateInfo* info,
-                                               FilePath* generated_name) {
-  GenerateFileName(GURL(info->url),
-                   info->content_disposition,
-                   info->referrer_charset,
-                   info->mime_type,
-                   generated_name);
-}
-
-void DownloadManager::GenerateFileName(const GURL& url,
-                                       const std::string& content_disposition,
-                                       const std::string& referrer_charset,
-                                       const std::string& mime_type,
-                                       FilePath* generated_name) {
-  std::wstring default_name =
-      l10n_util::GetString(IDS_DEFAULT_DOWNLOAD_FILENAME);
-#if defined(OS_WIN)
-  FilePath default_file_path(default_name);
-#elif defined(OS_POSIX)
-  FilePath default_file_path(base::SysWideToNativeMB(default_name));
-#endif
-
-  *generated_name = net::GetSuggestedFilename(GURL(url),
-                                              content_disposition,
-                                              referrer_charset,
-                                              default_file_path);
-
-  DCHECK(!generated_name->empty());
-
-  GenerateSafeFileName(mime_type, generated_name);
-}
-
 void DownloadManager::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
   observer->ModelChanged();
@@ -1034,63 +895,9 @@ void DownloadManager::OpenDownload(const DownloadItem* download,
   // Open Chrome extensions with ExtensionsService. For everything else do shell
   // execute.
   if (download->is_extension_install()) {
-    OpenChromeExtension(download->full_path(),
-                        download->url(),
-                        download->referrer_url(),
-                        download->original_mime_type());
+    download_util::OpenChromeExtension(profile_, this, *download);
   } else {
     OpenDownloadInShell(download, parent_window);
-  }
-}
-
-void DownloadManager::OpenChromeExtension(
-    const FilePath& full_path,
-    const GURL& download_url,
-    const GURL& referrer_url,
-    const std::string& original_mime_type) {
-  // We don't support extensions in OTR mode.
-  ExtensionsService* service = profile_->GetExtensionsService();
-  if (service) {
-    NotificationService* nservice = NotificationService::current();
-    GURL nonconst_download_url = download_url;
-    nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
-                     Source<DownloadManager>(this),
-                     Details<GURL>(&nonconst_download_url));
-
-    scoped_refptr<CrxInstaller> installer(
-        new CrxInstaller(service->install_directory(),
-                         service,
-                         new ExtensionInstallUI(profile_)));
-    installer->set_delete_source(true);
-
-    if (UserScript::HasUserScriptFileExtension(download_url)) {
-      installer->InstallUserScript(full_path, download_url);
-    } else {
-      bool is_gallery_download =
-          ExtensionsService::IsDownloadFromGallery(download_url, referrer_url);
-      installer->set_original_mime_type(original_mime_type);
-      installer->set_apps_require_extension_mime_type(true);
-      installer->set_allow_privilege_increase(true);
-      installer->set_original_url(download_url);
-      installer->set_limit_web_extent_to_download_host(!is_gallery_download);
-      installer->InstallCrx(full_path);
-    }
-  } else {
-    TabContents* contents = NULL;
-    // Get last active normal browser of profile.
-    Browser* last_active = BrowserList::FindBrowserWithType(profile_,
-        Browser::TYPE_NORMAL, true);
-    if (last_active)
-      contents = last_active->GetSelectedTabContents();
-    if (contents) {
-      contents->AddInfoBar(
-          new SimpleAlertInfoBarDelegate(contents,
-              l10n_util::GetString(
-                  IDS_EXTENSION_INCOGNITO_INSTALL_INFOBAR_LABEL),
-              ResourceBundle::GetSharedInstance().GetBitmapNamed(
-                  IDR_INFOBAR_PLUGIN_INSTALL),
-              true));
-    }
   }
 }
 
@@ -1117,7 +924,7 @@ void DownloadManager::OpenFilesBasedOnExtension(
     return;
   DCHECK(extension[0] == FilePath::kExtensionSeparator);
   extension.erase(0, 1);
-  if (open && !IsExecutableExtension(extension))
+  if (open && !download_util::IsExecutableExtension(extension))
     auto_open_.insert(extension);
   else
     auto_open_.erase(extension);
@@ -1129,7 +936,7 @@ bool DownloadManager::ShouldOpenFileBasedOnExtension(
   FilePath::StringType extension = path.Extension();
   if (extension.empty())
     return false;
-  if (IsExecutableExtension(extension))
+  if (download_util::IsExecutableExtension(extension))
     return false;
   if (Extension::IsExtension(path))
     return false;
@@ -1140,59 +947,8 @@ bool DownloadManager::ShouldOpenFileBasedOnExtension(
   return false;
 }
 
-static const char* kExecutableWhiteList[] = {
-  // JavaScript is just as powerful as EXE.
-  "text/javascript",
-  "text/javascript;version=*",
-  // Registry files can cause critical changes to the MS OS behavior.
-  // Addition of this mimetype also addresses bug 7337.
-  "text/x-registry",
-  // Some sites use binary/octet-stream to mean application/octet-stream.
-  // See http://code.google.com/p/chromium/issues/detail?id=1573
-  "binary/octet-stream"
-};
-
-static const char* kExecutableBlackList[] = {
-  // These application types are not executable.
-  "application/*+xml",
-  "application/xml"
-};
-
-// static
-bool DownloadManager::IsExecutableMimeType(const std::string& mime_type) {
-  for (size_t i = 0; i < arraysize(kExecutableWhiteList); ++i) {
-    if (net::MatchesMimeType(kExecutableWhiteList[i], mime_type))
-      return true;
-  }
-  for (size_t i = 0; i < arraysize(kExecutableBlackList); ++i) {
-    if (net::MatchesMimeType(kExecutableBlackList[i], mime_type))
-      return false;
-  }
-  // We consider only other application types to be executable.
-  return net::MatchesMimeType("application/*", mime_type);
-}
-
 bool DownloadManager::IsExecutableFile(const FilePath& path) const {
-  return IsExecutableExtension(path.Extension());
-}
-
-bool DownloadManager::IsExecutableExtension(
-    const FilePath::StringType& extension) {
-  if (extension.empty())
-    return false;
-  if (!IsStringASCII(extension))
-    return false;
-#if defined(OS_WIN)
-  std::string ascii_extension = WideToASCII(extension);
-#elif defined(OS_POSIX)
-  std::string ascii_extension = extension;
-#endif
-
-  // Strip out leading dot if it's still there
-  if (ascii_extension[0] == FilePath::kExtensionSeparator)
-    ascii_extension.erase(0, 1);
-
-  return download_util::IsExecutableExtension(ascii_extension);
+  return download_util::IsExecutableExtension(path.Extension());
 }
 
 void DownloadManager::ResetAutoOpenFiles() {
@@ -1251,12 +1007,6 @@ void DownloadManager::FileSelectionCanceled(void* params) {
                             info->request_id);
 }
 
-void DownloadManager::DeleteDownload(const FilePath& path) {
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(&DeleteDownloadedFile, path));
-}
-
 void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
   DCHECK_EQ(DownloadItem::DANGEROUS, download->safety_state());
   download->set_safety_state(DownloadItem::DANGEROUS_BUT_VALIDATED);
@@ -1273,29 +1023,6 @@ void DownloadManager::DangerousDownloadValidated(DownloadItem* download) {
           this, &DownloadManager::ProceedWithFinishedDangerousDownload,
           download->db_handle(), download->full_path(),
           download->original_name()));
-}
-
-void DownloadManager::GenerateSafeFileName(const std::string& mime_type,
-                                           FilePath* file_name) {
-  // Make sure we get the right file extension
-  FilePath::StringType extension;
-  GenerateExtension(*file_name, mime_type, &extension);
-  *file_name = file_name->ReplaceExtension(extension);
-
-#if defined(OS_WIN)
-  // Prepend "_" to the file name if it's a reserved name
-  FilePath::StringType leaf_name = file_name->BaseName().value();
-  DCHECK(!leaf_name.empty());
-  if (win_util::IsReservedName(leaf_name)) {
-    leaf_name = FilePath::StringType(FILE_PATH_LITERAL("_")) + leaf_name;
-    *file_name = file_name->DirName();
-    if (file_name->value() == FilePath::kCurrentDirectory) {
-      *file_name = FilePath(leaf_name);
-    } else {
-      *file_name = file_name->Append(leaf_name);
-    }
-  }
-#endif
 }
 
 // Operations posted to us from the history service ----------------------------

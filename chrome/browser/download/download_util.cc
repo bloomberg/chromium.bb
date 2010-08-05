@@ -19,16 +19,27 @@
 #include "base/path_service.h"
 #include "base/singleton.h"
 #include "base/string_number_conversions.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/history/download_types.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/time_format.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/rect.h"
@@ -36,6 +47,7 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "net/base/mime_util.h"
+#include "net/base/net_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkShader.h"
@@ -56,7 +68,9 @@
 
 #if defined(OS_WIN)
 #include "app/os_exchange_data_provider_win.h"
+#include "app/win_util.h"
 #include "base/base_drag_source.h"
+#include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_list.h"
@@ -107,6 +121,196 @@ bool DownloadPathIsDangerous(const FilePath& download_path) {
     return false;
   }
   return (download_path == desktop_dir);
+}
+
+void GenerateExtension(const FilePath& file_name,
+                       const std::string& mime_type,
+                       FilePath::StringType* generated_extension) {
+  // We're worried about three things here:
+  //
+  // 1) Security.  Many sites let users upload content, such as buddy icons, to
+  //    their web sites.  We want to mitigate the case where an attacker
+  //    supplies a malicious executable with an executable file extension but an
+  //    honest site serves the content with a benign content type, such as
+  //    image/jpeg.
+  //
+  // 2) Usability.  If the site fails to provide a file extension, we want to
+  //    guess a reasonable file extension based on the content type.
+  //
+  // 3) Shell integration.  Some file extensions automatically integrate with
+  //    the shell.  We block these extensions to prevent a malicious web site
+  //    from integrating with the user's shell.
+
+  static const FilePath::CharType default_extension[] =
+      FILE_PATH_LITERAL("download");
+
+  // See if our file name already contains an extension.
+  FilePath::StringType extension = file_name.Extension();
+  if (!extension.empty())
+    extension.erase(extension.begin());  // Erase preceding '.'.
+
+#if defined(OS_WIN)
+  // Rename shell-integrated extensions.
+  if (win_util::IsShellIntegratedExtension(extension))
+    extension.assign(default_extension);
+#endif
+
+  std::string mime_type_from_extension;
+  net::GetMimeTypeFromFile(file_name,
+                           &mime_type_from_extension);
+  if (mime_type == mime_type_from_extension) {
+    // The hinted extension matches the mime type.  It looks like a winner.
+    generated_extension->swap(extension);
+    return;
+  }
+
+  if (IsExecutableExtension(extension) && !IsExecutableMimeType(mime_type)) {
+    // We want to be careful about executable extensions.  The worry here is
+    // that a trusted web site could be tricked into dropping an executable file
+    // on the user's filesystem.
+    if (!net::GetPreferredExtensionForMimeType(mime_type, &extension)) {
+      // We couldn't find a good extension for this content type.  Use a dummy
+      // extension instead.
+      extension.assign(default_extension);
+    }
+  }
+
+  if (extension.empty()) {
+    net::GetPreferredExtensionForMimeType(mime_type, &extension);
+  } else {
+    // Append extension generated from the mime type if:
+    // 1. New extension is not ".txt"
+    // 2. New extension is not the same as the already existing extension.
+    // 3. New extension is not executable. This action mitigates the case when
+    //    an executable is hidden in a benign file extension;
+    //    E.g. my-cat.jpg becomes my-cat.jpg.js if content type is
+    //         application/x-javascript.
+    // 4. New extension is not ".tar" for .tar.gz files. For misconfigured web
+    //    servers, i.e. bug 5772.
+    // 5. The original extension is not ".tgz" & the new extension is not "gz".
+    FilePath::StringType append_extension;
+    if (net::GetPreferredExtensionForMimeType(mime_type, &append_extension)) {
+      if (append_extension != FILE_PATH_LITERAL("txt") &&
+          append_extension != extension &&
+          !IsExecutableExtension(append_extension) &&
+          !(append_extension == FILE_PATH_LITERAL("gz") &&
+            extension == FILE_PATH_LITERAL("tgz")) &&
+          (append_extension != FILE_PATH_LITERAL("tar") ||
+           extension != FILE_PATH_LITERAL("tar.gz"))) {
+        extension += FILE_PATH_LITERAL(".");
+        extension += append_extension;
+      }
+    }
+  }
+
+  generated_extension->swap(extension);
+}
+
+void GenerateFileNameFromInfo(DownloadCreateInfo* info,
+                              FilePath* generated_name) {
+  GenerateFileName(GURL(info->url),
+                   info->content_disposition,
+                   info->referrer_charset,
+                   info->mime_type,
+                   generated_name);
+}
+
+void GenerateFileName(const GURL& url,
+                      const std::string& content_disposition,
+                      const std::string& referrer_charset,
+                      const std::string& mime_type,
+                      FilePath* generated_name) {
+  std::wstring default_name =
+      l10n_util::GetString(IDS_DEFAULT_DOWNLOAD_FILENAME);
+#if defined(OS_WIN)
+  FilePath default_file_path(default_name);
+#elif defined(OS_POSIX)
+  FilePath default_file_path(base::SysWideToNativeMB(default_name));
+#endif
+
+  *generated_name = net::GetSuggestedFilename(GURL(url),
+                                              content_disposition,
+                                              referrer_charset,
+                                              default_file_path);
+
+  DCHECK(!generated_name->empty());
+
+  GenerateSafeFileName(mime_type, generated_name);
+}
+
+void GenerateSafeFileName(const std::string& mime_type, FilePath* file_name) {
+  // Make sure we get the right file extension
+  FilePath::StringType extension;
+  GenerateExtension(*file_name, mime_type, &extension);
+  *file_name = file_name->ReplaceExtension(extension);
+
+#if defined(OS_WIN)
+  // Prepend "_" to the file name if it's a reserved name
+  FilePath::StringType leaf_name = file_name->BaseName().value();
+  DCHECK(!leaf_name.empty());
+  if (win_util::IsReservedName(leaf_name)) {
+    leaf_name = FilePath::StringType(FILE_PATH_LITERAL("_")) + leaf_name;
+    *file_name = file_name->DirName();
+    if (file_name->value() == FilePath::kCurrentDirectory) {
+      *file_name = FilePath(leaf_name);
+    } else {
+      *file_name = file_name->Append(leaf_name);
+    }
+  }
+#endif
+}
+
+void OpenChromeExtension(Profile* profile,
+                         DownloadManager* download_manager,
+                         const DownloadItem& download_item) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(download_item.is_extension_install());
+
+  // We don't support extensions in OTR mode.
+  ExtensionsService* service = profile->GetExtensionsService();
+  if (service) {
+    NotificationService* nservice = NotificationService::current();
+    GURL nonconst_download_url = download_item.url();
+    nservice->Notify(NotificationType::EXTENSION_READY_FOR_INSTALL,
+                     Source<DownloadManager>(download_manager),
+                     Details<GURL>(&nonconst_download_url));
+
+    scoped_refptr<CrxInstaller> installer(
+        new CrxInstaller(service->install_directory(),
+                         service,
+                         new ExtensionInstallUI(profile)));
+    installer->set_delete_source(true);
+
+    if (UserScript::HasUserScriptFileExtension(download_item.url())) {
+      installer->InstallUserScript(download_item.full_path(),
+                                   download_item.url());
+    } else {
+      bool is_gallery_download = ExtensionsService::IsDownloadFromGallery(
+          download_item.url(), download_item.referrer_url());
+      installer->set_original_mime_type(download_item.original_mime_type());
+      installer->set_apps_require_extension_mime_type(true);
+      installer->set_allow_privilege_increase(true);
+      installer->set_original_url(download_item.url());
+      installer->set_limit_web_extent_to_download_host(!is_gallery_download);
+      installer->InstallCrx(download_item.full_path());
+    }
+  } else {
+    TabContents* contents = NULL;
+    // Get last active normal browser of profile.
+    Browser* last_active =
+        BrowserList::FindBrowserWithType(profile, Browser::TYPE_NORMAL, true);
+    if (last_active)
+      contents = last_active->GetSelectedTabContents();
+    if (contents) {
+      contents->AddInfoBar(
+          new SimpleAlertInfoBarDelegate(contents,
+              l10n_util::GetString(
+                  IDS_EXTENSION_INCOGNITO_INSTALL_INFOBAR_LABEL),
+              ResourceBundle::GetSharedInstance().GetBitmapNamed(
+                  IDR_INFOBAR_PLUGIN_INSTALL),
+              true));
+    }
+  }
 }
 
 // Download progress painting --------------------------------------------------

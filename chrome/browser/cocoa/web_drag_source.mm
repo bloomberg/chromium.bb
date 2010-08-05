@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/drag_download_file.h"
 #include "chrome/browser/download/drag_download_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -367,11 +368,11 @@ void PromiseWriterTask::Run() {
               &downloadURL_)) {
         std::string contentDisposition =
             "attachment; filename=" + fileName.value();
-        DownloadManager::GenerateFileName(downloadURL_,
-                                          contentDisposition,
-                                          std::string(),
-                                          UTF16ToUTF8(mimeType),
-                                          &downloadFileName_);
+        download_util::GenerateFileName(downloadURL_,
+                                        contentDisposition,
+                                        std::string(),
+                                        UTF16ToUTF8(mimeType),
+                                        &downloadFileName_);
         fileExtension = SysUTF8ToNSString(downloadFileName_.Extension());
       }
     }

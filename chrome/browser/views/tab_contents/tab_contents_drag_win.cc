@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/drag_download_file.h"
 #include "chrome/browser/download/drag_download_util.h"
 #include "chrome/browser/profile.h"
@@ -198,11 +199,11 @@ void TabContentsDragWin::PrepareDragForDownload(
   std::string content_disposition =
       "attachment; filename=" + UTF16ToUTF8(file_name.value());
   FilePath generated_file_name;
-  DownloadManager::GenerateFileName(download_url,
-                                    content_disposition,
-                                    std::string(),
-                                    UTF16ToUTF8(mime_type),
-                                    &generated_file_name);
+  download_util::GenerateFileName(download_url,
+                                  content_disposition,
+                                  std::string(),
+                                  UTF16ToUTF8(mime_type),
+                                  &generated_file_name);
 
   // Provide the data as file (CF_HDROP). A temporary download file with the
   // Zone.Identifier ADS (Alternate Data Stream) attached will be created.

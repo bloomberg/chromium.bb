@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/mime_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/download/drag_download_file.h"
 #include "chrome/browser/download/drag_download_util.h"
 #include "chrome/browser/gtk/gtk_util.h"
@@ -294,11 +294,11 @@ void TabContentsDragSource::OnDragBegin(GtkWidget* sender,
     std::string content_disposition("attachment; filename=");
     content_disposition += download_file_name_.value();
     FilePath generated_download_file_name;
-    DownloadManager::GenerateFileName(download_url_,
-                                      content_disposition,
-                                      std::string(),
-                                      download_mime_type,
-                                      &generated_download_file_name);
+    download_util::GenerateFileName(download_url_,
+                                    content_disposition,
+                                    std::string(),
+                                    download_mime_type,
+                                    &generated_download_file_name);
 
     // Pass the file name to the drop target by setting the source window's
     // XdndDirectSave0 property.

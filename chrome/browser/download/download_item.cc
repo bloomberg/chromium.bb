@@ -4,8 +4,10 @@
 
 #include "chrome/browser/download/download_item.h"
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/timer.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
@@ -16,6 +18,14 @@ namespace {
 
 // Update frequency (milliseconds).
 const int kUpdateTimeMs = 1000;
+
+void DeleteDownloadedFile(const FilePath& path) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  // Make sure we only delete files.
+  if (!file_util::DirectoryExists(path))
+    file_util::Delete(path, false);
+}
 
 }  // namespace
 
@@ -229,8 +239,11 @@ void DownloadItem::Finished(int64 size) {
 void DownloadItem::Remove(bool delete_on_disk) {
   Cancel(true);
   state_ = REMOVING;
-  if (delete_on_disk)
-    download_manager_->DeleteDownload(full_path_);
+  if (delete_on_disk) {
+    ChromeThread::PostTask(
+        ChromeThread::FILE, FROM_HERE,
+        NewRunnableFunction(&DeleteDownloadedFile, full_path_));
+  }
   download_manager_->RemoveDownload(db_handle_);
   // We have now been deleted.
 }

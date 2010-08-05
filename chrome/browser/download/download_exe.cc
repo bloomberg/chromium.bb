@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "net/base/mime_util.h"
+#include "net/base/net_util.h"
 
 namespace download_util {
 
@@ -166,12 +168,58 @@ static const char* const g_executables[] = {
 #endif
 };
 
-bool IsExecutableExtension(const std::string& extension) {
+bool IsExecutableExtension(const FilePath::StringType& extension) {
+  if (extension.empty())
+    return false;
+  if (!IsStringASCII(extension))
+    return false;
+#if defined(OS_WIN)
+  std::string ascii_extension = WideToASCII(extension);
+#elif defined(OS_POSIX)
+  std::string ascii_extension = extension;
+#endif
+
+  // Strip out leading dot if it's still there
+  if (ascii_extension[0] == FilePath::kExtensionSeparator)
+    ascii_extension.erase(0, 1);
+
   for (size_t i = 0; i < arraysize(g_executables); ++i) {
-    if (LowerCaseEqualsASCII(extension, g_executables[i]))
+    if (LowerCaseEqualsASCII(ascii_extension, g_executables[i]))
       return true;
   }
   return false;
 }
+
+static const char* kExecutableWhiteList[] = {
+  // JavaScript is just as powerful as EXE.
+  "text/javascript",
+  "text/javascript;version=*",
+  // Registry files can cause critical changes to the MS OS behavior.
+  // Addition of this mimetype also addresses bug 7337.
+  "text/x-registry",
+  // Some sites use binary/octet-stream to mean application/octet-stream.
+  // See http://code.google.com/p/chromium/issues/detail?id=1573
+  "binary/octet-stream"
+};
+
+static const char* kExecutableBlackList[] = {
+  // These application types are not executable.
+  "application/*+xml",
+  "application/xml"
+};
+
+bool IsExecutableMimeType(const std::string& mime_type) {
+  for (size_t i = 0; i < arraysize(kExecutableWhiteList); ++i) {
+    if (net::MatchesMimeType(kExecutableWhiteList[i], mime_type))
+      return true;
+  }
+  for (size_t i = 0; i < arraysize(kExecutableBlackList); ++i) {
+    if (net::MatchesMimeType(kExecutableBlackList[i], mime_type))
+      return false;
+  }
+  // We consider only other application types to be executable.
+  return net::MatchesMimeType("application/*", mime_type);
+}
+
 
 }  // namespace download_util
