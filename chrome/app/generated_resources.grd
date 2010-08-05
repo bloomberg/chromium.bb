@@ -3755,7 +3755,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Click-to-load -->
       <message name="IDS_PLUGIN_LOAD" desc="The link for loading a blocked plug-in.">
-        Load plug-in
+        Run plug-in this time
       </message>
 
       <!-- Session Crashed Info Bar-->

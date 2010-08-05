@@ -50,8 +50,10 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                                  << resource_id;
 
   DictionaryValue localized_strings;
-  localized_strings.SetString("loadPlugin",
-                              l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD));
+  localized_strings.SetString(L"loadPlugin",
+      l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD));
+  localized_strings.SetString(L"message",
+      l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_TITLE));
 
   // "t" is the id of the templates root node.
   std::string htmlData = jstemplate_builder::GetTemplatesHtml(
