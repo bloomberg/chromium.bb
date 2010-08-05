@@ -38,9 +38,6 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   virtual bool GetAcceleratorForCommandId(int command_id,
                                           menus::Accelerator* accelerator);
  private:
-  // The current radio group for radio menu items.
-  int current_radio_group_id_;
-
   // The context menu itself and its contents.
   scoped_ptr<views::Menu2> menu_;
 
