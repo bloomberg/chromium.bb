@@ -7,5 +7,6 @@ DiskCacheEntryTest.*HugeSparse*
 SpdyNetworkingTest/SpdyNetworkTransactionTest.SocketWriteReturnsZero*
 # See http://crbug.com/50918
 SpdyNetworkingTest/SpdyNetworkTransactionTest.CancelledTransactionSendRst*
-
+# See http://crbug.com/51087
+SpdyNetworkingTest*
 
