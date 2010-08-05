@@ -558,10 +558,18 @@ const struct {
 
   { FILE_PATH_LITERAL("/foo/bar.exe"),
     "text/html",
+#if defined(OS_MACOSX)
+    FILE_PATH_LITERAL("/foo/bar.exe.html") },
+#else
     FILE_PATH_LITERAL("/foo/bar.html") },
+#endif
   { FILE_PATH_LITERAL("/foo/bar.exe"),
     "image/gif",
+#if defined(OS_MACOSX)
+    FILE_PATH_LITERAL("/foo/bar.exe.gif") },
+#else
     FILE_PATH_LITERAL("/foo/bar.gif") },
+#endif
 
   { FILE_PATH_LITERAL("/foo/google.com"),
     "text/html",
