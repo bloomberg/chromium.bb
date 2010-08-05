@@ -2141,8 +2141,9 @@ extrasdk-bitcode-make() {
   mkdir -p "${objdir}"
   ts-touch-open "${objdir}"
 
-  TARGET_CODE=bc-arm RunWithLog "extra_sdk_bitcode" \
+  RunWithLog "extra_sdk_bitcode" \
       ./scons MODE=nacl_extra_sdk \
+      bitcode=1 \
       platform=arm \
       sdl=none \
       naclsdk_validate=0 \
@@ -2201,8 +2202,9 @@ extrasdk-bitcode-install() {
   cp -fa "${lib_save_native}"/* "${lib_install_native}"
 
   # Do install_libpthread just in case it was wiped out.
-  TARGET_CODE=bc-arm RunWithLog "extra_sdk_bitcode.libpthread" \
+  RunWithLog "extra_sdk_bitcode.libpthread" \
       ./scons MODE=nacl_extra_sdk \
+      bitcode=1 \
       platform=arm \
       sdl=none \
       naclsdk_validate=0 \
@@ -2484,25 +2486,28 @@ verify() {
 if ${UTMAN_DEBUG}; then
   readonly SCONS_ARGS=(MODE=nacl
                        --verbose
-                       platform=arm
                        sdl=none
                        bitcode=1)
 
-  readonly SCONS_ARGS_SEL_LDR=(sdl=none
+  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
+                               bitcode=1
+                               sdl=none
                                --verbose)
+
 else
   readonly SCONS_ARGS=(MODE=nacl
-                       platform=arm
                        sdl=none
                        naclsdk_validate=0
                        sysinfo=
                        bitcode=1
                        -j${UTMAN_CONCURRENCY})
 
-  readonly SCONS_ARGS_SEL_LDR=(sdl=none
+  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
+                               bitcode=1
+                               sdl=none
                                naclsdk_validate=0
-                               sysinfo=
-                               -j${UTMAN_CONCURRENCY})
+                              sysinfo=
+                              -j${UTMAN_CONCURRENCY})
 fi
 
 #@ show-tests            - see what tests can be run
@@ -2511,38 +2516,35 @@ show-tests() {
   cat $(find tests -name nacl.scons) | grep -o 'run_[A-Za-z_-]*' | sort | uniq
 }
 
-
 scons-build-sel_ldr () {
   local  platform=$1
   ./scons platform=${platform} ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
 }
 
 scons-clean-pnacl-build-dir () {
-  local  platform=$1
-  # NOTE: we expect to have differnt dirs for each platform soon
-  rm -rf scons-out/nacl-arm-pnacl
+  rm -rf scons-out/nacl-$1-pnacl
 }
 
 scons-pnacl-build () {
   local platform=$1
   shift
-  # NOTE: we currently run all of pnacl through the arm target so we need
-  #       to turn of qemu emulation when we are not really targeting arm
-  #
-  local emu_flags="force_emulator="
-  if [[ ${platform} == "arm" ]] ; then
-    emu_flags=""
-  fi
-  TARGET_CODE=bc-${platform} ./scons ${SCONS_ARGS[@]} \
+  ./scons ${SCONS_ARGS[@]} \
+          platform=${platform} \
           force_sel_ldr=scons-out/opt-linux-${platform}/staging/sel_ldr \
-          ${emu_flags} "$@"
+          "$@"
 }
 
 test-scons-common () {
   local platform=$1
   shift
-  scons-build-sel_ldr ${platform}
   scons-clean-pnacl-build-dir ${platform}
+
+  # NOTE: We build sel_ldr separately and use the force_sel_ldr magic
+  #       in order to reduce testing time.
+  #       Instead, we could invoke scons using MODE=nacl,opt-linux ... smoke_tests
+  #       this would build sel_ldr automatically but it would also build and run
+  #       tons of trusted tests which we do not really care about.
+  scons-build-sel_ldr ${platform}
 
   if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
     # first build everything

@@ -376,12 +376,14 @@ def DecodePlatform(platform):
   assert 0
 
 BUILD_NAME = GetPlatform('buildplatform')
-pre_base_env.Replace(BUILD_ARCHITECTURE = DecodePlatform(BUILD_NAME)['arch'])
-pre_base_env.Replace(BUILD_SUBARCH = DecodePlatform(BUILD_NAME)['subarch'])
+pre_base_env.Replace(BUILD_PLATFORM=BUILD_NAME)
+pre_base_env.Replace(BUILD_ARCHITECTURE=DecodePlatform(BUILD_NAME)['arch'])
+pre_base_env.Replace(BUILD_SUBARCH=DecodePlatform(BUILD_NAME)['subarch'])
 
 TARGET_NAME = GetPlatform('targetplatform')
-pre_base_env.Replace(TARGET_ARCHITECTURE = DecodePlatform(TARGET_NAME)['arch'])
-pre_base_env.Replace(TARGET_SUBARCH = DecodePlatform(TARGET_NAME)['subarch'])
+pre_base_env.Replace(TARGET_PLATFORM=TARGET_NAME)
+pre_base_env.Replace(TARGET_ARCHITECTURE=DecodePlatform(TARGET_NAME)['arch'])
+pre_base_env.Replace(TARGET_SUBARCH=DecodePlatform(TARGET_NAME)['subarch'])
 
 # TODO(robertm): hacks for not breaking things while switching to pnacl TC
 #                This should be fixed by integrating pnacl more tightly
@@ -1431,14 +1433,13 @@ if ARGUMENTS.get('with_valgrind'):
                   LINKFLAGS = ['-Wl,-u,have_nacl_valgrind_interceptors'],
                   LIBS = ['valgrind'])
 
-if nacl_env['BUILD_ARCHITECTURE'] == 'x86':
+if nacl_env['BUILD_ARCHITECTURE'] == 'x86' and not ARGUMENTS.get('bitcode'):
   if nacl_env['BUILD_SUBARCH'] == '32':
     nacl_env.Append(CCFLAGS = ['-m32'], LINKFLAGS = '-m32')
   elif nacl_env['BUILD_SUBARCH'] == '64':
     nacl_env.Append(CCFLAGS = ['-m64'], LINKFLAGS = '-m64')
 
-if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
-    nacl_env['TARGET_ARCHITECTURE'] == 'arm'):
+if ARGUMENTS.get('bitcode'):
   # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
   nacl_env.FilterOut(CCFLAGS = ['-Werror'])
   nacl_env.Append(CFLAGS = werror_flags)

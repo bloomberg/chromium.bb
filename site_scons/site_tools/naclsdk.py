@@ -183,10 +183,8 @@ def _SetEnvForX86Sdk(env, sdk_path):
     env.Replace(LINK="nacl-glibc-gcc")
     env.Replace(NACL_SDK_LIB=sdk_path + '/nacl64/lib')
 
-def _SetEnvForPnacl(env, mode):
-  assert mode in ['bc-arm', 'bc-x86-32', 'bc-x86-64']
-  # skip 'bc-' prefix
-  arch = mode[3:]
+def _SetEnvForPnacl(env, arch):
+  assert arch in ['arm', 'x86-32', 'x86-64']
   pnacl_sdk_root = '${MAIN_DIR}/toolchain/linux_arm-untrusted'
   pnacl_sdk_lib = pnacl_sdk_root + '/libs-bitcode'
   #TODO(robertm): remove NACL_SDK_INCLUDE ASAP
@@ -324,20 +322,11 @@ def generate(env):
   if sdk_mode == 'manual':
     _SetEnvForSdkManually(env)
   else:
-    # NOTE: temporary kludge until we properly use TARGET_ARCH
-    target_code = os.environ.get('TARGET_CODE')
-    if not target_code:
-      if (SCons.Script.ARGUMENTS.get('bitcode') or
-          env['TARGET_ARCHITECTURE'] == 'arm'):
-        target_code = 'bc-arm'
-
-    if env['TARGET_ARCHITECTURE'] == 'x86':
+    # if bitcode=1 use pnacl toolchain
+    if SCons.Script.ARGUMENTS.get('bitcode'):
+      _SetEnvForPnacl(env, env['TARGET_PLATFORM'])
+    elif env['TARGET_ARCHITECTURE'] == 'x86':
       _SetEnvForX86Sdk(env, root)
-    # TODO(robertm): this should be triggered by bitcode=1
-    #                and the mode should come in via
-    #                TARGET_ARCH
-    elif target_code:
-      _SetEnvForPnacl(env, target_code)
     else:
       print "ERROR: unknown TARGET_ARCHITECTURE: ", env['TARGET_ARCHITECTURE']
       assert 0
