@@ -7,8 +7,8 @@
 #include "base/test/test_file_util.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/password_manager/encryptor.h"
-#include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
+#include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/util/user_settings.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/common/net/http_return.h"
@@ -43,7 +43,7 @@ class GaiaAuthMockForAuthWatcher : public gaia::GaiaAuthenticator {
 
   virtual int GetBackoffDelaySeconds(
       int current_backoff_delay) {
-    return AllStatus::GetRecommendedDelaySeconds(current_backoff_delay);
+    return SyncerThread::GetRecommendedDelaySeconds(current_backoff_delay);
   }
 
   void SendBadAuthTokenForNextRequest() { use_bad_auth_token_ = true; }

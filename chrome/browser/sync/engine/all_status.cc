@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/port.h"
-#include "base/rand_util.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
@@ -22,11 +21,6 @@
 namespace browser_sync {
 
 static const time_t kMinSyncObserveInterval = 10;  // seconds
-
-// Backoff interval randomization factor.
-static const int kBackoffRandomizationFactor = 2;
-
-const int AllStatus::kMaxBackoffSeconds = 60 * 60 * 4;  // 4 hours.
 
 const char* AllStatus::GetSyncStatusString(SyncStatus icon) {
   const char* strings[] = {"OFFLINE", "OFFLINE_UNSYNCED", "SYNCING", "READY",
@@ -234,31 +228,6 @@ void AllStatus::HandleServerConnectionEvent(
 AllStatus::Status AllStatus::status() const {
   AutoLock lock(mutex_);
   return status_;
-}
-
-int AllStatus::GetRecommendedDelaySeconds(int base_delay_seconds) {
-  if (base_delay_seconds >= kMaxBackoffSeconds)
-    return kMaxBackoffSeconds;
-
-  // This calculates approx. base_delay_seconds * 2 +/- base_delay_seconds / 2
-  int backoff_s = (0 == base_delay_seconds) ? 1 :
-      base_delay_seconds * kBackoffRandomizationFactor;
-
-  // Flip a coin to randomize backoff interval by +/- 50%.
-  int rand_sign = base::RandInt(0, 1) * 2 - 1;
-
-  // Truncation is adequate for rounding here.
-  backoff_s = backoff_s +
-      (rand_sign * (base_delay_seconds / kBackoffRandomizationFactor));
-
-  // Cap the backoff interval.
-  backoff_s = std::min(backoff_s, kMaxBackoffSeconds);
-
-  return backoff_s;
-}
-
-int AllStatus::GetRecommendedDelay(int base_delay_ms) const {
-  return GetRecommendedDelaySeconds(base_delay_ms / 1000) * 1000;
 }
 
 void AllStatus::SetNotificationsEnabled(bool notifications_enabled) {

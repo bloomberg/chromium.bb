@@ -1996,7 +1996,6 @@
       'type': 'executable',
       'sources': [
         'app/breakpad_mac_stubs.mm',
-        'browser/sync/engine/all_status_unittest.cc',
         'browser/sync/engine/apply_updates_command_unittest.cc',
         'browser/sync/engine/auth_watcher_unittest.cc',
         'browser/sync/engine/cleanup_disabled_types_command_unittest.cc',

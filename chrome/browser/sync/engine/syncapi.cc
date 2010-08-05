@@ -848,7 +848,7 @@ class BridgedGaiaAuthenticator : public gaia::GaiaAuthenticator {
   }
 
   virtual int GetBackoffDelaySeconds(int current_backoff_delay) {
-    return AllStatus::GetRecommendedDelaySeconds(current_backoff_delay);
+    return SyncerThread::GetRecommendedDelaySeconds(current_backoff_delay);
   }
  private:
   const std::string gaia_source_;
@@ -1374,7 +1374,7 @@ bool SyncManager::SyncInternal::Init(
           dir_manager(), model_safe_worker_registrar);
 
   // The SyncerThread takes ownership of |context|.
-  syncer_thread_ = new SyncerThread(context, &allstatus_);
+  syncer_thread_ = new SyncerThread(context);
   allstatus_.WatchSyncerThread(syncer_thread());
 
   // Subscribe to the syncer thread's channel.

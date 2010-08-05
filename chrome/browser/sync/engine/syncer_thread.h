@@ -22,7 +22,6 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/sync/engine/all_status.h"
 #if defined(OS_LINUX)
 #include "chrome/browser/sync/engine/idle_query_linux.h"
 #endif
@@ -103,8 +102,10 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // 30 minutes by default. If exponential backoff kicks in, this is the
   // longest possible poll interval.
   static const int kDefaultMaxPollIntervalMs;
+  // Maximum interval for exponential backoff.
+  static const int kMaxBackoffSeconds;
 
-  SyncerThread(sessions::SyncSessionContext* context, AllStatus* all_status);
+  explicit SyncerThread(sessions::SyncSessionContext* context);
   virtual ~SyncerThread();
 
   virtual void WatchConnectionManager(ServerConnectionManager* conn_mgr);
@@ -137,6 +138,9 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   void SetNotificationsEnabled(bool notifications_enabled);
 
   virtual SyncerEventChannel* relay_channel();
+
+  // DDOS avoidance function.  The argument and return value is in seconds
+  static int GetRecommendedDelaySeconds(int base_delay_seconds);
 
  protected:
   virtual void ThreadMain();
@@ -254,7 +258,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   // in case of exponential backoff so we only allow one nudge per backoff
   // interval.
   WaitInterval CalculatePollingWaitTime(
-      const AllStatus::Status& status,
       int last_poll_wait,  // in s
       int* user_idle_milliseconds,
       bool* continue_sync_cycle,
@@ -301,7 +304,6 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread>,
   bool p2p_subscribed_;
 
   scoped_ptr<EventListenerHookup> conn_mgr_hookup_;
-  const AllStatus* allstatus_;
 
   // Modifiable versions of kDefaultLongPollIntervalSeconds which can be
   // updated by the server.

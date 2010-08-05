@@ -19,6 +19,7 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   status->set_syncing(false);
   session->context()->set_previous_session_routing_info(
       session->routing_info());
+  session->context()->set_last_snapshot(session->TakeSnapshot());
 
   // This might be the first time we've fully completed a sync cycle, for
   // some subset of the currently synced datatypes.

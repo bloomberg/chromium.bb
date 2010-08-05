@@ -105,6 +105,14 @@ class SyncSessionContext {
     previous_session_routing_info_ = info;
   }
 
+  sessions::SyncSessionSnapshot* previous_session_snapshot() {
+    return previous_session_snapshot_.get();
+  }
+
+  void set_last_snapshot(const SyncSessionSnapshot& snapshot) {
+    previous_session_snapshot_.reset(new SyncSessionSnapshot(snapshot));
+  }
+
  private:
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
@@ -138,6 +146,9 @@ class SyncSessionContext {
   // Some routing info history to help us clean up types that get disabled
   // by the user.
   ModelSafeRoutingInfo previous_session_routing_info_;
+
+  // Cache of last session snapshot information.
+  scoped_ptr<sessions::SyncSessionSnapshot> previous_session_snapshot_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };

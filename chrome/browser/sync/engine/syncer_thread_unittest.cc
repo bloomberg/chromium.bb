@@ -28,13 +28,24 @@ using testing::AnyNumber;
 using testing::Field;
 
 namespace browser_sync {
+using sessions::ErrorCounters;
 using sessions::SyncSessionContext;
+using sessions::SyncSessionSnapshot;
+using sessions::SyncerStatus;
 
 typedef testing::Test SyncerThreadTest;
 typedef SyncerThread::WaitInterval WaitInterval;
 
 ACTION_P(SignalEvent, event) {
   event->Signal();
+}
+
+SyncSessionSnapshot SessionSnapshotForTest(
+    int64 num_server_changes_remaining, int64 max_local_timestamp,
+    int64 unsynced_count) {
+  return SyncSessionSnapshot(SyncerStatus(), ErrorCounters(),
+      num_server_changes_remaining, max_local_timestamp, false,
+      syncable::ModelTypeBitSet(), false, false, unsynced_count, 0, false);
 }
 
 class ListenerMock : public ChannelEventHandler<SyncerEvent> {
@@ -53,14 +64,12 @@ class SyncerThreadWithSyncerTest : public testing::Test,
     metadb_.SetUp();
     connection_.reset(new MockConnectionManager(metadb_.manager(),
                                                 metadb_.name()));
-    allstatus_.reset(new AllStatus());
     worker_ = new ModelSafeWorker();
     SyncSessionContext* context = new SyncSessionContext(connection_.get(),
         NULL, metadb_.manager(), this);
-    syncer_thread_ = new SyncerThread(context, allstatus_.get());
+    syncer_thread_ = new SyncerThread(context);
     syncer_event_hookup_.reset(
         syncer_thread_->relay_channel()->AddObserver(this));
-    allstatus_->WatchSyncerThread(syncer_thread_);
     syncer_thread_->SetConnected(true);
     syncable::ModelTypeBitSet expected_types;
     expected_types[syncable::BOOKMARKS] = true;
@@ -68,7 +77,6 @@ class SyncerThreadWithSyncerTest : public testing::Test,
   }
   virtual void TearDown() {
     syncer_event_hookup_.reset();
-    allstatus_.reset();
     syncer_thread_ = NULL;
     connection_.reset();
     metadb_.TearDown();
@@ -159,7 +167,6 @@ class SyncerThreadWithSyncerTest : public testing::Test,
  private:
   ManuallyOpenedTestDirectorySetterUpper metadb_;
   scoped_ptr<MockConnectionManager> connection_;
-  scoped_ptr<AllStatus> allstatus_;
   scoped_refptr<SyncerThread> syncer_thread_;
   scoped_refptr<ModelSafeWorker> worker_;
   scoped_ptr<ChannelHookup<SyncerEvent> > syncer_event_hookup_;
@@ -211,12 +218,12 @@ class SyncShareIntercept
 
 TEST_F(SyncerThreadTest, Construction) {
   SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
-  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
+  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
 }
 
 TEST_F(SyncerThreadTest, StartStop) {
   SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
-  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
+  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   EXPECT_TRUE(syncer_thread->Start());
   EXPECT_TRUE(syncer_thread->Stop(2000));
 
@@ -226,9 +233,22 @@ TEST_F(SyncerThreadTest, StartStop) {
   EXPECT_TRUE(syncer_thread->Stop(2000));
 }
 
+TEST(SyncerThread, GetRecommendedDelay) {
+  EXPECT_LE(0, SyncerThread::GetRecommendedDelaySeconds(0));
+  EXPECT_LE(1, SyncerThread::GetRecommendedDelaySeconds(1));
+  EXPECT_LE(50, SyncerThread::GetRecommendedDelaySeconds(50));
+  EXPECT_LE(10, SyncerThread::GetRecommendedDelaySeconds(10));
+  EXPECT_EQ(SyncerThread::kMaxBackoffSeconds,
+            SyncerThread::GetRecommendedDelaySeconds(
+                SyncerThread::kMaxBackoffSeconds));
+  EXPECT_EQ(SyncerThread::kMaxBackoffSeconds,
+            SyncerThread::GetRecommendedDelaySeconds(
+                SyncerThread::kMaxBackoffSeconds+1));
+}
+
 TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
   SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
-  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
+  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   syncer_thread->DisableIdleDetection();
 
   // Syncer_polling_interval_ is less than max poll interval.
@@ -288,7 +308,7 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // Set up the environment.
   int user_idle_milliseconds_param = 0;
   SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
-  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
+  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context));
   syncer_thread->DisableIdleDetection();
   // Hold the lock to appease asserts in code.
   AutoLock lock(syncer_thread->lock_);
@@ -296,13 +316,11 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // Notifications disabled should result in a polling interval of
   // kDefaultShortPollInterval.
   {
-    AllStatus::Status status = {};
-    status.notifications_enabled = 0;
+    context->set_notifications_enabled(false);
     bool continue_sync_cycle_param = false;
 
     // No work and no backoff.
     WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -317,7 +335,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     // In this case the continue_sync_cycle is turned off.
     continue_sync_cycle_param = true;
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -333,13 +350,11 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // Notifications enabled should result in a polling interval of
   // SyncerThread::kDefaultLongPollIntervalSeconds.
   {
-    AllStatus::Status status = {};
-    status.notifications_enabled = 1;
+    context->set_notifications_enabled(true);
     bool continue_sync_cycle_param = false;
 
     // No work and no backoff.
     WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -354,7 +369,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     // In this case the continue_sync_cycle is turned off.
     continue_sync_cycle_param = true;
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -371,13 +385,11 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // available do not match the updates received, or the unsynced count is
   // non-zero.
   {
-    AllStatus::Status status = {};
-    status.updates_available = 1;
-    status.updates_received = 0;
+    // More server changes remaining to download.
+    context->set_last_snapshot(SessionSnapshotForTest(1, 0, 0));
     bool continue_sync_cycle_param = false;
 
     WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -390,7 +402,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
     continue_sync_cycle_param = false;
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -402,7 +413,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_TRUE(continue_sync_cycle_param);
 
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -413,7 +423,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_FALSE(interval.had_nudge_during_backoff);
 
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -424,15 +433,15 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
-    status.updates_received = 1;
+    // Now simulate no more server changes remaining.
+    context->set_last_snapshot(SessionSnapshotForTest(1, 1, 0));
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
         false);
 
-    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
+    ASSERT_EQ(SyncerThread::kDefaultLongPollIntervalSeconds,
                 interval.poll_delta.InSeconds());
     ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
     ASSERT_FALSE(interval.had_nudge_during_backoff);
@@ -440,12 +449,12 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   }
 
   {
-    AllStatus::Status status = {};
-    status.unsynced_count = 1;
+
+    // Now try with unsynced local items.
+    context->set_last_snapshot(SessionSnapshotForTest(0, 0, 1));
     bool continue_sync_cycle_param = false;
 
     WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -458,7 +467,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
     continue_sync_cycle_param = false;
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         0,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -469,15 +477,14 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_FALSE(interval.had_nudge_during_backoff);
     ASSERT_TRUE(continue_sync_cycle_param);
 
-    status.unsynced_count = 0;
+    context->set_last_snapshot(SessionSnapshotForTest(0, 0, 0));
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         4,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
         false);
 
-    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
+    ASSERT_EQ(SyncerThread::kDefaultLongPollIntervalSeconds,
               interval.poll_delta.InSeconds());
     ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
     ASSERT_FALSE(interval.had_nudge_during_backoff);
@@ -486,14 +493,13 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
   // Regression for exponential backoff reset when the syncer is nudged.
   {
-    AllStatus::Status status = {};
-    status.unsynced_count = 1;
+
+    context->set_last_snapshot(SessionSnapshotForTest(0, 0, 1));
     bool continue_sync_cycle_param = false;
 
     // Expect move from default polling interval to exponential backoff due to
     // unsynced_count != 0.
     WaitInterval interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         3600,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -506,7 +512,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
     continue_sync_cycle_param = false;
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         3600,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -519,7 +524,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
     // Expect exponential backoff.
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         2,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -531,7 +535,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_TRUE(continue_sync_cycle_param);
 
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         2,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -545,7 +548,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     syncer_thread->vault_.current_wait_interval_ = interval;
 
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         static_cast<int>(interval.poll_delta.InSeconds()),
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -562,7 +564,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     // backoff.
     syncer_thread->vault_.current_wait_interval_.mode = WaitInterval::NORMAL;
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         2,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -577,7 +578,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
     // And if another interval expires, we get a bigger backoff.
     WaitInterval new_interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         static_cast<int>(interval.poll_delta.InSeconds()),
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -593,7 +593,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     // should return to the minimum.
     continue_sync_cycle_param = false;
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         3600,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -606,7 +605,6 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
 
     continue_sync_cycle_param = false;
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         3600,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
@@ -618,15 +616,14 @@ TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
     ASSERT_TRUE(continue_sync_cycle_param);
 
     // Setting unsynced_count = 0 returns us to the default polling interval.
-    status.unsynced_count = 0;
+    context->set_last_snapshot(SessionSnapshotForTest(0, 0, 0));
     interval = syncer_thread->CalculatePollingWaitTime(
-        status,
         4,
         &user_idle_milliseconds_param,
         &continue_sync_cycle_param,
         true);
 
-    ASSERT_EQ(SyncerThread::kDefaultShortPollIntervalSeconds,
+    ASSERT_EQ(SyncerThread::kDefaultLongPollIntervalSeconds,
               interval.poll_delta.InSeconds());
     ASSERT_EQ(WaitInterval::NORMAL, interval.mode);
     ASSERT_FALSE(interval.had_nudge_during_backoff);
