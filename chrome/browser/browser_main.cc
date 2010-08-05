@@ -1074,7 +1074,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // notification it needs to track the logged in user.
   g_browser_process->profile_manager()->GetDefaultProfile();
 
-  if (parsed_command_line.HasSwitch(switches::kLoginUser)) {
+  // There are two use cases for kLoginUser:
+  //   1) if passed in tandem with kLoginPassword, to drive a "StubLogin"
+  //   2) if passed alone, to signal that the indicated user has already
+  //      logged in and we should behave accordingly.
+  // This handles case 2.
+  if (parsed_command_line.HasSwitch(switches::kLoginUser) &&
+      !parsed_command_line.HasSwitch(switches::kLoginPassword)) {
     std::string username =
         parsed_command_line.GetSwitchValueASCII(switches::kLoginUser);
     LOG(INFO) << "Relaunching browser for user: " << username;
