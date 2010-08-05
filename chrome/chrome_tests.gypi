@@ -901,6 +901,7 @@
         'browser/cocoa/view_resizer_pong.mm',
         'browser/cocoa/web_drop_target_unittest.mm',
         'browser/cocoa/window_size_autosaver_unittest.mm',
+        'browser/cocoa/wrench_menu_button_cell_unittest.mm',
         'browser/cocoa/wrench_menu_controller_unittest.mm',
         'browser/config_dir_policy_provider_unittest.cc',
         'browser/command_line_pref_store_unittest.cc',

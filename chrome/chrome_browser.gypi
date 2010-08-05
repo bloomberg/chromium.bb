@@ -1052,6 +1052,8 @@
         'browser/cocoa/web_drop_target.mm',
         'browser/cocoa/window_size_autosaver.h',
         'browser/cocoa/window_size_autosaver.mm',
+        'browser/cocoa/wrench_menu_button_cell.h',
+        'browser/cocoa/wrench_menu_button_cell.mm',
         'browser/cocoa/wrench_menu_controller.h',
         'browser/cocoa/wrench_menu_controller.mm',
         'browser/command_line_pref_store.cc',
