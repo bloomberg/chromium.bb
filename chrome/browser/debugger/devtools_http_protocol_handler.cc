@@ -59,7 +59,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
  private:
   // Message handling routines
   void OnDispatchOnInspectorFrontend(const std::string& data) {
-    socket_->SendOverWebSocket("devtools$$dispatch(" + data + ")");
+    socket_->SendOverWebSocket(data);
   }
   HttpListenSocket* socket_;
 };
@@ -243,7 +243,16 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
     return;
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  manager->ForwardToDevToolsAgent(it->second,
+
+  if (data == "loaded") {
+    manager->ForwardToDevToolsAgent(
+        it->second,
+        DevToolsAgentMsg_FrontendLoaded());
+    return;
+  }
+
+  manager->ForwardToDevToolsAgent(
+      it->second,
       DevToolsAgentMsg_DispatchOnInspectorBackend(data));
 }
 

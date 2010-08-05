@@ -49,6 +49,10 @@ bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void DevToolsClient::sendFrontendLoaded() {
+  Send(DevToolsAgentMsg_FrontendLoaded());
+}
+
 void DevToolsClient::sendMessageToBackend(const WebString& message)  {
   Send(DevToolsAgentMsg_DispatchOnInspectorBackend(message.utf8()));
 }

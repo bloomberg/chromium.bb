@@ -138,12 +138,18 @@ void TestShellDevToolsAgent::attach(TestShellDevToolsClient* client) {
     web_agent->attach();
 }
 
-void TestShellDevToolsAgent::detach(TestShellDevToolsClient* client) {
+void TestShellDevToolsAgent::detach() {
   DCHECK(dev_tools_client_);
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent)
     web_agent->detach();
   dev_tools_client_ = NULL;
+}
+
+void TestShellDevToolsAgent::frontendLoaded() {
+  WebDevToolsAgent *web_agent = GetWebAgent();
+  if (web_agent)
+    web_agent->frontendLoaded();
 }
 
 bool TestShellDevToolsAgent::setTimelineProfilingEnabled(bool enabled) {

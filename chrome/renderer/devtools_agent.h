@@ -66,6 +66,7 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
 
   void OnAttach(const std::vector<std::string>& runtime_features);
   void OnDetach();
+  void OnFrontendLoaded();
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnInspectElement(int x, int y);
   void OnSetApuAgentEnabled(bool enabled);

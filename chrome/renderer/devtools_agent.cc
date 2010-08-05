@@ -78,6 +78,7 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(DevToolsAgent, message)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Attach, OnAttach)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_Detach, OnDetach)
+    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_FrontendLoaded, OnFrontendLoaded)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_InspectElement, OnInspectElement)
@@ -177,9 +178,14 @@ void DevToolsAgent::OnAttach(const std::vector<std::string>& runtime_features) {
 
 void DevToolsAgent::OnDetach() {
   WebDevToolsAgent* web_agent = GetWebAgent();
-  if (web_agent) {
+  if (web_agent)
     web_agent->detach();
-  }
+}
+
+void DevToolsAgent::OnFrontendLoaded() {
+  WebDevToolsAgent* web_agent = GetWebAgent();
+  if (web_agent)
+    web_agent->frontendLoaded();
 }
 
 void DevToolsAgent::OnDispatchOnInspectorBackend(const std::string& message) {

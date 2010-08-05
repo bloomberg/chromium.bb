@@ -41,6 +41,7 @@ class DevToolsClient : public WebKit::WebDevToolsFrontendClient {
   bool OnMessageReceived(const IPC::Message& message);
 
   // WebDevToolsFrontendClient implementation
+  virtual void sendFrontendLoaded();
   virtual void sendMessageToBackend(const WebKit::WebString&);
   virtual void sendDebuggerCommandToAgent(const WebKit::WebString& command);
   virtual void sendDebuggerPauseScript();

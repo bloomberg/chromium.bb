@@ -45,7 +45,8 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
   void AsyncCall(const TestShellDevToolsCallArgs& args);
 
   void attach(TestShellDevToolsClient* client);
-  void detach(TestShellDevToolsClient* client);
+  void detach();
+  void frontendLoaded();
 
   bool evaluateInWebInspector(long call_id, const std::string& script);
   bool setTimelineProfilingEnabled(bool enable);

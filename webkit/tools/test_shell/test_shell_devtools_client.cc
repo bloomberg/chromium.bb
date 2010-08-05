@@ -46,7 +46,12 @@ TestShellDevToolsClient::~TestShellDevToolsClient() {
   // dev_tools_agent_ and we should clean pending requests a bit earlier.
   call_method_factory_.RevokeAll();
   if (dev_tools_agent_)
-    dev_tools_agent_->detach(this);
+    dev_tools_agent_->detach();
+}
+
+void TestShellDevToolsClient::sendFrontendLoaded() {
+  if (dev_tools_agent_)
+    dev_tools_agent_->frontendLoaded();
 }
 
 void TestShellDevToolsClient::sendMessageToBackend(
