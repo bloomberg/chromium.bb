@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/string_util.h"
 
 class FilePath;
 
@@ -63,28 +62,6 @@ class ChromeMiniInstaller {
   void SetBuildUnderTest(const std::wstring& build);
 
  private:
-  // This variable holds the install type.
-  // Install type can be either system or user level.
-  std::wstring install_type_;
-
-  bool standalone_installer;
-
-  bool is_chrome_frame_;
-
-  // Name of the browser (Chrome or Chromium) and install type (sys or user)
-  std::wstring installer_name_;
-
-  // The full path to the various installers.
-  std::wstring full_installer_, diff_installer_, prev_installer_;
-
-  // Whether the path to the associated installer could be found.
-  // This is because we do not want to assert that these paths exist
-  // except in the tests that use them.
-  bool has_full_installer_, has_diff_installer_, has_prev_installer_;
-
-  // The version string of the current and previous builds.
-  std::wstring curr_version_, prev_version_;
-
   // Will clean up the machine if Chrome install is messed up.
   void CleanChromeInstall();
 
@@ -115,11 +92,11 @@ class ChromeMiniInstaller {
   // Get HKEY based on install type.
   HKEY GetRootRegistryKey();
 
-  // Returns Chrome pv registry key value
-  bool GetChromeVersionFromRegistry(std::wstring *return_reg_key_value);
+  // Returns Chrome pv registry key value.
+  bool GetChromeVersionFromRegistry(std::wstring* reg_key_value);
 
   // This method gets the shortcut path from start menu based on install type.
-  std::wstring GetStartMenuShortcutPath();
+  FilePath GetStartMenuShortcutPath();
 
   // Get path for uninstall.
   std::wstring GetUninstallPath();
@@ -136,8 +113,8 @@ class ChromeMiniInstaller {
   // This method verifies if Chrome/Chrome Frame installed correctly.
   void VerifyInstall(bool over_install);
 
-  // This method will verify if ChromeFrame got successfully installed
-  // on the machine.
+  // This method will verify if ChromeFrame got successfully installed on the
+  // machine.
   void VerifyChromeFrameInstall();
 
   // Launches the chrome installer and waits for it to end.
@@ -160,8 +137,27 @@ class ChromeMiniInstaller {
   // This method will verify if the installed build is correct.
   bool VerifyStandaloneInstall();
 
+  // This variable holds the install type.
+  // Install type can be either system or user level.
+  std::wstring install_type_;
+
+  bool is_chrome_frame_;
+
+  // Name of the browser (Chrome or Chromium) and install type (sys or user)
+  std::wstring installer_name_;
+
+  // The full path to the various installers.
+  std::wstring full_installer_, diff_installer_, prev_installer_;
+
+  // Whether the path to the associated installer could be found.
+  // This is because we do not want to assert that these paths exist
+  // except in the tests that use them.
+  bool has_full_installer_, has_diff_installer_, has_prev_installer_;
+
+  // The version string of the current and previous builds.
+  std::wstring curr_version_, prev_version_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeMiniInstaller);
 };
 
 #endif  // CHROME_TEST_MINI_INSTALLER_TEST_CHROME_MINI_INSTALLER_H_
-
