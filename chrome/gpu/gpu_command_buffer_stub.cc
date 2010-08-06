@@ -89,6 +89,8 @@ void GpuCommandBufferStub::OnInitialize(
         command_buffer_->SetPutOffsetChangeCallback(
             NewCallback(processor_.get(),
                         &gpu::GPUProcessor::ProcessCommands));
+        processor_->SetSwapBuffersCallback(
+            NewCallback(this, &GpuCommandBufferStub::OnSwapBuffers));
 
         // Assume service is responsible for duplicating the handle from the
         // calling process.
@@ -159,6 +161,10 @@ void GpuCommandBufferStub::OnGetTransferBuffer(
 
 void GpuCommandBufferStub::OnResizeOffscreenFrameBuffer(const gfx::Size& size) {
   processor_->ResizeOffscreenFrameBuffer(size);
+}
+
+void GpuCommandBufferStub::OnSwapBuffers() {
+  Send(new GpuCommandBufferMsg_SwapBuffers(route_id_));
 }
 
 #if defined(OS_MACOSX)

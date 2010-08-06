@@ -11,6 +11,7 @@
 #define CHROME_RENDERER_GGL_GGL_H_
 #pragma once
 
+#include "base/callback.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/size.h"
 
@@ -82,6 +83,11 @@ void ResizeOffscreenContext(Context* context, const gfx::Size& size);
 // respect to the parent context. Returns zero if context does not have a
 // parent.
 uint32 GetParentTextureId(Context* context);
+
+// Provides a callback that will be invoked when SwapBuffers has completed
+// service side.
+void SetSwapBuffersCallback(Context* context,
+                            Callback1<Context*>::Type* callback);
 
 // Set the current GGL context for the calling thread.
 bool MakeCurrent(Context* context);

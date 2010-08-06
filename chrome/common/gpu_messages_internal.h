@@ -159,8 +159,8 @@ IPC_END_MESSAGES(GpuChannel)
 
 //------------------------------------------------------------------------------
 // GPU Command Buffer Messages
-// These are messages from a renderer process to the GPU process relating to a
-// single OpenGL context.
+// These are messages between a renderer process to the GPU process relating to
+// a single OpenGL context.
 IPC_BEGIN_MESSAGES(GpuCommandBuffer)
   // Initialize a command buffer with the given number of command entries.
   // Returns the shared memory handle for the command buffer mapped to the
@@ -194,6 +194,9 @@ IPC_BEGIN_MESSAGES(GpuCommandBuffer)
   // GPU process to the renderer process.)
   IPC_MESSAGE_ROUTED1(GpuCommandBufferMsg_UpdateState,
                       gpu::CommandBuffer::State /* state */)
+
+  // Indicates that a SwapBuffers call has been issued.
+  IPC_MESSAGE_ROUTED0(GpuCommandBufferMsg_SwapBuffers)
 
   // Create a shared memory transfer buffer. Returns an id that can be used to
   // identify the transfer buffer from a comment.

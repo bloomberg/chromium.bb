@@ -11,6 +11,7 @@
 #include <map>
 #include <queue>
 
+#include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -52,6 +53,11 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
+  virtual void OnSwapBuffers();
+
+  // Set a callback that will be invoked when the SwapBuffers call has been
+  // issued.
+  void SetSwapBuffersCallback(Callback0::Type* callback);
 
   // Asynchronously resizes an offscreen frame buffer.
   void ResizeOffscreenFrameBuffer(const gfx::Size& size);
@@ -103,6 +109,8 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   AsyncFlushTaskQueue pending_async_flush_tasks_;
 
   scoped_ptr<Task> notify_repaint_task_;
+
+  scoped_ptr<Callback0::Type> swap_buffers_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxy);
 };

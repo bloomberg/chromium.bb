@@ -71,6 +71,12 @@ class Context : public base::SupportsWeakPtr<Context> {
   // Asynchronously resizes an offscreen frame buffer.
   void ResizeOffscreen(const gfx::Size& size);
 
+  // Provides a callback that will be invoked when SwapBuffers has completed
+  // service side.
+  void SetSwapBuffersCallback(Callback1<Context*>::Type* callback) {
+    swap_buffers_callback_.reset(callback);
+  }
+
   // For an offscreen frame buffer context, return the frame buffer ID with
   // respect to the parent.
   uint32 parent_texture_id() const {
@@ -95,8 +101,11 @@ class Context : public base::SupportsWeakPtr<Context> {
   void DisableShaderTranslation();
 
  private:
+  void OnSwapBuffers();
+
   scoped_refptr<GpuChannelHost> channel_;
   base::WeakPtr<Context> parent_;
+  scoped_ptr<Callback1<Context*>::Type> swap_buffers_callback_;
   uint32 parent_texture_id_;
   CommandBufferProxy* command_buffer_;
   gpu::gles2::GLES2CmdHelper* gles2_helper_;
@@ -163,6 +172,9 @@ bool Context::Initialize(gfx::NativeViewId view,
     Destroy();
     return false;
   }
+
+  command_buffer_->SetSwapBuffersCallback(NewCallback(this,
+                                                      &Context::OnSwapBuffers));
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_ = new gpu::gles2::GLES2CmdHelper(command_buffer_);
@@ -279,6 +291,11 @@ void Context::DisableShaderTranslation() {
   gles2_implementation_->CommandBufferEnable(PEPPER3D_SKIP_GLSL_TRANSLATION);
 }
 
+void Context::OnSwapBuffers() {
+  if (swap_buffers_callback_.get())
+    swap_buffers_callback_->Run(this);
+}
+
 #endif  // ENABLE_GPU
 
 Context* CreateViewContext(GpuChannelHost* channel,
@@ -329,6 +346,11 @@ uint32 GetParentTextureId(Context* context) {
 #else
   return 0;
 #endif
+}
+
+void SetSwapBuffersCallback(Context* context,
+                            Callback1<Context*>::Type* callback) {
+  context->SetSwapBuffersCallback(callback);
 }
 
 bool MakeCurrent(Context* context) {

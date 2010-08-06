@@ -57,6 +57,8 @@ class GpuCommandBufferStub
                            uint32* size);
   void OnResizeOffscreenFrameBuffer(const gfx::Size& size);
 
+  void OnSwapBuffers();
+
 #if defined(OS_MACOSX)
   void OnSetWindowSize(const gfx::Size& size);
   void SwapBuffersCallback();

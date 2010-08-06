@@ -34,6 +34,7 @@ CommandBufferProxy::~CommandBufferProxy() {
 void CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxy, message)
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UpdateState, OnUpdateState);
+    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SwapBuffers, OnSwapBuffers);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_NotifyRepaint,
                         OnNotifyRepaint);
     IPC_MESSAGE_UNHANDLED_ERROR()
@@ -181,6 +182,15 @@ void CommandBufferProxy::SetParseError(
     gpu::error::Error error) {
   // Not implemented in proxy.
   NOTREACHED();
+}
+
+void CommandBufferProxy::OnSwapBuffers() {
+  if (swap_buffers_callback_.get())
+    swap_buffers_callback_->Run();
+}
+
+void CommandBufferProxy::SetSwapBuffersCallback(Callback0::Type* callback) {
+  swap_buffers_callback_.reset(callback);
 }
 
 void CommandBufferProxy::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
