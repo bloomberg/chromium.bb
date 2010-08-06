@@ -42,7 +42,7 @@
     'themes',
     'translate',
     # This test fails due to crbug.com/35485
-    '-translate.TranslateTest.testTBarNeverVisibleOnErrorPage',
+    '-translate.TranslateTest.testBarNotVisibleOnSSLErrorPage',
     # This test fails due to crbug.com/50706
     '-translate.TranslateTest.testToggleTranslateOption'
   ],
