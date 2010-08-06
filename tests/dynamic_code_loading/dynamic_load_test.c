@@ -15,6 +15,12 @@
 
 #include "native_client/tests/dynamic_code_loading/templates.h"
 
+#define NACL_BUNDLE_SIZE  32
+/*
+ * TODO(bsy): get this value from the toolchain.  Get the toolchain
+ * team to provide this value.
+ */
+#define NUM_BUNDLES_FOR_HLT 3
 
 /* TODO(mseaborn): Add a symbol to the linker script for finding the
    end of the static code segment more accurately.  The value below is
@@ -227,22 +233,6 @@ void test_fail_on_overwrite() {
   assert(rc == -EINVAL);
 }
 
-/* Test a corner case: the same area can be written multiple times as
-   long as only HLTs are written.  This might change if the runtime
-   ever changes to use a separate data structure to record allocated
-   regions. */
-void test_allowed_overwrite() {
-  void *load_area = allocate_code_space(1);
-  uint8_t data[32];
-  int rc;
-
-  fill_hlts(data, sizeof(data));
-
-  rc = nacl_load_code(load_area, data, sizeof(data));
-  assert(rc == 0);
-  rc = nacl_load_code(load_area, data, sizeof(data));
-  assert(rc == 0);
-}
 
 /* Allowing mmap() to overwrite the dynamic code area would be unsafe. */
 void test_fail_on_mmap_to_dyncode_area() {
@@ -303,6 +293,19 @@ void test_end_of_code_region() {
   assert(rc == 0);
 }
 
+void test_fail_on_hlt_filled_bundle() {
+  uint8_t bad_code[NUM_BUNDLES_FOR_HLT * NACL_BUNDLE_SIZE];
+  void *load_area = allocate_code_space(1);
+  int ix;
+
+  for (ix = 0; ix < NUM_BUNDLES_FOR_HLT; ++ix) {
+    fill_nops(bad_code, sizeof bad_code);
+    fill_hlts(bad_code + ix * NACL_BUNDLE_SIZE, NACL_BUNDLE_SIZE);
+
+    assert(0 != nacl_load_code(load_area, bad_code, sizeof bad_code));
+  }
+}
+
 
 void run_test(const char *test_name, void (*test_func)(void)) {
   printf("Running %s...\n", test_name);
@@ -324,10 +327,10 @@ int main() {
   RUN_TEST(test_fail_on_load_to_static_code_area);
   RUN_TEST(test_fail_on_load_to_data_area);
   RUN_TEST(test_fail_on_overwrite);
-  RUN_TEST(test_allowed_overwrite);
   RUN_TEST(test_fail_on_mmap_to_dyncode_area);
   RUN_TEST(test_branches_outside_chunk);
   RUN_TEST(test_end_of_code_region);
+  RUN_TEST(test_fail_on_hlt_filled_bundle);
 
   /* Test again to make sure we didn't run out of space. */
   RUN_TEST(test_loading_code);

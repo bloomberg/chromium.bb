@@ -239,6 +239,15 @@ cleanup:
   return retval;
 }
 
+/*
+ * Since we do not currently keep track of code insertion buffers to
+ * enforce that code deletion will delete inserted regions atomically,
+ * we use regions filled with the HLT instruction as a simple way to
+ * detect that the dynamic code region is currently unused by any
+ * previous code insertion operation.  Note that we must forbid
+ * insertion of regions that contain bundles which are HLT filled,
+ * since otherwise this check can be fooled.
+ */
 static int CodeRangeIsUnused(uint8_t *data, uint32_t size) {
   uint32_t *end = (uint32_t *) (data + size);
   uint32_t *addr;
@@ -259,10 +268,10 @@ static void CopyBundleTails(uint8_t *dest,
    * none of the locations will be reachable, because the bundle heads
    * still contains HLTs.
    */
-  int bundle_mask = bundle_size - 1;
-  uint32_t *src_ptr;
-  uint32_t *dest_ptr;
-  uint32_t *end_ptr;
+  int       bundle_mask = bundle_size - 1;
+  uint32_t  *src_ptr;
+  uint32_t  *dest_ptr;
+  uint32_t  *end_ptr;
 
   CHECK(0 == ((uintptr_t) dest & 3));
 
@@ -312,28 +321,71 @@ static void CopyCodeSafely(uint8_t  *dest,
   CopyBundleTails(dest, src, size, bundle_size);
   NaClWriteMemoryBarrier();
   CopyBundleHeads(dest, src, size, bundle_size);
+  /*
+   * For security, we are fine; for correctness, another memory
+   * barrier is needed here.  We assume that there will be one later
+   * in the syscall processing and/or in the inter-thread
+   * communication needed for the code inserting thread to tell other
+   * threads that the newly inserted code is ready to use (and at what
+   * address it lives).
+   */
+}
+
+/*
+ * Assuming the nbytes bytes of code at code_buf starts a new bundle,
+ * verify that no bundles in the buffer contain only HLT instructions.
+ * nbytes must be an integer multiple of nap->bundle_size.
+ */
+static int NaClCodeContainsUnusedMarker(struct NaClApp  *nap,
+                                        uint8_t         *code_buf,
+                                        uint32_t        nbytes) {
+  uint32_t  *p = (uint32_t *) code_buf;
+  uint32_t  *p_end = (uint32_t *) (code_buf + nbytes);
+  uint32_t  words_per_bundle = nap->bundle_size / sizeof(uint32_t);
+  uint32_t  ix;
+  int       bundle_ok;
+
+  while (p < p_end) {
+    bundle_ok = 0;
+    for (ix = 0; ix < words_per_bundle; ++ix) {
+      if (p[ix] != NACL_HALT_WORD) {
+        bundle_ok = 1;
+        break;
+      }
+    }
+    if (!bundle_ok) {
+      NaClLog(1,
+              ("NaClCodeContainsUnusedMarker: found bad bundle at byte"
+               " offset 0x%"NACL_PRIx32" from start of bundle.\n"),
+              (uint32_t) ((uint8_t *) p - code_buf));
+      return 1;
+    }
+    p += words_per_bundle;
+  }
+
+  return 0;
 }
 
 int32_t NaClTextSysDyncode_Copy(struct NaClAppThread *natp,
                                 uint32_t             dest,
                                 uint32_t             src,
                                 uint32_t             size) {
-  struct NaClApp *nap = natp->nap;
-  uintptr_t dest_addr;
-  uintptr_t src_addr;
-  uint32_t shm_offset;
-  uint32_t shm_map_offset;
-  uint32_t within_page_offset;
-  uint32_t shm_map_offset_end;
-  uint32_t shm_map_size;
-  struct NaClDescEffectorShm shm_effector;
-  struct NaClDesc *shm = nap->text_shm;
-  uintptr_t mmap_ret;
-  uint8_t *mmap_result;
-  uint8_t *mapped_addr;
-  uint8_t *code_copy;
-  int validator_result;
-  int32_t retval = -NACL_ABI_EINVAL;
+  struct NaClApp              *nap = natp->nap;
+  uintptr_t                   dest_addr;
+  uintptr_t                   src_addr;
+  uint32_t                    shm_offset;
+  uint32_t                    shm_map_offset;
+  uint32_t                    within_page_offset;
+  uint32_t                    shm_map_offset_end;
+  uint32_t                    shm_map_size;
+  struct NaClDescEffectorShm  shm_effector;
+  struct NaClDesc             *shm = nap->text_shm;
+  uintptr_t                   mmap_ret;
+  uint8_t                     *mmap_result;
+  uint8_t                     *mapped_addr;
+  uint8_t                     *code_copy;
+  int                         validator_result;
+  int32_t                     retval = -NACL_ABI_EINVAL;
 
   if (!shm) {
     NaClLog(1, "NaClTextSysDyncode_Copy: Dynamic loading not enabled\n");
@@ -346,8 +398,8 @@ int32_t NaClTextSysDyncode_Copy(struct NaClAppThread *natp,
   }
   dest_addr = NaClUserToSysAddrRange(nap, dest, size);
   src_addr = NaClUserToSysAddrRange(nap, src, size);
-  if (dest_addr == kNaClBadAddress ||
-      src_addr == kNaClBadAddress) {
+  if (kNaClBadAddress == dest_addr ||
+      kNaClBadAddress == src_addr) {
     NaClLog(1, "NaClTextSysDyncode_Copy: Address out of range\n");
     return -NACL_ABI_EFAULT;
   }
@@ -400,49 +452,58 @@ int32_t NaClTextSysDyncode_Copy(struct NaClAppThread *natp,
   code_copy = malloc(size);
   if (!code_copy) {
     retval = -NACL_ABI_ENOMEM;
+    goto cleanup_unmap;
   }
-  else {
-    memcpy(code_copy, (uint8_t *) src_addr, size);
+  memcpy(code_copy, (uint8_t *) src_addr, size);
 
-    NaClMutexLock(&nap->dynamic_load_mutex);
+  if (NaClCodeContainsUnusedMarker(nap, code_copy, size)) {
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup_free;
+  }
 
+  NaClMutexLock(&nap->dynamic_load_mutex);
+
+  /*
+   * In principle, this can go outside the lock, but the validator
+   * has global mutable state which might not be used thread-safely.
+   * TODO(mseaborn): Check before moving this outside the lock.
+   */
+  validator_result = NaClValidateCode(nap, dest, code_copy, size);
+
+  if (validator_result != LOAD_OK && nap->ignore_validator_result) {
+    NaClLog(LOG_ERROR, "VALIDATION FAILED for dynamically-loaded code: "
+            "continuing anyway...\n");
+    validator_result = LOAD_OK;
+  }
+
+  if (validator_result != LOAD_OK) {
+    NaClLog(1, "NaClTextSysDyncode_Copy: "
+            "Validation of dynamic code failed\n");
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup_unlock;
+  }
+  if (!CodeRangeIsUnused(mapped_addr, size)) {
     /*
-     * In principle, this can go outside the lock, but the validator
-     * has global mutable state which might not be used thread-safely.
-     * TODO(mseaborn): Check before moving this outside the lock.
+     * We cannot safely overwrite this memory because other
+     * threads could be executing code from it.
      */
-    validator_result = NaClValidateCode(nap, dest, code_copy, size);
-
-    if (validator_result != LOAD_OK && nap->ignore_validator_result) {
-      NaClLog(LOG_ERROR, "VALIDATION FAILED for dynamically-loaded code: "
-              "continuing anyway...\n");
-      validator_result = LOAD_OK;
-    }
-
-    if (validator_result != LOAD_OK) {
-      NaClLog(1, "NaClTextSysDyncode_Copy: "
-              "Validation of dynamic code failed\n");
-      retval = -NACL_ABI_EINVAL;
-    }
-    else {
-      if (!CodeRangeIsUnused(mapped_addr, size)) {
-        /*
-         * We cannot safely overwrite this memory because other
-         * threads could be executing code from it.
-         */
-        NaClLog(1, "NaClTextSysDyncode_Copy: Code range already allocated\n");
-        retval = -NACL_ABI_EINVAL;
-      }
-      else {
-        CopyCodeSafely(mapped_addr, code_copy, size, nap->bundle_size);
-        retval = 0;
-      }
-    }
-
-    NaClMutexUnlock(&nap->dynamic_load_mutex);
-    free(code_copy);
+    NaClLog(1, "NaClTextSysDyncode_Copy: Code range already allocated\n");
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup_unlock;
   }
 
+  /* yay! passed all checks */
+
+  CopyCodeSafely(mapped_addr, code_copy, size, nap->bundle_size);
+  retval = 0;
+
+cleanup_unlock:
+  NaClMutexUnlock(&nap->dynamic_load_mutex);
+
+cleanup_free:
+  free(code_copy);
+
+cleanup_unmap:
   if (0 != (*shm->vtbl->UnmapUnsafe)(shm,
                                      (struct NaClDescEffector *) &shm_effector,
                                      mmap_result, shm_map_size)) {
