@@ -201,6 +201,24 @@ static bool ReadValue(const Message* m, void** iter, Value** value,
   return true;
 }
 
+
+void ParamTraits<base::Time>::Write(Message* m, const param_type& p) {
+  ParamTraits<int64>::Write(m, p.ToInternalValue());
+}
+
+bool ParamTraits<base::Time>::Read(const Message* m, void** iter,
+                                   param_type* r) {
+  int64 value;
+  if (!ParamTraits<int64>::Read(m, iter, &value))
+    return false;
+  *r = base::Time::FromInternalValue(value);
+  return true;
+}
+
+void ParamTraits<base::Time>::Log(const param_type& p, std::wstring* l) {
+  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+}
+
 void ParamTraits<DictionaryValue>::Write(Message* m, const param_type& p) {
   WriteValue(m, &p, 0);
 }

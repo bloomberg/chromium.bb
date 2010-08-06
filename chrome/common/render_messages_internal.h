@@ -24,7 +24,6 @@
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
-#include "chrome/common/thumbnail_score.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/window_container_type.h"
 #include "gfx/rect.h"
@@ -34,7 +33,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/form_field.h"
-#include "webkit/glue/webcursor.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -51,6 +49,9 @@
 // to typedef it to avoid that.
 // Substitution map for l10n messages.
 typedef std::map<std::string, std::string> SubstitutionMap;
+
+struct ThumbnailScore;
+class WebCursor;
 
 //-----------------------------------------------------------------------------
 // RenderView messages
