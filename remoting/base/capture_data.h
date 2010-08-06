@@ -9,12 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "gfx/rect.h"
 #include "remoting/base/protocol/chromotocol.pb.h"
+#include "remoting/base/types.h"
 
 namespace remoting {
-
-typedef std::vector<gfx::Rect> RectVector;
 
 struct DataPlanes {
   static const int kPlaneCount = 3;
@@ -45,7 +43,7 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
 
   // Get the list of updated rectangles in the last capture. The result is
   // written into |rects|.
-  const RectVector& dirty_rects() const { return dirty_rects_; }
+  const InvalidRects& dirty_rects() const { return dirty_rects_; }
 
   // Get the width of the image captured.
   int width() const { return width_; }
@@ -57,11 +55,11 @@ class CaptureData : public base::RefCountedThreadSafe<CaptureData> {
   PixelFormat pixel_format() const { return pixel_format_; }
 
   // Mutating methods.
-  RectVector& mutable_dirty_rects() { return dirty_rects_; }
+  InvalidRects& mutable_dirty_rects() { return dirty_rects_; }
 
  private:
   const DataPlanes data_planes_;
-  RectVector dirty_rects_;
+  InvalidRects dirty_rects_;
   int width_;
   int height_;
   PixelFormat pixel_format_;

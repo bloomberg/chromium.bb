@@ -20,21 +20,6 @@ CapturerFake::CapturerFake()
 CapturerFake::~CapturerFake() {
 }
 
-void CapturerFake::CaptureRects(const RectVector& rects,
-                                CaptureCompletedCallback* callback) {
-  GenerateImage();
-  DataPlanes planes;
-  planes.data[0] = buffers_[current_buffer_].get();
-  planes.strides[0] = bytes_per_row_;
-
-  scoped_refptr<CaptureData> capture_data(new CaptureData(planes,
-                                                          width_,
-                                                          height_,
-                                                          pixel_format_));
-  capture_data->mutable_dirty_rects() = rects;
-  FinishCapture(capture_data, callback);
-}
-
 void CapturerFake::ScreenConfigurationChanged() {
   width_ = kWidth;
   height_ = kHeight;
@@ -46,6 +31,25 @@ void CapturerFake::ScreenConfigurationChanged() {
   for (int i = 0; i < kNumBuffers; i++) {
     buffers_[i].reset(new uint8[buffer_size]);
   }
+}
+
+void CapturerFake::CalculateInvalidRects() {
+  GenerateImage();
+  InvalidateFullScreen();
+}
+
+void CapturerFake::CaptureRects(const InvalidRects& rects,
+                                CaptureCompletedCallback* callback) {
+  DataPlanes planes;
+  planes.data[0] = buffers_[current_buffer_].get();
+  planes.strides[0] = bytes_per_row_;
+
+  scoped_refptr<CaptureData> capture_data(new CaptureData(planes,
+                                                          width_,
+                                                          height_,
+                                                          pixel_format_));
+  capture_data->mutable_dirty_rects() = rects;
+  FinishCapture(capture_data, callback);
 }
 
 void CapturerFake::GenerateImage() {

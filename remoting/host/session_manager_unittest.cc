@@ -53,8 +53,12 @@ TEST_F(SessionManagerTest, Init) {
 }
 
 ACTION_P2(RunCallback, rects, data) {
-  RectVector& dirty_rects = data->mutable_dirty_rects();
-  dirty_rects.insert(dirty_rects.end(), rects.begin(), rects.end());
+  InvalidRects& dirty_rects = data->mutable_dirty_rects();
+  InvalidRects temp_rects;
+  std::set_union(dirty_rects.begin(), dirty_rects.end(),
+                 rects.begin(), rects.end(),
+                 std::inserter(temp_rects, temp_rects.begin()));
+  dirty_rects.swap(temp_rects);
   arg0->Run(data);
   delete arg0;
 }
@@ -79,8 +83,8 @@ ACTION_P(AssignDirtyRect, rects) {
 TEST_F(SessionManagerTest, OneRecordCycle) {
   Init();
 
-  RectVector update_rects;
-  update_rects.push_back(gfx::Rect(0, 0, 10, 10));
+  InvalidRects update_rects;
+  update_rects.insert(gfx::Rect(0, 0, 10, 10));
   DataPlanes planes;
   for (int i = 0; i < DataPlanes::kPlaneCount; ++i) {
     planes.data[i] = reinterpret_cast<uint8*>(i);
@@ -98,7 +102,6 @@ TEST_F(SessionManagerTest, OneRecordCycle) {
   record_->AddClient(client_);
 
   // First the capturer is called.
-  EXPECT_CALL(*capturer_, InvalidateFullScreen());
   EXPECT_CALL(*capturer_, CaptureInvalidRects(NotNull()))
       .WillOnce(RunCallback(update_rects, data));
 
@@ -114,7 +117,6 @@ TEST_F(SessionManagerTest, OneRecordCycle) {
   EXPECT_CALL(*client_, GetPendingUpdateStreamMessages())
       .Times(AtLeast(0))
       .WillRepeatedly(Return(0));
-
 
   // Start the recording.
   record_->Start();

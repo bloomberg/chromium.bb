@@ -117,6 +117,18 @@ bool Rect::operator==(const Rect& other) const {
   return origin_ == other.origin_ && size_ == other.size_;
 }
 
+bool Rect::operator<(const Rect& other) const {
+  if (origin_ == other.origin_) {
+    if (width() == other.width()) {
+      return height() < other.height();
+    } else {
+      return width() < other.width();
+    }
+  } else {
+    return origin_ < other.origin_;
+  }
+}
+
 #if defined(OS_WIN)
 RECT Rect::ToRECT() const {
   RECT r;

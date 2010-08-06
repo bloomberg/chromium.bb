@@ -17,9 +17,12 @@ using media::DataBuffer;
 void EncoderVerbatim::Encode(scoped_refptr<CaptureData> capture_data,
                              bool key_frame,
                              DataAvailableCallback* data_available_callback) {
-  int num_rects = capture_data->dirty_rects().size();
-  for (int i = 0; i < num_rects; i++) {
-    const gfx::Rect& dirty_rect = capture_data->dirty_rects()[i];
+  const InvalidRects& rects = capture_data->dirty_rects();
+  int num_rects = rects.size();
+  int index = 0;
+  for (InvalidRects::const_iterator r = rects.begin();
+      r != rects.end(); ++r, ++index) {
+    const gfx::Rect& dirty_rect = *r;
     HostMessage* msg = new HostMessage();
     UpdateStreamPacketMessage* packet = msg->mutable_update_stream_packet();
 
@@ -29,10 +32,10 @@ void EncoderVerbatim::Encode(scoped_refptr<CaptureData> capture_data,
       packet->mutable_end_rect();
 
       EncodingState state = EncodingInProgress;
-      if (i == 0) {
+      if (index == 0) {
         state |= EncodingStarting;
       }
-      if (i == num_rects - 1) {
+      if (index == num_rects - 1) {
         state |= EncodingEnded;
       }
       data_available_callback->Run(msg, state);

@@ -16,7 +16,10 @@ CapturerLinux::~CapturerLinux() {
 void CapturerLinux::ScreenConfigurationChanged() {
 }
 
-void CapturerLinux::CaptureRects(const RectVector& rects,
+void CapturerLinux::CalculateInvalidRects() {
+}
+
+void CapturerLinux::CaptureRects(const InvalidRects& rects,
                                  CaptureCompletedCallback* callback) {
 }
 

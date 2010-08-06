@@ -158,6 +158,7 @@
         'base/protocol_decoder.h',
         'base/protocol_util.cc',
         'base/protocol_util.h',
+        'base/types.h',
       ],
     },  # end of target 'chromoting_base'
 

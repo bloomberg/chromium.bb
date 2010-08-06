@@ -30,24 +30,25 @@ void EncoderZlib::Encode(scoped_refptr<CaptureData> capture_data,
   callback_.reset(data_available_callback);
 
   CompressorZlib compressor;
-  for (current_rect_ = 0; current_rect_ < capture_data->dirty_rects().size();
-       ++current_rect_) {
-    EncodeRect(&compressor);
+  const InvalidRects& rects = capture_data->dirty_rects();
+  int index = 0;
+  for (InvalidRects::const_iterator r = rects.begin();
+      r != rects.end(); ++r, ++index) {
+    EncodeRect(&compressor, *r, index);
   }
 
   capture_data_ = NULL;
   callback_.reset();
-  current_rect_ = 0;
 }
 
-void EncoderZlib::EncodeRect(CompressorZlib* compressor) {
+void EncoderZlib::EncodeRect(CompressorZlib* compressor,
+                             const gfx::Rect& rect, size_t rect_index) {
   CHECK(capture_data_->data_planes().data[0]);
-  const gfx::Rect rect = capture_data_->dirty_rects()[current_rect_];
   const int strides = capture_data_->data_planes().strides[0];
   const int bytes_per_pixel = GetBytesPerPixel(capture_data_->pixel_format());
   const int row_size = bytes_per_pixel * rect.width();
 
-  HostMessage* message = PrepareMessage(true);
+  HostMessage* message = PrepareMessage(&rect);
   const uint8 * in = capture_data_->data_planes().data[0] +
                      rect.y() * strides +
                      rect.x() * bytes_per_pixel;
@@ -61,7 +62,7 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor) {
   while (compress_again) {
     // Prepare a message for sending out.
     if (!message) {
-      message = PrepareMessage(false);
+      message = PrepareMessage(NULL);
       out = (uint8*)(message->mutable_update_stream_packet()->
                      mutable_rect_data()->mutable_data()->data());
       filled = 0;
@@ -69,10 +70,11 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor) {
 
     Compressor::CompressorFlush flush = Compressor::CompressorNoFlush;
     if (row_y == rect.height() - 1) {
-      if (current_rect_ == capture_data_->dirty_rects().size() - 1)
+      if (rect_index == capture_data_->dirty_rects().size() - 1) {
         flush = Compressor::CompressorFinish;
-      else
+      } else {
         flush = Compressor::CompressorSyncFlush;
+      }
     }
 
     int consumed = 0;
@@ -92,7 +94,7 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor) {
     if (filled == packet_size_ || !compress_again) {
       message->mutable_update_stream_packet()->mutable_rect_data()->
           mutable_data()->resize(filled);
-      SubmitMessage(message);
+      SubmitMessage(message, rect_index);
       message = NULL;
     }
 
@@ -105,17 +107,16 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor) {
   }
 }
 
-HostMessage* EncoderZlib::PrepareMessage(bool new_rect) {
+HostMessage* EncoderZlib::PrepareMessage(const gfx::Rect* rect) {
   HostMessage* message = new HostMessage();
   UpdateStreamPacketMessage* packet = message->mutable_update_stream_packet();
 
   // Prepare the begin rect content.
-  if (new_rect) {
-    gfx::Rect rect = capture_data_->dirty_rects()[current_rect_];
-    packet->mutable_begin_rect()->set_x(rect.x());
-    packet->mutable_begin_rect()->set_y(rect.y());
-    packet->mutable_begin_rect()->set_width(rect.width());
-    packet->mutable_begin_rect()->set_height(rect.height());
+  if (rect != NULL) {
+    packet->mutable_begin_rect()->set_x(rect->x());
+    packet->mutable_begin_rect()->set_y(rect->y());
+    packet->mutable_begin_rect()->set_width(rect->width());
+    packet->mutable_begin_rect()->set_height(rect->height());
     packet->mutable_begin_rect()->set_encoding(EncodingZlib);
     packet->mutable_begin_rect()->set_pixel_format(
         capture_data_->pixel_format());
@@ -125,11 +126,11 @@ HostMessage* EncoderZlib::PrepareMessage(bool new_rect) {
   return message;
 }
 
-void EncoderZlib::SubmitMessage(HostMessage* message) {
+void EncoderZlib::SubmitMessage(HostMessage* message, size_t rect_index) {
   EncodingState state = EncodingInProgress;
-  if (current_rect_ == 0 && message->update_stream_packet().has_begin_rect())
+  if (rect_index == 0 && message->update_stream_packet().has_begin_rect())
     state |= EncodingStarting;
-  if (current_rect_ == capture_data_->dirty_rects().size() - 1 &&
+  if (rect_index == capture_data_->dirty_rects().size() - 1 &&
       message->update_stream_packet().has_end_rect())
     state |= EncodingEnded;
   callback_->Run(message, state);

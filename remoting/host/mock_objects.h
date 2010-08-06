@@ -18,12 +18,13 @@ class MockCapturer : public Capturer {
  public:
   MockCapturer() {}
 
-  MOCK_METHOD1(CaptureInvalidRects, void(CaptureCompletedCallback* callback));
-  MOCK_METHOD2(CaptureRects, void(const RectVector& rects,
-                                  CaptureCompletedCallback* callback));
-  MOCK_METHOD1(InvalidateRects, void(const RectVector& inval_rects));
-  MOCK_METHOD0(InvalidateFullScreen, void());
   MOCK_METHOD0(ScreenConfigurationChanged, void());
+  MOCK_METHOD1(InvalidateRects, void(const InvalidRects& inval_rects));
+  MOCK_METHOD0(InvalidateFullScreen, void());
+  MOCK_METHOD0(CalculateInvalidRects, void());
+  MOCK_METHOD1(CaptureInvalidRects, void(CaptureCompletedCallback* callback));
+  MOCK_METHOD2(CaptureRects, void(const InvalidRects& rects,
+                                  CaptureCompletedCallback* callback));
   MOCK_CONST_METHOD0(width, int());
   MOCK_CONST_METHOD0(height, int());
 

@@ -18,12 +18,13 @@ class CapturerMac : public Capturer {
   CapturerMac();
   virtual ~CapturerMac();
 
-  virtual void CaptureRects(const RectVector& rects,
-                            CaptureCompletedCallback* callback);
-
   virtual void ScreenConfigurationChanged();
 
  private:
+  virtual void CalculateInvalidRects();
+  virtual void CaptureRects(const InvalidRects& rects,
+                            CaptureCompletedCallback* callback);
+
   void ScreenRefresh(CGRectCount count, const CGRect *rect_array);
   void ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
                                 size_t count,

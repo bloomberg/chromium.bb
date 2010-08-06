@@ -125,7 +125,7 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
   // Process a data buffer received from libjingle.
   void PacketReceivedTask(scoped_refptr<media::DataBuffer> data);
 
-  // The libjingle channel used to send and receive data from the remote viewer.
+  // The libjingle channel used to send and receive data from the remote client.
   scoped_refptr<JingleChannel> channel_;
 
   // The message loop that this object runs on.

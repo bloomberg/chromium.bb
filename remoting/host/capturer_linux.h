@@ -15,12 +15,12 @@ class CapturerLinux : public Capturer {
   CapturerLinux();
   virtual ~CapturerLinux();
 
-  virtual void CaptureRects(const RectVector& rects,
-                            CaptureCompletedCallback* callback);
-
   virtual void ScreenConfigurationChanged();
 
  private:
+  virtual void CalculateInvalidRects();
+  virtual void CaptureRects(const InvalidRects& rects,
+                            CaptureCompletedCallback* callback);
 
   DISALLOW_COPY_AND_ASSIGN(CapturerLinux);
 };

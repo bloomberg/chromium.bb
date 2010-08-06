@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
+#include "remoting/base/types.h"
 #include "remoting/host/capturer_mac.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -18,20 +19,20 @@ class CapturerMacTest : public testing::Test {
   virtual void SetUp() {
     capturer_.reset(new CapturerMac());
     capturer_->ScreenConfigurationChanged();
-    rects_.push_back(gfx::Rect(0, 0, 10, 10));
+    rects_.insert(gfx::Rect(0, 0, 10, 10));
   }
 
   scoped_ptr<CapturerMac> capturer_;
-  RectVector rects_;
+  InvalidRects rects_;
 };
 
 class CapturerCallback {
  public:
-  explicit CapturerCallback(const RectVector& rects) : rects_(rects) { }
+  explicit CapturerCallback(const InvalidRects& rects) : rects_(rects) { }
   void CaptureDoneCallback(scoped_refptr<CaptureData> capture_data);
 
  protected:
-  RectVector rects_;
+  InvalidRects rects_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CapturerCallback);
@@ -66,9 +67,10 @@ TEST_F(CapturerMacTest, Capture) {
 
 }  // namespace remoting
 
-std::ostream& operator<<(std::ostream& out, const remoting::RectVector& rects) {
-  for (remoting::RectVector::const_iterator i = rects.begin();
-       i < rects.end();
+std::ostream& operator<<(std::ostream& out,
+                         const remoting::InvalidRects& rects) {
+  for (remoting::InvalidRects::const_iterator i = rects.begin();
+       i != rects.end();
        ++i) {
     out << *i << std::endl;
   }

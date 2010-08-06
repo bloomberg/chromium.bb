@@ -10,10 +10,10 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "gfx/rect.h"
+#include "remoting/base/types.h"
 
 namespace remoting {
 
-typedef std::vector<gfx::Rect> DirtyRects;
 typedef uint8 DiffInfo;
 
 // Size (in pixels) of each square block used for diffing.
@@ -24,12 +24,12 @@ class Differ {
  public:
   // Create a differ that operates on bitmaps with the specified width, height
   // and bytes_per_pixel.
-  Differ(int width, int height, int bytes_per_pixel);
+  Differ(int width, int height, int bytes_per_pixel, int stride);
 
   // Given the previous and current screen buffer, calculate the set of
   // rectangles that enclose all the changed pixels in the new screen.
   void CalcDirtyRects(const void* prev_buffer, const void* curr_buffer,
-                      DirtyRects* rects);
+                      InvalidRects* rects);
 
   // Identify all of the blocks that contain changed pixels.
   void MarkDirtyBlocks(const void* prev_buffer, const void* curr_buffer);
@@ -54,7 +54,7 @@ class Differ {
   // blocks into larger rectangular units.
   // The goal is to minimize the number of rects that cover the dirty blocks,
   // although it is not required to calc the absolute minimum of rects.
-  void MergeBlocks(DirtyRects* rects);
+  void MergeBlocks(InvalidRects* rects);
 
   // Allow tests to access our private parts.
   friend class DifferTest;
@@ -65,9 +65,10 @@ class Differ {
   int height_;
 
   // Number of bytes for each pixel in source and dest bitmap.
+  // (Yes, they must match.)
   int bytes_per_pixel_;
 
-  // Number of bytes in each row of the image.
+  // Number of bytes in each row of the image (AKA: stride).
   int bytes_per_row_;
 
   // Diff information for each block in the image.

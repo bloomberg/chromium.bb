@@ -339,8 +339,9 @@ static void TestEncodingRects(Encoder* encoder,
                               scoped_refptr<CaptureData> data,
                               const gfx::Rect* rects, int count) {
   data->mutable_dirty_rects().clear();
-  data->mutable_dirty_rects().insert(
-      data->mutable_dirty_rects().begin(), rects, rects + count);
+  for (int i = 0; i < count; ++i) {
+    data->mutable_dirty_rects().insert(rects[i]);
+  }
   tester->AddRects(rects, count);
 
   encoder->Encode(data, true,
@@ -371,8 +372,9 @@ static void TestEncodingRects(Encoder* encoder,
                               scoped_refptr<CaptureData> data,
                               const gfx::Rect* rects, int count) {
   data->mutable_dirty_rects().clear();
-  data->mutable_dirty_rects().insert(
-      data->mutable_dirty_rects().begin(), rects, rects + count);
+  for (int i = 0; i < count; ++i) {
+    data->mutable_dirty_rects().insert(rects[i]);
+  }
   encoder_tester->AddRects(rects, count);
   decoder_tester->AddRects(rects, count);
   decoder_tester->reset_decode_done();

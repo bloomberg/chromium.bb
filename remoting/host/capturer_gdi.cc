@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "remoting/host/capturer_gdi.h"
+#include "remoting/host/differ.h"
 
 #include "gfx/rect.h"
 
@@ -13,8 +14,10 @@ static const int kPixelsPerMeter = 3780;
 // 32 bit RGBA is 4 bytes per pixel.
 static const int kBytesPerPixel = 4;
 
-CapturerGdi::CapturerGdi() : desktop_dc_(NULL),
-                             memory_dc_(NULL) {
+CapturerGdi::CapturerGdi()
+    : desktop_dc_(NULL),
+      memory_dc_(NULL),
+      capture_fullscreen_(true) {
   memset(target_bitmap_, 0, sizeof(target_bitmap_));
   memset(buffers_, 0, sizeof(buffers_));
 }
@@ -57,6 +60,9 @@ void CapturerGdi::ScreenConfigurationChanged() {
   pixel_format_ = PixelFormatRgb32;
   bytes_per_row_ = rounded_width * kBytesPerPixel;
 
+  // Create a differ for this screen size.
+  differ_.reset(new Differ(width_, height_, 4, bytes_per_row_));
+
   // Create a device independant bitmap (DIB) that is the same size.
   BITMAPINFO bmi;
   memset(&bmi, 0, sizeof(bmi));
@@ -75,15 +81,41 @@ void CapturerGdi::ScreenConfigurationChanged() {
                                          static_cast<void**>(&buffers_[i]),
                                          NULL, 0);
   }
+
+  capture_fullscreen_ = true;
 }
 
-void CapturerGdi::CaptureRects(const RectVector& rects,
+void CapturerGdi::CalculateInvalidRects() {
+  ClearInvalidRects();
+  CaptureImage();
+
+  if (capture_fullscreen_) {
+    InvalidateFullScreen();
+  } else {
+    // Calculate the difference between the previous and current screen.
+    int prev_buffer_id = current_buffer_ - 1;
+    if (prev_buffer_id < 0) {
+      prev_buffer_id = kNumBuffers - 1;
+    }
+
+    void* prev_buffer = buffers_[prev_buffer_id];
+    void* curr_buffer = buffers_[current_buffer_];
+
+    InvalidRects rects;
+    differ_->CalcDirtyRects(prev_buffer, curr_buffer, &rects);
+
+    InvalidateRects(rects);
+  }
+
+  capture_fullscreen_ = false;
+}
+
+void CapturerGdi::CaptureRects(const InvalidRects& rects,
                                CaptureCompletedCallback* callback) {
   DataPlanes planes;
   planes.data[0] = static_cast<uint8*>(buffers_[current_buffer_]);
   planes.strides[0] = bytes_per_row_;
 
-  CaptureImage();
   scoped_refptr<CaptureData> data(new CaptureData(planes,
                                                   width(),
                                                   height(),
@@ -94,7 +126,7 @@ void CapturerGdi::CaptureRects(const RectVector& rects,
 }
 
 void CapturerGdi::CaptureImage() {
-  // Selection the target bitmap into the memory dc.
+  // Select the target bitmap into the memory dc.
   SelectObject(memory_dc_, target_bitmap_[current_buffer_]);
 
   // And then copy the rect from desktop to memory.

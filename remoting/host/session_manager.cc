@@ -210,17 +210,14 @@ void SessionManager::DoCapture() {
   // And finally perform one capture.
   DCHECK(capturer_.get());
 
-  // TODO(dmaclach): make this not required on the Mac eventually.
-  // Will require getting the X11client to work properly. Right now X11 expects
-  // full screens each pass.
-  capturer_->InvalidateFullScreen();
   capturer_->CaptureInvalidRects(
       NewCallback(this, &SessionManager::CaptureDoneCallback));
 }
 
 void SessionManager::CaptureDoneCallback(
     scoped_refptr<CaptureData> capture_data) {
-  // TODO(hclam): There is a bug if the capturer doesn't produce any dirty rects.
+  // TODO(hclam): There is a bug if the capturer doesn't produce any dirty
+  // rects.
   DCHECK_EQ(capture_loop_, MessageLoop::current());
   encode_loop_->PostTask(
       FROM_HERE,

@@ -102,6 +102,14 @@ class Rect {
     return !(*this == other);
   }
 
+  // A rect is less than another rect if its origin is less than
+  // the other rect's origin. If the origins are equal, then the
+  // shortest rect is less than the other. If the origin and the
+  // height are equal, then the narrowest rect is less than.
+  // This comparison is required to use Rects in sets, or sorted
+  // vectors.
+  bool operator<(const Rect& other) const;
+
 #if defined(OS_WIN)
   // Construct an equivalent Win32 RECT object.
   RECT ToRECT() const;

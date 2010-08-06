@@ -7,6 +7,8 @@
 
 #include "remoting/base/encoder.h"
 
+#include "gfx/rect.h"
+
 namespace remoting {
 
 class CompressorZlib;
@@ -26,18 +28,19 @@ class EncoderZlib : public Encoder {
 
  private:
   // Encode a single dirty rect using compressor.
-  void EncodeRect(CompressorZlib* compressor);
+  void EncodeRect(CompressorZlib* compressor, const gfx::Rect& rect,
+                  size_t rect_index);
 
   // Create a new HostMessage with the right flag and attributes. The message
   // can be used immediately for output of encoding.
-  HostMessage* PrepareMessage(bool new_rect);
+  HostMessage* PrepareMessage(const gfx::Rect* rect);
 
   // Submit |message| to |callback_|.
-  void SubmitMessage(HostMessage* message);
+  void SubmitMessage(HostMessage* message, size_t rect_index);
 
   scoped_refptr<CaptureData> capture_data_;
   scoped_ptr<DataAvailableCallback> callback_;
-  size_t current_rect_;
+  //size_t current_rect_;
   int packet_size_;
 };
 

@@ -8,7 +8,10 @@
 #include <string>
 
 #include "base/thread.h"
+#include "remoting/base/encoder.h"
+#include "remoting/host/capturer.h"
 #include "remoting/host/client_connection.h"
+#include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/jingle_glue/jingle_client.h"
 #include "remoting/jingle_glue/jingle_thread.h"

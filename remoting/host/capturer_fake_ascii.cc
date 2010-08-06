@@ -18,19 +18,6 @@ CapturerFakeAscii::CapturerFakeAscii() {
 CapturerFakeAscii::~CapturerFakeAscii() {
 }
 
-void CapturerFakeAscii::CaptureRects(const RectVector& rects,
-                                     CaptureCompletedCallback* callback) {
-  GenerateImage();
-  DataPlanes planes;
-  planes.data[0] = buffers_[current_buffer_].get();
-  planes.strides[0] = bytes_per_row_;
-  scoped_refptr<CaptureData> capture_data(new CaptureData(planes,
-                                                          width_,
-                                                          height_,
-                                                          pixel_format_));
-  FinishCapture(capture_data, callback);
-}
-
 void CapturerFakeAscii::ScreenConfigurationChanged() {
   width_ = kWidth;
   height_ = kHeight;
@@ -42,6 +29,26 @@ void CapturerFakeAscii::ScreenConfigurationChanged() {
   for (int i = 0; i < kNumBuffers; i++) {
     buffers_[i].reset(new uint8[buffer_size]);
   }
+}
+
+void CapturerFakeAscii::CalculateInvalidRects() {
+  // Capture and invalidate the entire screen.
+  // Performing the capture here is modelled on the Windows
+  // GDI capturer.
+  GenerateImage();
+  InvalidateFullScreen();
+}
+
+void CapturerFakeAscii::CaptureRects(const InvalidRects& rects,
+                                     CaptureCompletedCallback* callback) {
+  DataPlanes planes;
+  planes.data[0] = buffers_[current_buffer_].get();
+  planes.strides[0] = bytes_per_row_;
+  scoped_refptr<CaptureData> capture_data(new CaptureData(planes,
+                                                          width_,
+                                                          height_,
+                                                          pixel_format_));
+  FinishCapture(capture_data, callback);
 }
 
 void CapturerFakeAscii::GenerateImage() {

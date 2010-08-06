@@ -71,11 +71,17 @@ void CapturerMac::ScreenConfigurationChanged() {
   CGLSetCurrentContext(cgl_context_);
 }
 
-void CapturerMac::CaptureRects(const RectVector& rects,
+void CapturerMac::CalculateInvalidRects() {
+  // Since the Mac gets its list of invalid rects via calls to InvalidateRect(),
+  // this step only needs to perform post-processing optimizations on the rect
+  // list (if needed).
+}
+
+void CapturerMac::CaptureRects(const InvalidRects& rects,
                                CaptureCompletedCallback* callback) {
   // TODO(dmaclach): something smarter here in the future.
   gfx::Rect dirtyRect;
-  for (RectVector::const_iterator i = rects.begin(); i < rects.end(); ++i) {
+  for (InvalidRects::const_iterator i = rects.begin(); i != rects.end(); ++i) {
     dirtyRect = dirtyRect.Union(*i);
   }
 
@@ -101,32 +107,31 @@ void CapturerMac::CaptureRects(const RectVector& rects,
                                                   width(),
                                                   height(),
                                                   pixel_format()));
-  data->mutable_dirty_rects().assign(1, dirtyRect);
+  data->mutable_dirty_rects().clear();
+  data->mutable_dirty_rects().insert(dirtyRect);
   FinishCapture(data, callback);
 }
 
-
 void CapturerMac::ScreenRefresh(CGRectCount count, const CGRect *rect_array) {
-  RectVector rects;
+  InvalidRects rects;
   for (CGRectCount i = 0; i < count; ++i) {
     CGRect rect = rect_array[i];
     rect.origin.y = height() - rect.size.height;
-    rects.push_back(gfx::Rect(rect));
+    rects.insert(gfx::Rect(rect));
   }
   InvalidateRects(rects);
-
 }
 
 void CapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,
                                    size_t count,
                                    const CGRect *rect_array) {
-  RectVector rects;
+  InvalidRects rects;
   for (CGRectCount i = 0; i < count; ++i) {
     CGRect rect = rect_array[i];
     rect.origin.y = height() - rect.size.height;
-    rects.push_back(gfx::Rect(rect));
+    rects.insert(gfx::Rect(rect));
     rect = CGRectOffset(rect, delta.dX, delta.dY);
-    rects.push_back(gfx::Rect(rect));
+    rects.insert(gfx::Rect(rect));
   }
   InvalidateRects(rects);
 }

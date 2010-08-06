@@ -96,7 +96,7 @@ void ChromotingHost::OnClientDisconnected(ClientConnection* client) {
 ////////////////////////////////////////////////////////////////////////////
 // ClientConnection::EventHandler implementations
 void ChromotingHost::HandleMessages(ClientConnection* client,
-                                ClientMessageList* messages) {
+                                    ClientMessageList* messages) {
   DCHECK_EQ(context_->main_message_loop(), MessageLoop::current());
 
   // Delegate the messages to EventExecutor and delete the unhandled

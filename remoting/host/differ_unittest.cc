@@ -9,9 +9,10 @@
 namespace remoting {
 
 // 96x96 screen gives a 3x3 grid of blocks.
-const int kScreenWidth = 96;
+const int kScreenWidth= 96;
 const int kScreenHeight = 96;
 const int kBytesPerPixel = 3;
+const int kBytesPerRow = (kBytesPerPixel * kScreenWidth);
 
 class DifferTest : public testing::Test {
  public:
@@ -20,18 +21,17 @@ class DifferTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    InitDiffer(kScreenWidth, kScreenHeight, kBytesPerPixel);
+    InitDiffer(kScreenWidth, kScreenHeight, kBytesPerPixel, kBytesPerRow);
   }
 
-  void InitDiffer(int width, int height, int bpp) {
+  void InitDiffer(int width, int height, int bpp, int stride) {
     width_ = width;
     height_ = height;
     bytes_per_pixel_ = bpp;
-
-    stride_ = width_ * bytes_per_pixel_;
+    stride_ = stride;
     buffer_size_ = width_ * height_ * bytes_per_pixel_;
 
-    differ_.reset(new Differ(width_, height_, bytes_per_pixel_));
+    differ_.reset(new Differ(width_, height_, bytes_per_pixel_, stride_));
 
     prev_.reset(new uint8[buffer_size_]);
     memset(prev_.get(), 0, buffer_size_);
@@ -126,12 +126,11 @@ class DifferTest : public testing::Test {
   // Verify that the given dirty rect matches the expected |x|, |y|, |width|
   // and |height|.
   // |x|, |y|, |width| and |height| are specified in block (not pixel) units.
-  void CheckDirtyRect(const gfx::Rect& rect, int x, int y,
+  void CheckDirtyRect(const InvalidRects& rects, int x, int y,
                       int width, int height) {
-    EXPECT_EQ(x * kBlockSize, rect.x());
-    EXPECT_EQ(y * kBlockSize, rect.y());
-    EXPECT_EQ(width * kBlockSize, rect.width());
-    EXPECT_EQ(height * kBlockSize, rect.height());
+    gfx::Rect r(x * kBlockSize, y * kBlockSize,
+                width * kBlockSize, height * kBlockSize);
+    EXPECT_TRUE(rects.find(r) != rects.end());
   }
 
   // Mark the range of blocks specified and then verify that they are
@@ -142,11 +141,11 @@ class DifferTest : public testing::Test {
     ClearDiffInfo();
     MarkBlocks(x_origin, y_origin, width, height);
 
-    scoped_ptr<DirtyRects> dirty(new DirtyRects());
+    scoped_ptr<InvalidRects> dirty(new InvalidRects());
     differ_->MergeBlocks(dirty.get());
 
     ASSERT_EQ(1UL, dirty->size());
-    CheckDirtyRect(dirty->at(0), x_origin, y_origin, width, height);
+    CheckDirtyRect(*dirty.get(), x_origin, y_origin, width, height);
   }
 
   // The differ class we're testing.
@@ -269,7 +268,7 @@ TEST_F(DifferTest, MergeBlocks_Empty) {
   // +---+---+---+---+
   ClearDiffInfo();
 
-  scoped_ptr<DirtyRects> dirty(new DirtyRects());
+  scoped_ptr<InvalidRects> dirty(new InvalidRects());
   differ_->MergeBlocks(dirty.get());
 
   EXPECT_EQ(0UL, dirty->size());
@@ -416,7 +415,7 @@ TEST_F(DifferTest, MergeBlocks_BlockRect) {
 // The exact rects returned depend on the current implementation, so these
 // may need to be updated if we modify how we merge blocks.
 TEST_F(DifferTest, MergeBlocks_MultiRect) {
-  scoped_ptr<DirtyRects> dirty;
+  scoped_ptr<InvalidRects> dirty;
 
   // +---+---+---+---+      +---+---+---+
   // |   | X |   | _ |      |   | 0 |   |
@@ -432,13 +431,13 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(0, 1, 1, 1);
   MarkBlocks(2, 2, 1, 1);
 
-  dirty.reset(new DirtyRects());
+  dirty.reset(new InvalidRects());
   differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(3UL, dirty->size());
-  CheckDirtyRect(dirty->at(0), 1, 0, 1, 1);
-  CheckDirtyRect(dirty->at(1), 0, 1, 1, 1);
-  CheckDirtyRect(dirty->at(2), 2, 2, 1, 1);
+  CheckDirtyRect(*dirty.get(), 1, 0, 1, 1);
+  CheckDirtyRect(*dirty.get(), 0, 1, 1, 1);
+  CheckDirtyRect(*dirty.get(), 2, 2, 1, 1);
 
   // +---+---+---+---+      +---+---+---+
   // |   |   | X | _ |      |   |   | 0 |
@@ -453,12 +452,12 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 0, 1, 3);
   MarkBlocks(0, 1, 2, 2);
 
-  dirty.reset(new DirtyRects());
+  dirty.reset(new InvalidRects());
   differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(2UL, dirty->size());
-  CheckDirtyRect(dirty->at(0), 2, 0, 1, 3);
-  CheckDirtyRect(dirty->at(1), 0, 1, 2, 2);
+  CheckDirtyRect(*dirty.get(), 2, 0, 1, 3);
+  CheckDirtyRect(*dirty.get(), 0, 1, 2, 2);
 
   // +---+---+---+---+      +---+---+---+
   // |   |   |   | _ |      |   |   |   |
@@ -474,13 +473,13 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 1, 1, 1);
   MarkBlocks(0, 2, 3, 1);
 
-  dirty.reset(new DirtyRects());
+  dirty.reset(new InvalidRects());
   differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(3UL, dirty->size());
-  CheckDirtyRect(dirty->at(0), 0, 1, 1, 2);
-  CheckDirtyRect(dirty->at(1), 2, 1, 1, 2);
-  CheckDirtyRect(dirty->at(2), 1, 2, 1, 1);
+  CheckDirtyRect(*dirty.get(), 0, 1, 1, 2);
+  CheckDirtyRect(*dirty.get(), 2, 1, 1, 2);
+  CheckDirtyRect(*dirty.get(), 1, 2, 1, 1);
 
   // +---+---+---+---+      +---+---+---+
   // | X | X | X | _ |      | 0   0   0 |
@@ -497,14 +496,14 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(2, 1, 1, 1);
   MarkBlocks(0, 2, 3, 1);
 
-  dirty.reset(new DirtyRects());
+  dirty.reset(new InvalidRects());
   differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(4UL, dirty->size());
-  CheckDirtyRect(dirty->at(0), 0, 0, 3, 1);
-  CheckDirtyRect(dirty->at(1), 0, 1, 1, 2);
-  CheckDirtyRect(dirty->at(2), 2, 1, 1, 2);
-  CheckDirtyRect(dirty->at(3), 1, 2, 1, 1);
+  CheckDirtyRect(*dirty.get(), 0, 0, 3, 1);
+  CheckDirtyRect(*dirty.get(), 0, 1, 1, 2);
+  CheckDirtyRect(*dirty.get(), 2, 1, 1, 2);
+  CheckDirtyRect(*dirty.get(), 1, 2, 1, 1);
 
   // +---+---+---+---+      +---+---+---+
   // | X | X |   | _ |      | 0   0 |   |
@@ -519,12 +518,12 @@ TEST_F(DifferTest, MergeBlocks_MultiRect) {
   MarkBlocks(0, 0, 2, 2);
   MarkBlocks(1, 2, 1, 1);
 
-  dirty.reset(new DirtyRects());
+  dirty.reset(new InvalidRects());
   differ_->MergeBlocks(dirty.get());
 
   ASSERT_EQ(2UL, dirty->size());
-  CheckDirtyRect(dirty->at(0), 0, 0, 2, 2);
-  CheckDirtyRect(dirty->at(1), 1, 2, 1, 1);
+  CheckDirtyRect(*dirty.get(), 0, 0, 2, 2);
+  CheckDirtyRect(*dirty.get(), 1, 2, 1, 1);
 }
 
 }  // namespace remoting

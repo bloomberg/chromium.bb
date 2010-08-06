@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 
   if (fake) {
     // Inject a fake capturer.
-    LOG(INFO) << "Usage a fake capturer.";
+    LOG(INFO) << "Using a fake capturer.";
     capturer.reset(new remoting::CapturerFake());
   }
 
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
                                    encoder.release(),
                                    executor.release());
 
-  // Let the chromoting host runs until the shutdown task is executed.
+  // Let the chromoting host run until the shutdown task is executed.
   MessageLoop message_loop(MessageLoop::TYPE_UI);
   host->Start(NewRunnableFunction(&ShutdownTask, &message_loop));
   message_loop.Run();

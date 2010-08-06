@@ -20,11 +20,13 @@ class CapturerFake : public Capturer {
   CapturerFake();
   virtual ~CapturerFake();
 
-  virtual void CaptureRects(const RectVector& rects,
-                            CaptureCompletedCallback* callback);
   virtual void ScreenConfigurationChanged();
 
  private:
+  virtual void CalculateInvalidRects();
+  virtual void CaptureRects(const InvalidRects& rects,
+                            CaptureCompletedCallback* callback);
+
   // Generates an image in the front buffer.
   void GenerateImage();
 

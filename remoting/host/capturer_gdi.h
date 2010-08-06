@@ -12,6 +12,8 @@ typedef HBITMAP BitmapRef;
 
 namespace remoting {
 
+class Differ;
+
 // CapturerGdi captures 32bit RGB using GDI.
 //
 // CapturerGdi is doubled buffered as required by Capturer. See
@@ -21,11 +23,13 @@ class CapturerGdi : public Capturer {
   CapturerGdi();
   virtual ~CapturerGdi();
 
-  virtual void CaptureRects(const RectVector& rects,
-                            CaptureCompletedCallback* callback);
   virtual void ScreenConfigurationChanged();
 
  private:
+  virtual void CalculateInvalidRects();
+  virtual void CaptureRects(const InvalidRects& rects,
+                            CaptureCompletedCallback* callback);
+
   void ReleaseBuffers();
   // Generates an image in the current buffer.
   void CaptureImage();
@@ -37,6 +41,12 @@ class CapturerGdi : public Capturer {
 
   // We have two buffers for the screen images as required by Capturer.
   void* buffers_[kNumBuffers];
+
+  // Class to calculate the difference between two screen bitmaps.
+  scoped_ptr<Differ> differ_;
+
+  // True if we should force a fullscreen capture.
+  bool capture_fullscreen_;
 
   DISALLOW_COPY_AND_ASSIGN(CapturerGdi);
 };

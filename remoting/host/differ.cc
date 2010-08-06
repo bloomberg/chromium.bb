@@ -8,12 +8,12 @@
 
 namespace remoting {
 
-Differ::Differ(int width, int height, int bpp) {
+Differ::Differ(int width, int height, int bpp, int stride) {
   // Dimensions of screen.
   width_ = width;
   height_ = height;
   bytes_per_pixel_ = bpp;
-  bytes_per_row_ = width_ * bytes_per_pixel_;
+  bytes_per_row_ = stride;
 
   // Calc number of blocks (full and partial) required to cover entire image.
   // One additional row/column is added as a boundary on the right & bottom.
@@ -24,7 +24,7 @@ Differ::Differ(int width, int height, int bpp) {
 }
 
 void Differ::CalcDirtyRects(const void* prev_buffer, const void* curr_buffer,
-                            DirtyRects* rects) {
+                            InvalidRects* rects) {
   if (!rects) {
     return;
   }
@@ -147,7 +147,7 @@ DiffInfo Differ::DiffPartialBlock(const uint8* prev_buffer,
   return 0;
 }
 
-void Differ::MergeBlocks(DirtyRects* rects) {
+void Differ::MergeBlocks(InvalidRects* rects) {
   DCHECK(rects);
   rects->clear();
 
@@ -211,7 +211,7 @@ void Differ::MergeBlocks(DirtyRects* rects) {
         if (top + height > height_) {
           height = height_ - top;
         }
-        rects->push_back(gfx::Rect(left, top, width, height));
+        rects->insert(gfx::Rect(left, top, width, height));
       }
 
       // Increment to next block in this row.
