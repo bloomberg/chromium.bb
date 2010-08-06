@@ -29,14 +29,14 @@ class ChromeLoggingTest : public testing::Test {
     if (!env->GetEnv(env_vars::kLogFileName, &environment_filename_))
       environment_filename_ = "";
 
-    env->SetEnv(env_vars::kLogFileName, new_value);
+    env->SetVar(env_vars::kLogFileName, new_value);
   }
 
   // Restores the value of the log file nave environment variable
   // previously saved by SaveEnvironmentVariable().
   void RestoreEnvironmentVariable() {
     scoped_ptr<base::Environment> env(base::Environment::Create());
-    env->SetEnv(env_vars::kLogFileName, environment_filename_);
+    env->SetVar(env_vars::kLogFileName, environment_filename_);
   }
 
  private:

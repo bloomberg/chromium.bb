@@ -144,23 +144,23 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
   // Test the support of LANGUAGE environment variable.
   SetICUDefaultLocale("en-US");
-  env->SetEnv("LANGUAGE", "xx:fr_CA");
+  env->SetVar("LANGUAGE", "xx:fr_CA");
   EXPECT_EQ("fr", l10n_util::GetApplicationLocale(""));
 
-  env->SetEnv("LANGUAGE", "xx:yy:en_gb.utf-8@quot");
+  env->SetVar("LANGUAGE", "xx:yy:en_gb.utf-8@quot");
   EXPECT_EQ("en-GB", l10n_util::GetApplicationLocale(""));
 
-  env->SetEnv("LANGUAGE", "xx:zh-hk");
+  env->SetVar("LANGUAGE", "xx:zh-hk");
   EXPECT_EQ("zh-TW", l10n_util::GetApplicationLocale(""));
 
   // We emulate gettext's behavior here, which ignores LANG/LC_MESSAGES/LC_ALL
   // when LANGUAGE is specified. If no language specified in LANGUAGE is valid,
   // then just fallback to the default language, which is en-US for us.
   SetICUDefaultLocale("fr-FR");
-  env->SetEnv("LANGUAGE", "xx:yy");
+  env->SetVar("LANGUAGE", "xx:yy");
   EXPECT_EQ("en-US", l10n_util::GetApplicationLocale(""));
 
-  env->SetEnv("LANGUAGE", "/fr:zh_CN");
+  env->SetVar("LANGUAGE", "/fr:zh_CN");
   EXPECT_EQ("zh-CN", l10n_util::GetApplicationLocale(""));
 
   // Make sure the follow tests won't be affected by LANGUAGE environment

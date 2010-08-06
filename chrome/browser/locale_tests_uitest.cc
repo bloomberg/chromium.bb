@@ -17,7 +17,7 @@ class LocaleTestsBase : public UITest {
 #if defined(OS_LINUX)
     scoped_ptr<base::Environment> env(base::Environment::Create());
     if (old_lc_all_) {
-      env->SetEnv("LC_ALL", old_lc_all_);
+      env->SetVar("LC_ALL", old_lc_all_);
     } else {
       env->UnSetVar("LC_ALL");
     }

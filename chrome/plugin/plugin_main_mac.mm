@@ -36,7 +36,7 @@ void TrimInterposeEnvironment() {
              strcmp(interpose_list.c_str() + suffix_offset,
                     plugin_interpose_strings::kInterposeLibraryPath) == 0) {
     std::string trimmed_list = interpose_list.substr(0, suffix_offset - 1);
-    env->SetEnv(plugin_interpose_strings::kDYLDInsertLibrariesKey,
+    env->SetVar(plugin_interpose_strings::kDYLDInsertLibrariesKey,
                 trimmed_list.c_str());
   } else {
     NOTREACHED() << "Missing Carbon interposing library";

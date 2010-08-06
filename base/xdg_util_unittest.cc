@@ -18,7 +18,7 @@ namespace {
 class MockEnvironment : public base::Environment {
  public:
   MOCK_METHOD2(GetEnv, bool(const char*, std::string* result));
-  MOCK_METHOD2(SetEnv, bool(const char*, const std::string& new_value));
+  MOCK_METHOD2(SetVar, bool(const char*, const std::string& new_value));
   MOCK_METHOD1(UnSetVar, bool(const char*));
 };
 

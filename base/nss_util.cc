@@ -83,7 +83,7 @@ void UseLocalCacheOfNSSDatabaseIfNFS(const FilePath& database_dir) {
       scoped_ptr<base::Environment> env(base::Environment::Create());
       const char* use_cache_env_var = "NSS_SDB_USE_CACHE";
       if (!env->HasVar(use_cache_env_var))
-        env->SetEnv(use_cache_env_var, "yes");
+        env->SetVar(use_cache_env_var, "yes");
     }
   }
 #endif  // defined(OS_LINUX)
