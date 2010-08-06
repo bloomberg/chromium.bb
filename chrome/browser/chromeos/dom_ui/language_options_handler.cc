@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -97,19 +98,19 @@ ListValue* LanguageOptionsHandler::GetInputMethodList(
 
 ListValue* LanguageOptionsHandler::GetLanguageList(
     const InputMethodDescriptors& descriptors) {
-  std::vector<std::string> language_codes;
+  std::set<std::string> language_codes;
   // Collect the language codes from the supported input methods.
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const InputMethodDescriptor& descriptor = descriptors[i];
     const std::string language_code =
         input_method::GetLanguageCodeFromDescriptor(descriptor);
-    language_codes.push_back(language_code);
+    language_codes.insert(language_code);
   }
   // Collect the language codes from kExtraLanguages.
   for (size_t i = 0; i < arraysize(input_method::kExtraLanguages); ++i) {
     const char* language_code =
         input_method::kExtraLanguages[i].language_code;
-    language_codes.push_back(language_code);
+    language_codes.insert(language_code);
   }
 
   // Map of display name -> {language code, native_display_name}.
@@ -123,15 +124,15 @@ ListValue* LanguageOptionsHandler::GetLanguageList(
   std::vector<std::wstring> display_names;
 
   // Build the list of display names, and build the language map.
-  for (size_t i = 0; i < language_codes.size(); ++i) {
+  for (std::set<std::string>::const_iterator iter = language_codes.begin();
+       iter != language_codes.end(); ++iter) {
     const std::wstring display_name =
-        input_method::GetLanguageDisplayNameFromCode(language_codes[i]);
+        input_method::GetLanguageDisplayNameFromCode(*iter);
     const std::wstring native_display_name =
-        input_method::GetLanguageNativeDisplayNameFromCode(
-            language_codes[i]);
+        input_method::GetLanguageNativeDisplayNameFromCode(*iter);
     display_names.push_back(display_name);
     language_map[display_name] =
-        std::make_pair(language_codes[i], native_display_name);
+        std::make_pair(*iter, native_display_name);
   }
   DCHECK_EQ(display_names.size(), language_map.size());
 

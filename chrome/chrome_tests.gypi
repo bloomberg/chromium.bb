@@ -731,6 +731,7 @@
         'browser/chrome_plugin_unittest.cc',
         'browser/chrome_thread_unittest.cc',
         'browser/chromeos/customization_document_unittest.cc',
+        'browser/chromeos/dom_ui/language_options_handler_unittest.cc',
         'browser/chromeos/external_cookie_handler_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',

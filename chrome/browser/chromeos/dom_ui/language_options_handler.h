@@ -26,18 +26,21 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 
- private:
+  // The following static methods are public for ease of testing.
+
   // Gets the list of input methods from the given input descriptors.
   // The return value will look like:
   // [{'id': 'pinyin', 'displayName': 'Pinyin', 'languageCode': 'zh-CW'}, ...]
-  ListValue* GetInputMethodList(const InputMethodDescriptors& descriptors);
+  static ListValue* GetInputMethodList(
+      const InputMethodDescriptors& descriptors);
 
   // Gets the list of languages from the given input descriptors.
   // The return value will look like:
   // [{'code': 'fi', 'displayName': 'Finnish', 'nativeDisplayName': 'suomi'},
   //  ...]
-  ListValue* GetLanguageList(const InputMethodDescriptors& descriptors);
+  static ListValue* GetLanguageList(const InputMethodDescriptors& descriptors);
 
+ private:
   // Called when the UI language is changed.
   // |value| will be the language code as string (ex. "fr").
   void UiLanguageChangeCallback(const Value* value);
