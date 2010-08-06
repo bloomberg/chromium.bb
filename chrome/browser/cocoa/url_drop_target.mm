@@ -81,6 +81,9 @@
 @implementation URLDropTargetHandler(Private)
 
 - (NSDragOperation)getDragOperation:(id<NSDraggingInfo>)sender {
+  if (![[sender draggingPasteboard] containsURLData])
+    return NSDragOperationNone;
+
   // Only allow the copy operation.
   return [sender draggingSourceOperationMask] & NSDragOperationCopy;
 }
