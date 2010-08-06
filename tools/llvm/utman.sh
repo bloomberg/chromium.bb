@@ -125,7 +125,7 @@ readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 readonly LLVM_REV=b98fb92a7457
 readonly LLVM_GCC_REV=408df9d0016a
 readonly NEWLIB_REV=c74ed6d22b4f
-readonly BINUTILS_REV=e22514d846ae
+readonly BINUTILS_REV=3b9d84d874e0
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
