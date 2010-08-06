@@ -124,7 +124,7 @@
         # http://code.google.com/p/chromium/issues/detail?id=18337
         ['target_arch!="x64" and target_arch!="arm"', {
           'dependencies': [
-            'copy_npapi_test_plugin',
+            'npapi_test_plugin',
           ],
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
@@ -583,39 +583,6 @@
           ],
         },
         {
-          'target_name': 'copy_npapi_test_plugin',
-          'type': 'none',
-          'dependencies': [
-            'npapi_test_plugin',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/plugins',
-                  'files': ['<(PRODUCT_DIR)/npapi_test_plugin.dll'],
-                },
-              ],
-            }],
-            ['OS=="mac"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/plugins/',
-                  'files': ['<(PRODUCT_DIR)/npapi_test_plugin.plugin'],
-                },
-              ]
-            }],
-            ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/plugins',
-                  'files': ['<(PRODUCT_DIR)/libnpapi_test_plugin.so'],
-                },
-              ],
-            }],
-          ],
-        },
-        {
           'target_name': 'npapi_pepper_test_plugin',
           'type': 'loadable_module',
           'mac_bundle': 1,
@@ -648,39 +615,6 @@
           'xcode_settings': {
             'INFOPLIST_FILE': '<(DEPTH)/webkit/tools/npapi_pepper_test_plugin/Info.plist',
           },
-        },
-        {
-          'target_name': 'copy_npapi_pepper_test_plugin',
-          'type': 'none',
-          'dependencies': [
-            'npapi_pepper_test_plugin',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/plugins',
-                  'files': ['<(PRODUCT_DIR)/npapi_pepper_test_plugin.dll'],
-                },
-              ],
-            }],
-            ['OS=="mac"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/plugins/',
-                  'files': ['<(PRODUCT_DIR)/npapi_pepper_test_plugin.plugin/'],
-                },
-              ]
-            }],
-            ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
-              'copies': [
-                {
-                  'destination': '<(PRODUCT_DIR)/plugins',
-                  'files': ['<(PRODUCT_DIR)/libnpapi_pepper_test_plugin.so'],
-                },
-              ],
-            }],
-          ],
         },
       ],
     }],
