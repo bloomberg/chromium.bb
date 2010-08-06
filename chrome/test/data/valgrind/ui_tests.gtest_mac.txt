@@ -77,3 +77,7 @@ ChromeMainTest.AppLaunch
 SessionHistoryTest.FrameBackForward
 SessionHistoryTest.JavascriptHistory
 SessionHistoryTest.LocationReplace
+
+# UNIMPLEMENTED reached, see http://crbug.com/51387
+OptionsUITest.LoadOptionsByURL
+AutomatedUITestBase.CloseTab
