@@ -229,7 +229,7 @@ drmHashEntry *drmGetEntry(int fd)
  * PCI:b:d:f format and the newer pci:oooo:bb:dd.f format.  In the format, o is
  * domain, b is bus, d is device, f is function.
  */
-static int drmMatchBusID(const char *id1, const char *id2)
+static int drmMatchBusID(const char *id1, const char *id2, int pci_domain_ok)
 {
     /* First, check if the IDs are exactly the same */
     if (strcasecmp(id1, id2) == 0)
@@ -256,6 +256,13 @@ static int drmMatchBusID(const char *id1, const char *id2)
 	    if (ret != 3)
 		return 0;
 	}
+
+	/* If domains aren't properly supported by the kernel interface,
+	 * just ignore them, which sucks less than picking a totally random
+	 * card with "open by name"
+	 */
+	if (!pci_domain_ok)
+		o1 = o2 = 0;
 
 	if ((o1 != o2) || (b1 != b2) || (d1 != d2) || (f1 != f2))
 	    return 0;
@@ -482,7 +489,7 @@ int drmAvailable(void)
  */
 static int drmOpenByBusid(const char *busid)
 {
-    int        i;
+    int        i, pci_domain_ok = 1;
     int        fd;
     const char *buf;
     drmSetVersion sv;
@@ -492,14 +499,27 @@ static int drmOpenByBusid(const char *busid)
 	fd = drmOpenMinor(i, 1, DRM_NODE_RENDER);
 	drmMsg("drmOpenByBusid: drmOpenMinor returns %d\n", fd);
 	if (fd >= 0) {
+	    /* We need to try for 1.4 first for proper PCI domain support
+	     * and if that fails, we know the kernel is busted
+	     */
 	    sv.drm_di_major = 1;
-	    sv.drm_di_minor = 1;
+	    sv.drm_di_minor = 4;
 	    sv.drm_dd_major = -1;	/* Don't care */
 	    sv.drm_dd_minor = -1;	/* Don't care */
-	    drmSetInterfaceVersion(fd, &sv);
+	    if (drmSetInterfaceVersion(fd, &sv)) {
+#ifndef __alpha__
+		pci_domain_ok = 0;
+#endif
+		sv.drm_di_major = 1;
+		sv.drm_di_minor = 1;
+		sv.drm_dd_major = -1;       /* Don't care */
+		sv.drm_dd_minor = -1;       /* Don't care */
+		drmMsg("drmOpenByBusid: Interface 1.4 failed, trying 1.1\n",fd);
+		drmSetInterfaceVersion(fd, &sv);
+	    }
 	    buf = drmGetBusid(fd);
 	    drmMsg("drmOpenByBusid: drmGetBusid reports %s\n", buf);
-	    if (buf && drmMatchBusID(buf, busid)) {
+	    if (buf && drmMatchBusID(buf, busid, pci_domain_ok)) {
 		drmFreeBusid(buf);
 		return fd;
 	    }
