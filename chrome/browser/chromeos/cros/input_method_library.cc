@@ -299,12 +299,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
       input_method_library->pending_config_requests_.insert(
           input_method_library->current_config_values_.begin(),
           input_method_library->current_config_values_.end());
-      // When the IME process starts up, the hardware layout will be the current
-      // method.  If this is not correct, we'll need to explicitly change it.
-      if (input_method_library->active_input_method_ !=
-          kHardwareKeyboardLayout) {
-        input_method_library->need_input_method_set_ = true;
-      }
+      input_method_library->need_input_method_set_ = true;
       input_method_library->FlushImeConfig();
     } else {
       // Stop attempting to resend config data, since it will continue to fail.
@@ -601,4 +596,3 @@ InputMethodLibrary* InputMethodLibrary::GetImpl(bool stub) {
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chromeos::InputMethodLibraryImpl);
-
