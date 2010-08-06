@@ -164,7 +164,12 @@ void Preferences::Init(PrefService* prefs) {
   }
   // Add the UI language to the preferred languages the user first logs in.
   if (!prefs->HasPrefPath(prefs::kLanguagePreferredLanguages)) {
-    language_preferred_languages_.SetValue(locale);
+    std::string preferred_languages(locale);
+    if (locale != kFallbackInputMethodLocale) {
+      preferred_languages += ",";
+      preferred_languages += kFallbackInputMethodLocale;
+    }
+    language_preferred_languages_.SetValue(preferred_languages);
   }
 
   // Initialize touchpad settings to what's saved in user preferences.
