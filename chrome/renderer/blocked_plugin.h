@@ -11,8 +11,6 @@
 #include "webkit/glue/cpp_bound_class.h"
 #include "webkit/glue/plugins/webview_plugin.h"
 
-class GURL;
-class PluginGroup;
 class RenderView;
 
 class BlockedPlugin : public CppBoundClass,
@@ -21,8 +19,10 @@ class BlockedPlugin : public CppBoundClass,
  public:
   BlockedPlugin(RenderView* render_view,
                 WebKit::WebFrame* frame,
-                const WebKit::WebPluginParams& params,
-                PluginGroup* group);
+                const WebKit::WebPluginParams& params);
+
+  void Load(const CppArgumentList& args, CppVariant* result);
+  void LoadPlugin();
 
   WebViewPlugin* plugin() { return plugin_; }
 
@@ -37,22 +37,6 @@ class BlockedPlugin : public CppBoundClass,
 
  private:
   virtual ~BlockedPlugin() { }
-
-  // Javascript callbacks:
-  // Load the blocked plugin by calling LoadPlugin() below.
-  // Takes no arguments, and returns nothing.
-  void Load(const CppArgumentList& args, CppVariant* result);
-
-  // Update an outdated plugin. Takes one argument, the URL to download the
-  // latest version, and returns nothing.
-  void Update(const CppArgumentList& args, CppVariant* result);
-
-  // Tells the browser to navigate to |url| (to download the latest version of
-  // the plugin there).
-  void OpenURL(GURL& url);
-
-  // Load the blocked plugin.
-  void LoadPlugin();
 
   RenderView* render_view_;
   WebKit::WebFrame* frame_;

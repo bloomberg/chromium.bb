@@ -184,9 +184,6 @@ const char kDisableLogging[]                = "disable-logging";
 // notification.
 const char kDisableNewTabFirstRun[]         = "disable-new-tab-first-run";
 
-// Prevent outdated plugins from running.
-const char kDisableOutdatedPlugins[]        = "disable-outdated-plugins";
-
 // Prevent plugins from running.
 const char kDisablePlugins[]                = "disable-plugins";
 

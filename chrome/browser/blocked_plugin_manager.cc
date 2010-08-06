@@ -31,7 +31,7 @@ int BlockedPluginManager::GetButtons() const {
 
 std::wstring BlockedPluginManager::GetButtonLabel(InfoBarButton button) const {
   if (button == BUTTON_OK)
-    return l10n_util::GetString(IDS_PLUGIN_LOAD_SHORT);
+    return l10n_util::GetString(IDS_PLUGIN_LOAD);
   return ConfirmInfoBarDelegate::GetButtonLabel(button);
 }
 
