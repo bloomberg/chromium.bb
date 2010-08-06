@@ -120,7 +120,7 @@ function testAdjust8() {
   var sm = createSelectionModel(100);
 
   sm.leadIndex = sm.anchorIndex = 50;
-  sm.selectAll(0, 99);
+  sm.selectAll();
 
   sm.adjust(10, 80, 0);
 

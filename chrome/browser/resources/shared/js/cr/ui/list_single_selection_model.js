@@ -7,21 +7,20 @@ cr.define('cr.ui', function() {
   const EventTarget = cr.EventTarget;
 
   /**
-   * Creates a new selection model that is to be used with lists.
+   * Creates a new selection model that is to be used with lists. This only
+   * allows a single index to be selected.
    *
    * @param {number=} opt_length The number items in the selection.
    *
    * @constructor
    * @extends {!cr.EventTarget}
    */
-  function ListSelectionModel(opt_length) {
+  function ListSingleSelectionModel(opt_length) {
     this.length_ = opt_length || 0;
-    // Even though selectedIndexes_ is really a map we use an array here to get
-    // iteration in the order of the indexes.
-    this.selectedIndexes_ = [];
+    this.selectedIndex = -1;
   }
 
-  ListSelectionModel.prototype = {
+  ListSingleSelectionModel.prototype = {
     __proto__: EventTarget.prototype,
 
     /**
@@ -36,20 +35,8 @@ cr.define('cr.ui', function() {
      * @type {!Array} The selected indexes.
      */
     get selectedIndexes() {
-      return Object.keys(this.selectedIndexes_).map(Number);
-    },
-    set selectedIndexes(selectedIndexes) {
-      this.beginChange();
-      this.unselectAll();
-      for (var i = 0; i < selectedIndexes.length; i++) {
-        this.setIndexSelected(selectedIndexes[i], true);
-      }
-      if (selectedIndexes.length) {
-        this.leadIndex = this.anchorIndex = selectedIndexes[0];
-      } else {
-        this.leadIndex = this.anchorIndex = -1;
-      }
-      this.endChange();
+      var i = this.selectedIndex;
+      return i != -1 ? [this.selectedIndex] : [];
     },
 
     /**
@@ -57,20 +44,17 @@ cr.define('cr.ui', function() {
      * @type {number}
      */
     get selectedIndex() {
-      for (var i in this.selectedIndexes_) {
-        return Number(i);
-      }
-      return -1;
+      return this.selectedIndex_;
     },
     set selectedIndex(selectedIndex) {
-      this.beginChange();
-      this.unselectAll();
-      if (selectedIndex != -1) {
-        this.selectedIndexes = [selectedIndex];
-      } else {
-        this.leadIndex = this.anchorIndex = -1;
+      var oldSelectedIndex = this.selectedIndex;
+      var i = Math.max(-1, Math.min(this.length_ - 1, selectedIndex));
+
+      if (i != oldSelectedIndex) {
+        this.beginChange();
+        this.selectedIndex_ = i
+        this.endChange();
       }
-      this.endChange();
     },
 
     /**
@@ -80,28 +64,15 @@ cr.define('cr.ui', function() {
      * @param {number} end The last index to select.
      */
     selectRange: function(start, end) {
-      // Swap if starts comes after end.
-      if (start > end) {
-        var tmp = start;
-        start = end;
-        end = tmp;
-      }
-
-      this.beginChange();
-
-      for (var index = start; index != end; index++) {
-        this.setIndexSelected(index, true);
-      }
-      this.setIndexSelected(end, true);
-
-      this.endChange();
+      // Only select first index.
+      this.selectedIndex = Math.min(start, end);
     },
 
     /**
      * Selects all indexes.
      */
     selectAll: function() {
-      this.selectRange(0, this.length - 1);
+      // Select all is not allowed on a single selection model
     },
 
     /**
@@ -110,8 +81,7 @@ cr.define('cr.ui', function() {
     clear: function() {
       this.beginChange();
       this.length_ = 0;
-      this.anchorIndex = this.leadIndex = -1;
-      this.unselectAll();
+      this.selectedIndex = this.anchorIndex = this.leadIndex = -1;
       this.endChange();
     },
 
@@ -119,11 +89,7 @@ cr.define('cr.ui', function() {
      * Unselects all selected items.
      */
     unselectAll: function() {
-      this.beginChange();
-      for (var i in this.selectedIndexes_) {
-        this.setIndexSelected(i, false);
-      }
-      this.endChange();
+      this.selectedIndex = -1;
     },
 
     /**
@@ -132,26 +98,15 @@ cr.define('cr.ui', function() {
      * @param {boolean} b Whether to select the index or not.
      */
     setIndexSelected: function(index, b) {
-      var oldSelected = index in this.selectedIndexes_;
+      // Only allow selection
+      var oldSelected = index == this.selectedIndex_;
       if (oldSelected == b)
         return;
 
       if (b)
-        this.selectedIndexes_[index] = true;
-      else
-        delete this.selectedIndexes_[index];
-
-      this.beginChange();
-
-      // Changing back?
-      if (index in this.changedIndexes_ && this.changedIndexes_[index] == !b) {
-        delete this.changedIndexes_[index];
-      } else {
-        this.changedIndexes_[index] = b;
-      }
-
-      // End change dispatches an event which in turn may update the view.
-      this.endChange();
+        this.selectedIndex = index;
+      else if (index == this.selectedIndex_)
+        this.selectedIndex = -1;
     },
 
     /**
@@ -160,7 +115,7 @@ cr.define('cr.ui', function() {
      * @return {boolean} Whether an index is selected.
      */
     getIndexSelected: function(index) {
-      return index in this.selectedIndexes_;
+      return index == this.selectedIndex_;
     },
 
     /**
@@ -170,7 +125,7 @@ cr.define('cr.ui', function() {
     beginChange: function() {
       if (!this.changeCount_) {
         this.changeCount_ = 0;
-        this.changedIndexes_ = {};
+        this.selectedIndexBefore_ = this.selectedIndex_;
       }
       this.changeCount_++;
     },
@@ -182,18 +137,20 @@ cr.define('cr.ui', function() {
     endChange: function() {
       this.changeCount_--;
       if (!this.changeCount_) {
-        var indexes = Object.keys(this.changedIndexes_);
-        if (indexes.length) {
+        if (this.selectedIndexBefore_ != this.selectedIndex_) {
           var e = new Event('change');
-          e.changes = indexes.map(function(index) {
+          var indexes = [this.selectedIndexBefore_, this.selectedIndex_];
+          indexes.sort();
+          e.changes = indexes.filter(function(index) {
+            return index != -1;
+          }).map(function(index) {
             return {
               index: index,
-              selected: this.changedIndexes_[index]
+              selected: index == this.selectedIndex_
             };
           }, this);
           this.dispatchEvent(e);
         }
-        this.changedIndexes_ = {};
       }
     },
 
@@ -213,25 +170,19 @@ cr.define('cr.ui', function() {
         var oldLeadIndex = this.leadIndex_;
         this.leadIndex_ = li;
         cr.dispatchPropertyChange(this, 'leadIndex', li, oldLeadIndex);
+        cr.dispatchPropertyChange(this, 'anchorIndex', li, oldLeadIndex);
       }
     },
-
-    anchorIndex_: -1,
 
     /**
      * The anchorIndex is used with multiple selection.
      * @type {number}
      */
     get anchorIndex() {
-      return this.anchorIndex_;
+      return this.leadIndex;
     },
     set anchorIndex(anchorIndex) {
-      var ai = Math.max(-1, Math.min(this.length_ - 1, anchorIndex));
-      if (ai != this.anchorIndex_) {
-        var oldAnchorIndex = this.anchorIndex_;
-        this.anchorIndex_ = ai;
-        cr.dispatchPropertyChange(this, 'anchorIndex', ai, oldAnchorIndex);
-      }
+      this.leadIndex = anchorIndex;
     },
 
     /**
@@ -239,7 +190,7 @@ cr.define('cr.ui', function() {
      * @type {boolean}
      */
     get multiple() {
-      return true;
+      return false;
     },
 
     /**
@@ -253,34 +204,26 @@ cr.define('cr.ui', function() {
     adjust: function(index, itemsRemoved, itemsAdded) {
       function getNewAdjustedIndex(i) {
         if (i >= index && i < index + itemsRemoved) {
-          return index
+          return index;
         } else if (i >= index) {
-          return i - itemsRemoved + itemsAdded;
+          return i + itemsAdded - itemsRemoved;
         }
         return i;
       }
 
       this.length_ += itemsAdded - itemsRemoved;
 
-      var newMap = [];
-      for (var i in this.selectedIndexes_) {
-        i = Number(i);
-        if (i < index) {
-          newMap[i] = true;
-        } else if (i < index + itemsRemoved) {
-          // noop
-        } else {
-          newMap[i + itemsAdded - itemsRemoved] = true;
-        }
-      }
-      this.selectedIndexes_ = newMap;
+      var i = this.selectedIndex;
+      if (itemsRemoved > 0 && i >= index && i < index + itemsRemoved)
+        this.selectedIndex = -1;
+      else if (i >= index)
+        this.selectedIndex = i + itemsAdded - itemsRemoved;
 
       this.leadIndex = getNewAdjustedIndex(this.leadIndex);
-      this.anchorIndex = getNewAdjustedIndex(this.anchorIndex);
     }
   };
 
   return {
-    ListSelectionModel: ListSelectionModel
+    ListSingleSelectionModel: ListSingleSelectionModel
   };
 });

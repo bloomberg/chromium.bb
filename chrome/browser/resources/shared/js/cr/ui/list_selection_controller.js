@@ -129,13 +129,15 @@ cr.define('cr.ui', function() {
         // pressed.
         if (cr.isMac) {
           sm.leadIndex = sm.anchorIndex = -1;
-          sm.unselectAll();
+          if (sm.multiple)
+            sm.unselectAll();
         } else if (!isDown && !e.shiftKey && !e.ctrlKey)
           // Keep anchor and lead indexes. Note that this is intentionally
           // different than on the Mac.
-          sm.unselectAll();
+          if (sm.multiple)
+            sm.unselectAll();
       } else {
-        if (cr.isMac ? e.metaKey : e.ctrlKey) {
+        if (sm.multiple && (cr.isMac ? e.metaKey : e.ctrlKey)) {
           // Selection is handled at mouseUp on windows/linux, mouseDown on mac.
           if (cr.isMac? isDown : !isDown) {
             // toggle the current one and make it anchor index
@@ -148,7 +150,10 @@ cr.define('cr.ui', function() {
           if (isDown) {
             sm.unselectAll();
             sm.leadIndex = index;
-            sm.selectRange(anchorIndex, index);
+            if (sm.multiple)
+              sm.selectRange(anchorIndex, index);
+            else
+              sm.setIndexSelected(index, true);
           }
         } else {
           // Right click for a context menu need to not clear the selection.
@@ -180,7 +185,7 @@ cr.define('cr.ui', function() {
       var prevent = true;
 
       // Ctrl/Meta+A
-      if (e.keyCode == 65 &&
+      if (sm.multiple && e.keyCode == 65 &&
           (cr.isMac && e.metaKey || !cr.isMac && e.ctrlKey)) {
         sm.selectAll();
         e.preventDefault();
@@ -192,7 +197,7 @@ cr.define('cr.ui', function() {
         if (leadIndex != -1) {
           var selected = sm.getIndexSelected(leadIndex);
           if (e.ctrlKey || !selected) {
-            sm.setIndexSelected(leadIndex, !selected);
+            sm.setIndexSelected(leadIndex, !selected || !sm.multiple);
             return;
           }
         }
@@ -231,7 +236,8 @@ cr.define('cr.ui', function() {
         sm.leadIndex = newIndex;
         if (e.shiftKey) {
           var anchorIndex = sm.anchorIndex;
-          sm.unselectAll();
+          if (sm.multiple)
+            sm.unselectAll();
           if (anchorIndex == -1) {
             sm.setIndexSelected(newIndex, true);
             sm.anchorIndex = newIndex;
@@ -242,7 +248,8 @@ cr.define('cr.ui', function() {
           // Setting the lead index is done above
           // Mac does not allow you to change the lead.
         } else {
-          sm.unselectAll();
+          if (sm.multiple)
+            sm.unselectAll();
           sm.setIndexSelected(newIndex, true);
           sm.anchorIndex = newIndex;
         }
