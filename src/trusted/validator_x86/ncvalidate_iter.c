@@ -39,7 +39,7 @@ int NACL_FLAGS_max_reported_errors = 100;
  * the current validator state.
  */
 static Bool NaClPrintValidatorMessages(NaClValidatorState* state, int level) {
-  return (state->quit_after_error_count != 0) &&
+  return ((NULL == state) || (state->quit_after_error_count != 0)) &&
       (level <= NaClLogGetVerbosity());
 }
 

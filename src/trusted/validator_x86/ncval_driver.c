@@ -46,12 +46,12 @@ int NaClRunValidatorGrokFlags(int argc, const char* argv[]) {
   /* TODO(karl) Allow command line option to set base register. */
   for (i = 1; i < argc; ++i) {
     const char* arg = argv[i];
-    if (GrokBoolFlag("-histogram", arg, &NACL_FLAGS_opcode_histogram) ||
-        GrokBoolFlag("-time", arg, &NACL_FLAGS_print_timing) ||
-        GrokBoolFlag("-warnings", arg, &NACL_FLAGS_warnings) ||
-        GrokBoolFlag("-errors", arg, &NACL_FLAGS_errors) ||
-        GrokBoolFlag("-fatal", arg, &NACL_FLAGS_fatal) ||
-        GrokIntFlag("-alignment", arg, &NACL_FLAGS_block_alignment) ||
+    if (GrokBoolFlag("--histogram", arg, &NACL_FLAGS_opcode_histogram) ||
+        GrokBoolFlag("--time", arg, &NACL_FLAGS_print_timing) ||
+        GrokBoolFlag("--warnings", arg, &NACL_FLAGS_warnings) ||
+        GrokBoolFlag("--errors", arg, &NACL_FLAGS_errors) ||
+        GrokBoolFlag("--fatal", arg, &NACL_FLAGS_fatal) ||
+        GrokIntFlag("--alignment", arg, &NACL_FLAGS_block_alignment) ||
         GrokIntFlag("--max-errors", arg, &NACL_FLAGS_max_reported_errors) ||
         GrokBoolFlag("--identity_mask", arg, &NACL_FLAGS_identity_mask)) {
       continue;

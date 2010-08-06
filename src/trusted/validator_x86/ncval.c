@@ -49,7 +49,9 @@ static Bool FLAGS_analyze_segments = FALSE;
  * Code to run segment based validator.*
  ***************************************/
 
-void SegmentInfo(const char *fmt, ...) {
+static void SegmentInfo(const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+
+static void SegmentInfo(const char *fmt, ...) {
   va_list ap;
   fprintf(stdout, "I: ");
   va_start(ap, fmt);
@@ -57,7 +59,9 @@ void SegmentInfo(const char *fmt, ...) {
   va_end(ap);
 }
 
-void SegmentDebug(const char *fmt, ...) {
+static void SegmentDebug(const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+
+static void SegmentDebug(const char *fmt, ...) {
   va_list ap;
   fprintf(stdout, "D: ");
   va_start(ap, fmt);
@@ -65,8 +69,9 @@ void SegmentDebug(const char *fmt, ...) {
   va_end(ap);
 }
 
+static void SegmentFatal(const char *fmt, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
-void SegmentFatal(const char *fmt, ...) {
+static void SegmentFatal(const char *fmt, ...) {
   va_list ap;
   fprintf(stdout, "Fatal error: ");
   va_start(ap, fmt);
@@ -82,14 +87,16 @@ int AnalyzeSegmentSections(ncfile *ncf, struct NCValidatorState *vstate) {
 
   for (ii = 0; ii < ncf->phnum; ii++) {
     SegmentDebug(
-        "segment[%d] p_type %d p_offset %x vaddr %x paddr %x align %u\n",
-        ii, phdr[ii].p_type, (uint32_t)phdr[ii].p_offset,
-        (uint32_t)phdr[ii].p_vaddr, (uint32_t)phdr[ii].p_paddr,
-        (uint32_t)phdr[ii].p_align);
+        "segment[%d] p_type %"NACL_PRIdElf_Word
+        " p_offset %"NACL_PRIxElf_Off" vaddr %"NACL_PRIxElf_Addr
+        " paddr %"NACL_PRIxElf_Addr" align %"NACL_PRIuElf_Xword"\n",
+        ii, phdr[ii].p_type, phdr[ii].p_offset,
+        phdr[ii].p_vaddr, phdr[ii].p_paddr,
+        phdr[ii].p_align);
 
-    SegmentDebug("    filesz %x memsz %x flags %x\n",
-          phdr[ii].p_filesz, (uint32_t)phdr[ii].p_memsz,
-          (uint32_t)phdr[ii].p_flags);
+    SegmentDebug("    filesz %"NACL_PRIxElf_Xword" memsz %"NACL_PRIxElf_Xword
+                 " flags %"NACL_PRIxElf_Word"\n",
+          phdr[ii].p_filesz, phdr[ii].p_memsz, phdr[ii].p_flags);
     if ((PT_LOAD != phdr[ii].p_type) ||
         (0 == (phdr[ii].p_flags & PF_X)))
       continue;
@@ -317,6 +324,7 @@ static int ValidateSfiHexLoad(int argc, const char* argv[],
         NaClReadHexTextWithPc(input, &data->base, data->bytes,
                               NACL_MAX_INPUT_LINE);
     fclose(input);
+    --argc;
   }
   return argc;
 }
@@ -325,27 +333,88 @@ static int ValidateSfiHexLoad(int argc, const char* argv[],
  * Top-level driver code. *
  **************************/
 
+static void usage() {
+  printf(
+      "usage: ncval [options] [file]\n"
+      "\n"
+      "Validates an x86-%d nexe file\n"
+      "\n"
+      "Options (general):\n"
+      "\n"
+      "--help\n"
+      "\tPrint this message, and then exit.\n"
+      "--hex_text=<file>\n"
+      "\tRead text file of hex bytes, and use that\n"
+      "\tas the definition of the code segment. Note: -hex_text=- will\n"
+      "\tread from stdin instead of a file.\n"
+      "-t\n"
+      "\tTime the validator and print out results.\n"
+      "--use_iter\n"
+      "\tUse the iterator model. Currently, the x86-64 bit\n"
+      "\tvalidator uses the iterator model while the x86-32 bit model\n"
+      "\tdoes not.\n"
+      "\n"
+      "Options (iterator model):\n"
+      "--alignment=N\n"
+      "\tSet block alignment to N bytes.\n"
+      "--errors\n"
+      "\tPrint out error and fatal error messages, but not\n"
+      "\tinformative and warning messages\n"
+      "--fatal\n"
+      "\tOnly print out fatal error messages.\n"
+      "--histogram\n"
+      "\tPrint out a histogram of found opcodes.\n"
+      "--identity_mask\n"
+      "\tMask jumps using 0xFF instead of one matching\n"
+      "\tthe block alignment.\n"
+      "--max_errors=N\n"
+      "\tPrint out at most N error messages. If N is zero,\n"
+      "\tno messages are printed. If N is < 0, all messages are printed.\n"
+      "--readwrite_sfi\n"
+      "\tCheck for memory read and write software fault isolation.\n"
+      "--segments\n"
+      "\tAnalyze code in segments in elf file, instead of headers.\n"
+      "--time\n"
+      "\tTime the validator and print out results. Same as option -t.\n"
+      "--trace\n"
+      "\tTurn on trace validator messages.\n"
+      "--treace_verbose\n"
+      "\tTurn on all trace validator messages. Note: this\n"
+      "\tflag also implies --trace.\n"
+      "--warnings\n"
+      "\tPrint out warnings, errors, and fatal errors, but not\n"
+      "\tinformative messages.\n"
+      "--write_sfi\n"
+      "\tOnly check for memory write software fault isolation.\n",
+      NACL_TARGET_SUBARCH);
+  exit(0);
+}
+
 static int GrokFlags(int argc, const char* argv[]) {
   int i;
   int new_argc;
+  Bool help = FALSE;
   Bool write_sandbox = !NACL_FLAGS_read_sandbox;
   if (argc == 0) return 0;
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
     const char* arg = argv[i];
-    if (GrokCstringFlag("-hex_text", arg, &FLAGS_hex_text) ||
-        GrokBoolFlag("-segments", arg, &FLAGS_analyze_segments) ||
-        GrokBoolFlag("-trace", arg, &NACL_FLAGS_validator_trace) ||
-        GrokBoolFlag("-trace_verbose",
+    if (GrokCstringFlag("--hex_text", arg, &FLAGS_hex_text) ||
+        GrokBoolFlag("--segments", arg, &FLAGS_analyze_segments) ||
+        GrokBoolFlag("--trace", arg, &NACL_FLAGS_validator_trace) ||
+        GrokBoolFlag("--trace_verbose",
                      arg, &NACL_FLAGS_validator_trace_verbose) ||
-        GrokBoolFlag("-use_iter", arg, &FLAGS_use_iter) ||
+        GrokBoolFlag("--use_iter", arg, &FLAGS_use_iter) ||
         GrokBoolFlag("-t", arg, &FLAGS_print_timing) ||
-        GrokBoolFlag("-use_iter", arg, &FLAGS_use_iter)) {
-      continue;
-    } else if (GrokBoolFlag("-write_sfi", arg, &write_sandbox)) {
+        GrokBoolFlag("--use_iter", arg, &FLAGS_use_iter) ||
+        GrokBoolFlag("--help", arg, &help)) {
+      if (help) {
+        usage();
+      }
+    } else if (GrokBoolFlag("--write_sfi", arg, &write_sandbox)) {
       NACL_FLAGS_read_sandbox = !write_sandbox;
       continue;
-    } else if (GrokBoolFlag("-readwrite_sfi", arg, &NACL_FLAGS_read_sandbox)) {
+    } else if (GrokBoolFlag("--readwrite_sfi", arg, &NACL_FLAGS_read_sandbox)) {
       write_sandbox = !NACL_FLAGS_read_sandbox;
       continue;
     } else {
@@ -361,31 +430,34 @@ int main(int argc, const char *argv[]) {
 
   argc = GrokFlags(argc, argv);
   if (FLAGS_use_iter) {
+    Bool success = FALSE;
     argc = NaClRunValidatorGrokFlags(argc, argv);
     if (0 == strcmp(FLAGS_hex_text, "")) {
       /* Run SFI validator on elf file. */
       ValidateData data;
-      return NaClRunValidator(argc, argv, &data,
-                              (NaClValidateLoad) ValidateSfiLoad,
-                              (NaClValidateAnalyze) ValidateAnalyze)
-          ? 0 : 1;
+      success = NaClRunValidator(argc, argv, &data,
+                                (NaClValidateLoad) ValidateSfiLoad,
+                                (NaClValidateAnalyze) ValidateAnalyze);
+      result = (success ? 0 : 1);
     } else {
       NaClValidatorByteArray data;
       GioFileRefCtor(&gio_err_stream, stdout);
       NaClLogDisableTimestamp();
       argc = ValidateSfiHexLoad(argc, argv, &data);
-      if (NaClRunValidatorBytes(argc, argv, (uint8_t*) &data.bytes,
-                                data.num_bytes,
-                                data.base)) {
-        printf("***module is safe***\n");
-      } else {
-        printf("***MODULE IS UNSAFE***\n");
-      }
+      success = NaClRunValidatorBytes(
+          argc, argv, (uint8_t*) &data.bytes,
+          data.num_bytes, data.base);
       /* always succeed, so that the testing framework works. */
-      return 0;
+      result = 0;
+    }
+    if (success) {
+      printf("***module is safe***\n");
+    } else {
+      printf("***MODULE IS UNSAFE***\n");
     }
   } else if (64 == NACL_TARGET_SUBARCH) {
-    SegmentFatal("Can only run %s using -use_iter flag on 64 bit code\n");
+    SegmentFatal("Can only run %s using -use_iter=false flag on 64 bit code\n",
+                 argv[0]);
   } else {
     for (i=1; i< argc; i++) {
       /* Run x86-32 segment based validator. */
