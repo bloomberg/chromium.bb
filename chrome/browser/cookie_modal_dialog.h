@@ -74,7 +74,7 @@ class CookiePromptModalDialog : public AppModalDialog {
   static void RegisterUserPrefs(PrefService* prefs);
 
   // AppModalDialog overrides.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
   virtual void CreateAndShowDialog();
 #endif
   virtual int GetDialogButtons();
@@ -104,7 +104,7 @@ class CookiePromptModalDialog : public AppModalDialog {
  protected:
   // AppModalDialog overrides.
   virtual NativeDialog CreateNativeDialog();
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   virtual void HandleDialogResponse(GtkDialog* dialog, gint response_id);
   CHROMEGTK_CALLBACK_1(CookiePromptModalDialog,
                        void,
@@ -141,7 +141,7 @@ class CookiePromptModalDialog : public AppModalDialog {
   // delegate could be deleted
   CookiePromptModalDialogDelegate* delegate_;
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   // The "remember this choice" radio button in the dialog.
   GtkWidget* remember_radio_;
 

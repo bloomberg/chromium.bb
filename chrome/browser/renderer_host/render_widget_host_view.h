@@ -216,7 +216,7 @@ class RenderWidgetHostView {
   virtual void DrawAcceleratedSurfaceInstances(CGLContextObj context) = 0;
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;
 #endif

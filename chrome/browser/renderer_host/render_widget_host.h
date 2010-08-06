@@ -491,10 +491,7 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
   void OnMsgGpuRenderingActivated(bool activated);
 
-#if defined(OS_LINUX)
-  void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
-  void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   void OnMsgShowPopup(const ViewHostMsg_ShowPopup_Params& params);
   void OnMsgGetScreenInfo(gfx::NativeViewId view,
                           WebKit::WebScreenInfo* results);
@@ -513,6 +510,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
                                            int32 height,
                                            TransportDIB::Handle transport_dib);
   void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
+#elif defined(OS_POSIX)
+  void OnMsgCreatePluginContainer(gfx::PluginWindowHandle id);
+  void OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id);
 #endif
 
   // Paints the given bitmap to the current backing store at the given location.

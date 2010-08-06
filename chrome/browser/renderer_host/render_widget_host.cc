@@ -154,12 +154,7 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
                         OnMsgImeCancelComposition)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GpuRenderingActivated,
                         OnMsgGpuRenderingActivated)
-#if defined(OS_LINUX)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
-                        OnMsgCreatePluginContainer)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
-                        OnMsgDestroyPluginContainer)
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowPopup, OnMsgShowPopup)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
@@ -174,6 +169,11 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
                         OnAcceleratedSurfaceSetTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
+#elif defined(OS_POSIX)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreatePluginContainer,
+                        OnMsgCreatePluginContainer)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyPluginContainer,
+                        OnMsgDestroyPluginContainer)
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP_EX()
@@ -915,28 +915,7 @@ void RenderWidgetHost::OnMsgGpuRenderingActivated(bool activated) {
   is_gpu_rendering_active_ = activated;
 }
 
-#if defined(OS_LINUX)
-
-void RenderWidgetHost::OnMsgCreatePluginContainer(gfx::PluginWindowHandle id) {
-  // TODO(piman): view_ can only be NULL with delayed view creation in
-  // extensions (see ExtensionHost::CreateRenderViewSoon). Figure out how to
-  // support plugins in that case.
-  if (view_) {
-    view_->CreatePluginContainer(id);
-  } else {
-    NOTIMPLEMENTED();
-  }
-}
-
-void RenderWidgetHost::OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id) {
-  if (view_) {
-    view_->DestroyPluginContainer(id);
-  } else {
-    NOTIMPLEMENTED();
-  }
-}
-
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 
 void RenderWidgetHost::OnMsgShowPopup(
     const ViewHostMsg_ShowPopup_Params& params) {
@@ -1017,6 +996,27 @@ void RenderWidgetHost::OnAcceleratedSurfaceBuffersSwapped(
     view_->AcceleratedSurfaceBuffersSwapped(window);
   }
 }
+#elif defined(OS_POSIX)
+
+void RenderWidgetHost::OnMsgCreatePluginContainer(gfx::PluginWindowHandle id) {
+  // TODO(piman): view_ can only be NULL with delayed view creation in
+  // extensions (see ExtensionHost::CreateRenderViewSoon). Figure out how to
+  // support plugins in that case.
+  if (view_) {
+    view_->CreatePluginContainer(id);
+  } else {
+    NOTIMPLEMENTED();
+  }
+}
+
+void RenderWidgetHost::OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id) {
+  if (view_) {
+    view_->DestroyPluginContainer(id);
+  } else {
+    NOTIMPLEMENTED();
+  }
+}
+
 #endif
 
 void RenderWidgetHost::PaintBackingStoreRect(

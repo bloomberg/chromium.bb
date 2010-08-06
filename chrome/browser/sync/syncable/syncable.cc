@@ -83,7 +83,7 @@ int64 Now() {
   LARGE_INTEGER n;
   memcpy(&n, &filetime, sizeof(filetime));
   return n.QuadPart;
-#elif defined(OS_LINUX) || defined(OS_MACOSX)
+#elif defined(OS_POSIX)
   struct timeval tv;
   gettimeofday(&tv, NULL);
   return static_cast<int64>(tv.tv_sec);

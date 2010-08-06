@@ -47,16 +47,14 @@ class AppTestSuite : public TestSuite {
 #error Unknown branding
 #endif
     mac_util::SetOverrideAppBundlePath(path);
-#endif  // OS_MACOSX
-
-#if defined(OS_LINUX)
+#elif defined(OS_POSIX)
     FilePath pak_dir;
     PathService::Get(base::DIR_MODULE, &pak_dir);
     pak_dir = pak_dir.AppendASCII("app_unittests_strings");
     PathService::Override(app::DIR_LOCALES, pak_dir);
     PathService::Override(app::FILE_RESOURCES_PAK,
                           pak_dir.AppendASCII("app_resources.pak"));
-#endif  // OS_LINUX
+#endif
 
     // Force unittests to run using en-US so if we test against string
     // output, it'll pass regardless of the system language.

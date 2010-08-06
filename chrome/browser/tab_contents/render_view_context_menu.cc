@@ -927,9 +927,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
           WebContextMenuData::CheckableMenuItemEnabled;
     case IDC_WRITING_DIRECTION_MENU:
       return true;
-#endif  // OS_MACOSX
-
-#if defined(OS_LINUX)
+#elif defined(OS_POSIX)
     // TODO(suzhe): this should not be enabled for password fields.
     case IDC_INPUT_METHODS_MENU:
       return true;

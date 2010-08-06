@@ -57,14 +57,14 @@
 #include "views/drag_utils.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #if defined(TOOLKIT_VIEWS)
 #include "app/drag_drop_types.h"
 #include "views/widget/widget_gtk.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/gtk/custom_drag.h"
 #endif  // defined(TOOLKIT_GTK)
-#endif  // defined(OS_LINUX)
+#endif  // defined(TOOLKIT_USES_GTK)
 
 #if defined(OS_WIN)
 #include "app/os_exchange_data_provider_win.h"
@@ -515,7 +515,7 @@ void DragDownload(const DownloadItem* download,
   DWORD effects;
   DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source.get(),
              DROPEFFECT_COPY | DROPEFFECT_LINK, &effects);
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_USES_GTK)
   GtkWidget* root = gtk_widget_get_toplevel(view);
   if (!root)
     return;
@@ -526,13 +526,13 @@ void DragDownload(const DownloadItem* download,
   widget->DoDrag(data, DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK);
 #endif  // OS_WIN
 }
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
 void DragDownload(const DownloadItem* download,
                   SkBitmap* icon,
                   gfx::NativeView view) {
   DownloadItemDrag::BeginDrag(download, icon);
 }
-#endif  // OS_LINUX
+#endif  // USE_X11
 
 DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   DictionaryValue* file_value = new DictionaryValue();

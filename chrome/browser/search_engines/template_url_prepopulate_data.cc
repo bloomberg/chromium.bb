@@ -4,7 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <locale.h>
 #endif
 

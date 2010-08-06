@@ -128,7 +128,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   virtual bool ShouldUseNativeFrame() const;
   virtual bool HasCustomImage(int id) const;
   virtual RefCountedMemory* GetRawData(int id) const;
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
   // shared instances owned by the theme provider and should not be freed.
   virtual GdkPixbuf* GetPixbufNamed(int id) const;
@@ -240,12 +240,12 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Remove preference values for themes that are no longer in use.
   void RemoveUnusedThemes();
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.
   GdkPixbuf* GetPixbufImpl(int id, bool rtl_enabled) const;
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   typedef std::map<int, GdkPixbuf*> GdkPixbufMap;
   mutable GdkPixbufMap gdk_pixbufs_;
 #elif defined(OS_MACOSX)

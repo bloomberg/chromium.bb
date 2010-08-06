@@ -111,7 +111,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 #endif
   virtual void SetVisuallyDeemphasized(bool deemphasized) { }
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) { }
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) { }
 #endif

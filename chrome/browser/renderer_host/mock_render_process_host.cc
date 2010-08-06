@@ -102,7 +102,7 @@ TransportDIB* MockRenderProcessHost::GetTransportDIB(TransportDIB::Id dib_id) {
   // On Mac, TransportDIBs are always created in the browser, so we cannot map
   // one from a dib_id.
   transport_dib_ = TransportDIB::Create(100 * 100 * 4, 0);
-#elif defined(OS_LINUX)
+#elif defined(OS_POSIX)
   transport_dib_ = TransportDIB::Map(dib_id);
 #endif
 
