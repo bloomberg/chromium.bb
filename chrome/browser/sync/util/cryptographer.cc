@@ -70,9 +70,9 @@ bool Cryptographer::GetKeys(sync_pb::EncryptedData* encrypted) const {
     const Nigori& nigori = *it->second;
     sync_pb::NigoriKey* key = bag.add_key();
     key->set_name(it->first);
-    key->set_hostname(nigori.hostname());
-    key->set_username(nigori.username());
-    key->set_password(nigori.password());
+    nigori.ExportKeys(key->mutable_user_key(),
+                      key->mutable_encryption_key(),
+                      key->mutable_mac_key());
   }
 
   // Encrypt the bag with the default Nigori.
@@ -147,9 +147,9 @@ void Cryptographer::InstallKeys(const std::string& default_key_name,
     // Only use this key if we don't already know about it.
     if (nigoris_.end() == nigoris_.find(key.name())) {
       scoped_ptr<Nigori> new_nigori(new Nigori);
-      if (!new_nigori->InitByDerivation(key.hostname(),
-                                        key.username(),
-                                        key.password())) {
+      if (!new_nigori->InitByImport(key.user_key(),
+                                    key.encryption_key(),
+                                    key.mac_key())) {
         NOTREACHED();
         continue;
       }

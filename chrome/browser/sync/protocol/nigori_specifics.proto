@@ -18,9 +18,9 @@ import "sync.proto";
 
 message NigoriKey {
   optional string name = 1;
-  optional string hostname = 2;
-  optional string username = 3;
-  optional string password = 4;
+  optional bytes user_key = 2;
+  optional bytes encryption_key = 3;
+  optional bytes mac_key = 4;
 }
 
 message NigoriKeyBag {
