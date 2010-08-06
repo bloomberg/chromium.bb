@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -53,6 +53,7 @@
         'test_suite.h',
         'text_elider_unittest.cc',
         'tree_node_iterator_unittest.cc',
+	'tree_node_model_unittest.cc',
         'win_util_unittest.cc',
       ],
       'include_dirs': [
