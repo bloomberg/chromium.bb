@@ -1233,6 +1233,7 @@
         'test/v8_unit_test.cc',
         'test/v8_unit_test.h',
         'tools/convert_dict/convert_dict_unittest.cc',
+        '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
         # TODO(jcampan): Create a separate unit test for these to allow us to
         # test views completely decoupled from chrome.
