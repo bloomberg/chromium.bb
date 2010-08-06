@@ -1036,7 +1036,7 @@ each locale. -->
         <message name="IDS_ABOUT" desc="In Title Case: The text label of the About Chrome menu item">
           About &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
-        <message name="IDS_UPDATE_NOW" desc="The text label of the Update Chrome Now menu item">
+        <message name="IDS_UPDATE_NOW" desc="In Title Case: The text label of the Update Chrome Now menu item">
           Update &amp;<ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
@@ -4769,7 +4769,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_HIDE_TOOLBAR" desc="The label of the tab context menu item for hiding the toolbar of an app tab.">
           Hide toolbar
         </message>
-        <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
+        <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark all tabs...
         </message>
         <message name="IDS_TAB_CXMENU_USE_VERTICAL_TABS" desc="Use the vertical tab strip">
@@ -4801,19 +4801,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_TAB_CXMENU_PIN_TAB" desc="In Title Case: The label of the tab context menu item for pinning a tab.">
           Pin Tab
         </message>
-        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="The label of the tab context menu item for unpinning a tab.">
+        <message name="IDS_TAB_CXMENU_UNPIN_TAB" desc="In Title Case: The label of the tab context menu item for unpinning a tab.">
           Unpin Tab
         </message>
-        <message name="IDS_TAB_CXMENU_SHOW_TOOLBAR" desc="The label of the tab context menu item for showing the toolbar of an app tab.">
+        <message name="IDS_TAB_CXMENU_SHOW_TOOLBAR" desc="In Title Case: The label of the tab context menu item for showing the toolbar of an app tab.">
           Show Toolbar
         </message>
-        <message name="IDS_TAB_CXMENU_HIDE_TOOLBAR" desc="The label of the tab context menu item for hiding the toolbar of an app tab.">
+        <message name="IDS_TAB_CXMENU_HIDE_TOOLBAR" desc="In Title Case: The label of the tab context menu item for hiding the toolbar of an app tab.">
           Hide Toolbar
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark All Tabs...
         </message>
-        <message name="IDS_TAB_CXMENU_USE_VERTICAL_TABS" desc="Use the vertical tab strip">
+        <message name="IDS_TAB_CXMENU_USE_VERTICAL_TABS" desc="In Title Case: Use the vertical tab strip">
           Use Side Tabs
         </message>
       </if>
