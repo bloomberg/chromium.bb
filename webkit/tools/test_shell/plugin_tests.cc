@@ -78,6 +78,8 @@ class PluginTest : public TestShellTest {
   FilePath plugin_file_path_;
 };
 
+#if !defined(OS_LINUX)
+// TODO(tony): http://code.google.com/p/chromium/issues/detail?id=51402
 // Tests navigator.plugins.refresh() works.
 TEST_F(PluginTest, Refresh) {
   std::string html = "\
@@ -127,6 +129,7 @@ TEST_F(PluginTest, Refresh) {
   text = test_shell_->webView()->mainFrame()->contentAsText(10000).utf8();
   ASSERT_EQ(text, "DONE");
 }
+#endif
 
 // Tests that if a frame is deleted as a result of calling NPP_HandleEvent, we
 // don't crash.
