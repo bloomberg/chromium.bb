@@ -18,7 +18,11 @@ DecoderZlib::DecoderZlib()
       bytes_per_pixel_(0),
       updated_rects_(NULL),
       row_pos_(0),
-      row_y_(0) {
+      row_y_(0),
+      // TODO(hclam): We should use the information from the update stream
+      // to determine whether we should reverse the rows or not.
+      // But for simplicity we set to be always true.
+      reverse_rows_(true) {
 }
 
 bool DecoderZlib::BeginDecode(scoped_refptr<media::VideoFrame> frame,
@@ -106,9 +110,18 @@ bool DecoderZlib::HandleRectData(HostMessage* message) {
   const int in_size =
       message->update_stream_packet().rect_data().data().size();
   const int row_size = rect_width_ * bytes_per_pixel_;
-  const int stride = frame_->stride(media::VideoFrame::kRGBPlane);
-  uint8* out = frame_->data(media::VideoFrame::kRGBPlane) +
-      stride * (rect_y_ + row_y_) + bytes_per_pixel_ * rect_x_;
+  int stride = frame_->stride(media::VideoFrame::kRGBPlane);
+  uint8* rect_begin = frame_->data(media::VideoFrame::kRGBPlane);
+  if (reverse_rows_) {
+    // Advance the pointer to the last row.
+    rect_begin += (frame_->height() - 1) * stride;
+
+    // And then make the stride negative.
+    stride = -stride;
+  }
+
+  uint8* out = rect_begin + stride * (rect_y_ + row_y_) +
+      bytes_per_pixel_ * rect_x_;
 
   // Consume all the data in the message.
   bool decompress_again = true;

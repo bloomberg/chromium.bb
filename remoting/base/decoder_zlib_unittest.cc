@@ -16,13 +16,21 @@ namespace remoting {
 TEST(DecoderZlibTest, EncodeAndDecode) {
   EncoderZlib encoder;
   DecoderZlib decoder;
+  decoder.set_reverse_rows(false);
   TestEncoderDecoder(&encoder, &decoder, true);
 }
 
 TEST(DecoderZlibTest, EncodeAndDecodeSmallOutputBuffer) {
   EncoderZlib encoder(64);
   DecoderZlib decoder;
+  decoder.set_reverse_rows(false);
   TestEncoderDecoder(&encoder, &decoder, true);
+}
+
+TEST(DecoderZlibTest, EncodeAndDecodeNoneStrict) {
+  EncoderZlib encoder;
+  DecoderZlib decoder;
+  TestEncoderDecoder(&encoder, &decoder, false);
 }
 
 }  // namespace remoting

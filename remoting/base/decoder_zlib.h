@@ -23,6 +23,9 @@ class DecoderZlib : public Decoder {
   virtual bool PartialDecode(HostMessage* message);
   virtual void EndDecode();
 
+  // TODO(hclam): Should make this into the Decoder interface.
+  void set_reverse_rows(bool reverse) { reverse_rows_ = reverse; }
+
  private:
   bool HandleBeginRect(HostMessage* message);
   bool HandleRectData(HostMessage* message);
@@ -54,6 +57,9 @@ class DecoderZlib : public Decoder {
 
   // The row number in the rect that we are updaing.
   int row_y_;
+
+  // True if we should decode the image upside down.
+  bool reverse_rows_;
 
   DISALLOW_COPY_AND_ASSIGN(DecoderZlib);
 };
