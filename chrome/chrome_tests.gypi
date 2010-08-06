@@ -1219,6 +1219,7 @@
         'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'renderer/translate_helper_unittest.cc',
         'service/cloud_print/cloud_print_helpers_unittest.cc',
+        'service/service_process_unittest.cc',
         'test/browser_with_test_window_test.cc',
         'test/browser_with_test_window_test.h',
         'test/data/resource.rc',
