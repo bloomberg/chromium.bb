@@ -213,9 +213,11 @@ void PasswordAutocompleteManager::ReceivedPasswordFormFillData(
 
 void PasswordAutocompleteManager::FrameClosing(const WebKit::WebFrame* frame) {
   for (LoginToPasswordInfoMap::iterator iter = login_to_password_info_.begin();
-       iter != login_to_password_info_.end(); ++iter) {
+       iter != login_to_password_info_.end();) {
     if (iter->first.document().frame() == frame)
-      login_to_password_info_.erase(iter);
+      login_to_password_info_.erase(iter++);
+    else
+      ++iter;
   }
 }
 
