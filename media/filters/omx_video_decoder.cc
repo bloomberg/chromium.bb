@@ -5,7 +5,6 @@
 #include "media/filters/omx_video_decoder.h"
 
 #include "base/callback.h"
-#include "base/waitable_event.h"
 #include "media/base/callback.h"
 #include "media/base/factory.h"
 #include "media/base/filter_host.h"

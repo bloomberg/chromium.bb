@@ -23,7 +23,6 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "base/waitable_event.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/cookie_policy.h"
 #include "net/base/host_resolver.h"

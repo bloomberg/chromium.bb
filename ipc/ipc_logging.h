@@ -15,7 +15,6 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
-#include "base/waitable_event_watcher.h"
 
 namespace IPC {
 

@@ -16,7 +16,6 @@
 #include <string>
 #include <vector>
 
-#include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/lock.h"

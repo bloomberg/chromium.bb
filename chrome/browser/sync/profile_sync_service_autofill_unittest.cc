@@ -15,7 +15,6 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/autofill/autofill_common_unittest.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
@@ -38,7 +37,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::Time;
-using base::WaitableEvent;
 using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillModelAssociator;

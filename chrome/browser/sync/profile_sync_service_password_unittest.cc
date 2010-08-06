@@ -9,7 +9,6 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 #include "chrome/browser/sync/engine/syncapi.h"
@@ -34,7 +33,6 @@
 #include "webkit/glue/password_form.h"
 
 using base::Time;
-using base::WaitableEvent;
 using browser_sync::PasswordChangeProcessor;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::PasswordModelAssociator;

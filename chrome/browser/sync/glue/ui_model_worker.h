@@ -10,9 +10,12 @@
 #include "base/condition_variable.h"
 #include "base/lock.h"
 #include "base/task.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+
+namespace base {
+class WaitableEvent;
+}
 
 class MessageLoop;
 

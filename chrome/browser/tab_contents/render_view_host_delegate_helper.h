@@ -9,7 +9,6 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/common/window_container_type.h"
 #include "gfx/rect.h"

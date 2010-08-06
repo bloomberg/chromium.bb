@@ -16,7 +16,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "base/waitable_event.h"
 #include "chrome/common/policy_constants.h"
 
 ConfigurationPolicyProviderWin::GroupPolicyChangeWatcher::

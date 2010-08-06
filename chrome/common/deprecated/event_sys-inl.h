@@ -8,7 +8,6 @@
 
 #include <map>
 
-#include "base/atomicops.h"
 #include "base/basictypes.h"
 #include "base/condition_variable.h"
 #include "base/lock.h"

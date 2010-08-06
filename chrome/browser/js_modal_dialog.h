@@ -12,7 +12,6 @@
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-#include "net/base/cookie_monster.h"
 
 #if defined(OS_MACOSX)
 #if __OBJC__

@@ -8,8 +8,11 @@
 
 #include "base/callback.h"
 #include "base/ref_counted.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+
+namespace base {
+class WaitableEvent;
+}
 
 namespace browser_sync {
 

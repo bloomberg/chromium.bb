@@ -32,7 +32,6 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "base/waitable_event.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_resolver_impl.h"

@@ -9,7 +9,6 @@
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/sys_info.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/renderer_host/audio_sync_reader.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_logging.h"

@@ -11,7 +11,6 @@
 
 #include <map>
 
-#include "base/atomicops.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/util/channel.h"

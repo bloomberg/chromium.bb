@@ -4,7 +4,6 @@
 
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 
-#include "base/waitable_event.h"
 #include "net/base/net_errors.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_config_service.h"

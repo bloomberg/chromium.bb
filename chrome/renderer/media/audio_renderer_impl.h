@@ -42,7 +42,6 @@
 #include "base/scoped_ptr.h"
 #include "base/lock.h"
 #include "base/shared_memory.h"
-#include "base/waitable_event.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "media/audio/audio_io.h"
 #include "media/base/factory.h"

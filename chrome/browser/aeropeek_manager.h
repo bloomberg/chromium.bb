@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_AEROPEEK_MANAGER_H_
 #pragma once
 
+#include <windows.h>
+
 #include <list>
 
-#include "base/waitable_event.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "gfx/insets.h"
 

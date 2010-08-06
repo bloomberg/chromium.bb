@@ -12,6 +12,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_handle_win.h"
 #include "base/scoped_native_library.h"
+#include "base/waitable_event.h"
 #include "base/win_util.h"
 #include "chrome/browser/app_icon_win.h"
 #include "chrome/browser/browser_list.h"

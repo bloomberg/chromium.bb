@@ -16,8 +16,6 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
-#include "base/waitable_event.h"
-#include "base/waitable_event_watcher.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_message.h"
 #include "ipc/ipc_message_utils.h"

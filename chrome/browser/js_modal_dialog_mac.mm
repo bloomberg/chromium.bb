@@ -9,6 +9,7 @@
 #include "app/l10n_util_mac.h"
 #include "app/message_box_flags.h"
 #import "base/cocoa_protocols_mac.h"
+#include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
 #include "grit/app_strings.h"

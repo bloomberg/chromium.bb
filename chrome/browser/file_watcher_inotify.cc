@@ -27,7 +27,6 @@
 #include "base/singleton.h"
 #include "base/task.h"
 #include "base/thread.h"
-#include "base/waitable_event.h"
 
 namespace {
 

@@ -66,7 +66,6 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
 #include "ipc/ipc_message.h"
 #include "media/audio/audio_io.h"

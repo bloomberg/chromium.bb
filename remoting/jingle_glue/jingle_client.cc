@@ -8,7 +8,6 @@
 #include "remoting/jingle_glue/jingle_client.h"
 
 #include "base/logging.h"
-#include "base/waitable_event.h"
 #include "base/message_loop.h"
 #include "remoting/jingle_glue/gaia_token_pre_xmpp_auth.h"
 #include "remoting/jingle_glue/iq_request.h"

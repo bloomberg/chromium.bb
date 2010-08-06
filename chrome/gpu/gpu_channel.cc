@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/gpu/gpu_channel.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
-
-#include "chrome/gpu/gpu_channel.h"
 
 #include "base/command_line.h"
 #include "base/lock.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "base/waitable_event.h"
-#include "build/build_config.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"

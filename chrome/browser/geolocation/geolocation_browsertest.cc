@@ -4,7 +4,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"

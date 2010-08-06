@@ -13,7 +13,6 @@
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "base/waitable_event.h"
 #include "chrome/browser/blocked_plugin_manager.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/child_process_security_policy.h"

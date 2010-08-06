@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/ref_counted.h"
-#include "base/waitable_event.h"
 #include "media/base/filters.h"
 
 namespace media {

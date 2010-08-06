@@ -12,7 +12,6 @@
 #include <map>
 #include <string>
 
-#include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
 #include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"

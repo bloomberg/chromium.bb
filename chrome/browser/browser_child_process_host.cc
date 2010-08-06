@@ -13,7 +13,6 @@
 #include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/waitable_event.h"
 #include "chrome/app/breakpad_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
