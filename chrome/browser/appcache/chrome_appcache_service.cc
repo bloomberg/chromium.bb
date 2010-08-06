@@ -80,7 +80,7 @@ void ChromeAppCacheService::ClearLocalState(const FilePath& profile_path) {
 bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   ContentSetting setting = host_contents_settings_map_->GetContentSetting(
-      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES);
+      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
   // We don't prompt for read access.
   return setting != CONTENT_SETTING_BLOCK;
@@ -90,7 +90,7 @@ int ChromeAppCacheService::CanCreateAppCache(
     const GURL& manifest_url, net::CompletionCallback* callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   ContentSetting setting = host_contents_settings_map_->GetContentSetting(
-      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES);
+      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   DCHECK(setting != CONTENT_SETTING_DEFAULT);
   if (setting == CONTENT_SETTING_ASK) {
     ChromeThread::PostTask(
@@ -109,7 +109,7 @@ void ChromeAppCacheService::DoPrompt(
 
   // The setting may have changed (due to the "remember" option)
   ContentSetting setting = host_contents_settings_map_->GetContentSetting(
-      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES);
+      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   if (setting != CONTENT_SETTING_ASK) {
     int rv = (setting != CONTENT_SETTING_BLOCK) ? net::OK :
                                                   net::ERR_ACCESS_DENIED;

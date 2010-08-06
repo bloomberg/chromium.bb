@@ -99,7 +99,7 @@ bool DOMStorageArea::CheckContentSetting(
     DOMStorageDispatcherHost* sender) {
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
-          origin_url_, CONTENT_SETTINGS_TYPE_COOKIES);
+          origin_url_, CONTENT_SETTINGS_TYPE_COOKIES, "");
 
   if (content_setting == CONTENT_SETTING_ASK) {
     DOMStoragePermissionRequest request(origin_url_, key, value,

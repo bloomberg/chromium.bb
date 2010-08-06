@@ -43,7 +43,7 @@ void DatabasePermissionRequest::RequestPermission() {
 
   // Cookie settings may have changed.
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      url_, CONTENT_SETTINGS_TYPE_COOKIES);
+      url_, CONTENT_SETTINGS_TYPE_COOKIES, "");
   if (setting != CONTENT_SETTING_ASK) {
     SendResponse(setting);
     return;

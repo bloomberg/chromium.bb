@@ -389,7 +389,7 @@ void DatabaseDispatcherHost::OnAllowDatabase(const std::string& origin_url,
   GURL url = GURL(origin_url);
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
-          url, CONTENT_SETTINGS_TYPE_COOKIES);
+          url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   if (content_setting == CONTENT_SETTING_ASK) {
     // Create a task for each possible outcome.
     scoped_ptr<Task> on_allow(NewRunnableMethod(

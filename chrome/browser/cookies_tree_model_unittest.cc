@@ -538,7 +538,8 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
   EXPECT_EQ(2, observer.counter);
   EXPECT_EQ(pattern, observer.last_pattern);
   EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY,
-      content_settings->GetContentSetting(host, CONTENT_SETTINGS_TYPE_COOKIES));
+      content_settings->GetContentSetting(
+          host, CONTENT_SETTINGS_TYPE_COOKIES, ""));
 }
 
 }  // namespace

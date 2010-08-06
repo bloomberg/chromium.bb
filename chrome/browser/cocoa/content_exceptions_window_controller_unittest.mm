@@ -112,6 +112,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddRemove) {
 
   ClickAdd(controller);
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      "",
                                       &settings);
   EXPECT_EQ(0u, settings.size());
 
@@ -121,6 +122,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddRemove) {
   [controller close];
 
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      "",
                                       &settings);
   EXPECT_EQ(0u, settings.size());
 }
@@ -138,6 +140,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddRemoveAll) {
 
   HostContentSettingsMap::SettingsForOneType settings;
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      "",
                                       &settings);
   EXPECT_EQ(0u, settings.size());
 }
@@ -154,6 +157,7 @@ TEST_F(ContentExceptionsWindowControllerTest, Add) {
 
   HostContentSettingsMap::SettingsForOneType settings;
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      "",
                                       &settings);
   EXPECT_EQ(1u, settings.size());
   EXPECT_EQ(HostContentSettingsMap::Pattern("addedhost"), settings[0].first);
@@ -169,6 +173,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddEscDoesNotAdd) {
 
   HostContentSettingsMap::SettingsForOneType settings;
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      "",
                                       &settings);
   EXPECT_EQ(0u, settings.size());
   EXPECT_FALSE([controller editingNewException]);
@@ -191,6 +196,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddEditAddAdd) {
 
   HostContentSettingsMap::SettingsForOneType settings;
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      "",
                                       &settings);
   EXPECT_EQ(0u, settings.size());
 }
@@ -198,6 +204,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddEditAddAdd) {
 TEST_F(ContentExceptionsWindowControllerTest, AddExistingEditAdd) {
   settingsMap_->SetContentSetting(HostContentSettingsMap::Pattern("myhost"),
                                   CONTENT_SETTINGS_TYPE_PLUGINS,
+                                  "",
                                   CONTENT_SETTING_BLOCK);
 
   ContentExceptionsWindowController* controller =
@@ -213,6 +220,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddExistingEditAdd) {
 
   HostContentSettingsMap::SettingsForOneType settings;
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                      "",
                                       &settings);
   EXPECT_EQ(1u, settings.size());
 }
@@ -220,6 +228,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddExistingEditAdd) {
 TEST_F(ContentExceptionsWindowControllerTest, AddExistingDoesNotOverwrite) {
   settingsMap_->SetContentSetting(HostContentSettingsMap::Pattern("myhost"),
                                   CONTENT_SETTINGS_TYPE_COOKIES,
+                                  "",
                                   CONTENT_SETTING_SESSION_ONLY);
 
   ContentExceptionsWindowController* controller =
@@ -233,6 +242,7 @@ TEST_F(ContentExceptionsWindowControllerTest, AddExistingDoesNotOverwrite) {
 
   HostContentSettingsMap::SettingsForOneType settings;
   settingsMap_->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_COOKIES,
+                                      "",
                                       &settings);
   EXPECT_EQ(1u, settings.size());
   EXPECT_EQ(CONTENT_SETTING_SESSION_ONLY, settings[0].second);

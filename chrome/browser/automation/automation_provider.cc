@@ -4495,7 +4495,7 @@ void AutomationProvider::SetContentSetting(
       map->SetDefaultContentSetting(content_type, setting);
     } else {
       map->SetContentSetting(HostContentSettingsMap::Pattern(host),
-                             content_type, setting);
+                             content_type, "", setting);
     }
     *success = true;
   }

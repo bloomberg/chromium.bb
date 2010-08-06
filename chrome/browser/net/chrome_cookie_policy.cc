@@ -139,7 +139,7 @@ int ChromeCookiePolicy::CanSetCookie(const GURL& url,
 
 int ChromeCookiePolicy::CheckPolicy(const GURL& url) const {
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      url, CONTENT_SETTINGS_TYPE_COOKIES);
+      url, CONTENT_SETTINGS_TYPE_COOKIES, "");
   if (setting == CONTENT_SETTING_BLOCK)
     return net::ERR_ACCESS_DENIED;
   if (setting == CONTENT_SETTING_ALLOW)

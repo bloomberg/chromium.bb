@@ -261,7 +261,8 @@ void ContentSettingsHandler::UpdateImagesExceptionsViewFromModel() {
   HostContentSettingsMap::SettingsForOneType entries;
   const HostContentSettingsMap* settings_map =
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
-  settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES, &entries);
+  settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_IMAGES, "", &entries);
 
   ListValue exceptions;
   for (size_t i = 0; i < entries.size(); ++i) {
@@ -326,6 +327,7 @@ void ContentSettingsHandler::RemoveExceptions(const Value* value) {
     DCHECK(rv);
     settings_map->SetContentSetting(HostContentSettingsMap::Pattern(pattern),
                                     CONTENT_SETTINGS_TYPE_IMAGES,
+                                    "",
                                     CONTENT_SETTING_DEFAULT);
   }
 }
@@ -345,5 +347,6 @@ void ContentSettingsHandler::SetException(const Value* value) {
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
   settings_map->SetContentSetting(HostContentSettingsMap::Pattern(pattern),
                                   CONTENT_SETTINGS_TYPE_IMAGES,
+                                  "",
                                   ContentSettingFromString(setting));
 }

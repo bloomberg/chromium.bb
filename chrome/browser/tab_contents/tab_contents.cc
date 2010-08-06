@@ -1440,7 +1440,7 @@ void TabContents::AddPopup(TabContents* new_contents,
 
   if (creator.is_valid() &&
       profile()->GetHostContentSettingsMap()->GetContentSetting(
-          creator, CONTENT_SETTINGS_TYPE_POPUPS) == CONTENT_SETTING_ALLOW) {
+          creator, CONTENT_SETTINGS_TYPE_POPUPS, "") == CONTENT_SETTING_ALLOW) {
     AddNewContents(new_contents, NEW_POPUP, initial_pos, true);
   } else {
     if (!blocked_popups_)

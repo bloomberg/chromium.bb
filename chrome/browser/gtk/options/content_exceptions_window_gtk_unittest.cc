@@ -28,6 +28,7 @@ class ContentExceptionsWindowGtkUnittest : public testing::Test {
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern(pattern),
         CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+        "",
         value);
   }
 

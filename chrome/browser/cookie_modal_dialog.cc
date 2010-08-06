@@ -86,7 +86,7 @@ CookiePromptModalDialog::~CookiePromptModalDialog() {
 bool CookiePromptModalDialog::IsValid() {
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
-          origin_, CONTENT_SETTINGS_TYPE_COOKIES);
+          origin_, CONTENT_SETTINGS_TYPE_COOKIES, "");
   if (content_setting != CONTENT_SETTING_ASK) {
     if (content_setting == CONTENT_SETTING_ALLOW) {
       AllowSiteData(false, false);
@@ -108,10 +108,11 @@ void CookiePromptModalDialog::AllowSiteData(bool remember,
     // to insert for exactly this URL.
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURLNoWildcard(origin_),
-        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_DEFAULT);
+        CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_DEFAULT);
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURL(origin_),
         CONTENT_SETTINGS_TYPE_COOKIES,
+        "",
         session_expire ? CONTENT_SETTING_SESSION_ONLY : CONTENT_SETTING_ALLOW);
   }
 
@@ -127,10 +128,10 @@ void CookiePromptModalDialog::BlockSiteData(bool remember) {
     // to insert for exactly this URL.
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURLNoWildcard(origin_),
-        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_DEFAULT);
+        CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_DEFAULT);
     host_content_settings_map_->SetContentSetting(
         HostContentSettingsMap::Pattern::FromURL(origin_),
-        CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+        CONTENT_SETTINGS_TYPE_COOKIES, "", CONTENT_SETTING_BLOCK);
   }
 
   if (delegate_) {

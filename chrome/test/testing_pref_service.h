@@ -6,7 +6,7 @@
 #define CHROME_TEST_TESTING_PREF_SERVICE_H_
 #pragma once
 
-#include <chrome/browser/pref_service.h>
+#include "chrome/browser/pref_service.h"
 
 class PrefStore;
 
@@ -59,6 +59,8 @@ class TestingPrefService : public PrefService {
   // Pointers to the pref stores our value store uses.
   PrefStore* managed_prefs_;
   PrefStore* user_prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingPrefService);
 };
 
 #endif  // CHROME_TEST_TESTING_PREF_SERVICE_H_

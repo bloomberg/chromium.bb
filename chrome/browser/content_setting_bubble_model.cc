@@ -166,7 +166,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
     radio_group.radio_items.push_back(radio_block_label);
     radio_group.default_item =
         profile()->GetHostContentSettingsMap()->GetContentSetting(url,
-            content_type()) == CONTENT_SETTING_ALLOW ? 0 : 1;
+            content_type(), "") == CONTENT_SETTING_ALLOW ? 0 : 1;
     set_radio_group(radio_group);
   }
 
@@ -174,6 +174,7 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
     profile()->GetHostContentSettingsMap()->AddExceptionForURL(
         bubble_content().radio_group.url,
         content_type(),
+        "",
         radio_index == 0 ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
   }
 };

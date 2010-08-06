@@ -252,6 +252,7 @@ void CookieTreeOriginNode::CreateContentException(
   if (CanCreateContentException()) {
     content_settings->AddExceptionForURL(url_,
                                          CONTENT_SETTINGS_TYPE_COOKIES,
+                                         "",
                                          setting);
   }
 }

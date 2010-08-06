@@ -19,9 +19,12 @@ ContentExceptionsTableModel::ContentExceptionsTableModel(
       content_type_(type),
       observer_(NULL) {
   // Load the contents.
-  map->GetSettingsForOneType(type, &entries_);
-  if (off_the_record_map)
-    off_the_record_map->GetSettingsForOneType(type, &off_the_record_entries_);
+  map->GetSettingsForOneType(type, "", &entries_);
+  if (off_the_record_map) {
+    off_the_record_map->GetSettingsForOneType(type,
+                                              "",
+                                              &off_the_record_entries_);
+  }
 }
 
 void ContentExceptionsTableModel::AddException(
@@ -35,7 +38,10 @@ void ContentExceptionsTableModel::AddException(
 
   entries(is_off_the_record).push_back(
       HostContentSettingsMap::PatternSettingPair(pattern, setting));
-  map(is_off_the_record)->SetContentSetting(pattern, content_type_, setting);
+  map(is_off_the_record)->SetContentSetting(pattern,
+                                            content_type_,
+                                            "",
+                                            setting);
   if (observer_)
     observer_->OnItemsAdded(insert_position, 1);
 }
@@ -47,7 +53,7 @@ void ContentExceptionsTableModel::RemoveException(int row) {
   const HostContentSettingsMap::PatternSettingPair& pair = entry_at(row);
 
   map(is_off_the_record)->SetContentSetting(
-      pair.first, content_type_, CONTENT_SETTING_DEFAULT);
+      pair.first, content_type_, "", CONTENT_SETTING_DEFAULT);
   entries(is_off_the_record).erase(
       entries(is_off_the_record).begin() + position_to_delete);
   if (observer_)
