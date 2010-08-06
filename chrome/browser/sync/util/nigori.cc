@@ -70,10 +70,6 @@ Nigori::~Nigori() {
 bool Nigori::InitByDerivation(const std::string& hostname,
                               const std::string& username,
                               const std::string& password) {
-  hostname_ = hostname;
-  username_ = username;
-  password_ = password;
-
   NigoriStream salt_password;
   salt_password << username << hostname;
 

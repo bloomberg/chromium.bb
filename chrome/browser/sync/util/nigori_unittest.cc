@@ -13,14 +13,6 @@
 namespace browser_sync {
 namespace {
 
-TEST(NigoriTest, Parameters) {
-  Nigori nigori;
-  EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
-  EXPECT_STREQ("example.com", nigori.hostname().c_str());
-  EXPECT_STREQ("username", nigori.username().c_str());
-  EXPECT_STREQ("password", nigori.password().c_str());
-}
-
 TEST(NigoriTest, Permute) {
   Nigori nigori;
   EXPECT_TRUE(nigori.InitByDerivation("example.com", "username", "password"));
