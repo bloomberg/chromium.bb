@@ -10,7 +10,6 @@
 #include "app/l10n_util.h"
 #include "app/menus/button_menu_item_model.h"
 #include "app/resource_bundle.h"
-#include "base/command_line.h"
 #include "base/string_number_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
@@ -300,12 +298,6 @@ void WrenchMenuModel::Build() {
                          tools_menu_model_.get());
 
   AddSeparator();
-#if defined(ENABLE_REMOTING)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableRemoting)) {
-    AddItem(IDC_REMOTING_SETUP,
-            l10n_util::GetStringUTF16(IDS_REMOTING_SETUP_LABEL));
-  }
-#endif
   AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER, IDS_BOOKMARK_MANAGER);
   AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
