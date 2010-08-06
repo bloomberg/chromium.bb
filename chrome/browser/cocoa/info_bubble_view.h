@@ -22,8 +22,9 @@ enum BubbleArrowLocation {
 };
 
 enum InfoBubbleType {
-  kGradientInfoBubble,
-  kWhiteInfoBubble
+  kWhiteInfoBubble,
+  // Gradient bubbles are deprecated, per alcor@google.com. Please use white.
+  kGradientInfoBubble
 };
 
 }  // namespace info_bubble

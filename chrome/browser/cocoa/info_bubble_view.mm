@@ -16,7 +16,7 @@
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
     arrowLocation_ = info_bubble::kTopLeft;
-    bubbleType_ = info_bubble::kGradientInfoBubble;
+    bubbleType_ = info_bubble::kWhiteInfoBubble;
   }
 
   return self;
