@@ -632,7 +632,7 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   NSSize size = [title size];
 
   // Don't complicate drawing unless we need to clip
-  if (size.width <= NSWidth(cellFrame)) {
+  if (floor(size.width) <= NSWidth(cellFrame)) {
     return [super drawTitle:title withFrame:cellFrame inView:controlView];
   }
 
