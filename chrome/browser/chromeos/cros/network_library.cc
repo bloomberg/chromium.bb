@@ -249,7 +249,7 @@ class NetworkLibraryImpl : public NetworkLibrary,
     CheckNetworkTraffic(false);
   }
 
-  void OnBytesRead(URLRequestJob* job, int byte_count) {
+  void OnBytesRead(URLRequestJob* job, const char* buf, int byte_count) {
     CheckNetworkTraffic(true);
   }
 
@@ -1016,7 +1016,7 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
   void OnJobDone(URLRequestJob* job, const URLRequestStatus& status) {}
   void OnJobRedirect(
       URLRequestJob* job, const GURL& location, int status_code) {}
-  void OnBytesRead(URLRequestJob* job, int byte_count) {}
+  void OnBytesRead(URLRequestJob* job, const char* buf, int byte_count) {}
   void AddObserver(Observer* observer) {}
   void RemoveObserver(Observer* observer) {}
   virtual const EthernetNetwork& ethernet_network() const {

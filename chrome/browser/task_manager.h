@@ -238,7 +238,7 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   void OnJobRemoved(URLRequestJob* job);
   void OnJobDone(URLRequestJob* job, const URLRequestStatus& status);
   void OnJobRedirect(URLRequestJob* job, const GURL& location, int status_code);
-  void OnBytesRead(URLRequestJob* job, int byte_count);
+  void OnBytesRead(URLRequestJob* job, const char* buf, int byte_count);
 
   void AddResourceProvider(TaskManager::ResourceProvider* provider);
   void RemoveResourceProvider(TaskManager::ResourceProvider* provider);

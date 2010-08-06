@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,7 +51,8 @@ void URLRequestJobTracker::OnJobRedirect(URLRequestJob* job,
 }
 
 void URLRequestJobTracker::OnBytesRead(URLRequestJob* job,
+                                       const char* buf,
                                        int byte_count) {
   FOR_EACH_OBSERVER(JobObserver, observers_,
-                    OnBytesRead(job, byte_count));
+                    OnBytesRead(job, buf, byte_count));
 }
