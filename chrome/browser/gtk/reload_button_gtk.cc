@@ -127,11 +127,10 @@ void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
     GdkModifierType modifier_state;
     gtk_get_current_event_state(&modifier_state);
     guint modifier_state_uint = modifier_state;
-    if (modifier_state_uint & GDK_SHIFT_MASK) {
+    if (modifier_state_uint & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) {
       command = IDC_RELOAD_IGNORING_CACHE;
-      // Mask off shift so it isn't interpreted as affecting the disposition
-      // below.
-      modifier_state_uint &= ~GDK_SHIFT_MASK;
+      // Mask off Shift and Control so they don't affect the disposition below.
+      modifier_state_uint &= ~(GDK_SHIFT_MASK | GDK_CONTROL_MASK);
     } else {
       command = IDC_RELOAD;
     }

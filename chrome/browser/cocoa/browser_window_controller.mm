@@ -935,11 +935,11 @@
   DCHECK([targetController isKindOfClass:[BrowserWindowController class]]);
   NSInteger command = [sender tag];
   NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
-  if ((command == IDC_RELOAD) && (modifierFlags & NSShiftKeyMask)) {
+  if ((command == IDC_RELOAD) &&
+      (modifierFlags & (NSShiftKeyMask | NSControlKeyMask))) {
     command = IDC_RELOAD_IGNORING_CACHE;
-    // Mask off shift so it isn't interpreted as affecting the disposition
-    // below.
-    modifierFlags &= ~NSShiftKeyMask;
+    // Mask off Shift and Control so they don't affect the disposition below.
+    modifierFlags &= ~(NSShiftKeyMask | NSControlKeyMask);
   }
   if (![[sender window] isMainWindow]) {
     // Remove the command key from the flags, it means "keep the window in

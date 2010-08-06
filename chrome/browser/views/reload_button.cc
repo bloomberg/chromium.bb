@@ -59,8 +59,7 @@ void ReloadButton::ButtonPressed(views::Button* button,
     int flags = mouse_event_flags();
     if (event.IsShiftDown() || event.IsControlDown()) {
       command = IDC_RELOAD_IGNORING_CACHE;
-      // Mask off shift/ctrl so they aren't interpreted as affecting the
-      // disposition below.
+      // Mask off Shift and Control so they don't affect the disposition below.
       flags &= ~(views::Event::EF_SHIFT_DOWN | views::Event::EF_CONTROL_DOWN);
     } else {
       command = IDC_RELOAD;
