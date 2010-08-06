@@ -15,6 +15,8 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
 
+namespace chromeos {
+
 LanguageChewingOptionsHandler::LanguageChewingOptionsHandler() {
 }
 
@@ -25,15 +27,15 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Language Chewing page - ChromeOS
-  for (size_t i = 0; i < chromeos::kNumChewingBooleanPrefs; ++i) {
+  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
     localized_strings->SetString(
-        GetI18nContentValue(chromeos::kChewingBooleanPrefs[i]),
-        l10n_util::GetString(chromeos::kChewingBooleanPrefs[i].message_id));
+        GetI18nContentValue(kChewingBooleanPrefs[i]),
+        l10n_util::GetString(kChewingBooleanPrefs[i].message_id));
   }
 
-  for (size_t i = 0; i < chromeos::kNumChewingIntegerPrefs; ++i) {
-    const chromeos::LanguageIntegerRangePreference& preference =
-        chromeos::kChewingIntegerPrefs[i];
+  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+    const LanguageIntegerRangePreference& preference =
+        kChewingIntegerPrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
         l10n_util::GetString(preference.message_id));
@@ -45,31 +47,31 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
         UTF8ToWide(base::IntToString(preference.max_pref_value)));
   }
 
-  for (size_t i = 0; i < chromeos::kNumChewingMultipleChoicePrefs;
+  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs;
        ++i) {
-    const chromeos::LanguageMultipleChoicePreference<const char*>& preference =
-        chromeos::kChewingMultipleChoicePrefs[i];
+    const LanguageMultipleChoicePreference<const char*>& preference =
+        kChewingMultipleChoicePrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
         l10n_util::GetString(preference.label_message_id));
     localized_strings->Set(
         GetTemplateDataPropertyName(preference),
-        chromeos::CreateMultipleChoiceList(preference));
+        CreateMultipleChoiceList(preference));
   }
 
   localized_strings->SetString(
-      GetI18nContentValue(chromeos::kChewingHsuSelKeyType),
-      l10n_util::GetString(chromeos::kChewingHsuSelKeyType.label_message_id));
+      GetI18nContentValue(kChewingHsuSelKeyType),
+      l10n_util::GetString(kChewingHsuSelKeyType.label_message_id));
 
   int hsu_sel_key_type_min = std::numeric_limits<int>::max();
   int hsu_sel_key_type_max = std::numeric_limits<int>::min();
   for (size_t i = 0;
-       i < chromeos::LanguageMultipleChoicePreference<int>::kMaxItems;
+       i < LanguageMultipleChoicePreference<int>::kMaxItems;
        ++i) {
-    if (chromeos::kChewingHsuSelKeyType.values_and_ids[i].item_message_id == 0)
+    if (kChewingHsuSelKeyType.values_and_ids[i].item_message_id == 0)
       break;
     const int value =
-        chromeos::kChewingHsuSelKeyType.values_and_ids[i].ibus_config_value;
+        kChewingHsuSelKeyType.values_and_ids[i].ibus_config_value;
     if (value <= hsu_sel_key_type_min)
       hsu_sel_key_type_min = value;
     if (value >= hsu_sel_key_type_max)
@@ -79,9 +81,11 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
   DCHECK_NE(hsu_sel_key_type_max, std::numeric_limits<int>::min());
 
   localized_strings->SetString(
-      GetTemplateDataMinName(chromeos::kChewingHsuSelKeyType),
+      GetTemplateDataMinName(kChewingHsuSelKeyType),
       UTF8ToWide(base::IntToString(hsu_sel_key_type_min)));
   localized_strings->SetString(
-      GetTemplateDataMaxName(chromeos::kChewingHsuSelKeyType),
+      GetTemplateDataMaxName(kChewingHsuSelKeyType),
       UTF8ToWide(base::IntToString(hsu_sel_key_type_max)));
 }
+
+}  // namespace chromeos

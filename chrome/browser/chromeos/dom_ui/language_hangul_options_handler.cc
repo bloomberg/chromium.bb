@@ -10,6 +10,8 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
 
+namespace chromeos {
+
 LanguageHangulOptionsHandler::LanguageHangulOptionsHandler() {
 }
 
@@ -28,13 +30,15 @@ void LanguageHangulOptionsHandler::GetLocalizedValues(
 
 ListValue* LanguageHangulOptionsHandler::GetKeyboardLayoutList() {
   ListValue* keyboard_layout_list = new ListValue();
-  for (size_t i = 0; i < arraysize(chromeos::kHangulKeyboardNameIDPairs); ++i) {
+  for (size_t i = 0; i < arraysize(kHangulKeyboardNameIDPairs); ++i) {
     ListValue* option = new ListValue();
     option->Append(Value::CreateStringValue(ASCIIToWide(
-        chromeos::kHangulKeyboardNameIDPairs[i].keyboard_id)));
+        kHangulKeyboardNameIDPairs[i].keyboard_id)));
     option->Append(Value::CreateStringValue(l10n_util::GetString(
-        chromeos::kHangulKeyboardNameIDPairs[i].message_id)));
+        kHangulKeyboardNameIDPairs[i].message_id)));
     keyboard_layout_list->Append(option);
   }
   return keyboard_layout_list;
 }
+
+}  // namespace chromeos

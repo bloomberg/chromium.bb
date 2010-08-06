@@ -11,6 +11,8 @@
 class DictionaryValue;
 class ListValue;
 
+namespace chromeos {
+
 // Hangul options page UI handler.
 class LanguageHangulOptionsHandler : public OptionsPageUIHandler {
  public:
@@ -26,5 +28,7 @@ class LanguageHangulOptionsHandler : public OptionsPageUIHandler {
 
   DISALLOW_COPY_AND_ASSIGN(LanguageHangulOptionsHandler);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_HANGUL_OPTIONS_HANDLER_H_

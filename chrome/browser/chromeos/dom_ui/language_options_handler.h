@@ -11,6 +11,8 @@
 class DictionaryValue;
 class ListValue;
 
+namespace chromeos {
+
 // ChromeOS language options page UI handler.
 class LanguageOptionsHandler : public OptionsPageUIHandler {
  public:
@@ -39,5 +41,7 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
 
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandler);
 };
+
+}  // namespace
 
 #endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_OPTIONS_HANDLER_H_

@@ -12,6 +12,8 @@
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
 
+namespace chromeos {
+
 LanguageMozcOptionsHandler::LanguageMozcOptionsHandler() {
 }
 
@@ -22,25 +24,24 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Language Mozc page - ChromeOS
-  for (size_t i = 0; i < chromeos::kNumMozcBooleanPrefs; ++i) {
+  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
     localized_strings->SetString(
-        GetI18nContentValue(chromeos::kMozcBooleanPrefs[i]),
-        l10n_util::GetString(chromeos::kMozcBooleanPrefs[i].message_id));
+        GetI18nContentValue(kMozcBooleanPrefs[i]),
+        l10n_util::GetString(kMozcBooleanPrefs[i].message_id));
   }
 
-  for (size_t i = 0; i < chromeos::kNumMozcMultipleChoicePrefs; ++i) {
-    const chromeos::LanguageMultipleChoicePreference<const char*>& preference =
-        chromeos::kMozcMultipleChoicePrefs[i];
+  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+    const LanguageMultipleChoicePreference<const char*>& preference =
+        kMozcMultipleChoicePrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
         l10n_util::GetString(preference.label_message_id));
     localized_strings->Set(GetTemplateDataPropertyName(preference),
-                           chromeos::CreateMultipleChoiceList(preference));
+                           CreateMultipleChoiceList(preference));
   }
 
-  for (size_t i = 0; i < chromeos::kNumMozcIntegerPrefs; ++i) {
-    const chromeos::LanguageIntegerRangePreference& preference =
-        chromeos::kMozcIntegerPrefs[i];
+  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+    const LanguageIntegerRangePreference& preference = kMozcIntegerPrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
         l10n_util::GetString(preference.message_id));
@@ -52,3 +53,5 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
         UTF8ToWide(base::IntToString(preference.max_pref_value)));
   }
 }
+
+}  // namespace chromeos

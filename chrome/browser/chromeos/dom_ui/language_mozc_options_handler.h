@@ -10,6 +10,8 @@
 
 class DictionaryValue;
 
+namespace chromeos {
+
 // Mozc options page UI handler.
 class LanguageMozcOptionsHandler : public OptionsPageUIHandler {
  public:
@@ -22,5 +24,7 @@ class LanguageMozcOptionsHandler : public OptionsPageUIHandler {
  private:
   DISALLOW_COPY_AND_ASSIGN(LanguageMozcOptionsHandler);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_MOZC_OPTIONS_HANDLER_H_

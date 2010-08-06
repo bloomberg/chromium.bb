@@ -20,6 +20,8 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+namespace chromeos {
+
 LanguageOptionsHandler::LanguageOptionsHandler() {
 }
 
@@ -69,19 +71,17 @@ void LanguageOptionsHandler::RegisterMessages() {
 }
 
 ListValue* LanguageOptionsHandler::GetInputMethodList() {
-  using chromeos::CrosLibrary;
-
   ListValue* input_method_list = new ListValue();
 
   // GetSupportedLanguages() never return NULL.
-  scoped_ptr<chromeos::InputMethodDescriptors> descriptors(
+  scoped_ptr<InputMethodDescriptors> descriptors(
       CrosLibrary::Get()->GetInputMethodLibrary()->GetSupportedInputMethods());
   for (size_t i = 0; i < descriptors->size(); ++i) {
-    const chromeos::InputMethodDescriptor& descriptor = descriptors->at(i);
+    const InputMethodDescriptor& descriptor = descriptors->at(i);
     const std::string language_code =
-        chromeos::input_method::GetLanguageCodeFromDescriptor(descriptor);
+        input_method::GetLanguageCodeFromDescriptor(descriptor);
     const std::string display_name =
-        chromeos::input_method::GetInputMethodDisplayNameFromId(descriptor.id);
+        input_method::GetInputMethodDisplayNameFromId(descriptor.id);
 
     DictionaryValue* dictionary = new DictionaryValue();
     dictionary->SetString(L"id", UTF8ToWide(descriptor.id));
@@ -108,9 +108,9 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
   const std::vector<std::string>& locales = l10n_util::GetAvailableLocales();
   for (size_t i = 0; i < locales.size(); ++i) {
     const std::wstring display_name =
-        chromeos::input_method::GetLanguageDisplayNameFromCode(locales[i]);
+        input_method::GetLanguageDisplayNameFromCode(locales[i]);
     const std::wstring native_display_name =
-        chromeos::input_method::GetLanguageNativeDisplayNameFromCode(
+        input_method::GetLanguageNativeDisplayNameFromCode(
             locales[i]);
     display_names.push_back(display_name);
     language_map[display_name] =
@@ -157,3 +157,5 @@ void LanguageOptionsHandler::UiLanguageChangeCallback(
   dom_ui_->CallJavascriptFunction(
       L"options.LanguageOptions.uiLanguageSaved");
 }
+
+}  // namespace chromeos
