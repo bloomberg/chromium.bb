@@ -956,6 +956,12 @@
    fun:safe_browsing::PhishingDOMFeatureExtractorTest::SetUp
 }
 {
+   bug_50598_c
+   Heapcheck:Leak
+   ...
+   fun:safe_browsing::PhishingDOMFeatureExtractorTest::GetNextThreadName
+}
+{
    bug_51176_a
    Heapcheck:Leak
    fun:Callback1::Type* NewCallback

@@ -69,13 +69,7 @@ class PhishingDOMFeatureExtractorTest : public ::testing::Test,
     platform_.reset(new RendererMainPlatformDelegate(*params_));
     platform_->PlatformInitialize();
 
-    // We use a new IPC channel name for each test that runs.
-    // This is necessary because the renderer-side IPC channel is not
-    // shut down when the RenderThread goes away, so attempting to reuse
-    // the channel name gives an error (see ChildThread::~ChildThread()).
-    std::string thread_name = StringPrintf(
-        "phishing_dom_feature_Extractor_unittest.%d",
-        next_thread_id_++);
+    std::string thread_name = GetNextThreadName();
     channel_.reset(new IPC::Channel(thread_name,
                                     IPC::Channel::MODE_SERVER, this));
     ASSERT_TRUE(channel_->Connect());
@@ -204,6 +198,16 @@ class PhishingDOMFeatureExtractorTest : public ::testing::Test,
     RenderView::ForEach(this);
     ASSERT_TRUE(view_);
     msg_loop_.Quit();
+  }
+
+  // We use a new IPC channel name for each test that runs.
+  // This is necessary because the renderer-side IPC channel is not
+  // shut down when the RenderThread goes away, so attempting to reuse
+  // the channel name gives an error (see ChildThread::~ChildThread()).
+  static std::string GetNextThreadName() {
+    return StringPrintf(
+        "phishing_dom_feature_Extractor_unittest.%d",
+        next_thread_id_++);
   }
 
   static int next_thread_id_;  // incrementing counter for thread ids
