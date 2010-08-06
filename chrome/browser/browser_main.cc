@@ -165,6 +165,8 @@ BrowserMainParts::~BrowserMainParts() {
 void BrowserMainParts::EarlyInitialization() {
   PreEarlyInitialization();
 
+  // Note: make sure to call ConnectionFieldTrial() before
+  // ProxyConnectionsFieldTrial().
   ConnectionFieldTrial();
   SocketTimeoutFieldTrial();
   ProxyConnectionsFieldTrial();
@@ -273,9 +275,18 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
   scoped_refptr<FieldTrial> proxy_connection_trial =
       new FieldTrial("ProxyConnectionImpact", kProxyConnectionsDivisor);
 
-  const int proxy_connections_8 =
-      proxy_connection_trial->AppendGroup("_proxy_connections_8",
-                                          kProxyConnectionProbability);
+  // The number of max sockets per group cannot be greater than the max number
+  // of sockets per proxy server.  Consequently, we eliminate the
+  // |proxy_connections_8| trial group if we do happen to pass this lower bound
+  // (which may vary due to the existence of field trials). This leaves us with
+  // [16, 32, 64] to choose from. Otherwise, we have a set of four values:
+  // [8, 16, 32, 64].
+  int proxy_connections_8 = -1;
+  if (net::HttpNetworkSession::max_sockets_per_group() <= 8) {
+    proxy_connections_8 =
+        proxy_connection_trial->AppendGroup("_proxy_connections_8",
+                                            kProxyConnectionProbability);
+  }
   const int proxy_connections_16 =
       proxy_connection_trial->AppendGroup("_proxy_connections_16",
                                           kProxyConnectionProbability);
