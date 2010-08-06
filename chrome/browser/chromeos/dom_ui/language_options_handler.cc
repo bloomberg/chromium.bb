@@ -56,11 +56,15 @@ void LanguageOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(L"restart_required",
       l10n_util::GetString(IDS_OPTIONS_RESTART_REQUIRED));
 
+  // GetSupportedInputMethods() never return NULL.
+  scoped_ptr<InputMethodDescriptors> descriptors(
+      CrosLibrary::Get()->GetInputMethodLibrary()->GetSupportedInputMethods());
+
   // The followigns are resources, rather than local strings.
   localized_strings->SetString(L"currentUiLanguageCode",
       UTF8ToWide(g_browser_process->GetApplicationLocale()));
-  localized_strings->Set(L"inputMethodList", GetInputMethodList());
-  localized_strings->Set(L"languageList", GetLanguageList());
+  localized_strings->Set(L"inputMethodList", GetInputMethodList(*descriptors));
+  localized_strings->Set(L"languageList", GetLanguageList(*descriptors));
 }
 
 void LanguageOptionsHandler::RegisterMessages() {
@@ -70,14 +74,12 @@ void LanguageOptionsHandler::RegisterMessages() {
                   &LanguageOptionsHandler::UiLanguageChangeCallback));
 }
 
-ListValue* LanguageOptionsHandler::GetInputMethodList() {
+ListValue* LanguageOptionsHandler::GetInputMethodList(
+    const InputMethodDescriptors& descriptors) {
   ListValue* input_method_list = new ListValue();
 
-  // GetSupportedLanguages() never return NULL.
-  scoped_ptr<InputMethodDescriptors> descriptors(
-      CrosLibrary::Get()->GetInputMethodLibrary()->GetSupportedInputMethods());
-  for (size_t i = 0; i < descriptors->size(); ++i) {
-    const InputMethodDescriptor& descriptor = descriptors->at(i);
+  for (size_t i = 0; i < descriptors.size(); ++i) {
+    const InputMethodDescriptor& descriptor = descriptors[i];
     const std::string language_code =
         input_method::GetLanguageCodeFromDescriptor(descriptor);
     const std::string display_name =
@@ -93,7 +95,23 @@ ListValue* LanguageOptionsHandler::GetInputMethodList() {
   return input_method_list;
 }
 
-ListValue* LanguageOptionsHandler::GetLanguageList() {
+ListValue* LanguageOptionsHandler::GetLanguageList(
+    const InputMethodDescriptors& descriptors) {
+  std::vector<std::string> language_codes;
+  // Collect the language codes from the supported input methods.
+  for (size_t i = 0; i < descriptors.size(); ++i) {
+    const InputMethodDescriptor& descriptor = descriptors[i];
+    const std::string language_code =
+        input_method::GetLanguageCodeFromDescriptor(descriptor);
+    language_codes.push_back(language_code);
+  }
+  // Collect the language codes from kExtraLanguages.
+  for (size_t i = 0; i < arraysize(input_method::kExtraLanguages); ++i) {
+    const char* language_code =
+        input_method::kExtraLanguages[i].language_code;
+    language_codes.push_back(language_code);
+  }
+
   // Map of display name -> {language code, native_display_name}.
   // In theory, we should be able to create a map that is sorted by
   // display names using ICU comparator, but doing it is hard, thus we'll
@@ -105,16 +123,15 @@ ListValue* LanguageOptionsHandler::GetLanguageList() {
   std::vector<std::wstring> display_names;
 
   // Build the list of display names, and build the language map.
-  const std::vector<std::string>& locales = l10n_util::GetAvailableLocales();
-  for (size_t i = 0; i < locales.size(); ++i) {
+  for (size_t i = 0; i < language_codes.size(); ++i) {
     const std::wstring display_name =
-        input_method::GetLanguageDisplayNameFromCode(locales[i]);
+        input_method::GetLanguageDisplayNameFromCode(language_codes[i]);
     const std::wstring native_display_name =
         input_method::GetLanguageNativeDisplayNameFromCode(
-            locales[i]);
+            language_codes[i]);
     display_names.push_back(display_name);
     language_map[display_name] =
-        std::make_pair(locales[i], native_display_name);
+        std::make_pair(language_codes[i], native_display_name);
   }
   DCHECK_EQ(display_names.size(), language_map.size());
 
