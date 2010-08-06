@@ -521,10 +521,6 @@ TEST_F(SessionHistoryTest, LocationChangeInSubframe) {
   EXPECT_EQ(L"Default Title", GetTabTitle());
 }
 
-// Hangs, see http://crbug.com/38583.
-#if defined(OS_WIN)
-#define HistoryLength DISABLED_HistoryLength
-#endif  // defined(OS_WIN)
 TEST_F(SessionHistoryTest, HistoryLength) {
   scoped_refptr<net::HTTPTestServer> server(
       net::HTTPTestServer::CreateServer(kDocRoot));
