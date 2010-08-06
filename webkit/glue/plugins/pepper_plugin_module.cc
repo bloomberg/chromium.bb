@@ -29,6 +29,7 @@
 #include "third_party/ppapi/c/ppb_url_response_info.h"
 #include "third_party/ppapi/c/ppb_url_util.h"
 #include "third_party/ppapi/c/ppb_var.h"
+#include "third_party/ppapi/c/ppb_video_decoder.h"
 #include "third_party/ppapi/c/ppb_widget.h"
 #include "third_party/ppapi/c/ppp.h"
 #include "third_party/ppapi/c/ppp_instance.h"
@@ -54,6 +55,7 @@
 #include "webkit/glue/plugins/pepper_url_response_info.h"
 #include "webkit/glue/plugins/pepper_url_util.h"
 #include "webkit/glue/plugins/pepper_var.h"
+#include "webkit/glue/plugins/pepper_video_decoder.h"
 #include "webkit/glue/plugins/pepper_widget.h"
 #include "webkit/glue/plugins/ppb_private.h"
 
@@ -200,7 +202,8 @@ const void* GetInterface(const char* name) {
     return Private::GetInterface();
   if (strcmp(name, PPB_FILECHOOSER_INTERFACE) == 0)
     return FileChooser::GetInterface();
-
+  if (strcmp(name, PPB_VIDEODECODER_INTERFACE) == 0)
+    return VideoDecoder::GetInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

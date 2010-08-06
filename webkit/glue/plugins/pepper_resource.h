@@ -29,6 +29,7 @@ class Scrollbar;
 class URLLoader;
 class URLRequestInfo;
 class URLResponseInfo;
+class VideoDecoder;
 class Widget;
 
 class Resource : public base::RefCountedThreadSafe<Resource> {
@@ -90,6 +91,7 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   virtual URLLoader* AsURLLoader() { return NULL; }
   virtual URLRequestInfo* AsURLRequestInfo() { return NULL; }
   virtual URLResponseInfo* AsURLResponseInfo() { return NULL; }
+  virtual VideoDecoder* AsVideoDecoder() { return NULL; }
   virtual Widget* AsWidget() { return NULL; }
 
  private:
@@ -136,6 +138,7 @@ DEFINE_RESOURCE_CAST(Scrollbar)
 DEFINE_RESOURCE_CAST(URLLoader)
 DEFINE_RESOURCE_CAST(URLRequestInfo)
 DEFINE_RESOURCE_CAST(URLResponseInfo)
+DEFINE_RESOURCE_CAST(VideoDecoder)
 DEFINE_RESOURCE_CAST(Widget)
 
 #undef DEFINE_RESOURCE_CAST

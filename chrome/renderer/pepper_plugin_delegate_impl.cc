@@ -157,6 +157,91 @@ void PlatformAudioImpl::ShutDown() {
   client_ = NULL;
 }
 
+// Implements the VideoDecoder.
+class PlatformVideoDecoderImpl
+    : public pepper::PluginDelegate::PlatformVideoDecoder {
+ public:
+  PlatformVideoDecoderImpl()
+      : input_buffer_size_(0),
+        next_dib_id_(0),
+        dib_(NULL) {
+    memset(&flush_callback_, 0, sizeof(flush_callback_));
+  }
+
+  virtual bool Init(const PP_VideoDecoderConfig& decoder_config) {
+    decoder_config_ = decoder_config;
+    input_buffer_size_ = 1024 << 4;
+
+    // Allocate the transport DIB.
+    TransportDIB* dib = TransportDIB::Create(input_buffer_size_,
+                                             next_dib_id_++);
+    if (!dib)
+      return false;
+
+    // TODO(wjia): Create video decoder in GPU process.
+
+    return true;
+  }
+
+  virtual bool Decode(PP_VideoCompressedDataBuffer& input_buffer) {
+    // TODO(wjia): Implement me!
+    NOTIMPLEMENTED();
+
+    input_buffers_.push(&input_buffer);
+
+    // Copy input data to dib_ and send it to GPU video decoder.
+
+    return false;
+  }
+
+  virtual int32_t Flush(PP_CompletionCallback& callback) {
+    // TODO(wjia): Implement me!
+    NOTIMPLEMENTED();
+
+    // Do nothing if there is a flush pending.
+    if (flush_callback_.func)
+      return PP_ERROR_BADARGUMENT;
+
+    flush_callback_ = callback;
+
+    // Call GPU video decoder to flush.
+
+    return PP_ERROR_WOULDBLOCK;
+  }
+
+  virtual bool ReturnUncompressedDataBuffer(
+      PP_VideoUncompressedDataBuffer& buffer) {
+    // TODO(wjia): Implement me!
+    NOTIMPLEMENTED();
+
+    // Deliver the buffer to GPU video decoder.
+
+    return false;
+  }
+
+  void OnFlushDone() {
+    if (!flush_callback_.func)
+      return;
+
+    flush_callback_.func(flush_callback_.user_data, PP_OK);
+    flush_callback_.func = NULL;
+  }
+
+  virtual intptr_t GetSharedMemoryHandle() const {
+    return reinterpret_cast<intptr_t>(dib_.get());
+  }
+
+ private:
+  size_t input_buffer_size_;
+  int next_dib_id_;
+  scoped_ptr<TransportDIB> dib_;
+  PP_VideoDecoderConfig decoder_config_;
+  std::queue<PP_VideoCompressedDataBuffer*> input_buffers_;
+  PP_CompletionCallback flush_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(PlatformVideoDecoderImpl);
+};
+
 }  // namespace
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderView* render_view)
@@ -246,6 +331,17 @@ PepperPluginDelegateImpl::CreateImage2D(int width, int height) {
 #endif
 
   return new PlatformImage2DImpl(width, height, dib);
+}
+
+pepper::PluginDelegate::PlatformVideoDecoder*
+PepperPluginDelegateImpl::CreateVideoDecoder(
+    const PP_VideoDecoderConfig& decoder_config) {
+  scoped_ptr<PlatformVideoDecoderImpl> decoder(new PlatformVideoDecoderImpl());
+
+  if (!decoder->Init(decoder_config))
+    return NULL;
+
+  return decoder.release();
 }
 
 void PepperPluginDelegateImpl::DidChangeNumberOfFindResults(int identifier,

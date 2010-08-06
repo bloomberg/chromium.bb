@@ -9,7 +9,10 @@
 
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "third_party/ppapi/c/pp_completion_callback.h"
+#include "third_party/ppapi/c/pp_errors.h"
 #include "third_party/ppapi/c/pp_stdint.h"
+#include "third_party/ppapi/c/pp_video.h"
 
 class AudioMessageFilter;
 
@@ -72,6 +75,17 @@ class PluginDelegate {
     virtual void ShutDown() = 0;
   };
 
+  class PlatformVideoDecoder {
+   public:
+    virtual ~PlatformVideoDecoder() {}
+
+    // Returns false on failure.
+    virtual bool Decode(PP_VideoCompressedDataBuffer& input_buffer) = 0;
+    virtual int32_t Flush(PP_CompletionCallback& callback) = 0;
+    virtual bool ReturnUncompressedDataBuffer(
+        PP_VideoUncompressedDataBuffer& buffer) = 0;
+  };
+
   // Indicates that the given instance has been created.
   virtual void InstanceCreated(pepper::PluginInstance* instance) = 0;
 
@@ -82,6 +96,10 @@ class PluginDelegate {
 
   // The caller will own the pointer returned from this.
   virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;
+
+  // The caller will own the pointer returned from this.
+  virtual PlatformVideoDecoder* CreateVideoDecoder(
+      const PP_VideoDecoderConfig& decoder_config) = 0;
 
   // Notifies that the number of find results has changed.
   virtual void DidChangeNumberOfFindResults(int identifier,

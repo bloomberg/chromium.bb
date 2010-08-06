@@ -207,6 +207,8 @@
         'plugins/pepper_url_util.h',
         'plugins/pepper_var.cc',
         'plugins/pepper_var.h',
+        'plugins/pepper_video_decoder.cc',
+        'plugins/pepper_video_decoder.h',
         'plugins/pepper_webplugin_impl.cc',
         'plugins/pepper_webplugin_impl.h',
         'plugins/pepper_widget.cc',
