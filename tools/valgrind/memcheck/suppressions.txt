@@ -3843,27 +3843,6 @@
    fun:_ZN8chromeos12CrosSettings3GetEv
 }
 {
-   bug_51176_a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN51PrefValueStoreTest_TestConcurrentPolicyRefresh_Test8TestBodyEv
-}
-{
-   bug_51176_b
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN41PrefValueStoreTest_TestPolicyRefresh_Test8TestBodyEv
-}
-{
-   bug_51176_c
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN56PrefValueStoreTest_TestRefreshPolicyPrefsCompletion_Test8TestBodyEv
-}
-{
    bug_51218
    Memcheck:Leak
    fun:_Znw*

@@ -113,7 +113,7 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // Signature of callback triggered after policy refresh. Parameter is not
   // passed as reference to prevent passing along a pointer to a set whose
   // lifecycle is managed in another thread.
-  typedef Callback1<std::vector<std::string> >::Type* AfterRefreshCallback;
+  typedef Callback1<std::vector<std::string> >::Type AfterRefreshCallback;
 
   // Called as a result of a notification of policy change. Triggers a
   // reload of managed preferences from policy. Caller must pass in
@@ -121,11 +121,12 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   // |managed_pref_store| and |recommended_pref_store| respectively, since
   // PrefValueStore doesn't know about policy-specific PrefStores.
   // |callback| is called with the set of preferences changed by the policy
-  // refresh. |callback| is called the caller's thread as a Task
-  // after RefreshPolicyPrefs has returned.
+  // refresh. |callback| is called on the caller's thread as a Task
+  // after RefreshPolicyPrefs has returned. RefreshPolicyPrefs takes ownership
+  // of the |callback| object.
   void RefreshPolicyPrefs(PrefStore* managed_pref_store,
                           PrefStore* recommended_pref_store,
-                          AfterRefreshCallback callback);
+                          AfterRefreshCallback* callback);
 
  protected:
   // In decreasing order of precedence:
@@ -173,18 +174,20 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   PrefStoreType ControllingPrefStoreForPref(const wchar_t* name);
 
   // Called during policy refresh after ReadPrefs completes on the thread
-  // that initiated the policy refresh.
+  // that initiated the policy refresh. RefreshPolicyPrefsCompletion takes
+  // ownership of the |callback| object.
   void RefreshPolicyPrefsCompletion(
       PrefStore* new_managed_pref_store,
       PrefStore* new_recommended_pref_store,
-      AfterRefreshCallback callback);
+      AfterRefreshCallback* callback);
 
   // Called during policy refresh to do the ReadPrefs on the FILE thread.
+  // RefreshPolicyPrefsOnFileThread takes ownership of the |callback| object.
   void RefreshPolicyPrefsOnFileThread(
       ChromeThread::ID calling_thread_id,
       PrefStore* new_managed_pref_store,
       PrefStore* new_recommended_pref_store,
-      AfterRefreshCallback callback);
+      AfterRefreshCallback* callback);
 
   DISALLOW_COPY_AND_ASSIGN(PrefValueStore);
 };

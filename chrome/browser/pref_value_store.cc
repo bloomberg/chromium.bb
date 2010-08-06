@@ -156,8 +156,8 @@ PrefValueStore::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
 void PrefValueStore::RefreshPolicyPrefsCompletion(
     PrefStore* new_managed_pref_store,
     PrefStore* new_recommended_pref_store,
-    AfterRefreshCallback callback) {
-
+    AfterRefreshCallback* callback_pointer) {
+  scoped_ptr<AfterRefreshCallback> callback(callback_pointer);
   DictionaryValue* managed_prefs_before(pref_stores_[MANAGED]->prefs());
   DictionaryValue* managed_prefs_after(new_managed_pref_store->prefs());
   DictionaryValue* recommended_prefs_before(pref_stores_[RECOMMENDED]->prefs());
@@ -190,7 +190,8 @@ void PrefValueStore::RefreshPolicyPrefsOnFileThread(
     ChromeThread::ID calling_thread_id,
     PrefStore* new_managed_pref_store,
     PrefStore* new_recommended_pref_store,
-    AfterRefreshCallback callback) {
+    AfterRefreshCallback* callback_pointer) {
+  scoped_ptr<AfterRefreshCallback> callback(callback_pointer);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   scoped_ptr<PrefStore> managed_pref_store(new_managed_pref_store);
   scoped_ptr<PrefStore> recommended_pref_store(new_recommended_pref_store);
@@ -215,13 +216,13 @@ void PrefValueStore::RefreshPolicyPrefsOnFileThread(
                         &PrefValueStore::RefreshPolicyPrefsCompletion,
                         managed_pref_store.release(),
                         recommended_pref_store.release(),
-                        callback));
+                        callback.release()));
 }
 
 void PrefValueStore::RefreshPolicyPrefs(
     PrefStore* new_managed_pref_store,
     PrefStore* new_recommended_pref_store,
-    AfterRefreshCallback callback) {
+    AfterRefreshCallback* callback) {
   ChromeThread::ID current_thread_id;
   CHECK(ChromeThread::GetCurrentThreadIdentifier(&current_thread_id));
   ChromeThread::PostTask(

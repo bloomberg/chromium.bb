@@ -822,7 +822,7 @@ void PrefService::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
   if (type == NotificationType::POLICY_CHANGED) {
-      PrefValueStore::AfterRefreshCallback callback =
+      PrefValueStore::AfterRefreshCallback* callback =
           NewCallback(this,
                       &PrefService::FireObserversForRefreshedManagedPrefs);
       // The notification of the policy refresh can come from any thread,
