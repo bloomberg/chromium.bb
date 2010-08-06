@@ -68,7 +68,7 @@ var JSParser = Editor.Parser = (function() {
     // below to communicate with the driver loop in the 'next'
     // function.
     var consume, marked;
-  
+
     // The iterator object.
     var parser = {next: next, copy: copy};
 
@@ -105,7 +105,7 @@ var JSParser = Editor.Parser = (function() {
         lexical.align = true;
 
       // Execute actions until one 'consumes' the token and we can
-      // return it. Marked is used to 
+      // return it. Marked is used to
       while(true){
         consume = marked = false;
         // Take and execute the topmost action.
@@ -131,7 +131,7 @@ var JSParser = Editor.Parser = (function() {
     // between runs of the parser.
     function copy(){
       var _context = context, _lexical = lexical, _cc = cc.concat([]), _tokenState = tokens.state;
-  
+
       return function(input){
         context = _context;
         lexical = _lexical;
@@ -190,7 +190,7 @@ var JSParser = Editor.Parser = (function() {
       }
       return false;
     }
-  
+
     // Push a new lexical context of the given type.
     function pushlex(type){
       var result = function(){
@@ -207,7 +207,7 @@ var JSParser = Editor.Parser = (function() {
     // The 'lex' flag on these actions is used by the 'next' function
     // to know they can (and have to) be ran before moving on to the
     // next token.
-  
+
     // Creates an action that discards tokens until it finds one of
     // the given type.
     function expect(wanted){
@@ -314,7 +314,7 @@ var JSParser = Editor.Parser = (function() {
     function funarg(type, value){
       if (type == "variable"){register(value); cont();}
     }
-  
+
     return parser;
   }
 

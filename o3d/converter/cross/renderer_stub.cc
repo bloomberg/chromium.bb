@@ -192,9 +192,9 @@ bool RendererStub::CancelFullscreen(const DisplayWindow& display,
                                     int width, int height) {
   return false;
 }
- 
+
 bool RendererStub::fullscreen() const { return false; }
- 
+
 void RendererStub::GetDisplayModes(std::vector<DisplayMode> *modes) {
   modes->clear();
 }

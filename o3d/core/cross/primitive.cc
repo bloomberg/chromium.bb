@@ -131,7 +131,7 @@ void Primitive::Render(Renderer* renderer,
     return;
   }
 
-  PlatformSpecificRender(renderer, draw_element, material, override, 
+  PlatformSpecificRender(renderer, draw_element, material, override,
                          param_cache);
 }
 

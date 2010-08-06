@@ -6,7 +6,7 @@ body {
   width: 100%;
   margin:0pt auto;
   max-width:1024px;
-  width:expression( 
+  width:expression(
       document.body.clientWidth > 1024 ?
           "1024px":
           "auto" );
@@ -26,7 +26,7 @@ div {
 
 /*#footer {
   width: 100%;
-  
+
 }*/
 
 #selectSample {
@@ -232,7 +232,7 @@ td.footer {
 }
 
 #lbinner {
-  width:expression( 
+  width:expression(
       document.body.clientWidth > 1100 ?
           "1100px":
           "auto" );
@@ -247,7 +247,7 @@ td.footer {
 }
 
 #googleLogoTD {
-  text-align:right; 
+  text-align:right;
   vertical-align:middle;
 }
 
@@ -281,19 +281,19 @@ td.footer {
   background: #D0E4F6 url(interactive_sampler_assets/images/lb_tr.png) no-repeat top right;
 }
 
-.db_top div, .db_top, 
+.db_top div, .db_top,
 .lb_top div, .lb_top {
   height: 5px;
   font-size: 1px;
 }
 .lb_roundedcornr_content,
-.db_roundedcornr_content { 
-  padding: 0px 10px; 
+.db_roundedcornr_content {
+  padding: 0px 10px;
   font-size: 80%;
 }
 
 .lb_roundedcornr_content {
-  background-color: #D0E4F6;    
+  background-color: #D0E4F6;
 }
 
 .db_roundedcornr_content {

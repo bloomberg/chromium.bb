@@ -75,7 +75,7 @@ StreamProcessor::Status ArchiveProcessor::ProcessFile(const char *filename) {
   // progressive streaming system
   FILE *fp = fopen(filename, "rb");
   if (!fp) return FAILURE;  // can't open file!
-  if (static_cast<size_t>(file_length) != 
+  if (static_cast<size_t>(file_length) !=
       fread(p, sizeof(uint8), file_length, fp))
     return FAILURE;
   if (0 != fclose(fp)) return FAILURE;

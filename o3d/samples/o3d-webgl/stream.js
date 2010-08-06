@@ -57,7 +57,7 @@ o3d.Stream.Semantic = goog.typedef;
  *  BINORMAL,
  *  COLOR,
  *  TEXCOORD
- * 
+ *
  * Semantics used when binding buffers to the streambank.  They determine how
  * the Stream links up to the shader inputs.
  */

@@ -169,7 +169,7 @@ void ArchiveRequest::ReceiveFileHeader(const ArchiveFileInfo &file_info) {
 bool ArchiveRequest::ReceiveFileData(MemoryReadStream *input_stream,
                                      size_t nbytes) {
   // hold on to ourselves in case we are freed in the callback.
-  ArchiveRequest::Ref temp(this);  
+  ArchiveRequest::Ref temp(this);
   assert(input_stream->GetRemainingByteCount() >= nbytes);
   assert(file_memory_stream_.GetRemainingByteCount() >= nbytes);
 

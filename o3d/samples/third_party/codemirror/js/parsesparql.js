@@ -130,7 +130,7 @@ Editor.Parser = (function() {
         else if (/[\]\}\)]/.test(content)) {
           while (context && context.type == "pattern")
             popContext();
-          if (context && content == matching[context.type]) 
+          if (context && content == matching[context.type])
             popContext();
         }
         else if (content == "." && context && context.type == "pattern") {

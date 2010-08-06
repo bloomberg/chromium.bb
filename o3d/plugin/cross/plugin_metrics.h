@@ -103,7 +103,7 @@ DECLARE_METRIC_integer(browser_type);
 DECLARE_METRIC_integer(browser_major_version);
 DECLARE_METRIC_integer(browser_minor_version);
 DECLARE_METRIC_integer(browser_bugfix_version);
-  
+
 // Running time for instance of plugin
 DECLARE_METRIC_count(uptime_seconds);
 DECLARE_METRIC_count(cpu_time_seconds);

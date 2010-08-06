@@ -30,7 +30,7 @@
  */
 
 
-BODY { 
+BODY {
   overflow: hidden;
   background-image: url(../ui/bgtile.jpg);
   padding: 0px;
@@ -79,7 +79,7 @@ BODY {
   border: 0px;
 }
 #book-left {
-  background-image: url(../ui/scrollwork.gif); 
+  background-image: url(../ui/scrollwork.gif);
   background-repeat: repeat-x;
   background-position: right 40px;
   text-align: right;

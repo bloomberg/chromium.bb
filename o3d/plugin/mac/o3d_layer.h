@@ -48,14 +48,14 @@ using glue::_o3d::PluginObject;
 
 - (CGLContextObj)glContext;
 
-- (void)drawInCGLContext:(CGLContextObj)ctx 
+- (void)drawInCGLContext:(CGLContextObj)ctx
              pixelFormat:(CGLPixelFormatObj)pf
-            forLayerTime:(CFTimeInterval)t 
+            forLayerTime:(CFTimeInterval)t
              displayTime:(const CVTimeStamp *)ts;
 
 - (void)setPluginObject:(PluginObject *)obj;
 
-- (void)setWidth:(int)width 
+- (void)setWidth:(int)width
           height:(int)height;
 
 @end

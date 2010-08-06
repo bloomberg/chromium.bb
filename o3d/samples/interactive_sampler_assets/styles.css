@@ -20,10 +20,6 @@ div {
   height: 50px;
 }
 
-/*#footer {
-  width: 100%;
-  
-}*/
 
 #selectSample {
   width: 30%;
@@ -228,7 +224,7 @@ td.footer {
 }
 
 #googleLogoTD {
-  text-align:right; 
+  text-align:right;
   vertical-align:middle;
   padding-right: 7px;
 }
@@ -262,19 +258,19 @@ td.footer {
   background: #D0E4F6 url(interactive_sampler_assets/images/lb_tr.png) no-repeat top right;
 }
 
-.db_top div, .db_top, 
+.db_top div, .db_top,
 .lb_top div, .lb_top {
   height: 5px;
   font-size: 1px;
 }
 .lb_roundedcornr_content,
-.db_roundedcornr_content { 
-  padding: 0px 10px; 
+.db_roundedcornr_content {
+  padding: 0px 10px;
   font-size: 80%;
 }
 
 .lb_roundedcornr_content {
-  background-color: #D0E4F6;    
+  background-color: #D0E4F6;
 }
 
 .db_roundedcornr_content {

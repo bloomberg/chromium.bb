@@ -27,7 +27,7 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */ 
+ */
 #include "precompile.h"
 
 #include "conditioner.h"
@@ -70,7 +70,7 @@ Edge::Edge(Point3 p1, Point3 p2, uint32 i1, uint32 i2) {
   }
 }
 
-// less than operator overload, necessary function for edge-triangle map.
+// Less than operator overload, necessary function for edge-triangle map.
 bool operator<(const Edge& left, const Edge& right) {
   // compare two edges by their actually coordinates.
   if (dist(left.pts[0], right.pts[0]) < kEpsilon) {
@@ -92,7 +92,7 @@ bool operator<(const Edge& left, const Edge& right) {
   }
 }
 
-// go through triangles who share this edge. And check whether
+// Go through triangles who share this edge. And check whether
 // the max normal angle is larger than the threshold.
 void CheckSharpEdge(const Edge& shared_edge,
                     const std::vector<Triangle>& triangle_list,
@@ -139,7 +139,7 @@ void CheckSharpEdge(const Edge& shared_edge,
     }
 }
 
-// insert edge-triangle pair to edge triangle map.
+// Insert edge-triangle pair to edge triangle map.
 void InsertEdgeTrianglePair(const Edge& edge, const Triangle& triangle,
                             std::map<Edge, std::vector<Triangle>>* et_map) {
   std::map<Edge, std::vector<Triangle>>::iterator iter1 =
@@ -164,7 +164,7 @@ NodeInstance* CreateInstanceTree(FCDSceneNode *node) {
   return instance;
 }
 
-// go through all polygons in geom_instance, and add all sharp edges
+// Go through all polygons in geom_instance, and add all sharp edges
 // as a new polygon in geom. And also, add material and effect based
 // on the given sharpEdgeColor option.
 void BuildSharpEdge(FCDocument* doc, FCDGeometryInstance* geom_instance,
@@ -368,3 +368,4 @@ bool Condition(const wchar_t* in_filename, const wchar_t* out_filename,
   FCollada::Release();
   return retval;
 }
+

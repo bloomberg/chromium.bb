@@ -220,7 +220,7 @@ function __escapeString(str) { var escAmpRegEx = /&/g; var escLtRegEx = /</g; va
 }
 
 /**
- * function __unescapeString 
+ * function __unescapeString
  *
  * author: David Joham djoham@yahoo.com
  *

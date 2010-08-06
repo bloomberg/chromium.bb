@@ -190,7 +190,7 @@ String MessageQueue::GetSocketAddress() const {
 // Checks the message queue for an incoming message.  If one is found
 // then it processes it, otherwise it just returns.
 bool MessageQueue::CheckForNewMessages(bool* has_new_texture) {
-  // The flag will be set to true if we receive a new texture in 
+  // The flag will be set to true if we receive a new texture in
   // ProcessMessageUpdateTexture2DRect() or
   // ProcessMessageUpdateTexture2D()
   has_new_texture_ = false;

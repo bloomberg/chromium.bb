@@ -68,13 +68,12 @@ function changeOverlayZIndex() {
   var newZ;
   if (typeof lastZ != 'undefined') {
     newZ = parseInt(lastZ) - 1;
-    
   } else {
     newZ = 4999;
   }
-  
+
   parent.iframeZindex = newZ;
-  
+
   var overlay = parent.document.getElementById('overlay');
   overlay.style.zIndex = newZ;
 }

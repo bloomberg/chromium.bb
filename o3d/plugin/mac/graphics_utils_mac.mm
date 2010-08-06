@@ -82,11 +82,11 @@ bool IsMacOSTenFiveOrHigher() {
   }
   return result;
 }
-  
+
 // Returns whether OS is 10.6 (Snow Leopard) or higher.
 bool IsMacOSTenSixOrHigher() {
   static bool isCached = false, result = false;
-  
+
   if (!isCached) {
     SInt32 major = 0;
     SInt32 minor = 0;

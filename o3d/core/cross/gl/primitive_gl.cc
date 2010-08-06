@@ -85,7 +85,7 @@ void PrimitiveGL::PlatformSpecificRender(Renderer* renderer,
   EffectGL* effect_gl = down_cast<EffectGL*>(material->effect());
   DLOG_ASSERT(effect_gl);
   StreamBankGL* stream_bank_gl = down_cast<StreamBankGL*>(stream_bank());
-  DLOG_ASSERT(stream_bank_gl); 
+  DLOG_ASSERT(stream_bank_gl);
 
   ParamCacheGL* param_cache_gl = down_cast<ParamCacheGL*>(param_cache);
   ParamCacheGL::VaryingParameterMap& varying_map =

@@ -58,7 +58,7 @@ class StreamBank : public VertexSource {
     return change_count_;
   }
 
-  // True if all the streams on this streambank are renderable. 
+  // True if all the streams on this streambank are renderable.
   bool renderable() const {
     return renderable_;
   }
