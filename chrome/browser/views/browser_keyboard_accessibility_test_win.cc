@@ -20,14 +20,15 @@ class BrowserKeyboardAccessibility : public InProcessBrowserTest,
  public:
   BrowserKeyboardAccessibility()
       : is_waiting_(false),
-        current_view_(NULL) {
+        current_view_(NULL),
+        current_event_type_(AccessibilityTypes::EVENT_FOCUS) {
     // Set ourselves as the currently active ViewsDelegate.
     ViewsDelegate::views_delegate = this;
   }
 
   ~BrowserKeyboardAccessibility() {}
 
-  // Overidden from ChromeViewsDelegate.
+  // Overridden from ChromeViewsDelegate.
   // Save the last notification sent by views::View::NotifyAccessibilityEvent.
   virtual void NotifyAccessibilityEvent(
       views::View* view, AccessibilityTypes::Event event_type) {
