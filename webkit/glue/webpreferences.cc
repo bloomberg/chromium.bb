@@ -87,7 +87,8 @@ void WebPreferences::Apply(WebView* web_view) const {
 
   // Enable experimental WebGL support if requested on command line
   // and support is compiled in.
-  settings->setExperimentalWebGLEnabled(experimental_webgl_enabled);
+  settings->setExperimentalWebGLEnabled(
+      WebRuntimeFeatures::isWebGLEnabled() || experimental_webgl_enabled);
 
   // Display colored borders around composited render layers if requested
   // on command line.
