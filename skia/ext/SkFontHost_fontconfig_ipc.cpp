@@ -37,8 +37,8 @@ FontConfigIPC::~FontConfigIPC() {
 }
 
 bool FontConfigIPC::Match(std::string* result_family,
-                          unsigned* result_fileid,
-                          bool fileid_valid, unsigned fileid,
+                          unsigned* result_filefaceid,
+                          bool filefaceid_valid, unsigned filefaceid,
                           const std::string& family,
                           const void* characters, size_t characters_bytes,
                           bool* is_bold, bool* is_italic) {
@@ -47,9 +47,9 @@ bool FontConfigIPC::Match(std::string* result_family,
 
     Pickle request;
     request.WriteInt(METHOD_MATCH);
-    request.WriteBool(fileid_valid);
-    if (fileid_valid)
-        request.WriteUInt32(fileid);
+    request.WriteBool(filefaceid_valid);
+    if (filefaceid_valid)
+        request.WriteUInt32(filefaceid);
 
     request.WriteBool(is_bold && *is_bold);
     request.WriteBool(is_bold && *is_italic);
@@ -74,17 +74,17 @@ bool FontConfigIPC::Match(std::string* result_family,
     if (!result)
         return false;
 
-    uint32_t reply_fileid;
+    uint32_t reply_filefaceid;
     std::string reply_family;
     bool resulting_bold, resulting_italic;
-    if (!reply.ReadUInt32(&iter, &reply_fileid) ||
+    if (!reply.ReadUInt32(&iter, &reply_filefaceid) ||
         !reply.ReadString(&iter, &reply_family) ||
         !reply.ReadBool(&iter, &resulting_bold) ||
         !reply.ReadBool(&iter, &resulting_italic)) {
         return false;
     }
 
-    *result_fileid = reply_fileid;
+    *result_filefaceid = reply_filefaceid;
     if (result_family)
         *result_family = reply_family;
 
@@ -96,10 +96,10 @@ bool FontConfigIPC::Match(std::string* result_family,
     return true;
 }
 
-int FontConfigIPC::Open(unsigned fileid) {
+int FontConfigIPC::Open(unsigned filefaceid) {
     Pickle request;
     request.WriteInt(METHOD_OPEN);
-    request.WriteUInt32(fileid);
+    request.WriteUInt32(filefaceid);
 
     int result_fd = -1;
     uint8_t reply_buf[256];

@@ -34,10 +34,10 @@ class FontConfigInterface {
     /** Performs config match
      *
      *  @param result_family (output) on success, the resulting family name.
-     *  @param result_fileid (output) on success, the resulting file id.
-     *  @param fileid_valid if true, then |fileid| is valid
-     *  @param fileid the fileid (as returned by this function) which we are
-     *    trying to match.
+     *  @param result_filefaceid (output) on success, the resulting fileface id.
+     *  @param filefaceid_valid if true, then |filefaceid| is valid
+     *  @param filefaceid the filefaceid (as returned by this function)
+     *         which we are trying to match.
      *  @param family (optional) the family of the font that we are trying to
      *    match. If the length of the |family| is greater then
      *    kMaxFontFamilyLength, this function should immediately return false.
@@ -46,21 +46,25 @@ class FontConfigInterface {
      *  @param is_bold (optional, set to NULL to ignore, in/out)
      *  @param is_italic (optional, set to NULL to ignore, in/out)
      *  @return true iff successful.
+     *  Note that |filefaceid| uniquely identifies <font file, face_index) :
+     *  system font: filefaceid =
+     *                   (fileid(unique per font file) << 4 | face_index)
+     *  remote font: filefaceid = fileid
      */
     virtual bool Match(
           std::string* result_family,
-          unsigned* result_fileid,
-          bool fileid_valid,
-          unsigned fileid,
+          unsigned* result_filefaceid,
+          bool filefaceid_valid,
+          unsigned filefaceid,
           const std::string& family,
           const void* characters,
           size_t characters_bytes,
           bool* is_bold,
           bool* is_italic) = 0;
 
-    /** Open a font file given the fileid as returned by Match
+    /** Open a font file given the filefaceid as returned by Match.
      */
-    virtual int Open(unsigned fileid) = 0;
+    virtual int Open(unsigned filefaceid) = 0;
 
     static const unsigned kMaxFontFamilyLength = 2048;
 };

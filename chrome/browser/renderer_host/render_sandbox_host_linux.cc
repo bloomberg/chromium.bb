@@ -157,13 +157,13 @@ class SandboxIPCProcess  {
 
   void HandleFontMatchRequest(int fd, const Pickle& pickle, void* iter,
                               std::vector<int>& fds) {
-    bool fileid_valid;
-    uint32_t fileid;
+    bool filefaceid_valid;
+    uint32_t filefaceid;
 
-    if (!pickle.ReadBool(&iter, &fileid_valid))
+    if (!pickle.ReadBool(&iter, &filefaceid_valid))
       return;
-    if (fileid_valid) {
-      if (!pickle.ReadUInt32(&iter, &fileid))
+    if (filefaceid_valid) {
+      if (!pickle.ReadUInt32(&iter, &filefaceid))
         return;
     }
     bool is_bold, is_italic;
@@ -189,17 +189,17 @@ class SandboxIPCProcess  {
       return;
 
     std::string result_family;
-    unsigned result_fileid;
+    unsigned result_filefaceid;
     const bool r = font_config_->Match(
-        &result_family, &result_fileid, fileid_valid, fileid, family,
-        characters, characters_bytes, &is_bold, &is_italic);
+        &result_family, &result_filefaceid, filefaceid_valid, filefaceid,
+        family, characters, characters_bytes, &is_bold, &is_italic);
 
     Pickle reply;
     if (!r) {
       reply.WriteBool(false);
     } else {
       reply.WriteBool(true);
-      reply.WriteUInt32(result_fileid);
+      reply.WriteUInt32(result_filefaceid);
       reply.WriteString(result_family);
       reply.WriteBool(is_bold);
       reply.WriteBool(is_italic);
@@ -209,10 +209,10 @@ class SandboxIPCProcess  {
 
   void HandleFontOpenRequest(int fd, const Pickle& pickle, void* iter,
                              std::vector<int>& fds) {
-    uint32_t fileid;
-    if (!pickle.ReadUInt32(&iter, &fileid))
+    uint32_t filefaceid;
+    if (!pickle.ReadUInt32(&iter, &filefaceid))
       return;
-    const int result_fd = font_config_->Open(fileid);
+    const int result_fd = font_config_->Open(filefaceid);
 
     Pickle reply;
     if (result_fd == -1) {
