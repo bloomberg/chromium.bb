@@ -110,7 +110,8 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void HandleMouseEvent();
+  virtual void HandleMouseMove();
+  virtual void HandleMouseDown();
   virtual void HandleMouseLeave();
   virtual void OnFindReply(int request_id,
                            int number_of_matches,
@@ -622,9 +623,14 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::HandleKeyboardEvent(
     interstitial_page_->tab()->GetViewDelegate()->HandleKeyboardEvent(event);
 }
 
-void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseEvent() {
+void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseMove() {
   if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
-    interstitial_page_->tab()->GetViewDelegate()->HandleMouseEvent();
+    interstitial_page_->tab()->GetViewDelegate()->HandleMouseMove();
+}
+
+void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseDown() {
+  if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
+    interstitial_page_->tab()->GetViewDelegate()->HandleMouseDown();
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseLeave() {

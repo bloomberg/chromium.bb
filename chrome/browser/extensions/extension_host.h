@@ -168,7 +168,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual void HandleMouseEvent();
+  virtual void HandleMouseMove();
+  virtual void HandleMouseDown();
   virtual void HandleMouseLeave();
   virtual void UpdatePreferredSize(const gfx::Size& new_size);
 

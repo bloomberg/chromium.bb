@@ -171,7 +171,8 @@ class RenderViewHostDelegate {
 
     // Notifications about mouse events in this view.  This is useful for
     // implementing global 'on hover' features external to the view.
-    virtual void HandleMouseEvent() = 0;
+    virtual void HandleMouseMove() = 0;
+    virtual void HandleMouseDown() = 0;
     virtual void HandleMouseLeave() = 0;
 
     // The contents' preferred size changed.

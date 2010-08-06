@@ -182,9 +182,9 @@ bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
   return (e.GetKeyCode() == base::VKEY_TAB);
 }
 
-void ExtensionView::HandleMouseEvent() {
+void ExtensionView::HandleMouseMove() {
   if (container_)
-    container_->OnExtensionMouseEvent(this);
+    container_->OnExtensionMouseMove(this);
 }
 
 void ExtensionView::HandleMouseLeave() {

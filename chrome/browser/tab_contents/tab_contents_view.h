@@ -127,7 +127,8 @@ class TabContentsView : public RenderViewHostDelegate::View {
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // Simple mouse event forwarding from the RenderViewHost.
-  virtual void HandleMouseEvent() {}
+  virtual void HandleMouseMove() {}
+  virtual void HandleMouseDown() {}
   virtual void HandleMouseLeave() {}
 
   // Notification that the preferred size of the contents has changed.

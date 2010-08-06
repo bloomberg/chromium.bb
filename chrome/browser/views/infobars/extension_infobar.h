@@ -32,7 +32,7 @@ class ExtensionInfoBar : public InfoBar,
   virtual ~ExtensionInfoBar();
 
   // Overridden from ExtensionView::Container:
-  virtual void OnExtensionMouseEvent(ExtensionView* view) {}
+  virtual void OnExtensionMouseMove(ExtensionView* view) {}
   virtual void OnExtensionMouseLeave(ExtensionView* view) {}
   virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
 

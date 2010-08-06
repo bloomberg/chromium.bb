@@ -679,11 +679,14 @@ void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   UnhandledKeyboardEvent(event);
 }
 
-void ExtensionHost::HandleMouseEvent() {
+void ExtensionHost::HandleMouseMove() {
 #if defined(OS_WIN)
   if (view_.get())
-    view_->HandleMouseEvent();
+    view_->HandleMouseMove();
 #endif
+}
+
+void ExtensionHost::HandleMouseDown() {
 }
 
 void ExtensionHost::HandleMouseLeave() {

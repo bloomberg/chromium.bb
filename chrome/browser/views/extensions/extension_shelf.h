@@ -55,7 +55,7 @@ class ExtensionShelf : public DetachableToolbarView,
   virtual void OnThemeChanged();
 
   // ExtensionContainer methods:
-  virtual void OnExtensionMouseEvent(ExtensionView* view);
+  virtual void OnExtensionMouseMove(ExtensionView* view);
   virtual void OnExtensionMouseLeave(ExtensionView* view);
 
   // ExtensionShelfModelObserver methods:

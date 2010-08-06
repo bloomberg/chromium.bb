@@ -88,7 +88,8 @@ class BackgroundContents : public RenderViewHostDelegate,
     return false;
   }
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
-  virtual void HandleMouseEvent() {}
+  virtual void HandleMouseMove() {}
+  virtual void HandleMouseDown() {}
   virtual void HandleMouseLeave() {}
   virtual void UpdatePreferredSize(const gfx::Size& new_size) {}
 

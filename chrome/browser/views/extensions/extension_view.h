@@ -30,7 +30,7 @@ class ExtensionView : public views::NativeViewHost {
    public:
     virtual ~Container() {}
     // Mouse event notifications from the view. (useful for hover UI).
-    virtual void OnExtensionMouseEvent(ExtensionView* view) = 0;
+    virtual void OnExtensionMouseMove(ExtensionView* view) = 0;
     virtual void OnExtensionMouseLeave(ExtensionView* view) = 0;
     virtual void OnExtensionPreferredSizeChanged(ExtensionView* view) {}
   };
@@ -44,7 +44,7 @@ class ExtensionView : public views::NativeViewHost {
 
   // Notification from ExtensionHost.
   void UpdatePreferredSize(const gfx::Size& new_size);
-  void HandleMouseEvent();
+  void HandleMouseMove();
   void HandleMouseLeave();
 
   // Method for the ExtensionHost to notify us when the RenderViewHost has a

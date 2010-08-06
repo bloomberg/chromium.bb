@@ -886,7 +886,7 @@ void ExtensionShelf::Observe(NotificationType type,
   }
 }
 
-void ExtensionShelf::OnExtensionMouseEvent(ExtensionView* view) {
+void ExtensionShelf::OnExtensionMouseMove(ExtensionView* view) {
   Toolstrip *toolstrip = ToolstripForView(view);
   if (toolstrip)
     toolstrip->ShowShelfHandle();

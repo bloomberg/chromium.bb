@@ -1772,12 +1772,14 @@ void RenderViewHost::ForwardMouseEvent(
   if (view) {
     switch (event_copy.type) {
       case WebInputEvent::MouseMove:
-        view->HandleMouseEvent();
+        view->HandleMouseMove();
         break;
       case WebInputEvent::MouseLeave:
         view->HandleMouseLeave();
         break;
       case WebInputEvent::MouseDown:
+        view->HandleMouseDown();
+        break;
       case WebInputEvent::MouseWheel:
         if (ignore_input_events() && delegate_)
           delegate_->OnIgnoredUIEvent();
