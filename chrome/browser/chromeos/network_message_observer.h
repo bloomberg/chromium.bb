@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_NETWORK_MESSAGE_OBSERVER_H_
 #pragma once
 
-#include <set>
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
@@ -14,6 +14,9 @@
 #include "chrome/browser/chromeos/notifications/system_notification.h"
 
 class Profile;
+namespace views {
+class WindowDelegate;
+}
 
 namespace chromeos {
 
@@ -25,10 +28,19 @@ class NetworkMessageObserver : public NetworkLibrary::Observer {
   explicit NetworkMessageObserver(Profile* profile);
   virtual ~NetworkMessageObserver();
 
+  typedef std::map<std::string, WifiNetwork> ServicePathWifiMap;
+  typedef std::map<std::string, CellularNetwork> ServicePathCellularMap;
  private:
+  virtual void CreateModalPopup(views::WindowDelegate* view);
+
   virtual void NetworkChanged(NetworkLibrary* obj);
   virtual void NetworkTraffic(NetworkLibrary* obj, int traffic_type) {}
 
+  bool initialized_;
+  // Wifi networks by service path.
+  ServicePathWifiMap wifi_networks_;
+  // Cellular networks by service path.
+  ServicePathCellularMap cellular_networks_;
   SystemNotification notification_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkMessageObserver);

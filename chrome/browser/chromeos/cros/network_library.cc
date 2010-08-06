@@ -58,7 +58,8 @@ static std::string ToHtmlTableRow(Network* network) {
     }
   }
   str += WrapWithTD(network->GetStateString()) +
-      WrapWithTD(network->GetErrorString()) + WrapWithTD(network->ip_address());
+      WrapWithTD(network->failed() ? network->GetErrorString() : "") +
+      WrapWithTD(network->ip_address());
   return str;
 }
 
@@ -120,7 +121,7 @@ std::string Network::GetStateString() {
 std::string Network::GetErrorString() {
   switch (error_) {
     case ERROR_UNKNOWN:
-      break;
+      return "Unknown Error";
     case ERROR_OUT_OF_RANGE:
       return "Out Of Range";
     case ERROR_PIN_MISSING:
@@ -134,7 +135,7 @@ std::string Network::GetErrorString() {
     case ERROR_BAD_WEPKEY:
       return "Bad WEP Key";
   }
-  return "Unknown Error";
+  return "";
 }
 
 ////////////////////////////////////////////////////////////////////////////////

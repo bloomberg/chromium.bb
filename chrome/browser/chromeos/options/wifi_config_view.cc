@@ -303,6 +303,22 @@ void WifiConfigView::Init() {
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 
+  // If there's an error, add an error message label.
+  // Right now, only displaying bad_passphrase and bad_wepkey errors.
+  if (wifi_.error() == ERROR_BAD_PASSPHRASE ||
+      wifi_.error() == ERROR_BAD_WEPKEY) {
+    layout->StartRow(0, column_view_set_id);
+    layout->SkipColumns(1);
+    int id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE;
+    if (wifi_.error() == ERROR_BAD_WEPKEY)
+      id = IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_WEPKEY;
+    views::Label* label_error = new views::Label(l10n_util::GetString(id));
+    label_error->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    label_error->SetColor(SK_ColorRED);
+    layout->AddView(label_error);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+
   // Autoconnect checkbox
   autoconnect_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT));
