@@ -412,6 +412,7 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   gtk_widget_set_no_show_all(separator_, TRUE);
 
   gtk_widget_show_all(overflow_area_);
+  gtk_widget_set_no_show_all(overflow_area_, TRUE);
 
   gtk_box_pack_start(GTK_BOX(hbox_.get()), gripper, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), button_hbox_.get(), TRUE, TRUE, 0);
