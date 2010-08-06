@@ -202,6 +202,8 @@ void ReloadButtonGtk::UpdateThemeButtons() {
     gtk_widget_set_app_paintable(widget_.get(), FALSE);
     gtk_widget_set_double_buffered(widget_.get(), TRUE);
   } else {
+    gtk_button_set_image(GTK_BUTTON(widget()), NULL);
+
     gtk_widget_set_size_request(widget_.get(), reload_.Width(),
                                 reload_.Height());
 

@@ -81,6 +81,10 @@ const int kUpgradeDotOffset = 6;
 // of a half-throb).
 const int kThrobDuration = 1000;
 
+void SetWidgetHeightRequest(GtkWidget* widget, gpointer user_data) {
+  gtk_widget_set_size_request(widget, -1, GPOINTER_TO_INT(user_data));
+}
+
 }  // namespace
 
 // BrowserToolbarGtk, public ---------------------------------------------------
@@ -382,13 +386,14 @@ void BrowserToolbarGtk::Observe(NotificationType type,
         GTK_CONTAINER(wrench_menu_button_->widget()), border);
 
     // Force the height of the toolbar so we get the right amount of padding
-    // above and below the location bar. We always force the size of the hboxes
+    // above and below the location bar. We always force the size of the widgets
     // to either side of the location box, but we only force the location box
     // size in chrome-theme mode because that's the only time we try to control
     // the font size.
     int toolbar_height = ShouldOnlyShowLocation() ?
                          kToolbarHeightLocationBarOnly : kToolbarHeight;
-    gtk_widget_set_size_request(toolbar_left_, -1, toolbar_height);
+    gtk_container_foreach(GTK_CONTAINER(toolbar_), SetWidgetHeightRequest,
+                          GINT_TO_POINTER(toolbar_height));
     gtk_widget_set_size_request(location_hbox_, -1,
                                 use_gtk ? -1 : toolbar_height);
 
