@@ -227,6 +227,9 @@ void SubmenuView::ShowAt(gfx::NativeWindow parent,
                          bool do_capture) {
   if (host_) {
     host_->ShowMenuHost(do_capture);
+
+    GetScrollViewContainer()->NotifyAccessibilityEvent(
+        AccessibilityTypes::EVENT_MENUPOPUPSTART);
     return;
   }
 
@@ -236,6 +239,9 @@ void SubmenuView::ShowAt(gfx::NativeWindow parent,
   // Make sure the first row is visible.
   ScrollRectToVisible(gfx::Rect(gfx::Point(), gfx::Size(1, 1)));
   host_->Init(parent, bounds, scroll_view_container_, do_capture);
+
+  GetScrollViewContainer()->NotifyAccessibilityEvent(
+        AccessibilityTypes::EVENT_MENUPOPUPSTART);
 }
 
 void SubmenuView::Reposition(const gfx::Rect& bounds) {
@@ -245,6 +251,9 @@ void SubmenuView::Reposition(const gfx::Rect& bounds) {
 
 void SubmenuView::Close() {
   if (host_) {
+    GetScrollViewContainer()->NotifyAccessibilityEvent(
+        AccessibilityTypes::EVENT_MENUPOPUPEND);
+
     host_->DestroyMenuHost();
     host_ = NULL;
   }
@@ -288,6 +297,11 @@ MenuScrollViewContainer* SubmenuView::GetScrollViewContainer() {
     scroll_view_container_ = new MenuScrollViewContainer(this);
     // Otherwise MenuHost would delete us.
     scroll_view_container_->set_parent_owned(false);
+
+    // Use the parent menu item accessible name for the menu view.
+    std::wstring accessible_name;
+    GetMenuItem()->GetAccessibleName(&accessible_name);
+    scroll_view_container_->SetAccessibleName(accessible_name);
   }
   return scroll_view_container_;
 }

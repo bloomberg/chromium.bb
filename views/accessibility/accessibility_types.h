@@ -38,7 +38,8 @@ class AccessibilityTypes {
     STATE_PROTECTED   = 1 << 10,
     STATE_READONLY    = 1 << 11,
     STATE_SELECTED    = 1 << 12,
-    STATE_UNAVAILABLE = 1 << 13
+    STATE_FOCUSED     = 1 << 13,
+    STATE_UNAVAILABLE = 1 << 14
   };
 
   // This defines an enumeration of the supported accessibility roles in our

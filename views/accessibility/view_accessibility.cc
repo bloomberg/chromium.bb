@@ -878,6 +878,8 @@ int32 ViewAccessibility::MSAAState(AccessibilityTypes::State state) {
     msaa_state |= STATE_SYSTEM_READONLY;
   if (state & AccessibilityTypes::STATE_SELECTED)
     msaa_state |= STATE_SYSTEM_SELECTED;
+  if (state & AccessibilityTypes::STATE_FOCUSED)
+    msaa_state |= STATE_SYSTEM_FOCUSED;
   if (state & AccessibilityTypes::STATE_UNAVAILABLE)
     msaa_state |= STATE_SYSTEM_UNAVAILABLE;
   return msaa_state;

@@ -30,6 +30,7 @@ class MenuScrollViewContainer : public View {
                                const gfx::Rect& current);
   virtual gfx::Size GetPreferredSize();
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual bool GetAccessibleState(AccessibilityTypes::State* state);
 
  private:
   class MenuScrollView;

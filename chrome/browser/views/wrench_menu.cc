@@ -22,6 +22,7 @@
 #include "gfx/canvas.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/skia_util.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -483,7 +484,7 @@ class WrenchMenu::ZoomView : public ScheduleAllView,
   }
 
   double GetZoom(bool* enable_increment, bool* enable_decrement) {
-    // TODO: move this somewhere it can be shared.
+    // TODO(sky): move this somewhere it can be shared.
     TabContents* selected_tab = menu_->browser_->GetSelectedTabContents();
     *enable_decrement = *enable_increment = false;
     if (!selected_tab)
@@ -563,6 +564,7 @@ WrenchMenu::~WrenchMenu() {
 void WrenchMenu::Init(menus::MenuModel* model) {
   DCHECK(!root_.get());
   root_.reset(new MenuItemView(this));
+  root_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_APP));
   root_->set_has_icons(true);  // We have checks, radios and icons, set this
                                // so we get the taller menu style.
   int next_id = 1;

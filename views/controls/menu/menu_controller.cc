@@ -247,9 +247,6 @@ MenuItemView* MenuController::Run(gfx::NativeWindow parent,
 
   owner_ = parent;
 
-  if (button)
-    button->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_MENUPOPUPSTART);
-
   // Set the selection, which opens the initial menu.
   SetSelection(root, true, true);
 
@@ -382,11 +379,6 @@ void MenuController::SetSelection(MenuItemView* menu_item,
       (MenuDepth(menu_item) != 1 ||
           menu_item->GetType() != MenuItemView::SUBMENU))
     menu_item->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
-
-  if (menu_button_ && !menu_item && exit_type_ != EXIT_DESTROYED) {
-    menu_button_->
-        NotifyAccessibilityEvent(AccessibilityTypes::EVENT_MENUPOPUPEND);
-  }
 }
 
 void MenuController::Cancel(ExitType type) {
@@ -814,7 +806,6 @@ bool MenuController::Dispatch(const MSG& msg) {
 
 #else
 bool MenuController::Dispatch(GdkEvent* event) {
-
   if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED) {
     gtk_main_do_event(event);
     return false;
@@ -1212,7 +1203,7 @@ void MenuController::CommitPendingSelection() {
     state_.open_leading.clear();
   } else {
     int cached_size = static_cast<int>(state_.open_leading.size());
-    DCHECK(menu_depth >= 0);
+    DCHECK_GE(menu_depth, 0);
     while (cached_size-- >= menu_depth)
       state_.open_leading.pop_back();
   }

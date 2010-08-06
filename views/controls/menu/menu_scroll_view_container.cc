@@ -274,4 +274,13 @@ bool MenuScrollViewContainer::GetAccessibleRole(
   return true;
 }
 
+bool MenuScrollViewContainer::GetAccessibleState(
+    AccessibilityTypes::State* state) {
+  DCHECK(state);
+  // Some AT (like NVDA) will not process focus events on menu item children
+  // unless a parent claims to be focused.
+  *state = AccessibilityTypes::STATE_FOCUSED;
+  return true;
+}
+
 }  // namespace views
