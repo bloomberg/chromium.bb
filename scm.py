@@ -310,7 +310,7 @@ class GIT(object):
   def GetPatchName(cwd):
     """Constructs a name for this patch."""
     short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd)[0].strip()
-    return "%s-%s" % (GIT.GetBranch(cwd), short_sha)
+    return "%s#%s" % (GIT.GetBranch(cwd), short_sha)
 
   @staticmethod
   def GetCheckoutRoot(path):
