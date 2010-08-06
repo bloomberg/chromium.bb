@@ -204,7 +204,8 @@ void WebPluginDelegateProxy::PluginDestroyed() {
     WillDestroyWindow();
 
 #if defined(OS_MACOSX)
-  render_view_->UnregisterPluginDelegate(this);
+  if (render_view_)
+    render_view_->UnregisterPluginDelegate(this);
 #endif
 
   if (channel_host_) {
