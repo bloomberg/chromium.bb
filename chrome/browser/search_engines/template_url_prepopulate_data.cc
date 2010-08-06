@@ -1125,7 +1125,7 @@ const PrepopulatedEngine in = {
   L"in.gr",
   L"in.gr",
   "http://www.in.gr/favicon.ico",
-  L"http://find.in.gr/result.asp?q={searchTerms}",
+  L"http://find.in.gr/?qs={searchTerms}",
   "ISO-8859-7",
   NULL,
   TemplateURLPrepopulateData::SEARCH_ENGINE_IN,

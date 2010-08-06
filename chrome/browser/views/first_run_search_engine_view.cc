@@ -154,10 +154,12 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
   std::vector<const TemplateURL*> template_urls =
       search_engines_model_->GetTemplateURLs();
 
-  // If we have fewer than three search engines, signal that the search engine
-  // experiment is over, leaving imported default search engine setting intact.
-  if (template_urls.size() < 3)
+  // If we have fewer than two search engines, end search engine dialog
+  // immediately, leaving imported default search engine setting intact.
+  if (template_urls.size() < 2) {
+    MessageLoop::current()->Quit();
     return;
+  }
 
   std::vector<const TemplateURL*>::iterator search_engine_iter;
 
@@ -185,9 +187,12 @@ void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
   }
 
   // Now that we know what size the logos should be, create new search engine
-  // choices for the view:
+  // choices for the view.  If there are 2 search engines, only show 2
+  // choices; for 3 or more, show 3 (unless the default is not one of the
+  // top 3, in which case show 4).
   for (search_engine_iter = template_urls.begin();
-       search_engine_iter < template_urls.begin() + 3;
+       search_engine_iter < template_urls.begin() +
+           (template_urls.size() < 3 ? 2 : 3);
        ++search_engine_iter) {
     // Push first three engines into buttons:
     SearchEngineChoice* choice = new SearchEngineChoice(this,
@@ -336,8 +341,10 @@ void FirstRunSearchEngineView::Layout() {
 
     next_h_space = search_engine_choices_[1]->GetView()->x() + logo_width +
                    logo_padding;
-    search_engine_choices_[2]->SetChoiceViewBounds(
-        next_h_space, next_v_space, logo_width, logo_height);
+    if (num_choices > 2) {
+      search_engine_choices_[2]->SetChoiceViewBounds(
+          next_h_space, next_v_space, logo_width, logo_height);
+    }
 
     if (num_choices > 3) {
       next_h_space = search_engine_choices_[2]->GetView()->x() + logo_width +
@@ -360,8 +367,10 @@ void FirstRunSearchEngineView::Layout() {
     search_engine_choices_[1]->SetBounds(next_h_space, next_v_space,
                                          button_width, button_height);
     next_h_space = search_engine_choices_[1]->x() + logo_width + logo_padding;
-    search_engine_choices_[2]->SetBounds(next_h_space, next_v_space,
-                                         button_width, button_height);
+    if (num_choices > 2) {
+      search_engine_choices_[2]->SetBounds(next_h_space, next_v_space,
+                                           button_width, button_height);
+    }
 
     if (num_choices > 3) {
       next_h_space = search_engine_choices_[2]->x() + logo_width +
