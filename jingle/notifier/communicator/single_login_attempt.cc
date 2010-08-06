@@ -179,6 +179,13 @@ void SingleLoginAttempt::DoLogin(
   if (client_) {
     return;
   }
+  // TODO(akalin): Resolve any unresolved IPs, possibly through a
+  // proxy, instead of skipping them.
+  if (connection_settings.server().IsUnresolvedIP()) {
+    // Handler should attempt reconnect.
+    SignalUnexpectedDisconnect();
+    return;
+  }
 
   buzz::XmppClientSettings client_settings;
   // Set the user settings portion.
