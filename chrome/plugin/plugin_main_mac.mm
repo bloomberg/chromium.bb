@@ -25,16 +25,15 @@ void TrimInterposeEnvironment() {
   // need to handle are:
   // 1) The whole string is "<kInterposeLibraryPath>", so just clear it, or
   // 2) ":<kInterposeLibraryPath>" is the end of the string, so trim and re-set.
-  int suffix_offset = strlen(interpose_list.c_str()) -
-      strlen(plugin_interpose_strings::kInterposeLibraryPath);
-
+  std::string interpose_library_path(
+      plugin_interpose_strings::kInterposeLibraryPath);
+  DCHECK_GE(interpose_list.size(), interpose_library_path.size());
+  size_t suffix_offset = interpose_list.size() - interpose_library_path.size();
   if (suffix_offset == 0 &&
-      strcmp(interpose_list.c_str(),
-             plugin_interpose_strings::kInterposeLibraryPath) == 0) {
+      interpose_list == interpose_library_path) {
     env->UnSetVar(plugin_interpose_strings::kDYLDInsertLibrariesKey);
   } else if (suffix_offset > 0 && interpose_list[suffix_offset - 1] == ':' &&
-             strcmp(interpose_list.c_str() + suffix_offset,
-                    plugin_interpose_strings::kInterposeLibraryPath) == 0) {
+             interpose_list.substr(suffix_offset) == interpose_library_path) {
     std::string trimmed_list = interpose_list.substr(0, suffix_offset - 1);
     env->SetVar(plugin_interpose_strings::kDYLDInsertLibrariesKey,
                 trimmed_list.c_str());
