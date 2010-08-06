@@ -9,21 +9,13 @@
 #include "chrome/test/ui/npapi_test_helper.h"
 #include "chrome/test/ui_test_utils.h"
 
-#if defined(OS_WIN)
-static const char kPepperTestPluginName[] = "npapi_pepper_test_plugin.dll";
-#elif defined(OS_MACOSX)
-static const char kPepperTestPluginName[] = "npapi_pepper_test_plugin.plugin";
-#elif defined(OS_LINUX)
-static const char kPepperTestPluginName[] = "libnpapi_pepper_test_plugin.so";
-#endif
-
 using npapi_test::kTestCompleteCookie;
 using npapi_test::kTestCompleteSuccess;
 
 // Helper class pepper NPAPI tests.
 class PepperTester : public NPAPITesterBase {
  protected:
-  PepperTester() : NPAPITesterBase(kPepperTestPluginName) {}
+  PepperTester() : NPAPITesterBase() {}
 
   virtual void SetUp() {
     // TODO(alokp): Remove no-sandbox flag once gpu plugin can run in sandbox.

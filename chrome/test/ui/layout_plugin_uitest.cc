@@ -19,17 +19,9 @@ using npapi_test::kTestCompleteSuccess;
 
 static const FilePath::CharType* kTestDir = FILE_PATH_LITERAL("npapi");
 
-#if defined(OS_WIN)
-static const char kTestPluginName[] = "npapi_layout_test_plugin.dll";
-#elif defined(OS_MACOSX)
-static const char kTestPluginName[] = "TestNetscapePlugIn.plugin";
-#elif defined(OS_LINUX)
-static const char kTestPluginName[] = "libnpapi_layout_test_plugin.so";
-#endif
-
 class LayoutPluginTester : public NPAPITesterBase {
  protected:
-  LayoutPluginTester() : NPAPITesterBase(kTestPluginName) {}
+  LayoutPluginTester() : NPAPITesterBase() {}
 };
 
 // Make sure that navigating away from a plugin referenced by JS doesn't
