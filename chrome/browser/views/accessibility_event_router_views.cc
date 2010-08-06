@@ -11,10 +11,13 @@
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_type.h"
+#include "views/accessibility/accessibility_types.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/link.h"
+#include "views/controls/menu/menu_item_view.h"
+#include "views/controls/menu/submenu_view.h"
 
 using views::FocusManager;
 using views::View;
@@ -36,18 +39,6 @@ bool AccessibilityEventRouterViews::AddViewTree(View* view, Profile* profile) {
     return false;
 
   view_tree_profile_map_[view] = profile;
-  FocusManager* focus_manager = view->GetFocusManager();
-
-  // Add this object as a listener for this focus manager, but use a ref
-  // count to ensure we only call AddFocusChangeListener on any given
-  // focus manager once. Note that hash_map<FocusManager*, int>::operator[]
-  // will initialize the ref count to zero if it's not already in the map.
-  if (focus_manager_ref_count_[focus_manager] == 0) {
-    focus_manager->AddFocusChangeListener(this);
-  }
-  focus_manager_ref_count_[focus_manager]++;
-
-  view_info_map_[view].focus_manager = focus_manager;
   return true;
 }
 
@@ -55,15 +46,6 @@ void AccessibilityEventRouterViews::RemoveViewTree(View* view) {
   DCHECK(view_tree_profile_map_.find(view) !=
          view_tree_profile_map_.end());
   view_tree_profile_map_.erase(view);
-
-  // Decrement the ref count of the focus manager, and remove this object
-  // as a listener if the count reaches zero.
-  FocusManager* focus_manager = view_info_map_[view].focus_manager;
-  DCHECK(focus_manager);
-  focus_manager_ref_count_[focus_manager]--;
-  if (focus_manager_ref_count_[focus_manager] == 0) {
-    focus_manager->RemoveFocusChangeListener(this);
-  }
 }
 
 void AccessibilityEventRouterViews::IgnoreView(View* view) {
@@ -79,15 +61,23 @@ void AccessibilityEventRouterViews::RemoveView(View* view) {
   view_info_map_.erase(view);
 }
 
-//
-// views::FocusChangeListener
-//
-
-void AccessibilityEventRouterViews::FocusWillChange(
-    View* focused_before, View* focused_now) {
-  if (focused_now) {
-    DispatchAccessibilityNotification(
-        focused_now, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);
+void AccessibilityEventRouterViews::HandleAccessibilityEvent(
+    views::View* view, AccessibilityTypes::Event event_type) {
+  switch (event_type) {
+    case AccessibilityTypes::EVENT_FOCUS:
+      DispatchAccessibilityNotification(
+          view, NotificationType::ACCESSIBILITY_CONTROL_FOCUSED);
+      break;
+    case AccessibilityTypes::EVENT_MENUSTART:
+    case AccessibilityTypes::EVENT_MENUPOPUPSTART:
+      DispatchAccessibilityNotification(
+          view, NotificationType::ACCESSIBILITY_MENU_OPENED);
+      break;
+    case AccessibilityTypes::EVENT_MENUEND:
+    case AccessibilityTypes::EVENT_MENUPOPUPEND:
+      DispatchAccessibilityNotification(
+          view, NotificationType::ACCESSIBILITY_MENU_CLOSED);
+      break;
   }
 }
 
@@ -145,17 +135,38 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
   Profile* profile = NULL;
   bool is_accessible;
   FindView(view, &profile, &is_accessible);
+
+  // Special case: a menu isn't associated with any particular top-level
+  // window, so menu events get routed to the profile of the most recent
+  // event that was associated with a window, which should be the window
+  // that triggered opening the menu.
+  bool is_menu_event = IsMenuEvent(view, type);
+  if (is_menu_event && !profile && most_recent_profile_) {
+    profile = most_recent_profile_;
+    is_accessible = true;
+  }
+
   if (!is_accessible)
     return;
 
-  if (view->GetClassName() == views::ImageButton::kViewClassName) {
-    SendButtonNotification(view, type, profile);
-  } else if (view->GetClassName() == views::NativeButton::kViewClassName) {
-    SendButtonNotification(view, type, profile);
-  } else if (view->GetClassName() == views::Link::kViewClassName) {
-    SendLinkNotification(view, type, profile);
-  } else if (view->GetClassName() == views::MenuButton::kViewClassName) {
+  most_recent_profile_ = profile;
+
+  AccessibilityTypes::Role role;
+  view->GetAccessibleRole(&role);
+  std::string class_name = view->GetClassName();
+
+  if (class_name == views::MenuButton::kViewClassName ||
+      type == NotificationType::ACCESSIBILITY_MENU_OPENED ||
+      type == NotificationType::ACCESSIBILITY_MENU_CLOSED) {
     SendMenuNotification(view, type, profile);
+  } else if (is_menu_event) {
+    SendMenuItemNotification(view, type, profile);
+  } else if (class_name == views::ImageButton::kViewClassName ||
+             class_name == views::NativeButton::kViewClassName ||
+             class_name == views::TextButton::kViewClassName) {
+    SendButtonNotification(view, type, profile);
+  } else if (class_name == views::Link::kViewClassName) {
+    SendLinkNotification(view, type, profile);
   }
 }
 
@@ -175,4 +186,67 @@ void AccessibilityEventRouterViews::SendMenuNotification(
     View* view, NotificationType type, Profile* profile) {
   AccessibilityMenuInfo info(profile, GetViewName(view));
   SendAccessibilityNotification(type, &info);
+}
+
+void AccessibilityEventRouterViews::SendMenuItemNotification(
+    View* view, NotificationType type, Profile* profile) {
+  std::string name = GetViewName(view);
+
+  bool has_submenu = false;
+  int index = -1;
+  int count = -1;
+
+  if (view->GetClassName() == views::MenuItemView::kViewClassName)
+    has_submenu = static_cast<views::MenuItemView*>(view)->HasSubmenu();
+
+  View* parent_menu = view->GetParent();
+  while (parent_menu != NULL && parent_menu->GetClassName() !=
+         views::SubmenuView::kViewClassName) {
+    parent_menu = parent_menu->GetParent();
+  }
+  if (parent_menu) {
+    count = 0;
+    RecursiveGetMenuItemIndexAndCount(parent_menu, view, &index, &count);
+  }
+
+  AccessibilityMenuItemInfo info(profile, name, has_submenu, index, count);
+  SendAccessibilityNotification(type, &info);
+}
+
+void AccessibilityEventRouterViews::RecursiveGetMenuItemIndexAndCount(
+    views::View* menu, views::View* item, int* index, int* count) {
+  for (int i = 0; i < menu->GetChildViewCount(); ++i) {
+    views::View* child = menu->GetChildViewAt(i);
+    int previous_count = *count;
+    RecursiveGetMenuItemIndexAndCount(child, item, index, count);
+    if (child->GetClassName() == views::MenuItemView::kViewClassName &&
+        *count == previous_count) {
+      if (item == child)
+        *index = *count;
+      (*count)++;
+    } else if (child->GetClassName() == views::TextButton::kViewClassName) {
+      if (item == child)
+        *index = *count;
+      (*count)++;
+    }
+  }
+}
+
+bool AccessibilityEventRouterViews::IsMenuEvent(
+    View* view, NotificationType type) {
+  if (type == NotificationType::ACCESSIBILITY_MENU_OPENED ||
+      type == NotificationType::ACCESSIBILITY_MENU_CLOSED)
+    return true;
+
+  while (view) {
+    AccessibilityTypes::Role role;
+    view->GetAccessibleRole(&role);
+    if (role == AccessibilityTypes::ROLE_MENUITEM ||
+        role == AccessibilityTypes::ROLE_MENUPOPUP) {
+      return true;
+    }
+    view = view->GetParent();
+  }
+
+  return false;
 }

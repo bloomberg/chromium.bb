@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/views/accessibility_event_router_views.h"
 #include "chrome/browser/window_sizer.h"
 #include "gfx/rect.h"
 
@@ -75,6 +76,12 @@ bool ChromeViewsDelegate::GetSavedMaximizedState(
       g_browser_process->local_state()->GetDictionary(window_name.c_str());
   return dictionary && dictionary->GetBoolean(L"maximized", maximized) &&
       maximized;
+}
+
+void ChromeViewsDelegate::NotifyAccessibilityEvent(
+    views::View* view, AccessibilityTypes::Event event_type) {
+  AccessibilityEventRouterViews::GetInstance()->HandleAccessibilityEvent(
+      view, event_type);
 }
 
 #if defined(OS_WIN)

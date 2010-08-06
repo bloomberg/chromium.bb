@@ -102,11 +102,15 @@ void NativeControlWin::Focus() {
   View* parent_view = GetParent();
 
   // Due to some controls not behaving as expected without having
-  // a native win32 control, we exclude the following from sending
-  // their IAccessible as focus events.
-  if (parent_view->GetClassName() != views::Combobox::kViewClassName &&
-      parent_view->HasFocus())
-    parent_view->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+  // a native win32 control, we don't always send a native (MSAA)
+  // focus notification.
+  bool send_native_event =
+      parent_view->GetClassName() != views::Combobox::kViewClassName &&
+      parent_view->HasFocus();
+
+  // Send the accessibility focus notification.
+  parent_view->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS,
+                                        send_native_event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

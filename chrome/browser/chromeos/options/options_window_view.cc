@@ -16,6 +16,7 @@
 #include "chrome/browser/gtk/options/general_page_gtk.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/views/accessible_view_helper.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -142,6 +143,8 @@ class OptionsWindowView : public views::View,
   // The last page the user was on when they opened the Options window.
   IntegerPrefMember last_selected_page_;
 
+  scoped_ptr<AccessibleViewHelper> accessible_view_helper_;
+
   DISALLOW_IMPLICIT_CONSTRUCTORS(OptionsWindowView);
 };
 
@@ -252,6 +255,9 @@ void OptionsWindowView::Layout() {
   tabs_->SetBounds(kDialogPadding, kDialogPadding,
                    width() - (2 * kDialogPadding),
                    height() - (2 * kDialogPadding));
+  if (!accessible_view_helper_.get()) {
+    accessible_view_helper_.reset(new AccessibleViewHelper(this, profile_));
+  }
 }
 
 gfx::Size OptionsWindowView::GetPreferredSize() {

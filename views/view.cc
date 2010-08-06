@@ -314,6 +314,13 @@ void View::Focus() {
   FocusManager* focus_manager = GetFocusManager();
   if (focus_manager)
     focus_manager->ClearNativeFocus();
+
+  // Notify assistive technologies of the focus change.
+  NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
+}
+
+void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type) {
+  NotifyAccessibilityEvent(event_type, true);
 }
 
 void View::SetHotTracked(bool flag) {

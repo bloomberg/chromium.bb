@@ -66,6 +66,8 @@ void NativeControlGtk::VisibilityChanged(View* starting_from, bool is_visible) {
 void NativeControlGtk::Focus() {
   DCHECK(native_view());
   gtk_widget_grab_focus(native_view());
+
+  GetParent()->NotifyAccessibilityEvent(AccessibilityTypes::EVENT_FOCUS);
 }
 
 void NativeControlGtk::NativeControlCreated(GtkWidget* native_control) {

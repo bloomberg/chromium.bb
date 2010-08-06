@@ -31,10 +31,6 @@ int View::GetMenuShowDelay() {
   return delay;
 }
 
-void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type) {
-  NotifyAccessibilityEvent(event_type, true);
-}
-
 void View::NotifyAccessibilityEvent(AccessibilityTypes::Event event_type,
     bool send_native_event) {
   // Send the notification to the delegate.
