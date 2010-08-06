@@ -91,7 +91,9 @@ TEST_F(PPAPITest, DeviceContext2D) {
   RunTest("DeviceContext2D");
 }
 
-TEST_F(PPAPITest, ImageData) {
+// TODO(brettw) bug 51344: this is flaky on bots. Seems to timeout navigating.
+// Possibly all the image allocations slow things down on a loaded bot too much.
+TEST_F(PPAPITest, FLAKY_ImageData) {
   RunTest("ImageData");
 }
 
@@ -99,7 +101,8 @@ TEST_F(PPAPITest, Buffer) {
   RunTest("Buffer");
 }
 
-TEST_F(PPAPITest, URLLoader) {
+// TODO(brettw) bug 51345: this failed consistently on one of the bots.
+TEST_F(PPAPITest, FAILS_URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
