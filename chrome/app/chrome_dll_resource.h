@@ -234,6 +234,9 @@
 #define IDC_WRITING_DIRECTION_LTR        41122     // OSX only
 #define IDC_WRITING_DIRECTION_RTL        41123     // OSX only
 
+// Remoting
+#define IDC_REMOTING_SETUP               41140
+
 // Translate
 #define IDC_TRANSLATE_OPTIONS_ALWAYS                42000
 #define IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG  42001

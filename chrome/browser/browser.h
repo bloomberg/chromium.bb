@@ -516,6 +516,9 @@ class Browser : public TabStripModelDelegate,
   void OpenKeywordEditor();
   void OpenPasswordManager();
   void OpenSyncMyBookmarksDialog();
+#if defined(ENABLE_REMOTING)
+  void OpenRemotingSetupDialog();
+#endif
   void OpenImportSettingsDialog();
   void OpenAboutChromeDialog();
   void OpenUpdateChromeDialog();
