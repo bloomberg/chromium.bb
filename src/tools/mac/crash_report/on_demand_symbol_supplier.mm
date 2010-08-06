@@ -86,9 +86,7 @@ OnDemandSymbolSupplier::OnDemandSymbolSupplier(const string &search_dir,
           NSScanner *scanner = [NSScanner scannerWithString:dataStr];
           BOOL goodScan = [scanner scanString:@"MODULE mac " intoString:nil];
           if (goodScan) {
-            // TODO(mark): remove i386 from this list.
             goodScan = ([scanner scanString:@"x86 " intoString:nil] ||
-                        [scanner scanString:@"i386 " intoString:nil] ||
                         [scanner scanString:@"x86_64 " intoString:nil] ||
                         [scanner scanString:@"ppc " intoString:nil]);
             if (goodScan) {
