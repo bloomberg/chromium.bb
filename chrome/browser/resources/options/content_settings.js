@@ -28,12 +28,6 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       chrome.send('getContentFilterSettings');
-      this.showTab($('cookies-nav-tab'));
-
-      var self = this;
-      $('content-settings-nav-tabs').onclick = function(event) {
-        self.showTab(event.srcElement);
-      };
 
       // Cookies filter page ---------------------------------------------------
       $('cookies-exceptions-button').onclick = function(event) {
@@ -59,25 +53,6 @@ cr.define('options', function() {
       options.contentSettings.ExceptionsArea.decorate(
           $('imagesExceptionsArea'));
     },
-
-    /**
-     * Shows the tab contents for the given navigation tab.
-     * @param {!Element} tab The tab that the user clicked.
-     */
-    showTab: function(tab) {
-      if (!tab.classList.contains('inactive-tab'))
-        return;
-
-      if (this.activeNavTab != null) {
-        this.activeNavTab.classList.remove('active-tab');
-        $(this.activeNavTab.getAttribute('tab-contents')).classList.
-            remove('active-tab-contents');
-      }
-
-      tab.classList.add('active-tab');
-      $(tab.getAttribute('tab-contents')).classList.add('active-tab-contents');
-      this.activeNavTab = tab;
-    }
   };
 
   /**

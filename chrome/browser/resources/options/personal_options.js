@@ -50,9 +50,17 @@ cr.define('options', function() {
           });
 
 
-      $('showpasswords').onclick = function(event) {
-        OptionsPage.showPageByName('passwordsExceptions');
-      };
+      if(cr.isMac) {
+        $('showpasswords').onclick = function(event) {
+          //TODO(sargrass): Add the Mac implementation
+        }
+      }
+      else {
+        $('showpasswords').onclick = function(event) {
+          OptionsPage.showPageByName('passwordsExceptions');
+          OptionsPage.showTab($('passwords-nav-tab'));
+        };
+      }
 
       $('autofill_options').onclick = function(event) {
         OptionsPage.showPageByName('autoFillOptions');

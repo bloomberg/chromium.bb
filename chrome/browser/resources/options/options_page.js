@@ -65,6 +65,25 @@ cr.define('options', function() {
   };
 
   /**
+  * Shows the tab contents for the given navigation tab.
+  * @param {!Element} tab The tab that the user clicked.
+  */
+  OptionsPage.showTab = function(tab) {
+    if (!tab.classList.contains('inactive-tab'))
+      return;
+
+    if (this.activeNavTab != null) {
+      this.activeNavTab.classList.remove('active-tab');
+      $(this.activeNavTab.getAttribute('tab-contents')).classList.
+          remove('active-tab-contents');
+    }
+
+    tab.classList.add('active-tab');
+    $(tab.getAttribute('tab-contents')).classList.add('active-tab-contents');
+    this.activeNavTab = tab;
+  }
+
+  /**
    * Registers new options page.
    * @param {OptionsPage} page Page to register.
    */

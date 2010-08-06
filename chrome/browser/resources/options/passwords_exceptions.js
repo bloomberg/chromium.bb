@@ -14,6 +14,7 @@ cr.define('options', function() {
    * @constructor
    */
   function PasswordsExceptions() {
+    this.activeNavTab = null;
     OptionsPage.call(this, 'passwordsExceptions',
                      templateData.passwordsExceptionsTitle,
                      'passwordsExceptionsPage');
@@ -27,8 +28,11 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      // TODO(sargrass): Add initialization here.
-    }
+      // TODO(sargrass): Passwords filter page --------------------------
+
+      // TODO(sargrass): Exceptions filter page -------------------------
+
+    },
   };
 
   // Export

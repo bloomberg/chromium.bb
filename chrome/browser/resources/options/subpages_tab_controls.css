@@ -4,7 +4,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 */
 
-#content-settings-nav-tabs .inactive-tab {
+.subpages-nav-tabs .inactive-tab {
   background: -webkit-gradient(linear,
                                left top,
                                left bottom,
@@ -14,7 +14,7 @@ found in the LICENSE file.
   padding: 4px 8px;
 }
 
-#content-settings-nav-tabs .active-tab {
+.subpages-nav-tabs .active-tab {
   background: white;
   border: 1px solid #a0a0a0;
   border-bottom: 0;
@@ -23,11 +23,11 @@ found in the LICENSE file.
   font-weight: bold;
 }
 
-#content-settings-nav-tabs {
+.subpages-nav-tabs {
   margin-bottom: 15px;
 }
 
-.content-settings-tab-contents {
+.subpages-tab-contents {
   display: none;
    -webkit-padding-start: 10px;
 }

@@ -29,6 +29,7 @@ var OptionsPage = options.OptionsPage;
       // Setup click handlers for buttons.
       $('privacyContentSettingsButton').onclick = function(event) {
         OptionsPage.showPageByName('content');
+        OptionsPage.showTab($('cookies-nav-tab'));
       };
       $('privacyClearDataButton').onclick = function(event) {
         OptionsPage.showOverlay('clearBrowserDataOverlay');

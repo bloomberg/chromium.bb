@@ -18,7 +18,7 @@ cr.define('options', function() {
   }
 
   ImportDataOverlay.throbIntervalId = 0
-  ImportDataOverlay.checkboxMask = "";
+  ImportDataOverlay.checkboxMask = '';
 
   cr.addSingletonGetter(ImportDataOverlay);
 
@@ -34,8 +34,9 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       var self = this;
-      var checkboxList = $('checkboxList').getElementsByTagName('input');
-      for (var i = 0; i < checkboxList.length; ++i) {
+      var checkboxList =
+          document.querySelectorAll('#checkboxList input[type=checkbox]');
+      for (var i = 0; i < checkboxList.length; i++) {
         if(checkboxList[i].type == 'checkbox')
           checkboxList[i].onchange = function(e) {
             self.countCheckboxes_();
@@ -56,8 +57,9 @@ cr.define('options', function() {
 
     countCheckboxes_: function() {
       ImportDataOverlay.checkboxMask = "";
-      var checkboxList = $('checkboxList').getElementsByTagName('input');
-      for (var i = 0; i < checkboxList.length; ++i) {
+      var checkboxList =
+          document.querySelectorAll('#checkboxList input[type=checkbox]');
+      for (var i = 0; i < checkboxList.length; i++) {
         if (checkboxList[i].type == 'checkbox') {
           if(checkboxList[i].checked)
             ImportDataOverlay.checkboxMask += "1";
