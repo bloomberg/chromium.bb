@@ -2325,7 +2325,8 @@ organize-native-code() {
 
   cp -f ${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}/libgcc.a \
     ${PNACL_ARM_ROOT}
-
+  cp -f ${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}/crtbegin.o \
+    ${PNACL_ARM_ROOT}
   DebugRun ls -l ${PNACL_ARM_ROOT}
 
   # TODO(espindola): These files have been built with the conventional
@@ -2334,6 +2335,8 @@ organize-native-code() {
   StepBanner "PNaCl" "x86-32 native code: ${PNACL_X8632_ROOT}"
   mkdir -p ${PNACL_X8632_ROOT}
   cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}/libgcc.a \
+    ${PNACL_X8632_ROOT}
+  cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}/crtbegin.o \
     ${PNACL_X8632_ROOT}
   cp -f  ${x86_src}/nacl64/lib/32/crt*.o \
     ${x86_src}/nacl64/lib/32/libcrt*.a \
@@ -2345,11 +2348,12 @@ organize-native-code() {
   mkdir -p ${PNACL_X8664_ROOT}
   cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}/libgcc.a \
     ${PNACL_X8664_ROOT}
+  cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}/crtbegin.o \
+    ${PNACL_X8664_ROOT}
   cp -f ${x86_src}/nacl64/lib/crt*.o \
     ${x86_src}/nacl64/lib/libcrt*.a \
     ${x86_src}/nacl64/lib/intrinsics.o \
     ${PNACL_X8664_ROOT}
-
   DebugRun ls -l ${PNACL_X8664_ROOT}
 
 }
