@@ -15,6 +15,7 @@
       'sources': [
         'sync.proto',
         'encryption.proto',
+        'app_specifics.proto',
         'autofill_specifics.proto',
         'bookmark_specifics.proto',
         'extension_specifics.proto',

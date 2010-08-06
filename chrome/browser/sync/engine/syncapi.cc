@@ -34,6 +34,7 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/notifier/server_notifier_thread.h"
+#include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
@@ -253,6 +254,11 @@ int64 BaseNode::GetExternalId() const {
   return GetEntry()->Get(syncable::LOCAL_EXTERNAL_ID);
 }
 
+const sync_pb::AppSpecifics& BaseNode::GetAppSpecifics() const {
+  DCHECK(GetModelType() == syncable::APPS);
+  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::app);
+}
+
 const sync_pb::AutofillSpecifics& BaseNode::GetAutofillSpecifics() const {
   DCHECK(GetModelType() == syncable::AUTOFILL);
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::autofill);
@@ -325,6 +331,12 @@ void WriteNode::SetURL(const GURL& url) {
   sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
   new_value.set_url(url.spec());
   SetBookmarkSpecifics(new_value);
+}
+
+void WriteNode::SetAppSpecifics(
+    const sync_pb::AppSpecifics& new_value) {
+  DCHECK(GetModelType() == syncable::APPS);
+  PutAppSpecificsAndMarkForSyncing(new_value);
 }
 
 void WriteNode::SetAutofillSpecifics(
@@ -416,6 +428,13 @@ void WriteNode::SetExtensionSpecifics(
     const sync_pb::ExtensionSpecifics& new_value) {
   DCHECK(GetModelType() == syncable::EXTENSIONS);
   PutExtensionSpecificsAndMarkForSyncing(new_value);
+}
+
+void WriteNode::PutAppSpecificsAndMarkForSyncing(
+    const sync_pb::AppSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::app)->CopyFrom(new_value);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
 void WriteNode::PutThemeSpecificsAndMarkForSyncing(

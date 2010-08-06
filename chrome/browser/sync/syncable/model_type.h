@@ -54,10 +54,12 @@ enum ModelType {
   THEMES,
   // A typed_url folder or a typed_url object.
   TYPED_URLS,
-  // A extension folder or a extension object.
+  // An extension folder or an extension object.
   EXTENSIONS,
   // An object represeting a set of Nigori keys.
   NIGORI,
+  // An app folder or an app object.
+  APPS,
 
   MODEL_TYPE_COUNT,
 };

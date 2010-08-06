@@ -74,6 +74,7 @@ class WriteTransaction;
 }
 
 namespace sync_pb {
+class AppSpecifics;
 class AutofillSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
@@ -174,6 +175,10 @@ class BaseNode {
   // that are invalid for whatever reason.
   // TODO(ncarter): Remove this datatype-specific accessor.
   void GetFaviconBytes(std::vector<unsigned char>* output) const;
+
+  // Getter specific to the APPS datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == APPS.
+  const sync_pb::AppSpecifics& GetAppSpecifics() const;
 
   // Getter specific to the AUTOFILL datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == AUTOFILL.
@@ -316,6 +321,10 @@ class WriteNode : public BaseNode {
   void SetURL(const GURL& url);
   void SetFaviconBytes(const std::vector<unsigned char>& bytes);
 
+  // Set the app specifics (id, update url, enabled state, etc).
+  // Should only be called if GetModelType() == APPS.
+  void SetAppSpecifics(const sync_pb::AppSpecifics& specifics);
+
   // Set the autofill specifics (name and value).
   // Should only be called if GetModelType() == AUTOFILL.
   void SetAutofillSpecifics(const sync_pb::AutofillSpecifics& specifics);
@@ -363,6 +372,8 @@ class WriteNode : public BaseNode {
   // for internal initialization (you can use them to set the modeltype).
   // Additionally, they will mark for syncing if the underlying value
   // changes.
+  void PutAppSpecificsAndMarkForSyncing(
+      const sync_pb::AppSpecifics& new_value);
   void PutAutofillSpecificsAndMarkForSyncing(
       const sync_pb::AutofillSpecifics& new_value);
   void PutBookmarkSpecificsAndMarkForSyncing(

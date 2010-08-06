@@ -883,6 +883,7 @@ const wchar_t kKeepEverythingSynced[] = L"sync.keep_everything_synced";
 const wchar_t kSyncBookmarks[] = L"sync.bookmarks";
 const wchar_t kSyncPasswords[] = L"sync.passwords";
 const wchar_t kSyncPreferences[] = L"sync.preferences";
+const wchar_t kSyncApps[] = L"sync.apps";
 const wchar_t kSyncAutofill[] = L"sync.autofill";
 const wchar_t kSyncThemes[] = L"sync.themes";
 const wchar_t kSyncTypedUrls[] = L"sync.typed_urls";

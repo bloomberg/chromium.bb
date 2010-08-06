@@ -848,6 +848,8 @@
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/encryption.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/encryption.pb.h',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/app_specifics.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/app_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/autofill_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/autofill_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.cc',

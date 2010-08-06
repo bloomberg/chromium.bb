@@ -1,0 +1,30 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for apps.
+
+syntax = "proto2";
+
+// TODO(akalin): Re-enable this once LITE_RUNTIME supports preserving
+// unknown fields.
+
+// option optimize_for = LITE_RUNTIME;
+
+package sync_pb;
+
+import "sync.proto";
+import "extension_specifics.proto";
+
+// Properties of app sync objects.
+//
+// For now, an app is just an extension.  We keep the two data types
+// separate for future-proofing purposes.
+message AppSpecifics {
+  // Extension data.
+  optional ExtensionSpecifics extension = 1;
+}
+
+extend EntitySpecifics {
+  optional AppSpecifics app = 48364;
+}

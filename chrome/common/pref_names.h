@@ -318,6 +318,7 @@ extern const wchar_t kKeepEverythingSynced[];
 extern const wchar_t kSyncBookmarks[];
 extern const wchar_t kSyncPasswords[];
 extern const wchar_t kSyncPreferences[];
+extern const wchar_t kSyncApps[];
 extern const wchar_t kSyncAutofill[];
 extern const wchar_t kSyncThemes[];
 extern const wchar_t kSyncTypedUrls[];

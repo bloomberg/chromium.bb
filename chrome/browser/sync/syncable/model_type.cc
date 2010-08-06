@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 
 #include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/protocol/app_specifics.pb.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
@@ -43,6 +44,9 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
       break;
     case NIGORI:
       specifics->MutableExtension(sync_pb::nigori);
+      break;
+    case APPS:
+      specifics->MutableExtension(sync_pb::app);
       break;
     default:
       NOTREACHED() << "No known extension for model type.";
@@ -105,6 +109,9 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.HasExtension(sync_pb::nigori))
     return NIGORI;
 
+  if (specifics.HasExtension(sync_pb::app))
+    return APPS;
+
   return UNSPECIFIED;
 }
 
@@ -126,6 +133,8 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Extensions";
     case NIGORI:
       return "Encryption keys";
+    case APPS:
+      return "Apps";
     default:
       NOTREACHED() << "No known extension for model type.";
       return "INVALID";
@@ -143,6 +152,7 @@ const char kThemeNotificationType[] = "THEME";
 const char kTypedUrlNotificationType[] = "TYPED_URL";
 const char kExtensionNotificationType[] = "EXTENSION";
 const char kNigoriNotificationType[] = "NIGORI";
+const char kAppNotificationType[] = "APP";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -171,6 +181,9 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case NIGORI:
       *notification_type = kNigoriNotificationType;
+      return true;
+    case APPS:
+      *notification_type = kAppNotificationType;
       return true;
     default:
       break;
@@ -204,6 +217,9 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kNigoriNotificationType) {
     *model_type = NIGORI;
+    return true;
+  } else if (notification_type == kAppNotificationType) {
+    *model_type = APPS;
     return true;
   }
   *model_type = UNSPECIFIED;
