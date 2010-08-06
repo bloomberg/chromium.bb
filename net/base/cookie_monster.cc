@@ -180,7 +180,7 @@ void CookieMonster::InitStore() {
   // Initialize the store and sync in any saved persistent cookies.  We don't
   // care if it's expired, insert it so it can be garbage collected, removed,
   // and sync'd.
-  std::vector<KeyedCanonicalCookie> cookies;
+  std::vector<CanonicalCookie*> cookies;
   // Reserve space for the maximum amount of cookies a database should have.
   // This prevents multiple vector growth / copies as we append cookies.
   cookies.reserve(kNumCookiesTotal);
@@ -190,22 +190,22 @@ void CookieMonster::InitStore() {
   // that way we don't have to worry about what sections of code are safe
   // to call while it's in that state.
   std::set<int64> creation_times;
-  for (std::vector<KeyedCanonicalCookie>::const_iterator it = cookies.begin();
+  for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
-    int64 cookie_creation_time = it->second->CreationDate().ToInternalValue();
+    int64 cookie_creation_time = (*it)->CreationDate().ToInternalValue();
 
     if (creation_times.insert(cookie_creation_time).second) {
-      InternalInsertCookie(it->first, it->second, false);
+      InternalInsertCookie((*it)->Domain(), *it, false);
     } else {
       LOG(ERROR) << StringPrintf("Found cookies with duplicate creation "
                                  "times in backing store: "
                                  "{name='%s', domain='%s', path='%s'}",
-                                 it->second->Name().c_str(),
-                                 it->first.c_str(),
-                                 it->second->Path().c_str());
+                                 (*it)->Name().c_str(),
+                                 (*it)->Domain().c_str(),
+                                 (*it)->Path().c_str());
       // We've been given ownership of the cookie and are throwing it
       // away; reclaim the space.
-      delete it->second;
+      delete (*it);
     }
   }
 
@@ -1031,17 +1031,15 @@ int CookieMonster::DeleteAllForHost(const GURL& url) {
   return num_deleted;
 }
 
-bool CookieMonster::DeleteCookie(const std::string& domain,
-                                 const CanonicalCookie& cookie,
-                                 bool sync_to_store) {
+bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
   AutoLock autolock(lock_);
   InitIfNecessary();
 
-  for (CookieMapItPair its = cookies_.equal_range(domain);
+  for (CookieMapItPair its = cookies_.equal_range(cookie.Domain());
        its.first != its.second; ++its.first) {
     // The creation date acts as our unique index...
     if (its.first->second->CreationDate() == cookie.CreationDate()) {
-      InternalDeleteCookie(its.first, sync_to_store, DELETE_COOKIE_EXPLICIT);
+      InternalDeleteCookie(its.first, true, DELETE_COOKIE_EXPLICIT);
       return true;
     }
   }

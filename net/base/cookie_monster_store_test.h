@@ -42,7 +42,7 @@ class MockPersistentCookieStore
   }
 
   virtual bool Load(
-      std::vector<net::CookieMonster::KeyedCanonicalCookie>* out_cookies) {
+      std::vector<net::CookieMonster::CanonicalCookie*>* out_cookies) {
     bool ok = load_return_value_;
     if (ok)
       *out_cookies = load_result_;
@@ -69,7 +69,7 @@ class MockPersistentCookieStore
 
   void SetLoadExpectation(
       bool return_value,
-      const std::vector<net::CookieMonster::KeyedCanonicalCookie>& result) {
+      const std::vector<net::CookieMonster::CanonicalCookie*>& result) {
     load_return_value_ = return_value;
     load_result_ = result;
   }
@@ -83,7 +83,7 @@ class MockPersistentCookieStore
 
   // Deferred result to use when Load() is called.
   bool load_return_value_;
-  std::vector<net::CookieMonster::KeyedCanonicalCookie> load_result_;
+  std::vector<net::CookieMonster::CanonicalCookie*> load_result_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPersistentCookieStore);
 };
@@ -115,12 +115,12 @@ class MockCookieMonsterDelegate : public net::CookieMonster::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockCookieMonsterDelegate);
 };
 
-// Helper to build a list of KeyedCanonicalCookies.
-static void AddKeyedCookieToList(
+// Helper to build a list of CanonicalCookie*s.
+static void AddCookieToList(
     const std::string& key,
     const std::string& cookie_line,
     const base::Time& creation_time,
-    std::vector<net::CookieMonster::KeyedCanonicalCookie>* out_list) {
+    std::vector<net::CookieMonster::CanonicalCookie*>* out_list) {
 
   // Parse the cookie line.
   net::CookieMonster::ParsedCookie pc(cookie_line);
@@ -143,9 +143,7 @@ static void AddKeyedCookieToList(
           !cookie_expires.is_null(),
           cookie_expires));
 
-  out_list->push_back(
-      net::CookieMonster::KeyedCanonicalCookie(
-          key, cookie.release()));
+  out_list->push_back(cookie.release());
 }
 
 }  // namespace

@@ -28,7 +28,7 @@ class SQLitePersistentCookieStore
   explicit SQLitePersistentCookieStore(const FilePath& path);
   ~SQLitePersistentCookieStore();
 
-  virtual bool Load(std::vector<net::CookieMonster::KeyedCanonicalCookie>*);
+  virtual bool Load(std::vector<net::CookieMonster::CanonicalCookie*>*);
 
   virtual void AddCookie(const std::string&,
                          const net::CookieMonster::CanonicalCookie&);

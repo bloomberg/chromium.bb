@@ -52,7 +52,6 @@ class CookieMonster : public CookieStore {
   // a multimap.  Also, multimap is standard, another reason to use it.
   typedef std::multimap<std::string, CanonicalCookie*> CookieMap;
   typedef std::pair<CookieMap::iterator, CookieMap::iterator> CookieMapItPair;
-  typedef std::pair<std::string, CanonicalCookie*> KeyedCanonicalCookie;
   typedef std::vector<CanonicalCookie> CookieList;
 
   // The store passed in should not have had Init() called on it yet. This
@@ -135,9 +134,7 @@ class CookieMonster : public CookieStore {
   int DeleteAllForHost(const GURL& url);
 
   // Delete one specific cookie.
-  bool DeleteCookie(const std::string& domain,
-                    const CanonicalCookie& cookie,
-                    bool sync_to_store);
+  bool DeleteCanonicalCookie(const CanonicalCookie& cookie);
 
   // Override the default list of schemes that are allowed to be set in
   // this cookie store.  Calling his overrides the value of
@@ -542,7 +539,7 @@ class CookieMonster::PersistentCookieStore
 
   // Initializes the store and retrieves the existing cookies. This will be
   // called only once at startup.
-  virtual bool Load(std::vector<CookieMonster::KeyedCanonicalCookie>*) = 0;
+  virtual bool Load(std::vector<CookieMonster::CanonicalCookie*>*) = 0;
 
   virtual void AddCookie(const std::string&, const CanonicalCookie&) = 0;
   virtual void UpdateCookieAccessTime(const CanonicalCookie&) = 0;

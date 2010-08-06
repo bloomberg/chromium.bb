@@ -308,7 +308,7 @@ bool InitTable(sql::Connection* db) {
 }  // namespace
 
 bool SQLitePersistentCookieStore::Load(
-    std::vector<net::CookieMonster::KeyedCanonicalCookie>* cookies) {
+    std::vector<net::CookieMonster::CanonicalCookie*>* cookies) {
   scoped_ptr<sql::Connection> db(new sql::Connection);
   if (!db->Open(path_)) {
     NOTREACHED() << "Unable to open cookie DB.";
@@ -348,9 +348,7 @@ bool SQLitePersistentCookieStore::Load(
             Time::FromInternalValue(smt.ColumnInt64(5))));  // expires_utc
     DLOG_IF(WARNING,
             cc->CreationDate() > Time::Now()) << L"CreationDate too recent";
-    cookies->push_back(
-        net::CookieMonster::KeyedCanonicalCookie(smt.ColumnString(1),
-                                                 cc.release()));
+    cookies->push_back(cc.release());
   }
 
   // Create the backend, this will take ownership of the db pointer.

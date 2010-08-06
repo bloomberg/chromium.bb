@@ -59,8 +59,7 @@ void CookieTreeCookieNode::DeleteStoredObjects() {
   // vector storing the cookies in-tact and not delete from there (that would
   // invalidate our pointers), and the fact that it contains semi out-of-date
   // data is not problematic as we don't re-build the model based on that.
-  GetModel()->cookie_monster_->
-      DeleteCookie(cookie_->Domain(), *cookie_, true);
+  GetModel()->cookie_monster_->DeleteCanonicalCookie(*cookie_);
 }
 
 namespace {

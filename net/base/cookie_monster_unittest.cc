@@ -1111,7 +1111,7 @@ static bool FindAndDeleteCookie(net::CookieMonster* cm,
   for (net::CookieMonster::CookieList::iterator it = cookies.begin();
        it != cookies.end(); ++it)
     if (it->Domain() == domain && it->Name() == name)
-      return cm->DeleteCookie(domain, *it, false);
+      return cm->DeleteCanonicalCookie(*it);
   return false;
 }
 
@@ -1360,52 +1360,52 @@ TEST(CookieMonsterTest, DontImportDuplicateCookies) {
   // be careful not to have any duplicate creation times at all (as it's a
   // violation of a CookieMonster invariant) even if Time::Now() doesn't
   // move between calls.
-  std::vector<net::CookieMonster::KeyedCanonicalCookie> initial_cookies;
+  std::vector<net::CookieMonster::CanonicalCookie*> initial_cookies;
 
   // Insert 4 cookies with name "X" on path "/", with varying creation
   // dates. We expect only the most recent one to be preserved following
   // the import.
 
-  AddKeyedCookieToList("www.google.com",
-                       "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                       Time::Now() + TimeDelta::FromDays(3),
-                       &initial_cookies);
+  AddCookieToList("www.google.com",
+                  "X=1; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  Time::Now() + TimeDelta::FromDays(3),
+                  &initial_cookies);
 
-  AddKeyedCookieToList("www.google.com",
-                       "X=2; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                       Time::Now() + TimeDelta::FromDays(1),
-                       &initial_cookies);
+  AddCookieToList("www.google.com",
+                  "X=2; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  Time::Now() + TimeDelta::FromDays(1),
+                  &initial_cookies);
 
   // ===> This one is the WINNER (biggest creation time).  <====
-  AddKeyedCookieToList("www.google.com",
-                       "X=3; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                       Time::Now() + TimeDelta::FromDays(4),
-                       &initial_cookies);
+  AddCookieToList("www.google.com",
+                  "X=3; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  Time::Now() + TimeDelta::FromDays(4),
+                  &initial_cookies);
 
-  AddKeyedCookieToList("www.google.com",
-                       "X=4; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                       Time::Now(),
-                       &initial_cookies);
+  AddCookieToList("www.google.com",
+                  "X=4; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  Time::Now(),
+                  &initial_cookies);
 
   // Insert 2 cookies with name "X" on path "/2", with varying creation
   // dates. We expect only the most recent one to be preserved the import.
 
   // ===> This one is the WINNER (biggest creation time).  <====
-  AddKeyedCookieToList("www.google.com",
-                       "X=a1; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                       Time::Now() + TimeDelta::FromDays(9),
-                       &initial_cookies);
+  AddCookieToList("www.google.com",
+                  "X=a1; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  Time::Now() + TimeDelta::FromDays(9),
+                  &initial_cookies);
 
-  AddKeyedCookieToList("www.google.com",
-                       "X=a2; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                       Time::Now() + TimeDelta::FromDays(2),
-                       &initial_cookies);
+  AddCookieToList("www.google.com",
+                  "X=a2; path=/2; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  Time::Now() + TimeDelta::FromDays(2),
+                  &initial_cookies);
 
   // Insert 1 cookie with name "Y" on path "/".
-  AddKeyedCookieToList("www.google.com",
-                       "Y=a; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
-                       Time::Now() + TimeDelta::FromDays(10),
-                       &initial_cookies);
+  AddCookieToList("www.google.com",
+                  "Y=a; path=/; expires=Mon, 18-Apr-22 22:50:14 GMT",
+                  Time::Now() + TimeDelta::FromDays(10),
+                  &initial_cookies);
 
   // Inject our initial cookies into the mock PersistentCookieStore.
   store->SetLoadExpectation(true, initial_cookies);
@@ -1447,40 +1447,16 @@ TEST(CookieMonsterTest, DontImportDuplicateCreationTimes) {
   // four with the earlier time as creation times.  We should only get
   // two cookies remaining, but which two (other than that there should
   // be one from each set) will be random.
-  std::vector<net::CookieMonster::KeyedCanonicalCookie> initial_cookies;
-  AddKeyedCookieToList("www.google.com",
-                       "X=1; path=/",
-                       now,
-                       &initial_cookies);
-  AddKeyedCookieToList("www.google.com",
-                       "X=2; path=/",
-                       now,
-                       &initial_cookies);
-  AddKeyedCookieToList("www.google.com",
-                       "X=3; path=/",
-                       now,
-                       &initial_cookies);
-  AddKeyedCookieToList("www.google.com",
-                       "X=4; path=/",
-                       now,
-                       &initial_cookies);
+  std::vector<net::CookieMonster::CanonicalCookie*> initial_cookies;
+  AddCookieToList("www.google.com", "X=1; path=/", now, &initial_cookies);
+  AddCookieToList("www.google.com", "X=2; path=/", now, &initial_cookies);
+  AddCookieToList("www.google.com", "X=3; path=/", now, &initial_cookies);
+  AddCookieToList("www.google.com", "X=4; path=/", now, &initial_cookies);
 
-  AddKeyedCookieToList("www.google.com",
-                       "Y=1; path=/",
-                       earlier,
-                       &initial_cookies);
-  AddKeyedCookieToList("www.google.com",
-                       "Y=2; path=/",
-                       earlier,
-                       &initial_cookies);
-  AddKeyedCookieToList("www.google.com",
-                       "Y=3; path=/",
-                       earlier,
-                       &initial_cookies);
-  AddKeyedCookieToList("www.google.com",
-                       "Y=4; path=/",
-                       earlier,
-                       &initial_cookies);
+  AddCookieToList("www.google.com", "Y=1; path=/", earlier, &initial_cookies);
+  AddCookieToList("www.google.com", "Y=2; path=/", earlier, &initial_cookies);
+  AddCookieToList("www.google.com", "Y=3; path=/", earlier, &initial_cookies);
+  AddCookieToList("www.google.com", "Y=4; path=/", earlier, &initial_cookies);
 
   // Inject our initial cookies into the mock PersistentCookieStore.
   store->SetLoadExpectation(true, initial_cookies);
