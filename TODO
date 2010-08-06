@@ -1,7 +1,7 @@
 Core wayland protocol
 
- - enter notify needs coordinates for cases where pointer focus
-   changes without motion (surfaces coming or going)
+ - generate pointer_focus on raise/lower, move windows, all kinds of
+   changes in surface stacking.
 
  - generate marshal stubs as static inline functions.
 

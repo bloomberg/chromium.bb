@@ -124,6 +124,10 @@
     <event name="pointer_focus">
       <arg name="time" type="uint"/>
       <arg name="surface" type="surface"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="surface_x" type="int"/>
+      <arg name="surface_y" type="int"/>
     </event>
 
     <event name="keyboard_focus">

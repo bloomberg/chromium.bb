@@ -400,7 +400,8 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 static void
 window_handle_pointer_focus(void *data,
 			    struct wl_input_device *input_device,
-			    uint32_t time, struct wl_surface *surface)
+			    uint32_t time, struct wl_surface *surface,
+			    int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct input *input = data;
 

@@ -81,8 +81,6 @@ struct wl_visual {
 
 struct wl_output {
 	struct wl_proxy proxy;
-	struct wl_listener listener;
-	int32_t width, height;
 };
 
 struct wl_shell {

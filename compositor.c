@@ -641,7 +641,9 @@ wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
 static void
 wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
 				    struct wlsc_surface *surface,
-				    uint32_t time)
+				    uint32_t time,
+				    int32_t x, int32_t y,
+				    int32_t sx, int32_t sy)
 {
 	if (device->pointer_focus == surface)
 		return;
@@ -651,12 +653,13 @@ wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
 		wl_surface_post_event(&device->pointer_focus->base,
 				      &device->base,
 				      WL_INPUT_DEVICE_POINTER_FOCUS,
-				      time, NULL);
+				      time, NULL, 0, 0, 0, 0);
 	if (surface)
 		wl_surface_post_event(&surface->base,
 				      &device->base,
 				      WL_INPUT_DEVICE_POINTER_FOCUS,
-				      time, &surface->base);
+				      time, &surface->base,
+				      x, y, sx, sy);
 
 	device->pointer_focus = surface;
 }
@@ -711,7 +714,8 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	case WLSC_DEVICE_GRAB_MOTION:
 		es = pick_surface(device, &sx, &sy);
 
-		wlsc_input_device_set_pointer_focus(device, es, time);
+		wlsc_input_device_set_pointer_focus(device, es,
+						    time, x, y, sx, sy);
 
 		if (es)
 			wl_surface_post_event(&es->base, &device->base,
@@ -806,6 +810,12 @@ notify_button(struct wlsc_input_device *device,
 		    (device->modifier_state & MODIFIER_SUPER))
 			shell_move(NULL, &compositor->shell,
 				   &surface->base, device, time);
+		else if (state && button == BTN_MIDDLE &&
+			 device->grab == WLSC_DEVICE_GRAB_MOTION &&
+			 (device->modifier_state & MODIFIER_SUPER))
+			shell_resize(NULL, &compositor->shell,
+				     &surface->base, device, time,
+				     WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT);
 		else
 			wl_surface_post_event(&surface->base, &device->base,
 					      WL_INPUT_DEVICE_BUTTON,
@@ -896,7 +906,9 @@ handle_surface_destroy(struct wlsc_listener *listener,
 	if (device->pointer_focus == surface) {
 		device->grab = WLSC_DEVICE_GRAB_NONE;
 		focus = pick_surface(device, &sx, &sy);
-		wlsc_input_device_set_pointer_focus(device, focus, time);
+		wlsc_input_device_set_pointer_focus(device, focus, time,
+						    device->x, device->y,
+						    sx, sy);
 		fprintf(stderr, "lost pointer focus surface, reverting to %p\n", focus);
 	}
 }
