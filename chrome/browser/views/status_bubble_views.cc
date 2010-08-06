@@ -571,11 +571,22 @@ void StatusBubbleViews::Init() {
 }
 
 void StatusBubbleViews::Reposition() {
+  int xpos;
+  // If the UI layout is RTL, we need to mirror the position of the bubble
+  // relative to the parent. Don't hold onto the mirrored position, or
+  // the bubble will flip back and forth from left to right.
+  if (base::i18n::IsRTL()) {
+    gfx::Rect frame_bounds;
+    frame_->GetBounds(&frame_bounds, false);
+    xpos = frame_bounds.width() - position_.x() - size_.width();
+  } else {
+    xpos = position_.x();
+  }
+
   if (popup_.get()) {
     gfx::Point top_left;
     views::View::ConvertPointToScreen(frame_->GetRootView(), &top_left);
-
-    popup_->SetBounds(gfx::Rect(top_left.x() + position_.x(),
+    popup_->SetBounds(gfx::Rect(top_left.x() + xpos,
                                 top_left.y() + position_.y(),
                                 size_.width(), size_.height()));
   }
@@ -587,17 +598,7 @@ gfx::Size StatusBubbleViews::GetPreferredSize() {
 }
 
 void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
-  // If the UI layout is RTL, we need to mirror the position of the bubble
-  // relative to the parent.
-  if (base::i18n::IsRTL()) {
-    gfx::Rect frame_bounds;
-    frame_->GetBounds(&frame_bounds, false);
-    int mirrored_x = frame_bounds.width() - x - w;
-    position_.SetPoint(mirrored_x, y);
-  } else {
-    position_.SetPoint(x, y);
-  }
-
+  position_.SetPoint(x, y);
   size_.SetSize(w, h);
   Reposition();
 }
