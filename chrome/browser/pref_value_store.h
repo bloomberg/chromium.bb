@@ -21,6 +21,7 @@
 #include "chrome/common/pref_store.h"
 
 class PrefStore;
+class Profile;
 
 // The class PrefValueStore provides values for preferences. Each Preference
 // has a unique name. This name is used to retrieve the value of a Preference.
@@ -38,18 +39,17 @@ class PrefStore;
 // be called on the UI thread.
 class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
  public:
-  // In decreasing order of precedence:
-  //   |managed_prefs| contains all managed (policy) preference values.
-  //   |extension_prefs| contains preference values set by extensions.
-  //   |command_line_prefs| contains preference values set by command-line
-  //        switches.
-  //   |user_prefs| contains all user-set preference values.
-  //   |recommended_prefs| contains all recommended (policy) preference values.
-  PrefValueStore(PrefStore* managed_prefs,
-                 PrefStore* extension_prefs,
-                 PrefStore* command_line_prefs,
-                 PrefStore* user_prefs,
-                 PrefStore* recommended_prefs);
+  // Returns a new PrefValueStore with all applicable PrefStores. The
+  // |pref_filename| points to the user preference file. The |profile| is the
+  // one to which these preferences apply; it may be NULL if we're dealing
+  // with the local state. If |pref_filename| is empty, the user PrefStore will
+  // not be created. If |user_only| is true, no PrefStores will be created
+  // other than the user PrefStore (if |pref_filename| is not empty). This
+  // should not normally be called directly: the usual way to create a
+  // PrefValueStore is by creating a PrefService.
+  static PrefValueStore* CreatePrefValueStore(const FilePath& pref_filename,
+                                              Profile* profile,
+                                              bool user_only);
 
   ~PrefValueStore();
 
@@ -126,6 +126,24 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   void RefreshPolicyPrefs(PrefStore* managed_pref_store,
                           PrefStore* recommended_pref_store,
                           AfterRefreshCallback callback);
+
+ protected:
+  // In decreasing order of precedence:
+  //   |managed_prefs| contains all managed (policy) preference values.
+  //   |extension_prefs| contains preference values set by extensions.
+  //   |command_line_prefs| contains preference values set by command-line
+  //        switches.
+  //   |user_prefs| contains all user-set preference values.
+  //   |recommended_prefs| contains all recommended (policy) preference values.
+  //
+  // This constructor should only be used internally, or by subclasses in
+  // testing. The usual way to create a PrefValueStore is by creating a
+  // PrefService.
+  PrefValueStore(PrefStore* managed_prefs,
+                 PrefStore* extension_prefs,
+                 PrefStore* command_line_prefs,
+                 PrefStore* user_prefs,
+                 PrefStore* recommended_prefs);
 
  private:
   friend class PrefValueStoreTest;

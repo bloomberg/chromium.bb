@@ -6,8 +6,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dummy_pref_store.h"
 #include "chrome/browser/pref_value_store.h"
+#include "chrome/test/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -85,11 +87,12 @@ class PrefValueStoreTest : public testing::Test {
     recommended_pref_store_->set_prefs(recommended_prefs_);
 
     // Create a new pref-value-store.
-    pref_value_store_ = new PrefValueStore(enforced_pref_store_,
-                                           extension_pref_store_,
-                                           command_line_pref_store_,
-                                           user_pref_store_,
-                                           recommended_pref_store_);
+    pref_value_store_ = new TestingPrefService::TestingPrefValueStore(
+        enforced_pref_store_,
+        extension_pref_store_,
+        command_line_pref_store_,
+        user_pref_store_,
+        recommended_pref_store_);
 
     ui_thread_.reset(new ChromeThread(ChromeThread::UI, &loop_));
     file_thread_.reset(new ChromeThread(ChromeThread::FILE, &loop_));
@@ -176,7 +179,7 @@ class PrefValueStoreTest : public testing::Test {
 
   MessageLoop loop_;
 
-  scoped_refptr<PrefValueStore> pref_value_store_;
+  scoped_refptr<TestingPrefService::TestingPrefValueStore> pref_value_store_;
 
   // |PrefStore|s are owned by the |PrefValueStore|.
   DummyPrefStore* enforced_pref_store_;

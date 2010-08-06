@@ -14,6 +14,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/test/testing_pref_service.h"
 
 namespace {
 
@@ -321,7 +322,8 @@ TEST(ExtensionPrefStoreTest, NotifyWhenNeeded) {
   // The PrefValueStore takes ownership of the PrefStores; in this case, that's
   // only an ExtensionPrefStore. Likewise, the PrefService takes ownership of
   // the PrefValueStore.
-  PrefValueStore* value_store = new PrefValueStore(NULL, eps, NULL, NULL, NULL);
+  PrefValueStore* value_store = new TestingPrefService::TestingPrefValueStore(
+      NULL, eps, NULL, NULL, NULL);
   scoped_ptr<MockPrefService> pref_service(new MockPrefService(value_store));
   eps->SetPrefService(pref_service.get());
   pref_service->RegisterStringPref(kPref1, std::string());

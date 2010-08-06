@@ -3,21 +3,43 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/pref_value_store.h"
+
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/command_line_pref_store.h"
+#include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/browser/extensions/extension_pref_store.h"
+#include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"
 
-PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
-                               PrefStore* extension_prefs,
-                               PrefStore* command_line_prefs,
-                               PrefStore* user_prefs,
-                               PrefStore* recommended_prefs) {
-  pref_stores_[MANAGED].reset(managed_prefs);
-  pref_stores_[EXTENSION].reset(extension_prefs);
-  pref_stores_[COMMAND_LINE].reset(command_line_prefs);
-  pref_stores_[USER].reset(user_prefs);
-  pref_stores_[RECOMMENDED].reset(recommended_prefs);
+// static
+PrefValueStore* PrefValueStore::CreatePrefValueStore(
+    const FilePath& pref_filename,
+    Profile* profile,
+    bool user_only) {
+  ConfigurationPolicyPrefStore* managed = NULL;
+  ExtensionPrefStore* extension = NULL;
+  CommandLinePrefStore* command_line = NULL;
+  JsonPrefStore* user = NULL;
+  ConfigurationPolicyPrefStore* recommended = NULL;
+
+  if (!pref_filename.empty()) {
+    user = new JsonPrefStore(
+        pref_filename,
+        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
+  }
+
+  if (!user_only) {
+    managed = ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore();
+    extension = new ExtensionPrefStore(profile);
+    command_line = new CommandLinePrefStore(CommandLine::ForCurrentProcess());
+    recommended =
+        ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
+  }
+  return new PrefValueStore(managed, extension, command_line, user,
+      recommended);
 }
 
-PrefValueStore::~PrefValueStore() { }
+PrefValueStore::~PrefValueStore() {}
 
 bool PrefValueStore::GetValue(const std::wstring& name,
                               Value** out_value) const {
@@ -210,4 +232,16 @@ void PrefValueStore::RefreshPolicyPrefs(
                         new_managed_pref_store,
                         new_recommended_pref_store,
                         callback));
+}
+
+PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
+                               PrefStore* extension_prefs,
+                               PrefStore* command_line_prefs,
+                               PrefStore* user_prefs,
+                               PrefStore* recommended_prefs) {
+  pref_stores_[MANAGED].reset(managed_prefs);
+  pref_stores_[EXTENSION].reset(extension_prefs);
+  pref_stores_[COMMAND_LINE].reset(command_line_prefs);
+  pref_stores_[USER].reset(user_prefs);
+  pref_stores_[RECOMMENDED].reset(recommended_prefs);
 }

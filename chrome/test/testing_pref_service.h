@@ -8,11 +8,23 @@
 
 #include <chrome/browser/pref_service.h>
 
+class PrefStore;
+
 // A PrefService subclass for testing. It operates totally in memory and
 // provides additional API for manipulating preferences at the different levels
 // (managed, extension, user) conveniently.
 class TestingPrefService : public PrefService {
  public:
+  // Subclass to allow directly setting PrefStores.
+  class TestingPrefValueStore : public PrefValueStore {
+   public:
+    TestingPrefValueStore(PrefStore* managed_prefs,
+                          PrefStore* extension_prefs,
+                          PrefStore* command_line_prefs,
+                          PrefStore* user_prefs,
+                          PrefStore* recommended_prefs);
+  };
+
   // Create an empty instance.
   TestingPrefService();
 

@@ -19,11 +19,8 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/profile.h"
-#include "chrome/browser/command_line_pref_store.h"
 #include "chrome/browser/configuration_policy_pref_store.h"
-#include "chrome/browser/extensions/extension_pref_store.h"
-#include "chrome/common/json_pref_store.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -83,37 +80,14 @@ void NotifyReadError(PrefService* pref, int message_id) {
 // static
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
                                             Profile* profile) {
-  ExtensionPrefStore* extension_prefs = new ExtensionPrefStore(profile);
-  CommandLinePrefStore* command_line_prefs = new CommandLinePrefStore(
-      CommandLine::ForCurrentProcess());
-  PrefStore* local_prefs = new JsonPrefStore(
-      pref_filename,
-      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE));
-
-  // The PrefValueStore takes ownership of the PrefStores.
-  PrefValueStore* value_store = new PrefValueStore(
-      ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore(),
-      extension_prefs,
-      command_line_prefs,
-      local_prefs,
-      ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore());
-
-  return new PrefService(value_store);
+  return new PrefService(
+      PrefValueStore::CreatePrefValueStore(pref_filename, profile, false));
 }
 
 // static
-PrefService* PrefService::CreateUserPrefService(
-    const FilePath& pref_filename) {
-  PrefValueStore* value_store = new PrefValueStore(
-      NULL, /* no enforced prefs */
-      NULL, /* no extension prefs */
-      NULL, /* no command-line prefs */
-      new JsonPrefStore(
-          pref_filename,
-          ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE)),
-          /* user prefs */
-      NULL /* no advised prefs */);
-  return new PrefService(value_store);
+PrefService* PrefService::CreateUserPrefService(const FilePath& pref_filename) {
+  return new PrefService(
+      PrefValueStore::CreatePrefValueStore(pref_filename, NULL, true));
 }
 
 PrefService::PrefService(PrefValueStore* pref_value_store)

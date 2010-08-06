@@ -101,8 +101,8 @@ class PrefService : public NonThreadSafe,
     DISALLOW_COPY_AND_ASSIGN(Preference);
   };
 
-  // Factory method that creates a new instance of a |PrefService| with
-  // all platform-applicable PrefStores (managed, extension, user, etc.).
+  // Factory method that creates a new instance of a PrefService with
+  // a PrefValueStore containing all platform-applicable PrefStores.
   // The |pref_filename| points to the user preference file. The |profile| is
   // the one to which these preferences apply; it may be NULL if we're dealing
   // with the local state. This is the usual way to create a new PrefService.
