@@ -3786,6 +3786,32 @@
    fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
 }
 {
+   bug_51076_c
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:g_list_alloc
+   fun:g_object_notify
+   fun:gtk_window_set_position
+   fun:_ZN5views9WidgetGtk15CreateGtkWidgetEP10_GtkWidgetRKN3gfx4RectE
+   fun:_ZN5views9WidgetGtk4InitEP10_GtkWidgetRKN3gfx4RectE
+   fun:_ZN17StatusBubbleViews4InitEv
+   fun:_ZN17StatusBubbleViews6SetURLERK4GURLRKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN7Browser15UpdateTargetURLEP11TabContentsRK4GURL
+   fun:_ZN11TabContents15UpdateTargetURLEiRK4GURL
+   fun:_ZN11TabContents30DidNavigateMainFramePostCommitERKN20NavigationController20LoadCommittedDetailsERK32ViewHostMsg_FrameNavigate_Params
+   fun:_ZN11TabContents11DidNavigateEP14RenderViewHostRK32ViewHostMsg_FrameNavigate_Params
+   fun:_ZN14RenderViewHost13OnMsgNavigateERKN3IPC7MessageE
+   fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN24BrowserRenderProcessHost17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
+}
+{
    bug_51133
    Memcheck:Leak
    fun:_Znw*
@@ -3868,7 +3894,7 @@
    fun:_ZN8chromeos23GoogleAuthenticatorTest5SetUpEv
 }
 {
-   bug_51263
+   bug_51263_a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN8chromeos11CrosLibrary12EnsureLoadedEv
@@ -3878,6 +3904,20 @@
    fun:_ZN7Profile13CreateProfileERK8FilePath
    fun:_ZN14ProfileManager13CreateProfileERK8FilePath
 }
+{
+   bug_51263_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos11CrosLibrary12EnsureLoadedEv
+   fun:_ZN8chromeos20SynapticsLibraryImpl12SetParameterENS_18SynapticsParameterEi
+   fun:_ZN8chromeos20SynapticsLibraryImpl16SetBoolParameterENS_18SynapticsParameterEb
+   fun:_ZN8chromeos11Preferences17NotifyPrefChangedEPKSbIwSt11char_traitsIwESaIwEE
+   fun:_ZN8chromeos11Preferences4InitEP11PrefService
+   fun:_ZN11ProfileImplC1ERK8FilePath
+   fun:_ZN7Profile13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager10GetProfileERK8FilePathb
+}
+
 {
    bug_51379
    Memcheck:Leak
