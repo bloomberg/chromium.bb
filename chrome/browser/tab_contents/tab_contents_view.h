@@ -16,7 +16,6 @@
 #include "gfx/rect.h"
 #include "gfx/size.h"
 
-class Browser;
 class RenderViewHost;
 class RenderWidgetHost;
 class RenderWidgetHostView;

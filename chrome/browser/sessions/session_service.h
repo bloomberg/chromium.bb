@@ -20,7 +20,6 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-class Browser;
 class NavigationController;
 class NavigationEntry;
 class Profile;

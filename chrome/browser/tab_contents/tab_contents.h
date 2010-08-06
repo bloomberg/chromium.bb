@@ -10,7 +10,6 @@
 
 #include <deque>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -46,15 +45,6 @@
 
 namespace gfx {
 class Rect;
-class Size;
-}
-
-namespace views {
-class WindowDelegate;
-}
-
-namespace base {
-class WaitableEvent;
 }
 
 namespace printing {
@@ -76,7 +66,6 @@ class BlockedPopupContainer;
 class DOMUI;
 class DownloadItem;
 class Extension;
-class GeolocationSettingsState;
 class InfoBarDelegate;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
@@ -89,13 +78,10 @@ class SiteInstance;
 class SkBitmap;
 class TabContents;
 class TabContentsDelegate;
-class TabContentsFactory;
 class TabContentsSSLHelper;
 class TabContentsView;
 class URLPattern;
-class URLRequestContextGetter;
 struct ThumbnailScore;
-struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_RunFileChooser_Params;
 struct WebPreferences;

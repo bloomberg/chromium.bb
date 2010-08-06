@@ -27,8 +27,6 @@
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "chrome/common/net/url_fetcher.h"
 
-class Task;
-class Timer;
 class URLRequestStatus;
 
 #if defined(COMPILER_GCC)

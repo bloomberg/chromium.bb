@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 struct sqlite3;
-class SqliteCompiledStatement;
 class SqliteStatementCache;
 class SQLTransaction;
 

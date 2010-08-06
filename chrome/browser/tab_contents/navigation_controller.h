@@ -21,13 +21,9 @@
 #include "chrome/common/page_transition_types.h"
 
 class NavigationEntry;
-class GURL;
 class Profile;
-class TabContents;
 class SiteInstance;
-class SkBitmap;
 class TabContents;
-class TabContentsCollector;
 class TabNavigation;
 struct ViewHostMsg_FrameNavigate_Params;
 

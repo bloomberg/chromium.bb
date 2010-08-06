@@ -29,10 +29,6 @@ class RenderViewHost;
 class TabContents;
 class TemplateURL;
 
-namespace webkit_glue {
-struct WebApplicationInfo;
-}
-
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.
 class TabContentsDelegate : public AutomationResourceRoutingDelegate {

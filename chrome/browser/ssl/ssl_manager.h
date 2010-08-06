@@ -19,12 +19,10 @@
 class LoadFromMemoryCacheDetails;
 class NavigationController;
 class NavigationEntry;
-class PrefService;
 class ProvisionalLoadDetails;
 class ResourceDispatcherHost;
 class ResourceRedirectDetails;
 class ResourceRequestDetails;
-class SSLCertErrorHandler;
 class SSLPolicy;
 class Task;
 class URLRequest;

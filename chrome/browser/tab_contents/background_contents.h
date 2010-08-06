@@ -16,8 +16,6 @@
 #include "chrome/common/view_types.h"
 #include "chrome/common/window_container_type.h"
 
-class RenderWidgetHost;
-class RenderWidgetHostView;
 class TabContents;
 struct WebPreferences;
 

@@ -13,7 +13,6 @@
 #include "chrome/common/page_transition_types.h"
 
 namespace gfx {
-class Point;
 class Rect;
 }
 class Browser;

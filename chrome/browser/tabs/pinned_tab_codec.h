@@ -12,7 +12,6 @@
 #include "chrome/browser/browser_init.h"
 #include "googleurl/src/gurl.h"
 
-class Browser;
 class PrefService;
 class Profile;
 

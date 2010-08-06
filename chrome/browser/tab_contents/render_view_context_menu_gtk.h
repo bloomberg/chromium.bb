@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
 #pragma once
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -15,7 +14,6 @@
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "gfx/point.h"
 
-class RenderWidgetHostView;
 struct ContextMenuParams;
 
 class RenderViewContextMenuGtk : public RenderViewContextMenu,

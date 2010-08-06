@@ -9,7 +9,6 @@
 #include "app/menus/simple_menu_model.h"
 
 class TranslateInfoBarDelegate;
-class String16;
 
 // A menu model that builds the contents of the options menu in the translate
 // infobar. This menu has only one level (no submenus).

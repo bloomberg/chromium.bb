@@ -9,7 +9,6 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
-class Browser;
 class Profile;
 
 // PinnedTabService is responsible for updating preferences with the set of

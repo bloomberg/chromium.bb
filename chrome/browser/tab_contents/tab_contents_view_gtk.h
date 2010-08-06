@@ -17,12 +17,10 @@
 #include "chrome/common/notification_registrar.h"
 
 class ConstrainedWindowGtk;
-class GtkThemeProperties;
 class RenderViewContextMenuGtk;
 class SadTabGtk;
 class TabContentsDragSource;
 class WebDragDestGtk;
-typedef struct _GtkFloatingContainer GtkFloatingContainer;
 
 class TabContentsViewGtk : public TabContentsView,
                            public NotificationObserver {
