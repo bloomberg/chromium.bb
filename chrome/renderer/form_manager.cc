@@ -618,9 +618,9 @@ bool FormManager::ClearFormWithNode(const WebKit::WebNode& node) {
   return true;
 }
 
-bool FormManager::ClearPreviewedForm(const FormData& form) {
+bool FormManager::ClearPreviewedFormWithNode(const WebKit::WebNode& node) {
   FormElement* form_element = NULL;
-  if (!FindCachedFormElement(form, &form_element))
+  if (!FindCachedFormElementWithNode(node, &form_element))
     return false;
 
   for (size_t i = 0; i < form_element->control_elements.size(); ++i) {

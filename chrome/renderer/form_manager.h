@@ -102,9 +102,9 @@ class FormManager {
   bool ClearFormWithNode(const WebKit::WebNode& node);
 
   // Clears the placeholder values and the auto-filled background for any fields
-  // in |form| that have been previewed.  Returns false if the form is not
-  // found.
-  bool ClearPreviewedForm(const webkit_glue::FormData& form);
+  // in the form containing |node| that have been previewed. Returns false if
+  // the form is not found.
+  bool ClearPreviewedFormWithNode(const WebKit::WebNode& node);
 
   // Resets the stored set of forms.
   void Reset();

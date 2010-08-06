@@ -186,13 +186,7 @@ void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
 }
 
 void AutoFillHelper::DidClearAutoFillSelection(const WebNode& node) {
-  webkit_glue::FormData form;
-  const WebFormControlElement element = node.toConst<WebFormControlElement>();
-  if (!form_manager_.FindFormWithFormControlElement(
-          element, FormManager::REQUIRE_NONE, &form)) {
-    return;
-  }
-  form_manager_.ClearPreviewedForm(form);
+  form_manager_.ClearPreviewedFormWithNode(node);
 }
 
 void AutoFillHelper::FrameContentsAvailable(WebFrame* frame) {
