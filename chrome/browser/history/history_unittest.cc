@@ -24,7 +24,6 @@
 #include "app/sql/statement.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -42,7 +41,6 @@
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
@@ -687,9 +685,6 @@ TEST_F(HistoryTest, Segments) {
 // This just tests history system -> thumbnail database integration, the actual
 // thumbnail tests are in its own file.
 TEST_F(HistoryTest, Thumbnails) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
-    return;  // TopSitesTest replaces this.
-
   scoped_refptr<HistoryService> history(new HistoryService);
   history_service_ = history;
   ASSERT_TRUE(history->Init(history_dir_, NULL));

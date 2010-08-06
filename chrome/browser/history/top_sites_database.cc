@@ -5,7 +5,6 @@
 #include "app/sql/transaction.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/history/top_sites_database.h"
 
@@ -49,7 +48,7 @@ bool TopSitesDatabaseImpl::InitThumbnailTable() {
 
 void TopSitesDatabaseImpl::GetPageThumbnails(MostVisitedURLList* urls,
                                              std::map<GURL,
-                                             Images>* thumbnails) {
+                                             TopSites::Images>* thumbnails) {
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT url, url_rank, title, thumbnail, redirects, "
@@ -76,7 +75,7 @@ void TopSitesDatabaseImpl::GetPageThumbnails(MostVisitedURLList* urls,
 
     std::vector<unsigned char> data;
     statement.ColumnBlobAsVector(3, &data);
-    Images thumbnail;
+    TopSites::Images thumbnail;
     thumbnail.thumbnail = RefCountedBytes::TakeVector(&data);
     thumbnail.thumbnail_score.boring_score = statement.ColumnDouble(5);
     thumbnail.thumbnail_score.good_clipping = statement.ColumnBool(6);
@@ -107,7 +106,7 @@ void TopSitesDatabaseImpl::SetRedirects(const std::string& redirects,
 
 void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
                                             int new_rank,
-                                            const Images& thumbnail) {
+                                            const TopSites::Images& thumbnail) {
   sql::Transaction transaction(&db_);
   transaction.Begin();
 
@@ -123,7 +122,7 @@ void TopSitesDatabaseImpl::SetPageThumbnail(const MostVisitedURL& url,
 }
 
 void TopSitesDatabaseImpl::UpdatePageThumbnail(
-    const MostVisitedURL& url, const Images& thumbnail) {
+    const MostVisitedURL& url, const TopSites::Images& thumbnail) {
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "UPDATE thumbnails SET "
@@ -151,7 +150,7 @@ void TopSitesDatabaseImpl::UpdatePageThumbnail(
 
 void TopSitesDatabaseImpl::AddPageThumbnail(const MostVisitedURL& url,
                                             int new_rank,
-                                            const Images& thumbnail) {
+                                            const TopSites::Images& thumbnail) {
   int count = GetRowCount();
 
   sql::Statement statement(db_.GetCachedStatement(
@@ -195,7 +194,7 @@ void TopSitesDatabaseImpl::UpdatePageRankNoTransaction(
     const MostVisitedURL& url, int new_rank) {
   int prev_rank = GetURLRank(url);
   if (prev_rank == -1) {
-    LOG(WARNING) << "Updating rank of an unknown URL: " << url.url.spec();
+    NOTREACHED() << "Updating rank of an unknown URL: " << url.url.spec();
     return;
   }
 
@@ -237,7 +236,7 @@ void TopSitesDatabaseImpl::UpdatePageRankNoTransaction(
 }
 
 bool TopSitesDatabaseImpl::GetPageThumbnail(const GURL& url,
-                                            Images* thumbnail) {
+                                            TopSites::Images* thumbnail) {
   sql::Statement statement(db_.GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT thumbnail, boring_score, good_clipping, at_top, last_updated "

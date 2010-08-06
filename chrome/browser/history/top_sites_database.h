@@ -12,12 +12,13 @@
 
 #include "app/sql/connection.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"  // For DBCloseScoper.
 
 class FilePath;
 class RefCountedMemory;
 class SkBitmap;
-class Images;
+class TopSites;
 
 namespace base {
 class Time;
@@ -37,7 +38,7 @@ class TopSitesDatabase {
   // Returns a list of all URLs currently in the table.
   virtual void GetPageThumbnails(MostVisitedURLList* urls,
                                  std::map<GURL,
-                                 Images>* thumbnails) = 0;
+                                 TopSites::Images>* thumbnails) = 0;
 
   // Set a thumbnail for a URL. |url_rank| is the position of the URL
   // in the list of TopURLs, zero-based.
@@ -45,20 +46,20 @@ class TopSitesDatabase {
   // thumbnail.
   virtual void SetPageThumbnail(const MostVisitedURL& url,
                                 int url_rank,
-                                const Images& thumbnail) = 0;
+                                const TopSites::Images& thumbnail) = 0;
 
   // Update rank of a URL that's already in the database.
   virtual void UpdatePageRank(const MostVisitedURL& url, int new_rank) = 0;
 
   // Convenience wrapper.
   bool GetPageThumbnail(const MostVisitedURL& url,
-                        Images* thumbnail) {
+                        TopSites::Images* thumbnail) {
     return GetPageThumbnail(url.url, thumbnail);
   }
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   virtual bool GetPageThumbnail(const GURL& url,
-                                Images* thumbnail) = 0;
+                                TopSites::Images* thumbnail) = 0;
 
   // Remove the record for this URL. Returns true iff removed successfully.
   virtual bool RemoveURL(const MostVisitedURL& url) = 0;
@@ -78,7 +79,7 @@ class TopSitesDatabaseImpl : public TopSitesDatabase {
   // Returns a list of all URLs currently in the table.
   // WARNING: clears both input arguments.
   virtual void GetPageThumbnails(MostVisitedURLList* urls,
-                                 std::map<GURL, Images>* thumbnails);
+                                 std::map<GURL, TopSites::Images>* thumbnails);
 
   // Set a thumbnail for a URL. |url_rank| is the position of the URL
   // in the list of TopURLs, zero-based.
@@ -86,7 +87,7 @@ class TopSitesDatabaseImpl : public TopSitesDatabase {
   // thumbnail and rank. Shift the ranks of other URLs if necessary.
   virtual void SetPageThumbnail(const MostVisitedURL& url,
                                 int new_rank,
-                                const Images& thumbnail);
+                                const TopSites::Images& thumbnail);
 
   // Sets the rank for a given URL. The URL must be in the database.
   // Use SetPageThumbnail if it's not.
@@ -94,7 +95,7 @@ class TopSitesDatabaseImpl : public TopSitesDatabase {
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   virtual bool GetPageThumbnail(const GURL& url,
-                                Images* thumbnail);
+                                TopSites::Images* thumbnail);
 
   // Remove the record for this URL. Returns true iff removed successfully.
   virtual bool RemoveURL(const MostVisitedURL& url);
@@ -107,14 +108,14 @@ class TopSitesDatabaseImpl : public TopSitesDatabase {
   // Adds a new URL to the database.
   void AddPageThumbnail(const MostVisitedURL& url,
                         int new_rank,
-                        const Images& thumbnail);
+                        const TopSites::Images& thumbnail);
 
   // Sets the page rank. Should be called within an open transaction.
   void UpdatePageRankNoTransaction(const MostVisitedURL& url, int new_rank);
 
   // Updates thumbnail of a URL that's already in the database.
   void UpdatePageThumbnail(const MostVisitedURL& url,
-                           const Images& thumbnail);
+                           const TopSites::Images& thumbnail);
 
   // Returns the URL's current rank or -1 if it is not present.
   int GetURLRank(const MostVisitedURL& url);

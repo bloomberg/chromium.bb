@@ -498,8 +498,6 @@ ProfileImpl::~ProfileImpl() {
 
   // This causes the Preferences file to be written to disk.
   MarkAsCleanShutdown();
-  if (top_sites_.get())
-    top_sites_->ClearProfile();
 }
 
 ProfileId ProfileImpl::GetRuntimeId() {

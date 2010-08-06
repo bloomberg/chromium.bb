@@ -682,9 +682,6 @@ const char kNoProxyServer[]                 = "no-proxy-server";
 // Runs the renderer outside the sandbox.
 const char kNoSandbox[]                     = "no-sandbox";
 
-// Don't use TopSites; use old ThumbnailDatabase code instead.
-const char kNoTopSites[]                    = "no-top-sites";
-
 // Specifies the maximum number of threads to use for running the Proxy
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
@@ -944,6 +941,10 @@ const char kTestType[]                      = "test-type";
 // The value of this switch tells the app to listen for and broadcast
 // testing-related messages on IPC channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";
+
+// Enables using TopSites instead of ThumbnailDatabase (and
+// ThumbnailStore) for getting thumbnails for the new tab page.
+const char kTopSites[]                      = "top-sites";
 
 // Excludes these plugins from the plugin sandbox.
 // This is a comma-separated list of plugin library names.

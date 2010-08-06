@@ -16,10 +16,8 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/thumbnail_score.h"
-#include "chrome/test/testing_profile.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -92,8 +90,6 @@ class ExpireHistoryTest : public testing::Test,
   scoped_ptr<ArchivedDatabase> archived_db_;
   scoped_ptr<ThumbnailDatabase> thumb_db_;
   scoped_ptr<TextDatabaseManager> text_db_;
-  TestingProfile profile_;
-  scoped_refptr<TopSites> top_sites_;
 
   // Time at the beginning of the test, so everybody agrees what "now" is.
   const Time now_;
@@ -138,7 +134,6 @@ class ExpireHistoryTest : public testing::Test,
 
     expirer_.SetDatabases(main_db_.get(), archived_db_.get(), thumb_db_.get(),
                           text_db_.get());
-    top_sites_ = profile_.GetTopSites();
   }
 
   void TearDown() {
@@ -150,7 +145,6 @@ class ExpireHistoryTest : public testing::Test,
     archived_db_.reset();
     thumb_db_.reset();
     text_db_.reset();
-    TopSites::DeleteTopSites(top_sites_);
     file_util::Delete(dir_, true);
   }
 
@@ -217,9 +211,9 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
 
   Time time;
   GURL gurl;
-  top_sites_->SetPageThumbnail(url_row1.url(), *thumbnail, score);
-  top_sites_->SetPageThumbnail(url_row2.url(), *thumbnail, score);
-  top_sites_->SetPageThumbnail(url_row3.url(), *thumbnail, score);
+  thumb_db_->SetPageThumbnail(gurl, url_ids[0], *thumbnail, score, time);
+  thumb_db_->SetPageThumbnail(gurl, url_ids[1], *thumbnail, score, time);
+  thumb_db_->SetPageThumbnail(gurl, url_ids[2], *thumbnail, score, time);
 
   // Four visits.
   VisitRow visit_row1;
@@ -277,12 +271,8 @@ bool ExpireHistoryTest::HasFavIcon(FavIconID favicon_id) {
 }
 
 bool ExpireHistoryTest::HasThumbnail(URLID url_id) {
-  URLRow info;
-  if (!main_db_->GetURLRow(url_id, &info))
-    return false;
-  GURL url = info.url();
-  RefCountedBytes *data;
-  return top_sites_->GetPageThumbnail(url, &data);
+  std::vector<unsigned char> temp_data;
+  return thumb_db_->GetPageThumbnail(url_id, &temp_data);
 }
 
 int ExpireHistoryTest::CountTextMatchesForURL(const GURL& url) {

@@ -581,7 +581,7 @@ void HistoryBackend::InitImpl() {
 
   // Thumbnail database.
   thumbnail_db_.reset(new ThumbnailDatabase());
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     if (!db_->needs_version_18_migration()) {
       // No convertion needed - use new filename right away.
       thumbnail_name = GetFaviconsFileName();
@@ -598,7 +598,7 @@ void HistoryBackend::InitImpl() {
     thumbnail_db_.reset();
   }
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     if (db_->needs_version_18_migration()) {
       LOG(INFO) << "Starting TopSites migration";
       delegate_->StartTopSitesMigration();

@@ -2418,7 +2418,7 @@ void TabContents::UpdateThumbnail(const GURL& url,
                                   const SkBitmap& bitmap,
                                   const ThumbnailScore& score) {
   // Tell History about this thumbnail
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     if (!profile()->IsOffTheRecord())
       profile()->GetTopSites()->SetPageThumbnail(url, bitmap, score);
   } else {

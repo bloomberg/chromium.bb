@@ -13,14 +13,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/ref_counted_memory.h"
 #include "base/stack_container.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/history/snippet.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/ref_counted_util.h"
-#include "chrome/common/thumbnail_score.h"
 #include "googleurl/src/gurl.h"
 
 namespace history {
@@ -527,15 +525,6 @@ struct MostVisitedURL {
   bool operator==(const MostVisitedURL& other) {
     return url == other.url;
   }
-};
-
-// Used by TopSites to store the thumbnails.
-struct Images {
-  scoped_refptr<RefCountedBytes> thumbnail;
-  ThumbnailScore thumbnail_score;
-
-  // TODO(brettw): this will eventually store the favicon.
-  // scoped_refptr<RefCountedBytes> favicon;
 };
 
 typedef std::vector<MostVisitedURL> MostVisitedURLList;

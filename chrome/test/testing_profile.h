@@ -9,7 +9,6 @@
 #include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_prefs.h"
@@ -21,7 +20,6 @@
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/pref_service.h"
@@ -165,16 +163,7 @@ class TestingProfile : public Profile {
     return template_url_model_.get();
   }
   virtual TemplateURLFetcher* GetTemplateURLFetcher() { return NULL; }
-  virtual history::TopSites* GetTopSites() {
-    if (!top_sites_.get()) {
-      top_sites_ = new history::TopSites(this);
-      if (!temp_dir_.CreateUniqueTempDir())
-        return NULL;
-      FilePath file_name = temp_dir_.path().AppendASCII("TopSites.db");
-      top_sites_->Init(file_name);
-    }
-    return top_sites_;
-  }
+  virtual history::TopSites* GetTopSites() { return NULL; }
   virtual DownloadManager* GetDownloadManager() { return NULL; }
   virtual PersonalDataManager* GetPersonalDataManager() { return NULL; }
   virtual bool HasCreatedDownloadManager() const { return false; }
@@ -383,8 +372,6 @@ class TestingProfile : public Profile {
   scoped_ptr<FindBarState> find_bar_state_;
 
   FilePath last_selected_directory_;
-  scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
-  ScopedTempDir temp_dir_;
 };
 
 // A profile that derives from another profile.  This does not actually

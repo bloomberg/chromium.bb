@@ -150,7 +150,7 @@ void MostVisitedHandler::SendPagesValue() {
 }
 
 void MostVisitedHandler::StartQueryForMostVisited() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     // Use TopSites.
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
     ts->GetMostVisitedURLs(
@@ -212,7 +212,7 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const Value* urls) {
     }
     UserMetrics::RecordAction(UserMetricsAction("MostVisited_UrlRemoved"),
                               dom_ui_->GetProfile());
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
       history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
       ts->RemoveBlacklistedURL(GURL(WideToASCII(url)));
       return;
@@ -227,7 +227,7 @@ void MostVisitedHandler::HandleClearBlacklist(const Value* value) {
   UserMetrics::RecordAction(UserMetricsAction("MostVisited_BlacklistCleared"),
                             dom_ui_->GetProfile());
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
     ts->ClearBlacklistedURLs();
     return;
@@ -276,7 +276,7 @@ void MostVisitedHandler::HandleAddPinnedURL(const Value* value) {
 }
 
 void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
     ts->AddPinnedURL(page.url, index);
     return;
@@ -315,7 +315,7 @@ void MostVisitedHandler::HandleRemovePinnedURL(const Value* value) {
 }
 
 void MostVisitedHandler::RemovePinnedURL(const GURL& url) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
     ts->RemovePinnedURL(url);
     return;
@@ -485,7 +485,7 @@ void MostVisitedHandler::SetPagesValue(std::vector<PageUsageData*>* data) {
 
 void MostVisitedHandler::SetPagesValueFromTopSites(
     const history::MostVisitedURLList& data) {
-  DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites));
+  DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites));
   pages_value_.reset(new ListValue);
   for (size_t i = 0; i < data.size(); i++) {
     const history::MostVisitedURL& url = data[i];
@@ -607,7 +607,7 @@ void MostVisitedHandler::Observe(NotificationType type,
 }
 
 void MostVisitedHandler::BlacklistURL(const GURL& url) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
     ts->AddBlacklistedURL(url);
     return;
