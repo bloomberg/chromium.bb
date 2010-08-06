@@ -318,6 +318,7 @@ void TabRestoreService::RestoreEntryById(Browser* browser,
   if (entry->type == TAB) {
     Tab* tab = static_cast<Tab*>(entry);
     browser = RestoreTab(*tab, browser, replace_existing_tab);
+    browser->window()->Show();
   } else if (entry->type == WINDOW) {
     Browser* current_browser = browser;
     Window* window = static_cast<Window*>(entry);
