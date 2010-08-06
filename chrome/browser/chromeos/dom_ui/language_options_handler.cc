@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/dom_ui/language_options_handler.h"
 
+#include <map>
+#include <string>
+#include <utility>
+
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -90,17 +94,42 @@ ListValue* LanguageOptionsHandler::GetInputMethodList() {
 }
 
 ListValue* LanguageOptionsHandler::GetLanguageList() {
-  ListValue* language_list = new ListValue();
+  // Map of display name -> {language code, native_display_name}.
+  // In theory, we should be able to create a map that is sorted by
+  // display names using ICU comparator, but doing it is hard, thus we'll
+  // use an auxiliary vector to achieve the same result.
+  typedef std::pair<std::string, std::wstring> LanguagePair;
+  typedef std::map<std::wstring, LanguagePair> LanguageMap;
+  LanguageMap language_map;
+  // The auxiliary vector mentioned above.
+  std::vector<std::wstring> display_names;
 
+  // Build the list of display names, and build the language map.
   const std::vector<std::string>& locales = l10n_util::GetAvailableLocales();
   for (size_t i = 0; i < locales.size(); ++i) {
-    DictionaryValue* dictionary = new DictionaryValue();
-    dictionary->SetString(L"code", UTF8ToWide(locales[i]));
-    dictionary->SetString(L"displayName",
-        chromeos::input_method::GetLanguageDisplayNameFromCode(locales[i]));
-    dictionary->SetString(L"nativeDisplayName",
+    const std::wstring display_name =
+        chromeos::input_method::GetLanguageDisplayNameFromCode(locales[i]);
+    const std::wstring native_display_name =
         chromeos::input_method::GetLanguageNativeDisplayNameFromCode(
-            locales[i]));
+            locales[i]);
+    display_names.push_back(display_name);
+    language_map[display_name] =
+        std::make_pair(locales[i], native_display_name);
+  }
+  DCHECK_EQ(display_names.size(), language_map.size());
+
+  // Sort display names using locale specific sorter.
+  l10n_util::SortStrings(g_browser_process->GetApplicationLocale(),
+                         &display_names);
+
+  // Build the language list from the language map.
+  ListValue* language_list = new ListValue();
+  for (size_t i = 0; i < display_names.size(); ++i) {
+    const LanguagePair& pair = language_map[display_names[i]];
+    DictionaryValue* dictionary = new DictionaryValue();
+    dictionary->SetString(L"code",  pair.first);
+    dictionary->SetString(L"displayName", display_names[i]);
+    dictionary->SetString(L"nativeDisplayName", pair.second);
     language_list->Append(dictionary);
   }
 
