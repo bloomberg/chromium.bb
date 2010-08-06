@@ -37,6 +37,25 @@ void FramebufferManager::CreateFramebufferInfo(
   DCHECK(result.second);
 }
 
+bool FramebufferManager::FramebufferInfo::HasUnclearedAttachment(
+    GLenum attachment) const {
+  AttachmentToRenderbufferMap::const_iterator it =
+      renderbuffers_.find(attachment);
+  if (it != renderbuffers_.end()) {
+    RenderbufferManager::RenderbufferInfo* info = it->second;
+    return !info->cleared();
+  }
+  return false;
+}
+
+void FramebufferManager::FramebufferInfo::MarkAttachedRenderbuffersAsCleared() {
+  for (AttachmentToRenderbufferMap::iterator it = renderbuffers_.begin();
+       it != renderbuffers_.end(); ++it) {
+    RenderbufferManager::RenderbufferInfo* info = it->second;
+    info->set_cleared();
+  }
+}
+
 FramebufferManager::FramebufferInfo* FramebufferManager::GetFramebufferInfo(
     GLuint client_id) {
   FramebufferInfoMap::iterator it = framebuffer_infos_.find(client_id);
@@ -55,7 +74,8 @@ void FramebufferManager::FramebufferInfo::AttachRenderbuffer(
     GLenum attachment, RenderbufferManager::RenderbufferInfo* renderbuffer) {
   DCHECK(attachment == GL_COLOR_ATTACHMENT0 ||
          attachment == GL_DEPTH_ATTACHMENT ||
-         attachment == GL_STENCIL_ATTACHMENT);
+         attachment == GL_STENCIL_ATTACHMENT ||
+         attachment == GL_DEPTH_STENCIL_ATTACHMENT);
   if (renderbuffer) {
     renderbuffers_[attachment] =
         RenderbufferManager::RenderbufferInfo::Ref(renderbuffer);

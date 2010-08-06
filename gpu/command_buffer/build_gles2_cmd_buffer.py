@@ -1038,7 +1038,13 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glCheckFramebufferStatusEXT',
     'result': ['GLenum'],
   },
-  'ClearDepthf': {'decoder_func': 'glClearDepth'},
+  'ClearColor': {'decoder_func': 'DoClearColor'},
+  'ClearDepthf': {
+    'decoder_func': 'DoClearDepthf',
+    'gl_test_func': 'glClearDepth',
+  },
+  'ColorMask': {'decoder_func': 'DoColorMask'},
+  'ClearStencil': {'decoder_func': 'DoClearStencil'},
   'CommandBufferEnable': {
     'type': 'Custom',
     'immediate': False,
@@ -1091,7 +1097,11 @@ _FUNCTION_INFO = {
   },
   'DeleteTextures': {'type': 'DELn'},
   'DepthRangef': {'decoder_func': 'glDepthRange'},
+  'DepthMask': {'decoder_func': 'DoDepthMask'},
   'DetachShader': {'decoder_func': 'DoDetachShader'},
+  'Disable': {
+    'decoder_func': 'DoDisable',
+  },
   'DisableVertexAttribArray': {
     'decoder_func': 'DoDisableVertexAttribArray',
     'impl_decl': False,
@@ -1104,6 +1114,9 @@ _FUNCTION_INFO = {
   'DrawElements': {
     'type': 'Manual',
     'cmd_args': 'GLenum mode, GLsizei count, GLenum type, GLuint index_offset',
+  },
+  'Enable': {
+    'decoder_func': 'DoEnable',
   },
   'EnableVertexAttribArray': {
     'decoder_func': 'DoEnableVertexAttribArray',
@@ -1376,6 +1389,8 @@ _FUNCTION_INFO = {
     'cmd_args':
         'GLuint shader, const char* data',
   },
+  'StencilMask': {'decoder_func': 'DoStencilMask'},
+  'StencilMaskSeparate': {'decoder_func': 'DoStencilMaskSeparate'},
   'SwapBuffers': {
     'type': 'Custom',
     'impl_func': False,

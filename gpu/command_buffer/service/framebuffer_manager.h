@@ -33,10 +33,14 @@ class FramebufferManager {
       return service_id_;
     }
 
+    bool HasUnclearedAttachment(GLenum attachment) const;
+
     // Attaches a renderbuffer to a particlar attachment.
     // Pass null to detach.
     void AttachRenderbuffer(
         GLenum attachment, RenderbufferManager::RenderbufferInfo* renderbuffer);
+
+    void MarkAttachedRenderbuffersAsCleared();
 
     bool IsDeleted() {
       return service_id_ == 0;

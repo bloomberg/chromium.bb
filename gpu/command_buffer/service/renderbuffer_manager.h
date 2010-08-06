@@ -48,6 +48,7 @@ class RenderbufferManager {
 
     void set_internal_format(GLenum internalformat) {
       internal_format_ = internalformat;
+      cleared_ = false;
     }
 
     bool IsDeleted() {

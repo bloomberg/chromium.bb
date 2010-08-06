@@ -49,6 +49,9 @@ TEST_F(RenderbufferManagerTest, Basic) {
   EXPECT_FALSE(info1->cleared());
   info1->set_cleared();
   EXPECT_TRUE(info1->cleared());
+  // Check if we set the format it gets marked as not cleared.
+  info1->set_internal_format(GL_RGBA);
+  EXPECT_FALSE(info1->cleared());
   EXPECT_FALSE(info1->IsDeleted());
   EXPECT_EQ(kService1Id, info1->service_id());
   // Check we get nothing for a non-existent renderbuffer.

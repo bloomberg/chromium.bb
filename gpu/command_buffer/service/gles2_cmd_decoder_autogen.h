@@ -231,21 +231,21 @@ error::Error GLES2DecoderImpl::HandleClearColor(
   GLclampf green = static_cast<GLclampf>(c.green);
   GLclampf blue = static_cast<GLclampf>(c.blue);
   GLclampf alpha = static_cast<GLclampf>(c.alpha);
-  glClearColor(red, green, blue, alpha);
+  DoClearColor(red, green, blue, alpha);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleClearDepthf(
     uint32 immediate_data_size, const gles2::ClearDepthf& c) {
   GLclampf depth = static_cast<GLclampf>(c.depth);
-  glClearDepth(depth);
+  DoClearDepthf(depth);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleClearStencil(
     uint32 immediate_data_size, const gles2::ClearStencil& c) {
   GLint s = static_cast<GLint>(c.s);
-  glClearStencil(s);
+  DoClearStencil(s);
   return error::kNoError;
 }
 
@@ -255,7 +255,7 @@ error::Error GLES2DecoderImpl::HandleColorMask(
   GLboolean green = static_cast<GLboolean>(c.green);
   GLboolean blue = static_cast<GLboolean>(c.blue);
   GLboolean alpha = static_cast<GLboolean>(c.alpha);
-  glColorMask(red, green, blue, alpha);
+  DoColorMask(red, green, blue, alpha);
   return error::kNoError;
 }
 
@@ -613,7 +613,7 @@ error::Error GLES2DecoderImpl::HandleDepthFunc(
 error::Error GLES2DecoderImpl::HandleDepthMask(
     uint32 immediate_data_size, const gles2::DepthMask& c) {
   GLboolean flag = static_cast<GLboolean>(c.flag);
-  glDepthMask(flag);
+  DoDepthMask(flag);
   return error::kNoError;
 }
 
@@ -640,7 +640,7 @@ error::Error GLES2DecoderImpl::HandleDisable(
     SetGLError(GL_INVALID_ENUM, "glDisable: cap GL_INVALID_ENUM");
     return error::kNoError;
   }
-  glDisable(cap);
+  DoDisable(cap);
   return error::kNoError;
 }
 
@@ -675,7 +675,7 @@ error::Error GLES2DecoderImpl::HandleEnable(
     SetGLError(GL_INVALID_ENUM, "glEnable: cap GL_INVALID_ENUM");
     return error::kNoError;
   }
-  glEnable(cap);
+  DoEnable(cap);
   return error::kNoError;
 }
 
@@ -1609,7 +1609,7 @@ error::Error GLES2DecoderImpl::HandleStencilFuncSeparate(
 error::Error GLES2DecoderImpl::HandleStencilMask(
     uint32 immediate_data_size, const gles2::StencilMask& c) {
   GLuint mask = static_cast<GLuint>(c.mask);
-  glStencilMask(mask);
+  DoStencilMask(mask);
   return error::kNoError;
 }
 
@@ -1621,7 +1621,7 @@ error::Error GLES2DecoderImpl::HandleStencilMaskSeparate(
     SetGLError(GL_INVALID_ENUM, "glStencilMaskSeparate: face GL_INVALID_ENUM");
     return error::kNoError;
   }
-  glStencilMaskSeparate(face, mask);
+  DoStencilMaskSeparate(face, mask);
   return error::kNoError;
 }
 

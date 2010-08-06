@@ -2285,6 +2285,281 @@ TEST_F(GLES2DecoderTest, CopyTexSubImage2DBadArgs) {
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
+// Check that if a renderbuffer is attached and GL returns
+// GL_FRAMEBUFFER_COMPLETE that the buffer is cleared and state is restored.
+TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearColor) {
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  ClearColor color_cmd;
+  ColorMask color_mask_cmd;
+  Enable enable_cmd;
+  FramebufferRenderbuffer cmd;
+  color_cmd.Init(0.1f, 0.2f, 0.3f, 0.4f);
+  color_mask_cmd.Init(0, 1, 0, 1);
+  enable_cmd.Init(GL_SCISSOR_TEST);
+  cmd.Init(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+      client_renderbuffer_id_);
+  InSequence sequence;
+  EXPECT_CALL(*gl_, ClearColor(0.1f, 0.2f, 0.3f, 0.4f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ColorMask(0, 1, 0, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
+      kServiceRenderbufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearColor(0, 0, 0, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ColorMask(1, 1, 1, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Clear(GL_COLOR_BUFFER_BIT))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearColor(0.1f, 0.2f, 0.3f, 0.4f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ColorMask(0, 1, 0, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, static_cast<GLuint>(-1)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, static_cast<GLuint>(-1)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(1.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(color_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(color_mask_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(enable_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepth) {
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  ClearDepthf depth_cmd;
+  DepthMask depth_mask_cmd;
+  FramebufferRenderbuffer cmd;
+  depth_cmd.Init(0.5f);
+  depth_mask_cmd.Init(false);
+  cmd.Init(
+      GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+      client_renderbuffer_id_);
+  InSequence sequence;
+  EXPECT_CALL(*gl_, ClearDepth(0.5f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
+      GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
+      kServiceRenderbufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(1.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Clear(GL_DEPTH_BUFFER_BIT))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearColor(0, 0, 0, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ColorMask(1, 1, 1, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, static_cast<GLuint>(-1)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, static_cast<GLuint>(-1)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(0.5f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(depth_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(depth_mask_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearStencil) {
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  ClearStencil stencil_cmd;
+  StencilMaskSeparate stencil_mask_separate_cmd;
+  FramebufferRenderbuffer cmd;
+  stencil_cmd.Init(123);
+  stencil_mask_separate_cmd.Init(GL_BACK, 0x1234u);
+  cmd.Init(
+      GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+      client_renderbuffer_id_);
+  InSequence sequence;
+  EXPECT_CALL(*gl_, ClearStencil(123))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, 0x1234u))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
+      GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+      kServiceRenderbufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMask(static_cast<GLuint>(-1)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Clear(GL_STENCIL_BUFFER_BIT))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearColor(0, 0, 0, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ColorMask(1, 1, 1, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(123))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, static_cast<GLuint>(-1)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, 0x1234u))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(1.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(stencil_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(stencil_mask_separate_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+#if 0  // Turn this test on once we allow GL_DEPTH_STENCIL_ATTACHMENT
+TEST_F(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
+  DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  ClearDepthf depth_cmd;
+  ClearStencil stencil_cmd;
+  FramebufferRenderbuffer cmd;
+  depth_cmd.Init(0.5f);
+  stencil_cmd.Init(123);
+  cmd.Init(
+      GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+      client_renderbuffer_id_);
+  InSequence sequence;
+  EXPECT_CALL(*gl_, ClearDepth(0.5f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(123))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
+      GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+      kServiceRenderbufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMask(static_cast<GLuint>(-1)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(1.0f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Clear(GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearColor(0, 0, 0, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ColorMask(1, 1, 1, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(123))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, static_cast<GLuint>(-1)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, static_cast<GLuint>(-1)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(0.5f))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(1))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(depth_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(stencil_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+#endif
+
 // TODO(gman): BufferData
 
 // TODO(gman): BufferDataImmediate

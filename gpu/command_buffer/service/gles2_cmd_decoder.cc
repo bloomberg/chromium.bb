@@ -831,6 +831,12 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   error::Error ShaderSourceHelper(
       GLuint client_id, const char* data, uint32 data_size);
 
+  // Clears any uncleared render buffers attached to the given frame buffer.
+  void ClearUnclearedRenderbuffers(FramebufferManager::FramebufferInfo* info);
+
+  // Remembers the state of some capabilities.
+  void SetCapabilityState(GLenum cap, bool enabled);
+
   // Checks if the current program exists and is valid. If not generates the
   // appropriate GL error.  Returns true if the current program is in a usable
   // state.
@@ -886,6 +892,17 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glCheckFramebufferStatus
   GLenum DoCheckFramebufferStatus(GLenum target);
 
+  // Wrappers for clear and mask settings functions.
+  void DoClearColor(
+      GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+  void DoClearDepthf(GLclampf depth);
+  void DoClearStencil(GLint s);
+  void DoColorMask(
+      GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
+  void DoDepthMask(GLboolean depth);
+  void DoStencilMask(GLuint mask);
+  void DoStencilMaskSeparate(GLenum face, GLuint mask);
+
   // Wrapper for glCompileShader.
   void DoCompileShader(GLuint shader);
 
@@ -898,8 +915,14 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Wrapper for glDrawArrays.
   void DoDrawArrays(GLenum mode, GLint first, GLsizei count);
 
+  // Wrapper for glDisable
+  void DoDisable(GLenum cap);
+
   // Wrapper for glDisableVertexAttribArray.
   void DoDisableVertexAttribArray(GLuint index);
+
+  // Wrapper for glEnable
+  void DoEnable(GLenum cap);
 
   // Wrapper for glEnableVertexAttribArray.
   void DoEnableVertexAttribArray(GLuint index);
@@ -1159,6 +1182,23 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // TextureInfos are only for textures the client side can access.
   GLuint black_2d_texture_id_;
   GLuint black_cube_texture_id_;
+
+  // state saved for clearing so we can clear render buffers and then
+  // restore to these values.
+  GLclampf clear_red_;
+  GLclampf clear_green_;
+  GLclampf clear_blue_;
+  GLclampf clear_alpha_;
+  GLboolean mask_red_;
+  GLboolean mask_green_;
+  GLboolean mask_blue_;
+  GLboolean mask_alpha_;
+  GLint clear_stencil_;
+  GLuint mask_stencil_front_;
+  GLuint mask_stencil_back_;
+  GLclampf clear_depth_;
+  GLboolean mask_depth_;
+  bool enable_scissor_test_;
 
   // The program in use by glUseProgram
   ProgramManager::ProgramInfo::Ref current_program_;
@@ -1457,6 +1497,20 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       active_texture_unit_(0),
       black_2d_texture_id_(0),
       black_cube_texture_id_(0),
+      clear_red_(0),
+      clear_green_(0),
+      clear_blue_(0),
+      clear_alpha_(0),
+      mask_red_(true),
+      mask_green_(true),
+      mask_blue_(true),
+      mask_alpha_(true),
+      clear_stencil_(0),
+      mask_stencil_front_(-1),
+      mask_stencil_back_(-1),
+      clear_depth_(1.0f),
+      mask_depth_(true),
+      enable_scissor_test_(false),
       anti_aliased_(false),
       use_shader_translator_(true),
       vertex_compiler_(NULL),
@@ -2741,9 +2795,9 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     return;
   }
   GLuint service_id = 0;
+  RenderbufferManager::RenderbufferInfo* info = NULL;
   if (client_renderbuffer_id) {
-    RenderbufferManager::RenderbufferInfo* info =
-        GetRenderbufferInfo(client_renderbuffer_id);
+    info = GetRenderbufferInfo(client_renderbuffer_id);
     if (!info) {
       SetGLError(GL_INVALID_OPERATION,
                  "glFramebufferRenderbuffer: unknown renderbuffer");
@@ -2753,6 +2807,125 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
   }
   glFramebufferRenderbufferEXT(
       target, attachment, renderbuffertarget, service_id);
+  if (service_id == 0 ||
+      glCheckFramebufferStatusEXT(target) == GL_FRAMEBUFFER_COMPLETE) {
+    bound_framebuffer_->AttachRenderbuffer(attachment, info);
+    if (info) {
+      ClearUnclearedRenderbuffers(bound_framebuffer_);
+    }
+  }
+}
+
+void GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
+  switch (cap) {
+    case GL_SCISSOR_TEST:
+      enable_scissor_test_ = enabled;
+      break;
+    default:
+      break;
+  }
+}
+
+void GLES2DecoderImpl::DoDisable(GLenum cap) {
+  SetCapabilityState(cap, false);
+  glDisable(cap);
+}
+
+void GLES2DecoderImpl::DoEnable(GLenum cap) {
+  SetCapabilityState(cap, true);
+  glEnable(cap);
+}
+
+void GLES2DecoderImpl::DoClearColor(
+      GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
+  clear_red_ = red;
+  clear_green_ = green;
+  clear_blue_ = blue;
+  clear_alpha_ = alpha;
+  glClearColor(red, green, blue, alpha);
+}
+
+void GLES2DecoderImpl::DoClearDepthf(GLclampf depth) {
+  clear_depth_ = depth;
+  glClearDepth(depth);
+}
+
+void GLES2DecoderImpl::DoClearStencil(GLint s) {
+  clear_stencil_ = s;
+  glClearStencil(s);
+}
+
+void GLES2DecoderImpl::DoColorMask(
+    GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
+  mask_red_ = red;
+  mask_green_ = green;
+  mask_blue_ = blue;
+  mask_alpha_ = alpha;
+  glColorMask(red, green, blue, alpha);
+}
+
+void GLES2DecoderImpl::DoDepthMask(GLboolean depth) {
+  mask_depth_ = depth;
+  glDepthMask(depth);
+}
+
+void GLES2DecoderImpl::DoStencilMask(GLuint mask) {
+  mask_stencil_front_ = mask;
+  mask_stencil_back_ = mask;
+  glStencilMask(mask);
+}
+
+void GLES2DecoderImpl::DoStencilMaskSeparate(GLenum face, GLuint mask) {
+  if (face == GL_FRONT) {
+    mask_stencil_front_ = mask;
+  } else {
+    mask_stencil_back_ = mask;
+  }
+  glStencilMaskSeparate(face, mask);
+}
+
+// NOTE: There's an assumption here that Texture attachments
+// are cleared because they are textures so we only need to clear
+// the renderbuffers.
+void GLES2DecoderImpl::ClearUnclearedRenderbuffers(
+    FramebufferManager::FramebufferInfo* info) {
+  GLbitfield clear_bits = 0;
+  if (info->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0)) {
+    glClearColor(0, 0, 0, 0);
+    glColorMask(true, true, true, true);
+    clear_bits |= GL_COLOR_BUFFER_BIT;
+  }
+
+  if (info->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT) ||
+      info->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT)) {
+    glClearStencil(0);
+    glStencilMask(-1);
+    clear_bits |= GL_STENCIL_BUFFER_BIT;
+  }
+
+  if (info->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT) ||
+      info->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT)) {
+    glClearDepth(1.0f);
+    glDepthMask(true);
+    clear_bits |= GL_DEPTH_BUFFER_BIT;
+  }
+
+  glDisable(GL_SCISSOR_TEST);
+  glClear(clear_bits);
+
+  info->MarkAttachedRenderbuffersAsCleared();
+
+  // reset clear color
+  glClearColor(clear_red_, clear_green_, clear_blue_, clear_alpha_);
+  glColorMask(mask_red_, mask_green_, mask_blue_, mask_alpha_);
+  glClearStencil(clear_stencil_);
+  glStencilMaskSeparate(GL_FRONT, mask_stencil_front_);
+  glStencilMaskSeparate(GL_BACK, mask_stencil_back_);
+  glClearDepth(clear_depth_);
+  glDepthMask(mask_depth_);
+  if (enable_scissor_test_) {
+    glEnable(GL_SCISSOR_TEST);
+  }
 }
 
 GLenum GLES2DecoderImpl::DoCheckFramebufferStatus(GLenum target) {
@@ -2771,8 +2944,9 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
     return;
   }
   GLuint service_id = 0;
+  TextureManager::TextureInfo* info = NULL;
   if (client_texture_id) {
-    TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id);
+    info = GetTextureInfo(client_texture_id);
     if (!info) {
       SetGLError(GL_INVALID_OPERATION,
                  "glFramebufferTexture2D: unknown texture");
@@ -2781,6 +2955,10 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
     service_id = info->service_id();
   }
   glFramebufferTexture2DEXT(target, attachment, textarget, service_id, level);
+  if (service_id != 0 &&
+      glCheckFramebufferStatusEXT(target) == GL_FRAMEBUFFER_COMPLETE) {
+    ClearUnclearedRenderbuffers(bound_framebuffer_);
+  }
 }
 
 void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
