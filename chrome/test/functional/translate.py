@@ -43,14 +43,16 @@ class TranslateTest(pyauto.PyUITest):
     self.NavigateToURL(url)
     self.WaitForInfobarCount(1)
 
-  def _ClickTranslateUntilSuccess(self):
+  def _ClickTranslateUntilSuccess(self, window_index=0, tab_index=0):
     """Since the translate can fail due to server error, continue trying until
        it is successful or until it has tried too many times."""
     max_tries = 10
     curr_try = 0
-    while curr_try < max_tries and not self.ClickTranslateBarTranslate():
+    while (curr_try < max_tries and
+           not self.ClickTranslateBarTranslate(window_index=window_index,
+                                               tab_index=tab_index)):
       curr_try = curr_try + 1
-    if curr_try == 10:
+    if curr_try == max_tries:
       self.fail('Translation failed more than %d times.' % max_tries)
 
   def _AssertTranslateWorks(self, url, original_language):
@@ -251,15 +253,19 @@ class TranslateTest(pyauto.PyUITest):
     """Test that session restore restores the translate infobar and other
        translate settings.
     """
-    self._NavigateAndWaitForBar(self._GetDefaultSpanishURL())
-    translate_info = self.GetTranslateInfo()
+    # Due to crbug.com/51439, we must open two tabs here.
+    self.NavigateToURL("http://www.news.google.com")
+    self.AppendTab(pyauto.GURL("http://www.google.com/webhp?hl=es"))
+    self.WaitForInfobarCount(1, tab_index=1)
+    translate_info = self.GetTranslateInfo(tab_index=1)
     self.assertTrue('translate_bar' in translate_info)
-    self.SelectTranslateOption('toggle_always_translate')
-    self._ClickTranslateUntilSuccess()
+    self.SelectTranslateOption('toggle_always_translate', tab_index=1)
+    self._ClickTranslateUntilSuccess(tab_index=1)
     self.SetPrefs(pyauto.kRestoreOnStartup, 1)
     self.RestartBrowser(clear_profile=False)
-    self.WaitForInfobarCount(1)
-    translate_info = self.GetTranslateInfo()
+    self.WaitForInfobarCount(1, tab_index=1)
+    self.WaitUntilTranslateComplete()
+    translate_info = self.GetTranslateInfo(tab_index=1)
     self.assertTrue('translate_bar' in translate_info)
     # Sometimes translation fails. We don't really care whether it succeededs,
     # just that a translation was attempted.
