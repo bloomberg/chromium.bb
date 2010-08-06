@@ -105,7 +105,7 @@ readonly TC_BUILD_LIBSTDCPP="${TC_BUILD_LLVM_GCC1}/${CROSS_TARGET_ARM}/libstdc++
 readonly TC_BUILD_LIBSTDCPP_BITCODE="${TC_BUILD_LLVM_GCC1}/libstdcpp-bitcode"
 
 # These are fake directories, for storing the timestamp only
-readonly TC_BUILD_EXTRASDK_BITCODE="${TC_BUILD}/extrasdk-bitcode"
+readonly TC_BUILD_EXTRASDK_BITCODE="${TC_BUILD}/extrasdk"
 
 readonly TIMESTAMP_FILENAME="make-timestamp"
 
@@ -593,10 +593,12 @@ download-toolchains() {
 #@-------------------------------------------------------------------------
 #@ rebuild-pnacl-libs    - organized native libs and build bitcode libs
 rebuild-pnacl-libs() {
+  extrasdk-clean
   clean-pnacl
   newlib-bitcode
   # NOTE: currently also builds some native code
-  extrasdk-bitcode
+
+  extrasdk-make-install
   libstdcpp-bitcode
   organize-native-code
 }
@@ -658,6 +660,7 @@ progress() {
 
 #@ status                - Show status of build directories
 status() {
+  # TODO(robertm): this is currently broken
   StepBanner "BUILD STATUS"
 
   status-helper "BINUTILS-ARM"      binutils-arm
@@ -667,7 +670,7 @@ status() {
   status-helper "NEWLIB-ARM"        newlib-arm
 
   status-helper "NEWLIB-BITCODE"    newlib-bitcode
-  status-helper "EXTRASDK-BITCODE"  extrasdk-bitcode
+  status-helper "EXTRASDK-BITCODE"  extrasdk
   status-helper "LIBSTDCPP-BITCODE" extrasdk-bitcode
 
 }
@@ -2096,120 +2099,117 @@ newlib-bitcode-install() {
 
 
 #########################################################################
-#     < EXTRASDK-BITCODE >
+#     < EXTRASDK >
 #########################################################################
-# NOTE: the EXTRASDK-BITCODE does a little bit of double duty: it
-#       produces both bitcode and since we are using bc-arm
-#       also some native arm obj/lib
-# TODO(robertm): sepatate those two duties
+#+ extrasdk-clean  - Clean extra-sdk stuff
 
-#+ extrasdk-bitcode-clean  - Clean bitcode extra-sdk
-#+                         and also the arm native libraries
-
-# NOTE: this function does a little bit of double duty: it produces
-#       the bitcode parts of the nacl_sdk and a few additional native
-#       object like the startup code files.
-#       It would be nice to disentangle those but this will require more
-#       surgery in SConstruct and other places
-extrasdk-bitcode-clean() {
+extrasdk-clean() {
   StepBanner "EXTRASDK-BITCODE" "Clean"
   rm -rf "${TC_BUILD_EXTRASDK_BITCODE}"
+
+  StepBanner "EXTRASDK-BITCODE" "Clean bitcode lib"
+  # TODO(robertm): consider having a dedicated dir for this so can
+  #                delete this wholesale
+  # Do not clean libc and libstdc++ but everything else
+  rm -f "${PNACL_BITCODE_ROOT}"/*google*.a
+  rm -f "${PNACL_BITCODE_ROOT}"/*nacl*
+  rm -f "${PNACL_BITCODE_ROOT}"/libpthread.a
+  rm -f "${PNACL_BITCODE_ROOT}"/libsrpc.a
+  rm -f "${PNACL_BITCODE_ROOT}"/libnpapi.a
+  rm -f "${PNACL_BITCODE_ROOT}"/libppapi.a
+  rm -f "${PNACL_BITCODE_ROOT}"/libnosys.a
+  rm -f "${PNACL_BITCODE_ROOT}"/libav.a
+  rm -f "${PNACL_BITCODE_ROOT}"/libgio.a
+
+  StepBanner "EXTRASDK-BITCODE" "Clean arm libs"
+  # Do not clean libgcc but everything else
+  rm -f "${PNACL_ARM_ROOT}"/*crt* "${PNACL_ARM_ROOT}"/intrinsics.o
+
+  StepBanner "EXTRASDK-BITCODE" "Clean x86-32 libs"
+  # Do not clean libgcc but everything else
+  rm -f "${PNACL_X8632_ROOT}"/*crt* "${PNACL_X8632_ROOT}"/intrinsics.o
+
+  StepBanner "EXTRASDK-BITCODE" "Clean x86-64 libs"
+  # Do not clean libgcc but everything else
+  rm -f "${PNACL_X8664_ROOT}"/*crt* "${PNACL_X8664_ROOT}"/intrinsics.o
+
+  # clean scons obj dirs
+  rm -rf scons-out/nacl_extra_sdk-*-pnacl
 }
 
-#+ extrasdk-bitcode      - Build and install extra SDK libs (bitcode)
-extrasdk-bitcode() {
-  StepBanner "EXTRASDK-BITCODE"
+#+ extrasdk-make-install  - build and install all extra sdk components
+extrasdk-make-install() {
+  StepBanner "EXTRASDK"
+  local headerdir="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
 
-  if extrasdk-bitcode-needs-make; then
-    extrasdk-bitcode-make
-  fi
-  extrasdk-bitcode-install
-}
-
-
-extrasdk-bitcode-needs-make() {
-  speculative-check "gcc-stage1" && return 0
-  ts-newer-than "${TC_BUILD_LLVM_GCC1}-${CROSS_TARGET_ARM}" \
-                "${TC_BUILD_EXTRASDK_BITCODE}" && return 0
-  return 1   # false
-}
-
-extrasdk-bitcode-make() {
-  StepBanner "EXTRASDK-BITCODE" "Make"
-
-  local objdir="${TC_BUILD_EXTRASDK_BITCODE}"
-  mkdir -p "${objdir}"
-  ts-touch-open "${objdir}"
-
-  RunWithLog "extra_sdk_bitcode" \
+  StepBanner "EXTRASDK" "Make/Install headers"
+  RunWithLog "extra_sdk.headers" \
       ./scons MODE=nacl_extra_sdk \
+      extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
+      extra_sdk_include_destination="${headerdir}" \
       bitcode=1 \
       platform=arm \
       sdl=none \
       naclsdk_validate=0 \
-      disable_nosys_linker_warnings=1 \
-      extra_sdk_clean \
-      extra_sdk_update_header \
-      install_libpthread \
-      extra_sdk_update
+      extra_sdk_update_header
 
-  # Keep a backup of the files extrasdk generated
-  # in case we want to re-install them again.
-  local include_install="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/nacl"
-  local lib_install="${PNACL_BITCODE_ROOT}"
-  local include_save="${TC_BUILD_EXTRASDK_BITCODE}/include-nacl"
-  local lib_save="${TC_BUILD_EXTRASDK_BITCODE}/lib"
-  local lib_save_native="${TC_BUILD_EXTRASDK_BITCODE}/lib_native"
-
-  rm -rf "${include_save}"
-  rm -rf "${lib_save}"
-  rm -rf "${lib_save_native}"
-
-  # First take care of the native arm libs/objs which we also generate
-  mkdir -p ${lib_save_native}
-  mv "${PNACL_BITCODE_ROOT}"/crt*.o\
-     "${PNACL_BITCODE_ROOT}"/intrinsics.o\
-     "${PNACL_BITCODE_ROOT}"/libcrt_platform.a\
-     "${lib_save_native}"
-
-  cp -a "${lib_install}" "${lib_save}"
-  cp -a "${include_install}" "${include_save}"
-
-  # Except libc/libg/libm, since they do not belong to extrasdk...
-  rm -f "${lib_save}"/lib[cgm].a
-
-  ts-touch-commit "${objdir}"
-
-}
-
-extrasdk-bitcode-install() {
-  StepBanner "EXTRASDK-BITCODE" "Install from ${TC_BUILD_EXTRASDK_BITCODE}"
-
-  # Copy from the save directories
-  local include_install="${NEWLIB_INSTALL_DIR}/${CROSS_TARGET_ARM}/include/nacl"
-  local lib_install="${PNACL_BITCODE_ROOT}"
-  local lib_install_native="${PNACL_ARM_ROOT}"
-  local include_save="${TC_BUILD_EXTRASDK_BITCODE}/include-nacl"
-  local lib_save="${TC_BUILD_EXTRASDK_BITCODE}/lib"
-  local lib_save_native="${TC_BUILD_EXTRASDK_BITCODE}/lib_native"
-
-  mkdir -p "${include_install}"
-  mkdir -p "${lib_install}"
-  mkdir -p "${lib_install_native}"
-
-  cp -fa "${include_save}"/*    "${include_install}"
-  cp -fa "${lib_save}"/*        "${lib_install}"
-  cp -fa "${lib_save_native}"/* "${lib_install_native}"
-
-  # Do install_libpthread just in case it was wiped out.
-  RunWithLog "extra_sdk_bitcode.libpthread" \
-      ./scons MODE=nacl_extra_sdk \
+  StepBanner "EXTRASDK" "Make/Install bitcode libpthread"
+  RunWithLog "extra_sdk.bitcode_libpthread" \
+      ./scons MODE=nacl_extra_sdk -j 8\
+      extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
+      extra_sdk_include_destination="${headerdir}" \
       bitcode=1 \
       platform=arm \
       sdl=none \
       naclsdk_validate=0 \
-      disable_nosys_linker_warnings=1 \
       install_libpthread
+
+  StepBanner "EXTRASDK" "Make/Install bitcode components"
+  RunWithLog "extra_sdk.bitcode_components" \
+      ./scons MODE=nacl_extra_sdk -j 8\
+      extra_sdk_lib_destination="${PNACL_BITCODE_ROOT}" \
+      extra_sdk_include_destination="${headerdir}" \
+      bitcode=1 \
+      platform=arm \
+      sdl=none \
+      naclsdk_validate=0 \
+      extra_sdk_libs
+
+  StepBanner "EXTRASDK" "Make/Install arm components"
+  RunWithLog "extra_sdk.arm_components" \
+      ./scons MODE=nacl_extra_sdk \
+      extra_sdk_lib_destination="${PNACL_ARM_ROOT}" \
+      extra_sdk_include_destination="${headerdir}" \
+      bitcode=1 \
+      platform=arm \
+      sdl=none \
+      naclsdk_validate=0 \
+      extra_sdk_libs_platform
+
+  StepBanner "EXTRASDK" "Make/Install x86-32 components"
+  RunWithLog "extra_sdk.libs_x8632" \
+      ./scons MODE=nacl_extra_sdk \
+      extra_sdk_lib_destination="${PNACL_X8632_ROOT}" \
+      extra_sdk_include_destination="${headerdir}" \
+      bitcode=1 \
+      platform=x86-32 \
+      sdl=none \
+      naclsdk_validate=0 \
+      extra_sdk_libs_platform
+
+  # TODO(robertm): this does not quite work yet.
+  #                There are ranlib issues with on archive
+  #                and also a failure in tls_test
+  #StepBanner "EXTRASDK" "Make/Install x86-64 components"
+  #RunWithLog "extra_sdk_.libs_x8664" \
+  #    ./scons MODE=nacl_extra_sdk \
+  #    extra_sdk_lib_destination="${PNACL_X8664_ROOT}" \
+  #    extra_sdk_include_destination="${headerdir}" \
+  #    bitcode=1 \
+  #    platform=x86-64 \
+  #    sdl=none \
+  #    naclsdk_validate=0 \
+  #    extra_sdk_libs_platform
 }
 
 #+ newlib-nacl-headers   - Add custom NaCl headers to newlib
@@ -2315,29 +2315,15 @@ organize-native-code() {
   readonly x86_src=${NACL_TOOLCHAIN}
   readonly arm_llvm_gcc=${TARGET_ROOT}
 
-  # TODO(espindola): There is a transitive dependency from libgcc to
-  # libc, libnosys and libnacl. We should try to factor this better.
-  # NOTE: the (cyclic) dependency from libgcc to libgcc has likely
-  #       been removed for arm but may still exist for x86-32/64
-
   StepBanner "PNaCl" "arm native code: ${PNACL_ARM_ROOT}"
   mkdir -p ${PNACL_ARM_ROOT}
-
   cp -f ${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}/libgcc.a \
     ${PNACL_ARM_ROOT}
-
   DebugRun ls -l ${PNACL_ARM_ROOT}
 
-  # TODO(espindola): These files have been built with the conventional
-  # nacl-gcc. The ABI might not be exactly the same as the one used by
-  # PNaCl. We should build these files with PNaCl.
   StepBanner "PNaCl" "x86-32 native code: ${PNACL_X8632_ROOT}"
   mkdir -p ${PNACL_X8632_ROOT}
   cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}/libgcc.a \
-    ${PNACL_X8632_ROOT}
-  cp -f  ${x86_src}/nacl64/lib/32/crt*.o \
-    ${x86_src}/nacl64/lib/32/libcrt*.a \
-    ${x86_src}/nacl64/lib/32/intrinsics.o \
     ${PNACL_X8632_ROOT}
   DebugRun ls -l ${PNACL_X8632_ROOT}
 
@@ -2345,11 +2331,12 @@ organize-native-code() {
   mkdir -p ${PNACL_X8664_ROOT}
   cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}/libgcc.a \
     ${PNACL_X8664_ROOT}
-  cp -f ${x86_src}/nacl64/lib/crt*.o \
-    ${x86_src}/nacl64/lib/libcrt*.a \
-    ${x86_src}/nacl64/lib/intrinsics.o \
-    ${PNACL_X8664_ROOT}
-
+  # TODO(robertm): build this ourselves, c.f. extrasdk-make-install()
+  StepBanner "PNaCl" "x86-64 steal some more files from nacl-gcc"
+   cp -f ${x86_src}/nacl64/lib/crt*.o \
+     ${x86_src}/nacl64/lib/libcrt*.a \
+     ${x86_src}/nacl64/lib/intrinsics.o \
+     ${PNACL_X8664_ROOT}
   DebugRun ls -l ${PNACL_X8664_ROOT}
 
 }
