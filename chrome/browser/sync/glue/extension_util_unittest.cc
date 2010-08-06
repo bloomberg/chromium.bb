@@ -6,7 +6,6 @@
 
 #include "base/file_path.h"
 #include "base/values.h"
-#include "base/version.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"

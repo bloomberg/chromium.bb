@@ -9,7 +9,6 @@
 
 #include "gfx/rect.h"
 #include "base/event_synthesis_gtk.h"
-#include "base/keyboard_code_conversion_gtk.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/automation/ui_controls_internal.h"

@@ -9,13 +9,14 @@
 #include <set>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
-#include "base/version.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 
 class DictionaryValue;
+class Version;
 
 // Hard-coded definitions of plugin groups.
 struct PluginGroupDefinition {

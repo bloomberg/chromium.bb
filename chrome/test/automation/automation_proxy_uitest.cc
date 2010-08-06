@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
-#include "base/keyboard_codes.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"

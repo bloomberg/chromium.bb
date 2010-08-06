@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/scoped_vector.h"
-#include "base/version.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "libxml/globals.h"

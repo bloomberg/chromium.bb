@@ -11,6 +11,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/convert_user_script.h"

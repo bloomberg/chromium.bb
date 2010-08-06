@@ -28,7 +28,6 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
-#include "base/keyboard_codes.h"
 #include "base/i18n/time_formatting.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"

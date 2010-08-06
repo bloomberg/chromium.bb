@@ -15,7 +15,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "base/version.h"
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -25,6 +24,7 @@
 class ExtensionAction;
 class ExtensionResource;
 class SkBitmap;
+class Version;
 
 // Represents a Chrome extension.
 class Extension {

@@ -181,6 +181,6 @@ typedef enum {
   VKEY_UNKNOWN = 0
 } KeyboardCode;
 
-}  // namespace views
+}  // namespace base
 
 #endif  // BASE_KEYBOARD_CODES_WIN_H_

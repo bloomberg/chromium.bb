@@ -5,7 +5,6 @@
 #include "chrome/renderer/pepper_scrollbar_widget.h"
 
 #include "base/basictypes.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/renderer/pepper_devices.h"

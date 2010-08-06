@@ -5,7 +5,6 @@
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 
 #include "app/l10n_util_mac.h"
-#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"

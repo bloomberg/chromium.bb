@@ -12,7 +12,6 @@
 #include <set>
 
 #include "base/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"

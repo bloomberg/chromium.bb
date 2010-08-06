@@ -11,11 +11,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "base/values.h"
-#include "base/version.h"
 #include "googleurl/src/gurl.h"
-
-class Version;
 
 class UpdateManifest {
  public:
@@ -79,4 +75,3 @@ class UpdateManifest {
 };
 
 #endif  // CHROME_COMMON_EXTENSIONS_UPDATE_MANIFEST_H_
-

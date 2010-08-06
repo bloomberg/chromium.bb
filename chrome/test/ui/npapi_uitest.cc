@@ -20,7 +20,6 @@
 #include <ostream>
 
 #include "base/file_path.h"
-#include "base/keyboard_codes.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/common/chrome_paths.h"

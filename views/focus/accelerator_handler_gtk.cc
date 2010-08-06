@@ -4,8 +4,6 @@
 
 #include <gtk/gtk.h>
 
-#include "base/keyboard_code_conversion_gtk.h"
-#include "base/keyboard_codes.h"
 #include "views/accelerator.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/focus_manager.h"

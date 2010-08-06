@@ -9,10 +9,10 @@
 #include <set>
 #include <string>
 
-#include "base/version.h"
 #include "chrome/common/extensions/extension.h"
 
 class FilePath;
+class Version;
 
 // This class is an abstract class for implementing external extensions
 // providers.

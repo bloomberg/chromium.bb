@@ -8,7 +8,6 @@
 
 #include "app/gtk_dnd_util.h"
 #include "app/menus/accelerator_gtk.h"
-#include "base/keyboard_codes_posix.h"
 #include "base/singleton.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"

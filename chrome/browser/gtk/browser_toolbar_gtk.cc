@@ -14,7 +14,6 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
-#include "base/keyboard_codes_posix.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/singleton.h"

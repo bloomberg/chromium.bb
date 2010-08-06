@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "base/file_path.h"
-#include "base/keyboard_codes.h"
 #include "base/time.h"
 #include "chrome/browser/browser.h"  // TODO(beng): this dependency is awful.
 #include "chrome/browser/browser_process.h"

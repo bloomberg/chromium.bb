@@ -10,7 +10,6 @@
 #include "app/l10n_util_mac.h"
 #include "app/menus/accelerator_cocoa.h"
 #include "app/menus/menu_model.h"
-#include "base/keyboard_codes.h"
 #include "base/mac_util.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/singleton.h"

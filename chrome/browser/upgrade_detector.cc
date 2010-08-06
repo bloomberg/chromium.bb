@@ -13,7 +13,6 @@
 #include "base/task.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/version.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_switches.h"
