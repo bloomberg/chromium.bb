@@ -5289,8 +5289,22 @@ bool RenderView::IsNonLocalTopLevelNavigation(
   if (frame->parent() != NULL)
     return false;
 
+  // Navigations initiated within Webkit are not sent out to the external host
+  // in the following cases.
+  // 1. The url scheme or the frame url scheme is not http/https
+  // 2. The origin of the url and the frame is the same in which case the
+  //    opener relationship is maintained.
+  // 3. Anchor navigation within the same page.
+  // 4. Reloads/form submits/back forward navigations
+  if (!url.SchemeIs("http") && !url.SchemeIs("https"))
+    return false;
+
+  GURL frame_url(frame->url());
+  if (!frame_url.SchemeIs("http") && !frame_url.SchemeIs("https"))
+    return false;
+
   // Skip if navigation is on the same page (using '#').
-  GURL frame_origin = GURL(frame->url()).GetOrigin();
+  GURL frame_origin = frame_url.GetOrigin();
   if (url.GetOrigin() != frame_origin || url.ref().empty()) {
     // The link click could stay on the same page, in cases where it sends some
     // parameters to the same URL.
