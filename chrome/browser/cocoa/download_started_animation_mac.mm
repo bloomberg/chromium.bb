@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -176,6 +176,10 @@ class DownloadAnimationTabObserver : public NotificationObserver {
   // Will be deleted when the animation is complete in -animationComplete.
   DownloadStartedAnimationMac* controller =
       [[self alloc] initWithTabContents:contents];
+  // The initializer can return nil.
+  if (!controller)
+    return;
+
   // The |animation_| releaes itself when done.
   [controller->animation_ startAnimation];
 }
