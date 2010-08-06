@@ -890,7 +890,7 @@ bool UITestBase::CloseBrowser(BrowserProxy* browser,
   if (*application_closed) {
     // Let's wait until the process dies (if it is not gone already).
     bool success = base::WaitForSingleProcess(process_, base::kNoTimeout);
-    DCHECK(success);
+    EXPECT_TRUE(success);
   }
 
   return result;
