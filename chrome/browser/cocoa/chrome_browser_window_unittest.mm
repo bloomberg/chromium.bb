@@ -11,6 +11,7 @@
 #import "chrome/browser/cocoa/browser_frame_view.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -168,7 +169,7 @@ TEST_F(ChromeBrowserWindowTest, WindowWidgetTrackingArea) {
     NSRect rect = [area rect];
     foundArea = NSPointInRect(point, rect);
     if (foundArea) {
-      EXPECT_TRUE([[area owner] isEqual:frameView]);
+      EXPECT_NSEQ(frameView, [area owner]);
       break;
     }
   }

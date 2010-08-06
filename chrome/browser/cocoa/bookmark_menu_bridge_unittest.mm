@@ -10,6 +10,7 @@
 #include "chrome/browser/cocoa/bookmark_menu_bridge.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 class TestBookmarkMenuBridge : public BookmarkMenuBridge {
@@ -113,7 +114,7 @@ TEST_F(BookmarkMenuBridgeTest, TestClearBookmarkMenu) {
   // submenus removed, and all separator items are gone.
   EXPECT_EQ(2, [menu numberOfItems]);
   for (NSMenuItem *item in [menu itemArray]) {
-    EXPECT_FALSE([[item title] isEqual:@"not"]);
+    EXPECT_NSNE(@"not", [item title]);
   }
 }
 
@@ -203,7 +204,7 @@ TEST_F(BookmarkMenuBridgeTest, TestAddNodeToMenu) {
 
   // Make sure a short title looks fine
   NSString* s = [short_item title];
-  EXPECT_TRUE([s isEqual:[NSString stringWithUTF8String:short_url]]);
+  EXPECT_NSEQ([NSString stringWithUTF8String:short_url], s);
 
   // Make sure a super-long title gets trimmed
   s = [long_item title];
@@ -271,7 +272,7 @@ TEST_F(BookmarkMenuBridgeTest, TestAddNodeToOther) {
   EXPECT_TRUE(other);
   EXPECT_TRUE([other hasSubmenu]);
   ASSERT_GT([[other submenu] numberOfItems], 0);
-  EXPECT_TRUE([[[[other submenu] itemAtIndex:0] title] isEqual:@"http://foo/"]);
+  EXPECT_NSEQ(@"http://foo/", [[[other submenu] itemAtIndex:0] title]);
 }
 
 TEST_F(BookmarkMenuBridgeTest, TestFavIconLoading) {

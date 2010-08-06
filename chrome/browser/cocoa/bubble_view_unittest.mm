@@ -6,6 +6,7 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bubble_view.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "testing/gtest_mac.h"
 
 class BubbleViewTest : public CocoaTest {
  public:
@@ -37,10 +38,10 @@ TEST_F(BubbleViewTest, SetContent) {
   [view_ setContent:nil];
   EXPECT_TRUE([view_ content] == nil);
   [view_ setContent:@""];
-  EXPECT_TRUE([[view_ content] isEqualToString:@""]);
+  EXPECT_NSEQ(@"", [view_ content]);
   NSString* str = @"This is a really really long string that's just too long";
   [view_ setContent:str];
-  EXPECT_TRUE([[view_ content] isEqualToString:str]);
+  EXPECT_NSEQ(str, [view_ content]);
 }
 
 TEST_F(BubbleViewTest, CornerFlags) {

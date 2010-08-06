@@ -9,6 +9,7 @@
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // Implements the target interface for the tab, which gets sent messages when
@@ -121,7 +122,7 @@ TEST_F(TabControllerTest, ToolTip) {
   EXPECT_TRUE([[controller toolTip] length] == 0);
   NSString *tooltip_string = @"Some text to use as a tab title";
   [controller setTitle:tooltip_string];
-  EXPECT_TRUE([tooltip_string isEqualToString:[controller toolTip]]);
+  EXPECT_NSEQ(tooltip_string, [controller toolTip]);
 }
 
 // Tests setting the |loading| property via code.

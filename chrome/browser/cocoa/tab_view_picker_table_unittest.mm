@@ -10,6 +10,7 @@
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 @interface TabViewPickerTableTestPing : NSObject <NSTabViewDelegate> {
@@ -100,15 +101,15 @@ TEST_F(TabViewPickerTableTest, RowsCorrect) {
 
   id item;
   item = [[view_ dataSource] outlineView:view_ child:0 ofItem:nil];
-  EXPECT_TRUE([@"label 1" isEqualToString:[[view_ dataSource]
-                    outlineView:view_
-      objectValueForTableColumn:nil  // ignored
-                         byItem:item]]);
+  EXPECT_NSEQ(@"label 1",
+              [[view_ dataSource] outlineView:view_
+                    objectValueForTableColumn:nil  // ignored
+                                       byItem:item]);
   item = [[view_ dataSource] outlineView:view_ child:1 ofItem:nil];
-  EXPECT_TRUE([@"label 2" isEqualToString:[[view_ dataSource]
-                    outlineView:view_
-      objectValueForTableColumn:nil  // ignored
-                         byItem:item]]);
+  EXPECT_NSEQ(@"label 2",
+              [[view_ dataSource] outlineView:view_
+                    objectValueForTableColumn:nil  // ignored
+                                       byItem:item]);
 }
 
 TEST_F(TabViewPickerTableTest, TestListUpdatesTabView) {

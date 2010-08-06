@@ -12,6 +12,7 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 class BookmarkEditorBaseControllerTest : public CocoaTest {
@@ -154,7 +155,7 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
   BookmarkFolderInfo* newFolderInfo = [controller_ selectedFolder];
   EXPECT_TRUE(newFolderInfo);
   NSString* newFolderName = [newFolderInfo folderName];
-  EXPECT_TRUE([newFolderName isEqualToString:expectedName]);
+  EXPECT_NSEQ(expectedName, newFolderName);
   [controller_ createNewFolders];
   // Verify that the tab folder was added to the new folder.
   EXPECT_EQ(3, group_b_3_->GetChildCount());

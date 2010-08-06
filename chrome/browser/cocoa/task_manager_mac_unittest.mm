@@ -10,6 +10,7 @@
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 namespace {
@@ -63,11 +64,11 @@ TEST_F(TaskManagerWindowControllerTest, Sort) {
       [NSNumber numberWithInt:IDS_TASK_MANAGER_PAGE_COLUMN]];
   NSCell* cell;
   cell = [controller tableView:table dataCellForTableColumn:title_column row:0];
-  EXPECT_TRUE([@"zzb" isEqualToString:[cell title]]);
+  EXPECT_NSEQ(@"zzb", [cell title]);
   cell = [controller tableView:table dataCellForTableColumn:title_column row:1];
-  EXPECT_TRUE([@"zza" isEqualToString:[cell title]]);
+  EXPECT_NSEQ(@"zza", [cell title]);
   cell = [controller tableView:table dataCellForTableColumn:title_column row:2];
-  EXPECT_TRUE([@"zzz" isEqualToString:[cell title]]);
+  EXPECT_NSEQ(@"zzz", [cell title]);
 
   // Releases the controller, which in turn deletes |bridge|.
   [controller close];

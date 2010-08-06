@@ -24,6 +24,7 @@
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -144,14 +145,14 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
   CocoaCookieTreeNode* cookie = CocoaNodeFromTreeNode(node);
 
   CocoaCookieDetails* details = [cookie details];
-  EXPECT_TRUE([@"B" isEqualToString:[details content]]);
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_COOKIE_EXPIRES_SESSION)
-      isEqualToString:[details expires]]);
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_COOKIE_SENDFOR_ANY)
-      isEqualToString:[details sendFor]]);
-  EXPECT_TRUE([@"A" isEqualToString:[cookie title]]);
-  EXPECT_TRUE([@"A" isEqualToString:[details name]]);
-  EXPECT_TRUE([@"/" isEqualToString:[details path]]);
+  EXPECT_NSEQ(@"B", [details content]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_COOKIE_EXPIRES_SESSION),
+              [details expires]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_COOKIE_SENDFOR_ANY),
+              [details sendFor]);
+  EXPECT_NSEQ(@"A", [cookie title]);
+  EXPECT_NSEQ(@"A", [details name]);
+  EXPECT_NSEQ(@"/", [details path]);
   EXPECT_EQ(0U, [[cookie children] count]);
   EXPECT_TRUE([details created]);
   EXPECT_TRUE([cookie isLeaf]);
@@ -170,30 +171,29 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
   CocoaCookieTreeNode* cookie = [[cookies children] objectAtIndex:0];
 
   // Test domain-level node.
-  EXPECT_TRUE([@"foo.com" isEqualToString:[domain title]]);
+  EXPECT_NSEQ(@"foo.com", [domain title]);
 
   EXPECT_FALSE([domain isLeaf]);
   EXPECT_EQ(1U, [[domain children] count]);
   EXPECT_EQ(node, [domain treeNode]);
 
   // Test "Cookies" folder node.
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_COOKIES) isEqualToString:
-      [cookies title]]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_COOKIES), [cookies title]);
   EXPECT_FALSE([cookies isLeaf]);
   EXPECT_EQ(1U, [[cookies children] count]);
   EXPECT_EQ(node->GetChild(0), [cookies treeNode]);
 
   // Test cookie node. This is the same as CocoaNodeFromTreeNodeCookie.
   CocoaCookieDetails* details = [cookie details];
-  EXPECT_TRUE([@"B" isEqualToString:[details content]]);
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_COOKIE_EXPIRES_SESSION)
-      isEqualToString:[details expires]]);
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_COOKIE_SENDFOR_ANY)
-      isEqualToString:[details sendFor]]);
-  EXPECT_TRUE([@"A" isEqualToString:[cookie title]]);
-  EXPECT_TRUE([@"A" isEqualToString:[details name]]);
-  EXPECT_TRUE([@"/" isEqualToString:[details path]]);
-  EXPECT_TRUE([@"foo.com" isEqualToString:[details domain]]);
+  EXPECT_NSEQ(@"B", [details content]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_COOKIE_EXPIRES_SESSION),
+              [details expires]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_COOKIE_SENDFOR_ANY),
+              [details sendFor]);
+  EXPECT_NSEQ(@"A", [cookie title]);
+  EXPECT_NSEQ(@"A", [details name]);
+  EXPECT_NSEQ(@"/", [details path]);
+  EXPECT_NSEQ(@"foo.com", [details domain]);
   EXPECT_EQ(0U, [[cookie children] count]);
   EXPECT_TRUE([details created]);
   EXPECT_TRUE([cookie isLeaf]);
@@ -272,7 +272,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
   EXPECT_EQ(1U, [cocoa_children count]);
 
   NSString* title = [[[cocoa_children objectAtIndex:0] details] name];
-  EXPECT_TRUE([@"A" isEqualToString:title]);
+  EXPECT_NSEQ(@"A", title);
 }
 
 TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
@@ -297,11 +297,11 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
 
   // Check default ordering.
   CocoaCookieTreeNode* node = [cocoa_children objectAtIndex:0];
-  EXPECT_TRUE([@"A" isEqualToString:[[node details] name]]);
+  EXPECT_NSEQ(@"A", [[node details] name]);
   node =  [cocoa_children objectAtIndex:1];
-  EXPECT_TRUE([@"C" isEqualToString:[[node details] name]]);
+  EXPECT_NSEQ(@"C", [[node details] name]);
   node =  [cocoa_children objectAtIndex:2];
-  EXPECT_TRUE([@"E" isEqualToString:[[node details] name]]);
+  EXPECT_NSEQ(@"E", [[node details] name]);
 
   CookiesTreeModel* model = [controller_ treeModel];
   // Root --> foo.com --> Cookies.
@@ -318,11 +318,11 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
 
   // Check the new order.
   node = [cocoa_children objectAtIndex:0];
-  EXPECT_TRUE([@"E" isEqualToString:[[node details] name]]);
+  EXPECT_NSEQ(@"E", [[node details] name]);
   node =  [cocoa_children objectAtIndex:1];
-  EXPECT_TRUE([@"A" isEqualToString:[[node details] name]]);
+  EXPECT_NSEQ(@"A", [[node details] name]);
   node =  [cocoa_children objectAtIndex:2];
-  EXPECT_TRUE([@"C" isEqualToString:[[node details] name]]);
+  EXPECT_NSEQ(@"C", [[node details] name]);
 }
 
 TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
@@ -346,8 +346,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
       [[[[[controller_ cocoaTreeModel] children] objectAtIndex:0]
           children] objectAtIndex:0];
 
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_COOKIES) isEqualToString:
-      [cocoa_node title]]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_COOKIES),
+              [cocoa_node title]);
 
   // Fake update the cookie folder's title. This would never happen in reality,
   // but it tests the code path that ultimately calls CocoaNodeFromTreeNode,
@@ -355,7 +355,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
   node->SetTitle(L"Silly Change");
   [controller_ modelObserver]->TreeNodeChanged(model, node);
 
-  EXPECT_TRUE([@"Silly Change" isEqualToString:[cocoa_node title]]);
+  EXPECT_NSEQ(@"Silly Change", [cocoa_node title]);
 }
 
 TEST_F(CookiesWindowControllerTest, DeleteCookie) {
@@ -388,8 +388,8 @@ TEST_F(CookiesWindowControllerTest, DeleteCookie) {
   NSArray* cookies = [[[[[[controller cocoaTreeModel] children]
       objectAtIndex:0] children] objectAtIndex:0] children];
   EXPECT_EQ(1U, [cookies count]);
-  EXPECT_TRUE([@"C" isEqualToString:[[cookies lastObject] title]]);
-  EXPECT_TRUE([indexPath isEqual:[treeController selectionIndexPath]]);
+  EXPECT_NSEQ(@"C", [[cookies lastObject] title]);
+  EXPECT_NSEQ(indexPath, [treeController selectionIndexPath]);
 
   // Select cookie E.
   NSUInteger pathE[3] = {1, 0, 0};
@@ -631,46 +631,44 @@ TEST_F(CookiesWindowControllerTest, CreateDatabaseStorageNodes) {
   // Root --> gdbhost1.
   CocoaCookieTreeNode* node =
       [[[controller_ cocoaTreeModel] children] objectAtIndex:0];
-  EXPECT_TRUE([@"gdbhost1" isEqualToString:[node title]]);
+  EXPECT_NSEQ(@"gdbhost1", [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // host1 --> Web Databases.
   node = [[node children] lastObject];
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_WEB_DATABASES)
-      isEqualToString:[node title]]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_WEB_DATABASES), [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // Database Storage --> db1.
   node = [[node children] lastObject];
-  EXPECT_TRUE([@"db1" isEqualToString:[node title]]);
+  EXPECT_NSEQ(@"db1", [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeTreeDatabase, [node nodeType]);
   CocoaCookieDetails* details = [node details];
-  EXPECT_TRUE([@"description 1" isEqualToString:[details databaseDescription]]);
+  EXPECT_NSEQ(@"description 1", [details databaseDescription]);
   EXPECT_TRUE([details lastModified]);
   EXPECT_TRUE([details fileSize]);
 
   // Root --> gdbhost2.
   node =
       [[[controller_ cocoaTreeModel] children] objectAtIndex:1];
-  EXPECT_TRUE([@"gdbhost2" isEqualToString:[node title]]);
+  EXPECT_NSEQ(@"gdbhost2", [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // host1 --> Web Databases.
   node = [[node children] lastObject];
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_WEB_DATABASES)
-      isEqualToString:[node title]]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_WEB_DATABASES), [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // Database Storage --> db2.
   node = [[node children] lastObject];
-  EXPECT_TRUE([@"db2" isEqualToString:[node title]]);
+  EXPECT_NSEQ(@"db2", [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeTreeDatabase, [node nodeType]);
   details = [node details];
-  EXPECT_TRUE([@"description 2" isEqualToString:[details databaseDescription]]);
+  EXPECT_NSEQ(@"description 2", [details databaseDescription]);
   EXPECT_TRUE([details lastModified]);
   EXPECT_TRUE([details fileSize]);
 }
@@ -695,44 +693,42 @@ TEST_F(CookiesWindowControllerTest, CreateLocalStorageNodes) {
   // Root --> host1.
   CocoaCookieTreeNode* node =
       [[[controller_ cocoaTreeModel] children] objectAtIndex:2];
-  EXPECT_TRUE([@"host1" isEqualToString:[node title]]);
+  EXPECT_NSEQ(@"host1", [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // host1 --> Local Storage.
   node = [[node children] lastObject];
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_LOCAL_STORAGE)
-      isEqualToString:[node title]]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_LOCAL_STORAGE), [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // Local Storage --> http://host1:1/.
   node = [[node children] lastObject];
-  EXPECT_TRUE([@"http://host1:1/" isEqualToString:[node title]]);
+  EXPECT_NSEQ(@"http://host1:1/", [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeTreeLocalStorage, [node nodeType]);
-  EXPECT_TRUE([@"http://host1:1/" isEqualToString:[[node details] domain]]);
+  EXPECT_NSEQ(@"http://host1:1/", [[node details] domain]);
   EXPECT_TRUE([[node details] lastModified]);
   EXPECT_TRUE([[node details] fileSize]);
 
   // Root --> host2.
   node =
       [[[controller_ cocoaTreeModel] children] objectAtIndex:3];
-  EXPECT_TRUE([@"host2" isEqualToString:[node title]]);
+  EXPECT_NSEQ(@"host2", [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // host2 --> Local Storage.
   node = [[node children] lastObject];
-  EXPECT_TRUE([l10n_util::GetNSString(IDS_COOKIES_LOCAL_STORAGE)
-      isEqualToString:[node title]]);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_COOKIES_LOCAL_STORAGE), [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeFolder, [node nodeType]);
   EXPECT_EQ(1U, [[node children] count]);
 
   // Local Storage --> http://host2:2/.
   node = [[node children] lastObject];
-  EXPECT_TRUE([@"http://host2:2/" isEqualToString:[node title]]);
+  EXPECT_NSEQ(@"http://host2:2/", [node title]);
   EXPECT_EQ(kCocoaCookieDetailsTypeTreeLocalStorage, [node nodeType]);
-  EXPECT_TRUE([@"http://host2:2/" isEqualToString:[[node details] domain]]);
+  EXPECT_NSEQ(@"http://host2:2/", [[node details] domain]);
   EXPECT_TRUE([[node details] lastModified]);
   EXPECT_TRUE([[node details] fileSize]);
 }

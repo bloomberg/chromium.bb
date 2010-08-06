@@ -14,6 +14,7 @@
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -73,28 +74,28 @@ TEST_F(AutocompleteTextFieldEditorTest, InsertStripsControlChars) {
   [editor_ selectAll:nil];
 
   [editor_ insertText:@"t"];
-  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"t"]);
+  EXPECT_NSEQ(@"t", [field_ stringValue]);
 
   [editor_ insertText:@"h"];
-  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"th"]);
+  EXPECT_NSEQ(@"th", [field_ stringValue]);
 
   // TAB doesn't get inserted.
   [editor_ insertText:[NSString stringWithFormat:@"%c", 7]];
-  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"th"]);
+  EXPECT_NSEQ(@"th", [field_ stringValue]);
 
   // Newline doesn't get inserted.
   [editor_ insertText:[NSString stringWithFormat:@"%c", 12]];
-  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"th"]);
+  EXPECT_NSEQ(@"th", [field_ stringValue]);
 
   // Multi-character strings get through.
   [editor_ insertText:[NSString stringWithFormat:@"i%cs%c", 8, 127]];
-  EXPECT_TRUE([[field_ stringValue] isEqualToString:@"this"]);
+  EXPECT_NSEQ(@"this", [field_ stringValue]);
 
   // Attempting to insert newline when everything is selected clears
   // the field.
   [editor_ selectAll:nil];
   [editor_ insertText:[NSString stringWithFormat:@"%c", 12]];
-  EXPECT_TRUE([[field_ stringValue] isEqualToString:@""]);
+  EXPECT_NSEQ(@"", [field_ stringValue]);
 }
 
 // Test that |delegate| can provide page action menus.

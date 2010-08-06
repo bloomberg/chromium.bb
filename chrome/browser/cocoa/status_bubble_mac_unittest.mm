@@ -12,6 +12,7 @@
 #import "chrome/browser/cocoa/status_bubble_mac.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // The test delegate records all of the status bubble object's state
@@ -113,12 +114,12 @@ class StatusBubbleMacTest : public CocoaTest {
 TEST_F(StatusBubbleMacTest, SetStatus) {
   bubble_->SetStatus(L"");
   bubble_->SetStatus(L"This is a test");
-  EXPECT_TRUE([GetText() isEqualToString:@"This is a test"]);
+  EXPECT_NSEQ(@"This is a test", GetText());
   EXPECT_TRUE(IsVisible());
 
   // Set the status to the exact same thing again
   bubble_->SetStatus(L"This is a test");
-  EXPECT_TRUE([GetText() isEqualToString:@"This is a test"]);
+  EXPECT_NSEQ(@"This is a test", GetText());
 
   // Hide it
   bubble_->SetStatus(L"");
@@ -132,16 +133,16 @@ TEST_F(StatusBubbleMacTest, SetURL) {
   EXPECT_FALSE(IsVisible());
   bubble_->SetURL(GURL("http://"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetURLText() isEqualToString:@"http:"]);
+  EXPECT_NSEQ(@"http:", GetURLText());
   bubble_->SetURL(GURL("about:blank"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetURLText() isEqualToString:@"about:blank"]);
+  EXPECT_NSEQ(@"about:blank", GetURLText());
   bubble_->SetURL(GURL("foopy://"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetURLText() isEqualToString:@"foopy://"]);
+  EXPECT_NSEQ(@"foopy://", GetURLText());
   bubble_->SetURL(GURL("http://www.cnn.com"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetURLText() isEqualToString:@"www.cnn.com"]);
+  EXPECT_NSEQ(@"www.cnn.com", GetURLText());
 }
 
 // Test hiding bubble that's already hidden.
@@ -159,24 +160,24 @@ TEST_F(StatusBubbleMacTest, SetStatusAndURL) {
   EXPECT_FALSE(IsVisible());
   bubble_->SetStatus(L"Status");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"Status"]);
+  EXPECT_NSEQ(@"Status", GetBubbleViewText());
   bubble_->SetURL(GURL("http://www.nytimes.com"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com"]);
+  EXPECT_NSEQ(@"www.nytimes.com", GetBubbleViewText());
   bubble_->SetURL(GURL(), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"Status"]);
+  EXPECT_NSEQ(@"Status", GetBubbleViewText());
   bubble_->SetStatus(L"");
   EXPECT_FALSE(IsVisible());
   bubble_->SetURL(GURL("http://www.nytimes.com"), L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com"]);
+  EXPECT_NSEQ(@"www.nytimes.com", GetBubbleViewText());
   bubble_->SetStatus(L"Status");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"Status"]);
+  EXPECT_NSEQ(@"Status", GetBubbleViewText());
   bubble_->SetStatus(L"");
   EXPECT_TRUE(IsVisible());
-  EXPECT_TRUE([GetBubbleViewText() isEqualToString:@"www.nytimes.com"]);
+  EXPECT_NSEQ(@"www.nytimes.com", GetBubbleViewText());
   bubble_->SetURL(GURL(), L"");
   EXPECT_FALSE(IsVisible());
 }

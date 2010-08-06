@@ -9,6 +9,7 @@
 #import "chrome/browser/cocoa/font_language_settings_controller.h"
 #include "chrome/browser/profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // The FontLanguageSettingsControllerForTest overrides the getFontFieldOrigin
@@ -66,8 +67,8 @@ TEST_F(FontLanguageSettingsControllerTest, UpdateDisplayField) {
                               withFont:font
                              withLabel:label];
 
-  ASSERT_TRUE([[font fontName] isEqualToString:[[field font] fontName]]);
-  ASSERT_TRUE([@"Times-Roman, 12" isEqualToString:[field stringValue]]);
+  ASSERT_NSEQ([font fontName], [[field font] fontName]);
+  ASSERT_NSEQ(@"Times-Roman, 12", [field stringValue]);
 }
 
 TEST_F(FontLanguageSettingsControllerTest, UpdateDisplayFieldNilFont) {
@@ -80,7 +81,7 @@ TEST_F(FontLanguageSettingsControllerTest, UpdateDisplayFieldNilFont) {
                               withFont:nil
                              withLabel:label];
 
-  ASSERT_TRUE([@"foo" isEqualToString:[field stringValue]]);
+  ASSERT_NSEQ(@"foo", [field stringValue]);
 }
 
 TEST_F(FontLanguageSettingsControllerTest, UpdateDisplayFieldNilField) {

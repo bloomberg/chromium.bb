@@ -9,6 +9,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // A helper for NSNotifications. Makes a note that it's been called back.
@@ -103,7 +104,7 @@ TEST_F(SearchEngineListModelTest, Default) {
   EXPECT_EQ([model_ defaultIndex], 2U);
 
   NSString* defaultString = [[model_ searchEngines] objectAtIndex:2];
-  EXPECT_TRUE([@"google4" isEqualToString:defaultString]);
+  EXPECT_NSEQ(@"google4", defaultString);
 }
 
 // Make sure that when the back-end model changes that we get a notification.

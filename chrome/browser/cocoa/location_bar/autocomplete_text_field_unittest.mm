@@ -16,6 +16,7 @@
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 using ::testing::InSequence;
@@ -654,11 +655,11 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringBaseline) {
                                       attributes:attributes]);
 
   // Check that what we get back looks like what we put in.
-  EXPECT_FALSE([[field_ stringValue] isEqualToString:kString]);
+  EXPECT_NSNE(kString, [field_ stringValue]);
   [field_ setAttributedStringValue:attributedString];
   EXPECT_TRUE([[field_ attributedStringValue]
                 isEqualToAttributedString:attributedString]);
-  EXPECT_TRUE([[field_ stringValue] isEqualToString:kString]);
+  EXPECT_NSEQ(kString, [field_ stringValue]);
 
   // Try that again with focus.
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
@@ -667,11 +668,11 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringBaseline) {
 
   // Check that what we get back looks like what we put in.
   [field_ setStringValue:@""];
-  EXPECT_FALSE([[field_ stringValue] isEqualToString:kString]);
+  EXPECT_NSNE(kString, [field_ stringValue]);
   [field_ setAttributedStringValue:attributedString];
   EXPECT_TRUE([[field_ attributedStringValue]
                 isEqualToAttributedString:attributedString]);
-  EXPECT_TRUE([[field_ stringValue] isEqualToString:kString]);
+  EXPECT_NSEQ(kString, [field_ stringValue]);
 }
 
 // -setAttributedStringValue: shouldn't reset the undo state if things

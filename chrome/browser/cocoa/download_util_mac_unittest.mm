@@ -10,6 +10,7 @@
 #import "chrome/browser/cocoa/download_util_mac.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 namespace {
@@ -51,7 +52,7 @@ TEST_F(DownloadUtilMacTest, AddFileToPasteboardTest) {
   ASSERT_TRUE(files != nil);
   NSString* expectedPath = [files objectAtIndex:0];
   NSString* realPath = base::SysWideToNSString(testPath.ToWStringHack());
-  EXPECT_TRUE([expectedPath isEqualToString:realPath]);
+  EXPECT_NSEQ(expectedPath, realPath);
 }
 
 }  // namespace

@@ -18,6 +18,7 @@
 #include "gfx/codec/png_codec.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 
 namespace {
 
@@ -132,8 +133,8 @@ TEST_F(HistoryMenuBridgeTest, ClearHistoryMenuUntilEnd) {
   ClearMenuSection(menu, HistoryMenuBridge::kMostVisited);
 
   EXPECT_EQ(1, [menu numberOfItems]);
-  EXPECT_TRUE([@"HEADER" isEqualToString:
-      [[menu itemWithTag:HistoryMenuBridge::kMostVisitedTitle] title]]);
+  EXPECT_NSEQ(@"HEADER",
+      [[menu itemWithTag:HistoryMenuBridge::kMostVisitedTitle] title]);
 }
 
 // Skip menu items that are not hooked up to |-openHistoryMenuItem:|.
@@ -150,10 +151,10 @@ TEST_F(HistoryMenuBridgeTest, ClearHistoryMenuSkipping) {
   ClearMenuSection(menu, tag);
 
   EXPECT_EQ(2, [menu numberOfItems]);
-  EXPECT_TRUE([@"HEADER" isEqualToString:
-      [[menu itemWithTag:HistoryMenuBridge::kMostVisitedTitle] title]]);
-  EXPECT_TRUE([@"TITLE" isEqualToString:
-      [[menu itemAtIndex:1] title]]);
+  EXPECT_NSEQ(@"HEADER",
+      [[menu itemWithTag:HistoryMenuBridge::kMostVisitedTitle] title]);
+  EXPECT_NSEQ(@"TITLE",
+      [[menu itemAtIndex:1] title]);
 }
 
 // Edge case test for clearing an empty menu.
@@ -164,8 +165,8 @@ TEST_F(HistoryMenuBridgeTest, ClearHistoryMenuEmpty) {
   ClearMenuSection(menu, HistoryMenuBridge::kMostVisited);
 
   EXPECT_EQ(1, [menu numberOfItems]);
-  EXPECT_TRUE([@"HEADER" isEqualToString:
-      [[menu itemWithTag:HistoryMenuBridge::kMostVisited] title]]);
+  EXPECT_NSEQ(@"HEADER",
+      [[menu itemWithTag:HistoryMenuBridge::kMostVisited] title]);
 }
 
 // Test that AddItemToMenu() properly adds HistoryItem objects as menus.
@@ -236,13 +237,13 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabs) {
   MockBridge::HistoryItem* hist1 = bridge_->HistoryItemForMenuItem(item1);
   EXPECT_TRUE(hist1);
   EXPECT_EQ(24, hist1->session_id);
-  EXPECT_TRUE([@"Google" isEqualToString:[item1 title]]);
+  EXPECT_NSEQ(@"Google", [item1 title]);
 
   NSMenuItem* item2 = [menu itemAtIndex:1];
   MockBridge::HistoryItem* hist2 = bridge_->HistoryItemForMenuItem(item2);
   EXPECT_TRUE(hist2);
   EXPECT_EQ(42, hist2->session_id);
-  EXPECT_TRUE([@"Apple" isEqualToString:[item2 title]]);
+  EXPECT_NSEQ(@"Apple", [item2 title]);
 }
 
 // Test that the menu is created for a mix of windows and tabs.
@@ -296,7 +297,7 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   MockBridge::HistoryItem* hist1 = bridge_->HistoryItemForMenuItem(item1);
   EXPECT_TRUE(hist1);
   EXPECT_EQ(24, hist1->session_id);
-  EXPECT_TRUE([@"Google" isEqualToString:[item1 title]]);
+  EXPECT_NSEQ(@"Google", [item1 title]);
 
   NSMenuItem* item2 = [menu itemAtIndex:1];
   MockBridge::HistoryItem* hist2 = bridge_->HistoryItemForMenuItem(item2);
@@ -308,14 +309,14 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   EXPECT_EQ(4U, [[submenu1 itemArray] count]);
   // Do not test Restore All Tabs because it is localiced.
   EXPECT_TRUE([[submenu1 itemAtIndex:1] isSeparatorItem]);
-  EXPECT_TRUE([@"foo" isEqualToString:[[submenu1 itemAtIndex:2] title]]);
-  EXPECT_TRUE([@"bar" isEqualToString:[[submenu1 itemAtIndex:3] title]]);
+  EXPECT_NSEQ(@"foo", [[submenu1 itemAtIndex:2] title]);
+  EXPECT_NSEQ(@"bar", [[submenu1 itemAtIndex:3] title]);
 
   NSMenuItem* item3 = [menu itemAtIndex:2];
   MockBridge::HistoryItem* hist3 = bridge_->HistoryItemForMenuItem(item3);
   EXPECT_TRUE(hist3);
   EXPECT_EQ(42, hist3->session_id);
-  EXPECT_TRUE([@"Apple" isEqualToString:[item3 title]]);
+  EXPECT_NSEQ(@"Apple", [item3 title]);
 
   NSMenuItem* item4 = [menu itemAtIndex:3];
   MockBridge::HistoryItem* hist4 = bridge_->HistoryItemForMenuItem(item4);
@@ -327,9 +328,9 @@ TEST_F(HistoryMenuBridgeTest, RecentlyClosedTabsAndWindows) {
   EXPECT_EQ(5U, [[submenu2 itemArray] count]);
   // Do not test Restore All Tabs because it is localiced.
   EXPECT_TRUE([[submenu2 itemAtIndex:1] isSeparatorItem]);
-  EXPECT_TRUE([@"magic" isEqualToString:[[submenu2 itemAtIndex:2] title]]);
-  EXPECT_TRUE([@"goats" isEqualToString:[[submenu2 itemAtIndex:3] title]]);
-  EXPECT_TRUE([@"teleporter" isEqualToString:[[submenu2 itemAtIndex:4] title]]);
+  EXPECT_NSEQ(@"magic", [[submenu2 itemAtIndex:2] title]);
+  EXPECT_NSEQ(@"goats", [[submenu2 itemAtIndex:3] title]);
+  EXPECT_NSEQ(@"teleporter", [[submenu2 itemAtIndex:4] title]);
 }
 
 // Tests that we properly request an icon from the FaviconService.

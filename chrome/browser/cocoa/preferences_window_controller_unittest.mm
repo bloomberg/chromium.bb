@@ -12,6 +12,7 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/common/pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // Helper Objective-C object that sets a BOOL when we get a particular
@@ -197,27 +198,25 @@ TEST_F(PrefsControllerTest, SwitchToPage) {
   EXPECT_TRUE([basicsView isDescendantOf:contentView]);
   EXPECT_FALSE([personalStuffView isDescendantOf:contentView]);
   EXPECT_FALSE([underTheHoodView isDescendantOf:contentView]);
-  EXPECT_TRUE([[toolbar selectedItemIdentifier] isEqualTo:basicsIdentifier]);
+  EXPECT_NSEQ(basicsIdentifier, [toolbar selectedItemIdentifier]);
   EXPECT_EQ(OPTIONS_PAGE_GENERAL, lastSelectedPage->GetValue());
-  EXPECT_TRUE([[window title] isEqualTo:[basicsToolbarItem label]]);
+  EXPECT_NSEQ([basicsToolbarItem label], [window title]);
 
   [pref_controller_ switchToPage:OPTIONS_PAGE_CONTENT animate:NO];
   EXPECT_FALSE([basicsView isDescendantOf:contentView]);
   EXPECT_TRUE([personalStuffView isDescendantOf:contentView]);
   EXPECT_FALSE([underTheHoodView isDescendantOf:contentView]);
-  EXPECT_TRUE([[toolbar selectedItemIdentifier]
-                   isEqualTo:personalStuffIdentifier]);
+  EXPECT_NSEQ([toolbar selectedItemIdentifier], personalStuffIdentifier);
   EXPECT_EQ(OPTIONS_PAGE_CONTENT, lastSelectedPage->GetValue());
-  EXPECT_TRUE([[window title] isEqualTo:[personalStuffToolbarItem label]]);
+  EXPECT_NSEQ([personalStuffToolbarItem label], [window title]);
 
   [pref_controller_ switchToPage:OPTIONS_PAGE_ADVANCED animate:NO];
   EXPECT_FALSE([basicsView isDescendantOf:contentView]);
   EXPECT_FALSE([personalStuffView isDescendantOf:contentView]);
   EXPECT_TRUE([underTheHoodView isDescendantOf:contentView]);
-  EXPECT_TRUE([[toolbar selectedItemIdentifier]
-                   isEqualTo:underTheHoodIdentifier]);
+  EXPECT_NSEQ([toolbar selectedItemIdentifier], underTheHoodIdentifier);
   EXPECT_EQ(OPTIONS_PAGE_ADVANCED, lastSelectedPage->GetValue());
-  EXPECT_TRUE([[window title] isEqualTo:[underTheHoodToolbarItem label]]);
+  EXPECT_NSEQ([underTheHoodToolbarItem label], [window title]);
 
   // Test OPTIONS_PAGE_DEFAULT.
 
@@ -226,10 +225,9 @@ TEST_F(PrefsControllerTest, SwitchToPage) {
   EXPECT_FALSE([basicsView isDescendantOf:contentView]);
   EXPECT_TRUE([personalStuffView isDescendantOf:contentView]);
   EXPECT_FALSE([underTheHoodView isDescendantOf:contentView]);
-  EXPECT_TRUE([[toolbar selectedItemIdentifier]
-               isEqualTo:personalStuffIdentifier]);
+  EXPECT_NSEQ(personalStuffIdentifier, [toolbar selectedItemIdentifier]);
   EXPECT_EQ(OPTIONS_PAGE_CONTENT, lastSelectedPage->GetValue());
-  EXPECT_TRUE([[window title] isEqualTo:[personalStuffToolbarItem label]]);
+  EXPECT_NSEQ([personalStuffToolbarItem label], [window title]);
 
   // TODO(akalin): Figure out how to test animation; we'll need everything
   // to stick around until the animation finishes.

@@ -9,6 +9,7 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 class BookmarkNameFolderControllerTest : public CocoaTest {
@@ -133,7 +134,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
                                  node:folder]);
   [controller window];  // force nib load
 
-  EXPECT_TRUE([[controller folderName] isEqual:@"group"]);
+  EXPECT_NSEQ(@"group", [controller folderName]);
   [controller setFolderName:@"Zobo"];
   [controller ok:nil];
   EXPECT_EQ(1, parent->GetChildCount());

@@ -24,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/model_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
@@ -932,7 +933,7 @@ TEST_F(BookmarkBarControllerTest, Cell) {
 
   NSCell* cell = [bar_ cellForBookmarkNode:node];
   EXPECT_TRUE(cell);
-  EXPECT_TRUE([[cell title] isEqual:@"supertitle"]);
+  EXPECT_NSEQ(@"supertitle", [cell title]);
   EXPECT_EQ(node, [[cell representedObject] pointerValue]);
   EXPECT_TRUE([cell menu]);
 
@@ -1112,21 +1113,21 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   }
 
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"a"]);
+  EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:0] title]);
 
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:2]
                 to:NSMakePoint(0, 0)
               copy:NO];
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"c"]);
+  EXPECT_NSEQ(@"c", [[[bar_ buttons] objectAtIndex:0] title]);
   // Make sure a 'copy' did not happen.
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
 
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:1]
                 to:NSMakePoint(1000, 0)
               copy:NO];
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"c"]);
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"b"]);
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
+  EXPECT_NSEQ(@"c", [[[bar_ buttons] objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"b", [[[bar_ buttons] objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:2] title]);
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
 
   // A drop of the 1st between the next 2.
@@ -1135,9 +1136,9 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:0]
                 to:NSMakePoint(x, 0)
               copy:NO];
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"b"]);
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"c"]);
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
+  EXPECT_NSEQ(@"b", [[[bar_ buttons] objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"c", [[[bar_ buttons] objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:2] title]);
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
 
   // A drop on a non-folder button.  (Shouldn't try and go in it.)
@@ -1182,7 +1183,7 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
     model->SetURLStarred(gurls[i], titles[i], true);
   }
   EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"a"]);
+  EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:0] title]);
 
   // Drag 'a' between 'b' and 'c'.
   CGFloat x = NSMinX([[[bar_ buttons] objectAtIndex:2] frame]);
@@ -1190,10 +1191,10 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:0]
                 to:NSMakePoint(x, 0)
               copy:YES];
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"a"]);
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"b"]);
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
-  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:3] title] isEqual:@"c"]);
+  EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"b", [[[bar_ buttons] objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"a", [[[bar_ buttons] objectAtIndex:2] title]);
+  EXPECT_NSEQ(@"c", [[[bar_ buttons] objectAtIndex:3] title]);
   EXPECT_EQ([[bar_ buttons] count], 4U);
 }
 
@@ -1213,12 +1214,12 @@ TEST_F(BookmarkBarControllerTest, TestThemedButton) {
     [bar_ updateTheme:&theme];
     NSAttributedString* astr = [button attributedTitle];
     EXPECT_TRUE(astr);
-    EXPECT_TRUE([[astr string] isEqual:@"small"]);
+    EXPECT_NSEQ(@"small", [astr string]);
     // Pick a char in the middle to test (index 3)
     NSDictionary* attributes = [astr attributesAtIndex:3 effectiveRange:NULL];
     NSColor* newColor =
         [attributes objectForKey:NSForegroundColorAttributeName];
-    EXPECT_TRUE([newColor isEqual:color]);
+    EXPECT_NSEQ(newColor, color);
   }
 }
 
@@ -1599,40 +1600,40 @@ TEST_F(BookmarkBarControllerTest, MoveRemoveAddButtons) {
 
   // Move a button around a bit.
   [bar_ moveButtonFromIndex:0 toIndex:2];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"3b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"1b"]);
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"1b", [[buttons objectAtIndex:2] title]);
   EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
   [bar_ moveButtonFromIndex:2 toIndex:0];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"1b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"2f"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"3b"]);
+  EXPECT_NSEQ(@"1b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:2] title]);
   EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
 
   // Add a couple of buttons.
   const BookmarkNode* parent = root->GetChild(1); // Purloin an existing node.
   const BookmarkNode* node = parent->GetChild(0);
   [bar_ addButtonForNode:node atIndex:0];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f1b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"1b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"2f"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:3] title] isEqualToString:@"3b"]);
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"1b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:2] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:3] title]);
   EXPECT_EQ(oldDisplayedButtons + 1, [bar_ displayedButtonCount]);
   node = parent->GetChild(1);
   [bar_ addButtonForNode:node atIndex:-1];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f1b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"1b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"2f"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:3] title] isEqualToString:@"3b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:4] title] isEqualToString:@"2f2b"]);
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"1b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:2] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:3] title]);
+  EXPECT_NSEQ(@"2f2b", [[buttons objectAtIndex:4] title]);
   EXPECT_EQ(oldDisplayedButtons + 2, [bar_ displayedButtonCount]);
 
   // Remove a couple of buttons.
   [bar_ removeButton:4 animate:NO];
   [bar_ removeButton:1 animate:NO];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f1b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"2f"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"3b"]);
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"2f", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:2] title]);
   EXPECT_EQ(oldDisplayedButtons, [bar_ displayedButtonCount]);
 }
 

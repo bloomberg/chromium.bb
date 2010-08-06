@@ -7,6 +7,7 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // TODO(jrg): add OCMock to Chromium to save some typing.
@@ -128,7 +129,7 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
   EXPECT_TRUE([controller.get()->callbacks_ count] == 9);
 
   for (int x = 1; x < 9; x++) {
-    NSNumber *num = [NSNumber numberWithInt:x-1];
-    EXPECT_TRUE([[controller.get()->callbacks_ objectAtIndex:x] isEqual:num]);
+    NSNumber* num = [NSNumber numberWithInt:x-1];
+    EXPECT_NSEQ(num, [controller.get()->callbacks_ objectAtIndex:x]);
   }
 }

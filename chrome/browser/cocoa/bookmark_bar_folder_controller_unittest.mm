@@ -16,6 +16,7 @@
 #import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "chrome/test/model_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // Add a redirect to make testing easier.
@@ -1035,39 +1036,39 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MoveRemoveAddButtons) {
 
   // Move a button around a bit.
   [folder moveButtonFromIndex:0 toIndex:2];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f2b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"2f3b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"2f1b"]);
+  EXPECT_NSEQ(@"2f2b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"2f3b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:2] title]);
   EXPECT_EQ(oldDisplayedButtons, [buttons count]);
   [folder moveButtonFromIndex:2 toIndex:0];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"2f1b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"2f2b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"2f3b"]);
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"2f2b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"2f3b", [[buttons objectAtIndex:2] title]);
   EXPECT_EQ(oldDisplayedButtons, [buttons count]);
 
   // Add a couple of buttons.
   const BookmarkNode* node = root->GetChild(2); // Purloin an existing node.
   [folder addButtonForNode:node atIndex:0];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"3b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"2f1b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"2f2b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:3] title] isEqualToString:@"2f3b"]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"2f2b", [[buttons objectAtIndex:2] title]);
+  EXPECT_NSEQ(@"2f3b", [[buttons objectAtIndex:3] title]);
   EXPECT_EQ(oldDisplayedButtons + 1, [buttons count]);
   node = root->GetChild(3);
   [folder addButtonForNode:node atIndex:-1];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"3b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"2f1b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"2f2b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:3] title] isEqualToString:@"2f3b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:4] title] isEqualToString:@"4b"]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"2f1b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"2f2b", [[buttons objectAtIndex:2] title]);
+  EXPECT_NSEQ(@"2f3b", [[buttons objectAtIndex:3] title]);
+  EXPECT_NSEQ(@"4b", [[buttons objectAtIndex:4] title]);
   EXPECT_EQ(oldDisplayedButtons + 2, [buttons count]);
 
   // Remove a couple of buttons.
   [folder removeButton:4 animate:NO];
   [folder removeButton:1 animate:NO];
-  EXPECT_TRUE([[[buttons objectAtIndex:0] title] isEqualToString:@"3b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:1] title] isEqualToString:@"2f2b"]);
-  EXPECT_TRUE([[[buttons objectAtIndex:2] title] isEqualToString:@"2f3b"]);
+  EXPECT_NSEQ(@"3b", [[buttons objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"2f2b", [[buttons objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"2f3b", [[buttons objectAtIndex:2] title]);
   EXPECT_EQ(oldDisplayedButtons, [buttons count]);
 }
 

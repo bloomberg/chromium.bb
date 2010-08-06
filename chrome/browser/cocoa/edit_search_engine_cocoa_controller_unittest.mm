@@ -11,6 +11,7 @@
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 @interface FakeEditSearchEngineController : EditSearchEngineCocoaController {
@@ -83,7 +84,7 @@ TEST_F(EditSearchEngineControllerTest, ValidImageOriginals) {
   // Test window title is set correctly.
   NSString* title = l10n_util::GetNSString(
       IDS_SEARCH_ENGINES_EDITOR_NEW_WINDOW_TITLE);
-  EXPECT_TRUE([title isEqualToString:[[controller_ window] title]]);
+  EXPECT_NSEQ(title, [[controller_ window] title]);
 }
 
 TEST_F(EditSearchEngineControllerTest, SetImageViews) {
@@ -101,23 +102,23 @@ TEST_F(EditSearchEngineControllerTest, InvalidState) {
   NSString* toolTip = nil;
   EXPECT_FALSE([controller_ validateFields]);
 
-  EXPECT_TRUE([@"" isEqualToString:[[controller_ nameField] stringValue]]);
+  EXPECT_NSEQ(@"", [[controller_ nameField] stringValue]);
   EXPECT_EQ([controller_ badImage], [[controller_ nameImage] image]);
   toolTip = l10n_util::GetNSString(IDS_SEARCH_ENGINES_INVALID_TITLE_TT);
-  EXPECT_TRUE([toolTip isEqualToString:[[controller_ nameField] toolTip]]);
-  EXPECT_TRUE([toolTip isEqualToString:[[controller_ nameImage] toolTip]]);
+  EXPECT_NSEQ(toolTip, [[controller_ nameField] toolTip]);
+  EXPECT_NSEQ(toolTip, [[controller_ nameImage] toolTip]);
 
   // Keywords can not be empty strings.
-  EXPECT_TRUE([@"" isEqualToString:[[controller_ keywordField] stringValue]]);
+  EXPECT_NSEQ(@"", [[controller_ keywordField] stringValue]);
   EXPECT_EQ([controller_ badImage], [[controller_ keywordImage] image]);
   EXPECT_TRUE([[controller_ keywordField] toolTip]);
   EXPECT_TRUE([[controller_ keywordImage] toolTip]);
 
-  EXPECT_TRUE([@"" isEqualToString:[[controller_ urlField] stringValue]]);
+  EXPECT_NSEQ(@"", [[controller_ urlField] stringValue]);
   EXPECT_EQ([controller_ badImage], [[controller_ urlImage] image]);
   toolTip = l10n_util::GetNSString(IDS_SEARCH_ENGINES_INVALID_URL_TT);
-  EXPECT_TRUE([toolTip isEqualToString:[[controller_ urlField] toolTip]]);
-  EXPECT_TRUE([toolTip isEqualToString:[[controller_ urlImage] toolTip]]);
+  EXPECT_NSEQ(toolTip, [[controller_ urlField] toolTip]);
+  EXPECT_NSEQ(toolTip, [[controller_ urlImage] toolTip]);
 }
 
 // Tests that the single name field validates.
@@ -128,8 +129,8 @@ TEST_F(EditSearchEngineControllerTest, ValidateName) {
   EXPECT_FALSE([controller_ validateFields]);
   NSString* toolTip =
       l10n_util::GetNSString(IDS_SEARCH_ENGINES_INVALID_TITLE_TT);
-  EXPECT_TRUE([toolTip isEqualToString:[[controller_ nameField] toolTip]]);
-  EXPECT_TRUE([toolTip isEqualToString:[[controller_ nameImage] toolTip]]);
+  EXPECT_NSEQ(toolTip, [[controller_ nameField] toolTip]);
+  EXPECT_NSEQ(toolTip, [[controller_ nameImage] toolTip]);
   [[controller_ nameField] setStringValue:@"Test Name"];
   EXPECT_FALSE([controller_ validateFields]);
   EXPECT_EQ([controller_ goodImage], [[controller_ nameImage] image]);
@@ -162,8 +163,8 @@ TEST_F(EditSearchEngineControllerTest, ValidateURL) {
   EXPECT_FALSE([controller_ validateFields]);
   NSString* toolTip =
       l10n_util::GetNSString(IDS_SEARCH_ENGINES_INVALID_URL_TT);
-  EXPECT_TRUE([toolTip isEqualToString:[[controller_ urlField] toolTip]]);
-  EXPECT_TRUE([toolTip isEqualToString:[[controller_ urlImage] toolTip]]);
+  EXPECT_NSEQ(toolTip, [[controller_ urlField] toolTip]);
+  EXPECT_NSEQ(toolTip, [[controller_ urlImage] toolTip]);
   [[controller_ urlField] setStringValue:@"http://foo-bar.com"];
   EXPECT_FALSE([controller_ validateFields]);
   EXPECT_EQ([controller_ goodImage], [[controller_ urlImage] image]);
@@ -217,13 +218,13 @@ TEST_F(EditSearchEngineControllerTest, EditTemplateURL) {
   EXPECT_TRUE([controller window]);
   NSString* title = l10n_util::GetNSString(
       IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE);
-  EXPECT_TRUE([title isEqualToString:[[controller window] title]]);
+  EXPECT_NSEQ(title, [[controller window] title]);
   NSString* nameString = [[controller nameField] stringValue];
-  EXPECT_TRUE([@"Foobar" isEqualToString:nameString]);
+  EXPECT_NSEQ(@"Foobar", nameString);
   NSString* keywordString = [[controller keywordField] stringValue];
-  EXPECT_TRUE([@"keyword" isEqualToString:keywordString]);
+  EXPECT_NSEQ(@"keyword", keywordString);
   NSString* urlValueString = [[controller urlField] stringValue];
-  EXPECT_TRUE([@"http://foo-bar.com" isEqualToString:urlValueString]);
+  EXPECT_NSEQ(@"http://foo-bar.com", urlValueString);
   EXPECT_TRUE([controller validateFields]);
   [controller close];
 }

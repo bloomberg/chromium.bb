@@ -18,6 +18,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
@@ -128,7 +129,7 @@ TEST_F(ExtensionInstallPromptControllerTest, BasicsNormalCancel) {
   [controller window];  // force nib load
 
   // Test the right nib loaded.
-  EXPECT_TRUE([[controller windowNibName] isEqual:@"ExtensionInstallPrompt"]);
+  EXPECT_NSEQ(@"ExtensionInstallPrompt", [controller windowNibName]);
 
   // Check all the controls.
   // Make sure everything is non-nil, and that the fields that are
@@ -145,8 +146,8 @@ TEST_F(ExtensionInstallPromptControllerTest, BasicsNormalCancel) {
   EXPECT_NE('^', [[[controller subtitleField] stringValue] characterAtIndex:0]);
 
   EXPECT_TRUE([controller warningsField] != nil);
-  EXPECT_TRUE([[[controller warningsField] stringValue]
-                  isEqual:(base::SysUTF16ToNSString(warnings[0]))]);
+  EXPECT_NSEQ([[controller warningsField] stringValue],
+              base::SysUTF16ToNSString(warnings[0]));
 
   EXPECT_TRUE([controller warningsBox] != nil);
 
@@ -270,8 +271,7 @@ TEST_F(ExtensionInstallPromptControllerTest, BasicsSkinny) {
   [controller window];  // force nib load
 
   // Test the right nib loaded.
-  EXPECT_TRUE([[controller windowNibName]
-                  isEqual:@"ExtensionInstallPromptNoWarnings"]);
+  EXPECT_NSEQ(@"ExtensionInstallPromptNoWarnings", [controller windowNibName]);
 
   // Check all the controls.
   // In the skinny prompt, only the icon, title and buttons are non-nill.

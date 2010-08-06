@@ -7,6 +7,7 @@
 #import "chrome/browser/cocoa/custom_home_pages_model.h"
 #include "chrome/browser/session_startup_pref.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // A helper for KVO and NSNotifications. Makes a note that it's been called
@@ -132,17 +133,17 @@ TEST_F(CustomHomePagesModelTest, KVO) {
       inCustomHomePagesAtIndex:2];
   EXPECT_EQ([model_ countOfCustomHomePages], 3U);
 
-  EXPECT_TRUE([EntryURL([model_ objectInCustomHomePagesAtIndex:1])
-                  isEqualToString:@"http://www.yahoo.com/"]);
+  EXPECT_NSEQ(@"http://www.yahoo.com/",
+              EntryURL([model_ objectInCustomHomePagesAtIndex:1]));
 
   kvo_helper.get()->sawNotification_ = NO;
   [model_ removeObjectFromCustomHomePagesAtIndex:1];
   EXPECT_TRUE(kvo_helper.get()->sawNotification_);
   EXPECT_EQ([model_ countOfCustomHomePages], 2U);
-  EXPECT_TRUE([EntryURL([model_ objectInCustomHomePagesAtIndex:1])
-                  isEqualToString:@"http://dev.chromium.org/"]);
-  EXPECT_TRUE([EntryURL([model_ objectInCustomHomePagesAtIndex:0])
-                  isEqualToString:@"http://www.google.com/"]);
+  EXPECT_NSEQ(@"http://dev.chromium.org/",
+              EntryURL([model_ objectInCustomHomePagesAtIndex:1]));
+  EXPECT_NSEQ(@"http://www.google.com/",
+              EntryURL([model_ objectInCustomHomePagesAtIndex:0]));
 
   [model_ removeObserver:kvo_helper forKeyPath:@"customHomePages"];
 }
@@ -186,8 +187,8 @@ TEST_F(CustomHomePagesModelTest, ReloadURLs) {
 
   EXPECT_TRUE(kvo_helper.get()->sawNotification_);
   EXPECT_EQ([model_ countOfCustomHomePages], 1U);
-  EXPECT_TRUE([EntryURL([model_ objectInCustomHomePagesAtIndex:0])
-                  isEqualToString:@"http://www.google.com/"]);
+  EXPECT_NSEQ(@"http://www.google.com/",
+              EntryURL([model_ objectInCustomHomePagesAtIndex:0]));
 
   [model_ removeObserver:kvo_helper.get() forKeyPath:@"customHomePages"];
 }

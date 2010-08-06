@@ -10,6 +10,7 @@
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/keystone_glue.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 namespace {
@@ -95,28 +96,23 @@ TEST_F(AboutWindowControllerTest, TestCallbacks) {
   NSString *lastText = [[about_window_controller_ updateText]
                         stringValue];
   PostAutoupdateStatusNotification(kAutoupdateCurrent, @"foo");
-  ASSERT_FALSE([lastText isEqual:[[about_window_controller_ updateText]
-                                  stringValue]]);
+  ASSERT_NSNE(lastText, [[about_window_controller_ updateText] stringValue]);
 
   lastText = [[about_window_controller_ updateText] stringValue];
   PostAutoupdateStatusNotification(kAutoupdateCurrent, @"foo");
-  ASSERT_TRUE([lastText isEqual:[[about_window_controller_ updateText]
-                                 stringValue]]);
+  ASSERT_NSEQ(lastText, [[about_window_controller_ updateText] stringValue]);
 
   lastText = [[about_window_controller_ updateText] stringValue];
   PostAutoupdateStatusNotification(kAutoupdateCurrent, @"bar");
-  ASSERT_FALSE([lastText isEqual:[[about_window_controller_ updateText]
-                                  stringValue]]);
+  ASSERT_NSNE(lastText, [[about_window_controller_ updateText] stringValue]);
 
   lastText = [[about_window_controller_ updateText] stringValue];
   PostAutoupdateStatusNotification(kAutoupdateAvailable, nil);
-  ASSERT_FALSE([lastText isEqual:[[about_window_controller_ updateText]
-                                  stringValue]]);
+  ASSERT_NSNE(lastText, [[about_window_controller_ updateText] stringValue]);
 
   lastText = [[about_window_controller_ updateText] stringValue];
   PostAutoupdateStatusNotification(kAutoupdateCheckFailed, nil);
-  ASSERT_FALSE([lastText isEqual:[[about_window_controller_ updateText]
-                                  stringValue]]);
+  ASSERT_NSNE(lastText, [[about_window_controller_ updateText] stringValue]);
 
 #if 0
   // TODO(mark): The kAutoupdateInstalled portion of the test is disabled
@@ -126,19 +122,16 @@ TEST_F(AboutWindowControllerTest, TestCallbacks) {
 
   lastText = [[about_window_controller_ updateText] stringValue];
   PostAutoupdateStatusNotification(kAutoupdateInstalled, @"ver");
-  ASSERT_FALSE([lastText isEqual:[[about_window_controller_ updateText]
-                                  stringValue]]);
+  ASSERT_NSNE(lastText, [[about_window_controller_ updateText] stringValue]);
 
   lastText = [[about_window_controller_ updateText] stringValue];
   PostAutoupdateStatusNotification(kAutoupdateInstalled, nil);
-  ASSERT_FALSE([lastText isEqual:[[about_window_controller_ updateText]
-                                  stringValue]]);
+  ASSERT_NSNE(lastText, [[about_window_controller_ updateText] stringValue]);
 #endif
 
   lastText = [[about_window_controller_ updateText] stringValue];
   PostAutoupdateStatusNotification(kAutoupdateInstallFailed, nil);
-  ASSERT_FALSE([lastText isEqual:[[about_window_controller_
-                                  updateText] stringValue]]);
+  ASSERT_NSNE(lastText, [[about_window_controller_ updateText] stringValue]);
 }
 
 }  // namespace

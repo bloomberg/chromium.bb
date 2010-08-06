@@ -9,13 +9,14 @@
 #include "chrome/app/chrome_dll_resource.h"
 #import "chrome/browser/cocoa/accelerators_cocoa.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
 
 TEST(AcceleratorsCocoaTest, GetAccelerator) {
   AcceleratorsCocoa* keymap = Singleton<AcceleratorsCocoa>::get();
   const menus::AcceleratorCocoa* accelerator =
       keymap->GetAcceleratorForCommand(IDC_COPY);
   ASSERT_TRUE(accelerator);
-  EXPECT_TRUE([@"c" isEqualToString:accelerator->characters()]);
+  EXPECT_NSEQ(@"c", accelerator->characters());
   EXPECT_EQ(NSCommandKeyMask, accelerator->modifiers());
 }
 

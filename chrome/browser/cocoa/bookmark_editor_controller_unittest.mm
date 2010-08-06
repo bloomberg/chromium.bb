@@ -9,6 +9,7 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 class BookmarkEditorControllerTest : public CocoaTest {
@@ -118,12 +119,12 @@ TEST_F(BookmarkEditorControllerTest, GoodAndBadURLsChangeColor) {
   [controller_ setDisplayURL:@""];
   NSColor *urlColorB = [controller_ urlFieldColor];
   EXPECT_TRUE(urlColorB);
-  EXPECT_FALSE([urlColorB isEqual:urlColorA]);
+  EXPECT_NSNE(urlColorA, urlColorB);
   [controller_ setDisplayURL:@"http://www.google.com"];
   [controller_ cancel:nil];
   urlColorB = [controller_ urlFieldColor];
   EXPECT_TRUE(urlColorB);
-  EXPECT_TRUE([urlColorB isEqual:urlColorA]);
+  EXPECT_NSEQ(urlColorA, urlColorB);
 }
 
 class BookmarkEditorControllerNoNodeTest : public CocoaTest {
@@ -190,11 +191,11 @@ class BookmarkEditorControllerYesNodeTest : public CocoaTest {
 };
 
 TEST_F(BookmarkEditorControllerYesNodeTest, YesNodeShowTree) {
-  EXPECT_TRUE([base::SysWideToNSString(default_title_)
-               isEqual:[controller_ displayName]]);
-  EXPECT_TRUE([[NSString stringWithCString:url_name_
-                                  encoding:NSUTF8StringEncoding]
-               isEqual:[controller_ displayURL]]);
+  EXPECT_NSEQ(base::SysWideToNSString(default_title_),
+              [controller_ displayName]);
+  EXPECT_NSEQ([NSString stringWithCString:url_name_
+                                 encoding:NSUTF8StringEncoding],
+              [controller_ displayURL]);
   [controller_ cancel:nil];
 }
 

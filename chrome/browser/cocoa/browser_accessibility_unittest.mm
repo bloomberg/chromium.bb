@@ -8,6 +8,7 @@
 #include "chrome/browser/cocoa/browser_accessibility.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 
 @interface MockAccessibilityDelegate : NSObject<BrowserAccessibilityDelegate>
 
@@ -79,18 +80,16 @@ class BrowserAccessibilityTest : public CocoaTest {
 TEST_F(BrowserAccessibilityTest, HitTestTest) {
   BrowserAccessibility* firstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(50, 50)];
-  EXPECT_TRUE(
-      [[firstChild accessibilityAttributeValue:NSAccessibilityTitleAttribute]
-        isEqualToString:@"Child1"]);
+  EXPECT_NSEQ(@"Child1",
+      [firstChild accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
 }
 
 // Test doing a hit test on the edge of a child.
 TEST_F(BrowserAccessibilityTest, EdgeHitTest) {
   BrowserAccessibility* firstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(0, 0)];
-  EXPECT_TRUE(
-      [[firstChild accessibilityAttributeValue:NSAccessibilityTitleAttribute]
-        isEqualToString:@"Child1"]);
+  EXPECT_NSEQ(@"Child1",
+      [firstChild accessibilityAttributeValue:NSAccessibilityTitleAttribute]);
 }
 
 // This will test a hit test with invalid coordinates.  It is assumed that
@@ -99,14 +98,14 @@ TEST_F(BrowserAccessibilityTest, EdgeHitTest) {
 TEST_F(BrowserAccessibilityTest, InvalidHitTestCoordsTest) {
   BrowserAccessibility* hitTestResult =
       [accessibility_ accessibilityHitTest:NSMakePoint(-50, 50)];
-  EXPECT_TRUE([accessibility_ isEqualTo:hitTestResult]);
+  EXPECT_NSEQ(accessibility_, hitTestResult);
 }
 
 // Test to ensure querying standard attributes works.
 TEST_F(BrowserAccessibilityTest, BasicAttributeTest) {
   NSString* helpText = [accessibility_
       accessibilityAttributeValue:NSAccessibilityHelpAttribute];
-  EXPECT_TRUE([helpText isEqualToString: @"HelpText"]);
+  EXPECT_NSEQ(@"HelpText", helpText);
 }
 
 // Test querying for an invalid attribute to ensure it doesn't crash.

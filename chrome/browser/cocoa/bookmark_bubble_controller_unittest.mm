@@ -13,6 +13,7 @@
 #import "chrome/browser/cocoa/info_bubble_window.h"
 #include "chrome/common/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
 // Watch for bookmark pulse notifications so we can confirm they were sent.
@@ -318,11 +319,11 @@ TEST_F(BookmarkBubbleControllerTest, TestDuplicateNodeNames) {
   [controller setParentFolderSelection:node1];
   NSMenuItem* item = [button selectedItem];
   id itemObject = [item representedObject];
-  EXPECT_TRUE([itemObject isEqual:[NSValue valueWithPointer:node1]]);
+  EXPECT_NSEQ([NSValue valueWithPointer:node1], itemObject);
   [controller setParentFolderSelection:node2];
   item = [button selectedItem];
   itemObject = [item representedObject];
-  EXPECT_TRUE([itemObject isEqual:[NSValue valueWithPointer:node2]]);
+  EXPECT_NSEQ([NSValue valueWithPointer:node2], itemObject);
 }
 
 // Click the "remove" button

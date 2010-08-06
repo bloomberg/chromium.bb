@@ -8,6 +8,7 @@
 
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#import "testing/gtest_mac.h"
 
 namespace {
 
@@ -41,24 +42,24 @@ TEST_F(SelectedKeywordDecorationTest, UsesPartialKeywordIfNarrow) {
   // Wide width chooses the full string and image.
   const CGFloat all_width = decoration_.GetWidthForSpace(kWidth);
   EXPECT_TRUE(decoration_.image_);
-  EXPECT_TRUE([decoration_.label_ isEqualToString:kFullString]);
+  EXPECT_NSEQ(kFullString, decoration_.label_);
 
   // If not enough space to include the image, uses exactly the full
   // string.
   const CGFloat full_width = decoration_.GetWidthForSpace(all_width - 5.0);
   EXPECT_LT(full_width, all_width);
   EXPECT_FALSE(decoration_.image_);
-  EXPECT_TRUE([decoration_.label_ isEqualToString:kFullString]);
+  EXPECT_NSEQ(kFullString, decoration_.label_);
 
   // Narrow width chooses the partial string.
   const CGFloat partial_width = decoration_.GetWidthForSpace(kNarrowWidth);
   EXPECT_LT(partial_width, full_width);
   EXPECT_FALSE(decoration_.image_);
-  EXPECT_TRUE([decoration_.label_ isEqualToString:kPartialString]);
+  EXPECT_NSEQ(kPartialString, decoration_.label_);
 
   // Narrow doesn't choose partial string if there is not one.
   decoration_.partial_string_.reset();
   decoration_.GetWidthForSpace(kNarrowWidth);
   EXPECT_FALSE(decoration_.image_);
-  EXPECT_TRUE([decoration_.label_ isEqualToString:kFullString]);
+  EXPECT_NSEQ(kFullString, decoration_.label_);
 }
