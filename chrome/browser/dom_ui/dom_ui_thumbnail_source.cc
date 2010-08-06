@@ -28,8 +28,8 @@ DOMUIThumbnailSource::~DOMUIThumbnailSource() {
 void DOMUIThumbnailSource::StartDataRequest(const std::string& path,
                                             bool is_off_the_record,
                                             int request_id) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
-    scoped_refptr<history::TopSites> top_sites = profile_->GetTopSites();
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites)) {
+    history::TopSites* top_sites = profile_->GetTopSites();
     RefCountedBytes* data = NULL;
     if (top_sites->GetPageThumbnail(GURL(path), &data)) {
       // We have the thumbnail.

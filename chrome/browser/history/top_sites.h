@@ -18,6 +18,7 @@
 #include "base/ref_counted.h"
 #include "base/ref_counted_memory.h"
 #include "chrome/browser/cancelable_request.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
@@ -47,9 +48,11 @@ typedef std::vector<MostVisitedURL> MostVisitedURLList;
 // new tab page requests on the I/O thread without proxying to the UI thread is
 // a nontrivial performance win, especially when the browser is starting and
 // the UI thread is busy.
-class TopSites : public NotificationObserver,
-                 public base::RefCountedThreadSafe<TopSites>,
-                 public CancelableRequestProvider {
+class TopSites :
+      public base::RefCountedThreadSafe<TopSites,
+                                        ChromeThread::DeleteOnUIThread>,
+      public NotificationObserver,
+      public CancelableRequestProvider {
  public:
   explicit TopSites(Profile* profile);
 
@@ -66,14 +69,6 @@ class TopSites : public NotificationObserver,
         CancelableRequestConsumerTSimple<size_t>* consumer,
         HistoryService::ThumbnailDataCallback* callback,
         size_t index) = 0;
-  };
-
-  struct Images {
-    scoped_refptr<RefCountedBytes> thumbnail;
-    ThumbnailScore thumbnail_score;
-
-    // TODO(brettw): this will eventually store the favicon.
-    // scoped_refptr<RefCountedBytes> favicon;
   };
 
   // Initializes TopSites.
@@ -108,9 +103,6 @@ class TopSites : public NotificationObserver,
   // Add a  URL to the blacklist.
   void AddBlacklistedURL(const GURL& url);
 
-  // Returns true if the URL is blacklisted.
-  bool IsBlacklisted(const GURL& url);
-
   // Removes a URL from the blacklist.
   void RemoveBlacklistedURL(const GURL& url);
 
@@ -122,9 +114,6 @@ class TopSites : public NotificationObserver,
   // Pin a URL at |index|.
   void AddPinnedURL(const GURL& url, size_t index);
 
-  // Get the index of a URL. Returns true if |url| is pinned.
-  bool GetIndexOfPinnedURL(const GURL& url, size_t* index);
-
   // Returns true if a URL is pinned.
   bool IsURLPinned(const GURL& url);
 
@@ -135,8 +124,18 @@ class TopSites : public NotificationObserver,
   // is a URL pinned at |index|.
   bool GetPinnedURLAtIndex(size_t index, GURL* out);
 
+  // TopSites must be deleted on a UI thread. This happens
+  // automatically in a real browser, but in unit_tests we don't have
+  // a real UI thread. Use this function to delete a TopSites object.
+  static void DeleteTopSites(scoped_refptr<TopSites>& ptr);
+
+  // Sets the profile pointer to NULL. This is for the case where
+  // TopSites outlives the profile, since TopSites is refcounted.
+  void ClearProfile();
+
  private:
-  friend class base::RefCountedThreadSafe<TopSites>;
+  friend struct ChromeThread::DeleteOnThread<ChromeThread::UI>;
+  friend class DeleteTask<TopSites>;
   friend class TopSitesTest;
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, GetMostVisited);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, RealDatabase);
@@ -165,9 +164,9 @@ class TopSites : public NotificationObserver,
 
   // A version of SetPageThumbnail that takes RefCountedBytes as
   // returned by HistoryService.
-  bool SetPageThumbnail(const GURL& url,
-                        const RefCountedBytes* thumbnail,
-                        const ThumbnailScore& score);
+  bool SetPageThumbnailEncoded(const GURL& url,
+                               const RefCountedBytes* thumbnail,
+                               const ThumbnailScore& score);
 
   // Query history service for the list of available thumbnails.
   void StartQueryForMostVisited();
@@ -229,6 +228,12 @@ class TopSites : public NotificationObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Returns true if the URL is blacklisted.
+  bool IsBlacklisted(const GURL& url);
+
+  // A variant of RemovePinnedURL that must be called within a lock.
+  void RemovePinnedURLLocked(const GURL& url);
+
   // Returns the delay until the next update of history is needed.
   // Uses num_urls_changed
   base::TimeDelta GetUpdateDelay();
@@ -243,7 +248,7 @@ class TopSites : public NotificationObserver,
   // Write a thumbnail to database.
   void WriteThumbnailToDB(const MostVisitedURL& url,
                           int url_rank,
-                          const TopSites::Images& thumbnail);
+                          const Images& thumbnail);
 
   // Updates the top sites list and writes the difference to disk.
   void UpdateMostVisited(MostVisitedURLList most_visited);

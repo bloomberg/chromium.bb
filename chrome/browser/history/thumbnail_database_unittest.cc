@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -13,6 +14,7 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
 #include "gfx/codec/jpeg_codec.h"
@@ -70,6 +72,9 @@ class ThumbnailDatabaseTest : public testing::Test {
 };
 
 TEST_F(ThumbnailDatabaseTest, AddDelete) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+    return;  // TopSitesTest replaces this.
+
   ThumbnailDatabase db;
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
 
@@ -112,6 +117,9 @@ TEST_F(ThumbnailDatabaseTest, AddDelete) {
 }
 
 TEST_F(ThumbnailDatabaseTest, UseLessBoringThumbnails) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+    return;  // TopSitesTest replaces this.
+
   ThumbnailDatabase db;
   Time now = Time::Now();
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
@@ -146,6 +154,9 @@ TEST_F(ThumbnailDatabaseTest, UseLessBoringThumbnails) {
 }
 
 TEST_F(ThumbnailDatabaseTest, UseAtTopThumbnails) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+    return;  // TopSitesTest replaces this.
+
   ThumbnailDatabase db;
   Time now = Time::Now();
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
@@ -217,6 +228,9 @@ TEST_F(ThumbnailDatabaseTest, UseAtTopThumbnails) {
 }
 
 TEST_F(ThumbnailDatabaseTest, ThumbnailTimeDegradation) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+    return;  // TopSitesTest replaces this.
+
   ThumbnailDatabase db;
   const Time kNow = Time::Now();
   const Time kThreeHoursAgo = kNow - TimeDelta::FromHours(4);
@@ -261,6 +275,9 @@ TEST_F(ThumbnailDatabaseTest, NeverAcceptTotallyBoringThumbnail) {
   // should replace a thumbnail with another because of reasons other
   // than straight up boringness score, still reject because the
   // thumbnail is totally boring.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+    return;  // TopSitesTest replaces this.
+
   ThumbnailDatabase db;
   Time now = Time::Now();
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
@@ -332,6 +349,9 @@ TEST_F(ThumbnailDatabaseTest, NeverAcceptTotallyBoringThumbnail) {
 }
 
 TEST_F(ThumbnailDatabaseTest, NeedsMigrationToTopSites) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+    return;  // TopSitesTest replaces this.
+
   ThumbnailDatabase db;
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL));
   db.BeginTransaction();

@@ -134,14 +134,11 @@ void HistoryDatabase::BeginExclusiveMode() {
 
 // static
 int HistoryDatabase::GetCurrentVersion() {
-  // Temporary solution while TopSites is behind a flag. If there is
-  // no flag, we are still using the Thumbnails file, i.e. we are at
-  // version 17.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites)) {
+  // If we don't use TopSites, we are one version number behind.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+    return 17;  // Last pre-TopSites version.
+  else
     return kCurrentVersionNumber;
-  } else {
-    return kCurrentVersionNumber - 1;
-  }
 }
 
 void HistoryDatabase::BeginTransaction() {
@@ -286,7 +283,7 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
   if (cur_version == 17)
     needs_version_18_migration_ = true;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTopSites) &&
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites) &&
       cur_version == 18) {
     // Set DB version back to pre-top sites.
     cur_version = 17;

@@ -130,7 +130,7 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
 
 bool ThumbnailDatabase::InitThumbnailTable() {
   if (!db_.DoesTableExist("thumbnails")) {
-    if (CommandLine::ForCurrentProcess()-> HasSwitch(switches::kTopSites)) {
+    if (!CommandLine::ForCurrentProcess()-> HasSwitch(switches::kNoTopSites)) {
       use_top_sites_ = true;
       return true;
     }
@@ -231,8 +231,10 @@ void ThumbnailDatabase::SetPageThumbnail(
     const SkBitmap& thumbnail,
     const ThumbnailScore& score,
     base::Time time) {
-  if (use_top_sites_)
+  if (use_top_sites_) {
+    LOG(WARNING) << "Use TopSites instead.";
     return;  // Not possible after migration to TopSites.
+  }
 
   if (!thumbnail.isNull()) {
     bool add_thumbnail = true;
@@ -286,8 +288,10 @@ void ThumbnailDatabase::SetPageThumbnail(
 
 bool ThumbnailDatabase::GetPageThumbnail(URLID id,
                                          std::vector<unsigned char>* data) {
-  if (use_top_sites_)
+  if (use_top_sites_) {
+    LOG(WARNING) << "Use TopSites instead.";
     return false;  // Not possible after migration to TopSites.
+  }
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "SELECT data FROM thumbnails WHERE url_id=?"));
@@ -303,8 +307,10 @@ bool ThumbnailDatabase::GetPageThumbnail(URLID id,
 }
 
 bool ThumbnailDatabase::DeleteThumbnail(URLID id) {
-  if (use_top_sites_)
+  if (use_top_sites_) {
+    LOG(WARNING) << "Use TopSites instead.";
     return true;  // Not possible after migration to TopSites.
+  }
 
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM thumbnails WHERE url_id = ?"));
@@ -317,8 +323,10 @@ bool ThumbnailDatabase::DeleteThumbnail(URLID id) {
 
 bool ThumbnailDatabase::ThumbnailScoreForId(URLID id,
                                             ThumbnailScore* score) {
-  if (use_top_sites_)
+  if (use_top_sites_) {
+    LOG(WARNING) << "Use TopSites instead.";
     return false;  // Not possible after migration to TopSites.
+  }
 
   // Fetch the current thumbnail's information to make sure we
   // aren't replacing a good thumbnail with one that's worse.
