@@ -49,6 +49,8 @@ BASE_ARM = BASE + '/arm-none-linux-gnueabi'
 
 LD_SCRIPT_ARM = BASE_ARM + '/ld_script_arm_untrusted'
 
+GOLD_PLUGIN = BASE_ARM + '/lib/LLVMgold.so'
+
 # NOTE: derived from
 # toolchain/linux_x86/nacl64/lib/ldscripts/elf_nacl.x
 LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x8632_untrusted'
@@ -204,8 +206,6 @@ global_config_flags = {
 LLVM_GCC = BASE_ARM + '/bin/arm-none-linux-gnueabi-gcc'
 
 LLC = BASE_ARM + '/bin/llc'
-
-LLVM_LD = BASE_ARM + '/bin/llvm-ld'
 
 OPT = BASE_ARM + '/bin/opt'
 
@@ -471,7 +471,7 @@ def Incarnation_illegal(argv):
 
 
 def MassageFinalLinkCommandPnacl(args, native_dir, flags):
-  out = flags
+  out = flags[:]
 
   # add init code
   if '-nostdlib' not in args:
@@ -498,9 +498,21 @@ MAGIC_OBJS = set([
     'sandboxed_arm.o',
     ])
 
+def GoldBCArgv(argv):
+  # remove the script
+  T_index = argv.index('-T')
+  argv = argv[:T_index] + argv[T_index + 2:]
 
-def GenerateCombinedBitcodeFile(argv):
-  """Run llvm-ld to produce a single bitcode file
+  # TODO(espindola): We should use also-emit-llvm for sanity checking that
+  # we have included all that we need in the link.
+
+  # add the -plugin and -plugin-opt options
+  return argv + ['-plugin=%s' % GOLD_PLUGIN,
+                 '-plugin-opt=emit-llvm']
+
+
+def GenerateCombinedBitcodeFile(argv, root, ld_flags):
+  """Run gold to produce a single bitcode file
   Returns:
   name of resulting bitcode file without .bc extension.
 
@@ -532,6 +544,7 @@ def GenerateCombinedBitcodeFile(argv):
         last_bitcode_pos = len(args_bit_ld)
     elif a == '-nostdlib':
       args_native_ld.append(a)
+      args_bit_ld.append(a)
     elif a.startswith('-l'):
       args_bit_ld.append(a)
     elif a.startswith('-L'):
@@ -545,53 +558,26 @@ def GenerateCombinedBitcodeFile(argv):
 
   assert output
 
-  # NOTE: LLVM_LD automagically appends .bc to the output
   if '-nostdlib' not in argv:
     if last_bitcode_pos != None:
-      # Splice in the extra symbols.
       args_bit_ld = ([PNACL_BITCODE_ROOT + "/nacl_startup.o"] +
-                     args_bit_ld[:last_bitcode_pos] +
-                     args_bit_ld[last_bitcode_pos:] +
-                     [# NOTE: bad things happen when '-lc' is not first
-                      '-lc',
+                     args_bit_ld +
+                     ['-lc',
                       '-lnacl',
                       '-lstdc++',
                       '-lc',
                       '-lnosys',
                       ])
 
-  # NOTE:.bc will be appended to the output name by LLVM_LD
-  # NOTE:These are to insure that dependencies for libgcc.a are satified
-  #      c.f. http://code.google.com/p/nativeclient/issues/detail?id=639
-  public_functions = ['environ',
-                      'memset',
-                      'abort',
-                      'raise',
-                      ]
+  args_bit_ld += ['-o', output + '.bc']
 
-  # if we are not in barebones mode keep some symbols other than main
-  # alive which are called form crtX.o
+  # add init and fini
+  args_bit_ld = MassageFinalLinkCommandPnacl(args_bit_ld, root, ld_flags)
 
-  if '-nostdlib' not in argv:
-    args_bit_ld += [
-       '-internalize-public-api-list=' + ','.join(public_functions),
-       '-referenced-list=' + ','.join(public_functions),
-       # NOTE: without this we still get a few miscompiles for pnacl-x86-32.
-       # (LLVM's inliner will be more aggressives when functions are not
-       # internalized.)
-       '-disable-internalize',
-       ]
-  else:
-     args_bit_ld += ['-internalize-public-api-list=_start',
-                     # NOTE: without this llvm will be able
-                     # to evaluate too much at compile time
-                     # TODO(robertm): make all tests depend
-                     # on argc to fool llvm
-                     '-disable-internalize',
-                     ]
+  # add the plugin arguments
+  args_bit_ld = GoldBCArgv(args_bit_ld)
 
-  args_bit_ld += ['-o', output]
-  Run([LLVM_LD] +  args_bit_ld)
+  Run([ELF_LD] +  args_bit_ld)
   return output, args_native_ld
 
 
@@ -601,7 +587,7 @@ def BitcodeToNative(argv, llc, llc_flags, ascom, as_flags, ld, ld_flags, root):
      2) Run as to convert to .o
      3) Run ld
   """
-  output, args_native_ld = GenerateCombinedBitcodeFile(argv)
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv, root, ld_flags)
 
   bitcode_combined = output + ".bc"
   asm_combined = output + ".bc.s"
