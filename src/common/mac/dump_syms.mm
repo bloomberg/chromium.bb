@@ -449,12 +449,16 @@ bool DumpSymbols::WriteSymbolFile(FILE *stream) {
       = NXGetArchInfoFromCpuType(selected_object_file_->cputype,
                                  selected_object_file_->cpusubtype);
 
+  const char *selected_arch_name = selected_arch_info->name;
+  if (strcmp(selected_arch_name, "i386") == 0)
+    selected_arch_name = "x86";
+
   // Produce a name to use in error messages that includes the
   // filename, and the architecture, if there is more than one.
   selected_object_name_ = [object_filename_ UTF8String];
   if (object_files_.size() > 1) {
     selected_object_name_ += ", architecture ";
-    selected_object_name_ + selected_arch_info->name;
+    selected_object_name_ + selected_arch_name;
   }
 
   // Compute a module name, to appear in the MODULE record.
@@ -467,7 +471,7 @@ bool DumpSymbols::WriteSymbolFile(FILE *stream) {
   identifier += "0";
 
   // Create a module to hold the debugging information.
-  Module module([module_name UTF8String], "mac", selected_arch_info->name, 
+  Module module([module_name UTF8String], "mac", selected_arch_name, 
                 identifier);
 
   // Parse the selected object file.
