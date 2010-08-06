@@ -79,4 +79,9 @@ struct NaClInstState* NaClInstIterGetLookbackState(
 /* Advance the iterator past the current instruction. */
 void NaClInstIterAdvance(NaClInstIter* iter);
 
+/* Returns the memory address of the beginning of the currently
+ * matched instruction.
+ */
+uint8_t* NaClInstIterGetInstMemory(NaClInstIter* iter);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_INST_ITER_h_ */

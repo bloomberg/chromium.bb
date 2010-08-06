@@ -160,7 +160,7 @@ void NaClCpuCheck(struct NaClValidatorState* state,
   }
   if (squash_me) {
     /* Replace all bytes with the stop instruction. */
-    memset(iter->segment->mbase, kNaClFullStop,
+    memset(NaClInstIterGetInstMemory(iter), kNaClFullStop,
            NaClInstStateLength(inst_state));
   }
 }

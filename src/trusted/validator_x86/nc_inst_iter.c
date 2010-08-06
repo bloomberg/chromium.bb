@@ -105,3 +105,12 @@ void NaClInstIterAdvance(NaClInstIter* iter) {
           iter->index, iter->buffer_index));
   iter->buffer[iter->buffer_index].inst = NULL;
 }
+
+uint8_t* NaClInstIterGetInstMemory(NaClInstIter* iter) {
+  if (iter->index >= iter->segment->size) {
+    fprintf(stderr,
+            "*ERROR* NaClInstIterGetInstMemory with no next element.\n");
+    exit(1);
+  }
+  return iter->segment->mbase + iter->index;
+}
