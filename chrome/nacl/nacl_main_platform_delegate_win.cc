@@ -34,7 +34,7 @@ void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 
   if (target_services && !no_sandbox) {
     std::wstring test_dll_name =
-      command_line.GetSwitchValue(switches::kTestNaClSandbox);
+      command_line.GetSwitchValueNative(switches::kTestNaClSandbox);
     if (!test_dll_name.empty()) {
       // At this point, hack on the suffix according to with bitness
       // of your windows process.

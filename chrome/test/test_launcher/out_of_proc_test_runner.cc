@@ -86,10 +86,10 @@ class OutOfProcTestRunner : public tests::TestRunner {
 
     int test_terminate_timeout_ms = kDefaultTestTimeoutMs;
     if (cmd_line->HasSwitch(kTestTerminateTimeoutFlag)) {
-      std::wstring timeout_str(
-          cmd_line->GetSwitchValue(kTestTerminateTimeoutFlag));
+      std::string timeout_str =
+          cmd_line->GetSwitchValueASCII(kTestTerminateTimeoutFlag);
       int timeout;
-      base::StringToInt(WideToUTF8(timeout_str), &timeout);
+      base::StringToInt(timeout_str, &timeout);
       test_terminate_timeout_ms = std::max(test_terminate_timeout_ms, timeout);
     }
 

@@ -274,8 +274,8 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     FilePath inner_html;
     if (WriteEULAtoTempFile(&inner_html)) {
       int retcode = 0;
-      const std::string eula = WideToASCII(installer_util::switches::kShowEula);
-      if (!LaunchSetupWithParam(eula, inner_html.ToWStringHack(), &retcode) ||
+      if (!LaunchSetupWithParam(installer_util::switches::kShowEula,
+                                inner_html.ToWStringHack(), &retcode) ||
           (retcode == installer_util::EULA_REJECTED)) {
         LOG(WARNING) << "EULA rejected. Fast exit.";
         ::ExitProcess(1);

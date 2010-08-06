@@ -10,7 +10,7 @@
 #include "chrome_frame/test_utils.h"
 #include "chrome_frame/utils.h"
 
-const wchar_t kRegisterDllFlag[] = L"register";
+static const char kRegisterDllFlag[] = "register";
 
 int main(int argc, char **argv) {
 
@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
   int result = -1;
   if (cmd_line->HasSwitch(kRegisterDllFlag)) {
-    std::wstring dll_path = cmd_line->GetSwitchValue(kRegisterDllFlag);
+    std::wstring dll_path = cmd_line->GetSwitchValueNative(kRegisterDllFlag);
 
     // Run() must be called within the scope of the ScopedChromeFrameRegistrar
     // to ensure that the correct DLL remains registered during the tests.

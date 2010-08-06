@@ -54,8 +54,9 @@ void PepperPluginRegistry::PreloadModules() {
 // static
 void PepperPluginRegistry::GetPluginInfoFromSwitch(
     std::vector<PepperPluginInfo>* plugins) {
-  const std::wstring& value = CommandLine::ForCurrentProcess()->GetSwitchValue(
-      switches::kRegisterPepperPlugins);
+  const std::string value =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kRegisterPepperPlugins);
   if (value.empty())
     return;
 
@@ -64,27 +65,34 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
   // plugin-entry = <file-path> + ["#" + <name> + ["#" + <description>]] +
   //                *1( LWS + ";" + LWS + <mime-type> )
 
-  std::vector<std::wstring> modules;
+  std::vector<std::string> modules;
   SplitString(value, ',', &modules);
   for (size_t i = 0; i < modules.size(); ++i) {
-    std::vector<std::wstring> parts;
+    std::vector<std::string> parts;
     SplitString(modules[i], ';', &parts);
     if (parts.size() < 2) {
       DLOG(ERROR) << "Required mime-type not found";
       continue;
     }
 
-    std::vector<std::wstring> name_parts;
+    std::vector<std::string> name_parts;
     SplitString(parts[0], '#', &name_parts);
 
     PepperPluginInfo plugin;
-    plugin.path = FilePath::FromWStringHack(name_parts[0]);
+#if defined(OS_WIN)
+    // This means we can't provide plugins from non-ASCII paths, but
+    // since this switch is only for development I don't think that's
+    // too awful.
+    plugin.path = FilePath(ASCIIToUTF16(name_parts[0]));
+#else
+    plugin.path = FilePath(name_parts[0]);
+#endif
     if (name_parts.size() > 1)
-      plugin.name = WideToUTF8(name_parts[1]);
+      plugin.name = name_parts[1];
     if (name_parts.size() > 2)
-      plugin.type_descriptions = WideToUTF8(name_parts[2]);
+      plugin.type_descriptions = name_parts[2];
     for (size_t j = 1; j < parts.size(); ++j)
-      plugin.mime_types.push_back(WideToASCII(parts[j]));
+      plugin.mime_types.push_back(parts[j]);
 
     plugins->push_back(plugin);
   }

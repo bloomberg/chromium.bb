@@ -102,7 +102,7 @@ bool RendererMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
 
   if (target_services && !no_sandbox) {
       std::wstring test_dll_name =
-          command_line.GetSwitchValue(switches::kTestSandbox);
+          command_line.GetSwitchValueNative(switches::kTestSandbox);
     if (!test_dll_name.empty()) {
       sandbox_test_module_ = LoadLibrary(test_dll_name.c_str());
       DCHECK(sandbox_test_module_);

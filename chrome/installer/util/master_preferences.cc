@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/installer/util/util_constants.h"
 #include "googleurl/src/gurl.h"
@@ -106,8 +107,8 @@ DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line) {
   DictionaryValue* prefs = NULL;
 #if defined(OS_WIN)
   if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
-    FilePath prefs_path(
-        cmd_line.GetSwitchValue(installer_util::switches::kInstallerData));
+    FilePath prefs_path = cmd_line.GetSwitchValuePath(
+        installer_util::switches::kInstallerData);
     prefs = installer_util::ParseDistributionPreferences(prefs_path);
   }
 

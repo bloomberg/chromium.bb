@@ -469,7 +469,8 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
       params.append(installer_util::switches::kRemoveChromeRegistration);
       if (!suffix.empty()) {
         params.append(L" --");
-        params.append(installer_util::switches::kRegisterChromeBrowserSuffix);
+        params.append(ASCIIToWide(
+            installer_util::switches::kRegisterChromeBrowserSuffix));
         params.append(L"=\"" + suffix + L"\"");
       }
       DWORD exit_code = installer_util::UNKNOWN_STATUS;

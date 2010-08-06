@@ -340,9 +340,9 @@ bool ApplyPolicyForBuiltInFlashPlugin(sandbox::TargetPolicy* policy) {
 bool AddPolicyForPlugin(const CommandLine* cmd_line,
                         sandbox::TargetPolicy* policy) {
   std::wstring plugin_dll = cmd_line->
-      GetSwitchValue(switches::kPluginPath);
+      GetSwitchValueNative(switches::kPluginPath);
   std::wstring trusted_plugins = CommandLine::ForCurrentProcess()->
-      GetSwitchValue(switches::kTrustedPlugins);
+      GetSwitchValueNative(switches::kTrustedPlugins);
   // Add the policy for the pipes.
   sandbox::ResultCode result = sandbox::SBOX_ALL_OK;
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_NAMED_PIPES,

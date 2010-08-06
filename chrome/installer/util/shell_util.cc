@@ -309,11 +309,13 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
   }
   if (file_util::PathExists(FilePath::FromWStringHack(exe_path))) {
     std::wstring params(L"--");
-    params.append(installer_util::switches::kRegisterChromeBrowser);
+    params.append(
+        ASCIIToWide(installer_util::switches::kRegisterChromeBrowser));
     params.append(L"=\"" + chrome_exe + L"\"");
     if (!suffix.empty()) {
       params.append(L" --");
-      params.append(installer_util::switches::kRegisterChromeBrowserSuffix);
+      params.append(ASCIIToWide(
+          installer_util::switches::kRegisterChromeBrowserSuffix));
       params.append(L"=\"" + suffix + L"\"");
     }
 
