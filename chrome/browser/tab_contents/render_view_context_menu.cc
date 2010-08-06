@@ -236,13 +236,12 @@ void RenderViewContextMenu::RecursivelyAppendExtensionItems(
        i != items.end(); ++i) {
     ExtensionMenuItem* item = *i;
 
-    // Auto-prepend a separator, if needed, to visually group radio items
-    // together.
-    if (item->type() != ExtensionMenuItem::RADIO &&
-        item->type() != ExtensionMenuItem::SEPARATOR &&
-        last_type == ExtensionMenuItem::RADIO) {
+    // If last item was of type radio but the current one isn't, auto-insert
+    // a separator.  The converse case is handled below.
+    if (last_type == ExtensionMenuItem::RADIO &&
+        item->type() != ExtensionMenuItem::RADIO) {
       menu_model->AddSeparator();
-      radio_group_id++;
+      last_type = ExtensionMenuItem::SEPARATOR;
     }
 
     int menu_id = IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST + (*index)++;
@@ -265,17 +264,20 @@ void RenderViewContextMenu::RecursivelyAppendExtensionItems(
     } else if (item->type() == ExtensionMenuItem::CHECKBOX) {
       menu_model->AddCheckItem(menu_id, title);
     } else if (item->type() == ExtensionMenuItem::RADIO) {
-      // Auto-append a separator if needed to visually group radio items
-      // together.
-      if (*index > 0 && last_type != ExtensionMenuItem::RADIO &&
-          last_type != ExtensionMenuItem::SEPARATOR) {
-        menu_model->AddSeparator();
+      if (i != items.begin() &&
+          last_type != ExtensionMenuItem::RADIO) {
         radio_group_id++;
+
+        // Auto-append a separator if needed.
+        if (last_type != ExtensionMenuItem::SEPARATOR)
+          menu_model->AddSeparator();
       }
 
       menu_model->AddRadioItem(menu_id, title, radio_group_id);
-    } else {
-      NOTREACHED();
+    } else if (item->type() == ExtensionMenuItem::SEPARATOR) {
+      if (i != items.begin() && last_type != ExtensionMenuItem::SEPARATOR) {
+        menu_model->AddSeparator();
+      }
     }
     last_type = item->type();
   }

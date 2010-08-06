@@ -60,30 +60,6 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     return true;
   }
 
- protected:
-  // These two functions implement pure virtual methods of
-  // RenderViewContextMenu.
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator) {
-    // None of our commands have accelerators, so always return false.
-    return false;
-  }
-  virtual void PlatformInit() {}
-
-
-  // Given an extension menu item id, tries to find the corresponding command id
-  // in the menu.
-  bool FindCommandId(const ExtensionMenuItem::Id& id, int* command_id) {
-    std::map<int, ExtensionMenuItem::Id>::const_iterator i;
-    for (i = extension_item_map_.begin(); i != extension_item_map_.end(); ++i) {
-      if (i->second == id) {
-        *command_id = i->first;
-        return true;
-      }
-    }
-    return false;
-  }
-
   // Searches for an menu item with |command_id|. If it's found, the return
   // value is true and the model and index where it appears in that model are
   // returned in |found_model| and |found_index|. Otherwise returns false.
@@ -107,6 +83,30 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
       }
     }
 
+    return false;
+  }
+
+ protected:
+  // These two functions implement pure virtual methods of
+  // RenderViewContextMenu.
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator) {
+    // None of our commands have accelerators, so always return false.
+    return false;
+  }
+  virtual void PlatformInit() {}
+
+
+  // Given an extension menu item id, tries to find the corresponding command id
+  // in the menu.
+  bool FindCommandId(const ExtensionMenuItem::Id& id, int* command_id) {
+    std::map<int, ExtensionMenuItem::Id>::const_iterator i;
+    for (i = extension_item_map_.begin(); i != extension_item_map_.end(); ++i) {
+      if (i->second == id) {
+        *command_id = i->first;
+        return true;
+      }
+    }
     return false;
   }
 };
@@ -136,6 +136,20 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
   // Shortcut to return the current ExtensionMenuManager.
   ExtensionMenuManager* menu_manager() {
     return browser()->profile()->GetExtensionsService()->menu_manager();
+  }
+
+  // Returns a pointer to the currently loaded extension with |name|, or null
+  // if not found.
+  Extension* GetExtensionNamed(std::string name) {
+    const ExtensionList* extensions =
+        browser()->profile()->GetExtensionsService()->extensions();
+    ExtensionList::const_iterator i;
+    for (i = extensions->begin(); i != extensions->end(); ++i) {
+      if ((*i)->name() == name) {
+        return *i;
+      }
+    }
+    return NULL;
   }
 
   // This gets all the items that any extension has registered for possible
@@ -227,4 +241,93 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, LongTitle) {
   string16 label;
   ASSERT_TRUE(menu->GetItemLabel(item->id(), &label));
   ASSERT_TRUE(label.size() <= limit);
+}
+
+// Checks that in |menu|, the item at |index| has type |expected_type| and a
+// label of |expected_label|.
+static void ExpectLabelAndType(const char* expected_label,
+                               MenuModel::ItemType expected_type,
+                               const MenuModel& menu,
+                               int index) {
+  EXPECT_EQ(expected_type, menu.GetTypeAt(index));
+  EXPECT_EQ(UTF8ToUTF16(expected_label), menu.GetLabelAt(index));
+}
+
+// In the separators test we build a submenu with items and separators in two
+// different ways - this is used to verify the results in both cases.
+static void VerifyMenuForSeparatorsTest(const MenuModel& menu) {
+  // We expect to see the following items in the menu:
+  //  radio1
+  //  radio2
+  //  --separator-- (automatically added)
+  //  normal1
+  //  --separator--
+  //  normal2
+  //  --separator--
+  //  radio3
+  //  radio4
+  //  --separator--
+  //  normal3
+
+  int index = 0;
+  ASSERT_EQ(11, menu.GetItemCount());
+  ExpectLabelAndType("radio1", MenuModel::TYPE_RADIO, menu, index++);
+  ExpectLabelAndType("radio2", MenuModel::TYPE_RADIO, menu, index++);
+  EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
+  ExpectLabelAndType("normal1", MenuModel::TYPE_COMMAND, menu, index++);
+  EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
+  ExpectLabelAndType("normal2", MenuModel::TYPE_COMMAND, menu, index++);
+  EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
+  ExpectLabelAndType("radio3", MenuModel::TYPE_RADIO, menu, index++);
+  ExpectLabelAndType("radio4", MenuModel::TYPE_RADIO, menu, index++);
+  EXPECT_EQ(MenuModel::TYPE_SEPARATOR, menu.GetTypeAt(index++));
+  ExpectLabelAndType("normal3", MenuModel::TYPE_COMMAND, menu, index++);
+}
+
+// Tests a number of cases for auto-generated and explicitly added separators.
+IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
+  // Load the extension.
+  ASSERT_TRUE(LoadContextMenuExtension("separators"));
+  Extension* extension = GetExtensionNamed("Separators Test");
+  ASSERT_TRUE(extension != NULL);
+
+  // Navigate to test1.html inside the extension, which should create a bunch
+  // of items at the top-level (but they'll get pushed into an auto-generated
+  // parent).
+  ExtensionTestMessageListener listener1("test1 create finished");
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(extension->GetResourceURL("test1.html")));
+  listener1.WaitUntilSatisfied();
+
+  GURL url("http://www.google.com/");
+  scoped_ptr<TestRenderViewContextMenu> menu(CreateMenuForURL(url));
+
+  // The top-level item should be an "automagic parent" with the extension's
+  // name.
+  MenuModel* model = NULL;
+  int index = 0;
+  string16 label;
+  ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
+      IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
+  EXPECT_EQ(UTF8ToUTF16(extension->name()), model->GetLabelAt(index));
+  ASSERT_EQ(MenuModel::TYPE_SUBMENU, model->GetTypeAt(index));
+
+  // Get the submenu and verify the items there.
+  MenuModel* submenu = model->GetSubmenuModelAt(index);
+  ASSERT_TRUE(submenu != NULL);
+  VerifyMenuForSeparatorsTest(*submenu);
+
+  // Now run our second test - navigate to test2.html which creates an explicit
+  // parent node and populates that with the same items as in test1.
+  ExtensionTestMessageListener listener2("test2 create finished");
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(extension->GetResourceURL("test2.html")));
+  listener2.WaitUntilSatisfied();
+  menu.reset(CreateMenuForURL(url));
+  ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
+      IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
+  EXPECT_EQ(UTF8ToUTF16("parent"), model->GetLabelAt(index));
+  submenu = model->GetSubmenuModelAt(index);
+  ASSERT_TRUE(submenu != NULL);
+  VerifyMenuForSeparatorsTest(*submenu);
 }
