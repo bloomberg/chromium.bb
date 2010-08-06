@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // Borrowed from media/tools/omx_test/file_reader_util.h.
 // Added some functionalities related to timestamps on packets and Media
 // Foundation.
 
-#ifndef MEDIA_MEDIA_FOUNDATION_FILE_READER_UTIL_H_
-#define MEDIA_MEDIA_FOUNDATION_FILE_READER_UTIL_H_
+#ifndef MEDIA_MF_FILE_READER_UTIL_H_
+#define MEDIA_MF_FILE_READER_UTIL_H_
 
 #include <string>
 
@@ -43,8 +43,9 @@ class FFmpegFileReader : public FileReader {
   virtual void Read(uint8** output, int* size);
 
   // Reads a video packet, converts it into Annex B stream, and allocates a
-  // buffer to |*output| and copies the contents into it.
-  void Read(uint8** output, int* size, int* duration, int64* sample_time);
+  // buffer to |*output| and copies the contents into it. Timestamp and
+  // duration are given in 100-ns units.
+  void Read2(uint8** output, int* size, int64* timestamp, int64* duration);
   bool GetFrameRate(int* num, int* denom) const;
   bool GetWidth(int* width) const;
   bool GetHeight(int* height) const;
@@ -65,4 +66,4 @@ class FFmpegFileReader : public FileReader {
 
 }  // namespace media
 
-#endif  // MEDIA_MEDIA_FOUNDATION_FILE_READER_UTIL_H_
+#endif  // MEDIA_MF_FILE_READER_UTIL_H_

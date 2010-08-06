@@ -1,30 +1,24 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#include "media/media_foundation/h264mft.h"
+#include "media/mf/mft_h264_decoder.h"
 
 #include <algorithm>
 #include <string>
 
-#include <d3d9.h>
-#include <evr.h>
-#include <initguid.h>
 #include <mfapi.h>
 #include <mferror.h>
-#include <mfidl.h>
-#include <shlwapi.h>
 #include <wmcodecdsp.h>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/scoped_comptr_win.h"
 #include "media/base/video_frame.h"
-#include "media/media_foundation/file_reader_util.h"
 
 #pragma comment(lib, "dxva2.lib")
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "mfuuid.lib")
-#pragma comment(lib, "evr.lib")
 #pragma comment(lib, "mfplat.lib")
 
 namespace media {
@@ -121,7 +115,7 @@ static IMFSample* CreateInputSample(uint8* stream, int size,
     LOG(ERROR) << "Failed to lock buffer";
     return NULL;
   }
-  CHECK_EQ(static_cast<int>(current_length), 0);
+  CHECK_EQ(current_length, 0u);
   CHECK_GE(static_cast<int>(max_length), size);
   memcpy(destination, stream, size);
   CHECK(SUCCEEDED(buffer->Unlock()));
@@ -136,8 +130,10 @@ static IMFSample* CreateInputSample(uint8* stream, int size,
 
 // Public methods
 
-H264Mft::H264Mft(bool use_dxva)
-    : decoder_(NULL),
+MftH264Decoder::MftH264Decoder(bool use_dxva)
+    : read_input_callback_(NULL),
+      output_avail_callback_(NULL),
+      decoder_(NULL),
       initialized_(false),
       use_dxva_(use_dxva),
       drain_message_sent_(false),
@@ -147,18 +143,25 @@ H264Mft::H264Mft(bool use_dxva)
       frames_decoded_(0),
       width_(0),
       height_(0),
-      stride_(0) {
+      stride_(0),
+      output_format_(use_dxva ? MFVideoFormat_NV12 : MFVideoFormat_YV12) {
 }
 
-H264Mft::~H264Mft() {
+MftH264Decoder::~MftH264Decoder() {
 }
 
-bool H264Mft::Init(IDirect3DDeviceManager9* dev_manager,
-                   int frame_rate_num, int frame_rate_denom,
-                   int width, int height,
-                   int aspect_num, int aspect_denom) {
+bool MftH264Decoder::Init(IDirect3DDeviceManager9* dev_manager,
+                          int frame_rate_num, int frame_rate_denom,
+                          int width, int height,
+                          int aspect_num, int aspect_denom,
+                          ReadInputCallback* read_input_cb,
+                          OutputReadyCallback* output_avail_cb) {
+  CHECK(read_input_cb != NULL);
+  CHECK(output_avail_cb != NULL);
   if (initialized_)
     return true;
+  read_input_callback_.reset(read_input_cb);
+  output_avail_callback_.reset(output_avail_cb);
   if (!InitDecoder(dev_manager, frame_rate_num, frame_rate_denom,
                    width, height, aspect_num, aspect_denom))
     return false;
@@ -170,8 +173,8 @@ bool H264Mft::Init(IDirect3DDeviceManager9* dev_manager,
   return true;
 }
 
-bool H264Mft::SendInput(uint8* data, int size, int64 timestamp,
-                        int64 duration) {
+bool MftH264Decoder::SendInput(uint8* data, int size, int64 timestamp,
+                               int64 duration) {
   CHECK(initialized_);
   CHECK(data != NULL);
   CHECK_GT(size, 0);
@@ -205,10 +208,8 @@ static const char* const ProcessOutputStatusToCString(HRESULT hr) {
     return "unhandled error from ProcessOutput";
 }
 
-H264Mft::DecoderOutputState H264Mft::GetOutput(
-    scoped_refptr<VideoFrame>* decoded_frame) {
+MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
   CHECK(initialized_);
-  CHECK(decoded_frame != NULL);
 
   ScopedComPtr<IMFSample> output_sample;
   if (!use_dxva_) {
@@ -220,154 +221,140 @@ H264Mft::DecoderOutputState H264Mft::GetOutput(
     }
   }
   MFT_OUTPUT_DATA_BUFFER output_data_buffer;
-  output_data_buffer.dwStreamID = 0;
-  output_data_buffer.pSample = output_sample;
-  output_data_buffer.dwStatus = 0;
-  output_data_buffer.pEvents = NULL;
-  DWORD status;
   HRESULT hr;
-  hr = decoder_->ProcessOutput(0,            // No flags
-                               1,            // # of out streams to pull from
-                               &output_data_buffer,
-                               &status);
-
-  // TODO(imcheng): Handle the events, if any. (No event is returned most of
-  // the time.)
-  IMFCollection* events = output_data_buffer.pEvents;
-  if (events != NULL) {
-    LOG(INFO) << "Got events from ProcessOuput, but discarding";
-    events->Release();
-  }
-  if (FAILED(hr)) {
-    LOG(INFO) << "ProcessOutput failed with status " << std::hex << hr
-              << ", meaning..." << ProcessOutputStatusToCString(hr);
-    if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
-      if (!SetDecoderOutputMediaType(MFVideoFormat_NV12)) {
-        LOG(ERROR) << "Failed to reset output type";
-        return kResetOutputStreamFailed;
-       } else {
-        LOG(INFO) << "Reset output type done";
-        return kResetOutputStreamOk;
-      }
-    } else if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
-      // At this point we have either read everything from file or we can
-      // still feed the decoder input. If we have read everything then we
-      // should've sent a drain message to the MFT. If the drain message is
-      // sent but it doesn't give out anymore output then we know the decoder
-      // has processed everything.
-      if (drain_message_sent_) {
-        LOG(INFO) << "Drain message was already sent + no output => done";
-        return kNoMoreOutput;
+  DWORD status;
+  for (;;) {
+    output_data_buffer.dwStreamID = 0;
+    output_data_buffer.pSample = output_sample;
+    output_data_buffer.dwStatus = 0;
+    output_data_buffer.pEvents = NULL;
+    hr = decoder_->ProcessOutput(0,            // No flags
+                                 1,            // # of out streams to pull from
+                                 &output_data_buffer,
+                                 &status);
+    IMFCollection* events = output_data_buffer.pEvents;
+    if (events != NULL) {
+      LOG(INFO) << "Got events from ProcessOuput, but discarding";
+      events->Release();
+    }
+    if (FAILED(hr)) {
+      LOG(INFO) << "ProcessOutput failed with status " << std::hex << hr
+                << ", meaning..." << ProcessOutputStatusToCString(hr);
+      if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
+        if (!SetDecoderOutputMediaType(output_format_)) {
+          LOG(ERROR) << "Failed to reset output type";
+          return kResetOutputStreamFailed;
+         } else {
+          LOG(INFO) << "Reset output type done";
+          continue;
+        }
+      } else if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
+        // If we have read everything then we should've sent a drain message
+        // to the MFT. If the drain message is sent but it doesn't give out
+        // anymore output then we know the decoder has processed everything.
+        if (drain_message_sent_) {
+          LOG(INFO) << "Drain message was already sent + no output => done";
+          return kNoMoreOutput;
+        } else {
+          if (!ReadAndProcessInput()) {
+            LOG(INFO) << "Failed to read/process input. Sending drain message";
+            if (!SendDrainMessage()) {
+              LOG(ERROR) << "Failed to send drain message";
+              return kNoMoreOutput;
+            }
+          }
+          continue;
+        }
       } else {
-        return kNeedMoreInput;
+        return kUnspecifiedError;
       }
     } else {
-      return kUnspecifiedError;
-    }
-  } else {
-    // A decoded sample was successfully obtained.
-    LOG(INFO) << "Got a decoded sample from decoder";
-    if (use_dxva_) {
-      // If dxva is enabled, we did not provide a sample to ProcessOutput,
-      // i.e. output_sample is NULL.
-      output_sample.Attach(output_data_buffer.pSample);
-      if (output_sample.get() == NULL) {
-        LOG(ERROR) << "Output sample using DXVA is NULL - ProcessOutput did "
-                   << "not provide it!";
+      // A decoded sample was successfully obtained.
+      LOG(INFO) << "Got a decoded sample from decoder";
+      if (use_dxva_) {
+        // If dxva is enabled, we did not provide a sample to ProcessOutput,
+        // i.e. output_sample is NULL.
+        output_sample.Attach(output_data_buffer.pSample);
+        if (output_sample.get() == NULL) {
+          LOG(ERROR) << "Output sample using DXVA is NULL - ProcessOutput did "
+                     << "not provide it!";
+          return kOutputSampleError;
+        }
+      }
+      int64 timestamp, duration;
+      hr = output_sample->GetSampleTime(&timestamp);
+      hr = output_sample->GetSampleDuration(&duration);
+      if (FAILED(hr)) {
+        LOG(ERROR) << "Failed to get sample duration or timestamp "
+                   << std::hex << hr;
         return kOutputSampleError;
       }
-    }
-    int64 timestamp, duration;
-    hr = output_sample->GetSampleTime(&timestamp);
-    hr = output_sample->GetSampleDuration(&duration);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to get sample duration or timestamp "
-                 << std::hex << hr;
-      return kOutputSampleError;
-    }
 
-    // The duration and timestamps are in 100-ns units, so divide by 10
-    // to convert to microseconds.
-    timestamp /= 10;
-    duration /= 10;
+      // The duration and timestamps are in 100-ns units, so divide by 10
+      // to convert to microseconds.
+      timestamp /= 10;
+      duration /= 10;
 
-    // Sanity checks for checking if there is really something in the sample.
-    DWORD buf_count;
-    hr = output_sample->GetBufferCount(&buf_count);
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to get buff count, hr = " << std::hex << hr;
-      return kOutputSampleError;
-    }
-    if (buf_count == 0) {
-      LOG(ERROR) << "buf_count is 0, dropping sample";
-      return kOutputSampleError;
-    }
-    ScopedComPtr<IMFMediaBuffer> out_buffer;
-    hr = output_sample->GetBufferByIndex(0, out_buffer.Receive());
-    if (FAILED(hr)) {
-      LOG(ERROR) << "Failed to get decoded output buffer";
-      return kOutputSampleError;
-    }
+      // Sanity checks for checking if there is really something in the sample.
+      DWORD buf_count;
+      hr = output_sample->GetBufferCount(&buf_count);
+      if (FAILED(hr)) {
+        LOG(ERROR) << "Failed to get buff count, hr = " << std::hex << hr;
+        return kOutputSampleError;
+      }
+      if (buf_count == 0) {
+        LOG(ERROR) << "buf_count is 0, dropping sample";
+        return kOutputSampleError;
+      }
+      ScopedComPtr<IMFMediaBuffer> out_buffer;
+      hr = output_sample->GetBufferByIndex(0, out_buffer.Receive());
+      if (FAILED(hr)) {
+        LOG(ERROR) << "Failed to get decoded output buffer";
+        return kOutputSampleError;
+      }
 
-    // To obtain the data, the caller should call the Lock() method instead
-    // of using the data field.
-    // In NV12, there are only 2 planes - the Y plane, and the interleaved UV
-    // plane. Both have the same strides.
-    uint8* null_data[2] = { NULL, NULL };
-    int32 strides[2] = { stride_, stride_ };
-    VideoFrame::CreateFrameExternal(
-        use_dxva_ ? VideoFrame::TYPE_DIRECT3DSURFACE :
-                    VideoFrame::TYPE_MFBUFFER,
-        VideoFrame::NV12,
-        width_,
-        height_,
-        2,
-        null_data,
-        strides,
-        base::TimeDelta::FromMicroseconds(timestamp),
-        base::TimeDelta::FromMicroseconds(duration),
-        out_buffer.Detach(),
-        decoded_frame);
-    CHECK(decoded_frame->get() != NULL);
-    frames_decoded_++;
-    return kOutputOk;
+      // To obtain the data, the caller should call the Lock() method instead
+      // of using the data field.
+      // In NV12, there are only 2 planes - the Y plane, and the interleaved UV
+      // plane. Both have the same strides.
+      uint8* null_data[2] = { NULL, NULL };
+      int32 strides[2] = { stride_, output_format_ == MFVideoFormat_NV12 ?
+                                    stride_ :
+                                    stride_ / 2 };
+      scoped_refptr<VideoFrame> decoded_frame;
+      VideoFrame::CreateFrameExternal(
+          use_dxva_ ? VideoFrame::TYPE_DIRECT3DSURFACE :
+                      VideoFrame::TYPE_MFBUFFER,
+          output_format_ == MFVideoFormat_NV12 ? VideoFrame::NV12
+                                               : VideoFrame::YV12,
+          width_,
+          height_,
+          2,
+          null_data,
+          strides,
+          base::TimeDelta::FromMicroseconds(timestamp),
+          base::TimeDelta::FromMicroseconds(duration),
+          out_buffer.Detach(),
+          &decoded_frame);
+      CHECK(decoded_frame.get() != NULL);
+      frames_decoded_++;
+      output_avail_callback_->Run(decoded_frame);
+      return kOutputOk;
+    }
   }
-}
-
-bool H264Mft::SendDrainMessage() {
-  CHECK(initialized_);
-  if (drain_message_sent_) {
-    LOG(ERROR) << "Drain message was already sent before!";
-    return false;
-  }
-
-  // Send the drain message with no parameters.
-  HRESULT hr = decoder_->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to send the drain message to decoder";
-    return false;
-  }
-  drain_message_sent_ = true;
-  return true;
 }
 
 // Private methods
 
-bool H264Mft::InitDecoder(IDirect3DDeviceManager9* dev_manager,
-                          int frame_rate_num, int frame_rate_denom,
-                          int width, int height,
-                          int aspect_num, int aspect_denom) {
+bool MftH264Decoder::InitDecoder(IDirect3DDeviceManager9* dev_manager,
+                                 int frame_rate_num, int frame_rate_denom,
+                                 int width, int height,
+                                 int aspect_num, int aspect_denom) {
   decoder_.Attach(GetH264Decoder());
   if (!decoder_.get())
     return false;
-  if (!CheckDecoderProperties())
+  if (use_dxva_ && !SetDecoderD3d9Manager(dev_manager))
     return false;
-  if (use_dxva_) {
-    if (!CheckDecoderDxvaSupport())
-    return false;
-  if (!SetDecoderD3d9Manager(dev_manager))
-    return false;
-  }
   if (!SetDecoderMediaTypes(frame_rate_num, frame_rate_denom,
                             width, height,
                             aspect_num, aspect_denom)) {
@@ -376,58 +363,8 @@ bool H264Mft::InitDecoder(IDirect3DDeviceManager9* dev_manager,
   return true;
 }
 
-bool H264Mft::CheckDecoderProperties() {
-  DCHECK(decoder_.get());
-  DWORD in_stream_count;
-  DWORD out_stream_count;
-  HRESULT hr;
-  hr = decoder_->GetStreamCount(&in_stream_count, &out_stream_count);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to get stream count";
-    return false;
-  } else {
-    LOG(INFO) << "Input stream count: " << in_stream_count << ", "
-              << "Output stream count: " << out_stream_count;
-    bool mismatch = false;
-    if (in_stream_count != 1) {
-      LOG(ERROR) << "Input stream count mismatch!";
-      mismatch = true;
-    }
-    if (out_stream_count != 1) {
-      LOG(ERROR) << "Output stream count mismatch!";
-      mismatch = true;
-    }
-    return !mismatch;
-  }
-}
-
-bool H264Mft::CheckDecoderDxvaSupport() {
-  HRESULT hr;
-  ScopedComPtr<IMFAttributes> attributes;
-  hr = decoder_->GetAttributes(attributes.Receive());
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Unlock: Failed to get attributes, hr = "
-               << std::hex << std::showbase << hr;
-    return false;
-  }
-  UINT32 dxva;
-  hr = attributes->GetUINT32(MF_SA_D3D_AWARE, &dxva);
-  if (FAILED(hr)) {
-    LOG(ERROR) << "Failed to get DXVA attr, hr = "
-               << std::hex << std::showbase << hr
-               << "this might not be the right decoder.";
-    return false;
-  }
-  LOG(INFO) << "Support dxva? " << dxva;
-  if (!dxva) {
-    LOG(ERROR) << "Decoder does not support DXVA - this might not be the "
-               << "right decoder.";
-    return false;
-  }
-  return true;
-}
-
-bool H264Mft::SetDecoderD3d9Manager(IDirect3DDeviceManager9* dev_manager) {
+bool MftH264Decoder::SetDecoderD3d9Manager(
+    IDirect3DDeviceManager9* dev_manager) {
   DCHECK(use_dxva_) << "SetDecoderD3d9Manager should only be called if DXVA is "
                     << "enabled";
   CHECK(dev_manager != NULL);
@@ -441,56 +378,59 @@ bool H264Mft::SetDecoderD3d9Manager(IDirect3DDeviceManager9* dev_manager) {
   return true;
 }
 
-bool H264Mft::SetDecoderMediaTypes(int frame_rate_num, int frame_rate_denom,
-                                   int width, int height,
-                                   int aspect_num, int aspect_denom) {
+bool MftH264Decoder::SetDecoderMediaTypes(int frame_rate_num,
+                                          int frame_rate_denom,
+                                          int width, int height,
+                                          int aspect_num, int aspect_denom) {
   DCHECK(decoder_.get());
   if (!SetDecoderInputMediaType(frame_rate_num, frame_rate_denom,
                                 width, height,
                                 aspect_num, aspect_denom))
     return false;
-  if (!SetDecoderOutputMediaType(MFVideoFormat_NV12)) {
+  if (!SetDecoderOutputMediaType(output_format_)) {
     return false;
   }
   return true;
 }
 
-bool H264Mft::SetDecoderInputMediaType(int frame_rate_num, int frame_rate_denom,
-                                       int width, int height,
-                                       int aspect_num, int aspect_denom) {
+bool MftH264Decoder::SetDecoderInputMediaType(int frame_rate_num,
+                                              int frame_rate_denom,
+                                              int width, int height,
+                                              int aspect_num,
+                                              int aspect_denom) {
   ScopedComPtr<IMFMediaType> media_type;
   HRESULT hr;
   hr = MFCreateMediaType(media_type.Receive());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to create empty media type object";
-    return NULL;
+    return false;
   }
   hr = media_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
   if (FAILED(hr)) {
     LOG(ERROR) << "SetGUID for major type failed";
-    return NULL;
+    return false;
   }
   hr = media_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264);
   if (FAILED(hr)) {
     LOG(ERROR) << "SetGUID for subtype failed";
-    return NULL;
+    return false;
   }
 
   // Provide additional info to the decoder to avoid a format change during
   // streaming.
-  if (frame_rate_num == 0 || frame_rate_denom == 0) {
+  if (frame_rate_num > 0 && frame_rate_denom > 0) {
     hr = MFSetAttributeRatio(media_type.get(), MF_MT_FRAME_RATE,
                              frame_rate_num, frame_rate_denom);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to set frame rate";
-      return NULL;
+      return false;
     }
   }
-  if (width == 0 || height == 0) {
+  if (width > 0 && height > 0) {
     hr = MFSetAttributeSize(media_type.get(), MF_MT_FRAME_SIZE, width, height);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to set frame size";
-      return NULL;
+      return false;
     }
   }
 
@@ -500,14 +440,14 @@ bool H264Mft::SetDecoderInputMediaType(int frame_rate_num, int frame_rate_denom,
                              MFVideoInterlace_MixedInterlaceOrProgressive);
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to set interlace mode";
-    return NULL;
+    return false;
   }
-  if (aspect_num == 0 || aspect_denom == 0) {
+  if (aspect_num > 0 && aspect_denom > 0) {
     hr = MFSetAttributeRatio(media_type.get(), MF_MT_PIXEL_ASPECT_RATIO,
                              aspect_num, aspect_denom);
     if (FAILED(hr)) {
       LOG(ERROR) << "Failed to get aspect ratio";
-      return NULL;
+      return false;
     }
   }
   hr = decoder_->SetInputType(0, media_type.get(), 0);  // No flags
@@ -518,7 +458,7 @@ bool H264Mft::SetDecoderInputMediaType(int frame_rate_num, int frame_rate_denom,
   return true;
 }
 
-bool H264Mft::SetDecoderOutputMediaType(const GUID subtype) {
+bool MftH264Decoder::SetDecoderOutputMediaType(const GUID subtype) {
   DWORD i = 0;
   IMFMediaType* out_media_type;
   bool found = false;
@@ -538,10 +478,9 @@ bool H264Mft::SetDecoderOutputMediaType(const GUID subtype) {
       hr = MFGetAttributeSize(out_media_type, MF_MT_FRAME_SIZE,
                               reinterpret_cast<UINT32*>(&width_),
                               reinterpret_cast<UINT32*>(&height_));
-      hr = MFGetStrideForBitmapInfoHeader(
-          MFVideoFormat_NV12.Data1,
-          width_,
-          reinterpret_cast<LONG*>(&stride_));
+      hr = MFGetStrideForBitmapInfoHeader(output_format_.Data1,
+                                          width_,
+                                          reinterpret_cast<LONG*>(&stride_));
       if (FAILED(hr)) {
         LOG(ERROR) << "Failed to SetOutputType to |subtype| or obtain "
                    << "width/height/stride " << std::hex << hr;
@@ -555,13 +494,13 @@ bool H264Mft::SetDecoderOutputMediaType(const GUID subtype) {
     out_media_type->Release();
   }
   if (!found) {
-    LOG(ERROR) << "NV12 was not found in GetOutputAvailableType()";
+    LOG(ERROR) << "|subtype| was not found in GetOutputAvailableType()";
     return false;
   }
   return true;
 }
 
-bool H264Mft::SendStartMessage() {
+bool MftH264Decoder::SendStartMessage() {
   HRESULT hr;
   hr = decoder_->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL);
   if (FAILED(hr)) {
@@ -579,7 +518,7 @@ bool H264Mft::SendStartMessage() {
 // The MFT will not allocate buffer for neither input nor output, so we have
 // to do it ourselves and make sure they're the correct size.
 // Exception is when dxva is enabled, the decoder will allocate output.
-bool H264Mft::GetStreamsInfoAndBufferReqs() {
+bool MftH264Decoder::GetStreamsInfoAndBufferReqs() {
   DCHECK(decoder_.get());
   HRESULT hr;
   MFT_INPUT_STREAM_INFO input_stream_info;
@@ -596,13 +535,11 @@ bool H264Mft::GetStreamsInfoAndBufferReqs() {
   // sample, and one that specifies a fixed sample size. (as in cbSize)
   LOG(INFO) << "Flags: "
             << std::hex << std::showbase << input_stream_info.dwFlags;
-  CHECK_EQ(static_cast<int>(input_stream_info.dwFlags), 0x7);
+  CHECK_EQ(input_stream_info.dwFlags, 0x7u);
   LOG(INFO) << "Min buffer size: " << input_stream_info.cbSize;
   LOG(INFO) << "Max lookahead: " << input_stream_info.cbMaxLookahead;
   LOG(INFO) << "Alignment: " << input_stream_info.cbAlignment;
-  if (input_stream_info.cbAlignment > 0) {
-    LOG(WARNING) << "Warning: Decoder requires input to be aligned";
-  }
+  CHECK_EQ(input_stream_info.cbAlignment, 0u);
   in_buffer_size_ = input_stream_info.cbSize;
 
   MFT_OUTPUT_STREAM_INFO output_stream_info;
@@ -618,15 +555,45 @@ bool H264Mft::GetStreamsInfoAndBufferReqs() {
   // allocate its own sample.
   LOG(INFO) << "Flags: "
             << std::hex << std::showbase << output_stream_info.dwFlags;
-  CHECK_EQ(static_cast<int>(output_stream_info.dwFlags),
-           use_dxva_ ? 0x107 : 0x7);
+  CHECK_EQ(output_stream_info.dwFlags, use_dxva_ ? 0x107u : 0x7u);
   LOG(INFO) << "Min buffer size: " << output_stream_info.cbSize;
   LOG(INFO) << "Alignment: " << output_stream_info.cbAlignment;
-  if (output_stream_info.cbAlignment > 0) {
-    LOG(WARNING) << "Warning: Decoder requires output to be aligned";
-  }
+  CHECK_EQ(output_stream_info.cbAlignment, 0u);
   out_buffer_size_ = output_stream_info.cbSize;
 
+  return true;
+}
+
+bool MftH264Decoder::ReadAndProcessInput() {
+  uint8* input_stream_dummy;
+  int size;
+  int64 duration;
+  int64 timestamp;
+  read_input_callback_->Run(&input_stream_dummy, &size, &timestamp, &duration);
+  scoped_array<uint8> input_stream(input_stream_dummy);
+  if (input_stream.get() == NULL) {
+    LOG(INFO) << "No more input";
+    return false;
+  } else {
+    // We read an input stream, we can feed it into the decoder.
+    return SendInput(input_stream.get(), size, timestamp, duration);
+  }
+}
+
+bool MftH264Decoder::SendDrainMessage() {
+  CHECK(initialized_);
+  if (drain_message_sent_) {
+    LOG(ERROR) << "Drain message was already sent before!";
+    return false;
+  }
+
+  // Send the drain message with no parameters.
+  HRESULT hr = decoder_->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to send the drain message to decoder";
+    return false;
+  }
+  drain_message_sent_ = true;
   return true;
 }
 

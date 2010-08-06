@@ -1,8 +1,12 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
-// Demonstrates the use of H264Mft.
+// Demonstrates the use of MftH264Decoder.
+
+#include <cstdio>
+
+#include <string>
 
 #include <d3d9.h>
 #include <dxva2api.h>
@@ -15,22 +19,25 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "media/base/media.h"
+#include "media/base/video_frame.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/ffmpeg/file_protocol.h"
-#include "media/media_foundation/file_reader_util.h"
-#include "media/media_foundation/h264mft.h"
+#include "media/mf/file_reader_util.h"
+#include "media/mf/mft_h264_decoder.h"
 
+using base::Time;
+using base::TimeDelta;
 using media::FFmpegFileReader;
-using media::H264Mft;
+using media::MftH264Decoder;
 using media::VideoFrame;
 
 namespace {
 
 void usage() {
   static char* usage_msg =
-      "Usage: h264mft [--enable-dxva] --input-file=FILE\n"
+      "Usage: mft_h264_decoder [--enable-dxva] --input-file=FILE\n"
       "enable-dxva: Enables hardware accelerated decoding\n"
-      "To display this message: h264mft --help";
+      "To display this message: mft_h264_decoder --help";
   fprintf(stderr, "%s\n", usage_msg);
 }
 
@@ -68,11 +75,9 @@ void ShutdownComLibraries() {
   CoUninitialize();
 }
 
-IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
-                                             int width,
-                                             int height,
-                                             IDirect3D9** direct3d,
-                                             IDirect3DDevice9** device) {
+static IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
+                                                    IDirect3D9** direct3d,
+                                                    IDirect3DDevice9** device) {
   CHECK(video_window != NULL);
   CHECK(direct3d != NULL);
   CHECK(device != NULL);
@@ -86,8 +91,10 @@ IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
   }
   D3DPRESENT_PARAMETERS present_params = {0};
 
-  present_params.BackBufferWidth = width;
-  present_params.BackBufferHeight = height;
+  // Once we know the dimensions, we need to reset using
+  // AdjustD3DDeviceBackBufferDimensions().
+  present_params.BackBufferWidth = 0;
+  present_params.BackBufferHeight = 0;
   present_params.BackBufferFormat = D3DFMT_UNKNOWN;
   present_params.BackBufferCount = 1;
   present_params.SwapEffect = D3DSWAPEFFECT_DISCARD;
@@ -103,7 +110,7 @@ IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
   // (Is it even needed for just video decoding?)
   HRESULT hr = d3d->CreateDevice(D3DADAPTER_DEFAULT,
                                  D3DDEVTYPE_HAL,
-                                 video_window,
+                                 NULL,
                                  D3DCREATE_HARDWARE_VERTEXPROCESSING,
                                  &present_params,
                                  temp_device.Receive());
@@ -128,88 +135,31 @@ IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
   return dev_manager.Detach();
 }
 
-// Example usage of how to get a decoded frame from the decoder.
-bool GetDecodedSample(FFmpegFileReader* reader, H264Mft* decoder,
-                      scoped_refptr<VideoFrame>* decoded_frame) {
-  // Keep feeding the MFT with inputs until it spits out an output.
-  for (;;) {
-    // First check if there is output.
-    H264Mft::DecoderOutputState state = decoder->GetOutput(decoded_frame);
-    if (state == H264Mft::kOutputOk) {
-      LOG(INFO) << "Got an output from decoder";
-      return true;
-    } else if (state == H264Mft::kResetOutputStreamFailed) {
-      LOG(ERROR) << "Reset output stream failed, quitting";
-      return false;
-    } else if (state == H264Mft::kResetOutputStreamOk) {
-      LOG(INFO) << "Reset output stream, try to get output again";
-      continue;
-    } else if (state == H264Mft::kNeedMoreInput) {
-      LOG(INFO) << "Need more input";
-      uint8* input_stream_dummy;
-      int size;
-      int duration;
-      int64 timestamp;
-      reader->Read(&input_stream_dummy, &size, &duration, &timestamp);
-      scoped_array<uint8> input_stream(input_stream_dummy);
-      if (input_stream.get() == NULL) {
-        LOG(INFO) << "No more input, sending drain message to decoder";
-        if (!decoder->SendDrainMessage()) {
-          LOG(ERROR) << "Failed to send drain message, quitting";
-          return false;
-        } else {
-          continue;   // Try reading the rest of the drained outputs.
-        }
-      } else {
-        // We read an input stream, we can feed it into the decoder.
-        if (!decoder->SendInput(input_stream.get(), size,
-            reader->ConvertFFmpegTimeBaseTo100Ns(timestamp),
-            reader->ConvertFFmpegTimeBaseTo100Ns(duration))) {
-          LOG(ERROR) << "Failed to send input, dropping frame...";
-        }
-        continue;  // Try reading the output after attempting to send an input.
-      }
-    } else if (state == H264Mft::kNoMoreOutput) {
-      LOG(INFO) << "Decoder has processed everything, quitting";
-      return false;
-    } else if (state == H264Mft::kUnspecifiedError) {
-      LOG(ERROR) << "Unknown error, quitting";
-      return false;
-    } else if (state == H264Mft::kNoMemory) {
-      LOG(ERROR) << "Not enough memory for sample, quitting";
-      return false;
-    } else if (state == H264Mft::kOutputSampleError) {
-      LOG(ERROR) << "Inconsistent sample, dropping...";
-      continue;
-    } else {
-      NOTREACHED();
-    }
-  }  // for (;;)
-  NOTREACHED();
-}
-
 static void ReleaseOutputBuffer(VideoFrame* frame) {
-  if (frame->type() == VideoFrame::TYPE_MFBUFFER ||
+  if (frame != NULL &&
+      frame->type() == VideoFrame::TYPE_MFBUFFER ||
       frame->type() == VideoFrame::TYPE_DIRECT3DSURFACE) {
     static_cast<IMFMediaBuffer*>(frame->private_buffer())->Release();
-  } else {
-    return;
   }
 }
 
-int Run(bool use_dxva, const std::string& input_file) {
+class FakeRenderer {
+ public:
+  FakeRenderer() {}
+  ~FakeRenderer() {}
+  void ProcessFrame(scoped_refptr<VideoFrame> frame) {
+    ReleaseOutputBuffer(frame.get());
+  }
+};
+
+static int Run(bool use_dxva, const std::string& input_file) {
+  // If we are not rendering, we need a window anyway to create a D3D device,
+  // so we will just use the desktop window. (?)
+  HWND window = GetDesktopWindow();
   scoped_ptr<FFmpegFileReader> reader(new FFmpegFileReader(input_file));
-  if (reader.get() == NULL) {
-    LOG(ERROR) << "Failed to create reader";
+  if (reader.get() == NULL || !reader->Initialize()) {
+    LOG(ERROR) << "Failed to create/initialize reader";
     return -1;
-  }
-  if (!reader->Initialize()) {
-    LOG(ERROR) << "Failed to initialize reader";
-    return -1;
-  }
-  int frame_rate_num = 0, frame_rate_denom = 0;
-  if (!reader->GetFrameRate(&frame_rate_num, &frame_rate_denom)) {
-    LOG(WARNING) << "Failed to get frame rate from reader";
   }
   int width = 0, height = 0;
   if (!reader->GetWidth(&width) || !reader->GetHeight(&height)) {
@@ -217,15 +167,17 @@ int Run(bool use_dxva, const std::string& input_file) {
   }
   int aspect_ratio_num = 0, aspect_ratio_denom = 0;
   if (!reader->GetAspectRatio(&aspect_ratio_num, &aspect_ratio_denom)) {
-    LOG(WARNING) << "Failed to get aspect ratio from reader";
+    LOG(WARNING) << "Failed to get aspect ratio";
+  }
+  int frame_rate_num = 0, frame_rate_denom = 0;
+  if (!reader->GetFrameRate(&frame_rate_num, &frame_rate_denom)) {
+    LOG(WARNING) << "Failed to get frame rate";
   }
   ScopedComPtr<IDirect3D9> d3d9;
   ScopedComPtr<IDirect3DDevice9> device;
   ScopedComPtr<IDirect3DDeviceManager9> dev_manager;
   if (use_dxva) {
-    dev_manager.Attach(CreateD3DDevManager(GetDesktopWindow(),
-                                           width,
-                                           height,
+    dev_manager.Attach(CreateD3DDevManager(window,
                                            d3d9.Receive(),
                                            device.Receive()));
     if (dev_manager.get() == NULL) {
@@ -233,26 +185,29 @@ int Run(bool use_dxva, const std::string& input_file) {
       return -1;
     }
   }
-  scoped_ptr<H264Mft> mft(new H264Mft(use_dxva));
-  if (mft.get() == NULL) {
-    LOG(ERROR) << "Failed to create MFT";
+  scoped_ptr<MftH264Decoder> mft(new MftH264Decoder(use_dxva));
+  scoped_ptr<FakeRenderer> renderer(new FakeRenderer());
+
+  if (mft.get() == NULL || renderer.get() == NULL) {
+    LOG(ERROR) << "Failed to create fake renderer / MFT";
     return -1;
   }
-  if (!mft->Init(dev_manager, frame_rate_num, frame_rate_denom, width, height,
-                 aspect_ratio_num, aspect_ratio_denom)) {
+  if (!mft->Init(dev_manager,
+                 frame_rate_num, frame_rate_denom,
+                 width, height,
+                 aspect_ratio_num, aspect_ratio_denom,
+                 NewCallback(reader.get(), &FFmpegFileReader::Read2),
+                 NewCallback(renderer.get(), &FakeRenderer::ProcessFrame))) {
     LOG(ERROR) << "Failed to initialize mft";
     return -1;
   }
-  base::TimeDelta decode_time;
+  Time decode_start(Time::Now());
   while (true) {
-    // Do nothing with the sample except to let it go out of scope
-    scoped_refptr<VideoFrame> decoded_frame;
-    base::Time decode_start(base::Time::Now());
-    if (!GetDecodedSample(reader.get(), mft.get(), &decoded_frame))
+    if (MftH264Decoder::kOutputOk != mft->GetOutput())
       break;
-    decode_time += base::Time::Now() - decode_start;
-    ReleaseOutputBuffer(decoded_frame.get());
   }
+  TimeDelta decode_time = Time::Now() - decode_start;
+
   printf("All done, frames read: %d, frames decoded: %d\n",
          mft->frames_read(), mft->frames_decoded());
   printf("Took %lldms\n", decode_time.InMilliseconds());
@@ -268,7 +223,6 @@ int main(int argc, char** argv) {
     usage();
     return -1;
   }
-
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
   if (cmd_line.HasSwitch("help")) {
     usage();

@@ -5,7 +5,9 @@
 // Borrowed from media/tools/omx_test/file_reader_util.cc.
 // Added some functionalities related to timestamps on packets.
 
-#include "media/media_foundation/file_reader_util.h"
+#include "media/mf/file_reader_util.h"
+
+#include <cstring>
 
 #include <algorithm>
 
@@ -13,7 +15,6 @@
 #include "base/logging.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/bitstream_converter.h"
-#include "media/media_foundation/h264mft.h"
 
 namespace media {
 
@@ -92,11 +93,11 @@ bool FFmpegFileReader::Initialize() {
 }
 
 void FFmpegFileReader::Read(uint8** output, int* size) {
-  Read(output, size, NULL, NULL);
+  Read2(output, size, NULL, NULL);
 }
 
-void FFmpegFileReader::Read(uint8** output, int* size, int* duration,
-                            int64* sample_time) {
+void FFmpegFileReader::Read2(uint8** output, int* size, int64* timestamp,
+                            int64* duration) {
   if (!format_context_ || !codec_context_ || target_stream_ == -1) {
     *size = 0;
     *output = NULL;
@@ -129,15 +130,15 @@ void FFmpegFileReader::Read(uint8** output, int* size, int* duration,
           LOG(WARNING) << "Packet duration not known";
         }
         // This is in AVCodecContext::time_base units
-        *duration = packet.duration;
+        *duration = ConvertFFmpegTimeBaseTo100Ns(packet.duration);
       }
-      if (sample_time) {
+      if (timestamp) {
         if (packet.pts == AV_NOPTS_VALUE) {
           LOG(ERROR) << "Packet presentation time not known";
-          *sample_time = 0L;
+          *timestamp = 0L;
         } else {
           // This is in AVCodecContext::time_base units
-          *sample_time = packet.pts;
+          *timestamp = ConvertFFmpegTimeBaseTo100Ns(packet.pts);
         }
       }
       found = true;
@@ -146,12 +147,13 @@ void FFmpegFileReader::Read(uint8** output, int* size, int* duration,
   }
 }
 
-bool FFmpegFileReader::GetFrameRate(int* num, int *denom) const {
+bool FFmpegFileReader::GetFrameRate(int* num, int* denom) const {
   if (!codec_context_)
     return false;
-  *num = codec_context_->time_base.num;
-  *denom = codec_context_->time_base.den;
-  if (denom == 0) {
+
+  *denom = codec_context_->time_base.num;
+  *num = codec_context_->time_base.den;
+  if (*denom == 0) {
     *num = 0;
     return false;
   }
@@ -188,8 +190,10 @@ int64 FFmpegFileReader::ConvertFFmpegTimeBaseTo100Ns(
   // FFmpeg units after time base conversion seems to be actually given in
   // milliseconds (instead of seconds...) so we need to multiply it by a factor
   // of 10,000 to convert it into units compatible with MF.
+  // Note we need to double this because the frame rate is doubled in
+  // ffmpeg.
   CHECK(codec_context_) << "Codec context needs to be initialized";
-  return time_base_unit * 10000 * codec_context_->time_base.num /
+  return time_base_unit * 20000 * codec_context_->time_base.num /
          codec_context_->time_base.den;
 }
 
