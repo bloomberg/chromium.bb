@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_utils.h"
@@ -243,4 +245,21 @@ TEST_F(ManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
 TEST_F(ManifestTest, ChromeURLContentScriptInvalid) {
   LoadAndExpectError("content_script_chrome_url_invalid.json",
       errors::kInvalidMatch);
+}
+
+TEST_F(ManifestTest, DevToolsExtensions) {
+  LoadAndExpectError("devtools_extension_no_permissions.json",
+      errors::kDevToolsExperimental);
+  LoadAndExpectError("devtools_extension_url_invalid_type.json",
+      errors::kInvalidDevToolsPage);
+
+  CommandLine old_command_line = *CommandLine::ForCurrentProcess();
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  scoped_ptr<Extension> extension;
+  extension.reset(LoadAndExpectSuccess("devtools_extension.json"));
+  EXPECT_EQ(extension->url().spec() + "devtools.html",
+            extension->devtools_url().spec());
+  *CommandLine::ForCurrentProcess() = old_command_line;
 }

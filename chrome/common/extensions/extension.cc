@@ -1486,6 +1486,20 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     }
   }
 
+  // Initialize devtools page url (optional).
+  if (source.HasKey(keys::kDevToolsPage)) {
+    std::string devtools_str;
+    if (!source.GetString(keys::kDevToolsPage, &devtools_str)) {
+      *error = errors::kInvalidDevToolsPage;
+      return false;
+    }
+    if (!HasApiPermission(Extension::kExperimentalPermission)) {
+      *error = errors::kDevToolsExperimental;
+      return false;
+    }
+    devtools_url_ = GetResourceURL(devtools_str);
+  }
+
   if (!LoadIsApp(manifest_value_.get(), error) ||
       !LoadExtent(manifest_value_.get(), keys::kWebURLs, &web_extent_,
                   errors::kInvalidWebURLs, errors::kInvalidWebURL, error) ||
