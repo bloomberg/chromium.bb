@@ -244,6 +244,9 @@ class RenderViewHostDelegate {
     // Notification that a worker process has crashed.
     virtual void OnCrashedWorker() = 0;
 
+    virtual void OnDisabledOutdatedPlugin(const string16& name,
+                                          const GURL& update_url) = 0;
+
     // Notification that a request for install info has completed.
     virtual void OnDidGetApplicationInfo(
         int32 page_id,

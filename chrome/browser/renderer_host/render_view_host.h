@@ -600,6 +600,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnNonSandboxedPluginBlocked(const string16& name);
   void OnBlockedPluginLoaded();
   void OnCrashedPlugin(const FilePath& plugin_path);
+  void OnDisabledOutdatedPlugin(const string16& name, const GURL& update_url);
 
   void OnReceivedSavableResourceLinksForCurrentPage(
       const std::vector<GURL>& resources_list,

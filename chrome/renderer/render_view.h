@@ -64,6 +64,7 @@ class ListValue;
 class NavigationState;
 class NotificationProvider;
 class PepperDeviceTest;
+class PluginGroup;
 class PrintWebViewHelper;
 class RenderViewVisitor;
 class SkBitmap;
@@ -868,7 +869,8 @@ class RenderView : public RenderWidget,
   // Create a new placeholder for a blocked plugin.
   WebKit::WebPlugin* CreatePluginPlaceholder(
       WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
+      const WebKit::WebPluginParams& params,
+      PluginGroup* group);
 
   // Sends an IPC notification that the specified content type was blocked.
   void DidBlockContentType(ContentSettingsType settings_type);

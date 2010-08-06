@@ -834,6 +834,8 @@ class TabContents : public PageNavigator,
   virtual void OnDidGetApplicationInfo(
       int32 page_id,
       const webkit_glue::WebApplicationInfo& info);
+  virtual void OnDisabledOutdatedPlugin(const string16& name,
+                                        const GURL& update_url);
   virtual void OnPageContents(const GURL& url,
                               int renderer_process_id,
                               int32 page_id,

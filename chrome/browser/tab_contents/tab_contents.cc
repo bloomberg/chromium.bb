@@ -236,6 +236,68 @@ void MakeNavigateParams(const NavigationController& controller,
   params->request_time = base::Time::Now();
 }
 
+class DisabledPluginInfoBar : public ConfirmInfoBarDelegate {
+ public:
+  DisabledPluginInfoBar(TabContents* tab_contents,
+                        const string16& name,
+                        const GURL& update_url)
+      : ConfirmInfoBarDelegate(tab_contents),
+        tab_contents_(tab_contents),
+        name_(name),
+        update_url_(update_url) {
+    tab_contents->AddInfoBar(this);
+  }
+
+  virtual int GetButtons() const {
+    return BUTTON_OK | BUTTON_CANCEL | BUTTON_OK_DEFAULT;
+  }
+
+  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+    if (button == BUTTON_CANCEL)
+      return l10n_util::GetString(IDS_PLUGIN_ENABLE_TEMPORARILY);
+    if (button == BUTTON_OK)
+      return l10n_util::GetString(IDS_PLUGIN_UPDATE);
+    return ConfirmInfoBarDelegate::GetButtonLabel(button);
+  }
+
+  virtual std::wstring GetMessageText() const {
+    return UTF16ToWide(l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT,
+                                                  name_));
+  }
+
+  virtual std::wstring GetLinkText() {
+    return l10n_util::GetString(IDS_LEARN_MORE);
+  }
+
+  virtual SkBitmap* GetIcon() const {
+    return ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_INFOBAR_PLUGIN_INSTALL);
+  }
+
+  virtual bool Accept() {
+    tab_contents_->OpenURL(update_url_, GURL(),
+                           CURRENT_TAB, PageTransition::LINK);
+    return false;
+  }
+
+  virtual bool Cancel() {
+    tab_contents_->OpenURL(GURL(chrome::kChromeUIPluginsURL), GURL(),
+                           CURRENT_TAB, PageTransition::LINK);
+    return false;
+  }
+
+  virtual bool LinkClicked(WindowOpenDisposition disposition) {
+    // TODO(bauerb): Navigate to a help page explaining why we disabled
+    // the plugin, once we have one.
+    return false;
+  }
+
+ private:
+  TabContents* tab_contents_;
+  string16 name_;
+  GURL update_url_;
+};
+
 }  // namespace
 
 // -----------------------------------------------------------------------------
@@ -1965,6 +2027,11 @@ void TabContents::OnDidGetApplicationInfo(
 
   if (delegate())
     delegate()->OnDidGetApplicationInfo(this, page_id);
+}
+
+void TabContents::OnDisabledOutdatedPlugin(const string16& name,
+                                           const GURL& update_url) {
+  new DisabledPluginInfoBar(this, name, update_url);
 }
 
 void TabContents::OnPageContents(const GURL& url,

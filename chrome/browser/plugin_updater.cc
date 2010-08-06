@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/plugin_group.h"
 #include "chrome/common/pref_names.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -207,6 +209,19 @@ void DisablePluginGroupsFromPrefs(Profile* profile) {
   }
 }
 
+void DisableOutdatedPluginGroups() {
+  std::vector<linked_ptr<PluginGroup> > groups;
+  GetPluginGroups(&groups);
+  for (std::vector<linked_ptr<PluginGroup> >::iterator it =
+       groups.begin();
+       it != groups.end();
+       ++it) {
+    if ((*it)->IsVulnerable()) {
+      (*it)->Enable(false);
+    }
+  }
+}
+
 void UpdatePreferences(Profile* profile) {
   ListValue* plugins_list = profile->GetPrefs()->GetMutableList(
       prefs::kPluginsPluginsList);
@@ -234,7 +249,9 @@ void UpdatePreferences(Profile* profile) {
        it != plugin_groups.end();
        ++it) {
     // Don't save preferences for vulnerable pugins.
-    if (!(*it)->IsVulnerable()) {
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableOutdatedPlugins) ||
+        !(*it)->IsVulnerable()) {
       plugins_list->Append((*it)->GetSummary());
     }
   }

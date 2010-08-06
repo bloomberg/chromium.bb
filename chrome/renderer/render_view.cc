@@ -34,6 +34,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/pepper_plugin_registry.h"
+#include "chrome/common/plugin_group.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/thumbnail_score.h"
@@ -2236,15 +2237,30 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                      &info,
                                      &actual_mime_type));
 
-  if (!found || !info.enabled)
+  if (!found)
     return NULL;
+
+  scoped_ptr<PluginGroup> group(PluginGroup::FindHardcodedPluginGroup(info));
+  group->AddPlugin(info, 0);
+
+  if (!info.enabled) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableOutdatedPlugins) &&
+        group->IsVulnerable()) {
+      Send(new ViewHostMsg_DisabledOutdatedPlugin(routing_id_,
+                                                  group->GetGroupName(),
+                                                  GURL(group->GetUpdateURL())));
+      return CreatePluginPlaceholder(frame, params, group.get());
+    }
+    return NULL;
+  }
 
   if (info.path.value() != kDefaultPluginLibraryName) {
     if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS)) {
       DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableClickToPlay));
       didNotAllowPlugins(frame);
-      return CreatePluginPlaceholder(frame, params);
+      return CreatePluginPlaceholder(frame, params, NULL);
     }
     scoped_refptr<pepper::PluginModule> pepper_module =
         PepperPluginRegistry::GetInstance()->GetModule(info.path);
@@ -2252,8 +2268,9 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
       return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kBlockNonSandboxedPlugins)) {
-      Send(new ViewHostMsg_NonSandboxedPluginBlocked(routing_id_, info.name));
-      return CreatePluginPlaceholder(frame, params);
+      Send(new ViewHostMsg_NonSandboxedPluginBlocked(routing_id_,
+                                                     group->GetGroupName()));
+      return CreatePluginPlaceholder(frame, params, NULL);
     }
   }
   return CreateNPAPIPlugin(frame, params, info.path, actual_mime_type);
@@ -3746,11 +3763,13 @@ WebPlugin* RenderView::CreateNPAPIPlugin(WebFrame* frame,
 }
 
 WebPlugin* RenderView::CreatePluginPlaceholder(WebFrame* frame,
-                                               const WebPluginParams& params) {
+                                               const WebPluginParams& params,
+                                               PluginGroup* group) {
   // |blocked_plugin| will delete itself when the WebViewPlugin is destroyed.
-  BlockedPlugin* blocked_plugin = new BlockedPlugin(this, frame, params);
+  BlockedPlugin* blocked_plugin = new BlockedPlugin(this, frame, params, group);
   WebViewPlugin* plugin = blocked_plugin->plugin();
-  webkit_preferences_.Apply(plugin->web_view());
+  WebView* web_view = plugin->web_view();
+  webkit_preferences_.Apply(web_view);
   return plugin;
 }
 
