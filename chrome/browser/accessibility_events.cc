@@ -24,78 +24,96 @@ void SendAccessibilityNotification(
 
 void AccessibilityControlInfo::SerializeToDict(DictionaryValue *dict) const {
   dict->SetString(keys::kNameKey, name_);
+  dict->SetString(keys::kTypeKey, type());
 }
 
-void AccessibilityWindowInfo::SerializeToDict(DictionaryValue *dict) const {
-  AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeWindow);
+const char* AccessibilityWindowInfo::type() const {
+  return keys::kTypeWindow;
 }
 
-void AccessibilityButtonInfo::SerializeToDict(DictionaryValue *dict) const {
-  AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeButton);
+const char* AccessibilityButtonInfo::type() const {
+  return keys::kTypeButton;
 }
 
-void AccessibilityLinkInfo::SerializeToDict(DictionaryValue *dict) const {
-  AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeLink);
+const char* AccessibilityLinkInfo::type() const {
+  return keys::kTypeLink;
+}
+
+const char* AccessibilityRadioButtonInfo::type() const {
+  return keys::kTypeRadioButton;
 }
 
 void AccessibilityRadioButtonInfo::SerializeToDict(
     DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeRadioButton);
   dict->SetBoolean(keys::kCheckedKey, checked_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
   dict->SetInteger(keys::kItemCountKey, item_count_);
 }
 
+const char* AccessibilityCheckboxInfo::type() const {
+  return keys::kTypeCheckbox;
+}
+
 void AccessibilityCheckboxInfo::SerializeToDict(DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeCheckbox);
   dict->SetBoolean(keys::kCheckedKey, checked_);
+}
+
+const char* AccessibilityTabInfo::type() const {
+  return keys::kTypeTab;
 }
 
 void AccessibilityTabInfo::SerializeToDict(DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeTab);
   dict->SetInteger(keys::kItemIndexKey, tab_index_);
   dict->SetInteger(keys::kItemCountKey, tab_count_);
 }
 
+const char* AccessibilityComboBoxInfo::type() const {
+  return keys::kTypeComboBox;
+}
+
 void AccessibilityComboBoxInfo::SerializeToDict(DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeComboBox);
   dict->SetString(keys::kValueKey, value_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
   dict->SetInteger(keys::kItemCountKey, item_count_);
 }
 
+const char* AccessibilityTextBoxInfo::type() const {
+  return keys::kTypeTextBox;
+}
+
 void AccessibilityTextBoxInfo::SerializeToDict(DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeTextBox);
   dict->SetString(keys::kValueKey, value_);
   dict->SetBoolean(keys::kPasswordKey, password_);
   dict->SetInteger(keys::kSelectionStartKey, selection_start_);
   dict->SetInteger(keys::kSelectionEndKey, selection_end_);
 }
 
+const char* AccessibilityListBoxInfo::type() const {
+  return keys::kTypeListBox;
+}
+
 void AccessibilityListBoxInfo::SerializeToDict(DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeListBox);
   dict->SetString(keys::kValueKey, value_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
   dict->SetInteger(keys::kItemCountKey, item_count_);
 }
 
-void AccessibilityMenuInfo::SerializeToDict(DictionaryValue *dict) const {
-  AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeMenu);
+const char* AccessibilityMenuInfo::type() const {
+  return keys::kTypeMenu;
+}
+
+const char* AccessibilityMenuItemInfo::type() const {
+  return keys::kTypeMenuItem;
 }
 
 void AccessibilityMenuItemInfo::SerializeToDict(DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
-  dict->SetString(keys::kTypeKey, keys::kTypeMenuItem);
   dict->SetBoolean(keys::kHasSubmenuKey, has_submenu_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
   dict->SetInteger(keys::kItemCountKey, item_count_);
