@@ -336,10 +336,6 @@ var RunAllTests = function() {
       testExpectedFail(test_descr[1], test_descr[2]);
     }
   }
-  if (0 == failing_count) {
-    // Set the magic Selenium variable to signal success.
-    document.cookie = 'status=OK';
-  }
 }
 
 var EnqueueAndRunTests = function() {

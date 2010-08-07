@@ -293,8 +293,6 @@ var RunAllTests = function() {
         } else if (0 != num_failing) {
           return "Tests failed.";
         } else {
-          // Set the magic Selenium variable to signal success.
-          document.cookie = 'status=OK';
           return "";
         }
       }

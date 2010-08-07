@@ -1,5 +1,6 @@
 // JavaScript Library for Nacl Tests and Demos
 
+
 function NaclLib(embed_name, status_id, num_retries) {
    this.embed_name_ = embed_name;
    this.statusfield_ = document.getElementById(status_id);
@@ -22,7 +23,7 @@ NaclLib.prototype.getMessage = function() {
 
 NaclLib.prototype.cleanUp = function() {
   if (this.handler_) {
-     clearInterval(this._handler);
+     clearInterval(this.handler_);
      this.handler_ = null;
   }
 };
@@ -94,6 +95,13 @@ NaclLib.prototype.checkModuleReadiness = function() {
   // <embed> tags and then gather the list of all of those scriptable objects
   // each time this method is invoked.
   var module_list = document.getElementsByName(this.embed_name_);
+  if (module_list.length == 0) {
+    this.cleanUp();
+    this.setStatusError("No elements found with attribute name='"
+                        + this.embed_name_
+                        + "'.  (Did you forget the name tag and just use id?)");
+    return;
+  }
   var num_ready = this.numModulesReady(module_list);
 
   if (module_list.length == num_ready) {
@@ -116,7 +124,9 @@ NaclLib.prototype.checkModuleReadiness = function() {
     }
 
     if (result == "") {
-      this.setStatusSuccess("");
+      this.setStatusSuccess("all tests passed");
+      // Set the magic Selenium variable to signal success.
+      document.cookie = 'status=OK';
     } else {
       this.setStatusError(result);
     }
