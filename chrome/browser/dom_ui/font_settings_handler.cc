@@ -20,7 +20,7 @@ void FontSettingsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString(L"fontSettingsTitle",
-      l10n_util::GetString(IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE));
+  localized_strings->SetString("fontSettingsTitle",
+      l10n_util::GetStringUTF16(IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE));
 }
 

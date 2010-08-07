@@ -55,16 +55,16 @@
 // Maximum number of search results to return in a given search. We should
 // eventually remove this.
 static const int kMaxSearchResults = 100;
-static const std::wstring kPropertyPath = L"path";
-static const std::wstring kPropertyTitle = L"title";
-static const std::wstring kPropertyDirectory = L"isDirectory";
-static const std::string kPicasawebUserPrefix =
+static const char kPropertyPath[] = "path";
+static const char kPropertyTitle[] = "title";
+static const char kPropertyDirectory[] = "isDirectory";
+static const char kPicasawebUserPrefix[] =
     "http://picasaweb.google.com/data/feed/api/user/";
-static const std::string kPicasawebDefault = "/albumid/default";
-static const std::string kPicasawebDropBox = "/home";
-static const std::string kPicasawebBaseUrl = "http://picasaweb.google.com/";
-static const std::string kMediaPath = "/media";
-static const char* kFilebrowseURLHash = "chrome://filebrowse#";
+static const char kPicasawebDefault[] = "/albumid/default";
+static const char kPicasawebDropBox[] = "/home";
+static const char kPicasawebBaseUrl[] = "http://picasaweb.google.com/";
+static const char kMediaPath[] = "/media";
+static const char kFilebrowseURLHash[] = "chrome://filebrowse#";
 static const int kPopupLeft = 0;
 static const int kPopupTop = 0;
 
@@ -269,49 +269,50 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
   DictionaryValue localized_strings;
   // TODO(dhg): Add stirings to localized strings, also add more strings
   // that are currently hardcoded.
-  localized_strings.SetString(L"title",
-      l10n_util::GetString(IDS_FILEBROWSER_TITLE));
-  localized_strings.SetString(L"pause",
-      l10n_util::GetString(IDS_FILEBROWSER_PAUSE));
-  localized_strings.SetString(L"resume",
-      l10n_util::GetString(IDS_FILEBROWSER_RESUME));
-  localized_strings.SetString(L"scanning",
-      l10n_util::GetString(IDS_FILEBROWSER_SCANNING));
-  localized_strings.SetString(L"confirmdelete",
-      l10n_util::GetString(IDS_FILEBROWSER_CONFIRM_DELETE));
-  localized_strings.SetString(L"confirmyes",
-      l10n_util::GetString(IDS_FILEBROWSER_CONFIRM_YES));
-  localized_strings.SetString(L"confirmcancel",
-      l10n_util::GetString(IDS_FILEBROWSER_CONFIRM_CANCEL));
-  localized_strings.SetString(L"allowdownload",
-      l10n_util::GetString(IDS_FILEBROWSER_CONFIRM_DOWNLOAD));
-  localized_strings.SetString(L"filenameprompt",
-      l10n_util::GetString(IDS_FILEBROWSER_PROMPT_FILENAME));
-  localized_strings.SetString(L"save",
-      l10n_util::GetString(IDS_FILEBROWSER_SAVE));
-  localized_strings.SetString(L"newfolder",
-      l10n_util::GetString(IDS_FILEBROWSER_NEW_FOLDER));
-  localized_strings.SetString(L"open",
-      l10n_util::GetString(IDS_FILEBROWSER_OPEN));
-  localized_strings.SetString(L"picasaweb",
-      l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_PICASAWEB));
-  localized_strings.SetString(L"flickr",
-      l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_FLICKR));
-  localized_strings.SetString(L"email",
-      l10n_util::GetString(IDS_FILEBROWSER_UPLOAD_EMAIL));
-  localized_strings.SetString(L"delete",
-      l10n_util::GetString(IDS_FILEBROWSER_DELETE));
-  localized_strings.SetString(L"enqueue",
-      l10n_util::GetString(IDS_FILEBROWSER_ENQUEUE));
-  localized_strings.SetString(L"mediapath", kMediaPath);
+  localized_strings.SetString("title",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_TITLE));
+  localized_strings.SetString("pause",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_PAUSE));
+  localized_strings.SetString("resume",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_RESUME));
+  localized_strings.SetString("scanning",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_SCANNING));
+  localized_strings.SetString("confirmdelete",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_DELETE));
+  localized_strings.SetString("confirmyes",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_YES));
+  localized_strings.SetString("confirmcancel",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_CANCEL));
+  localized_strings.SetString("allowdownload",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_CONFIRM_DOWNLOAD));
+  localized_strings.SetString("filenameprompt",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_PROMPT_FILENAME));
+  localized_strings.SetString("save",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_SAVE));
+  localized_strings.SetString("newfolder",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_NEW_FOLDER));
+  localized_strings.SetString("open",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_OPEN));
+  localized_strings.SetString("picasaweb",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_UPLOAD_PICASAWEB));
+  localized_strings.SetString("flickr",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_UPLOAD_FLICKR));
+  localized_strings.SetString("email",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_UPLOAD_EMAIL));
+  localized_strings.SetString("delete",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_DELETE));
+  localized_strings.SetString("enqueue",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_ENQUEUE));
+  localized_strings.SetString("mediapath", kMediaPath);
   FilePath default_download_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
                         &default_download_path)) {
     NOTREACHED();
   }
-  localized_strings.SetString(L"downloadpath", default_download_path.value());
-  localized_strings.SetString(L"error_unknown_file_type",
-      l10n_util::GetString(IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE));
+  // TODO(viettrungluu): this is wrong -- FilePath's need not be Unicode.
+  localized_strings.SetString("downloadpath", default_download_path.value());
+  localized_strings.SetString("error_unknown_file_type",
+      l10n_util::GetStringUTF16(IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE));
   SetFontAndTextDirection(&localized_strings);
 
   static const base::StringPiece filebrowse_html(
@@ -447,7 +448,7 @@ void FilebrowseHandler::FireDeleteComplete(const FilePath& path) {
 void FilebrowseHandler::FireUploadComplete() {
 #if defined(OS_CHROMEOS)
   DictionaryValue info_value;
-  info_value.SetString(L"path", current_file_uploaded_);
+  info_value.SetString("path", current_file_uploaded_);
 
   std::string username;
   chromeos::UserManager* user_man = chromeos::UserManager::Get();
@@ -463,12 +464,11 @@ void FilebrowseHandler::FireUploadComplete() {
     return;
   }
   username = username.erase(username.find_first_of('@',0));
-  std::string picture_url;
-  picture_url = kPicasawebBaseUrl;
+  std::string picture_url = kPicasawebBaseUrl;
   picture_url += username;
   picture_url += kPicasawebDropBox;
-  info_value.SetString(L"url", picture_url);
-  info_value.SetInteger(L"status_code", upload_response_code_);
+  info_value.SetString("url", picture_url);
+  info_value.SetInteger("status_code", upload_response_code_);
   dom_ui_->CallJavascriptFunction(L"uploadComplete", info_value);
 #endif
 }
@@ -544,7 +544,7 @@ void FilebrowseHandler::HandleGetRoots(const Value* value) {
 
   results_value.Append(download_value);
 
-  info_value.SetString(L"functionCall", "getRoots");
+  info_value.SetString("functionCall", "getRoots");
   info_value.SetString(kPropertyPath, "");
   dom_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, results_value);
@@ -633,8 +633,8 @@ void FilebrowseHandler::HandleIsAdvancedEnabled(const Value* value) {
       prefs::kLabsAdvancedFilesystemEnabled);
   bool mp_enabled = pref_service->GetBoolean(prefs::kLabsMediaplayerEnabled);
   DictionaryValue info_value;
-  info_value.SetBoolean(L"enabled", is_enabled);
-  info_value.SetBoolean(L"mpEnabled", mp_enabled);
+  info_value.SetBoolean("enabled", is_enabled);
+  info_value.SetBoolean("mpEnabled", mp_enabled);
   dom_ui_->CallJavascriptFunction(L"enabledResult",
                                   info_value);
 #endif
@@ -947,9 +947,9 @@ void FilebrowseHandler::OnListFile(
 void FilebrowseHandler::OnListDone(int error) {
   DictionaryValue info_value;
   if (is_refresh_) {
-    info_value.SetString(L"functionCall", "refresh");
+    info_value.SetString("functionCall", "refresh");
   } else {
-    info_value.SetString(L"functionCall", "getChildren");
+    info_value.SetString("functionCall", "getChildren");
   }
   info_value.SetString(kPropertyPath, currentpath_.value());
   dom_ui_->CallJavascriptFunction(L"browseFileResult",
