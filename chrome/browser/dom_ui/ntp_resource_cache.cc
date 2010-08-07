@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/ref_counted_memory.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -60,8 +61,8 @@ const char kSyncServiceHelpUrl[] =
 const char kHelpContentUrl[] =
     "http://www.google.com/support/chrome/";
 
-std::wstring GetUrlWithLang(const GURL& url) {
-  return ASCIIToWide(google_util::AppendGoogleLocaleParam(url).spec());
+string16 GetUrlWithLang(const GURL& url) {
+  return ASCIIToUTF16(google_util::AppendGoogleLocaleParam(url).spec());
 }
 
 std::string SkColorToRGBAString(SkColor color) {
@@ -191,18 +192,18 @@ void NTPResourceCache::Observe(NotificationType type,
 
 void NTPResourceCache::CreateNewTabIncognitoHTML() {
   DictionaryValue localized_strings;
-  localized_strings.SetString(L"title",
-      l10n_util::GetString(IDS_NEW_TAB_TITLE));
-  localized_strings.SetString(L"content",
-      l10n_util::GetStringF(IDS_NEW_TAB_OTR_MESSAGE,
-                            GetUrlWithLang(GURL(kLearnMoreIncognitoUrl))));
-  localized_strings.SetString(L"extensionsmessage",
-      l10n_util::GetStringF(IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
-                            l10n_util::GetString(IDS_PRODUCT_NAME),
-                            ASCIIToWide(chrome::kChromeUIExtensionsURL)));
+  localized_strings.SetString("title",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+  localized_strings.SetString("content",
+      l10n_util::GetStringFUTF16(IDS_NEW_TAB_OTR_MESSAGE,
+                                 GetUrlWithLang(GURL(kLearnMoreIncognitoUrl))));
+  localized_strings.SetString("extensionsmessage",
+      l10n_util::GetStringFUTF16(IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
+                                 ASCIIToUTF16(chrome::kChromeUIExtensionsURL)));
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
-  localized_strings.SetString(L"bookmarkbarattached",
+  localized_strings.SetString("bookmarkbarattached",
       bookmark_bar_attached ? "true" : "false");
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
@@ -223,92 +224,92 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 void NTPResourceCache::CreateNewTabHTML() {
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
-  std::wstring title = l10n_util::GetString(IDS_NEW_TAB_TITLE);
-  std::wstring most_visited = l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED);
+  string16 title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
+  string16 most_visited = l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED);
   DictionaryValue localized_strings;
-  localized_strings.SetString(L"bookmarkbarattached",
+  localized_strings.SetString("bookmarkbarattached",
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
       "true" : "false");
-  localized_strings.SetString(L"hasattribution",
+  localized_strings.SetString("hasattribution",
       profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
       "true" : "false");
-  localized_strings.SetString(L"title", title);
-  localized_strings.SetString(L"mostvisited", most_visited);
-  localized_strings.SetString(L"restorethumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK));
-  localized_strings.SetString(L"recentlyclosed",
-      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED));
-  localized_strings.SetString(L"closedwindowsingle",
-      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
-  localized_strings.SetString(L"closedwindowmultiple",
-      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE));
-  localized_strings.SetString(L"attributionintro",
-      l10n_util::GetString(IDS_NEW_TAB_ATTRIBUTION_INTRO));
-  localized_strings.SetString(L"thumbnailremovednotification",
-      l10n_util::GetString(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
-  localized_strings.SetString(L"undothumbnailremove",
-      l10n_util::GetString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE));
-  localized_strings.SetString(L"removethumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"pinthumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_PIN_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"unpinthumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_UNPIN_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"showhidethumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"showhidelisttooltip",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
-  localized_strings.SetString(L"pagedisplaytooltip",
-      l10n_util::GetString(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
-  localized_strings.SetString(L"firstrunnotification",
-      l10n_util::GetString(IDS_NEW_TAB_FIRST_RUN_NOTIFICATION));
-  localized_strings.SetString(L"closefirstrunnotification",
-      l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
-  localized_strings.SetString(L"tips",
-      l10n_util::GetString(IDS_NEW_TAB_TIPS));
-  localized_strings.SetString(L"close", l10n_util::GetString(IDS_CLOSE));
-  localized_strings.SetString(L"history",
-                              l10n_util::GetString(IDS_NEW_TAB_HISTORY));
-  localized_strings.SetString(L"downloads",
-                              l10n_util::GetString(IDS_NEW_TAB_DOWNLOADS));
-  localized_strings.SetString(L"help",
-                              l10n_util::GetString(IDS_NEW_TAB_HELP));
-  localized_strings.SetString(L"helpurl",
+  localized_strings.SetString("title", title);
+  localized_strings.SetString("mostvisited", most_visited);
+  localized_strings.SetString("restorethumbnails",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK));
+  localized_strings.SetString("recentlyclosed",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED));
+  localized_strings.SetString("closedwindowsingle",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
+  localized_strings.SetString("closedwindowmultiple",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE));
+  localized_strings.SetString("attributionintro",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_ATTRIBUTION_INTRO));
+  localized_strings.SetString("thumbnailremovednotification",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
+  localized_strings.SetString("undothumbnailremove",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE));
+  localized_strings.SetString("removethumbnailtooltip",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP));
+  localized_strings.SetString("pinthumbnailtooltip",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_PIN_THUMBNAIL_TOOLTIP));
+  localized_strings.SetString("unpinthumbnailtooltip",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_UNPIN_THUMBNAIL_TOOLTIP));
+  localized_strings.SetString("showhidethumbnailtooltip",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_SHOW_HIDE_THUMBNAIL_TOOLTIP));
+  localized_strings.SetString("showhidelisttooltip",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
+  localized_strings.SetString("pagedisplaytooltip",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
+  localized_strings.SetString("firstrunnotification",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_FIRST_RUN_NOTIFICATION));
+  localized_strings.SetString("closefirstrunnotification",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
+  localized_strings.SetString("tips",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_TIPS));
+  localized_strings.SetString("close", l10n_util::GetStringUTF16(IDS_CLOSE));
+  localized_strings.SetString("history",
+                              l10n_util::GetStringUTF16(IDS_NEW_TAB_HISTORY));
+  localized_strings.SetString("downloads",
+                              l10n_util::GetStringUTF16(IDS_NEW_TAB_DOWNLOADS));
+  localized_strings.SetString("help",
+                              l10n_util::GetStringUTF16(IDS_NEW_TAB_HELP));
+  localized_strings.SetString("helpurl",
       GetUrlWithLang(GURL(kHelpContentUrl)));
-  localized_strings.SetString(L"appsettings",
-      l10n_util::GetString(IDS_NEW_TAB_APP_SETTINGS));
-  localized_strings.SetString(L"appuninstall",
-      l10n_util::GetString(IDS_NEW_TAB_APP_UNINSTALL));
-  localized_strings.SetString(L"appoptions",
-      l10n_util::GetString(IDS_NEW_TAB_APP_OPTIONS));
-  localized_strings.SetString(L"web_store_title",
-      l10n_util::GetString(IDS_EXTENSION_WEB_STORE_TITLE));
-  localized_strings.SetString(L"web_store_url",
+  localized_strings.SetString("appsettings",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS));
+  localized_strings.SetString("appuninstall",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_UNINSTALL));
+  localized_strings.SetString("appoptions",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_OPTIONS));
+  localized_strings.SetString("web_store_title",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
+  localized_strings.SetString("web_store_url",
       GetUrlWithLang(GURL(Extension::ChromeStoreURL())));
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
   if (profile_->GetProfileSyncService())
-    localized_strings.SetString(L"syncispresent", "true");
+    localized_strings.SetString("syncispresent", "true");
   else
-    localized_strings.SetString(L"syncispresent", "false");
+    localized_strings.SetString("syncispresent", "false");
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
   // Control fade and resize animations.
   std::string anim =
       Animation::ShouldRenderRichAnimation() ? "true" : "false";
-  localized_strings.SetString(L"anim", anim);
+  localized_strings.SetString("anim", anim);
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   bool has_3d =
       command_line->HasSwitch(switches::kEnableAcceleratedCompositing);
-  localized_strings.SetString(L"has_3d", has_3d ? "true" : "false");
+  localized_strings.SetString("has_3d", has_3d ? "true" : "false");
 
   // Pass the shown_sections pref early so that we can prevent flicker.
   const int shown_sections = profile_->GetPrefs()->GetInteger(
       prefs::kNTPShownSections);
-  localized_strings.SetInteger(L"shown_sections", shown_sections);
+  localized_strings.SetInteger("shown_sections", shown_sections);
 
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
       GetRawDataResource(IDR_NEW_NEW_TAB_HTML));

@@ -161,9 +161,9 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
       return;
     }
     DictionaryValue value;
-    value.SetString(L"syncEnabledMessage",
-        l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO,
-            UTF16ToWide(sync_service_->GetAuthenticatedUsername())));
+    value.SetString("syncEnabledMessage",
+                    l10n_util::GetStringFUTF16(IDS_SYNC_NTP_SYNCED_TO,
+                        sync_service_->GetAuthenticatedUsername()));
     dom_ui_->CallJavascriptFunction(L"syncAlreadyEnabled", value);
   } else {
     // User clicked the 'Start now' link to begin syncing.
@@ -183,36 +183,35 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
     MessageType type, std::string msg,
     std::string linktext) {
   DictionaryValue value;
-  std::wstring user;
+  std::string user;
   std::string title;
   std::string linkurl;
 
   // If there is no message to show, we should hide the sync section
   // altogether.
   if (type == HIDE || msg.empty()) {
-    value.SetBoolean(L"syncsectionisvisible", false);
+    value.SetBoolean("syncsectionisvisible", false);
   } else {  // type == SYNC_ERROR
-    title = WideToUTF8(
-        l10n_util::GetString(IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE));
+    title = l10n_util::GetStringUTF8(IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE);
 
-    value.SetBoolean(L"syncsectionisvisible", true);
-    value.SetString(L"msg", msg);
-    value.SetString(L"title", title);
+    value.SetBoolean("syncsectionisvisible", true);
+    value.SetString("msg", msg);
+    value.SetString("title", title);
     if (linktext.empty()) {
-      value.SetBoolean(L"linkisvisible", false);
+      value.SetBoolean("linkisvisible", false);
     } else {
-      value.SetBoolean(L"linkisvisible", true);
-      value.SetString(L"linktext", linktext);
+      value.SetBoolean("linkisvisible", true);
+      value.SetString("linktext", linktext);
 
       // The only time we set the URL is when the user is synced and we need to
       // show a link to a web interface (e.g. http://docs.google.com). When we
       // set that URL, HandleSyncLinkClicked won't be called when the user
       // clicks on the link.
       if (linkurl.empty()) {
-        value.SetBoolean(L"linkurlisset", false);
+        value.SetBoolean("linkurlisset", false);
       } else {
-        value.SetBoolean(L"linkurlisset", true);
-        value.SetString(L"linkurl", linkurl);
+        value.SetBoolean("linkurlisset", true);
+        value.SetString("linkurl", linkurl);
       }
     }
   }

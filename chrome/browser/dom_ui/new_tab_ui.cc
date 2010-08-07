@@ -48,8 +48,8 @@ const int kSearchURLs = 3;
 
 // Strings sent to the page via jstemplates used to set the direction of the
 // HTML document based on locale.
-const wchar_t kRTLHtmlTextDirection[] = L"rtl";
-const wchar_t kDefaultHtmlTextDirection[] = L"ltr";
+const char kRTLHtmlTextDirection[] = "rtl";
+const char kDefaultHtmlTextDirection[] = "ltr";
 
 ////////////////////////////////////////////////////////////////////////////////
 // PaintTimer
@@ -156,7 +156,7 @@ class RecentlyClosedTabsHandler : public DOMMessageHandler,
   // tab was already in the list, true if it was absent.  A tab is
   // considered unique if no other tab shares both its title and its url.
   bool EnsureTabIsUnique(const DictionaryValue* tab,
-                   std::set<std::wstring>& unique_items);
+                         std::set<std::string>* unique_items);
 
   // TabRestoreService that we are observing.
   TabRestoreService* tab_restore_service_;
@@ -195,10 +195,10 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const Value* content) {
         list_member->GetType() == Value::TYPE_STRING) {
       const StringValue* string_value =
           static_cast<const StringValue*>(list_member);
-      std::wstring wstring_value;
-      if (string_value->GetAsString(&wstring_value)) {
+      std::string session_to_restore_str;
+      if (string_value->GetAsString(&session_to_restore_str)) {
         int session_to_restore;
-        base::StringToInt(WideToUTF8(wstring_value), &session_to_restore);
+        base::StringToInt(session_to_restore_str, &session_to_restore);
         tab_restore_service_->RestoreEntryById(browser, session_to_restore,
                                                true);
         // The current tab has been nuked at this point; don't touch any member
@@ -232,7 +232,7 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
     TabRestoreService* service) {
   const TabRestoreService::Entries& entries = service->entries();
   ListValue list_value;
-  std::set<std::wstring> unique_items;
+  std::set<std::string> unique_items;
   int added_count = 0;
   const int max_count = 10;
 
@@ -245,11 +245,11 @@ void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
     DictionaryValue* value = new DictionaryValue();
     if ((entry->type == TabRestoreService::TAB &&
          TabToValue(*static_cast<TabRestoreService::Tab*>(entry), value) &&
-         EnsureTabIsUnique(value, unique_items)) ||
+         EnsureTabIsUnique(value, &unique_items)) ||
         (entry->type == TabRestoreService::WINDOW &&
          WindowToValue(*static_cast<TabRestoreService::Window*>(entry),
                        value))) {
-      value->SetInteger(L"sessionId", entry->id);
+      value->SetInteger("sessionId", entry->id);
       list_value.Append(value);
       added_count++;
     } else {
@@ -277,8 +277,8 @@ bool RecentlyClosedTabsHandler::TabToValue(
 
   NewTabUI::SetURLTitleAndDirection(dictionary, current_navigation.title(),
                                     current_navigation.virtual_url());
-  dictionary->SetString(L"type", L"tab");
-  dictionary->SetReal(L"timestamp", tab.timestamp.ToDoubleT());
+  dictionary->SetString("type", "tab");
+  dictionary->SetReal("timestamp", tab.timestamp.ToDoubleT());
   return true;
 }
 
@@ -303,23 +303,27 @@ bool RecentlyClosedTabsHandler::WindowToValue(
     return false;
   }
 
-  dictionary->SetString(L"type", L"window");
-  dictionary->SetReal(L"timestamp", window.timestamp.ToDoubleT());
-  dictionary->Set(L"tabs", tab_values);
+  dictionary->SetString("type", "window");
+  dictionary->SetReal("timestamp", window.timestamp.ToDoubleT());
+  dictionary->Set("tabs", tab_values);
   return true;
 }
 
-bool RecentlyClosedTabsHandler::EnsureTabIsUnique(const DictionaryValue* tab,
-    std::set<std::wstring>& unique_items) {
-  std::wstring title;
-  std::wstring url;
-  if (tab->GetString(L"title", &title) &&
-      tab->GetString(L"url", &url)) {
-    std::wstring unique_key = title + url;
-    if (unique_items.find(unique_key) != unique_items.end())
+bool RecentlyClosedTabsHandler::EnsureTabIsUnique(
+    const DictionaryValue* tab,
+    std::set<std::string>* unique_items) {
+  DCHECK(unique_items);
+  std::string title;
+  std::string url;
+  if (tab->GetString("title", &title) &&
+      tab->GetString("url", &url)) {
+    // TODO(viettrungluu): this isn't obviously reliable, since different
+    // combinations of titles/urls may conceivably yield the same string.
+    std::string unique_key = title + url;
+    if (unique_items->find(unique_key) != unique_items->end())
       return false;
     else
-      unique_items.insert(unique_key);
+      unique_items->insert(unique_key);
   }
   return true;
 }
@@ -369,11 +373,11 @@ void MetricsHandler::HandleMetrics(const Value* content) {
         list_member->GetType() == Value::TYPE_STRING) {
       const StringValue* string_value =
           static_cast<const StringValue*>(list_member);
-      std::wstring wstring_value;
-      if (string_value->GetAsString(&wstring_value)) {
-        UserMetrics::RecordComputedAction(WideToASCII(wstring_value),
-                                          dom_ui_->GetProfile());
-      }
+      std::string string_action;
+      // TODO(viettrungluu): this usage of |RecordComputedAction()| doesn't
+      // conform with the docs; scripts can't pick this up.
+      if (string_value->GetAsString(&string_action))
+        UserMetrics::RecordComputedAction(string_action, dom_ui_->GetProfile());
     }
   }
 }
@@ -424,9 +428,9 @@ void NewTabPageSetHomePageHandler::HandleSetHomePage(
                                                 true);
   ListValue list_value;
   list_value.Append(new StringValue(
-      l10n_util::GetString(IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION)));
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION)));
   list_value.Append(new StringValue(
-      l10n_util::GetString(IDS_NEW_TAB_HOME_PAGE_HIDE_NOTIFICATION)));
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_HOME_PAGE_HIDE_NOTIFICATION)));
   dom_ui_->CallJavascriptFunction(L"onHomePageSet", list_value);
 }
 
@@ -443,7 +447,7 @@ NewTabUI::NewTabUI(TabContents* contents)
   force_extension_shelf_visible_ = true;
   focus_location_bar_by_default_ = true;
   should_hide_url_ = true;
-  overridden_title_ = WideToUTF16Hack(l10n_util::GetString(IDS_NEW_TAB_TITLE));
+  overridden_title_ = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
 
   // We count all link clicks as AUTO_BOOKMARK, so that site can be ranked more
   // highly. Note this means we're including clicks on not only most visited
@@ -577,16 +581,13 @@ bool NewTabUI::FirstRunDisabled() {
 void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
                                        const string16& title,
                                        const GURL& gurl) {
-  std::wstring wstring_url = UTF8ToWide(gurl.spec());
-  dictionary->SetString(L"url", wstring_url);
-
-  std::wstring wstring_title = UTF16ToWide(title);
+  dictionary->SetString("url", gurl.spec());
 
   bool using_url_as_the_title = false;
-  std::wstring title_to_set(wstring_title);
+  string16 title_to_set(title);
   if (title_to_set.empty()) {
     using_url_as_the_title = true;
-    title_to_set = wstring_url;
+    title_to_set = UTF8ToUTF16(gurl.spec());
   }
 
   // We set the "dir" attribute of the title, so that in RTL locales, a LTR
@@ -609,12 +610,12 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
   // entire title within a tooltip when the mouse is over the title link.. For
   // example, without LRE-PDF pair, the title "Yahoo!" will be rendered as
   // "!Yahoo" within the tooltip when the mouse is over the title link.
-  std::wstring direction = kDefaultHtmlTextDirection;
+  std::string direction = kDefaultHtmlTextDirection;
   if (base::i18n::IsRTL()) {
     if (using_url_as_the_title) {
       base::i18n::WrapStringWithLTRFormatting(&title_to_set);
     } else {
-      if (base::i18n::StringContainsStrongRTLChars(wstring_title)) {
+      if (base::i18n::StringContainsStrongRTLChars(title)) {
         base::i18n::WrapStringWithRTLFormatting(&title_to_set);
         direction = kRTLHtmlTextDirection;
       } else {
@@ -622,8 +623,8 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
       }
     }
   }
-  dictionary->SetString(L"title", title_to_set);
-  dictionary->SetString(L"direction", direction);
+  dictionary->SetString("title", title_to_set);
+  dictionary->SetString("direction", direction);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
