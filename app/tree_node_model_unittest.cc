@@ -275,3 +275,18 @@ TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
   ASSERT_EQ(1, bar1->GetTotalNodeCount());
   ASSERT_EQ(2, foo2->GetTotalNodeCount());
 }
+
+// Makes sure that we are notified when the node is renamed,
+// also makes sure the node is properly renamed.
+TEST_F(TreeNodeModelTest, SetTitle) {
+  TreeNodeWithValue<int>* root =
+      new TreeNodeWithValue<int>(L"root", 0);
+  TreeNodeModel<TreeNodeWithValue<int> > model(root);
+  model.AddObserver(this);
+  ClearCounts();
+
+  const std::wstring title(L"root2");
+  model.SetTitle(root, title);
+  AssertObserverCount(0, 0, 0, 1);
+  EXPECT_EQ(WideToUTF16(title), root->GetTitleAsString16());
+}
