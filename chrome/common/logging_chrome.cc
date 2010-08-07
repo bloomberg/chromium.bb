@@ -249,7 +249,7 @@ void CleanupChromeLogging() {
 FilePath GetLogFileName() {
   std::string filename;
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  if (env->GetEnv(env_vars::kLogFileName, &filename) && !filename.empty()) {
+  if (env->GetVar(env_vars::kLogFileName, &filename) && !filename.empty()) {
 #if defined(OS_WIN)
     return FilePath(UTF8ToWide(filename).c_str());
 #elif defined(OS_POSIX)

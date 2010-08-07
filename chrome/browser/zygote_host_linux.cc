@@ -43,7 +43,7 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
 
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string value;
-    if (env->GetEnv(envvar, &value))
+    if (env->GetVar(envvar, &value))
       env->SetVar(saved_envvar, value);
     else
       env->UnSetVar(saved_envvar);

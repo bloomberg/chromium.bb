@@ -49,7 +49,7 @@ std::string GetDesktopName(base::Environment* env) {
   // versions can set themselves as the default without interfering with
   // non-official, packaged versions using the built-in value.
   std::string name;
-  if (env->GetEnv("CHROME_DESKTOP", &name) && !name.empty())
+  if (env->GetVar("CHROME_DESKTOP", &name) && !name.empty())
     return name;
   return "chromium-browser.desktop";
 #endif
@@ -254,13 +254,13 @@ bool ShellIntegration::GetDesktopShortcutTemplate(
   std::vector<FilePath> search_paths;
 
   std::string xdg_data_home;
-  if (env->GetEnv("XDG_DATA_HOME", &xdg_data_home) &&
+  if (env->GetVar("XDG_DATA_HOME", &xdg_data_home) &&
       !xdg_data_home.empty()) {
     search_paths.push_back(FilePath(xdg_data_home));
   }
 
   std::string xdg_data_dirs;
-  if (env->GetEnv("XDG_DATA_DIRS", &xdg_data_dirs) &&
+  if (env->GetVar("XDG_DATA_DIRS", &xdg_data_dirs) &&
       !xdg_data_dirs.empty()) {
     StringTokenizer tokenizer(xdg_data_dirs, ":");
     while (tokenizer.GetNext()) {

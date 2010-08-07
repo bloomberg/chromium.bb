@@ -72,7 +72,7 @@ class ShutdownTest : public UITest {
     int numCycles = kNumCyclesMax;
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string numCyclesEnv;
-    if (env->GetEnv(env_vars::kStartupTestsNumCycles, &numCyclesEnv) &&
+    if (env->GetVar(env_vars::kStartupTestsNumCycles, &numCyclesEnv) &&
         base::StringToInt(numCyclesEnv, &numCycles)) {
       if (numCycles <= kNumCyclesMax) {
         LOG(INFO) << env_vars::kStartupTestsNumCycles

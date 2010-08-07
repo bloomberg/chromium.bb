@@ -14,7 +14,7 @@ void TrimInterposeEnvironment() {
   scoped_ptr<base::Environment> env(base::Environment::Create());
 
   std::string interpose_list;
-  if (!env->GetEnv(plugin_interpose_strings::kDYLDInsertLibrariesKey,
+  if (!env->GetVar(plugin_interpose_strings::kDYLDInsertLibrariesKey,
                    &interpose_list)) {
     NOTREACHED() << "No interposing libraries set";
     return;

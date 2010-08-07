@@ -39,7 +39,7 @@ class MockEnvironment : public base::Environment {
     variables_[name] = value;
   }
 
-  virtual bool GetEnv(const char* variable_name, std::string* result) {
+  virtual bool GetVar(const char* variable_name, std::string* result) {
     if (ContainsKey(variables_, variable_name)) {
       *result = variables_[variable_name];
       return true;

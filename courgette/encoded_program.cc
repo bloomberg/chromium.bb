@@ -268,7 +268,7 @@ static FieldSelect GetFieldSelect() {
   // TODO(sra): Use better configuration.
   scoped_ptr<base::Environment> env(base::Environment::Create());
   std::string s;
-  env->GetEnv("A_FIELDS", &s);
+  env->GetVar("A_FIELDS", &s);
   if (!s.empty()) {
     return static_cast<FieldSelect>(wcstoul(ASCIIToWide(s).c_str(), 0, 0));
   }

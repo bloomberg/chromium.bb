@@ -14,7 +14,7 @@ namespace base {
 FilePath GetXDGDirectory(Environment* env, const char* env_name,
                          const char* fallback_dir) {
   std::string env_value;
-  if (env->GetEnv(env_name, &env_value) && !env_value.empty())
+  if (env->GetVar(env_name, &env_value) && !env_value.empty())
     return FilePath(env_value);
   return file_util::GetHomeDir().Append(fallback_dir);
 }
@@ -32,7 +32,7 @@ FilePath GetXDGUserDirectory(Environment* env, const char* dir_name,
 
 DesktopEnvironment GetDesktopEnvironment(Environment* env) {
   std::string desktop_session;
-  if (env->GetEnv("DESKTOP_SESSION", &desktop_session)) {
+  if (env->GetVar("DESKTOP_SESSION", &desktop_session)) {
     if (desktop_session == "gnome") {
       return DESKTOP_ENVIRONMENT_GNOME;
     } else if (desktop_session == "kde4") {
