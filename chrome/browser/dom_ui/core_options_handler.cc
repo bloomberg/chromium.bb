@@ -40,49 +40,49 @@ void CoreOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Main
-  localized_strings->SetString(L"title",
-      l10n_util::GetStringF(IDS_OPTIONS_DIALOG_TITLE,
-          l10n_util::GetString(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("title",
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_DIALOG_TITLE,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 
-  localized_strings->SetString(L"browserPage",
-      l10n_util::GetString(IDS_OPTIONS_GENERAL_TAB_LABEL));
-  localized_strings->SetString(L"personalPage",
-      l10n_util::GetString(IDS_OPTIONS_CONTENT_TAB_LABEL));
-  localized_strings->SetString(L"advancedPage",
-      l10n_util::GetString(IDS_OPTIONS_ADVANCED_TAB_LABEL));
+  localized_strings->SetString("browserPage",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_GENERAL_TAB_LABEL));
+  localized_strings->SetString("personalPage",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTENT_TAB_LABEL));
+  localized_strings->SetString("advancedPage",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_ADVANCED_TAB_LABEL));
 #if defined(OS_CHROMEOS)
-  localized_strings->SetString(L"internetPage",
-      l10n_util::GetString(IDS_OPTIONS_INTERNET_TAB_LABEL));
-  localized_strings->SetString(L"languageChewingPage",
-      l10n_util::GetString(
+  localized_strings->SetString("internetPage",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_INTERNET_TAB_LABEL));
+  localized_strings->SetString("languageChewingPage",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE));
-  localized_strings->SetString(L"languageHangulPage",
-      l10n_util::GetString(
+  localized_strings->SetString("languageHangulPage",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_HANGUL_SETTINGS_TITLE));
-  localized_strings->SetString(L"languageMozcPage",
-      l10n_util::GetString(
+  localized_strings->SetString("languageMozcPage",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_SETTINGS_TITLE));
-  localized_strings->SetString(L"languagePinyinPage",
-      l10n_util::GetString(
+  localized_strings->SetString("languagePinyinPage",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE));
 #endif
 
-  localized_strings->SetString(L"ok",
-      l10n_util::GetString(IDS_OK));
-  localized_strings->SetString(L"cancel",
-      l10n_util::GetString(IDS_CANCEL));
-  localized_strings->SetString(L"delete",
-      l10n_util::GetString(IDS_DELETE));
-  localized_strings->SetString(L"edit",
-      l10n_util::GetString(IDS_EDIT));
-  localized_strings->SetString(L"learnMore",
-      l10n_util::GetString(IDS_LEARN_MORE));
-  localized_strings->SetString(L"abort",
-      l10n_util::GetString(IDS_ABORT));
-  localized_strings->SetString(L"close",
-      l10n_util::GetString(IDS_CLOSE));
-  localized_strings->SetString(L"done",
-      l10n_util::GetString(IDS_DONE));
+  localized_strings->SetString("ok",
+      l10n_util::GetStringUTF16(IDS_OK));
+  localized_strings->SetString("cancel",
+      l10n_util::GetStringUTF16(IDS_CANCEL));
+  localized_strings->SetString("delete",
+      l10n_util::GetStringUTF16(IDS_DELETE));
+  localized_strings->SetString("edit",
+      l10n_util::GetStringUTF16(IDS_EDIT));
+  localized_strings->SetString("learnMore",
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  localized_strings->SetString("abort",
+      l10n_util::GetStringUTF16(IDS_ABORT));
+  localized_strings->SetString("close",
+      l10n_util::GetStringUTF16(IDS_CLOSE));
+  localized_strings->SetString("done",
+      l10n_util::GetStringUTF16(IDS_DONE));
 }
 
 void CoreOptionsHandler::Observe(NotificationType type,

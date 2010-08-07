@@ -297,8 +297,8 @@ MessageLoop* ChromeURLDataManager::DataSource::MessageLoopForRequestPath(
 // static
 void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
     DictionaryValue* localized_strings) {
-  localized_strings->SetString(L"fontfamily",
-      l10n_util::GetString(IDS_WEB_FONT_FAMILY));
+  localized_strings->SetString("fontfamily",
+      l10n_util::GetStringUTF16(IDS_WEB_FONT_FAMILY));
 
   int web_font_size_id = IDS_WEB_FONT_SIZE;
 #if defined(OS_WIN)
@@ -307,11 +307,11 @@ void ChromeURLDataManager::DataSource::SetFontAndTextDirection(
   if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
     web_font_size_id = IDS_WEB_FONT_SIZE_XP;
 #endif
-  localized_strings->SetString(L"fontsize",
-      l10n_util::GetString(web_font_size_id));
+  localized_strings->SetString("fontsize",
+      l10n_util::GetStringUTF16(web_font_size_id));
 
-  localized_strings->SetString(L"textdirection",
-      base::i18n::IsRTL() ? L"rtl" : L"ltr");
+  localized_strings->SetString("textdirection",
+      base::i18n::IsRTL() ? "rtl" : "ltr");
 }
 
 URLRequestJob* ChromeURLDataManager::Factory(URLRequest* request,

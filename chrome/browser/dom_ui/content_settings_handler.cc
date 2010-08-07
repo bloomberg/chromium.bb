@@ -21,26 +21,26 @@ typedef HostContentSettingsMap::ContentSettingsDetails ContentSettingsDetails;
 
 namespace {
 
-std::wstring ContentSettingsTypeToGroupName(ContentSettingsType type) {
+std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
   switch (type) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
-      return L"cookies";
+      return "cookies";
     case CONTENT_SETTINGS_TYPE_IMAGES:
-      return L"images";
+      return "images";
     case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
-      return L"javascript";
+      return "javascript";
     case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return L"plugins";
+      return "plugins";
     case CONTENT_SETTINGS_TYPE_POPUPS:
-      return L"popups";
+      return "popups";
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
-      return L"location";
+      return "location";
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
-      return L"notifications";
+      return "notifications";
 
     default:
       NOTREACHED();
-      return L"";
+      return "";
   }
 }
 
@@ -103,108 +103,108 @@ void ContentSettingsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString(L"content_exceptions",
-      l10n_util::GetString(IDS_COOKIES_EXCEPTIONS_BUTTON));
-  localized_strings->SetString(L"contentSettingsPage",
-      l10n_util::GetString(IDS_CONTENT_SETTINGS_TITLE));
-  localized_strings->SetString(L"allowException",
-      l10n_util::GetString(IDS_EXCEPTIONS_ALLOW_BUTTON));
-  localized_strings->SetString(L"blockException",
-      l10n_util::GetString(IDS_EXCEPTIONS_BLOCK_BUTTON));
-  localized_strings->SetString(L"addExceptionRow",
-      l10n_util::GetString(IDS_EXCEPTIONS_ADD_BUTTON));
-  localized_strings->SetString(L"removeExceptionRow",
-      l10n_util::GetString(IDS_EXCEPTIONS_REMOVE_BUTTON));
-  localized_strings->SetString(L"editExceptionRow",
-      l10n_util::GetString(IDS_EXCEPTIONS_EDIT_BUTTON));
+  localized_strings->SetString("content_exceptions",
+      l10n_util::GetStringUTF16(IDS_COOKIES_EXCEPTIONS_BUTTON));
+  localized_strings->SetString("contentSettingsPage",
+      l10n_util::GetStringUTF16(IDS_CONTENT_SETTINGS_TITLE));
+  localized_strings->SetString("allowException",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
+  localized_strings->SetString("blockException",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
+  localized_strings->SetString("addExceptionRow",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ADD_BUTTON));
+  localized_strings->SetString("removeExceptionRow",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_REMOVE_BUTTON));
+  localized_strings->SetString("editExceptionRow",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_EDIT_BUTTON));
 
   // Cookies filter.
-  localized_strings->SetString(L"cookies_tab_label",
-      l10n_util::GetString(IDS_COOKIES_TAB_LABEL));
-  localized_strings->SetString(L"cookies_modify",
-      l10n_util::GetString(IDS_MODIFY_COOKIE_STORING_LABEL));
-  localized_strings->SetString(L"cookies_allow",
-      l10n_util::GetString(IDS_COOKIES_ALLOW_RADIO));
-  localized_strings->SetString(L"cookies_block",
-      l10n_util::GetString(IDS_COOKIES_BLOCK_RADIO));
-  localized_strings->SetString(L"cookies_block_3rd_party",
-      l10n_util::GetString(IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX));
-  localized_strings->SetString(L"cookies_clear_on_exit",
-      l10n_util::GetString(IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX));
-  localized_strings->SetString(L"cookies_show_cookies",
-      l10n_util::GetString(IDS_COOKIES_SHOW_COOKIES_BUTTON));
-  localized_strings->SetString(L"flash_storage_settings",
-      l10n_util::GetString(IDS_FLASH_STORAGE_SETTINGS));
-  localized_strings->SetString(L"flash_storage_url",
-      l10n_util::GetString(IDS_FLASH_STORAGE_URL));
+  localized_strings->SetString("cookies_tab_label",
+      l10n_util::GetStringUTF16(IDS_COOKIES_TAB_LABEL));
+  localized_strings->SetString("cookies_modify",
+      l10n_util::GetStringUTF16(IDS_MODIFY_COOKIE_STORING_LABEL));
+  localized_strings->SetString("cookies_allow",
+      l10n_util::GetStringUTF16(IDS_COOKIES_ALLOW_RADIO));
+  localized_strings->SetString("cookies_block",
+      l10n_util::GetStringUTF16(IDS_COOKIES_BLOCK_RADIO));
+  localized_strings->SetString("cookies_block_3rd_party",
+      l10n_util::GetStringUTF16(IDS_COOKIES_BLOCK_3RDPARTY_CHKBOX));
+  localized_strings->SetString("cookies_clear_on_exit",
+      l10n_util::GetStringUTF16(IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX));
+  localized_strings->SetString("cookies_show_cookies",
+      l10n_util::GetStringUTF16(IDS_COOKIES_SHOW_COOKIES_BUTTON));
+  localized_strings->SetString("flash_storage_settings",
+      l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_SETTINGS));
+  localized_strings->SetString("flash_storage_url",
+      l10n_util::GetStringUTF16(IDS_FLASH_STORAGE_URL));
 
   // Image filter.
-  localized_strings->SetString(L"images_tab_label",
-      l10n_util::GetString(IDS_IMAGES_TAB_LABEL));
-  localized_strings->SetString(L"images_setting",
-      l10n_util::GetString(IDS_IMAGES_SETTING_LABEL));
-  localized_strings->SetString(L"images_allow",
-      l10n_util::GetString(IDS_IMAGES_LOAD_RADIO));
-  localized_strings->SetString(L"images_block",
-      l10n_util::GetString(IDS_IMAGES_NOLOAD_RADIO));
+  localized_strings->SetString("images_tab_label",
+      l10n_util::GetStringUTF16(IDS_IMAGES_TAB_LABEL));
+  localized_strings->SetString("images_setting",
+      l10n_util::GetStringUTF16(IDS_IMAGES_SETTING_LABEL));
+  localized_strings->SetString("images_allow",
+      l10n_util::GetStringUTF16(IDS_IMAGES_LOAD_RADIO));
+  localized_strings->SetString("images_block",
+      l10n_util::GetStringUTF16(IDS_IMAGES_NOLOAD_RADIO));
 
   // JavaScript filter.
-  localized_strings->SetString(L"javascript_tab_label",
-      l10n_util::GetString(IDS_JAVASCRIPT_TAB_LABEL));
-  localized_strings->SetString(L"javascript_setting",
-      l10n_util::GetString(IDS_JS_SETTING_LABEL));
-  localized_strings->SetString(L"javascript_allow",
-      l10n_util::GetString(IDS_JS_ALLOW_RADIO));
-  localized_strings->SetString(L"javascript_block",
-      l10n_util::GetString(IDS_JS_DONOTALLOW_RADIO));
+  localized_strings->SetString("javascript_tab_label",
+      l10n_util::GetStringUTF16(IDS_JAVASCRIPT_TAB_LABEL));
+  localized_strings->SetString("javascript_setting",
+      l10n_util::GetStringUTF16(IDS_JS_SETTING_LABEL));
+  localized_strings->SetString("javascript_allow",
+      l10n_util::GetStringUTF16(IDS_JS_ALLOW_RADIO));
+  localized_strings->SetString("javascript_block",
+      l10n_util::GetStringUTF16(IDS_JS_DONOTALLOW_RADIO));
 
   // Plug-ins filter.
-  localized_strings->SetString(L"plugins_tab_label",
-      l10n_util::GetString(IDS_PLUGIN_TAB_LABEL));
-  localized_strings->SetString(L"plugins_setting",
-      l10n_util::GetString(IDS_PLUGIN_SETTING_LABEL));
-  localized_strings->SetString(L"plugins_allow",
-      l10n_util::GetString(IDS_PLUGIN_LOAD_RADIO));
-  localized_strings->SetString(L"plugins_block",
-      l10n_util::GetString(IDS_PLUGIN_NOLOAD_RADIO));
-  localized_strings->SetString(L"disable_individual_plugins",
-      l10n_util::GetString(IDS_PLUGIN_SELECTIVE_DISABLE));
-  localized_strings->SetString(L"chrome_plugin_url",
+  localized_strings->SetString("plugins_tab_label",
+      l10n_util::GetStringUTF16(IDS_PLUGIN_TAB_LABEL));
+  localized_strings->SetString("plugins_setting",
+      l10n_util::GetStringUTF16(IDS_PLUGIN_SETTING_LABEL));
+  localized_strings->SetString("plugins_allow",
+      l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD_RADIO));
+  localized_strings->SetString("plugins_block",
+      l10n_util::GetStringUTF16(IDS_PLUGIN_NOLOAD_RADIO));
+  localized_strings->SetString("disable_individual_plugins",
+      l10n_util::GetStringUTF16(IDS_PLUGIN_SELECTIVE_DISABLE));
+  localized_strings->SetString("chrome_plugin_url",
       chrome::kChromeUIPluginsURL);
 
   // Pop-ups filter.
-  localized_strings->SetString(L"popups_tab_label",
-      l10n_util::GetString(IDS_POPUP_TAB_LABEL));
-  localized_strings->SetString(L"popups_setting",
-      l10n_util::GetString(IDS_POPUP_SETTING_LABEL));
-  localized_strings->SetString(L"popups_allow",
-      l10n_util::GetString(IDS_POPUP_ALLOW_RADIO));
-  localized_strings->SetString(L"popups_block",
-      l10n_util::GetString(IDS_POPUP_BLOCK_RADIO));
+  localized_strings->SetString("popups_tab_label",
+      l10n_util::GetStringUTF16(IDS_POPUP_TAB_LABEL));
+  localized_strings->SetString("popups_setting",
+      l10n_util::GetStringUTF16(IDS_POPUP_SETTING_LABEL));
+  localized_strings->SetString("popups_allow",
+      l10n_util::GetStringUTF16(IDS_POPUP_ALLOW_RADIO));
+  localized_strings->SetString("popups_block",
+      l10n_util::GetStringUTF16(IDS_POPUP_BLOCK_RADIO));
 
   // Location filter.
-  localized_strings->SetString(L"location_tab_label",
-      l10n_util::GetString(IDS_GEOLOCATION_TAB_LABEL));
-  localized_strings->SetString(L"location_setting",
-      l10n_util::GetString(IDS_GEOLOCATION_SETTING_LABEL));
-  localized_strings->SetString(L"location_allow",
-      l10n_util::GetString(IDS_GEOLOCATION_ALLOW_RADIO));
-  localized_strings->SetString(L"location_ask",
-      l10n_util::GetString(IDS_GEOLOCATION_ASK_RADIO));
-  localized_strings->SetString(L"location_block",
-      l10n_util::GetString(IDS_GEOLOCATION_BLOCK_RADIO));
+  localized_strings->SetString("location_tab_label",
+      l10n_util::GetStringUTF16(IDS_GEOLOCATION_TAB_LABEL));
+  localized_strings->SetString("location_setting",
+      l10n_util::GetStringUTF16(IDS_GEOLOCATION_SETTING_LABEL));
+  localized_strings->SetString("location_allow",
+      l10n_util::GetStringUTF16(IDS_GEOLOCATION_ALLOW_RADIO));
+  localized_strings->SetString("location_ask",
+      l10n_util::GetStringUTF16(IDS_GEOLOCATION_ASK_RADIO));
+  localized_strings->SetString("location_block",
+      l10n_util::GetStringUTF16(IDS_GEOLOCATION_BLOCK_RADIO));
 
   // Notifications filter.
-  localized_strings->SetString(L"notifications_tab_label",
-      l10n_util::GetString(IDS_NOTIFICATIONS_TAB_LABEL));
-  localized_strings->SetString(L"notifications_setting",
-      l10n_util::GetString(IDS_NOTIFICATIONS_SETTING_LABEL));
-  localized_strings->SetString(L"notifications_allow",
-      l10n_util::GetString(IDS_NOTIFICATIONS_ALLOW_RADIO));
-  localized_strings->SetString(L"notifications_ask",
-      l10n_util::GetString(IDS_NOTIFICATIONS_ASK_RADIO));
-  localized_strings->SetString(L"notifications_block",
-      l10n_util::GetString(IDS_NOTIFICATIONS_BLOCK_RADIO));
+  localized_strings->SetString("notifications_tab_label",
+      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_TAB_LABEL));
+  localized_strings->SetString("notifications_setting",
+      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_SETTING_LABEL));
+  localized_strings->SetString("notifications_allow",
+      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_ALLOW_RADIO));
+  localized_strings->SetString("notifications_ask",
+      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_ASK_RADIO));
+  localized_strings->SetString("notifications_block",
+      l10n_util::GetStringUTF16(IDS_NOTIFICATIONS_BLOCK_RADIO));
 }
 
 void ContentSettingsHandler::Initialize() {
