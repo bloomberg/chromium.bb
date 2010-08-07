@@ -29,7 +29,7 @@
 
 namespace {
 // Constant value for os_name sent in setUserInfo.
-const wchar_t kOSName[] = L"ChromeOS";
+const char kOSName[] = "ChromeOS";
 }  // namespace
 
 class RegisterPageUIHTMLSource : public ChromeURLDataManager::DataSource {
@@ -213,19 +213,18 @@ void RegisterPageHandler::SendUserInfo() {
   }
 
   // Required info.
-  value.SetString(L"system_hwqual", L"hardware qual identifier");
-  value.SetString(L"system_sku", UTF8ToWide(system_sku));
-  value.SetString(L"system_serial", L"serial number");
-  value.SetString(L"os_language",
-                  UTF8ToWide(g_browser_process->GetApplicationLocale()));
-  value.SetString(L"os_name", kOSName);
-  value.SetString(L"os_version", UTF8ToWide(version_));
-  value.SetString(L"os_connection", L"connection type");
-  value.SetString(L"user_email", L"");
+  value.SetString("system_hwqual", "hardware qual identifier");
+  value.SetString("system_sku", system_sku);
+  value.SetString("system_serial", "serial number");
+  value.SetString("os_language", g_browser_process->GetApplicationLocale());
+  value.SetString("os_name", kOSName);
+  value.SetString("os_version", version_);
+  value.SetString("os_connection", "connection type");
+  value.SetString("user_email", "");
 
   // Optional info.
-  value.SetString(L"user_first_name", L"");
-  value.SetString(L"user_last_name", L"");
+  value.SetString("user_first_name", "");
+  value.SetString("user_last_name", "");
 
   LOG(INFO) << "Sending user info to host page";
   dom_ui_->CallJavascriptFunction(L"setUserInfo", value);

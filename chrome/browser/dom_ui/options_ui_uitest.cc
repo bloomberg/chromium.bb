@@ -4,6 +4,8 @@
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -28,10 +30,10 @@ class OptionsUITest : public UITest {
   void AssertIsOptionsPage(TabProxy* tab) {
     std::wstring title;
     ASSERT_TRUE(tab->GetTabTitle(&title));
-    std::wstring expected_title =
-        l10n_util::GetStringF(IDS_OPTIONS_DIALOG_TITLE,
-            l10n_util::GetString(IDS_PRODUCT_NAME));
-    ASSERT_EQ(expected_title, title);
+    string16 expected_title =
+        l10n_util::GetStringFUTF16(IDS_OPTIONS_DIALOG_TITLE,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+    ASSERT_EQ(expected_title, WideToUTF16Hack(title));
   }
 };
 

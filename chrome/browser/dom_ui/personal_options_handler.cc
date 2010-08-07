@@ -34,59 +34,59 @@ void PersonalOptionsHandler::GetLocalizedValues(
 
   DCHECK(localized_strings);
   // Personal Stuff page
-  localized_strings->SetString(L"sync_section",
-      l10n_util::GetString(IDS_SYNC_OPTIONS_GROUP_NAME));
-  localized_strings->SetString(L"sync_not_setup_info",
-      l10n_util::GetStringF(IDS_SYNC_NOT_SET_UP_INFO,
-          l10n_util::GetString(IDS_PRODUCT_NAME)));
-  localized_strings->SetString(L"start_sync",
-      l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL));
-  localized_strings->SetString(L"sync_customize",
-      l10n_util::GetString(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
-  localized_strings->SetString(L"stop_sync",
-      l10n_util::GetString(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL));
+  localized_strings->SetString("sync_section",
+      l10n_util::GetStringUTF16(IDS_SYNC_OPTIONS_GROUP_NAME));
+  localized_strings->SetString("sync_not_setup_info",
+      l10n_util::GetStringFUTF16(IDS_SYNC_NOT_SET_UP_INFO,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("start_sync",
+      l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
+  localized_strings->SetString("sync_customize",
+      l10n_util::GetStringUTF16(IDS_SYNC_CUSTOMIZE_BUTTON_LABEL));
+  localized_strings->SetString("stop_sync",
+      l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL));
 
-  localized_strings->SetString(L"passwords",
-      l10n_util::GetString(IDS_OPTIONS_PASSWORDS_GROUP_NAME));
-  localized_strings->SetString(L"passwords_asktosave",
-      l10n_util::GetString(IDS_OPTIONS_PASSWORDS_ASKTOSAVE));
-  localized_strings->SetString(L"passwords_neversave",
-      l10n_util::GetString(IDS_OPTIONS_PASSWORDS_NEVERSAVE));
-  localized_strings->SetString(L"showpasswords",
-      l10n_util::GetString(IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS));
+  localized_strings->SetString("passwords",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_GROUP_NAME));
+  localized_strings->SetString("passwords_asktosave",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_ASKTOSAVE));
+  localized_strings->SetString("passwords_neversave",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_NEVERSAVE));
+  localized_strings->SetString("showpasswords",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS));
 
-  localized_strings->SetString(L"autofill",
-      l10n_util::GetString(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME));
-  localized_strings->SetString(L"autofill_options",
-      l10n_util::GetString(IDS_AUTOFILL_OPTIONS));
+  localized_strings->SetString("autofill",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME));
+  localized_strings->SetString("autofill_options",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS));
 
-  localized_strings->SetString(L"browsing_data",
-      l10n_util::GetString(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME));
-  localized_strings->SetString(L"import_data",
-      l10n_util::GetString(IDS_OPTIONS_IMPORT_DATA_BUTTON));
+  localized_strings->SetString("browsing_data",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_BROWSING_DATA_GROUP_NAME));
+  localized_strings->SetString("import_data",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_IMPORT_DATA_BUTTON));
 
 #if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
-  localized_strings->SetString(L"appearance",
-      l10n_util::GetString(IDS_APPEARANCE_GROUP_NAME));
-  localized_strings->SetString(L"themes_GTK_button",
-      l10n_util::GetString(IDS_THEMES_GTK_BUTTON));
-  localized_strings->SetString(L"themes_set_classic",
-      l10n_util::GetString(IDS_THEMES_SET_CLASSIC));
-  localized_strings->SetString(L"showWindow_decorations_radio",
-      l10n_util::GetString(IDS_SHOW_WINDOW_DECORATIONS_RADIO));
-  localized_strings->SetString(L"hideWindow_decorations_radio",
-      l10n_util::GetString(IDS_HIDE_WINDOW_DECORATIONS_RADIO));
-  localized_strings->SetString(L"themes_gallery",
-      l10n_util::GetString(IDS_THEMES_GALLERY_BUTTON));
+  localized_strings->SetString("appearance",
+      l10n_util::GetStringUTF16(IDS_APPEARANCE_GROUP_NAME));
+  localized_strings->SetString("themes_GTK_button",
+      l10n_util::GetStringUTF16(IDS_THEMES_GTK_BUTTON));
+  localized_strings->SetString("themes_set_classic",
+      l10n_util::GetStringUTF16(IDS_THEMES_SET_CLASSIC));
+  localized_strings->SetString("showWindow_decorations_radio",
+      l10n_util::GetStringUTF16(IDS_SHOW_WINDOW_DECORATIONS_RADIO));
+  localized_strings->SetString("hideWindow_decorations_radio",
+      l10n_util::GetStringUTF16(IDS_HIDE_WINDOW_DECORATIONS_RADIO));
+  localized_strings->SetString("themes_gallery",
+      l10n_util::GetStringUTF16(IDS_THEMES_GALLERY_BUTTON));
 #else
-  localized_strings->SetString(L"themes",
-      l10n_util::GetString(IDS_THEMES_GROUP_NAME));
-  localized_strings->SetString(L"themes_reset",
-      l10n_util::GetString(IDS_THEMES_RESET_BUTTON));
-  localized_strings->SetString(L"themes_gallery",
-      l10n_util::GetString(IDS_THEMES_GALLERY_BUTTON));
-  localized_strings->SetString(L"themes_default",
-      l10n_util::GetString(IDS_THEMES_DEFAULT_THEME_LABEL));
+  localized_strings->SetString("themes",
+      l10n_util::GetStringUTF16(IDS_THEMES_GROUP_NAME));
+  localized_strings->SetString("themes_reset",
+      l10n_util::GetStringUTF16(IDS_THEMES_RESET_BUTTON));
+  localized_strings->SetString("themes_gallery",
+      l10n_util::GetStringUTF16(IDS_THEMES_GALLERY_BUTTON));
+  localized_strings->SetString("themes_default",
+      l10n_util::GetStringUTF16(IDS_THEMES_DEFAULT_THEME_LABEL));
 #endif
 }
 
@@ -101,7 +101,7 @@ void PersonalOptionsHandler::SetSyncStatusUIString(const Value* value) {
   DCHECK(dom_ui_);
 
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
-  if(service != NULL && ProfileSyncService::IsSyncEnabled()) {
+  if (service != NULL && ProfileSyncService::IsSyncEnabled()) {
     scoped_ptr<Value> status_string(Value::CreateStringValue(
         l10n_util::GetStringFUTF16(IDS_SYNC_ACCOUNT_SYNCED_TO_USER_WITH_TIME,
                                    service->GetAuthenticatedUsername(),

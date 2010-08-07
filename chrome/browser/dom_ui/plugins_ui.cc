@@ -64,42 +64,42 @@ void PluginsUIHTMLSource::StartDataRequest(const std::string& path,
                                            int request_id) {
   // Strings used in the JsTemplate file.
   DictionaryValue localized_strings;
-  localized_strings.SetString(L"pluginsTitle",
-      l10n_util::GetString(IDS_PLUGINS_TITLE));
-  localized_strings.SetString(L"pluginsDetailsModeLink",
-      l10n_util::GetString(IDS_PLUGINS_DETAILS_MODE_LINK));
-  localized_strings.SetString(L"pluginsNoneInstalled",
-      l10n_util::GetString(IDS_PLUGINS_NONE_INSTALLED));
-  localized_strings.SetString(L"pluginDisabled",
-      l10n_util::GetString(IDS_PLUGINS_DISABLED_PLUGIN));
-  localized_strings.SetString(L"pluginDisabledByPolicy",
-      l10n_util::GetString(IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN));
-  localized_strings.SetString(L"pluginCannotBeEnabledDueToPolicy",
-      l10n_util::GetString(IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY));
-  localized_strings.SetString(L"pluginDownload",
-      l10n_util::GetString(IDS_PLUGINS_DOWNLOAD));
-  localized_strings.SetString(L"pluginName",
-      l10n_util::GetString(IDS_PLUGINS_NAME));
-  localized_strings.SetString(L"pluginPriority",
-      l10n_util::GetString(IDS_PLUGINS_PRIORITY));
-  localized_strings.SetString(L"pluginVersion",
-      l10n_util::GetString(IDS_PLUGINS_VERSION));
-  localized_strings.SetString(L"pluginDescription",
-      l10n_util::GetString(IDS_PLUGINS_DESCRIPTION));
-  localized_strings.SetString(L"pluginPath",
-      l10n_util::GetString(IDS_PLUGINS_PATH));
-  localized_strings.SetString(L"pluginMimeTypes",
-      l10n_util::GetString(IDS_PLUGINS_MIME_TYPES));
-  localized_strings.SetString(L"pluginMimeTypesMimeType",
-      l10n_util::GetString(IDS_PLUGINS_MIME_TYPES_MIME_TYPE));
-  localized_strings.SetString(L"pluginMimeTypesDescription",
-      l10n_util::GetString(IDS_PLUGINS_MIME_TYPES_DESCRIPTION));
-  localized_strings.SetString(L"pluginMimeTypesFileExtensions",
-      l10n_util::GetString(IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS));
-  localized_strings.SetString(L"disable",
-      l10n_util::GetString(IDS_PLUGINS_DISABLE));
-  localized_strings.SetString(L"enable",
-      l10n_util::GetString(IDS_PLUGINS_ENABLE));
+  localized_strings.SetString("pluginsTitle",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_TITLE));
+  localized_strings.SetString("pluginsDetailsModeLink",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_DETAILS_MODE_LINK));
+  localized_strings.SetString("pluginsNoneInstalled",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_NONE_INSTALLED));
+  localized_strings.SetString("pluginDisabled",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN));
+  localized_strings.SetString("pluginDisabledByPolicy",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_BY_POLICY_PLUGIN));
+  localized_strings.SetString("pluginCannotBeEnabledDueToPolicy",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_CANNOT_ENABLE_DUE_TO_POLICY));
+  localized_strings.SetString("pluginDownload",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_DOWNLOAD));
+  localized_strings.SetString("pluginName",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_NAME));
+  localized_strings.SetString("pluginPriority",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_PRIORITY));
+  localized_strings.SetString("pluginVersion",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_VERSION));
+  localized_strings.SetString("pluginDescription",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_DESCRIPTION));
+  localized_strings.SetString("pluginPath",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_PATH));
+  localized_strings.SetString("pluginMimeTypes",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_MIME_TYPES));
+  localized_strings.SetString("pluginMimeTypesMimeType",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_MIME_TYPES_MIME_TYPE));
+  localized_strings.SetString("pluginMimeTypesDescription",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_MIME_TYPES_DESCRIPTION));
+  localized_strings.SetString("pluginMimeTypesFileExtensions",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_MIME_TYPES_FILE_EXTENSIONS));
+  localized_strings.SetString("disable",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLE));
+  localized_strings.SetString("enable",
+      l10n_util::GetStringUTF16(IDS_PLUGINS_ENABLE));
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 
@@ -176,7 +176,7 @@ void PluginsDOMHandler::RegisterMessages() {
 
 void PluginsDOMHandler::HandleRequestPluginsData(const Value* value) {
   DictionaryValue* results = new DictionaryValue();
-  results->Set(L"plugins", plugin_updater::GetPluginGroupsData());
+  results->Set("plugins", plugin_updater::GetPluginGroupsData());
 
   dom_ui_->CallJavascriptFunction(L"returnPluginsData", *results);
 }
@@ -197,12 +197,11 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const Value* value) {
     return;
 
   if (is_group_str == "true") {
-    std::wstring group_name;
+    string16 group_name;
     if (!list->GetString(0, &group_name))
       return;
 
-    plugin_updater::EnablePluginGroup(enable_str == "true",
-                                      WideToUTF16(group_name));
+    plugin_updater::EnablePluginGroup(enable_str == "true", group_name);
   } else {
     FilePath::StringType file_path;
     if (!list->GetString(0, &file_path))

@@ -22,12 +22,12 @@ void PasswordsExceptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString(L"passwordsExceptionsTitle",
-      l10n_util::GetString(IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE));
-  localized_strings->SetString(L"passwordsTabTitle",
-      l10n_util::GetString(IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE));
-  localized_strings->SetString(L"exceptionsTabTitle",
-      l10n_util::GetString(IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE));
+  localized_strings->SetString("passwordsExceptionsTitle",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE));
+  localized_strings->SetString("passwordsTabTitle",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE));
+  localized_strings->SetString("exceptionsTabTitle",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE));
 }
 
 void PasswordsExceptionsHandler::RegisterMessages() {
