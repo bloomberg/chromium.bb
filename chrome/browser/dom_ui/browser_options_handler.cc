@@ -34,40 +34,40 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
 void BrowserOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString(L"startupGroupName",
-      l10n_util::GetString(IDS_OPTIONS_STARTUP_GROUP_NAME));
-  localized_strings->SetString(L"startupShowDefaultAndNewTab",
-      l10n_util::GetString(IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB));
-  localized_strings->SetString(L"startupShowLastSession",
-      l10n_util::GetString(IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION));
-  localized_strings->SetString(L"startupShowPages",
-      l10n_util::GetString(IDS_OPTIONS_STARTUP_SHOW_PAGES));
-  localized_strings->SetString(L"startupAddButton",
-      l10n_util::GetString(IDS_OPTIONS_STARTUP_ADD_BUTTON));
-  localized_strings->SetString(L"startupRemoveButton",
-      l10n_util::GetString(IDS_OPTIONS_STARTUP_REMOVE_BUTTON));
-  localized_strings->SetString(L"startupUseCurrent",
-      l10n_util::GetString(IDS_OPTIONS_STARTUP_USE_CURRENT));
-  localized_strings->SetString(L"homepageGroupName",
-      l10n_util::GetString(IDS_OPTIONS_HOMEPAGE_GROUP_NAME));
-  localized_strings->SetString(L"homepageUseNewTab",
-      l10n_util::GetString(IDS_OPTIONS_HOMEPAGE_USE_NEWTAB));
-  localized_strings->SetString(L"homepageUseURL",
-      l10n_util::GetString(IDS_OPTIONS_HOMEPAGE_USE_URL));
-  localized_strings->SetString(L"homepageShowButton",
-      l10n_util::GetString(IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON));
-  localized_strings->SetString(L"defaultSearchGroupName",
-      l10n_util::GetString(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME));
-  localized_strings->SetString(L"defaultSearchManageEnginesLink",
-      l10n_util::GetString(IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK));
-  localized_strings->SetString(L"defaultBrowserGroupName",
-      l10n_util::GetString(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME));
-  localized_strings->SetString(L"defaultBrowserUnknown",
-      l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
-          l10n_util::GetString(IDS_PRODUCT_NAME)));
-  localized_strings->SetString(L"defaultBrowserUseAsDefault",
-      l10n_util::GetStringF(IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT,
-          l10n_util::GetString(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("startupGroupName",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_GROUP_NAME));
+  localized_strings->SetString("startupShowDefaultAndNewTab",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB));
+  localized_strings->SetString("startupShowLastSession",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION));
+  localized_strings->SetString("startupShowPages",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_SHOW_PAGES));
+  localized_strings->SetString("startupAddButton",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_ADD_BUTTON));
+  localized_strings->SetString("startupRemoveButton",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_REMOVE_BUTTON));
+  localized_strings->SetString("startupUseCurrent",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_STARTUP_USE_CURRENT));
+  localized_strings->SetString("homepageGroupName",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_GROUP_NAME));
+  localized_strings->SetString("homepageUseNewTab",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_USE_NEWTAB));
+  localized_strings->SetString("homepageUseURL",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_USE_URL));
+  localized_strings->SetString("homepageShowButton",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON));
+  localized_strings->SetString("defaultSearchGroupName",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME));
+  localized_strings->SetString("defaultSearchManageEnginesLink",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK));
+  localized_strings->SetString("defaultBrowserGroupName",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME));
+  localized_strings->SetString("defaultBrowserUnknown",
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  localized_strings->SetString("defaultBrowserUseAsDefault",
+      l10n_util::GetStringFUTF16(IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
 void BrowserOptionsHandler::RegisterMessages() {
@@ -153,8 +153,8 @@ void BrowserOptionsHandler::SetDefaultBrowserUIState(
 
 void BrowserOptionsHandler::SetDefaultBrowserUIString(int status_string_id) {
   scoped_ptr<Value> status_string(Value::CreateStringValue(
-      l10n_util::GetStringF(status_string_id,
-                            l10n_util::GetString(IDS_PRODUCT_NAME))));
+      l10n_util::GetStringFUTF16(status_string_id,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME))));
 
   scoped_ptr<Value> is_default(Value::CreateBooleanValue(
       status_string_id == IDS_OPTIONS_DEFAULTBROWSER_DEFAULT));
@@ -180,8 +180,8 @@ void BrowserOptionsHandler::OnTemplateURLModelChanged() {
       continue;
 
     DictionaryValue* entry = new DictionaryValue();
-    entry->SetString(L"name", model_urls[i]->short_name());
-    entry->SetInteger(L"index", i);
+    entry->SetString("name", WideToUTF16Hack(model_urls[i]->short_name()));
+    entry->SetInteger("index", i);
     search_engines.Append(entry);
     if (model_urls[i] == default_url)
       default_index = i;
@@ -241,10 +241,10 @@ void BrowserOptionsHandler::OnModelChanged() {
   int page_count = startup_custom_pages_table_model_->RowCount();
   for (int i = 0; i < page_count; ++i) {
     DictionaryValue* entry = new DictionaryValue();
-    entry->SetString(L"title",
-                     startup_custom_pages_table_model_->GetText(i, 0));
-    entry->SetString(L"tooltip",
-                     startup_custom_pages_table_model_->GetTooltip(i));
+    entry->SetString("title", WideToUTF16Hack(
+                        startup_custom_pages_table_model_->GetText(i, 0)));
+    entry->SetString("tooltip", WideToUTF16Hack(
+                         startup_custom_pages_table_model_->GetTooltip(i)));
     startup_pages.Append(entry);
   }
 
