@@ -419,6 +419,7 @@ void FilterDisabledTests() {
     // TODO(tommi): The tests currently fail though, so need to fix.
     "HTTPSRequestTest.HTTPSMismatchedTest",
     "HTTPSRequestTest.HTTPSExpiredTest",
+    "HTTPSRequestTest.ClientAuthTest",
 
     // Tests chrome's network stack's cache (might not apply to CF).
     "URLRequestTestHTTP.VaryHeader",
