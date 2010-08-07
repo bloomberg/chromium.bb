@@ -210,6 +210,17 @@ void UITestBase::TearDown() {
   EXPECT_EQ(expected_crashes_, actual_crashes) << error_msg;
 }
 
+void UITestBase::set_command_execution_timeout_ms(int timeout) {
+  if (server_.get()) {
+    // automation channel already created. Set its timeout for use by
+    // subsequent automation calls.
+    server_->set_command_execution_timeout_ms(timeout);
+  }
+  command_execution_timeout_ms_ = timeout;
+  LOG(INFO) << "Automation command execution timeout set to "
+            << timeout << " milli secs.";
+}
+
 // Pick up the various test time out values from the command line.
 void UITestBase::InitializeTimeouts() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

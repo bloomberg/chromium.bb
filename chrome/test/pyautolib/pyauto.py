@@ -292,6 +292,31 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       time.sleep(retry_sleep)
     return False
 
+  class CmdExecutionTimeoutChanger(object):
+    """Facilitate temporary changes to command_execution_timeout_ms.
+
+    Automatically resets to original timeout when object is destroyed.
+    """
+    _saved_timeout = -1  # Saved value for command_execution_timeout_ms
+
+    def __init__(self, ui_test, new_timeout):
+      """Initialize.
+
+      Args:
+        ui_test: a PyUITest object
+        new_timeout: new timeout to use (in milli secs)
+      """
+      self._saved_timeout = ui_test.command_execution_timeout_ms()
+      if new_timeout != self._saved_timeout:
+        ui_test.set_command_execution_timeout_ms(new_timeout)
+      self._ui_test = ui_test
+
+    def __del__(self):
+      """Reset command_execution_timeout_ms to original value."""
+      if self._ui_test.command_execution_timeout_ms() != self._saved_timeout:
+        self._ui_test.set_command_execution_timeout_ms(self._saved_timeout)
+
+
   def _GetResultFromJSONRequest(self, cmd_dict, windex=0):
     """Issue call over the JSON automation channel and fetch output.
 

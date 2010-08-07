@@ -23,7 +23,7 @@ class DownloadsTest(pyauto.PyUITest):
     """Determine if 2 given files have the same contents."""
     if not (os.path.exists(file1) and os.path.exists(file2)):
       return False
-    return filecmp.cmp(file1, file2)
+    return filecmp.cmp(file1, file2, shallow=False)
 
   def testNoDownloadWaitingNeeded(self):
     """Make sure "wait for downloads" returns quickly if we have none."""
@@ -53,13 +53,45 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
 
   def testBigZip(self):
-    # TODO: download something "pretty big".  The above test will
-    # usually wortk even without the WaitForAllDownloadsToComplete().
-    # Manual testing shows it isn't just a noop, but an explicit test
-    # is needed here.  However, if the download is TOO big, we hit a
-    # 30sec timeout in our automation proxy / IPC (didn't track down
-    # where exactly).
-    pass
+    """Verify that we can download a 1GB file.
+
+    This test needs 2 GB of free space, 1 GB for the original zip file and
+    another for the downloaded one.
+
+    Note: This test increases automation timeout to 4 min.  Things might seem
+          to hang.
+    """
+    size = 2**30  # 1 GB
+    # Create a 1 GB file on the fly
+    fd, file_path = tempfile.mkstemp(suffix='.zip', prefix='bigfile-')
+    os.lseek(fd, size, os.SEEK_SET)
+    os.write(fd, 'a')
+    os.close(fd)
+    try:
+      file_url = self.GetFileURLForPath(file_path)
+      downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                    os.path.basename(file_path))
+      os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+      self.DownloadAndWaitForStart(file_url)
+      # Waiting for big file to download might exceed automation timeout.
+      # Temporarily increase the automation timeout.
+      new_timeout = 4 * 60 * 1000  # 4 min
+      timeout_changer = pyauto.PyUITest.CmdExecutionTimeoutChanger(
+          self, new_timeout)
+      logging.info('Automation execution timeout has been increased. Things '
+                   'might seem to be hung even though it might not really be.')
+      self.WaitForAllDownloadsToComplete()
+      del timeout_changer  # reset automation timeout
+      # Verify that the file was correctly downloaded
+      self.assertTrue(os.path.exists(downloaded_pkg),
+                      'Downloaded file %s missing.' % downloaded_pkg)
+      self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg),
+                      'Downloaded file %s does not match original' %
+                        downloaded_pkg)
+    finally:  # Cleanup. Remove all big files.
+      os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+      os.path.exists(file_path) and os.remove(file_path)
+
 
   def testFileRenaming(self):
     """Test file renaming when downloading a already-existing filename."""
@@ -135,6 +167,30 @@ class DownloadsTest(pyauto.PyUITest):
         os.path.exists(downloaded_file) and os.remove(downloaded_file)
     finally:
       shutil.rmtree(unicode(temp_dir))  # unicode so that win treats nicely.
+
+  def testDownloadsPersistence(self):
+    """Verify that download history persists on session restart."""
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
+    file_url = self.GetFileURLForPath(os.path.join(test_dir, 'a_zip_file.zip'))
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  'a_zip_file.zip')
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self.DownloadAndWaitForStart(file_url)
+    downloads = self.GetDownloadsInfo().Downloads()
+    self.assertEqual(1, len(downloads))
+    self.assertEqual('a_zip_file.zip', downloads[0]['file_name'])
+    file_url = downloads[0]['url']
+    self.RestartBrowser(clear_profile=False)
+    # Trigger the download service to get loaded after restart.
+    self.NavigateToURL('chrome://downloads/')
+    # Verify that there's no download shelf anymore.
+    self.assertFalse(self.IsDownloadShelfVisible(),
+                     'Download shelf persisted browser restart.')
+    # Verify that the download history persists.
+    downloads = self.GetDownloadsInfo().Downloads()
+    self.assertEqual(1, len(downloads))
+    self.assertEqual('a_zip_file.zip', downloads[0]['file_name'])
+    self.assertEqual(file_url, downloads[0]['url'])
 
 
 if __name__ == '__main__':

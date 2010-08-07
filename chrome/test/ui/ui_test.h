@@ -406,8 +406,10 @@ class UITestBase {
   base::ProcessId browser_process_id() const { return process_id_; }
 
   // Timeout accessors.
-  void set_command_execution_timeout_ms(int timeout) {
-    command_execution_timeout_ms_ = timeout;
+  void set_command_execution_timeout_ms(int timeout);
+
+  int command_execution_timeout_ms() const {
+    return command_execution_timeout_ms_;
   }
 
   int action_timeout_ms() const { return action_timeout_ms_; }

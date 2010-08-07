@@ -187,6 +187,15 @@ class PyUITestBase {
       action_max_timeout_ms;
   int action_max_timeout_ms() const;
 
+  %feature("docstring", "Get the timeout (in milli secs) for an automation "
+           "call") command_execution_timeout_ms;
+  int command_execution_timeout_ms() const;
+  %feature("docstring", "Set the timeout (in milli secs) for an automation "
+           "call.  This is an internal method.  Do not use this directly.  "
+           "Use CmdExecutionTimeoutChanger instead")
+      set_command_execution_timeout_ms;
+  void set_command_execution_timeout_ms(int timeout);
+
   %feature("docstring", "Launches the browser and IPC testing server.")
       LaunchBrowserAndServer;
   void LaunchBrowserAndServer();

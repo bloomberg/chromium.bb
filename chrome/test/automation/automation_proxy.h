@@ -236,6 +236,13 @@ class AutomationProxy : public IPC::Channel::Listener,
     return static_cast<int>(command_execution_timeout_.InMilliseconds());
   }
 
+  // Sets the timeout for subsequent automation calls.
+  void set_command_execution_timeout_ms(int timeout_ms) {
+    DCHECK(timeout_ms <= 10 * 60 * 1000 ) << "10+ min of automation timeout "
+        "can make the test hang and be killed by buildbot";
+    command_execution_timeout_ = base::TimeDelta::FromMilliseconds(timeout_ms);
+  }
+
   // Returns the server version of the server connected. You may only call this
   // method after WaitForAppLaunch() has returned SUCCESS or VERSION_MISMATCH.
   // If you call it before this, the return value is undefined.
