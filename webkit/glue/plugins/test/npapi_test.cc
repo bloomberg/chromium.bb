@@ -73,6 +73,17 @@ EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* pFuncs) {
 EXPORT NPError API_CALL NP_Shutdown() {
   return NPAPIClient::PluginClient::Shutdown();
 }
+
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+EXPORT const char* API_CALL NP_GetMIMEDescription(void) {
+  // The layout test LayoutTests/fast/js/navigator-mimeTypes-length.html
+  // asserts that the number of mimetypes handled by plugins should be
+  // greater than the number of plugins.  We specify a mimetype here so
+  // this plugin has at least one.
+  return "application/x-npapi-test-netscape:npapitestnetscape:"
+         "npapi test netscape content";
+}
+#endif
 } // extern "C"
 
 namespace WebCore {

@@ -4,5 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-BUG51402 LINUX DEBUG : fast/js/navigator-mimeTypes-length.html = TEXT

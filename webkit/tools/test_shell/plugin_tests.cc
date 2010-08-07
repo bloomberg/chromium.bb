@@ -69,11 +69,6 @@ class PluginTest : public TestShellTest {
     TestShellTest::SetUp();
   }
 
-  virtual void TearDown() {
-    DeleteTestPlugin();
-    TestShellTest::TearDown();
-  }
-
   FilePath plugin_src_;
   FilePath plugin_file_path_;
 };
