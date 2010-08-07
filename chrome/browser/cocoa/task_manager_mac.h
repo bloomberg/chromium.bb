@@ -28,9 +28,10 @@ class TaskManagerMac;
 
   scoped_nsobject<WindowSizeAutosaver> size_saver_;
 
-  // Contains a permutation of [0..|model_->ResourceCount() - 1|]. Used to
+  // These contain a permutation of [0..|model_->ResourceCount() - 1|]. Used to
   // implement sorting.
-  std::vector<int> indexShuffle_;
+  std::vector<int> viewToModelMap_;
+  std::vector<int> modelToViewMap_;
 
   // Descriptor of the current sort column.
   scoped_nsobject<NSSortDescriptor> currentSortDescriptor_;

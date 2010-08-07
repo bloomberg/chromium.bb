@@ -77,3 +77,37 @@ TEST_F(TaskManagerWindowControllerTest, Sort) {
   task_manager.RemoveResource(&resource2);
   task_manager.RemoveResource(&resource3);
 }
+
+TEST_F(TaskManagerWindowControllerTest, SelectionAdaptsToSorting) {
+  TaskManager task_manager;
+
+  TestResource resource1(UTF8ToUTF16("yyy"), 1);
+  TestResource resource2(UTF8ToUTF16("aaa"), 2);
+
+  task_manager.AddResource(&resource1);
+  task_manager.AddResource(&resource2);
+
+  TaskManagerMac* bridge(new TaskManagerMac(&task_manager));
+  TaskManagerWindowController* controller = bridge->cocoa_controller();
+  NSTableView* table = [controller tableView];
+  ASSERT_EQ(2, [controller numberOfRowsInTableView:table]);
+
+  // Select row 0 in the table (corresponds to row 1 in the model).
+  [table  selectRowIndexes:[NSIndexSet indexSetWithIndex:0]
+      byExtendingSelection:NO];
+
+  // Change the name of resource2 so that it becomes row 1 in the table.
+  resource2.title_ = UTF8ToUTF16("zzz");
+  bridge->OnItemsChanged(1, 1);
+
+  // Check that the selection has moved to row 1.
+  NSIndexSet* selection = [table selectedRowIndexes];
+  ASSERT_EQ(1u, [selection count]);
+  EXPECT_EQ(1u, [selection firstIndex]);
+
+  // Releases the controller, which in turn deletes |bridge|.
+  [controller close];
+
+  task_manager.RemoveResource(&resource1);
+  task_manager.RemoveResource(&resource2);
+}

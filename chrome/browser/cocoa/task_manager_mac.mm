@@ -89,6 +89,7 @@ class SortHelper {
 - (void)setUpTableHeaderContextMenu;
 - (void)toggleColumn:(id)sender;
 - (void)adjustSelectionAndEndProcessButton;
+- (void)deselectRows;
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -118,16 +119,41 @@ class SortHelper {
 }
 
 - (void)sortShuffleArray {
-  indexShuffle_.resize(model_->ResourceCount());
-  for (size_t i = 0; i < indexShuffle_.size(); ++i)
-    indexShuffle_[i] = i;
+  viewToModelMap_.resize(model_->ResourceCount());
+  for (size_t i = 0; i < viewToModelMap_.size(); ++i)
+    viewToModelMap_[i] = i;
 
-  std::sort(indexShuffle_.begin(), indexShuffle_.end(),
+  std::sort(viewToModelMap_.begin(), viewToModelMap_.end(),
             SortHelper(model_, currentSortDescriptor_.get()));
+
+  modelToViewMap_.resize(viewToModelMap_.size());
+  for (size_t i = 0; i < viewToModelMap_.size(); ++i)
+    modelToViewMap_[viewToModelMap_[i]] = i;
 }
 
 - (void)reloadData {
+  // Store old view indices, and the model indices they map to.
+  NSIndexSet* viewSelection = [tableView_ selectedRowIndexes];
+  std::vector<int> modelSelection;
+  for (NSUInteger i = [viewSelection lastIndex];
+       i != NSNotFound;
+       i = [viewSelection indexLessThanIndex:i]) {
+    modelSelection.push_back(viewToModelMap_[i]);
+  }
+
+  // Sort.
   [self sortShuffleArray];
+
+  // Use the model indices to get the new view indices of the selection, and
+  // set selection to that. This assumes that no rows were added or removed
+  // (in that case, the selection is cleared before -reloadData is called).
+  if (modelSelection.size() > 0)
+    DCHECK_EQ([tableView_ numberOfRows], model_->ResourceCount());
+  NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
+  for (size_t i = 0; i < modelSelection.size(); ++i)
+    [indexSet addIndex:modelToViewMap_[modelSelection[i]]];
+  [tableView_ selectRowIndexes:indexSet byExtendingSelection:NO];
+
   [tableView_ reloadData];
   [self adjustSelectionAndEndProcessButton];
 }
@@ -141,7 +167,7 @@ class SortHelper {
   for (NSUInteger i = [selection lastIndex];
        i != NSNotFound;
        i = [selection indexLessThanIndex:i]) {
-    taskManager_->KillProcess(i);
+    taskManager_->KillProcess(viewToModelMap_[i]);
   }
 }
 
@@ -298,17 +324,24 @@ class SortHelper {
   for (NSUInteger i = [selection lastIndex];
        i != NSNotFound;
        i = [selection indexLessThanIndex:i]) {
-    if (taskManager_->IsBrowserProcess(i))
+    int modelIndex = viewToModelMap_[i];
+    if (taskManager_->IsBrowserProcess(modelIndex))
       selectionContainsBrowserProcess = true;
 
-    std::pair<int, int> rangePair = model_->GetGroupRangeForResource(i);
-    NSRange range = NSMakeRange(rangePair.first, rangePair.second);
-    NSIndexSet* rangeIndexSet = [NSIndexSet indexSetWithIndexesInRange:range];
-    [tableView_ selectRowIndexes:rangeIndexSet byExtendingSelection:YES];
+    std::pair<int, int> rangePair =
+        model_->GetGroupRangeForResource(modelIndex);
+    NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
+    for (int j = 0; j < rangePair.second; ++j)
+      [indexSet addIndex:modelToViewMap_[rangePair.first + j]];
+    [tableView_ selectRowIndexes:indexSet byExtendingSelection:YES];
   }
 
   bool enabled = [selection count] > 0 && !selectionContainsBrowserProcess;
   [endProcessButton_ setEnabled:enabled];
+}
+
+- (void)deselectRows {
+  [tableView_ deselectAll:self];
 }
 
 // Table view delegate method.
@@ -334,8 +367,8 @@ class SortHelper {
 }
 
 - (NSString*)modelTextForRow:(int)row column:(int)columnId {
-  DCHECK_LT(static_cast<size_t>(row), indexShuffle_.size());
-  row = indexShuffle_[row];
+  DCHECK_LT(static_cast<size_t>(row), viewToModelMap_.size());
+  row = viewToModelMap_[row];
   switch (columnId) {
     case IDS_TASK_MANAGER_PAGE_COLUMN:  // Process
       return base::SysWideToNSString(model_->GetResourceTitle(row));
@@ -421,7 +454,7 @@ class SortHelper {
                                     column:[[tableColumn identifier] intValue]];
     [buttonCell setTitle:title];
     [buttonCell setImage:
-        taskManagerObserver_->GetImageForRow(indexShuffle_[rowIndex])];
+        taskManagerObserver_->GetImageForRow(viewToModelMap_[rowIndex])];
     [buttonCell setRefusesFirstResponder:YES];  // Don't push in like a button.
     [buttonCell setHighlightsBy:NSNoCellMask];
   }
@@ -470,6 +503,7 @@ TaskManagerMac::~TaskManagerMac() {
 
 void TaskManagerMac::OnModelChanged() {
   icon_cache_.OnModelChanged();
+  [window_controller_ deselectRows];
   [window_controller_ reloadData];
 }
 
@@ -480,11 +514,13 @@ void TaskManagerMac::OnItemsChanged(int start, int length) {
 
 void TaskManagerMac::OnItemsAdded(int start, int length) {
   icon_cache_.OnItemsAdded(start, length);
+  [window_controller_ deselectRows];
   [window_controller_ reloadData];
 }
 
 void TaskManagerMac::OnItemsRemoved(int start, int length) {
   icon_cache_.OnItemsRemoved(start, length);
+  [window_controller_ deselectRows];
   [window_controller_ reloadData];
 }
 
