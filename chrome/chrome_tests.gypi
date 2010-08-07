@@ -343,9 +343,15 @@
         # http://code.google.com/p/chromium/issues/detail?id=18337
         ['target_arch!="x64" and target_arch!="arm"', {
           'dependencies': [
-            '../webkit/webkit.gyp:npapi_test_plugin',
-            '../webkit/webkit.gyp:npapi_pepper_test_plugin',
+            '../webkit/webkit.gyp:copy_npapi_test_plugin',
             '../third_party/mesa/mesa.gyp:osmesa',
+          ],
+        }],
+        # Only copy the pepper plugin on Windows which is the only platform
+        # that runs tests that need this plugin.
+        ['target_arch!="x64" and target_arch!="arm" and OS=="win"', {
+          'dependencies': [
+            '../webkit/webkit.gyp:copy_npapi_pepper_test_plugin',
           ],
         }],
         ['OS=="linux"', {
@@ -518,7 +524,7 @@
             '../google_update/google_update.gyp:google_update',
             '../views/views.gyp:views',
             # run time dependency
-            '../webkit/webkit.gyp:npapi_test_plugin',
+            '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
@@ -585,7 +591,7 @@
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
             # run time dependency
-            '../webkit/webkit.gyp:npapi_test_plugin',
+            '../webkit/webkit.gyp:copy_npapi_test_plugin',
           ],
           'conditions': [
             ['win_use_allocator_shim==1', {
