@@ -60,7 +60,8 @@ const int TestServerLauncher::kBadHTTPSPort = 9666;
 const wchar_t TestServerLauncher::kCertIssuerName[] = L"Test CA";
 
 TestServerLauncher::TestServerLauncher()
-    : process_handle_(base::kNullProcessHandle) {
+    : process_handle_(base::kNullProcessHandle),
+      ssl_client_auth_(false) {
   InitCertPath();
 }
 
@@ -178,6 +179,8 @@ bool TestServerLauncher::Start(Protocol protocol,
     command_line.append(file_root_url);
     command_line.append(L"\"");
   }
+  if (ssl_client_auth_)
+    command_line.append(L" --ssl-client-auth");
 
   if (!LaunchTestServerAsJob(command_line,
                              true,
@@ -196,6 +199,8 @@ bool TestServerLauncher::Start(Protocol protocol,
     command_line.push_back("-f");
   if (!cert_path.value().empty())
     command_line.push_back("--https=" + cert_path.value());
+  if (ssl_client_auth_)
+    command_line.push_back("--ssl-client-auth");
 
   base::file_handle_mapping_vector no_mappings;
   LOG(INFO) << "Trying to launch " << command_line[0] << " ...";
