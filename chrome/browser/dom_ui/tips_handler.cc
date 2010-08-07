@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,20 +70,19 @@ void TipsHandler::HandleGetTips(const Value* content) {
         bool value;
         if (pref && !pref->IsManaged() &&
             pref->GetValue()->GetAsBoolean(&value) && !value) {
-          SendTip(WideToUTF8(l10n_util::GetString(
-              IDS_NEW_TAB_MAKE_THIS_HOMEPAGE)), L"set_homepage_tip",
-              current_tip_index);
+          SendTip(l10n_util::GetStringUTF8(IDS_NEW_TAB_MAKE_THIS_HOMEPAGE),
+                  "set_homepage_tip", current_tip_index);
           return;
         }
       }
       if (wr_list->GetString(current_tip_index, &current_tip)) {
-        SendTip(current_tip, L"tip_html_text", current_tip_index + 1);
+        SendTip(current_tip, "tip_html_text", current_tip_index + 1);
       }
     }
   }
 }
 
-void TipsHandler::SendTip(std::string tip, std::wstring tip_type,
+void TipsHandler::SendTip(std::string tip, std::string tip_type,
                           int tip_index) {
   // List containing the tips to be displayed.
   ListValue list_value;

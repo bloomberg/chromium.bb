@@ -26,22 +26,22 @@ void SyncOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Sync page - ChromeOS
-  localized_strings->SetString(L"syncPage",
-      l10n_util::GetString(IDS_SYNC_NTP_SYNC_SECTION_TITLE));
-  localized_strings->SetString(L"sync_title",
-      l10n_util::GetString(IDS_CUSTOMIZE_SYNC_DESCRIPTION));
-  localized_strings->SetString(L"syncsettings",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_PREFERENCES));
-  localized_strings->SetString(L"syncbookmarks",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_BOOKMARKS));
-  localized_strings->SetString(L"synctypedurls",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_TYPED_URLS));
-  localized_strings->SetString(L"syncpasswords",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_PASSWORDS));
-  localized_strings->SetString(L"syncextensions",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_EXTENSIONS));
-  localized_strings->SetString(L"syncautofill",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_AUTOFILL));
-  localized_strings->SetString(L"syncthemes",
-      l10n_util::GetString(IDS_SYNC_DATATYPE_THEMES));
+  localized_strings->SetString("syncPage",
+      l10n_util::GetStringUTF16(IDS_SYNC_NTP_SYNC_SECTION_TITLE));
+  localized_strings->SetString("sync_title",
+      l10n_util::GetStringUTF16(IDS_CUSTOMIZE_SYNC_DESCRIPTION));
+  localized_strings->SetString("syncsettings",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_PREFERENCES));
+  localized_strings->SetString("syncbookmarks",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_BOOKMARKS));
+  localized_strings->SetString("synctypedurls",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_TYPED_URLS));
+  localized_strings->SetString("syncpasswords",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_PASSWORDS));
+  localized_strings->SetString("syncextensions",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_EXTENSIONS));
+  localized_strings->SetString("syncautofill",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_AUTOFILL));
+  localized_strings->SetString("syncthemes",
+      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_THEMES));
 }

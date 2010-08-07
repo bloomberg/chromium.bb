@@ -32,10 +32,10 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
-static const std::wstring kPropertyPath = L"path";
-static const std::wstring kPropertyTitle = L"title";
-static const std::wstring kPropertyOffset = L"currentOffset";
-static const std::wstring kPropertyDirectory = L"isDirectory";
+static const char kPropertyPath[] = "path";
+static const char kPropertyTitle[] = "title";
+static const char kPropertyOffset[] = "currentOffset";
+static const char kPropertyDirectory[] = "isDirectory";
 
 class SlideshowUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -290,9 +290,9 @@ void SlideshowHandler::OnListDone(int error) {
     info_value.SetInteger(kPropertyOffset, currentOffset_);
   }
   if (is_refresh_) {
-    info_value.SetString(L"functionCall", "refresh");
+    info_value.SetString("functionCall", "refresh");
   } else {
-    info_value.SetString(L"functionCall", "getChildren");
+    info_value.SetString("functionCall", "getChildren");
   }
   info_value.SetString(kPropertyPath, currentpath_.value());
   dom_ui_->CallJavascriptFunction(L"browseFileResult",

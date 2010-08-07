@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ class TipsHandler : public DOMMessageHandler {
   // Send a tip to the NTP.  tip_type is "tip_html_text" if the tip is from
   // the tip server, and "set_homepage_tip" if it's the tip to set the NTP
   // as home page.
-  void SendTip(std::string tip, std::wstring tip_type, int tip_index);
+  void SendTip(std::string tip, std::string tip_type, int tip_index);
 
   // So we can push data out to the page that has called this handler.
   DOMUI* dom_ui_;

@@ -22,8 +22,8 @@ void SearchEngineManagerHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString(L"searchEngineManagerPage",
-      l10n_util::GetString(IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE));
+  localized_strings->SetString("searchEngineManagerPage",
+      l10n_util::GetStringUTF16(IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE));
 }
 
 void SearchEngineManagerHandler::RegisterMessages() {
