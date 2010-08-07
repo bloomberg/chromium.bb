@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -31,24 +32,24 @@ void ImportDataHandler::Initialize() {
 void ImportDataHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString(L"import_data_title",
-      l10n_util::GetString(IDS_IMPORT_SETTINGS_TITLE));
-  localized_strings->SetString(L"import_from_label",
-      l10n_util::GetString(IDS_IMPORT_FROM_LABEL));
-  localized_strings->SetString(L"import_commit",
-      l10n_util::GetString(IDS_IMPORT_COMMIT));
-  localized_strings->SetString(L"import_description",
-      l10n_util::GetString(IDS_IMPORT_ITEMS_LABEL));
-  localized_strings->SetString(L"import_favorites",
-      l10n_util::GetString(IDS_IMPORT_FAVORITES_CHKBOX));
-  localized_strings->SetString(L"import_search",
-      l10n_util::GetString(IDS_IMPORT_SEARCH_ENGINES_CHKBOX));
-  localized_strings->SetString(L"import_passwords",
-      l10n_util::GetString(IDS_IMPORT_PASSWORDS_CHKBOX));
-  localized_strings->SetString(L"import_history",
-      l10n_util::GetString(IDS_IMPORT_HISTORY_CHKBOX));
-  localized_strings->SetString(L"no_profile_found",
-      l10n_util::GetString(IDS_IMPORT_NO_PROFILE_FOUND));
+  localized_strings->SetString("import_data_title",
+      l10n_util::GetStringUTF16(IDS_IMPORT_SETTINGS_TITLE));
+  localized_strings->SetString("import_from_label",
+      l10n_util::GetStringUTF16(IDS_IMPORT_FROM_LABEL));
+  localized_strings->SetString("import_commit",
+      l10n_util::GetStringUTF16(IDS_IMPORT_COMMIT));
+  localized_strings->SetString("import_description",
+      l10n_util::GetStringUTF16(IDS_IMPORT_ITEMS_LABEL));
+  localized_strings->SetString("import_favorites",
+      l10n_util::GetStringUTF16(IDS_IMPORT_FAVORITES_CHKBOX));
+  localized_strings->SetString("import_search",
+      l10n_util::GetStringUTF16(IDS_IMPORT_SEARCH_ENGINES_CHKBOX));
+  localized_strings->SetString("import_passwords",
+      l10n_util::GetStringUTF16(IDS_IMPORT_PASSWORDS_CHKBOX));
+  localized_strings->SetString("import_history",
+      l10n_util::GetStringUTF16(IDS_IMPORT_HISTORY_CHKBOX));
+  localized_strings->SetString("no_profile_found",
+      l10n_util::GetStringUTF16(IDS_IMPORT_NO_PROFILE_FOUND));
 }
 
 void ImportDataHandler::RegisterMessages() {
@@ -62,10 +63,11 @@ void ImportDataHandler::DetectSupportedBrowsers() {
 
   if (profiles_count > 0) {
     for (int i = 0; i < profiles_count; i++) {
-      std::wstring profile = importer_host_->GetSourceProfileNameAt(i);
+      string16 profile =
+          WideToUTF16Hack(importer_host_->GetSourceProfileNameAt(i));
       DictionaryValue* entry = new DictionaryValue();
-      entry->SetString(L"name", profile);
-      entry->SetInteger(L"index", i);
+      entry->SetString("name", profile);
+      entry->SetInteger("index", i);
       supported_browsers.Append(entry);
     }
   }
@@ -83,7 +85,7 @@ void ImportDataHandler::ImportData(const Value* value) {
 
   const ListValue* param_values = static_cast<const ListValue*>(value);
   std::string string_value;
-  if(param_values->GetSize() != 1 ||
+  if (param_values->GetSize() != 1 ||
      !param_values->GetString(0, &string_value)) {
     NOTREACHED();
     return;
@@ -91,16 +93,16 @@ void ImportDataHandler::ImportData(const Value* value) {
   int browser_index = string_value[0] - '0';
 
   uint16 items = importer::NONE;
-  if(string_value[1] == '1') {
+  if (string_value[1] == '1') {
     items |= importer::FAVORITES;
   }
-  if(string_value[2] == '1') {
+  if (string_value[2] == '1') {
     items |= importer::SEARCH_ENGINES;
   }
-  if(string_value[3] == '1') {
+  if (string_value[3] == '1') {
     items |= importer::PASSWORDS;
   }
-  if(string_value[4] == '1') {
+  if (string_value[4] == '1') {
     items |= importer::HISTORY;
   }
 

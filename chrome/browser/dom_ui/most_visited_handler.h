@@ -90,7 +90,7 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   // Returns the key used in url_blacklist_ and pinned_urls_ for the passed
   // |url|.
-  std::wstring GetDictionaryKeyForURL(const std::string& url);
+  std::string GetDictionaryKeyForURL(const std::string& url);
 
   // Gets the page data for a pinned URL at a given index. This returns
   // true if found.

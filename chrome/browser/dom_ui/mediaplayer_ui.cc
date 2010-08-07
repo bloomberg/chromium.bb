@@ -47,11 +47,10 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
-static const std::wstring kPropertyPath = L"path";
-static const std::wstring kPropertyForce = L"force";
-static const std::wstring kPropertyTitle = L"title";
-static const std::wstring kPropertyOffset = L"currentOffset";
-static const std::wstring kPropertyError = L"error";
+static const char kPropertyPath[] = "path";
+static const char kPropertyForce[] = "force";
+static const char kPropertyOffset[] = "currentOffset";
+static const char kPropertyError[] = "error";
 
 const char* kMediaplayerURL = "chrome://mediaplayer";
 const char* kMediaplayerPlaylistURL = "chrome://mediaplayer#playlist";
@@ -166,7 +165,7 @@ void MediaplayerUIHTMLSource::StartDataRequest(const std::string& path,
   DictionaryValue localized_strings;
   // TODO(dhg): Fix the strings that are currently hardcoded so they
   // use the localized versions.
-  localized_strings.SetString(L"errorstring", "Error Playing Back");
+  localized_strings.SetString("errorstring", "Error Playing Back");
 
   SetFontAndTextDirection(&localized_strings);
 
