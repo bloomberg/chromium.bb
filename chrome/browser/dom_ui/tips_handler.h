@@ -41,7 +41,8 @@ class TipsHandler : public DOMMessageHandler {
   // Send a tip to the NTP.  tip_type is "tip_html_text" if the tip is from
   // the tip server, and "set_homepage_tip" if it's the tip to set the NTP
   // as home page.
-  void SendTip(std::string tip, std::string tip_type, int tip_index);
+  void SendTip(const std::string& tip, const std::string& tip_type,
+               int tip_index);
 
   // So we can push data out to the page that has called this handler.
   DOMUI* dom_ui_;

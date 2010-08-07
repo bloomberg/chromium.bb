@@ -82,7 +82,7 @@ void TipsHandler::HandleGetTips(const Value* content) {
   }
 }
 
-void TipsHandler::SendTip(std::string tip, std::string tip_type,
+void TipsHandler::SendTip(const std::string& tip, const std::string& tip_type,
                           int tip_index) {
   // List containing the tips to be displayed.
   ListValue list_value;
