@@ -5,7 +5,6 @@
 #include "chrome/browser/views/location_bar/selected_keyword_view.h"
 
 #include "app/l10n_util.h"
-#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/location_bar_util.h"

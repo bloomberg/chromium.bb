@@ -5,7 +5,6 @@
 #include "views/view_text_utils.h"
 
 #include "app/bidi_line_iterator.h"
-#include "base/i18n/rtl.h"
 #include "base/i18n/word_iterator.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"

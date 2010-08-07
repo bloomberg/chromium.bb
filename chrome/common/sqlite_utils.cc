@@ -6,7 +6,6 @@
 
 #include <list>
 
-#include "base/at_exit.h"
 #include "base/file_path.h"
 #include "base/lock.h"
 #include "base/logging.h"

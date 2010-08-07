@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/base64.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/ref_counted.h"

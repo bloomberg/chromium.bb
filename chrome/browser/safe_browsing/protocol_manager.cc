@@ -4,7 +4,9 @@
 
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 
+#ifndef NDEBUG
 #include "base/base64.h"
+#endif
 #include "base/environment.h"
 #include "base/file_version_info.h"
 #include "base/histogram.h"

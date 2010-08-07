@@ -6,7 +6,9 @@
 
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
+#if defined(OS_WIN)
 #include "base/i18n/rtl.h"
+#endif
 #include "base/file_path.h"
 #include "base/sys_info.h"
 #include "base/utf_string_conversions.h"

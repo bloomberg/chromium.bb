@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"

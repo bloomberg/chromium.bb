@@ -8,7 +8,6 @@
 #include "app/resource_bundle.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/i18n/time_formatting.h"
 #include "base/stl_util-inl.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"

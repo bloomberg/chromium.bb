@@ -9,7 +9,6 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#import "base/i18n/time_formatting.h"
 #import "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browsing_data_remover.h"

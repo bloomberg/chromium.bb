@@ -10,7 +10,6 @@
 
 #include <string>
 
-#include "base/at_exit.h"
 #include "base/scoped_ptr.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"

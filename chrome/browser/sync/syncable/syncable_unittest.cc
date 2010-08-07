@@ -20,7 +20,6 @@
 #include <sys/times.h>
 #endif  // !defined(OS_WIN)
 
-#include "base/at_exit.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"

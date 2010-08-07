@@ -17,7 +17,6 @@
 
 #include "ipc/ipc_tests.h"
 
-#include "base/at_exit.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug_on_start.h"

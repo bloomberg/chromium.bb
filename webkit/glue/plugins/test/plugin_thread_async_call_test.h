@@ -1,15 +1,18 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H
-#define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H
+#ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
+#define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
 
 #include <vector>
 
-#include "base/at_exit.h"
 #include "base/scoped_ptr.h"
 #include "webkit/glue/plugins/test/plugin_test.h"
+
+namespace base {
+class AtExitManager;
+}
 
 namespace NPAPIClient {
 
@@ -35,4 +38,4 @@ class PluginThreadAsyncCallTest : public PluginTest {
 
 }  // namespace NPAPIClient
 
-#endif  // WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H
+#endif  // WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_

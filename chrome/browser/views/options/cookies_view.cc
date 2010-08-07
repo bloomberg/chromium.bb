@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"

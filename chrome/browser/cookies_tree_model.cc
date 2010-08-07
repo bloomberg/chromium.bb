@@ -11,7 +11,6 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/callback.h"
-#include "base/i18n/rtl.h"
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/extensions_service.h"

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "base/i18n/time_formatting.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/color_utils.h"
 #include "grit/generated_resources.h"
@@ -126,4 +125,3 @@ void LocalStorageSetItemInfoView::Init() {
   value_value_field_->RemoveBorder();
   value_value_field_->SetBackgroundColor(text_area_background);
 }
-

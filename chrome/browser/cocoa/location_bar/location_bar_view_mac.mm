@@ -6,7 +6,6 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#include "base/i18n/rtl.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"

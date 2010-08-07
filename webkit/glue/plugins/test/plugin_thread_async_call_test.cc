@@ -4,6 +4,7 @@
 
 #include "webkit/glue/plugins/test/plugin_thread_async_call_test.h"
 
+#include "base/at_exit.h"
 #include "base/message_loop.h"
 #include "base/thread.h"
 #include "webkit/glue/plugins/test/plugin_client.h"

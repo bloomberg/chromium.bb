@@ -5,7 +5,6 @@
 #include <atlbase.h>
 #include <iostream>
 
-#include "base/at_exit.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"

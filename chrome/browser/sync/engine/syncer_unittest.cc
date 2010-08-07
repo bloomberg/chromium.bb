@@ -10,8 +10,6 @@
 #include <set>
 #include <string>
 
-#include "base/at_exit.h"
-
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
