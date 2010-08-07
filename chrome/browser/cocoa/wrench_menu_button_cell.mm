@@ -26,7 +26,7 @@
   NSColor* end = [NSColor colorWithDeviceWhite:0.922 alpha:1.0];
   if ([self isHighlighted]) {
     start = [NSColor colorWithDeviceRed:0.396 green:0.641 blue:0.941 alpha:1.0];
-    end = [NSColor selectedMenuItemColor];
+    end = [NSColor colorWithDeviceRed:0.157 green:0.384 blue:0.929 alpha:1.0];
   }
 
   scoped_nsobject<NSGradient> gradient(
