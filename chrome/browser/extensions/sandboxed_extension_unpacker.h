@@ -11,9 +11,9 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
-#include "base/values.h"
 #include "chrome/browser/utility_process_host.h"
 
+class DictionaryValue;
 class Extension;
 class ResourceDispatcherHost;
 

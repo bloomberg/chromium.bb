@@ -7,7 +7,6 @@
 
 #include <string>
 #include <vector>
-#include "base/values.h"
 #include "base/scoped_ptr.h"
 
 // Avoid conflicts with basictypes and the gecko sdk.
@@ -29,6 +28,7 @@ ASSOCIATE_IID(NS_ISERVICEMANAGER_IID_STR, nsIServiceManager);
 ASSOCIATE_IID(NS_IPREFSERVICE_IID_STR, nsIPrefService);
 ASSOCIATE_IID(NS_IPREFBRANCH2_IID_STR, nsIPrefBranch2);
 
+class DictionaryValue;
 class nsIServiceManager;
 class nsIPrefService;
 class nsIPrefBranch2;

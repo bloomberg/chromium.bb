@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/extension_action.h"
 
+class DictionaryValue;
 class ExtensionAction;
 
 // Base class for chrome.browserAction.* APIs.

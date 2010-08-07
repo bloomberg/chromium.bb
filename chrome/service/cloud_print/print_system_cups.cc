@@ -23,6 +23,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "base/values.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 

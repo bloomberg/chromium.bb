@@ -21,9 +21,10 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
+
+class Value;
 
 namespace chrome_browser_net {
 

@@ -23,6 +23,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "base/win_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/importer_bridge.h"

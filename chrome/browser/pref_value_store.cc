@@ -4,6 +4,7 @@
 
 #include "chrome/browser/pref_value_store.h"
 
+#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/command_line_pref_store.h"
 #include "chrome/browser/configuration_policy_pref_store.h"

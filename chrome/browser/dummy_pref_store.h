@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/values.h"
 #include "chrome/common/pref_store.h"
 
+class DictionaryValue;
 
 // |DummyPrefStore| is a stub implementation of the |PrefStore| interface.
 // It allows to get and set the state of the |PrefStore|.

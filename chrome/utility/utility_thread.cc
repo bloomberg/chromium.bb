@@ -11,7 +11,6 @@
 #include "base/iat_patch.h"
 #endif
 #include "base/path_service.h"
-#include "base/values.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_unpacker.h"
@@ -254,4 +253,3 @@ bool UtilityThread::RenderPDFToWinMetafile(
   return ret;
 }
 #endif  // defined(OS_WIN)
-

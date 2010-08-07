@@ -13,7 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "base/values.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/test/automation/autocomplete_edit_proxy.h"

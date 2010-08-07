@@ -19,7 +19,6 @@
 #include "base/task.h"
 #include "base/time.h"
 #include "base/tuple.h"
-#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_menu_manager.h"

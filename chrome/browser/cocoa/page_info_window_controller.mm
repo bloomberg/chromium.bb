@@ -6,7 +6,6 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
-#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
 #include "chrome/browser/cocoa/window_size_autosaver.h"

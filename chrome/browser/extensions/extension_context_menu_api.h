@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_menu_manager.h"
 #include "chrome/common/extensions/extension_extent.h"
 
+class DictionaryValue;
 class ExtensionMenuItem;
 
 class ExtensionContextMenuFunction : public SyncExtensionFunction {

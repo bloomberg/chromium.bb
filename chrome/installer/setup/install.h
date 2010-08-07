@@ -8,10 +8,12 @@
 #define CHROME_INSTALLER_SETUP_INSTALL_H_
 #pragma once
 
-#include <base/values.h>
+#include <string>
 
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
+
+class DictionaryValue;
 
 namespace installer {
 // Get path to the installer under Chrome version folder

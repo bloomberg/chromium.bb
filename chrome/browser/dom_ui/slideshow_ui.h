@@ -8,9 +8,7 @@
 
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/scoped_ptr.h"
-#include "base/values.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 
 class SlideshowUI : public DOMUI {

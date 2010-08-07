@@ -9,14 +9,15 @@
 #include <string>
 #include <list>
 
-#include "base/values.h"
 #include "base/scoped_ptr.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 
 class ExtensionFunctionDispatcher;
+class ListValue;
 class Profile;
 class QuotaLimitHeuristic;
+class Value;
 
 #define EXTENSION_FUNCTION_VALIDATE(test) do { \
     if (!(test)) { \

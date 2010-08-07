@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/values.h"
 #include "chrome/browser/configuration_policy_store.h"
 
 // A mostly-abstract super class for platform-specific policy providers.
@@ -51,4 +52,3 @@ class ConfigurationPolicyProvider {
 };
 
 #endif  // CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_H_
-

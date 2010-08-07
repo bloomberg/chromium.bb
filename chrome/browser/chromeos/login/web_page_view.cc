@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "base/values.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"

@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_SETTINGS_PROVIDER_H_
 
 #include <string>
-#include "base/values.h"
+
+class Value;
 
 namespace chromeos {
 

@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_CONFIGURATION_POLICY_STORE_H_
 #pragma once
 
-#include "base/values.h"
+#include "base/basictypes.h"
+
+class Value;
 
 // An abstract super class for policy stores that provides a method that can be
 // called by a |ConfigurationPolicyProvider| to specify a policy.

@@ -7,7 +7,6 @@
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
 #include "base/string_util.h"
-#include "base/values.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/advanced_contents_view.h"

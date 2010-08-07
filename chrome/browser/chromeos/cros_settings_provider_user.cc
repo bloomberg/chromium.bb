@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cros_settings_provider_user.h"
 
 #include "base/string_util.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 
 namespace chromeos {

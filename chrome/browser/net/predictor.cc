@@ -13,6 +13,7 @@
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/preconnect.h"
 #include "net/base/address_list.h"
@@ -578,6 +579,11 @@ GURL Predictor::HostNameQueue::Pop() {
   GURL url(queue->front());
   queue->pop();
   return url;
+}
+
+void Predictor::DeserializeReferrersThenDelete(ListValue* referral_list) {
+    DeserializeReferrers(*referral_list);
+    delete referral_list;
 }
 
 }  // namespace chrome_browser_net

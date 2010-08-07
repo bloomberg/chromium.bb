@@ -33,6 +33,8 @@
 #include "chrome/common/net/predictor_common.h"
 #include "net/base/host_port_pair.h"
 
+class ListValue;
+
 namespace net {
 class HostResolver;
 }  // namespace net
@@ -117,10 +119,7 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // values into the current referrer list.
   void DeserializeReferrers(const ListValue& referral_list);
 
-  void DeserializeReferrersThenDelete(ListValue* referral_list) {
-    DeserializeReferrers(*referral_list);
-    delete referral_list;
-  }
+  void DeserializeReferrersThenDelete(ListValue* referral_list);
 
   // For unit test code only.
   size_t max_concurrent_dns_lookups() const {

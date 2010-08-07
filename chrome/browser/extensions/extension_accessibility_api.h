@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/singleton.h"
+#include "base/values.h"
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/notification_service.h"

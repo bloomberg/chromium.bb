@@ -13,6 +13,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "googleurl/src/gurl.h"
 
 namespace installer_util {

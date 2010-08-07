@@ -7,6 +7,7 @@
 #include <limits.h>
 
 #include "base/logging.h"
+#include "base/values.h"
 #include "chrome/browser/net/predictor.h"
 
 namespace chrome_browser_net {

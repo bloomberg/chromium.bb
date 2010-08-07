@@ -4,6 +4,8 @@
 
 #include "chrome/browser/dummy_pref_store.h"
 
+#include "base/values.h"
+
 DummyPrefStore::DummyPrefStore()
     : prefs_(new DictionaryValue()),
       read_only_(true),
@@ -18,4 +20,3 @@ bool DummyPrefStore::WritePrefs() {
   prefs_written_ = true;
   return prefs_written_;
 }
-

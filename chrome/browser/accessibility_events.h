@@ -8,9 +8,8 @@
 
 #include <string>
 
-#include "base/values.h"
-
 class AccessibilityControlInfo;
+class DictionaryValue;
 class NotificationType;
 class Profile;
 
@@ -29,7 +28,7 @@ class AccessibilityControlInfo {
 
   // Serialize this class as a DictionaryValue that can be converted to
   // a JavaScript object.
-  virtual void SerializeToDict(DictionaryValue *dict) const;
+  virtual void SerializeToDict(DictionaryValue* dict) const;
 
   // Return the specific type of this control, which will be one of the
   // string constants defined in extension_accessibility_api_constants.h.
@@ -98,7 +97,7 @@ class AccessibilityRadioButtonInfo : public AccessibilityControlInfo {
 
   virtual const char* type() const;
 
-  virtual void SerializeToDict(DictionaryValue *dict) const;
+  virtual void SerializeToDict(DictionaryValue* dict) const;
 
   void SetChecked(bool checked) { checked_ = checked; }
 
@@ -122,7 +121,7 @@ class AccessibilityCheckboxInfo : public AccessibilityControlInfo {
 
   virtual const char* type() const;
 
-  virtual void SerializeToDict(DictionaryValue *dict) const;
+  virtual void SerializeToDict(DictionaryValue* dict) const;
 
   void SetChecked(bool checked) { checked_ = checked; }
 
@@ -145,7 +144,7 @@ class AccessibilityTabInfo : public AccessibilityControlInfo {
 
   virtual const char* type() const;
 
-  virtual void SerializeToDict(DictionaryValue *dict) const;
+  virtual void SerializeToDict(DictionaryValue* dict) const;
 
   void SetTab(int tab_index, std::string tab_name) {
     tab_index_ = tab_index;
@@ -175,7 +174,7 @@ class AccessibilityComboBoxInfo : public AccessibilityControlInfo {
 
   virtual const char* type() const;
 
-  virtual void SerializeToDict(DictionaryValue *dict) const;
+  virtual void SerializeToDict(DictionaryValue* dict) const;
 
   void SetValue(int item_index, std::string value) {
     item_index_ = item_index;
@@ -207,7 +206,7 @@ class AccessibilityTextBoxInfo : public AccessibilityControlInfo {
 
   virtual const char* type() const;
 
-  virtual void SerializeToDict(DictionaryValue *dict) const;
+  virtual void SerializeToDict(DictionaryValue* dict) const;
 
   void SetValue(std::string value, int selection_start, int selection_end) {
     value_ = value;
@@ -239,7 +238,7 @@ class AccessibilityListBoxInfo : public AccessibilityControlInfo {
 
   virtual const char* type() const;
 
-  virtual void SerializeToDict(DictionaryValue *dict) const;
+  virtual void SerializeToDict(DictionaryValue* dict) const;
 
   void SetValue(int item_index, std::string value) {
     item_index_ = item_index;
@@ -282,7 +281,7 @@ class AccessibilityMenuItemInfo : public AccessibilityControlInfo {
 
   virtual const char* type() const;
 
-  virtual void SerializeToDict(DictionaryValue *dict) const;
+  virtual void SerializeToDict(DictionaryValue* dict) const;
 
  private:
   bool has_submenu_;

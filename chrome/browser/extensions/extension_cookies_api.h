@@ -20,6 +20,7 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/cookie_monster.h"
 
+class DictionaryValue;
 class URLRequestContextGetter;
 
 // Observes CookieMonster notifications and routes them as events to the

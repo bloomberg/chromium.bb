@@ -9,9 +9,10 @@
 #include <string>
 #include <vector>
 #include "base/singleton.h"
-#include "base/values.h"
 
 #include "chrome/browser/chromeos/cros_settings_names.h"
+
+class Value;
 
 namespace chromeos {
 

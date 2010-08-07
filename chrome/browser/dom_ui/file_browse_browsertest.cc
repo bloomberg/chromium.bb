@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/task.h"
-#include "base/values.h"
 #include "base/path_service.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"

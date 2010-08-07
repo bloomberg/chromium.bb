@@ -10,6 +10,8 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros_settings_provider.h"
 
+class DictionaryValue;
+
 namespace chromeos {
 
 class UserCrosSettingsProvider : public CrosSettingsProvider {

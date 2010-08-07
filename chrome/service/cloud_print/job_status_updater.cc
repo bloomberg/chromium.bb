@@ -7,7 +7,6 @@
 #include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
 #include "chrome/service/cloud_print/cloud_print_helpers.h"
 #include "googleurl/src/gurl.h"
@@ -91,4 +90,3 @@ void JobStatusUpdater::OnURLFetchComplete(const URLFetcher* source,
         FROM_HERE, NewRunnableMethod(this, &JobStatusUpdater::Stop));
   }
 }
-

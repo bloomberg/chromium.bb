@@ -4,6 +4,8 @@
 
 #include "chrome/browser/accessibility_events.h"
 
+#include "base/values.h"
+
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"

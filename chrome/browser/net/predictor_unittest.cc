@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/timer.h"
+#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_info.h"

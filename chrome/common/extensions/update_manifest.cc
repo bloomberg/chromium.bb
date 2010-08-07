@@ -9,7 +9,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
-#include "base/values.h"
 #include "base/version.h"
 #include "chrome/common/libxml_utils.h"
 #include "libxml/tree.h"
