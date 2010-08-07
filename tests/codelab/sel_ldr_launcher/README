@@ -8,5 +8,5 @@ To build this example, you will need 64-bit linux.
 
 3. make
 
-4. ./run.sh
+4. make run
 
