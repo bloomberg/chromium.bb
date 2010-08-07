@@ -29,7 +29,7 @@ class DevToolsMessageHandler: public DOMMessageHandler {
       if ((*extension)->devtools_url().is_empty())
         continue;
       DictionaryValue* extension_info = new DictionaryValue();
-      extension_info->Set(L"startPage",
+      extension_info->Set("startPage",
           new StringValue((*extension)->devtools_url().spec()));
       results.Append(extension_info);
     }

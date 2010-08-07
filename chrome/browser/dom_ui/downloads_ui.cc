@@ -57,46 +57,46 @@ void DownloadsUIHTMLSource::StartDataRequest(const std::string& path,
                                              bool is_off_the_record,
                                              int request_id) {
   DictionaryValue localized_strings;
-  localized_strings.SetString(L"title",
-      l10n_util::GetString(IDS_DOWNLOAD_TITLE));
-  localized_strings.SetString(L"searchbutton",
-      l10n_util::GetString(IDS_DOWNLOAD_SEARCH_BUTTON));
-  localized_strings.SetString(L"no_results",
-      l10n_util::GetString(IDS_DOWNLOAD_SEARCH_BUTTON));
-  localized_strings.SetString(L"searchresultsfor",
-      l10n_util::GetString(IDS_DOWNLOAD_SEARCHRESULTSFOR));
-  localized_strings.SetString(L"downloads",
-      l10n_util::GetString(IDS_DOWNLOAD_TITLE));
-  localized_strings.SetString(L"clear_all",
-      l10n_util::GetString(IDS_DOWNLOAD_LINK_CLEAR_ALL));
+  localized_strings.SetString("title",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE));
+  localized_strings.SetString("searchbutton",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_SEARCH_BUTTON));
+  localized_strings.SetString("no_results",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_SEARCH_BUTTON));
+  localized_strings.SetString("searchresultsfor",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_SEARCHRESULTSFOR));
+  localized_strings.SetString("downloads",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_TITLE));
+  localized_strings.SetString("clear_all",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CLEAR_ALL));
 
   // Status.
-  localized_strings.SetString(L"status_cancelled",
-      l10n_util::GetString(IDS_DOWNLOAD_TAB_CANCELED));
-  localized_strings.SetString(L"status_paused",
-      l10n_util::GetString(IDS_DOWNLOAD_PROGRESS_PAUSED));
+  localized_strings.SetString("status_cancelled",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_TAB_CANCELED));
+  localized_strings.SetString("status_paused",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED));
 
   // Dangerous file.
-  localized_strings.SetString(L"danger_desc",
-      l10n_util::GetString(IDS_PROMPT_DANGEROUS_DOWNLOAD));
-  localized_strings.SetString(L"danger_save",
-      l10n_util::GetString(IDS_SAVE_DOWNLOAD));
-  localized_strings.SetString(L"danger_discard",
-      l10n_util::GetString(IDS_DISCARD_DOWNLOAD));
+  localized_strings.SetString("danger_desc",
+      l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD));
+  localized_strings.SetString("danger_save",
+      l10n_util::GetStringUTF16(IDS_SAVE_DOWNLOAD));
+  localized_strings.SetString("danger_discard",
+      l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
 
   // Controls.
-  localized_strings.SetString(L"control_pause",
-      l10n_util::GetString(IDS_DOWNLOAD_LINK_PAUSE));
+  localized_strings.SetString("control_pause",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_PAUSE));
   if (browser_defaults::kDownloadPageHasShowInFolder) {
-    localized_strings.SetString(L"control_showinfolder",
-        l10n_util::GetString(IDS_DOWNLOAD_LINK_SHOW));
+    localized_strings.SetString("control_showinfolder",
+        l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_SHOW));
   }
-  localized_strings.SetString(L"control_cancel",
-      l10n_util::GetString(IDS_DOWNLOAD_LINK_CANCEL));
-  localized_strings.SetString(L"control_resume",
-      l10n_util::GetString(IDS_DOWNLOAD_LINK_RESUME));
-  localized_strings.SetString(L"control_removefromlist",
-      l10n_util::GetString(IDS_DOWNLOAD_LINK_REMOVE));
+  localized_strings.SetString("control_cancel",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_CANCEL));
+  localized_strings.SetString("control_resume",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_RESUME));
+  localized_strings.SetString("control_removefromlist",
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_LINK_REMOVE));
 
   SetFontAndTextDirection(&localized_strings);
 
