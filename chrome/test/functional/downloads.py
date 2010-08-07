@@ -64,7 +64,7 @@ class DownloadsTest(pyauto.PyUITest):
     size = 2**30  # 1 GB
     # Create a 1 GB file on the fly
     fd, file_path = tempfile.mkstemp(suffix='.zip', prefix='bigfile-')
-    os.lseek(fd, size, os.SEEK_SET)
+    os.lseek(fd, size, 0)
     os.write(fd, 'a')
     os.close(fd)
     try:
