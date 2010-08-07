@@ -15,6 +15,9 @@ namespace sandbox {
 const wchar_t kNTPrefix[] = L"\\??\\";
 const size_t kNTPrefixLen = arraysize(kNTPrefix) - 1;
 
+const wchar_t kNTObjManPrefix[] = L"\\Device\\";
+const size_t kNTObjManPrefixLen = arraysize(kNTObjManPrefix) - 1;
+
 // Automatically acquires and releases a lock when the object is
 // is destroyed.
 class AutoLock {
@@ -74,8 +77,12 @@ DWORD IsReparsePoint(const std::wstring& full_path, bool* result);
 // Returns true if the handle corresponds to the object pointed by this path.
 bool SameObject(HANDLE handle, const wchar_t* full_path);
 
-// Resolves a handle to a path. Returns true if the handle can be resolved.
+// Resolves a handle to an nt path. Returns true if the handle can be resolved.
 bool GetPathFromHandle(HANDLE handle, std::wstring* path);
+
+// Resolves a win32 path to an nt path using GetPathFromHandle. The path must
+// exist. Returs true if the translation was succesful.
+bool GetNtPathFromWin32Path(const std::wstring& path, std::wstring* nt_path);
 
 // Translates a reserved key name to its handle.
 // For example "HKEY_LOCAL_MACHINE" returns HKEY_LOCAL_MACHINE.

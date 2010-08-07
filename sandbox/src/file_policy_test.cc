@@ -1,6 +1,8 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include <algorithm>
+#include <cctype>
 
 #include <windows.h>
 #include <winioctl.h>
@@ -10,6 +12,7 @@
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/sandbox_policy.h"
+#include "sandbox/src/win_utils.h"
 #include "sandbox/tests/common/controller.h"
 #include "sandbox/tests/common/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,7 +92,10 @@ SBOX_TESTS_COMMAND int File_CreateSys32(int argc, wchar_t **argv) {
   if (argc != 1)
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  std::wstring file = MakePathToSys(argv[0], true);
+  std::wstring file(argv[0]);
+  if (0 != _wcsnicmp(file.c_str(), kNTObjManPrefix, kNTObjManPrefixLen))
+    file = MakePathToSys(argv[0], true);
+
   UNICODE_STRING object_name;
   RtlInitUnicodeString(&object_name, file.c_str());
 
@@ -254,6 +260,22 @@ TEST(FilePolicyTest, AllowNtCreateCalc) {
 
   runner.SetTestState(BEFORE_REVERT);
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"File_CreateSys32 calc.exe"));
+}
+
+TEST(FilePolicyTest, AllowNtCreateWithNativePath) {
+  std::wstring calc = MakePathToSys(L"calc.exe", false);
+  std::wstring nt_path;
+  ASSERT_TRUE(GetNtPathFromWin32Path(calc, &nt_path));
+  TestRunner runner;
+  runner.AddFsRule(TargetPolicy::FILES_ALLOW_READONLY, nt_path.c_str());
+
+  wchar_t buff[MAX_PATH];
+  ::wsprintfW(buff, L"File_CreateSys32 %s", nt_path.c_str());
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(buff));
+
+  std::transform(nt_path.begin(), nt_path.end(), nt_path.begin(), std::tolower);
+  ::wsprintfW(buff, L"File_CreateSys32 %s", nt_path.c_str());
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(buff));
 }
 
 TEST(FilePolicyTest, AllowReadOnly) {

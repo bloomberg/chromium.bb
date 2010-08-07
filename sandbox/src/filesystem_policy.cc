@@ -67,20 +67,23 @@ bool FileSystemPolicy::GenerateRules(const wchar_t* name,
     return false;
   }
 
-  // TODO(cpu) bug 32224: This prefix add is a hack because we don't have the
-  // infrastructure to normalize names. In any case we need to escape the
-  // question marks.
-  if (!PreProcessName(mod_name, &mod_name)) {
-    // The path to be added might contain a reparse point.
-    NOTREACHED();
-    return false;
-  }
-
-  if (0 != mod_name.compare(0, kNTPrefixLen, kNTPrefix)) {
-    // TODO(nsylvain): Find a better way to do name resolution. Right now we
-    // take the name and we expand it.
-    mod_name.insert(0, L"\\/?/?\\");
-    name = mod_name.c_str();
+  // Don't do any pre-processing if the name starts like the the native
+  // object manager style.
+  if (0 != _wcsnicmp(mod_name.c_str(), kNTObjManPrefix, kNTObjManPrefixLen)) {
+    // TODO(cpu) bug 32224: This prefix add is a hack because we don't have the
+    // infrastructure to normalize names. In any case we need to escape the
+    // question marks.
+    if (!PreProcessName(mod_name, &mod_name)) {
+      // The path to be added might contain a reparse point.
+      NOTREACHED();
+      return false;
+    }
+    if (0 != mod_name.compare(0, kNTPrefixLen, kNTPrefix)) {
+      // TODO(nsylvain): Find a better way to do name resolution. Right now we
+      // take the name and we expand it.
+      mod_name.insert(0, L"\\/?/?\\");
+      name = mod_name.c_str();
+    }
   }
 
   EvalResult result = ASK_BROKER;

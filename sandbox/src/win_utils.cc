@@ -139,7 +139,8 @@ bool SameObject(HANDLE handle, const wchar_t* full_path) {
   if (path[path.length() - 1] == kBackslash)
     path = path.substr(0, path.length() - 1);
 
-  if (0 == actual_path.compare(full_path))
+  // Perfect match (case-insesitive check).
+  if (0 == _wcsicmp(actual_path.c_str(), path.c_str()))
     return true;
 
   // Look for the drive letter.
@@ -263,6 +264,17 @@ bool GetPathFromHandle(HANDLE handle, std::wstring* path) {
   path->assign(name->ObjectName.Buffer, name->ObjectName.Length /
                                         sizeof(name->ObjectName.Buffer[0]));
   return true;
+}
+
+bool GetNtPathFromWin32Path(const std::wstring& path, std::wstring* nt_path) {
+  HANDLE file = ::CreateFileW(path.c_str(), 0,
+    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL,
+    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  if (file == INVALID_HANDLE_VALUE)
+    return false;
+  bool rv = GetPathFromHandle(file, nt_path);
+  ::CloseHandle(file);
+  return rv;
 }
 
 bool WriteProtectedChildMemory(HANDLE child_process, void* address,
