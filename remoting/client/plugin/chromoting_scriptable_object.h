@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This implements the JavaScript class entrypoint for the plugin.
+// This implements the JavaScript class entrypoint for the plugin instance.
 // The Javascript API is defined as follows.
 //
 // interface ChromotingScriptableObject {
-//   // Called when the Chromoting plugin has had a state change such as
+//   // Called when the Chromoting instance has had a state change such as
 //   // connection completed.
 //   attribute Function onreadystatechange;
 //
@@ -38,11 +38,11 @@
 
 namespace remoting {
 
-class ChromotingPlugin;
+class ChromotingInstance;
 
 class ChromotingScriptableObject : public pp::ScriptableObject {
  public:
-  explicit ChromotingScriptableObject(ChromotingPlugin* instance);
+  explicit ChromotingScriptableObject(ChromotingInstance* instance);
   virtual ~ChromotingScriptableObject();
 
   virtual void Init();
@@ -92,7 +92,7 @@ class ChromotingScriptableObject : public pp::ScriptableObject {
   PropertyNameMap property_names_;
   std::vector<PropertyDescriptor> properties_;
 
-  ChromotingPlugin* instance_;
+  ChromotingInstance* instance_;
 };
 
 }  // namespace remoting

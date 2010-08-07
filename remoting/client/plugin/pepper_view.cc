@@ -6,7 +6,7 @@
 
 #include "base/message_loop.h"
 #include "remoting/base/decoder_zlib.h"
-#include "remoting/client/plugin/chromoting_plugin.h"
+#include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "third_party/ppapi/cpp/device_context_2d.h"
 #include "third_party/ppapi/cpp/image_data.h"
@@ -15,8 +15,8 @@
 
 namespace remoting {
 
-PepperView::PepperView(ChromotingPlugin* plugin)
-  : plugin_(plugin),
+PepperView::PepperView(ChromotingInstance* instance)
+  : instance_(instance),
     backing_store_width_(0),
     backing_store_height_(0),
     viewport_x_(0),
@@ -38,7 +38,7 @@ void PepperView::TearDown() {
 }
 
 void PepperView::Paint() {
-  if (!plugin_->CurrentlyOnPluginThread()) {
+  if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewRunnableMethod(this, &PepperView::Paint));
     return;
   }
@@ -84,7 +84,7 @@ void PepperView::Paint() {
 }
 
 void PepperView::SetSolidFill(uint32 color) {
-  if (!plugin_->CurrentlyOnPluginThread()) {
+  if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::SetSolidFill, color));
     return;
@@ -95,7 +95,7 @@ void PepperView::SetSolidFill(uint32 color) {
 }
 
 void PepperView::UnsetSolidFill() {
-  if (!plugin_->CurrentlyOnPluginThread()) {
+  if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::UnsetSolidFill));
     return;
@@ -105,7 +105,7 @@ void PepperView::UnsetSolidFill() {
 }
 
 void PepperView::SetViewport(int x, int y, int width, int height) {
-  if (!plugin_->CurrentlyOnPluginThread()) {
+  if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewRunnableMethod(this, &PepperView::SetViewport,
                                           x, y, width, height));
     return;
@@ -121,14 +121,14 @@ void PepperView::SetViewport(int x, int y, int width, int height) {
 
   device_context_ =
       pp::DeviceContext2D(pp::Size(viewport_width_, viewport_height_), false);
-  if (!plugin_->BindGraphicsDeviceContext(device_context_)) {
+  if (!instance_->BindGraphicsDeviceContext(device_context_)) {
     LOG(ERROR) << "Couldn't bind the device context.";
     return;
   }
 }
 
 void PepperView::SetHostScreenSize(int width, int height) {
-  if (!plugin_->CurrentlyOnPluginThread()) {
+  if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(NewRunnableMethod(this,
                                             &PepperView::SetHostScreenSize,
                                             width, height));
@@ -140,7 +140,7 @@ void PepperView::SetHostScreenSize(int width, int height) {
 }
 
 void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
-  if (!plugin_->CurrentlyOnPluginThread()) {
+  if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::HandleBeginUpdateStream,
                           msg));
@@ -170,7 +170,7 @@ void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
 }
 
 void PepperView::HandleUpdateStreamPacket(HostMessage* msg) {
-  if (!plugin_->CurrentlyOnPluginThread()) {
+  if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::HandleUpdateStreamPacket,
                           msg));
@@ -181,7 +181,7 @@ void PepperView::HandleUpdateStreamPacket(HostMessage* msg) {
 }
 
 void PepperView::HandleEndUpdateStream(HostMessage* msg) {
-  if (!plugin_->CurrentlyOnPluginThread()) {
+  if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::HandleEndUpdateStream,
                           msg));

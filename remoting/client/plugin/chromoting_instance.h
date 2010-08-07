@@ -5,13 +5,12 @@
 // TODO(ajwong): We need to come up with a better description of the
 // responsibilities for each thread.
 
-#ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_PLUGIN_H_
-#define REMOTING_CLIENT_PLUGIN_CHROMOTING_PLUGIN_H_
+#ifndef REMOTING_CLIENT_PLUGIN_CHROMOTING_INSTANCE_H_
+#define REMOTING_CLIENT_PLUGIN_CHROMOTING_INSTANCE_H_
 
 #include <string>
 
 #include "base/at_exit.h"
-#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/host_connection.h"
@@ -43,13 +42,13 @@ class InputHandler;
 class JingleThread;
 class PepperView;
 
-class ChromotingPlugin : public pp::Instance {
+class ChromotingInstance : public pp::Instance {
  public:
   // The mimetype for which this plugin is registered.
   static const char *kMimeType;
 
-  ChromotingPlugin(PP_Instance instance);
-  virtual ~ChromotingPlugin();
+  explicit ChromotingInstance(PP_Instance instance);
+  virtual ~ChromotingInstance();
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]);
   virtual void Connect(const ClientConfig& config);
@@ -60,7 +59,7 @@ class ChromotingPlugin : public pp::Instance {
   virtual bool CurrentlyOnPluginThread() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ChromotingPluginTest, TestCaseSetup);
+  FRIEND_TEST(ChromotingInstanceTest, TestCaseSetup);
 
   // Since we're an internal plugin, we can just grab the message loop during
   // init to figure out which thread we're on.  This should only be used to
@@ -77,9 +76,9 @@ class ChromotingPlugin : public pp::Instance {
   scoped_ptr<ChromotingClient> client_;
   pp::Var instance_object_;  // JavaScript interface to control this instance.
 
-  DISALLOW_COPY_AND_ASSIGN(ChromotingPlugin);
+  DISALLOW_COPY_AND_ASSIGN(ChromotingInstance);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_PLUGIN_CHROMOTING_PLUGIN_H_
+#endif  // REMOTING_CLIENT_PLUGIN_CHROMOTING_INSTANCE_H_

@@ -76,8 +76,8 @@
         '../third_party/ppapi/ppapi.gyp:ppapi_cpp_objects',
       ],
       'sources': [
-        'client/plugin/chromoting_plugin.cc',
-        'client/plugin/chromoting_plugin.h',
+        'client/plugin/chromoting_instance.cc',
+        'client/plugin/chromoting_instance.h',
         'client/plugin/chromoting_scriptable_object.cc',
         'client/plugin/chromoting_scriptable_object.h',
         'client/plugin/pepper_entrypoints.cc',

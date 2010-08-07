@@ -1,10 +1,11 @@
-// Copyright 2010 Google Inc. All Rights Reserved.
-// Author: ajwong@google.com (Albert Wong)
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "remoting/client/plugin/chromoting_scriptable_object.h"
 
 #include "remoting/client/client_config.h"
-#include "remoting/client/plugin/chromoting_plugin.h"
+#include "remoting/client/plugin/chromoting_instance.h"
 
 #include "third_party/ppapi/cpp/var.h"
 
@@ -12,7 +13,7 @@ using pp::Var;
 
 namespace remoting {
 ChromotingScriptableObject::ChromotingScriptableObject(
-    ChromotingPlugin* instance)
+    ChromotingInstance* instance)
     : instance_(instance) {
 }
 

@@ -5,7 +5,7 @@
 #include "remoting/client/plugin/pepper_entrypoints.h"
 
 #include "base/message_loop.h"
-#include "remoting/client/plugin/chromoting_plugin.h"
+#include "remoting/client/plugin/chromoting_instance.h"
 #include "third_party/ppapi/c/pp_errors.h"
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_module.h"
@@ -27,8 +27,8 @@ namespace remoting {
 
 class ChromotingModule : public pp::Module {
  protected:
-  virtual ChromotingPlugin* CreateInstance(PP_Instance instance) {
-    return new ChromotingPlugin(instance);
+  virtual ChromotingInstance* CreateInstance(PP_Instance instance) {
+    return new ChromotingInstance(instance);
   }
 };
 

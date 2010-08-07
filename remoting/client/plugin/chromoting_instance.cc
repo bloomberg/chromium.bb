@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/plugin/chromoting_plugin.h"
+#include "remoting/client/plugin/chromoting_instance.h"
 
 #include <string>
 #include <vector>
@@ -25,14 +25,14 @@
 
 namespace remoting {
 
-const char* ChromotingPlugin::kMimeType = "pepper-application/x-chromoting";
+const char* ChromotingInstance::kMimeType = "pepper-application/x-chromoting";
 
-ChromotingPlugin::ChromotingPlugin(PP_Instance pp_instance)
+ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
       pepper_main_loop_dont_post_to_me_(NULL) {
 }
 
-ChromotingPlugin::~ChromotingPlugin() {
+ChromotingInstance::~ChromotingInstance() {
   if (client_.get()) {
     client_->Stop();
   }
@@ -44,9 +44,9 @@ ChromotingPlugin::~ChromotingPlugin() {
   context_.Stop();
 }
 
-bool ChromotingPlugin::Init(uint32_t argc,
-                            const char* argn[],
-                            const char* argv[]) {
+bool ChromotingInstance::Init(uint32_t argc,
+                              const char* argn[],
+                              const char* argv[]) {
   CHECK(pepper_main_loop_dont_post_to_me_ == NULL);
 
   // Record the current thread.  This function should only be invoked by the
@@ -60,7 +60,7 @@ bool ChromotingPlugin::Init(uint32_t argc,
   // TODO(ajwong): See if there is a method for querying what thread we're on
   // from inside the pepper API.
   pepper_main_loop_dont_post_to_me_ = MessageLoop::current();
-  LOG(INFO) << "Started ChromotingPlugin::Init";
+  LOG(INFO) << "Started ChromotingInstance::Init";
 
   // Start all the threads.
   context_.Start();
@@ -76,7 +76,7 @@ bool ChromotingPlugin::Init(uint32_t argc,
   return true;
 }
 
-void ChromotingPlugin::Connect(const ClientConfig& config) {
+void ChromotingInstance::Connect(const ClientConfig& config) {
   DCHECK(CurrentlyOnPluginThread());
 
   client_.reset(new ChromotingClient(config,
@@ -90,7 +90,7 @@ void ChromotingPlugin::Connect(const ClientConfig& config) {
   client_->Start();
 }
 
-void ChromotingPlugin::ViewChanged(const pp::Rect& position,
+void ChromotingInstance::ViewChanged(const pp::Rect& position,
                                    const pp::Rect& clip) {
   DCHECK(CurrentlyOnPluginThread());
 
@@ -107,11 +107,11 @@ void ChromotingPlugin::ViewChanged(const pp::Rect& position,
   view_->Paint();
 }
 
-bool ChromotingPlugin::CurrentlyOnPluginThread() const {
+bool ChromotingInstance::CurrentlyOnPluginThread() const {
   return pepper_main_loop_dont_post_to_me_ == MessageLoop::current();
 }
 
-bool ChromotingPlugin::HandleEvent(const PP_Event& event) {
+bool ChromotingInstance::HandleEvent(const PP_Event& event) {
   DCHECK(CurrentlyOnPluginThread());
 
   switch (event.type) {
@@ -120,11 +120,11 @@ bool ChromotingPlugin::HandleEvent(const PP_Event& event) {
     case PP_EVENT_TYPE_MOUSEMOVE:
     case PP_EVENT_TYPE_MOUSEENTER:
     case PP_EVENT_TYPE_MOUSELEAVE:
-      //client_->handle_mouse_event(npevent);
+      // client_->handle_mouse_event(npevent);
       break;
 
     case PP_EVENT_TYPE_CHAR:
-      //client_->handle_char_event(npevent);
+      // client_->handle_char_event(npevent);
       break;
 
     default:
@@ -134,7 +134,7 @@ bool ChromotingPlugin::HandleEvent(const PP_Event& event) {
   return false;
 }
 
-pp::Var ChromotingPlugin::GetInstanceObject() {
+pp::Var ChromotingInstance::GetInstanceObject() {
   LOG(ERROR) << "Getting instance object.";
   if (instance_object_.is_void()) {
     ChromotingScriptableObject* object = new ChromotingScriptableObject(this);

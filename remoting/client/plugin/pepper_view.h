@@ -23,7 +23,7 @@
 
 namespace remoting {
 
-class ChromotingPlugin;
+class ChromotingInstance;
 class Decoder;
 
 class PepperView : public ChromotingView {
@@ -33,7 +33,7 @@ class PepperView : public ChromotingView {
   //
   // TODO(ajwong): This probably needs to synchronize with the pepper thread
   // to be safe.
-  explicit PepperView(ChromotingPlugin* plugin);
+  explicit PepperView(ChromotingInstance* instance);
   virtual ~PepperView();
 
   // ChromotingView implementation.
@@ -56,7 +56,7 @@ class PepperView : public ChromotingView {
   // Reference to the creating plugin instance. Needed for interacting with
   // pepper.  Marking explciitly as const since it must be initialized at
   // object creation, and never change.
-  ChromotingPlugin* const plugin_;
+  ChromotingInstance* const instance_;
 
   pp::DeviceContext2D device_context_;
 
