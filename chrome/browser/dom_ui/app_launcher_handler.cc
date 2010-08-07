@@ -80,11 +80,11 @@ void AppLauncherHandler::Observe(NotificationType type,
 void AppLauncherHandler::CreateAppInfo(Extension* extension,
                                        DictionaryValue* value) {
   value->Clear();
-  value->SetString(L"id", extension->id());
-  value->SetString(L"name", extension->name());
-  value->SetString(L"description", extension->description());
-  value->SetString(L"launch_url", extension->GetFullLaunchURL().spec());
-  value->SetString(L"options_url", extension->options_url().spec());
+  value->SetString("id", extension->id());
+  value->SetString("name", extension->name());
+  value->SetString("description", extension->description());
+  value->SetString("launch_url", extension->GetFullLaunchURL().spec());
+  value->SetString("options_url", extension->options_url().spec());
 
   FilePath relative_path =
       extension->GetIconPath(Extension::EXTENSION_ICON_LARGE).relative_path();
@@ -96,7 +96,7 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
 #endif  // OS_WIN
 
   GURL icon_url = extension->GetResourceURL(path);
-  value->SetString(L"icon", icon_url.spec());
+  value->SetString("icon", icon_url.spec());
 }
 
 void AppLauncherHandler::HandleGetApps(const Value* value) {
@@ -104,7 +104,7 @@ void AppLauncherHandler::HandleGetApps(const Value* value) {
       switches::kAppsDebug);
 
   DictionaryValue dictionary;
-  dictionary.SetBoolean(L"showDebugLink", show_debug_link);
+  dictionary.SetBoolean("showDebugLink", show_debug_link);
 
   ListValue* list = new ListValue();
   const ExtensionList* extensions = extensions_service_->extensions();
@@ -117,7 +117,7 @@ void AppLauncherHandler::HandleGetApps(const Value* value) {
      }
   }
 
-  dictionary.Set(L"apps", list);
+  dictionary.Set("apps", list);
   dom_ui_->CallJavascriptFunction(L"getAppsCallback", dictionary);
 
   // First time we get here we set up the observer so that we can tell update

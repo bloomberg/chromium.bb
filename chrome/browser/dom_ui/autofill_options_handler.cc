@@ -19,8 +19,8 @@ void AutoFillOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString(L"autoFillOptionsTitle",
-      l10n_util::GetString(IDS_AUTOFILL_OPTIONS_TITLE));
+  localized_strings->SetString("autoFillOptionsTitle",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_OPTIONS_TITLE));
 }
 
 void AutoFillOptionsHandler::RegisterMessages() {

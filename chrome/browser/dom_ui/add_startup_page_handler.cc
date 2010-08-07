@@ -19,11 +19,11 @@ AddStartupPageHandler::~AddStartupPageHandler() {
 void AddStartupPageHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString(L"addStartupPageTitle",
-      l10n_util::GetString(IDS_ASI_ADD_TITLE));
-  localized_strings->SetString(L"addStartupPageAddButton",
-      l10n_util::GetString(IDS_ASI_ADD));
-  localized_strings->SetString(L"addStartupPageCancelButton",
-      l10n_util::GetString(IDS_CANCEL));
+  localized_strings->SetString("addStartupPageTitle",
+      l10n_util::GetStringUTF16(IDS_ASI_ADD_TITLE));
+  localized_strings->SetString("addStartupPageAddButton",
+      l10n_util::GetStringUTF16(IDS_ASI_ADD));
+  localized_strings->SetString("addStartupPageCancelButton",
+      l10n_util::GetStringUTF16(IDS_CANCEL));
 }
 
