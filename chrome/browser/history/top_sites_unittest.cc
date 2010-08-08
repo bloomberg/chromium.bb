@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,10 +46,10 @@ class TopSitesTest : public testing::Test {
   size_t number_of_callbacks() {return number_of_callbacks_; }
   // Prepopulated URLs - added at the back of TopSites.
   GURL welcome_url() {
-    return GURL(WideToUTF8(l10n_util::GetString(IDS_CHROME_WELCOME_URL)));
+    return GURL(l10n_util::GetStringUTF8(IDS_CHROME_WELCOME_URL));
   }
   GURL themes_url() {
-    return GURL(WideToUTF8(l10n_util::GetString(IDS_THEMES_GALLERY_URL)));
+    return GURL(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL));
   }
 
   virtual void SetUp() {

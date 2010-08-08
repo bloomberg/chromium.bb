@@ -1266,13 +1266,13 @@ void SavePackage::ContinueGetSaveInfo(FilePath save_dir) {
     if (add_extra_extension)
       file_type_info.extensions[0].push_back(extra_extension);
     file_type_info.extension_description_overrides.push_back(
-        WideToUTF16(l10n_util::GetString(IDS_SAVE_PAGE_DESC_HTML_ONLY)));
+        l10n_util::GetStringUTF16(IDS_SAVE_PAGE_DESC_HTML_ONLY));
     file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("htm"));
     file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("html"));
     if (add_extra_extension)
       file_type_info.extensions[1].push_back(extra_extension);
     file_type_info.extension_description_overrides.push_back(
-        WideToUTF16(l10n_util::GetString(IDS_SAVE_PAGE_DESC_COMPLETE)));
+        l10n_util::GetStringUTF16(IDS_SAVE_PAGE_DESC_COMPLETE));
     file_type_info.include_all_files = false;
     default_extension = kDefaultHtmlExtension;
   } else {

@@ -158,9 +158,8 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Heading label
   GtkWidget* heading_label = gtk_label_new(NULL);
-  std::string heading_text = WideToUTF8(l10n_util::GetStringF(
-      IDS_EXTENSION_INSTALLED_HEADING,
-      UTF8ToWide(extension_->name())));
+  std::string heading_text = l10n_util::GetStringFUTF8(
+      IDS_EXTENSION_INSTALLED_HEADING, UTF8ToUTF16(extension_->name()));
   char* markup = g_markup_printf_escaped("<span size=\"larger\">%s</span>",
       heading_text.c_str());
   gtk_label_set_markup(GTK_LABEL(heading_label), markup);
@@ -172,9 +171,8 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Page action label
   if (type_ == ExtensionInstalledBubbleGtk::PAGE_ACTION) {
-    GtkWidget* info_label = gtk_label_new(
-        WideToUTF8(l10n_util::GetString(
-            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO)).c_str());
+    GtkWidget* info_label = gtk_label_new(l10n_util::GetStringUTF8(
+            IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO).c_str());
     gtk_label_set_line_wrap(GTK_LABEL(info_label), TRUE);
     gtk_widget_set_size_request(info_label, kTextColumnWidth, -1);
     gtk_box_pack_start(GTK_BOX(text_column), info_label, FALSE, FALSE, 0);
@@ -182,8 +180,8 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Manage label
   GtkWidget* manage_label = gtk_label_new(
-      WideToUTF8(l10n_util::GetStringF(IDS_EXTENSION_INSTALLED_MANAGE_INFO,
-          UTF8ToWide(extension_->name()))).c_str());
+      l10n_util::GetStringFUTF8(IDS_EXTENSION_INSTALLED_MANAGE_INFO,
+          UTF8ToUTF16(extension_->name())).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(manage_label), TRUE);
   gtk_widget_set_size_request(manage_label, kTextColumnWidth, -1);
   gtk_box_pack_start(GTK_BOX(text_column), manage_label, FALSE, FALSE, 0);

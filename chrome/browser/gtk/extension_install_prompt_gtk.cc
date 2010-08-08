@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -84,8 +84,8 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
   gtk_box_pack_start(GTK_BOX(icon_hbox), right_column_area, TRUE, TRUE, 0);
 
   int heading_id = ExtensionInstallUI::kHeadingIds[type];
-  std::string heading_text = WideToUTF8(l10n_util::GetStringF(
-      heading_id, UTF8ToWide(extension->name())));
+  std::string heading_text = l10n_util::GetStringFUTF8(
+      heading_id, UTF8ToUTF16(extension->name()));
   GtkWidget* heading_label = MakeMarkupLabel("<span weight=\"bold\">%s</span>",
                                              heading_text);
   gtk_misc_set_alignment(GTK_MISC(heading_label), 0.0, 0.5);

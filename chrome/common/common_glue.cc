@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ std::string GetWebKitLocale() {
 }
 
 string16 GetLocalizedString(int message_id) {
-  return WideToUTF16(l10n_util::GetString(message_id));
+  return l10n_util::GetStringUTF16(message_id);
 }
 
 }  // namespace webkit_glue

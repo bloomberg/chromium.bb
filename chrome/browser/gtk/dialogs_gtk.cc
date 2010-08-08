@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -284,7 +284,7 @@ void SelectFileDialogImpl::AddFilters(GtkFileChooser* chooser) {
     GtkFileFilter* filter = gtk_file_filter_new();
     gtk_file_filter_add_pattern(filter, "*");
     gtk_file_filter_set_name(filter,
-        WideToUTF8(l10n_util::GetString(IDS_SAVEAS_ALL_FILES)).c_str());
+        l10n_util::GetStringUTF8(IDS_SAVEAS_ALL_FILES).c_str());
     gtk_file_chooser_add_filter(chooser, filter);
   }
 }

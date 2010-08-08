@@ -204,7 +204,7 @@ void TimeFormatter::BuildFormats(
     icu::UnicodeString pattern;
     for (size_t j = 0; j < arraysize(kKeywords); ++j) {
       int msg_id = message_ids.ids[i][j];
-      std::string sub_pattern = WideToUTF8(l10n_util::GetString(msg_id));
+      std::string sub_pattern = l10n_util::GetStringUTF8(msg_id);
       // NA means this keyword is not used in the current locale.
       // Even if a translator translated for this keyword, we do not
       // use it unless it's 'other' (j=0) or it's defined in the rules

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -197,8 +197,8 @@ void FlowHandler::ShowChooseDataTypes(const DictionaryValue& args) {
 }
 
 void FlowHandler::ShowSetupDone(const std::wstring& user) {
-  StringValue synced_to_string(WideToUTF8(l10n_util::GetStringF(
-      IDS_SYNC_NTP_SYNCED_TO, user)));
+  StringValue synced_to_string(l10n_util::GetStringFUTF8(
+      IDS_SYNC_NTP_SYNCED_TO, WideToUTF16Hack(user)));
   std::string json;
   base::JSONWriter::Write(&synced_to_string, false, &json);
   std::wstring javascript = std::wstring(L"setSyncedToUser") +

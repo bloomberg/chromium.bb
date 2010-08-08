@@ -465,7 +465,7 @@ int GetBigProgressIconSize() {
   static int big_progress_icon_size = 0;
   if (big_progress_icon_size == 0) {
     string16 locale_size_str =
-        WideToUTF16Hack(l10n_util::GetString(IDS_DOWNLOAD_BIG_PROGRESS_SIZE));
+        l10n_util::GetStringUTF16(IDS_DOWNLOAD_BIG_PROGRESS_SIZE);
     bool rc = base::StringToInt(locale_size_str, &big_progress_icon_size);
     if (!rc || big_progress_icon_size < kBigProgressIconSize) {
       NOTREACHED();

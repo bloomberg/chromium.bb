@@ -235,7 +235,7 @@ ListValue* InternetOptionsHandler::GetWiredList() {
   list->Append(GetNetwork(
       ethernet_network.service_path(),
       icon,
-      WideToASCII(l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)),
+      l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
       ethernet_network.connecting(),
       ethernet_network.connected(),
       chromeos::TYPE_ETHERNET,

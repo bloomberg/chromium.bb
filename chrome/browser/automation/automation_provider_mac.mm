@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,8 +134,8 @@ void AutomationProvider::GetWindowTitle(int handle, string16* text) {
   }
   // If we don't yet have a title, use "Untitled".
   if (![title length]) {
-    text->assign(WideToUTF16(l10n_util::GetString(
-        IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED)));
+    text->assign(l10n_util::GetStringUTF16(
+        IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED));
     return;
   }
 

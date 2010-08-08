@@ -315,7 +315,7 @@ bool TopSites::AddPrepopulatedPages(MostVisitedURLList* urls) {
   // TODO(arv): This needs to get the data from some configurable place.
   // http://crbug.com/17630
   bool added = false;
-  GURL welcome_url(WideToUTF8(l10n_util::GetString(IDS_CHROME_WELCOME_URL)));
+  GURL welcome_url(l10n_util::GetStringUTF8(IDS_CHROME_WELCOME_URL));
   if (urls->size() < kTopSitesNumber && IndexOf(*urls, welcome_url) == -1) {
     MostVisitedURL url = {
       welcome_url,
@@ -327,7 +327,7 @@ bool TopSites::AddPrepopulatedPages(MostVisitedURLList* urls) {
     added = true;
   }
 
-  GURL themes_url(WideToUTF8(l10n_util::GetString(IDS_THEMES_GALLERY_URL)));
+  GURL themes_url(l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL));
   if (urls->size() < kTopSitesNumber && IndexOf(*urls, themes_url) == -1) {
     MostVisitedURL url = {
       themes_url,

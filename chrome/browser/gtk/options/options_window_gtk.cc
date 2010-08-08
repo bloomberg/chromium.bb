@@ -99,7 +99,7 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
   std::string dialog_name =
       l10n_util::GetStringFUTF8(
           IDS_OPTIONS_DIALOG_TITLE,
-          WideToUTF16(l10n_util::GetString(IDS_PRODUCT_NAME)));
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   dialog_ = gtk_dialog_new_with_buttons(
       dialog_name.c_str(),
       // Prefs window is shared between all browser windows.
