@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "chrome/browser/sync/util/sync_types.h"
 
 using std::string;
 using std::vector;

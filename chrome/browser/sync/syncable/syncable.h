@@ -30,7 +30,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/channel.h"
 #include "chrome/browser/sync/util/dbgq.h"
-#include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
 
 struct PurgeInfo;

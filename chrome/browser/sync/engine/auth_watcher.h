@@ -18,7 +18,6 @@
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
-#include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/net/gaia/gaia_authenticator.h"
 

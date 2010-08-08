@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -944,7 +945,7 @@ int DirectoryBackingStore::CreateTables() {
 
 sqlite3* DirectoryBackingStore::LazyGetSaveHandle() {
   if (!save_dbhandle_ && !OpenAndConfigureHandleHelper(&save_dbhandle_)) {
-    DCHECK(FALSE) << "Unable to open handle for saving";
+    NOTREACHED() << "Unable to open handle for saving";
     return NULL;
   }
   return save_dbhandle_;

@@ -26,6 +26,7 @@
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"

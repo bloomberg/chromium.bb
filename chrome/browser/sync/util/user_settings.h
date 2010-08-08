@@ -13,7 +13,6 @@
 #include "base/file_path.h"
 #include "base/lock.h"
 #include "build/build_config.h"
-#include "chrome/browser/sync/util/sync_types.h"
 
 extern "C" struct sqlite3;
 

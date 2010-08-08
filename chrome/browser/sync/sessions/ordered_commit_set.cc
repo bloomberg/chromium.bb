@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 
 namespace browser_sync {

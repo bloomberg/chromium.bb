@@ -19,7 +19,6 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
-#include "chrome/browser/sync/util/sync_types.h"
 
 using syncable::BASE_VERSION;
 using syncable::Blob;

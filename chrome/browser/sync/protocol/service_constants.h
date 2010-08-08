@@ -4,8 +4,6 @@
 //
 // Product-specific constants.
 
-#include "chrome/browser/sync/util/sync_types.h"
-
 #ifndef CHROME_BROWSER_SYNC_PROTOCOL_SERVICE_CONSTANTS_H_
 #define CHROME_BROWSER_SYNC_PROTOCOL_SERVICE_CONSTANTS_H_
 #pragma once

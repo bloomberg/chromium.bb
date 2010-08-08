@@ -352,9 +352,9 @@ void PasswordModelAssociator::WriteToSyncNode(
 std::string PasswordModelAssociator::MakeTag(
                 const webkit_glue::PasswordForm& password) {
   return MakeTag(password.origin.spec(),
-                 UTF16ToASCII(password.username_element),
-                 UTF16ToASCII(password.username_value),
-                 UTF16ToASCII(password.password_element),
+                 UTF16ToUTF8(password.username_element),
+                 UTF16ToUTF8(password.username_value),
+                 UTF16ToUTF8(password.password_element),
                  password.signon_realm);
 }
 

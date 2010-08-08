@@ -10,7 +10,6 @@
 
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/sync_types.h"
 
 using std::set;
 using std::vector;

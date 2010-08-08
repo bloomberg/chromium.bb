@@ -16,7 +16,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
 #include "chrome/common/deprecated/event_sys-inl.h"
 #include "chrome/common/net/http_return.h"

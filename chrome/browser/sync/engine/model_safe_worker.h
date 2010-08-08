@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/sync/syncable/model_type.h"
-#include "chrome/browser/sync/util/sync_types.h"
 
 namespace browser_sync {
 

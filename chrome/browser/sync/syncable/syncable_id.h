@@ -13,7 +13,6 @@
 
 #include "base/hash_tables.h"
 #include "chrome/browser/sync/util/fast_dump.h"
-#include "chrome/browser/sync/util/sync_types.h"
 
 extern "C" {
 struct sqlite3;

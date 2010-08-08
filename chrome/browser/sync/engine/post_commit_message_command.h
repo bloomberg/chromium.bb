@@ -7,7 +7,6 @@
 #pragma once
 
 #include "chrome/browser/sync/engine/syncer_command.h"
-#include "chrome/browser/sync/util/sync_types.h"
 
 namespace browser_sync {
 

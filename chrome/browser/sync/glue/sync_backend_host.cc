@@ -376,8 +376,8 @@ std::string MakeUserAgentForSyncapi() {
     return user_agent;
   }
 
-  user_agent += WideToASCII(version_info->product_version());
-  user_agent += " (" + WideToASCII(version_info->last_change()) + ")";
+  user_agent += WideToUTF8(version_info->product_version());
+  user_agent += " (" + WideToUTF8(version_info->last_change()) + ")";
   if (!version_info->is_official_build())
     user_agent += "-devel";
   return user_agent;

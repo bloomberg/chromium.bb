@@ -23,7 +23,6 @@
 #include "chrome/browser/sync/syncable/path_name_cmp.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/cryptographer.h"
-#include "chrome/browser/sync/util/sync_types.h"
 #include "chrome/common/deprecated/event_sys.h"
 
 namespace sync_api { class BaseTransaction; }

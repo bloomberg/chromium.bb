@@ -6,6 +6,7 @@
 
 #include "chrome/browser/sync/util/user_settings.h"
 
+#include "base/logging.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/common/sqlite_utils.h"
 
