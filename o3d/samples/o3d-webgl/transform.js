@@ -901,6 +901,8 @@ o3d.Transform.axisRotateMatrix =
       r20 * m01 + r21 * m11 + r22 * m21,
       r20 * m02 + r21 * m12 + r22 * m22,
       r20 * m03 + r21 * m13 + r22 * m23);
+
+  opt_target[3].splice(0, 4, m30, m31, m32, m33);
 };
 
 
