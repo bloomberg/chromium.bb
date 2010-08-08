@@ -85,74 +85,75 @@ ExtensionsUIHTMLSource::ExtensionsUIHTMLSource()
 void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
     bool is_off_the_record, int request_id) {
   DictionaryValue localized_strings;
-  localized_strings.SetString(L"title",
-      l10n_util::GetString(IDS_EXTENSIONS_TITLE));
-  localized_strings.SetString(L"devModeLink",
-      l10n_util::GetString(IDS_EXTENSIONS_DEVELOPER_MODE_LINK));
-  localized_strings.SetString(L"devModePrefix",
-      l10n_util::GetString(IDS_EXTENSIONS_DEVELOPER_MODE_PREFIX));
-  localized_strings.SetString(L"loadUnpackedButton",
-      l10n_util::GetString(IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON));
-  localized_strings.SetString(L"packButton",
-      l10n_util::GetString(IDS_EXTENSIONS_PACK_BUTTON));
-  localized_strings.SetString(L"updateButton",
-      l10n_util::GetString(IDS_EXTENSIONS_UPDATE_BUTTON));
-  localized_strings.SetString(L"noExtensions",
-      l10n_util::GetString(IDS_EXTENSIONS_NONE_INSTALLED));
-  localized_strings.SetString(L"suggestGallery",
-      l10n_util::GetStringF(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
-          std::wstring(L"<a href='") +
-          ASCIIToWide(google_util::AppendGoogleLocaleParam(
-              GURL(Extension::ChromeStoreURL())).spec()) + L"'>",
-          L"</a>"));
-  localized_strings.SetString(L"getMoreExtensions",
-      std::wstring(L"<a href='") +
-          ASCIIToWide(google_util::AppendGoogleLocaleParam(
-              GURL(Extension::ChromeStoreURL())).spec()) + L"'>" +
-          l10n_util::GetString(IDS_GET_MORE_EXTENSIONS) +
-          L"</a>");
-  localized_strings.SetString(L"extensionDisabled",
-      l10n_util::GetString(IDS_EXTENSIONS_DISABLED_EXTENSION));
-  localized_strings.SetString(L"inDevelopment",
-      l10n_util::GetString(IDS_EXTENSIONS_IN_DEVELOPMENT));
-  localized_strings.SetString(L"extensionId",
-      l10n_util::GetString(IDS_EXTENSIONS_ID));
-  localized_strings.SetString(L"extensionVersion",
-      l10n_util::GetString(IDS_EXTENSIONS_VERSION));
-  localized_strings.SetString(L"inspectViews",
-      l10n_util::GetString(IDS_EXTENSIONS_INSPECT_VIEWS));
-  localized_strings.SetString(L"inspectPopupsInstructions",
-      l10n_util::GetString(IDS_EXTENSIONS_INSPECT_POPUPS_INSTRUCTIONS));
-  localized_strings.SetString(L"disable",
-      l10n_util::GetString(IDS_EXTENSIONS_DISABLE));
-  localized_strings.SetString(L"enable",
-      l10n_util::GetString(IDS_EXTENSIONS_ENABLE));
-  localized_strings.SetString(L"enableIncognito",
-      l10n_util::GetString(IDS_EXTENSIONS_ENABLE_INCOGNITO));
-  localized_strings.SetString(L"allowFileAccess",
-      l10n_util::GetString(IDS_EXTENSIONS_ALLOW_FILE_ACCESS));
-  localized_strings.SetString(L"incognitoWarning",
-      l10n_util::GetString(IDS_EXTENSIONS_INCOGNITO_WARNING));
-  localized_strings.SetString(L"reload",
-      l10n_util::GetString(IDS_EXTENSIONS_RELOAD));
-  localized_strings.SetString(L"uninstall",
-      l10n_util::GetString(IDS_EXTENSIONS_UNINSTALL));
-  localized_strings.SetString(L"options",
-      l10n_util::GetString(IDS_EXTENSIONS_OPTIONS));
-  localized_strings.SetString(L"packDialogTitle",
-      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_TITLE));
-  localized_strings.SetString(L"packDialogHeading",
-      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_HEADING));
-  localized_strings.SetString(L"rootDirectoryLabel",
-      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL));
-  localized_strings.SetString(L"packDialogBrowse",
-      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_BROWSE));
-  localized_strings.SetString(L"privateKeyLabel",
-      l10n_util::GetString(IDS_EXTENSION_PACK_DIALOG_PRIVATE_KEY_LABEL));
-  localized_strings.SetString(L"okButton",
-      l10n_util::GetString(IDS_OK));
-  localized_strings.SetString(L"cancelButton",
-      l10n_util::GetString(IDS_CANCEL));
+  localized_strings.SetString("title",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_TITLE));
+  localized_strings.SetString("devModeLink",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_DEVELOPER_MODE_LINK));
+  localized_strings.SetString("devModePrefix",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_DEVELOPER_MODE_PREFIX));
+  localized_strings.SetString("loadUnpackedButton",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON));
+  localized_strings.SetString("packButton",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_PACK_BUTTON));
+  localized_strings.SetString("updateButton",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_UPDATE_BUTTON));
+  localized_strings.SetString("noExtensions",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_NONE_INSTALLED));
+  localized_strings.SetString("suggestGallery",
+      l10n_util::GetStringFUTF16(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
+          ASCIIToUTF16("<a href='") +
+          ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+              GURL(Extension::ChromeStoreURL())).spec()) + ASCIIToUTF16("'>"),
+          ASCIIToUTF16("</a>")));
+  localized_strings.SetString("getMoreExtensions",
+      ASCIIToUTF16("<a href='") +
+          ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+              GURL(Extension::ChromeStoreURL())).spec()) + ASCIIToUTF16("'>") +
+          l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS) +
+          ASCIIToUTF16("</a>"));
+  localized_strings.SetString("extensionDisabled",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLED_EXTENSION));
+  localized_strings.SetString("inDevelopment",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_IN_DEVELOPMENT));
+  localized_strings.SetString("extensionId",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ID));
+  localized_strings.SetString("extensionVersion",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_VERSION));
+  localized_strings.SetString("inspectViews",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSPECT_VIEWS));
+  localized_strings.SetString("inspectPopupsInstructions",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSPECT_POPUPS_INSTRUCTIONS));
+  localized_strings.SetString("disable",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE));
+  localized_strings.SetString("enable",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE));
+  localized_strings.SetString("enableIncognito",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE_INCOGNITO));
+  localized_strings.SetString("allowFileAccess",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_ALLOW_FILE_ACCESS));
+  localized_strings.SetString("incognitoWarning",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_INCOGNITO_WARNING));
+  localized_strings.SetString("reload",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_RELOAD));
+  localized_strings.SetString("uninstall",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));
+  localized_strings.SetString("options",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPTIONS));
+  localized_strings.SetString("packDialogTitle",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_TITLE));
+  localized_strings.SetString("packDialogHeading",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_HEADING));
+  localized_strings.SetString("rootDirectoryLabel",
+      l10n_util::GetStringUTF16(
+          IDS_EXTENSION_PACK_DIALOG_ROOT_DIRECTORY_LABEL));
+  localized_strings.SetString("packDialogBrowse",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_BROWSE));
+  localized_strings.SetString("privateKeyLabel",
+      l10n_util::GetStringUTF16(IDS_EXTENSION_PACK_DIALOG_PRIVATE_KEY_LABEL));
+  localized_strings.SetString("okButton",
+      l10n_util::GetStringUTF16(IDS_OK));
+  localized_strings.SetString("cancelButton",
+      l10n_util::GetStringUTF16(IDS_CANCEL));
 
   SetFontAndTextDirection(&localized_strings);
 
@@ -201,7 +202,7 @@ void ExtensionsDOMHandler::IconLoader::LoadIconsOnFileThread(
   scoped_ptr<DictionaryValue> json_deleter(json);
 
   ListValue* extensions = NULL;
-  CHECK(json->GetList(L"extensions", &extensions));
+  CHECK(json->GetList("extensions", &extensions));
 
   for (size_t i = 0; i < icons->size(); ++i) {
     DictionaryValue* extension = NULL;
@@ -221,7 +222,7 @@ void ExtensionsDOMHandler::IconLoader::LoadIconsOnFileThread(
     // If the extension is disabled, we desaturate the icon to add to the
     // disabledness effect.
     bool enabled = false;
-    CHECK(extension->GetBoolean(L"enabled", &enabled));
+    CHECK(extension->GetBoolean("enabled", &enabled));
     if (!enabled) {
       const unsigned char* data =
           reinterpret_cast<const unsigned char*>(file_contents.data());
@@ -247,7 +248,7 @@ void ExtensionsDOMHandler::IconLoader::LoadIconsOnFileThread(
     base::Base64Encode(file_contents, &base64_encoded);
     GURL icon_url("data:image/png;base64," + base64_encoded);
 
-    extension->SetString(L"icon", icon_url.spec());
+    extension->SetString("icon", icon_url.spec());
   }
 
   ChromeThread::PostTask(
@@ -346,11 +347,11 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
       extension_icons->push_back(PickExtensionIcon(*extension));
     }
   }
-  results->Set(L"extensions", extensions_list);
+  results->Set("extensions", extensions_list);
 
   bool developer_mode = dom_ui_->GetProfile()->GetPrefs()
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  results->SetBoolean(L"developerMode", developer_mode);
+  results->SetBoolean("developerMode", developer_mode);
 
   if (icon_loader_.get())
     icon_loader_->Cancel();
@@ -591,16 +592,17 @@ void ExtensionsDOMHandler::ShowAlert(const std::string& message) {
 }
 
 void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
-  std::wstring extension_path;
-  std::wstring private_key_path;
+  std::string extension_path;
+  std::string private_key_path;
   CHECK(value->IsType(Value::TYPE_LIST));
   const ListValue* list = static_cast<const ListValue*>(value);
   CHECK(list->GetSize() == 2);
   CHECK(list->GetString(0, &extension_path));
   CHECK(list->GetString(1, &private_key_path));
 
-  FilePath root_directory = FilePath::FromWStringHack(extension_path);
-  FilePath key_file = FilePath::FromWStringHack(private_key_path);
+  FilePath root_directory =
+      FilePath::FromWStringHack(UTF8ToWide(extension_path));
+  FilePath key_file = FilePath::FromWStringHack(UTF8ToWide(private_key_path));
 
   if (root_directory.empty()) {
     if (extension_path.empty()) {
@@ -628,14 +630,14 @@ void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,
                                          const FilePath& pem_file) {
   std::string message;
   if (!pem_file.empty()) {
-    message = WideToUTF8(l10n_util::GetStringF(
+    message = l10n_util::GetStringFUTF8(
         IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_NEW,
-        crx_file.ToWStringHack(),
-        pem_file.ToWStringHack()));
+        WideToUTF16(crx_file.ToWStringHack()),
+        WideToUTF16(pem_file.ToWStringHack()));
   } else {
-    message = WideToUTF8(l10n_util::GetStringF(
+    message = l10n_util::GetStringFUTF8(
         IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_UPDATE,
-        crx_file.ToWStringHack()));
+        WideToUTF16(crx_file.ToWStringHack()));
   }
   ShowAlert(message);
 
@@ -643,8 +645,8 @@ void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,
   dom_ui_->CallJavascriptFunction(L"hidePackDialog", results);
 }
 
-void ExtensionsDOMHandler::OnPackFailure(const std::wstring& error) {
-  ShowAlert(WideToUTF8(error));
+void ExtensionsDOMHandler::OnPackFailure(const std::string& error) {
+  ShowAlert(error);
 }
 
 void ExtensionsDOMHandler::HandleAutoUpdateMessage(const Value* value) {
@@ -680,9 +682,9 @@ void ExtensionsDOMHandler::HandleSelectFilePathMessage(const Value* value) {
         IDS_EXTENSION_PACK_DIALOG_SELECT_KEY);
     info.extensions.push_back(std::vector<FilePath::StringType>());
         info.extensions.front().push_back(FILE_PATH_LITERAL("pem"));
-        info.extension_description_overrides.push_back(WideToUTF16(
-            l10n_util::GetString(
-                IDS_EXTENSION_PACK_DIALOG_KEY_FILE_TYPE_DESCRIPTION)));
+        info.extension_description_overrides.push_back(
+            l10n_util::GetStringUTF16(
+                IDS_EXTENSION_PACK_DIALOG_KEY_FILE_TYPE_DESCRIPTION));
         info.include_all_files = true;
     file_type_index = 1;
   } else {
@@ -753,7 +755,7 @@ void ExtensionsDOMHandler::MaybeUpdateAfterNotification() {
 
 static void CreateScriptFileDetailValue(
     const FilePath& extension_path, const UserScript::FileList& scripts,
-    const wchar_t* key, DictionaryValue* script_data) {
+    const char* key, DictionaryValue* script_data) {
   if (scripts.empty())
     return;
 
@@ -772,9 +774,9 @@ static void CreateScriptFileDetailValue(
 DictionaryValue* ExtensionsDOMHandler::CreateContentScriptDetailValue(
   const UserScript& script, const FilePath& extension_path) {
   DictionaryValue* script_data = new DictionaryValue();
-  CreateScriptFileDetailValue(extension_path, script.js_scripts(), L"js",
+  CreateScriptFileDetailValue(extension_path, script.js_scripts(), "js",
     script_data);
-  CreateScriptFileDetailValue(extension_path, script.css_scripts(), L"css",
+  CreateScriptFileDetailValue(extension_path, script.css_scripts(), "css",
     script_data);
 
   // Get list of glob "matches" strings
@@ -786,7 +788,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateContentScriptDetailValue(
     url_pattern_list->Append(new StringValue(url_pattern->GetAsString()));
   }
 
-  script_data->Set(L"matches", url_pattern_list);
+  script_data->Set("matches", url_pattern_list);
 
   return script_data;
 }
@@ -811,29 +813,29 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
     const std::vector<ExtensionPage>& pages, bool enabled) {
   DictionaryValue* extension_data = new DictionaryValue();
 
-  extension_data->SetString(L"id", extension->id());
-  extension_data->SetString(L"name", extension->name());
-  extension_data->SetString(L"description", extension->description());
-  extension_data->SetString(L"version", extension->version()->GetString());
-  extension_data->SetBoolean(L"enabled", enabled);
-  extension_data->SetBoolean(L"enabledIncognito",
+  extension_data->SetString("id", extension->id());
+  extension_data->SetString("name", extension->name());
+  extension_data->SetString("description", extension->description());
+  extension_data->SetString("version", extension->version()->GetString());
+  extension_data->SetBoolean("enabled", enabled);
+  extension_data->SetBoolean("enabledIncognito",
       service ? service->IsIncognitoEnabled(extension) : false);
-  extension_data->SetBoolean(L"wantsFileAccess",
+  extension_data->SetBoolean("wantsFileAccess",
       ExtensionWantsFileAccess(extension));
-  extension_data->SetBoolean(L"allowFileAccess",
+  extension_data->SetBoolean("allowFileAccess",
       service ? service->AllowFileAccess(extension) : false);
-  extension_data->SetBoolean(L"allow_reload",
+  extension_data->SetBoolean("allow_reload",
                              extension->location() == Extension::LOAD);
 
   // Determine the sort order: Extensions loaded through --load-extensions show
   // up at the top. Disabled extensions show up at the bottom.
   if (extension->location() == Extension::LOAD)
-    extension_data->SetInteger(L"order", 1);
+    extension_data->SetInteger("order", 1);
   else
-    extension_data->SetInteger(L"order", 2);
+    extension_data->SetInteger("order", 2);
 
   if (!extension->options_url().is_empty())
-    extension_data->SetString(L"options_url", extension->options_url().spec());
+    extension_data->SetString("options_url", extension->options_url().spec());
 
   // Add list of content_script detail DictionaryValues.
   ListValue *content_script_list = new ListValue();
@@ -843,7 +845,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
       content_script_list->Append(
           CreateContentScriptDetailValue(*script, extension->path()));
   }
-  extension_data->Set(L"content_scripts", content_script_list);
+  extension_data->Set("content_scripts", content_script_list);
 
   // Add permissions.
   ListValue *permission_list = new ListValue;
@@ -853,7 +855,7 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
     permission_list->Append(Value::CreateStringValue(
         permission->GetAsString()));
   }
-  extension_data->Set(L"permissions", permission_list);
+  extension_data->Set("permissions", permission_list);
 
   // Add views
   ListValue* views = new ListValue;
@@ -862,19 +864,19 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
     DictionaryValue* view_value = new DictionaryValue;
     if (iter->url.scheme() == chrome::kExtensionScheme) {
       // No leading slash.
-      view_value->SetString(L"path", iter->url.path().substr(1));
+      view_value->SetString("path", iter->url.path().substr(1));
     } else {
       // For live pages, use the full URL.
-      view_value->SetString(L"path", iter->url.spec());
+      view_value->SetString("path", iter->url.spec());
     }
-    view_value->SetInteger(L"renderViewId", iter->render_view_id);
-    view_value->SetInteger(L"renderProcessId", iter->render_process_id);
+    view_value->SetInteger("renderViewId", iter->render_view_id);
+    view_value->SetInteger("renderProcessId", iter->render_process_id);
     views->Append(view_value);
   }
-  extension_data->Set(L"views", views);
-  extension_data->SetBoolean(L"hasPopupAction",
+  extension_data->Set("views", views);
+  extension_data->SetBoolean("hasPopupAction",
       extension->browser_action() || extension->page_action());
-  extension_data->SetString(L"galleryUrl", extension->GalleryUrl().spec());
+  extension_data->SetString("galleryUrl", extension->GalleryUrl().spec());
 
   return extension_data;
 }

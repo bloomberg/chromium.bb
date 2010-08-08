@@ -124,7 +124,7 @@ class ExtensionsDOMHandler
   virtual void OnPackSuccess(const FilePath& crx_file,
                              const FilePath& key_file);
 
-  virtual void OnPackFailure(const std::wstring& message);
+  virtual void OnPackFailure(const std::string& message);
 
   // ExtensionInstallUI::Delegate implementation, used for receiving
   // notification about uninstall confirmation dialog selections.

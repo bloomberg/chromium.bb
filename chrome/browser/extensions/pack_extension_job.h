@@ -23,7 +23,7 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
    public:
     virtual void OnPackSuccess(const FilePath& crx_file,
                                const FilePath& key_file) = 0;
-    virtual void OnPackFailure(const std::wstring& message) = 0;
+    virtual void OnPackFailure(const std::string& message) = 0;
 
    protected:
     virtual ~Client() {}

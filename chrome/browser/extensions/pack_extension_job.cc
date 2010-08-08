@@ -55,5 +55,5 @@ void PackExtensionJob::ReportSuccessOnUIThread() {
 
 void PackExtensionJob::ReportFailureOnUIThread(const std::string& error) {
   if (client_)
-    client_->OnPackFailure(UTF8ToWide(error));
+    client_->OnPackFailure(error);
 }

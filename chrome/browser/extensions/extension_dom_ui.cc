@@ -288,8 +288,8 @@ void ExtensionDOMUI::RegisterChromeURLOverrides(
   // For each override provided by the extension, add it to the front of
   // the override list if it's not already in the list.
   Extension::URLOverrideMap::const_iterator iter = overrides.begin();
-  for (;iter != overrides.end(); ++iter) {
-    const std::wstring key = UTF8ToWide((*iter).first);
+  for (; iter != overrides.end(); ++iter) {
+    const std::string& key = iter->first;
     ListValue* page_overrides;
     if (!all_overrides->GetList(key, &page_overrides)) {
       page_overrides = new ListValue();
@@ -305,7 +305,7 @@ void ExtensionDOMUI::RegisterChromeURLOverrides(
           NOTREACHED();
           continue;
         }
-        if (override_val == (*iter).second.spec())
+        if (override_val == iter->second.spec())
           break;
       }
       // This value is already in the list, leave it alone.
@@ -314,7 +314,7 @@ void ExtensionDOMUI::RegisterChromeURLOverrides(
     }
     // Insert the override at the front of the list.  Last registered override
     // wins.
-    page_overrides->Insert(0, new StringValue((*iter).second.spec()));
+    page_overrides->Insert(0, new StringValue(iter->second.spec()));
   }
 }
 
@@ -368,16 +368,16 @@ void ExtensionDOMUI::UnregisterChromeURLOverrides(
   DictionaryValue* all_overrides =
       prefs->GetMutableDictionary(kExtensionURLOverrides);
   Extension::URLOverrideMap::const_iterator iter = overrides.begin();
-  for (;iter != overrides.end(); ++iter) {
-    std::wstring page = UTF8ToWide((*iter).first);
+  for (; iter != overrides.end(); ++iter) {
+    const std::string& page = iter->first;
     ListValue* page_overrides;
     if (!all_overrides->GetList(page, &page_overrides)) {
       // If it's being unregistered, it should already be in the list.
       NOTREACHED();
       continue;
     } else {
-      StringValue override((*iter).second.spec());
-      UnregisterAndReplaceOverride((*iter).first, profile,
+      StringValue override(iter->second.spec());
+      UnregisterAndReplaceOverride(iter->first, profile,
                                    page_overrides, &override);
     }
   }
