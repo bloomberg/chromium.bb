@@ -7,6 +7,7 @@
 #include "chrome/common/child_process.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/renderer/command_buffer_proxy.h"
+#include "chrome/renderer/gpu_video_service_host.h"
 
 GpuChannelHost::GpuChannelHost() : state_(UNCONNECTED) {
 }
@@ -35,6 +36,9 @@ void GpuChannelHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void GpuChannelHost::OnChannelConnected(int32 peer_pid) {
+  GpuVideoServiceHost::get()->OnGpuChannelConnected(this,
+                                                    &router_,
+                                                    channel_.get());
 }
 
 void GpuChannelHost::OnChannelError() {

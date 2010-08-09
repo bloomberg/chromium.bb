@@ -578,6 +578,8 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableRemoting,
     switches::kEnableClickToPlay,
     switches::kPrelaunchGpuProcess,
+    switches::kEnableAcceleratedCompositing,
+    switches::kEnableAcceleratedDecoding,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

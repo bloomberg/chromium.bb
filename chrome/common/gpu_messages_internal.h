@@ -10,6 +10,7 @@
 // from it via utility_messages.h.
 #include "base/shared_memory.h"
 #include "chrome/common/gpu_info.h"
+#include "chrome/common/gpu_video_common.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -155,6 +156,21 @@ IPC_BEGIN_MESSAGES(GpuChannel)
   IPC_MESSAGE_CONTROL1(GpuChannelMsg_DestroyCommandBuffer,
                        int32 /* instance_id */)
 
+  // Get hardware video service routing id.
+  IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_GetVideoService,
+                              GpuVideoServiceInfoParam)
+
+  // Create hardware video decoder && associate it with the output |decoder_id|;
+  // We need this to be control message because we had to map the GpuChannel and
+  // |decoder_id|.
+  IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_CreateVideoDecoder,
+                              GpuVideoDecoderInfoParam)
+
+  // Release all resource of the hardware video decoder which was assocaited
+  // with the input |decoder_id|.
+  IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyVideoDecoder,
+                              int32 /* decoder_id */)
+
 IPC_END_MESSAGES(GpuChannel)
 
 //------------------------------------------------------------------------------
@@ -241,3 +257,67 @@ IPC_BEGIN_MESSAGES(GpuCommandBuffer)
 #endif
 
 IPC_END_MESSAGES(GpuCommandBuffer)
+
+//------------------------------------------------------------------------------
+
+// GpuVideoDecoderMsgs : send from renderer process to gpu process.
+IPC_BEGIN_MESSAGES(GpuVideoDecoder)
+  // Initialize and configure GpuVideoDecoder asynchronously.
+  IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_Initialize,
+                      GpuVideoDecoderInitParam)
+
+  // Destroy and release GpuVideoDecoder asynchronously.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_Destroy)
+
+  // Start decoder flushing operation.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_Flush)
+
+  // Send input buffer to GpuVideoDecoder.
+  IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_EmptyThisBuffer,
+                      GpuVideoDecoderInputBufferParam)
+
+  // Require output buffer from GpuVideoDecoder.
+  IPC_MESSAGE_ROUTED1(GpuVideoDecoderMsg_FillThisBuffer,
+                      GpuVideoDecoderOutputBufferParam)
+
+  // GpuVideoDecoderHost has consumed the output buffer.
+  // NOTE: this may only useful for copy back solution
+  // where output transfer buffer had to be guarded.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderMsg_FillThisBufferDoneACK)
+
+IPC_END_MESSAGES(GpuVideoDecoder)
+
+//------------------------------------------------------------------------------
+
+// GpuVideoDecoderMsgs : send from gpu process to renderer process.
+IPC_BEGIN_MESSAGES(GpuVideoDecoderHost)
+  // Confirm GpuVideoDecoder had been initialized or failed to initialize.
+  IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_InitializeACK,
+                      GpuVideoDecoderInitDoneParam)
+
+  // Confrim GpuVideoDecoder had been destroyed properly.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_DestroyACK)
+
+  // Confirm decoder had been flushed.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_FlushACK)
+
+  // GpuVideoDecoder has consumed input buffer from transfer buffer.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_EmptyThisBufferACK)
+
+  // GpuVideoDecoder require new input buffer.
+  IPC_MESSAGE_ROUTED0(GpuVideoDecoderHostMsg_EmptyThisBufferDone)
+
+  // GpuVideoDecoder report output buffer ready.
+  IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_FillThisBufferDone,
+                      GpuVideoDecoderOutputBufferParam)
+
+  // GpuVideoDecoder report output format change.
+  IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_MediaFormatChange,
+                      GpuVideoDecoderFormatChangeParam)
+
+  // GpuVideoDecoder report error.
+  IPC_MESSAGE_ROUTED1(GpuVideoDecoderHostMsg_ErrorNotification,
+                      GpuVideoDecoderErrorInfoParam)
+
+IPC_END_MESSAGES(GpuVideoDecoderHost)
+
