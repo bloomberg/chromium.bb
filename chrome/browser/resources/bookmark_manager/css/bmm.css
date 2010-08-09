@@ -20,14 +20,9 @@ list {
 list > * {
   color: hsl(0, 0%, 70%);
   padding: 0 3px;
-  padding-right: 20px;
+  -webkit-padding-end: 20px;
   text-decoration: none;
   white-space: nowrap;
-}
-
-html[dir=rtl] list > * {
-  padding-right: 3px;
-  padding-left: 20px;
 }
 
 list > * > * {
@@ -117,17 +112,19 @@ list .url input {
   font-family: inherit;
   font-size: inherit;
   font-weight: inherit;
-  margin: -2px 4px -2px -4px;
+  margin: 0;
+  -webkit-margin-start: -4px;
+  -webkit-margin-end: 4px;
   max-width: 40%;
-  padding: 1px 3px 1px 1px;
-  outline: none;
+  padding: 0;
+  -webkit-padding-start: 1px;
+  -webkit-padding-end: 3px;
   text-decoration: none;
 }
 
-html[dir=rtl] list .label input,
-html[dir=rtl] list .url input {
-  margin: -2px -4px -2px 4px;
-  padding: 1px 1px 1px 3px;
+html:not([os=mac]) list .label input,
+html:not([os=mac]) list .url input {
+  outline: none;
 }
 
 list > [editing] {
@@ -142,7 +139,7 @@ list [editing] > * {
 }
 
 list [editing] .url {
-  -webkit-padding-start: 5px;
+  -webkit-padding-start: 10px;
 }
 
 list .url form {
@@ -187,11 +184,8 @@ html[os=mac] .tree-row[selected] > .tree-label {
   max-width: 50%;
   overflow: auto;
   -webkit-box-sizing: border-box;
-  padding: 5px 5px 5px 10px;
-}
-
-html[dir=rtl] #tree-container {
-  padding: 5px 10px 5px 5px;
+  padding: 5px;
+  -webkit-padding-start: 10px;
 }
 
 #tree {
@@ -287,12 +281,10 @@ html[dir=rtl] .header form {
   font: inherit;
   padding: 0;
   background: -webkit-canvas(drop-down-arrow) 100% 50% no-repeat;
-  padding-right: 11px;
+  -webkit-padding-end: 11px;
   -webkit-margin-start: 10px;
 }
 
 html[dir=rtl] .summary button {
   background-position: 0% 50%;
-  padding-right: 0;
-  padding-left: 11px;
 }
