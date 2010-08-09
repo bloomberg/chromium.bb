@@ -82,17 +82,19 @@ void AutocompletePopupModel::SetHoveredLine(size_t line) {
 
 void AutocompletePopupModel::SetSelectedLine(size_t line,
                                              bool reset_to_default) {
-  // We should at least be dealing with the results of the current query.
+  // We should at least be dealing with the results of the current query.  Note
+  // that even if |line| was valid on entry, this may make it invalid.  We clamp
+  // it below.
   controller_->CommitIfQueryHasNeverBeenCommitted();
 
   const AutocompleteResult& result = controller_->result();
-  CHECK(line < result.size());
   if (result.empty())
     return;
 
   // Cancel the query so the matches don't change on the user.
   controller_->Stop(false);
 
+  line = std::min(line, result.size() - 1);
   const AutocompleteMatch& match = result.match_at(line);
   if (reset_to_default) {
     manually_selected_match_.Clear();
@@ -236,8 +238,8 @@ void AutocompletePopupModel::Move(int count) {
 
   // Clamp the new line to [0, result_.count() - 1].
   const size_t new_line = selected_line_ + count;
-  SetSelectedLine((((count < 0) && (new_line >= selected_line_)) ?
-      0 : std::min(new_line, result.size() - 1)), false);
+  SetSelectedLine(((count < 0) && (new_line >= selected_line_)) ? 0 : new_line,
+                  false);
 }
 
 void AutocompletePopupModel::TryDeletingCurrentItem() {
@@ -259,10 +261,12 @@ void AutocompletePopupModel::TryDeletingCurrentItem() {
     const AutocompleteResult& result = controller_->result();
     if (!result.empty()) {
       // Move the selection to the next choice after the deleted one.
+      // SetSelectedLine() will clamp to take care of the case where we deleted
+      // the last item.
       // TODO(pkasting): Eventually the controller should take care of this
       // before notifying us, reducing flicker.  At that point the check for
       // deletability can move there too.
-      SetSelectedLine(std::min(result.size() - 1, selected_line), false);
+      SetSelectedLine(selected_line, false);
     }
   }
 }

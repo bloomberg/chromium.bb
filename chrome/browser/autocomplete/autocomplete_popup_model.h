@@ -65,7 +65,7 @@ class AutocompletePopupModel : public NotificationObserver {
 
   // Call to change the selected line.  This will update all state and repaint
   // the necessary parts of the window, as well as updating the edit with the
-  // new temporary text.  |line| should be within the range of valid lines.
+  // new temporary text.  |line| will be clamped to the range of valid lines.
   // |reset_to_default| is true when the selection is being reset back to the
   // default match, and thus there is no temporary text (and no
   // |manually_selected_match_|).
