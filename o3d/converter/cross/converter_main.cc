@@ -45,6 +45,9 @@
 #include "converter/cross/converter.h"
 #include "utils/cross/file_path_utils.h"
 
+using std::string;
+using std::wstring;
+
 #if defined(OS_WIN)
 int wmain(int argc, wchar_t **argv) {
   // On Windows, CommandLine::Init ignores its arguments and uses
@@ -132,21 +135,23 @@ int CrossMain(int argc, char**argv) {
   options.convert_dds_to_png = command_line->HasSwitch("convert-dds-to-png");
   options.convert_cg_to_glsl = command_line->HasSwitch("convert-cg-to-glsl");
   options.converter_tool = command_line->HasSwitch("converter-tool") ?
-      command_line->GetSwitchValuePath("converter-tool") : converter_tool;
+      o3d::WideToFilePath(command_line->GetSwitchValue("converter-tool")) :
+      converter_tool;
   if (command_line->HasSwitch("base-path")) {
-    options.base_path = command_line->GetSwitchValuePath("base-path");
+    options.base_path = o3d::WideToFilePath(
+        command_line->GetSwitchValue("base-path"));
   }
   if (command_line->HasSwitch("asset-paths")) {
-    std::vector<CommandLine::StringType> paths;
-    SplitString(command_line->GetSwitchValueNative("asset-paths"), ',', &paths);
+    std::vector<std::wstring> paths;
+    SplitString(command_line->GetSwitchValue("asset-paths"), ',', &paths);
     for (size_t ii = 0; ii < paths.size(); ++ii) {
-      options.file_paths.push_back(FilePath(paths[ii]));
+      options.file_paths.push_back(o3d::WideToFilePath(paths[ii]));
     }
   }
   if (command_line->HasSwitch("up-axis")) {
-    std::string up_axis_string = command_line->GetSwitchValueASCII("up-axis");
+    wstring up_axis_string = command_line->GetSwitchValue("up-axis");
     int x, y, z;
-    if (sscanf(up_axis_string.c_str(), "%d,%d,%d", &x, &y, &z) != 3) {
+    if (swscanf(up_axis_string.c_str(), L"%d,%d,%d", &x, &y, &z) != 3) {
       std::cerr << "Invalid --up-axis value. Should be --up-axis=x,y,z\n";
       return EXIT_FAILURE;
     }
