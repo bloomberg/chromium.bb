@@ -28,20 +28,28 @@ struct PluginGroupDefinition {
   const char* update_url;  // Location of latest secure version.
 };
 
+// A PluginGroup can match a range of versions of a specific plugin (as defined
+// by matching a substring of its name).
+// It contains all WebPluginInfo structs (at least one) matching its definition.
+// In addition, it knows about a security "baseline", i.e. the minimum version
+// of a plugin that is needed in order not to exhibit known security
+// vulnerabilities.
 
-// A PluginGroup contains at least one WebPluginInfo.
-// In addition, it knows if the plugin is critically vulnerable.
 class PluginGroup {
  public:
   // Creates a PluginGroup from a PluginGroupDefinition.
   static PluginGroup* FromPluginGroupDefinition(
       const PluginGroupDefinition& definition);
 
+  ~PluginGroup();
+
   // Creates a PluginGroup from a WebPluginInfo -- when no hard-coded
   // definition is found.
   static PluginGroup* FromWebPluginInfo(const WebPluginInfo& wpi);
 
-  // Find a plugin group matching |info| in the list of hardcoded plugins.
+  // Find a plugin group matching |info| in the list of hardcoded plugins and
+  // returns a copy of it if found, or a new group matching exactly this plugin
+  // otherwise.
   static PluginGroup* FindHardcodedPluginGroup(const WebPluginInfo& info);
 
   // Configures the set of plugin names that are disabled by policy.

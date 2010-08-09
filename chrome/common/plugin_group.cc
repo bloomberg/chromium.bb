@@ -149,6 +149,8 @@ PluginGroup* PluginGroup::FromPluginGroupDefinition(
                          definition.update_url);
 }
 
+PluginGroup::~PluginGroup() { }
+
 PluginGroup* PluginGroup::FromWebPluginInfo(const WebPluginInfo& wpi) {
   // Create a matcher from the name of this plugin.
   return new PluginGroup(wpi.name, wpi.name,

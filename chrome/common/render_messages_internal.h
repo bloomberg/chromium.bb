@@ -1697,6 +1697,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_CrashedPlugin,
                       FilePath /* plugin_path */)
 
+  // Notifies when a plugin couldn't be loaded because it's outdated.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_DisabledOutdatedPlugin,
+                      string16, /* name */
+                      GURL      /* update_url */)
+
   // Displays a JavaScript out-of-memory message in the infobar.
   IPC_MESSAGE_ROUTED0(ViewHostMsg_JSOutOfMemory)
 

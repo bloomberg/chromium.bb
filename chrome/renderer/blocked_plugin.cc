@@ -10,6 +10,7 @@
 #include "base/string_piece.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/plugin_group.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
@@ -33,7 +34,8 @@ static const char* const kBlockedPluginDataURL = "chrome://blockedplugindata/";
 
 BlockedPlugin::BlockedPlugin(RenderView* render_view,
                              WebFrame* frame,
-                            const WebPluginParams& params)
+                             const WebPluginParams& params,
+                             PluginGroup* group)
     : render_view_(render_view),
       frame_(frame),
       plugin_params_(params) {
@@ -49,15 +51,19 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
   DCHECK(!template_html.empty()) << "unable to load template. ID: "
                                  << resource_id;
 
-  DictionaryValue localized_strings;
-  localized_strings.SetString(L"loadPlugin",
+  DictionaryValue values;
+  values.SetString(L"loadPlugin",
       l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD));
-  localized_strings.SetString(L"message",
+  values.SetString(L"updatePlugin",
+      l10n_util::GetStringUTF16(IDS_PLUGIN_UPDATE));
+  values.SetString(L"message",
       l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_TITLE));
+  if (group)
+    values.Set(L"pluginGroup", group->GetDataForUI());
 
   // "t" is the id of the templates root node.
   std::string htmlData = jstemplate_builder::GetTemplatesHtml(
-      template_html, &localized_strings, "t");
+      template_html, &values, "t");
 
   web_view->mainFrame()->loadHTMLString(htmlData,
                                         GURL(kBlockedPluginDataURL));
@@ -70,6 +76,7 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
 void BlockedPlugin::BindWebFrame(WebFrame* frame) {
   BindToJavascript(frame, L"plugin");
   BindMethod("load", &BlockedPlugin::Load);
+  BindMethod("update", &BlockedPlugin::Update);
 }
 
 void BlockedPlugin::WillDestroyPlugin() {
@@ -88,6 +95,23 @@ void BlockedPlugin::Observe(NotificationType type,
 
 void BlockedPlugin::Load(const CppArgumentList& args, CppVariant* result) {
   LoadPlugin();
+}
+
+void BlockedPlugin::Update(const CppArgumentList& args, CppVariant* result) {
+  if (args.size() > 0) {
+    CppVariant arg(args[0]);
+    if (arg.isString()) {
+      GURL url(arg.ToString());
+      OpenURL(url);
+    }
+  }
+}
+
+void BlockedPlugin::OpenURL(GURL& url) {
+  render_view_->Send(new ViewHostMsg_OpenURL(render_view_->routing_id(),
+                                             url,
+                                             GURL(),
+                                             CURRENT_TAB));
 }
 
 void BlockedPlugin::LoadPlugin() {
