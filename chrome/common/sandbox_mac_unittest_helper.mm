@@ -8,8 +8,12 @@ extern "C" {
 #include <sandbox.h>
 }
 
+#include <map>
+
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/sandbox_mac.h"
+#include "testing/multiprocess_func_list.h"
 
 namespace {
 
@@ -71,7 +75,8 @@ bool MacSandboxTest::RunTestInSandbox(sandbox::SandboxProcessType sandbox_type,
   if (test_data)
     setenv(kTestDataKey, test_data, 1);
 
-  base::ProcessHandle child_process = SpawnChild("mac_sandbox_test_runner");
+  base::ProcessHandle child_process = SpawnChild("mac_sandbox_test_runner",
+                                                 false);
   int code = -1;
   if (!base::WaitForExitCode(child_process, &code)) {
     LOG(WARNING) << "base::WaitForExitCode failed";

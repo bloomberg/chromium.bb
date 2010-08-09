@@ -78,7 +78,7 @@ class OutOfProcTestRunner : public tests::TestRunner {
 
     // Do not let the child ignore failures.  We need to propagate the
     // failure status back to the parent.
-    new_cmd_line.AppendSwitch(kStrictFailureHandling);
+    new_cmd_line.AppendSwitch(base::TestSuite::kStrictFailureHandling);
 
     base::ProcessHandle process_handle;
     if (!base::LaunchApp(new_cmd_line, false, false, &process_handle))

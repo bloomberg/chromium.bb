@@ -92,6 +92,7 @@
         'courgette_lib',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
@@ -117,6 +118,7 @@
         'courgette_lib',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [

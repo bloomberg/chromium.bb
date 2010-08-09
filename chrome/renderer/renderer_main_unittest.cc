@@ -1,15 +1,16 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
-#include "base/multiprocess_test.h"
 #include "base/process_util.h"
+#include "base/test/multiprocess_test.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/main_function_params.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/multiprocess_func_list.h"
 
 // TODO(port): Bring up this test this on other platforms.
 #if defined(OS_POSIX)
@@ -22,9 +23,8 @@ extern int RendererMain(const MainFunctionParams& parameters);
 
 // TODO(port): The IPC Channel tests have a class with extremely similar
 // functionality, we should combine them.
-class RendererMainTest : public MultiProcessTest {
+class RendererMainTest : public base::MultiProcessTest {
  protected:
-
   // Create a new MessageLoopForIO For each test.
   virtual void SetUp();
   virtual void TearDown();

@@ -9,14 +9,13 @@
 #include "app/app_paths.h"
 #include "app/resource_bundle.h"
 #include "app/win_util.h"
-
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
-
+#include "base/string_util.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/plugin_service.h"
@@ -36,6 +35,7 @@
 #include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test/win_event_receiver.h"
 #include "chrome_frame/test/net/test_automation_resource_message_filter.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 

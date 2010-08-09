@@ -66,6 +66,7 @@
             'installer_util_strings',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/base.gyp:base_i18n',
+            '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
             '<(DEPTH)/testing/gtest.gyp:gtest',
           ],
@@ -144,6 +145,7 @@
             'installer_util',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/base.gyp:base_i18n',
+            '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
@@ -293,6 +295,7 @@
             'installer_util',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/base.gyp:base_i18n',
+            '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
             '<(DEPTH)/testing/gtest.gyp:gtest',
           ],

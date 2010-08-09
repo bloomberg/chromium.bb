@@ -752,6 +752,10 @@ const char kProcessPerSite[]                = "process-per-site";
 // script connections to each other).
 const char kProcessPerTab[]                 = "process-per-tab";
 
+// The value of this switch determines whether the process is started as a
+// renderer or plugin host.  If it's empty, it's the browser.
+const char kProcessType[]                   = "type";
+
 // Output the product version information and quit. Used as an internal api to
 // detect the installed version of Chrome on Linux.
 const char kProductVersion[]                = "product-version";

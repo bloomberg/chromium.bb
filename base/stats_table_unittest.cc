@@ -7,12 +7,14 @@
 #include <windows.h>
 #endif
 
-#include "base/multiprocess_test.h"
 #include "base/platform_thread.h"
 #include "base/simple_thread.h"
 #include "base/shared_memory.h"
 #include "base/stats_table.h"
 #include "base/stats_counters.h"
+#include "base/string_piece.h"
+#include "base/string_util.h"
+#include "base/test/multiprocess_test.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -204,7 +206,7 @@ TEST_F(StatsTableTest, MultipleProcesses) {
 
   // Spawn the processes.
   for (int16 index = 0; index < kMaxProcs; index++) {
-    procs[index] = this->SpawnChild("StatsTableMultipleProcessMain");
+    procs[index] = this->SpawnChild("StatsTableMultipleProcessMain", false);
     EXPECT_NE(base::kNullProcessHandle, procs[index]);
   }
 
