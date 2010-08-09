@@ -3935,3 +3935,29 @@
    fun:_ZN6WebKit23WebKeyboardEventBuilderC1ERKN7WebCore13KeyboardEventE
    fun:_ZN6WebKit16EditorClientImpl27doTextFieldCommandFromEventEPN7WebCore7ElementEPNS1_13KeyboardEventE
 }
+{
+   bug_51581
+   Memcheck:Leak
+   fun:malloc
+   fun:_Z15sk_malloc_flagsjj
+   fun:_ZN8SkBitmap13HeapAllocator13allocPixelRefEPS_P12SkColorTable
+   fun:_ZN8SkBitmap11allocPixelsEPNS_9AllocatorEP12SkColorTable
+   fun:_ZN8SkBitmap11allocPixelsEP12SkColorTable
+   fun:_ZN18SkBitmapOperations18CreateMaskedBitmapERK8SkBitmapS2_
+   fun:_ZN3Tab24PaintActiveTabBackgroundEPN3gfx6CanvasE
+   fun:_ZN3Tab18PaintTabBackgroundEPN3gfx6CanvasE
+   fun:_ZN3Tab5PaintEPN3gfx6CanvasE
+   fun:_ZN5views4View12ProcessPaintEPN3gfx6CanvasE
+   fun:_ZN8TabStrip13PaintChildrenEPN3gfx6CanvasE
+   fun:_ZN5views4View12ProcessPaintEPN3gfx6CanvasE
+   fun:_ZN5views4View13PaintChildrenEPN3gfx6CanvasE
+   fun:_ZN5views4View12ProcessPaintEPN3gfx6CanvasE
+   fun:_ZN5views4View13PaintChildrenEPN3gfx6CanvasE
+   fun:_ZN5views4View12ProcessPaintEPN3gfx6CanvasE
+   fun:_ZN5views4View13PaintChildrenEPN3gfx6CanvasE
+   fun:_ZN5views4View12ProcessPaintEPN3gfx6CanvasE
+   fun:_ZN5views8RootView12ProcessPaintEPN3gfx6CanvasE
+   fun:_ZN5views8RootView7OnPaintEP15_GdkEventExpose
+   fun:_ZN5views9WidgetGtk7OnPaintEP10_GtkWidgetP15_GdkEventExpose
+   fun:_ZN5views9WidgetGtk12OnPaintThunkEP10_GtkWidgetP15_GdkEventExposePv
+}
