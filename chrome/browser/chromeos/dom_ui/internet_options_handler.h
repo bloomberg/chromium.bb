@@ -30,8 +30,6 @@ class InternetOptionsHandler : public OptionsPageUIHandler,
 
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(chromeos::NetworkLibrary* obj);
-  virtual void NetworkTraffic(chromeos::NetworkLibrary* cros,
-                              int traffic_type) {}
 
  private:
   // Open a modal popup dialog.

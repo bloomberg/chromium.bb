@@ -49,7 +49,6 @@ class NetworkScreen : public ViewScreen<NetworkSelectionView>,
 
   // NetworkLibrary::Observer implementation:
   virtual void NetworkChanged(NetworkLibrary* network_lib);
-  virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type) {}
 
   // NetworkConfigView::Delegate implementation:
   virtual void OnDialogAccepted();

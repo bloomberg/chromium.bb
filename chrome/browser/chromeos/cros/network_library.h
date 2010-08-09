@@ -14,7 +14,6 @@
 #include "base/singleton.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "net/url_request/url_request_job_tracker.h"
 #include "cros/chromeos_network.h"
 
 namespace chromeos {
@@ -229,18 +228,8 @@ class NetworkLibrary {
  public:
   class Observer {
    public:
-    // A bitfield mask for traffic types.
-    enum TrafficTypes {
-      TRAFFIC_DOWNLOAD = 0x1,
-      TRAFFIC_UPLOAD = 0x2,
-    } TrafficTypeMasks;
-
     // Called when the network has changed. (wifi networks, and ethernet)
     virtual void NetworkChanged(NetworkLibrary* obj) = 0;
-
-    // Called when network traffic has been detected.
-    // Takes a bitfield of TrafficTypeMasks.
-    virtual void NetworkTraffic(NetworkLibrary* obj, int traffic_type) = 0;
   };
 
   virtual ~NetworkLibrary() {}

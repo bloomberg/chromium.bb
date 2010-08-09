@@ -33,8 +33,8 @@ class NetworkMessageObserver : public NetworkLibrary::Observer {
  private:
   virtual void CreateModalPopup(views::WindowDelegate* view);
 
+  // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(NetworkLibrary* obj);
-  virtual void NetworkTraffic(NetworkLibrary* obj, int traffic_type) {}
 
   bool initialized_;
   // Wifi networks by service path.

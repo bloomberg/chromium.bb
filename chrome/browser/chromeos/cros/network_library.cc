@@ -11,7 +11,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "net/url_request/url_request_job.h"
 
 namespace chromeos {
 
@@ -205,12 +204,10 @@ std::string WifiNetwork::GetEncryptionString() {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkLibrary
 
-class NetworkLibraryImpl : public NetworkLibrary,
-                           public URLRequestJobTracker::JobObserver {
+class NetworkLibraryImpl : public NetworkLibrary  {
  public:
   NetworkLibraryImpl()
-      : traffic_type_(0),
-        network_status_connection_(NULL),
+      : network_status_connection_(NULL),
         available_devices_(0),
         enabled_devices_(0),
         connected_devices_(0),
@@ -220,38 +217,12 @@ class NetworkLibraryImpl : public NetworkLibrary,
     } else {
       InitTestData();
     }
-    g_url_request_job_tracker.AddObserver(this);
   }
 
   ~NetworkLibraryImpl() {
     if (network_status_connection_) {
       DisconnectMonitorNetwork(network_status_connection_);
     }
-    g_url_request_job_tracker.RemoveObserver(this);
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-  // NetworkLibraryImpl, URLRequestJobTracker::JobObserver implementation:
-
-  void OnJobAdded(URLRequestJob* job) {
-    CheckNetworkTraffic(false);
-  }
-
-  void OnJobRemoved(URLRequestJob* job) {
-    CheckNetworkTraffic(false);
-  }
-
-  void OnJobDone(URLRequestJob* job, const URLRequestStatus& status) {
-    CheckNetworkTraffic(false);
-  }
-
-  void OnJobRedirect(
-      URLRequestJob* job, const GURL& location, int status_code) {
-    CheckNetworkTraffic(false);
-  }
-
-  void OnBytesRead(URLRequestJob* job, const char* buf, int byte_count) {
-    CheckNetworkTraffic(true);
   }
 
   void AddObserver(Observer* observer) {
@@ -912,63 +883,7 @@ class NetworkLibraryImpl : public NetworkLibrary,
     FreeSystemInfo(system);
   }
 
-  void CheckNetworkTraffic(bool download) {
-    // If we already have a pending upload and download notification, then
-    // shortcut and return.
-    if (traffic_type_ ==
-        (Observer::TRAFFIC_DOWNLOAD | Observer::TRAFFIC_UPLOAD)) {
-      return;
-    }
-    // Figure out if we are uploading and/or downloading. We are downloading
-    // if download == true. We are uploading if we have upload progress.
-    if (download)
-      traffic_type_ |= Observer::TRAFFIC_DOWNLOAD;
-    if ((traffic_type_ & Observer::TRAFFIC_UPLOAD) == 0) {
-      URLRequestJobTracker::JobIterator it;
-      for (it = g_url_request_job_tracker.begin();
-           it != g_url_request_job_tracker.end();
-           ++it) {
-        URLRequestJob* job = *it;
-        if (job->GetUploadProgress() > 0) {
-          traffic_type_ |= Observer::TRAFFIC_UPLOAD;
-          break;
-        }
-      }
-    }
-    // If we have new traffic data to send out and the timer is not currently
-    // running, then start a new timer.
-    if (traffic_type_ && !timer_.IsRunning()) {
-      timer_.Start(base::TimeDelta::FromSeconds(kNetworkTrafficeTimerSecs),
-                   this,
-                   &NetworkLibraryImpl::NetworkTrafficTimerFired);
-    }
-  }
-
-  void  NetworkTrafficTimerFired() {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &NetworkLibraryImpl::NotifyNetworkTraffic,
-                          traffic_type_));
-    // Reset traffic type so that we don't send the same data next time.
-    traffic_type_ = 0;
-  }
-
-  void NotifyNetworkTraffic(int traffic_type) {
-    FOR_EACH_OBSERVER(Observer, observers_, NetworkTraffic(this, traffic_type));
-  }
-
   ObserverList<Observer> observers_;
-
-  // The amount of time to wait between each NetworkTraffic notifications.
-  static const int kNetworkTrafficeTimerSecs = 1;
-
-  // Timer for sending NetworkTraffic notification every
-  // kNetworkTrafficeTimerSecs seconds.
-  base::OneShotTimer<NetworkLibraryImpl> timer_;
-
-  // The current traffic type that will be sent out for the next NetworkTraffic
-  // notification. This is a bitfield of TrafficTypeMasks.
-  int traffic_type_;
 
   // The network status connection for monitoring network status changes.
   MonitorNetworkConnection network_status_connection_;
@@ -1012,12 +927,6 @@ class NetworkLibraryStubImpl : public NetworkLibrary {
  public:
   NetworkLibraryStubImpl() : ip_address_("1.1.1.1") {}
   ~NetworkLibraryStubImpl() {}
-  void OnJobAdded(URLRequestJob* job) {}
-  void OnJobRemoved(URLRequestJob* job) {}
-  void OnJobDone(URLRequestJob* job, const URLRequestStatus& status) {}
-  void OnJobRedirect(
-      URLRequestJob* job, const GURL& location, int status_code) {}
-  void OnBytesRead(URLRequestJob* job, const char* buf, int byte_count) {}
   void AddObserver(Observer* observer) {}
   void RemoveObserver(Observer* observer) {}
   virtual const EthernetNetwork& ethernet_network() const {

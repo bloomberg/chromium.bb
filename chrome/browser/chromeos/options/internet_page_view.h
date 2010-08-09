@@ -26,7 +26,6 @@ class InternetPageView : public SettingsPageView,
 
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(NetworkLibrary* obj);
-  virtual void NetworkTraffic(NetworkLibrary* obj, int traffic_type) {}
 
   // views::View overrides:
   virtual void Layout();

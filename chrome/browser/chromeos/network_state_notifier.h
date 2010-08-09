@@ -61,7 +61,6 @@ class NetworkStateNotifier : public NetworkLibrary::Observer {
 
   // NetworkLibrary::Observer implementation.
   virtual void NetworkChanged(NetworkLibrary* cros);
-  virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type) {}
 
  private:
   friend struct DefaultSingletonTraits<NetworkStateNotifier>;
