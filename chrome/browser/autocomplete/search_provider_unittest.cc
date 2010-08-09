@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -136,7 +136,6 @@ void SearchProviderTest::SetUp() {
 }
 
 void SearchProviderTest::OnProviderUpdate(bool updated_matches) {
-  SearchProvider::set_query_suggest_immediately(false);
   if (quit_when_done_ && provider_->done()) {
     quit_when_done_ = false;
     message_loop_.Quit();
@@ -268,4 +267,31 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
   // The fill into edit should contain the keyword.
   EXPECT_EQ(keyword_t_url_->keyword() + L" " + UTF16ToWide(keyword_term_),
             match.fill_into_edit);
+}
+
+TEST_F(SearchProviderTest, DontSendPrivateDataToSuggest) {
+  // None of the following input strings should be sent to the suggest server,
+  // because they may contain private data.
+  char* inputs[] = {
+    "username:password",
+    "http://username:password",
+    "https://username:password",
+    "username:password@hostname",
+    "http://username:password@hostname/",
+    "file://filename",
+    "data://data",
+    "unknownscheme:anything",
+    "http://hostname/?query=q",
+    "http://hostname/path#ref",
+    "https://hostname/path",
+  };
+
+  for (size_t i = 0; i < arraysize(inputs); ++i) {
+    QueryForInput(ASCIIToUTF16(inputs[i]));
+    // Make sure the default providers suggest service was not queried.
+    ASSERT_TRUE(test_factory_.GetFetcherByID(
+        SearchProvider::kDefaultProviderURLFetcherID) == NULL);
+    // Run till the history results complete.
+    RunTillProviderDone();
+  }
 }
