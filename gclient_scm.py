@@ -752,6 +752,12 @@ class SVNWrapper(SCMWrapper):
                                 "and try again." %
                                 checkout_path)
 
+    # Look for locked directories.
+    dir_info = scm.SVN.CaptureStatus(os.path.join(checkout_path, '.'))
+    if [True for d in dir_info if d[0][2] == 'L' and d[1] == checkout_path]:
+      # The current directory is locked, clean it up.
+      scm.SVN.Run(['cleanup'], checkout_path)
+
     if options.manually_grab_svn_rev:
       # Retrieve the current HEAD version because svn is slow at null updates.
       if not revision:

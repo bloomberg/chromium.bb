@@ -255,6 +255,11 @@ class SVNWrapperTestCase(BaseTestCase):
     }
     gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.git')
                                ).AndReturn(False)
+
+    # Verify no locked files.
+    gclient_scm.scm.SVN.CaptureStatus(gclient_scm.os.path.join(base_path, '.')
+        ).AndReturn([])
+
     # Checkout or update.
     gclient_scm.os.path.exists(base_path).AndReturn(True)
     gclient_scm.scm.SVN.CaptureInfo(
@@ -294,6 +299,10 @@ class SVNWrapperTestCase(BaseTestCase):
         ).AndReturn(False)
     gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, 'DEPS')
         ).AndReturn(False)
+
+    # Verify no locked files.
+    gclient_scm.scm.SVN.CaptureStatus(gclient_scm.os.path.join(base_path, '.')
+        ).AndReturn([])
 
     # When checking out a single file, we issue an svn checkout and svn update.
     files_list = self.mox.CreateMockAnything()
@@ -363,6 +372,10 @@ class SVNWrapperTestCase(BaseTestCase):
         ).AndReturn(True)
     gclient_scm.os.remove(gclient_scm.os.path.join(base_path, 'DEPS'))
 
+    # Verify no locked files.
+    gclient_scm.scm.SVN.CaptureStatus(gclient_scm.os.path.join(base_path, '.')
+        ).AndReturn([])
+
     # When checking out a single file, we issue an svn checkout and svn update.
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Run(
@@ -398,6 +411,10 @@ class SVNWrapperTestCase(BaseTestCase):
         ).AndReturn('svn, version 1.5.1 (r32289)')
     gclient_scm.os.path.exists(gclient_scm.os.path.join(base_path, '.svn')
         ).AndReturn(True)
+
+    # Verify no locked files.
+    gclient_scm.scm.SVN.CaptureStatus(gclient_scm.os.path.join(base_path, '.')
+        ).AndReturn([])
 
     # Now we fall back on scm.update().
     files_list = self.mox.CreateMockAnything()
