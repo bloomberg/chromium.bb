@@ -50,24 +50,28 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
   const CellularNetworkVector& cellular_networks = obj->cellular_networks();
 
   NetworkConfigView* view = NULL;
+  std::string new_failed_network;
   // Check to see if we have any newly failed wifi network.
   for (WifiNetworkVector::const_iterator it = wifi_networks.begin();
        it < wifi_networks.end(); it++) {
     const WifiNetwork& wifi = *it;
     if (wifi.failed()) {
-      bool failed = true;
       ServicePathWifiMap::iterator iter =
           wifi_networks_.find(wifi.service_path());
-      if (iter != wifi_networks_.end()) {
-        // If same error message, then it's not new
-        if (wifi.error() == iter->second.error()) {
-          failed = false;
-        }
-      }
+      // If the network did not previously exist, then don't do anything.
+      // For example, if the user travels to a location and finds a service
+      // that has previously failed, we don't want to show a notification.
+      if (iter == wifi_networks_.end())
+        continue;
+
+      const WifiNetwork& wifi_old = iter->second;
+      // If this network was in a failed state previously, then it's not new.
+      if (wifi_old.failed())
+        continue;
+
       // Display login box again for bad_passphrase and bad_wepkey errors.
-      if (failed && (wifi.error() == ERROR_BAD_PASSPHRASE ||
-          wifi.error() == ERROR_BAD_WEPKEY)) {
-        DLOG(INFO) << "Found newly failed network: " << wifi.name();
+      if (wifi.error() == ERROR_BAD_PASSPHRASE ||
+          wifi.error() == ERROR_BAD_WEPKEY) {
         // The NetworkConfigView will show the appropriate error message.
         view = new NetworkConfigView(wifi, true);
         // There should only be one wifi network that failed to connect.
@@ -75,6 +79,21 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
         // we only display the first one. So we break here.
         break;
       }
+
+      // If network connection failed, display a notification.
+      // We only do this if we were trying to make a new connection.
+      // So if a previously connected network got disconnected for any reason,
+      // we don't display notification.
+      if (wifi_old.connecting()) {
+        new_failed_network = wifi.name();
+        // Like above, there should only be one newly failed network.
+        break;
+      }
+    }
+
+    // If we find any network connecting, we hide any notifications.
+    if (wifi.connecting()) {
+      notification_.Hide();
     }
   }
 
@@ -93,9 +112,14 @@ void NetworkMessageObserver::NetworkChanged(NetworkLibrary* obj) {
   }
 
   // Show notification if necessary.
-//    notification_.Show(l10n_util::GetStringFUTF16(
-//        IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
-//        ASCIIToUTF16(new_failed_network)), true);
+  if (!new_failed_network.empty()) {
+    // Hide if already shown to force show it in case user has closed it.
+    if (notification_.visible())
+      notification_.Hide();
+    notification_.Show(l10n_util::GetStringFUTF16(
+        IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
+        ASCIIToUTF16(new_failed_network)), false);
+  }
 
   // Show login box if necessary.
   if (view && initialized_)
