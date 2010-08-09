@@ -3928,4 +3928,10 @@
    fun:_ZN3gfx10CanvasSkia13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiiii
    fun:_ZN3gfx10CanvasSkia13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiii
 }
-
+{
+   bug_51579
+   Memcheck:Addr4
+   fun:_ZNK7WebCore21PlatformKeyboardEvent20nativeVirtualKeyCodeEv
+   fun:_ZN6WebKit23WebKeyboardEventBuilderC1ERKN7WebCore13KeyboardEventE
+   fun:_ZN6WebKit16EditorClientImpl27doTextFieldCommandFromEventEPN7WebCore7ElementEPNS1_13KeyboardEventE
+}
