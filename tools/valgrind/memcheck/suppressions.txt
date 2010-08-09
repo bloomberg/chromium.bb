@@ -3961,3 +3961,11 @@
    fun:_ZN5views9WidgetGtk7OnPaintEP10_GtkWidgetP15_GdkEventExpose
    fun:_ZN5views9WidgetGtk12OnPaintThunkEP10_GtkWidgetP15_GdkEventExposePv
 }
+{
+   bug_51587
+   Memcheck:Cond
+   ...
+   fun:_ZN29AccessibilityEventRouterViews11IsMenuEventEPN5views4ViewE16NotificationType
+   ...
+   fun:_ZN5views16NativeControlGtk5FocusEv
+}
