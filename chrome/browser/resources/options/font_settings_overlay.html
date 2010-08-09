@@ -1,3 +1,61 @@
 <div class="page hidden" id="fontSettingsOverlay">
   <h1 i18n-content="fontSettingsTitle"></h1>
+  <section>
+    <h3 i18n-content="fontSettingsFontTitle"></h3>
+    <div>
+      <div>
+        <label style="display:inline;">
+          <span i18n-content="fontSettingsSerifLabel"></span>
+          <select id="fontSettingsSerifSelector"
+              pref="webkit.webprefs.serif_font_family"></select>
+        </label>
+        <label style="display:inline;">
+          <span i18n-content="fontSettingsSizeLabel"></span>
+          <select id="fontSettingsSerifSizeSelector"
+              pref="webkit.webprefs.default_font_size"></select>
+        </label>
+        <div id="fontSettingsSerifPreview"></div>
+      </div>
+      <div>
+        <label style="display:inline;">
+          <span i18n-content="fontSettingsSansSerifLabel"></span>
+          <select id="fontSettingsSansSerifSelector"
+              pref="webkit.webprefs.sansserif_font_family"></select>
+        </label>
+        <label style="display:inline;">
+          <span i18n-content="fontSettingsSizeLabel"></span>
+          <select id="fontSettingsSansSerifSizeSelector"
+              pref="webkit.webprefs.default_font_size"></select>
+        </label>
+        <div id="fontSettingsSansSerifPreview"></div>
+      </div>
+      <div>
+        <label style="display:inline;">
+          <span i18n-content="fontSettingsFixedWidthLabel"></span>
+          <select id="fontSettingsFixedWidthSelector"
+              pref="webkit.webprefs.fixed_font_family"></select>
+        </label>
+        <label style="display:inline;">
+          <span i18n-content="fontSettingsSizeLabel"></span>
+          <select id="fontSettingsFixedWidthSizeSelector"
+              pref="webkit.webprefs.default_fixed_font_size"></select>
+        </label>
+        <div id="fontSettingsFixedWidthPreview"></div>
+      </div>
+    </div>
+  </section>
+  <section>
+    <h3 i18n-content="fontSettingsEncodingTitle"></h3>
+    <div>
+      <label style="display:inline;">
+        <span i18n-content="fontSettingsEncodingLabel"></span>
+        <select id="fontSettingsEncodingSelector"
+            pref="intl.charset_default"></select>
+      </label>
+    </div>
+  </section>
+  <div>
+    <button id="fontSettingsDismissButton" i18n-content="close"
+        onclick="OptionsPage.clearOverlays();"></button>
+  </div>
 </div>

@@ -191,7 +191,8 @@ cr.define('options', function() {
                 return;
               }
             }
-            self.selectedIndex = -1;
+            // Item not found, select first item.
+            self.selectedIndex = 0;
           });
 
       // Listen to user events.
