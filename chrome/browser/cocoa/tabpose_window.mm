@@ -370,17 +370,14 @@ void AnimateCALayerFrameFromTo(
 }
 
 - (CALayer*)selectedLayer {
-  return [allLayers_ objectAtIndex:tileSet_->selected_index()];
+  return [allThumbnailLayers_ objectAtIndex:tileSet_->selected_index()];
 }
 
 - (void)selectTileAtIndex:(int)newIndex {
-  // TODO(thakis): Have a nicer indicator for the current selection
-  // (a blue outline, probably).
-  int oldIndex = tileSet_->selected_index();
-  CALayer* oldSelectedLayer = [allLayers_ objectAtIndex:oldIndex];
-  oldSelectedLayer.backgroundColor = CGColorGetConstantColor(kCGColorBlack);
-  CALayer* newSelectedLayer = [allLayers_ objectAtIndex:newIndex];
-  newSelectedLayer.backgroundColor = CGColorGetConstantColor(kCGColorWhite);
+  ScopedCAActionDisabler disabler;
+  const tabpose::Tile& tile = tileSet_->tile_at(newIndex);
+  selectionHighlight_.frame =
+      NSRectToCGRect(NSInsetRect(tile.thumb_rect(), -6, -6));
 
   tileSet_->set_selected_index(newIndex);
 }
@@ -399,6 +396,15 @@ void AnimateCALayerFrameFromTo(
   bgLayer_.masksToBounds = YES;
   [rootLayer_ addSublayer:bgLayer_];
 
+  // Selection highlight layer.
+  darkBlue_.reset(CGColorCreateGenericRGB(0.25, 0.34, 0.86, 1.0));
+  selectionHighlight_ = [CALayer layer];
+  selectionHighlight_.backgroundColor = darkBlue_;
+  selectionHighlight_.cornerRadius = 5.0;
+  selectionHighlight_.zPosition = -1;  // Behind other layers.
+  selectionHighlight_.hidden = YES;
+  [bgLayer_ addSublayer:selectionHighlight_];
+
   // Top gradient.
   CALayer* gradientLayer = [DarkGradientLayer layer];
   gradientLayer.frame = CGRectMake(
@@ -413,13 +419,13 @@ void AnimateCALayerFrameFromTo(
   tileSet_->Build(tabStripModel_);
   tileSet_->Layout(bgLayerRect);
 
-  allLayers_.reset(
+  allThumbnailLayers_.reset(
       [[NSMutableArray alloc] initWithCapacity:tabStripModel_->count()]);
   for (int i = 0; i < tabStripModel_->count(); ++i) {
     CALayer* layer = [CALayer layer];
 
     // Background color as placeholder for now.
-    layer.backgroundColor = CGColorGetConstantColor(kCGColorBlack);
+    layer.backgroundColor = CGColorGetConstantColor(kCGColorWhite);
 
     AnimateCALayerFrameFromTo(
         layer,
@@ -440,7 +446,7 @@ void AnimateCALayerFrameFromTo(
     layer.shadowOffset = CGSizeMake(0, -10);
 
     [bgLayer_ addSublayer:layer];
-    [allLayers_ addObject:layer];
+    [allThumbnailLayers_ addObject:layer];
   }
   [self selectTileAtIndex:tileSet_->selected_index()];
 }
@@ -480,8 +486,8 @@ void AnimateCALayerFrameFromTo(
 - (void)mouseMoved:(NSEvent*)event {
   int newIndex = -1;
   CGPoint p = NSPointToCGPoint([event locationInWindow]);
-  for (NSUInteger i = 0; i < [allLayers_ count]; ++i) {
-    CALayer* layer = [allLayers_ objectAtIndex:i];
+  for (NSUInteger i = 0; i < [allThumbnailLayers_ count]; ++i) {
+    CALayer* layer = [allThumbnailLayers_ objectAtIndex:i];
     CGPoint lp = [layer convertPoint:p fromLayer:rootLayer_];
     if ([static_cast<CALayer*>([layer presentationLayer]) containsPoint:lp])
       newIndex = i;
@@ -531,17 +537,19 @@ void AnimateCALayerFrameFromTo(
     // Move the selected layer on top of all other layers.
     [self selectedLayer].zPosition = 1;
 
+    selectionHighlight_.hidden = YES;
+
     // Running animations with shadows is slow, so turn shadows off before
     // running the exit animation.
-    for (CALayer* layer in allLayers_.get())
+    for (CALayer* layer in allThumbnailLayers_.get())
       layer.shadowOpacity = 0.0;
   }
 
   // Animate layers out, all in one transaction.
   CGFloat duration = kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1);
   ScopedCAActionSetDuration durationSetter(duration);
-  for (NSUInteger i = 0; i < [allLayers_ count]; ++i) {
-    CALayer* layer = [allLayers_ objectAtIndex:i];
+  for (NSUInteger i = 0; i < [allThumbnailLayers_ count]; ++i) {
+    CALayer* layer = [allThumbnailLayers_ objectAtIndex:i];
     // |start_thumb_rect_| was relative to |initial_index_|, now this needs to
     // be relative to |selectedIndex_| (whose start rect was relative to
     // |initial_index_| too)
@@ -570,10 +578,12 @@ void AnimateCALayerFrameFromTo(
       DCHECK_EQ(tabpose::kFadingIn, state_);
       state_ = tabpose::kFadedIn;
 
+      selectionHighlight_.hidden = NO;
+
       // Running animations with shadows is slow, so turn shadows on only after
       // the animation is done.
       ScopedCAActionDisabler disableCAActions;
-      for (CALayer* layer in allLayers_.get())
+      for (CALayer* layer in allThumbnailLayers_.get())
         layer.shadowOpacity = 0.5;
     }
   } else if ([animationId isEqualToString:kAnimationIdFadeOut]) {

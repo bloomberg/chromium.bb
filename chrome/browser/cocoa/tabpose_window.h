@@ -48,13 +48,18 @@ class TabStripModel;
   // The layer showing the background layer. Covers the whole visible area.
   CALayer* bgLayer_;  // weak
 
+  // The layer drawn behind the currently selected tile.
+  CALayer* selectionHighlight_;  // weak
+
+  // Colors used by the layers.
   scoped_cftyperef<CGColorRef> gray_;
+  scoped_cftyperef<CGColorRef> darkBlue_;
 
   TabStripModel* tabStripModel_;  // weak
 
   // Stores all preview layers. The order in here matches the order in
   // the tabstrip model.
-  scoped_nsobject<NSArray> allLayers_;
+  scoped_nsobject<NSArray> allThumbnailLayers_;
 
   // Manages the state of all layers.
   scoped_ptr<tabpose::TileSet> tileSet_;
