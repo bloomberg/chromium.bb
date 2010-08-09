@@ -70,13 +70,8 @@ struct wl_event_source *wl_event_loop_add_idle(struct wl_event_loop *loop,
 					       void *data);
 
 struct wl_client;
-
 struct wl_display;
 struct wl_input_device;
-
-struct wl_map {
-	int32_t x, y, width, height;
-};
 
 struct wl_display *wl_display_create(void);
 struct wl_event_loop *wl_display_get_event_loop(struct wl_display *display);
@@ -93,13 +88,22 @@ void wl_client_destroy(struct wl_client *client);
 
 struct wl_compositor {
 	struct wl_object base;
-	const char *device;
+};
+
+struct wl_resource {
+	struct wl_object base;
+	void (*destroy)(struct wl_resource *resource,
+			struct wl_client *client);
+	struct wl_list link;
+};
+
+struct wl_buffer {
+	struct wl_resource base;
 };
 
 struct wl_surface {
-	struct wl_object base;
+	struct wl_resource base;
 	struct wl_client *client;
-	struct wl_list link;
 };
 
 void
@@ -124,10 +128,6 @@ wl_client_add_surface(struct wl_client *client,
 		      uint32_t id);
 
 void
-wl_client_remove_surface(struct wl_client *client,
-			 struct wl_surface *surface);
-
-void
 wl_client_send_acknowledge(struct wl_client *client,
 			   struct wl_compositor *compositor,
 			   uint32_t key, uint32_t frame);
@@ -136,6 +136,13 @@ void
 wl_display_post_frame(struct wl_display *display,
 		      struct wl_compositor *compositor,
 		      uint32_t frame, uint32_t msecs);
+
+void
+wl_client_add_resource(struct wl_client *client,
+		       struct wl_resource *resource);
+
+void
+wl_resource_destroy(struct wl_resource *resource, struct wl_client *client);
 
 #ifdef  __cplusplus
 }

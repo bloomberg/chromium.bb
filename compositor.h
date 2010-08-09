@@ -26,6 +26,10 @@
 #include "wayland.h"
 #include "wayland-util.h"
 
+#define GL_GLEXT_PROTOTYPES
+#define EGL_EGLEXT_PROTOTYPES
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
@@ -93,10 +97,23 @@ struct wlsc_input_device {
 	struct wlsc_listener listener;
 };
 
+struct wlsc_drm {
+	struct wl_object base;
+	int fd;
+	char *filename;
+};
+
+struct wlsc_buffer {
+	struct wl_buffer base;
+	EGLImageKHR image;
+	struct wl_visual *visual;
+};
+
 struct wlsc_compositor {
 	struct wl_compositor base;
 	struct wl_visual argb_visual, premultiplied_argb_visual, rgb_visual;
 
+	struct wlsc_drm drm;
 	EGLDisplay display;
 	EGLContext context;
 	GLuint fbo, vbo;
@@ -124,6 +141,7 @@ struct wlsc_compositor {
 
 	uint32_t focus;
 
+	void (*authenticate)(struct wlsc_compositor *c, uint32_t id);
 	void (*present)(struct wlsc_compositor *c);
 };
 
@@ -138,13 +156,12 @@ struct wlsc_vector {
 struct wlsc_surface {
 	struct wl_surface base;
 	struct wlsc_compositor *compositor;
-	struct wl_visual *visual;
 	GLuint texture;
-	EGLImageKHR image;
 	int32_t x, y, width, height;
 	struct wl_list link;
 	struct wlsc_matrix matrix;
 	struct wlsc_matrix matrix_inv;
+	struct wl_visual *visual;
 };
 
 void
@@ -170,6 +187,8 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec);
+int
+wlsc_drm_init(struct wlsc_compositor *ec, int fd, const char *filename);
 
 struct wlsc_compositor *
 x11_compositor_create(struct wl_display *display);

@@ -50,7 +50,6 @@ struct x11_compositor {
 	xcb_cursor_t		 null_cursor;
 	int			 dri2_major;
 	int			 dri2_minor;
-	int			 drm_fd;
 	struct wl_event_source	*xcb_source;
 	struct {
 		xcb_atom_t		 wm_protocols;
@@ -104,6 +103,8 @@ dri2_connect(struct x11_compositor *c)
 	xcb_dri2_connect_reply_t *connect;
 	xcb_dri2_connect_cookie_t connect_cookie;
 	xcb_generic_error_t *error;
+	char path[256];
+	int fd;
 
 	xcb_prefetch_extension_data (c->conn, &xcb_xfixes_id);
 	xcb_prefetch_extension_data (c->conn, &xcb_dri2_id);
@@ -152,17 +153,19 @@ dri2_connect(struct x11_compositor *c)
 		return -1;
 	}
 
-	c->base.base.device =
-		strndup(xcb_dri2_connect_device_name (connect),
-			xcb_dri2_connect_device_name_length (connect));
-		   
-	if (c->base.base.device == NULL) {
-		free(connect);
-		return -1;
-	}
+	snprintf(path, sizeof path, "%.*s",
+		 xcb_dri2_connect_device_name_length (connect),
+		 xcb_dri2_connect_device_name (connect));
 	free(connect);
 
-	return 0;
+	fd = open(path, O_RDWR);
+	if (fd < 0) {
+		fprintf(stderr,
+			"DRI2: could not open %s (%s)", path, strerror(errno));
+		return -1;
+	}
+
+	return wlsc_drm_init(&c->base, fd, path);
 }
 
 static int
@@ -172,7 +175,7 @@ dri2_authenticate(struct x11_compositor *c)
 	xcb_dri2_authenticate_cookie_t authenticate_cookie;
 	drm_magic_t magic;
 
-	if (drmGetMagic(c->drm_fd, &magic)) {
+	if (drmGetMagic(c->base.drm.fd, &magic)) {
 		fprintf(stderr, "DRI2: failed to get drm magic");
 		return -1;
 	}
@@ -207,18 +210,10 @@ x11_compositor_init_egl(struct x11_compositor *c)
 	if (dri2_connect(c) < 0)
 		return -1;
 
-	c->drm_fd = open(c->base.base.device, O_RDWR);
-	if (c->drm_fd == -1) {
-		fprintf(stderr,
-			"DRI2: could not open %s (%s)", c->base.base.device,
-			strerror(errno));
-		return -1;
-	}
-
 	if (dri2_authenticate(c) < 0)
 		return -1;
 
-	c->base.display = eglGetDRMDisplayMESA(c->drm_fd);
+	c->base.display = eglGetDRMDisplayMESA(c->base.drm.fd);
 	if (c->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -641,6 +636,7 @@ x11_compositor_create(struct wl_display *display)
 
 	x11_compositor_get_resources(c);
 
+	c->base.wl_display = display;
 	x11_compositor_init_egl(c);
 
 	/* Can't init base class until we have a current egl context */

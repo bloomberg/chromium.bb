@@ -88,10 +88,20 @@ wl_shell_resize(struct wl_shell *shell,
 		struct wl_surface *surface, struct wl_input_device *device,
 		uint32_t time, uint32_t edges);
 
+int
+wl_drm_add_listener(struct wl_drm *drm,
+		    const struct wl_drm_listener *listener,
+		    void *data);
+void
+wl_drm_authenticate(struct wl_drm *drm, uint32_t id);
+struct wl_buffer *
+wl_drm_create_buffer(struct wl_drm *drm, uint32_t name,
+		     int32_t width, int32_t height,
+		     uint32_t stride, struct wl_visual *visual);
+void wl_buffer_destroy(struct wl_buffer *buffer);
+
 void wl_surface_destroy(struct wl_surface *surface);
-void wl_surface_attach(struct wl_surface *surface, uint32_t name,
-		       int32_t width, int32_t height, uint32_t stride,
-		       struct wl_visual *visual);
+void wl_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer);
 void wl_surface_map(struct wl_surface *surface,
 		    int32_t x, int32_t y, int32_t width, int32_t height);
 void wl_surface_damage(struct wl_surface *surface,

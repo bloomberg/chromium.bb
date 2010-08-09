@@ -49,7 +49,8 @@ compositor :					\
 	compositor-drm.o			\
 	compositor-x11.o			\
 	screenshooter.o				\
-	cairo-util.o
+	cairo-util.o				\
+	drm.o
 
 compositor : CFLAGS += $(COMPOSITOR_CFLAGS)
 compositor : LDLIBS += ./libwayland-server.so $(COMPOSITOR_LIBS) -rdynamic -lrt -lEGL -lm

@@ -53,6 +53,7 @@ struct display {
 	struct wl_display *display;
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
+	struct wl_drm *drm;
 	struct wl_output *output;
 	struct rectangle screen_allocation;
 	EGLDisplay dpy;
@@ -178,6 +179,8 @@ static void
 window_attach_surface(struct window *window)
 {
 	struct wl_visual *visual;
+	struct display *display = window->display;
+	struct wl_buffer *buffer;
 	struct surface_data *data;
 	EGLint name, stride;
 
@@ -192,13 +195,16 @@ window_attach_surface(struct window *window)
 	eglExportDRMImageMESA(window->display->dpy,
 			      data->image, &name, NULL, &stride);
 
-	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
-	wl_surface_attach(window->surface,
-			  name,
-			  window->allocation.width,
-			  window->allocation.height,
-			  stride,
-			  visual);
+	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	buffer = wl_drm_create_buffer(display->drm,
+				      name,
+				      window->allocation.width,
+				      window->allocation.height,
+				      stride,
+				      visual);
+
+	wl_surface_attach(window->surface, buffer);
+	wl_buffer_destroy(buffer);
 
 	wl_surface_map(window->surface,
 		       window->allocation.x,
@@ -679,14 +685,21 @@ window_create(struct display *display, const char *title,
 }
 
 static void
-display_handle_device(void *data,
-		      struct wl_compositor *compositor,
-		      const char *device)
+drm_handle_device(void *data, struct wl_drm *drm, const char *device)
 {
 	struct display *d = data;
 
 	d->device_name = strdup(device);
 }
+
+static void drm_handle_authenticated(void *data, struct wl_drm *drm)
+{
+}
+
+static const struct wl_drm_listener drm_listener = {
+	drm_handle_device,
+	drm_handle_authenticated
+};
 
 static void
 display_handle_acknowledge(void *data,
@@ -726,7 +739,6 @@ display_handle_frame(void *data,
 }
 
 static const struct wl_compositor_listener compositor_listener = {
-	display_handle_device,
 	display_handle_acknowledge,
 	display_handle_frame,
 };
@@ -785,6 +797,9 @@ display_handle_global(struct wl_display *display,
 	} else if (wl_object_implements(object, "shell", 1)) {
 		d->shell = (struct wl_shell *) object;
 		wl_shell_add_listener(d->shell, &shell_listener, d);
+	} else if (wl_object_implements(object, "drm", 1)) {
+		d->drm = (struct wl_drm *) object;
+		wl_drm_add_listener(d->drm, &drm_listener, d);
 	}
 }
 

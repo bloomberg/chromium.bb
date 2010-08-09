@@ -30,13 +30,6 @@
 #include <time.h>
 #include <linux/input.h>
 
-#define GL_GLEXT_PROTOTYPES
-#define EGL_EGLEXT_PROTOTYPES
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
-#include <EGL/egl.h>
-#include <EGL/eglext.h>
-
 #include "wayland.h"
 #include "wayland-server-protocol.h"
 #include "cairo-util.h"
@@ -180,14 +173,15 @@ wlsc_surface_create_from_cairo_surface(struct wlsc_compositor *ec,
 }
 
 static void
-wlsc_surface_destroy(struct wlsc_surface *surface,
-		     struct wlsc_compositor *compositor)
+destroy_surface(struct wl_resource *resource, struct wl_client *client)
 {
+	struct wlsc_surface *surface =
+		container_of(resource, struct wlsc_surface, base.base);
+	struct wlsc_compositor *compositor = surface->compositor;
 	struct wlsc_listener *l;
 
 	wl_list_remove(&surface->link);
 	glDeleteTextures(1, &surface->texture);
-	wl_client_remove_surface(surface->base.client, &surface->base);
 
 	wl_list_for_each(l, &compositor->surface_destroy_listener_list, link)
 		l->func(l, surface);
@@ -427,73 +421,26 @@ surface_destroy(struct wl_client *client,
 		struct wl_surface *surface)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_compositor *ec = es->compositor;
 
-	wlsc_surface_destroy(es, ec);
+	wl_resource_destroy(&surface->base, client);
 
-	wlsc_compositor_schedule_repaint(ec);
+	wlsc_compositor_schedule_repaint(es->compositor);
 }
 
 static void
 surface_attach(struct wl_client *client,
-	       struct wl_surface *surface, uint32_t name,
-	       int32_t width, int32_t height, uint32_t stride,
-	       struct wl_visual *visual)
+	       struct wl_surface *surface, struct wl_buffer *buffer_base)
 {
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-	struct wlsc_compositor *ec = es->compositor;
-	EGLImageKHR image;
-	EGLint attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_IMAGE_STRIDE_MESA,	0,
-		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
-		EGL_NONE
-	};
-
-	attribs[1] = width;
-	attribs[3] = height;
-	attribs[5] = stride / 4;
-
-	image = eglCreateImageKHR(ec->display, ec->context,
-				  EGL_DRM_IMAGE_MESA,
-				  (EGLClientBuffer) name, attribs);
-	if (image == NULL) {
-		/* FIXME: Define a real exception event instead of
-		 * abusing this one */
-		wl_client_post_event(client, ec->wl_display,
-				     WL_DISPLAY_INVALID_OBJECT, 0);
-		fprintf(stderr, "failed to create image for name %d\n", name);
-		return;
-	}
-
-	if (visual == &ec->argb_visual)
-		es->visual = &ec->argb_visual;
-	else if (visual == &ec->premultiplied_argb_visual)
-		es->visual = &ec->premultiplied_argb_visual;
-	else if (visual == &ec->rgb_visual)
-		es->visual = &ec->rgb_visual;
-	else {
-		/* FIXME: Define a real exception event instead of
-		 * abusing this one */
-		wl_client_post_event(client, ec->display,
-				     WL_DISPLAY_INVALID_OBJECT, 0);
-		fprintf(stderr, "invalid visual in surface_attach\n");
-		return;
-	}
+	struct wlsc_buffer *buffer = (struct wlsc_buffer *) buffer_base;
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	if (es->image)
-		eglDestroyImageKHR(ec->display, es->image);
-
-	es->image = image;
-
-	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, es->image);
+	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
+	es->visual = buffer->visual;
 }
 
 static void
@@ -577,13 +524,17 @@ compositor_create_surface(struct wl_client *client,
 	struct wlsc_surface *surface;
 
 	surface = malloc(sizeof *surface);
-	if (surface == NULL)
-		/* FIXME: Send OOM event. */
+	if (surface == NULL) {
+		wl_client_post_event(client,
+				     (struct wl_object *) ec->wl_display,
+				     WL_DISPLAY_NO_MEMORY, 0);
 		return;
+	}
 
 	wlsc_surface_init(surface, ec, NULL, 0, 0, 0, 0);
 
 	wl_list_insert(ec->surface_list.prev, &surface->link);
+	surface->base.base.destroy = destroy_surface;
 	wl_client_add_surface(client, &surface->base,
 			      &surface_interface, id);
 }
@@ -921,6 +872,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	device->base.implementation = NULL;
 	wl_display_add_object(ec->wl_display, &device->base);
 	wl_display_add_global(ec->wl_display, &device->base, NULL);
+
 	device->x = 100;
 	device->y = 100;
 	device->ec = ec;

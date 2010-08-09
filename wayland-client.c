@@ -87,6 +87,14 @@ struct wl_shell {
 	struct wl_proxy proxy;
 };
 
+struct wl_drm {
+	struct wl_proxy proxy;
+};
+
+struct wl_buffer {
+	struct wl_proxy proxy;
+};
+
 struct wl_input_device {
 	struct wl_proxy proxy;
 };
@@ -258,6 +266,49 @@ wl_shell_resize(struct wl_shell *shell,
 			 WL_SHELL_RESIZE, surface, device, time, edges);
 }
 
+WL_EXPORT int
+wl_drm_add_listener(struct wl_drm *drm,
+		    const struct wl_drm_listener *listener,
+		    void *data)
+{
+	return wl_proxy_add_listener(&drm->proxy,
+				     (void (**)(void)) listener, data);
+}
+
+WL_EXPORT void
+wl_drm_authenticate(struct wl_drm *drm, uint32_t id)
+{
+	wl_proxy_marshal(&drm->proxy, WL_DRM_AUTHENTICATE, id);
+}
+
+WL_EXPORT struct wl_buffer *
+wl_drm_create_buffer(struct wl_drm *drm, uint32_t name,
+		     int32_t width, int32_t height,
+		     uint32_t stride, struct wl_visual *visual)
+{
+	struct wl_buffer *buffer;
+
+	buffer = malloc(sizeof *buffer);
+	if (buffer == NULL)
+		return NULL;
+
+	buffer->proxy.base.interface = &wl_buffer_interface;
+	buffer->proxy.base.id = wl_display_allocate_id(drm->proxy.display);
+	buffer->proxy.display = drm->proxy.display;
+	wl_hash_table_insert(drm->proxy.display->objects,
+			     drm->proxy.base.id, buffer);
+	wl_proxy_marshal(&drm->proxy, WL_DRM_CREATE_BUFFER,
+			 buffer, name, width, height, stride, visual);
+
+	return buffer;
+}
+
+WL_EXPORT void
+wl_buffer_destroy(struct wl_buffer *buffer)
+{
+	wl_proxy_marshal(&buffer->proxy, WL_BUFFER_DESTROY);
+}
+
 static void
 add_visual(struct wl_display *display, struct wl_global *global)
 {
@@ -360,6 +411,9 @@ display_handle_global(void *data,
 	else if (strcmp(global->interface, "shell") == 0)
 		wl_proxy_create_for_global(display, global,
 					   &wl_shell_interface);
+	else if (strcmp(global->interface, "drm") == 0)
+		wl_proxy_create_for_global(display, global,
+					   &wl_drm_interface);
 }
 
 static void
@@ -589,12 +643,9 @@ wl_surface_destroy(struct wl_surface *surface)
 }
 
 WL_EXPORT void
-wl_surface_attach(struct wl_surface *surface, uint32_t name,
-		  int32_t width, int32_t height, uint32_t stride,
-		  struct wl_visual *visual)
+wl_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer)
 {
-	wl_proxy_marshal(&surface->proxy, WL_SURFACE_ATTACH,
-			 name, width, height, stride, visual);
+	wl_proxy_marshal(&surface->proxy, WL_SURFACE_ATTACH, buffer);
 }
 
 WL_EXPORT void

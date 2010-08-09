@@ -32,10 +32,6 @@
       <arg name="key" type="uint"/>
     </request>
 
-    <event name="device">
-      <arg name="name" type="string"/>
-    </event>
-
     <event name="acknowledge">
       <arg name="key" type="uint"/>
       <arg name="frame" type="uint"/>
@@ -45,6 +41,32 @@
       <arg name="frame" type="uint"/>
       <arg name="timestamp" type="uint"/>
     </event>
+  </interface>
+
+  <interface name="drm" version="1">
+    <!-- dri2 auth and create buffer -->
+    <request name="authenticate">
+      <arg name="id" type="uint"/>
+    </request>
+
+    <request name="create_buffer">
+      <arg name="id" type="new_id"/>
+      <arg name="name" type="uint"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="stride" type="uint"/>
+      <arg name="visual" type="visual"/>
+    </request>
+
+    <event name="device">
+      <arg name="name" type="string"/>
+    </event>
+
+    <event name="authenticated"/>
+  </interface>
+
+  <interface name="buffer" version="1">
+    <request name="destroy"/>
   </interface>
 
   <interface name="shell" version="1">
@@ -78,11 +100,7 @@
     <request name="destroy"/>
 
     <request name="attach">
-      <arg name="name" type="uint"/>
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
-      <arg name="stride" type="uint"/>
-      <arg name="visual" type="visual"/>
+      <arg name="buffer" type="buffer"/>
     </request>
 
     <request name="map">

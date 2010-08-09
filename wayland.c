@@ -42,7 +42,7 @@ struct wl_client {
 	struct wl_connection *connection;
 	struct wl_event_source *source;
 	struct wl_display *display;
-	struct wl_list surface_list;
+	struct wl_list resource_list;
 	struct wl_list link;
 	uint32_t id_count;
 };
@@ -186,7 +186,7 @@ wl_client_create(struct wl_display *display, int fd)
 	client->connection =
 		wl_connection_create(fd, wl_client_connection_update, client);
 
-	wl_list_init(&client->surface_list);
+	wl_list_init(&client->resource_list);
 	wl_list_init(&client->link);
 
 	wl_display_post_range(display, client);
@@ -205,30 +205,42 @@ wl_client_create(struct wl_display *display, int fd)
 	return client;
 }
 
-static void
-wl_object_destroy(struct wl_object *object)
+WL_EXPORT void
+wl_client_add_resource(struct wl_client *client,
+		       struct wl_resource *resource)
 {
-	const struct wl_surface_interface *interface =
-		(const struct wl_surface_interface *) object->implementation;
+	struct wl_display *display = client->display;
 
-	/* FIXME: Need generic object destructor. */
-	interface->destroy(NULL, (struct wl_surface *) object);
+	if (client->id_count-- < 64)
+		wl_display_post_range(display, client);
+
+	wl_hash_table_insert(client->display->objects,
+			     resource->base.id, resource);
+	wl_list_insert(client->resource_list.prev, &resource->link);
+}
+
+WL_EXPORT void
+wl_resource_destroy(struct wl_resource *resource, struct wl_client *client)
+{
+	struct wl_display *display = client->display;
+
+	wl_list_remove(&resource->link);
+	wl_hash_table_remove(display->objects, resource->base.id);
+	resource->destroy(resource, client);
 }
 
 WL_EXPORT void
 wl_client_destroy(struct wl_client *client)
 {
-	struct wl_surface *surface;
+	struct wl_resource *resource, *tmp;
 
 	printf("disconnect from client %p\n", client);
 
 	wl_list_remove(&client->link);
 
-	while (client->surface_list.next != &client->surface_list) {
-		surface = container_of(client->surface_list.next,
-				       struct wl_surface, link);
-		wl_list_remove(&surface->link);
-		wl_object_destroy(&surface->base);
+	wl_list_for_each_safe(resource, tmp, &client->resource_list, link) {
+		wl_list_remove(&resource->link);
+		resource->destroy(resource, client);
 	}
 
 	wl_event_source_remove(client->source);
@@ -242,30 +254,14 @@ wl_client_add_surface(struct wl_client *client,
 		      const struct wl_surface_interface *implementation, 
 		      uint32_t id)
 {
-	struct wl_display *display = client->display;
-
-	if (client->id_count-- < 64)
-		wl_display_post_range(display, client);
-
-	surface->base.id = id;
-	surface->base.interface = &wl_surface_interface;
-	surface->base.implementation = (void (**)(void)) implementation;
+	surface->base.base.id = id;
+	surface->base.base.interface = &wl_surface_interface;
+	surface->base.base.implementation = (void (**)(void)) implementation;
 	surface->client = client;
 
-	wl_hash_table_insert(display->objects, id, surface);
-	wl_list_insert(client->surface_list.prev, &surface->link);
+	wl_client_add_resource(client, &surface->base);
 
 	return 0;
-}
-
-WL_EXPORT void
-wl_client_remove_surface(struct wl_client *client,
-			 struct wl_surface *surface)
-{
-	struct wl_display *display = client->display;
-
-	wl_hash_table_remove(display->objects, surface->base.id);
-	wl_list_remove(&surface->link);
 }
 
 WL_EXPORT void
@@ -280,16 +276,6 @@ wl_client_send_acknowledge(struct wl_client *client,
 			     WL_COMPOSITOR_ACKNOWLEDGE, key, frame);
 }
 
-static void
-post_compositor_device(struct wl_client *client, struct wl_object *global)
-{
-	struct wl_compositor *compositor =
-		container_of(global, struct wl_compositor, base);
-
-	wl_client_post_event(client, global,
-			     WL_COMPOSITOR_DEVICE, compositor->device);
-}
-
 WL_EXPORT int
 wl_display_set_compositor(struct wl_display *display,
 			  struct wl_compositor *compositor,
@@ -299,7 +285,7 @@ wl_display_set_compositor(struct wl_display *display,
 	compositor->base.implementation = (void (**)(void)) implementation;
 
 	wl_display_add_object(display, &compositor->base);
-	if (wl_display_add_global(display, &compositor->base, post_compositor_device))
+	if (wl_display_add_global(display, &compositor->base, NULL))
 		return -1;
 
 	return 0;

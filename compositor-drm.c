@@ -41,7 +41,6 @@ struct drm_compositor {
 
 	struct udev *udev;
 	struct wl_event_source *drm_source;
-	int drm_fd;
 
 	struct wl_event_source *term_signal_source;
 
@@ -272,7 +271,7 @@ drm_compositor_present(struct wlsc_compositor *ec)
 					  GL_RENDERBUFFER,
 					  output->rbo[output->current]);
 
-		drmModePageFlip(c->drm_fd, output->crtc_id,
+		drmModePageFlip(c->base.drm.fd, output->crtc_id,
 				output->fb_id[output->current ^ 1],
 				DRM_MODE_PAGE_FLIP_EVENT, output);
 	}	
@@ -305,22 +304,25 @@ static int
 init_egl(struct drm_compositor *ec, struct udev_device *device)
 {
 	EGLint major, minor;
-	const char *extensions;
+	const char *extensions, *filename;
+	int fd;
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
 	};
 
-	ec->base.base.device = strdup(udev_device_get_devnode(device));
-	ec->drm_fd = open(ec->base.base.device, O_RDWR);
-	if (ec->drm_fd < 0) {
+	filename = udev_device_get_devnode(device);
+	fd = open(filename, O_RDWR);
+	if (fd < 0) {
 		/* Probably permissions error */
 		fprintf(stderr, "couldn't open %s, skipping\n",
 			udev_device_get_devnode(device));
 		return -1;
 	}
 
-	ec->base.display = eglGetDRMDisplayMESA(ec->drm_fd);
+	wlsc_drm_init(&ec->base, fd, filename);
+
+	ec->base.display = eglGetDRMDisplayMESA(ec->base.drm.fd);
 	if (ec->base.display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;
@@ -390,7 +392,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	else
 		mode = &builtin_1024x768;
 
-	encoder = drmModeGetEncoder(ec->drm_fd, connector->encoders[0]);
+	encoder = drmModeGetEncoder(ec->base.drm.fd, connector->encoders[0]);
 	if (encoder == NULL) {
 		fprintf(stderr, "No encoder for connector.\n");
 		return -1;
@@ -428,7 +430,7 @@ create_output_for_connector(struct drm_compositor *ec,
 		eglExportDRMImageMESA(ec->base.display, output->image[i],
 				      NULL, &handle, &stride);
 
-		ret = drmModeAddFB(ec->drm_fd,
+		ret = drmModeAddFB(ec->base.drm.fd,
 				   output->base.width, output->base.height,
 				   32, 32, stride, handle, &output->fb_id[i]);
 		if (ret) {
@@ -442,7 +444,7 @@ create_output_for_connector(struct drm_compositor *ec,
 				  GL_COLOR_ATTACHMENT0,
 				  GL_RENDERBUFFER,
 				  output->rbo[output->current]);
-	ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
+	ret = drmModeSetCrtc(ec->base.drm.fd, output->crtc_id,
 			     output->fb_id[output->current ^ 1], 0, 0,
 			     &output->connector_id, 1, &output->mode);
 	if (ret) {
@@ -462,14 +464,14 @@ create_outputs(struct drm_compositor *ec)
 	drmModeRes *resources;
 	int i;
 
-	resources = drmModeGetResources(ec->drm_fd);
+	resources = drmModeGetResources(ec->base.drm.fd);
 	if (!resources) {
 		fprintf(stderr, "drmModeGetResources failed\n");
 		return -1;
 	}
 
 	for (i = 0; i < resources->count_connectors; i++) {
-		connector = drmModeGetConnector(ec->drm_fd, resources->connectors[i]);
+		connector = drmModeGetConnector(ec->base.drm.fd, resources->connectors[i]);
 		if (connector == NULL)
 			continue;
 
@@ -498,7 +500,7 @@ static void on_enter_vt(int signal_number, void *data)
 	struct drm_output *output;
 	int ret;
 
-	ret = drmSetMaster(ec->drm_fd);
+	ret = drmSetMaster(ec->base.drm.fd);
 	if (ret) {
 		fprintf(stderr, "failed to set drm master\n");
 		kill(0, SIGTERM);
@@ -511,7 +513,7 @@ static void on_enter_vt(int signal_number, void *data)
 	ec->vt_active = 1;
 
 	wl_list_for_each(output, &ec->base.output_list, base.link) {
-		ret = drmModeSetCrtc(ec->drm_fd, output->crtc_id,
+		ret = drmModeSetCrtc(ec->base.drm.fd, output->crtc_id,
 				     output->fb_id[output->current ^ 1], 0, 0,
 				     &output->connector_id, 1, &output->mode);
 		if (ret)
@@ -526,7 +528,7 @@ static void on_leave_vt(int signal_number, void *data)
 	struct drm_compositor *ec = data;
 	int ret;
 
-	ret = drmDropMaster(ec->drm_fd);
+	ret = drmDropMaster(ec->base.drm.fd);
 	if (ret) {
 		fprintf(stderr, "failed to drop drm master\n");
 		kill(0, SIGTERM);
@@ -644,6 +646,7 @@ drm_compositor_create(struct wl_display *display)
 		return NULL;
 	}
 
+	ec->base.wl_display = display;
 	if (init_egl(ec, device) < 0) {
 		fprintf(stderr, "failed to initialize egl\n");
 		return NULL;
@@ -662,7 +665,7 @@ drm_compositor_create(struct wl_display *display)
 
 	loop = wl_display_get_event_loop(ec->base.wl_display);
 	ec->drm_source =
-		wl_event_loop_add_fd(loop, ec->drm_fd,
+		wl_event_loop_add_fd(loop, ec->base.drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
 	setup_tty(ec, loop);
 	ec->base.present = drm_compositor_present;
