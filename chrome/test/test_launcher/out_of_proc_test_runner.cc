@@ -28,9 +28,10 @@ typedef int (*DLL_MAIN)(HINSTANCE, sandbox::SandboxInterfaceInfo*, wchar_t*);
 
 namespace {
 
+const char kGTestHelpFlag[]   = "gtest_help";
 const char kGTestListTestsFlag[] = "gtest_list_tests";
 const char kGTestOutputFlag[] = "gtest_output";
-const char kGTestHelpFlag[]   = "gtest_help";
+const char kGTestRepeatFlag[] = "gtest_repeat";
 const char kSingleProcessTestsFlag[]   = "single_process";
 const char kSingleProcessTestsAndChromeFlag[]   = "single-process";
 const char kTestTerminateTimeoutFlag[] = "test-terminate-timeout";
@@ -58,13 +59,19 @@ class OutOfProcTestRunner : public tests::TestRunner {
   // Returns true if the test succeeded, false if it failed.
   bool RunTest(const std::string& test_name) {
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-    // Construct the new command line.  Strip out gtest_output flag if
-    // it has been given because otherwise each test outputs the same file
-    // over and over overriding the previous one every time.
-    // We will generate the final output file later in RunTests().
     CommandLine new_cmd_line(cmd_line->GetProgram());
     CommandLine::SwitchMap switches = cmd_line->GetSwitches();
+
+    // Strip out gtest_output flag because otherwise we would overwrite results
+    // of the previous test. We will generate the final output file later
+    // in RunTests().
     switches.erase(kGTestOutputFlag);
+
+    // Strip out gtest_repeat flag because we can only run one test in the child
+    // process (restarting the browser in the same process is illegal after it
+    // has been shut down and will actually crash).
+    switches.erase(kGTestRepeatFlag);
+
     for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
          iter != switches.end(); ++iter) {
       new_cmd_line.AppendSwitchNative((*iter).first, (*iter).second);
@@ -208,5 +215,23 @@ int main(int argc, char** argv) {
       "--single-process (to do the above, and also run Chrome in single-\n"
       "process mode).\n");
   OutOfProcTestRunnerFactory test_runner_factory;
-  return tests::RunTests(test_runner_factory) ? 0 : 1;
+
+  int cycles = 1;
+  if (command_line->HasSwitch(kGTestRepeatFlag)) {
+    base::StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag),
+                      &cycles);
+  }
+
+  int exit_code = 0;
+  while (cycles != 0) {
+    if (!tests::RunTests(test_runner_factory)) {
+      exit_code = 1;
+      break;
+    }
+
+    // Special value "-1" means "repeat indefinitely".
+    if (cycles != -1)
+      cycles--;
+  }
+  return exit_code;
 }
