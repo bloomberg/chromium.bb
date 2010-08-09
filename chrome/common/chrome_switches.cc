@@ -129,6 +129,11 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // Disable support for cached byte-ranges.
 const char kDisableByteRangeSupport[]       = "disable-byte-range-support";
 
+// Disable requests that webkit labels TargetIsPrefetch.  As of
+// writing only <link rel=prefetch...> but also eventually
+// Link: headers.
+const char kDisableContentPrefetch[]        = "disable-content-prefetch";
+
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 
@@ -165,7 +170,7 @@ const char kDisableInternalFlash[]          = "disable-internal-flash";
 const char kDisableIPv6[]                   = "disable-ipv6";
 
 // Disable speculative TCP/IP preconnection.
-const char kDisablePreconnect[]              = "disable-preconnect";
+const char kDisablePreconnect[]             = "disable-preconnect";
 
 // Don't execute JavaScript (browser JS like the new tab page still runs).
 const char kDisableJavaScript[]             = "disable-javascript";
@@ -192,11 +197,6 @@ const char kDisablePlugins[]                = "disable-plugins";
 
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
-
-// Disable requests that webkit labels TargetIsPrefetch.  As of
-// writing only <link rel=prefetch...> but also eventually
-// Link: headers.
-const char kDisablePrefetch[]               = "disable-prefetch";
 
 // Normally when the user attempts to navigate to a page that was the result of
 // a post we prompt to make sure they want to. This switch may be used to
@@ -316,6 +316,11 @@ const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 // Enables the Cloud Print dialog hosting code.
 const char kEnableCloudPrint[]              = "enable-cloud-print";
 
+// Enable requests that webkit labels TargetIsPrefetch.  As of
+// writing only <link rel=prefetch...> but also eventually
+// Link: headers.
+const char kEnableContentPrefetch[]         = "enable-content-prefetch";
+
 // Enables the cookie prompt.
 const char kEnableCookiePrompt[]            = "enable-cookie-prompt";
 
@@ -388,11 +393,6 @@ const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 
 // Enable speculative TCP/IP preconnection.
 const char kEnablePreconnect[]              = "enable-preconnect";
-
-// Enable requests that webkit labels TargetIsPrefetch.  As of
-// writing only <link rel=prefetch...> but also eventually
-// Link: headers.
-const char kEnablePrefetch[]               = "enable-prefetch";
 
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";

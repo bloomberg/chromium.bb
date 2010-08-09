@@ -240,6 +240,16 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   void set_was_translated(bool value) { was_translated_ = value; }
   bool was_translated() const { return was_translated_; }
 
+  void set_was_prefetcher(bool value) { was_prefetcher_ = value; }
+  bool was_prefetcher() const { return was_prefetcher_; }
+
+  void set_was_referred_by_prefetcher(bool value) {
+    was_referred_by_prefetcher_ = value;
+  }
+  bool was_referred_by_prefetcher() const {
+    return was_referred_by_prefetcher_;
+  }
+
  private:
   NavigationState(PageTransition::Type transition_type,
                   const base::Time& request_time,
@@ -262,7 +272,9 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         was_npn_negotiated_(false),
         was_alternate_protocol_available_(false),
         was_fetched_via_proxy_(false),
-        was_translated_(false) {
+        was_translated_(false),
+        was_prefetcher_(false),
+        was_referred_by_prefetcher_(false) {
   }
 
   PageTransition::Type transition_type_;
@@ -297,6 +309,10 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   bool was_alternate_protocol_available_;
   bool was_fetched_via_proxy_;
   bool was_translated_;
+
+  // A prefetcher is a page that contains link rel=prefetch elements.
+  bool was_prefetcher_;
+  bool was_referred_by_prefetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };

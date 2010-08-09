@@ -538,7 +538,7 @@ void RenderView::SetNextPageID(int32 next_page_id) {
   next_page_id_ = next_page_id;
 }
 
-WebKit::WebView* RenderView::webview() const{
+WebKit::WebView* RenderView::webview() const {
   return static_cast<WebKit::WebView*>(webwidget());
 }
 
@@ -2643,8 +2643,37 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   NavigationState* state = content_initiated ?
       NavigationState::CreateContentInitiated() :
       pending_navigation_state_.release();
+
+  const WebURLRequest& original_request = ds->originalRequest();
+  const WebURLRequest& request = ds->request();
+
+  // NavigationState::referred_by_prefetcher_ is true if we are
+  // navigating from a page that used prefetching using a link on that
+  // page.  We are early enough in the request process here that we
+  // can still see the NavigationState of the previous page and set
+  // this value appropriately.
+  // TODO(gavinp): catch the important case of navigation in a new
+  // renderer process.
+  if (webview()) {
+    if( WebFrame* old_frame = webview()->mainFrame()) {
+      const GURL referrer(
+          original_request.httpHeaderField(WebString::fromUTF8("Referer")));
+      if (!referrer.is_empty() &&
+          NavigationState::FromDataSource(
+              old_frame->dataSource())->was_prefetcher()) {
+        for (;old_frame;old_frame = old_frame->traverseNext(false)) {
+          WebDataSource* old_frame_ds = old_frame->dataSource();
+          if (old_frame_ds && referrer == GURL(old_frame_ds->request().url())) {
+            state->set_was_referred_by_prefetcher(true);
+            break;
+          }
+        }
+      }
+    }
+  }
+
   if (content_initiated) {
-    switch (ds->request().cachePolicy()) {
+    switch (request.cachePolicy()) {
       case WebURLRequest::UseProtocolCachePolicy:  // normal load.
         state->set_load_type(NavigationState::LINK_LOAD_NORMAL);
         break;
@@ -3020,14 +3049,22 @@ void RenderView::willSendRequest(
   WebFrame* top_frame = frame->top();
   if (!top_frame)
     top_frame = frame;
-  WebDataSource* data_source = top_frame->provisionalDataSource();
-  if (!data_source)
-    data_source = top_frame->dataSource();
+  WebDataSource* provisional_data_source = top_frame->provisionalDataSource();
+  WebDataSource* top_data_source = top_frame->dataSource();
+  WebDataSource* data_source =
+      provisional_data_source ? provisional_data_source : top_data_source;
   if (data_source) {
     NavigationState* state = NavigationState::FromDataSource(data_source);
     if (state && state->is_cache_policy_override_set())
       request.setCachePolicy(state->cache_policy_override());
   }
+
+  if (top_data_source) {
+    NavigationState* state = NavigationState::FromDataSource(top_data_source);
+    if (state && request.targetType() == WebURLRequest::TargetIsPrefetch)
+      state->set_was_prefetcher(true);
+  }
+
   request.setRequestorID(routing_id_);
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoReferrers))
     request.clearHTTPHeaderField("Referer");
@@ -4705,6 +4742,58 @@ void RenderView::DumpLoadHistograms() const {
       default:
         break;
     }
+  }
+
+  // Histograms to determine if content prefetching has an impact on PLT.
+  static const bool prefetching_fieldtrial =
+      FieldTrialList::Find("Prefetch") &&
+      !FieldTrialList::Find("Prefetch")->group_name().empty();
+  static const bool prefetching_explicitly_disabled =
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableContentPrefetch);
+  if (navigation_state->was_prefetcher()) {
+    if (!prefetching_explicitly_disabled) {
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcher",
+                    begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcher",
+                    begin_to_finish);
+    }
+    if (prefetching_fieldtrial) {
+      PLT_HISTOGRAM(
+          FieldTrial::MakeName("PLT.BeginToFinishDoc_ContentPrefetcher",
+                               "Prefetch"),
+          begin_to_finish_doc);
+      PLT_HISTOGRAM(
+          FieldTrial::MakeName("PLT.BeginToFinish_ContentPrefetcher",
+                               "Prefetch"),
+          begin_to_finish);
+    }
+  }
+  if (navigation_state->was_referred_by_prefetcher()) {
+    if (!prefetching_explicitly_disabled) {
+      PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcherReferrer",
+                    begin_to_finish_doc);
+      PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcherReferrer",
+                    begin_to_finish);
+    }
+    if (prefetching_fieldtrial) {
+      PLT_HISTOGRAM(
+          FieldTrial::MakeName("PLT.BeginToFinishDoc_ContentPrefetcherReferrer",
+                               "Prefetch"),
+          begin_to_finish_doc);
+      PLT_HISTOGRAM(
+          FieldTrial::MakeName("PLT.BeginToFinish_ContentPrefetcherReferrer",
+                               "Prefetch"),
+          begin_to_finish);
+    }
+  }
+  if (prefetching_fieldtrial) {
+    UMA_HISTOGRAM_ENUMERATION(FieldTrial::MakeName("PLT.Abandoned", "Prefetch"),
+                              abandoned_page ? 1 : 0, 2);
+    PLT_HISTOGRAM(FieldTrial::MakeName("PLT.BeginToFinishDoc", "Prefetch"),
+                  begin_to_finish_doc);
+    PLT_HISTOGRAM(FieldTrial::MakeName("PLT.BeginToFinish", "Prefetch"),
+                  begin_to_finish);
   }
 
   // Histograms to determine if the number of connections has an

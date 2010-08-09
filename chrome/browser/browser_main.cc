@@ -171,6 +171,7 @@ void BrowserMainParts::EarlyInitialization() {
   SocketTimeoutFieldTrial();
   ProxyConnectionsFieldTrial();
   SpdyFieldTrial();
+  PrefetchFieldTrial();
   InitializeSSL();
 
   PostEarlyInitialization();
@@ -361,6 +362,28 @@ void BrowserMainParts::SpdyFieldTrial() {
     } else {
       CHECK(!is_spdy_trial);
     }
+  }
+}
+
+// If neither --enable-content-prefetch or --disable-content-prefetch
+// is set, users will be in an A/B test for prefetching.
+void BrowserMainParts::PrefetchFieldTrial() {
+  if (parsed_command_line().HasSwitch(switches::kEnableContentPrefetch))
+    ResourceDispatcherHost::set_is_prefetch_enabled(true);
+  else if (parsed_command_line().HasSwitch(switches::kDisableContentPrefetch)) {
+    ResourceDispatcherHost::set_is_prefetch_enabled(false);
+  } else {
+    const FieldTrial::Probability kPrefetchDivisor = 100;
+    const FieldTrial::Probability no_prefetch_probability = 90;
+    scoped_refptr<FieldTrial> trial =
+        new FieldTrial("Prefetch", kPrefetchDivisor);
+    trial->AppendGroup("ContentPrefetchDisabled", no_prefetch_probability);
+    const int yes_prefetch_grp =
+        trial->AppendGroup("ContentPrefetchEnabled",
+                           FieldTrial::kAllRemainingProbability);
+    const int trial_grp = trial->group();
+    ResourceDispatcherHost::set_is_prefetch_enabled(
+        trial_grp == yes_prefetch_grp);
   }
 }
 

@@ -126,7 +126,7 @@ bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
     return true;
 
   if (request_data.resource_type == ResourceType::PREFETCH &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePrefetch))
+      !ResourceDispatcherHost::is_prefetch_enabled())
     return false;
 
   ChildProcessSecurityPolicy* policy =
@@ -1858,3 +1858,16 @@ net::RequestPriority ResourceDispatcherHost::DetermineRequestPriority(
       return net::LOW;
   }
 }
+
+// static
+bool ResourceDispatcherHost::is_prefetch_enabled() {
+  return is_prefetch_enabled_;
+}
+
+// static
+void ResourceDispatcherHost::set_is_prefetch_enabled(bool value) {
+  is_prefetch_enabled_ = value;
+}
+
+// static
+bool ResourceDispatcherHost::is_prefetch_enabled_ = false;

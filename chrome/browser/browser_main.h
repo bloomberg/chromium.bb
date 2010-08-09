@@ -113,6 +113,9 @@ class BrowserMainParts {
   // A/B test for spdy when --use-spdy not set.
   void SpdyFieldTrial();
 
+  // A/B test for prefetching with --(enable|disable)-prefetch not set.
+  void PrefetchFieldTrial();
+
   // Used to initialize NSPR where appropriate.
   virtual void InitializeSSL() = 0;
 

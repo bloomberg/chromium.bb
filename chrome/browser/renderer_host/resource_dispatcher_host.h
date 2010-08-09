@@ -268,6 +268,11 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // Needed for the sync IPC message dispatcher macros.
   bool Send(IPC::Message* message);
 
+  // Controls if we launch or squash prefetch requests as they arrive
+  // from renderers.
+  static bool is_prefetch_enabled();
+  static void set_is_prefetch_enabled(bool value);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            TestBlockedRequestsProcessDies);
@@ -493,6 +498,8 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // Used during IPC message dispatching so that the handlers can get a pointer
   // to the source of the message.
   Receiver* receiver_;
+
+  static bool is_prefetch_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHost);
 };
