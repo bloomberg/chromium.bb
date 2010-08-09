@@ -47,6 +47,19 @@ HMODULE DllRedirector::GetFirstCFModule() {
   if (GetClassInfoEx(GetModuleHandle(NULL), kBeaconWindowClassName,
                      &wnd_class)) {
     oldest_module = reinterpret_cast<HMODULE>(wnd_class.lpfnWndProc);
+    // Handle older versions that store module pointer in a class info.
+    // TODO(amit): Remove this in future versions.
+    if (reinterpret_cast<HMODULE>(DefWindowProc) == oldest_module) {
+      WNDCLASSEX wnd_class = {0};
+      HMODULE oldest_module = NULL;
+      HWND hwnd = CreateWindow(kBeaconWindowClassName, L"temp_window",
+                               WS_POPUP, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+      DCHECK(IsWindow(hwnd));
+      if (hwnd) {
+        oldest_module = reinterpret_cast<HMODULE>(GetClassLongPtr(hwnd, 0));
+        DestroyWindow(hwnd);
+      }
+    }
   }
   return oldest_module;
 }
