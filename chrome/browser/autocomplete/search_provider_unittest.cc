@@ -272,7 +272,7 @@ TEST_F(SearchProviderTest, QueryKeywordProvider) {
 TEST_F(SearchProviderTest, DontSendPrivateDataToSuggest) {
   // None of the following input strings should be sent to the suggest server,
   // because they may contain private data.
-  char* inputs[] = {
+  const char* inputs[] = {
     "username:password",
     "http://username:password",
     "https://username:password",
