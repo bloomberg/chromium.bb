@@ -94,8 +94,6 @@ readonly TC_BUILD_LLVM_GCC1="${TC_BUILD}/llvm-gcc-stage1"
 readonly TC_BUILD_LLVM_TOOLS_X8632_SB="${TC_BUILD}/llvm-tools-x8632-sandboxed"
 readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
 readonly TC_BUILD_BINUTILS_LIBERTY_X86="${TC_BUILD}/binutils-liberty-x86"
-readonly TC_BUILD_BINUTILS_X8632_SB="${TC_BUILD}/binutils-x8632-sandboxed"
-readonly TC_BUILD_BINUTILS_X8664_SB="${TC_BUILD}/binutils-x8664-sandboxed"
 readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
 readonly TC_BUILD_NEWLIB_BITCODE="${TC_BUILD}/newlib-bitcode"
 
@@ -1618,78 +1616,94 @@ llvm-tools-x8632-sb-install() {
 }
 
 #+-------------------------------------------------------------------------
-#+ binutils-x8632-sb       - Build and install binutils (sandboxed) for x8632
-binutils-x8632-sb() {
+#+ binutils-sb       - Build and install binutils (sandboxed) x86
+binutils-sb() {
   local srcdir="${TC_SRC_BINUTILS}"
 
   assert-dir "${srcdir}" "You need to checkout binutils."
 
+  if [ $# != 1 ]; then
+    echo "ERROR: Usage binutils-sb <arch>"
+    exit -1
+  fi
+
+  local arch=$1
+  if [ ${arch} != "x8632" ] && [ ${arch} != "x8664" ]; then
+    echo "ERROR: Unsupported arch. Choose one of: x8632, x8664"
+    exit -1
+  fi
+
   if [ ! -d ${NACL_TOOLCHAIN} ] ; then
-    echo "ERROR: install Native Client toolchain"
+    echo "ERROR: Install Native Client toolchain"
     exit -1
   fi
 
   if [ ! -f ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ] ; then
-    echo "ERROR: missing lib. Run this script with  binutils-liberty-x86 option"
+    echo "ERROR: Missing lib. Run this script with  binutils-liberty-x86 option"
     exit -1
   fi
 
-  if binutils-x8632-sb-needs-configure; then
-    binutils-x8632-sb-clean
-    binutils-x8632-sb-configure
+  if binutils-sb-needs-configure "${arch}"; then
+    binutils-sb-clean "${arch}"
+    binutils-sb-configure "${arch}"
   else
-    SkipBanner "BINUTILS-X8632-SB" "configure"
+    SkipBanner "BINUTILS-SB" "configure ${arch}"
   fi
 
-  if binutils-x8632-sb-needs-make; then
-    binutils-x8632-sb-make
+  if binutils-sb-needs-make "${arch}"; then
+    binutils-sb-make "${arch}"
   else
-    SkipBanner "BINUTILS-X8632-SB" "make"
+    SkipBanner "BINUTILS-SB" "make ${arch}"
   fi
 
-  binutils-x8632-sb-install
+  binutils-sb-install "${arch}"
 }
 
-binutils-x8632-sb-needs-configure() {
-  [ ! -f "${TC_BUILD_BINUTILS_X8632_SB}/config.status" ]
+binutils-sb-needs-configure() {
+  local arch=$1
+  [ ! -f "${TC_BUILD}/binutils-${arch}-sandboxed/config.status" ]
   return $?
 }
 
-#+ binutils-x8632-sb-clean - Clean binutils (sandboxed) for x8632
-binutils-x8632-sb-clean() {
-  StepBanner "BINUTILS-X8632-SB" "Clean"
-  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
-
+# binutils-sb-clean - Clean binutils (sandboxed) for x86
+binutils-sb-clean() {
+  local arch=$1
+  StepBanner "BINUTILS-SB" "Clean ${arch}"
+  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
   rm -rf "${objdir}"
   mkdir -p "${objdir}"
 }
 
-#+ binutils-x8632-sb-configure - Configure binutils (sandboxed) for x8632
-binutils-x8632-sb-configure() {
-  StepBanner "BINUTILS-X8632-SB" "Configure"
+# binutils-sb-configure - Configure binutils (sandboxed) for x86
+binutils-sb-configure() {
+  local arch=$1
+  StepBanner "BINUTILS-SB" "Configure ${arch}"
+  local bitsize=${arch:3:2}
+  local nacl="nacl${bitsize/"32"/}"
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
+  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
+  local installdir="${PNACL_CLIENT_TC_ROOT}/${arch}"
 
-  mkdir ${TC_BUILD_BINUTILS_X8632_SB}/opcodes
+  mkdir ${objdir}/opcodes
   spushd ${objdir}
   cp ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ./opcodes/.
   RunWithLog \
-    binutils.x8632.sandboxed.configure \
+    binutils.${arch}.sandboxed.configure \
     env -i \
     PATH="/usr/bin:/bin" \
-    AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
-    AS="${NACL_TOOLCHAIN}/bin/nacl-as" \
-    CC="${NACL_TOOLCHAIN}/bin/nacl-gcc" \
-    CXX="${NACL_TOOLCHAIN}/bin/nacl-g++" \
-    LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
-    RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
-    CFLAGS="-m32 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -I${NACL_TOOLCHAIN}/nacl/include" \
+    AR="${NACL_TOOLCHAIN}/bin/${nacl}-ar" \
+    AS="${NACL_TOOLCHAIN}/bin/${nacl}-as" \
+    CC="${NACL_TOOLCHAIN}/bin/${nacl}-gcc" \
+    CXX="${NACL_TOOLCHAIN}/bin/${nacl}-g++" \
+    LD="${NACL_TOOLCHAIN}/bin/${nacl}-ld" \
+    RANLIB="${NACL_TOOLCHAIN}/bin/${nacl}-ranlib" \
+    CFLAGS="-m${bitsize} -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -I${NACL_TOOLCHAIN}/${nacl}/include" \
     LDFLAGS="-s" \
     LDFLAGS_FOR_BUILD="-L ." \
     ${srcdir}/binutils-2.20/configure \
-                             --prefix=${PNACL_CLIENT_TC_X8632} \
-                             --host=nacl \
-                             --target=nacl \
+                             --prefix=${installdir} \
+                             --host=${nacl} \
+                             --target=${nacl} \
                              --disable-nls \
                              --enable-static \
                              --enable-shared=no \
@@ -1697,23 +1711,26 @@ binutils-x8632-sb-configure() {
   spopd
 }
 
-binutils-x8632-sb-needs-make() {
+binutils-sb-needs-make() {
+  local arch=$1
   local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
+  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
 
   ts-modified "$srcdir" "$objdir"
   return $?
 }
 
-#+ binutils-x8632-sb-make - Make binutils (sandboxed) for x8632
-binutils-x8632-sb-make() {
-  StepBanner "BINUTILS-X8632-SB" "Make"
-  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
+# binutils-sb-make - Make binutils (sandboxed) for x86
+binutils-sb-make() {
+  local arch=$1
+  StepBanner "BINUTILS-SB" "Make ${arch}"
+  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
+
   spushd ${objdir}
 
   ts-touch-open "${objdir}"
 
-  RunWithLog binutils.x8632.sandboxed.make \
+  RunWithLog binutils.${arch}.sandboxed.make \
     env -i PATH="/usr/bin:/bin" \
     make ${MAKE_OPTS} all-gas
 
@@ -1722,132 +1739,15 @@ binutils-x8632-sb-make() {
   spopd
 }
 
-#+ binutils-x8632-sb-install - Install binutils (sandboxed) for x8632
-binutils-x8632-sb-install() {
-  StepBanner "BINUTILS-X8632-SB" "Install"
-  local objdir="${TC_BUILD_BINUTILS_X8632_SB}"
+# binutils-sb-install - Install binutils (sandboxed) for x86
+binutils-sb-install() {
+  local arch=$1
+  StepBanner "BINUTILS-SB" "Install ${arch}"
+  local objdir="${TC_BUILD}/binutils-${arch}-sandboxed"
+
   spushd ${objdir}
 
-  RunWithLog binutils.x8632.sandboxed.install \
-    env -i PATH="/usr/bin:/bin" \
-    make install-gas
-
-  spopd
-}
-
-#+-------------------------------------------------------------------------
-#TODO(abetul): Share more code with binutils 32-bit sandboxing.
-#+ binutils-x8664-sb       - Build and install binutils (sandboxed) for x8664
-binutils-x8664-sb() {
-  local srcdir="${TC_SRC_BINUTILS}"
-
-  assert-dir "${srcdir}" "You need to checkout binutils."
-
-  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
-    echo "ERROR: install Native Client toolchain"
-    exit -1
-  fi
-
-  if [ ! -f ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ] ; then
-    echo "ERROR: missing lib. Run this script with  binutils-liberty-x86 option"
-    exit -1
-  fi
-
-  if binutils-x8664-sb-needs-configure; then
-    binutils-x8664-sb-clean
-    binutils-x8664-sb-configure
-  else
-    SkipBanner "BINUTILS-X8664-SB" "configure"
-  fi
-
-  if binutils-x8664-sb-needs-make; then
-    binutils-x8664-sb-make
-  else
-    SkipBanner "BINUTILS-X8664-SB" "make"
-  fi
-
-  binutils-x8664-sb-install
-}
-
-binutils-x8664-sb-needs-configure() {
-  [ ! -f "${TC_BUILD_BINUTILS_X8664_SB}/config.status" ]
-  return $?
-}
-
-#+ binutils-x8664-sb-clean - Clean binutils (sandboxed) for x8664
-binutils-x8664-sb-clean() {
-  StepBanner "BINUTILS-X8664-SB" "Clean"
-  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
-
-  rm -rf "${objdir}"
-  mkdir -p "${objdir}"
-}
-
-#+ binutils-x8664-sb-configure - Configure binutils (sandboxed) for x8664
-binutils-x8664-sb-configure() {
-  StepBanner "BINUTILS-X8664-SB" "Configure"
-  local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
-
-  mkdir ${TC_BUILD_BINUTILS_X8664_SB}/opcodes
-  spushd ${objdir}
-  cp ${PNACL_CLIENT_TC_ROOT}/lib/libiberty.a ./opcodes/.
-  RunWithLog \
-    binutils.x8664.sandboxed.configure \
-    env -i \
-    PATH="/usr/bin:/bin" \
-    AR="${NACL_TOOLCHAIN}/bin/nacl64-ar" \
-    AS="${NACL_TOOLCHAIN}/bin/nacl64-as" \
-    CC="${NACL_TOOLCHAIN}/bin/nacl64-gcc" \
-    CXX="${NACL_TOOLCHAIN}/bin/nacl64-g++" \
-    LD="${NACL_TOOLCHAIN}/bin/nacl64-ld" \
-    RANLIB="${NACL_TOOLCHAIN}/bin/nacl64-ranlib" \
-    CFLAGS="-m64 -O2 -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5 -DNACL_TOOLCHAIN_PATCH -I${NACL_TOOLCHAIN}/nacl64/include" \
-    LDFLAGS="-s" \
-    LDFLAGS_FOR_BUILD="-L." \
-    ${srcdir}/binutils-2.20/configure \
-                             --prefix=${PNACL_CLIENT_TC_X8664} \
-                             --host=nacl64 \
-                             --target=nacl64 \
-                             --disable-nls \
-                             --enable-static \
-                             --enable-shared=no \
-                             --with-sysroot=${NEWLIB_INSTALL_DIR}
-  spopd
-}
-
-binutils-x8664-sb-needs-make() {
-  local srcdir="${TC_SRC_BINUTILS}"
-  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
-
-  ts-modified "$srcdir" "$objdir"
-  return $?
-}
-
-#+ binutils-x8664-sb-make - Make binutils (sandboxed) for x8664
-binutils-x8664-sb-make() {
-  StepBanner "BINUTILS-X8664-SB" "Make"
-  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
-  spushd ${objdir}
-
-  ts-touch-open "${objdir}"
-
-  RunWithLog binutils.x8664.sandboxed.make \
-    env -i PATH="/usr/bin:/bin" \
-    make ${MAKE_OPTS} all-gas
-
-  ts-touch-commit "${objdir}"
-
-  spopd
-}
-
-#+ binutils-x8664-sb-install - Install binutils (sandboxed) for x8664
-binutils-x8664-sb-install() {
-  StepBanner "BINUTILS-X8664-SB" "Install"
-  local objdir="${TC_BUILD_BINUTILS_X8664_SB}"
-  spushd ${objdir}
-
-  RunWithLog binutils.x8664.sandboxed.install \
+  RunWithLog binutils.${arch}.sandboxed.install \
     env -i PATH="/usr/bin:/bin" \
     make install-gas
 
@@ -1869,13 +1769,13 @@ build-sandboxed-translators() {
 
   StepBanner "32-bit X86" "Sandboxing"
   StepBanner "----------" "----------"
-  binutils-x8632-sb
+  binutils-sb x8632
   cp tools/llvm/dummy_translator_x8632.sh "${PNACL_CLIENT_TC_X8632}/translator"
   echo ""
 
   StepBanner "64-bit X86" "Sandboxing"
   StepBanner "----------" "----------"
-  binutils-x8664-sb
+  binutils-sb x8664
   cp tools/llvm/dummy_translator_x8664.sh "${PNACL_CLIENT_TC_X8664}/translator"
   echo ""
 }
