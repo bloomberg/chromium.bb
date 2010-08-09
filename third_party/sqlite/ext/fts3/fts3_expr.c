@@ -58,7 +58,6 @@ int sqlite3_fts3_enable_parentheses = 0;
 
 #include "fts3_expr.h"
 #include "sqlite3.h"
-#include <ctype.h>
 #include <string.h>
 #include <assert.h>
 
@@ -84,7 +83,7 @@ struct ParseContext {
 ** negative values).
 */
 static int fts3isspace(char c){
-  return (c&0x80)==0 ? isspace(c) : 0;
+  return c==' ' || c=='\t' || c=='\n' || c=='\r' || c=='\v' || c=='\f';
 }
 
 /*
