@@ -5,7 +5,7 @@
 
 Import('env')
 
-if env['TARGET_ARCHITECTURE'] == 'arm':
+if ARGUMENTS.get('bitcode'):
   assert env.get('CC_NATIVE')
   # NOTE: we make sure everything in this directory gets compiled
   #       all the way down into native code.
@@ -15,6 +15,17 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   #       that always compiles to native.
   env.Replace(CC='${CC_NATIVE}')
 
+  if env.get('TARGET_PLATFORM') == 'x86-64':
+    # the pnacl toolchain does not export this define and
+    # this is probably a good thing.
+    # We only need it because the crt?_x86.S files have #ifdefs
+    # in them.
+    env.Append(ASFLAGS='-D__x86_64__=1')
+    # sadly tls also had #ifdefs
+    # TODO(robertm): break this up in mulitple files
+    env.Append(CPPDEFINES=['__x86_64__=1'])
+  elif env.get('TARGET_PLATFORM') == 'x86-32':
+    env.Append(CPPDEFINES=['__x86_32__=1'])
 # This directory contains untrusted C and ASM source for low-level
 # CPU-specific libraries implicitly supplied by the compiler driver.
 # Unlike most untrusted SDK code, conditional compilation may be

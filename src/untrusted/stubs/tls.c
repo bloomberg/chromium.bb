@@ -14,7 +14,9 @@
 
 /* See src/untrusted/nacl/tls.h */
 int __nacl_tls_aligment() {
-#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
+#ifdef __x86_32__
+  return 32;
+#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
   return (1 << 12);
 #else
   return 32;
@@ -24,7 +26,9 @@ int __nacl_tls_aligment() {
 
 /* See src/untrusted/nacl/tls.h */
 size_t __nacl_tdb_offset_in_tls(size_t tls_data_and_bss_size) {
-#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
+#ifdef __x86_32__
+  return tls_data_and_bss_size; /* TDB after TLS */
+#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
   return 0; /* TDB is the first symbol in the TLS. */
 #else
   return tls_data_and_bss_size; /* TDB after TLS */
@@ -34,7 +38,9 @@ size_t __nacl_tdb_offset_in_tls(size_t tls_data_and_bss_size) {
 
 /* See src/untrusted/nacl/tls.h */
 size_t __nacl_tdb_effective_payload_size(size_t tdb_size) {
-#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
+#ifdef __x86_32__
+  return tdb_size; /* TDB after TLS */
+#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
   return 0; /* TDB is the first symbol in the TLS. */
 #else
   return tdb_size; /* TDB after TLS */
