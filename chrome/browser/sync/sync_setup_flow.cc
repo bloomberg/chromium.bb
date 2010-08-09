@@ -323,10 +323,12 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
   if (!service->last_attempted_user_email().empty()) {
     args->SetString(L"user", service->last_attempted_user_email());
     args->SetInteger(L"error", error.state());
+    args->SetBoolean(L"editable_user", true);
   } else {
     std::wstring user(UTF16ToWide(service->GetAuthenticatedUsername()));
     args->SetString(L"user", user);
-    args->SetInteger(L"error", user.empty() ? 0 : error.state());
+    args->SetInteger(L"error", 0);
+    args->SetBoolean(L"editable_user", user.empty());
   }
 
   args->SetString(L"captchaUrl", error.captcha().image_url.spec());

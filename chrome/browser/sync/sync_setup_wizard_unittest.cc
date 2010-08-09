@@ -250,7 +250,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
   dialog_args.Clear();
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(4U, dialog_args.size());
+  EXPECT_EQ(5U, dialog_args.size());
   std::string iframe_to_show;
   dialog_args.GetString(L"iframeToShow", &iframe_to_show);
   EXPECT_EQ("login", iframe_to_show);
@@ -268,7 +268,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   service_->set_auth_state(kTestUser, captcha_error);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(4U, dialog_args.size());
+  EXPECT_EQ(5U, dialog_args.size());
   dialog_args.GetString(L"iframeToShow", &iframe_to_show);
   EXPECT_EQ("login", iframe_to_show);
   std::string captcha_url;
@@ -472,7 +472,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_EQ(4U, dialog_args.size());
+  EXPECT_EQ(5U, dialog_args.size());
   std::string iframe_to_show;
   dialog_args.GetString(L"iframeToShow", &iframe_to_show);
   EXPECT_EQ("login", iframe_to_show);

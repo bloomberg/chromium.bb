@@ -20,6 +20,9 @@
     text-align: left;
   }
   #gaia_account_text { font-weight: bold; }
+  #email_readonly { font-size: 10pt;
+                    font-weight: bold;
+                    display: none; }
   div.errorbox-good {}
   div.errorbox-bad {}
   div.errormsg { color: red; font-size: smaller;
@@ -165,6 +168,13 @@
       var f = document.getElementById("gaia_loginform");
       if (f) {
         f.Email.value = args.user;
+        if (!args.editable_user) {
+          f.Email.style.display = 'none';
+          var span = document.getElementById('email_readonly');
+          span.appendChild(document.createTextNode(f.Email.value));
+          span.style.display = 'inline';
+          setElementDisplay("createaccountdiv", "none");
+        }
       }
       if (1 == args.error) {
         setElementDisplay("errormsg_1_Password", 'table-row');
@@ -366,6 +376,7 @@
             <td>
               <input type="text" name="Email"  id="Email" size="18"
                      value="" class='gaia le val' />
+              <span id="email_readonly"></span>
             </td>
           </tr>
           <tr>
