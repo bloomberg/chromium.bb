@@ -12,8 +12,8 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/configuration_policy_provider_win.h"
-#include "chrome/browser/mock_configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_provider_win.h"
+#include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/policy_constants.h"
 #include "chrome/common/pref_names.h"
 

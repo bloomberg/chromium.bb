@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONFIGURATION_POLICY_PREF_STORE_H_
-#define CHROME_BROWSER_CONFIGURATION_POLICY_PREF_STORE_H_
+#ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_H_
+#define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_H_
 #pragma once
 
 #include <string>
@@ -12,8 +12,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/configuration_policy_provider.h"
-#include "chrome/browser/configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_store.h"
 #include "chrome/common/pref_store.h"
 
 class CommandLine;
@@ -104,4 +104,4 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyPrefStore);
 };
 
-#endif  // CHROME_BROWSER_CONFIGURATION_POLICY_PREF_STORE_H_
+#endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_H_

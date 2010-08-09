@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MOCK_CONFIGURATION_POLICY_STORE_H_
-#define CHROME_BROWSER_MOCK_CONFIGURATION_POLICY_STORE_H_
+#ifndef CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_STORE_H_
+#define CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_STORE_H_
 #pragma once
 
 #include <map>
 
 #include "base/stl_util-inl.h"
-#include "chrome/browser/configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_store.h"
 
 // Mock ConfigurationPolicyStore implementation that records values for policy
 // settings as they get set.
@@ -32,4 +32,4 @@ class MockConfigurationPolicyStore : public ConfigurationPolicyStore {
   PolicyMap policy_map_;
 };
 
-#endif  // CHROME_BROWSER_MOCK_CONFIGURATION_POLICY_STORE_H_
+#endif  // CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_STORE_H_

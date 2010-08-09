@@ -7,7 +7,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/command_line_pref_store.h"
-#include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/common/json_pref_store.h"
 #include "chrome/common/notification_service.h"

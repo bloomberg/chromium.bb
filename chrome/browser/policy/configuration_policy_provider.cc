@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 
 #include "base/values.h"
 #include "chrome/common/policy_constants.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -11,15 +11,15 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 #if defined(OS_WIN)
-#include "chrome/browser/configuration_policy_provider_win.h"
+#include "chrome/browser/policy/configuration_policy_provider_win.h"
 #elif defined(OS_MACOSX)
-#include "chrome/browser/configuration_policy_provider_mac.h"
+#include "chrome/browser/policy/configuration_policy_provider_mac.h"
 #elif defined(OS_POSIX)
-#include "chrome/browser/config_dir_policy_provider.h"
+#include "chrome/browser/policy/config_dir_policy_provider.h"
 #endif
-#include "chrome/browser/dummy_configuration_policy_provider.h"
+#include "chrome/browser/policy/dummy_configuration_policy_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"

@@ -6,8 +6,8 @@
 
 #include "base/stl_util-inl.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/configuration_policy_provider_mac.h"
-#include "chrome/browser/mock_configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_provider_mac.h"
+#include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/browser/preferences_mock_mac.h"
 
 // A subclass of |ConfigurationPolicyProviderMac| providing access to various

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_H_
-#define CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_H_
+#ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
+#define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
 #pragma once
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/values.h"
-#include "chrome/browser/configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_store.h"
 
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
@@ -51,4 +51,4 @@ class ConfigurationPolicyProvider {
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
 };
 
-#endif  // CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_H_
+#endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_

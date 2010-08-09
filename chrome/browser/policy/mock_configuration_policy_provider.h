@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MOCK_CONFIGURATION_POLICY_PROVIDER_H_
-#define CHROME_BROWSER_MOCK_CONFIGURATION_POLICY_PROVIDER_H_
+#ifndef CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_PROVIDER_H_
+#define CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_PROVIDER_H_
 #pragma once
 
 #include <map>
 
 #include "base/stl_util-inl.h"
-#include "chrome/browser/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 
 // Mock ConfigurationPolicyProvider implementation that supplies canned
 // values for polices.
@@ -39,5 +39,5 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   PolicyMap policy_map_;
 };
 
-#endif  // CHROME_BROWSER_MOCK_CONFIGURATION_POLICY_PROVIDER_H_
+#endif  // CHROME_BROWSER_POLICY_MOCK_CONFIGURATION_POLICY_PROVIDER_H_
 

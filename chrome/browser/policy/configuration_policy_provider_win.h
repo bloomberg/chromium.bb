@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_WIN_H_
-#define CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_WIN_H_
+#ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_WIN_H_
+#define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_WIN_H_
 #pragma once
 
 #include "base/object_watcher.h"
 #include "base/scoped_ptr.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/configuration_policy_store.h"
-#include "chrome/browser/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 
 // An implementation of |ConfigurationPolicyProvider| using the
 // mechanism provided by Windows Groups Policy. Policy decisions are
@@ -58,5 +58,5 @@ class ConfigurationPolicyProviderWin : public ConfigurationPolicyProvider {
   bool GetRegistryPolicyInteger(const wchar_t* value_name, uint32* result);
 };
 
-#endif  // CHROME_BROWSER_CONFIGURATION_POLICY_PROVIDER_WIN_H_
+#endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_WIN_H_
 

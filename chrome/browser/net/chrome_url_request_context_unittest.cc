@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/format_macros.h"
-#include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_pref_service.h"

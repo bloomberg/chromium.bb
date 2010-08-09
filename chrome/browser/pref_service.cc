@@ -20,7 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
