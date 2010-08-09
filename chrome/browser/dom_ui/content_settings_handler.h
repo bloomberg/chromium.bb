@@ -33,6 +33,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   void SetAllowThirdPartyCookies(const Value* value);
   void RemoveExceptions(const Value* value);
   void SetException(const Value* value);
+  void CheckExceptionPatternValidity(const Value* value);
 
   NotificationRegistrar notification_registrar_;
 

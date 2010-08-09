@@ -290,6 +290,9 @@ void ContentSettingsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("setImageException",
       NewCallback(this,
                   &ContentSettingsHandler::SetException));
+  dom_ui_->RegisterMessageCallback("checkExceptionPatternValidity",
+      NewCallback(this,
+                  &ContentSettingsHandler::CheckExceptionPatternValidity));
 }
 
 void ContentSettingsHandler::SetContentFilter(const Value* value) {
@@ -349,4 +352,20 @@ void ContentSettingsHandler::SetException(const Value* value) {
                                   CONTENT_SETTINGS_TYPE_IMAGES,
                                   "",
                                   ContentSettingFromString(setting));
+}
+
+// TODO(estade): generalize this function to work on all content settings types
+// rather than just images.
+void ContentSettingsHandler::CheckExceptionPatternValidity(const Value* value) {
+  std::string pattern_string = WideToUTF8(ExtractStringValue(value));
+  HostContentSettingsMap::Pattern pattern(pattern_string);
+
+  scoped_ptr<Value> pattern_value(Value::CreateStringValue(
+      pattern_string));
+  scoped_ptr<Value> valid_value(Value::CreateBooleanValue(
+      pattern.IsValid()));
+
+  dom_ui_->CallJavascriptFunction(
+      L"ContentSettings.patternValidityCheckComplete", *pattern_value.get(),
+                                                       *valid_value.get());
 }

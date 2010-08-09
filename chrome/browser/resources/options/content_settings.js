@@ -87,6 +87,17 @@ cr.define('options', function() {
     $('block-third-party-cookies').checked = block;
   };
 
+  /**
+   * The browser's response to a request to check the validity of a given URL
+   * pattern.
+   * @param {string} pattern The pattern.
+   * @param {bool} valid Whether said pattern is valid in the context of
+   *     a content exception setting.
+   */
+  ContentSettings.patternValidityCheckComplete = function(pattern, valid) {
+    imagesExceptionsList.patternValidityCheckComplete(pattern, valid);
+  };
+
   // Export
   return {
     ContentSettings: ContentSettings

@@ -57,6 +57,18 @@ cr.define('options.contentSettings', function() {
       this.appendChild(select);
       select.className = 'exceptionSetting hidden';
 
+      // Used to track whether the URL pattern in the input is valid.
+      // This will be true if the browser process has informed us that the
+      // current text in the input is valid. Changing the text resets this to
+      // false, and getting a response from the browser sets it back to true.
+      // It starts off as false for empty string (new exceptions) or true for
+      // already-existing exceptions (which we assume are valid).
+      this.inputValidityKnown = this.pattern;
+      // This one tracks the actual validity of the pattern in the input. This
+      // starts off as true so as not to annoy the user when he adds a new and
+      // empty input.
+      this.inputIsValid = true;
+
       this.patternLabel = patternLabel;
       this.settingLabel = settingLabel;
       this.input = input;
@@ -66,7 +78,13 @@ cr.define('options.contentSettings', function() {
 
       this.updateEditables();
 
+      var self = this;
       // Handle events on the editable nodes.
+      input.oninput = function(event) {
+        self.inputValidityKnown = false;
+        chrome.send('checkExceptionPatternValidity', [input.value]);
+      };
+
       var eventsToStop =
           ['mousedown', 'mouseup', 'contextmenu', 'dblclick', 'paste'];
       eventsToStop.forEach(function(type) {
@@ -149,6 +167,28 @@ cr.define('options.contentSettings', function() {
     },
 
     /**
+     * Update this list item to reflect whether the input is a valid pattern
+     * if |pattern| matches the text currently in the input.
+     * @param {string} pattern The pattern.
+     * @param {boolean} valid Whether said pattern is valid in the context of
+     *     a content exception setting.
+     */
+    maybeSetPatternValid: function(pattern, valid) {
+      // Don't do anything for messages where we are not the intended recipient,
+      // or if the response is stale (i.e. the input value has changed since we
+      // sent the request to analyze it).
+      if (pattern != this.input.value)
+        return;
+
+      if (valid)
+        this.input.setCustomValidity('');
+      else
+        this.input.setCustomValidity(' ');
+      this.inputIsValid = valid;
+      this.inputValidityKnown = true;
+    },
+
+    /**
      * Copy the data model values to the editable nodes.
      */
     updateEditables: function() {
@@ -185,6 +225,14 @@ cr.define('options.contentSettings', function() {
       var optionAllow = this.optionAllow;
       var optionBlock = this.optionBlock;
 
+      // Check that we have a valid pattern and if not we do not change the
+      // editing mode.
+      if (!editing && (!this.inputValidityKnown || !this.inputIsValid)) {
+        input.focus();
+        input.select();
+        return;
+      }
+
       patternLabel.classList.toggle('hidden');
       settingLabel.classList.toggle('hidden');
       input.classList.toggle('hidden');
@@ -197,22 +245,7 @@ cr.define('options.contentSettings', function() {
         input.focus();
         input.select();
       } else {
-        // Check that we have a valid pattern and if not we do not change then
-        // editing mode.
         var newPattern = input.value;
-
-        // TODO(estade): check for pattern validity.
-        if (false) {
-          // In case the item was removed before getting here we should
-          // not alert.
-          if (listItem.parentNode) {
-            // TODO(estade): i18n
-            alert('invalid pattern');
-          }
-          input.focus();
-          input.select();
-          return;
-        }
 
         this.pattern = patternLabel.textContent = newPattern;
         if (optionAllow.selected)
@@ -277,6 +310,21 @@ cr.define('options.contentSettings', function() {
     },
 
     /**
+     * The browser has finished checking a pattern for validity. Update the
+     * list item to reflect this.
+     * @param {string} pattern The pattern.
+     * @param {bool} valid Whether said pattern is valid in the context of
+     *     a content exception setting.
+     */
+    patternValidityCheckComplete: function(pattern, valid) {
+      for (var i = 0; i < this.dataModel.length; ++i) {
+        var listItem = this.getListItemByIndex(i);
+        if (listItem)
+          listItem.maybeSetPatternValid(pattern, valid);
+      }
+    },
+
+    /**
      * Removes all exceptions from the js model.
      */
     clear: function() {
@@ -313,10 +361,8 @@ cr.define('options.contentSettings', function() {
 
     decorate: function() {
       ExceptionsList.decorate($('imagesExceptionsList'));
-      this.boundHandleOnSelectionChange_ =
-          cr.bind(this.handleOnSelectionChange_, this);
       imagesExceptionsList.selectionModel.addEventListener(
-          'change', this.boundHandleOnSelectionChange_);
+          'change', cr.bind(this.handleOnSelectionChange_, this));
 
       var addRow = cr.doc.createElement('button');
       addRow.textContent = templateData.addExceptionRow;
