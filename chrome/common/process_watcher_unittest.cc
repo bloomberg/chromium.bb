@@ -8,12 +8,11 @@
 #include <sys/wait.h>
 
 #include "base/eintr_wrapper.h"
+#include "base/multiprocess_test.h"
 #include "base/process_util.h"
-#include "base/test/multiprocess_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/multiprocess_func_list.h"
 
-class ProcessWatcherTest : public base::MultiProcessTest {
+class ProcessWatcherTest : public MultiProcessTest {
 };
 
 namespace {
@@ -30,7 +29,7 @@ bool IsProcessDead(base::ProcessHandle child) {
 
 TEST_F(ProcessWatcherTest, DelayedTermination) {
   base::ProcessHandle child_process =
-      SpawnChild("process_watcher_test_never_die", false);
+      SpawnChild("process_watcher_test_never_die");
   ProcessWatcher::EnsureProcessTerminated(child_process);
   base::WaitForSingleProcess(child_process, 5000);
 
@@ -48,7 +47,7 @@ MULTIPROCESS_TEST_MAIN(process_watcher_test_never_die) {
 
 TEST_F(ProcessWatcherTest, ImmediateTermination) {
   base::ProcessHandle child_process =
-      SpawnChild("process_watcher_test_die_immediately", false);
+      SpawnChild("process_watcher_test_die_immediately");
   // Give it time to die.
   sleep(2);
   ProcessWatcher::EnsureProcessTerminated(child_process);

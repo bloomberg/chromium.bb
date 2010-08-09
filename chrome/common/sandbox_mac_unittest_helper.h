@@ -6,7 +6,7 @@
 #define CHROME_COMMON_SANDBOX_MAC_UNITTEST_HELPER_H_
 #pragma once
 
-#include "base/test/multiprocess_test.h"
+#include "base/multiprocess_test.h"
 #include "chrome/common/sandbox_mac.h"
 
 namespace sandboxtest {
@@ -43,7 +43,7 @@ namespace sandboxtest {
 
 // Base test type with helper functions to spawn a subprocess that exercises
 // a given test in the sandbox.
-class MacSandboxTest : public base::MultiProcessTest {
+class MacSandboxTest : public MultiProcessTest {
  public:
   // Runs a test specified by |test_name| in a sandbox of the type specified
   // by |sandbox_type|. |test_data| is a custom string that a test can pass

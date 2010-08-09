@@ -1,7 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #include "base/platform_thread.h"
 #include "base/test/perf_test_suite.h"
 #include "base/scoped_ptr.h"
@@ -11,7 +10,7 @@
 #include "chrome_frame/utils.h"
 
 int main(int argc, char **argv) {
-  base::PerfTestSuite perf_suite(argc, argv);
+  PerfTestSuite perf_suite(argc, argv);
   chrome::RegisterPathProvider();
   PlatformThread::SetName("ChromeFrame perf tests");
 

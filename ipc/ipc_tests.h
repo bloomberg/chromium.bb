@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IPC_IPC_TESTS_H_
-#define IPC_IPC_TESTS_H_
+#ifndef IPC_IPC_TESTS_H__
+#define IPC_IPC_TESTS_H__
 #pragma once
 
-#include "base/test/multiprocess_test.h"
+#include "base/multiprocess_test.h"
 #include "base/process.h"
 
 // This unit test uses 3 types of child processes, a regular pipe client,
@@ -32,7 +32,7 @@ class Channel;
 }  // namespace IPC
 
 //Base class to facilitate Spawning IPC Client processes.
-class IPCChannelTest : public base::MultiProcessTest {
+class IPCChannelTest : public MultiProcessTest {
  protected:
 
   // Create a new MessageLoopForIO For each test.
@@ -46,4 +46,4 @@ class IPCChannelTest : public base::MultiProcessTest {
   MessageLoopForIO* message_loop_;
 };
 
-#endif  // IPC_IPC_TESTS_H_
+#endif  // IPC_IPC_TESTS_H__

@@ -536,7 +536,7 @@ int main(int argc, char** argv) {
 #ifdef PERFORMANCE_TEST
   int retval = PerfTestSuite(argc, argv).Run();
 #else
-  int retval = base::TestSuite(argc, argv).Run();
+  int retval = TestSuite(argc, argv).Run();
 #endif
   return retval;
 }

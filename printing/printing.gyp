@@ -87,7 +87,6 @@
       'dependencies': [
         'printing',
         '../testing/gtest.gyp:gtest',
-        '../base/base.gyp:test_support_base',
       ],
       'sources': [
         'emf_win_unittest.cc',

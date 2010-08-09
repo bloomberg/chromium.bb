@@ -18,7 +18,6 @@ extern "C" {
 #include "base/message_loop.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message_utils.h"
-#include "testing/multiprocess_func_list.h"
 
 #if defined(OS_POSIX)
 

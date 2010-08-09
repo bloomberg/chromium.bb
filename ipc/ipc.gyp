@@ -38,7 +38,6 @@
         'ipc',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
-        '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [

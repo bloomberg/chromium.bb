@@ -7,7 +7,7 @@
 #include "chrome/common/chrome_paths.cc"
 
 int main(int argc, char **argv) {
-  base::PerfTestSuite suite(argc, argv);
+  PerfTestSuite suite(argc, argv);
   chrome::RegisterPathProvider();
   MessageLoop main_message_loop;
 

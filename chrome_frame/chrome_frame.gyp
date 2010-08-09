@@ -115,9 +115,8 @@
       'type': 'executable',
       'msvs_guid': '17D98CCA-0F6A-470F-9DF9-56DC6CC1A0BE',
       'dependencies': [
-        '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
-        '../chrome/chrome.gyp:browser',
+        '../chrome/chrome.gyp:browser',     
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:debugger',
         '../chrome/chrome.gyp:nacl',
@@ -204,7 +203,6 @@
       'msvs_guid': '1D25715A-C8CE-4448-AFA3-8515AF22D235',
       'type': 'executable',
       'dependencies': [
-        '../base/base.gyp:test_support_base',
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chrome/chrome.gyp:common',
         '../chrome/chrome.gyp:utility',
@@ -436,7 +434,6 @@
       'type': 'executable',
       'msvs_guid': 'A1440368-4089-4E14-8864-D84D3C5714A7',
       'dependencies': [
-        '../base/base.gyp:test_support_base',
         '../chrome/chrome.gyp:browser',
         '../chrome/chrome.gyp:renderer',
         '../testing/gtest.gyp:gtest',

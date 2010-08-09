@@ -12,11 +12,9 @@
 
 #include "app/app_paths.h"
 #include "app/resource_bundle.h"
-#include "base/command_line.h"
 #include "base/stats_table.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
@@ -30,7 +28,6 @@
 #include "chrome/test/testing_browser_process.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/net_util.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
@@ -84,10 +81,10 @@ class WarningHostResolverProc : public net::HostResolverProc {
   }
 };
 
-class ChromeTestSuite : public base::TestSuite {
+class ChromeTestSuite : public TestSuite {
  public:
   ChromeTestSuite(int argc, char** argv)
-      : base::TestSuite(argc, argv),
+      : TestSuite(argc, argv),
         stats_table_(NULL),
         created_user_data_dir_(false) {
   }
@@ -97,7 +94,7 @@ class ChromeTestSuite : public base::TestSuite {
   virtual void Initialize() {
     base::ScopedNSAutoreleasePool autorelease_pool;
 
-    base::TestSuite::Initialize();
+    TestSuite::Initialize();
 
     chrome::RegisterChromeSchemes();
     host_resolver_proc_ = new WarningHostResolverProc();
@@ -175,7 +172,7 @@ class ChromeTestSuite : public base::TestSuite {
       file_util::Delete(user_data_dir, true);
       file_util::Delete(user_data_dir.DirName(), false);
     }
-    base::TestSuite::Shutdown();
+    TestSuite::Shutdown();
   }
 
   void SetBrowserDirectory(const FilePath& browser_dir) {

@@ -19,7 +19,7 @@
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
 
-class AppTestSuite : public base::TestSuite {
+class AppTestSuite : public TestSuite {
  public:
   AppTestSuite(int argc, char** argv) : TestSuite(argc, argv) {
   }
