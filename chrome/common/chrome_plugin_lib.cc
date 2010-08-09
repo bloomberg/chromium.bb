@@ -25,10 +25,10 @@ using base::TimeDelta;
 
 // TODO(port): revisit when plugins happier
 #if defined(OS_WIN)
-const TCHAR ChromePluginLib::kRegistryChromePlugins[] =
-    _T("Software\\Google\\Chrome\\Plugins");
-static const TCHAR kRegistryLoadOnStartup[] = _T("LoadOnStartup");
-static const TCHAR kRegistryPath[] = _T("Path");
+const wchar_t ChromePluginLib::kRegistryChromePlugins[] =
+    L"Software\\Google\\Chrome\\Plugins";
+static const wchar_t kRegistryLoadOnStartup[] = L"LoadOnStartup";
+static const wchar_t kRegistryPath[] = L"Path";
 #endif
 
 typedef base::hash_map<FilePath, scoped_refptr<ChromePluginLib> >

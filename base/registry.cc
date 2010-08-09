@@ -1,27 +1,17 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// All Rights Reserved.
 
 #include "base/registry.h"
 
-#include <assert.h>
 #include <shlwapi.h>
-#include <windows.h>
+
+#include "base/logging.h"
 
 #pragma comment(lib, "shlwapi.lib")  // for SHDeleteKey
 
-// local types (see the same declarations in the header file)
-#define tchar TCHAR
-#define CTP const tchar*
-#define tstr std::basic_string<tchar>
-
-//
-// RegistryValueIterator
-//
-
 RegistryValueIterator::RegistryValueIterator(HKEY root_key,
-                                             LPCTSTR folder_key) {
+                                             const wchar_t* folder_key) {
   LONG result = RegOpenKeyEx(root_key, folder_key, 0, KEY_READ, &key_);
   if (result != ERROR_SUCCESS) {
     key_ = NULL;
@@ -47,19 +37,17 @@ RegistryValueIterator::~RegistryValueIterator() {
 }
 
 bool RegistryValueIterator::Valid() const {
-  // true while the iterator is valid
   return key_ != NULL && index_ >= 0;
 }
 
 void RegistryValueIterator::operator++() {
-  // advance to the next entry in the folder
   --index_;
   Read();
 }
 
 bool RegistryValueIterator::Read() {
   if (Valid()) {
-    DWORD ncount = sizeof(name_)/sizeof(*name_);
+    DWORD ncount = arraysize(name_);
     value_size_ = sizeof(value_);
     LRESULT r = ::RegEnumValue(key_, index_, name_, &ncount, NULL, &type_,
                                reinterpret_cast<BYTE*>(value_), &value_size_);
@@ -74,7 +62,6 @@ bool RegistryValueIterator::Read() {
 }
 
 DWORD RegistryValueIterator::ValueCount() const {
-
   DWORD count = 0;
   HRESULT result = ::RegQueryInfoKey(key_, NULL, 0, NULL, NULL, NULL, NULL,
                                      &count, NULL, NULL, NULL, NULL);
@@ -85,12 +72,8 @@ DWORD RegistryValueIterator::ValueCount() const {
   return count;
 }
 
-//
-// RegistryKeyIterator
-//
-
 RegistryKeyIterator::RegistryKeyIterator(HKEY root_key,
-                                         LPCTSTR folder_key) {
+                                         const wchar_t* folder_key) {
   LONG result = RegOpenKeyEx(root_key, folder_key, 0, KEY_READ, &key_);
   if (result != ERROR_SUCCESS) {
     key_ = NULL;
@@ -116,19 +99,17 @@ RegistryKeyIterator::~RegistryKeyIterator() {
 }
 
 bool RegistryKeyIterator::Valid() const {
-  // true while the iterator is valid
   return key_ != NULL && index_ >= 0;
 }
 
 void RegistryKeyIterator::operator++() {
-  // advance to the next entry in the folder
   --index_;
   Read();
 }
 
 bool RegistryKeyIterator::Read() {
   if (Valid()) {
-    DWORD ncount = sizeof(name_)/sizeof(*name_);
+    DWORD ncount = arraysize(name_);
     FILETIME written;
     LRESULT r = ::RegEnumKeyEx(key_, index_, name_, &ncount, NULL, NULL,
                                NULL, &written);
@@ -141,7 +122,6 @@ bool RegistryKeyIterator::Read() {
 }
 
 DWORD RegistryKeyIterator::SubkeyCount() const {
-
   DWORD count = 0;
   HRESULT result = ::RegQueryInfoKey(key_, NULL, 0, NULL, &count, NULL, NULL,
                                      NULL, NULL, NULL, NULL, NULL);
@@ -152,19 +132,16 @@ DWORD RegistryKeyIterator::SubkeyCount() const {
   return count;
 }
 
-//
-// RegKey
-//
-
-RegKey::RegKey(HKEY rootkey, const tchar* subkey, REGSAM access)
-  : key_(NULL), watch_event_(0) {
+RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
+    : key_(NULL),
+      watch_event_(0) {
   if (rootkey) {
     if (access & (KEY_SET_VALUE | KEY_CREATE_SUB_KEY | KEY_CREATE_LINK))
-      this->Create(rootkey, subkey, access);
+      Create(rootkey, subkey, access);
     else
-      this->Open(rootkey, subkey, access);
+      Open(rootkey, subkey, access);
   } else {
-    assert(!subkey);
+    DCHECK(!subkey);
   }
 }
 
@@ -176,25 +153,25 @@ void RegKey::Close() {
   }
 }
 
-bool RegKey::Create(HKEY rootkey, const tchar* subkey, REGSAM access) {
+bool RegKey::Create(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
   DWORD disposition_value;
   return CreateWithDisposition(rootkey, subkey, &disposition_value, access);
 }
 
-bool RegKey::CreateWithDisposition(HKEY rootkey, const tchar* subkey,
+bool RegKey::CreateWithDisposition(HKEY rootkey, const wchar_t* subkey,
                                    DWORD* disposition, REGSAM access) {
-  assert(rootkey && subkey && access && disposition);
-  this->Close();
+  DCHECK(rootkey && subkey && access && disposition);
+  Close();
 
-  LONG const result = RegCreateKeyEx(rootkey,
-                                     subkey,
-                                     0,
-                                     NULL,
-                                     REG_OPTION_NON_VOLATILE,
-                                     access,
-                                     NULL,
-                                     &key_,
-                                     disposition );
+  LONG result = RegCreateKeyEx(rootkey,
+                               subkey,
+                               0,
+                               NULL,
+                               REG_OPTION_NON_VOLATILE,
+                               access,
+                               NULL,
+                               &key_,
+                               disposition);
   if (result != ERROR_SUCCESS) {
     key_ = NULL;
     return false;
@@ -203,40 +180,37 @@ bool RegKey::CreateWithDisposition(HKEY rootkey, const tchar* subkey,
   return true;
 }
 
-bool RegKey::Open(HKEY rootkey, const tchar* subkey, REGSAM access) {
-  assert(rootkey && subkey && access);
-  this->Close();
+bool RegKey::Open(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
+  DCHECK(rootkey && subkey && access);
+  Close();
 
-  LONG const result = RegOpenKeyEx(rootkey, subkey, 0,
-                                   access, &key_ );
+  LONG result = RegOpenKeyEx(rootkey, subkey, 0, access, &key_);
   if (result != ERROR_SUCCESS) {
     key_ = NULL;
     return false;
   }
-
   return true;
 }
 
-bool RegKey::CreateKey(const tchar* name, REGSAM access) {
-  assert(name && access);
+bool RegKey::CreateKey(const wchar_t* name, REGSAM access) {
+  DCHECK(name && access);
 
   HKEY subkey = NULL;
-  LONG const result = RegCreateKeyEx(key_, name, 0, NULL,
-                                     REG_OPTION_NON_VOLATILE,
-                                     access, NULL, &subkey, NULL);
-  this->Close();
+  LONG result = RegCreateKeyEx(key_, name, 0, NULL, REG_OPTION_NON_VOLATILE,
+                               access, NULL, &subkey, NULL);
+  Close();
 
   key_ = subkey;
   return (result == ERROR_SUCCESS);
 }
 
-bool RegKey::OpenKey(const tchar* name, REGSAM access) {
-  assert(name && access);
+bool RegKey::OpenKey(const wchar_t* name, REGSAM access) {
+  DCHECK(name && access);
 
   HKEY subkey = NULL;
-  LONG const result = RegOpenKeyEx(key_, name, 0, access, &subkey);
+  LONG result = RegOpenKeyEx(key_, name, 0, access, &subkey);
 
-  this->Close();
+  Close();
 
   key_ = subkey;
   return (result == ERROR_SUCCESS);
@@ -244,14 +218,14 @@ bool RegKey::OpenKey(const tchar* name, REGSAM access) {
 
 DWORD RegKey::ValueCount() {
   DWORD count = 0;
-  HRESULT const result = ::RegQueryInfoKey(key_, NULL, 0, NULL, NULL, NULL,
-                                     NULL, &count, NULL, NULL, NULL, NULL);
+  HRESULT result = RegQueryInfoKey(key_, NULL, 0, NULL, NULL, NULL,
+                                   NULL, &count, NULL, NULL, NULL, NULL);
   return (result != ERROR_SUCCESS) ? 0 : count;
 }
 
-bool RegKey::ReadName(int index, tstr* name) {
-  tchar buf[256];
-  DWORD bufsize = sizeof(buf)/sizeof(*buf);
+bool RegKey::ReadName(int index, std::wstring* name) {
+  wchar_t buf[256];
+  DWORD bufsize = arraysize(buf);
   LRESULT r = ::RegEnumValue(key_, index, buf, &bufsize, NULL, NULL,
                              NULL, NULL);
   if (r != ERROR_SUCCESS)
@@ -261,34 +235,35 @@ bool RegKey::ReadName(int index, tstr* name) {
   return true;
 }
 
-bool RegKey::ValueExists(const tchar* name) {
-  if (!key_) return false;
-  const HRESULT result = RegQueryValueEx(key_, name, 0, NULL, NULL, NULL);
+bool RegKey::ValueExists(const wchar_t* name) {
+  if (!key_)
+    return false;
+  HRESULT result = RegQueryValueEx(key_, name, 0, NULL, NULL, NULL);
   return (result == ERROR_SUCCESS);
 }
 
-bool RegKey::ReadValue(const tchar* name, void* data,
+bool RegKey::ReadValue(const wchar_t* name, void* data,
                        DWORD* dsize, DWORD* dtype) {
-  if (!key_) return false;
-  HRESULT const result = RegQueryValueEx(key_, name, 0, dtype,
-                                         reinterpret_cast<LPBYTE>(data),
-                                         dsize);
+  if (!key_)
+    return false;
+  HRESULT result = RegQueryValueEx(key_, name, 0, dtype,
+                                   reinterpret_cast<LPBYTE>(data), dsize);
   return (result == ERROR_SUCCESS);
 }
 
-bool RegKey::ReadValue(const tchar* name, tstr * value) {
-  assert(value);
-  static const size_t kMaxStringLength = 1024;  // This is after expansion.
+bool RegKey::ReadValue(const wchar_t* name, std::wstring* value) {
+  DCHECK(value);
+  const size_t kMaxStringLength = 1024;  // This is after expansion.
   // Use the one of the other forms of ReadValue if 1024 is too small for you.
-  TCHAR raw_value[kMaxStringLength];
+  wchar_t raw_value[kMaxStringLength];
   DWORD type = REG_SZ, size = sizeof(raw_value);
-  if (this->ReadValue(name, raw_value, &size, &type)) {
+  if (ReadValue(name, raw_value, &size, &type)) {
     if (type == REG_SZ) {
       *value = raw_value;
     } else if (type == REG_EXPAND_SZ) {
-      TCHAR expanded[kMaxStringLength];
+      wchar_t expanded[kMaxStringLength];
       size = ExpandEnvironmentStrings(raw_value, expanded, kMaxStringLength);
-      // Success: returns the number of TCHARs copied
+      // Success: returns the number of wchar_t's copied
       // Fail: buffer too small, returns the size required
       // Fail: other, returns 0
       if (size == 0 || size > kMaxStringLength)
@@ -304,12 +279,14 @@ bool RegKey::ReadValue(const tchar* name, tstr * value) {
   return false;
 }
 
-bool RegKey::ReadValueDW(const tchar* name, DWORD * value) {
-  assert(value);
-  DWORD type = REG_DWORD, size = sizeof(DWORD), result = 0;
-  if (this->ReadValue(name, &result, &size, &type)
-     && (type == REG_DWORD || type == REG_BINARY)
-     && size == sizeof(DWORD)) {
+bool RegKey::ReadValueDW(const wchar_t* name, DWORD* value) {
+  DCHECK(value);
+  DWORD type = REG_DWORD;
+  DWORD size = sizeof(DWORD);
+  DWORD result = 0;
+  if (ReadValue(name, &result, &size, &type) &&
+      (type == REG_DWORD || type == REG_BINARY) &&
+      size == sizeof(DWORD)) {
     *value = result;
     return true;
   }
@@ -317,13 +294,14 @@ bool RegKey::ReadValueDW(const tchar* name, DWORD * value) {
   return false;
 }
 
-bool RegKey::WriteValue(const tchar* name,
-                        const void * data,
-                        DWORD dsize,
-                        DWORD dtype) {
-  assert(data);
-  if (!key_) return false;
-  HRESULT const result = RegSetValueEx(
+bool RegKey::WriteValue(const wchar_t* name, const void * data,
+                        DWORD dsize, DWORD dtype) {
+  DCHECK(data);
+
+  if (!key_)
+    return false;
+
+  HRESULT result = RegSetValueEx(
       key_,
       name,
       0,
@@ -333,25 +311,23 @@ bool RegKey::WriteValue(const tchar* name,
   return (result == ERROR_SUCCESS);
 }
 
-bool RegKey::WriteValue(const tchar * name, const tchar * value) {
-  return this->WriteValue(name, value,
-    static_cast<DWORD>(sizeof(*value) * (_tcslen(value) + 1)), REG_SZ);
+bool RegKey::WriteValue(const wchar_t * name, const wchar_t* value) {
+  return WriteValue(name, value,
+      static_cast<DWORD>(sizeof(*value) * (wcslen(value) + 1)), REG_SZ);
 }
 
-bool RegKey::WriteValue(const tchar * name, DWORD value) {
-  return this->WriteValue(name, &value,
-    static_cast<DWORD>(sizeof(value)), REG_DWORD);
+bool RegKey::WriteValue(const wchar_t* name, DWORD value) {
+  return WriteValue(name, &value,
+      static_cast<DWORD>(sizeof(value)), REG_DWORD);
 }
 
-bool RegKey::DeleteKey(const tchar * name) {
-  if (!key_) return false;
-  return (ERROR_SUCCESS == SHDeleteKey(key_, name));
+bool RegKey::DeleteKey(const wchar_t* name) {
+  return (!key_) ? false : (ERROR_SUCCESS == SHDeleteKey(key_, name));
 }
 
-
-bool RegKey::DeleteValue(const tchar * value_name) {
-  assert(value_name);
-  HRESULT const result = RegDeleteValue(key_, value_name);
+bool RegKey::DeleteValue(const wchar_t* value_name) {
+  DCHECK(value_name);
+  HRESULT result = RegDeleteValue(key_, value_name);
   return (result == ERROR_SUCCESS);
 }
 
@@ -393,30 +369,4 @@ bool RegKey::HasChanged() {
     }
   }
   return false;
-}
-
-// Register a COM object with the most usual properties.
-bool RegisterCOMServer(const tchar* guid,
-                       const tchar* name,
-                       const tchar* path) {
-  RegKey key(HKEY_CLASSES_ROOT, _T("CLSID"), KEY_WRITE);
-  key.CreateKey(guid, KEY_WRITE);
-  key.WriteValue(NULL, name);
-  key.CreateKey(_T("InprocServer32"), KEY_WRITE);
-  key.WriteValue(NULL, path);
-  key.WriteValue(_T("ThreadingModel"), _T("Apartment"));
-  return true;
-}
-
-bool RegisterCOMServer(const tchar* guid, const tchar* name, HINSTANCE module) {
-  tchar module_path[MAX_PATH];
-  ::GetModuleFileName(module, module_path, MAX_PATH);
-  _tcslwr_s(module_path, MAX_PATH);
-  return RegisterCOMServer(guid, name, module_path);
-}
-
-bool UnregisterCOMServer(const tchar* guid) {
-  RegKey key(HKEY_CLASSES_ROOT, _T("CLSID"), KEY_WRITE);
-  key.DeleteKey(guid);
-  return true;
 }
