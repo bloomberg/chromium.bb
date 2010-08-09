@@ -19,8 +19,7 @@ class BubbleWidget : public views::WidgetGtk {
  public:
   explicit BubbleWidget(BrowserBubble* bubble)
       : views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW),
-        bubble_(bubble),
-        closed_(false) {
+        bubble_(bubble) {
   }
 
   void Show(bool activate) {
@@ -29,19 +28,19 @@ class BubbleWidget : public views::WidgetGtk {
   }
 
   virtual void Close() {
-    if (closed_)
-      return;
-    closed_ = true;
+    if (!bubble_)
+      return;  // We have already been closed.
     if (IsActive()) {
       BrowserBubble::Delegate* delegate = bubble_->delegate();
       if (delegate)
         delegate->BubbleLostFocus(bubble_, false);
     }
     views::WidgetGtk::Close();
+    bubble_ = NULL;
   }
 
   virtual void Hide() {
-    if (IsActive()) {
+    if (IsActive()&& bubble_) {
       BrowserBubble::Delegate* delegate = bubble_->delegate();
       if (delegate)
         delegate->BubbleLostFocus(bubble_, false);
@@ -50,7 +49,7 @@ class BubbleWidget : public views::WidgetGtk {
   }
 
   virtual void IsActiveChanged() {
-    if (IsActive() || closed_)
+    if (IsActive() || !bubble_)
       return;
     BrowserBubble::Delegate* delegate = bubble_->delegate();
     if (!delegate) {
@@ -66,15 +65,13 @@ class BubbleWidget : public views::WidgetGtk {
   }
 
   virtual gboolean OnFocusIn(GtkWidget* widget, GdkEventFocus* event) {
-    BrowserBubble::Delegate* delegate = bubble_->delegate();
-    if (delegate)
-      delegate->BubbleGotFocus(bubble_);
+    if (bubble_ && bubble_->delegate())
+      bubble_->delegate()->BubbleGotFocus(bubble_);
     return views::WidgetGtk::OnFocusIn(widget, event);
   }
 
  private:
   BrowserBubble* bubble_;
-  bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleWidget);
 };

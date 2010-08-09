@@ -12,8 +12,7 @@
 class BubbleWidget : public views::WidgetWin {
  public:
   explicit BubbleWidget(BrowserBubble* bubble)
-      : bubble_(bubble),
-        closed_(false) {
+      : bubble_(bubble) {
     set_window_style(WS_POPUP | WS_CLIPCHILDREN);
     set_window_ex_style(WS_EX_TOOLWINDOW);
   }
@@ -26,19 +25,19 @@ class BubbleWidget : public views::WidgetWin {
   }
 
   void Close() {
-    if (closed_)
-      return;
-    closed_ = true;
+    if (!bubble_)
+      return;  // We have already been closed.
     if (IsActive()) {
       BrowserBubble::Delegate* delegate = bubble_->delegate();
       if (delegate)
         delegate->BubbleLostFocus(bubble_, NULL);
     }
     views::WidgetWin::Close();
+    bubble_ = NULL;
   }
 
   void Hide() {
-    if (IsActive()) {
+    if (IsActive() && bubble_) {
       BrowserBubble::Delegate* delegate = bubble_->delegate();
       if (delegate)
         delegate->BubbleLostFocus(bubble_, NULL);
@@ -48,16 +47,19 @@ class BubbleWidget : public views::WidgetWin {
 
   void OnActivate(UINT action, BOOL minimized, HWND window) {
     WidgetWin::OnActivate(action, minimized, window);
+    if (!bubble_)
+      return;
+
     BrowserBubble::Delegate* delegate = bubble_->delegate();
     if (!delegate) {
-      if (action == WA_INACTIVE && !closed_) {
+      if (action == WA_INACTIVE) {
         bubble_->DetachFromBrowser();
         delete bubble_;
       }
       return;
     }
 
-    if (action == WA_INACTIVE && !closed_) {
+    if (action == WA_INACTIVE) {
       bool lost_focus_to_child = false;
 
       // Are we a parent of this window?
@@ -81,14 +83,14 @@ class BubbleWidget : public views::WidgetWin {
 
   virtual void OnSetFocus(HWND focused_window) {
     WidgetWin::OnSetFocus(focused_window);
-    BrowserBubble::Delegate* delegate = bubble_->delegate();
-    if (delegate)
-      delegate->BubbleGotFocus(bubble_);
+    if (bubble_ && bubble_->delegate())
+      bubble_->delegate()->BubbleGotFocus(bubble_);
   }
 
  private:
   BrowserBubble* bubble_;
-  bool closed_;
+
+  DISALLOW_COPY_AND_ASSIGN(BubbleWidget);
 };
 
 void BrowserBubble::InitPopup() {
