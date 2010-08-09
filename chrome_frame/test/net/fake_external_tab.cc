@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "app/win_util.h"
 #include "base/command_line.h"
+#include "base/debug_util.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/i18n/icu_util.h"
