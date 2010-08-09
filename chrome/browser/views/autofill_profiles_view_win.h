@@ -85,6 +85,10 @@ class AutoFillProfilesView : public views::View,
   // Updates inferred labels.
   void UpdateProfileLabels();
 
+  // Updates the billing model. This is invoked any time the profile_set_
+  // changes.
+  void UpdateBillingModel();
+
   // Following two functions are called from opened child dialog to
   // disable/enable buttons.
   void ChildWindowOpened();
@@ -230,7 +234,7 @@ class AutoFillProfilesView : public views::View,
   class AddressComboBoxModel;
   class StringVectorComboboxModel;
 
-  // Sub-view dealing with addresses.
+  // Sub-view for editing/adding a credit card or address.
   class EditableSetViewContents : public views::View,
                                   public views::DialogDelegate,
                                   public views::ButtonListener,
@@ -352,10 +356,8 @@ class AutoFillProfilesView : public views::View,
     explicit AddressComboBoxModel(bool is_billing);
     virtual ~AddressComboBoxModel() {}
 
-    // Should be called only once. No other function should be called before it.
-    // Does not own |address_labels|. To update the model text,
-    // update label in one of the profiles and call LabelChanged()
-    void set_address_labels(const std::vector<EditableSetInfo>* address_labels);
+    // Updates address_labels_ from |address_labels|.
+    void SetAddressLabels(const std::vector<EditableSetInfo>& address_labels);
 
     // When you add a CB view that relies on this model, call this function
     // so the CB can be notified if strings change. Can be called multiple
@@ -367,7 +369,7 @@ class AutoFillProfilesView : public views::View,
     void ClearComboBoxes() { combo_boxes_.clear(); }
 
     // Call this function if one of the labels has changed
-    void LabelChanged();
+    void NotifyChanged();
 
     // Gets index of the item in the model or -1 if not found.
     int GetIndex(int unique_id);
@@ -377,7 +379,7 @@ class AutoFillProfilesView : public views::View,
     virtual std::wstring GetItemAt(int index);
 
    private:
-    std::list<views::Combobox *> combo_boxes_;
+    std::list<views::Combobox*> combo_boxes_;
     std::vector<EditableSetInfo> address_labels_;
     bool is_billing_;
 

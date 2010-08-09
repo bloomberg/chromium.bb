@@ -184,6 +184,7 @@ void AutoFillProfilesView::DeleteClicked() {
     last_view_row = table_model_->RowCount() - 1;
   if (last_view_row >= 0)
     scroll_view_->Select(scroll_view_->ViewToModel(last_view_row));
+  UpdateBillingModel();
   UpdateButtonState();
 }
 
@@ -216,6 +217,10 @@ void AutoFillProfilesView::UpdateProfileLabels() {
     profiles[i] = &(profiles_set_[i].address);
   }
   AutoFillProfile::AdjustInferredLabels(&profiles);
+}
+
+void AutoFillProfilesView::UpdateBillingModel() {
+  billing_model_.SetAddressLabels(profiles_set_);
 }
 
 void AutoFillProfilesView::ChildWindowOpened() {
@@ -415,7 +420,7 @@ void AutoFillProfilesView::Init() {
   enable_auto_fill_button_->SetChecked(
       preferences_->GetBoolean(prefs::kAutoFillEnabled));
 
-  billing_model_.set_address_labels(&profiles_set_);
+  billing_model_.SetAddressLabels(profiles_set_);
 
   table_model_.reset(new ContentListTableModel(&profiles_set_,
                                                &credit_card_set_));
@@ -789,6 +794,7 @@ bool AutoFillProfilesView::EditableSetViewContents::Cancel() {
     // Remove added item - it is last in the list.
     if (temporary_info_.is_address) {
       observer_->profiles_set_.pop_back();
+      observer_->UpdateBillingModel();
     } else {
       observer_->credit_card_set_.pop_back();
     }
@@ -809,8 +815,10 @@ bool AutoFillProfilesView::EditableSetViewContents::Accept() {
     observer_->table_model_->AddItem(index);
   else
     observer_->table_model_->UpdateItem(index);
-  if (temporary_info_.is_address)
+  if (temporary_info_.is_address) {
     observer_->UpdateProfileLabels();
+    observer_->UpdateBillingModel();
+  }
   return true;
 }
 
@@ -1222,10 +1230,11 @@ AutoFillProfilesView::AddressComboBoxModel::AddressComboBoxModel(
     : is_billing_(is_billing) {
 }
 
-void AutoFillProfilesView::AddressComboBoxModel::set_address_labels(
-    const std::vector<EditableSetInfo>* address_labels) {
-  for (size_t i = 0; i < address_labels->size(); ++i) {
-    const EditableSetInfo& item = address_labels->at(i);
+void AutoFillProfilesView::AddressComboBoxModel::SetAddressLabels(
+    const std::vector<EditableSetInfo>& address_labels) {
+  address_labels_.clear();
+  for (size_t i = 0; i < address_labels.size(); ++i) {
+    const EditableSetInfo& item = address_labels[i];
     DCHECK(item.is_address);
     FieldTypeSet fields;
     item.address.GetAvailableFieldTypes(&fields);
@@ -1242,6 +1251,7 @@ void AutoFillProfilesView::AddressComboBoxModel::set_address_labels(
     }
     address_labels_.push_back(item);
   }
+  NotifyChanged();
 }
 
 void AutoFillProfilesView::AddressComboBoxModel::UsedWithComboBox(
@@ -1249,7 +1259,7 @@ void AutoFillProfilesView::AddressComboBoxModel::UsedWithComboBox(
   combo_boxes_.push_back(combo_box);
 }
 
-void AutoFillProfilesView::AddressComboBoxModel::LabelChanged() {
+void AutoFillProfilesView::AddressComboBoxModel::NotifyChanged() {
   for (std::list<views::Combobox*>::iterator it = combo_boxes_.begin();
        it != combo_boxes_.end();
        ++it)
