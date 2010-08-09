@@ -76,8 +76,6 @@ void Preconnect::Connect(const GURL& url) {
     return;
   }
 
-  AddRef();  // Stay alive until socket is available.
-
   URLRequestContext* context = getter->GetURLRequestContext();
 
   if (preconnect_despite_proxy_) {
@@ -100,8 +98,10 @@ void Preconnect::Connect(const GURL& url) {
     }
   }
 
+  // We are now commited to doing the async preconnection call.
   UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation_,
                             UrlInfo::MAX_MOTIVATED);
+  AddRef();  // Stay alive until socket is available.
 
   net::HttpTransactionFactory* factory = context->http_transaction_factory();
   net::HttpNetworkSession* session = factory->GetSession();
