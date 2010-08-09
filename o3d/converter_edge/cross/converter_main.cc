@@ -44,9 +44,6 @@
 #include "converter_edge/cross/converter.h"
 #include "utils/cross/file_path_utils.h"
 
-using std::string;
-using std::wstring;
-
 #if defined(OS_WIN)
 int wmain(int argc, wchar_t **argv) {
   // On Windows, CommandLine::Init ignores its arguments and uses
@@ -113,20 +110,19 @@ int CrossMain(int argc, char**argv) {
   options.condition = !command_line->HasSwitch("no-condition");
   options.pretty_print = command_line->HasSwitch("pretty-print");
   if (command_line->HasSwitch("base-path")) {
-    options.base_path = o3d::WideToFilePath(
-        command_line->GetSwitchValue("base-path"));
+    options.base_path = command_line->GetSwitchValuePath("base-path");
   }
   if (command_line->HasSwitch("asset-paths")) {
-    std::vector<std::wstring> paths;
-    SplitString(command_line->GetSwitchValue("asset-paths"), ',', &paths);
+    std::vector<CommandLine::StringType> paths;
+    SplitString(command_line->GetSwitchValueNative("asset-paths"), ',', &paths);
     for (size_t ii = 0; ii < paths.size(); ++ii) {
-      options.file_paths.push_back(o3d::WideToFilePath(paths[ii]));
+      options.file_paths.push_back(FilePath(paths[ii]));
     }
   }
   if (command_line->HasSwitch("up-axis")) {
-    wstring up_axis_string = command_line->GetSwitchValue("up-axis");
+    std::string up_axis_string = command_line->GetSwitchValueASCII("up-axis");
     int x, y, z;
-    if (swscanf(up_axis_string.c_str(), L"%d,%d,%d", &x, &y, &z) != 3) {
+    if (sscanf(up_axis_string.c_str(), "%d,%d,%d", &x, &y, &z) != 3) {
       std::cerr << "Invalid --up-axis value. Should be --up-axis=x,y,z\n";
       return EXIT_FAILURE;
     }
@@ -135,10 +131,10 @@ int CrossMain(int argc, char**argv) {
                                    static_cast<float>(z));
   }
   if (command_line->HasSwitch("sharp-edge-threshold")) {
-    wstring soften_edge_string =
-      command_line->GetSwitchValue("sharp-edge-threshold");
+    std::string soften_edge_string =
+        command_line->GetSwitchValueASCII("sharp-edge-threshold");
     float soft_threshold;
-    if (swscanf(soften_edge_string.c_str(), L"%f", &soft_threshold) != 1) {
+    if (sscanf(soften_edge_string.c_str(), "%f", &soft_threshold) != 1) {
       std::cerr << "Invalid --sharp-edges-threshold value.\n";
       return EXIT_FAILURE;
     }
@@ -146,10 +142,10 @@ int CrossMain(int argc, char**argv) {
     options.sharp_edge_threshold = soft_threshold;
   }
   if (command_line->HasSwitch("sharp-edge-color")) {
-    wstring edge_color_str =
-      command_line->GetSwitchValue("sharp-edge-color");
+    std::string edge_color_str =
+        command_line->GetSwitchValueASCII("sharp-edge-color");
     int r, g, b;
-    if (swscanf(edge_color_str.c_str(), L"%d,%d,%d", &r, &g, &b) != 3) {
+    if (sscanf(edge_color_str.c_str(), "%d,%d,%d", &r, &g, &b) != 3) {
       std::cerr << "Invalid --sharp-edge-color value. Should be "
                 << "--sharp-edge-color=r,g,b\n";
       return EXIT_FAILURE;
