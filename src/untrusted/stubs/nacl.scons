@@ -15,13 +15,6 @@ if ARGUMENTS.get('bitcode'):
   #       that always compiles to native.
   env.Replace(CC='${CC_NATIVE}')
 
-  if env.get('TARGET_PLATFORM') == 'x86-64':
-    # the pnacl toolchain does not export this define and
-    # this is probably a good thing.
-    # We only need it because the crt?_x86.S files have #ifdefs
-    # in them.
-    env.Append(ASFLAGS='-D__x86_64__=1')
-
 # This directory contains untrusted C and ASM source for low-level
 # CPU-specific libraries implicitly supplied by the compiler driver.
 # Unlike most untrusted SDK code, conditional compilation may be
@@ -32,24 +25,22 @@ assert platform in ['x86-32',  'x86-64', 'arm']
  # we do not like hyphens in file names
 platform = platform.replace('-', '_')
 
-if env.get('TARGET_ARCHITECTURE') == 'x86':
-  objects = [env.ComponentObject('crt1', ['crt1_x86.S' ]),
-             env.ComponentObject('crti', ['crti_x86.S' ]),
-             env.ComponentObject('crtn', ['crtn_x86.S' ]),
-             env.ComponentObject('intrinsics', ['intrinsics_x86.S' ]),
-             ]
-elif env.get('TARGET_ARCHITECTURE') == 'arm':
-  objects = [env.ComponentObject('crt1', ['crt1_arm.S']),
-             env.ComponentObject('crti', ['crti_arm.S']),
-             env.ComponentObject('crtn', ['crtn_arm.S']),
-             env.ComponentObject('intrinsics', ['intrinsics_arm.S']),
-             ]
+# the nacl-gcc toolchain does not want to switch to using
+# src/untrusted/startup/nacl_startup.c
+# c.f. http://code.google.com/p/nativeclient/issues/detail?id=651
+if ARGUMENTS.get('bitcode'):
+  crt1 = env.ComponentObject('crt1', ['crt1_%s.S' % platform])
 else:
-  raise Exception, (
-    'Unexpected TARGET_ARCHITECTURE: %s' % env.get('TARGET_ARCHITECTURE'))
+  crt1 = env.ComponentObject('crt1', ['crt1_x86.S'])
+
+crti = env.ComponentObject('crti', ['crti_%s.S' % platform])
+crtn = env.ComponentObject('crtn', ['crtn_%s.S' % platform])
+intrinsics = env.ComponentObject('intrinsics', ['intrinsics_%s.S' % platform])
 
 tls = env.StaticObject('tls.o', ['tls_%s.c' % platform])
 
 # Archive library of modules written in C.
 crt_platform = env.StaticLibrary('crt_platform', [tls])
-env.AddObjectToSdk(objects + [crt_platform], is_platform=True)
+
+env.AddObjectToSdk([crt1, crti, crtn, intrinsics, crt_platform],
+                   is_platform=True)
