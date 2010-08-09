@@ -13,6 +13,7 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -235,9 +236,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DISABLED_ReloadExtension) {
   WaitForResourceChange(3);
 }
 
-// Crashy, http://crbug.com/42301.
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
-                       DISABLED_PopulateWebCacheFields) {
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, PopulateWebCacheFields) {
   EXPECT_EQ(0, model()->ResourceCount());
 
   // Show the task manager. This populates the model, and helps with debugging
@@ -254,11 +253,19 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
                            TabStripModel::ADD_SELECTED, NULL, std::string());
   WaitForResourceChange(3);
 
+  // Make sure that we have received updated stats from the renderer. An update
+  // could be pending before we added the new tab, so wait for two updates.
+  // This way at least one of them must have occurred after adding the tab.
+  ui_test_utils::WaitForNotification(
+      NotificationType::TASK_MANAGER_RESOURCE_TYPE_STATS_UPDATED);
+  ui_test_utils::WaitForNotification(
+      NotificationType::TASK_MANAGER_RESOURCE_TYPE_STATS_UPDATED);
+
   // Check that we get some value for the cache columns.
-  DCHECK_NE(model()->GetResourceWebCoreImageCacheSize(2),
+  EXPECT_NE(model()->GetResourceWebCoreImageCacheSize(2),
             l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT));
-  DCHECK_NE(model()->GetResourceWebCoreScriptsCacheSize(2),
+  EXPECT_NE(model()->GetResourceWebCoreScriptsCacheSize(2),
             l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT));
-  DCHECK_NE(model()->GetResourceWebCoreCSSCacheSize(2),
+  EXPECT_NE(model()->GetResourceWebCoreCSSCacheSize(2),
             l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT));
 }

@@ -35,7 +35,7 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   base::ProcessHandle GetProcess() const;
   TabContents* GetTabContents() const;
 
-  virtual bool ReportsCacheStats() const { return true; }
+  virtual bool HasCacheStats() const { return had_stats_update_; }
   virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
 
   virtual bool ReportsV8MemoryStats() const { return true; }
@@ -58,11 +58,17 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   TabContents* tab_contents_;
   base::ProcessHandle process_;
   int pid_;
+
   // The stats_ field holds information about resource usage in the renderer
   // process and so it is updated asynchronously by the Refresh() call.
   WebKit::WebCache::ResourceTypeStats stats_;
+
   // This flag is true if we are waiting for the renderer to report its stats.
   bool pending_stats_update_;
+
+  // This flag is true after we received at least one stats report
+  // from the renderer.
+  bool had_stats_update_;
 
   // We do a similar dance to gather the V8 memory usage in a process.
   size_t v8_memory_allocated_;

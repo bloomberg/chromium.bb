@@ -54,6 +54,7 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
     TabContents* tab_contents)
     : tab_contents_(tab_contents),
       pending_stats_update_(false),
+      had_stats_update_(false),
       v8_memory_allocated_(0),
       v8_memory_used_(0),
       pending_v8_memory_allocated_update_(false) {
@@ -61,11 +62,7 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
   // becomes NULL and the TaskManager still needs it.
   process_ = tab_contents_->GetRenderProcessHost()->GetHandle();
   pid_ = base::GetProcId(process_);
-  stats_.images.size = 0;
-  stats_.cssStyleSheets.size = 0;
-  stats_.scripts.size = 0;
-  stats_.xslStyleSheets.size = 0;
-  stats_.fonts.size = 0;
+  memset(&stats_, 0, sizeof(stats_));
 }
 
 TaskManagerTabContentsResource::~TaskManagerTabContentsResource() {
@@ -122,6 +119,7 @@ void TaskManagerTabContentsResource::NotifyResourceTypeStats(
     const WebKit::WebCache::ResourceTypeStats& stats) {
   stats_ = stats;
   pending_stats_update_ = false;
+  had_stats_update_ = true;
 }
 
 void TaskManagerTabContentsResource::NotifyV8HeapStats(

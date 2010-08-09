@@ -24,6 +24,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/task_manager_resource_providers.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
@@ -179,7 +180,7 @@ std::wstring TaskManagerModel::GetResourceGoatsTeleported(int index) const {
 std::wstring TaskManagerModel::GetResourceWebCoreImageCacheSize(
     int index) const {
   DCHECK(index < ResourceCount());
-  if (!resources_[index]->ReportsCacheStats())
+  if (!resources_[index]->HasCacheStats())
     return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
   const WebKit::WebCache::ResourceTypeStats stats(
       resources_[index]->GetWebCoreCacheStats());
@@ -189,7 +190,7 @@ std::wstring TaskManagerModel::GetResourceWebCoreImageCacheSize(
 std::wstring TaskManagerModel::GetResourceWebCoreScriptsCacheSize(
     int index) const {
   DCHECK(index < ResourceCount());
-  if (!resources_[index]->ReportsCacheStats())
+  if (!resources_[index]->HasCacheStats())
     return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
   const WebKit::WebCache::ResourceTypeStats stats(
       resources_[index]->GetWebCoreCacheStats());
@@ -199,7 +200,7 @@ std::wstring TaskManagerModel::GetResourceWebCoreScriptsCacheSize(
 std::wstring TaskManagerModel::GetResourceWebCoreCSSCacheSize(
     int index) const {
   DCHECK(index < ResourceCount());
-  if (!resources_[index]->ReportsCacheStats())
+  if (!resources_[index]->HasCacheStats())
     return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
   const WebKit::WebCache::ResourceTypeStats stats(
       resources_[index]->GetWebCoreCacheStats());
@@ -338,9 +339,9 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN: {
       WebKit::WebCache::ResourceTypeStats stats1 = { { 0 } };
       WebKit::WebCache::ResourceTypeStats stats2 = { { 0 } };
-      if (resources_[row1]->ReportsCacheStats())
+      if (resources_[row1]->HasCacheStats())
         stats1 = resources_[row1]->GetWebCoreCacheStats();
-      if (resources_[row2]->ReportsCacheStats())
+      if (resources_[row2]->HasCacheStats())
         stats2 = resources_[row2]->GetWebCoreCacheStats();
       if (IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN == col_id)
         return ValueCompare<size_t>(stats1.images.size, stats2.images.size);
@@ -687,6 +688,10 @@ void TaskManagerModel::NotifyResourceTypeStats(
       (*it)->NotifyResourceTypeStats(stats);
     }
   }
+  NotificationService::current()->Notify(
+      NotificationType::TASK_MANAGER_RESOURCE_TYPE_STATS_UPDATED,
+      Source<TaskManagerModel>(this),
+      NotificationService::NoDetails());
 }
 
 void TaskManagerModel::NotifyV8HeapStats(base::ProcessId renderer_id,
