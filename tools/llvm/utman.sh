@@ -2201,19 +2201,17 @@ extrasdk-make-install() {
       --verbose \
       extra_sdk_libs_platform
 
-  # TODO(robertm): this does not quite work yet.
-  #                There are ranlib issues with on archive
-  #                and also a failure in tls_test
-  #StepBanner "EXTRASDK" "Make/Install x86-64 components"
-  #RunWithLog "extra_sdk_.libs_x8664" \
-  #    ./scons MODE=nacl_extra_sdk \
-  #    extra_sdk_lib_destination="${PNACL_X8664_ROOT}" \
-  #    extra_sdk_include_destination="${headerdir}" \
-  #    bitcode=1 \
-  #    platform=x86-64 \
-  #    sdl=none \
-  #    naclsdk_validate=0 \
-  #    extra_sdk_libs_platform
+  StepBanner "EXTRASDK" "Make/Install x86-64 components"
+  RunWithLog "extra_sdk_.libs_x8664" \
+      ./scons MODE=nacl_extra_sdk \
+      extra_sdk_lib_destination="${PNACL_X8664_ROOT}" \
+      extra_sdk_include_destination="${headerdir}" \
+      bitcode=1 \
+      platform=x86-64 \
+      sdl=none \
+      naclsdk_validate=0 \
+      --verbose \
+      extra_sdk_libs_platform
 }
 
 #+ newlib-nacl-headers   - Add custom NaCl headers to newlib
@@ -2341,12 +2339,11 @@ organize-native-code() {
     ${PNACL_X8664_ROOT}
   cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}/crtbegin.o \
     ${PNACL_X8664_ROOT}
-  # TODO(robertm): build this ourselves, c.f. extrasdk-make-install()
-  StepBanner "PNaCl" "x86-64 steal some more files from nacl-gcc"
-   cp -f ${x86_src}/nacl64/lib/crt*.o \
-     ${x86_src}/nacl64/lib/libcrt*.a \
-     ${x86_src}/nacl64/lib/intrinsics.o \
-     ${PNACL_X8664_ROOT}
+  StepBanner "PNaCl" "x86-64 steal libcrt_platform.a  from nacl-gcc"
+  # NOTE: we cannot build this ourselves:
+  # http://code.google.com/p/nativeclient/issues/detail?id=797
+  cp -f ${x86_src}/nacl64/lib/libcrt_platform.a ${PNACL_X8664_ROOT}
+
   DebugRun ls -l ${PNACL_X8664_ROOT}
 }
 
