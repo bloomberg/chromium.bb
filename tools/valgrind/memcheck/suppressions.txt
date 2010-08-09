@@ -3972,8 +3972,6 @@
    bug_51590
    Memcheck:Addr4
    ...
-   fun:HB_ShapeItem
-   fun:_ZN7WebCore13TextRunWalker11shapeGlyphsEv
    fun:_ZN7WebCore13TextRunWalker13nextScriptRunEv
    fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
 }
@@ -3981,8 +3979,6 @@
    bug_51590
    Memcheck:Addr2
    ...
-   fun:HB_ShapeItem
-   fun:_ZN7WebCore13TextRunWalker11shapeGlyphsEv
    fun:_ZN7WebCore13TextRunWalker13nextScriptRunEv
    fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
 }
@@ -3990,8 +3986,6 @@
    bug_51590
    Memcheck:Addr1
    ...
-   fun:HB_ShapeItem
-   fun:_ZN7WebCore13TextRunWalker11shapeGlyphsEv
    fun:_ZN7WebCore13TextRunWalker13nextScriptRunEv
    fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
 }
