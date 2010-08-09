@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/app_switches.h"
+#include "app/gfx/gl/gl_implementation.h"
 #include "base/at_exit.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -211,6 +213,10 @@ int main(int argc, char* argv[]) {
     if (timeout_ms > 0)
       TestShell::SetFileTestTimeout(timeout_ms);
   }
+
+  // Unless specifically requested otherwise, default to OSMesa for GL.
+  if (!parsed_command_line.HasSwitch(switches::kUseGL))
+    gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
 
   // Treat the first argument as the initial URL to open.
   GURL starting_url;
