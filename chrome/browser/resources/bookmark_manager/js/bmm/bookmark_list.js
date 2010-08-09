@@ -205,7 +205,7 @@ cr.define('bmm', function() {
         var node = el.bookmarkNode;
         if (!bmm.isFolder(node)) {
           var event = new cr.Event('urlClicked', true, false);
-          event.url = url;
+          event.url = node.url;
           event.originalEvent = e;
           this.dispatchEvent(event);
         }
