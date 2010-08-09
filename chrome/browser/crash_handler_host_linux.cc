@@ -144,6 +144,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   // Walk the control payload an extract the file descriptor and validated pid.
   pid_t crashing_pid = -1;
+  int partner_fd = -1;
   int signal_fd = -1;
   for (struct cmsghdr *hdr = CMSG_FIRSTHDR(&msg); hdr;
        hdr = CMSG_NXTHDR(&msg, hdr)) {
@@ -154,16 +155,17 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
           (((uint8_t*)CMSG_DATA(hdr)) - (uint8_t*)hdr);
       DCHECK_EQ(len % sizeof(int), 0u);
       const unsigned num_fds = len / sizeof(int);
-      if (num_fds > 1 || num_fds == 0) {
+      if (num_fds != 2) {
         // A nasty process could try and send us too many descriptors and
         // force a leak.
-        LOG(ERROR) << "Death signal contained too many descriptors;"
+        LOG(ERROR) << "Death signal contained wrong number of descriptors;"
                    << " num_fds:" << num_fds;
         for (unsigned i = 0; i < num_fds; ++i)
           HANDLE_EINTR(close(reinterpret_cast<int*>(CMSG_DATA(hdr))[i]));
         return;
       } else {
-        signal_fd = reinterpret_cast<int*>(CMSG_DATA(hdr))[0];
+        partner_fd = reinterpret_cast<int*>(CMSG_DATA(hdr))[0];
+        signal_fd = reinterpret_cast<int*>(CMSG_DATA(hdr))[1];
       }
     } else if (hdr->cmsg_type == SCM_CREDENTIALS) {
       const struct ucred *cred =
@@ -172,10 +174,12 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     }
   }
 
-  if (crashing_pid == -1 || signal_fd == -1) {
+  if (crashing_pid == -1 || partner_fd == -1 || signal_fd == -1) {
     LOG(ERROR) << "Death signal message didn't contain all expected control"
                << " messages";
-    if (signal_fd)
+    if (partner_fd >= 0)
+      HANDLE_EINTR(close(partner_fd));
+    if (signal_fd >= 0)
       HANDLE_EINTR(close(signal_fd));
     return;
   }
@@ -186,20 +190,27 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   // In the future we can remove this workaround, but we have to wait a couple
   // of years to be sure that it's worked its way out into the world.
 
+  // The crashing process closes its copy of the signal_fd immediately after
+  // calling sendmsg(). We can thus not reliably look for with with
+  // FindProcessHoldingSocket(). But by necessity, it has to keep the
+  // partner_fd open until the crashdump is complete.
   uint64_t inode_number;
-  if (!base::FileDescriptorGetInode(&inode_number, signal_fd)) {
+  if (!base::FileDescriptorGetInode(&inode_number, partner_fd)) {
     LOG(WARNING) << "Failed to get inode number for passed socket";
+    HANDLE_EINTR(close(partner_fd));
     HANDLE_EINTR(close(signal_fd));
     return;
   }
+  HANDLE_EINTR(close(partner_fd));
 
   pid_t actual_crashing_pid = -1;
-  if (!base::FindProcessHoldingSocket(&actual_crashing_pid, inode_number - 1)) {
+  if (!base::FindProcessHoldingSocket(&actual_crashing_pid, inode_number)) {
     LOG(WARNING) << "Failed to find process holding other end of crash reply "
                     "socket";
     HANDLE_EINTR(close(signal_fd));
     return;
   }
+
   if (actual_crashing_pid != crashing_pid) {
     crashing_pid = actual_crashing_pid;
 

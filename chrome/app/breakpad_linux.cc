@@ -684,7 +684,7 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
                             // browser to convert namespace tids.
 
   // The length of the control message:
-  static const unsigned kControlMsgSize = CMSG_SPACE(sizeof(int));
+  static const unsigned kControlMsgSize = CMSG_SPACE(2*sizeof(int));
 
   struct kernel_msghdr msg;
   my_memset(&msg, 0, sizeof(struct kernel_msghdr));
@@ -712,8 +712,9 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
   struct cmsghdr *hdr = CMSG_FIRSTHDR(&msg);
   hdr->cmsg_level = SOL_SOCKET;
   hdr->cmsg_type = SCM_RIGHTS;
-  hdr->cmsg_len = CMSG_LEN(sizeof(int));
-  *((int*) CMSG_DATA(hdr)) = fds[1];
+  hdr->cmsg_len = CMSG_LEN(2*sizeof(int));
+  ((int*) CMSG_DATA(hdr))[0] = fds[0];
+  ((int*) CMSG_DATA(hdr))[1] = fds[1];
 
   HANDLE_EINTR(sys_sendmsg(fd, &msg, 0));
   sys_close(fds[1]);
