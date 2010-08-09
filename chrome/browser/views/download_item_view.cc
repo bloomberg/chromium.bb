@@ -127,7 +127,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     dangerous_download_label_sized_(false),
     disabled_while_opening_(false),
     creation_time_(base::Time::Now()),
-    ALLOW_THIS_IN_INITIALIZER_LIST(reenable_method_factory_(this)) {
+    ALLOW_THIS_IN_INITIALIZER_LIST(reenable_method_factory_(this)),
+    deleted_(NULL) {
   DCHECK(download_);
   download_->AddObserver(this);
 
@@ -306,6 +307,8 @@ DownloadItemView::~DownloadItemView() {
   icon_consumer_.CancelAllRequests();
   StopDownloadProgress();
   download_->RemoveObserver(this);
+  if (deleted_)
+    *deleted_ = true;
 }
 
 // Progress animation handlers.
@@ -814,7 +817,14 @@ bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
 
     if (!context_menu_.get())
       context_menu_.reset(new DownloadShelfContextMenuWin(model_.get()));
+    // When we call the Run method on the menu, it runs an inner message loop
+    // that might causes us to be deleted.
+    bool deleted = false;
+    deleted_ = &deleted;
     context_menu_->Run(point);
+    if (deleted)
+      return true;  // We have been deleted! Don't access 'this'.
+    deleted_ = NULL;
 
     // If the menu action was to remove the download, this view will also be
     // invalid so we must not access 'this' in this case.

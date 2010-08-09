@@ -256,6 +256,11 @@ class DownloadItemView : public views::ButtonListener,
   // The currently running download context menu.
   scoped_ptr<DownloadShelfContextMenuWin> context_menu_;
 
+  // If non-NULL, set to true when this object is deleted.
+  // (Used when showing the context menu as it runs an inner message loop that
+  // might delete us).
+  bool* deleted_;
+
   DISALLOW_COPY_AND_ASSIGN(DownloadItemView);
 };
 
