@@ -284,14 +284,14 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
   int proxy_connections_8 = -1;
   if (net::HttpNetworkSession::max_sockets_per_group() <= 8) {
     proxy_connections_8 =
-        proxy_connection_trial->AppendGroup("_proxy_connections_8",
+        proxy_connection_trial->AppendGroup("proxy_connections_8",
                                             kProxyConnectionProbability);
   }
   const int proxy_connections_16 =
-      proxy_connection_trial->AppendGroup("_proxy_connections_16",
+      proxy_connection_trial->AppendGroup("proxy_connections_16",
                                           kProxyConnectionProbability);
   const int proxy_connections_64 =
-      proxy_connection_trial->AppendGroup("_proxy_connections_64",
+      proxy_connection_trial->AppendGroup("proxy_connections_64",
                                           kProxyConnectionProbability);
 
   // This (32 connections per proxy server) is the current default value.
@@ -299,7 +299,7 @@ void BrowserMainParts::ProxyConnectionsFieldTrial() {
   // maintaining that the default group always has the remainder of the "share",
   // which allows for cleaner and quicker changes down the line if needed.
   const int proxy_connections_32 =
-      proxy_connection_trial->AppendGroup("_proxy_connections_32",
+      proxy_connection_trial->AppendGroup("proxy_connections_32",
                                           FieldTrial::kAllRemainingProbability);
 
   const int proxy_connections_trial_group = proxy_connection_trial->group();

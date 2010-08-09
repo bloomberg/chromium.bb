@@ -4692,10 +4692,10 @@ void RenderView::DumpLoadHistograms() const {
   // impact on PLT.
   // TODO(jar): Consider removing the per-link-type versions.  We
   //   really only need LINK_LOAD_NORMAL and NORMAL_LOAD.
-  static bool use_conn_impact_histogram(
+  static bool use_connection_impact_histogram(
       FieldTrialList::Find("ConnCountImpact") &&
       !FieldTrialList::Find("ConnCountImpact")->group_name().empty());
-  if (use_conn_impact_histogram) {
+  if (use_connection_impact_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         FieldTrial::MakeName("PLT.Abandoned", "ConnCountImpact"),
         abandoned_page ? 1 : 0, 2);
