@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/cros/system_library.h"
 
+#include <map>
+
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
@@ -11,7 +13,12 @@ namespace chromeos {
 
 class SystemLibraryImpl : public SystemLibrary {
  public:
+  typedef std::map<std::string, std::string> StringMap;
+
   SystemLibraryImpl() {
+    // Get Statistics
+    UpdateMachineStatistics();
+    // Get Timezone
     std::string id = "US/Pacific";
     if (CrosLibrary::Get()->EnsureLoaded()) {
       std::string timezone_id = chromeos::GetTimezoneID();
@@ -54,11 +61,37 @@ class SystemLibraryImpl : public SystemLibrary {
     FOR_EACH_OBSERVER(Observer, observers_, TimezoneChanged(*timezone));
   }
 
-  private:
-   scoped_ptr<icu::TimeZone> timezone_;
-   ObserverList<Observer> observers_;
+  bool GetMachineStatistic(const std::string& name, std::string* result) {
+    StringMap::iterator iter = machine_info_.find(name);
+    if (iter != machine_info_.end()) {
+      *result = iter->second;
+      return true;
+    }
+    return false;
+  }
 
-   DISALLOW_COPY_AND_ASSIGN(SystemLibraryImpl);
+ private:
+  void UpdateMachineStatistics() {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      chromeos::MachineInfo* machine_info = chromeos::GetMachineInfo();
+      if (!machine_info) {
+        LOG(ERROR) << "Error calling chromeos::GetMachineInfo().";
+        return;
+      }
+      // Get Name Value pairs.
+      for (int i = 0; i<machine_info->name_value_size; ++i) {
+        const chromeos::MachineInfo::NVPair& nv = machine_info->name_values[i];
+        machine_info_[nv.name] = nv.value;
+      }
+      chromeos::FreeMachineInfo(machine_info);
+    }
+  }
+
+  scoped_ptr<icu::TimeZone> timezone_;
+  ObserverList<Observer> observers_;
+  StringMap machine_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemLibraryImpl);
 };
 
 class SystemLibraryStubImpl : public SystemLibrary {
@@ -77,6 +110,11 @@ class SystemLibraryStubImpl : public SystemLibrary {
     return *timezone_.get();
   }
   void SetTimezone(const icu::TimeZone* timezone) {}
+
+  bool GetMachineStatistic(const std::string& name, std::string* result) {
+    *result = "Stub Statistic:" + name;
+    return true;
+  }
 
   private:
    scoped_ptr<icu::TimeZone> timezone_;

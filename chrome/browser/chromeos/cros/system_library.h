@@ -34,6 +34,11 @@ class SystemLibrary {
   // Sets the current timezone. |timezone| must be non-null.
   virtual void SetTimezone(const icu::TimeZone* timezone) = 0;
 
+  // Retrieve the named machine statistic (e.g. "hardware_class").
+  // This does not update the statistcs (i.e. does not call into libcros).
+  virtual bool GetMachineStatistic(const std::string& name,
+                                   std::string* result) = 0;
+
   // Get library implementation.
   static SystemLibrary* GetImpl(bool stub);
 };

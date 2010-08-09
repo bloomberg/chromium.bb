@@ -201,10 +201,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/external_metrics.h"
-
-static const char kHardwareClassTool[] = "/usr/bin/hardware_class";
-static const char kUnknownHardwareClass[] = "unknown";
 #endif
 
 namespace {
@@ -368,7 +367,9 @@ class MetricsService::InitTask : public Task {
     NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
     std::string hardware_class;  // Empty string by default.
 #if defined(OS_CHROMEOS)
-    hardware_class = MetricsService::GetHardwareClass();
+    chromeos::SystemLibrary* system_library =
+      chromeos::CrosLibrary::Get()->GetSystemLibrary();
+    system_library->GetMachineStatistic("hardware_class", &hardware_class);
 #endif  // OS_CHROMEOS
     callback_loop_->PostTask(FROM_HERE, new InitTaskComplete(
         hardware_class, plugins));
@@ -1940,20 +1941,6 @@ static bool IsSingleThreaded() {
 }
 
 #if defined(OS_CHROMEOS)
-// static
-std::string MetricsService::GetHardwareClass() {
-  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::UI));
-  std::string hardware_class;
-  FilePath tool(kHardwareClassTool);
-  CommandLine command(tool);
-  if (base::GetAppOutput(command, &hardware_class)) {
-    TrimWhitespaceASCII(hardware_class, TRIM_ALL, &hardware_class);
-  } else {
-    hardware_class = kUnknownHardwareClass;
-  }
-  return hardware_class;
-}
-
 void MetricsService::StartExternalMetrics() {
   external_metrics_ = new chromeos::ExternalMetrics;
   external_metrics_->Start();

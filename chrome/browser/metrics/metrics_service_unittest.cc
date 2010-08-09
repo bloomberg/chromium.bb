@@ -40,16 +40,6 @@ TEST(MetricsServiceTest, ClientIdCorrectlyFormatted) {
 }
 #endif
 
-#if defined(OS_CHROMEOS)
-TEST(MetricsServiceTest, GetHardwareClass) {
-  // The assumption is that unit tests run on the build host rather
-  // than on the Chrome OS device so the hardware_class tool is not
-  // available.
-  std::string hardware_class = MetricsService::GetHardwareClass();
-  EXPECT_EQ("unknown", hardware_class);
-}
-#endif  // OS_CHROMEOS
-
 class MetricsServiceTest : public ::testing::Test {
 };
 
