@@ -3922,25 +3922,9 @@
    bug_51379
    Memcheck:Leak
    fun:malloc
-   fun:malloc
-   fun:allocate_image
-   fun:pixman_image_create_bits
-   obj:/usr/lib/libcairo.so.2.17.3
-   obj:/usr/lib/libcairo.so.2.17.3
-   obj:/usr/lib/libcairo.so.2.17.3
-   obj:/usr/lib/libcairo.so.2.17.3
-   obj:/usr/lib/libcairo.so.2.17.3
-   obj:/usr/lib/libcairo.so.2.17.3
-   obj:/usr/lib/libcairo.so.2.17.3
-   obj:/usr/lib/libcairo.so.2.17.3
-   obj:/usr/lib/libcairo.so.2.17.3
-   obj:/usr/lib/libcairo.so.2.17.3
-   fun:cairo_show_glyphs
+   ...
    obj:/usr/lib/libpangocairo-1.0.so.0.2002.3
-   fun:pango_renderer_draw_glyphs
-   fun:pango_renderer_draw_layout_line
-   fun:pango_renderer_draw_layout
-   obj:/usr/lib/libpangocairo-1.0.so.0.2002.3
+   ...
    fun:_ZN3gfx10CanvasSkia13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiiii
    fun:_ZN3gfx10CanvasSkia13DrawStringIntERKSbIwSt11char_traitsIwESaIwEERKNS_4FontERKjiiii
 }
