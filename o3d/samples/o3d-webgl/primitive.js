@@ -78,7 +78,6 @@ o3d.Primitive = function(opt_streamBank) {
 
   /**
    * The index of the first vertex to render.
-   * Default = 0.
    *
    * @type {number}
    */
@@ -246,6 +245,21 @@ o3d.Primitive.prototype.render = function() {
 
 
 /**
+ * Given n, gets index number n in the index buffer if there is an index buffer
+ * otherwise returns n.
+ * @param {number} n The number of the entry in the index buffer.
+ * @return {return} The index.
+ * @private
+ */
+o3d.Primitive.prototype.getIndex_ = function(n) {
+  if (this.indexBuffer) {
+    return this.indexBuffer.array_[n]
+  }
+  return n;
+};
+
+
+/**
  * Generates an index buffer for a wireframe outline of a triangle-based
  * primitive.
  * @private
@@ -253,23 +267,25 @@ o3d.Primitive.prototype.render = function() {
 o3d.Primitive.prototype.computeWireframeIndices_ = function() {
   this.wireframeIndexBuffer_ = new o3d.IndexBuffer;
   this.wireframeIndexBuffer_.gl = this.gl;
-  var indices = this.indexBuffer.array_;
 
-  // The current index in wireframeIndices.
-  var j = 0;
+  var numTriangles = this.numberPrimitives;
+  var numLines = (this.primitiveType == o3d.Primitive.TRIANGLELIST) ?
+    (3 * numTriangles) : (2 * numTriangles + 1);
 
+  this.wireframeIndexBuffer_.resize(2 * numLines);
+
+  var j = 0;  // The current index in wireframeIndices.
   switch (this.primitiveType) {
     default:
     case o3d.Primitive.TRIANGLELIST: {
-      this.wireframeIndexBuffer_.resize(2 * indices.length);
       var wireframeIndices = this.wireframeIndexBuffer_.array_;
       this.wireframeIndexBuffer_.lock();
       // Iterate through triangles.
-      for (var i = 0; i < indices.length / 3; ++i) {
+      for (var i = 0; i < numTriangles; ++i) {
         // Indices the vertices of the triangle a, b, c.
-        var a = indices[3 * i];
-        var b = indices[3 * i + 1];
-        var c = indices[3 * i + 2];
+        var a = this.getIndex_(3 * i);
+        var b = this.getIndex_(3 * i + 1);
+        var c = this.getIndex_(3 * i + 2);
         wireframeIndices[j++] = a;
         wireframeIndices[j++] = b;
         wireframeIndices[j++] = b;
@@ -282,44 +298,42 @@ o3d.Primitive.prototype.computeWireframeIndices_ = function() {
     break;
 
     case o3d.Primitive.TRIANGLEFAN: {
-      this.wireframeIndexBuffer_.resize(Math.max(0, 4 * indices.length - 4));
       var wireframeIndices = this.wireframeIndexBuffer_.array_;
       this.wireframeIndexBuffer_.lock();
       // The first two points make a line.
       var z;
-      if (indices.length > 1) {
-        z = indices[0];
+      if (numTriangles > 0) {
+        z = this.getIndex_(0);
         wireframeIndices[j++] = z;
-        wireframeIndices[j++] = indices[1];
+        wireframeIndices[j++] = this.getIndex_(1);
       }
       // Each additional point forms a new triangle by adding two lines.
-      for (var i = 2; i < indices.length; ++i) {
-        var a = indices[i];
+      for (var i = 2; i < numTriangles + 2; ++i) {
+        var a = this.getIndex_(i);
         wireframeIndices[j++] = z;
         wireframeIndices[j++] = a;
         wireframeIndices[j++] = a;
-        wireframeIndices[j++] = indices[i - 1];
+        wireframeIndices[j++] = this.getIndex_(i - 1);
       }
       this.wireframeIndexBuffer_.unlock();
     }
     break;
 
     case o3d.Primitive.TRIANGLESTRIP: {
-      this.wireframeIndexBuffer_.resize(Math.max(0, 4 * indices.length - 4));
       var wireframeIndices = this.wireframeIndexBuffer_.array_;
       this.wireframeIndexBuffer_.lock();
       // The frist two points make a line.
       var a;
       var b;
-      if (indices.length > 1) {
-        a = indices[0];
-        b = indices[1];
+      if (numTriangles > 0) {
+        a = this.getIndex_(0);
+        b = this.getIndex_(1);
         wireframeIndices[j++] = a;
         wireframeIndices[j++] = b;
       }
       // Each additional point forms a new triangle by adding two lines.
-      for (var i = 2; i < indices.length; ++i) {
-        var c = indices[i];
+      for (var i = 2; i < numTriangles + 2; ++i) {
+        var c = this.getIndex_(i);
         wireframeIndices[j++] = b;
         wireframeIndices[j++] = c;
         wireframeIndices[j++] = c;

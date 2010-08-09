@@ -64,18 +64,28 @@ var g_clock = 0;
 var g_timeMult = 1;
 var g_cubeTransform;
 var g_cubePrimitive;
+var g_currentPrimitiveType;
+var g_currentIndexed;
+var g_positionArray;
+var g_positionBuffer;
+var g_indexBuffer;
 var g_material;
 var g_finished = false;  // for selenium testing
+
 
 /**
  * Changes the primitive type of the displayed cube. Some primitive types will
  * only draw a partial cube.
  * @param {string} type The desired primitive type.
+ * @param {string} indexed 'Yes' or 'No' whether or not to generate an indexed
+ *     primitive.
  */
-function changePrimitive(type) {
+function changePrimitive(type, indexed) {
   var indicesArray;
   var primitiveType;
   var numberPrimitives;
+
+  var indicesPerLine = 1;
 
   // All of the indices arrays below reference the same set of 8 vertices,
   // defined below in the createCube method.
@@ -84,6 +94,7 @@ function changePrimitive(type) {
       primitiveType = g_o3d.Primitive.POINTLIST;
       numberPrimitives = 8;
       indicesArray = [0, 1, 2, 3, 4, 5, 6, 7];
+      indicesPerLine = 0;
       break;
     case 'LineList':
       primitiveType = g_o3d.Primitive.LINELIST;
@@ -102,6 +113,7 @@ function changePrimitive(type) {
         0, 6,
         1, 7
       ];
+      indicesPerLine = 2;
       break;
     case 'LineStrip':
       primitiveType = g_o3d.Primitive.LINESTRIP;
@@ -109,6 +121,7 @@ function changePrimitive(type) {
       // Forms an incomplete cube, where indices 0 and 1 are the first segment,
       // 1 and 3 are the second segement, 3 and 5 are the third, and so forth.
       indicesArray = [0, 1, 3, 5, 7, 6, 4, 2, 0];
+      indicesPerLine = 0;
       break;
     case 'TriangleList':
       primitiveType = g_o3d.Primitive.TRIANGLELIST;
@@ -127,6 +140,7 @@ function changePrimitive(type) {
         6, 0, 4,  // face 6
         4, 0, 2
       ];
+      indicesPerLine = 3;
       break;
     case 'TriangleStrip':
       primitiveType = g_o3d.Primitive.TRIANGLESTRIP;
@@ -134,6 +148,7 @@ function changePrimitive(type) {
       // Forms a cube missing two faces. Indices (0, 1, 2) forms the first
       // triangle, (1, 2, 3) forms the second triangle, and so forth.
       indicesArray = [0, 1, 2, 3, 4, 5, 6, 7, 0, 1];
+      indicesPerLine = 0;
       break;
     case 'TriangleFan':
       primitiveType = g_o3d.Primitive.TRIANGLEFAN;
@@ -141,6 +156,7 @@ function changePrimitive(type) {
       // Forms a half cube, missing three faces. Indices (2, 0, 1) forms the
       // first triangle, (2, 1, 3) is the second, (2, 3, 5) is the third, etc.
       indicesArray = [2, 0, 1, 3, 5, 4, 6, 0];
+      indicesPerLine = 0;
       break;
     default:
       alert('Invalid selection type!');
@@ -149,7 +165,69 @@ function changePrimitive(type) {
 
   g_cubePrimitive.primitiveType = primitiveType;
   g_cubePrimitive.numberPrimitives = numberPrimitives;
-  g_cubePrimitive.indexBuffer.set(indicesArray);
+
+  var verticesString = '';
+  var indicesString = '';
+
+  if (indexed == 'Yes') {
+    g_cubePrimitive.indexBuffer = g_indexBuffer;
+    g_indexBuffer.set(indicesArray);
+    g_positionBuffer.set(g_positionArray);
+    verticesString = numberArrayToString(g_positionArray, 3);
+    indicesString = numberArrayToString(indicesArray, indicesPerLine);
+  } else {
+    g_cubePrimitive.indexBuffer = null;
+    var positionArray = createPositionArray(g_positionArray, indicesArray)
+    g_positionBuffer.set(positionArray);
+    verticesString = numberArrayToString(positionArray, 3);
+    indicesString = 'null';
+  }
+
+  document.getElementById('vertices').value = verticesString;
+  document.getElementById('indices').value = indicesString;
+}
+
+
+/**
+ * Creates an array of vertex coordinates by indexing into the given array of
+ * position coordinates according to the indices provided.
+ * @param {!Array.<number>} positions The positions array to be indexed into.
+ * @param {!Array.<number>} indices The indices.
+ * @return {!Array.<number>} A new array of positions.
+ */
+function createPositionArray(positions, indices) {
+  var newPositions = [];
+  for (var i = 0; i < indices.length; ++i) {
+    var t = 3 * indices[i];
+    newPositions.push(positions[t], positions[t + 1], positions[t + 2]);
+  }
+  return newPositions;
+}
+
+
+/**
+ * Converts an array of numbers to a string.
+ * @param {!Array.<number>} a An array of numbers.
+ * @param {number} numbersPerLine The number of numbers per line
+ * @return {string} A string representation of that array.
+ */
+function numberArrayToString(a, numbersPerLine) {
+  var s = ''
+  var n = a.length;
+  for (var i = 0; i < n; i++) {
+    s += '' + a[i];
+
+    if (i != n-1) {
+      s += ','
+    }
+
+    if ((i + 1) % numbersPerLine == 0 || i == n-1) {
+      s += '\n'
+    } else {
+      s += ' ';
+    }
+  }
+  return s;
 }
 
 
@@ -189,53 +267,55 @@ function createCube(material) {
 
   // Create the Primitive that will contain the geometry data for
   // the cube.
-  var cubePrimitive = g_pack.createObject('Primitive');
-  g_cubePrimitive = cubePrimitive;
+  g_cubePrimitive = g_pack.createObject('Primitive');
 
   // Create a StreamBank to hold the streams of vertex data.
   var streamBank = g_pack.createObject('StreamBank');
 
   // Assign the material that was passed in to the primitive.
-  cubePrimitive.material = material;
+  g_cubePrimitive.material = material;
 
   // Assign the Primitive to the Shape.
-  cubePrimitive.owner = cubeShape;
+  g_cubePrimitive.owner = cubeShape;
 
   // Assign the StreamBank to the Primitive.
-  cubePrimitive.streamBank = streamBank;
+  g_cubePrimitive.streamBank = streamBank;
 
   // Generate the draw element for the cube primitive.
-  cubePrimitive.createDrawElement(g_pack, null);
+  g_cubePrimitive.createDrawElement(g_pack, null);
 
   // Create a javascript array that stores the X, Y and Z coordinates of each
   // of the 8 corners of the cube.
-  var positionArray = [
-    -0.5, -0.5,  0.5,  // vertex 0
-     0.5, -0.5,  0.5,  // vertex 1
-    -0.5,  0.5,  0.5,  // vertex 2
-     0.5,  0.5,  0.5,  // vertex 3
-    -0.5,  0.5, -0.5,  // vertex 4
-     0.5,  0.5, -0.5,  // vertex 5
-    -0.5, -0.5, -0.5,  // vertex 6
-     0.5, -0.5, -0.5   // vertex 7
+  g_positionArray = [
+    -0.5, -0.5,  0.5,
+     0.5, -0.5,  0.5,
+    -0.5,  0.5,  0.5,
+     0.5,  0.5,  0.5,
+    -0.5,  0.5, -0.5,
+     0.5,  0.5, -0.5,
+    -0.5, -0.5, -0.5,
+     0.5, -0.5, -0.5
   ];
 
-  // Create buffers containing the vertex data.
-  var positionsBuffer = g_pack.createObject('VertexBuffer');
-  var positionsField = positionsBuffer.createField('FloatField', 3);
-  positionsBuffer.set(positionArray);
-  cubePrimitive.indexBuffer = g_pack.createObject('IndexBuffer');
+  // Create buffer containing the vertex data.
+  g_positionBuffer = g_pack.createObject('VertexBuffer');
+  var positionField = g_positionBuffer.createField('FloatField', 3);
 
-  // Associate the positions Buffer with the StreamBank.
+  g_positionBuffer.set(g_positionArray);
+  g_indexBuffer = g_pack.createObject('IndexBuffer');
+  g_cubePrimitive.indexBuffer = g_indexBuffer;
+
+  // Associate the positions field with the StreamBank.
   streamBank.setVertexStream(
       g_o3d.Stream.POSITION, // semantic: This stream stores vertex positions
       0,                     // semantic index: First (and only) position stream
-      positionsField,        // field: the field this stream uses.
+      positionField,       // field: the field this stream uses.
       0);                    // start_index: How many elements to skip in the
                              //     field.
 
   return cubeShape;
 }
+
 
 /**
  * This method gets called every time O3D renders a frame.  Here's where
@@ -257,6 +337,7 @@ function renderCallback(renderEvent) {
 function init() {
   o3djs.webgl.makeClients(initStep2);
 }
+
 
 /**
  * Initializes O3D, creates the cube and sets up the transform and
@@ -290,8 +371,8 @@ function initStep2(clientElements) {
   // Set up our view transformation to look towards the world origin where the
   // cube is located.
   viewInfo.drawContext.view = g_math.matrix4.lookAt([0, 1, 5],  // eye
-                                            [0, 0, 0],  // target
-                                            [0, 1, 0]); // up
+                                                    [0, 0, 0],  // target
+                                                    [0, 1, 0]); // up
 
   // Create an Effect object and initialize it using the shaders from the
   // text area.
@@ -321,7 +402,7 @@ function initStep2(clientElements) {
   var cubeShape = createCube(g_material);
 
   // Render with line lists to begin with.
-  changePrimitive('LineList');
+  changePrimitive('LineList', 'Yes');
   changeFillMode('Solid');
 
   // Create a new transform and parent the Shape under it.
@@ -360,8 +441,18 @@ This example shows how to display a cube in O3D using different primitive types.
 
 <form name="default_form" action="#" method="get">
   <p>
+  Indexed:
+  <select onchange="changePrimitive(
+      g_currentPrimitiveType, this.options[this.selectedIndex].value);">
+    <option value="Yes" selected>Yes</option>
+    <option value="No">No</option>
+  </select>
+  </p>
+
+  <p>
   Primitive type:
-  <select onchange="changePrimitive(this.options[this.selectedIndex].value);">
+  <select onchange="changePrimitive(
+      this.options[this.selectedIndex].value, g_currentIndexed);">
     <option value="PointList">PointList</option>
     <option value="LineList" selected>LineList</option>
     <option value="LineStrip">LineStrip</option>
@@ -380,6 +471,25 @@ This example shows how to display a cube in O3D using different primitive types.
   </select>
   </p>
 </form>
+
+<table>
+  <tr>
+    <td>
+      <center>Vertex Buffer</center>
+    </td>
+    <td>
+      <center>Index Buffer</center>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <textarea id="vertices" cols=30 rows=15> </textarea>
+    </td>
+    <td>
+      <textarea id="indices" cols=30 rows=15> </textarea>
+    </td>
+  </tr>
+</table>
 
 <!-- End of O3D plugin -->
 
