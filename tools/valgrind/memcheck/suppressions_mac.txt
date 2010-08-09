@@ -188,6 +188,34 @@
    fun:_cache_collect_free
    fun:_cache_fill
 }
+# Unaddressable bytes passed to chmod_extended() and fchmod_extended() syscalls.
+# Being discussed on valgrind-developers@lists.sf.net
+# TODO(glider): update
+{
+   chmod_extended_unaddressable
+   Memcheck:Param
+   chmod_extended(xsecurity)
+   fun:__chmod_extended
+   fun:chmodx_np
+   fun:copyfile
+}
+{
+   fchmod_extended_unaddressable
+   Memcheck:Param
+   fchmod_extended(xsecurity)
+   fun:__fchmod_extended
+   fun:fchmodx_np
+   fun:copyfile_internal
+   fun:copyfile
+}
+
+# See http://openradar.appspot.com/radar?id=574401
+{
+   DKeyHas8Words_below_stack
+   Memcheck:Addr4
+   fun:DKeyHas8Words
+}
+
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
