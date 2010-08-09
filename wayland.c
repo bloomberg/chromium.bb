@@ -86,7 +86,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	struct wl_object *object;
 	uint32_t p[2], opcode, size;
 	uint32_t cmask = 0;
-	int len;
+	int len, ret;
 
 	if (mask & WL_EVENT_READABLE)
 		cmask |= WL_CONNECTION_READABLE;
@@ -114,7 +114,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			len -= size;
 			continue;
 		}
-				
+
 		if (opcode >= object->interface->method_count) {
 			wl_client_post_event(client, &client->display->base,
 					     WL_DISPLAY_INVALID_METHOD, p[0], opcode);
@@ -122,14 +122,22 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			len -= size;
 			continue;
 		}
-				
-		wl_connection_demarshal(client->connection,
-					size,
-					client->display->objects,
-					object->implementation[opcode],
-					client,
-					object, 
-					&object->interface->methods[opcode]);
+
+		ret = wl_connection_demarshal(client->connection,
+					      size,
+					      client->display->objects,
+					      object->implementation[opcode],
+					      client,
+					      object, 
+					      &object->interface->methods[opcode]);
+
+		if (ret < 0 && errno == EINVAL)
+			wl_client_post_event(client, &client->display->base,
+					     WL_DISPLAY_INVALID_METHOD,
+					     p[0], opcode);
+		if (ret < 0 && errno == ENOMEM)
+			wl_client_post_event(client, &client->display->base,
+					     WL_DISPLAY_NO_MEMORY);
 
 		wl_connection_consume(connection, size);
 		len -= size;

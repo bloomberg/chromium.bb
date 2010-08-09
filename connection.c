@@ -29,6 +29,7 @@
 #include <ffi.h>
 #include <assert.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "wayland-util.h"
 #include "connection.h"
@@ -279,7 +280,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 	wl_connection_write(connection, args, size);
 }
 
-void
+int
 wl_connection_demarshal(struct wl_connection *connection,
 			uint32_t size,
 			struct wl_hash_table *objects,
@@ -289,8 +290,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 {
 	ffi_type *types[20];
 	ffi_cif cif;
-	uint32_t *p, result, length;
-	int i, count;
+	uint32_t *p, *next, *end, result, length;
+	int i, count, ret = 0;
 	union {
 		uint32_t uint32;
 		char *string;
@@ -305,12 +306,12 @@ wl_connection_demarshal(struct wl_connection *connection,
 	count = strlen(message->signature) + 2;
 	if (count > ARRAY_LENGTH(types)) {
 		printf("too many args (%d)\n", count);
-		return;
+		assert(0);
 	}
 
 	if (sizeof buffer < size) {
 		printf("request too big, should malloc tmp buffer here\n");
-		return;
+		assert(0);
 	}
 
 	types[0] = &ffi_type_pointer;
@@ -323,7 +324,17 @@ wl_connection_demarshal(struct wl_connection *connection,
 
 	wl_connection_copy(connection, buffer, size);
 	p = &buffer[2];
+	end = (uint32_t *) ((char *) (p + size));
 	for (i = 2; i < count; i++) {
+		if (p + 1 > end) {
+			printf("message too short, "
+			       "object (%d), message %s(%s)\n",
+			       *p, message->name, message->signature);
+			errno = EINVAL;
+			ret = -1;
+			goto out;
+		}
+
 		switch (message->signature[i - 2]) {
 		case 'u':
 		case 'i':
@@ -333,21 +344,37 @@ wl_connection_demarshal(struct wl_connection *connection,
 		case 's':
 			types[i] = &ffi_type_pointer;
 			length = *p++;
+
+			next = p + DIV_ROUNDUP(length, sizeof *p);
+			if (next > end) {
+				printf("message too short, "
+				       "object (%d), message %s(%s)\n",
+				       *p, message->name, message->signature);
+				errno = EINVAL;
+				ret = -1;
+				goto out;
+			}
+
 			values[i].string = malloc(length + 1);
 			if (values[i].string == NULL) {
-				/* FIXME: Send NO_MEMORY */
-				return;
+				errno = ENOMEM;
+				ret = -1;
+				goto out;
 			}
 			memcpy(values[i].string, p, length);
 			values[i].string[length] = '\0';
-			p += DIV_ROUNDUP(length, sizeof *p);
+			p = next;
 			break;
 		case 'o':
 			types[i] = &ffi_type_pointer;
 			object = wl_hash_table_lookup(objects, *p);
-			if (object == NULL && *p != 0)
+			if (object == NULL && *p != 0) {
 				printf("unknown object (%d), message %s(%s)\n",
 				       *p, message->name, message->signature);
+				errno = EINVAL;
+				ret = -1;
+				goto out;
+			}
 			values[i].object = object;
 			p++;
 			break;
@@ -355,26 +382,46 @@ wl_connection_demarshal(struct wl_connection *connection,
 			types[i] = &ffi_type_uint32;
 			values[i].new_id = *p;
 			object = wl_hash_table_lookup(objects, *p);
-			if (object != NULL)
-				printf("object already exists (%d)\n", *p);
+			if (object != NULL) {
+				printf("not a new object (%d), "
+				       "message %s(%s)\n",
+				       *p, message->name, message->signature);
+				errno = EINVAL;
+				ret = -1;
+				goto out;
+			}
 			p++;
 			break;
 		case 'a':
 			types[i] = &ffi_type_pointer;
 			length = *p++;
-			values[i].array = malloc(length + sizeof *values[i].array);
+
+			next = p + DIV_ROUNDUP(length, sizeof *p);
+			if (next > end) {
+				printf("message too short, "
+				       "object (%d), message %s(%s)\n",
+				       *p, message->name, message->signature);
+				errno = EINVAL;
+				ret = -1;
+				goto out;
+			}
+
+			values[i].array =
+				malloc(length + sizeof *values[i].array);
 			if (values[i].array == NULL) {
-				/* FIXME: Send NO_MEMORY */
-				return;
+				errno = ENOMEM;
+				ret = -1;
+				goto out;
 			}
 			values[i].array->size = length;
 			values[i].array->alloc = 0;
 			values[i].array->data = values[i].array + 1;
 			memcpy(values[i].array->data, p, length);
-			p += DIV_ROUNDUP(length, sizeof *p);
+			p = next;
 			break;
 		default:
 			printf("unknown type\n");
+			assert(0);
 			break;
 		}
 		args[i] = &values[i];
@@ -383,6 +430,8 @@ wl_connection_demarshal(struct wl_connection *connection,
 	ffi_prep_cif(&cif, FFI_DEFAULT_ABI, count, &ffi_type_uint32, types);
 	ffi_call(&cif, func, &result, args);
 
+ out:
+	count = i;
 	for (i = 2; i < count; i++) {
 		switch (message->signature[i - 2]) {
 		case 's':
@@ -393,4 +442,6 @@ wl_connection_demarshal(struct wl_connection *connection,
 			break;
 		}
 	}
+
+	return ret;
 }

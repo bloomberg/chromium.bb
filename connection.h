@@ -48,11 +48,11 @@ void wl_connection_vmarshal(struct wl_connection *connection,
 			    uint32_t opcode, va_list ap,
 			    const struct wl_message *message);
 
-void wl_connection_demarshal(struct wl_connection *connection,
-			     uint32_t size,
-			     struct wl_hash_table *objects,
-			     void (*func)(void),
-			     void *data, struct wl_object *target,
-			     const struct wl_message *message);
+int wl_connection_demarshal(struct wl_connection *connection,
+			    uint32_t size,
+			    struct wl_hash_table *objects,
+			    void (*func)(void),
+			    void *data, struct wl_object *target,
+			    const struct wl_message *message);
 
 #endif
