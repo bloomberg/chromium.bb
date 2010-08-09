@@ -209,6 +209,7 @@ function open_chromoting_tab(host_jid) {
   };
   var tab_args = {
     url: new_tab_url,
+    selected: false,
   };
 
   console.log("Attempt to connect with " +
@@ -216,13 +217,18 @@ function open_chromoting_tab(host_jid) {
               " host_jid='" + request.host_jid + "'" +
               " auth_token='" + request.xmpp_auth + "'");
 
+  // TODO(sergeyu): Currently we open a new tab, send a message and only after
+  // that select the new tab. This is neccessary because chrome closes the
+  // popup the moment the new tab is selected, and so we fail to send the
+  // message if the tab is selected when it is created. There is visible delay
+  // when opening a new tab, so it is necessary to pass the message somehow
+  // differently. Figure out how.
   chrome.tabs.create(tab_args, function(tab) {
     console.log("We're trying now to send to " + tab.id);
-    // TODO(ajwong): This request does not always seem to make it through.
-    // I think there's a race condition sending to the view. Figure out how
-    // to correctly synchronize this call.
     chrome.tabs.sendRequest(
-      tab.id, request,
-      function() {console.log('Tab finished conenct.')});
+      tab.id, request, function() {
+        console.log('Tab finished connect.');
+        chrome.tabs.update(tab.id, {selected: true});
+      });
   });
 }
