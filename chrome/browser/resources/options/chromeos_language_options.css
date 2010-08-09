@@ -26,7 +26,7 @@
 .language-options-left, .language-options-right {
   border: 1px solid #cccccc;
   vertical-align: top;
-  padding: 0px;
+  padding: 0;
   height: 400px;
 }
 
@@ -51,7 +51,7 @@
 
 #language-options-list {
   -webkit-box-flex: 1;
-  padding: 0px;
+  padding: 0;
   width: 100%;
   display: block;
 }
@@ -78,11 +78,11 @@
 }
 
 #add-language-overlay-page button {
-  padding: 0px;
+  padding: 0;
   text-align: left;
 }
 
 #add-language-overlay-page ul {
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
 }

@@ -1,7 +1,7 @@
 .user-list-table {
   border: 1px solid lightgrey;
   border-collapse: collapse;
-  border-spacing: 0px;
+  border-spacing: 0;
 }
 
 .user-name-edit-row {

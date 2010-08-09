@@ -143,7 +143,7 @@ html[dir='rtl'] .navbar-item-selected {
 #mainview {
   -webkit-box-align: stretch;
   width: 600px;
-  padding: 0px 24px 24px;
+  padding: 0 24px 24px;
   position: relative;
 }
 
@@ -182,7 +182,7 @@ section > h3 {
 
 .option-control-table, section > div:only-of-type {
   -webkit-padding-start: 10px;
-  border-spacing: 0px 0px;
+  border-spacing: 0 0;
 }
 
 .suboption {
