@@ -28,6 +28,10 @@ GL_FUNCTIONS = [
 ['void', ['glBlendFunc'], 'GLenum sfactor, GLenum dfactor'],
 ['void', ['glBlendFuncSeparate'],
     'GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha'],
+['void', ['glBlitFramebufferEXT', 'BlitFramebuffer'],
+    'GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, '
+    'GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, '
+    'GLbitfield mask, GLenum filter'],
 ['void', ['glBufferData'],
     'GLenum target, GLsizei size, const void* data, GLenum usage'],
 ['void', ['glBufferSubData'],
@@ -104,7 +108,8 @@ GL_FUNCTIONS = [
     'GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders'],
 ['GLint', ['glGetAttribLocation'], 'GLuint program, const char* name'],
 ['void', ['glGetBooleanv'], 'GLenum pname, GLboolean* params'],
-['void', ['glGetBufferParameteriv'], 'GLenum target, GLenum pname, GLint* params'],
+['void', ['glGetBufferParameteriv'],
+    'GLenum target, GLenum pname, GLint* params'],
 ['GLenum', ['glGetError'], 'void'],
 ['void', ['glGetFloatv'], 'GLenum pname, GLfloat* params'],
 ['void', ['glGetFramebufferAttachmentParameterivEXT',
@@ -151,6 +156,10 @@ GL_FUNCTIONS = [
     'GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, '
     'GLenum type, void* pixels'],
 ['void', ['glReleaseShaderCompiler'], 'void'],
+['void', ['glRenderbufferStorageMultisampleEXT',
+    'glRenderbufferStorageMultisample'],
+    'GLenum target, GLsizei samples, GLenum internalformat, '
+    'GLsizei width, GLsizei height'],
 ['void', ['glRenderbufferStorageEXT', 'glRenderbufferStorage'],
     'GLenum target, GLenum internalformat, GLsizei width, GLsizei height'],
 ['void', ['glSampleCoverage'], 'GLclampf value, GLboolean invert'],
@@ -260,7 +269,8 @@ EGL_FUNCTIONS = [
 ['EGLBoolean', ['eglGetConfigAttrib'],
     'EGLDisplay dpy, EGLConfig config, EGLint attribute, EGLint* value'],
 ['EGLSurface', ['eglCreateWindowSurface'],
-    'EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, const EGLint* attrib_list'],
+    'EGLDisplay dpy, EGLConfig config, EGLNativeWindowType win, '
+    'const EGLint* attrib_list'],
 ['EGLSurface', ['eglCreatePbufferSurface'],
     'EGLDisplay dpy, EGLConfig config, const EGLint* attrib_list'],
 ['EGLSurface', ['eglCreatePixmapSurface'],
