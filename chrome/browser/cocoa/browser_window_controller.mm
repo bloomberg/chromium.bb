@@ -1856,7 +1856,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
     activeArea.size.height += NSHeight([bookmarkBarView frame]);
   }
 
-  [TabposeWindow openTabposeFor:[self window] rect:activeArea slomo:slomo];
+  [TabposeWindow openTabposeFor:[self window]
+                           rect:activeArea
+                          slomo:slomo
+                  tabStripModel:browser_->tabstrip_model()];
 }
 
 @end  // @implementation BrowserWindowController(Fullscreen)
