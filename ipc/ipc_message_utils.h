@@ -18,7 +18,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
+#include "base/time.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -66,13 +66,6 @@ enum IPCMessageStart {
   // IPCStatusView::IPCStatusView to ensure logging works.
   LastMsgIndex
 };
-
-class DictionaryValue;
-class ListValue;
-
-namespace base {
-class Time;
-}
 
 namespace IPC {
 
@@ -313,9 +306,19 @@ struct ParamTraits<wchar_t> {
 template <>
 struct ParamTraits<base::Time> {
   typedef base::Time param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Write(Message* m, const param_type& p) {
+    ParamTraits<int64>::Write(m, p.ToInternalValue());
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int64 value;
+    if (!ParamTraits<int64>::Read(m, iter, &value))
+      return false;
+    *r = base::Time::FromInternalValue(value);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    ParamTraits<int64>::Log(p.ToInternalValue(), l);
+  }
 };
 
 #if defined(OS_WIN)
@@ -361,9 +364,6 @@ struct ParamTraits<MSG> {
     }
 
     return result;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<MSG>");
   }
 };
 #endif  // defined(OS_WIN)
@@ -1026,14 +1026,20 @@ template <class ParamType>
 class MessageWithTuple : public Message {
  public:
   typedef ParamType Param;
-  typedef typename TupleTypes<ParamType>::ParamTuple RefParam;
+  typedef typename ParamType::ParamTuple RefParam;
 
-  // The constructor and the Read() method's templated implementations are in
-  // ipc_message_utils_impl.h. The subclass constructor and Log() methods call
-  // the templated versions of these and make sure there are instantiations in
-  // those translation units.
-  MessageWithTuple(int32 routing_id, uint32 type, const RefParam& p);
-  static bool Read(const Message* msg, Param* p);
+  MessageWithTuple(int32 routing_id, uint32 type, const RefParam& p)
+      : Message(routing_id, type, PRIORITY_NORMAL) {
+    WriteParam(this, p);
+  }
+
+  static bool Read(const Message* msg, Param* p) {
+    void* iter = NULL;
+    if (ReadParam(msg, &iter, p))
+      return true;
+    NOTREACHED() << "Error deserializing message " << msg->type();
+    return false;
+  }
 
   // Generic dispatcher.  Should cover most cases.
   template<class T, class Method>
@@ -1103,6 +1109,12 @@ class MessageWithTuple : public Message {
       return true;
     }
     return false;
+  }
+
+  static void Log(const Message* msg, std::wstring* l) {
+    Param p;
+    if (Read(msg, &p))
+      LogParam(p, l);
   }
 
   // Functions used to do manual unpacking.  Only used by the automation code,
@@ -1177,7 +1189,7 @@ template <class SendParamType, class ReplyParamType>
 class MessageWithReply : public SyncMessage {
  public:
   typedef SendParamType SendParam;
-  typedef typename TupleTypes<SendParam>::ParamTuple RefSendParam;
+  typedef typename SendParam::ParamTuple RefSendParam;
   typedef ReplyParamType ReplyParam;
 
   MessageWithReply(int32 routing_id, uint32 type,
@@ -1204,7 +1216,7 @@ class MessageWithReply : public SyncMessage {
     } else {
       // This is an outgoing reply.  Now that we have the output parameters, we
       // can finally log the message.
-      typename TupleTypes<ReplyParam>::ValueTuple p;
+      typename ReplyParam::ValueTuple p;
       void* iter = SyncMessage::GetDataIterator(msg);
       if (ReadParam(msg, &iter, &p))
         LogParam(p, l);
@@ -1218,7 +1230,7 @@ class MessageWithReply : public SyncMessage {
     Message* reply = GenerateReply(msg);
     bool error;
     if (ReadParam(msg, &iter, &send_params)) {
-      typename TupleTypes<ReplyParam>::ValueTuple reply_params;
+      typename ReplyParam::ValueTuple reply_params;
       DispatchToMethod(obj, func, send_params, &reply_params);
       WriteParam(reply, reply_params);
       error = false;

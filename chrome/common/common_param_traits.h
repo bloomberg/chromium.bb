@@ -34,7 +34,6 @@ class DictionaryValue;
 class ListValue;
 struct ThumbnailScore;
 class URLRequestStatus;
-class WebCursor;
 
 namespace gfx {
 class Point;
@@ -211,7 +210,7 @@ struct ParamTraits<WebCursor> {
   static void Write(Message* m, const param_type& p) {
     p.Serialize(m);
   }
-  static bool Read(const Message* m, void** iter, param_type* r)  {
+  static bool Read(const Message* m, void** iter, param_type* r) {
     return r->Deserialize(m, iter);
   }
   static void Log(const param_type& p, std::wstring* l) {
