@@ -3969,3 +3969,14 @@
    ...
    fun:_ZN5views16NativeControlGtk5FocusEv
 }
+{
+   bug_51590
+   Memcheck:Addr4
+   fun:_ZN7WebCore14stringToGlyphsEP8HB_Font_PKtjPjS4_h
+   ...
+   fun:HB_ShapeItem
+   fun:_ZN7WebCore13TextRunWalker11shapeGlyphsEv
+   fun:_ZN7WebCore13TextRunWalker13nextScriptRunEv
+   fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
+}
+
