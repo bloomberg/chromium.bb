@@ -19,7 +19,7 @@
 
 namespace {
 
-const wchar_t kRunDromaeo[] = L"run-dromaeo-benchmark";
+const char kRunDromaeo[] = "run-dromaeo-benchmark";
 
 class DromaeoTest : public UITest {
  public:
