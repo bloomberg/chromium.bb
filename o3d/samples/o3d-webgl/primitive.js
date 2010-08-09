@@ -525,7 +525,7 @@ o3d.Primitive.prototype.intersectRay =
         (m00 * m12 - m02 * m10) * y +
         (m00 * m11 - m01 * m10) * z) / d;
 
-    if (v0 > 0 && v1 > 0 && v2 > 0) {
+    if (v0 >= 0 && v1 >= 0 && v2 >= 0 && (v0 + v1 + v2 > 0)) {
       // Rescale by the one-norm to find the intersection of the transformed.
       // ray with the unit triangle.
       var one_norm = v0 + v1 + v2;
