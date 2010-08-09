@@ -127,6 +127,12 @@ void AutocompleteEditModel::RestoreState(const State& state) {
   }
 }
 
+GURL AutocompleteEditModel::CurrentURL() {
+  AutocompleteMatch match;
+  GetInfoForCurrentText(&match, NULL);
+  return match.destination_url;
+}
+
 bool AutocompleteEditModel::UpdatePermanentText(
     const std::wstring& new_permanent_text) {
   // When there's a new URL, and the user is not editing anything or the edit

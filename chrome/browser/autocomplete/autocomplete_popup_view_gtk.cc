@@ -366,6 +366,12 @@ AutocompletePopupModel* AutocompletePopupViewGtk::GetModel() {
   return model_.get();
 }
 
+int AutocompletePopupViewGtk::GetMaxYCoordinate() {
+  // TODO: implement if match preview pans out.
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 void AutocompletePopupViewGtk::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {

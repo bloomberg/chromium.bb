@@ -102,10 +102,8 @@ class AutocompleteEditModel : public NotificationObserver {
 
   void SetPopupModel(AutocompletePopupModel* popup_model);
 
-#ifdef UNIT_TEST
   // It should only be used by testing code.
   AutocompletePopupModel* popup_model() const { return popup_; }
-#endif
 
   // Invoked when the profile has changed.
   void SetProfile(Profile* profile);
@@ -118,6 +116,11 @@ class AutocompleteEditModel : public NotificationObserver {
 
   // Restores local state from the saved |state|.
   void RestoreState(const State& state);
+
+  // Returns the url for the current text. If the user has not edited the text
+  // this is the permanent url, otherwise it is the url the user would navigate
+  // to if they accept the current edit.
+  GURL CurrentURL();
 
   // Called when the user wants to export the entire current text as a URL.
   // Sets the url, and if known, the title and favicon.

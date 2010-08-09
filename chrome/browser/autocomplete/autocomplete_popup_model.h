@@ -40,6 +40,8 @@ class AutocompletePopupModel : public NotificationObserver {
   // Returns true if the popup is currently open.
   bool IsOpen() const;
 
+  AutocompletePopupView* view() const { return view_; }
+
   // Returns the AutocompleteController used by this popup.
   AutocompleteController* autocomplete_controller() const {
     return controller_.get();

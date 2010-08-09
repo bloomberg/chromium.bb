@@ -124,6 +124,7 @@ class AutocompleteEditViewWin
   virtual bool OnAfterPossibleChange();
   virtual gfx::NativeView GetNativeView() const;
   virtual CommandUpdater* GetCommandUpdater();
+  int GetPopupMaxYCoordinate();
 
   // Exposes custom IAccessible implementation to the overall MSAA hierarchy.
   IAccessible* GetIAccessible();
