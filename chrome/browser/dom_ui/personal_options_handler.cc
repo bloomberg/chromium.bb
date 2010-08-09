@@ -11,12 +11,14 @@
 #include "base/stl_util-inl.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/chrome_paths.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/options_page_base.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -65,19 +67,19 @@ void PersonalOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("import_data",
       l10n_util::GetStringUTF16(IDS_OPTIONS_IMPORT_DATA_BUTTON));
 
-#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
-  localized_strings->SetString("appearance",
-      l10n_util::GetStringUTF16(IDS_APPEARANCE_GROUP_NAME));
-  localized_strings->SetString("themes_GTK_button",
-      l10n_util::GetStringUTF16(IDS_THEMES_GTK_BUTTON));
-  localized_strings->SetString("themes_set_classic",
-      l10n_util::GetStringUTF16(IDS_THEMES_SET_CLASSIC));
-  localized_strings->SetString("showWindow_decorations_radio",
-      l10n_util::GetStringUTF16(IDS_SHOW_WINDOW_DECORATIONS_RADIO));
-  localized_strings->SetString("hideWindow_decorations_radio",
-      l10n_util::GetStringUTF16(IDS_HIDE_WINDOW_DECORATIONS_RADIO));
-  localized_strings->SetString("themes_gallery",
-      l10n_util::GetStringUTF16(IDS_THEMES_GALLERY_BUTTON));
+#if defined(TOOLKIT_GTK)
+  localized_strings->SetString(L"appearance",
+      l10n_util::GetString(IDS_APPEARANCE_GROUP_NAME));
+  localized_strings->SetString(L"themes_GTK_button",
+      l10n_util::GetString(IDS_THEMES_GTK_BUTTON));
+  localized_strings->SetString(L"themes_set_classic",
+      l10n_util::GetString(IDS_THEMES_SET_CLASSIC));
+  localized_strings->SetString(L"showWindow_decorations_radio",
+      l10n_util::GetString(IDS_SHOW_WINDOW_DECORATIONS_RADIO));
+  localized_strings->SetString(L"hideWindow_decorations_radio",
+      l10n_util::GetString(IDS_HIDE_WINDOW_DECORATIONS_RADIO));
+  localized_strings->SetString(L"themes_gallery",
+      l10n_util::GetString(IDS_THEMES_GALLERY_BUTTON));
 #else
   localized_strings->SetString("themes",
       l10n_util::GetStringUTF16(IDS_THEMES_GROUP_NAME));
@@ -94,7 +96,18 @@ void PersonalOptionsHandler::RegisterMessages() {
   DCHECK(dom_ui_);
   dom_ui_->RegisterMessageCallback(
       "getSyncStatus",
-      NewCallback(this,&PersonalOptionsHandler::SetSyncStatusUIString));
+      NewCallback(this, &PersonalOptionsHandler::SetSyncStatusUIString));
+  dom_ui_->RegisterMessageCallback(
+      "themesReset",
+      NewCallback(this, &PersonalOptionsHandler::ThemesReset));
+  dom_ui_->RegisterMessageCallback(
+      "themesGallery",
+      NewCallback(this, &PersonalOptionsHandler::ThemesGallery));
+#if defined(TOOLKIT_GTK)
+  dom_ui_->RegisterMessageCallback(
+      "themesSetGTK",
+      NewCallback(this, &PersonalOptionsHandler::ThemesSetGTK));
+#endif
 }
 
 void PersonalOptionsHandler::SetSyncStatusUIString(const Value* value) {
@@ -112,3 +125,29 @@ void PersonalOptionsHandler::SetSyncStatusUIString(const Value* value) {
         *(status_string.get()));
   }
 }
+
+void PersonalOptionsHandler::ThemesReset(const Value* value) {
+  DCHECK(dom_ui_);
+
+  UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"),
+                          dom_ui_->GetProfile()->GetPrefs());
+  dom_ui_->GetProfile()->ClearTheme();
+}
+
+void PersonalOptionsHandler::ThemesGallery(const Value* value) {
+  DCHECK(dom_ui_);
+
+  UserMetricsRecordAction(UserMetricsAction("Options_ThemesGallery"),
+                          dom_ui_->GetProfile()->GetPrefs());
+  BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
+}
+
+#if defined(TOOLKIT_GTK)
+void PersonalOptionsHandler::ThemesSetGTK(const Value* value) {
+  DCHECK(dom_ui_);
+
+  UserMetricsRecordAction(UserMetricsAction("Options_GtkThemeSet"),
+                          dom_ui_->GetProfile()->GetPrefs());
+  dom_ui_->GetProfile()->SetNativeTheme();
+}
+#endif

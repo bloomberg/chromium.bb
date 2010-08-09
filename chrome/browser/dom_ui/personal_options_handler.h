@@ -23,6 +23,11 @@ class PersonalOptionsHandler : public OptionsPageUIHandler {
 
  private:
   virtual void SetSyncStatusUIString(const Value* value);
+  virtual void ThemesReset(const Value* value);
+  virtual void ThemesGallery(const Value* value);
+#if defined(TOOLKIT_GTK)
+  virtual void ThemesSetGTK(const Value* value);
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PersonalOptionsHandler);
 };

@@ -72,18 +72,24 @@ cr.define('options', function() {
 
       if(!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
         $('themes_GTK_button').onclick = function(event) {
-          //TODO(sargrass): Show themes GTK dialog here.
+          chrome.send('themesSetGTK');
         };
 
         $('themes_set_classic').onclick = function(event) {
-          //TODO(sargrass): Show themes set classic dialog here.
+          chrome.send('themesReset');
         };
+        $('themes-gallery').onclick = function(event) {
+          chrome.send('themesGallery');
+        }
       }
 
       if(cr.isMac || cr.isWindows || cr.isChromeOS) {
         $('themes_reset').onclick = function(event) {
-          //TODO(sargrass): Show themes reset dialog here.
+          chrome.send('themesReset');
         };
+        $('themes-gallery').onclick = function(event) {
+          chrome.send('themesGallery');
+        }
       }
     },
 
