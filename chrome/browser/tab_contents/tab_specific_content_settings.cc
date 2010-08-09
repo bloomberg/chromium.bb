@@ -11,13 +11,6 @@
 #include "chrome/browser/cookies_tree_model.h"
 #include "net/base/cookie_monster.h"
 
-bool TabSpecificContentSettings::LocalSharedObjectsContainer::empty() const {
-  return cookies_->GetAllCookies().empty() &&
-      appcaches_->empty() &&
-      databases_->empty() &&
-      local_storages_->empty();
-}
-
 bool TabSpecificContentSettings::IsContentBlocked(
     ContentSettingsType content_type) const {
   DCHECK(content_type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
@@ -37,21 +30,12 @@ bool TabSpecificContentSettings::IsContentBlocked(
   return false;
 }
 
-bool TabSpecificContentSettings::IsContentAccessed(
-    ContentSettingsType content_type) const {
-  if (content_type != CONTENT_SETTINGS_TYPE_COOKIES)
-    return false;
-
-  return !allowed_local_shared_objects_.empty() ||
-         IsContentBlocked(content_type);
-}
-
 void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   content_blocked_[type] = true;
   if (delegate_)
-    delegate_->OnContentSettingsAccessed(true);
+    delegate_->OnContentSettingsChange();
 }
 
 void TabSpecificContentSettings::OnCookieAccessed(
@@ -65,8 +49,6 @@ void TabSpecificContentSettings::OnCookieAccessed(
   } else {
     allowed_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);
-    if (delegate_)
-      delegate_->OnContentSettingsAccessed(false);
   }
 }
 
@@ -77,8 +59,6 @@ void TabSpecificContentSettings::OnLocalStorageAccessed(
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.local_storages()->AddLocalStorage(url);
-    if (delegate_)
-      delegate_->OnContentSettingsAccessed(false);
   }
 }
 
@@ -95,8 +75,6 @@ void TabSpecificContentSettings::OnWebDatabaseAccessed(
   } else {
     allowed_local_shared_objects_.databases()->AddDatabase(
         url, UTF16ToUTF8(name), UTF16ToUTF8(display_name));
-    if (delegate_)
-      delegate_->OnContentSettingsAccessed(false);
   }
 }
 
@@ -107,8 +85,6 @@ void TabSpecificContentSettings::OnAppCacheAccessed(
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
-    if (delegate_)
-      delegate_->OnContentSettingsAccessed(false);
   }
 }
 
@@ -118,7 +94,7 @@ void TabSpecificContentSettings::OnGeolocationPermissionSet(
   geolocation_settings_state_.OnGeolocationPermissionSet(requesting_origin,
                                                          allowed);
   if (delegate_)
-    delegate_->OnContentSettingsAccessed(!allowed);
+    delegate_->OnContentSettingsChange();
 }
 
 TabSpecificContentSettings::TabSpecificContentSettings(
@@ -139,13 +115,13 @@ void TabSpecificContentSettings::ClearBlockedContentSettings() {
   blocked_local_shared_objects_.Reset();
   allowed_local_shared_objects_.Reset();
   if (delegate_)
-    delegate_->OnContentSettingsAccessed(false);
+    delegate_->OnContentSettingsChange();
 }
 
 void TabSpecificContentSettings::SetPopupsBlocked(bool blocked) {
   content_blocked_[CONTENT_SETTINGS_TYPE_POPUPS] = blocked;
   if (delegate_)
-    delegate_->OnContentSettingsAccessed(blocked);
+    delegate_->OnContentSettingsChange();
 }
 
 void TabSpecificContentSettings::GeolocationDidNavigate(
