@@ -1420,4 +1420,12 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_MESSAGE_ROUTED3(AutomationMsg_RunUnloadHandlers, int, gfx::NativeWindow,
                       int)
 
+  // This message sets the current zoom level on the tab
+  // Request:
+  //   -int: Tab handle
+  //   -int: Zoom level. Values ZOOM_OUT = -1, RESET = 0, ZOOM_IN  = 1
+  // Response:
+  //   None expected
+  IPC_MESSAGE_ROUTED2(AutomationMsg_SetZoomLevel, int, int)
+
 IPC_END_MESSAGES(Automation)

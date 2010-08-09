@@ -1251,6 +1251,13 @@ void ChromeFrameAutomationClient::RunUnloadHandlers(HWND notification_window,
   }
 }
 
+void ChromeFrameAutomationClient::SetZoomLevel(PageZoom::Function zoom_level) {
+  if (automation_server_) {
+    automation_server_->Send(new AutomationMsg_SetZoomLevel(0, tab_handle_,
+                                                            zoom_level));
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////
 // PluginUrlRequestDelegate implementation.
 // Forward network related responses to Chrome.

@@ -273,6 +273,8 @@ BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
 
   EXEC_COMMAND_HANDLER_NO_ARGS(&CGID_ShellDocView, DOCHOST_DISPLAY_PRIVACY,
                                OnDisplayPrivacyInfo)
+  EXEC_COMMAND_HANDLER(NULL, OLECMDID_OPTICAL_GETZOOMRANGE, OnGetZoomRange)
+  EXEC_COMMAND_HANDLER(NULL, OLECMDID_OPTICAL_ZOOM, OnSetZoomRange)
 END_EXEC_COMMAND_MAP()
 
   // IPCs from automation server.
@@ -381,6 +383,12 @@ END_EXEC_COMMAND_MAP()
                                VARIANT* out_args);
   void OnDisplayPrivacyInfo();
 
+  void OnGetZoomRange(const GUID* cmd_group_guid, DWORD command_id,
+                      DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
+
+  void OnSetZoomRange(const GUID* cmd_group_guid, DWORD command_id,
+                      DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
+
   // Call exec on our site's command target
   HRESULT IEExec(const GUID* cmd_group_guid, DWORD command_id,
                  DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
@@ -423,6 +431,10 @@ END_EXEC_COMMAND_MAP()
   // Checks for the presence of known-to-be-buggy BHOs.  If we find any
   // we do not fire the DocumentComplete event to avoid a crash.
   static bool ShouldFireDocumentComplete();
+
+  // Sets the dimensions on the IE window. These dimensions are parsed out from
+  // the information passed in from Chrome during window.open.
+  void SetWindowDimensions();
 
  protected:
   typedef std::map<int, OLECMDF> CommandStatusMap;

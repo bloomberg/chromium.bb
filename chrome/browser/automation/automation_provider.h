@@ -913,6 +913,8 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void OnRunUnloadHandlers(int handle, gfx::NativeWindow notification_window,
                            int notification_message);
 
+  void OnSetZoomLevel(int handle, int zoom_level);
+
   ExternalTabContainer* GetExternalTabForHandle(int handle);
 #endif  // defined(OS_WIN)
 

@@ -18,6 +18,7 @@
 #include "base/task.h"
 #include "base/timer.h"
 #include "base/thread.h"
+#include "chrome/common/page_zoom.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/chrome_frame_delegate.h"
@@ -276,6 +277,9 @@ class ChromeFrameAutomationClient
   // Sends an IPC message to the external tab container requesting it to run
   // unload handlers on the page.
   void RunUnloadHandlers(HWND notification_window, int notification_message);
+
+  // Sets the current zoom level on the tab.
+  void SetZoomLevel(PageZoom::Function zoom_level);
 
  protected:
   // ChromeFrameAutomationProxy::LaunchDelegate implementation.

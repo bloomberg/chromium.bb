@@ -33,6 +33,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/navigation_types.h"
+#include "chrome/common/page_zoom.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome_frame/bho.h"
@@ -571,23 +572,7 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
           return AtlHresultFromLastError();
         }
       }
-
-      ScopedComPtr<IWebBrowser2> web_browser2;
-      DoQueryService(SID_SWebBrowserApp, m_spClientSite,
-                     web_browser2.Receive());
-      if (web_browser2) {
-        if (!dimensions_.IsEmpty()) {
-          web_browser2->put_Width(dimensions_.width());
-          web_browser2->put_Height(dimensions_.height());
-          web_browser2->put_Left(dimensions_.x());
-          web_browser2->put_Top(dimensions_.y());
-          web_browser2->put_MenuBar(VARIANT_FALSE);
-          web_browser2->put_ToolBar(VARIANT_FALSE);
-
-          dimensions_.set_height(0);
-          dimensions_.set_width(0);
-        }
-      }
+      SetWindowDimensions();
     }
     SetObjectRects(&position_rect, &clip_rect);
   }
@@ -864,6 +849,36 @@ void ChromeActiveDocument::OnDisplayPrivacyInfo() {
   DoPrivacyDlg(m_hWnd, url_, this, TRUE);
 }
 
+void ChromeActiveDocument::OnGetZoomRange(const GUID* cmd_group_guid,
+                                          DWORD command_id,
+                                          DWORD cmd_exec_opt,
+                                          VARIANT* in_args,
+                                          VARIANT* out_args) {
+  if (out_args != NULL) {
+    out_args->vt = VT_I4;
+    out_args->lVal = 0;
+  }
+}
+
+void ChromeActiveDocument::OnSetZoomRange(const GUID* cmd_group_guid,
+                                          DWORD command_id,
+                                          DWORD cmd_exec_opt,
+                                          VARIANT* in_args,
+                                          VARIANT* out_args) {
+  const int kZoomIn = 125;
+  const int kZoomOut = 75;
+
+  if (in_args && V_VT(in_args) == VT_I4 && IsValid()) {
+    if (in_args->lVal == kZoomIn) {
+      automation_client_->SetZoomLevel(PageZoom::ZOOM_IN);
+    } else if (in_args->lVal == kZoomOut) {
+      automation_client_->SetZoomLevel(PageZoom::ZOOM_OUT);
+    } else {
+      DLOG(WARNING) << "Unsupported zoom level:" << in_args->lVal;
+    }
+  }
+}
+
 void ChromeActiveDocument::OnOpenURL(int tab_handle,
                                      const GURL& url_to_open,
                                      const GURL& referrer,
@@ -977,11 +992,12 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
   std::string utf8_url;
   WideToUTF8(url_, url_.Length(), &utf8_url);
 
-  DLOG(INFO) << "Url is " << url_;
+  DLOG(INFO) << "this:" << this << " url is:" << url_;
 
   if (cf_url.attach_to_external_tab()) {
     dimensions_ = cf_url.dimensions();
     automation_client_->AttachExternalTab(cf_url.cookie());
+    SetWindowDimensions();
   } else if (!automation_client_->InitiateNavigation(utf8_url,
                                                      referrer,
                                                      is_privileged_)) {
@@ -1221,4 +1237,26 @@ LRESULT ChromeActiveDocument::OnSetFocus(UINT message, WPARAM wparam,
   if (!ignore_setfocus_)
     GiveFocusToChrome(false);
   return 0;
+}
+
+void ChromeActiveDocument::SetWindowDimensions() {
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  DoQueryService(SID_SWebBrowserApp, m_spClientSite,
+                 web_browser2.Receive());
+  if (!web_browser2)
+    return;
+  DLOG(INFO) << "this:" << this;
+  DLOG(INFO) << "dimensions: width:" << dimensions_.width()
+             << "height:" << dimensions_.height();
+  if (!dimensions_.IsEmpty()) {
+    web_browser2->put_Width(dimensions_.width());
+    web_browser2->put_Height(dimensions_.height());
+    web_browser2->put_Left(dimensions_.x());
+    web_browser2->put_Top(dimensions_.y());
+    web_browser2->put_MenuBar(VARIANT_FALSE);
+    web_browser2->put_ToolBar(VARIANT_FALSE);
+
+    dimensions_.set_height(0);
+    dimensions_.set_width(0);
+  }
 }

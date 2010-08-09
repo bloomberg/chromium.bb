@@ -20,6 +20,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
+#include "chrome/common/page_zoom.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
@@ -603,3 +604,12 @@ void AutomationProvider::OnRunUnloadHandlers(
   }
 }
 
+void AutomationProvider::OnSetZoomLevel(int handle, int zoom_level) {
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    if (tab->tab_contents() && tab->tab_contents()->render_view_host()) {
+      tab->tab_contents()->render_view_host()->Zoom(
+          static_cast<PageZoom::Function>(zoom_level));
+    }
+  }
+}
