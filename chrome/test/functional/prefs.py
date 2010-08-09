@@ -140,6 +140,26 @@ class PrefsTest(pyauto.PyUITest):
     # TODO(nirnimesh): Actually verify that homepage loads.
     # This requires telling pyauto *not* to set about:blank as homepage.
 
+  def testGeolocationPref(self):
+    """Verify geolocation pref.
+
+    Checks for the geolocation infobar.
+    """
+    url = self.GetFileURLForPath(os.path.join(  # triggers geolocation
+        self.DataDir(), 'geolocation', 'geolocation_on_load.html'))
+    self.assertEqual(3,  # default state
+        self.GetPrefsInfo().Prefs(pyauto.kGeolocationDefaultContentSetting))
+    self.NavigateToURL(url)
+    self.WaitForInfobarCount(1)
+    self.assertTrue(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+    # Disable geolocation
+    self.SetPrefs(pyauto.kGeolocationDefaultContentSetting, 2)
+    self.assertEqual(2,
+        self.GetPrefsInfo().Prefs(pyauto.kGeolocationDefaultContentSetting))
+    self.GetBrowserWindow(0).GetTab(0).Reload()
+    self.WaitForInfobarCount(0)
+    self.assertFalse(self.GetBrowserInfo()['windows'][0]['tabs'][0]['infobars'])
+
 
 if __name__ == '__main__':
   pyauto_functional.Main()
