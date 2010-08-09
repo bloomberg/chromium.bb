@@ -21,15 +21,16 @@ if ARGUMENTS.get('bitcode'):
     # We only need it because the crt?_x86.S files have #ifdefs
     # in them.
     env.Append(ASFLAGS='-D__x86_64__=1')
-    # sadly tls also had #ifdefs
-    # TODO(robertm): break this up in mulitple files
-    env.Append(CPPDEFINES=['__x86_64__=1'])
-  elif env.get('TARGET_PLATFORM') == 'x86-32':
-    env.Append(CPPDEFINES=['__x86_32__=1'])
+
 # This directory contains untrusted C and ASM source for low-level
 # CPU-specific libraries implicitly supplied by the compiler driver.
 # Unlike most untrusted SDK code, conditional compilation may be
 # freely used, as the target will never be PNaCl.
+
+platform = env.get('TARGET_PLATFORM')
+assert platform in ['x86-32',  'x86-64', 'arm']
+ # we do not like hyphens in file names
+platform = platform.replace('-', '_')
 
 if env.get('TARGET_ARCHITECTURE') == 'x86':
   objects = [env.ComponentObject('crt1', ['crt1_x86.S' ]),
@@ -47,8 +48,8 @@ else:
   raise Exception, (
     'Unexpected TARGET_ARCHITECTURE: %s' % env.get('TARGET_ARCHITECTURE'))
 
-# Archive library of modules written in C.
-crt_platform = env.StaticLibrary('crt_platform',
-                                 [env.StaticObject('tls.o', ['tls.c'])])
+tls = env.StaticObject('tls.o', ['tls_%s.c' % platform])
 
+# Archive library of modules written in C.
+crt_platform = env.StaticLibrary('crt_platform', [tls])
 env.AddObjectToSdk(objects + [crt_platform], is_platform=True)
