@@ -122,6 +122,9 @@ class CannedBrowsingDataLocalStorageHelper
   // Clear the list of canned local storages.
   void Reset();
 
+  // True if no local storages are currently stored.
+  bool empty() const;
+
   // BrowsingDataLocalStorageHelper methods.
   virtual void StartFetching(
       Callback1<const std::vector<LocalStorageInfo>& >::Type* callback);

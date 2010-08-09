@@ -2328,6 +2328,9 @@ each locale. -->
       <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to write cookies or other site data.">
         This page was prevented from setting cookies.
       </message>
+      <message name="IDS_ACCESSED_COOKIES_TITLE" desc="Tooltip and bubble info header text when a page wrote cookies or other site data.">
+        This page set cookies.
+      </message>
       <message name="IDS_BLOCKED_COOKIES_LINK" desc="Link to cookie section of content blocking management dialog, displayed in bubble when a page tries to write cookies or other site data.">
         Manage cookie blocking...
       </message>
