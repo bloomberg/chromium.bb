@@ -137,12 +137,14 @@ bool ContextGroup::Initialize() {
 
   // Lookup GL things we need to know.
   GetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs_);
-  const GLuint kGLES2RequiredMiniumumVertexAttribs = 8u;
-  DCHECK_GE(max_vertex_attribs_, kGLES2RequiredMiniumumVertexAttribs);
+  const GLuint kGLES2RequiredMinimumVertexAttribs = 8u;
+  if (max_vertex_attribs_ < kGLES2RequiredMinimumVertexAttribs)
+    return false;
 
   GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units_);
-  const GLuint kGLES2RequiredMiniumumTextureUnits = 8u;
-  DCHECK_GE(max_texture_units_, kGLES2RequiredMiniumumTextureUnits);
+  const GLuint kGLES2RequiredMinimumTextureUnits = 8u;
+  if (max_texture_units_ < kGLES2RequiredMinimumTextureUnits)
+    return false;
 
   GLint max_texture_size;
   GLint max_cube_map_texture_size;
