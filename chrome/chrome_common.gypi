@@ -59,8 +59,6 @@
           'common/gpu_info.cc',
           'common/gpu_messages.h',
           'common/gpu_messages_internal.h',
-          'common/gpu_video_common.cc',
-          'common/gpu_video_common.h',
           'common/indexed_db_key.cc',
           'common/indexed_db_key.h',
           'common/logging_chrome.cc',

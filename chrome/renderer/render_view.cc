@@ -52,7 +52,6 @@
 #include "chrome/renderer/geolocation_dispatcher.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
-#include "chrome/renderer/media/ipc_video_decoder.h"
 #include "chrome/renderer/media/ipc_video_renderer.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/notification_provider.h"
@@ -78,7 +77,6 @@
 #include "gfx/rect.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
-#include "media/base/media_switches.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -2325,13 +2323,6 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     // Add the chrome specific audio renderer.
     factory->AddFactory(
         AudioRendererImpl::CreateFactory(audio_message_filter()));
-  }
-
-  if (cmd_line->HasSwitch(switches::kEnableAcceleratedDecoding) &&
-      cmd_line->HasSwitch(switches::kEnableAcceleratedCompositing)) {
-    // Add the hardware video decoder factory.
-    factory->AddFactory(
-        media::IpcVideoDecoder::CreateFactory(MessageLoop::current()));
   }
 
   WebApplicationCacheHostImpl* appcache_host =
