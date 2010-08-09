@@ -314,7 +314,10 @@ const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 const char kEnableCloudPrint[]              = "enable-cloud-print";
 
 // Enables the cookie prompt.
-const char kEnableCookiePrompt[ ]           = "enable-cookie-prompt";
+const char kEnableCookiePrompt[]            = "enable-cookie-prompt";
+
+// Enables device motion events.
+const char kEnableDeviceMotion[]            = "enable-device-motion";
 
 // Enables device orientation events.
 const char kEnableDeviceOrientation[]       = "enable-device-orientation";

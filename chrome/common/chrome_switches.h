@@ -104,6 +104,7 @@ extern const char kEnableClickToPlay[];
 extern const char kEnableCloudPrintProxy[];
 extern const char kEnableCloudPrint[];
 extern const char kEnableCookiePrompt[];
+extern const char kEnableDeviceMotion[];
 extern const char kEnableDeviceOrientation[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExperimentalWebGL[];

@@ -911,6 +911,9 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableTouch(
       command_line.HasSwitch(switches::kEnableTouch));
 
+  WebRuntimeFeatures::enableDeviceMotion(
+      command_line.HasSwitch(switches::kEnableDeviceMotion));
+
   WebRuntimeFeatures::enableDeviceOrientation(
       command_line.HasSwitch(switches::kEnableDeviceOrientation));
 
