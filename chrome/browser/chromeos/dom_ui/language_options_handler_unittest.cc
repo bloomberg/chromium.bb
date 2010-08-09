@@ -8,6 +8,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,29 +17,22 @@ namespace chromeos {
 static InputMethodDescriptors CreateInputMethodDescriptors() {
   InputMethodDescriptors descriptors;
   descriptors.push_back(
-      InputMethodDescriptor("xkb:us::eng",
-                            "English (USA) keyboard layout",
-                            "us",
-                            "en-US"));
+      InputMethodDescriptor("xkb:us::eng", "USA", "us", "eng"));
   descriptors.push_back(
-      InputMethodDescriptor("xkb:fr::fra",
-                            "French keyboard layout",
-                            "fr",
-                            "fr"));
+      InputMethodDescriptor("xkb:fr::fra", "France", "fr", "fra"));
   descriptors.push_back(
-      InputMethodDescriptor("xkb:be::fra",
-                            "Belgian keyboard layout",
-                            "be",
-                            "fr"));
+      InputMethodDescriptor("xkb:be::fra", "Belgium", "be", "fr"));
   descriptors.push_back(
-      InputMethodDescriptor("mozc",
-                            "Japanese input method (for US keyboard)",
-                            "us",
-                            "ja"));
+      InputMethodDescriptor("mozc", "Mozc (US keyboard layout)", "us", "ja"));
   return descriptors;
 }
 
 TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
+  // Use the stub libcros. The change is global (i.e. affects other unti
+  // tests), but it should be ok. Unit tests should not require the real
+  // libcros.
+  CrosLibrary::Get()->GetTestApi()->SetUseStubImpl();
+
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
   scoped_ptr<ListValue> list(
       LanguageOptionsHandler::GetInputMethodList(descriptors));
@@ -46,26 +40,42 @@ TEST(LanguageOptionsHandlerTest, GetInputMethodList) {
 
   DictionaryValue* entry = NULL;
   std::string input_method_id;
+  std::string display_name;
+  std::string language_code;
 
   // As shown below, the list should be input method ids should appear in
-  // the same order of the descriptors. Note that we cannot test
-  // displayName and languageCode here, as these need data coming from
-  // libcros. TODO(satorux): make it testable.
+  // the same order of the descriptors.
   ASSERT_TRUE(list->GetDictionary(0, &entry));
   ASSERT_TRUE(entry->GetString("id", &input_method_id));
+  ASSERT_TRUE(entry->GetString("displayName", &display_name));
+  ASSERT_TRUE(entry->GetString("languageCode", &language_code));
   EXPECT_EQ("xkb:us::eng", input_method_id);
+  EXPECT_EQ("English (USA) keyboard layout", display_name);
+  EXPECT_EQ("en-US", language_code);
 
   ASSERT_TRUE(list->GetDictionary(1, &entry));
   ASSERT_TRUE(entry->GetString("id", &input_method_id));
+  ASSERT_TRUE(entry->GetString("displayName", &display_name));
+  ASSERT_TRUE(entry->GetString("languageCode", &language_code));
   EXPECT_EQ("xkb:fr::fra", input_method_id);
+  EXPECT_EQ("French keyboard layout", display_name);
+  EXPECT_EQ("fr", language_code);
 
   ASSERT_TRUE(list->GetDictionary(2, &entry));
   ASSERT_TRUE(entry->GetString("id", &input_method_id));
+  ASSERT_TRUE(entry->GetString("displayName", &display_name));
+  ASSERT_TRUE(entry->GetString("languageCode", &language_code));
   EXPECT_EQ("xkb:be::fra", input_method_id);
+  EXPECT_EQ("Belgian keyboard layout", display_name);
+  EXPECT_EQ("fr", language_code);
 
   ASSERT_TRUE(list->GetDictionary(3, &entry));
   ASSERT_TRUE(entry->GetString("id", &input_method_id));
+  ASSERT_TRUE(entry->GetString("displayName", &display_name));
+  ASSERT_TRUE(entry->GetString("languageCode", &language_code));
   EXPECT_EQ("mozc", input_method_id);
+  EXPECT_EQ("Japanese input method (for US keyboard)", display_name);
+  EXPECT_EQ("ja", language_code);
 }
 
 TEST(LanguageOptionsHandlerTest, GetLanguageList) {
