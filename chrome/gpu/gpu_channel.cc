@@ -17,6 +17,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_thread.h"
+#include "chrome/gpu/gpu_video_service.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
@@ -88,6 +89,12 @@ void GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
         OnDestroyCommandBuffer)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_GetVideoService,
+        OnGetVideoService)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateVideoDecoder,
+        OnCreateVideoDecoder)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyVideoDecoder,
+        OnDestroyVideoDecoder)
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -178,6 +185,50 @@ void GpuChannel::OnDestroyCommandBuffer(int32 route_id) {
 #endif
 }
 
+void GpuChannel::OnGetVideoService(GpuVideoServiceInfoParam* info) {
+  info->service_available_ = 0;
+#if defined(ENABLE_GPU)
+#if defined(OS_WIN)
+  // TODO(jiesun): Not every windows platforms will support our media
+  // foundation implementation. Add more check here.
+  LOG(INFO) << "GpuChannel::OnGetVideoService";
+  GpuVideoService* service = GpuVideoService::get();
+  if (service == NULL)
+    return;
+
+  info->video_service_host_route_id_ = GenerateRouteID();
+  info->video_service_route_id_ = GenerateRouteID();
+  // TODO(jiesun): we could had multiple entries in this routing table.
+  router_.AddRoute(info->video_service_route_id_, service);
+  info->service_available_ = 1;
+#endif
+#endif
+}
+
+void GpuChannel::OnCreateVideoDecoder(GpuVideoDecoderInfoParam* info) {
+#if defined(ENABLE_GPU)
+  LOG(INFO) << "GpuChannel::OnCreateVideoDecoder";
+  info->decoder_id_ = -1;
+  GpuVideoService* service = GpuVideoService::get();
+  if (service == NULL)
+    return;
+
+  info->decoder_host_route_id_ = GenerateRouteID();
+  info->decoder_route_id_ = GenerateRouteID();
+  service->CreateVideoDecoder(this, &router_, info);
+#endif
+}
+
+void GpuChannel::OnDestroyVideoDecoder(int32 decoder_id) {
+#if defined(ENABLE_GPU)
+  LOG(ERROR) << "GpuChannel::OnDestroyVideoDecoder";
+  GpuVideoService* service = GpuVideoService::get();
+  if (service == NULL)
+    return;
+  service->DestroyVideoDecoder(&router_, decoder_id);
+#endif
+}
+
 bool GpuChannel::Init() {
   // Check whether we're already initialized.
   if (channel_.get())
@@ -198,6 +249,7 @@ bool GpuChannel::Init() {
       channel_name, IPC::Channel::MODE_SERVER, this, NULL,
       ChildProcess::current()->io_message_loop(), false,
       ChildProcess::current()->GetShutDownEvent()));
+
   return true;
 }
 

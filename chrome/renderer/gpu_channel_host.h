@@ -61,7 +61,6 @@ class GpuChannelHost : public IPC::Channel::Listener,
                                                    const gfx::Size& size,
                                                    uint32 parent_texture_id);
 
-
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxy* command_buffer);
 

@@ -580,6 +580,8 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kPrelaunchGpuProcess,
     switches::kEnableContentPrefetch,
     switches::kDisableContentPrefetch,
+    switches::kEnableAcceleratedCompositing,
+    switches::kEnableAcceleratedDecoding,
   };
   renderer_cmd->CopySwitchesFrom(browser_cmd, kSwitchNames,
                                  arraysize(kSwitchNames));

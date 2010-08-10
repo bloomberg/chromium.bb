@@ -58,6 +58,8 @@ enum IPCMessageStart {
   GpuMsgStart,
   GpuHostMsgStart,
   GpuChannelMsgStart,
+  GpuVideoDecoderHostMsgStart,
+  GpuVideoDecoderMsgStart,
   ServiceMsgStart,
   ServiceHostMsgStart,
   // NOTE: When you add a new message class, also update

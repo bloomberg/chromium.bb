@@ -4,6 +4,7 @@ include_rules = [
   "+grit",  # For generated headers
   "+media/audio",
   "+media/base",
+  "+media/ffmpeg",
   "+media/filters",
   "+sandbox/src",
   "+skia/include",

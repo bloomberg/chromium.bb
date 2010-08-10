@@ -50,6 +50,7 @@
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/gpu_channel_host.h"
+#include "chrome/renderer/gpu_video_service_host.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
@@ -286,6 +287,8 @@ void RenderThread::Init() {
                                         &RenderThread::EstablishGpuChannel),
                                     kPrelauchGpuProcessDelayMS);
   }
+
+  GpuVideoServiceHost::get()->OnRendererThreadInit(MessageLoop::current());
 }
 
 RenderThread::~RenderThread() {
