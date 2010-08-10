@@ -3038,6 +3038,26 @@
    ...
 }
 {
+   bug_44341
+   Memcheck:Cond
+   fun:memcpy
+   fun:fill_window
+   fun:deflate_slow
+   ...
+   fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
+   ...
+}
+{
+   bug_44341
+   Memcheck:Value4
+   fun:memcpy
+   fun:fill_window
+   fun:deflate_slow
+   ...
+   fun:_ZN3net18SSLClientSocketNSS14DoPayloadWriteEv
+   ...
+}
+{
    bug_44966
    Memcheck:Addr8
    fun:event_del
