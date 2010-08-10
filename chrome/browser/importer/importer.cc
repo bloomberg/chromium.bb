@@ -8,6 +8,7 @@
 #include "base/thread.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"

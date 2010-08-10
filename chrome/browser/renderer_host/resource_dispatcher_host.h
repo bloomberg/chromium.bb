@@ -19,9 +19,7 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/observer_list.h"
-#include "base/process.h"
 #include "base/timer.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/browser/renderer_host/resource_queue.h"

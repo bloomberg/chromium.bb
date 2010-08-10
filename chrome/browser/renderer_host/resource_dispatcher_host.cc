@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"

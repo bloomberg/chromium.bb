@@ -14,16 +14,13 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/browser/profile_import_process_host.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"
-#include "googleurl/src/gurl.h"
 
 using importer::ImportItem;
 using importer::ProfileInfo;
@@ -31,6 +28,7 @@ using importer::ProfileInfo;
 class ExternalProcessImporterClient;
 class ImporterBridge;
 class InProcessImporterBridge;
+class GURL;
 class Profile;
 class Task;
 class TemplateURL;
