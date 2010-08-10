@@ -49,6 +49,34 @@ class KeyboardLibraryImpl : public KeyboardLibrary {
     return false;
   }
 
+  bool GetAutoRepeatEnabled(bool* enabled) const {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::GetAutoRepeatEnabled(enabled);
+    }
+    return false;
+  }
+
+  bool SetAutoRepeatEnabled(bool enabled) {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::SetAutoRepeatEnabled(enabled);
+    }
+    return false;
+  }
+
+  bool GetAutoRepeatRate(AutoRepeatRate* out_rate) const {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::GetAutoRepeatRate(out_rate);
+    }
+    return false;
+  }
+
+  bool SetAutoRepeatRate(const AutoRepeatRate& rate) {
+    if (CrosLibrary::Get()->EnsureLoaded()) {
+      return chromeos::SetAutoRepeatRate(rate);
+    }
+    return false;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardLibraryImpl);
 };
@@ -75,6 +103,22 @@ class KeyboardLibraryStubImpl : public KeyboardLibrary {
   }
 
   bool SetKeyboardLayoutPerWindow(bool is_per_window) {
+    return false;
+  }
+
+  bool GetAutoRepeatEnabled(bool* enabled) const {
+    return false;
+  }
+
+  bool SetAutoRepeatEnabled(bool enabled) {
+    return false;
+  }
+
+  bool GetAutoRepeatRate(AutoRepeatRate* out_rate) const {
+    return false;
+  }
+
+  bool SetAutoRepeatRate(const AutoRepeatRate& rate) {
     return false;
   }
 
