@@ -3900,51 +3900,6 @@
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
 }
 {
-   bug_51261a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos11CrosLibrary10GetTestApiEv
-   fun:_ZN8chromeos23GoogleAuthenticatorTest5SetUpEv
-}
-{
-   bug_51261b
-   Memcheck:Cond
-   fun:_ZN8chromeos11CrosLibrary7TestApi16SetLibraryLoaderEPNS_13LibraryLoaderEb
-   fun:_ZN8chromeos23GoogleAuthenticatorTest5SetUpEv
-}
-{
-   bug_51263_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos11CrosLibrary12EnsureLoadedEv
-   ...
-   fun:_ZN8chromeos11Preferences4InitEP11PrefService
-   fun:_ZN11ProfileImplC1ERK8FilePath
-   fun:_ZN7Profile13CreateProfileERK8FilePath
-   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
-}
-{
-   bug_51263_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos11CrosLibrary12EnsureLoadedEv
-   fun:_ZN8chromeos20SynapticsLibraryImpl12SetParameterENS_18SynapticsParameterEi
-   fun:_ZN8chromeos20SynapticsLibraryImpl16SetBoolParameterENS_18SynapticsParameterEb
-   fun:_ZN8chromeos11Preferences17NotifyPrefChangedEPKSbIwSt11char_traitsIwESaIwEE
-   fun:_ZN8chromeos11Preferences4InitEP11PrefService
-   fun:_ZN11ProfileImplC1ERK8FilePath
-   fun:_ZN7Profile13CreateProfileERK8FilePath
-   fun:_ZN14ProfileManager10GetProfileERK8FilePathb
-}
-{
-   bug_51263_c
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos11CrosLibrary12EnsureLoadedEv
-   fun:_ZN8chromeos20NetworkStateNotifier13RetrieveStateEv
-   fun:_ZN8chromeos20NetworkStateNotifierC1Ev
-}
-{
    bug_51379
    Memcheck:Leak
    fun:malloc

@@ -22,6 +22,7 @@
 namespace chromeos {
 
 CrosLibrary::CrosLibrary() : library_loader_(NULL),
+                             own_library_loader_(false),
                              use_stub_impl_(false),
                              loaded_(false),
                              load_error_(false),
@@ -95,8 +96,10 @@ bool CrosLibrary::EnsureLoaded() {
     return true;
 
   if (!loaded_ && !load_error_) {
-    if (!library_loader_)
+    if (!library_loader_) {
       library_loader_ = new CrosLibraryLoader();
+      own_library_loader_ = true;
+    }
     loaded_ = library_loader_->Load(&load_error_string_);
     load_error_ = !loaded_;
   }
@@ -104,9 +107,9 @@ bool CrosLibrary::EnsureLoaded() {
 }
 
 CrosLibrary::TestApi* CrosLibrary::GetTestApi() {
-  if (!test_api_)
-    test_api_ = new TestApi(this);
-  return test_api_;
+  if (!test_api_.get())
+    test_api_.reset(new TestApi(this));
+  return test_api_.get();
 }
 
 void CrosLibrary::TestApi::SetUseStubImpl() {

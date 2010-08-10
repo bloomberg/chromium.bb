@@ -8,6 +8,7 @@
 
 #include <string>
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "base/singleton.h"
 namespace chromeos {
 
@@ -196,7 +197,7 @@ class CrosLibrary {
   bool load_error_;
   // Contains the error string from the last load attempt.
   std::string load_error_string_;
-  TestApi* test_api_;
+  scoped_ptr<TestApi> test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(CrosLibrary);
 };
