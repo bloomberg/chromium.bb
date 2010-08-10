@@ -4016,3 +4016,14 @@
    fun:_ZN7WebCore13TextRunWalker13nextScriptRunEv
    fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
 }
+{
+   bug_51683
+   Memcheck:Leak
+   fun:malloc
+   fun:sqlite3MemMalloc
+   fun:mallocWithAlarm
+   fun:sqlite3Malloc
+   ...
+   fun:yy_reduce
+}
+
