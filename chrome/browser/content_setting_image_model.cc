@@ -5,7 +5,11 @@
 #include "chrome/browser/content_setting_image_model.h"
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
+#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -17,8 +21,10 @@ class ContentSettingBlockedImageModel : public ContentSettingImageModel {
   virtual void UpdateFromTabContents(const TabContents* tab_contents);
 
  private:
+  static const int kAccessedIconIDs[];
   static const int kBlockedIconIDs[];
-  static const int kTooltipIDs[];
+  static const int kAccessedTooltipIDs[];
+  static const int kBlockedTooltipIDs[];
 };
 
 class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
@@ -43,14 +49,29 @@ const int ContentSettingBlockedImageModel::kBlockedIconIDs[] = {
     IDR_BLOCKED_POPUPS,
 };
 
-const int ContentSettingBlockedImageModel::kTooltipIDs[] = {
-  IDS_BLOCKED_COOKIES_TITLE,
-  IDS_BLOCKED_IMAGES_TITLE,
-  IDS_BLOCKED_JAVASCRIPT_TITLE,
-  IDS_BLOCKED_PLUGINS_TITLE,
-  IDS_BLOCKED_POPUPS_TOOLTIP,
+const int ContentSettingBlockedImageModel::kAccessedIconIDs[] = {
+    IDR_ACCESSED_COOKIES,
+    0,
+    0,
+    0,
+    0,
 };
 
+const int ContentSettingBlockedImageModel::kBlockedTooltipIDs[] = {
+    IDS_BLOCKED_COOKIES_TITLE,
+    IDS_BLOCKED_IMAGES_TITLE,
+    IDS_BLOCKED_JAVASCRIPT_TITLE,
+    IDS_BLOCKED_PLUGINS_TITLE,
+    IDS_BLOCKED_POPUPS_TOOLTIP,
+};
+
+const int ContentSettingBlockedImageModel::kAccessedTooltipIDs[] = {
+    IDS_ACCESSED_COOKIES_TITLE,
+    0,
+    0,
+    0,
+    0,
+};
 
 ContentSettingBlockedImageModel::ContentSettingBlockedImageModel(
     ContentSettingsType content_settings_type)
@@ -61,14 +82,33 @@ void ContentSettingBlockedImageModel::UpdateFromTabContents(
     const TabContents* tab_contents) {
   TabSpecificContentSettings* content_settings = tab_contents ?
       tab_contents->GetTabSpecificContentSettings() : NULL;
-  if (!content_settings ||
-      !content_settings->IsContentBlocked(get_content_settings_type())) {
+  const int* icon_ids;
+  const int* tooltip_ids;
+
+  if (!content_settings) {
     set_visible(false);
     return;
   }
-  set_icon(kBlockedIconIDs[get_content_settings_type()]);
+  if (content_settings->IsContentBlocked(get_content_settings_type())) {
+    icon_ids = kBlockedIconIDs;
+    tooltip_ids = kBlockedTooltipIDs;
+  } else if (!CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kEnableCookiePrompt) &&
+             tab_contents->profile()->GetHostContentSettingsMap()->
+                 GetDefaultContentSetting(get_content_settings_type()) ==
+                 CONTENT_SETTING_BLOCK &&
+             content_settings->IsContentAccessed(get_content_settings_type())) {
+    // If a content type is blocked by default and was accessed, display the
+    // accessed icon.
+    icon_ids = kAccessedIconIDs;
+    tooltip_ids = kAccessedTooltipIDs;
+  } else {
+    set_visible(false);
+    return;
+  }
+  set_icon(icon_ids[get_content_settings_type()]);
   set_tooltip(
-      l10n_util::GetStringUTF8(kTooltipIDs[get_content_settings_type()]));
+      l10n_util::GetStringUTF8(tooltip_ids[get_content_settings_type()]));
   set_visible(true);
 }
 

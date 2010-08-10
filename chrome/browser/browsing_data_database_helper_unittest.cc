@@ -93,3 +93,19 @@ TEST(CannedBrowsingDataDatabaseTest, Unique) {
   EXPECT_STREQ(origin_str, result[0].origin_identifier.c_str());
   EXPECT_STREQ(db, result[0].database_name.c_str());
 }
+
+TEST(CannedBrowsingDataDatabaseTest, Empty) {
+  TestingProfile profile;
+
+  const GURL origin("http://host1:1/");
+  const char db[] = "db1";
+
+  scoped_refptr<CannedBrowsingDataDatabaseHelper> helper =
+      new CannedBrowsingDataDatabaseHelper(&profile);
+
+  ASSERT_TRUE(helper->empty());
+  helper->AddDatabase(origin, db, "");
+  ASSERT_FALSE(helper->empty());
+  helper->Reset();
+  ASSERT_TRUE(helper->empty());
+}

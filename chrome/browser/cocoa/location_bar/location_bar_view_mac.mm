@@ -144,9 +144,10 @@ void LocationBarViewMac::FocusSearch() {
 }
 
 void LocationBarViewMac::UpdateContentSettingsIcons() {
-  RefreshContentSettingsDecorations();
-  [field_ updateCursorAndToolTipRects];
-  [field_ setNeedsDisplay:YES];
+  if (RefreshContentSettingsDecorations()) {
+    [field_ updateCursorAndToolTipRects];
+    [field_ setNeedsDisplay:YES];
+  }
 }
 
 void LocationBarViewMac::UpdatePageActions() {
@@ -429,13 +430,20 @@ void LocationBarViewMac::PostNotification(NSString* notification) {
                                         object:[NSValue valueWithPointer:this]];
 }
 
-void LocationBarViewMac::RefreshContentSettingsDecorations() {
+bool LocationBarViewMac::RefreshContentSettingsDecorations() {
   const bool input_in_progress = toolbar_model_->input_in_progress();
   const TabContents* tab_contents =
       input_in_progress ? NULL : browser_->GetSelectedTabContents();
+  bool icons_updated = false;
   for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
+    bool was_visible = content_setting_decorations_[i]->is_visible();
+    int old_icon = content_setting_decorations_[i]->get_icon();
     content_setting_decorations_[i]->UpdateFromTabContents(tab_contents);
+    if (was_visible != content_setting_decorations_[i]->is_visible() ||
+        old_icon != content_setting_decorations_[i]->get_icon())
+      icons_updated = true;
   }
+  return icons_updated;
 }
 
 void LocationBarViewMac::DeletePageActionDecorations() {
