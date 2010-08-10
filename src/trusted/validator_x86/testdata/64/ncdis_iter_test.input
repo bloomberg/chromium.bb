@@ -14,7 +14,7 @@
 #           Specifies a (even length) hexidecimal value defined the sequence
 #           of bytess that defines the instruction to translate.
 #
-#   -pc=XXXXXXXX
+#   --pc=XXXXXXXX
 #           Specifies the value of the program counter, when it is pointing
 #           to the instruction to be decoded. In not specified, the program
 #           counter is assumed to be zero.
@@ -30,23 +30,23 @@
 -i=020400                                #0000000000000000: 02 04 00                                     add %al, [%rax+%rax*1]
 -i=67020400                              #0000000000000000: 67 02 04 00                                  add %al, [%eax+%eax*1]
 -i=4883EC08                              #0000000000000000: 48 83 ec 08                                  sub %rsp, 0x8
--i=e883000000 -pc=4003d4                 #00000000004003d4: e8 83 00 00 00                               call 0x40045c
--pc=4003de -i=e87d050000                 #00000000004003de: e8 7d 05 00 00                               call 0x400960
+-i=e883000000 --pc=4003d4                #00000000004003d4: e8 83 00 00 00                               call 0x40045c
+--pc=4003de -i=e87d050000                #00000000004003de: e8 7d 05 00 00                               call 0x400960
 -i=c3                                    #0000000000000000: c3                                           ret
 -i=ff35ea0d2000                          #0000000000000000: ff 35 ea 0d 20 00                            push [%rip+0x200dea]
 -i=ff25ec0d2000                          #0000000000000000: ff 25 ec 0d 20 00                            jmp [%rip+0x200dec]
 -i=0F1F4000                              #0000000000000000: 0f 1f 40 00                                  nop
 -i=6800000000                            #0000000000000000: 68 00 00 00 00                               push 0x0
--pc=400403 -i=E9E0FFFFFF                 #0000000000400403: e9 e0 ff ff ff                               jmp 0x4003e8
+--pc=400403 -i=E9E0FFFFFF                #0000000000400403: e9 e0 ff ff ff                               jmp 0x4003e8
 -i=4989D1                                #0000000000000000: 49 89 d1                                     mov %r9, %rdx
 -i=5E                                    #0000000000000000: 5e                                           pop %rsi
 -i=49C7C0C0084000                        #0000000000000000: 49 c7 c0 c0 08 40 00                         mov %r8, 0x4008c0
 -i=F4                                    #0000000000000000: f4                                           hlt
 -i=488B05610D2000                        #0000000000000000: 48 8b 05 61 0d 20 00                         mov %rax, [%rip+0x200d61]
 -i=4885C0                                #0000000000000000: 48 85 c0                                     test %rax, %rax
--pc=40046a -i=7402                       #000000000040046a: 74 02                                        jz 0x40046e
+--pc=40046a -i=7402                      #000000000040046a: 74 02                                        jz 0x40046e
 -i=FFD0                                  #0000000000000000: ff d0                                        call %rax
--pc=40048d -i=EB24                       #000000000040048d: eb 24                                        jmp 0x4004b3
+--pc=40048d -i=EB24                      #000000000040048d: eb 24                                        jmp 0x4004b3
 -i=c9                                    #0000000000000000: c9                                           leave
 -i=66662E0F1F840000000000                #0000000000000000: 66 66 2e 0f 1f 84 00 00 00 00 00             nop
 -i=B800000000                            #0000000000000000: b8 00 00 00 00                               mov %eax, 0x0
@@ -264,7 +264,7 @@
 -i=660f3a150000                          #0000000000000000: 66 0f 3a 15 00 00                            pextrw [%rax], %xmm0, 0x0
 -i=0fec00                                #0000000000000000: 0f ec 00                                     paddsb %mmx0, [%rax]
 -i=0ff400                                #0000000000000000: 0f f4 00                                     pmuludq %mmx0, [%rax]
--i=40e000 -pc=1000                       #0000000000001000: 40 e0 00                                     loopne 0x1003
+-i=40e000 --pc=1000                      #0000000000001000: 40 e0 00                                     loopne 0x1003
 -i=40e300                                #0000000000000000: 40 e3 00                                     jrcxz 0x3
 -i=6740e300                              #0000000000000000: 67 40 e3 00                                  jecxz 0x4
 -i=41d9f0                                #0000000000000000: 41 d9 f0                                     f2xm1 %st0

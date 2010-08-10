@@ -13,7 +13,7 @@
 #           Specifies a (even length) hexidecimal value defined the sequence
 #           of bytess that defines the instruction to translate.
 #
-#   -pc=XXXXXXXX
+#   --pc=XXXXXXXX
 #           Specifies the value of the program counter, when it is pointing
 #           to the instruction to be decoded. In not specified, the program
 #           counter is assumed to be zero.
@@ -22,7 +22,7 @@
 
 -i=55                                                       # 0:	55                  	push %ebp
 -i=8d742600                                                 # 0:	8d 74 26 00         	lea %esi, 0x0[%esi]
--pc=80483f8 -i=e8fffeffff                                   # 80483f8:	e8 ff fe ff ff      	call 0x80482fc
+--pc=80483f8 -i=e8fffeffff                                  # 80483f8:	e8 ff fe ff ff      	call 0x80482fc
 
 # Check move immediates (b8-bf).
 -i=b888776655                                               # 0:	b8 88 77 66 55      	mov %eax, 0x55667788

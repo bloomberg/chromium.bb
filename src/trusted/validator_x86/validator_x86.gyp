@@ -450,7 +450,7 @@
       ],
       # we depend on ncvalidate build to generate the headers
       'dependencies': ['ncvalidate_gen' ],
-      'sources': [ 'ncdis_util.c' ],
+      'sources': [ 'ncdis_util.c', 'ncdis_segments.c' ],
       'cflags!': [
         '-Wextra',
         '-Wswitch-enum',

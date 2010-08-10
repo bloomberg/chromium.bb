@@ -71,8 +71,8 @@ def AddNcdisTests():
   stdout_path = os.path.join(testdata_dir, 'ncdis_test.input')
   options = ['--stdin=%s' % stdin_path,
              '--stdout_golden=%s' % stdout_path]
-  extras = ['-self_document',
-            '-commands=-']
+  extras = ['--self_document',
+            '--commands=-']
   TESTS.append([name, options, extras, 'small'])
 
   # Also add test using new iterator model
@@ -80,14 +80,14 @@ def AddNcdisTests():
   stdout_path = os.path.join(testdata_dir,'ncdis_iter_test.input')
   options = ['--stdin=%s' % stdin_path,
              '--stdout_golden=%s' % stdout_path]
-  extras = ['-use_iter'] + extras
+  extras = ['--use_iter'] + extras
   TESTS.append([name, options, extras, 'small'])
 
   # Same as above, but comparing internal representation against golden files.
   stdout_path = os.path.join(testdata_dir, 'ncdis_iter_test.internal')
   options = ['--stdin=%s' % stdin_path,
              '--stdout_golden=%s' % stdout_path]
-  TESTS.append([name, options, ['-use_iter', '-internal', '-commands=-'],
+  TESTS.append([name, options, ['--use_iter', '--internal', '--commands=-'],
                'small'])
 
   # Test that we can textually define a code segment using hex values.
@@ -97,7 +97,7 @@ def AddNcdisTests():
              '--stdout_golden=%s' % stdout_path]
   # TODO(gregoryd): disabling the test since it fails, reenable when we
   # can successfully run the script on the bots.
-  #TESTS.append([name, options, ['-use_iter', '-hex_text=-'], 'small'])
+  #TESTS.append([name, options, ['--use_iter', '--hex_text=-'], 'small'])
 
 def AddServiceRuntimeTests():
   # Service_runtime_tests itself is in the initialized TESTS

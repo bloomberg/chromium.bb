@@ -149,7 +149,7 @@ env.ComponentLibrary('ncvalidate_sfi',
                       'nc_jumps.c',
                       'ncval_driver.c'])
 
-env.ComponentLibrary('ncdis_util', ['ncdis_util.c'])
+env.ComponentLibrary('ncdis_util', ['ncdis_util.c', 'ncdis_segments.c'])
 
 #------------------------------------------------------------------
 # Generate the header files containing the modeled x86 instructions.
@@ -196,11 +196,11 @@ if env['TARGET_SUBARCH'] == '32':
 # ======================================================================
 ncdis = env.ComponentProgram('ncdis',
                              ['ncdis.c'],
-                             EXTRA_LIBS=['utils',
+                             EXTRA_LIBS=['ncdis_util',
+                                         'utils',
                                          'ncvalidate',
                                          'ncopcode_utils',
-                                         'nchelper',
-                                         'ncdis_util'])
+                                         'nchelper'])
 
 env.Requires(ncdis, crt)
 
@@ -293,7 +293,7 @@ ncdis_input_golden = env.File(TESTDATA_DIR + 'ncdis_test.input')
 
 ncdis_test = env.CommandTest(
     NCDIS_TEST_NAME + '.out',
-    [ncdis[0] , '-self_document', '-commands=-'],
+    [ncdis[0] , '--use_iter=false', '--self_document', '--commands=-'],
     stdin=ncdis_input_golden,
     stdout_golden=ncdis_input_golden)
 
@@ -308,7 +308,7 @@ ncdis_iter_input_golden = env.File(TESTDATA_DIR + 'ncdis_iter_test.input')
 
 ncdis_iter_test = env.CommandTest(
     NCDIS_ITER_TEST_NAME + '.out',
-    [ncdis[0] , '-use_iter', '-self_document', '-commands=-'],
+    [ncdis[0] , '--use_iter', '--self_document', '--commands=-'],
     stdin=ncdis_iter_input_golden,
     stdout_golden=ncdis_iter_input_golden)
 
@@ -320,7 +320,7 @@ ncdis_iter_internal_golden = env.File(TESTDATA_DIR + 'ncdis_iter_test.internal')
 
 ncdis_internal_test = env.CommandTest(
     NCDIS_ITER_TEST_NAME + "_int.out",
-    [ncdis[0], "-use_iter", "-internal", "-commands=-"],
+    [ncdis[0], "--use_iter", "--internal", "--commands=-"],
     stdin=ncdis_iter_input_golden,
     stdout_golden=ncdis_iter_internal_golden)
 
@@ -332,7 +332,8 @@ env.AddNodeToTestSuite(ncdis_internal_test,
 # Segment register validator.
 ncval = env.ComponentProgram('ncval',
                              ['ncval.c'],
-                             EXTRA_LIBS=['ncvalidate_sfi',
+                             EXTRA_LIBS=['ncdis_util',
+                                         'ncvalidate_sfi',
                                          'ncvalidate',
                                          'ncopcode_utils',
                                          'nchelper',
@@ -366,9 +367,11 @@ def __AddNcDisTests(use_iter):
     ext = "dis"
   else:
     ext = "ndis"
-  options = ['-hex_text=-']
+  options = ['--hex_text=-']
   if use_iter:
-    options.append('-use_iter');
+    options.append('--use_iter');
+  else:
+    options.append('--use_iter=false');
   for base in __GoldenBases(ext):
     node_dis = env.CommandTest(
         __OutTestFile(test, base, ext),

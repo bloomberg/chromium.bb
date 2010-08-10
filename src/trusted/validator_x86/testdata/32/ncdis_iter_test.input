@@ -13,7 +13,7 @@
 #           Specifies a (even length) hexidecimal value defined the sequence
 #           of bytess that defines the instruction to translate.
 #
-#   -pc=XXXXXXXX
+#   --pc=XXXXXXXX
 #           Specifies the value of the program counter, when it is pointing
 #           to the instruction to be decoded. In not specified, the program
 #           counter is assumed to be zero.
