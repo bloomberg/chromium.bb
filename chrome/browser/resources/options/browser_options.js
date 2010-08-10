@@ -48,6 +48,14 @@ cr.define('options', function() {
         chrome.send('becomeDefaultBrowser');
       };
 
+      // Initialize control enabled states.
+      Preferences.getInstance().addEventListener('session.restore_on_startup',
+          cr.bind(this.updateCustomStartupPageControlStates_, this));
+      Preferences.getInstance().addEventListener('homepage_is_newtabpage',
+          cr.bind(this.updateHomepageFieldState_, this));
+      this.updateCustomStartupPageControlStates_();
+      this.updateHomepageFieldState_();
+
       // Remove Windows-style accelerators from button labels.
       // TODO(stuartmorgan): Remove this once the strings are updated.
       $('startupAddButton').textContent =
@@ -58,8 +66,9 @@ cr.define('options', function() {
 
     /**
      * Update the Default Browsers section based on the current state.
-     * @param {String} statusString Description of the current default state.
-     * @param {Boolean} isDefault Whether or not the browser is currently
+     * @private
+     * @param {string} statusString Description of the current default state.
+     * @param {boolean} isDefault Whether or not the browser is currently
      *     default.
      */
     updateDefaultBrowserState_: function(statusString, isDefault) {
@@ -112,7 +121,19 @@ cr.define('options', function() {
     },
 
     /**
+     * Returns true if the custom startup page control block should
+     * be enabled.
+     * @private
+     * @returns {boolean} Whether the startup page controls should be
+     *     enabled.
+     */
+    shouldEnableCustomStartupPageControls_: function(pages) {
+      return $('startupShowPagesButton').checked;
+    },
+
+    /**
      * Updates the startup pages list with the given entries.
+     * @private
      * @param {Array} pages List of startup pages.
      */
     updateStartupPages_: function(pages) {
@@ -131,16 +152,32 @@ cr.define('options', function() {
     },
 
     /**
+     * Sets the enabled state of the custom startup page list controls
+     * based on the current startup radio button selection.
+     * @private
+     */
+    updateCustomStartupPageControlStates_: function() {
+      var disable = !this.shouldEnableCustomStartupPageControls_();
+      $('startupPages').disabled = disable;
+      $('startupAddButton').disabled = disable;
+      $('startupUseCurrentButton').disabled = disable;
+      this.updateRemoveButtonState_();
+    },
+
+    /**
      * Sets the enabled state of the startup page Remove button based on
      * the current selection in the startup pages list.
+     * @private
      */
     updateRemoveButtonState_: function() {
-      $('startupRemoveButton').disabled =
+      var groupEnabled = this.shouldEnableCustomStartupPageControls_();
+      $('startupRemoveButton').disabled = !groupEnabled ||
           ($('startupPages').selectedIndex == -1);
     },
 
     /**
      * Removes the selected startup pages.
+     * @private
      */
     removeSelectedStartupPages_: function() {
       var pageSelect = $('startupPages');
@@ -160,6 +197,15 @@ cr.define('options', function() {
     addStartupPage_: function(url) {
       var firstSelection = $('startupPages').selectedIndex;
       chrome.send('addStartupPage', [url, String(firstSelection)]);
+    },
+
+    /**
+     * Sets the enabled state of the homepage field based on the current
+     * homepage radio button selection.
+     * @private
+     */
+    updateHomepageFieldState_: function() {
+      $('homepageURL').disabled = !$('homepageUseURLButton').checked;
     },
 
     /**
