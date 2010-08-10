@@ -2200,7 +2200,7 @@ void TabContents::DocumentLoadedInFrame() {
   controller_.DocumentLoadedInFrame();
 }
 
-void TabContents::OnContentSettingsAccessed(bool content_was_blocked) {
+void TabContents::OnContentSettingsChange() {
   if (delegate_)
     delegate_->OnContentSettingsChange(this);
 }
