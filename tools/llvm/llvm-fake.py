@@ -79,6 +79,12 @@ global_pnacl_roots = {
   'x86-64' : PNACL_X8664_ROOT
 }
 
+global_pnacl_triples = {
+  'arm' : 'armv7a-none-linux-gnueabi',
+  'x86-32' : 'i686-none-linux-gnu',
+  'x86-64' : 'x86_64-none-linux-gnu'
+}
+
 PNACL_BITCODE_ROOT = BASE + '/../linux_arm-untrusted/libs-bitcode'
 
 ######################################################################
@@ -148,7 +154,6 @@ global_config_flags = {
       '-mcpu=cortex-a8',
       '-mattr=-neon',
       '-mattr=+vfp3',
-      '-mtriple=armv7a-*-*eabi*',
       '-arm-reserve-r9',
       # The following options might come in hand and are left
       # here as comments:
@@ -281,7 +286,8 @@ def SfiCompile(argv, arch, assembler, as_flags):
       global_config_flags['OPT'] +
       [filename + '.bc', '-f', '-o', filename + '.opt.bc'])
 
-  llc = [LLC] + global_config_flags['LLC'][arch]
+  triple=global_pnacl_triples[arch]
+  llc = [LLC] + global_config_flags['LLC'][arch] + ['-mtriple=%s' % triple]
   llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
 
@@ -505,13 +511,12 @@ def GoldBCArgv(argv):
 
   # TODO(espindola): We should use also-emit-llvm for sanity checking that
   # we have included all that we need in the link.
-
   # add the -plugin and -plugin-opt options
-  return argv + ['-plugin=%s' % GOLD_PLUGIN,
-                 '-plugin-opt=emit-llvm']
+  ret = argv + ['-plugin=%s' % GOLD_PLUGIN,
+                '-plugin-opt=emit-llvm']
+  return ret
 
-
-def GenerateCombinedBitcodeFile(argv, root, ld_flags):
+def GenerateCombinedBitcodeFile(argv, arch):
   """Run gold to produce a single bitcode file
   Returns:
   name of resulting bitcode file without .bc extension.
@@ -522,6 +527,8 @@ def GenerateCombinedBitcodeFile(argv, root, ld_flags):
   last_bitcode_pos = None
   output = None
   last = None
+  ld_flags = global_config_flags['LD'][arch]
+  root = global_pnacl_roots[arch]
 
   for a in argv[1:]:
     if last:
@@ -581,42 +588,42 @@ def GenerateCombinedBitcodeFile(argv, root, ld_flags):
   return output, args_native_ld
 
 
-def BitcodeToNative(argv, llc, llc_flags, ascom, as_flags, ld, ld_flags, root):
+def BitcodeToNative(argv, arch):
   """The ld step for bitcode is quite elaborate:
      1) Run llc to convert to .s
      2) Run as to convert to .o
      3) Run ld
   """
-  output, args_native_ld = GenerateCombinedBitcodeFile(argv, root, ld_flags)
+
+  llc_flags = global_config_flags['LLC'][arch]
+  ascom = global_assemblers[arch]
+  as_flags = global_config_flags['AS'][arch]
+  root = global_pnacl_roots[arch]
+  ld_flags = global_config_flags['LD'][arch]
+
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv, arch)
 
   bitcode_combined = output + ".bc"
   asm_combined = output + ".bc.s"
   obj_combined = output + ".bc.o"
 
-  if not os.path.isfile(llc):
-    LogFatal('You must create a symlink "%s" to your llc executable' % llc)
+  if not os.path.isfile(LLC):
+    LogFatal('You must create a symlink "%s" to your llc executable' % LLC)
 
-  Run([llc] + llc_flags + ['-f', bitcode_combined, '-o', asm_combined])
+  Run([LLC] + llc_flags + ['-f', bitcode_combined, '-o', asm_combined])
 
   Run([ascom] + as_flags + [asm_combined, '-o', obj_combined])
 
   args_native_ld = MassageFinalLinkCommandPnacl([obj_combined] + args_native_ld,
                                                 root,
                                                 ld_flags)
-  Run([ld] +  args_native_ld)
+  Run([ELF_LD] +  args_native_ld)
   return output
 
 
 def Incarnation_bcld_generic(argv):
   arch, argv = ExtractArch(argv)
-  output = BitcodeToNative(argv,
-                           LLC,
-                           global_config_flags['LLC'][arch],
-                           global_assemblers[arch],
-                           global_config_flags['AS'][arch],
-                           ELF_LD,
-                           global_config_flags['LD'][arch],
-                           global_pnacl_roots[arch])
+  output = BitcodeToNative(argv, arch)
 
 ######################################################################
 # Dispatch based on name the scripts is invoked with
