@@ -101,11 +101,19 @@ void PepperPluginRegistry::GetPluginInfoFromSwitch(
 // static
 void PepperPluginRegistry::GetExtraPlugins(
     std::vector<PepperPluginInfo>* plugins) {
+  // Once we're sandboxed, we can't know if the PDF plugin is
+  // available or not; but (on Linux) this function is always called
+  // once before we're sandboxed.  So the first time through test if
+  // the file is available and then skip the check on subsequent calls
+  // if not.
+  static bool skip_pdf_plugin = false;
   FilePath path;
-  // We can't check for path existance here, since we are in the sandbox.
-  // If plugin is missing, it will later fail to
-  // load the library and the missing plugin message will be displayed.
-  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path)) {
+  if (!skip_pdf_plugin && PathService::Get(chrome::FILE_PDF_PLUGIN, &path)) {
+    if (!file_util::PathExists(path)) {
+      skip_pdf_plugin = true;
+      return;
+    }
+
     PepperPluginInfo pdf;
     pdf.path = path;
     pdf.name = "Chrome PDF Viewer";
