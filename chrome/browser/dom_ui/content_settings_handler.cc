@@ -231,14 +231,12 @@ void ContentSettingsHandler::Initialize() {
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setBlockThirdPartyCookies", *bool_value.get());
 
-  UpdateImagesExceptionsViewFromModel();
+  UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(
       this, NotificationType::CONTENT_SETTINGS_CHANGED,
       Source<const HostContentSettingsMap>(settings_map));
 }
 
-// TODO(estade): generalize this function to work on all content settings types
-// rather than just images.
 void ContentSettingsHandler::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
@@ -248,21 +246,26 @@ void ContentSettingsHandler::Observe(NotificationType type,
   const ContentSettingsDetails* settings_details =
       static_cast<Details<const ContentSettingsDetails> >(details).ptr();
 
-  if (settings_details->type() == CONTENT_SETTINGS_TYPE_IMAGES ||
-      settings_details->update_all_types()) {
-    // TODO(estade): we pretend update_all() is always true.
-    UpdateImagesExceptionsViewFromModel();
+  // TODO(estade): we pretend update_all() is always true.
+  if (settings_details->update_all_types())
+    UpdateAllExceptionsViewsFromModel();
+  else
+    UpdateExceptionsViewFromModel(settings_details->type());
+}
+
+void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
+  for (int type = CONTENT_SETTINGS_TYPE_DEFAULT + 1;
+       type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
+    UpdateExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
   }
 }
 
-// TODO(estade): generalize this function to work on all content settings types
-// rather than just images.
-void ContentSettingsHandler::UpdateImagesExceptionsViewFromModel() {
+void ContentSettingsHandler::UpdateExceptionsViewFromModel(
+    ContentSettingsType type) {
   HostContentSettingsMap::SettingsForOneType entries;
   const HostContentSettingsMap* settings_map =
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
-  settings_map->GetSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_IMAGES, "", &entries);
+  settings_map->GetSettingsForOneType(type, "", &entries);
 
   ListValue exceptions;
   for (size_t i = 0; i < entries.size(); ++i) {
@@ -273,8 +276,9 @@ void ContentSettingsHandler::UpdateImagesExceptionsViewFromModel() {
     exceptions.Append(exception);
   }
 
+  StringValue type_string(ContentSettingsTypeToGroupName(type));
   dom_ui_->CallJavascriptFunction(
-      L"ContentSettings.setImagesExceptions", exceptions);
+      L"ContentSettings.setExceptions", type_string, exceptions);
 }
 
 void ContentSettingsHandler::RegisterMessages() {
@@ -284,10 +288,10 @@ void ContentSettingsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("setAllowThirdPartyCookies",
       NewCallback(this,
                   &ContentSettingsHandler::SetAllowThirdPartyCookies));
-  dom_ui_->RegisterMessageCallback("removeImageExceptions",
+  dom_ui_->RegisterMessageCallback("removeExceptions",
       NewCallback(this,
                   &ContentSettingsHandler::RemoveExceptions));
-  dom_ui_->RegisterMessageCallback("setImageException",
+  dom_ui_->RegisterMessageCallback("setException",
       NewCallback(this,
                   &ContentSettingsHandler::SetException));
   dom_ui_->RegisterMessageCallback("checkExceptionPatternValidity",
@@ -317,47 +321,52 @@ void ContentSettingsHandler::SetAllowThirdPartyCookies(const Value* value) {
       allow == L"true");
 }
 
-// TODO(estade): generalize this function to work on all content settings types
-// rather than just images.
 void ContentSettingsHandler::RemoveExceptions(const Value* value) {
   const ListValue* list_value = static_cast<const ListValue*>(value);
+  size_t arg_i = 0;
+  std::string type_string;
+  CHECK(list_value->GetString(arg_i++, &type_string));
 
   HostContentSettingsMap* settings_map =
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
-  for (size_t i = 0; i < list_value->GetSize(); ++i) {
+  while (arg_i < list_value->GetSize()) {
     std::string pattern;
-    bool rv = list_value->GetString(i, &pattern);
+    bool rv = list_value->GetString(arg_i++, &pattern);
     DCHECK(rv);
-    settings_map->SetContentSetting(HostContentSettingsMap::Pattern(pattern),
-                                    CONTENT_SETTINGS_TYPE_IMAGES,
-                                    "",
-                                    CONTENT_SETTING_DEFAULT);
+    settings_map->SetContentSetting(
+        HostContentSettingsMap::Pattern(pattern),
+        ContentSettingsTypeFromGroupName(type_string),
+        "",
+        CONTENT_SETTING_DEFAULT);
   }
 }
 
-// TODO(estade): generalize this function to work on all content settings types
-// rather than just images.
 void ContentSettingsHandler::SetException(const Value* value) {
   const ListValue* list_value = static_cast<const ListValue*>(value);
+  size_t arg_i = 0;
+  std::string type_string;
+  CHECK(list_value->GetString(arg_i++, &type_string));
   std::string pattern;
-  bool rv = list_value->GetString(0, &pattern);
-  DCHECK(rv);
+  CHECK(list_value->GetString(arg_i++, &pattern));
   std::string setting;
-  rv = list_value->GetString(1, &setting);
-  DCHECK(rv);
+  CHECK(list_value->GetString(arg_i++, &setting));
 
   HostContentSettingsMap* settings_map =
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
   settings_map->SetContentSetting(HostContentSettingsMap::Pattern(pattern),
-                                  CONTENT_SETTINGS_TYPE_IMAGES,
+                                  ContentSettingsTypeFromGroupName(type_string),
                                   "",
                                   ContentSettingFromString(setting));
 }
 
-// TODO(estade): generalize this function to work on all content settings types
-// rather than just images.
 void ContentSettingsHandler::CheckExceptionPatternValidity(const Value* value) {
-  std::string pattern_string = WideToUTF8(ExtractStringValue(value));
+  const ListValue* list_value = static_cast<const ListValue*>(value);
+  size_t arg_i = 0;
+  Value* type;
+  CHECK(list_value->Get(arg_i++, &type));
+  std::string pattern_string;
+  CHECK(list_value->GetString(arg_i++, &pattern_string));
+
   HostContentSettingsMap::Pattern pattern(pattern_string);
 
   scoped_ptr<Value> pattern_value(Value::CreateStringValue(
@@ -366,6 +375,7 @@ void ContentSettingsHandler::CheckExceptionPatternValidity(const Value* value) {
       pattern.IsValid()));
 
   dom_ui_->CallJavascriptFunction(
-      L"ContentSettings.patternValidityCheckComplete", *pattern_value.get(),
+      L"ContentSettings.patternValidityCheckComplete", *type,
+                                                       *pattern_value.get(),
                                                        *valid_value.get());
 }

@@ -104,13 +104,17 @@ class DOMUI {
   // the renderer.  This is asynchronous; there's no way to get the result
   // of the call, and should be thought of more like sending a message to
   // the page.
-  // There are two function variants for one-arg and two-arg calls.
+  // There are variants for calls with more arguments.
   void CallJavascriptFunction(const std::wstring& function_name);
   void CallJavascriptFunction(const std::wstring& function_name,
                               const Value& arg);
   void CallJavascriptFunction(const std::wstring& function_name,
                               const Value& arg1,
                               const Value& arg2);
+  void CallJavascriptFunction(const std::wstring& function_name,
+                              const Value& arg1,
+                              const Value& arg2,
+                              const Value& arg3);
 
   ThemeProvider* GetThemeProvider() const;
 

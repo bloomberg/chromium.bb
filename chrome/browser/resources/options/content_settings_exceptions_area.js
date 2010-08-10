@@ -78,11 +78,14 @@ cr.define('options.contentSettings', function() {
 
       this.updateEditables();
 
-      var self = this;
+      var listItem = this;
       // Handle events on the editable nodes.
       input.oninput = function(event) {
-        self.inputValidityKnown = false;
-        chrome.send('checkExceptionPatternValidity', [input.value]);
+        listItem.inputValidityKnown = false;
+        if (listItem.parentNode) {
+          chrome.send('checkExceptionPatternValidity',
+                      [listItem.parentNode.contentType, input.value]);
+        }
       };
 
       var eventsToStop =
@@ -94,7 +97,6 @@ cr.define('options.contentSettings', function() {
         }
       );
 
-      var listItem = this;
       // Handles enter and escape which trigger reset and commit respectively.
       function handleKeydown(e) {
         // Make sure that the tree does not handle the key.
@@ -256,10 +258,12 @@ cr.define('options.contentSettings', function() {
 
         this.removeAttribute('editing');
 
-        if (pattern != this.pattern)
-          chrome.send('removeImageExceptions', [pattern]);
+        var contentType = this.parentNode.contentType;
 
-        chrome.send('setImageException', [this.pattern, this.setting]);
+        if (pattern != this.pattern)
+          chrome.send('removeExceptions', [contentType, pattern]);
+
+        chrome.send('setException', [contentType, this.pattern, this.setting]);
       }
     }
   };
@@ -317,7 +321,7 @@ cr.define('options.contentSettings', function() {
      *     a content exception setting.
      */
     patternValidityCheckComplete: function(pattern, valid) {
-      for (var i = 0; i < this.dataModel.length; ++i) {
+      for (var i = 0; i < this.dataModel.length; i++) {
         var listItem = this.getListItemByIndex(i);
         if (listItem)
           listItem.maybeSetPatternValid(pattern, valid);
@@ -335,13 +339,15 @@ cr.define('options.contentSettings', function() {
      * Removes all selected rows from browser's model.
      */
     removeSelectedRows: function() {
-      var removePatterns = [];
+      // The first member is the content type; the rest of the values are
+      // the patterns we are removing.
+      var args = [this.contentType];
       var selectedItems = this.selectedItems;
-      for (var i = 0; i < selectedItems.length; ++i) {
-        removePatterns.push(selectedItems[i][0]);
+      for (var i = 0; i < selectedItems.length; i++) {
+        args.push(selectedItems[i][0]);
       }
 
-      chrome.send('removeImageExceptions', removePatterns);
+      chrome.send('removeExceptions', args);
     },
 
     /**
@@ -360,8 +366,13 @@ cr.define('options.contentSettings', function() {
     __proto__: HTMLDivElement.prototype,
 
     decorate: function() {
-      ExceptionsList.decorate($('imagesExceptionsList'));
-      imagesExceptionsList.selectionModel.addEventListener(
+      // TODO(estade): need some sort of visual indication when the list is
+      // empty.
+      this.exceptionsList = this.querySelector('list');
+      this.exceptionsList.contentType = this.contentType;
+
+      ExceptionsList.decorate(this.exceptionsList);
+      this.exceptionsList.selectionModel.addEventListener(
           'change', cr.bind(this.handleOnSelectionChange_, this));
 
       var addRow = cr.doc.createElement('button');
@@ -378,19 +389,31 @@ cr.define('options.contentSettings', function() {
       this.appendChild(removeRow);
       this.removeRow = removeRow;
 
+      var self = this;
       addRow.onclick = function(event) {
-        imagesExceptionsList.addException(['', '']);
+        self.exceptionsList.addException(['', '']);
       };
 
       editRow.onclick = function(event) {
-        imagesExceptionsList.editSelectedRow();
+        self.exceptionsList.editSelectedRow();
       };
 
       removeRow.onclick = function(event) {
-        imagesExceptionsList.removeSelectedRows();
+        self.exceptionsList.removeSelectedRows();
       };
 
       this.updateButtonSensitivity();
+    },
+
+    /**
+     * The content type for this exceptions area, such as 'images'.
+     * @type {string}
+     */
+    get contentType() {
+      return this.getAttribute('contentType');
+    },
+    set contentType(type) {
+      return this.setAttribute('contentType', type);
     },
 
     /**
@@ -398,7 +421,7 @@ cr.define('options.contentSettings', function() {
      * rows are selected.
      */
     updateButtonSensitivity: function() {
-      var selectionSize = imagesExceptionsList.selectedItems.length;
+      var selectionSize = this.exceptionsList.selectedItems.length;
       this.editRow.disabled = selectionSize != 1;
       this.removeRow.disabled = selectionSize == 0;
     },

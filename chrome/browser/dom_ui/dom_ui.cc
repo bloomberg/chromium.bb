@@ -17,6 +17,24 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
 
+namespace {
+
+std::wstring GetJavascript(const std::wstring& function_name,
+                           const std::vector<const Value*>& arg_list) {
+  std::wstring parameters;
+  std::string json;
+  for (size_t i = 0; i < arg_list.size(); ++i) {
+    if (i > 0)
+      parameters += L",";
+
+    base::JSONWriter::Write(arg_list[i], false, &json);
+    parameters += UTF8ToWide(json);
+  }
+  return function_name + L"(" + parameters + L");";
+}
+
+}  // namespace
+
 DOMUI::DOMUI(TabContents* contents)
     : hide_favicon_(false),
       force_bookmark_bar_visible_(false),
@@ -58,23 +76,28 @@ void DOMUI::CallJavascriptFunction(const std::wstring& function_name) {
 
 void DOMUI::CallJavascriptFunction(const std::wstring& function_name,
                                    const Value& arg) {
-  std::string json;
-  base::JSONWriter::Write(&arg, false, &json);
-  std::wstring javascript = function_name + L"(" + UTF8ToWide(json) + L");";
-
-  ExecuteJavascript(javascript);
+  std::vector<const Value*> args;
+  args.push_back(&arg);
+  ExecuteJavascript(GetJavascript(function_name, args));
 }
 
 void DOMUI::CallJavascriptFunction(
     const std::wstring& function_name,
     const Value& arg1, const Value& arg2) {
-  std::string json;
-  base::JSONWriter::Write(&arg1, false, &json);
-  std::wstring javascript = function_name + L"(" + UTF8ToWide(json);
-  base::JSONWriter::Write(&arg2, false, &json);
-  javascript += L"," + UTF8ToWide(json) + L");";
+  std::vector<const Value*> args;
+  args.push_back(&arg1);
+  args.push_back(&arg2);
+  ExecuteJavascript(GetJavascript(function_name, args));
+}
 
-  ExecuteJavascript(javascript);
+void DOMUI::CallJavascriptFunction(
+    const std::wstring& function_name,
+    const Value& arg1, const Value& arg2, const Value& arg3) {
+  std::vector<const Value*> args;
+  args.push_back(&arg1);
+  args.push_back(&arg2);
+  args.push_back(&arg3);
+  ExecuteJavascript(GetJavascript(function_name, args));
 }
 
 ThemeProvider* DOMUI::GetThemeProvider() const {

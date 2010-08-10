@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/dom_ui/options_ui.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -28,7 +29,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
                        const NotificationDetails& details);
 
  private:
-  void UpdateImagesExceptionsViewFromModel();
+  void UpdateAllExceptionsViewsFromModel();
+  void UpdateExceptionsViewFromModel(ContentSettingsType type);
   void SetContentFilter(const Value* value);
   void SetAllowThirdPartyCookies(const Value* value);
   void RemoveExceptions(const Value* value);

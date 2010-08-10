@@ -50,8 +50,10 @@ cr.define('options', function() {
         imagesExceptionsList.redraw();
       };
 
-      options.contentSettings.ExceptionsArea.decorate(
-          $('imagesExceptionsArea'));
+      var exceptionsAreas = document.querySelectorAll('div[contentType]');
+      for (var i = 0; i < exceptionsAreas.length; i++) {
+        options.contentSettings.ExceptionsArea.decorate(exceptionsAreas[i]);
+      }
     },
   };
 
@@ -68,14 +70,17 @@ cr.define('options', function() {
   };
 
   /**
-   * Initializes the image exceptions list.
+   * Initializes an exceptions list.
+   * @param {string} type The content type that we are setting exceptions for.
    * @param {Array} list An array of pairs, where the first element of each pair
    *     is the filter string, and the second is the setting (allow/block).
    */
-  ContentSettings.setImagesExceptions = function(list) {
-    imagesExceptionsList.clear();
-    for (var i = 0; i < list.length; ++i) {
-      imagesExceptionsList.addException(list[i]);
+  ContentSettings.setExceptions = function(type, list) {
+    var exceptionsList =
+        document.querySelector('div[contentType=' + type + '] list');
+    exceptionsList.clear();
+    for (var i = 0; i < list.length; i++) {
+      exceptionsList.addException(list[i]);
     }
   };
 
@@ -94,8 +99,11 @@ cr.define('options', function() {
    * @param {bool} valid Whether said pattern is valid in the context of
    *     a content exception setting.
    */
-  ContentSettings.patternValidityCheckComplete = function(pattern, valid) {
-    imagesExceptionsList.patternValidityCheckComplete(pattern, valid);
+  ContentSettings.patternValidityCheckComplete =
+      function(type, pattern, valid) {
+    var exceptionsList =
+        document.querySelector('div[contentType=' + type + '] list');
+    exceptionsList.patternValidityCheckComplete(pattern, valid);
   };
 
   // Export

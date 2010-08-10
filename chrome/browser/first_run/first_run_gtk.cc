@@ -22,7 +22,10 @@
 #include "chrome/installer/util/util_constants.h"
 #include "googleurl/src/gurl.h"
 
-bool OpenFirstRunDialog(Profile* profile, bool homepage_defined,
+// TODO(estade): pay attention to the args between |profile| and
+// |process_singleton|.
+bool OpenFirstRunDialog(Profile* profile,
+                        bool homepage_defined,
                         int import_items,
                         int dont_import_items,
                         bool search_engine_experiment,
