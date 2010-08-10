@@ -15,63 +15,12 @@
 
 namespace {
 
-// FocusWaiter is used to wait for focus on a NativeWindow. It is ViewsDelegate
-// to know when focus changes.
-class FocusWaiter : public ChromeViewsDelegate {
- public:
-  // Wait for focus to be received on the window. Returns true if successful.
-  static bool WaitForFocus(gfx::NativeWindow window) {
-    FocusWaiter waiter(window);
-    ui_test_utils::RunMessageLoop();
-    // FocusWaiter exits the message loop when done.
-    return waiter.quit_message_loop_;
-  }
-
- private:
-  FocusWaiter(gfx::NativeWindow window)
-      : window_(window),
-        last_delegate_(ViewsDelegate::views_delegate),
-        quit_message_loop_(false) {
-    ViewsDelegate::views_delegate = this;
-  }
-
-  ~FocusWaiter() {
-    DCHECK_EQ(this, ViewsDelegate::views_delegate);
-    ViewsDelegate::views_delegate = last_delegate_;
-  }
-
-  // Overidden from ChromeViewsDelegate.
-  virtual void NotifyAccessibilityEvent(views::View* view,
-                                        AccessibilityTypes::Event event_type) {
-    if (!quit_message_loop_ && view->GetWidget()->GetNativeView() == window_) {
-      quit_message_loop_ = true;
-      MessageLoop::current()->Quit();
-    }
-
-    // Notify the existing delegate so that it can maintain whatever state it
-    // needs to.
-    if (last_delegate_)
-      last_delegate_->NotifyAccessibilityEvent(view, event_type);
-  }
-
- private:
-  // Window we're waiting for focus on.
-  gfx::NativeWindow window_;
-
-  // ViewsDelegate at the time we were created.
-  ViewsDelegate* last_delegate_;
-
-  // Have we quit the message loop yet?
-  bool quit_message_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusWaiter);
-};
-
 class BrowserKeyboardAccessibility : public InProcessBrowserTest,
                                      public ChromeViewsDelegate {
  public:
   BrowserKeyboardAccessibility()
-      : current_view_(NULL),
+      : is_waiting_(false),
+        current_view_(NULL),
         current_event_type_(AccessibilityTypes::EVENT_FOCUS) {
     // Set ourselves as the currently active ViewsDelegate.
     ViewsDelegate::views_delegate = this;
@@ -83,13 +32,22 @@ class BrowserKeyboardAccessibility : public InProcessBrowserTest,
   // Save the last notification sent by views::View::NotifyAccessibilityEvent.
   virtual void NotifyAccessibilityEvent(
       views::View* view, AccessibilityTypes::Event event_type) {
-    current_view_ = view;
+    current_view_  = view;
     current_event_type_ = event_type;
+
+    // Are we within a message loop waiting for a particular event?
+    // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+    LOG(ERROR) << "Got notification; is_waiting_ is "
+               << (is_waiting_ ? "true" : "false");
+    if (is_waiting_) {
+      is_waiting_ = false;
+      MessageLoop::current()->Quit();
+    }
   }
 
   // Helper that performs tabbing until it cycles back to the original focus.
-  void TabCyclerForwardAndBack();
-  void TabCycler(bool forward_tab);
+  void TabCyclerForwardAndBack(gfx::NativeWindow hwnd);
+  void TabCycler(gfx::NativeWindow hwnd, bool forward_tab);
 
   views::View* current_view() const { return current_view_; }
 
@@ -101,7 +59,12 @@ class BrowserKeyboardAccessibility : public InProcessBrowserTest,
     return current_event_type_;
   }
 
+  void set_waiting(bool value) { is_waiting_ = value; }
+
  private:
+  // Are we waiting for an event?
+  bool is_waiting_;
+
   // View of interest (i.e. for testing or one we are waiting to gain focus).
   views::View* current_view_;
 
@@ -109,45 +72,49 @@ class BrowserKeyboardAccessibility : public InProcessBrowserTest,
   AccessibilityTypes::Event current_event_type_;
 };
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInAboutChromeDialog) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInAboutChromeDialog) {
   views::Window* about_chrome_window =
       BrowserView::GetBrowserViewForNativeWindow(
           browser()->window()->GetNativeHandle())->ShowAboutChromeDialog();
 
-  if (current_view_native_window() != about_chrome_window->GetNativeWindow()) {
-    // Wait for 'about' to get focus.
-    ASSERT_TRUE(
-        FocusWaiter::WaitForFocus(about_chrome_window->GetNativeWindow()));
-  }
-  TabCyclerForwardAndBack();
+  TabCyclerForwardAndBack(about_chrome_window->GetNativeWindow());
 }
 
+// This test is disabled, see bug 50864.
 IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
-                       TabInClearBrowsingDataDialog) {
+                       DISABLED_TabInClearBrowsingDataDialog) {
   browser()->OpenClearBrowsingDataDialog();
-  TabCyclerForwardAndBack();
+  TabCyclerForwardAndBack(current_view_native_window());
 }
 
+// This test is disabled, see bug 50864.
 IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
-                       TabInImportSettingsDialog) {
+                       DISABLED_TabInImportSettingsDialog) {
   browser()->OpenImportSettingsDialog();
-  TabCyclerForwardAndBack();
+  TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInKeywordEditor) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInKeywordEditor) {
   browser()->OpenKeywordEditor();
-  TabCyclerForwardAndBack();
+  TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInOptionsDialog) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInOptionsDialog) {
   browser()->OpenOptionsDialog();
 
   // Tab through each of the three tabs.
-  for (int i = 0; i < 3 && !HasFatalFailure(); ++i) {
+  for (int i = 0; i < 3; ++i) {
     // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
     LOG(ERROR) << "Iteration no. " << i;
 
-    TabCyclerForwardAndBack();
+    TabCyclerForwardAndBack(current_view_native_window());
+
 
     // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
     LOG(ERROR) << "Sending TAB key event...";
@@ -155,64 +122,76 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInOptionsDialog) {
                                             base::VKEY_TAB,
                                             true, false, false, false,
                                             new MessageLoop::QuitTask());
+    set_waiting(true);
     ui_test_utils::RunMessageLoop();
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInPasswordManager) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInPasswordManager) {
   browser()->OpenPasswordManager();
-  TabCyclerForwardAndBack();
+  TabCyclerForwardAndBack(current_view_native_window());
 }
 
 // TODO(dtseng): http://www.crbug.com/50402
 IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
                        FAILS_TabInSyncMyBookmarksDialog) {
   browser()->OpenSyncMyBookmarksDialog();
-  TabCyclerForwardAndBack();
+  TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInTaskManager) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInTaskManager) {
   browser()->OpenTaskManager();
-  TabCyclerForwardAndBack();
+  TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInToolbar) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInToolbar) {
   gfx::NativeWindow native_window = browser()->window()->GetNativeHandle();
   ui_controls::SendKeyPressNotifyWhenDone(native_window,
                                           base::VKEY_T,
                                           false, true, true, false,
                                           new MessageLoop::QuitTask());
+  set_waiting(true);
   ui_test_utils::RunMessageLoop();
-
-  // TODO: this needs to assert the toolbar got focus.
-
-  TabCyclerForwardAndBack();
+  TabCyclerForwardAndBack(current_view_native_window());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility, TabInUpdateChromeDialog) {
+// This test is disabled, see bug 50864.
+IN_PROC_BROWSER_TEST_F(BrowserKeyboardAccessibility,
+                       DISABLED_TabInUpdateChromeDialog) {
   browser()->OpenUpdateChromeDialog();
-  TabCyclerForwardAndBack();
+  TabCyclerForwardAndBack(current_view_native_window());
 }
 
-void BrowserKeyboardAccessibility::TabCyclerForwardAndBack() {
-  if (HasFatalFailure())
-    return;
-
-  TabCycler(true);
-
-  if (HasFatalFailure())
-    return;
-
-  TabCycler(false);
+void BrowserKeyboardAccessibility::TabCyclerForwardAndBack(
+    gfx::NativeWindow hwnd) {
+  TabCycler(hwnd, true);
+  TabCycler(hwnd, false);
 }
 
-void BrowserKeyboardAccessibility::TabCycler(bool forward_tab) {
-  gfx::NativeWindow hwnd = current_view_native_window();
-  ASSERT_TRUE(hwnd);
+void BrowserKeyboardAccessibility::TabCycler(gfx::NativeWindow hwnd,
+                                             bool forward_tab) {
+  // Wait for a focus event on the provided native window.
+  while (current_event() != AccessibilityTypes::EVENT_FOCUS ||
+         current_view_native_window() != hwnd) {
+    // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+    LOG(ERROR) << "Runnig message loop...";
+    set_waiting(true);
+    ui_test_utils::RunMessageLoop();
+  }
+  // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
+  LOG(ERROR) << "After the loop.";
 
   views::View* first_focused_item = current_view();
 
   ASSERT_TRUE(first_focused_item != NULL);
+
+  views::View* next_focused_item = first_focused_item;
 
   // Keep tabbing until we reach the originally focused view.
   do {
@@ -220,11 +199,10 @@ void BrowserKeyboardAccessibility::TabCycler(bool forward_tab) {
     LOG(ERROR) << "Sending TAB key event.";
     ui_controls::SendKeyPressNotifyWhenDone(hwnd, base::VKEY_TAB,
         false, !forward_tab, false, false, new MessageLoop::QuitTask());
-
-    current_view_ = NULL;
-
+    set_waiting(true);
     ui_test_utils::RunMessageLoop();
-  } while (first_focused_item != current_view() && !HasFatalFailure());
+    next_focused_item = current_view();
+  } while (first_focused_item != next_focused_item);
   // TODO(phajdan.jr): remove logging after fixing http://crbug.com/50663.
   LOG(ERROR) << "After second loop.";
 }
