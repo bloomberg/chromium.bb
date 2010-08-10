@@ -4026,4 +4026,12 @@
    ...
    fun:yy_reduce
 }
-
+{
+   bug_51679
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN23ExtensionMessageService16AddEventListenerERKSsi
+   fun:_ZN24BrowserRenderProcessHost22OnExtensionAddListenerERKSs
+   fun:_Z16DispatchToMethodI24BrowserRenderProcessHostMS0_FvRKSsESsEvPT_T0_RK6Tuple1IT1_E
+}
