@@ -172,8 +172,6 @@
       'sources': [
         'host/capturer.cc',
         'host/capturer.h',
-        'host/capturer_fake.cc',
-        'host/capturer_fake.h',
         'host/chromoting_host.cc',
         'host/chromoting_host.h',
         'host/chromoting_host_context.cc',
@@ -263,6 +261,8 @@
         '../base/base.gyp:base_i18n',
       ],
       'sources': [
+        'host/capturer_fake.cc',
+        'host/capturer_fake.h',
         'host/capturer_fake_ascii.cc',
         'host/capturer_fake_ascii.h',
         'host/simple_host_process.cc',
