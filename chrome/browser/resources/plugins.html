@@ -579,28 +579,27 @@ document.addEventListener('DOMContentLoaded', requestPluginsData);
                     <td>
                       <span jsdisplay="enabledMode == 'disabledByUser'"
                           i18n-content="pluginDisabled">(DISABLED)</span>
-                      <span>
                       <span jsdisplay="enabledMode == 'disabledByPolicy'"
                           i18n-content="pluginDisabled">(DISABLED_BY_POLICY)</span>
                       <span>
-            <a
-              jsvalues=".path:name"
-              jsdisplay="enabledMode == 'enabled'"
-              onclick="handleEnablePlugin(this, false, false)"
-              href="javascript:void(0);"
-              i18n-content="disable"
-              >DISABLE</a>
-            <a
-              jsvalues=".path:name"
-              jsdisplay="enabledMode == 'disabledByUser'"
-              onclick="handleEnablePlugin(this, true, false)"
-              href="javascript:void(0);"
-              i18n-content="enable"
-              >ENABLE</a>
-            <span
-              jsdisplay="enabledMode == 'disabledByPolicy'"
-              i18n-content="pluginCannotBeEnabledDueToPolicy"
-              >CANNOT_ENABLE</span>
+                        <a
+                          jsvalues=".path:path"
+                          jsdisplay="enabledMode == 'enabled'"
+                          onclick="handleEnablePlugin(this, false, false)"
+                          href="javascript:void(0);"
+                          i18n-content="disable"
+                          >DISABLE</a>
+                        <a
+                          jsvalues=".path:path"
+                          jsdisplay="enabledMode == 'disabledByUser'"
+                          onclick="handleEnablePlugin(this, true, false)"
+                          href="javascript:void(0);"
+                          i18n-content="enable"
+                          >ENABLE</a>
+                        <span
+                          jsdisplay="enabledMode == 'disabledByPolicy'"
+                          i18n-content="pluginCannotBeEnabledDueToPolicy"
+                          >CANNOT_ENABLE</span>
                       </span>
                     </td>
                   </tr></table></div>
