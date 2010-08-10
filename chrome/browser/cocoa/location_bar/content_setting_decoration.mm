@@ -39,10 +39,14 @@ ContentSettingDecoration::ContentSettingDecoration(
 ContentSettingDecoration::~ContentSettingDecoration() {
 }
 
-void ContentSettingDecoration::UpdateFromTabContents(
+bool ContentSettingDecoration::UpdateFromTabContents(
     const TabContents* tab_contents) {
+  bool was_visible = IsVisible();
+  int old_icon = content_setting_image_model_->get_icon();
   content_setting_image_model_->UpdateFromTabContents(tab_contents);
   SetVisible(content_setting_image_model_->is_visible());
+  bool decoration_changed = was_visible != IsVisible() ||
+      old_icon != content_setting_image_model_->get_icon();
   if (IsVisible()) {
     // TODO(thakis): We should use pdfs for these icons on OSX.
     // http://crbug.com/35847
@@ -51,6 +55,7 @@ void ContentSettingDecoration::UpdateFromTabContents(
     SetToolTip(base::SysUTF8ToNSString(
         content_setting_image_model_->get_tooltip()));
   }
+  return decoration_changed;
 }
 
 NSPoint ContentSettingDecoration::GetBubblePointInFrame(NSRect frame) {

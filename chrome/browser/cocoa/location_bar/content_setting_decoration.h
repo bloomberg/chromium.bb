@@ -26,7 +26,8 @@ class ContentSettingDecoration : public ImageDecoration {
   virtual ~ContentSettingDecoration();
 
   // Updates the image and visibility state based on the supplied TabContents.
-  void UpdateFromTabContents(const TabContents* tab_contents);
+  // Returns true if the decoration's visible state changed.
+  bool UpdateFromTabContents(const TabContents* tab_contents);
 
   // Overridden from |LocationBarDecoration|
   virtual bool AcceptsMousePress() { return true; }

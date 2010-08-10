@@ -158,7 +158,7 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // Updates visibility of the content settings icons based on the current
   // tab contents state.
-  void RefreshContentSettingsDecorations();
+  bool RefreshContentSettingsDecorations();
 
   void ShowFirstRunBubbleInternal(FirstRun::BubbleType bubble_type);
 
