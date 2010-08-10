@@ -524,7 +524,10 @@ Voronoi::Voronoi(Surface *surf, int count, int numRegions, bool multi) {
     const float v = (frand() * 2.0f - 1.0f) * speed;
     velocities_[i].Set(u, v);
     // 'unique' color (well... unique enough for our purposes)
-    colors_[i] = MakeRGBA(rand255(), rand255(), rand255(), 255);
+    uint32_t c3 = rand255();
+    uint32_t c2 = rand255();
+    uint32_t c1 = rand255();
+    colors_[i] = MakeRGBA(c1, c2, c3, 255);
   }
 }
 
