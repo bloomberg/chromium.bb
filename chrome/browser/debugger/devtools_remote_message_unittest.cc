@@ -5,14 +5,14 @@
 #include <string>
 
 #include "base/string_number_conversions.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/debugger/devtools_remote.h"
 #include "chrome/browser/debugger/devtools_remote_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class DevToolsRemoteMessageTest : public testing::Test {
  public:
-  DevToolsRemoteMessageTest() : testing::Test() {
-  }
+  DevToolsRemoteMessageTest() : testing::Test() {}
 
  protected:
   virtual void SetUp() {
@@ -41,11 +41,11 @@ TEST_F(DevToolsRemoteMessageTest, ConstructInstanceManually) {
 
 TEST_F(DevToolsRemoteMessageTest, ConstructWithBuilder) {
   std::string content = "Responsecontent";
-  testing::internal::scoped_ptr<DevToolsRemoteMessage> message(
+  scoped_ptr<DevToolsRemoteMessage> message(
       DevToolsRemoteMessageBuilder::instance().Create(
           "V8Debugger",  // tool
-          "2",  // destination
-          content));  // content
+          "2",           // destination
+          content));     // content
 
   ASSERT_EQ(static_cast<DevToolsRemoteMessage::HeaderMap::size_type>(3),
             message->headers().size());
