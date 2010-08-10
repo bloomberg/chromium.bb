@@ -1,0 +1,73 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_
+#define CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_
+
+#include <string>
+#include "base/basictypes.h"
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "chrome/common/net/url_fetcher.h"
+#include "googleurl/src/gurl.h"
+
+class URLFetcher;
+class URLRequestContextGetter;
+
+namespace speech_input {
+
+// Provides a simple interface for sending recorded speech data to the server
+// and get back recognition results.
+class SpeechRecognitionRequest : public URLFetcher::Delegate {
+ public:
+  // ID passed to URLFetcher::Create(). Used for testing.
+  static int url_fetcher_id_for_tests;
+
+  // Interface for receiving callbacks from this object.
+  class Delegate {
+   public:
+    virtual void SetRecognitionResult(bool error, const string16& value) = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
+  // |url| is the server address to which the request wil be sent.
+  SpeechRecognitionRequest(URLRequestContextGetter* context,
+                           const GURL& url,
+                           Delegate* delegate);
+
+  // Sends a new request with the given audio data, returns true if successful.
+  // The same object can be used to send multiple requests but only after the
+  // previous request has completed.
+  bool Send(const std::string& audio_data);
+
+  bool HasPendingRequest() { return url_fetcher_ != NULL; }
+
+  // URLFetcher::Delegate methods.
+  void OnURLFetchComplete(const URLFetcher* source,
+                          const GURL& url,
+                          const URLRequestStatus& status,
+                          int response_code,
+                          const ResponseCookies& cookies,
+                          const std::string& data);
+
+ private:
+  scoped_refptr<URLRequestContextGetter> url_context_;
+  const GURL url_;
+  Delegate* delegate_;
+  scoped_ptr<URLFetcher> url_fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpeechRecognitionRequest);
+};
+
+// This typedef is to workaround the issue with certain versions of
+// Visual Studio where it gets confused between multiple Delegate
+// classes and gives a C2500 error. (I saw this error on the try bots -
+// the workaround was not needed for my machine).
+typedef SpeechRecognitionRequest::Delegate SpeechRecognitionRequestDelegate;
+
+}  // namespace speech_input
+
+#endif  // CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_REQUEST_H_

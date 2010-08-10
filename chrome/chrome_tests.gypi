@@ -1088,6 +1088,7 @@
         'browser/sessions/session_service_unittest.cc',
         'browser/sessions/tab_restore_service_unittest.cc',
         'browser/shell_integration_unittest.cc',
+        'browser/speech/speech_recognition_request_unittest.cc',
         'browser/spellchecker_platform_engine_unittest.cc',
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/status_icons/status_icon_unittest.cc',
