@@ -54,6 +54,7 @@ __version__ = "0.5"
 import logging
 import optparse
 import os
+import posixpath
 import pprint
 import re
 import subprocess
@@ -165,6 +166,12 @@ class Dependency(GClientKeywords):
     self.processed = False
     # This dependency had its hook run
     self.hooks_ran = False
+    # Required dependencies to run before running this one:
+    self.requirements = []
+    if self.parent and self.parent.name:
+      self.requirements.append(self.parent.name)
+    if isinstance(self.url, self.FromImpl):
+      self.requirements.append(self.url.module_name)
 
     # Sanity checks
     if not self.name and self.parent:
@@ -362,6 +369,16 @@ class Dependency(GClientKeywords):
       if pm:
         pm._total = len(self.tree(False)) + 1
         pm.update(0)
+      # Adjust the implicit dependency requirement; e.g. if a DEPS file contains
+      # both src/foo and src/foo/bar, src/foo/bar is implicitly dependent of
+      # src/foo. Yes, it's O(n^2)...
+      for s in self.dependencies:
+        for s2 in self.dependencies:
+          if s is s2:
+            continue
+          if s.name.startswith(posixpath.join(s2.name, '')):
+            s.requirements.append(s2.name)
+
       # Parse the dependencies of this dependency.
       for s in self.dependencies:
         # TODO(maruel): All these can run concurrently! No need for threads,
@@ -476,7 +493,7 @@ class Dependency(GClientKeywords):
     out = []
     for i in ('name', 'url', 'parsed_url', 'safesync_url', 'custom_deps',
               'custom_vars', 'deps_hooks', '_file_list', 'processed',
-              'hooks_ran', 'deps_parsed'):
+              'hooks_ran', 'deps_parsed', 'requirements'):
       # 'deps_file'
       if self.__dict__[i]:
         out.append('%s: %s' % (i, self.__dict__[i]))
