@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ssl_client_certificate_selector.h"
 
+#include <windows.h>
 #include <cryptuiapi.h>
 #pragma comment(lib, "cryptui.lib")
 
