@@ -30,7 +30,7 @@ class Label;
 class RadioButton;
 class TableView;
 class TextButton;
-}
+}  // namespace views
 
 class PrefService;
 class SkBitmap;
@@ -68,7 +68,7 @@ class AutoFillProfilesView : public views::View,
                   CreditCard* imported_credit_card);
 
  protected:
-  // forward declaration. This struct defined further down.
+  // Forward declaration. This struct defined further down.
   struct EditableSetInfo;
   // Called when 'Add Address' (|group_type| is
   // ContentListTableModel::kAddressGroup) or 'Add Credit Card' (|group_type| is
@@ -230,7 +230,7 @@ class AutoFillProfilesView : public views::View,
     DISALLOW_COPY_AND_ASSIGN(PhoneSubView);
   };
 
-  // forward declaration
+  // Forward declaration.
   class AddressComboBoxModel;
   class StringVectorComboboxModel;
 
@@ -262,7 +262,7 @@ class AutoFillProfilesView : public views::View,
       MessageBoxFlags::DialogButton button) const;
     virtual bool CanResize() const { return false; }
     virtual bool CanMaximize() const { return false; }
-    virtual bool IsAlwaysOnTop() const { return false; }
+    virtual bool IsModal() const { return true; }
     virtual bool HasAlwaysOnTopMenu() const { return false; }
     virtual std::wstring GetWindowTitle() const;
     virtual void WindowClosing();
@@ -272,7 +272,7 @@ class AutoFillProfilesView : public views::View,
 
     // views::ButtonListener methods:
     virtual void ButtonPressed(views::Button* sender,
-        const views::Event& event);
+                               const views::Event& event);
 
     // views::Textfield::Controller methods:
     virtual void ContentsChanged(views::Textfield* sender,
@@ -299,7 +299,7 @@ class AutoFillProfilesView : public views::View,
       TEXT_FAX_PHONE,
       TEXT_CC_NAME,
       TEXT_CC_NUMBER,
-      // must be last
+      // Must be last.
       MAX_TEXT_FIELD
     };
 
@@ -350,7 +350,7 @@ class AutoFillProfilesView : public views::View,
     DISALLOW_COPY_AND_ASSIGN(EditableSetViewContents);
   };
 
-  // Encapsulates ComboboxModel for address
+  // Encapsulates ComboboxModel for address.
   class AddressComboBoxModel : public ComboboxModel {
    public:
     explicit AddressComboBoxModel(bool is_billing);
@@ -374,7 +374,8 @@ class AutoFillProfilesView : public views::View,
     // Gets index of the item in the model or -1 if not found.
     int GetIndex(int unique_id);
 
-    // ComboboxModel methods, public as they used from EditableSetViewContents
+    // Overridden from ComboboxModel:
+    // Public as they are used from EditableSetViewContents.
     virtual int GetItemCount();
     virtual std::wstring GetItemAt(int index);
 
@@ -395,10 +396,8 @@ class AutoFillProfilesView : public views::View,
     // |source|.
     void set_cb_strings(std::vector<std::wstring> *source);
 
-    // Return the number of items in the combo box.
+    // Overridden from ComboboxModel:
     virtual int GetItemCount();
-
-    // Return the string that should be used to represent a given item.
     virtual std::wstring GetItemAt(int index);
 
     // Find an index of the item in the model, -1 if not present.
@@ -410,8 +409,7 @@ class AutoFillProfilesView : public views::View,
     DISALLOW_COPY_AND_ASSIGN(StringVectorComboboxModel);
   };
 
-
-  // Model for scrolling credit cards and addresses
+  // Model for scrolling credit cards and addresses.
   class ContentListTableModel : public TableModel {
    public:
     ContentListTableModel(std::vector<EditableSetInfo>* profiles,
@@ -470,4 +468,3 @@ class AutoFillProfilesView : public views::View,
 };
 
 #endif  // CHROME_BROWSER_VIEWS_AUTOFILL_PROFILES_VIEW_WIN_H_
-

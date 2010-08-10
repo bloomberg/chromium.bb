@@ -425,11 +425,7 @@ void AutoFillProfilesView::Init() {
   table_model_.reset(new ContentListTableModel(&profiles_set_,
                                                &credit_card_set_));
   std::vector<TableColumn> columns;
-  columns.resize(1);
-  columns[0] = TableColumn(IDS_AUTOFILL_LIST_HEADER_SUMMARY,
-                           TableColumn::LEFT, -1, .67f);
-  columns.back().sortable = false;
-
+  columns.push_back(TableColumn());
   scroll_view_ = new views::TableView(table_model_.get(), columns,
                                       views::TEXT_ONLY, false, true, true);
   scroll_view_->SetObserver(this);
