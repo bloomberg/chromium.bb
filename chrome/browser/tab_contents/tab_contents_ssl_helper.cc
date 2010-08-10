@@ -163,10 +163,8 @@ TabContentsSSLHelper::~TabContentsSSLHelper() {
 
 void TabContentsSSLHelper::ShowClientCertificateRequestDialog(
     scoped_refptr<SSLClientAuthHandler> handler) {
-  // Display the native certificate request dialog for each platform.
   browser::ShowSSLClientCertificateSelector(
-      tab_contents_->GetMessageBoxRootWindow(),
-      handler->cert_request_info(), handler);
+      tab_contents_, handler->cert_request_info(), handler);
 }
 
 void TabContentsSSLHelper::OnVerifyClientCertificateError(

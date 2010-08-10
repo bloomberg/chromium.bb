@@ -15,19 +15,23 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
 
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    gfx::NativeWindow parent,
+    TabContents* parent,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
   net::X509Certificate* cert = NULL;
   // TODO(jcampan): replace this with our own cert selection dialog.
   // CryptUIDlgSelectCertificateFromStore is blocking (but still processes
   // Windows messages), which is scary.
+  //
+  // TODO(davidben): Make this dialog tab-modal to the
+  // TabContents. This depends on the above TODO.
   HCERTSTORE client_certs = CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL,
                                           0, NULL);
   BOOL ok;
@@ -43,7 +47,8 @@ void ShowSSLClientCertificateSelector(
       IDS_CLIENT_CERT_DIALOG_TEXT,
       ASCIIToWide(cert_request_info->host_and_port));
   PCCERT_CONTEXT cert_context = CryptUIDlgSelectCertificateFromStore(
-      client_certs, parent, title.c_str(), text.c_str(), 0, 0, NULL);
+      client_certs, parent->GetMessageBoxRootWindow(),
+      title.c_str(), text.c_str(), 0, 0, NULL);
 
   if (cert_context) {
     cert = net::X509Certificate::CreateFromHandle(

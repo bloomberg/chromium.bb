@@ -17,6 +17,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
 
@@ -40,15 +41,16 @@
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    gfx::NativeWindow parent,
+    TabContents* parent,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
+  // TODO(davidben): Implement a tab-modal dialog.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   SSLClientCertificateSelectorCocoa* selector =
       [[[SSLClientCertificateSelectorCocoa alloc]
           initWithHandler:delegate
           certRequestInfo:cert_request_info] autorelease];
-  [selector displayDialog:parent];
+  [selector displayDialog:parent->GetMessageBoxRootWindow()];
 }
 
 }  // namespace browser

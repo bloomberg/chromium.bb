@@ -10,14 +10,18 @@
 #include <string>
 #include <vector>
 
+#include "app/gtk_signal.h"
 #include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/gtk/constrained_window_gtk.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
 #include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
 #include "chrome/third_party/mozilla_security_manager/nsUsageArrayHelper.h"
@@ -34,68 +38,70 @@ enum {
   RESPONSE_SHOW_CERT_INFO = 1,
 };
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // SSLClientCertificateSelector
 
-class SSLClientCertificateSelector {
+class SSLClientCertificateSelector : public ConstrainedDialogDelegate {
  public:
-  SSLClientCertificateSelector(gfx::NativeWindow parent,
-                               net::SSLCertRequestInfo* cert_request_info,
-                               SSLClientAuthHandler* delegate);
+  explicit SSLClientCertificateSelector(
+      TabContents* parent,
+      net::SSLCertRequestInfo* cert_request_info,
+      SSLClientAuthHandler* delegate);
+  ~SSLClientCertificateSelector();
 
   void Show();
 
+  // ConstrainedDialogDelegate implementation:
+  virtual GtkWidget* GetWidgetRoot() { return root_widget_.get(); }
+  virtual void DeleteDelegate() { delete this; }
+
  private:
   void PopulateCerts();
+
+  net::X509Certificate* GetSelectedCert();
 
   static std::string FormatComboBoxText(CERTCertificate* cert,
                                         const char* nickname);
   static std::string FormatDetailsText(CERTCertificate* cert);
 
-  static void OnComboBoxChanged(GtkComboBox* combo_box,
-                                SSLClientCertificateSelector* cert_selector);
-  static void OnResponse(GtkDialog* dialog, gint response_id,
-                         SSLClientCertificateSelector* cert_selector);
-  static void OnDestroy(GtkDialog* dialog,
-                        SSLClientCertificateSelector* cert_selector);
+  CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnComboBoxChanged);
+  CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnViewClicked);
+  CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnCancelClicked);
+  CHROMEGTK_CALLBACK_0(SSLClientCertificateSelector, void, OnOkClicked);
+  CHROMEGTK_CALLBACK_1(SSLClientCertificateSelector, void, OnPromptShown,
+                       GtkWidget*);
 
-  scoped_refptr<SSLClientAuthHandler> delegate_;
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;
 
   std::vector<std::string> details_strings_;
 
-  GtkWidget* dialog_;
   GtkWidget* cert_combo_box_;
   GtkTextBuffer* cert_details_buffer_;
+
+  scoped_refptr<SSLClientAuthHandler> delegate_;
+
+  OwnedWidgetGtk root_widget_;
+  // Hold on to the select button to focus it.
+  GtkWidget* select_button_;
+
+  TabContents* parent_;
+  ConstrainedWindow* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelector);
 };
 
 SSLClientCertificateSelector::SSLClientCertificateSelector(
-    gfx::NativeWindow parent,
+    TabContents* parent,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate)
-    : delegate_(delegate),
-      cert_request_info_(cert_request_info) {
-  dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringFUTF8(
-          IDS_CERT_SELECTOR_DIALOG_TITLE,
-          UTF8ToUTF16(cert_request_info->host_and_port)).c_str(),
-      parent,
-      // Non-modal.
-      GTK_DIALOG_NO_SEPARATOR,
-      l10n_util::GetStringUTF8(IDS_PAGEINFO_CERT_INFO_BUTTON).c_str(),
-      RESPONSE_SHOW_CERT_INFO,
-      GTK_STOCK_CANCEL,
-      GTK_RESPONSE_CANCEL,
-      GTK_STOCK_OK,
-      GTK_RESPONSE_OK,
-      NULL);
-  gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
-                      gtk_util::kContentAreaSpacing);
-  gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_OK);
+    : cert_request_info_(cert_request_info),
+      delegate_(delegate),
+      parent_(parent),
+      window_(NULL) {
+  root_widget_.Own(gtk_vbox_new(FALSE, gtk_util::kControlSpacing));
 
   GtkWidget* site_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), site_vbox,
+  gtk_box_pack_start(GTK_BOX(root_widget_.get()), site_vbox,
                      FALSE, FALSE, 0);
 
   GtkWidget* site_description_label = gtk_util::CreateBoldLabel(
@@ -109,7 +115,7 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
   gtk_box_pack_start(GTK_BOX(site_vbox), site_label, FALSE, FALSE, 0);
 
   GtkWidget* selector_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), selector_vbox,
+  gtk_box_pack_start(GTK_BOX(root_widget_.get()), selector_vbox,
                      TRUE, TRUE, 0);
 
   GtkWidget* choose_description_label = gtk_util::CreateBoldLabel(
@@ -119,8 +125,8 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
 
 
   cert_combo_box_ = gtk_combo_box_new_text();
-  g_signal_connect(cert_combo_box_, "changed", G_CALLBACK(OnComboBoxChanged),
-                   this);
+  g_signal_connect(cert_combo_box_, "changed",
+                   G_CALLBACK(OnComboBoxChangedThunk), this);
   gtk_box_pack_start(GTK_BOX(selector_vbox), cert_combo_box_,
                      FALSE, FALSE, 0);
 
@@ -144,14 +150,44 @@ SSLClientCertificateSelector::SSLClientCertificateSelector(
   gtk_container_add(GTK_CONTAINER(details_frame), cert_details_view);
   gtk_box_pack_start(GTK_BOX(selector_vbox), details_frame, TRUE, TRUE, 0);
 
+  // And then create a set of buttons like a GtkDialog would.
+  GtkWidget* button_box = gtk_hbutton_box_new();
+  gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
+  gtk_box_set_spacing(GTK_BOX(button_box), gtk_util::kControlSpacing);
+  gtk_box_pack_end(GTK_BOX(root_widget_.get()), button_box, FALSE, FALSE, 0);
+
+  GtkWidget* view_button = gtk_button_new_with_mnemonic(
+      l10n_util::GetStringUTF8(IDS_PAGEINFO_CERT_INFO_BUTTON).c_str());
+  gtk_box_pack_start(GTK_BOX(button_box), view_button, FALSE, FALSE, 0);
+  g_signal_connect(view_button, "clicked",
+                   G_CALLBACK(OnViewClickedThunk), this);
+
+  GtkWidget* cancel_button = gtk_button_new_from_stock(GTK_STOCK_CANCEL);
+  gtk_box_pack_end(GTK_BOX(button_box), cancel_button, FALSE, FALSE, 0);
+  g_signal_connect(cancel_button, "clicked",
+                   G_CALLBACK(OnCancelClickedThunk), this);
+
+  GtkWidget* select_button = gtk_button_new_from_stock(GTK_STOCK_OK);
+  gtk_box_pack_end(GTK_BOX(button_box), select_button, FALSE, FALSE, 0);
+  g_signal_connect(select_button, "clicked",
+                   G_CALLBACK(OnOkClickedThunk), this);
+
+  // When we are attached to a window, focus the select button.
+  select_button_ = select_button;
+  g_signal_connect(root_widget_.get(), "hierarchy-changed",
+                   G_CALLBACK(OnPromptShownThunk), this);
   PopulateCerts();
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
-  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnDestroy), this);
+  gtk_widget_show_all(root_widget_.get());
+}
+
+SSLClientCertificateSelector::~SSLClientCertificateSelector() {
+  root_widget_.Destroy();
 }
 
 void SSLClientCertificateSelector::Show() {
-  gtk_widget_show_all(dialog_);
+  DCHECK(!window_);
+  window_ = parent_->CreateConstrainedDialog(this);
 }
 
 void SSLClientCertificateSelector::PopulateCerts() {
@@ -190,6 +226,15 @@ void SSLClientCertificateSelector::PopulateCerts() {
 
   // Auto-select the first cert.
   gtk_combo_box_set_active(GTK_COMBO_BOX(cert_combo_box_), 0);
+}
+
+net::X509Certificate* SSLClientCertificateSelector::GetSelectedCert() {
+  int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(cert_combo_box_));
+  if (selected >= 0 &&
+      selected < static_cast<int>(
+          cert_request_info_->client_certs.size()))
+    return cert_request_info_->client_certs[selected];
+  return NULL;
 }
 
 // static
@@ -278,46 +323,45 @@ std::string SSLClientCertificateSelector::FormatDetailsText(
   return rv;
 }
 
-// static
-void SSLClientCertificateSelector::OnComboBoxChanged(
-    GtkComboBox* combo_box, SSLClientCertificateSelector* cert_selector) {
+void SSLClientCertificateSelector::OnComboBoxChanged(GtkWidget* combo_box) {
   int selected = gtk_combo_box_get_active(
-      GTK_COMBO_BOX(cert_selector->cert_combo_box_));
+      GTK_COMBO_BOX(cert_combo_box_));
   if (selected < 0)
     return;
-  gtk_text_buffer_set_text(cert_selector->cert_details_buffer_,
-                           cert_selector->details_strings_[selected].c_str(),
-                           cert_selector->details_strings_[selected].size());
+  gtk_text_buffer_set_text(cert_details_buffer_,
+                           details_strings_[selected].c_str(),
+                           details_strings_[selected].size());
 }
 
-// static
-void SSLClientCertificateSelector::OnResponse(
-    GtkDialog* dialog, gint response_id,
-    SSLClientCertificateSelector* cert_selector) {
-  net::X509Certificate* cert = NULL;
-  if (response_id == GTK_RESPONSE_OK ||
-      response_id == RESPONSE_SHOW_CERT_INFO) {
-    int selected = gtk_combo_box_get_active(
-        GTK_COMBO_BOX(cert_selector->cert_combo_box_));
-    if (selected >= 0 &&
-        selected < static_cast<int>(
-            cert_selector->cert_request_info_->client_certs.size()))
-      cert = cert_selector->cert_request_info_->client_certs[selected];
+void SSLClientCertificateSelector::OnViewClicked(GtkWidget* button) {
+  net::X509Certificate* cert = GetSelectedCert();
+  if (cert) {
+    GtkWidget* toplevel = gtk_widget_get_toplevel(root_widget_.get());
+    ShowCertificateViewer(GTK_WINDOW(toplevel), cert);
   }
-  if (response_id == RESPONSE_SHOW_CERT_INFO) {
-    if (cert)
-      ShowCertificateViewer(GTK_WINDOW(cert_selector->dialog_), cert);
+}
+
+void SSLClientCertificateSelector::OnCancelClicked(GtkWidget* button) {
+  delegate_->CertificateSelected(NULL);
+  DCHECK(window_);
+  window_->CloseConstrainedWindow();
+}
+
+void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
+  net::X509Certificate* cert = GetSelectedCert();
+  delegate_->CertificateSelected(cert);
+  DCHECK(window_);
+  window_->CloseConstrainedWindow();
+}
+
+void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,
+                                                 GtkWidget* previous_toplevel) {
+  if (!root_widget_.get() ||
+      !GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(root_widget_.get())))
     return;
-  }
-  cert_selector->delegate_->CertificateSelected(cert);
-  gtk_widget_destroy(GTK_WIDGET(dialog));
-}
-
-// static
-void SSLClientCertificateSelector::OnDestroy(
-    GtkDialog* dialog,
-    SSLClientCertificateSelector* cert_selector) {
-  delete cert_selector;
+  GTK_WIDGET_SET_FLAGS(select_button_, GTK_CAN_DEFAULT);
+  gtk_widget_grab_default(select_button_);
+  gtk_widget_grab_focus(select_button_);
 }
 
 }  // namespace
@@ -328,7 +372,7 @@ void SSLClientCertificateSelector::OnDestroy(
 namespace browser {
 
 void ShowSSLClientCertificateSelector(
-    gfx::NativeWindow parent,
+    TabContents* parent,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
   (new SSLClientCertificateSelector(parent,
