@@ -65,7 +65,7 @@ void HeartbeatSender::Start() {
     return;
   }
 
-  DCHECK(state_ == INITIALIZED);
+  DCHECK_EQ(INITIALIZED, state_);
   state_ = STARTED;
 
   request_.reset(jingle_client_->CreateIqRequest());
@@ -82,7 +82,9 @@ void HeartbeatSender::Stop() {
     return;
   }
 
-  DCHECK(state_ == STARTED);
+  // We may call Stop() even if we have not started.
+  if (state_ != STARTED)
+    return;
   state_ = STOPPED;
   request_.reset(NULL);
 }
