@@ -144,6 +144,15 @@
       'filepath': 'net/base/cookie_.*|'\
         'chrome/browser/net/sqlite_persistent_cookie_store.*',
     },
+    'autofill': {
+      'filepath': 'chrome/app/nibs/AutoFill.*|'\
+        'chrome/browser/autofill/.*|'\
+        'chrome/browser/dom_ui/autofill_.*|'\
+        'chrome/browser/sync/glue/autofill_.*|'\
+        'chrome/browser/views/autofill_.*|'\
+        'chrome/renderer/autofill_.*|'\
+        'chrome/renderer/form_manager.*',
+    },
   },
 
   'WATCHLISTS': {
@@ -194,9 +203,10 @@
     'chromeos': ['davemoore+watch@chromium.org'],
     'npapi_headers': ['stuartmorgan@chromium.org'],
     'remoting': ['ajwong@chromium.org', 'sergeyu@chromium.org',
-              	'hclam@chromium.org', 'dmaclach@chromium.org',
-	 	'garykac@chromium.org'],
+                 'hclam@chromium.org', 'dmaclach@chromium.org',
+                 'garykac@chromium.org'],
     'domui_options': ['dhg@chromium.org'],
     'cookie_monster': ['rdsmith@chromium.org'],
+    'autofill': ['dhollowa@chromium.org'],
   },
 }
