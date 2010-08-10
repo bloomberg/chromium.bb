@@ -10,7 +10,7 @@ import types
 
 # Do not add any more imports here!  This could lead to undeclared
 # dependencies, changes to which fail to trigger rebuilds.
-from dirtree import FileSnapshot
+from dirtree import FileSnapshot, FileSnapshotInMemory
 
 
 def UnionIntoDict(input_tree, dest_dict, context=""):
@@ -59,10 +59,27 @@ def MungeMultilibDir(tree):
     tree["nacl64"]["lib32"] = lib32
 
 
+def AddEnvVarWrapperScripts(tree):
+  # Move the real executables from "bin" to "original-bin" and create
+  # wrapper scripts in "bin" that set LD_LIBRARY_PATH.
+  if "bin" in tree:
+    assert "original-bin" not in tree
+    tree["original-bin"] = tree["bin"]
+    tree["bin"] = {}
+    for script_name in tree["original-bin"].iterkeys():
+      tree["bin"][script_name] = FileSnapshotInMemory("""\
+#!/bin/bash
+export LD_LIBRARY_PATH="${0%%/*}/../lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}"
+exec ${0%%/*}/../original-bin/%s "$@"
+""" % script_name, executable=True)
+
+
 def CombineInstallTrees(*trees):
   for tree in trees:
     MungeMultilibDir(tree)
-  return UnionDir(*trees)
+  combined = UnionDir(*trees)
+  AddEnvVarWrapperScripts(combined)
+  return combined
 
 
 def AddHeadersToNewlib(newlib_source, nacl_headers):

@@ -166,11 +166,21 @@ class FileSnapshotUsingHardLink(FileSnapshot):
 
 class FileSnapshotInMemory(FileSnapshot):
 
-  def __init__(self, data):
+  def __init__(self, data, executable=False):
     self._data = data
+    self._is_executable = executable
 
   def CopyToPath(self, dest_path):
-    WriteFile(dest_path, self._data)
+    if self._is_executable:
+      mode = 0777
+    else:
+      mode = 0666
+    fd = os.open(dest_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
+    fh = os.fdopen(fd, "w")
+    try:
+      fh.write(self._data)
+    finally:
+      fh.close()
 
   def GetContents(self):
     return self._data

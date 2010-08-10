@@ -209,9 +209,20 @@ def InstallDestdir(prefix_dir, install_dir, func):
   dirtree.RemoveTree(temp_dir)
 
 
-def GetPathVar(prefix_obj):
-  return "PATH=%s:%s" % (os.path.join(prefix_obj.dest_path, "bin"),
-                         os.environ["PATH"])
+def GetPrefixVars(prefix_dir):
+  env_vars = []
+
+  def AddVar(var_name, value, separator=":"):
+    if var_name in os.environ:
+      value = value + separator + os.environ[var_name]
+    env_vars.append("%s=%s" % (var_name, value))
+
+  AddVar("PATH", os.path.join(prefix_dir, "bin"))
+  AddVar("C_INCLUDE_PATH", os.path.join(prefix_dir, "include"))
+  AddVar("LD_LIBRARY_PATH", os.path.join(prefix_dir, "lib"))
+  AddVar("LDFLAGS", "-L%s" % os.path.join(prefix_dir, "lib"),
+         separator=" ")
+  return env_vars
 
 
 def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
@@ -225,7 +236,7 @@ def AutoconfModule(name, install_dir, build_dir, prefix_obj, src,
 
   def DoBuild():
     ResetDir(build_dir)
-    prefix_cmd = ["env", GetPathVar(prefix_obj)]
+    prefix_cmd = ["env"] + GetPrefixVars(prefix_obj.dest_path)
     subprocess.check_call(
         prefix_cmd + ["env"] + configure_env +
         [os.path.join(src.dest_path, "configure"),
@@ -276,8 +287,8 @@ def SconsBuild(name, dest_dir, src_dir, prefix_obj, scons_args):
     # TODO(mseaborn): Get Scons to use a pristine build directory,
     # instead of reusing the contents of "scons-out".
     subprocess.check_call(
-        ["env", GetPathVar(prefix_obj),
-         "./scons",
+        ["env"] + GetPrefixVars(prefix_obj.dest_path) +
+        ["./scons",
          "USE_ENVIRON=1",
          "naclsdk_mode=custom:%s" % dest_dir,
          "naclsdk_validate=0",
@@ -308,7 +319,7 @@ def TestModule(name, dest_dir, prefix_obj, code, compiler):
     ResetDir(dest_dir)
     dirtree.WriteFile(os.path.join(dest_dir, "prog.c"), code)
     subprocess.check_call(
-        ["env", GetPathVar(prefix_obj)] +
+        ["env"] + GetPrefixVars(prefix_obj.dest_path) +
         compiler +
         [os.path.join(dest_dir, "prog.c"),
          "-o", os.path.join(dest_dir, "prog")])

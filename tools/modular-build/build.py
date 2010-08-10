@@ -22,6 +22,8 @@ if not os.path.exists(nacl_src):
 nacl_dir = os.path.join(nacl_src, "native_client")
 
 subdirs = [
+    "third_party/gmp",
+    "third_party/mpfr",
     "third_party/gcc",
     "third_party/binutils",
     "third_party/newlib",
@@ -47,6 +49,8 @@ def PatchGlob(name):
 
 def GetSources():
   return {
+    "gmp": dirtree.TarballTree(FindFile("gmp-4.3.1.tar.bz2")),
+    "mpfr": dirtree.TarballTree(FindFile("mpfr-2.4.1.tar.bz2")),
     "binutils": dirtree.PatchedTree(
         dirtree.TarballTree(FindFile("binutils-2.20.1.tar.bz2")),
         PatchGlob("binutils-2.20.1"), strip=2),
@@ -115,6 +119,12 @@ def GetTargets(src):
         MakeInstallPrefix(name, deps), scons_args)
     AddModule(name, module)
 
+  AddAutoconfModule("gmp", "gmp", deps=[])
+  AddAutoconfModule("mpfr", "mpfr", deps=["gmp"])
+  # TODO(mseaborn): Add an automated mechanism for these libraries to
+  # be pulled in whenever gcc is declared as a dependency.
+  gcc_libs = ["gmp", "mpfr"]
+
   modules["nacl_src"] = btarget.ExistingSource("nacl-src", nacl_dir)
   modules["nacl-headers"] = \
       btarget.ExportHeaders("nacl-headers", os.path.join(top_dir, "headers"),
@@ -130,10 +140,8 @@ def GetTargets(src):
       configure_opts=[
           "--target=nacl64",
           "CFLAGS=-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"])
-  # Undeclared Debian dependencies:
-  # sudo apt-get install libgmp3-dev libmpfr-dev
   AddAutoconfModule(
-      "pre-gcc", "gcc", deps=["binutils"],
+      "pre-gcc", "gcc", deps=["binutils"] + gcc_libs,
       configure_opts=common_gcc_options + [
           "--without-headers",
           "--enable-languages=c",
@@ -149,7 +157,7 @@ def GetTargets(src):
       make_cmd=["make", "all-gcc"],
       install_cmd=["make", "install-gcc"])
   AddAutoconfModule(
-      "newlib", "newlib2", deps=["binutils", "pre-gcc"],
+      "newlib", "newlib2", deps=["binutils", "pre-gcc"] + gcc_libs,
       configure_opts=[
           "--disable-libgloss",
           "--enable-newlib-io-long-long",
@@ -161,23 +169,24 @@ def GetTargets(src):
 
   AddSconsModule(
       "nc_threads",
-      deps=["binutils", "pre-gcc"],
+      deps=["binutils", "pre-gcc"] + gcc_libs,
       scons_args=["MODE=nacl_extra_sdk", "install_libpthread"])
   AddSconsModule(
       "libnacl_headers",
-      deps=["binutils", "pre-gcc"],
+      deps=["binutils", "pre-gcc"] + gcc_libs,
       scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update_header"])
   # Before full-gcc is built, we cannot build any C++ code, and
   # tools/Makefile builds the following with nocpp=yes.  However,
   # full-gcc does not actually depend on it, so we do not use it.
   AddSconsModule(
       "libnacl_nocpp",
-      deps=["binutils", "pre-gcc", "newlib", "libnacl_headers", "nc_threads"],
+      deps=["binutils", "pre-gcc", "newlib", "libnacl_headers", "nc_threads"] +
+          gcc_libs,
       scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update", "nocpp=yes"])
 
   AddAutoconfModule(
       "full-gcc", "gcc",
-      deps=["binutils", "newlib", "libnacl_headers", "nc_threads"],
+      deps=["binutils", "newlib", "libnacl_headers", "nc_threads"] + gcc_libs,
       configure_opts=common_gcc_options + [
           "--with-newlib",
           "--enable-threads=nacl",
@@ -193,7 +202,7 @@ def GetTargets(src):
     AddSconsModule(
         "libnacl_x86_%s" % arch,
         deps=["binutils", "full-gcc", "newlib",
-              "libnacl_headers", "nc_threads"],
+              "libnacl_headers", "nc_threads"] + gcc_libs,
         scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update",
                     "platform=x86-%s" % arch])
 
@@ -202,7 +211,7 @@ def GetTargets(src):
   newlib_toolchain = MakeInstallPrefix(
       "newlib_toolchain",
       deps=["binutils", "full-gcc", "newlib", "nc_threads",
-            "libnacl_x86_32", "libnacl_x86_64"])
+            "libnacl_x86_32", "libnacl_x86_64"] + gcc_libs)
 
   hello_c = """
 #include <stdio.h>
@@ -224,7 +233,7 @@ int main() {
   # TODO(mseaborn): Get glibc to build without having to build newlib first.
   AddAutoconfModule(
       "glibc", "glibc",
-      deps=["binutils", "full-gcc", "libnacl_nocpp", "newlib"],
+      deps=["binutils", "full-gcc", "libnacl_nocpp", "newlib"] + gcc_libs,
       explicitly_passed_deps=[src["linux_headers"]],
       configure_opts=[
           "--prefix=/nacl64",
@@ -250,7 +259,8 @@ int main() {
 
   glibc_toolchain = MakeInstallPrefix(
       "glibc_toolchain",
-      deps=["binutils", "full-gcc", "glibc", "wrappers", "linker_scripts"])
+      deps=["binutils", "full-gcc", "glibc", "wrappers", "linker_scripts"] +
+          gcc_libs)
 
   modules["hello_glibc"] = btarget.TestModule(
       "hello_glibc",

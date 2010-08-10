@@ -13,6 +13,7 @@ from dirtree_test import TempDirTestCase
 import dirtree
 import dirtree_test
 import btarget
+import treemappers
 
 
 def PlanToString(targets):
@@ -34,7 +35,7 @@ class BuildTargetTests(TempDirTestCase):
   def test_src(self):
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
-                              dirtree.CopyTree("example"))
+                              dirtree.CopyTree("examples/minimal"))
     self.assertEquals(PlanToString([src]), "src: yes\n")
     btarget.Rebuild([src], open(os.devnull, "w"))
     self.assertEquals(PlanToString([src]), "src: no\n")
@@ -42,7 +43,7 @@ class BuildTargetTests(TempDirTestCase):
   def test_build(self):
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
-                              dirtree.CopyTree("example"))
+                              dirtree.CopyTree("examples/minimal"))
     input_prefix = btarget.UnionDir("input",
                                     os.path.join(tempdir, "prefix"),
                                     [])
@@ -78,7 +79,7 @@ class BuildTargetTests(TempDirTestCase):
   def test_building_specific_targets(self):
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
-                              dirtree.CopyTree("example"))
+                              dirtree.CopyTree("examples/minimal"))
     input_prefix = btarget.UnionDir("input",
                                     os.path.join(tempdir, "prefix"),
                                     [])
@@ -115,7 +116,7 @@ class BuildTargetTests(TempDirTestCase):
     # but not the usual "make install DESTDIR=DIR".
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
-                              dirtree.CopyTree("example"))
+                              dirtree.CopyTree("examples/minimal"))
     input_prefix = btarget.UnionDir("input",
                                     os.path.join(tempdir, "prefix"),
                                     [])
@@ -220,6 +221,43 @@ class BuildTargetTests(TempDirTestCase):
     target2 = btarget.TreeMapper("dir_out", os.path.join(tempdir, "dir_out"),
                                  MapperFunc2, [])
     self.assertEquals(target2.NeedsBuild(), True)
+
+  def test_component_with_library(self):
+    top_dir = self.MakeTempDir()
+    src_dirs = {
+        "libhello": dirtree.CopyTree("examples/libhello"),
+        "library-user": dirtree.CopyTree("examples/library-user")}
+    src = dict((src_name,
+                btarget.SourceTarget("%s-src" % src_name,
+                                     os.path.join(top_dir, "source", src_name),
+                                     src_tree))
+               for src_name, src_tree in src_dirs.iteritems())
+    modules = {}
+
+    def MakeInstallPrefix(name, deps):
+      return btarget.TreeMapper("%s-input" % name,
+                                os.path.join(top_dir, "input-prefix", name),
+                                treemappers.CombineInstallTrees,
+                                [modules[dep] for dep in deps])
+
+    def AddAutoconfModule(name, src_name, deps, **kwargs):
+      modules[name] = btarget.AutoconfModule(
+          name,
+          os.path.join(top_dir, "install", name),
+          os.path.join(top_dir, "build", name),
+          MakeInstallPrefix(name, deps), src[src_name], **kwargs)
+
+    AddAutoconfModule("libhello", "libhello", deps=[])
+    AddAutoconfModule("library-user", "library-user", deps=["libhello"])
+    result = MakeInstallPrefix("result", deps=["libhello", "library-user"])
+    btarget.Rebuild(modules.values() + [result], open(os.devnull, "w"))
+    proc = subprocess.Popen([os.path.join(result.dest_path, "bin", "hello"),
+                             "rhizome", "stolon"],
+                            stdout=subprocess.PIPE)
+    stdout = proc.communicate()[0]
+    self.assertEquals(proc.wait(), 0)
+    self.assertEquals(stdout, "Hello world, in libhello\n"
+                      "argv[1] = rhizome\nargv[2] = stolon\n")
 
 
 if __name__ == "__main__":
