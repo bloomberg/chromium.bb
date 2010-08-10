@@ -793,11 +793,14 @@ class SVNWrapper(SCMWrapper):
             from_info['Repository Root'],
             to_info['Repository Root'])
       else:
-        if scm.SVN.CaptureStatus(checkout_path) and not options.force:
-          raise gclient_utils.Error("Can't switch the checkout to %s; UUID "
-                                    "don't match and there is local changes "
-                                    "in %s. Delete the directory and "
-                                    "try again." % (url, checkout_path))
+        if not options.force:
+          # Look for local modifications but ignore unversioned files.
+          for status in scm.SVN.CaptureStatus(checkout_path):
+            if status[0] != '?':
+              raise gclient_utils.Error(
+                  ('Can\'t switch the checkout to %s; UUID don\'t match and '
+                   'there is local changes in %s. Delete the directory and '
+                   'try again.') % (url, checkout_path))
         # Ok delete it.
         print("\n_____ switching %s to a new checkout" % self.relpath)
         gclient_utils.RemoveDirectory(checkout_path)
