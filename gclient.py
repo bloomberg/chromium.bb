@@ -185,7 +185,7 @@ class Dependency(GClientKeywords):
     self.url because it may called with other urls due to From()."""
     overriden_url = self.get_custom_deps(self.name, url)
     if overriden_url != url:
-      logging.debug('%s, %s was overriden to %s' % (self.name, url,
+      logging.info('%s, %s was overriden to %s' % (self.name, url,
           overriden_url))
       return overriden_url
     elif isinstance(url, self.FromImpl):
@@ -206,11 +206,11 @@ class Dependency(GClientKeywords):
           break
       if not found_dep:
         raise gclient_utils.Error(
-            'Couldn\'t find %s in %s, referenced by %s' % (
-            sub_target, ref.name, self.name))
+            'Couldn\'t find %s in %s, referenced by %s\n%s' % (
+                sub_target, ref.name, self.name, str(self.root_parent())))
       # Call LateOverride() again.
       parsed_url = found_dep.LateOverride(found_dep.url)
-      logging.debug('%s, %s to %s' % (self.name, url, parsed_url))
+      logging.info('%s, %s to %s' % (self.name, url, parsed_url))
       return parsed_url
     elif isinstance(url, basestring):
       parsed_url = urlparse.urlparse(url)
@@ -228,11 +228,11 @@ class Dependency(GClientKeywords):
         parsed_url = scm.FullUrlForRelativeUrl(url)
       else:
         parsed_url = url
-      logging.debug('%s, %s -> %s' % (self.name, url, parsed_url))
+      logging.info('%s, %s -> %s' % (self.name, url, parsed_url))
       return parsed_url
     elif isinstance(url, self.FileImpl):
       parsed_url = url
-      logging.debug('%s, %s -> %s (File)' % (self.name, url, parsed_url))
+      logging.info('%s, %s -> %s (File)' % (self.name, url, parsed_url))
       return parsed_url
     elif url is None:
       return None
@@ -246,12 +246,15 @@ class Dependency(GClientKeywords):
       # directly referenced.
       self.direct_reference = direct_reference
     if self.deps_parsed:
+      logging.debug('%s was already parsed' % self.name)
       return
     self.deps_parsed = True
     filepath = os.path.join(self.root_dir(), self.name, self.deps_file)
     if not os.path.isfile(filepath):
+      logging.info('%s: No DEPS file found at %s' % (self.name, filepath))
       return
     deps_content = gclient_utils.FileRead(filepath)
+    logging.debug(deps_content)
 
     # Eval the content.
     # One thing is unintuitive, vars= {} must happen before Var() use.
@@ -305,7 +308,9 @@ class Dependency(GClientKeywords):
     # Convert the deps into real Dependency.
     for name, url in deps.iteritems():
       if name in [s.name for s in self.dependencies]:
-        raise
+        raise gclient_utils.Error(
+            'The same name "%s" appears multiple times in the deps section' %
+                name)
       self.dependencies.append(Dependency(self, name, url, None, None, None,
           None))
     # Sorting by name would in theory make the whole thing coherent, since
@@ -314,7 +319,7 @@ class Dependency(GClientKeywords):
     # later. But if this would be removed right now, many projects wouldn't be
     # able to sync anymore.
     self.dependencies.sort(key=lambda x: x.name)
-    logging.info('Loaded: %s' % str(self))
+    logging.debug('Loaded: %s' % str(self))
 
   def RunCommandRecursively(self, options, revision_overrides,
                             command, args, pm):
@@ -410,9 +415,12 @@ class Dependency(GClientKeywords):
 
   def _RunHookAction(self, hook_dict, matching_file_list):
     """Runs the action from a single hook."""
+    # A single DEPS file can specify multiple hooks so this function can be
+    # called multiple times on a single Dependency.
+    #assert self.hooks_ran == False
     self.hooks_ran = True
-    logging.info(hook_dict)
-    logging.info(matching_file_list)
+    logging.debug(hook_dict)
+    logging.debug(matching_file_list)
     command = hook_dict['action'][:]
     if command[0] == 'python':
       # If the hook specified "python" as the first item, the action is a
@@ -466,9 +474,9 @@ class Dependency(GClientKeywords):
 
   def __str__(self):
     out = []
-    for i in ('name', 'url', 'safesync_url', 'custom_deps', 'custom_vars',
-              'deps_hooks', '_file_list', 'processed',
-              'hooks_ran'):
+    for i in ('name', 'url', 'parsed_url', 'safesync_url', 'custom_deps',
+              'custom_vars', 'deps_hooks', '_file_list', 'processed',
+              'hooks_ran', 'deps_parsed'):
       # 'deps_file'
       if self.__dict__[i]:
         out.append('%s: %s' % (i, self.__dict__[i]))
@@ -489,6 +497,13 @@ class Dependency(GClientKeywords):
       out = '%s(%s) -> %s' % (i.name, i.url, out)
       i = i.parent
     return out
+
+  def root_parent(self):
+    """Returns the root object, normally a GClient object."""
+    d = self
+    while d.parent:
+      d = d.parent
+    return d
 
 
 class GClient(Dependency):
@@ -776,7 +791,7 @@ solutions = [
         if not entry is entries[-1]:
           line += ';'
         print line
-    logging.debug(str(self))
+    logging.info(str(self))
 
   def ParseDepsFile(self, direct_reference):
     """No DEPS to parse for a .gclient file."""
