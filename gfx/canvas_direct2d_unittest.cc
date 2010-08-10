@@ -11,6 +11,7 @@
 #include "base/ref_counted_memory.h"
 #include "base/resource_util.h"
 #include "base/scoped_ptr.h"
+#include "gfx/brush.h"
 #include "gfx/canvas_direct2d.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/codec/png_codec.h"

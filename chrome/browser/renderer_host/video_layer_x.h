@@ -8,6 +8,7 @@
 
 #include "app/x11_util.h"
 #include "chrome/browser/renderer_host/video_layer.h"
+#include "gfx/rect.h"
 
 // Implements a YUV data layer using X to hold the RGB data.
 class VideoLayerX : public VideoLayer {

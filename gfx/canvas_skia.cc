@@ -8,6 +8,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "gfx/brush.h"
 #include "gfx/font.h"
 #include "gfx/rect.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"

@@ -9,6 +9,7 @@
 
 #include "app/gtk_signal_registrar.h"
 #include "base/i18n/rtl.h"
+#include "base/logging.h"
 #include "chrome/browser/gtk/gtk_util.h"
 
 namespace gtk_util {

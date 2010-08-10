@@ -22,6 +22,7 @@
 #include "base/logging.h"
 #include "base/thread.h"
 #include "app/x11_util_internal.h"
+#include "gfx/rect.h"
 #include "gfx/size.h"
 
 namespace x11_util {

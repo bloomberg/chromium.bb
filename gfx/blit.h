@@ -7,8 +7,6 @@
 #pragma once
 
 #include "gfx/native_widget_types.h"
-#include "gfx/point.h"
-#include "gfx/rect.h"
 
 namespace skia {
 class PlatformCanvas;

@@ -10,6 +10,7 @@
 #include <float.h>
 #endif
 
+#include "base/logging.h"
 #include "gfx/rect.h"
 
 // static

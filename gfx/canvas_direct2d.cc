@@ -5,6 +5,7 @@
 #include "gfx/canvas_direct2d.h"
 
 #include "base/scoped_ptr.h"
+#include "gfx/brush.h"
 #include "gfx/rect.h"
 
 namespace {

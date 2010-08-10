@@ -15,8 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "base/task.h"
-#include "gfx/rect.h"
+#include "base/basictypes.h"
 
 typedef struct _GdkDrawable GdkWindow;
 typedef struct _GtkWidget GtkWidget;
@@ -30,6 +29,7 @@ class Thread;
 }
 
 namespace gfx {
+class Rect;
 class Size;
 }
 

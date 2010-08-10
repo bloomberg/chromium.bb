@@ -21,10 +21,12 @@ class Path : public SkPath {
     int y;
   };
 
-  Path() : SkPath() { moveTo(0, 0); }
+  Path();
 
   // Creates a path populated with the specified points.
   Path(const Point* points, size_t count);
+
+  ~Path();
 
 #if defined(OS_WIN) || defined(USE_X11)
   // Creates a NativeRegion from the path. The caller is responsible for freeing
