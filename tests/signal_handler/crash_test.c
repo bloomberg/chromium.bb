@@ -7,8 +7,8 @@
 #include <stdio.h>
 
 int main() {
-  fprintf(stderr, "Causing crash in untrusted code...\n");
+  fprintf(stderr, "[CRASH_TEST] Causing crash in untrusted code...\n");
   *(int *) 0 = 0;
-  fprintf(stderr, "FAIL: Survived crash attempt\n");
+  fprintf(stderr, "[CRASH_TEST] FAIL: Survived crash attempt\n");
   return 1;
 }

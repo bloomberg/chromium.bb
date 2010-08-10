@@ -16,10 +16,14 @@ env.ComponentProgram('crash_test.nexe', 'crash_test.c')
 
 nodes = []
 
+# Regular expression to filter out crash test messages.
+crash_filter = '\'^\[CRASH_TEST\]|Fault in NaCl\''
+
 # Test that crashes in untrusted code are recognised as such.
 nodes.append(env.CommandSelLdrTestNacl(
         'sig.out', command=[env.File('crash_test.nexe')],
         stderr_golden=env.File('untrusted-fault.stderr'),
+        stderr_filter=crash_filter,
         exit_status='segfault'))
 
 # Test that crashes in trusted code are recognised as such.
@@ -28,6 +32,7 @@ crash_env['ENV']['NACL_CRASH_TEST'] = '1'
 nodes.append(crash_env.CommandSelLdrTestNacl(
         'sig2.out', command=[env.File('crash_test.nexe')],
         stderr_golden=env.File('trusted-fault.stderr'),
+        stderr_filter=crash_filter,
         exit_status='segfault'))
 
 if not env.IsRunningUnderValgrind():

@@ -252,7 +252,11 @@ def main(argv):
     return -1
 
   if GlobalSettings['filter_validator']:
+    # Note: This will filter out x86-32 validator messages.
     stdout = test_lib.RegexpFilterLines(r'^(?!VALIDATOR)', stdout)
+    # Note: This will filter out x86-64 validator messages.
+    stderr = test_lib.RegexpFilterLines(
+             r'^(?!\[\d+,\d+:\d+:\d+:\d+\.\d+] VALIDATOR:)', stderr)
 
   for (stream, getter) in [
       ('stdout', lambda: stdout),

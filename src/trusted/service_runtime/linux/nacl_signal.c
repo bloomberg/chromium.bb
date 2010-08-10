@@ -156,7 +156,7 @@ void NaClSignalHandlerInit() {
   }
 
   if (getenv("NACL_CRASH_TEST") != NULL) {
-    DebugMsg("Causing crash in NaCl trusted code...\n");
+    DebugMsg("[CRASH_TEST] Causing crash in NaCl trusted code...\n");
     *(int *) 0 = 0;
   }
 }
