@@ -15,34 +15,39 @@ using testing::_;
 using testing::CreateFunctor;
 using testing::Return;
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ProxyFactory::LaunchDelegate);
+DISABLE_RUNNABLE_METHOD_REFCOUNT(LaunchDelegate);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ChromeFrameAutomationClient);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(chrome_frame_test::TimedMsgLoop);
+
+MATCHER_P(LaunchParamProfileEq, profile_name, "Check for profile name") {
+  return arg->profile_name().compare(profile_name) == 0;
+}
 
 void MockProxyFactory::GetServerImpl(ChromeFrameAutomationProxy* pxy,
                                      void* proxy_id,
                                      AutomationLaunchResult result,
                                      LaunchDelegate* d,
-                                     const ChromeFrameLaunchParams& params,
+                                     ChromeFrameLaunchParams* params,
                                      void** automation_server_id) {
   *automation_server_id = proxy_id;
   Task* task = NewRunnableMethod(d,
-      &ProxyFactory::LaunchDelegate::LaunchComplete, pxy, result);
+      &LaunchDelegate::LaunchComplete, pxy, result);
   loop_->PostDelayedTask(FROM_HERE, task,
-                         params.automation_server_launch_timeout/2);
+                         params->launch_timeout() / 2);
 }
 
 void CFACMockTest::SetAutomationServerOk(int times) {
   EXPECT_CALL(factory_, GetAutomationServer(testing::NotNull(),
-              testing::Field(&ChromeFrameLaunchParams::profile_name,
-                  testing::StrEq(profile_path_.BaseName().value())),
-              testing::NotNull()))
+        LaunchParamProfileEq(profile_path_.BaseName().value()),
+        testing::NotNull()))
     .Times(times)
     .WillRepeatedly(testing::Invoke(CreateFunctor(&factory_,
         &MockProxyFactory::GetServerImpl, get_proxy(), id_,
         AUTOMATION_SUCCESS)));
 
-  EXPECT_CALL(factory_, ReleaseAutomationServer(testing::Eq(id_))).Times(times);
+  EXPECT_CALL(factory_,
+      ReleaseAutomationServer(testing::Eq(id_), testing::NotNull()))
+          .Times(times);
 }
 
 void CFACMockTest::Set_CFD_LaunchFailed(AutomationLaunchResult result) {
@@ -93,17 +98,12 @@ TEST(CFACWithChrome, CreateTooFast) {
       .Times(1)
       .WillOnce(QUIT_LOOP(loop));
 
-  ChromeFrameLaunchParams clp = {
-    timeout,
-    GURL(),
-    GURL(),
-    profile_path,
-    profile_path.BaseName().value(),
-    L"",
-    false,
-    false,
-    false
-  };
+  GURL empty;
+  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
+      empty, empty, profile_path, profile_path.BaseName().value(), L"",
+      false, false));
+  clp->set_launch_timeout(timeout);
+  clp->set_version_check(false);
   EXPECT_TRUE(client->Initialize(&cfd, clp));
   loop.RunFor(10);
   client->Uninitialize();
@@ -130,17 +130,12 @@ TEST(CFACWithChrome, CreateNotSoFast) {
   EXPECT_CALL(cfd, OnAutomationServerLaunchFailed(_, _))
       .Times(0);
 
-  ChromeFrameLaunchParams clp = {
-    timeout,
-    GURL(),
-    GURL(),
-    profile_path,
-    profile_path.BaseName().value(),
-    L"",
-    false,
-    false,
-    false
-  };
+  GURL empty;
+  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
+      empty, empty, profile_path, profile_path.BaseName().value(), L"",
+      false, false));
+  clp->set_launch_timeout(timeout);
+  clp->set_version_check(false);
   EXPECT_TRUE(client->Initialize(&cfd, clp));
 
   loop.RunFor(11);
@@ -182,17 +177,12 @@ TEST(CFACWithChrome, NavigateOk) {
         .WillOnce(QUIT_LOOP(loop));
   }
 
-  ChromeFrameLaunchParams clp = {
-    timeout,
-    GURL(),
-    GURL(),
-    profile_path,
-    profile_path.BaseName().value(),
-    L"",
-    false,
-    false,
-    false
-  };
+  GURL empty;
+  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
+      empty, empty, profile_path, profile_path.BaseName().value(), L"",
+      false, false));
+  clp->set_launch_timeout(timeout);
+  clp->set_version_check(false);
   EXPECT_TRUE(client->Initialize(&cfd, clp));
   loop.RunFor(10);
   client->Uninitialize();
@@ -233,17 +223,12 @@ TEST(CFACWithChrome, NavigateFailed) {
       .Times(1)
       .WillOnce(QUIT_LOOP_SOON(loop, 2));
 
-  ChromeFrameLaunchParams clp = {
-    10000,
-    GURL(),
-    GURL(),
-    profile_path,
-    profile_path.BaseName().value(),
-    L"",
-    false,
-    false,
-    false
-  };
+  GURL empty;
+  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
+      empty, empty, profile_path, profile_path.BaseName().value(), L"",
+      false, false));
+  clp->set_launch_timeout(10000);
+  clp->set_version_check(false);
   EXPECT_TRUE(client->Initialize(&cfd, clp));
 
   loop.RunFor(10);
@@ -276,17 +261,12 @@ TEST_F(CFACMockTest, MockedCreateTabOk) {
   EXPECT_CALL(mock_proxy_, CancelAsync(_)).Times(testing::AnyNumber());
 
   // Here we go!
-  ChromeFrameLaunchParams clp = {
-    timeout,
-    GURL(),
-    GURL(),
-    profile_path_,
-    profile_path_.BaseName().value(),
-    L"",
-    false,
-    false,
-    false
-  };
+  GURL empty;
+  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
+      empty, empty, profile_path_, profile_path_.BaseName().value(), L"",
+      false, false));
+  clp->set_launch_timeout(timeout);
+  clp->set_version_check(false);
   EXPECT_TRUE(client_->Initialize(&cfd_, clp));
   loop_.RunFor(10);
 
@@ -313,17 +293,12 @@ TEST_F(CFACMockTest, MockedCreateTabFailed) {
   Set_CFD_LaunchFailed(AUTOMATION_CREATE_TAB_FAILED);
 
   // Here we go!
-  ChromeFrameLaunchParams clp = {
-    timeout_,
-    GURL(),
-    GURL(),
-    profile_path_,
-    profile_path_.BaseName().value(),
-    L"",
-    false,
-    false,
-    false
-  };
+  GURL empty;
+  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
+      empty, empty, profile_path_, profile_path_.BaseName().value(), L"",
+      false, false));
+  clp->set_launch_timeout(timeout_);
+  clp->set_version_check(false);
   EXPECT_TRUE(client_->Initialize(&cfd_, clp));
   loop_.RunFor(4);
   client_->Uninitialize();
@@ -333,7 +308,8 @@ class TestChromeFrameAutomationProxyImpl
     : public ChromeFrameAutomationProxyImpl {
  public:
   TestChromeFrameAutomationProxyImpl()
-      : ChromeFrameAutomationProxyImpl(1) {  // 1 is an unneeded timeout.
+        // 1 is an unneeded timeout.
+      : ChromeFrameAutomationProxyImpl(NULL, 1) {
   }
   MOCK_METHOD3(
       SendAsAsync,
@@ -357,17 +333,12 @@ TEST_F(CFACMockTest, OnChannelError) {
   TestChromeFrameAutomationProxyImpl proxy;
   returned_proxy_ = &proxy;
 
-  ChromeFrameLaunchParams clp = {
-    1,  // Unneeded timeout, but can't be 0.
-    GURL(),
-    GURL(),
-    profile_path_,
-    profile_path_.BaseName().value(),
-    L"",
-    false,
-    false,
-    false
-  };
+  GURL empty;
+  scoped_refptr<ChromeFrameLaunchParams> clp(new ChromeFrameLaunchParams(
+      empty, empty, profile_path_, profile_path_.BaseName().value(), L"",
+      false, false));
+  clp->set_launch_timeout(1);  // Unneeded timeout, but can't be 0.
+  clp->set_version_check(false);
 
   HWND h1 = ::GetDesktopWindow();
   HWND h2 = ::GetDesktopWindow();

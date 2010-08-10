@@ -1175,7 +1175,12 @@ std::string BindStatus2Str(ULONG bind_status) {
 }
 
 std::string PiFlags2Str(DWORD flags) {
-#define ADD_PI_FLAG(x)  if (flags & x) { s.append(#x ## " "); flags &= ~x; }
+#define ADD_PI_FLAG(x)  \
+  if (flags & x) { \
+    s.append(#x ## " "); \
+    flags &= ~x; \
+  }
+
   std::string s = " flags ";
   ADD_PI_FLAG(PI_PARSE_URL);
   ADD_PI_FLAG(PI_FILTER_MODE);
@@ -1200,7 +1205,12 @@ std::string PiFlags2Str(DWORD flags) {
 }
 
 std::string Bscf2Str(DWORD flags) {
-#define ADD_BSCF_FLAG(x)  if (flags & x) { s.append(#x ## " "); flags &= ~x; }
+#define ADD_BSCF_FLAG(x)  \
+  if (flags & x) {\
+    s.append(#x ## " "); \
+    flags &= ~x; \
+  }
+
   std::string s = " flags ";
   ADD_BSCF_FLAG(BSCF_FIRSTDATANOTIFICATION)
   ADD_BSCF_FLAG(BSCF_INTERMEDIATEDATANOTIFICATION)
@@ -1253,8 +1263,7 @@ bool ChromeFrameUrl::Parse(const std::wstring& url) {
 
   attach_to_external_tab_ = MatchPatternWide(url.c_str(),
                                              kChromeFrameAttachTabPattern);
-  is_chrome_protocol_ = StartsWith(url, kChromeProtocolPrefix,
-                                   false);
+  is_chrome_protocol_ = StartsWith(url, kChromeProtocolPrefix, false);
   DCHECK(!(attach_to_external_tab_ && is_chrome_protocol_));
   if (is_chrome_protocol_) {
     url_.erase(0, lstrlen(kChromeProtocolPrefix));

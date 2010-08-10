@@ -81,7 +81,7 @@ class MockNPAPI: public ChromeFrameNPAPI {
 class MockAutomationClient: public ChromeFrameAutomationClient {
  public:
   MOCK_METHOD2(Initialize, bool(ChromeFrameDelegate*,
-                                const ChromeFrameLaunchParams&));
+                                ChromeFrameLaunchParams*));
   MOCK_METHOD1(SetEnableExtensionAutomation,
                void(const std::vector<std::string>&));  // NOLINT
 };
@@ -91,6 +91,16 @@ class MockProxyService: public NpProxyService {
   MOCK_METHOD2(Initialize, bool(NPP instance, ChromeFrameAutomationClient*));
 };
 
+namespace {
+
+MATCHER_P4(LaunchParamEq, version_check, extra, incognito, widget,
+           "Basic check for ChromeFrameLaunchParams") {
+  return arg->version_check() == version_check &&
+         arg->extra_arguments().compare(extra) == 0 &&
+         arg->incognito() == incognito,
+         arg->widget_mode() == widget;
+}
+}
 
 // Test fixture to allow testing the privileged NPAPI APIs
 class TestNPAPIPrivilegedApi: public ::testing::Test {
@@ -125,13 +135,12 @@ class TestNPAPIPrivilegedApi: public ::testing::Test {
 
     EXPECT_CALL(*mock_proxy, Initialize(_, _)).WillRepeatedly(Return(false));
 
+    scoped_refptr<ChromeFrameLaunchParams> launch_params(
+        new ChromeFrameLaunchParams(GURL(), GURL(), FilePath(), profile_name,
+            extra_args, is_incognito, true));
+
     EXPECT_CALL(*mock_automation,
-        Initialize(_, AllOf(
-            Field(&ChromeFrameLaunchParams::perform_version_check, true),
-            Field(&ChromeFrameLaunchParams::extra_chrome_arguments,
-                StrEq(extra_args)),
-            Field(&ChromeFrameLaunchParams::incognito_mode, is_incognito),
-            Field(&ChromeFrameLaunchParams::is_widget_mode, true))))
+      Initialize(_, LaunchParamEq(true, extra_args, is_incognito, true)))
         .WillOnce(Return(true));
 
     if (expect_privilege_check) {
@@ -554,3 +563,4 @@ TEST_F(TestNPAPIPrivilegedProperty,
 }
 
 // TODO(siggi): test invoking postPrivateMessage.
+

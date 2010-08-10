@@ -5,6 +5,8 @@
 #ifndef CHROME_FRAME_TEST_MOCK_IE_EVENT_SINK_ACTIONS_H_
 #define CHROME_FRAME_TEST_MOCK_IE_EVENT_SINK_ACTIONS_H_
 
+#include "base/scoped_bstr_win.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/simulate_input.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,6 +41,28 @@ ACTION_P(StopWindowWatching, mock) {
 
 ACTION_P(ExpectRendererHasFocus, mock) {
   mock->event_sink()->ExpectRendererWindowHasFocus();
+}
+
+ACTION_P2(ConnectDocPropNotifySink, mock, sink) {
+  ScopedComPtr<IDispatch> document;
+  mock->event_sink()->web_browser2()->get_Document(document.Receive());
+  EXPECT_TRUE(document != NULL);  // NOLINT
+  if (document) {
+    sink->Attach(document);
+  }
+}
+
+ACTION_P(DisconnectDocPropNotifySink, sink) {
+  sink->Detach();
+}
+
+ACTION_P3(DelayNavigateToCurrentUrl, mock, loop, delay) {
+  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(&NavigateToCurrentUrl,
+      mock), delay);
+}
+
+ACTION_P2(ExpectDocumentReadystate, mock, ready_state) {
+  mock->ExpectDocumentReadystate(ready_state);
 }
 
 ACTION_P8(DelayExecCommand, mock, loop, delay, cmd_group_guid, cmd_id,
@@ -106,6 +130,13 @@ ACTION_P4(DelaySendScanCode, loop, delay, c, mod) {
         simulate_input::SendScanCode, c, mod), delay);
 }
 
+
+ACTION(KillChromeFrameProcesses) {
+  KillAllNamedProcessesWithArgument(
+      UTF8ToWide(chrome_frame_test::kChromeImageName),
+      UTF8ToWide(switches::kChromeFrame));
+}
+
 // This function selects the address bar via the Alt+d shortcut. This is done
 // via a delayed task which executes after the delay which is passed in.
 // The subsequent operations like typing in the actual url and then hitting
@@ -138,10 +169,10 @@ ACTION_P5(ValidateWindowSize, mock, left, top, width, height) {
   int actual_height = 0;
 
   IWebBrowser2* web_browser2 = mock->event_sink()->web_browser2();
-  web_browser2->get_Left(reinterpret_cast<long*>(&actual_left));
-  web_browser2->get_Top(reinterpret_cast<long*>(&actual_top));
-  web_browser2->get_Width(reinterpret_cast<long*>(&actual_width));
-  web_browser2->get_Height(reinterpret_cast<long*>(&actual_height));
+  web_browser2->get_Left(reinterpret_cast<long*>(&actual_left));  // NOLINT
+  web_browser2->get_Top(reinterpret_cast<long*>(&actual_top));  // NOLINT
+  web_browser2->get_Width(reinterpret_cast<long*>(&actual_width));  // NOLINT
+  web_browser2->get_Height(reinterpret_cast<long*>(&actual_height));  // NOLINT
 
   EXPECT_EQ(actual_left, left);
   EXPECT_EQ(actual_top, top);

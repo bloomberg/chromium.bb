@@ -175,13 +175,15 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
  public:
   ChromeFrameActivexBase()
       : ready_state_(READYSTATE_UNINITIALIZED),
-        failed_to_fetch_in_place_frame_(false) {
+      url_fetcher_(new UrlmonUrlRequestManager()),
+      failed_to_fetch_in_place_frame_(false),
+      draw_sad_tab_(false) {
     m_bWindowOnly = TRUE;
-    url_fetcher_.set_container(static_cast<IDispatch*>(this));
+    url_fetcher_->set_container(static_cast<IDispatch*>(this));
   }
 
   ~ChromeFrameActivexBase() {
-    url_fetcher_.set_container(NULL);
+    url_fetcher_->set_container(NULL);
   }
 
 DECLARE_OLEMISC_STATUS(OLEMISC_RECOMPOSEONRESIZE | OLEMISC_CANTLINKINSIDE |
@@ -206,6 +208,7 @@ BEGIN_COM_MAP(ChromeFrameActivexBase)
   COM_INTERFACE_ENTRY(IQuickActivate)
   COM_INTERFACE_ENTRY(IProvideClassInfo)
   COM_INTERFACE_ENTRY(IProvideClassInfo2)
+  COM_INTERFACE_ENTRY(IConnectionPointContainer)
   COM_INTERFACE_ENTRY_FUNC_BLIND(0, InterfaceNotSupported)
 END_COM_MAP()
 
@@ -270,6 +273,10 @@ END_MSG_MAP()
     Uninitialize();
   }
 
+  void ResetUrlRequestManager() {
+    url_fetcher_.reset(new UrlmonUrlRequestManager());
+  }
+
   static HRESULT WINAPI InterfaceNotSupported(void* pv, REFIID riid, void** ppv,
                                               DWORD dw) {
 #ifndef NDEBUG
@@ -300,7 +307,23 @@ END_MSG_MAP()
       NOTREACHED();
       return E_FAIL;
     }
-    // Don't draw anything.
+
+    if (draw_sad_tab_) {
+      // TODO(tommi): Draw a proper sad tab.
+      RECT rc = {0};
+      if (draw_info.prcBounds) {
+        rc.top = draw_info.prcBounds->top;
+        rc.bottom = draw_info.prcBounds->bottom;
+        rc.left = draw_info.prcBounds->left;
+        rc.right = draw_info.prcBounds->right;
+      } else {
+        GetClientRect(&rc);
+      }
+      ::DrawTextA(draw_info.hdcDraw, ":-(", -1, &rc,
+          DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    } else {
+      // Don't draw anything.
+    }
     return S_OK;
   }
 
@@ -512,7 +535,7 @@ END_MSG_MAP()
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
                    BOOL& handled) {  // NO_LINT
     ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0);
-    url_fetcher_.put_notification_window(m_hWnd);
+    url_fetcher_->put_notification_window(m_hWnd);
     if (automation_client_.get()) {
       automation_client_->SetParentWindow(m_hWnd);
     } else {
@@ -535,6 +558,7 @@ END_MSG_MAP()
 
   // ChromeFrameDelegate override
   virtual void OnAutomationServerReady() {
+    draw_sad_tab_ = false;
     ChromeFramePlugin<T>::OnAutomationServerReady();
 
     ready_state_ = READYSTATE_COMPLETE;
@@ -544,6 +568,10 @@ END_MSG_MAP()
   // ChromeFrameDelegate override
   virtual void OnAutomationServerLaunchFailed(
       AutomationLaunchResult reason, const std::string& server_version) {
+    DLOG(INFO) << __FUNCTION__;
+    if (reason == AUTOMATION_SERVER_CRASHED)
+      draw_sad_tab_ = true;
+
     ready_state_ = READYSTATE_UNINITIALIZED;
     FireOnChanged(DISPID_READYSTATE);
   }
@@ -1201,6 +1229,8 @@ END_MSG_MAP()
   // If false, we tried but failed to fetch an IOleInPlaceFrame from our host.
   // Cached here so we don't try to fetch it every time if we keep failing.
   bool failed_to_fetch_in_place_frame_;
+  bool draw_sad_tab_;
+
   ScopedComPtr<IOleInPlaceFrame> in_place_frame_;
 
   // For more information on the ready_state_ property see:
@@ -1222,7 +1252,7 @@ END_MSG_MAP()
 
   // Handle network requests when host network stack is used. Passed to the
   // automation client on initialization.
-  UrlmonUrlRequestManager url_fetcher_;
+  scoped_ptr<UrlmonUrlRequestManager> url_fetcher_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_BASE_H_

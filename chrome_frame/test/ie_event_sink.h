@@ -57,6 +57,14 @@ class IEEventListener {
   virtual void OnNewBrowserWindow(IDispatch* new_window, const wchar_t* url) {}
 };
 
+// Listener for IPropertyNotifySink.
+class PropertyNotifySinkListener {
+ public:
+  virtual ~PropertyNotifySinkListener() {}
+  virtual void OnChanged(DISPID dispid) {}
+  virtual void OnRequestEdit(DISPID dispid) {}
+};
+
 // This class sets up event sinks to the IWebBrowser interface. It forwards
 // all events to its listener.
 // TODO(kkania): Delete WebBrowserEventSink and use this class instead for
@@ -227,6 +235,38 @@ END_SINK_MAP()
   static _ATL_FUNC_INFO kVoidMethodInfo;
   static _ATL_FUNC_INFO kDocumentCompleteInfo;
   static _ATL_FUNC_INFO kFileDownloadInfo;
+};
+
+class PropertyNotifySinkImpl
+    : public CComObjectRootEx<CComSingleThreadModel>,
+      public IPropertyNotifySink {
+ public:
+  PropertyNotifySinkImpl() : listener_(NULL) {
+  }
+
+BEGIN_COM_MAP(PropertyNotifySinkImpl)
+  COM_INTERFACE_ENTRY(IPropertyNotifySink)
+END_COM_MAP()
+
+  STDMETHOD(OnChanged)(DISPID dispid) {
+    if (listener_)
+      listener_->OnChanged(dispid);
+    return S_OK;
+  }
+
+  STDMETHOD(OnRequestEdit)(DISPID dispid) {
+    if (listener_)
+      listener_->OnRequestEdit(dispid);
+    return S_OK;
+  }
+
+  void set_listener(PropertyNotifySinkListener* listener) {
+    DCHECK(listener_ == NULL || listener == NULL);
+    listener_ = listener;
+  }
+
+ protected:
+  PropertyNotifySinkListener* listener_;
 };
 
 }  // namespace chrome_frame_test

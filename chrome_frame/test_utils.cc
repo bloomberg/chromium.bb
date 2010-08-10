@@ -297,7 +297,6 @@ bool KillAllNamedProcessesWithArgument(const std::wstring& process_name,
   base::NamedProcessIterator iter(process_name, &filter);
   while (const base::ProcessEntry* entry = iter.NextProcessEntry()) {
     if (!base::KillProcessById(entry->pid(), 0, true)) {
-      DLOG(ERROR) << "Failed to kill process " << (*entry).th32ProcessID;
       result = false;
     }
   }

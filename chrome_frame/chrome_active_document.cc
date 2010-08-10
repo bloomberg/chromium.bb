@@ -68,7 +68,7 @@ ChromeActiveDocument::ChromeActiveDocument()
       accelerator_table_(NULL) {
   TRACE_EVENT_BEGIN("chromeframe.createactivedocument", this, "");
 
-  url_fetcher_.set_frame_busting(false);
+  url_fetcher_->set_frame_busting(false);
   memset(&navigation_info_, 0, sizeof(navigation_info_));
 }
 
@@ -83,7 +83,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
     DLOG(INFO) << "Reusing automation client instance from "
                << cached_document;
     DCHECK(automation_client_.get() != NULL);
-    automation_client_->Reinitialize(this, &url_fetcher_);
+    automation_client_->Reinitialize(this, url_fetcher_.get());
     is_automation_client_reused_ = true;
   } else {
     // The FinalConstruct implementation in the ChromeFrameActivexBase class
@@ -277,7 +277,8 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     return E_INVALIDARG;
   }
 
-  std::string referrer = mgr ? mgr->referrer() : EmptyString();
+  std::string referrer(mgr ? mgr->referrer() : EmptyString());
+
   // With CTransaction patch we have more robust way to grab the referrer for
   // each top-level-switch-to-CF request by peeking at our sniffing data
   // object that lives inside the bind context.
@@ -293,7 +294,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   }
 
   if (!cf_url.is_chrome_protocol() && !cf_url.attach_to_external_tab())
-    url_fetcher_.SetInfoForUrl(cf_url.url(), moniker_name, bind_context);
+    url_fetcher_->SetInfoForUrl(cf_url.url(), moniker_name, bind_context);
 
   THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",
                                           cf_url.is_chrome_protocol(),
@@ -372,7 +373,12 @@ STDMETHODIMP ChromeActiveDocument::Exec(const GUID* cmd_group_guid,
   if (automation_client_.get() && automation_client_->tab()) {
     return ProcessExecCommand(cmd_group_guid, command_id, cmd_exec_opt,
                               in_args, out_args);
+  } else if (command_id == OLECMDID_REFRESH && cmd_group_guid == NULL) {
+    // If the automation server has crashed and the user is refreshing the
+    // page, let OnRefreshPage attempt to recover.
+    OnRefreshPage(cmd_group_guid, command_id, cmd_exec_opt, in_args, out_args);
   }
+
   return OLECMDERR_E_NOTSUPPORTED;
 }
 
@@ -844,7 +850,7 @@ void ChromeActiveDocument::OnDetermineSecurityZone(const GUID* cmd_group_guid,
 }
 
 void ChromeActiveDocument::OnDisplayPrivacyInfo() {
-  privacy_info_ = url_fetcher_.privacy_info();
+  privacy_info_ = url_fetcher_->privacy_info();
   Reset();
   DoPrivacyDlg(m_hWnd, url_, this, TRUE);
 }
@@ -989,10 +995,8 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
 
   url_.Allocate(cf_url.url().c_str());
 
-  std::string utf8_url;
-  WideToUTF8(url_, url_.Length(), &utf8_url);
-
-  DLOG(INFO) << "this:" << this << " url is:" << url_;
+  std::string utf8_url(WideToUTF8(cf_url.url()));
+  DLOG(INFO) << "this:" << this << " url is:" << utf8_url;
 
   if (cf_url.attach_to_external_tab()) {
     dimensions_ = cf_url.dimensions();
@@ -1010,15 +1014,17 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
   if (is_automation_client_reused_)
     return true;
 
-  automation_client_->SetUrlFetcher(&url_fetcher_);
+  automation_client_->SetUrlFetcher(url_fetcher_.get());
 
+  GURL url(utf8_url);
   return InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate(),
-                              false, GURL(utf8_url), GURL(referrer));
+                              false, url, GURL(referrer));
 }
 
 
 HRESULT ChromeActiveDocument::OnRefreshPage(const GUID* cmd_group_guid,
     DWORD command_id, DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args) {
+  DLOG(INFO) << __FUNCTION__;
   popup_allowed_ = false;
   if (in_args->vt == VT_I4 &&
       in_args->lVal & OLECMDIDF_REFRESH_PAGEACTION_POPUPWINDOW) {
@@ -1027,16 +1033,28 @@ HRESULT ChromeActiveDocument::OnRefreshPage(const GUID* cmd_group_guid,
     // Ask the yellow security band to change the text and icon and to remain
     // visible.
     IEExec(&CGID_DocHostCommandHandler, OLECMDID_PAGEACTIONBLOCKED,
-      0x80000000 | OLECMDIDF_WINDOWSTATE_USERVISIBLE_VALID, NULL, NULL);
+        0x80000000 | OLECMDIDF_WINDOWSTATE_USERVISIBLE_VALID, NULL, NULL);
   }
 
   TabProxy* tab_proxy = GetTabProxy();
-  if (tab_proxy)
+  if (tab_proxy) {
     tab_proxy->ReloadAsync();
+  } else {
+    DLOG(ERROR) << "No automation proxy";
+    // The current url request manager (url_fetcher_) has been switched to
+    // a stopping state so we need to reset it and get a new one for the new
+    // automation server.
+    ResetUrlRequestManager();
+    url_fetcher_->set_frame_busting(false);
+    // And now launch the current URL again.  This starts a new server process.
+    DCHECK(navigation_info_.url.is_valid());
+    ChromeFrameUrl cf_url;
+    cf_url.Parse(UTF8ToWide(navigation_info_.url.spec()));
+    LaunchUrl(cf_url, navigation_info_.referrer.spec());
+  }
 
   return S_OK;
 }
-
 
 HRESULT ChromeActiveDocument::SetPageFontSize(const GUID* cmd_group_guid,
                                               DWORD command_id,

@@ -44,7 +44,6 @@ BEGIN_COM_MAP(ChromeFrameActivex)
   COM_INTERFACE_ENTRY(IObjectWithSite)
   COM_INTERFACE_ENTRY(IObjectSafety)
   COM_INTERFACE_ENTRY(IPersistPropertyBag)
-  COM_INTERFACE_ENTRY(IConnectionPointContainer)
   COM_INTERFACE_ENTRY_CHAIN(Base)
 END_COM_MAP()
 

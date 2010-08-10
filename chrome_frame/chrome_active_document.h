@@ -9,9 +9,10 @@
 #include <atlcom.h>
 #include <atlctl.h>
 #include <htiframe.h>
-#include <map>
 #include <mshtmcid.h>
 #include <perhist.h>
+
+#include <map>
 #include <string>
 
 #include "base/scoped_ptr.h"
@@ -427,10 +428,6 @@ END_EXEC_COMMAND_MAP()
                        BOOL& handled);
   LRESULT OnSetFocus(UINT message, WPARAM wparam, LPARAM lparam,
                      BOOL& handled);
-
-  // Checks for the presence of known-to-be-buggy BHOs.  If we find any
-  // we do not fire the DocumentComplete event to avoid a crash.
-  static bool ShouldFireDocumentComplete();
 
   // Sets the dimensions on the IE window. These dimensions are parsed out from
   // the information passed in from Chrome during window.open.

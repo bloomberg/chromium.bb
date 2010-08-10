@@ -17,39 +17,43 @@ TEST(ProxyFactoryTest, CreateDestroy) {
   LaunchDelegateMock d;
   EXPECT_CALL(d, LaunchComplete(testing::NotNull(), testing::_)).Times(1);
 
-  ChromeFrameLaunchParams params;
-  params.automation_server_launch_timeout = 0;
-  params.profile_name = L"Adam.N.Epilinter";
-  params.extra_chrome_arguments = L"";
-  params.perform_version_check = false;
-  params.incognito_mode = false;
+  GURL empty;
+  FilePath profile_path;
+  scoped_refptr<ChromeFrameLaunchParams> params(
+      new ChromeFrameLaunchParams(empty, empty, profile_path,
+          L"Adam.N.Epilinter", L"", false, false));
+  params->set_launch_timeout(0);
+  params->set_version_check(false);
 
   void* id = NULL;
   f.GetAutomationServer(&d, params, &id);
-  f.ReleaseAutomationServer(id);
+  f.ReleaseAutomationServer(id, &d);
 }
 
 TEST(ProxyFactoryTest, CreateSameProfile) {
   ProxyFactory f;
   LaunchDelegateMock d;
-  EXPECT_CALL(d, LaunchComplete(testing::NotNull(), testing::_)).Times(2);
+  LaunchDelegateMock d2;
+  EXPECT_CALL(d, LaunchComplete(testing::NotNull(), testing::_)).Times(1);
+  EXPECT_CALL(d2, LaunchComplete(testing::NotNull(), testing::_)).Times(1);
 
-  ChromeFrameLaunchParams params;
-  params.automation_server_launch_timeout = 0;
-  params.profile_name = L"Dr. Gratiano Forbeson";
-  params.extra_chrome_arguments = L"";
-  params.perform_version_check = false;
-  params.incognito_mode = false;
+  GURL empty;
+  FilePath profile_path;
+  scoped_refptr<ChromeFrameLaunchParams> params(
+      new ChromeFrameLaunchParams(empty, empty, profile_path,
+          L"Dr. Gratiano Forbeson", L"", false, false));
+  params->set_launch_timeout(0);
+  params->set_version_check(false);
 
   void* i1 = NULL;
   void* i2 = NULL;
 
   f.GetAutomationServer(&d, params, &i1);
-  f.GetAutomationServer(&d, params, &i2);
+  f.GetAutomationServer(&d2, params, &i2);
 
   EXPECT_EQ(i1, i2);
-  f.ReleaseAutomationServer(i2);
-  f.ReleaseAutomationServer(i1);
+  f.ReleaseAutomationServer(i2, &d2);
+  f.ReleaseAutomationServer(i1, &d);
 }
 
 TEST(ProxyFactoryTest, CreateDifferentProfiles) {
@@ -57,19 +61,19 @@ TEST(ProxyFactoryTest, CreateDifferentProfiles) {
   LaunchDelegateMock d;
   EXPECT_CALL(d, LaunchComplete(testing::NotNull(), testing::_)).Times(2);
 
-  ChromeFrameLaunchParams params1;
-  params1.automation_server_launch_timeout = 0;
-  params1.profile_name = L"Adam.N.Epilinter";
-  params1.extra_chrome_arguments = L"";
-  params1.perform_version_check = false;
-  params1.incognito_mode = false;
+  GURL empty;
+  FilePath profile_path;
+  scoped_refptr<ChromeFrameLaunchParams> params1(
+      new ChromeFrameLaunchParams(empty, empty, profile_path,
+          L"Adam.N.Epilinter", L"", false, false));
+  params1->set_launch_timeout(0);
+  params1->set_version_check(false);
 
-  ChromeFrameLaunchParams params2;
-  params2.automation_server_launch_timeout = 0;
-  params2.profile_name = L"Dr. Gratiano Forbeson";
-  params2.extra_chrome_arguments = L"";
-  params2.perform_version_check = false;
-  params2.incognito_mode = false;
+  scoped_refptr<ChromeFrameLaunchParams> params2(
+      new ChromeFrameLaunchParams(empty, empty, profile_path,
+          L"Dr. Gratiano Forbeson", L"", false, false));
+  params2->set_launch_timeout(0);
+  params2->set_version_check(false);
 
   void* i1 = NULL;
   void* i2 = NULL;
@@ -78,8 +82,8 @@ TEST(ProxyFactoryTest, CreateDifferentProfiles) {
   f.GetAutomationServer(&d, params2, &i2);
 
   EXPECT_NE(i1, i2);
-  f.ReleaseAutomationServer(i2);
-  f.ReleaseAutomationServer(i1);
+  f.ReleaseAutomationServer(i2, &d);
+  f.ReleaseAutomationServer(i1, &d);
 }
 
 TEST(ProxyFactoryTest, FastCreateDestroy) {
@@ -87,17 +91,17 @@ TEST(ProxyFactoryTest, FastCreateDestroy) {
   LaunchDelegateMock* d1 = new LaunchDelegateMock();
   LaunchDelegateMock* d2 = new LaunchDelegateMock();
 
-  ChromeFrameLaunchParams params;
-  params.automation_server_launch_timeout = 10000;
-  params.profile_name = L"Dr. Gratiano Forbeson";
-  params.extra_chrome_arguments = L"";
-  params.perform_version_check = false;
-  params.incognito_mode = false;
+  GURL empty;
+  FilePath profile_path;
+  scoped_refptr<ChromeFrameLaunchParams> params(
+      new ChromeFrameLaunchParams(empty, empty, profile_path,
+          L"Dr. Gratiano Forbeson", L"", false, false));
+  params->set_launch_timeout(10000);
+  params->set_version_check(false);
 
   void* i1 = NULL;
   base::WaitableEvent launched(true, false);
   EXPECT_CALL(*d1, LaunchComplete(testing::NotNull(), AUTOMATION_SUCCESS))
-      .Times(1)
       .WillOnce(testing::InvokeWithoutArgs(&launched,
                                            &base::WaitableEvent::Signal));
   f.GetAutomationServer(d1, params, &i1);
@@ -114,10 +118,10 @@ TEST(ProxyFactoryTest, FastCreateDestroy) {
   void* i2 = NULL;
   f.GetAutomationServer(d2, params, &i2);
   EXPECT_EQ(i1, i2);
-  f.ReleaseAutomationServer(i2);
+  f.ReleaseAutomationServer(i2, d2);
   delete d2;
 
   ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_NORMAL);
-  f.ReleaseAutomationServer(i1);
+  f.ReleaseAutomationServer(i1, d1);
   delete d1;
 }

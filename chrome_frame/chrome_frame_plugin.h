@@ -5,6 +5,9 @@
 #ifndef CHROME_FRAME_CHROME_FRAME_PLUGIN_H_
 #define CHROME_FRAME_CHROME_FRAME_PLUGIN_H_
 
+#include <string>
+#include <vector>
+
 #include "base/ref_counted.h"
 #include "base/win_util.h"
 #include "chrome_frame/chrome_frame_automation.h"
@@ -61,23 +64,15 @@ END_MSG_MAP()
                             bool incognito, bool is_widget_mode,
                             const GURL& url, const GURL& referrer) {
     DCHECK(IsValid());
+    DCHECK(launch_params_ == NULL);
     // We don't want to do incognito when privileged, since we're
     // running in browser chrome or some other privileged context.
     bool incognito_mode = !is_privileged_ && incognito;
     FilePath profile_path;
     GetProfilePath(profile_name, &profile_path);
-    ChromeFrameLaunchParams chrome_launch_params = {
-      kCommandExecutionTimeout,
-      url,
-      referrer,
-      profile_path,
-      profile_name,
-      extra_chrome_arguments,
-      true,
-      incognito_mode,
-      is_widget_mode
-    };
-    return automation_client_->Initialize(this, chrome_launch_params);
+    launch_params_ = new ChromeFrameLaunchParams(url, referrer, profile_path,
+        profile_name, extra_chrome_arguments, incognito_mode, is_widget_mode);
+    return automation_client_->Initialize(this, launch_params_);
   }
 
   // ChromeFrameDelegate implementation
@@ -239,6 +234,9 @@ END_MSG_MAP()
  protected:
   // Our gateway to chrome land
   scoped_refptr<ChromeFrameAutomationClient> automation_client_;
+
+  // How we launched Chrome.
+  scoped_refptr<ChromeFrameLaunchParams> launch_params_;
 
   // Url of the containing document.
   std::string document_url_;

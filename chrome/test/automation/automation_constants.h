@@ -14,10 +14,12 @@ static const int kSleepTime = 250;
 // Used by AutomationProxy, declared here so that other headers don't need
 // to include automation_proxy.h.
 enum AutomationLaunchResult {
+  AUTOMATION_LAUNCH_RESULT_INVALID = -1,
   AUTOMATION_SUCCESS,
   AUTOMATION_TIMEOUT,
   AUTOMATION_VERSION_MISMATCH,
-  AUTOMATION_CREATE_TAB_FAILED
+  AUTOMATION_CREATE_TAB_FAILED,
+  AUTOMATION_SERVER_CRASHED,
 };
 
 enum AutomationMsg_NavigationResponseValues {

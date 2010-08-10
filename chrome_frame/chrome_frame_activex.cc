@@ -420,7 +420,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
       if (SUCCEEDED(service_hr) && wants_privileged)
         is_privileged_ = true;
 
-      url_fetcher_.set_privileged_mode(is_privileged_);
+      url_fetcher_->set_privileged_mode(is_privileged_);
     }
 
     std::wstring chrome_extra_arguments;
@@ -458,8 +458,8 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
       WideToUTF8(url_, url_.Length(), &utf8_url);
     }
 
-    url_fetcher_.set_frame_busting(!is_privileged_);
-    automation_client_->SetUrlFetcher(&url_fetcher_);
+    url_fetcher_->set_frame_busting(!is_privileged_);
+    automation_client_->SetUrlFetcher(url_fetcher_.get());
     if (!InitializeAutomation(profile_name, chrome_extra_arguments,
                               IsIEInPrivate(), true, GURL(utf8_url),
                               GURL())) {

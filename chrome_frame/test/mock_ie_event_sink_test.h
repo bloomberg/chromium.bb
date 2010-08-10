@@ -114,6 +114,8 @@ class MockIEEventSink : public IEEventListener {
   // Expects any and all navigations.
   void ExpectAnyNavigations();
 
+  void ExpectDocumentReadystate(int ready_state);
+
   IEEventSink* event_sink() { return event_sink_; }
 
  private:
@@ -146,6 +148,59 @@ class MockIEEventSink : public IEEventListener {
   // TODO(kkania): Investigate if the above is true.
   CComObject<IEEventSink>* event_sink_;
 };
+
+// This mocks a PropertyNotifySinkListener, providing methods for
+// expecting certain sequences of events.
+class MockPropertyNotifySinkListener : public PropertyNotifySinkListener {
+ public:
+  MockPropertyNotifySinkListener() : cookie_(0), sink_(NULL) {
+    CComObject<PropertyNotifySinkImpl>::CreateInstance(&sink_);
+    sink_->AddRef();
+    sink_->set_listener(this);
+  }
+
+  ~MockPropertyNotifySinkListener() {
+    Detach();
+    sink_->set_listener(NULL);
+    DLOG_IF(ERROR, sink_->m_dwRef != 1)
+        << "Event sink is still referenced externally: ref count = "
+        << sink_->m_dwRef;
+    sink_->Release();
+  }
+
+  // Override PropertyNotifySinkListener methods.
+  MOCK_METHOD1(OnChanged, void (DISPID dispid));  // NOLINT
+
+  bool Attach(IUnknown* obj) {
+    DCHECK_EQ(cookie_, 0UL);
+    DCHECK(obj);
+    HRESULT hr = AtlAdvise(obj, sink_->GetUnknown(), IID_IPropertyNotifySink,
+                           &cookie_);
+    if (SUCCEEDED(hr)) {
+      event_source_ = obj;
+    } else {
+      LOG(ERROR) << StringPrintf("AtlAdvise: 0x%08X", hr);
+      cookie_ = 0;
+    }
+
+    return SUCCEEDED(hr);
+  }
+
+  void Detach() {
+    if (event_source_) {
+      DCHECK_NE(cookie_, 0UL);
+      AtlUnadvise(event_source_, IID_IPropertyNotifySink, cookie_);
+      event_source_.Release();
+      cookie_ = 0;
+    }
+  }
+
+ private:
+  CComObject<PropertyNotifySinkImpl>* sink_;
+  DWORD cookie_;
+  ScopedComPtr<IUnknown> event_source_;
+};
+
 
 // Mocks a window observer so that tests can detect new windows.
 class MockWindowObserver : public WindowObserver {

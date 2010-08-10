@@ -11,6 +11,8 @@
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
 
+#include "testing/gmock_mutant.h"
+
 using testing::_;
 using testing::InSequence;
 using testing::StrCaseEq;
@@ -230,6 +232,84 @@ TEST_P(FullTabUITest, FLAKY_ViewSource) {
 
   EXPECT_CALL(view_source_mock, OnQuit())
       .Times(testing::AtMost(1))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(GetSimplePageUrl());
+}
+
+void NavigateToCurrentUrl(MockIEEventSink* mock) {
+  IWebBrowser2* browser = mock->event_sink()->web_browser2();
+  DCHECK(browser);
+  ScopedBstr bstr;
+  HRESULT hr = browser->get_LocationURL(bstr.Receive());
+  EXPECT_HRESULT_SUCCEEDED(hr);
+  if (SUCCEEDED(hr)) {
+    DCHECK(bstr.Length());
+    VARIANT empty = ScopedVariant::kEmptyVariant;
+    hr = browser->Navigate(bstr, &empty, &empty, &empty, &empty);
+    EXPECT_HRESULT_SUCCEEDED(hr);
+  }
+}
+
+// Tests that Chrome gets re-instantiated after crash if we reload via
+// the address bar or via a new navigation.
+TEST_P(FullTabUITest, TabCrashReload) {
+  using testing::DoAll;
+
+  if (!GetParam().invokes_cf()) {
+    LOG(ERROR) << "Test needs CF.";
+    return;
+  }
+
+  MockPropertyNotifySinkListener prop_listener;
+  InSequence expect_in_sequence_for_scope;
+
+  EXPECT_CALL(ie_mock_, OnLoad(_, StrEq(GetSimplePageUrl())))
+      .WillOnce(DoAll(
+          ExpectRendererHasFocus(&ie_mock_),
+          ExpectDocumentReadystate(&ie_mock_, READYSTATE_COMPLETE),
+          ConnectDocPropNotifySink(&ie_mock_, &prop_listener),
+          KillChromeFrameProcesses()));
+
+  EXPECT_CALL(prop_listener, OnChanged(DISPID_READYSTATE))
+      .WillOnce(DoAll(
+          ExpectDocumentReadystate(&ie_mock_, READYSTATE_UNINITIALIZED),
+          DelayNavigateToCurrentUrl(&ie_mock_, &loop_, 10)));
+
+  EXPECT_CALL(ie_mock_, OnLoad(_, StrEq(GetSimplePageUrl())))
+      .WillOnce(CloseBrowserMock(&ie_mock_));
+
+  LaunchIEAndNavigate(GetSimplePageUrl());
+}
+
+// Tests if Chrome gets restarted after a crash by just refreshing the document.
+TEST_P(FullTabUITest, TabCrashRefresh) {
+  using testing::DoAll;
+
+  if (!GetParam().invokes_cf()) {
+    LOG(ERROR) << "Test needs CF.";
+    return;
+  }
+
+  MockPropertyNotifySinkListener prop_listener;
+  InSequence expect_in_sequence_for_scope;
+
+  EXPECT_CALL(ie_mock_, OnLoad(_, StrEq(GetSimplePageUrl())))
+      .WillOnce(DoAll(
+          ExpectRendererHasFocus(&ie_mock_),
+          ExpectDocumentReadystate(&ie_mock_, READYSTATE_COMPLETE),
+          ConnectDocPropNotifySink(&ie_mock_, &prop_listener),
+          KillChromeFrameProcesses()));
+
+  VARIANT empty = ScopedVariant::kEmptyVariant;
+  EXPECT_CALL(prop_listener, OnChanged(/*DISPID_READYSTATE*/_))
+      .WillOnce(DoAll(
+          DisconnectDocPropNotifySink(&prop_listener),
+          ExpectDocumentReadystate(&ie_mock_, READYSTATE_UNINITIALIZED),
+          DelayExecCommand(&ie_mock_, &loop_, 10, static_cast<GUID*>(NULL),
+              OLECMDID_REFRESH, 0, &empty, &empty)));
+
+  EXPECT_CALL(ie_mock_, OnLoad(_, StrEq(GetSimplePageUrl())))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIEAndNavigate(GetSimplePageUrl());

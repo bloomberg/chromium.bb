@@ -51,18 +51,26 @@ struct DECLSPEC_NOVTABLE ChromeFrameAutomationProxy {  // NOLINT
   virtual ~ChromeFrameAutomationProxy() {}
 };
 
+// Forward declarations.
+class ProxyFactory;
+
 // We extend the AutomationProxy class to handle our custom
 // IPC messages
-class ChromeFrameAutomationProxyImpl : public ChromeFrameAutomationProxy,
-  // We have to derive from automationproxy since we want access to some members
-  // (tracker_ & channel_) - simple aggregation wont work;
-  // .. and non-public inheritance is verboten.
-  public AutomationProxy {
+class ChromeFrameAutomationProxyImpl
+  : public ChromeFrameAutomationProxy,
+    // We have to derive from automationproxy since we want access to some
+    // members (tracker_ & channel_) - simple aggregation wont work;
+    // .. and non-public inheritance is verboten.
+    public AutomationProxy {
  public:
+  ~ChromeFrameAutomationProxyImpl();
   virtual void SendAsAsync(
       IPC::SyncMessage* msg,
       SyncMessageReplyDispatcher::SyncMessageCallContext* context,
       void* key);
+
+  // Called on the worker thread.
+  virtual void OnChannelError();
 
   virtual void CancelAsync(void* key);
 
@@ -81,72 +89,200 @@ class ChromeFrameAutomationProxyImpl : public ChromeFrameAutomationProxy,
   }
 
  protected:
-  explicit ChromeFrameAutomationProxyImpl(int launch_timeout);
-  ~ChromeFrameAutomationProxyImpl();
+  friend class AutomationProxyCacheEntry;
+  ChromeFrameAutomationProxyImpl(AutomationProxyCacheEntry* entry,
+                                 int launch_timeout);
+
   class CFMsgDispatcher;
-  scoped_refptr<CFMsgDispatcher> sync_;
   class TabProxyNotificationMessageFilter;
+
+  scoped_refptr<CFMsgDispatcher> sync_;
   scoped_refptr<TabProxyNotificationMessageFilter> message_filter_;
-  friend class ProxyFactory;
+  AutomationProxyCacheEntry* proxy_entry_;
 };
 
-// This structure contains information used for launching chrome.
-struct ChromeFrameLaunchParams {
-  int automation_server_launch_timeout;
-  GURL url;
-  GURL referrer;
-  FilePath profile_path;
+// This class contains information used for launching chrome.
+class ChromeFrameLaunchParams :  // NOLINT
+    public base::RefCounted<ChromeFrameLaunchParams> {
+ public:
+  ChromeFrameLaunchParams(const GURL& url, const GURL& referrer,
+                          const FilePath& profile_path,
+                          const std::wstring& profile_name,
+                          const std::wstring& extra_arguments,
+                          bool incognito, bool widget_mode)
+    : launch_timeout_(kCommandExecutionTimeout), url_(url),
+      referrer_(referrer), profile_path_(profile_path),
+      profile_name_(profile_name), extra_arguments_(extra_arguments),
+      version_check_(true), incognito_mode_(incognito),
+      is_widget_mode_(widget_mode) {
+  }
+
+  ~ChromeFrameLaunchParams() {
+  }
+
+  void set_launch_timeout(int timeout) {
+    launch_timeout_ = timeout;
+  }
+
+  int launch_timeout() const {
+    return launch_timeout_;
+  }
+
+  const GURL& url() const {
+    return url_;
+  }
+
+  void set_url(const GURL& url) {
+    url_ = url;
+  }
+
+  const GURL& referrer() const {
+    return referrer_;
+  }
+
+  void set_referrer(const GURL& referrer) {
+    referrer_ = referrer;
+  }
+
+  const FilePath& profile_path() const {
+    return profile_path_;
+  }
+
+  const std::wstring& profile_name() const {
+    return profile_name_;
+  }
+
+  const std::wstring& extra_arguments() const {
+    return extra_arguments_;
+  }
+
+  bool version_check() const {
+    return version_check_;
+  }
+
+  void set_version_check(bool check) {
+    version_check_ = check;
+  }
+
+  bool incognito() const {
+    return incognito_mode_;
+  }
+
+  bool widget_mode() const {
+    return is_widget_mode_;
+  }
+
+ protected:
+  int launch_timeout_;
+  GURL url_;
+  GURL referrer_;
+  FilePath profile_path_;
+  std::wstring profile_name_;
+  std::wstring extra_arguments_;
+  bool version_check_;
+  bool incognito_mode_;
+  bool is_widget_mode_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeFrameLaunchParams);
+};
+
+// Callback when chrome process launch is complete and automation handshake
+// (Hello message) is established.
+struct DECLSPEC_NOVTABLE LaunchDelegate {  // NOLINT
+  virtual void LaunchComplete(ChromeFrameAutomationProxy* proxy,
+                              AutomationLaunchResult result) = 0;
+  virtual void AutomationServerDied() = 0;
+};  // NOLINT
+
+// Manages a cached ChromeFrameAutomationProxyImpl entry and holds
+// reference-less pointers to LaunchDelegate(s) to be notified in case
+// of automation server process changes.
+class AutomationProxyCacheEntry
+    : public base::RefCounted<AutomationProxyCacheEntry> {
+ public:
+  AutomationProxyCacheEntry(ChromeFrameLaunchParams* params,
+                            LaunchDelegate* delegate);
+
+  ~AutomationProxyCacheEntry();
+
+  void AddDelegate(LaunchDelegate* delegate);
+  void RemoveDelegate(LaunchDelegate* delegate, base::WaitableEvent* done,
+                      bool* was_last_delegate);
+
+  void StartSendUmaInterval(ChromeFrameHistogramSnapshots* snapshots,
+                            int send_interval);
+
+  DWORD WaitForThread(DWORD timeout) {  // NOLINT
+    DCHECK(thread_.get());
+    return ::WaitForSingleObject(thread_->thread_handle(), timeout);
+  }
+
+  bool IsSameProfile(const std::wstring& name) const {
+    return lstrcmpiW(name.c_str(), profile_name.c_str()) == 0;
+  }
+
+  base::Thread* thread() const {
+    return thread_.get();
+  }
+
+  MessageLoop* message_loop() const {
+    return thread_->message_loop();
+  }
+
+  bool IsSameThread(PlatformThreadId id) const {
+    return thread_->thread_id() == id;
+  }
+
+  ChromeFrameAutomationProxyImpl* proxy() const {
+    DCHECK(IsSameThread(PlatformThread::CurrentId()));
+    return proxy_.get();
+  }
+
+  // Called by the proxy when the automation server has unexpectedly gone away.
+  void OnChannelError();
+
+ protected:
+  void CreateProxy(ChromeFrameLaunchParams* params,
+                   LaunchDelegate* delegate);
+  void SendUMAData();
+
+ protected:
   std::wstring profile_name;
-  std::wstring extra_chrome_arguments;
-  bool perform_version_check;
-  bool incognito_mode;
-  bool is_widget_mode;
+  scoped_ptr<base::Thread> thread_;
+  scoped_ptr<ChromeFrameAutomationProxyImpl> proxy_;
+  AutomationLaunchResult launch_result_;
+  typedef std::vector<LaunchDelegate*> LaunchDelegates;
+  LaunchDelegates launch_delegates_;
+  // Used for UMA histogram logging to measure the time for the chrome
+  // automation server to start;
+  base::TimeTicks automation_server_launch_start_time_;
+  ChromeFrameHistogramSnapshots* snapshots_;
+  int uma_send_interval_;
 };
 
 // We must create and destroy automation proxy in a thread with a message loop.
 // Hence thread cannot be a member of the proxy.
 class ProxyFactory {
  public:
-  // Callback when chrome process launch is complete and automation handshake
-  // (Hello message) is established.
-  struct DECLSPEC_NOVTABLE LaunchDelegate {  // NOLINT
-    virtual void LaunchComplete(ChromeFrameAutomationProxy* proxy,
-                                AutomationLaunchResult result) = 0;
-  };  // NOLINT
-
   ProxyFactory();
   virtual ~ProxyFactory();
 
+  // Fetches or creates a new automation server instance.
+  // delegate may be NULL.  If non-null, a pointer to the delegate will
+  // be stored for the lifetime of the automation process or until
+  // ReleaseAutomationServer is called.
   virtual void GetAutomationServer(LaunchDelegate* delegate,
-                                   const ChromeFrameLaunchParams& params,
+                                   ChromeFrameLaunchParams* params,
                                    void** automation_server_id);
-  virtual bool ReleaseAutomationServer(void* server_id);
+  virtual bool ReleaseAutomationServer(void* server_id,
+                                       LaunchDelegate* delegate);
 
  private:
-  struct ProxyCacheEntry {
-    std::wstring profile_name;
-    int ref_count;
-    scoped_ptr<base::Thread> thread;
-    ChromeFrameAutomationProxyImpl* proxy;
-    AutomationLaunchResult launch_result;
-    explicit ProxyCacheEntry(const std::wstring& profile);
-  };
-
-  void CreateProxy(ProxyCacheEntry* entry,
-                   const ChromeFrameLaunchParams& params,
-                   LaunchDelegate* delegate);
-  void ReleaseProxy(ProxyCacheEntry* entry, base::WaitableEvent* done);
-
-  void SendUMAData(ProxyCacheEntry* proxy_entry);
-
-  typedef StackVector<ProxyCacheEntry*, 4> Vector;
+  typedef StackVector<scoped_refptr<AutomationProxyCacheEntry>, 4> Vector;
   Vector proxies_;
   // Lock if we are going to call GetAutomationServer from more than one thread.
   Lock lock_;
-
-  // Used for UMA histogram logging to measure the time for the chrome
-  // automation server to start;
-  base::TimeTicks automation_server_launch_start_time_;
 
   // Gathers histograms to be sent to Chrome.
   ChromeFrameHistogramSnapshots chrome_frame_histograms_;
@@ -164,15 +300,16 @@ class ChromeFrameAutomationClient
       public base::RefCountedThreadSafe<ChromeFrameAutomationClient>,
       public PluginUrlRequestDelegate,
       public TabProxy::TabProxyDelegate,
-      public ProxyFactory::LaunchDelegate {
+      public LaunchDelegate {
  public:
   ChromeFrameAutomationClient();
   ~ChromeFrameAutomationClient();
 
   // Called from UI thread.
   virtual bool Initialize(ChromeFrameDelegate* chrome_frame_delegate,
-                          const ChromeFrameLaunchParams& chrome_launch_params);
+                          ChromeFrameLaunchParams* chrome_launch_params);
   void Uninitialize();
+  void NotifyAndUninitialize();
 
   virtual bool InitiateNavigation(const std::string& url,
                                   const std::string& referrer,
@@ -284,7 +421,9 @@ class ChromeFrameAutomationClient
  protected:
   // ChromeFrameAutomationProxy::LaunchDelegate implementation.
   virtual void LaunchComplete(ChromeFrameAutomationProxy* proxy,
-                            AutomationLaunchResult result);
+                              AutomationLaunchResult result);
+  virtual void AutomationServerDied();
+
   // TabProxyDelegate implementation
   virtual void OnMessageReceived(TabProxy* tab, const IPC::Message& msg);
   virtual void OnChannelError(TabProxy* tab);
@@ -301,12 +440,16 @@ class ChromeFrameAutomationClient
     Release();
   }
 
+  scoped_refptr<ChromeFrameLaunchParams> launch_params() {
+    return chrome_launch_params_;
+  }
+
  private:
   void OnMessageReceivedUIThread(const IPC::Message& msg);
   void OnChannelErrorUIThread();
 
   HWND chrome_window() const { return chrome_window_; }
-  void BeginNavigate(const GURL& url, const GURL& referrer);
+  void BeginNavigate();
   void BeginNavigateCompleted(AutomationMsg_NavigationResponseValues result);
 
   // Helpers
@@ -352,7 +495,7 @@ class ChromeFrameAutomationClient
   // server being initialized.
   bool navigate_after_initialization_;
 
-  ChromeFrameLaunchParams chrome_launch_params_;
+  scoped_refptr<ChromeFrameLaunchParams> chrome_launch_params_;
 
   // When host network stack is used, this object is in charge of
   // handling network requests.
