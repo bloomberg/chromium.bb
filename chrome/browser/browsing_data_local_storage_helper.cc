@@ -152,6 +152,10 @@ void CannedBrowsingDataLocalStorageHelper::Reset() {
   local_storage_info_.clear();
 }
 
+bool CannedBrowsingDataLocalStorageHelper::empty() const {
+  return local_storage_info_.empty();
+}
+
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
     Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
   callback->Run(local_storage_info_);

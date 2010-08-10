@@ -128,6 +128,9 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   // Clear the list of canned databases.
   void Reset();
 
+  // True if no databases are currently stored.
+  bool empty() const;
+
   // BrowsingDataDatabaseHelper methods.
   virtual void StartFetching(
       Callback1<const std::vector<DatabaseInfo>& >::Type* callback);

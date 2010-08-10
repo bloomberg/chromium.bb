@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/tab_contents/tab_specific_content_settings.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -33,7 +34,7 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
 
  private:
   void SetTitle() {
-    static const int kTitleIDs[] = {
+    static const int kBlockedTitleIDs[] = {
       IDS_BLOCKED_COOKIES_TITLE,
       IDS_BLOCKED_IMAGES_TITLE,
       IDS_BLOCKED_JAVASCRIPT_TITLE,
@@ -42,10 +43,30 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       0,  // Geolocation does not have an overall title.
       0,  // Notifications do not have a bubble.
     };
-    COMPILE_ASSERT(arraysize(kTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
+    static const int kAccessedTitleIDs[] = {
+      IDS_ACCESSED_COOKIES_TITLE,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+    };
+    COMPILE_ASSERT(arraysize(kAccessedTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
-    if (kTitleIDs[content_type()])
-      set_title(l10n_util::GetStringUTF8(kTitleIDs[content_type()]));
+    COMPILE_ASSERT(arraysize(kBlockedTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
+                   Need_a_setting_for_every_content_settings_type);
+    const int *title_ids = kBlockedTitleIDs;
+    if (tab_contents() &&
+        tab_contents()->GetTabSpecificContentSettings()->IsContentAccessed(
+            content_type()) &&
+        !tab_contents()->GetTabSpecificContentSettings()->IsContentBlocked(
+            content_type()) &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableCookiePrompt))
+      title_ids = kAccessedTitleIDs;
+    if (title_ids[content_type()])
+      set_title(l10n_util::GetStringUTF8(title_ids[content_type()]));
   }
 
   void SetManageLink() {
