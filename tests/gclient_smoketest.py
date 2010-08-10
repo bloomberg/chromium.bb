@@ -383,6 +383,9 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.checkString('hi', out[1][1])
     self.assertEquals(4, len(out[0]))
     self.assertEquals(2, len(out[1]))
+    self.assertEquals(1, len(out[2]))
+    self.assertEquals(1, len(out[3]))
+    self.assertEquals(4, len(out))
 
     # Revert implies --force implies running hooks without looking at pattern
     # matching.

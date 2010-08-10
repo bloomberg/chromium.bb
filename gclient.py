@@ -182,11 +182,15 @@ class Dependency(GClientKeywords):
                                 'filename. %s' % self.deps_file)
 
   def LateOverride(self, url):
+    """Resolves the parsed url from url.
+
+    Manages From() keyword accordingly. Do not touch self.parsed_url nor
+    self.url because it may called with other urls due to From()."""
     overriden_url = self.get_custom_deps(self.name, url)
     if overriden_url != url:
-      self.parsed_url = overriden_url
       logging.debug('%s, %s was overriden to %s' % (self.name, url,
-          self.parsed_url))
+          overriden_url))
+      return overriden_url
     elif isinstance(url, self.FromImpl):
       ref = [dep for dep in self.tree(True) if url.module_name == dep.name]
       if not len(ref) == 1:
@@ -206,8 +210,9 @@ class Dependency(GClientKeywords):
         raise Exception('Couldn\'t find %s in %s, referenced by %s' % (
             sub_target, ref.name, self.name))
       # Call LateOverride() again.
-      self.parsed_url = found_dep.LateOverride(found_dep.url)
-      logging.debug('%s, %s to %s' % (self.name, url, self.parsed_url))
+      parsed_url = found_dep.LateOverride(found_dep.url)
+      logging.debug('%s, %s to %s' % (self.name, url, parsed_url))
+      return parsed_url
     elif isinstance(url, basestring):
       parsed_url = urlparse.urlparse(url)
       if not parsed_url[0]:
@@ -221,14 +226,19 @@ class Dependency(GClientKeywords):
         if isinstance(parent_url, self.FileImpl):
           parent_url = parent_url.file_location
         scm = gclient_scm.CreateSCM(parent_url, self.root_dir(), None)
-        self.parsed_url = scm.FullUrlForRelativeUrl(url)
+        parsed_url = scm.FullUrlForRelativeUrl(url)
       else:
-        self.parsed_url = url
-      logging.debug('%s, %s -> %s' % (self.name, url, self.parsed_url))
+        parsed_url = url
+      logging.debug('%s, %s -> %s' % (self.name, url, parsed_url))
+      return parsed_url
     elif isinstance(url, self.FileImpl):
-      self.parsed_url = url
-      logging.debug('%s, %s -> %s (File)' % (self.name, url, self.parsed_url))
-    return self.parsed_url
+      parsed_url = url
+      logging.debug('%s, %s -> %s (File)' % (self.name, url, parsed_url))
+      return parsed_url
+    elif url is None:
+      return None
+    else:
+      raise gclient_utils.Error('Unkown url type')
 
   def ParseDepsFile(self, direct_reference):
     """Parses the DEPS file for this dependency."""
@@ -299,7 +309,11 @@ class Dependency(GClientKeywords):
         raise
       self.dependencies.append(Dependency(self, name, url, None, None, None,
           None))
-    # Sort by name.
+    # Sorting by name would in theory make the whole thing coherent, since
+    # subdirectories will be sorted after the parent directory, but that doens't
+    # work with From() that fetch from a dependency with a name being sorted
+    # later. But if this would be removed right now, many projects wouldn't be
+    # able to sync anymore.
     self.dependencies.sort(key=lambda x: x.name)
     logging.info('Loaded: %s' % str(self))
 
@@ -312,7 +326,7 @@ class Dependency(GClientKeywords):
     # All known hooks are expected to run unconditionally regardless of working
     # copy state, so skip the SCM status check.
     run_scm = command not in ('runhooks', None)
-    self.LateOverride(self.url)
+    self.parsed_url = self.LateOverride(self.url)
     if run_scm and self.parsed_url:
       if isinstance(self.parsed_url, self.FileImpl):
         # Special support for single-file checkout.
