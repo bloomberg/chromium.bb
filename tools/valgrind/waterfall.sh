@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -13,6 +13,30 @@ set -e
 THISDIR=$(dirname "${0}")
 LOGS_DIR=$THISDIR/waterfall.tmp
 
+download() {
+  # Download a file.
+  # $1 = URL to download
+  # $2 = Path to the output file
+  # {{{1
+  if [ x$(which curl) != x ]; then
+    if ! curl -s -o "$2" "$1" ; then
+      echo
+      echo "Failed to download '$1'... aborting"
+      exit 1
+    fi
+  elif [ x$(which wget) != x ]; then
+    if ! wget "$1" -O "$2" -q ; then
+      echo
+      echo "Failed to download '$1'... aborting"
+      exit 1
+    fi
+  else
+    echo "Need either curl or wget to download stuff... aborting"
+    exit 1
+  fi
+  # }}}
+}
+
 fetch_logs() {
   # Fetch Valgrind logs from the waterfall {{{1
 
@@ -22,7 +46,7 @@ fetch_logs() {
   mkdir "$LOGS_DIR"
 
   echo "Fetching the list of builders..."
-  wget $WATERFALL_PAGE -O "$LOGS_DIR/builders" -q
+  download $WATERFALL_PAGE "$LOGS_DIR/builders"
   SLAVES=$(grep "<a href=\"builders\/" "$LOGS_DIR/builders" | \
            sed "s/.*<a href=\"builders\///" | sed "s/\".*//" | \
            sort | uniq)
@@ -32,7 +56,7 @@ fetch_logs() {
     SLAVE_URL=$WATERFALL_PAGE/$S
     SLAVE_NAME=$(echo $S | sed "s/%20/ /g" | sed "s/%28/(/g" | sed "s/%29/)/g")
     echo -n "Fetching builds by slave '${SLAVE_NAME}'"
-    wget $SLAVE_URL -O "$LOGS_DIR/slave_${S}" -q
+    download $SLAVE_URL "$LOGS_DIR/slave_${S}"
 
     # We speed up the 'fetch' step by skipping the builds/tests which succeeded.
     # TODO(timurrrr): OTOH, we won't be able to check
@@ -44,7 +68,7 @@ fetch_logs() {
     for BUILD in $LIST_OF_BUILDS
     do
       BUILD_RESULTS="$LOGS_DIR/slave_${S}_build_${BUILD}"
-      wget $SLAVE_URL/builds/$BUILD -O "$BUILD_RESULTS" -q
+      download $SLAVE_URL/builds/$BUILD "$BUILD_RESULTS"
       LIST_OF_TESTS=$(grep "<a href=\"[0-9]\+/steps/memory.*/logs/stdio\"" \
                       "$BUILD_RESULTS" | \
                       sed "s/.*a href=\"//" | sed "s/\".*//")
@@ -53,7 +77,7 @@ fetch_logs() {
         REPORT_FILE=$(echo "report_${S}_$TEST" | sed "s/\/logs\/stdio//" | \
                     sed "s/\/steps//" | sed "s/\//_/g")
         echo -n "."
-        wget $SLAVE_URL/builds/$TEST -O "$LOGS_DIR/$REPORT_FILE" -q
+        download $SLAVE_URL/builds/$TEST "$LOGS_DIR/$REPORT_FILE"
         echo $SLAVE_URL/builds/$TEST >> "$LOGS_DIR/$REPORT_FILE"
       done
     done
