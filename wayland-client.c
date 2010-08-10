@@ -79,26 +79,6 @@ struct wl_visual {
 	struct wl_proxy proxy;
 };
 
-struct wl_output {
-	struct wl_proxy proxy;
-};
-
-struct wl_shell {
-	struct wl_proxy proxy;
-};
-
-struct wl_drm {
-	struct wl_proxy proxy;
-};
-
-struct wl_buffer {
-	struct wl_proxy proxy;
-};
-
-struct wl_input_device {
-	struct wl_proxy proxy;
-};
-
 struct wl_display {
 	struct wl_proxy proxy;
 	struct wl_connection *connection;
@@ -219,7 +199,7 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 	return proxy;
 }
 
-static int
+WL_EXPORT int
 wl_proxy_add_listener(struct wl_proxy *proxy, void (**implementation)(void), void *data)
 {
 	struct wl_listener *listener;
@@ -245,33 +225,6 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 			       &proxy->base, opcode, ap,
 			       &proxy->base.interface->methods[opcode]);
 	va_end(ap);
-}
-
-WL_EXPORT int
-wl_output_add_listener(struct wl_output *output,
-		       const struct wl_output_listener *listener,
-		       void *data)
-{
-	return wl_proxy_add_listener(&output->proxy,
-				     (void (**)(void)) listener, data);
-}
-
-WL_EXPORT int
-wl_shell_add_listener(struct wl_shell *shell,
-		      const struct wl_shell_listener *listener,
-		      void *data)
-{
-	return wl_proxy_add_listener(&shell->proxy,
-				     (void (**)(void)) listener, data);
-}
-
-WL_EXPORT int
-wl_drm_add_listener(struct wl_drm *drm,
-		    const struct wl_drm_listener *listener,
-		    void *data)
-{
-	return wl_proxy_add_listener(&drm->proxy,
-				     (void (**)(void)) listener, data);
 }
 
 static void
@@ -306,15 +259,6 @@ WL_EXPORT struct wl_visual *
 wl_display_get_rgb_visual(struct wl_display *display)
 {
 	return display->rgb_visual;
-}
-
-WL_EXPORT int
-wl_input_device_add_listener(struct wl_input_device *input_device,
-			     const struct wl_input_device_listener *listener,
-			     void *data)
-{
-	return wl_proxy_add_listener(&input_device->proxy,
-				     (void (**)(void)) listener, data);
 }
 
 static void
@@ -564,15 +508,6 @@ WL_EXPORT struct wl_compositor *
 wl_display_get_compositor(struct wl_display *display)
 {
 	return display->compositor;
-}
-
-WL_EXPORT int
-wl_compositor_add_listener(struct wl_compositor *compositor,
-			   const struct wl_compositor_listener *listener,
-			   void *data)
-{
-	return wl_proxy_add_listener(&compositor->proxy,
-				     (void (**)(void)) listener, data);
 }
 
 WL_EXPORT void

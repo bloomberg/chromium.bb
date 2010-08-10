@@ -293,7 +293,8 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		if (ret)
 			printf("\tstruct wl_proxy *%s;\n\n"
 			       "\t%s = wl_proxy_create("
-			       "(struct wl_proxy *) %s, &wl_%s_interface);\n"
+			       "(struct wl_proxy *) %s,\n"
+			       "\t\t\t     &wl_%s_interface);\n"
 			       "\tif (!%s)\n"
 			       "\t\treturn NULL;\n\n",
 			       ret->name,
@@ -301,7 +302,8 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 			       interface->name, ret->interface_name,
 			       ret->name);
 
-		printf("\twl_proxy_marshal((struct wl_proxy *) %s, WL_%s_%s",
+		printf("\twl_proxy_marshal((struct wl_proxy *) %s,\n"
+		       "\t\t\t WL_%s_%s",
 		       interface->name,
 		       interface->uppercase_name,
 		       m->uppercase_name);
@@ -320,12 +322,28 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	}
 }
 
+static const char *indent(int n)
+{
+	const char *whitespace[] = {
+		"\t\t\t\t\t\t\t\t\t\t\t\t",
+		"\t\t\t\t\t\t\t\t\t\t\t\t ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t  ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t   ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t    ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t     ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t      ",
+		"\t\t\t\t\t\t\t\t\t\t\t\t       "
+	};
+
+	return whitespace[n % 8] + 12 - n / 8;
+}
+
 static void
 emit_structs(struct wl_list *message_list, struct interface *interface)
 {
 	struct message *m;
 	struct arg *a;
-	int is_interface;
+	int is_interface, n;
 
 	if (wl_list_empty(message_list))
 		return;
@@ -337,28 +355,44 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 	wl_list_for_each(m, message_list, link) {
 		printf("\tvoid (*%s)(", m->name);
 
+		n = strlen(m->name) + 17;
 		if (is_interface) {
-			printf("struct wl_client *client, struct wl_%s *%s",
+			printf("struct wl_client *client,\n"
+			       "%sstruct wl_%s *%s",
+			       indent(n),
 			       interface->name, interface->name);
 		} else {
-			printf("void *data, struct wl_%s *%s",
-			       interface->name, interface->name);
+			printf("void *data,\n"),
+			printf("%sstruct wl_%s *%s",
+			       indent(n), interface->name, interface->name);
 		}
 
-		if (!wl_list_empty(&m->arg_list))
-			printf(", ");
-
 		wl_list_for_each(a, &m->arg_list, link) {
+			printf(",\n%s", indent(n));
+
 			emit_type(a);
-			printf("%s%s",
-			       a->name,
-			       a->link.next == &m->arg_list ? "" : ", ");
+			printf("%s", a->name);
 		}
 
 		printf(");\n");
 	}
 
 	printf("};\n\n");
+
+	if (!is_interface) {
+	    printf("static inline int\n"
+		   "wl_%s_add_listener(struct wl_%s *%s,\n"
+		   "%sconst struct wl_%s_listener *listener, void *data)\n"
+		   "{\n"
+		   "\treturn wl_proxy_add_listener((struct wl_proxy *) %s,\n"
+		   "%s(void (**)(void)) listener, data);\n"
+		   "}\n\n",
+		   interface->name, interface->name, interface->name,
+		   indent(17 + strlen(interface->name)),
+		   interface->name,
+		   interface->name,
+		   indent(37));
+	}
 }
 
 static void
@@ -387,9 +421,15 @@ emit_header(struct protocol *protocol, int server)
 		       "extern void\n"
 		       "wl_proxy_marshal(struct wl_proxy *p, "
 		       "uint32_t opcode, ...);\n"
+
 		       "extern struct wl_proxy *\n"
-		       "wl_proxy_create(struct wl_proxy *factory, "
-		       "const struct wl_interface *interface);\n\n");
+		       "wl_proxy_create(struct wl_proxy *factory,\n"
+		       "\t\tconst struct wl_interface *interface);\n"
+
+		       "extern int\n"
+		       "wl_proxy_add_listener(struct wl_proxy *proxy,\n"
+		       "\t\t      void (**implementation)(void), "
+		       "void *data);\n\n");
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
 		printf("extern const struct wl_interface "
