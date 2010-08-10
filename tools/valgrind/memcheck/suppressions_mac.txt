@@ -1294,7 +1294,7 @@
    Memcheck:Cond
    fun:gleUpdateFogData
    fun:gleUpdateState
-   fun:_ZN8remoting11CapturerMac12CaptureRectsERKSt6vectorIN3gfx4RectESaIS3_EEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
+   fun:_ZN8remoting11CapturerMac12CaptureRectsERKSt3setIN3gfx4RectESt4lessIS3_ESaIS3_EEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
    fun:_ZN8remoting8Capturer19CaptureInvalidRectsEP14CallbackRunnerI6Tuple1I13scoped_refptrINS_11CaptureDataEEEE
    fun:_ZN8remoting28CapturerMacTest_Capture_Test8TestBodyEv
 }
