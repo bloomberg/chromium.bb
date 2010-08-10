@@ -24,26 +24,23 @@ Note: The current version uses a synchronous version of source reader. An
 asynchronous version will likely to be more useful and have better
 performance.
 
-Note2: There might be some artifacts produced when displaying using software
-decoding. This is related to execution of MMX instructions and alignment 
-issues with the video buffer during color-space conversion and is not a bug.
-
-Note3: The program might crash randomly when rendering windows using D3D
-surfaces (i.e., both -h and -r flags are specified), especially for videos
-for larger dimensions. This seems to be caused by the D3D Device's Present()
-method during rendering even though the decoding behaves correctly.
-
-Note4: The maximum resolution supported by Microsoft's H.264 decoder is
+Note2: The maximum resolution supported by Microsoft's H.264 decoder is
 1920 by 1088 pixels. If you try to feed it a larger video, it will "fail
 to determine frame size." This is an inherent limitation that cannot be fixed
 unless a different decoder is used.
 
+
 Requirements: Windows 7
 
-usage: mfdecoder (-s|-h) (-d|-r) input-file
+usage: mfdecoder (-s|-h) (-d|-r|-f) input-file
 flags:
 -s: Use software decoding
 -h: Uses hardware decoding
 
 -d: Decode to YV12 as fast as possible, no rendering or color-space conversion
 -r: Render to window
+-f: Decode+render as fast as possible
+
+WARNING: Using both -h and -f, or opening too many windows with -h may lead to
+driver crash / system instability. Realistically, you will never want to 
+do this unless you want to push the limits of the GPU ...

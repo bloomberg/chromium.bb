@@ -6,6 +6,8 @@
 #undef UNICODE
 #endif
 
+#include <algorithm>
+
 #include <d3d9.h>
 #include <dxva2api.h>
 #include <evr.h>
@@ -31,15 +33,21 @@ const char* const kWindowTitle = "MF Decoder";
 const int kWindowStyleFlags = (WS_OVERLAPPEDWINDOW | WS_VISIBLE) &
                               ~(WS_MAXIMIZEBOX | WS_THICKFRAME);
 bool g_render_to_window = false;
+bool g_render_asap = false;
+
+base::TimeDelta* g_decode_time;
+base::TimeDelta* g_render_time;
+int64 g_num_frames = 0;
 
 void usage() {
-  static char* usage_msg = "Usage: mfdecoder (-s|-h) (-d|-r) input-file\n"
+  static char* usage_msg = "Usage: mfdecoder (-s|-h) (-d|-r|-f) input-file\n"
                            "-s: Use software decoding\n"
                            "-h: Use hardware decoding\n"
                            "\n"
                            "-d: Decode to YV12 as fast as possible, no " \
                            "rendering or color-space conversion\n"
-                           "-r: Render to window\n"
+                           "-r: Render to window at 30ms per frame\n"
+                           "-f: Decode and render as fast as possible\n"
                            "\n"
                            "To see this message: mfdecoder --help\n";
   fprintf(stderr, "%s", usage_msg);
@@ -82,6 +90,7 @@ bool ConvertToRGBAndDrawToWindow(HWND video_window, uint8* data, int width,
   CHECK_GT(width, 0);
   CHECK_GT(height, 0);
   CHECK_GE(stride, width);
+  height = (height + 15) & ~15;
   bool success = true;
   uint8* y_start = reinterpret_cast<uint8*>(data);
   uint8* u_start = y_start + height * stride * 5 / 4;
@@ -136,6 +145,7 @@ bool PaintMediaBufferOntoWindow(HWND video_window, IMFMediaBuffer* video_buffer,
     return false;
   }
   if (g_render_to_window) {
+    base::Time render_start(base::Time::Now());
     if (!ConvertToRGBAndDrawToWindow(video_window,
                                      reinterpret_cast<uint8*>(data),
                                      width,
@@ -145,6 +155,7 @@ bool PaintMediaBufferOntoWindow(HWND video_window, IMFMediaBuffer* video_buffer,
       video_buffer->Unlock();
       return false;
     }
+    *g_render_time += base::Time::Now() - render_start;
   }
   video_buffer->Unlock();
   return true;
@@ -164,7 +175,8 @@ bool PaintD3D9BufferOntoWindow(IDirect3DDevice9* device,
     return false;
   }
   if (g_render_to_window) {
-    hr = device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 255),
+    base::Time render_start(base::Time::Now());
+    hr = device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0),
                        1.0f, 0);
     if (FAILED(hr)) {
       LOG(ERROR) << "Device->Clear() failed";
@@ -184,7 +196,7 @@ bool PaintD3D9BufferOntoWindow(IDirect3DDevice9* device,
       return false;
     }
     hr = device->Present(NULL, NULL, NULL, NULL);
-    if (FAILED(hr)) {
+    if (FAILED(hr) && hr != E_FAIL) {
       static int frames_dropped = 0;
       LOG(ERROR) << "Device->Present() failed "
                  << std::hex << std::showbase << hr;
@@ -194,6 +206,7 @@ bool PaintD3D9BufferOntoWindow(IDirect3DDevice9* device,
         return false;
       }
     }
+    *g_render_time += base::Time::Now() - render_start;
   }
   return true;
 }
@@ -218,12 +231,14 @@ bool DrawVideoSample(HWND video_window, media::MFDecoder* decoder,
     return false;
   }
   ScopedComPtr<IMFSample> video_sample;
+  base::Time decode_time_start(base::Time::Now());
   video_sample.Attach(decoder->ReadVideoSample());
   if (video_sample.get() == NULL) {
     LOG(ERROR) << "Failed to obtain a sample from decoder: end of stream? "
                << (decoder->end_of_stream() ? "true" : "false");
     return false;
   }
+  *g_decode_time += base::Time::Now() - decode_time_start;
 
   // Get the buffer inside the sample.
   DWORD buffer_count;
@@ -234,7 +249,7 @@ bool DrawVideoSample(HWND video_window, media::MFDecoder* decoder,
   }
 
   // For H.264 videos, the number of buffers in the sample is 1.
-  CHECK_EQ(static_cast<int>(buffer_count), 1) << "buffer_count should be equal "
+  CHECK_EQ(buffer_count, 1u) << "buffer_count should be equal "
                                               << "to 1 for H.264 format";
   ScopedComPtr<IMFMediaBuffer> video_buffer;
   hr = video_sample->GetBufferByIndex(0, video_buffer.Receive());
@@ -257,7 +272,7 @@ HWND CreateDrawWindow(int width, int height) {
   WNDCLASS window_class = {0};
   window_class.lpszClassName = kWindowClass;
   window_class.hInstance = NULL;
-  window_class.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
+  window_class.hbrBackground = 0;
   window_class.lpfnWndProc = DefWindowProc;
   window_class.hCursor = LoadCursor(0, IDC_ARROW);
 
@@ -307,7 +322,7 @@ IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
   // they even matter. (taken from DXVA_HD sample code)
   present_params.BackBufferWidth = 0;
   present_params.BackBufferHeight = 0;
-  present_params.BackBufferFormat = D3DFMT_X8R8G8B8;
+  present_params.BackBufferFormat = D3DFMT_UNKNOWN;
   present_params.BackBufferCount = 1;
   present_params.SwapEffect = D3DSWAPEFFECT_DISCARD;
   present_params.hDeviceWindow = video_window;
@@ -317,10 +332,11 @@ IDirect3DDeviceManager9* CreateD3DDevManager(HWND video_window,
   present_params.PresentationInterval = 0;
 
   ScopedComPtr<IDirect3DDevice9> temp_device;
+
   // D3DCREATE_HARDWARE_VERTEXPROCESSING specifies hardware vertex processing.
   HRESULT hr = d3d->CreateDevice(D3DADAPTER_DEFAULT,
                                  D3DDEVTYPE_HAL,
-                                 video_window,
+                                 NULL,
                                  D3DCREATE_HARDWARE_VERTEXPROCESSING,
                                  &present_params,
                                  temp_device.Receive());
@@ -357,10 +373,9 @@ bool AdjustD3DDeviceBackBufferDimensions(media::MFDecoder* decoder,
   CHECK(decoder->use_dxva2());
   CHECK(device != NULL);
   D3DPRESENT_PARAMETERS present_params = {0};
-  memset(&present_params, 0, sizeof(present_params));
   present_params.BackBufferWidth = decoder->width();
   present_params.BackBufferHeight = decoder->height();
-  present_params.BackBufferFormat = D3DFMT_X8R8G8B8;
+  present_params.BackBufferFormat = D3DFMT_UNKNOWN;
   present_params.BackBufferCount = 1;
   present_params.SwapEffect = D3DSWAPEFFECT_DISCARD;
   present_params.hDeviceWindow = video_window;
@@ -372,57 +387,35 @@ bool AdjustD3DDeviceBackBufferDimensions(media::MFDecoder* decoder,
   return SUCCEEDED(device->Reset(&present_params)) ? true : false;
 }
 
-// Post this task in the MessageLoop if DXVA2 is enabled.
-void RepaintD3D9(media::MFDecoder* decoder, HWND video_window,
+// Post this task in the MessageLoop. This function keeps posting itself
+// until DrawVideoSample fails.
+void RepaintTask(media::MFDecoder* decoder, HWND video_window,
                  IDirect3DDevice9* device) {
+  // This sends a WM_PAINT message so we can paint on the window later.
   // If we are using D3D9, then we do not send a WM_PAINT message since the two
   // do not work well together.
+  if (!decoder->use_dxva2())
+    InvalidateRect(video_window, NULL, TRUE);
+  base::Time start(base::Time::Now());
   if (!DrawVideoSample(video_window, decoder, device)) {
     LOG(ERROR) << "DrawVideoSample failed, quitting MessageLoop";
     MessageLoopForUI::current()->Quit();
   } else {
-    if (g_render_to_window) {
+    ++g_num_frames;
+    if (!g_render_asap && g_render_to_window) {
+      base::Time end(base::Time::Now());
+      int64 delta = (end-start).InMilliseconds();
       MessageLoopForUI::current()->PostDelayedTask(
           FROM_HERE,
-          NewRunnableFunction(&RepaintD3D9, decoder, video_window, device), 30);
+          NewRunnableFunction(&RepaintTask, decoder, video_window, device),
+                              std::max<int64>(0L, 30-delta));
     } else {
       MessageLoopForUI::current()->PostTask(
           FROM_HERE,
-          NewRunnableFunction(&RepaintD3D9, decoder, video_window, device));
+          NewRunnableFunction(&RepaintTask, decoder, video_window, device));
     }
   }
 }
-
-// Post this task in the MessageLoop if DXVA2 is NOT enabled.
-void RepaintGdi(media::MFDecoder* decoder, HWND video_window) {
-  // This sends a WM_PAINT message so we can paint on the window later.
-  InvalidateRect(video_window, NULL, TRUE);
-
-  // We do not have a D3D device if we did not enable DXVA2, so NULL is passed
-  // in.
-  if (!DrawVideoSample(video_window, decoder, NULL)) {
-    LOG(ERROR) << "DrawVideoSample failed, quitting MessageLoop";
-    MessageLoopForUI::current()->Quit();
-  } else {
-    if (g_render_to_window) {
-      MessageLoopForUI::current()->PostDelayedTask(
-          FROM_HERE,
-          NewRunnableFunction(&RepaintGdi, decoder, video_window), 30);
-    } else {
-      MessageLoopForUI::current()->PostTask(
-          FROM_HERE,
-          NewRunnableFunction(&RepaintGdi, decoder, video_window));
-    }
-  }
-}
-
-// Implementation of Observer for MessageLoopForUI.
-class WindowObserver : public MessageLoopForUI::Observer {
- public:
-  virtual void WillProcessMessage(const MSG& msg) {}
-
-  virtual void DidProcessMessage(const MSG& msg) {}
-};
 
 }  // namespace
 
@@ -455,16 +448,21 @@ int main(int argc, char** argv) {
   LOG(INFO) << "use_dxva2: " << use_dxva2;
 
   g_render_to_window = false;
+  g_render_asap = false;
   if (strcmp(argv[2], "-d") == 0) {
     g_render_to_window = false;
   } else if (strcmp(argv[2], "-r") == 0) {
     g_render_to_window = true;
+  } else if (strcmp(argv[2], "-f") == 0) {
+    g_render_to_window = true;
+    g_render_asap = true;
   } else {
     fprintf(stderr, "unknown option %s\n", argv[2]);
     usage();
     return -1;
   }
   LOG(INFO) << "g_render_to_window: " << g_render_to_window;
+  LOG(INFO) << "g_render_asap: " << g_render_asap;
 
   scoped_array<wchar_t> file_name(ConvertASCIIStringToUnicode(argv[argc-1]));
   if (file_name.get() == NULL) {
@@ -474,7 +472,8 @@ int main(int argc, char** argv) {
 
   // Once we initialized the decoder, we should resize the window to frame size.
   // For now, just create a window with arbitrary dimensions.
-  HWND video_window = CreateDrawWindow(640, 480);
+  HWND video_window = g_render_to_window ? CreateDrawWindow(640, 480)
+                                         : GetDesktopWindow();
   if (video_window == NULL) {
     LOG(ERROR) << "main: Failed to create the video window";
     return -1;
@@ -499,53 +498,66 @@ int main(int argc, char** argv) {
   }
 
   // Resize the window to the dimensions of video frame.
-  RECT rect;
-  rect.left = 0;
-  rect.right = decoder->width();
-  rect.top = 0;
-  rect.bottom = decoder->height();
-  AdjustWindowRect(&rect, kWindowStyleFlags, FALSE);
-  if (!MoveWindow(video_window, 0, 0, rect.right - rect.left,
-                  rect.bottom - rect.top, TRUE)) {
-    LOG(WARNING) << "Warning: Failed to resize window";
-  }
-  if (decoder->use_dxva2()) {
-    // Reset the device's back buffer dimensions to match the window's
-    // dimensions.
-    if (!AdjustD3DDeviceBackBufferDimensions(decoder.get(), device.get(),
-                                             video_window)) {
-      LOG(WARNING) << "Warning: Failed to reset device to have correct "
-                   << "backbuffer dimension, scaling might occur";
+  if (g_render_to_window) {
+    RECT rect;
+    rect.left = 0;
+    rect.right = decoder->width();
+    rect.top = 0;
+    rect.bottom = decoder->height();
+    AdjustWindowRect(&rect, kWindowStyleFlags, FALSE);
+    if (!MoveWindow(video_window, 0, 0, rect.right - rect.left,
+                    rect.bottom - rect.top, TRUE)) {
+      LOG(WARNING) << "Warning: Failed to resize window";
     }
+    if (decoder->use_dxva2()) {
+      // Reset the device's back buffer dimensions to match the window's
+      // dimensions.
+      if (!AdjustD3DDeviceBackBufferDimensions(decoder.get(), device.get(),
+                                               video_window)) {
+        LOG(WARNING) << "Warning: Failed to reset device to have correct "
+                     << "backbuffer dimension, scaling might occur";
+      }
+    }
+  }
+  g_decode_time = new base::TimeDelta();
+  g_render_time = new base::TimeDelta();
+  if (g_decode_time == NULL || g_render_time == NULL) {
+    fprintf(stderr, "Failed to create decode/render timers\n");
+    return -1;
   }
   base::Time start(base::Time::Now());
   printf("Decoding started\n");
-  LOG(INFO) << "Decoding started at " << start.ToTimeT();
+  LOG(INFO) << "Decoding " << file_name.get()
+            << " started at " << start.ToTimeT();
 
-  // MessageLoop
   base::AtExitManager exit_manager;
   MessageLoopForUI message_loop;
-  WindowObserver window_observer;
-  MessageLoopForUI::current()->AddObserver(&window_observer);
-  if (decoder->use_dxva2()) {
-    MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                          NewRunnableFunction(&RepaintD3D9,
-                                                              decoder.get(),
-                                                              video_window,
-                                                              device.get()));
-  } else {
-    MessageLoopForUI::current()->PostTask(FROM_HERE,
-                                          NewRunnableFunction(&RepaintGdi,
-                                                              decoder.get(),
-                                                              video_window));
-  }
+
+  // The device is NULL if DXVA2 is not enabled.
+  MessageLoopForUI::current()->PostTask(FROM_HERE,
+                                        NewRunnableFunction(&RepaintTask,
+                                                            decoder.get(),
+                                                            video_window,
+                                                            device.get()));
   MessageLoopForUI::current()->Run(NULL);
 
   printf("Decoding finished\n");
   base::Time end(base::Time::Now());
   LOG(INFO) << "Decoding finished at " << end.ToTimeT();
   LOG(INFO) << "Took " << (end-start).InMilliseconds() << "ms";
-
+  LOG(INFO) << "Number of frames processed: " << g_num_frames;
+  LOG(INFO) << "Decode time: " << g_decode_time->InMilliseconds() << "ms";
+  LOG(INFO) << "Average decode time: "
+            << (g_num_frames == 0 ?
+                0 :
+                g_decode_time->InMillisecondsF() / g_num_frames);
+  LOG(INFO) << "Render time: " << g_render_time->InMilliseconds() << "ms";
+  LOG(INFO) << "Average render time: "
+            << (g_num_frames == 0 ?
+                0 :
+                g_render_time->InMillisecondsF() / g_num_frames);
   printf("Normal termination\n");
+  delete g_decode_time;
+  delete g_render_time;
   return 0;
 }
