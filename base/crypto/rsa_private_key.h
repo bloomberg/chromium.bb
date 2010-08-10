@@ -24,6 +24,9 @@ struct SECKEYPublicKeyStr;
 #if defined(OS_WIN)
 #include "base/crypto/scoped_capi_types.h"
 #endif
+#if defined(USE_NSS)
+#include "base/gtest_prod_util.h"
+#endif
 
 namespace base {
 
@@ -162,10 +165,36 @@ class RSAPrivateKey {
   // Create a new random instance. Can return NULL if initialization fails.
   static RSAPrivateKey* Create(uint16 num_bits);
 
+  // Create a new random instance. Can return NULL if initialization fails.
+  // The created key is permanent and is not exportable in plaintext form.
+  //
+  // NOTE: Currently only available if USE_NSS is defined.
+  static RSAPrivateKey* CreateSensitive(uint16 num_bits);
+
   // Create a new instance by importing an existing private key. The format is
   // an ASN.1-encoded PrivateKeyInfo block from PKCS #8. This can return NULL if
   // initialization fails.
   static RSAPrivateKey* CreateFromPrivateKeyInfo(
+      const std::vector<uint8>& input);
+
+  // Create a new instance by importing an existing private key. The format is
+  // an ASN.1-encoded PrivateKeyInfo block from PKCS #8. This can return NULL if
+  // initialization fails.
+  // The created key is permanent and is not exportable in plaintext form.
+  //
+  // NOTE: Currently only available if USE_NSS is defined.
+  static RSAPrivateKey* CreateSensitiveFromPrivateKeyInfo(
+      const std::vector<uint8>& input);
+
+  // Import an existing public key, and then search for the private
+  // half in the key database. The format of the public key blob is is
+  // an X509 SubjectPublicKeyInfo block. This can return NULL if
+  // initialization fails or the private key cannot be found.  The
+  // caller takes ownership of the returned object, but nothing new is
+  // created in the key database.
+  //
+  // NOTE: Currently only available if USE_NSS is defined.
+  static RSAPrivateKey* FindFromPublicKeyInfo(
       const std::vector<uint8>& input);
 
   ~RSAPrivateKey();
@@ -186,9 +215,26 @@ class RSAPrivateKey {
   bool ExportPublicKey(std::vector<uint8>* output);
 
 private:
-  // Constructor is private. Use Create() or CreateFromPrivateKeyInfo()
-  // instead.
+#if defined(USE_NSS)
+  FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FindFromPublicKey);
+  FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FailedFindFromPublicKey);
+#endif
+
+  // Constructor is private. Use one of the Create*() or Find*()
+  // methods above instead.
   RSAPrivateKey();
+
+  // Shared helper for Create() and CreateSensitive().
+  // TODO(cmasone): consider replacing |permanent| and |sensitive| with a
+  //                flags arg created by ORing together some enumerated values.
+  static RSAPrivateKey* CreateWithParams(uint16 num_bits,
+                                         bool permanent,
+                                         bool sensitive);
+
+  // Shared helper for CreateFromPrivateKeyInfo() and
+  // CreateSensitiveFromPrivateKeyInfo().
+  static RSAPrivateKey* CreateFromPrivateKeyInfoWithParams(
+      const std::vector<uint8>& input, bool permanent, bool sensitive);
 
 #if defined(USE_NSS)
   SECKEYPrivateKeyStr* key_;

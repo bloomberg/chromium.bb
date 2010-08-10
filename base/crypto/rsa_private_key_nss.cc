@@ -13,6 +13,7 @@
 #include "base/leak_annotations.h"
 #include "base/logging.h"
 #include "base/nss_util.h"
+#include "base/nss_util_internal.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 
@@ -41,10 +42,14 @@ static bool ReadAttribute(SECKEYPrivateKey* key,
 namespace base {
 
 // static
-RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
+RSAPrivateKey* RSAPrivateKey::CreateWithParams(uint16 num_bits,
+                                               bool permanent,
+                                               bool sensitive) {
+  base::EnsureNSSInit();
+
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
 
-  PK11SlotInfo *slot = PK11_GetInternalSlot();
+  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
   if (!slot)
     return NULL;
 
@@ -52,7 +57,7 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
   param.keySizeInBits = num_bits;
   param.pe = 65537L;
   result->key_ = PK11_GenerateKeyPair(slot, CKM_RSA_PKCS_KEY_PAIR_GEN, &param,
-      &result->public_key_, PR_FALSE, PR_FALSE, NULL);
+      &result->public_key_, permanent, sensitive, NULL);
   PK11_FreeSlot(slot);
   if (!result->key_)
     return NULL;
@@ -61,14 +66,30 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
 }
 
 // static
-RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
-    const std::vector<uint8>& input) {
+RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
+  return CreateWithParams(num_bits,
+                          PR_FALSE /* not permanent */,
+                          PR_FALSE /* not sensitive */);
+}
+
+// static
+RSAPrivateKey* RSAPrivateKey::CreateSensitive(uint16 num_bits) {
+  return CreateWithParams(num_bits,
+                          PR_TRUE /* permanent */,
+                          PR_TRUE /* sensitive */);
+}
+
+// static
+RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
+    const std::vector<uint8>& input, bool permanent, bool sensitive) {
   // This method currently leaks some memory.
   // See http://crbug.com/34742.
   ANNOTATE_SCOPED_MEMORY_LEAK;
+  base::EnsureNSSInit();
+
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
 
-  PK11SlotInfo *slot = PK11_GetInternalSlot();
+  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
   if (!slot)
     return NULL;
 
@@ -76,7 +97,7 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
   der_private_key_info.data = const_cast<unsigned char*>(&input.front());
   der_private_key_info.len = input.size();
   SECStatus rv =  PK11_ImportDERPrivateKeyInfoAndReturnKey(slot,
-      &der_private_key_info, NULL, NULL, PR_FALSE, PR_FALSE,
+      &der_private_key_info, NULL, NULL, permanent, sensitive,
       KU_DIGITAL_SIGNATURE, &result->key_, NULL);
   PK11_FreeSlot(slot);
   if (rv != SECSuccess) {
@@ -89,6 +110,85 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
     NOTREACHED();
     return NULL;
   }
+
+  return result.release();
+}
+
+// static
+RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
+    const std::vector<uint8>& input) {
+  return CreateFromPrivateKeyInfoWithParams(input,
+                                            PR_FALSE /* not permanent */,
+                                            PR_FALSE /* not sensitive */);
+}
+
+// static
+RSAPrivateKey* RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo(
+    const std::vector<uint8>& input) {
+  return CreateFromPrivateKeyInfoWithParams(input,
+                                            PR_TRUE /* permanent */,
+                                            PR_TRUE /* seneitive */);
+}
+
+// static
+RSAPrivateKey* RSAPrivateKey::FindFromPublicKeyInfo(
+    const std::vector<uint8>& input) {
+  base::EnsureNSSInit();
+
+  scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
+
+  // First, decode and save the public key.
+  SECItem key_der;
+  key_der.type = siBuffer;
+  key_der.data = const_cast<unsigned char*>(&input[0]);
+  key_der.len = input.size();
+
+  CERTSubjectPublicKeyInfo *spki =
+      SECKEY_DecodeDERSubjectPublicKeyInfo(&key_der);
+  if (!spki) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  result->public_key_ = SECKEY_ExtractPublicKey(spki);
+  SECKEY_DestroySubjectPublicKeyInfo(spki);
+  if (!result->public_key_) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  // Now, look for the associated private key in the user's NSS DB.  If it's
+  // not there, consider that an error.
+  PK11SlotInfo *slot = GetDefaultNSSKeySlot();
+  if (!slot) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  // Make sure the key is an RSA key.  If not, that's an error
+  if (result->public_key_->keyType != rsaKey) {
+    PK11_FreeSlot(slot);
+    NOTREACHED();
+    return NULL;
+  }
+
+  SECItem *ck_id = PK11_MakeIDFromPubKey(&(result->public_key_->u.rsa.modulus));
+  if (!ck_id) {
+    PK11_FreeSlot(slot);
+    NOTREACHED();
+    return NULL;
+  }
+
+  // Finally...Look for the key!
+  result->key_ = PK11_FindKeyByKeyID(slot, ck_id, NULL);
+
+  // Cleanup...
+  PK11_FreeSlot(slot);
+  SECITEM_FreeItem(ck_id, PR_TRUE);
+
+  // If we didn't find it, that's ok.
+  if (!result->key_)
+    return NULL;
 
   return result.release();
 }
