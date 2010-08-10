@@ -747,7 +747,7 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
     }
     Browser* browser;
     if (popup) {
-      browser = Browser::CreateForPopup(profile_);
+      browser = Browser::CreateForType(Browser::TYPE_APP_PANEL, profile_);
     } else {
       browser = BrowserList::GetLastActive();
     }
@@ -1109,7 +1109,7 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
 
   // Create new browser if no matching pop up found.
   if (browser == NULL) {
-    browser = Browser::CreateForPopup(profile);
+    browser = Browser::CreateForType(Browser::TYPE_APP_PANEL, profile);
     std::string url;
     if (hashArgument.empty()) {
       url = chrome::kChromeUIFileBrowseURL;
@@ -1127,15 +1127,33 @@ Browser* FileBrowseUI::OpenPopup(Profile* profile,
                                            height));
 
     browser->window()->Show();
+  } else {
+    browser->window()->Show();
   }
 
   return browser;
 }
 
 Browser* FileBrowseUI::GetPopupForPath(const std::string& path) {
+  std::string current_path = path;
+  if (current_path.empty()) {
+    Profile* profile = BrowserList::GetLastActive()->profile();
+    PrefService* pref_service = profile->GetPrefs();
+    bool is_enabled = pref_service->GetBoolean(
+        prefs::kLabsAdvancedFilesystemEnabled);
+    if (!is_enabled) {
+      FilePath default_download_path;
+      if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
+                            &default_download_path)) {
+        NOTREACHED();
+      }
+      current_path = default_download_path.value();
+    }
+  }
+
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
-    if ((*it)->type() == Browser::TYPE_POPUP) {
+    if (((*it)->type() == Browser::TYPE_APP_PANEL)) {
       TabContents* tab_contents = (*it)->GetSelectedTabContents();
       DCHECK(tab_contents);
       if (!tab_contents)
@@ -1144,7 +1162,7 @@ Browser* FileBrowseUI::GetPopupForPath(const std::string& path) {
 
       if (url.SchemeIs(chrome::kChromeUIScheme) &&
           url.host() == chrome::kChromeUIFileBrowseHost &&
-          url.ref() == path) {
+          url.ref() == current_path) {
         return (*it);
       }
     }

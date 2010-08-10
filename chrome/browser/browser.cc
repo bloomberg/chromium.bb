@@ -300,7 +300,13 @@ Browser* Browser::Create(Profile* profile) {
 
 // static
 Browser* Browser::CreateForPopup(Profile* profile) {
-  Browser* browser = new Browser(TYPE_POPUP, profile);
+  Browser* browser = CreateForType(TYPE_POPUP, profile);
+  return browser;
+}
+
+// static
+Browser* Browser::CreateForType(Type type, Profile* profile) {
+  Browser* browser = new Browser(type, profile);
   browser->CreateBrowserWindow();
   return browser;
 }

@@ -516,7 +516,8 @@ void MediaPlayer::RemoveHandler(MediaplayerHandler* handler) {
 
 void MediaPlayer::PopupPlaylist(Browser* creator) {
   Profile* profile = BrowserList::GetLastActive()->profile();
-  playlist_browser_ = Browser::CreateForPopup(profile);
+  playlist_browser_ = Browser::CreateForType(Browser::TYPE_APP_PANEL,
+                                             profile);
   playlist_browser_->AddTabWithURL(
       GURL(kMediaplayerPlaylistURL), GURL(), PageTransition::LINK,
       -1, TabStripModel::ADD_SELECTED, NULL, std::string());
@@ -536,7 +537,8 @@ void MediaPlayer::PopupMediaPlayer(Browser* creator) {
     return;
   }
   Profile* profile = BrowserList::GetLastActive()->profile();
-  mediaplayer_browser_ = Browser::CreateForPopup(profile);
+  mediaplayer_browser_ = Browser::CreateForType(Browser::TYPE_APP_PANEL,
+                                                profile);
 #if defined(OS_CHROMEOS)
   // Since we are on chromeos, popups should be a PanelBrowserView,
   // so we can just cast it.

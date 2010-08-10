@@ -28,7 +28,7 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
   bool IsPlayerVisible() {
     for (BrowserList::const_iterator it = BrowserList::begin();
          it != BrowserList::end(); ++it) {
-      if ((*it)->type() == Browser::TYPE_POPUP) {
+      if ((*it)->type() == Browser::TYPE_APP_PANEL) {
         const GURL& url =
             (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
 
@@ -44,7 +44,7 @@ class MediaPlayerBrowserTest : public InProcessBrowserTest {
   bool IsPlaylistVisible() {
     for (BrowserList::const_iterator it = BrowserList::begin();
          it != BrowserList::end(); ++it) {
-      if ((*it)->type() == Browser::TYPE_POPUP) {
+      if ((*it)->type() == Browser::TYPE_APP_PANEL) {
         const GURL& url =
             (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
 

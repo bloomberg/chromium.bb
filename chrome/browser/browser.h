@@ -119,6 +119,9 @@ class Browser : public TabStripModelDelegate,
   // Like Create, but creates a tabstrip-less popup window.
   static Browser* CreateForPopup(Profile* profile);
 
+  // Like Create, but creates a browser of the specified type.
+  static Browser* CreateForType(Type type, Profile* profile);
+
   // Like Create, but creates a toolbar-less "app" window for the specified
   // app. |app_name| is required and is used to identify the window to the
   // shell.  |extension| is optional. If supplied, we create a window with
