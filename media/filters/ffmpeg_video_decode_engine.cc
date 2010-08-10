@@ -133,6 +133,10 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   // Let FFmpeg handle presentation timestamp reordering.
   codec_context_->reordered_opaque = buffer->GetTimestamp().InMicroseconds();
 
+  // This is for codecs not using get_buffer to initialize
+  // |av_frame_->reordered_opaque|
+  av_frame_->reordered_opaque = codec_context_->reordered_opaque;
+
   int frame_decoded = 0;
   int result = avcodec_decode_video2(codec_context_,
                                      av_frame_.get(),

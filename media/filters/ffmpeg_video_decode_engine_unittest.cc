@@ -205,8 +205,10 @@ TEST_F(FFmpegVideoDecodeEngineTest, DecodeFrame_Normal) {
   EXPECT_CALL(*this, OnDecodeComplete(_))
      .WillOnce(DecodeComplete(this));
   test_engine_->EmptyThisBuffer(buffer_);
-  EXPECT_EQ(kTimestamp.InMicroseconds(),
-            video_frame_->GetTimestamp().ToInternalValue());
+
+  // |video_frame_| timestamp is 0 because we set the timestamp based off
+  // the buffer timestamp.
+  EXPECT_EQ(0, video_frame_->GetTimestamp().ToInternalValue());
   EXPECT_EQ(kDuration.ToInternalValue(),
             video_frame_->GetDuration().ToInternalValue());
 }
