@@ -3,8 +3,6 @@ Core wayland protocol
  - generate pointer_focus on raise/lower, move windows, all kinds of
    changes in surface stacking.
 
- - generate marshal stubs as static inline functions.
-
  - don't store globals on client side, require global_handler like
    everything else.
 

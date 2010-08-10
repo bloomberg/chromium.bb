@@ -88,7 +88,7 @@ enum arg_type {
 struct arg {
 	char *name;
 	enum arg_type type;
-	char *object_name;
+	char *interface_name;
 	struct wl_list link;
 };
 
@@ -119,12 +119,13 @@ start_element(void *data, const char *element_name, const char **atts)
 	struct interface *interface;
 	struct message *message;
 	struct arg *arg;
-	const char *name, *type;
+	const char *name, *type, *interface_name;
 	int i, version;
 
-	name = 0;
-	type = 0;
+	name = NULL;
+	type = NULL;
 	version = 0;
+	interface_name = NULL;
 	for (i = 0; atts[i]; i += 2) {
 		if (strcmp(atts[i], "name") == 0)
 			name = atts[i + 1];
@@ -132,6 +133,8 @@ start_element(void *data, const char *element_name, const char **atts)
 			version = atoi(atts[i + 1]);
 		if (strcmp(atts[i], "type") == 0)
 			type = atts[i + 1];
+		if (strcmp(atts[i], "interface") == 0)
+			interface_name = atts[i + 1];
 	}
 
 	if (strcmp(element_name, "interface") == 0) {
@@ -178,9 +181,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		arg = malloc(sizeof *arg);
 		arg->name = strdup(name);
 
-		if (strcmp(type, "new_id") == 0)
-			arg->type = NEW_ID;
-		else if (strcmp(type, "int") == 0)
+		if (strcmp(type, "int") == 0)
 			arg->type = INT;
 		else if (strcmp(type, "uint") == 0)
 			arg->type = UNSIGNED;
@@ -188,9 +189,23 @@ start_element(void *data, const char *element_name, const char **atts)
 			arg->type = STRING;
 		else if (strcmp(type, "array") == 0)
 			arg->type = ARRAY;
-		else {
+		else if (strcmp(type, "new_id") == 0) {
+			if (interface_name == NULL) {
+				fprintf(stderr, "no interface name given\n");
+				exit(EXIT_FAILURE);
+			}
+			arg->type = NEW_ID;
+			arg->interface_name = strdup(interface_name);
+		} else if (strcmp(type, "object") == 0) {
+			if (interface_name == NULL) {
+				fprintf(stderr, "no interface name given\n");
+				exit(EXIT_FAILURE);
+			}
 			arg->type = OBJECT;
-			arg->object_name = strdup(type);
+			arg->interface_name = strdup(interface_name);
+		} else {
+			fprintf(stderr, "unknown type: %s\n", type);
+			exit(EXIT_FAILURE);
 		}
 
 		wl_list_insert(ctx->message->arg_list.prev,
@@ -216,11 +231,104 @@ emit_opcodes(struct wl_list *message_list, struct interface *interface)
 }
 
 static void
+emit_type(struct arg *a)
+{
+	switch (a->type) {
+	default:
+	case INT:
+		printf("int32_t ");
+		break;
+	case NEW_ID:
+	case UNSIGNED:
+		printf("uint32_t ");
+		break;
+	case STRING:
+		printf("const char *");
+		break;
+	case OBJECT:
+		printf("struct wl_%s *", a->interface_name);
+		break;
+	case ARRAY:
+		printf("struct wl_array *");
+		break;
+	}
+}
+
+static void
+emit_stubs(struct wl_list *message_list, struct interface *interface)
+{
+	struct message *m;
+	struct arg *a, *ret;
+
+	if (wl_list_empty(message_list))
+		return;
+
+	wl_list_for_each(m, message_list, link) {
+		ret = NULL;
+		wl_list_for_each(a, &m->arg_list, link) {
+			if (a->type == NEW_ID)
+				ret = a;
+		}
+
+		if (ret)
+			printf("static inline struct wl_%s *\n",
+			       ret->interface_name);
+		else
+			printf("static inline void\n");
+
+		printf("wl_%s_%s(struct wl_%s *%s",
+		       interface->name, m->name,
+		       interface->name, interface->name);
+
+		wl_list_for_each(a, &m->arg_list, link) {
+			if (a->type == NEW_ID)
+				continue;
+			printf(", ");
+			emit_type(a);
+			printf("%s", a->name);
+		}
+
+		printf(")\n"
+		       "{\n");
+		if (ret)
+			printf("\tstruct wl_proxy *%s;\n\n"
+			       "\t%s = wl_proxy_create("
+			       "(struct wl_proxy *) %s, &wl_%s_interface);\n"
+			       "\tif (!%s)\n"
+			       "\t\treturn NULL;\n\n",
+			       ret->name,
+			       ret->name,
+			       interface->name, ret->interface_name,
+			       ret->name);
+
+		printf("\twl_proxy_marshal((struct wl_proxy *) %s, WL_%s_%s",
+		       interface->name,
+		       interface->uppercase_name,
+		       m->uppercase_name);
+
+		wl_list_for_each(a, &m->arg_list, link) {
+			printf(", ");
+				printf("%s", a->name);
+		}
+		printf(");\n");
+
+		if (ret)
+			printf("\n\treturn (struct wl_%s *) %s;\n",
+			       ret->interface_name, ret->name);
+
+		printf("}\n\n");
+	}
+}
+
+static void
 emit_structs(struct wl_list *message_list, struct interface *interface)
 {
 	struct message *m;
 	struct arg *a;
 	int is_interface;
+
+	if (wl_list_empty(message_list))
+		return;
 
 	is_interface = message_list == &interface->request_list;
 	printf("struct wl_%s_%s {\n", interface->name,
@@ -241,25 +349,7 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 			printf(", ");
 
 		wl_list_for_each(a, &m->arg_list, link) {
-			switch (a->type) {
-			default:
-			case INT:
-				printf("int32_t ");
-				break;
-			case NEW_ID:
-			case UNSIGNED:
-				printf("uint32_t ");
-				break;
-			case STRING:
-				printf("const char *");
-				break;
-			case OBJECT:
-				printf("struct wl_%s *", a->object_name);
-				break;
-			case ARRAY:
-				printf("struct wl_array *");
-				break;
-			}
+			emit_type(a);
 			printf("%s%s",
 			       a->name,
 			       a->link.next == &m->arg_list ? "" : ", ");
@@ -292,6 +382,22 @@ emit_header(struct protocol *protocol, int server)
 		printf("struct wl_%s;\n", i->name);
 	printf("\n");
 
+	if (!server)
+		printf("struct wl_proxy;\n\n"
+		       "extern void\n"
+		       "wl_proxy_marshal(struct wl_proxy *p, "
+		       "uint32_t opcode, ...);\n"
+		       "extern struct wl_proxy *\n"
+		       "wl_proxy_create(struct wl_proxy *factory, "
+		       "const struct wl_interface *interface);\n\n");
+
+	wl_list_for_each(i, &protocol->interface_list, link) {
+		printf("extern const struct wl_interface "
+		       "wl_%s_interface;\n",
+		       i->name);
+	}
+	printf("\n");
+
 	wl_list_for_each(i, &protocol->interface_list, link) {
 
 		if (server) {
@@ -300,11 +406,8 @@ emit_header(struct protocol *protocol, int server)
 		} else {
 			emit_structs(&i->event_list, i);
 			emit_opcodes(&i->request_list, i);
+			emit_stubs(&i->request_list, i);
 		}
-
-		printf("extern const struct wl_interface "
-		       "wl_%s_interface;\n\n",
-		       i->name);
 	}
 
 	printf("#ifdef  __cplusplus\n"

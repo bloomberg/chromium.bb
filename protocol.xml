@@ -13,7 +13,7 @@
     <event name="no_memory"/>
 
     <event name="global">
-      <arg name="id" type="new_id"/>
+      <arg name="id" type="new_id" interface="object"/>
       <arg name="name" type="string"/>
       <arg name="version" type="uint"/>
     </event>
@@ -25,7 +25,7 @@
 
   <interface name="compositor" version="1">
     <request name="create_surface">
-      <arg name="id" type="new_id"/>
+      <arg name="id" type="new_id" interface="surface"/>
     </request>
 
     <request name="commit">
@@ -50,12 +50,12 @@
     </request>
 
     <request name="create_buffer">
-      <arg name="id" type="new_id"/>
+      <arg name="id" type="new_id" interface="buffer"/>
       <arg name="name" type="uint"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
       <arg name="stride" type="uint"/>
-      <arg name="visual" type="visual"/>
+      <arg name="visual" type="object" interface="visual"/>
     </request>
 
     <event name="device">
@@ -71,14 +71,14 @@
 
   <interface name="shell" version="1">
     <request name="move">
-      <arg name="surface" type="surface"/>
-      <arg name="input_device" type="input_device"/>
+      <arg name="surface" type="object" interface="surface"/>
+      <arg name="input_device" type="object" interface="input_device"/>
       <arg name="time" type="uint"/>
     </request>
 
     <request name="resize">
-      <arg name="surface" type="surface"/>
-      <arg name="input_device" type="input_device"/>
+      <arg name="surface" type="object" interface="surface"/>
+      <arg name="input_device" type="object" interface="input_device"/>
       <arg name="time" type="uint"/>
       <!-- edges is an enum, need to get the values in here -->
       <arg name="edges" type="uint"/>
@@ -88,7 +88,7 @@
       <arg name="time" type="uint"/>
       <!-- Same as edges except also move (16) -->
       <arg name="type" type="uint"/>
-      <arg name="surface" type="surface"/>
+      <arg name="surface" type="object" interface="surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="width" type="int"/>
@@ -100,7 +100,7 @@
     <request name="destroy"/>
 
     <request name="attach">
-      <arg name="buffer" type="buffer"/>
+      <arg name="buffer" type="object" interface="buffer"/>
     </request>
 
     <request name="map">
@@ -141,7 +141,7 @@
 
     <event name="pointer_focus">
       <arg name="time" type="uint"/>
-      <arg name="surface" type="surface"/>
+      <arg name="surface" type="object" interface="surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="surface_x" type="int"/>
@@ -150,7 +150,7 @@
 
     <event name="keyboard_focus">
       <arg name="time" type="uint"/>
-      <arg name="surface" type="surface"/>
+      <arg name="surface" type="object" interface="surface"/>
       <arg name="keys" type="array"/>
     </event>
   </interface>

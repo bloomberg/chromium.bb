@@ -66,10 +66,6 @@ wl_display_get_premultiplied_argb_visual(struct wl_display *display);
 struct wl_visual *
 wl_display_get_rgb_visual(struct wl_display *display);
 
-struct wl_surface *
-wl_compositor_create_surface(struct wl_compositor *compositor);
-void
-wl_compositor_commit(struct wl_compositor *compositor, uint32_t key);
 int
 wl_compositor_add_listener(struct wl_compositor *compostior,
 			   const struct wl_compositor_listener *listener,
@@ -79,33 +75,10 @@ int
 wl_shell_add_listener(struct wl_shell *shell,
 		      const struct wl_shell_listener *listener,
 		      void *data);
-void
-wl_shell_move(struct wl_shell *shell,
-	      struct wl_surface *surface, struct wl_input_device *device,
-	      uint32_t time);
-void
-wl_shell_resize(struct wl_shell *shell,
-		struct wl_surface *surface, struct wl_input_device *device,
-		uint32_t time, uint32_t edges);
-
 int
 wl_drm_add_listener(struct wl_drm *drm,
 		    const struct wl_drm_listener *listener,
 		    void *data);
-void
-wl_drm_authenticate(struct wl_drm *drm, uint32_t id);
-struct wl_buffer *
-wl_drm_create_buffer(struct wl_drm *drm, uint32_t name,
-		     int32_t width, int32_t height,
-		     uint32_t stride, struct wl_visual *visual);
-void wl_buffer_destroy(struct wl_buffer *buffer);
-
-void wl_surface_destroy(struct wl_surface *surface);
-void wl_surface_attach(struct wl_surface *surface, struct wl_buffer *buffer);
-void wl_surface_map(struct wl_surface *surface,
-		    int32_t x, int32_t y, int32_t width, int32_t height);
-void wl_surface_damage(struct wl_surface *surface,
-		       int32_t x, int32_t y, int32_t width, int32_t height);
 
 void wl_surface_set_user_data(struct wl_surface *surface, void *user_data);
 void *wl_surface_get_user_data(struct wl_surface *surface);
