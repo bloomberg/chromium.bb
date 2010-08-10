@@ -4,6 +4,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_database.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/tools/profiles/thumbnail-inl.h"
@@ -402,6 +404,9 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
 
 TEST_F(HistoryBackendTest, GetPageThumbnailAfterRedirects) {
   ASSERT_TRUE(backend_.get());
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+    return;
+
 
   const char* base_url = "http://mail";
   const char* thumbnail_url = "http://mail.google.com";
@@ -598,6 +603,9 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
 }
 
 TEST_F(HistoryBackendTest, DeleteThumbnailsDatabaseTest) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTopSites))
+    return;
+
   EXPECT_TRUE(backend_->thumbnail_db_->NeedsMigrationToTopSites());
   backend_->delegate_->StartTopSitesMigration();
   EXPECT_FALSE(backend_->thumbnail_db_->NeedsMigrationToTopSites());

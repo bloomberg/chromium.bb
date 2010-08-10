@@ -178,6 +178,10 @@ TestingProfile::~TestingProfile() {
   // FaviconService depends on HistoryServce so destroying it later.
   DestroyFaviconService();
   DestroyWebDataService();
+  if (top_sites_.get())
+    top_sites_->ClearProfile();
+  history::TopSites::DeleteTopSites(top_sites_);
+
   file_util::Delete(path_, true);
 }
 

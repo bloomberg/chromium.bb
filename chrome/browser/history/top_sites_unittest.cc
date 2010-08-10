@@ -74,7 +74,7 @@ class TopSitesTest : public testing::Test {
 
   virtual void TearDown() {
     profile_.reset();
-    top_sites_ = NULL;
+    TopSites::DeleteTopSites(top_sites_);
     EXPECT_TRUE(file_util::Delete(file_name_, false));
   }
 
@@ -92,7 +92,6 @@ class TopSitesTest : public testing::Test {
   }
 
   void StoreMostVisited(std::vector<MostVisitedURL>* urls) {
-    AutoLock lock(top_sites_->lock_);  // The function asserts it's in the lock.
     top_sites_->StoreMostVisited(urls);
   }
 
@@ -103,6 +102,10 @@ class TopSitesTest : public testing::Test {
                               std::vector<size_t>* moved_urls)  {
     TopSites::DiffMostVisited(old_list, new_list,
                               added_urls, deleted_urls, moved_urls);
+  }
+
+  Lock& lock() {
+    return top_sites_->lock_;
   }
 
  private:
@@ -120,6 +123,7 @@ class TopSitesTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesTest);
 };
+
 
 // A mockup of a HistoryService used for testing TopSites.
 class MockHistoryServiceImpl : public TopSites::MockHistoryService {
@@ -188,14 +192,14 @@ class MockHistoryServiceImpl : public TopSites::MockHistoryService {
 class MockTopSitesDatabaseImpl : public TopSitesDatabase {
  public:
   virtual void GetPageThumbnails(MostVisitedURLList* urls,
-                                 std::map<GURL, TopSites::Images>* thumbnails) {
+                                 std::map<GURL, Images>* thumbnails) {
     // Return a copy of the vector.
     *urls = top_sites_list_;
     *thumbnails = thumbnails_map_;
   }
 
   virtual void SetPageThumbnail(const MostVisitedURL& url, int url_rank,
-                                const TopSites::Images& thumbnail) {
+                                const Images& thumbnail) {
     SetPageRank(url, url_rank);
     // Update thubmnail
     thumbnails_map_[url.url] = thumbnail;
@@ -229,8 +233,8 @@ class MockTopSitesDatabaseImpl : public TopSitesDatabase {
 
   // Get a thumbnail for a given page. Returns true iff we have the thumbnail.
   virtual bool GetPageThumbnail(const GURL& url,
-                                TopSites::Images* thumbnail) {
-    std::map<GURL, TopSites::Images>::const_iterator found =
+                                Images* thumbnail) {
+    std::map<GURL, Images>::const_iterator found =
         thumbnails_map_.find(url);
     if (found == thumbnails_map_.end())
       return false;  // No thumbnail for this URL.
@@ -255,7 +259,7 @@ class MockTopSitesDatabaseImpl : public TopSitesDatabase {
 
  private:
   MostVisitedURLList top_sites_list_;  // Keeps the URLs sorted by score (rank).
-  std::map<GURL, TopSites::Images> thumbnails_map_;
+  std::map<GURL, Images> thumbnails_map_;
 };
 
 
@@ -448,7 +452,7 @@ TEST_F(TopSitesTest, MockDatabase) {
   url.url = asdf_url;
   url.title = asdf_title;
   url.redirects.push_back(url.url);
-  TopSites::Images thumbnail;
+  Images thumbnail;
   db->SetPageThumbnail(url, 0, thumbnail);
 
   top_sites().ReadDatabase();
@@ -495,7 +499,7 @@ TEST_F(TopSitesTest, MockDatabase) {
   top_sites().StartQueryForMostVisited();
   MessageLoop::current()->RunAllPending();
 
-  std::map<GURL, TopSites::Images> thumbnails;
+  std::map<GURL, Images> thumbnails;
   MostVisitedURLList result;
   db->GetPageThumbnails(&result, &thumbnails);
   ASSERT_EQ(4u, result.size());
@@ -520,18 +524,18 @@ TEST_F(TopSitesTest, TopSitesDB) {
   url.url = asdf_url;
   url.title = asdf_title;
   url.redirects.push_back(url.url);
-  TopSites::Images thumbnail;
+  Images thumbnail;
   thumbnail.thumbnail = random_thumbnail();
   // Add asdf at rank 0.
   db.SetPageThumbnail(url, 0, thumbnail);
 
-  TopSites::Images result;
+  Images result;
   EXPECT_TRUE(db.GetPageThumbnail(url.url, &result));
   EXPECT_EQ(thumbnail.thumbnail->data.size(), result.thumbnail->data.size());
   EXPECT_TRUE(ThumbnailsAreEqual(thumbnail.thumbnail, result.thumbnail));
 
   MostVisitedURLList urls;
-  std::map<GURL, TopSites::Images> thumbnails;
+  std::map<GURL, Images> thumbnails;
   db.GetPageThumbnails(&urls, &thumbnails);
   ASSERT_EQ(1u, urls.size());
   EXPECT_EQ(asdf_url, urls[0].url);
@@ -607,7 +611,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   url.url = asdf_url;
   url.title = asdf_title;
   url.redirects.push_back(url.url);
-  TopSites::Images thumbnail;
+  Images thumbnail;
   thumbnail.thumbnail = random_thumbnail();
   db->SetPageThumbnail(url, 0, thumbnail);
 
@@ -623,7 +627,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   EXPECT_EQ(welcome_url(), urls()[1].url);
   EXPECT_EQ(themes_url(), urls()[2].url);
 
-  TopSites::Images img_result;
+  Images img_result;
   db->GetPageThumbnail(asdf_url, &img_result);
   EXPECT_TRUE(img_result.thumbnail != NULL);
   EXPECT_TRUE(ThumbnailsAreEqual(random_thumbnail(), img_result.thumbnail));
@@ -641,7 +645,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   url2.redirects.push_back(google3_url);
 
   // Add new thumbnail at rank 0 and shift the other result to 1.
-  TopSites::Images g_thumbnail;
+  Images g_thumbnail;
   g_thumbnail.thumbnail = google_thumbnail();
   db->SetPageThumbnail(url2, 0, g_thumbnail);
 
@@ -676,7 +680,7 @@ TEST_F(TopSitesTest, RealDatabase) {
   top_sites().StartQueryForMostVisited();
   MessageLoop::current()->RunAllPending();
 
-  std::map<GURL, TopSites::Images> thumbnails;
+  std::map<GURL, Images> thumbnails;
   MostVisitedURLList results;
   db->GetPageThumbnails(&results, &thumbnails);
   ASSERT_EQ(4u, results.size());
@@ -697,7 +701,7 @@ TEST_F(TopSitesTest, RealDatabase) {
                                            *weewar_bitmap,
                                            medium_score));
   RefCountedBytes* out_1;
-  TopSites::Images out_2;
+  Images out_2;
   EXPECT_TRUE(top_sites().GetPageThumbnail(google1_url, &out_1));
 
   MessageLoop::current()->RunAllPending();
@@ -1074,7 +1078,11 @@ TEST_F(TopSitesTest, Blacklisting) {
                   &TopSitesTest::OnTopSitesAvailable));
   top_sites().OnTopSitesAvailable(0, pages);
   MessageLoop::current()->RunAllPending();
-  EXPECT_FALSE(top_sites().IsBlacklisted(GURL("http://bbc.com/")));
+  {
+    Lock& l = lock();
+    AutoLock lock(l);  // IsBlacklisted must be in a lock.
+    EXPECT_FALSE(top_sites().IsBlacklisted(GURL("http://bbc.com/")));
+  }
 
   EXPECT_EQ(1u, number_of_callbacks());
 
@@ -1085,9 +1093,13 @@ TEST_F(TopSitesTest, Blacklisting) {
   EXPECT_EQ(themes_url(), urls()[3].url);
 
   top_sites().AddBlacklistedURL(GURL("http://google.com/"));
-  EXPECT_TRUE(top_sites().IsBlacklisted(GURL("http://google.com/")));
-  EXPECT_FALSE(top_sites().IsBlacklisted(GURL("http://bbc.com/")));
-  EXPECT_FALSE(top_sites().IsBlacklisted(welcome_url()));
+  {
+    Lock& l = lock();
+    AutoLock lock(l);  // IsBlacklisted must be in a lock.
+    EXPECT_TRUE(top_sites().IsBlacklisted(GURL("http://google.com/")));
+    EXPECT_FALSE(top_sites().IsBlacklisted(GURL("http://bbc.com/")));
+    EXPECT_FALSE(top_sites().IsBlacklisted(welcome_url()));
+  }
 
   top_sites().GetMostVisitedURLs(
       &c,
@@ -1110,7 +1122,11 @@ TEST_F(TopSitesTest, Blacklisting) {
   EXPECT_EQ(themes_url(), urls()[1].url);
 
   top_sites().RemoveBlacklistedURL(GURL("http://google.com/"));
-  EXPECT_FALSE(top_sites().IsBlacklisted(GURL("http://google.com/")));
+  {
+    Lock& l = lock();
+    AutoLock lock(l);  // IsBlacklisted must be in a lock.
+    EXPECT_FALSE(top_sites().IsBlacklisted(GURL("http://google.com/")));
+  }
 
   top_sites().GetMostVisitedURLs(
       &c,
@@ -1151,7 +1167,6 @@ TEST_F(TopSitesTest, PinnedURLs) {
                   &TopSitesTest::OnTopSitesAvailable));
   top_sites().OnTopSitesAvailable(0, pages);
   MessageLoop::current()->RunAllPending();
-  size_t index = 0;
   EXPECT_FALSE(top_sites().IsURLPinned(GURL("http://bbc.com/")));
 
   ASSERT_EQ(4u, urls().size());
@@ -1161,9 +1176,6 @@ TEST_F(TopSitesTest, PinnedURLs) {
   EXPECT_EQ(themes_url(), urls()[3].url);
 
   top_sites().AddPinnedURL(GURL("http://google.com/"), 3);
-  EXPECT_TRUE(top_sites().GetIndexOfPinnedURL(GURL("http://google.com/"),
-                                              &index));
-  EXPECT_EQ(3u, index);
   EXPECT_FALSE(top_sites().IsURLPinned(GURL("http://bbc.com/")));
   EXPECT_FALSE(top_sites().IsURLPinned(welcome_url()));
 

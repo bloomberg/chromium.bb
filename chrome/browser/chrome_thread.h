@@ -165,7 +165,7 @@ class ChromeThread : public base::Thread {
   //
   // ...
   //  private:
-  //   friend class ChromeThread;
+  //   friend struct ChromeThread::DeleteOnThread<ChromeThread::IO>;
   //   friend class DeleteTask<Foo>;
   //
   //   ~Foo();
