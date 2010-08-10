@@ -33,22 +33,20 @@ extern "C" {
 #define WL_DISPLAY_READABLE 0x01
 #define WL_DISPLAY_WRITABLE 0x02
 
-int
-wl_object_implements(struct wl_object *object,
-		     const char *interface, int version);
-
 typedef int (*wl_display_update_func_t)(uint32_t mask, void *data);
 
 struct wl_display *wl_display_create(const char *name, size_t name_size);
 void wl_display_destroy(struct wl_display *display);
 int wl_display_get_fd(struct wl_display *display,
 		      wl_display_update_func_t update, void *data);
-
+uint32_t wl_display_allocate_id(struct wl_display *display);
 void wl_display_iterate(struct wl_display *display, uint32_t mask);
 
 struct wl_global_listener;
 typedef void (*wl_display_global_func_t)(struct wl_display *display,
-					 struct wl_object *object,
+					 uint32_t id,
+					 const char *interface,
+					 uint32_t version,
 					 void *data);
 void
 wl_display_remove_global_listener(struct wl_display *display,
@@ -57,8 +55,6 @@ wl_display_remove_global_listener(struct wl_display *display,
 struct wl_global_listener *
 wl_display_add_global_listener(struct wl_display *display,
 			       wl_display_global_func_t handler, void *data);
-struct wl_compositor *
-wl_display_get_compositor(struct wl_display *display);
 struct wl_visual *
 wl_display_get_argb_visual(struct wl_display *display);
 struct wl_visual *
@@ -66,45 +62,8 @@ wl_display_get_premultiplied_argb_visual(struct wl_display *display);
 struct wl_visual *
 wl_display_get_rgb_visual(struct wl_display *display);
 
-int
-wl_compositor_add_listener(struct wl_compositor *compostior,
-			   const struct wl_compositor_listener *listener,
-			   void *data);
-
-int
-wl_shell_add_listener(struct wl_shell *shell,
-		      const struct wl_shell_listener *listener,
-		      void *data);
-int
-wl_drm_add_listener(struct wl_drm *drm,
-		    const struct wl_drm_listener *listener,
-		    void *data);
-
 void wl_surface_set_user_data(struct wl_surface *surface, void *user_data);
 void *wl_surface_get_user_data(struct wl_surface *surface);
-
-int
-wl_output_add_listener(struct wl_output *output,
-		       const struct wl_output_listener *listener,
-		       void *data);
-
-int
-wl_input_device_add_listener(struct wl_input_device *input_device,
-			     const struct wl_input_device_listener *listener,
-			     void *data);
-
-
-/* These entry points are for client side implementation of custom
- * objects. */
-
-uint32_t wl_display_get_object_id(struct wl_display *display,
-				  const char *interface, uint32_t version);
-uint32_t wl_display_allocate_id(struct wl_display *display);
-void wl_display_write(struct wl_display *display,
-		      const void *data,
-		      size_t count);
-void wl_display_advertise_global(struct wl_display *display,
-				 struct wl_object *object);
 
 #ifdef  __cplusplus
 }

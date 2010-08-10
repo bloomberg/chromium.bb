@@ -766,7 +766,7 @@ static const struct wl_output_listener output_listener = {
 };
 
 static void
-display_add_input(struct display *d, struct wl_object *object)
+display_add_input(struct display *d, uint32_t id)
 {
 	struct input *input;
 
@@ -776,7 +776,7 @@ display_add_input(struct display *d, struct wl_object *object)
 
 	memset(input, 0, sizeof *input);
 	input->display = d;
-	input->input_device = (struct wl_input_device *) object;
+	input->input_device = wl_input_device_create(d->display, id);
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
 	wl_list_insert(d->input_list.prev, &input->link);
@@ -786,24 +786,25 @@ display_add_input(struct display *d, struct wl_object *object)
 }
 
 static void
-display_handle_global(struct wl_display *display,
-		     struct wl_object *object, void *data)
+display_handle_global(struct wl_display *display, uint32_t id,
+		      const char *interface, uint32_t version, void *data)
 {
 	struct display *d = data;
 
-	if (wl_object_implements(object, "compositor", 1)) { 
-		d->compositor = (struct wl_compositor *) object;
-		wl_compositor_add_listener(d->compositor, &compositor_listener, d);
-	} else if (wl_object_implements(object, "output", 1)) {
-		d->output = (struct wl_output *) object;
+	if (strcmp(interface, "compositor") == 0) {
+		d->compositor = wl_compositor_create(display, id);
+		wl_compositor_add_listener(d->compositor,
+					   &compositor_listener, d);
+	} else if (strcmp(interface, "output") == 0) {
+		d->output = wl_output_create(display, id);
 		wl_output_add_listener(d->output, &output_listener, d);
-	} else if (wl_object_implements(object, "input_device", 1)) {
-		display_add_input(d, object);
-	} else if (wl_object_implements(object, "shell", 1)) {
-		d->shell = (struct wl_shell *) object;
+	} else if (strcmp(interface, "input_device") == 0) {
+		display_add_input(d, id);
+	} else if (strcmp(interface, "shell") == 0) {
+		d->shell = wl_shell_create(display, id);
 		wl_shell_add_listener(d->shell, &shell_listener, d);
-	} else if (wl_object_implements(object, "drm", 1)) {
-		d->drm = (struct wl_drm *) object;
+	} else if (strcmp(interface, "drm") == 0) {
+		d->drm = wl_drm_create(display, id);
 		wl_drm_add_listener(d->drm, &drm_listener, d);
 	}
 }

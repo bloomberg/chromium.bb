@@ -260,6 +260,19 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 	struct message *m;
 	struct arg *a, *ret;
 
+	/* We provide a hand written constructor for the display object */
+	if (strcmp(interface->name, "display") != 0)
+		printf("static inline struct wl_%s *\n"
+		       "wl_%s_create(struct wl_display *display, uint32_t id)\n"
+		       "{\n"
+		       "\treturn (struct wl_%s *)\n"
+		       "\t\twl_proxy_create_for_id(display, &wl_%s_interface, id);\n"
+		       "}\n\n",
+		       interface->name,
+		       interface->name,
+		       interface->name,
+		       interface->name);
+
 	if (wl_list_empty(message_list))
 		return;
 
@@ -395,6 +408,24 @@ emit_structs(struct wl_list *message_list, struct interface *interface)
 	}
 }
 
+static const char client_prototypes[] =
+	"struct wl_proxy;\n\n"
+
+	"extern void\n"
+	"wl_proxy_marshal(struct wl_proxy *p, uint32_t opcode, ...);\n"
+
+	"extern struct wl_proxy *\n"
+	"wl_proxy_create(struct wl_proxy *factory,\n"
+	"\t\tconst struct wl_interface *interface);\n"
+
+	"extern struct wl_proxy *\n"
+	"wl_proxy_create_for_id(struct wl_display *display,\n"
+	"\t\t       const struct wl_interface *interface, uint32_t id);\n"
+
+	"extern int\n"
+	"wl_proxy_add_listener(struct wl_proxy *proxy,\n"
+	"\t\t      void (**implementation)(void), void *data);\n\n";
+
 static void
 emit_header(struct protocol *protocol, int server)
 {
@@ -417,19 +448,7 @@ emit_header(struct protocol *protocol, int server)
 	printf("\n");
 
 	if (!server)
-		printf("struct wl_proxy;\n\n"
-		       "extern void\n"
-		       "wl_proxy_marshal(struct wl_proxy *p, "
-		       "uint32_t opcode, ...);\n"
-
-		       "extern struct wl_proxy *\n"
-		       "wl_proxy_create(struct wl_proxy *factory,\n"
-		       "\t\tconst struct wl_interface *interface);\n"
-
-		       "extern int\n"
-		       "wl_proxy_add_listener(struct wl_proxy *proxy,\n"
-		       "\t\t      void (**implementation)(void), "
-		       "void *data);\n\n");
+		printf(client_prototypes);
 
 	wl_list_for_each(i, &protocol->interface_list, link) {
 		printf("extern const struct wl_interface "

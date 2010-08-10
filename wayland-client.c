@@ -40,14 +40,6 @@
 
 static const char socket_name[] = "\0wayland";
 
-struct wl_global {
-	uint32_t id;
-	char *interface;
-	uint32_t version;
-	struct wl_proxy *proxy;
-	struct wl_list link;
-};
-
 struct wl_global_listener {
 	wl_display_global_func_t handler;
 	void *data;
@@ -67,18 +59,6 @@ struct wl_proxy {
 	void *user_data;
 };
 
-struct wl_compositor {
-	struct wl_proxy proxy;
-};
-
-struct wl_surface {
-	struct wl_proxy proxy;
-};
-
-struct wl_visual {
-	struct wl_proxy proxy;
-};
-
 struct wl_display {
 	struct wl_proxy proxy;
 	struct wl_connection *connection;
@@ -86,7 +66,6 @@ struct wl_display {
 	uint32_t id, id_count, next_range;
 	uint32_t mask;
 	struct wl_hash_table *objects;
-	struct wl_list global_list;
 	struct wl_listener listener;
 	struct wl_list global_listener_list;
 
@@ -99,8 +78,6 @@ struct wl_display {
 
 	wl_display_global_func_t global_handler;
 	void *global_handler_data;
-
-	struct wl_compositor *compositor;
 };
 
 static int
@@ -117,20 +94,11 @@ connection_update(struct wl_connection *connection,
 	return 0;
 }
 
-WL_EXPORT int
-wl_object_implements(struct wl_object *object,
-		     const char *interface, int version)
-{
-	return strcmp(object->interface->name, interface) == 0 &&
-		object->interface->version >= version;
-}
-
 WL_EXPORT struct wl_global_listener *
 wl_display_add_global_listener(struct wl_display *display,
 			       wl_display_global_func_t handler, void *data)
 {
 	struct wl_global_listener *listener;
-	struct wl_global *global;
 
 	listener = malloc(sizeof *listener);
 	if (listener == NULL)
@@ -139,12 +107,6 @@ wl_display_add_global_listener(struct wl_display *display,
 	listener->handler = handler;
 	listener->data = data;
 	wl_list_insert(display->global_listener_list.prev, &listener->link);
-
-	/* FIXME: Need a destructor for void *data? */
-
-	wl_list_for_each(global, &display->global_list, link)
-		if (global->proxy != NULL)
-			(*handler)(display, &global->proxy->base, data);
 
 	return listener;
 }
@@ -157,50 +119,36 @@ wl_display_remove_global_listener(struct wl_display *display,
 	free(listener);
 }
 
-static struct wl_proxy *
-wl_proxy_create_for_global(struct wl_display *display,
-			   struct wl_global *global,
-			   const struct wl_interface *interface)
+WL_EXPORT struct wl_proxy *
+wl_proxy_create_for_id(struct wl_display *display,
+		       const struct wl_interface *interface, uint32_t id)
 {
 	struct wl_proxy *proxy;
-	struct wl_global_listener *listener;
 
 	proxy = malloc(sizeof *proxy);
 	if (proxy == NULL)
 		return NULL;
 
 	proxy->base.interface = interface;
-	proxy->base.id = global->id;
+	proxy->base.id = id;
 	proxy->display = display;
-	global->proxy = proxy;
 	wl_list_init(&proxy->listener_list);
 	wl_hash_table_insert(display->objects, proxy->base.id, proxy);
-
-	wl_list_for_each(listener, &display->global_listener_list, link)
-		(*listener->handler)(display, &proxy->base, listener->data);
 
 	return proxy;
 }
 
 WL_EXPORT struct wl_proxy *
-wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
+wl_proxy_create(struct wl_proxy *factory,
+		const struct wl_interface *interface)
 {
-	struct wl_proxy *proxy;
-
-	proxy = malloc(sizeof *proxy);
-	if (proxy == NULL)
-		return NULL;
-
-	proxy->base.interface = interface;
-	proxy->base.id = wl_display_allocate_id(factory->display);
-	proxy->display = factory->display;
-	wl_hash_table_insert(factory->display->objects, proxy->base.id, proxy);
-
-	return proxy;
+	return wl_proxy_create_for_id(factory->display, interface,
+				      wl_display_allocate_id(factory->display));
 }
 
 WL_EXPORT int
-wl_proxy_add_listener(struct wl_proxy *proxy, void (**implementation)(void), void *data)
+wl_proxy_add_listener(struct wl_proxy *proxy,
+		      void (**implementation)(void), void *data)
 {
 	struct wl_listener *listener;
 
@@ -228,13 +176,12 @@ wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 }
 
 static void
-add_visual(struct wl_display *display, struct wl_global *global)
+add_visual(struct wl_display *display, uint32_t id)
 {
 	struct wl_visual *visual;
 
 	visual = (struct wl_visual *)
-		wl_proxy_create_for_global(display, global,
-					   &wl_visual_interface);
+		wl_proxy_create_for_id(display, &wl_visual_interface, id);
 	if (display->argb_visual == NULL)
 		display->argb_visual = visual;
 	else if (display->premultiplied_argb_visual == NULL)
@@ -291,38 +238,17 @@ display_handle_global(void *data,
 		      struct wl_display *display,
 		      uint32_t id, const char *interface, uint32_t version)
 {
-	struct wl_global *global;
+	struct wl_global_listener *listener;
 
-	global = malloc(sizeof *global);
-	if (global == NULL)
-		return;
-
-	global->id = id;
-	global->interface = strdup(interface);
-	global->version = version;
-	wl_list_insert(display->global_list.prev, &global->link);
-
-	if (strcmp(global->interface, "display") == 0)
+	if (strcmp(interface, "display") == 0)
 		wl_hash_table_insert(display->objects,
 				     id, &display->proxy.base);
-	else if (strcmp(global->interface, "compositor") == 0)
-		display->compositor = (struct wl_compositor *) 
-			wl_proxy_create_for_global(display, global,
-						   &wl_compositor_interface);
-	else if (strcmp(global->interface, "visual") == 0)
-		add_visual(display, global);
-	else if (strcmp(global->interface, "output") == 0)
-		wl_proxy_create_for_global(display, global,
-					   &wl_output_interface);
-	else if (strcmp(global->interface, "input_device") == 0)
-		wl_proxy_create_for_global(display, global,
-					   &wl_input_device_interface);
-	else if (strcmp(global->interface, "shell") == 0)
-		wl_proxy_create_for_global(display, global,
-					   &wl_shell_interface);
-	else if (strcmp(global->interface, "drm") == 0)
-		wl_proxy_create_for_global(display, global,
-					   &wl_drm_interface);
+	else if (strcmp(interface, "visual") == 0)
+		add_visual(display, id);
+
+	wl_list_for_each(listener, &display->global_listener_list, link)
+		(*listener->handler)(display,
+				     id, interface, version, listener->data);
 }
 
 static void
@@ -370,7 +296,6 @@ wl_display_create(const char *name, size_t name_size)
 	}
 
 	display->objects = wl_hash_table_create();
-	wl_list_init(&display->global_list);
 	wl_list_init(&display->global_listener_list);
 
 	display->proxy.base.interface = &wl_display_interface;
@@ -394,20 +319,6 @@ wl_display_destroy(struct wl_display *display)
 	wl_connection_destroy(display->connection);
 	close(display->fd);
 	free(display);
-}
-
-WL_EXPORT uint32_t
-wl_display_get_object_id(struct wl_display *display,
-			 const char *interface, uint32_t version)
-{
-	struct wl_global *global;
-
-	wl_list_for_each(global, &display->global_list, link)
-		if (strcmp(global->interface, interface) == 0 &&
-		    global->version >= version)
-			return global->id;
-
-	return 0;
 }
 
 WL_EXPORT int
@@ -499,25 +410,17 @@ wl_display_allocate_id(struct wl_display *display)
 }
 
 WL_EXPORT void
-wl_display_write(struct wl_display *display, const void *data, size_t count)
-{
-	wl_connection_write(display->connection, data, count);
-}
-
-WL_EXPORT struct wl_compositor *
-wl_display_get_compositor(struct wl_display *display)
-{
-	return display->compositor;
-}
-
-WL_EXPORT void
 wl_surface_set_user_data(struct wl_surface *surface, void *user_data)
 {
-	surface->proxy.user_data = user_data;
+	struct wl_proxy *proxy = (struct wl_proxy *) surface;
+
+	proxy->user_data = user_data;
 }
 
 WL_EXPORT void *
 wl_surface_get_user_data(struct wl_surface *surface)
 {
-	return surface->proxy.user_data;
+	struct wl_proxy *proxy = (struct wl_proxy *) surface;
+
+	return proxy->user_data;
 }

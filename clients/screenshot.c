@@ -36,45 +36,36 @@
 
 static const char socket_name[] = "\0wayland";
 
-struct screenshooter {
-	uint32_t id;
-	struct wl_display *display;
-};
-
-static struct screenshooter *
-screenshooter_create(struct wl_display *display)
-{
-	struct screenshooter *screenshooter;
-	uint32_t id;
-
-	id = wl_display_get_object_id(display, "screenshooter", 1);
-	if (id == 0) {
-		fprintf(stderr, "server doesn't support screenshooter interface\n");
-		return NULL;
-	}
-
-	screenshooter = malloc(sizeof screenshooter);
-	if (screenshooter == NULL)
-		return NULL;
-
-	screenshooter->id = id;
-	screenshooter->display = display;
-
-	return screenshooter;
-}
-
 #define SCREENSHOOTER_SHOOT 0
 
-static void
-screenshooter_shoot(struct screenshooter *screenshooter)
+struct screenshooter;
+
+static const struct wl_message screenshooter_requests[] = {
+	{ "shoot", "" },
+};
+
+static const struct wl_interface screenshooter_interface = {
+	"screenshooter", 1,
+	ARRAY_LENGTH(screenshooter_requests), screenshooter_requests,
+	0, NULL
+};
+
+static inline void
+screenshooter_shoot(struct screenshooter *shooter)
 {
-	uint32_t request[2];
+	wl_proxy_marshal((struct wl_proxy *) shooter, SCREENSHOOTER_SHOOT);
+}
 
-	request[0] = screenshooter->id;
-	request[1] = SCREENSHOOTER_SHOOT | ((sizeof request) << 16);
+static void
+handle_global(struct wl_display *display, uint32_t id,
+	      const char *interface, uint32_t version, void *data)
+{
+	struct screenshooter **screenshooter = data;
 
-	wl_display_write(screenshooter->display,
-			 request, sizeof request);
+	if (strcmp(interface, "screenshooter") == 0)
+		*screenshooter = (struct screenshooter *)
+			wl_proxy_create_for_id(display,
+					       &screenshooter_interface, id);
 }
 
 int main(int argc, char *argv[])
@@ -82,7 +73,7 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	GMainLoop *loop;
 	GSource *source;
-	struct screenshooter *s;
+	struct screenshooter *screenshooter;
 
 	display = wl_display_create(socket_name, sizeof socket_name);
 	if (display == NULL) {
@@ -90,16 +81,20 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	screenshooter = NULL;
+	wl_display_add_global_listener(display, handle_global, &screenshooter);
 	wl_display_iterate(display, WL_DISPLAY_READABLE);
+	if (screenshooter == NULL) {
+		fprintf(stderr, "display doesn't support screenshooter\n");
+		return -1;
+	}
+
 	loop = g_main_loop_new(NULL, FALSE);
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
-	s = screenshooter_create(display);
-	if (s == NULL)
-		exit(-1);
+	screenshooter_shoot(screenshooter);
 
-	screenshooter_shoot(s);
 	g_idle_add((GSourceFunc) g_main_loop_quit, loop);
 	g_main_loop_run(loop);
 

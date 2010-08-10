@@ -3,9 +3,6 @@ Core wayland protocol
  - generate pointer_focus on raise/lower, move windows, all kinds of
    changes in surface stacking.
 
- - don't store globals on client side, require global_handler like
-   everything else.
-
  - glyph cache
 
  - dnd, figure out large object transfer: through wayland protocol or
