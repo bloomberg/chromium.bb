@@ -283,7 +283,8 @@ TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseNoUnloadListeners)) {
 }
 
 // Tests closing the browser on a page with an unload listener registered.
-TEST_F(UnloadTest, SKIP_LINUX(BrowserCloseUnload)) {
+// Test marked as flaky in http://crbug.com/51698
+TEST_F(UnloadTest, SKIP_LINUX(FLAKY_BrowserCloseUnload)) {
   LoadUrlAndQuitBrowser(UNLOAD_HTML, L"unload");
 }
 
