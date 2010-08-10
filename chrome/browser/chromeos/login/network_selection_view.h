@@ -79,6 +79,9 @@ class NetworkSelectionView : public views::View {
   views::NativeButton* continue_button_;
   views::SmoothedThrobber* throbber_;
 
+  // Tab index of continue button.
+  int continue_button_order_index_;
+
   // NetworkScreen delegate.
   NetworkScreenDelegate* delegate_;
 

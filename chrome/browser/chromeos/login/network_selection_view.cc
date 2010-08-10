@@ -71,6 +71,7 @@ NetworkSelectionView::NetworkSelectionView(NetworkScreenDelegate* delegate)
       connecting_network_label_(NULL),
       continue_button_(NULL),
       throbber_(NULL),
+      continue_button_order_index_(-1),
       delegate_(delegate) {
 }
 
@@ -143,8 +144,6 @@ void NetworkSelectionView::UpdateLocalizedStrings() {
       l10n_util::GetString(IDS_LANGUAGE_SELECTION_SELECT));
   select_network_label_->SetText(
       l10n_util::GetString(IDS_NETWORK_SELECTION_SELECT));
-  continue_button_->SetLabel(
-      l10n_util::GetString(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
   UpdateConnectingNetworkLabel();
 }
 
@@ -158,12 +157,18 @@ void NetworkSelectionView::ChildPreferredSizeChanged(View* child) {
 
 void NetworkSelectionView::OnLocaleChanged() {
   UpdateLocalizedStrings();
+
+  int index_to_restore = GetSelectedNetworkItem();
   NetworkModelChanged();
-  // Explicitly set selected item - index 0 is a localized string.
-  if (GetSelectedNetworkItem() <= 0 &&
-      delegate_->GetItemCount() > 0) {
-    SetSelectedNetworkItem(0);
+  index_to_restore = std::max(index_to_restore, 0);
+  index_to_restore = std::min<int>(index_to_restore,
+                                   delegate_->GetItemCount() - 1);
+  if (index_to_restore >= 0) {
+    // Only localized names of networking options has changed
+    // so we should restore networking option selected previously.
+    SetSelectedNetworkItem(index_to_restore);
   }
+
   Layout();
   SchedulePaint();
 }
@@ -299,9 +304,14 @@ void NetworkSelectionView::RecreateNativeControls() {
   // There is no way to get native button preferred size after the button was
   // sized so delete and recreate the button on text update.
   delete continue_button_;
-  continue_button_ = new views::NativeButton(delegate_, std::wstring());
+  continue_button_ = new views::NativeButton(
+      delegate_,
+      l10n_util::GetString(IDS_NETWORK_SELECTION_CONTINUE_BUTTON));
   continue_button_->SetEnabled(false);
-  AddChildView(continue_button_);
+  if (continue_button_order_index_ < 0) {
+    continue_button_order_index_ = GetChildViewCount();
+  }
+  AddChildView(continue_button_order_index_, continue_button_);
 }
 
 void NetworkSelectionView::UpdateConnectingNetworkLabel() {
