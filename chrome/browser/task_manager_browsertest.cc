@@ -117,7 +117,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
 #define NoticeExtensionChanges DISABLED_NoticeExtensionChanges
 #endif
 
-IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
+// Flaky test bug filed in http://crbug.com/51701
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, FLAKY_NoticeExtensionChanges) {
   EXPECT_EQ(0, model()->ResourceCount());
 
   // Show the task manager. This populates the model, and helps with debugging
