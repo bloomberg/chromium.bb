@@ -35,12 +35,10 @@ else:
 
 crti = env.ComponentObject('crti', ['crti_%s.S' % platform])
 crtn = env.ComponentObject('crtn', ['crtn_%s.S' % platform])
-intrinsics = env.ComponentObject('intrinsics', ['intrinsics_%s.S' % platform])
 
 tls = env.StaticObject('tls.o', ['tls_%s.c' % platform])
 
 # Archive library of modules written in C.
 crt_platform = env.StaticLibrary('crt_platform', [tls])
 
-env.AddObjectToSdk([crt1, crti, crtn, intrinsics, crt_platform],
-                   is_platform=True)
+env.AddObjectToSdk([crt1, crti, crtn, crt_platform], is_platform=True)

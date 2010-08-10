@@ -2023,15 +2023,15 @@ extrasdk-clean() {
 
   StepBanner "EXTRASDK-BITCODE" "Clean arm libs"
   # Do not clean libgcc but everything else
-  rm -f "${PNACL_ARM_ROOT}"/*crt* "${PNACL_ARM_ROOT}"/intrinsics.o
+  rm -f "${PNACL_ARM_ROOT}"/*crt*
 
   StepBanner "EXTRASDK-BITCODE" "Clean x86-32 libs"
   # Do not clean libgcc but everything else
-  rm -f "${PNACL_X8632_ROOT}"/*crt* "${PNACL_X8632_ROOT}"/intrinsics.o
+  rm -f "${PNACL_X8632_ROOT}"/*crt*
 
   StepBanner "EXTRASDK-BITCODE" "Clean x86-64 libs"
   # Do not clean libgcc but everything else
-  rm -f "${PNACL_X8664_ROOT}"/*crt* "${PNACL_X8664_ROOT}"/intrinsics.o
+  rm -f "${PNACL_X8664_ROOT}"/*crt*
 
   # clean scons obj dirs
   rm -rf scons-out/nacl_extra_sdk-*-pnacl
@@ -2102,7 +2102,7 @@ extrasdk-make-install() {
       extra_sdk_libs_platform
 
   StepBanner "EXTRASDK" "Make/Install x86-64 components"
-  RunWithLog "extra_sdk_.libs_x8664" \
+  RunWithLog "extra_sdk.libs_x8664" \
       ./scons MODE=nacl_extra_sdk \
       extra_sdk_lib_destination="${PNACL_X8664_ROOT}" \
       extra_sdk_include_destination="${headerdir}" \

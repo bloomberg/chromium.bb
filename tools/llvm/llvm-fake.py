@@ -478,7 +478,6 @@ def MassageFinalLinkCommandPnacl(args, native_dir, flags):
     out.append(native_dir + '/crt1.o')
     out.append(native_dir + '/crti.o')
     out.append(native_dir + '/crtbegin.o')
-    out.append(native_dir + '/intrinsics.o')
 
   out += args
 
