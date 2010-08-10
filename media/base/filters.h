@@ -92,7 +92,7 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
 
   // The pipeline has resumed playback.  Filters can continue requesting reads.
   // Filters may implement this method if they need to respond to this call.
-  // TODO(boliu): Check that callback is not NULL in sublcasses.
+  // TODO(boliu): Check that callback is not NULL in subclasses.
   virtual void Play(FilterCallback* callback) {
     DCHECK(callback);
     if (callback) {
@@ -101,11 +101,21 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
     }
   }
 
-  // The pipeline has paused playback.  Filters should fulfill any existing read
-  // requests and then idle.  Filters may implement this method if they need to
-  // respond to this call.
-  // TODO(boliu): Check that callback is not NULL in sublcasses.
+  // The pipeline has paused playback.  Filters should stop buffer exchange.
+  // Filters may implement this method if they need to respond to this call.
+  // TODO(boliu): Check that callback is not NULL in subclasses.
   virtual void Pause(FilterCallback* callback) {
+    DCHECK(callback);
+    if (callback) {
+      callback->Run();
+      delete callback;
+    }
+  }
+
+  // The pipeline has been flushed.  Filters should return buffer to owners.
+  // Filters may implement this method if they need to respond to this call.
+  // TODO(boliu): Check that callback is not NULL in subclasses.
+  virtual void Flush(FilterCallback* callback) {
     DCHECK(callback);
     if (callback) {
       callback->Run();
@@ -115,7 +125,7 @@ class MediaFilter : public base::RefCountedThreadSafe<MediaFilter> {
 
   // The pipeline is being stopped either as a result of an error or because
   // the client called Stop().
-  // TODO(boliu): Check that callback is not NULL in sublcasses.
+  // TODO(boliu): Check that callback is not NULL in subclasses.
   virtual void Stop(FilterCallback* callback) {
     DCHECK(callback);
     if (callback) {
@@ -292,6 +302,9 @@ class VideoDecoder : public MediaFilter {
   // will be recycled to renderer by fill_buffer_done_callback_;
   // We could also pass empty pointer here to let decoder provide buffers pool.
   virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame) = 0;
+
+  // Indicate whether decoder provides its own output buffers
+  virtual bool ProvidesBuffer() = 0;
 
  private:
   scoped_ptr<FillBufferDoneCallback> fill_buffer_done_callback_;

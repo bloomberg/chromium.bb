@@ -119,6 +119,15 @@ void FFmpegVideoDecodeEngine::EmptyThisBuffer(
   DecodeFrame(buffer);
 }
 
+void FFmpegVideoDecodeEngine::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
+  scoped_refptr<Buffer> buffer;
+  empty_this_buffer_callback_->Run(buffer);
+}
+
+bool FFmpegVideoDecodeEngine::ProvidesBuffer() const {
+  return false;
+}
+
 // Try to decode frame when both input and output are ready.
 void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   scoped_refptr<VideoFrame> video_frame;
@@ -157,7 +166,10 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
 
   // If frame_decoded == 0, then no frame was produced.
   if (frame_decoded == 0) {
-    fill_this_buffer_callback_->Run(video_frame);
+    if (buffer->IsEndOfStream())  // We had started flushing.
+      fill_this_buffer_callback_->Run(video_frame);
+    else
+      empty_this_buffer_callback_->Run(buffer);
     return;
   }
 
@@ -232,6 +244,10 @@ void FFmpegVideoDecodeEngine::Flush(Task* done_cb) {
   AutoTaskRunner done_runner(done_cb);
 
   avcodec_flush_buffers(codec_context_);
+}
+
+void FFmpegVideoDecodeEngine::Seek(Task* done_cb) {
+  AutoTaskRunner done_runner(done_cb);
 }
 
 VideoFrame::Format FFmpegVideoDecodeEngine::GetSurfaceFormat() const {

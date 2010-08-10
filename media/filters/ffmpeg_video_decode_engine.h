@@ -16,9 +16,6 @@ struct AVStream;
 
 namespace media {
 
-class InputBuffer;
-class OmxCodec;
-
 class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
  public:
   FFmpegVideoDecodeEngine();
@@ -31,10 +28,12 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
                           FillThisBufferCallback* fill_buffer_callback,
                           Task* done_cb);
   virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
-  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame) {}
+  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
+  virtual bool ProvidesBuffer() const;
   virtual void Stop(Task* done_cb);
   virtual void Pause(Task* done_cb);
   virtual void Flush(Task* done_cb);
+  virtual void Seek(Task* done_cb);
   virtual VideoFrame::Format GetSurfaceFormat() const;
 
   virtual State state() const { return state_; }

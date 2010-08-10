@@ -26,6 +26,7 @@ class VideoDecodeEngine {
     kCreated,
     kNormal,
     kStopped,
+    kFlushing,
     kError,
   };
 
@@ -65,6 +66,7 @@ class VideoDecodeEngine {
 
   virtual void Stop(Task* done_cb) = 0;
   virtual void Pause(Task* done_cb) = 0;
+  virtual void Seek(Task* done_cb) = 0;
 
   // Flushes the decode engine of any buffered input packets.
   virtual void Flush(Task* done_cb) = 0;
@@ -72,6 +74,8 @@ class VideoDecodeEngine {
   // Returns the VideoSurface::Format of the resulting |yuv_frame| from
   // DecodeFrame().
   virtual VideoFrame::Format GetSurfaceFormat() const = 0;
+
+  virtual bool ProvidesBuffer() const = 0;
 
   // Returns the current state of the decode engine.
   virtual State state() const  = 0;
