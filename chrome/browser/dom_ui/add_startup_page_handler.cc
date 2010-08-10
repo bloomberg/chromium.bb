@@ -21,6 +21,8 @@ void AddStartupPageHandler::GetLocalizedValues(
   DCHECK(localized_strings);
   localized_strings->SetString("addStartupPageTitle",
       l10n_util::GetStringUTF16(IDS_ASI_ADD_TITLE));
+  localized_strings->SetString("addStartupPageURLLabel",
+      l10n_util::GetStringUTF16(IDS_ASI_URL));
   localized_strings->SetString("addStartupPageAddButton",
       l10n_util::GetStringUTF16(IDS_ASI_ADD));
   localized_strings->SetString("addStartupPageCancelButton",

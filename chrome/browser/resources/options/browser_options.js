@@ -154,6 +154,15 @@ cr.define('options', function() {
     },
 
     /**
+     * Adds the given startup page at the current selection point.
+     * @private
+     */
+    addStartupPage_: function(url) {
+      var firstSelection = $('startupPages').selectedIndex;
+      chrome.send('addStartupPage', [url, String(firstSelection)]);
+    },
+
+    /**
      * Set the default search engine based on the popup selection.
      */
     setDefaultBrowser: function() {
@@ -177,6 +186,10 @@ cr.define('options', function() {
 
   BrowserOptions.updateStartupPages = function(pages) {
     BrowserOptions.getInstance().updateStartupPages_(pages);
+  };
+
+  BrowserOptions.addStartupPage = function(url) {
+    BrowserOptions.getInstance().addStartupPage_(url);
   };
 
   // Export

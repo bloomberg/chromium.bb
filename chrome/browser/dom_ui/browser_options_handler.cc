@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -80,6 +81,9 @@ void BrowserOptionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
       "removeStartupPages",
       NewCallback(this, &BrowserOptionsHandler::RemoveStartupPages));
+  dom_ui_->RegisterMessageCallback(
+      "addStartupPage",
+      NewCallback(this, &BrowserOptionsHandler::AddStartupPage));
   dom_ui_->RegisterMessageCallback(
       "setStartupPagesToCurrentPages",
       NewCallback(this, &BrowserOptionsHandler::SetStartupPagesToCurrentPages));
@@ -292,6 +296,33 @@ void BrowserOptionsHandler::RemoveStartupPages(const Value* value) {
   }
 
   SaveStartupPagesPref();
+}
+
+void BrowserOptionsHandler::AddStartupPage(const Value* value) {
+  if (!value || !value->IsType(Value::TYPE_LIST)) {
+    NOTREACHED();
+    return;
+  }
+  const ListValue* param_values = static_cast<const ListValue*>(value);
+  std::string url_string;
+  std::string index_string;
+  int index;
+  if (param_values->GetSize() != 2 ||
+      !param_values->GetString(0, &url_string) ||
+      !param_values->GetString(1, &index_string) ||
+      !base::StringToInt(index_string, &index)) {
+    NOTREACHED();
+    return;
+  };
+
+  if (index == -1)
+    index = startup_custom_pages_table_model_->RowCount();
+  else
+    ++index;
+
+  GURL url = URLFixerUpper::FixupURL(url_string, std::string());
+
+  startup_custom_pages_table_model_->Add(index, url);
 }
 
 void BrowserOptionsHandler::SaveStartupPagesPref() {

@@ -1,0 +1,7 @@
+#addURLBlock {
+  display: -webkit-block:
+}
+
+#addStartupPageURL {
+  -webkit-block-flex: 1;
+}
