@@ -12,7 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(ServiceProcessTest, Run) {
+TEST(ServiceProcessTest, DISABLED_Run) {
   MessageLoopForUI main_message_loop;
   ServiceProcess process;
   EXPECT_TRUE(process.Initialize(&main_message_loop));
