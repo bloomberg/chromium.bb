@@ -570,6 +570,36 @@
    fun:g_closure_invoke
 }
 
+# This is a variation from bug_46571_e.
+{
+   bug_46571_g
+   Heapcheck:Leak
+   fun:WTF::fastMalloc
+   fun:WTF::StringImpl::createUninitialized
+   fun:WTF::String::createUninitialized
+   fun:WebCore::StringTraits::fromV8String
+   fun:WebCore::v8StringToWebCoreString
+   fun:WebCore::v8StringToWebCoreString
+   fun:WebCore::v8ValueToWebCoreString
+   fun:WebCore::toWebCoreString
+   fun:WebCore::ScriptValue::getString
+   fun:WebKit::WebFrameImpl::loadJavaScriptURL
+   fun:WebKit::WebFrameImpl::loadRequest
+   fun:TestShell::Navigate
+   fun:TestNavigationController::NavigateToPendingEntry
+   fun:TestNavigationController::LoadEntry
+   fun:TestShell::LoadURLForFrame
+   fun:TestShell::LoadURL
+   fun:::BookmarkletTest_NonEmptyResult_Test::TestBody
+   fun:testing::Test::Run
+   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestCase::Run
+   fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::UnitTest::Run
+   fun:main
+   fun:__libc_start_main
+}
+
 
 {
    bug_32366
