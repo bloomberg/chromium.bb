@@ -128,7 +128,7 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.host_render_view_id = host_render_view_id_;
 
 #ifdef LOG_RESOURCE_REQUESTS
-  url_ = url.possibly_invalid_spec();
+  url_ = request_.url.possibly_invalid_spec();
 #endif
 }
 
