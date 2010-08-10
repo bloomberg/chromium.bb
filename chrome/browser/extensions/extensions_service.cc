@@ -996,13 +996,14 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
           pending_extension_info.enable_incognito_on_install;
     }
   } else {
-    // Make sure we don't enable a disabled extension.
+    // Make sure we preserve enabled/disabled states.
     Extension::State existing_state =
         extension_prefs_->GetExtensionState(extension->id());
     initial_state =
         (existing_state == Extension::DISABLED) ?
         Extension::DISABLED : Extension::ENABLED;
-    initial_enable_incognito = false;
+    initial_enable_incognito =
+        extension_prefs_->IsIncognitoEnabled(extension->id());
   }
 
   extension_prefs_->OnExtensionInstalled(

@@ -1223,6 +1223,33 @@ TEST_F(ExtensionsServiceTest, UpdateToSameVersionIsNoop) {
   UpdateExtension(good_crx, path, FAILED_SILENTLY);
 }
 
+// Tests that updating an extension does not clobber old state.
+TEST_F(ExtensionsServiceTest, UpdateExtensionPreservesState) {
+  InitializeEmptyExtensionsService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+
+  FilePath path = extensions_path.AppendASCII("good.crx");
+
+  InstallExtension(path, true);
+  Extension* good = service_->extensions()->at(0);
+  ASSERT_EQ("1.0.0.0", good->VersionString());
+  ASSERT_EQ(good_crx, good->id());
+
+  // Disable it and allow it to run in incognito. These settings should carry
+  // over to the updated version.
+  service_->DisableExtension(good->id());
+  service_->SetIsIncognitoEnabled(good, true);
+
+  path = extensions_path.AppendASCII("good2.crx");
+  UpdateExtension(good_crx, path, INSTALLED);
+  ASSERT_EQ(1u, service_->disabled_extensions()->size());
+  Extension* good2 = service_->disabled_extensions()->at(0);
+  ASSERT_EQ("1.0.0.1", good2->version()->GetString());
+  EXPECT_TRUE(service_->IsIncognitoEnabled(good2));
+}
+
 // Test adding a pending extension.
 TEST_F(ExtensionsServiceTest, AddPendingExtension) {
   InitializeEmptyExtensionsService();
