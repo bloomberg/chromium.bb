@@ -2377,41 +2377,23 @@ verify() {
 ######################################################################
 
 if ${UTMAN_DEBUG}; then
-  readonly SCONS_ARGS=(MODE=nacl
+  readonly SCONS_ARGS=(MODE=nacl,opt-linux
                        --verbose
                        sdl=none
                        bitcode=1)
-
-  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
-                               bitcode=1
-                               sdl=none
-                               --verbose)
-
 else
-  readonly SCONS_ARGS=(MODE=nacl
+  readonly SCONS_ARGS=(MODE=nacl,opt-linux
                        sdl=none
                        naclsdk_validate=0
                        sysinfo=
                        bitcode=1
                        -j${UTMAN_CONCURRENCY})
-
-  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
-                               bitcode=1
-                               sdl=none
-                               naclsdk_validate=0
-                              sysinfo=
-                              -j${UTMAN_CONCURRENCY})
 fi
 
 #@ show-tests            - see what tests can be run
 show-tests() {
   StepBanner "SHOWING TESTS"
   cat $(find tests -name nacl.scons) | grep -o 'run_[A-Za-z_-]*' | sort | uniq
-}
-
-scons-build-sel_ldr () {
-  local  platform=$1
-  ./scons platform=${platform} ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
 }
 
 scons-clean-pnacl-build-dir () {
@@ -2423,7 +2405,6 @@ scons-pnacl-build () {
   shift
   ./scons ${SCONS_ARGS[@]} \
           platform=${platform} \
-          force_sel_ldr=scons-out/opt-linux-${platform}/staging/sel_ldr \
           "$@"
 }
 
@@ -2431,13 +2412,6 @@ test-scons-common () {
   local platform=$1
   shift
   scons-clean-pnacl-build-dir ${platform}
-
-  # NOTE: We build sel_ldr separately and use the force_sel_ldr magic
-  #       in order to reduce testing time.
-  #       Instead, we could invoke scons using MODE=nacl,opt-linux ... smoke_tests
-  #       this would build sel_ldr automatically but it would also build and run
-  #       tons of trusted tests which we do not really care about.
-  scons-build-sel_ldr ${platform}
 
   if [ $# -eq 0 ] || ([ $# -eq 1 ] && [ "$1" == "-k" ]); then
     # first build everything
