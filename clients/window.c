@@ -31,6 +31,7 @@
 #include <cairo.h>
 #include <glib.h>
 #include <glib-object.h>
+#include <xf86drm.h>
 
 #define EGL_EGLEXT_PROTOTYPES 1
 #define GL_GLEXT_PROTOTYPES 1
@@ -56,6 +57,7 @@ struct display {
 	struct wl_drm *drm;
 	struct wl_output *output;
 	struct rectangle screen_allocation;
+	int authenticated;
 	EGLDisplay dpy;
 	EGLContext ctx;
 	cairo_device_t *device;
@@ -694,6 +696,9 @@ drm_handle_device(void *data, struct wl_drm *drm, const char *device)
 
 static void drm_handle_authenticated(void *data, struct wl_drm *drm)
 {
+	struct display *d = data;
+
+	d->authenticated = 1;
 }
 
 static const struct wl_drm_listener drm_listener = {
@@ -865,6 +870,7 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	int fd;
 	GOptionContext *context;
 	GError *error;
+	drm_magic_t magic;
 
 	g_type_init();
 
@@ -901,6 +907,17 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		fprintf(stderr, "drm open failed: %m\n");
 		return NULL;
 	}
+
+	if (drmGetMagic(fd, &magic)) {
+		fprintf(stderr, "DRI2: failed to get drm magic");
+		return NULL;
+	}
+
+	/* Wait for authenticated event */
+	wl_drm_authenticate(d->drm, magic);
+	wl_display_iterate(d->display, WL_DISPLAY_WRITABLE);
+	while (!d->authenticated)
+		wl_display_iterate(d->display, WL_DISPLAY_READABLE);
 
 	d->dpy = eglGetDRMDisplayMESA(fd);
 	if (!eglInitialize(d->dpy, &major, &minor)) {

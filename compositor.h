@@ -141,7 +141,7 @@ struct wlsc_compositor {
 
 	uint32_t focus;
 
-	void (*authenticate)(struct wlsc_compositor *c, uint32_t id);
+	int (*authenticate)(struct wlsc_compositor *c, uint32_t id);
 	void (*present)(struct wlsc_compositor *c);
 };
 

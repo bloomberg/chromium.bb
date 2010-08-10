@@ -608,6 +608,14 @@ static int setup_tty(struct drm_compositor *ec, struct wl_event_loop *loop)
 	return 0;
 }
 
+static int
+drm_authenticate(struct wlsc_compositor *c, uint32_t id)
+{
+	struct drm_compositor *ec = (struct drm_compositor *) c;
+
+	return drmAuthMagic(ec->base.drm.fd, id);
+}
+
 struct wlsc_compositor *
 drm_compositor_create(struct wl_display *display)
 {
@@ -668,6 +676,7 @@ drm_compositor_create(struct wl_display *display)
 		wl_event_loop_add_fd(loop, ec->base.drm.fd,
 				     WL_EVENT_READABLE, on_drm_input, ec);
 	setup_tty(ec, loop);
+	ec->base.authenticate = drm_authenticate;
 	ec->base.present = drm_compositor_present;
 	ec->base.focus = 1;
 

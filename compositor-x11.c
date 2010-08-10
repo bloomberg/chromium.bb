@@ -169,16 +169,10 @@ dri2_connect(struct x11_compositor *c)
 }
 
 static int
-dri2_authenticate(struct x11_compositor *c)
+dri2_authenticate(struct x11_compositor *c, uint32_t magic)
 {
 	xcb_dri2_authenticate_reply_t *authenticate;
 	xcb_dri2_authenticate_cookie_t authenticate_cookie;
-	drm_magic_t magic;
-
-	if (drmGetMagic(c->base.drm.fd, &magic)) {
-		fprintf(stderr, "DRI2: failed to get drm magic");
-		return -1;
-	}
 
 	authenticate_cookie =
 		xcb_dri2_authenticate_unchecked(c->conn,
@@ -202,6 +196,7 @@ x11_compositor_init_egl(struct x11_compositor *c)
 {
 	EGLint major, minor;
 	const char *extensions;
+	drm_magic_t magic;
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
 		EGL_NONE
@@ -210,7 +205,12 @@ x11_compositor_init_egl(struct x11_compositor *c)
 	if (dri2_connect(c) < 0)
 		return -1;
 
-	if (dri2_authenticate(c) < 0)
+	if (drmGetMagic(c->base.drm.fd, &magic)) {
+		fprintf(stderr, "DRI2: failed to get drm magic");
+		return -1;
+	}
+
+	if (dri2_authenticate(c, magic) < 0)
 		return -1;
 
 	c->base.display = eglGetDRMDisplayMESA(c->base.drm.fd);
@@ -614,6 +614,12 @@ x11_compositor_get_resources(struct x11_compositor *c)
 	xcb_free_pixmap(c->conn, pixmap);
 }
 
+static int
+x11_authenticate(struct wlsc_compositor *c, uint32_t id)
+{
+	return dri2_authenticate((struct x11_compositor *) c, id);
+}
+
 struct wlsc_compositor *
 x11_compositor_create(struct wl_display *display)
 {
@@ -654,6 +660,7 @@ x11_compositor_create(struct wl_display *display)
 				     WL_EVENT_READABLE,
 				     x11_compositor_handle_event, c);
 
+	c->base.authenticate = x11_authenticate;
 	c->base.present = x11_compositor_present;
 
 	return &c->base;
