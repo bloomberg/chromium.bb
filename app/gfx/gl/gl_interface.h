@@ -240,11 +240,11 @@ class GLInterface {
 
   virtual GLboolean IsEnabled(GLenum cap) = 0;
 
-  virtual GLboolean IsFramebuffer(GLuint framebuffer) = 0;
+  virtual GLboolean IsFramebufferEXT(GLuint framebuffer) = 0;
 
   virtual GLboolean IsProgram(GLuint program) = 0;
 
-  virtual GLboolean IsRenderbuffer(GLuint renderbuffer) = 0;
+  virtual GLboolean IsRenderbufferEXT(GLuint renderbuffer) = 0;
 
   virtual GLboolean IsShader(GLuint shader) = 0;
 

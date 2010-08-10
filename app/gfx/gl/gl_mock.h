@@ -235,11 +235,11 @@ class MockGLInterface : public GLInterface {
 
   MOCK_METHOD1(IsEnabled, GLboolean(GLenum cap));
 
-  MOCK_METHOD1(IsFramebuffer, GLboolean(GLuint framebuffer));
+  MOCK_METHOD1(IsFramebufferEXT, GLboolean(GLuint framebuffer));
 
   MOCK_METHOD1(IsProgram, GLboolean(GLuint program));
 
-  MOCK_METHOD1(IsRenderbuffer, GLboolean(GLuint renderbuffer));
+  MOCK_METHOD1(IsRenderbufferEXT, GLboolean(GLuint renderbuffer));
 
   MOCK_METHOD1(IsShader, GLboolean(GLuint shader));
 

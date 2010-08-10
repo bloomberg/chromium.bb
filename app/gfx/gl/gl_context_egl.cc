@@ -9,6 +9,7 @@
 #include "app/x11_util.h"
 #define EGL_HAS_PBUFFERS 1
 #endif
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context_egl.h"

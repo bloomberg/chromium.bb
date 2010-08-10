@@ -8,6 +8,7 @@
 
 #include "app/gfx/gl/gl_bindings.h"
 #include "app/gfx/gl/gl_context_osmesa.h"
+#include "base/logging.h"
 
 namespace gfx {
 
