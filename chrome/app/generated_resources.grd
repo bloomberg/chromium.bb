@@ -6253,6 +6253,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of a HTML standard)">
         Local Storage
       </message>
+      <message name="IDS_COOKIES_SESSION_STORAGE" desc="Label for session storage (name of a HTML standard)">
+        Session Storage
+      </message>
       <message name="IDS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">
         Last accessed:
       </message>

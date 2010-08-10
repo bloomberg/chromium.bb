@@ -187,6 +187,7 @@ void CookiesView::Init(GtkWindow* parent) {
       profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
       browsing_data_database_helper_,
       browsing_data_local_storage_helper_,
+      NULL,
       browsing_data_appcache_helper_));
   cookies_tree_adapter_.reset(
       new gtk_tree::TreeAdapter(this, cookies_tree_model_.get()));

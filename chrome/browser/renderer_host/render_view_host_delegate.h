@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/dom_storage_common.h"
 #include "chrome/common/translate_errors.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/window_container_type.h"
@@ -352,6 +353,7 @@ class RenderViewHostDelegate {
     // |blocked_by_policy| should be true, and this function should invoke
     // OnContentBlocked.
     virtual void OnLocalStorageAccessed(const GURL& url,
+                                        DOMStorageType storage_type,
                                         bool blocked_by_policy) = 0;
 
     // Called when a specific Web database in the current page was accessed. If

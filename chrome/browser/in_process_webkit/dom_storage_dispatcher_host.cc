@@ -269,7 +269,8 @@ void DOMStorageDispatcherHost::OnSetItem(
     CallRenderViewHostContentSettingsDelegate(
         process_id_, reply_msg->routing_id(),
         &RenderViewHostDelegate::ContentSettings::OnLocalStorageAccessed,
-        url, result == WebStorageArea::ResultBlockedByPolicy);
+        url, storage_area->owner()->dom_storage_type(),
+        result == WebStorageArea::ResultBlockedByPolicy);
   }
 
   ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, result, old_value);

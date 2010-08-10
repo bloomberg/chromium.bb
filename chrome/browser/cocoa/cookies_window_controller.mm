@@ -443,7 +443,7 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 - (void)loadTreeModelFromProfile {
   treeModel_.reset(new CookiesTreeModel(
       profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
-      databaseHelper_, storageHelper_, appcacheHelper_));
+      databaseHelper_, storageHelper_, NULL, appcacheHelper_));
   modelObserver_.reset(new CookiesTreeModelObserverBridge(self));
   treeModel_->AddObserver(modelObserver_.get());
 

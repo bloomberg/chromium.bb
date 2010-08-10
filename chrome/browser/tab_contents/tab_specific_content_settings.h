@@ -75,7 +75,9 @@ class TabSpecificContentSettings
   virtual void OnCookieAccessed(const GURL& url,
                                 const std::string& cookie_line,
                                 bool blocked_by_policy);
-  virtual void OnLocalStorageAccessed(const GURL& url, bool blocked_by_policy);
+  virtual void OnLocalStorageAccessed(const GURL& url,
+                                      DOMStorageType storage_type,
+                                      bool blocked_by_policy);
   virtual void OnWebDatabaseAccessed(const GURL& url,
                                      const string16& name,
                                      const string16& display_name,
@@ -105,6 +107,9 @@ class TabSpecificContentSettings
     CannedBrowsingDataLocalStorageHelper* local_storages() const {
       return local_storages_;
     }
+    CannedBrowsingDataLocalStorageHelper* session_storages() const {
+      return session_storages_;
+    }
 
     CookiesTreeModel* GetCookiesTreeModel();
 
@@ -115,6 +120,7 @@ class TabSpecificContentSettings
     scoped_refptr<CannedBrowsingDataAppCacheHelper> appcaches_;
     scoped_refptr<CannedBrowsingDataDatabaseHelper> databases_;
     scoped_refptr<CannedBrowsingDataLocalStorageHelper> local_storages_;
+    scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
   };
 
   // Stores which content setting types actually have blocked content.

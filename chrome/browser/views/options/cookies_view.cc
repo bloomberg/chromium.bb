@@ -284,6 +284,7 @@ void CookiesView::Init() {
       profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster(),
       new BrowsingDataDatabaseHelper(profile_),
       new BrowsingDataLocalStorageHelper(profile_),
+      NULL,
       new BrowsingDataAppCacheHelper(profile_)));
   cookies_tree_model_->AddObserver(this);
 

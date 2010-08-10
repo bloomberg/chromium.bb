@@ -53,13 +53,20 @@ void TabSpecificContentSettings::OnCookieAccessed(
 }
 
 void TabSpecificContentSettings::OnLocalStorageAccessed(
-    const GURL& url, bool blocked_by_policy) {
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.local_storages()->AddLocalStorage(url);
+    const GURL& url,
+    DOMStorageType storage_type,
+    bool blocked_by_policy) {
+  LocalSharedObjectsContainer& container = blocked_by_policy ?
+      blocked_local_shared_objects_ : allowed_local_shared_objects_;
+  CannedBrowsingDataLocalStorageHelper* helper =
+      storage_type == DOM_STORAGE_LOCAL ?
+          container.local_storages() : container.session_storages();
+  helper->AddLocalStorage(url);
+
+  if (blocked_by_policy)
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
-  } else {
-    allowed_local_shared_objects_.local_storages()->AddLocalStorage(url);
-  }
+  else if (delegate_)
+    delegate_->OnContentSettingsChange();
 }
 
 void TabSpecificContentSettings::OnWebDatabaseAccessed(
@@ -142,7 +149,8 @@ TabSpecificContentSettings::LocalSharedObjectsContainer::
     : cookies_(new net::CookieMonster(NULL, NULL)),
       appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
-      local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
+      local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
+      session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
 }
 
 TabSpecificContentSettings::LocalSharedObjectsContainer::
@@ -154,10 +162,11 @@ void TabSpecificContentSettings::LocalSharedObjectsContainer::Reset() {
   appcaches_->Reset();
   databases_->Reset();
   local_storages_->Reset();
+  session_storages_->Reset();
 }
 
 CookiesTreeModel*
 TabSpecificContentSettings::LocalSharedObjectsContainer::GetCookiesTreeModel() {
   return new CookiesTreeModel(
-      cookies_, databases_, local_storages_, appcaches_);
+      cookies_, databases_, local_storages_, session_storages_, appcaches_);
 }
