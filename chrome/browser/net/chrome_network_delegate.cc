@@ -13,6 +13,6 @@ ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
 void ChromeNetworkDelegate::OnSendHttpRequest(
     net::HttpRequestHeaders* headers) {
   DCHECK(headers);
-  
+
   // TODO(willchan): Add Chrome-side hooks to listen / mutate requests here.
 }

@@ -21,7 +21,7 @@ class MockResourceLoaderBridge : public webkit_glue::ResourceLoaderBridge {
   }
 
   MOCK_METHOD2(AppendDataToUpload, void(const char* data, int data_len));
-  MOCK_METHOD4(AppendFileRangeToUpload, 
+  MOCK_METHOD4(AppendFileRangeToUpload,
                void(const FilePath& file_path,
                     uint64 offset,
                     uint64 length,
