@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/field_trial.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/nullable_string16.h"
@@ -115,6 +116,9 @@ static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
 static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
 static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
+
+static const int kPrelauchGpuPercentage = 5;
+static const int kPrelauchGpuProcessDelayMS = 10000;
 
 // Keep the global RenderThread in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
@@ -268,10 +272,19 @@ void RenderThread::Init() {
 
   // Establish a channel to the GPU process asynchronously if requested. If the
   // channel is established in time, EstablishGpuChannelSync will not block when
-  // it is later called.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPrelaunchGpuProcess)) {
-    EstablishGpuChannel();
+  // it is later called. Delays by a fixed period of time to avoid loading the
+  // GPU immediately in an attempt to not slow startup time.
+  scoped_refptr<FieldTrial> prelaunch_trial(
+      new FieldTrial("PrelaunchGpuProcessExperiment", 100));
+  int prelaunch_group = prelaunch_trial->AppendGroup("prelaunch_gpu_process",
+                                                     kPrelauchGpuPercentage);
+  if (prelaunch_group == prelaunch_trial->group() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kPrelaunchGpuProcess)) {
+    message_loop()->PostDelayedTask(FROM_HERE,
+                                    task_factory_->NewRunnableMethod(
+                                        &RenderThread::EstablishGpuChannel),
+                                    kPrelauchGpuProcessDelayMS);
   }
 }
 
