@@ -45,7 +45,7 @@ class TaskManager {
     virtual SkBitmap GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
 
-    virtual bool HasCacheStats() const { return false; }
+    virtual bool ReportsCacheStats() const { return false; }
     virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const {
       return WebKit::WebCache::ResourceTypeStats();
     }

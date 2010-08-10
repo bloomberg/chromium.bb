@@ -1051,12 +1051,6 @@ class NotificationType {
     // TokenRequestFailedDetails object.
     TOKEN_REQUEST_FAILED,
 
-    // Task Manager ------------------------------------------------------------
-
-    // Sent after the Task Manager has received updated ResourceTypeStats
-    // from a renderer. Source is a TaskManagerModel.
-    TASK_MANAGER_RESOURCE_TYPE_STATS_UPDATED,
-
     // Misc --------------------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
