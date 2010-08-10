@@ -49,6 +49,22 @@ def UnionDir(*trees):
 # and use the file-based identity tracking method discussed below.
 
 
+# This is done instead of the lib32 -> lib/32 symlink that Makefile uses.
+# TODO(mseaborn): Fix newlib to not output using this odd layout.
+def MungeMultilibDir(tree):
+  lib32 = tree.get("nacl64", {}).get("lib", {}).get("32")
+  if lib32 is not None:
+    assert "lib32" not in tree["nacl64"]
+    del tree["nacl64"]["lib"]["32"]
+    tree["nacl64"]["lib32"] = lib32
+
+
+def CombineInstallTrees(*trees):
+  for tree in trees:
+    MungeMultilibDir(tree)
+  return UnionDir(*trees)
+
+
 def AddHeadersToNewlib(newlib_source, nacl_headers):
   UnionIntoDict(nacl_headers, newlib_source["newlib"]["libc"]["sys"]["nacl"])
   return newlib_source

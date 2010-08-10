@@ -195,15 +195,6 @@ def ExistingSource(name, dir_path):
                                     args=["existing"], deps=[])
 
 
-def MungeMultilibDir(install_dir):
-  # This is done instead of the lib32 -> lib/32 symlink that Makefile uses.
-  # TODO(mseaborn): Fix newlib to not output using this odd layout,
-  # or move this fixup into build.py.
-  if os.path.exists(os.path.join(install_dir, "nacl64/lib/32")):
-    os.rename(os.path.join(install_dir, "nacl64/lib/32"),
-              os.path.join(install_dir, "nacl64/lib32"))
-
-
 def InstallDestdir(prefix_dir, install_dir, func):
   temp_dir = "%s.tmp" % install_dir
   dirtree.RemoveTree(temp_dir)
@@ -212,7 +203,6 @@ def InstallDestdir(prefix_dir, install_dir, func):
   # We need to strip $prefix.
   assert prefix_dir.startswith("/")
   temp_subdir = os.path.join(temp_dir, prefix_dir.lstrip("/"))
-  MungeMultilibDir(temp_subdir)
   dirtree.RemoveTree(install_dir)
   os.rename(temp_subdir, install_dir)
   # TODO: assert that temp_dir doesn't contain anything except prefix dirs
@@ -293,7 +283,6 @@ def SconsBuild(name, dest_dir, src_dir, prefix_obj, scons_args):
          "naclsdk_validate=0",
          "--verbose"] + scons_args,
         cwd=src_dir.dest_path)
-    MungeMultilibDir(dest_dir)
   return BuildTarget(name, dest_dir, DoBuild,
                      args=[scons_args],
                      deps=[src_dir, prefix_obj])

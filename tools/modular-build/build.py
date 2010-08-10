@@ -90,9 +90,10 @@ def GetTargets(src):
   module_list = []
 
   def MakeInstallPrefix(name, deps):
-    return btarget.UnionDir("%s-input" % name,
-                            os.path.join(top_dir, "input-prefix", name),
-                            [modules[dep] for dep in deps])
+    return btarget.TreeMapper("%s-input" % name,
+                              os.path.join(top_dir, "input-prefix", name),
+                              treemappers.CombineInstallTrees,
+                              [modules[dep] for dep in deps])
 
   def AddModule(name, module):
     modules[name] = module
