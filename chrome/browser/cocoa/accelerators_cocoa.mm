@@ -15,6 +15,7 @@ const struct AcceleratorMapping {
   NSString* key;
   NSUInteger modifiers;
 } kAcceleratorMap[] = {
+  { IDC_CLEAR_BROWSING_DATA, @"\x8", NSCommandKeyMask | NSShiftKeyMask },
   { IDC_COPY, @"c", NSCommandKeyMask },
   { IDC_CUT, @"x", NSCommandKeyMask },
   { IDC_DEV_TOOLS, @"i", NSCommandKeyMask | NSAlternateKeyMask },
