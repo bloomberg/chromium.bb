@@ -126,6 +126,7 @@ void Preconnect::Connect(const GURL& url) {
   // unused socket, when a previously used socket was available.
   net::RequestPriority priority = net::HIGHEST;
 
+  int rv = net::OK;  // Result of Init call.
   if (url.SchemeIs("https")) {
     group_name = StringPrintf("ssl/%s", group_name.c_str());
 
@@ -143,15 +144,17 @@ void Preconnect::Connect(const GURL& url) {
     const scoped_refptr<net::SSLClientSocketPool>& pool =
         session->ssl_socket_pool();
 
-    handle_.Init(group_name, ssl_params, priority, this, pool,
+    rv = handle_.Init(group_name, ssl_params, priority, this, pool,
                  net::BoundNetLog());
-    return;
+  } else {
+    const scoped_refptr<net::TCPClientSocketPool>& pool =
+        session->tcp_socket_pool();
+    rv = handle_.Init(group_name, tcp_params, priority, this, pool,
+                 net::BoundNetLog());
   }
 
-  const scoped_refptr<net::TCPClientSocketPool>& pool =
-      session->tcp_socket_pool();
-  handle_.Init(group_name, tcp_params, priority, this, pool,
-               net::BoundNetLog());
+  if (rv != net::ERR_IO_PENDING)
+    Release();  // There will be no callback.
 }
 
 void Preconnect::RunWithParams(const Tuple1<int>& params) {
