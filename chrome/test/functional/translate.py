@@ -82,7 +82,7 @@ class TranslateTest(pyauto.PyUITest):
   def testNoTranslate(self):
     """Tests that a page isn't translated if the user declines translate."""
     self._NavigateAndWaitForBar(self._GetDefaultSpanishURL())
-    self.PerformActionOnInfobar('dismiss', 0)
+    self.SelectTranslateOption('decline_translation')
     translate_info = self.GetTranslateInfo()
     self.assertEqual(self.spanish, translate_info['original_language'])
     self.assertFalse(translate_info['page_translated'])
@@ -328,6 +328,35 @@ class TranslateTest(pyauto.PyUITest):
     self.assertFalse(self.GetPrefsInfo().Prefs(pyauto.kEnableTranslate))
     self.NavigateToURL(self._GetDefaultSpanishURL())
     self.assertFalse('translate_bar' in self.GetTranslateInfo())
+
+  def testAlwaysTranslateLanguageButton(self):
+    """Test the always translate language button."""
+    spanish_url = self._GetDefaultSpanishURL()
+    self._NavigateAndWaitForBar(spanish_url)
+
+    # The 'Always Translate' button doesn't show up until the user has clicked
+    # 'Translate' for a language several times.
+    max_tries = 10
+    curr_try = 0
+    while (curr_try < max_tries and
+           not self.GetTranslateInfo()['translate_bar']\
+                                      ['always_translate_lang_button_showing']):
+      self._ClickTranslateUntilSuccess()
+      self._NavigateAndWaitForBar(spanish_url)
+      curr_try = curr_try + 1
+    if curr_try == max_tries:
+      self.fail('Clicked translate %d times and always translate button never '\
+                'showed up.' % max_tries)
+
+    # Click the 'Always Translate' button.
+    self.SelectTranslateOption('click_always_translate_lang_button')
+    # Navigate to another Spanish page and verify it was translated.
+    self._NavigateAndWaitForBar('http://www.google.com/webhp?hl=es')
+    self.WaitUntilTranslateComplete()
+    # Assert that a translation was attempted. We don't care if it was error
+    # or success.
+    self.assertNotEqual(self.before_translate,
+                        self.GetTranslateInfo()['translate_bar']['bar_state'])
 
   def testSeveralLanguages(self):
     """Verify translation for several languages.

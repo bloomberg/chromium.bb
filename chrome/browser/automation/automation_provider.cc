@@ -2865,6 +2865,17 @@ void AutomationProvider::SelectTranslateOption(Browser* browser,
     return_value->SetBoolean("translation_success", true);
     AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
     return;
+  } else if (option == "click_always_translate_lang_button") {
+    if (!translate_bar->ShouldShowAlwaysTranslateButton()) {
+      AutomationJSONReply(this, reply_message)
+          .SendError("Always translate button not showing.");
+      return;
+    }
+    // Clicking 'Always Translate' triggers a translation. The observer will
+    // wait until the translation is complete before sending the reply.
+    new PageTranslatedObserver(this, reply_message, tab_contents);
+    translate_bar->AlwaysTranslatePageLanguage();
+    return;
   }
 
   AutomationJSONReply reply(this, reply_message);
@@ -2887,6 +2898,18 @@ void AutomationProvider::SelectTranslateOption(Browser* browser,
     reply.SendSuccess(NULL);
   } else if (option == "revert_translation") {
     translate_bar->RevertTranslation();
+    reply.SendSuccess(NULL);
+  } else if (option == "click_never_translate_lang_button") {
+    if (!translate_bar->ShouldShowNeverTranslateButton()) {
+      reply.SendError("Always translate button not showing.");
+      return;
+    }
+    translate_bar->NeverTranslatePageLanguage();
+    reply.SendSuccess(NULL);
+  } else if (option == "decline_translation") {
+    // This is the function called when an infobar is dismissed or when the
+    // user clicks the 'Nope' translate button.
+    translate_bar->TranslationDeclined();
     reply.SendSuccess(NULL);
   } else {
     reply.SendError("Invalid string found for option.");

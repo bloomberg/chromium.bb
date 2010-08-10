@@ -691,7 +691,9 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
 
     Returns:
       A dictionary of information about translate for the page. Example:
-      { u'can_translate_page': True,
+      { u'always_translate_lang_button_showing': False,
+        u'never_translate_lang_button_showing': False,
+        u'can_translate_page': True,
         u'original_language': u'es',
         u'page_translated': False,
         # The below will only appear if the translate bar is showing.
@@ -824,15 +826,24 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       window_index: The index of the window, default is 0.
 
     *Notes*
-    never translate language:  Selecting this means that no sites in this
+    never_translate_language: Selecting this means that no sites in this
       language will be translated. This dismisses the infobar.
-    never translate site: Selecting this means that this site will never be
+    never_translate_site: Selecting this means that this site will never be
       translated, regardless of the language. This dismisses the infobar.
-    toggle always translate: This does not dismiss the infobar or translate the
+    toggle_always_translate: This does not dismiss the infobar or translate the
       page. See ClickTranslateBarTranslate and PerformActioOnInfobar to do
       those. If a language is selected to be always translated, then whenver
       the user visits a page with that language, the infobar will show the
       'This page has been translated...' message.
+    decline_translation: Equivalent to selecting 'Nope' on the translate bar.
+    click_never_translate_lang_button: This button appears when the user has
+      declined translation of this language several times. Selecting it causes
+      the language to never be translated. Look at GetTranslateInfo to
+      determine if the button is showing.
+    click_always_translate_lang_button: This button appears when the user has
+      accepted translation of this language several times. Selecting it causes
+      the language to always be translated. Look at GetTranslateInfo to
+      determine if the button is showing.
 
     Raises:
       pyauto_errors.JSONInterfaceError if the automation returns an error.
