@@ -35,32 +35,6 @@ Core wayland protocol
    switching away from.  for minimized windows that we don't want live
    thumb nails for. etc.
 
- - Consolidate drm buffer upload with a create_buffer request, returns
-   buffer object we can use in surface.attach, cache.upload and
-   input.attach?  Will increase object id usage significantly, each
-   buffer swap allocates and throws away a new id.  Does consolidate
-   the details of a buffer very nicely though.
-
-     compositor.create_buffer(new_id, visual, name, stride, width, height)
-
-     surface.attach(buffer)
-
-     cache.upload(buffer, x, y, width, height)
-
-     input.set_cursor(buffer, hotspot_x, hotspot_y)
-
-   Doesn't increase id usage too much, can keep buffers around.
-
- - Move/resize protocol in the style of the dnd protocol: a surface
-   who has a grabbed device can send a request to initiate a
-   resize(top/bottom+rigth/left) or a move.  The compositor will then
-   resize or move the window and take into account windows, panels and
-   screen edges and constrain and snap the motion accordingly.  As the
-   cursor moves, the compositor sends resize or move (maybe not move
-   events?) events to the app, which responds by attaching a new
-   surface at the new size (optionally, reducing the allocated space
-   to satisfy aspect ratio or resize increments).
-
  - Initial placement of surfaces.  Guess we can do, 1)
    surface-relative (menus), 2) pointer-relative (tooltips and
    right-click menus) or 3) server-decides (all other top-levels).
@@ -94,12 +68,6 @@ Core wayland protocol
     - multi touch?
 
     - synaptics, 3-button emulation, scim
-
- - sparse/gcc plugin based idl compiler
-
-    - crack?
-
-    - xml based description instead?
 
  - Figure out if we need the batch/commit scheme and what to do
    instead.  Since dropping the "copy" request, we have a race between
