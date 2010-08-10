@@ -74,7 +74,8 @@ TEST_F(NewTabUITest, FLAKY_ChromeInternalLoadsNTP) {
   EXPECT_GT(thumbnails_count, 0);
 }
 
-TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
+// Flaky on XP bots: http://crbug.com/51726
+TEST_F(NewTabUITest, FLAKY_UpdateUserPrefsVersion) {
   // PrefService with JSON user-pref file only, no enforced or advised prefs.
   scoped_ptr<PrefService> prefs(new TestingPrefService);
 
