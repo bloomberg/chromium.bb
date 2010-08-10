@@ -16,10 +16,15 @@
 #include "ipc/ipc_switches.h"
 #include "testing/multiprocess_func_list.h"
 
-// Definition of IPC Messages used for this test.
+// Declaration of IPC Messages used for this test.
 #define MESSAGES_INTERNAL_FILE \
     "chrome/browser/importer/firefox_importer_unittest_messages_internal.h"
 #include "ipc/ipc_message_macros.h"
+
+// Definition of IPC Messages used for this test.
+#define MESSAGES_INTERNAL_IMPL_FILE \
+  "chrome/browser/importer/firefox_importer_unittest_messages_internal.h"
+#include "ipc/ipc_message_impl_macros.h"
 
 namespace {
 
