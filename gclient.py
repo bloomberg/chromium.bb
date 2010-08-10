@@ -137,8 +137,8 @@ class Dependency(GClientKeywords):
   """Object that represents a dependency checkout."""
   DEPS_FILE = 'DEPS'
 
-  def __init__(self, parent, name, url, safesync_url=None, custom_deps=None,
-               custom_vars=None, deps_file=None):
+  def __init__(self, parent, name, url, safesync_url, custom_deps,
+               custom_vars, deps_file):
     GClientKeywords.__init__(self)
     self.parent = parent
     self.name = name
@@ -297,7 +297,8 @@ class Dependency(GClientKeywords):
     for name, url in deps.iteritems():
       if name in [s.name for s in self.dependencies]:
         raise
-      self.dependencies.append(Dependency(self, name, url))
+      self.dependencies.append(Dependency(self, name, url, None, None, None,
+          None))
     # Sort by name.
     self.dependencies.sort(key=lambda x: x.name)
     logging.info('Loaded: %s' % str(self))
@@ -422,17 +423,17 @@ class Dependency(GClientKeywords):
   def recursion_limit(self):
     return self.parent.recursion_limit() - 1
 
-  def tree(self, force_all):
-    return self.parent.tree(force_all)
+  def tree(self, include_all):
+    return self.parent.tree(include_all)
 
-  def subtree(self, force_all):
+  def subtree(self, include_all):
     result = []
     # Add breadth-first.
-    if self.direct_reference or force_all:
+    if self.direct_reference or include_all:
       for d in self.dependencies:
         result.append(d)
       for d in self.dependencies:
-        result.extend(d.subtree(force_all))
+        result.extend(d.subtree(include_all))
     return result
 
   def get_custom_deps(self, name, url):
@@ -516,7 +517,10 @@ solutions = [
 """)
 
   def __init__(self, root_dir, options):
-    Dependency.__init__(self, None, None, None)
+    # Do not change previous behavior. Only solution level and immediate DEPS
+    # are processed.
+    self._recursion_limit = 2
+    Dependency.__init__(self, None, None, None, None, None, None, None)
     self._options = options
     if options.deps_os:
       enforced_os = options.deps_os.split(',')
@@ -527,9 +531,6 @@ solutions = [
     self._enforced_os = list(set(enforced_os))
     self._root_dir = root_dir
     self.config_content = None
-    # Do not change previous behavior. Only solution level and immediate DEPS
-    # are processed.
-    self._recursion_limit = 2
 
   def SetConfig(self, content):
     assert self.dependencies == []
@@ -545,7 +546,8 @@ solutions = [
             self, s['name'], s['url'],
             s.get('safesync_url', None),
             s.get('custom_deps', {}),
-            s.get('custom_vars', {})))
+            s.get('custom_vars', {}),
+            None))
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
@@ -776,9 +778,9 @@ solutions = [
     """How recursive can each dependencies in DEPS file can load DEPS file."""
     return self._recursion_limit
 
-  def tree(self, force_all):
+  def tree(self, include_all):
     """Returns a flat list of all the dependencies."""
-    return self.subtree(force_all)
+    return self.subtree(include_all)
 
 
 #### gclient commands.
