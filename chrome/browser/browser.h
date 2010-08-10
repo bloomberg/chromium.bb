@@ -278,6 +278,10 @@ class Browser : public TabStripModelDelegate,
   // Gives beforeunload handlers the chance to cancel the close.
   bool ShouldCloseWindow();
 
+  bool IsAttemptingToCloseBrowser() const {
+    return is_attempting_to_close_browser_;
+  }
+
   // Invoked when the window containing us is closing. Performs the necessary
   // cleanup.
   void OnWindowClosing();

@@ -7278,6 +7278,44 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </ph> now has <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions<ph name="END_LINK">&lt;/a&gt;</ph> and <ph name="BEGIN_BUTTON">&lt;button&gt;</ph>bookmark sync<ph name="END_BUTTON">&lt;/button&gt;</ph>.
       </message>
 
+      <!-- Mac AppleScript -->
+      <if expr="os == 'darwin'">
+        <message name="IDS_GET_PROFILE_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when profile fails to load.  Mac-only.">
+        Could not get profile.
+        </message>
+        <message name="IDS_BOOKMARK_MODEL_LOAD_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when bookmark model fails to load.  Mac-only.">
+        Could not load bookmark model.
+        </message>
+        <message name="IDS_CREATE_BOOKMARK_FOLDER_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when bookmark folder cannot be created.  Mac-only.">
+        Could not create bookmark folder.
+        </message>
+        <message name="IDS_CREATE_BOOKMARK_ITEM_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when bookmark item cannot be created.  Mac-only.">
+                Could not create bookmark item.
+        </message>
+        <message name="IDS_INVALID_URL_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when invalid URL is entered.  Mac-only.">
+                Invalid URL entered.
+        </message>
+        <message name="IDS_INITIATE_PRINTING_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when printing could not be initiated.  Mac-only.">
+                Could not initiate printing.
+        </message>
+        <message name="IDS_INVALID_SAVE_TYPE_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when wrong save type is entered.  Mac-only.">
+                Invalid save type entered.
+        </message>
+        <message name="IDS_INVALID_MODE_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when wrong save type is entered.  Mac-only.">
+                Invalid mode entered.
+        </message>
+        <message name="IDS_INVALID_TAB_INDEX_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when invalid tab index is entered.  Mac-only.">
+                Invalid tab index entered.
+        </message>
+        <message name="IDS_SET_MODE_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when mode is entered after window is created.  Mac-only.">
+                Cannot set mode after window is set.
+        </message>
+        <message name="IDS_WRONG_INDEX_ERROR_APPLESCRIPT_MAC" desc="Error dialog title to be displayed when ordered index is out of bounds.  Mac-only.">
+                Wrong index.
+        </message>
+      </if> <!-- os == 'darwin' -->
+
+
       <!-- Mac Menubar Menus -->
       <if expr="os == 'darwin'">
         <!-- Menubar Menu Titles -->

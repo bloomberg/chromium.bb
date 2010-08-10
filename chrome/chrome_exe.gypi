@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -220,11 +220,13 @@
               'mac_bundle_resources': [
                 'app/theme/google_chrome/app.icns',
                 'app/theme/google_chrome/document.icns',
+                'browser/cocoa/applescript/scripting.sdef',
               ],
             }, {  # else: 'branding!="Chrome"
               'mac_bundle_resources': [
                 'app/theme/chromium/app.icns',
                 'app/theme/chromium/document.icns',
+                'browser/cocoa/applescript/scripting.sdef',
               ],
             }],
             ['mac_breakpad==1', {

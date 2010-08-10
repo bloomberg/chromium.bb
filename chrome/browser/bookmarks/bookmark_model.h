@@ -366,6 +366,9 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // Returns whether the bookmarks file changed externally.
   bool file_changed() const { return file_changed_; }
 
+  // Returns the next node ID.
+  int64 next_node_id() const { return next_node_id_; }
+
  private:
   // Used to order BookmarkNodes by URL.
   class NodeURLComparator {
