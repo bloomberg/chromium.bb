@@ -65,9 +65,6 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
   // Clears the list of canned caches.
   void Reset();
 
-  // True if no appcaches are currently stored.
-  bool empty() const;
-
   // BrowsingDataAppCacheHelper methods.
   virtual void StartFetching(Callback0::Type* completion_callback);
   virtual void CancelNotification() {}
