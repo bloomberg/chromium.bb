@@ -41,21 +41,21 @@ NewTabUITest.UpdateUserPrefsVersion
 # http://crbug.com/32818
 VisibleBrowserTest.WindowOpenClose
 
-# See http://crbug.com/30661.
-NPAPITester.GetURL
-NPAPITester.SelfDeletePluginGetUrl
-NPAPITester.PluginThreadAsyncCall
-NPAPITester.GetJavaScriptURL
-NPAPITester.SelfDeletePluginInvoke
-NPAPITester.Arguments
-NPAPITester.GetJavaScriptURL2
-NPAPITester.PrivateDisabled
+# See http://crbug.com/30661 and http://crbug.com/27447.
+NPAPITesterBase.GetURL
+NPAPITesterBase.SelfDeletePluginGetUrl
+NPAPITesterBase.PluginThreadAsyncCall
+NPAPITesterBase.GetJavaScriptURL
+NPAPITesterBase.SelfDeletePluginInvoke
+NPAPITesterBase.Arguments
+NPAPITesterBase.GetJavaScriptURL2
+NPAPITesterBase.PrivateDisabled
 NPAPIVisiblePluginTester.PluginReferrerTest
 NPAPIVisiblePluginTester.GetURLRequestFailWrite
 NPAPIIncognitoTester.PrivateEnabled
-NPAPITester.ManyPlugins
-NPAPITester.NPObjectProxy
-NPAPITester.ScheduleTimer
+NPAPITesterBase.ManyPlugins
+NPAPITesterBase.NPObjectProxy
+NPAPITesterBase.ScheduleTimer
 NPAPIVisiblePluginTester.SelfDeletePluginInNewStream
 NPAPIVisiblePluginTester.MultipleInstancesSyncCalls
 NPAPIVisiblePluginTester.PluginConvertPointTest
