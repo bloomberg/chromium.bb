@@ -918,6 +918,7 @@ class SyncManager::SyncInternal
             const char* user_agent,
             const std::string& lsid,
             const bool use_chrome_async_socket,
+            const bool try_ssltcp_first,
             browser_sync::NotificationMethod notification_method);
 
   // Tell sync engine to submit credentials to GAIA for verification.
@@ -1238,6 +1239,7 @@ bool SyncManager::Init(const FilePath& database_location,
                        const char* user_agent,
                        const char* lsid,
                        bool use_chrome_async_socket,
+                       bool try_ssltcp_first,
                        browser_sync::NotificationMethod notification_method) {
   DCHECK(post_factory);
   LOG(INFO) << "SyncManager starting Init...";
@@ -1257,6 +1259,7 @@ bool SyncManager::Init(const FilePath& database_location,
                      user_agent,
                      lsid,
                      use_chrome_async_socket,
+                     try_ssltcp_first,
                      notification_method);
 }
 
@@ -1307,6 +1310,7 @@ bool SyncManager::SyncInternal::Init(
     const char* user_agent,
     const std::string& lsid,
     bool use_chrome_async_socket,
+    bool try_ssltcp_first,
     browser_sync::NotificationMethod notification_method) {
 
   LOG(INFO) << "Starting SyncInternal initialization.";
@@ -1349,8 +1353,10 @@ bool SyncManager::SyncInternal::Init(
   // MediatorThreadImpl.
   notifier::MediatorThread* mediator_thread =
       (notification_method == browser_sync::NOTIFICATION_SERVER) ?
-      new sync_notifier::ServerNotifierThread(use_chrome_async_socket) :
-      new notifier::MediatorThreadImpl(use_chrome_async_socket);
+      new sync_notifier::ServerNotifierThread(use_chrome_async_socket,
+                                              try_ssltcp_first) :
+      new notifier::MediatorThreadImpl(use_chrome_async_socket,
+                                       try_ssltcp_first);
   const bool kInitializeSsl = true;
   const bool kConnectImmediately = false;
   talk_mediator_.reset(new TalkMediatorImpl(mediator_thread, kInitializeSsl,
@@ -1522,7 +1528,7 @@ bool SyncManager::SyncInternal::AuthenticateForUser(
 
 #if defined(OS_WIN)
       UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedWin", 1);
-#elif defined (OS_MACOSX)
+#elif defined(OS_MACOSX)
       UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedMac", 1);
 #else
       UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedNotWinMac", 1);

@@ -57,6 +57,7 @@ class Login : public net::NetworkChangeNotifier::Observer,
         ServerInformation* server_list,
         int server_count,
         talk_base::FirewallManager* firewall,
+        bool try_ssltcp_first,
         bool proxy_only);
   virtual ~Login();
 

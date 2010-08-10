@@ -27,7 +27,7 @@ class ServerNotifierThread
     : public notifier::MediatorThreadImpl,
       public ChromeInvalidationClient::Listener {
  public:
-  explicit ServerNotifierThread(bool use_chrome_async_socket);
+  ServerNotifierThread(bool use_chrome_async_socket, bool try_ssltcp_first);
 
   virtual ~ServerNotifierThread();
 

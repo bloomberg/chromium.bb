@@ -728,6 +728,10 @@ class SyncManager {
   // |invalidate_xmpp_auth_token| makes it so that any auth token
   // used to log into XMPP is invalidated.  This is used for testing
   // code paths related to authentication failures for XMPP only.
+  //
+  // |try_ssltcp_first| indicates that the SSLTCP port (443) is tried before the
+  // the XMPP port (5222) during login. It is used by the sync tests that are
+  // run on the chromium builders because port 5222 is blocked.
   bool Init(const FilePath& database_location,
             const char* sync_server_and_path,
             int sync_server_port,
@@ -743,6 +747,7 @@ class SyncManager {
             const char* user_agent,
             const char* lsid,
             bool use_chrome_async_socket,
+            bool try_ssltcp_first,
             browser_sync::NotificationMethod notification_method);
 
   // Returns the username last used for a successful authentication.

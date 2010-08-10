@@ -59,7 +59,7 @@ class MediatorThreadImpl
     : public MediatorThread,
       public sigslot::has_slots<> {
  public:
-  explicit MediatorThreadImpl(bool use_chrome_async_socket);
+  MediatorThreadImpl(bool use_chrome_async_socket, bool try_ssltcp_first);
   virtual ~MediatorThreadImpl();
 
   virtual void SetDelegate(Delegate* delegate);
@@ -125,6 +125,8 @@ class MediatorThreadImpl
       bool success);
 
   const bool use_chrome_async_socket_;
+  const bool try_ssltcp_first_;
+
   base::Thread worker_thread_;
   scoped_refptr<net::HostResolver> host_resolver_;
 

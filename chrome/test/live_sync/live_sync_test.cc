@@ -64,6 +64,15 @@ void LiveSyncTest::SetUp() {
                           "transitional");
   }
 
+  // The chrome sync builders are behind a firewall that blocks port 5222, the
+  // default port for XMPP notifications. This causes the tests to spend up to a
+  // minute waiting for a connection on port 5222 before they fail over to port
+  // 443, the default SSL/TCP port. This switch causes the tests to use port 443
+  // by default, without having to try port 5222.
+  if (!cl->HasSwitch(switches::kSyncUseSslTcp)) {
+    cl->AppendSwitch(switches::kSyncUseSslTcp);
+  }
+
   // Unless a sync server was explicitly provided, run a test one locally.
   // TODO(ncarter): It might be better to allow the user to specify a choice
   // of sync server "providers" -- a script that could locate (or allocate)

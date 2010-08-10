@@ -107,6 +107,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
                   bool invalidate_sync_login,
                   bool invalidate_sync_xmpp_login,
                   bool use_chrome_async_socket,
+                  bool try_ssltcp_first,
                   NotificationMethod notification_method);
 
   // Called on |frontend_loop_| to kick off asynchronous authentication.
@@ -253,6 +254,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
           bool invalidate_sync_login,
           bool invalidate_sync_xmpp_login,
           bool use_chrome_async_socket,
+          bool try_ssltcp_first,
           NotificationMethod notification_method)
           : service_url(service_url),
             attempt_last_user_authentication(attempt_last_user_authentication),
@@ -263,6 +265,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
             invalidate_sync_login(invalidate_sync_login),
             invalidate_sync_xmpp_login(invalidate_sync_xmpp_login),
             use_chrome_async_socket(use_chrome_async_socket),
+            try_ssltcp_first(try_ssltcp_first),
             notification_method(notification_method) {}
 
       GURL service_url;
@@ -274,6 +277,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
       bool invalidate_sync_login;
       bool invalidate_sync_xmpp_login;
       bool use_chrome_async_socket;
+      bool try_ssltcp_first;
       NotificationMethod notification_method;
     };
 
@@ -340,7 +344,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
                              NotificationMethod notification_method) {
       DoInitialize(DoInitializeOptions(GURL(), false, factory, auth_factory,
                                        std::string(), delete_sync_data_folder,
-                                       false, false, false,
+                                       false, false, false, false,
                                        notification_method));
         syncapi_->SetupForTestMode(test_user);
     }

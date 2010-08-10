@@ -26,10 +26,12 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(notifier::MediatorThreadImpl);
 
 namespace notifier {
 
-MediatorThreadImpl::MediatorThreadImpl(bool use_chrome_async_socket)
+MediatorThreadImpl::MediatorThreadImpl(bool use_chrome_async_socket,
+                                       bool try_ssltcp_first)
     : delegate_(NULL),
       parent_message_loop_(MessageLoop::current()),
       use_chrome_async_socket_(use_chrome_async_socket),
+      try_ssltcp_first_(try_ssltcp_first),
       worker_thread_("MediatorThread worker thread") {
   DCHECK(parent_message_loop_);
 }
@@ -204,6 +206,7 @@ void MediatorThreadImpl::DoLogin(
                                    server_list_count,
                                    // talk_base::FirewallManager* is NULL.
                                    NULL,
+                                   try_ssltcp_first_,
                                    // Both the proxy and a non-proxy route
                                    // will be attempted.
                                    false));

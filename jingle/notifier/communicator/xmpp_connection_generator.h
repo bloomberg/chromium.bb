@@ -38,6 +38,7 @@ struct ServerInformation {
 class XmppConnectionGenerator : public sigslot::has_slots<> {
  public:
   // parent is the parent for any tasks needed during this operation.
+  // try_ssltcp_first indicates that SSLTCP is tried before XMPP. Used by tests.
   // proxy_only indicates if true connections are only attempted using the
   // proxy.
   // server_list is the list of connections to attempt in priority order.
@@ -46,6 +47,7 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
       talk_base::Task* parent,
       const scoped_refptr<net::HostResolver>& host_resolver,
       const ConnectionOptions* options,
+      bool try_ssltcp_first,
       bool proxy_only,
       const ServerInformation* server_list,
       int server_count);
@@ -80,6 +82,7 @@ class XmppConnectionGenerator : public sigslot::has_slots<> {
   talk_base::scoped_array<ServerInformation> server_list_;
   int server_count_;
   int server_index_;  // The server that is current being used.
+  bool try_ssltcp_first_;  // Used when sync tests are run on chromium builders.
   bool proxy_only_;
   bool successfully_resolved_dns_;
   int first_dns_error_;

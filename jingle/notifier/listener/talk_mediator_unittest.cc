@@ -40,11 +40,12 @@ class TalkMediatorImplTest : public testing::Test {
 
   TalkMediatorImpl* NewTalkMediator() {
     const bool kUseChromeAsyncSocket = false;
+    const bool kTrySslTcpFirst = false;
     const bool kInitializeSsl = true;
     const bool kConnectImmediately = false;
     const bool kInvalidateXmppAuthToken = false;
     return new TalkMediatorImpl(
-        new MediatorThreadImpl(kUseChromeAsyncSocket),
+        new MediatorThreadImpl(kUseChromeAsyncSocket, kTrySslTcpFirst),
         kInitializeSsl, kConnectImmediately, kInvalidateXmppAuthToken);
   }
 

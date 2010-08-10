@@ -58,10 +58,12 @@ class ConnectionSettingsList {
                        const std::vector<uint32>& iplist,
                        int16 port,
                        bool special_port_magic,
+                       bool try_ssltcp_first,
                        bool proxy_only);
  private:
   void PermuteForAddress(const talk_base::SocketAddress& server,
                          bool special_port_magic,
+                         bool try_ssltcp_first,
                          bool proxy_only,
                          std::deque<ConnectionSettings>* list_temp);
 

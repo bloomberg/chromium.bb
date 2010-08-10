@@ -266,11 +266,14 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 
   bool invalidate_sync_login = false;
   bool invalidate_sync_xmpp_login = false;
+  bool try_ssltcp_first = false;
 #if !defined(NDEBUG)
   invalidate_sync_login = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kInvalidateSyncLogin);
   invalidate_sync_xmpp_login = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kInvalidateSyncXmppLogin);
+  try_ssltcp_first = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSyncUseSslTcp);
 #endif
 
   syncable::ModelTypeSet types;
@@ -287,6 +290,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
                        invalidate_sync_login,
                        invalidate_sync_xmpp_login,
                        use_chrome_async_socket_,
+                       try_ssltcp_first,
                        notification_method_);
 }
 

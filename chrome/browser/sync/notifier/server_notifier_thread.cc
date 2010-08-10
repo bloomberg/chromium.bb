@@ -13,8 +13,9 @@
 
 namespace sync_notifier {
 
-ServerNotifierThread::ServerNotifierThread(bool use_chrome_async_socket)
-    : notifier::MediatorThreadImpl(use_chrome_async_socket),
+ServerNotifierThread::ServerNotifierThread(bool use_chrome_async_socket,
+                                           bool try_ssltcp_first)
+    : notifier::MediatorThreadImpl(use_chrome_async_socket, try_ssltcp_first),
       state_(notifier::STATE_DISCONNECTED) {}
 
 ServerNotifierThread::~ServerNotifierThread() {}

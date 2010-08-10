@@ -302,11 +302,12 @@ void CloudPrintProxyBackend::Core::DoInitializeWithToken(
   auth_token_ = cloud_print_token;
 
   const bool kUseChromeAsyncSocket = false;
+  const bool kTrySslTcpFirst = false;
   const bool kInitializeSsl = true;
   const bool kConnectImmediately = false;
   const bool kInvalidateXmppAuthToken = false;
   talk_mediator_.reset(new notifier::TalkMediatorImpl(
-      new notifier::MediatorThreadImpl(kUseChromeAsyncSocket),
+      new notifier::MediatorThreadImpl(kUseChromeAsyncSocket, kTrySslTcpFirst),
       kInitializeSsl, kConnectImmediately, kInvalidateXmppAuthToken));
   talk_mediator_->AddSubscribedServiceUrl(kCloudPrintTalkServiceUrl);
   talk_mediator_->SetDelegate(this);
