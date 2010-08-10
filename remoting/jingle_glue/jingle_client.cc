@@ -76,6 +76,11 @@ void JingleClient::DoConnect(scoped_refptr<JingleChannel> channel,
 }
 
 void JingleClient::Close() {
+  // Once we are closed we really shouldn't talk to the callback again. In the
+  // case when JingleClient outlives the owner access the callback is not safe.
+  // TODO(hclam): We need to lock to reset callback.
+  callback_ = NULL;
+
   message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &JingleClient::DoClose));
 }
@@ -85,12 +90,14 @@ void JingleClient::DoClose() {
 
   // If we have not yet initialized and the client is already closed then
   // don't close again.
-  if (!callback_ || state_ == CLOSED)
+  if (state_ == CLOSED)
     return;
 
-  client_->Disconnect();
-  // Client is deleted by TaskRunner.
-  client_ = NULL;
+  if (client_) {
+    client_->Disconnect();
+    // Client is deleted by TaskRunner.
+    client_ = NULL;
+  }
   tunnel_session_client_.reset();
   port_allocator_.reset();
   session_manager_.reset();
