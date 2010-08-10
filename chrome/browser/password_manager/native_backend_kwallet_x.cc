@@ -208,8 +208,10 @@ bool NativeBackendKWallet::RemoveLoginsCreatedBetween(
                       DBUS_TYPE_G_UCHAR_ARRAY, &byte_array,
                       G_TYPE_INVALID);
 
-    if (CheckError() || !byte_array || !byte_array->len)
+    if (CheckError() || !byte_array ||
+        !CheckSerializedValue(byte_array, *realm)) {
       continue;
+    }
 
     string signon_realm(*realm);
     Pickle pickle(byte_array->data, byte_array->len);
@@ -281,8 +283,12 @@ bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
                     G_TYPE_BOOLEAN, &has_entry,
                     G_TYPE_INVALID);
 
-  if (CheckError() || !has_entry)
+  if (CheckError())
     return false;
+  if (!has_entry) {
+    // This is not an error. There just isn't a matching entry.
+    return true;
+  }
 
   GArray* byte_array = NULL;
   dbus_g_proxy_call(proxy_, "readEntry", &error_,
@@ -294,8 +300,16 @@ bool NativeBackendKWallet::GetLoginsList(PasswordFormList* forms,
                     DBUS_TYPE_G_UCHAR_ARRAY, &byte_array,
                     G_TYPE_INVALID);
 
-  if (CheckError() || !byte_array || !byte_array->len)
+  if (CheckError() || !byte_array)
     return false;
+  if (!CheckSerializedValue(byte_array, signon_realm.c_str())) {
+    // This is weird, but we choose not to call it an error. There's an invalid
+    // entry somehow, but by pretending it just doesn't exist, we make it easier
+    // to repair without having to delete it using kwalletmanager (that is, by
+    // just saving a new password within this realm to overwrite it).
+    g_array_free(byte_array, true);
+    return true;
+  }
 
   Pickle pickle(byte_array->data, byte_array->len);
   DeserializeValue(signon_realm, pickle, forms);
@@ -370,8 +384,10 @@ bool NativeBackendKWallet::GetAllLogins(PasswordFormList* forms,
                       DBUS_TYPE_G_UCHAR_ARRAY, &byte_array,
                       G_TYPE_INVALID);
 
-    if (CheckError() || !byte_array || !byte_array->len)
+    if (CheckError() || !byte_array ||
+        !CheckSerializedValue(byte_array, *realm)) {
       continue;
+    }
 
     Pickle pickle(byte_array->data, byte_array->len);
     DeserializeValue(*realm, pickle, forms);
@@ -461,6 +477,18 @@ void NativeBackendKWallet::SerializeValue(const PasswordFormList& forms,
     pickle->WriteBool(form->blacklisted_by_user);
     pickle->WriteInt64(form->date_created.ToTimeT());
   }
+}
+
+bool NativeBackendKWallet::CheckSerializedValue(const GArray* byte_array,
+                                                const char* realm) {
+  const Pickle::Header* header =
+      reinterpret_cast<const Pickle::Header*>(byte_array->data);
+  if (byte_array->len < sizeof(*header) ||
+      header->payload_size > byte_array->len - sizeof(*header)) {
+    LOG(WARNING) << "Invalid KWallet entry detected! (realm: " << realm << ")";
+    return false;
+  }
+  return true;
 }
 
 void NativeBackendKWallet::DeserializeValue(const string& signon_realm,

@@ -92,6 +92,10 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   // Serializes a list of PasswordForms to be stored in the wallet.
   static void SerializeValue(const PasswordFormList& forms, Pickle* pickle);
 
+  // Checks a serialized list of PasswordForms for sanity. Returns true if OK.
+  // Note that |realm| is only used for generating a useful warning message.
+  static bool CheckSerializedValue(const GArray* byte_array, const char* realm);
+
   // Deserializes a list of PasswordForms from the wallet.
   static void DeserializeValue(const std::string& signon_realm,
                                const Pickle& pickle,
