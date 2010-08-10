@@ -3936,7 +3936,14 @@
    fun:_ZN7Profile13CreateProfileERK8FilePath
    fun:_ZN14ProfileManager10GetProfileERK8FilePathb
 }
-
+{
+   bug_51263_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8chromeos11CrosLibrary12EnsureLoadedEv
+   fun:_ZN8chromeos20NetworkStateNotifier13RetrieveStateEv
+   fun:_ZN8chromeos20NetworkStateNotifierC1Ev
+}
 {
    bug_51379
    Memcheck:Leak
