@@ -52,8 +52,8 @@ static std::string ToHtmlTableRow(Network* network) {
     if (network->type() == TYPE_WIFI) {
       WifiNetwork* wifi = static_cast<WifiNetwork*>(network);
       str += WrapWithTD(wifi->GetEncryptionString()) +
-          WrapWithTD(wifi->passphrase()) + WrapWithTD(wifi->identity()) +
-          WrapWithTD(wifi->cert_path());
+          WrapWithTD(std::string(wifi->passphrase().length(), '*')) +
+          WrapWithTD(wifi->identity()) + WrapWithTD(wifi->cert_path());
     }
   }
   str += WrapWithTD(network->GetStateString()) +
