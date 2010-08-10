@@ -5,9 +5,20 @@
 #include "chrome/browser/blocked_popup_container.h"
 
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "gfx/rect.h"
 
 // static
 const size_t BlockedPopupContainer::kImpossibleNumberOfPopups = 30;
+
+struct BlockedPopupContainer::BlockedPopup {
+  BlockedPopup(TabContents* tab_contents,
+               const gfx::Rect& bounds)
+      : tab_contents(tab_contents), bounds(bounds) {
+  }
+
+  TabContents* tab_contents;
+  gfx::Rect bounds;
+};
 
 BlockedPopupContainer::BlockedPopupContainer(TabContents* owner)
     : owner_(owner) {

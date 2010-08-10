@@ -13,6 +13,7 @@
 #include "base/rand_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/task.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"

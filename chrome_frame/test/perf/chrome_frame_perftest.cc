@@ -25,6 +25,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/trace_event_win.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"

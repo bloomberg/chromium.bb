@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/ref_counted.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

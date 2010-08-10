@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_manager.h"
 #include "chrome/browser/autofill/phone_number.h"
 #include "chrome/browser/browser.h"

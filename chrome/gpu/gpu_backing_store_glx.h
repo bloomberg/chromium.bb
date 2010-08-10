@@ -11,6 +11,7 @@
 #include "base/process.h"
 #include "gfx/size.h"
 #include "ipc/ipc_channel.h"
+#include "gfx/size.h"
 
 class GpuViewX;
 class GpuThread;

@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_actions_toolbar_gtk.h"
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"

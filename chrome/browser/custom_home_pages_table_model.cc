@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
 #include "base/i18n/rtl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/pref_service.h"

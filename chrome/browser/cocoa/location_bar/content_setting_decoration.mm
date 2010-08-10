@@ -6,6 +6,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
 #import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"

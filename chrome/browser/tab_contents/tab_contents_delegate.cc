@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 
+#include "gfx/rect.h"
+
 void TabContentsDelegate::DetachContents(TabContents* source) {
 }
 

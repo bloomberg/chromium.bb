@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"

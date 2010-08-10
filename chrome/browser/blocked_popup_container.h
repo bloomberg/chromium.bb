@@ -93,15 +93,7 @@ class BlockedPopupContainer : public TabContentsDelegate {
   static const size_t kImpossibleNumberOfPopups;
 
  protected:
-  struct BlockedPopup {
-    BlockedPopup(TabContents* tab_contents,
-                 const gfx::Rect& bounds)
-        : tab_contents(tab_contents), bounds(bounds) {
-    }
-
-    TabContents* tab_contents;
-    gfx::Rect bounds;
-  };
+  struct BlockedPopup;
   typedef std::vector<BlockedPopup> BlockedPopups;
 
  private:

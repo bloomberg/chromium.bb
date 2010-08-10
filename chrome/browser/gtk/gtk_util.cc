@@ -18,6 +18,7 @@
 #include "base/i18n/rtl.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"

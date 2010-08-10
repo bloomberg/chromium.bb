@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/location_bar/page_action_image_view.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"

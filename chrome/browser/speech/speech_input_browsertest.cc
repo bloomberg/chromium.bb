@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/speech/speech_input_manager.h"

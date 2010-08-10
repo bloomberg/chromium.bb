@@ -8,6 +8,7 @@
 
 #include "app/x11_util.h"
 #include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/drop_shadow_label.h"

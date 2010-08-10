@@ -16,6 +16,7 @@
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_tokenizer.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/encoding_menu_controller.h"

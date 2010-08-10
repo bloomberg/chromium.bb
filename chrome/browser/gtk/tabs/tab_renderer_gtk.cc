@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/throb_animation.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"

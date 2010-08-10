@@ -12,22 +12,27 @@
 #include "chrome/browser/automation/automation_resource_routing_delegate.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/page_transition_types.h"
 #include "gfx/native_widget_types.h"
-#include "gfx/rect.h"
-#include "webkit/glue/context_menu.h"
 #include "webkit/glue/window_open_disposition.h"
+
+namespace gfx {
+class Point;
+class Rect;
+class Size;
+}
 
 class Browser;
 class DownloadItem;
 class ExtensionFunctionDispatcher;
 class GURL;
 class HtmlDialogUIDelegate;
+struct NativeWebKeyboardEvent;
 class Profile;
 class RenderViewHost;
 class TabContents;
 class TemplateURL;
+struct ContextMenuParams;
 
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.

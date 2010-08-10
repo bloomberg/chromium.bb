@@ -9,6 +9,7 @@
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
