@@ -30,7 +30,6 @@
 #include <time.h>
 #include <linux/input.h>
 
-#include "wayland.h"
 #include "wayland-server-protocol.h"
 #include "cairo-util.h"
 #include "compositor.h"

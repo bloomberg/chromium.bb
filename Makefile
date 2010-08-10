@@ -1,33 +1,33 @@
 include config.mk
 
 subdirs = clients spec
-libs = libwayland-server.so libwayland.so
+libs = libwayland-server.so libwayland-client.so
 
 all : $(libs) compositor subdirs-all scanner
 
 headers =					\
 	wayland-util.h				\
 	wayland-server-protocol.h		\
-	wayland.h				\
+	wayland-server.h			\
 	wayland-client-protocol.h		\
 	wayland-client.h \
 
 libwayland-server.so :				\
 	wayland-protocol.o			\
-	wayland.o				\
+	wayland-server.o			\
 	event-loop.o				\
 	connection.o				\
 	wayland-util.o				\
 	wayland-hash.o
 
-libwayland.so :					\
+libwayland-client.so :				\
 	wayland-protocol.o			\
 	wayland-client.o			\
 	connection.o				\
 	wayland-util.o				\
 	wayland-hash.o
 
-wayland.o : wayland-server-protocol.h
+wayland-server.o : wayland-server-protocol.h
 wayland-client.o : wayland-client-protocol.h
 
 wayland-protocol.c : protocol.xml scanner
@@ -67,7 +67,7 @@ subdirs-all subdirs-clean :
 install : $(libs) compositor
 	install -d $(libdir) $(libdir)/pkgconfig ${udev_rules_dir}
 	install $(libs) $(libdir)
-	install wayland-server.pc wayland.pc $(libdir)/pkgconfig
+	install wayland-server.pc wayland-client.pc $(libdir)/pkgconfig
 	install $(headers) $(includedir)
 	install 70-wayland.rules ${udev_rules_dir}
 

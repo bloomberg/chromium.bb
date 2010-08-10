@@ -23,7 +23,7 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <libudev.h>
-#include "wayland.h"
+#include "wayland-server.h"
 #include "wayland-util.h"
 
 #define GL_GLEXT_PROTOTYPES

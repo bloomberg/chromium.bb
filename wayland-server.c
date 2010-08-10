@@ -34,7 +34,7 @@
 #include <assert.h>
 #include <ffi.h>
 
-#include "wayland.h"
+#include "wayland-server.h"
 #include "wayland-server-protocol.h"
 #include "connection.h"
 

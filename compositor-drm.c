@@ -33,7 +33,6 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#include "wayland.h"
 #include "compositor.h"
 
 struct drm_compositor {

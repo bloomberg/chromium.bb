@@ -33,7 +33,7 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 #include <assert.h>
-#include "wayland.h"
+#include "wayland-server.h"
 
 struct wl_event_loop {
 	int epoll_fd;

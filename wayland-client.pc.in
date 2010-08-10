@@ -7,4 +7,4 @@ Name: Wayland Client
 Description: Wayland client side library
 Version: 0.1
 Cflags: -I${includedir}
-Libs: -L${libdir} -lwayland
+Libs: -L${libdir} -lwayland-client
