@@ -48,6 +48,9 @@ class WrenchMenuModel;
 // Returns the weak reference to the WrenchMenuModel.
 - (WrenchMenuModel*)wrenchMenuModel;
 
+// Inserts the update available notification menu item.
+- (void)insertUpdateAvailableItem;
+
 @end
 
 ////////////////////////////////////////////////////////////////////////////////

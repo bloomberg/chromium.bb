@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/wrench_menu_controller.h"
 
+#include "app/l10n_util.h"
 #include "app/menus/menu_model.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -12,6 +13,8 @@
 #import "chrome/browser/cocoa/menu_tracked_root_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/wrench_menu_model.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 
 @interface WrenchMenuController (Private)
 - (void)adjustPositioning;
@@ -119,6 +122,36 @@
 
 - (WrenchMenuModel*)wrenchMenuModel {
   return static_cast<WrenchMenuModel*>(model_);
+}
+
+// Inserts the update available notification menu item.
+- (void)insertUpdateAvailableItem {
+  WrenchMenuModel* model = [self wrenchMenuModel];
+  // Don't insert the item multiple times.
+  if (!model || model->GetIndexOfCommandId(IDC_ABOUT) != -1)
+    return;
+
+  // Update the model manually because the model is static because other
+  // platforms always have an About item.
+  int index = model->GetIndexOfCommandId(IDC_OPTIONS) + 1;
+  model->InsertItemAt(index, IDC_ABOUT,
+                      l10n_util::GetStringFUTF16(IDS_ABOUT,
+                          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+
+  // The model does not broadcast change notifications to its delegate, so
+  // insert the actual menu item ourselves.
+  NSInteger menuIndex = [[self menu] indexOfItemWithTag:index];
+  [self addItemToMenu:[self menu]
+              atIndex:menuIndex
+            fromModel:model
+           modelIndex:index];
+
+  // Since the tag of each menu item is the index within the model, they need
+  // to be adjusted after insertion.
+  for (NSInteger i = menuIndex + 1; i < [[self menu] numberOfItems]; ++i) {
+    NSMenuItem* item = [[self menu] itemAtIndex:i];
+    [item setTag:[item tag] + 1];
+  }
 }
 
 // Fit the localized strings into the Cut/Copy/Paste control, then resize the

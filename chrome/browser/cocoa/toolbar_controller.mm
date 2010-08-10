@@ -579,6 +579,8 @@ class NotificationBridge : public NotificationObserver {
   [overlayImage unlockFocus];
 
   [[wrenchButton_ cell] setOverlayImage:overlayImage];
+
+  [wrenchMenuController_ insertUpdateAvailableItem];
 }
 
 - (void)prefChanged:(std::wstring*)prefName {
