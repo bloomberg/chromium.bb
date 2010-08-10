@@ -4035,3 +4035,13 @@
    fun:_ZN24BrowserRenderProcessHost22OnExtensionAddListenerERKSs
    fun:_Z16DispatchToMethodI24BrowserRenderProcessHostMS0_FvRKSsESsEvPT_T0_RK6Tuple1IT1_E
 }
+{
+   bug_51707
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16CookiesTreeModelC2EPN3net13CookieMonsterEP26BrowsingDataDatabaseHelperP30BrowsingDataLocalStorageHelperS6_P26BrowsingDataAppCacheHelper
+   fun:_ZN26TabSpecificContentSettings27LocalSharedObjectsContainer19GetCookiesTreeModelEv
+   fun:-[CollectedCookiesWindowController loadTreeModelFromTabContents]
+   fun:-[CollectedCookiesWindowController initWithTabContents:]
+   fun:_ZN12_GLOBAL__N_154CollectedCookiesWindowControllerTest_Construction_Test8TestBodyEv
+}
