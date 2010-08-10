@@ -241,7 +241,7 @@ void SubmenuView::ShowAt(gfx::NativeWindow parent,
   host_->Init(parent, bounds, scroll_view_container_, do_capture);
 
   GetScrollViewContainer()->NotifyAccessibilityEvent(
-        AccessibilityTypes::EVENT_MENUPOPUPSTART);
+      AccessibilityTypes::EVENT_MENUPOPUPSTART);
 }
 
 void SubmenuView::Reposition(const gfx::Rect& bounds) {
