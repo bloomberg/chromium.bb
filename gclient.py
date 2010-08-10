@@ -161,17 +161,14 @@ class Dependency(GClientKeywords):
     # solution. A indirect one is one that was loaded with From() or that
     # exceeded recursion limit.
     self.direct_reference = False
+    # This dependency has been processed, i.e. checked out
+    self.processed = False
+    # This dependency had its hook run
+    self.hooks_ran = False
 
     # Sanity checks
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
-    # TODO(maruel): http://crbug.com/50015 Reenable this check once
-    # self.tree(False) is corrected.
-    # tree = dict((d.name, d) for d in self.tree(False))
-    #if self.name in tree:
-    #  raise gclient_utils.Error(
-    #      'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
-    #      (self.name, tree[self.name].hierarchy(), self.hierarchy()))
     if not isinstance(self.url,
         (basestring, self.FromImpl, self.FileImpl, None.__class__)):
       raise gclient_utils.Error('dependency url must be either a string, None, '
@@ -193,9 +190,10 @@ class Dependency(GClientKeywords):
       return overriden_url
     elif isinstance(url, self.FromImpl):
       ref = [dep for dep in self.tree(True) if url.module_name == dep.name]
-      if not len(ref) == 1:
-        raise Exception('Failed to find one reference to %s. %s' % (
-          url.module_name, ref))
+      if not ref:
+        raise gclient_utils.Error('Failed to find one reference to %s. %s' % (
+            url.module_name, ref))
+      # It may happen that len(ref) > 1 but it's no big deal.
       ref = ref[0]
       sub_target = url.sub_target_name or self.name
       # Make sure the referenced dependency DEPS file is loaded and file the
@@ -207,7 +205,8 @@ class Dependency(GClientKeywords):
           found_dep = d
           break
       if not found_dep:
-        raise Exception('Couldn\'t find %s in %s, referenced by %s' % (
+        raise gclient_utils.Error(
+            'Couldn\'t find %s in %s, referenced by %s' % (
             sub_target, ref.name, self.name))
       # Call LateOverride() again.
       parsed_url = found_dep.LateOverride(found_dep.url)
@@ -345,6 +344,7 @@ class Dependency(GClientKeywords):
         self._file_list = [os.path.join(self.name, f.strip())
                            for f in self._file_list]
       options.revision = None
+    self.processed = True
     if pm:
       # The + 1 comes from the fact that .gclient is considered a step in
       # itself, .i.e. this code is called one time for the .gclient. This is not
@@ -410,6 +410,7 @@ class Dependency(GClientKeywords):
 
   def _RunHookAction(self, hook_dict, matching_file_list):
     """Runs the action from a single hook."""
+    self.hooks_ran = True
     logging.info(hook_dict)
     logging.info(matching_file_list)
     command = hook_dict['action'][:]
@@ -466,7 +467,8 @@ class Dependency(GClientKeywords):
   def __str__(self):
     out = []
     for i in ('name', 'url', 'safesync_url', 'custom_deps', 'custom_vars',
-              'deps_hooks', '_file_list'):
+              'deps_hooks', '_file_list', 'processed',
+              'hooks_ran'):
       # 'deps_file'
       if self.__dict__[i]:
         out.append('%s: %s' % (i, self.__dict__[i]))
@@ -774,6 +776,7 @@ solutions = [
         if not entry is entries[-1]:
           line += ';'
         print line
+    logging.debug(str(self))
 
   def ParseDepsFile(self, direct_reference):
     """No DEPS to parse for a .gclient file."""
