@@ -20,6 +20,7 @@
 
 .language-options-contents  {
   -webkit-padding-start: 12px;
+  -webkit-padding-end: 12px;
   padding-bottom: 10px;
 }
 
@@ -46,14 +47,18 @@
 .language-options-right {
   /* To share the center line with the left pane. */
   -webkit-margin-start: -1px;
-  min-width: 300px;
+  min-width: 360px;
 }
 
 #language-options-list {
   -webkit-box-flex: 1;
   padding: 0;
   width: 100%;
+}
+
+#language-options-input-method-list button {
   display: block;
+  -webkit-margin-start: 20px;
 }
 
 #language-options-list li {

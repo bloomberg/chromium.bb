@@ -8,6 +8,17 @@ cr.define('options', function() {
   const AddLanguageOverlay = options.language.AddLanguageOverlay;
   const LanguageList = options.language.LanguageList;
 
+  // Some input methods like Chinese Pinyin have config pages.
+  // This is the map of the input method names to their config page names.
+  const INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME = {
+    'chewing': 'languageChewing',
+    'hangul': 'languageHangul',
+    'mozc': 'languageMozc',
+    'mozc-dv': 'languageMozc',
+    'mozc-jp': 'languageMozc',
+    'pinyin': 'languagePinyin',
+  };
+
   /////////////////////////////////////////////////////////////////////////////
   // LanguageOptions class:
 
@@ -91,12 +102,35 @@ cr.define('options', function() {
         label.appendChild(document.createTextNode(inputMethod.displayName));
         label.style.display = 'none';
         label.languageCode = inputMethod.languageCode;
+        // Add the configure button if the config page is present for this
+        // input method.
+        if (inputMethod.id in INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME) {
+          var pageName = INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME[inputMethod.id];
+          var button = this.createConfigureInputMethodButton_(inputMethod.id,
+                                                              pageName);
+          label.appendChild(button);
+        }
 
         inputMethodList.appendChild(label);
       }
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(this.preloadEnginesPref,
           cr.bind(this.handlePreloadEnginesPrefChange_, this));
+    },
+
+    /**
+     * Creates a configure button for the given input method ID.
+     * @param {string} inputMethodId Input method ID (ex. "pinyin").
+     * @param {string} pageName Name of the config page (ex. "languagePinyin").
+     * @private
+     */
+    createConfigureInputMethodButton_: function(inputMethodId, pageName) {
+      var button = document.createElement('button');
+      button.textContent = localStrings.getString('configure');
+      button.onclick = function(e) {
+        OptionsPage.showPageByName(pageName);
+      }
+      return button;
     },
 
     /**
