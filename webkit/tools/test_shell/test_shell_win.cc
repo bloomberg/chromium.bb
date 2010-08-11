@@ -257,11 +257,11 @@ bool TestShell::RunFileTest(const TestParams& params) {
   shell = static_cast<TestShell*>(win_util::GetWindowUserData(hwnd));
   DCHECK(shell);
 
-  if (strstr(params.test_url.c_str(), "/inspector/") ||
-      strstr(params.test_url.c_str(), "\\inspector\\"))
-    inspector_test_mode_ = true;
+  // Whether DevTools should be open before loading the page.
+  bool inspector_test_mode = strstr(params.test_url.c_str(), "/inspector/") ||
+                             strstr(params.test_url.c_str(), "\\inspector\\");
 
-  developer_extras_enabled_ = inspector_test_mode_ ||
+  developer_extras_enabled_ = inspector_test_mode ||
       strstr(params.test_url.c_str(), "/inspector-enabled/") ||
       strstr(params.test_url.c_str(), "\\inspector-enabled\\");
 
@@ -279,7 +279,7 @@ bool TestShell::RunFileTest(const TestParams& params) {
       strstr(params.test_url.c_str(), "loading\\"))
     shell->layout_test_controller()->SetShouldDumpFrameLoadCallbacks(true);
 
-  if (inspector_test_mode_)
+  if (inspector_test_mode)
     shell->ShowDevTools();
 
   GURL url(params.test_url);

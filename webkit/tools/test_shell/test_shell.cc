@@ -107,7 +107,6 @@ WindowList* TestShell::window_list_;
 WebPreferences* TestShell::web_prefs_ = NULL;
 bool TestShell::developer_extras_enabled_ = false;
 bool TestShell::enable_html5_parser_ = true;
-bool TestShell::inspector_test_mode_ = false;
 bool TestShell::layout_test_mode_ = false;
 bool TestShell::allow_external_pages_ = false;
 int TestShell::file_test_timeout_ms_ = kDefaultFileTestTimeoutMillisecs;
