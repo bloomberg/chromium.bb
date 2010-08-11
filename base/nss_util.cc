@@ -127,7 +127,6 @@ class NSSInitSingleton {
  public:
   NSSInitSingleton()
       : real_db_slot_(NULL),
-        test_db_slot_(NULL),
         root_(NULL),
         chromeos_user_logged_in_(false) {
     base::EnsureNSPRInit();
@@ -219,7 +218,6 @@ class NSSInitSingleton {
       PK11_FreeSlot(real_db_slot_);
       real_db_slot_ = NULL;
     }
-    CloseTestNSSDB();
     if (root_) {
       SECMOD_UnloadUserModule(root_);
       SECMOD_DestroyModule(root_);
@@ -239,33 +237,23 @@ class NSSInitSingleton {
   void OpenPersistentNSSDB() {
     if (!chromeos_user_logged_in_) {
       chromeos_user_logged_in_ = true;
-      real_db_slot_ = OpenUserDB(GetDefaultConfigDirectory(),
-                                 "Real NSS database");
 
+      const std::string modspec =
+          StringPrintf("configDir='%s' tokenDescription='Real NSS database'",
+                       GetDefaultConfigDirectory().value().c_str());
+      real_db_slot_ = SECMOD_OpenUserDB(modspec.c_str());
       if (real_db_slot_ == NULL) {
         LOG(ERROR) << "Error opening persistent database (" << modspec
                    << "): NSS error code " << PR_GetError();
+      } else {
+        if (PK11_NeedUserInit(real_db_slot_))
+          PK11_InitPin(real_db_slot_, NULL, NULL);
       }
     }
   }
 #endif  // defined(OS_CHROMEOS)
 
-  bool OpenTestNSSDB(const FilePath& path, const char* description) {
-    test_db_slot_ = OpenUserDB(path, description);
-    return !!test_db_slot_;
-  }
-
-  void CloseTestNSSDB() {
-    if (test_db_slot_) {
-      SECMOD_CloseUserDB(test_db_slot_);
-      PK11_FreeSlot(test_db_slot_);
-      test_db_slot_ = NULL;
-    }
-  }
-
   PK11SlotInfo* GetDefaultKeySlot() {
-    if (test_db_slot_)
-      return PK11_ReferenceSlot(test_db_slot_);
     if (real_db_slot_)
       return PK11_ReferenceSlot(real_db_slot_);
     return PK11_GetInternalKeySlot();
@@ -278,21 +266,7 @@ class NSSInitSingleton {
 #endif  // defined(USE_NSS)
 
  private:
-  static PK11SlotInfo* OpenUserDB(const FilePath& path,
-                                  const char* description) {
-    const std::string modspec =
-        StringPrintf("configDir='sql:%s' tokenDescription='%s'",
-                     path.value().c_str(), description);
-    PK11SlotInfo* db_slot = SECMOD_OpenUserDB(modspec.c_str());
-    if (db_slot) {
-      if (PK11_NeedUserInit(db_slot))
-        PK11_InitPin(db_slot, NULL, NULL);
-    }
-    return db_slot;
-  }
-
   PK11SlotInfo* real_db_slot_;  // Overrides internal key slot if non-NULL.
-  PK11SlotInfo* test_db_slot_;  // Overrides internal key slot and real_db_slot_
   SECMODModule *root_;
   bool chromeos_user_logged_in_;
 #if defined(USE_NSS)
@@ -313,14 +287,6 @@ void EnsureNSSInit() {
 }
 
 #if defined(USE_NSS)
-bool OpenTestNSSDB(const FilePath& path, const char* description) {
-  return Singleton<NSSInitSingleton>::get()->OpenTestNSSDB(path, description);
-}
-
-void CloseTestNSSDB() {
-  Singleton<NSSInitSingleton>::get()->CloseTestNSSDB();
-}
-
 Lock* GetNSSWriteLock() {
   return Singleton<NSSInitSingleton>::get()->write_lock();
 }
