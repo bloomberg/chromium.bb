@@ -22,17 +22,19 @@
   NSRectFill(frame);
   frame = NSInsetRect(frame, 1.0, 1.0);
 
-  NSColor* start = [NSColor whiteColor];
-  NSColor* end = [NSColor colorWithDeviceWhite:0.922 alpha:1.0];
-  if ([self isHighlighted]) {
-    start = [NSColor colorWithDeviceRed:0.396 green:0.641 blue:0.941 alpha:1.0];
-    end = [NSColor colorWithDeviceRed:0.157 green:0.384 blue:0.929 alpha:1.0];
+  // The default state should be a subtle gray gradient.
+  if (![self isHighlighted]) {
+    NSColor* end = [NSColor colorWithDeviceWhite:0.922 alpha:1.0];
+    scoped_nsobject<NSGradient> gradient(
+        [[NSGradient alloc] initWithStartingColor:[NSColor whiteColor]
+                                      endingColor:end]);
+    [gradient drawInRect:frame angle:90.0];
+  } else {
+    // |+selectedMenuItemColor| appears to be a gradient, so just filling the
+    // rect with that color produces the desired effect.
+    [[NSColor selectedMenuItemColor] set];
+    NSRectFill(frame);
   }
-
-  scoped_nsobject<NSGradient> gradient(
-      [[NSGradient alloc] initWithStartingColor:start
-                                    endingColor:end]);
-  [gradient drawInRect:frame angle:90.0];
 
   [NSGraphicsContext restoreGraphicsState];
 }
