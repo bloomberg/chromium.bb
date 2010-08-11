@@ -6,15 +6,10 @@
   'variables': {
     'chromium_code': 1,
     'conditions': [
-      # Pepper demos that are compiled as shared libraries need to be compiled
-      # with -fPIC flag. All static libraries that these demos depend on must
-      # also be compiled with -fPIC flag. Setting GYP_DEFINES="linux_fpic=1"
-      # compiles everything with -fPIC. Disable pepper demos on linux/x64
-      # unless linux_fpic is 1.
-      ['OS=="linux" and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
-        'enable_pepper_demos%': 0,
-      }, {
+      ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
         'enable_pepper_demos%': 1,
+      }, {
+        'enable_pepper_demos%': 0,
       }],
     ],
   },
