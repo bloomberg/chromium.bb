@@ -4,8 +4,11 @@
 
 #include "base/pickle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
+
+using WebKit::WebCursorInfo;
 
 TEST(WebCursorTest, CursorSerialization) {
   WebCursor custom_cursor;
@@ -80,3 +83,36 @@ TEST(WebCursorTest, CursorSerialization) {
   EXPECT_FALSE(custom_cursor.Deserialize(&neg_custom_pickle, &iter));
 }
 
+TEST(WebCursorTest, ClampHotspot) {
+  WebCursor custom_cursor;
+  // This is a valid custom cursor.
+  Pickle ok_custom_pickle;
+  // Type and hotspots.
+  ok_custom_pickle.WriteInt(WebCursorInfo::TypeCustom);
+  // Hotspot is invalid --- outside the bounds of the image.
+  ok_custom_pickle.WriteInt(5);
+  ok_custom_pickle.WriteInt(5);
+  // X & Y
+  ok_custom_pickle.WriteInt(2);
+  ok_custom_pickle.WriteInt(2);
+  // Data len including enough data for a 2x2 image.
+  ok_custom_pickle.WriteInt(4 * 4);
+  for (size_t i = 0; i < 4; i++)
+    ok_custom_pickle.WriteUInt32(0);
+  // Custom Windows message.
+  ok_custom_pickle.WriteUInt32(0);
+  void* iter = NULL;
+  ASSERT_TRUE(custom_cursor.Deserialize(&ok_custom_pickle, &iter));
+
+  // Convert to WebCursorInfo, make sure the hotspot got clamped.
+  WebCursorInfo info;
+  custom_cursor.GetCursorInfo(&info);
+  EXPECT_EQ(gfx::Point(1, 1), gfx::Point(info.hotSpot));
+
+  // Set hotspot to an invalid point again, pipe back through WebCursor,
+  // and make sure the hotspot got clamped again.
+  info.hotSpot = gfx::Point(-1, -1);
+  custom_cursor.InitFromCursorInfo(info);
+  custom_cursor.GetCursorInfo(&info);
+  EXPECT_EQ(gfx::Point(0, 0), gfx::Point(info.hotSpot));
+}

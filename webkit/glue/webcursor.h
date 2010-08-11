@@ -127,6 +127,9 @@ class WebCursor {
   void SetCustomData(const WebKit::WebImage& image);
   void ImageFromCustomData(WebKit::WebImage* image) const;
 
+  // Clamp the hotspot to the custom image's bounds, if this is a custom cursor.
+  void ClampHotspot();
+
   // WebCore::PlatformCursor type.
   int type_;
 

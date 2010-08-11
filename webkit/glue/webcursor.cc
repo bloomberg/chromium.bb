@@ -57,6 +57,7 @@ void WebCursor::InitFromCursorInfo(const WebCursorInfo& cursor_info) {
   hotspot_ = cursor_info.hotSpot;
   if (IsCustom())
     SetCustomData(cursor_info.customImage);
+  ClampHotspot();
 }
 
 void WebCursor::GetCursorInfo(WebCursorInfo* cursor_info) const {
@@ -100,6 +101,7 @@ bool WebCursor::Deserialize(const Pickle* pickle, void** iter) {
   hotspot_.set_y(hotspot_y);
   custom_size_.set_width(size_x);
   custom_size_.set_height(size_y);
+  ClampHotspot();
 
   custom_data_.clear();
   if (data_len > 0) {
@@ -192,3 +194,14 @@ void WebCursor::ImageFromCustomData(WebImage* image) const {
   image->assign(bitmap);
 }
 #endif
+
+void WebCursor::ClampHotspot() {
+  if (!IsCustom())
+    return;
+
+  // Clamp the hotspot to the custom image's dimensions.
+  hotspot_.set_x(std::max(0,
+                          std::min(custom_size_.width() - 1, hotspot_.x())));
+  hotspot_.set_y(std::max(0,
+                          std::min(custom_size_.height() - 1, hotspot_.y())));
+}
