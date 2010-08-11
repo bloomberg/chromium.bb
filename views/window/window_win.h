@@ -65,6 +65,7 @@ class WindowWin : public WidgetWin,
   virtual void PushForceHidden();
   virtual void PopForceHidden();
   virtual void Activate();
+  virtual void Deactivate();
   virtual void Close();
   virtual void Maximize();
   virtual void Minimize();
@@ -156,7 +157,7 @@ class WindowWin : public WidgetWin,
     RECT window_rect;
   };
 
-  // Set the window as modal (by disabling all the other windows).
+  // Sets the window as modal (by disabling all the other windows).
   void BecomeModal();
 
   // Sets-up the focus manager with the view that should have focus when the

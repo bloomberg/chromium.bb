@@ -2742,6 +2742,14 @@ bool Browser::TakeFocus(bool reverse) {
   return false;
 }
 
+void Browser::Activate() {
+  window_->Activate();
+}
+
+void Browser::Deactivate() {
+  window_->Deactivate();
+}
+
 bool Browser::IsApplication() const {
   return (type_ & TYPE_APP) != 0;
 }

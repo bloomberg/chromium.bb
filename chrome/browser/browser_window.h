@@ -60,6 +60,10 @@ class BrowserWindow {
   // state if necessary.
   virtual void Activate() = 0;
 
+  // Deactivates the window, making the next window in the Z order the active
+  // window.
+  virtual void Deactivate() = 0;
+
   // Returns true if the window is currently the active/focused window.
   virtual bool IsActive() const = 0;
 

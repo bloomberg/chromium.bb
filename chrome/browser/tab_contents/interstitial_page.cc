@@ -108,6 +108,8 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   virtual void UpdateDragCursor(WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
+  virtual void Activate();
+  virtual void Deactivate();
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
@@ -608,6 +610,16 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::TakeFocus(
     bool reverse) {
   if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
     interstitial_page_->tab()->GetViewDelegate()->TakeFocus(reverse);
+}
+
+void InterstitialPage::InterstitialPageRVHViewDelegate::Activate() {
+  if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
+    interstitial_page_->tab()->GetViewDelegate()->Activate();
+}
+
+void InterstitialPage::InterstitialPageRVHViewDelegate::Deactivate() {
+  if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
+    interstitial_page_->tab()->GetViewDelegate()->Deactivate();
 }
 
 bool InterstitialPage::InterstitialPageRVHViewDelegate::PreHandleKeyboardEvent(

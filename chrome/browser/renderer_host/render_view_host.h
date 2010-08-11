@@ -481,6 +481,8 @@ class RenderViewHost : public RenderWidgetHost {
   virtual void NotifyRendererUnresponsive();
   virtual void NotifyRendererResponsive();
   virtual void OnMsgFocusedNodeChanged();
+  virtual void OnMsgFocus();
+  virtual void OnMsgBlur();
 
   // IPC message handlers.
   void OnMsgShowView(int route_id,

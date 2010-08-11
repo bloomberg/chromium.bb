@@ -23,6 +23,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void SetBounds(const gfx::Rect& bounds) {}
   virtual void Close() {}
   virtual void Activate() {}
+  virtual void Deactivate() {}
   virtual bool IsActive() const { return false; }
   virtual void FlashFrame() {}
   virtual gfx::NativeWindow GetNativeHandle() { return NULL; }

@@ -244,6 +244,12 @@ void WindowWin::Activate() {
   SetForegroundWindow(GetNativeView());
 }
 
+void WindowWin::Deactivate() {
+  HWND hwnd = ::GetNextWindow(GetNativeView(), GW_HWNDNEXT);
+  if (hwnd)
+    ::SetForegroundWindow(hwnd);
+}
+
 void WindowWin::Close() {
   if (window_closed_) {
     // It appears we can hit this code path if you close a modal dialog then

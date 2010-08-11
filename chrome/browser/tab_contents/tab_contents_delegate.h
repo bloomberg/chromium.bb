@@ -175,10 +175,15 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
       RenderViewHost* render_view_host,
       const std::string& extension_id);
 
-  // This is called when webkit tells us that it is done tabbing through
+  // This is called when WebKit tells us that it is done tabbing through
   // controls on the page. Provides a way for TabContentsDelegates to handle
   // this. Returns true if the delegate successfully handled it.
   virtual bool TakeFocus(bool reverse);
+
+  // Called by WebKit to notify that the page requested the tab hosting window
+  // to be activated/deactivated (by calling window.focus()/blur()).
+  virtual void Activate();
+  virtual void Deactivate();
 
   // Changes the blocked state of the tab at |index|. TabContents are
   // considered blocked while displaying a tab modal dialog. During that time

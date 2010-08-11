@@ -882,14 +882,13 @@ void RenderWidgetHost::ProcessWheelAck() {
 }
 
 void RenderWidgetHost::OnMsgFocus() {
-  // Only the user can focus a RenderWidgetHost.
+  // Only RenderViewHost can deal with that message.
   process()->ReceivedBadMessage(ViewHostMsg_Focus__ID);
 }
 
 void RenderWidgetHost::OnMsgBlur() {
-  if (view_) {
-    view_->Blur();
-  }
+  // Only RenderViewHost can deal with that message.
+  process()->ReceivedBadMessage(ViewHostMsg_Blur__ID);
 }
 
 void RenderWidgetHost::OnMsgSetCursor(const WebCursor& cursor) {

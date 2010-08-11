@@ -481,8 +481,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgUpdateVideo(TransportDIB::Id bitmap, const gfx::Rect& bitmap_rect);
   void OnMsgDestroyVideo();
   void OnMsgInputEventAck(const IPC::Message& message);
-  void OnMsgFocus();
-  void OnMsgBlur();
+  virtual void OnMsgFocus();
+  virtual void OnMsgBlur();
 
   void OnMsgSetCursor(const WebCursor& cursor);
   void OnMsgImeUpdateTextInputState(WebKit::WebTextInputType type,

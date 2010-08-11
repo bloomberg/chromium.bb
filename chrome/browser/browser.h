@@ -711,6 +711,8 @@ class Browser : public TabStripModelDelegate,
   virtual void SetTabContentBlocked(TabContents* contents, bool blocked);
   virtual void TabContentsFocused(TabContents* tab_content);
   virtual bool TakeFocus(bool reverse);
+  virtual void Activate();
+  virtual void Deactivate();
   virtual bool IsApplication() const;
   virtual void ConvertContentsToApplication(TabContents* source);
   virtual bool ShouldDisplayURLField();

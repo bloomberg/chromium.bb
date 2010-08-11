@@ -66,6 +66,14 @@ void TabContentsView::ShowCreatedWidget(int route_id,
   ShowCreatedWidgetInternal(widget_host_view, initial_pos);
 }
 
+void TabContentsView::Activate() {
+  tab_contents_->delegate()->Activate();
+}
+
+void TabContentsView::Deactivate() {
+  tab_contents_->delegate()->Deactivate();
+}
+
 bool TabContentsView::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
   return tab_contents_->delegate() &&

@@ -1766,6 +1766,18 @@ void RenderViewHost::OnMsgFocusedNodeChanged() {
   delegate_->FocusedNodeChanged();
 }
 
+void RenderViewHost::OnMsgFocus() {
+  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  if (view)
+    view->Activate();
+}
+
+void RenderViewHost::OnMsgBlur() {
+  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  if (view)
+    view->Deactivate();
+}
+
 gfx::Rect RenderViewHost::GetRootWindowResizerRect() const {
   return delegate_->GetRootWindowResizerRect();
 }

@@ -628,13 +628,7 @@ void RenderWidget::show(WebNavigationPolicy) {
 }
 
 void RenderWidget::didFocus() {
-  // Prevent the widget from stealing the focus if it does not have focus
-  // already.  We do this by explicitely setting the focus to false again.
-  // We only let the browser focus the renderer.
-  if (!has_focus_ && webwidget_) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &RenderWidget::ClearFocus));
-  }
+  Send(new ViewHostMsg_Focus(routing_id_));
 }
 
 void RenderWidget::didBlur() {

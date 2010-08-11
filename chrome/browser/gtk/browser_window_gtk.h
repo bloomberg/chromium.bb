@@ -53,6 +53,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void SetBounds(const gfx::Rect& bounds);
   virtual void Close();
   virtual void Activate();
+  virtual void Deactivate();
   virtual bool IsActive() const;
   virtual void FlashFrame();
   virtual gfx::NativeWindow GetNativeHandle();

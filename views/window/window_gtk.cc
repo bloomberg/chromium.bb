@@ -130,6 +130,10 @@ void WindowGtk::Activate() {
   gtk_window_present(GTK_WINDOW(GetNativeView()));
 }
 
+void WindowGtk::Deactivate() {
+  // TODO(jcivelli): http://crbug.com/51364 Implement me.
+}
+
 void WindowGtk::Close() {
   if (window_closed_) {
     // Don't do anything if we've already been closed.

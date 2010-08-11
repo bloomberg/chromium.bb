@@ -654,6 +654,12 @@ void ExtensionHost::GotFocus() {
 void ExtensionHost::TakeFocus(bool reverse) {
 }
 
+void ExtensionHost::Activate() {
+}
+
+void ExtensionHost::Deactivate() {
+}
+
 bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                            bool* is_keyboard_shortcut) {
   if (extension_host_type_ == ViewType::EXTENSION_POPUP &&

@@ -187,6 +187,8 @@ class TabContentsView : public RenderViewHostDelegate::View {
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture);
   virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
+  virtual void Activate();
+  virtual void Deactivate();
 
   // The TabContents whose contents we display.
   TabContents* tab_contents_;

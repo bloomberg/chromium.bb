@@ -108,6 +108,11 @@ void BrowserWindowCocoa::Activate() {
   [controller_ activate];
 }
 
+void BrowserWindowCocoa::Deactivate() {
+  // TODO(jcivelli): http://crbug.com/51364 Implement me.
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowCocoa::FlashFrame() {
   [NSApp requestUserAttention:NSInformationalRequest];
 }

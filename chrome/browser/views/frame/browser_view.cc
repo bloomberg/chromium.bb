@@ -762,6 +762,10 @@ void BrowserView::Activate() {
   frame_->GetWindow()->Activate();
 }
 
+void BrowserView::Deactivate() {
+  frame_->GetWindow()->Deactivate();
+}
+
 bool BrowserView::IsActive() const {
   return frame_->GetWindow()->IsActive();
 }

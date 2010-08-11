@@ -33,6 +33,7 @@ class WindowGtk : public WidgetGtk, public Window {
   virtual void Show();
   virtual void HideWindow();
   virtual void Activate();
+  virtual void Deactivate();
   virtual void Close();
   virtual void Maximize();
   virtual void Minimize();

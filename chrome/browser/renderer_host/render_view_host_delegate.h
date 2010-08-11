@@ -153,9 +153,15 @@ class RenderViewHostDelegate {
     // Notification that view for this delegate got the focus.
     virtual void GotFocus() = 0;
 
-    // Callback to inform the browser it should take back focus. If reverse is
-    // true, it means the focus was retrieved by doing a Shift-Tab.
+    // Callback to inform the browser that the page is returning the focus to
+    // the browser's chrome. If reverse is true, it means the focus was
+    // retrieved by doing a Shift-Tab.
     virtual void TakeFocus(bool reverse) = 0;
+
+    // The page wants the hosting window to activate/deactivate itself (it
+    // called the JavaScript window.focus()/blur() method).
+    virtual void Activate() = 0;
+    virtual void Deactivate() = 0;
 
     // Callback to give the browser a chance to handle the specified keyboard
     // event before sending it to the renderer.

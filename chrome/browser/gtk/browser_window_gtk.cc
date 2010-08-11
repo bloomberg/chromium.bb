@@ -711,6 +711,11 @@ void BrowserWindowGtk::Activate() {
   gtk_window_present(window_);
 }
 
+void BrowserWindowGtk::Deactivate() {
+  // TODO(jcivelli): http://crbug.com/51364 Implement me.
+  NOTIMPLEMENTED();
+}
+
 bool BrowserWindowGtk::IsActive() const {
   return is_active_;
 }
