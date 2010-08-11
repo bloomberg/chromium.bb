@@ -1164,8 +1164,54 @@ class MessageWithTuple : public Message {
   }
 };
 
+// defined in ipc_logging.cc
+void GenerateLogData(const std::string& channel, const Message& message,
+                     LogData* data);
+
+
+#if defined(IPC_MESSAGE_LOG_ENABLED)
+inline void AddOutputParamsToLog(const Message* msg, std::wstring* l) {
+  const std::wstring& output_params = msg->output_params();
+  if (!l->empty() && !output_params.empty())
+    l->append(L", ");
+
+  l->append(output_params);
+}
+
+template <class ReplyParamType>
+inline void LogReplyParamsToMessage(const ReplyParamType& reply_params,
+                                    const Message* msg) {
+  if (msg->received_time() != 0) {
+    std::wstring output_params;
+    LogParam(reply_params, &output_params);
+    msg->set_output_params(output_params);
+  }
+}
+
+inline void ConnectMessageAndReply(const Message* msg, Message* reply) {
+  if (msg->sent_time()) {
+    // Don't log the sync message after dispatch, as we don't have the
+    // output parameters at that point.  Instead, save its data and log it
+    // with the outgoing reply message when it's sent.
+    LogData* data = new LogData;
+    GenerateLogData("", *msg, data);
+    msg->set_dont_log();
+    reply->set_sync_log_data(data);
+  }
+}
+#else
+inline void AddOutputParamsToLog(const Message* msg, std::wstring* l) {}
+
+template <class ReplyParamType>
+inline void LogReplyParamsToMessage(const ReplyParamType& reply_params,
+                                    const Message* msg) {}
+
+inline void ConnectMessageAndReply(const Message* msg, Message* reply) {}
+#endif
+
 // This class assumes that its template argument is a RefTuple (a Tuple with
-// reference elements).
+// reference elements). This would go into ipc_message_utils_impl.h, but it is
+// also used by chrome_frame.
 template <class RefTuple>
 class ParamDeserializer : public MessageReplyDeserializer {
  public:
@@ -1178,10 +1224,6 @@ class ParamDeserializer : public MessageReplyDeserializer {
   RefTuple out_;
 };
 
-// defined in ipc_logging.cc
-void GenerateLogData(const std::string& channel, const Message& message,
-                     LogData* data);
-
 // Used for synchronous messages.
 template <class SendParamType, class ReplyParamType>
 class MessageWithReply : public SyncMessage {
@@ -1191,54 +1233,33 @@ class MessageWithReply : public SyncMessage {
   typedef ReplyParamType ReplyParam;
 
   MessageWithReply(int32 routing_id, uint32 type,
-                   const RefSendParam& send, const ReplyParam& reply)
-      : SyncMessage(routing_id, type, PRIORITY_NORMAL,
-                    new ParamDeserializer<ReplyParam>(reply)) {
-    WriteParam(this, send);
+                   const RefSendParam& send, const ReplyParam& reply);
+
+  // TODO(erg): Migrate these ReadSendParam/ReadReplyParam() methods to
+  // ipc_message_utils_impl.h once I figure out how to get the linkage correct
+  // in the release builds.
+  static bool ReadSendParam(const Message* msg, SendParam* p) {
+    void* iter = SyncMessage::GetDataIterator(msg);
+    return ReadParam(msg, &iter, p);
   }
 
-  static void Log(const Message* msg, std::wstring* l) {
-    if (msg->is_sync()) {
-      SendParam p;
-      void* iter = SyncMessage::GetDataIterator(msg);
-      if (ReadParam(msg, &iter, &p))
-        LogParam(p, l);
-
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-      const std::wstring& output_params = msg->output_params();
-      if (!l->empty() && !output_params.empty())
-        l->append(L", ");
-
-      l->append(output_params);
-#endif
-    } else {
-      // This is an outgoing reply.  Now that we have the output parameters, we
-      // can finally log the message.
-      typename TupleTypes<ReplyParam>::ValueTuple p;
-      void* iter = SyncMessage::GetDataIterator(msg);
-      if (ReadParam(msg, &iter, &p))
-        LogParam(p, l);
-    }
+  static bool ReadReplyParam(const Message* msg,
+                             typename TupleTypes<ReplyParam>::ValueTuple* p) {
+    void* iter = SyncMessage::GetDataIterator(msg);
+    return ReadParam(msg, &iter, p);
   }
 
   template<class T, class Method>
   static bool Dispatch(const Message* msg, T* obj, Method func) {
     SendParam send_params;
-    void* iter = GetDataIterator(msg);
     Message* reply = GenerateReply(msg);
     bool error;
-    if (ReadParam(msg, &iter, &send_params)) {
+    if (ReadSendParam(msg, &send_params)) {
       typename TupleTypes<ReplyParam>::ValueTuple reply_params;
       DispatchToMethod(obj, func, send_params, &reply_params);
       WriteParam(reply, reply_params);
       error = false;
-#ifdef IPC_MESSAGE_LOG_ENABLED
-      if (msg->received_time() != 0) {
-        std::wstring output_params;
-        LogParam(reply_params, &output_params);
-        msg->set_output_params(output_params);
-      }
-#endif
+      LogReplyParamsToMessage(reply_params, msg);
     } else {
       NOTREACHED() << "Error deserializing message " << msg->type();
       reply->set_reply_error();
@@ -1252,23 +1273,11 @@ class MessageWithReply : public SyncMessage {
   template<class T, class Method>
   static bool DispatchDelayReply(const Message* msg, T* obj, Method func) {
     SendParam send_params;
-    void* iter = GetDataIterator(msg);
     Message* reply = GenerateReply(msg);
     bool error;
-    if (ReadParam(msg, &iter, &send_params)) {
+    if (ReadSendParam(msg, &send_params)) {
       Tuple1<Message&> t = MakeRefTuple(*reply);
-
-#ifdef IPC_MESSAGE_LOG_ENABLED
-      if (msg->sent_time()) {
-        // Don't log the sync message after dispatch, as we don't have the
-        // output parameters at that point.  Instead, save its data and log it
-        // with the outgoing reply message when it's sent.
-        LogData* data = new LogData;
-        GenerateLogData("", *msg, data);
-        msg->set_dont_log();
-        reply->set_sync_log_data(data);
-      }
-#endif
+      ConnectMessageAndReply(msg, reply);
       DispatchToMethod(obj, func, send_params, &t);
       error = false;
     } else {
