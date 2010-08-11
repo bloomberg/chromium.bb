@@ -107,6 +107,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   }
 
   void ChangeInputMethod(const std::string& input_method_id) {
+    active_input_method_ = input_method_id;
     if (EnsureLoadedAndStarted()) {
       if (input_method_id != kHardwareKeyboardLayout) {
         StartInputMethodProcesses();
@@ -116,8 +117,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     }
   }
 
-  void SetImePropertyActivated(const std::string& key,
-                                                       bool activated) {
+  void SetImePropertyActivated(const std::string& key, bool activated) {
     DCHECK(!key.empty());
     if (EnsureLoadedAndStarted()) {
       chromeos::SetImePropertyActivated(
@@ -125,8 +125,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     }
   }
 
-  bool InputMethodIsActivated(
-      const std::string& input_method_id) {
+  bool InputMethodIsActivated(const std::string& input_method_id) {
     scoped_ptr<InputMethodDescriptors> active_input_method_descriptors(
         CrosLibrary::Get()->GetInputMethodLibrary()->GetActiveInputMethods());
     for (size_t i = 0; i < active_input_method_descriptors->size(); ++i) {
@@ -137,22 +136,18 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     return false;
   }
 
-  bool GetImeConfig(
-      const char* section,
-      const char* config_name,
-      ImeConfigValue* out_value) {
+  bool GetImeConfig(const char* section, const char* config_name,
+                    ImeConfigValue* out_value) {
     bool success = false;
     if (EnsureLoadedAndStarted()) {
-      success = chromeos::GetImeConfig(
-          input_method_status_connection_, section, config_name, out_value);
+      success = chromeos::GetImeConfig(input_method_status_connection_,
+                                       section, config_name, out_value);
     }
     return success;
   }
 
-  bool SetImeConfig(
-      const char* section,
-      const char* config_name,
-      const ImeConfigValue& value) {
+  bool SetImeConfig(const char* section, const char* config_name,
+                    const ImeConfigValue& value) {
     MaybeUpdateImeState(section, config_name, value);
 
     const ConfigKeyType key = std::make_pair(section, config_name);
@@ -173,23 +168,6 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
 
   virtual const ImePropertyList& current_ime_properties() const {
     return current_ime_properties_;
-  }
-
-  void StartIme() {
-    ime_running_ = true;
-    MaybeLaunchIme();
-  }
-
-  void StopIme() {
-    ime_running_ = false;
-    if (ime_handle_) {
-      kill(ime_handle_, SIGTERM);
-      ime_handle_ = 0;
-    }
-    if (candidate_window_handle_) {
-      kill(candidate_window_handle_, SIGTERM);
-      candidate_window_handle_ = 0;
-    }
   }
 
  private:
@@ -466,6 +444,10 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     if (ime_handle_) {
       kill(ime_handle_, SIGTERM);
       ime_handle_ = 0;
+    }
+    if (candidate_window_handle_) {
+      kill(candidate_window_handle_, SIGTERM);
+      candidate_window_handle_ = 0;
     }
   }
 
