@@ -89,6 +89,7 @@ namespace extension_manifest_errors {
   extern const char* kCannotScriptGallery;
   extern const char* kChromeVersionTooLow;
   extern const char* kDevToolsExperimental;
+  extern const char* kHostedAppsCannotIncludeExtensionFeatures;
   extern const char* kInvalidAllFrames;
   extern const char* kInvalidBackground;
   extern const char* kInvalidBrowserAction;

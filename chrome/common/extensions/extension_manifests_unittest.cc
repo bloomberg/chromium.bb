@@ -263,3 +263,10 @@ TEST_F(ManifestTest, DevToolsExtensions) {
             extension->devtools_url().spec());
   *CommandLine::ForCurrentProcess() = old_command_line;
 }
+
+TEST_F(ManifestTest, DisallowHybridApps) {
+  LoadAndExpectError("disallow_hybrid_1.json",
+                     errors::kHostedAppsCannotIncludeExtensionFeatures);
+  LoadAndExpectError("disallow_hybrid_2.json",
+                     errors::kHostedAppsCannotIncludeExtensionFeatures);
+}
