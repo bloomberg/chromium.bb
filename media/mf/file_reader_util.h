@@ -67,4 +67,3 @@ class FFmpegFileReader : public FileReader {
 }  // namespace media
 
 #endif  // MEDIA_MF_FILE_READER_UTIL_H_
-

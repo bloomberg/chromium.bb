@@ -32,4 +32,3 @@ bool AdjustD3DDeviceBackBufferDimensions(IDirect3DDevice9* device,
 
 }  // namespace media
 #endif  // MEDIA_MF_D3D_UTIL_H_
-

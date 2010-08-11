@@ -137,4 +137,3 @@ class MftH264Decoder : public base::RefCountedThreadSafe<MftH264Decoder> {
 }  // namespace media
 
 #endif  // MEDIA_MF_MFT_H264_DECODER_H_
-

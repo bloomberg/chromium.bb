@@ -58,4 +58,3 @@ class BasicRenderer : public MftRenderer {
 }  // namespace media
 
 #endif  // MEDIA_MF_BASIC_RENDERER_H_
-

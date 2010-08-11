@@ -276,4 +276,3 @@ TEST_F(MftH264DecoderTest, DecodeValidVideoDxva) {
 }
 
 }  // namespace media
-

@@ -661,4 +661,3 @@ bool MftH264Decoder::SendDrainMessage() {
 }
 
 }  // namespace media
-
