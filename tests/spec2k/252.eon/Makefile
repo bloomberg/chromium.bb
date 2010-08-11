@@ -1,4 +1,4 @@
-SRC= \
+CPPSRC= \
 src/ggCoverageSolidTexture.cc \
 src/ggPathDielectricMaterial.cc \
 src/ggBox2.cc \
@@ -129,6 +129,7 @@ src/myrand.cc
 
 
 IT=eon
-CFLAGS_EXTRA = -DNDEBUG -Isrc -DHAS_ERRLIST
+CFLAGS_EXTRA = -DNDEBUG -Isrc # -DHAS_ERRLIST
+
 EXTRA_CLEAN= pixels* chair* materials spectra.dat
 include ../Makefile.common

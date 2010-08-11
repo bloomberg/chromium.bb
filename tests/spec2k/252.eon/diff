@@ -1,0 +1,12 @@
+diff -Naurb src/eon.cc src2/eon.cc
+--- src/eon.cc	2010-07-23 02:51:57.000000000 -0700
++++ src2/eon.cc	2010-07-23 02:51:24.000000000 -0700
+@@ -53,7 +53,7 @@
+ #if defined( _WIN32 )
+ #else
+     struct tms time_usage;
+-    float clk_tck = (float) sysconf(_SC_CLK_TCK);
++    float clk_tck = (float) sysconf(2);
+     times(&time_usage);
+     float ustart_time = time_usage.tms_utime/clk_tck;
+     float sstart_time = time_usage.tms_stime/clk_tck;
