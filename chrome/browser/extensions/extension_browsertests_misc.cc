@@ -324,7 +324,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
 }
 
 // Flaky crash on Mac debug. http://crbug.com/45079
-#if defined(OS_MACOSX)
+// Stuck/time-out on XP test. http://crbug.com/51814
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define PageActionRefreshCrash DISABLED_PageActionRefreshCrash
 #endif
 // Tests that we can load page actions in the Omnibox.
