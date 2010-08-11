@@ -27,6 +27,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -343,20 +344,6 @@ static bool in_startup = false;
 GURL GetWelcomePageURL() {
   std::string welcome_url = l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL);
   return GURL(welcome_url);
-}
-
-void ShowPackExtensionMessage(const std::wstring caption,
-    const std::wstring message) {
-#if defined(OS_WIN)
-  win_util::MessageBox(NULL, message, caption, MB_OK | MB_SETFOREGROUND);
-#else
-  // Just send caption & text to stdout on mac & linux.
-  std::string out_text = WideToASCII(caption);
-  out_text.append("\n\n");
-  out_text.append(WideToASCII(message));
-  out_text.append("\n");
-  printf("%s", out_text.c_str());
-#endif
 }
 
 void UrlsToTabs(const std::vector<GURL>& urls,
@@ -934,6 +921,54 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
       ChromeThread::FILE, FROM_HERE, new CheckDefaultBrowserTask());
 }
 
+class PackExtensionLogger : public PackExtensionJob::Client {
+ public:
+  PackExtensionLogger() {}
+  virtual void OnPackSuccess(const FilePath& crx_path,
+                             const FilePath& output_private_key_path);
+  virtual void OnPackFailure(const std::string& error_message);
+
+ private:
+  void ShowPackExtensionMessage(const std::wstring& caption,
+                                const std::wstring& message);
+
+  DISALLOW_COPY_AND_ASSIGN(PackExtensionLogger);
+};
+
+void PackExtensionLogger::OnPackSuccess(const FilePath& crx_path,
+                                        const FilePath& output_private_key_path)
+{
+  ShowPackExtensionMessage(L"Extension Packaging Success",
+                           PackExtensionJob::StandardSuccessMessage(
+                               crx_path, output_private_key_path));
+}
+
+void PackExtensionLogger::OnPackFailure(const std::string& error_message) {
+  ShowPackExtensionMessage(L"Extension Packaging Error",
+                           UTF8ToWide(error_message));
+}
+
+void PackExtensionLogger::ShowPackExtensionMessage(const std::wstring& caption,
+                                                   const std::wstring& message)
+{
+#if defined(OS_WIN)
+  win_util::MessageBox(NULL, message, caption, MB_OK | MB_SETFOREGROUND);
+#else
+  // Just send caption & text to stdout on mac & linux.
+  std::string out_text = WideToASCII(caption);
+  out_text.append("\n\n");
+  out_text.append(WideToASCII(message));
+  out_text.append("\n");
+  printf("%s", out_text.c_str());
+#endif
+
+  // We got the notification and processed it; we don't expect any further tasks
+  // to be posted to the current thread, so we should stop blocking and exit.
+  // This call to |Quit()| matches the call to |Run()| in
+  // |ProcessCmdLineImpl()|.
+  MessageLoop::current()->Quit();
+}
+
 bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
                                      const FilePath& cur_dir,
                                      bool process_startup,
@@ -980,44 +1015,21 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
             switches::kPackExtensionKey);
       }
 
-      // Output Paths.
-      FilePath output(src_dir.DirName().Append(src_dir.BaseName().value()));
-      FilePath crx_path(output);
-      crx_path = crx_path.ReplaceExtension(chrome::kExtensionFileExtension);
-      FilePath output_private_key_path;
-      if (private_key_path.empty()) {
-        output_private_key_path = FilePath(output);
-        output_private_key_path =
-            output_private_key_path.ReplaceExtension(FILE_PATH_LITERAL("pem"));
-      }
+      // Launch a job to perform the packing on the file thread.
+      PackExtensionLogger pack_client;
+      scoped_refptr<PackExtensionJob> pack_job =
+          new PackExtensionJob(&pack_client, src_dir, private_key_path);
+      pack_job->Start();
 
-      // TODO(port): Creation & running is removed from mac & linux because
-      // ExtensionCreator depends on base/crypto/rsa_private_key and
-      // base/crypto/signature_creator, both of which only have windows
-      // implementations.
-      scoped_ptr<ExtensionCreator> creator(new ExtensionCreator());
-      if (creator->Run(src_dir, crx_path, private_key_path,
-          output_private_key_path)) {
-        std::wstring message;
-        if (private_key_path.value().empty()) {
-          message = StringPrintf(
-              L"Created the following files:\n\n"
-              L"Extension: %ls\n"
-              L"Key File: %ls\n\n"
-              L"Keep your key file in a safe place. You will need it to create "
-              L"new versions of your extension.",
-              crx_path.ToWStringHack().c_str(),
-              output_private_key_path.ToWStringHack().c_str());
-        } else {
-          message = StringPrintf(L"Created the extension:\n\n%ls",
-                                 crx_path.ToWStringHack().c_str());
-        }
-        ShowPackExtensionMessage(L"Extension Packaging Success", message);
-      } else {
-        ShowPackExtensionMessage(L"Extension Packaging Error",
-            UTF8ToWide(creator->error_message()));
-        return false;
-      }
+      // The job will post a notification task to the current thread's message
+      // loop when it is finished.  We manually run the loop here so that we
+      // block and catch the notification.  Otherwise, the process would exit;
+      // in particular, this would mean that |pack_client| would be destroyed
+      // and we wouldn't be able to report success or failure back to the user.
+      // This call to |Run()| is matched by a call to |Quit()| in the
+      // |PackExtensionLogger|'s notification handling code.
+      MessageLoop::current()->Run();
+
       return false;
     }
   }

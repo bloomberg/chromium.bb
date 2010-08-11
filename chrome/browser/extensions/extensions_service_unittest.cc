@@ -27,6 +27,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
+#include "chrome/browser/extensions/pack_extension_job.cc"
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -600,16 +601,56 @@ class ExtensionsServiceTest
   NotificationRegistrar registrar_;
 };
 
-FilePath::StringType NormalizeSeperators(FilePath::StringType path) {
+FilePath NormalizeSeparators(const FilePath& path) {
 #if defined(FILE_PATH_USES_WIN_SEPARATORS)
-  FilePath::StringType ret_val;
-  for (size_t i = 0; i < path.length(); i++) {
-    if (FilePath::IsSeparator(path[i]))
-      path[i] = FilePath::kSeparators[0];
-  }
-#endif  // FILE_PATH_USES_WIN_SEPARATORS
+  return path.NormalizeWindowsPathSeparators();
+#else
   return path;
+#endif  // FILE_PATH_USES_WIN_SEPARATORS
 }
+
+// Receives notifications from a PackExtensionJob, indicating either that
+// packing succeeded or that there was some error.
+class PackExtensionTestClient : public PackExtensionJob::Client {
+ public:
+  PackExtensionTestClient(const FilePath& expected_crx_path,
+                          const FilePath& expected_private_key_path);
+  virtual void OnPackSuccess(const FilePath& crx_path,
+                             const FilePath& private_key_path);
+  virtual void OnPackFailure(const std::string& error_message);
+
+ private:
+  const FilePath expected_crx_path_;
+  const FilePath expected_private_key_path_;
+  DISALLOW_COPY_AND_ASSIGN(PackExtensionTestClient);
+};
+
+PackExtensionTestClient::PackExtensionTestClient(
+    const FilePath& expected_crx_path,
+    const FilePath& expected_private_key_path)
+    : expected_crx_path_(expected_crx_path),
+      expected_private_key_path_(expected_private_key_path) {}
+
+// If packing succeeded, we make sure that the package names match our
+// expectations.
+void PackExtensionTestClient::OnPackSuccess(const FilePath& crx_path,
+                                            const FilePath& private_key_path) {
+  // We got the notification and processed it; we don't expect any further tasks
+  // to be posted to the current thread, so we should stop blocking and continue
+  // on with the rest of the test.
+  // This call to |Quit()| matches the call to |Run()| in the
+  // |PackPunctuatedExtension| test.
+  MessageLoop::current()->Quit();
+  EXPECT_EQ(expected_crx_path_.value(), crx_path.value());
+  EXPECT_EQ(expected_private_key_path_.value(), private_key_path.value());
+  ASSERT_TRUE(file_util::PathExists(private_key_path));
+}
+
+// The tests are designed so that we never expect to see a packing error.
+void PackExtensionTestClient::OnPackFailure(const std::string& error_message) {
+  FAIL() << "Packing should not fail.";
+}
+
 // Test loading good extensions from the profile directory.
 TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   // Initialize the test dir with a good Preferences/extensions.
@@ -934,6 +975,80 @@ TEST_F(ExtensionsServiceTest, PackExtension) {
   creator.reset(new ExtensionCreator());
   ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
                             FilePath()));
+}
+
+// Test Packaging and installing an extension whose name contains punctuation.
+TEST_F(ExtensionsServiceTest, PackPunctuatedExtension) {
+  InitializeEmptyExtensionsService();
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath input_directory = extensions_path
+      .AppendASCII("good")
+      .AppendASCII("Extensions")
+      .AppendASCII(good0)
+      .AppendASCII("1.0.0.0");
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  // Extension names containing punctuation, and the expected names for the
+  // packed extensions.
+  const FilePath punctuated_names[] = {
+    FilePath(FilePath::StringType(
+        FILE_PATH_LITERAL("this.extensions.name.has.periods"))),
+    FilePath(FilePath::StringType(
+        FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod"))),
+    NormalizeSeparators(FilePath(FilePath::StringType(
+        FILE_PATH_LITERAL("thisextensionhasaslashinitsname/")))),
+  };
+  const FilePath expected_crx_names[] = {
+    FilePath(FilePath::StringType(
+        FILE_PATH_LITERAL("this.extensions.name.has.periods.crx"))),
+    FilePath(FilePath::StringType(
+        FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.crx"))),
+    FilePath(FilePath::StringType(
+        FILE_PATH_LITERAL("thisextensionhasaslashinitsname.crx"))),
+  };
+  const FilePath expected_private_key_names[] = {
+    FilePath(FilePath::StringType(
+        FILE_PATH_LITERAL("this.extensions.name.has.periods.pem"))),
+    FilePath(FilePath::StringType(
+        FILE_PATH_LITERAL(".thisextensionsnamestartswithaperiod.pem"))),
+    FilePath(FilePath::StringType(
+        FILE_PATH_LITERAL("thisextensionhasaslashinitsname.pem"))),
+  };
+
+  for (size_t i = 0; i < arraysize(punctuated_names); ++i) {
+    SCOPED_TRACE(punctuated_names[i].value().c_str());
+    FilePath output_dir = temp_dir.path().Append(punctuated_names[i]);
+
+    // Copy the extension into the output directory, as PackExtensionJob doesn't
+    // let us choose where to output the packed extension.
+    ASSERT_TRUE(file_util::CopyDirectory(input_directory, output_dir, true));
+
+    FilePath expected_crx_path = temp_dir.path().Append(expected_crx_names[i]);
+    FilePath expected_private_key_path =
+        temp_dir.path().Append(expected_private_key_names[i]);
+    PackExtensionTestClient pack_client(expected_crx_path,
+                                        expected_private_key_path);
+    scoped_refptr<PackExtensionJob> packer(new PackExtensionJob(&pack_client,
+                                                                output_dir,
+                                                                FilePath()));
+    packer->Start();
+
+    // The packer will post a notification task to the current thread's message
+    // loop when it is finished.  We manually run the loop here so that we
+    // block and catch the notification; otherwise, the process would exit.
+    // This call to |Run()| is matched by a call to |Quit()| in the
+    // |PackExtensionTestClient|'s notification handling code.
+    MessageLoop::current()->Run();
+
+    if (HasFatalFailure())
+      return;
+
+    InstallExtension(expected_crx_path, true);
+  }
 }
 
 // Test Packaging and installing an extension using an openssl generated key.

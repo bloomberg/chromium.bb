@@ -423,7 +423,7 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
 
     // Delete Software\Classes\.crx,
     std::wstring ext_association(ShellUtil::kRegClasses);
-    ext_association.append(L"\\.");
+    ext_association.append(L"\\");
     ext_association.append(chrome::kExtensionFileExtension);
     InstallUtil::DeleteRegistryKey(key, ext_association);
   }

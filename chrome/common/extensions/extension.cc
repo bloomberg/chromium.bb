@@ -168,9 +168,7 @@ const std::string Extension::VersionString() const {
 
 // static
 bool Extension::IsExtension(const FilePath& file_name) {
-  return file_name.MatchesExtension(
-      FilePath::StringType(FILE_PATH_LITERAL(".")) +
-      chrome::kExtensionFileExtension);
+  return file_name.MatchesExtension(chrome::kExtensionFileExtension);
 }
 
 // static

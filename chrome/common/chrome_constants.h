@@ -34,6 +34,7 @@ extern const char    kStatsFilename[];
 extern const wchar_t kBrowserResourcesDll[];
 extern const wchar_t kNaClAppName[];
 extern const FilePath::CharType kExtensionFileExtension[];
+extern const FilePath::CharType kExtensionKeyFileExtension[];
 
 // filenames
 extern const FilePath::CharType kArchivedHistoryFilename[];

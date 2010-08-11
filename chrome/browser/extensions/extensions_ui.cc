@@ -628,18 +628,8 @@ void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
 
 void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,
                                          const FilePath& pem_file) {
-  std::string message;
-  if (!pem_file.empty()) {
-    message = l10n_util::GetStringFUTF8(
-        IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_NEW,
-        WideToUTF16(crx_file.ToWStringHack()),
-        WideToUTF16(pem_file.ToWStringHack()));
-  } else {
-    message = l10n_util::GetStringFUTF8(
-        IDS_EXTENSION_PACK_DIALOG_SUCCESS_BODY_UPDATE,
-        WideToUTF16(crx_file.ToWStringHack()));
-  }
-  ShowAlert(message);
+  ShowAlert(WideToUTF8(PackExtensionJob::StandardSuccessMessage(crx_file,
+                                                                pem_file)));
 
   ListValue results;
   dom_ui_->CallJavascriptFunction(L"hidePackDialog", results);
