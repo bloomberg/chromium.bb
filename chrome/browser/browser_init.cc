@@ -655,7 +655,7 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
     // Keep the app alive while the system initializes, then allow it to
     // shutdown if no other module wants to keep it running.
     MessageLoop::current()->PostTask(
-       FROM_HERE, NewRunnableFunction(BrowserList::EndKeepAlive));
+        FROM_HERE, NewRunnableFunction(BrowserList::EndKeepAlive));
     return;
   }
 

@@ -377,6 +377,4 @@ TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
   EXPECT_EQ(1, window_count);
 }
 
-
-
 }  // namespace
