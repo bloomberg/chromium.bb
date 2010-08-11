@@ -6,8 +6,8 @@
 
 #include "app/resource_bundle.h"
 #include "chrome/browser/views/event_utils.h"
-#include "chrome/browser/views/infobars/infobar_button_border.h"
 #include "chrome/browser/views/infobars/infobars.h"
+#include "chrome/browser/views/infobars/infobar_text_button.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -42,15 +42,14 @@ class SaveCCInfoConfirmInfoBar : public AlertInfoBar,
 
  private:
   void Init();
-  views::TextButton* CreateTextButton(const std::wstring& text);
 
   ConfirmInfoBarDelegate* GetDelegate();
 
   // The buttons are owned by InfoBar view from the moment they are added to its
   // hierarchy (Init() called), but we still need pointers to them to process
   // messages from them.
-  views::TextButton* save_button_;
-  views::TextButton* dont_save_button_;
+  InfoBarTextButton* save_button_;
+  InfoBarTextButton* dont_save_button_;
   views::Link* link_;
   bool initialized_;
 
@@ -61,10 +60,11 @@ SaveCCInfoConfirmInfoBar::SaveCCInfoConfirmInfoBar(
     ConfirmInfoBarDelegate* delegate)
     : AlertInfoBar(delegate),
       initialized_(false) {
-  save_button_ = CreateTextButton(delegate->GetButtonLabel(
-                                  ConfirmInfoBarDelegate::BUTTON_OK));
-  dont_save_button_ = CreateTextButton(delegate->GetButtonLabel(
-                                       ConfirmInfoBarDelegate::BUTTON_CANCEL));
+  save_button_ = InfoBarTextButton::Create(this,
+      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+  dont_save_button_ = InfoBarTextButton::Create(this,
+      delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+
   // Set up the link.
   link_ = new views::Link;
   link_->SetText(delegate->GetLinkText());
@@ -160,26 +160,6 @@ void SaveCCInfoConfirmInfoBar::Init() {
   AddChildView(save_button_);
   AddChildView(dont_save_button_);
   AddChildView(link_);
-}
-
-views::TextButton* SaveCCInfoConfirmInfoBar::CreateTextButton(
-    const std::wstring& text) {
-  views::TextButton* text_button = new views::TextButton(this, std::wstring());
-  text_button->set_border(new InfoBarButtonBorder);
-
-  // Set font colors for different states.
-  text_button->SetEnabledColor(SK_ColorBLACK);
-  text_button->SetHighlightColor(SK_ColorBLACK);
-  text_button->SetHoverColor(SK_ColorBLACK);
-  text_button->SetNormalHasBorder(true);
-
-  // Set font then text, then size button to fit text.
-  text_button->SetFont(ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::MediumFont));
-  text_button->SetText(text);
-  text_button->ClearMaxTextSize();
-  text_button->SizeToPreferredSize();
-  return text_button;
 }
 
 ConfirmInfoBarDelegate* SaveCCInfoConfirmInfoBar::GetDelegate() {
