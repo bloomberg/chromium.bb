@@ -15,6 +15,7 @@ class WebFrame;
 class WebIDBCallbacks;
 class WebIDBIndex;
 class WebIDBKey;
+class WebIDBKeyRange;
 class WebString;
 }
 
@@ -41,7 +42,8 @@ class RendererWebIDBObjectStoreImpl : public WebKit::WebIDBObjectStore {
   WebKit::WebIDBIndex* index(const WebKit::WebString& name);
   void removeIndex(const WebKit::WebString& name,
                    WebKit::WebIDBCallbacks* callbacks);
-
+  void openCursor(const WebKit::WebIDBKeyRange& idb_key_range,
+                  unsigned short direction, WebKit::WebIDBCallbacks* callbacks);
  private:
   int32 idb_object_store_id_;
 };

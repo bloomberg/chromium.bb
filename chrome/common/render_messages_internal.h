@@ -868,6 +868,9 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbacksSuccessSerializedScriptValue,
                        int32 /* response_id */,
                        SerializedScriptValue /* serialized_script_value */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_IDBCallbackSuccessOpenCursor,
+                       int32 /* response_id */,
+                       int32 /* cursor_id */)
   IPC_MESSAGE_CONTROL3(ViewMsg_IDBCallbacksError,
                        int32 /* response_id */,
                        int /* code */,
@@ -2230,6 +2233,21 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               GURL /* url */,
                               bool /* something_cleared */)
 
+  // WebIDBCursor::direction() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBCursorDirection,
+                              int32, /* idb_cursor_id */
+                              int32 /* direction */)
+
+  // WebIDBCursor::key() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBCursorKey,
+                              int32, /* idb_cursor_id */
+                              IndexedDBKey)
+
+  // WebIDBCursor::value() message.
+  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBCursorValue,
+                              int32, /* idb_cursor_id */
+                              SerializedScriptValue)
+
   // WebIDBFactory::open() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBFactoryOpen,
                        ViewHostMsg_IDBFactoryOpen_Params)
@@ -2347,9 +2365,17 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int32, /* response_id */
                        string16 /* name */)
 
+   // WebIDBObjectStore::openCursor() message.
+   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreOpenCursor,
+                        ViewHostMsg_IDBObjectStoreOpenCursor_Params)
+
   // WebIDBObjectStore::~WebIDBObjectStore() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBObjectStoreDestroyed,
                        int32 /* idb_object_store_id */)
+
+  // WebIDBDatabase::~WebIDBCursor() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBCursorDestroyed,
+                       int32 /* idb_cursor_id */)
 
   // Get file size in bytes. Set result to -1 if failed to get the file size.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,

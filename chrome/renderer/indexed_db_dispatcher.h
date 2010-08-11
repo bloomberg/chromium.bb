@@ -17,6 +17,7 @@ class SerializedScriptValue;
 
 namespace WebKit {
 class WebFrame;
+class WebIDBKeyRange;
 }
 
 // Handle the indexed db related communication for this entire renderer.
@@ -64,6 +65,10 @@ class IndexedDBDispatcher {
       const string16& name, WebKit::WebIDBCallbacks* callbacks,
       int32 idb_object_store_id);
 
+  void RequestIDBObjectStoreOpenCursor(
+      const WebKit::WebIDBKeyRange& idb_key_range, unsigned short direction,
+      WebKit::WebIDBCallbacks* callbacks, int32 idb_object_store_id);
+
  private:
   // IDBCallback message handlers.
   void OnSuccessNull(int32 response_id);
@@ -71,6 +76,7 @@ class IndexedDBDispatcher {
   void OnSuccessIndexedDBKey(int32 response_id, const IndexedDBKey& key);
   void OnSuccessIDBObjectStore(int32 response_id, int32 object_id);
   void OnSuccessIDBIndex(int32 response_id, int32 object_id);
+  void OnSuccessOpenCursor(int32 response_id, int32 object_id);
   void OnSuccessSerializedScriptValue(int32 response_id,
                                       const SerializedScriptValue& value);
   void OnError(int32 response_id, int code, const string16& message);

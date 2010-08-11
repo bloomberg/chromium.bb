@@ -159,6 +159,8 @@
         'renderer/renderer_webapplicationcachehost_impl.h',
         'renderer/renderer_webcookiejar_impl.cc',
         'renderer/renderer_webcookiejar_impl.h',
+        'renderer/renderer_webidbcursor_impl.cc',
+        'renderer/renderer_webidbcursor_impl.h',
         'renderer/renderer_webidbdatabase_impl.cc',
         'renderer/renderer_webidbdatabase_impl.h',
         'renderer/renderer_webidbindex_impl.cc',

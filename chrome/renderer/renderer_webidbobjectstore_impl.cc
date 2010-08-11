@@ -12,11 +12,14 @@
 #include "chrome/renderer/renderer_webidbindex_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBKey.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBKeyRange.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
+using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
 using WebKit::WebSerializedScriptValue;
@@ -111,4 +114,13 @@ void RendererWebIDBObjectStoreImpl::removeIndex(const WebString& name,
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBObjectStoreRemoveIndex(name, callbacks,
                                                idb_object_store_id_);
+}
+
+void RendererWebIDBObjectStoreImpl::openCursor(
+    const WebIDBKeyRange& idb_key_range,
+    unsigned short direction, WebIDBCallbacks* callbacks) {
+  IndexedDBDispatcher* dispatcher =
+      RenderThread::current()->indexed_db_dispatcher();
+  dispatcher->RequestIDBObjectStoreOpenCursor(idb_key_range, direction,
+                                              callbacks,  idb_object_store_id_);
 }

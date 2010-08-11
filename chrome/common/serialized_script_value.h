@@ -24,6 +24,9 @@ class SerializedScriptValue {
   void set_data(const string16& data) { data_ = data; }
   const string16& data() const { return data_; }
 
+  void set_web_serialized_script_value(
+      const WebKit::WebSerializedScriptValue& value);
+
   operator WebKit::WebSerializedScriptValue() const;
 
  private:

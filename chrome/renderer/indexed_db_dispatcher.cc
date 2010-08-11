@@ -8,16 +8,20 @@
 #include "chrome/common/serialized_script_value.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
+#include "chrome/renderer/renderer_webidbcursor_impl.h"
 #include "chrome/renderer/renderer_webidbdatabase_impl.h"
 #include "chrome/renderer/renderer_webidbindex_impl.h"
 #include "chrome/renderer/renderer_webidbobjectstore_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBKeyRange.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
+using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
 
@@ -40,6 +44,8 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSuccessIDBObjectStore)
     IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksSuccessIDBIndex,
                         OnSuccessIDBIndex)
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbackSuccessOpenCursor,
+                        OnSuccessOpenCursor)
     IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksSuccessSerializedScriptValue,
                         OnSuccessSerializedScriptValue)
     IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksError,
@@ -155,6 +161,21 @@ void IndexedDBDispatcher::RequestIDBObjectStoreRemoveIndex(
           name));
 }
 
+void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
+    const WebIDBKeyRange& idb_key_range, unsigned short direction,
+    WebIDBCallbacks* callbacks_ptr, int32 idb_object_store_id) {
+  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
+  ViewHostMsg_IDBObjectStoreOpenCursor_Params params;
+  params.response_id_ = pending_callbacks_.Add(callbacks.release());
+  params.left_key_.Set(idb_key_range.left());
+  params.right_key_.Set(idb_key_range.right());
+  params.flags_ = idb_key_range.flags();
+  params.direction_ = direction;
+  params.idb_object_store_id_ = idb_object_store_id;
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBObjectStoreOpenCursor(params));
+}
+
 void IndexedDBDispatcher::OnSuccessNull(int32 response_id) {
   WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onSuccess();
@@ -194,6 +215,14 @@ void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
   WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onSuccess(value);
   pending_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnSuccessOpenCursor(int32 repsonse_id,
+                                              int32 object_id) {
+  WebKit::WebIDBCallbacks* callbacks =
+        pending_callbacks_.Lookup(repsonse_id);
+  callbacks->onSuccess(new RendererWebIDBCursorImpl(object_id));
+  pending_callbacks_.Remove(repsonse_id);
 }
 
 void IndexedDBDispatcher::OnError(int32 response_id, int code,

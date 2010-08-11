@@ -14,6 +14,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/serialized_script_value.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
 
 // Template magic to figure out what message to send to the renderer based on
@@ -67,6 +68,31 @@ class IndexedDBCallbacks : public IndexedDBCallbacksBase {
     dispatcher_host()->Send(
         new typename WebIDBToMsgHelper<WebObjectType>::MsgType(response_id(),
                                                                object_id));
+  }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+};
+
+// WebIDBCursor uses onSuccess(WebIDBCursor*) to indicate it has data, and
+// onSuccess() without params to indicate it does not contain any data, i.e.,
+// there is no key within the key range, or it has reached the end.
+template <>
+class IndexedDBCallbacks<WebKit::WebIDBCursor>
+    : public IndexedDBCallbacksBase {
+ public:
+  IndexedDBCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host, int32 response_id)
+      : IndexedDBCallbacksBase(dispatcher_host, response_id) { }
+
+  virtual void onSuccess(WebKit::WebIDBCursor* idb_object) {
+    int32 object_id = dispatcher_host()->Add(idb_object);
+    dispatcher_host()->Send(
+        new ViewMsg_IDBCallbackSuccessOpenCursor(response_id(), object_id));
+  }
+
+  virtual void onSuccess() {
+    dispatcher_host()->Send(new ViewMsg_IDBCallbacksSuccessNull(response_id()));
   }
 
  private:

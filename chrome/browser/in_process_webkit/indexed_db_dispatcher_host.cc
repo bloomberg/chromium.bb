@@ -13,18 +13,22 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/serialized_script_value.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDOMStringList.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBKeyRange.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBIndex.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 
 using WebKit::WebDOMStringList;
+using WebKit::WebIDBCursor;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
 using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
+using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBObjectStore;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSerializedScriptValue;
@@ -39,6 +43,8 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
           new IndexDispatcherHost(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(object_store_dispatcher_host_(
           new ObjectStoreDispatcherHost(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(cursor_dispatcher_host_(
+          new CursorDispatcherHost(this))),
       process_handle_(0) {
   DCHECK(sender_);
   DCHECK(webkit_context_.get());
@@ -81,6 +87,10 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK(process_handle_);
 
   switch (message.type()) {
+    case ViewHostMsg_IDBCursorDestroyed::ID:
+    case ViewHostMsg_IDBCursorDirection::ID:
+    case ViewHostMsg_IDBCursorKey::ID:
+    case ViewHostMsg_IDBCursorValue::ID:
     case ViewHostMsg_IDBFactoryOpen::ID:
     case ViewHostMsg_IDBDatabaseName::ID:
     case ViewHostMsg_IDBDatabaseDescription::ID:
@@ -98,6 +108,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBObjectStoreKeyPath::ID:
     case ViewHostMsg_IDBObjectStoreIndexNames::ID:
     case ViewHostMsg_IDBObjectStoreGet::ID:
+    case ViewHostMsg_IDBObjectStoreOpenCursor::ID:
     case ViewHostMsg_IDBObjectStorePut::ID:
     case ViewHostMsg_IDBObjectStoreRemove::ID:
     case ViewHostMsg_IDBObjectStoreCreateIndex::ID:
@@ -147,7 +158,8 @@ void IndexedDBDispatcherHost::OnMessageReceivedWebKit(
   bool handled =
       database_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       index_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
-      object_store_dispatcher_host_->OnMessageReceived(message, &msg_is_ok);
+      object_store_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
+      cursor_dispatcher_host_->OnMessageReceived(message, &msg_is_ok);
 
   if (!handled) {
     handled = true;
@@ -164,6 +176,10 @@ void IndexedDBDispatcherHost::OnMessageReceivedWebKit(
     BrowserRenderProcessHost::BadMessageTerminateProcess(message.type(),
                                                          process_handle_);
   }
+}
+
+int32 IndexedDBDispatcherHost::Add(WebIDBCursor* idb_cursor) {
+  return cursor_dispatcher_host_->map_.Add(idb_cursor);
 }
 
 int32 IndexedDBDispatcherHost::Add(WebIDBDatabase* idb_database) {
@@ -569,4 +585,100 @@ void IndexedDBDispatcherHost::ObjectStoreDispatcherHost::OnDestroyed(
     int32 object_id) {
   parent_->DestroyObject(
       &map_, object_id, ViewHostMsg_IDBObjectStoreDestroyed::ID);
+}
+
+//////////////////////////////////////////////////////////////////////
+// IndexedDBDispatcherHost::CursorDispatcherHost
+//
+
+IndexedDBDispatcherHost::CursorDispatcherHost::CursorDispatcherHost(
+    IndexedDBDispatcherHost* parent)
+    : parent_(parent) {
+}
+
+IndexedDBDispatcherHost::CursorDispatcherHost::~CursorDispatcherHost() {
+}
+
+bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
+    const IPC::Message& message, bool* msg_is_ok) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::CursorDispatcherHost,
+                           message, *msg_is_ok)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBObjectStoreOpenCursor, OnOpenCursor)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorDirection,
+                                    OnDirection)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorKey, OnKey)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBCursorValue, OnValue)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBCursorDestroyed, OnDestroyed)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::Send(
+    IPC::Message* message) {
+  // The macro magic in OnMessageReceived requires this to link, but it should
+  // never actually be called.
+  NOTREACHED();
+  parent_->Send(message);
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnOpenCursor(
+    const ViewHostMsg_IDBObjectStoreOpenCursor_Params& params) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
+  WebIDBObjectStore* idb_object_store = parent_->GetOrTerminateProcess(
+      &parent_->object_store_dispatcher_host_->map_,
+      params.idb_object_store_id_, NULL,
+      ViewHostMsg_IDBObjectStoreOpenCursor::ID);
+  if (!idb_object_store)
+    return;
+  idb_object_store->openCursor(
+      WebIDBKeyRange(params.left_key_, params.right_key_, params.flags_),
+      params.direction_,
+      new IndexedDBCallbacks<WebIDBCursor>(parent_, params.response_id_));
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnDirection(
+    int32 object_id, IPC::Message* reply_msg) {
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
+      &map_, object_id, reply_msg,
+      ViewHostMsg_IDBCursorDirection::ID);
+  if (!idb_cursor)
+    return;
+
+  int direction = idb_cursor->direction();
+  ViewHostMsg_IDBCursorDirection::WriteReplyParams(reply_msg, direction);
+  parent_->Send(reply_msg);
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnKey(
+    int32 object_id, IPC::Message* reply_msg) {
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
+      &map_, object_id, reply_msg,
+      ViewHostMsg_IDBCursorKey::ID);
+  if (!idb_cursor)
+    return;
+
+  IndexedDBKey key(idb_cursor->key());
+  ViewHostMsg_IDBCursorKey::WriteReplyParams(reply_msg, key);
+  parent_->Send(reply_msg);
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnValue(
+    int32 object_id, IPC::Message* reply_msg) {
+  WebIDBCursor* idb_cursor = parent_->GetOrTerminateProcess(
+      &map_, object_id, reply_msg,
+      ViewHostMsg_IDBCursorValue::ID);
+  if (!idb_cursor)
+    return;
+
+  SerializedScriptValue value(idb_cursor->value());
+  ViewHostMsg_IDBCursorValue::WriteReplyParams(reply_msg, value);
+  parent_->Send(reply_msg);
+}
+
+void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(
+    int32 object_id) {
+  parent_->DestroyObject(
+      &map_, object_id, ViewHostMsg_IDBCursorDestroyed::ID);
 }

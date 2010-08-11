@@ -19,6 +19,7 @@ class IndexedDBKey {
   void SetInvalid();
   void Set(const string16& string);
   void Set(int32_t number);
+  void Set(const WebKit::WebIDBKey& key);
 
   WebKit::WebIDBKey::Type type() const { return type_; }
   const string16& string() const { return string_; }

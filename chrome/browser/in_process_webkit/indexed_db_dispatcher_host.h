@@ -18,8 +18,10 @@ class SerializedScriptValue;
 struct ViewHostMsg_IDBDatabaseCreateObjectStore_Params;
 struct ViewHostMsg_IDBFactoryOpen_Params;
 struct ViewHostMsg_IDBObjectStoreCreateIndex_Params;
+struct ViewHostMsg_IDBObjectStoreOpenCursor_Params;
 
 namespace WebKit {
+class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBIndex;
 class WebIDBObjectStore;
@@ -54,6 +56,7 @@ class IndexedDBDispatcherHost
 
   // The various IndexedDBCallbacks children call these methods to add the
   // results into the applicable map.  See below for more details.
+  int32 Add(WebKit::WebIDBCursor* idb_cursor);
   int32 Add(WebKit::WebIDBDatabase* idb_database);
   int32 Add(WebKit::WebIDBIndex* idb_index);
   int32 Add(WebKit::WebIDBObjectStore* idb_object_store);
@@ -152,6 +155,25 @@ class IndexedDBDispatcherHost
     IndexedDBDispatcherHost* parent_;
     IDMap<WebKit::WebIDBObjectStore, IDMapOwnPointer> map_;
   };
+
+  class CursorDispatcherHost {
+   public:
+    explicit CursorDispatcherHost(IndexedDBDispatcherHost* parent);
+    ~CursorDispatcherHost();
+
+    bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
+    void Send(IPC::Message* message);
+
+    void OnOpenCursor(
+        const ViewHostMsg_IDBObjectStoreOpenCursor_Params& params);
+    void OnDirection(int32 idb_object_store_id, IPC::Message* reply_msg);
+    void OnKey(int32 idb_object_store_id, IPC::Message* reply_msg);
+    void OnValue(int32 idb_object_store_id, IPC::Message* reply_msg);
+    void OnDestroyed(int32 idb_cursor_id);
+
+    IndexedDBDispatcherHost* parent_;
+    IDMap<WebKit::WebIDBCursor, IDMapOwnPointer> map_;
+  };
   // Only use on the IO thread.
   IPC::Message::Sender* sender_;
 
@@ -162,6 +184,7 @@ class IndexedDBDispatcherHost
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;
   scoped_ptr<IndexDispatcherHost> index_dispatcher_host_;
   scoped_ptr<ObjectStoreDispatcherHost> object_store_dispatcher_host_;
+  scoped_ptr<CursorDispatcherHost> cursor_dispatcher_host_;
 
   // If we get a corrupt message from a renderer, we need to kill it using this
   // handle.

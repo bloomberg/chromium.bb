@@ -651,6 +651,22 @@ struct ViewHostMsg_IDBObjectStoreCreateIndex_Params {
   int32 idb_object_store_id_;
 };
 
+// Used to open an IndexedDB cursor.
+struct ViewHostMsg_IDBObjectStoreOpenCursor_Params {
+  // The response should have this id.
+  int32 response_id_;
+  // The serialized left key.
+  IndexedDBKey left_key_;
+  // The serialized right key.
+  IndexedDBKey right_key_;
+  // The key flags.
+  int32 flags_;
+  // The direction of this cursor.
+  int32 direction_;
+  // The object store the index belongs to.
+  int32 idb_object_store_id_;
+};
+
 // Allows an extension to execute code in a tab.
 struct ViewMsg_ExecuteCode_Params {
   ViewMsg_ExecuteCode_Params() {}
@@ -2822,6 +2838,44 @@ struct ParamTraits<ViewHostMsg_IDBObjectStoreCreateIndex_Params> {
     LogParam(p.key_path_, l);
     l->append(L", ");
     LogParam(p.unique_, l);
+    l->append(L", ");
+    LogParam(p.idb_object_store_id_, l);
+    l->append(L")");
+  }
+};
+
+// Traits for ViewHostMsg_IDBObjectStoreOpenCursor_Params.
+template <>
+struct ParamTraits<ViewHostMsg_IDBObjectStoreOpenCursor_Params> {
+  typedef ViewHostMsg_IDBObjectStoreOpenCursor_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.response_id_);
+    WriteParam(m, p.left_key_);
+    WriteParam(m, p.right_key_);
+    WriteParam(m, p.flags_);
+    WriteParam(m, p.direction_);
+    WriteParam(m, p.idb_object_store_id_);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->response_id_) &&
+        ReadParam(m, iter, &p->left_key_) &&
+        ReadParam(m, iter, &p->right_key_) &&
+        ReadParam(m, iter, &p->flags_) &&
+        ReadParam(m, iter, &p->direction_) &&
+        ReadParam(m, iter, &p->idb_object_store_id_);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.response_id_, l);
+    l->append(L", ");
+    LogParam(p.left_key_, l);
+    l->append(L", ");
+    LogParam(p.right_key_, l);
+    l->append(L", ");
+    LogParam(p.flags_, l);
+    l->append(L", ");
+    LogParam(p.direction_, l);
     l->append(L", ");
     LogParam(p.idb_object_store_id_, l);
     l->append(L")");
