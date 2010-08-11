@@ -906,6 +906,53 @@ TEST_F(WebDatabaseTest, Autofill_UpdateDontReplace) {
   EXPECT_EQ(1U, expected_entries.count(entry));
 }
 
+TEST_F(WebDatabaseTest, Autofill_AddFormFieldValues) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  Time t = Time::Now();
+
+  // Add multiple values for "firstname" and "lastname" names.  Test that only
+  // first value of each gets added. Related to security issue:
+  // http://crbug.com/51727.
+  std::vector<FormField> elements;
+  elements.push_back(FormField(string16(),
+                               ASCIIToUTF16("firstname"),
+                               ASCIIToUTF16("Joe"),
+                               string16(),
+                               0));
+  elements.push_back(FormField(string16(),
+                               ASCIIToUTF16("firstname"),
+                               ASCIIToUTF16("Jane"),
+                               string16(),
+                               0));
+  elements.push_back(FormField(string16(),
+                               ASCIIToUTF16("lastname"),
+                               ASCIIToUTF16("Smith"),
+                               string16(),
+                               0));
+  elements.push_back(FormField(string16(),
+                               ASCIIToUTF16("lastname"),
+                               ASCIIToUTF16("Jones"),
+                               string16(),
+                               0));
+
+  std::vector<AutofillChange> changes;
+  db.AddFormFieldValuesTime(elements, &changes, t);
+
+  ASSERT_EQ(2U, changes.size());
+  EXPECT_EQ(changes[0], AutofillChange(AutofillChange::ADD,
+                                       AutofillKey(ASCIIToUTF16("firstname"),
+                                       ASCIIToUTF16("Joe"))));
+  EXPECT_EQ(changes[1], AutofillChange(AutofillChange::ADD,
+                                       AutofillKey(ASCIIToUTF16("lastname"),
+                                       ASCIIToUTF16("Smith"))));
+
+  std::vector<AutofillEntry> all_entries;
+  ASSERT_TRUE(db.GetAllAutofillEntries(&all_entries));
+  ASSERT_EQ(2U, all_entries.size());
+}
+
 static bool AddTimestampedLogin(WebDatabase* db, std::string url,
                                 const std::string& unique_string,
                                 const Time& time) {

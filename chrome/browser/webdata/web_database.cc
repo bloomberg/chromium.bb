@@ -1075,12 +1075,21 @@ bool WebDatabase::AddFormFieldValues(const std::vector<FormField>& elements,
 bool WebDatabase::AddFormFieldValuesTime(const std::vector<FormField>& elements,
                                          std::vector<AutofillChange>* changes,
                                          base::Time time) {
+  // Only add one new entry for each unique element name.  Use |seen_names| to
+  // track this.  Add up to |kMaximumUniqueNames| unique entries per form.
+  const size_t kMaximumUniqueNames = 256;
+  std::set<string16> seen_names;
   bool result = true;
   for (std::vector<FormField>::const_iterator
        itr = elements.begin();
        itr != elements.end();
        itr++) {
+    if (seen_names.size() >= kMaximumUniqueNames)
+      break;
+    if (seen_names.find(itr->name()) != seen_names.end())
+      continue;
     result = result && AddFormFieldValueTime(*itr, changes, time);
+    seen_names.insert(itr->name());
   }
   return result;
 }

@@ -284,6 +284,7 @@ class WebDatabase {
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest,
                            Autofill_GetAllAutofillEntries_TwoSame);
   FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_UpdateDontReplace);
+  FRIEND_TEST_ALL_PREFIXES(WebDatabaseTest, Autofill_AddFormFieldValues);
   // Methods for adding autofill entries at a specified time.  For
   // testing only.
   bool AddFormFieldValuesTime(
