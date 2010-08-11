@@ -88,7 +88,10 @@ class PluginGroup {
   void Enable(bool enable);
 
   // Returns this group's name
-  const string16 GetGroupName() const { return group_name_; }
+  const string16& GetGroupName() const { return group_name_; }
+
+  // Returns the description of highest-priority plug-in in the group.
+  const string16& description() const { return description_; }
 
   // Returns a DictionaryValue with data to display in the UI.
   DictionaryValue* GetDataForUI() const;
@@ -116,6 +119,10 @@ class PluginGroup {
               const std::string& min_version,
               const std::string& update_url);
 
+  // Set the description and version for this plugin group from the
+  // given plug-in.
+  void UpdateDescriptionAndVersion(const WebPluginInfo& plugin);
+
   static std::set<string16>* policy_disabled_puglins_;
 
   string16 group_name_;
@@ -129,7 +136,7 @@ class PluginGroup {
   bool enabled_;
   std::string min_version_str_;
   scoped_ptr<Version> min_version_;
-  scoped_ptr<Version> max_version_;
+  scoped_ptr<Version> version_;
   std::vector<WebPluginInfo> web_plugin_infos_;
   std::vector<int> web_plugin_positions_;
 

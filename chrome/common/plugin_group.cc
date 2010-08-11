@@ -136,7 +136,7 @@ PluginGroup::PluginGroup(const string16& group_name,
   }
   update_url_ = update_url;
   enabled_ = false;
-  max_version_.reset(Version::GetVersionFromString("0"));
+  version_.reset(Version::GetVersionFromString("0"));
 }
 
 PluginGroup* PluginGroup::FromPluginGroupDefinition(
@@ -225,18 +225,10 @@ bool PluginGroup::Match(const WebPluginInfo& plugin) const {
           version_range_high_->CompareTo(*plugin_version) > 0);
 }
 
-void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
-  web_plugin_infos_.push_back(plugin);
-  // The position of this plugin relative to the global list of plugins.
-  web_plugin_positions_.push_back(position);
+void PluginGroup::UpdateDescriptionAndVersion(const WebPluginInfo& plugin) {
   description_ = plugin.desc;
 
-  // A group is enabled if any of the files are enabled.
-  if (plugin.enabled) {
-    enabled_ = true;
-  }
-
-  // update max_version_. Remove spaces and ')' from the version string,
+  // Update |version_|. Remove spaces and ')' from the version string,
   // Replace any instances of 'r', ',' or '(' with a dot.
   std::wstring version = UTF16ToWide(plugin.version);
   RemoveChars(version, L") ", &version);
@@ -244,12 +236,29 @@ void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
   std::replace(version.begin(), version.end(), ',', '.');
   std::replace(version.begin(), version.end(), '(', '.');
 
-  scoped_ptr<Version> plugin_version(
-      Version::GetVersionFromString(version));
-  if (plugin_version.get() != NULL) {
-    if (plugin_version->CompareTo(*(max_version_)) > 0) {
-      max_version_.reset(plugin_version.release());
+  if (Version* new_version = Version::GetVersionFromString(version))
+    version_.reset(new_version);
+  else
+    version_.reset(Version::GetVersionFromString("0"));
+}
+
+void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
+  web_plugin_infos_.push_back(plugin);
+  // The position of this plugin relative to the global list of plugins.
+  web_plugin_positions_.push_back(position);
+
+  // A group is enabled if any of the files are enabled.
+  if (plugin.enabled) {
+    if (!enabled_) {
+      // If this is the first enabled plugin, use its description.
+      enabled_ = true;
+      UpdateDescriptionAndVersion(plugin);
     }
+  } else {
+    // If this is the first plugin and it's disabled,
+    // use its description for now.
+    if (description_.empty())
+      UpdateDescriptionAndVersion(plugin);
   }
 }
 
@@ -264,7 +273,7 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
   DictionaryValue* result = new DictionaryValue();
   result->SetString("name", group_name_);
   result->SetString("description", description_);
-  result->SetString("version", max_version_->GetString());
+  result->SetString("version", version_->GetString());
   result->SetString("update_url", update_url_);
   result->SetBoolean("critical", IsVulnerable());
 
@@ -290,7 +299,7 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
       plugin_file->SetString("enabledMode", "disabledByPolicy");
     } else {
       plugin_file->SetString("enabledMode",
-                        web_plugin.enabled ? "enabled" : "disabledByUser");
+                             web_plugin.enabled ? "enabled" : "disabledByUser");
     }
     plugin_file->SetInteger("priority", priority);
 
@@ -325,10 +334,10 @@ DictionaryValue* PluginGroup::GetDataForUI() const {
 
 // Returns true if the latest version of this plugin group is vulnerable.
 bool PluginGroup::IsVulnerable() const {
-  if (min_version_.get() == NULL || max_version_->GetString() == "0") {
+  if (min_version_.get() == NULL || version_->GetString() == "0") {
     return false;
   }
-  return max_version_->CompareTo(*min_version_) < 0;
+  return version_->CompareTo(*min_version_) < 0;
 }
 
 void PluginGroup::Enable(bool enable) {
