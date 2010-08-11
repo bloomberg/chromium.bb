@@ -122,6 +122,7 @@ RendererWebKitClientImpl::RendererWebKitClientImpl()
       sandbox_support_(new RendererWebKitClientImpl::SandboxSupport),
       sudden_termination_disables_(0),
       shared_worker_repository_(new WebSharedWorkerRepositoryImpl) {
+  file_system_->set_sandbox_enabled(sandboxEnabled());
 }
 
 RendererWebKitClientImpl::~RendererWebKitClientImpl() {
