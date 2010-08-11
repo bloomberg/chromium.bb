@@ -91,12 +91,6 @@ WebCString TestShellDevToolsAgent::injectedScriptSource() {
   return WebCString(injectjsWebkit.data(), injectjsWebkit.length());
 }
 
-WebCString TestShellDevToolsAgent::injectedScriptDispatcherSource() {
-  base::StringPiece injectDispatchjs =
-      webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_DISPATCH_JS);
-  return WebCString(injectDispatchjs.data(), injectDispatchjs.length());
-}
-
 WebCString TestShellDevToolsAgent::debuggerScriptSource() {
   base::StringPiece debuggerScriptjs =
       webkit_glue::GetDataResource(IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);

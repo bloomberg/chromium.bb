@@ -478,9 +478,7 @@ WebCString GetDevToolsInjectedScriptSource() {
 }
 
 WebCString GetDevToolsInjectedScriptDispatcherSource() {
-  base::StringPiece injectDispatchJS = webkit_glue::GetDataResource(
-      IDR_DEVTOOLS_INJECT_DISPATCH_JS);
-  return WebCString(injectDispatchJS.as_string().c_str());
+  return WebCString();
 }
 
 WebCString GetDevToolsDebuggerScriptSource() {
