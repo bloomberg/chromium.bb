@@ -1,0 +1,7 @@
+This directory contains the jQuery library and a customized subset of the
+jQuery UI library, available at http://jquery.com and http://jqueryui.com/,
+licensed under the General Public License (GPL) Version 2 and MIT licenses.
+
+The provided CSS stylesheet(s) (css/*.css) have been modified to remove 
+unneeded style rules and image dependencies. The remaining code is otherwise 
+unmodified.
