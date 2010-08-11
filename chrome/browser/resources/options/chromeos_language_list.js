@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 cr.define('options.language', function() {
-  const List = cr.ui.List;
-  const ListItem = cr.ui.ListItem;
   const ArrayDataModel = cr.ui.ArrayDataModel;
   const LanguageOptions = options.LanguageOptions;
+  const List = cr.ui.List;
+  const ListItem = cr.ui.ListItem;
+  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
    * Creates a new language list.
@@ -42,6 +43,7 @@ cr.define('options.language', function() {
     /** @inheritDoc */
     decorate: function() {
       List.prototype.decorate.call(this);
+      this.selectionModel = new ListSingleSelectionModel;
 
       // HACK(arv): http://crbug.com/40902
       window.addEventListener('resize', cr.bind(this.redraw, this));
@@ -90,18 +92,10 @@ cr.define('options.language', function() {
       if (this.selectionModel.selectedIndex >= 0 &&
           // Don't allow removing the last language.
           this.dataModel.length > 1) {
-        // TODO(satorux): Until we switch to the single selection model,
-        // it's possible that multiple languages are selected, but we don't
-        // handle that case here.
-        var originalIndex = this.selectionModel.selectedIndex;
         this.dataModel.splice(this.selectionModel.selectedIndex, 1);
-        // Select the item at the original index if possible. Otherwise,
-        // select the last item.
-        // TODO(satorux): This should be handled by the selection model
-        // See crbug.com/49893.
-        this.selectionModel.selectedIndex = Math.min(
-            originalIndex,
-            this.dataModel.length - 1);
+        // Once the selected item is removed, there will be no selected item.
+        // Select the item pointed by the lead index.
+        this.selectionModel.selectedIndex = this.selectionModel.leadIndex;
         this.updateBackend_();
       }
     },
@@ -136,8 +130,8 @@ cr.define('options.language', function() {
         this.selectionModel.selectedIndex = originalSelectedIndex;
       } else if (this.dataModel.length > 0){
         // Otherwise, select the first item if it's not empty.
-        // TODO(satorux): Switch to a single item selection model that does
-        // not allow no selection, one it's ready: crbug.com/49893
+        // Note that ListSingleSelectionModel won't select an item
+        // automatically, hence we manually select the first item here.
         this.selectionModel.selectedIndex = 0;
       }
     },
