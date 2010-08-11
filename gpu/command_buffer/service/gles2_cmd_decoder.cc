@@ -2031,7 +2031,10 @@ void GLES2DecoderImpl::Destroy() {
     ShDestruct(fragment_compiler_);
     fragment_compiler_ = NULL;
   }
-  ShFinalize();
+  // TODO(alokp): Move ShInitialize/ShFinalize where they are called only
+  // once per process. Currently they get called out-of-order leading to
+  // crashes.
+  //ShFinalize();
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER)
 
   if (context_.get()) {
