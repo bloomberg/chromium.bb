@@ -826,7 +826,7 @@ int main(int argc, char** argv) {
   int rc = dlclose(dl_handle);
   CHECK(rc == 0);
 
-  NaClCondVarCtor(&callback_condvar);
+  NaClCondVarDtor(&callback_condvar);
   NaClMutexDtor(&callback_mutex);
 
   return 0;

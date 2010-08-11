@@ -73,18 +73,15 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     browser_interface_->Alert(plugin()->instance_id(), error);
     return false;
   }
-  ScriptableHandle* raw_channel;
   // The first connect on the socket address returns the service
   // runtime command channel.  This channel is created before the NaCl
   // module runs, and is private to the service runtime.  This channel
   // is used for a secure plugin<->service runtime communication path
-
-
   // that can be used to forcibly shut down the sel_ldr.
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
                  " (connecting for SrtSocket)\n"));
   PortableHandle* portable_socket_address = default_socket_address_->handle();
-  raw_channel = portable_socket_address->Connect();
+  ScriptableHandle* raw_channel = portable_socket_address->Connect();
   if (NULL == raw_channel) {
     const char* error = "service runtime connect failed";
     PLUGIN_PRINTF(("ServiceRuntime::InitCommuncation (%s)\n", error));
@@ -96,7 +93,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   runtime_channel_ = new(std::nothrow) SrtSocket(raw_channel,
                                                  browser_interface_);
   if (NULL == runtime_channel_) {
-    // TODO(sehr): leaking raw_channel.
+    raw_channel->Unref();
     return false;
   }
 
@@ -145,7 +142,6 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     const char* error = "could not set origin";
     PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
     browser_interface_->Alert(plugin()->instance_id(), error);
-    // TODO(sehr): leaking raw_channel and runtime_channel_.
     return false;
   }
 
@@ -188,7 +184,6 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     const char* error = "could not start nacl module";
     PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
     browser_interface_->Alert(plugin()->instance_id(), error);
-    // TODO(sehr): leaking raw_channel and runtime_channel_.
     return false;
   }
   PLUGIN_PRINTF((" start_module returned %d\n", load_status));
@@ -196,7 +191,6 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     nacl::string error = "loading of module failed with status " + load_status;
     PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error.c_str()));
     browser_interface_->Alert(plugin()->instance_id(), error.c_str());
-    // TODO(sehr): leaking raw_channel and runtime_channel_.
     return false;
   }
 

@@ -66,6 +66,11 @@ SrpcClient::~SrpcClient() {
   if (srpc_channel_initialised_) {
     NaClSrpcDtor(&srpc_channel_);
   }
+  for (Methods::iterator iter = methods_.begin();
+       iter != methods_.end();
+       ++iter) {
+    delete iter->second;
+  }
   PLUGIN_PRINTF(("SrpcClient::~SrpcClient (return)\n"));
 }
 

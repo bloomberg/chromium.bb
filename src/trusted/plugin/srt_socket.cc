@@ -51,7 +51,6 @@ namespace plugin {
 SrtSocket::SrtSocket(ScriptableHandle* s, BrowserInterface* browser_interface)
     : connected_socket_(s),
       browser_interface_(browser_interface) {
-  connected_socket_->AddRef();
   InitializeIdentifiers(browser_interface_);  // inlineable tail call.
 }
 
