@@ -115,11 +115,42 @@ static const char* kSynchronizedPreferences[] = {
 
 #if defined(OS_CHROMEOS)
   // IME prefs
+  prefs::kLanguageChewingAddPhraseDirection,
+  prefs::kLanguageChewingAutoShiftCur,
+  prefs::kLanguageChewingCandPerPage,
+  prefs::kLanguageChewingEasySymbolInput,
+  prefs::kLanguageChewingEscCleanAllBuf,
+  prefs::kLanguageChewingForceLowercaseEnglish,
+  prefs::kLanguageChewingHsuSelKeyType,
+  prefs::kLanguageChewingKeyboardType,
+  prefs::kLanguageChewingMaxChiSymbolLen,
+  prefs::kLanguageChewingPhraseChoiceRearward,
+  prefs::kLanguageChewingPlainZhuyin,
+  prefs::kLanguageChewingSelKeys,
+  prefs::kLanguageChewingSpaceAsSelection,
   prefs::kLanguageHangulKeyboard,
+  prefs::kLanguageMozcHistoryLearningLevel,
+  prefs::kLanguageMozcIncognitoMode,
+  prefs::kLanguageMozcNumpadCharacterForm,
+  prefs::kLanguageMozcPreeditMethod,
+  prefs::kLanguageMozcPunctuationMethod,
+  prefs::kLanguageMozcSessionKeymap,
+  prefs::kLanguageMozcShiftKeyModeSwitch,
+  prefs::kLanguageMozcSpaceCharacterForm,
+  prefs::kLanguageMozcSuggestionsSize,
+  prefs::kLanguageMozcSymbolMethod,
+  prefs::kLanguageMozcUseAutoImeTurnOff,
+  prefs::kLanguageMozcUseDateConversion,
+  prefs::kLanguageMozcUseDictionarySuggest,
+  prefs::kLanguageMozcUseHistorySuggest,
+  prefs::kLanguageMozcUseNumberConversion,
+  prefs::kLanguageMozcUseSingleKanjiConversion,
+  prefs::kLanguageMozcUseSymbolConversion,
   prefs::kLanguagePinyinAutoCommit,
   prefs::kLanguagePinyinCommaPeriodPage,
   prefs::kLanguagePinyinCorrectPinyin,
   prefs::kLanguagePinyinDoublePinyin,
+  prefs::kLanguagePinyinDoublePinyinSchema,
   prefs::kLanguagePinyinFuzzyPinyin,
   prefs::kLanguagePinyinInitChinese,
   prefs::kLanguagePinyinInitFull,
@@ -130,34 +161,23 @@ static const char* kSynchronizedPreferences[] = {
   prefs::kLanguagePinyinTradCandidate,
   prefs::kLanguagePreferredLanguages,
   prefs::kLanguagePreloadEngines,
-  // TODO(yusukes): Add prefs for ibus-mozc (Japanese input method).
-  //   prefs::kLanguageMozcPreeditMethod,
-  //   prefs::kLanguageMozcSessionKeymap,
-  //   prefs::kLanguageMozcPunctuationMethod,
-  //   prefs::kLanguageMozcSymbolMethod,
-  //   prefs::kLanguageMozcSpaceCharacterForm;
-  //   prefs::kLanguageMozcHistoryLearningLevel;
-  //   prefs::kLanguageMozcSelectionShortcut;
-  //   prefs::kLanguageMozcShiftKeyModeSwitch;
-  //   prefs::kLanguageMozcNumpadCharacterForm;
-  //   prefs::kLanguageMozcIncognitoMode,
-  //   prefs::kLanguageMozcUseAutoImeTurnOff,
-  //   prefs::kLanguageMozcUseDateConversion,
-  //   prefs::kLanguageMozcUseSingleKanjiConversion,
-  //   prefs::kLanguageMozcUseSymbolConversion,
-  //   prefs::kLanguageMozcUseNumberConversion,
-  //   prefs::kLanguageMozcUseHistorySuggest,
-  //   prefs::kLanguageMozcUseDictionarySuggest,
-  //   prefs::kLanguageMozcSuggestionsSize
-  //
+
   // We don't sync the following IME prefs since they are not user-configurable
   // (yet):
+  //   prefs::kLanguageHangulHanjaKeys,
   //   prefs::kLanguageHotkeyNextEngineInMenu,
   //   prefs::kLanguageHotkeyPreviousEngine,
-  //   prefs::kLanguagePinyinDoublePinyinSchema,
+  //   prefs::kLanguageMozcSelectionShortcut,
   //   prefs::kLanguagePinyinLookupTablePageSize,
   //
   // We don't sync prefs::kLanguageCurrentInputMethod and PreviousInputMethod.
+
+  // Keyboard prefs
+  prefs::kLanguageXkbAutoRepeatDelay,
+  prefs::kLanguageXkbAutoRepeatEnabled,
+  prefs::kLanguageXkbAutoRepeatInterval,
+  // TODO(mazda): Remove kLanguageXkbModifierRemap when issue5152 gets fixed.
+  prefs::kLanguageXkbModifierRemap,
 #endif
 };
 
