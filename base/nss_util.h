@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 
 #if defined(USE_NSS)
+class FilePath;
 class Lock;
 #endif  // defined(USE_NSS)
 
@@ -39,6 +40,12 @@ void OpenPersistentNSSDB();
 Time PRTimeToBaseTime(int64 prtime);
 
 #if defined(USE_NSS)
+// Exposed for unittests only.  |path| should be an existing directory under
+// which the DB files will be placed.  |description| is a user-visible name for
+// the DB, as a utf8 string, which will be truncated at 32 bytes.
+bool OpenTestNSSDB(const FilePath& path, const char* description);
+void CloseTestNSSDB();
+
 // NSS has a bug which can cause a deadlock or stall in some cases when writing
 // to the certDB and keyDB. It also has a bug which causes concurrent key pair
 // generations to scribble over each other. To work around this, we synchronize
