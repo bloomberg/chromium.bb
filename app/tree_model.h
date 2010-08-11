@@ -42,11 +42,6 @@ class TreeModelObserver {
                                 int start,
                                 int count) = 0;
 
-  // Notification the children of |parent| have been reordered. Note, only
-  // the direct children of |parent| have been reordered, not descendants.
-  virtual void TreeNodeChildrenReordered(TreeModel* model,
-                                         TreeModelNode* parent) = 0;
-
   // Notification that the contents of a node has changed.
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) = 0;
 

@@ -70,35 +70,6 @@ void CookiesTreeModelObserverBridge::TreeNodesRemoved(TreeModel* model,
   [window_controller_ didChangeValueForKey:kCocoaTreeModel];
 }
 
-// Notification the children of |parent| have been reordered. Note, only
-// the direct children of |parent| have been reordered, not descendants.
-void CookiesTreeModelObserverBridge::TreeNodeChildrenReordered(TreeModel* model,
-    TreeModelNode* parent) {
-  // We're in for a major rebuild. Ignore this request.
-  if (batch_update_ || !HasCocoaModel())
-    return;
-
-  CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
-  NSMutableArray* cocoa_children = [cocoa_parent mutableChildren];
-
-  CookieTreeNode* cookie_parent = static_cast<CookieTreeNode*>(parent);
-  const int child_count = cookie_parent->GetChildCount();
-
-  [window_controller_ willChangeValueForKey:kCocoaTreeModel];
-  for (int i = 0; i < child_count; ++i) {
-    CookieTreeNode* swap_in = cookie_parent->GetChild(i);
-    for (int j = i; j < child_count; ++j) {
-      CocoaCookieTreeNode* child = [cocoa_children objectAtIndex:j];
-      TreeModelNode* swap_out = [child treeNode];
-      if (swap_in == swap_out) {
-        [cocoa_children exchangeObjectAtIndex:j withObjectAtIndex:i];
-        break;
-      }
-    }
-  }
-  [window_controller_ didChangeValueForKey:kCocoaTreeModel];
-}
-
 // Notification that the contents of a node has changed.
 void CookiesTreeModelObserverBridge::TreeNodeChanged(TreeModel* model,
                                                      TreeModelNode* node) {

@@ -10,19 +10,17 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
   TreeNodeModelTest()
       : added_count_(0),
         removed_count_(0),
-        reordered_count_(0),
         changed_count_(0) {}
 
   void AssertObserverCount(int added_count, int removed_count,
-                           int reordered_count, int changed_count) {
+                           int changed_count) {
     ASSERT_EQ(added_count, added_count_);
     ASSERT_EQ(removed_count, removed_count_);
-    ASSERT_EQ(reordered_count, reordered_count_);
     ASSERT_EQ(changed_count, changed_count_);
   }
 
   void ClearCounts() {
-    added_count_ = removed_count_ = reordered_count_ = changed_count_ = 0;
+    added_count_ = removed_count_ = changed_count_ = 0;
   }
 
   // Begin TreeModelObserver implementation.
@@ -34,10 +32,6 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
                                 int start, int count) {
     removed_count_++;
   }
-  virtual void TreeNodeChildrenReordered(TreeModel* model,
-                                         TreeModelNode* parent) {
-    reordered_count_++;
-  }
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) {
     changed_count_++;
   }
@@ -46,7 +40,6 @@ class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
  private:
   int added_count_;
   int removed_count_;
-  int reordered_count_;
   int changed_count_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeNodeModelTest);
@@ -72,7 +65,7 @@ TEST_F(TreeNodeModelTest, AddNode) {
       new TreeNodeWithValue<int>(L"child 1", 1);
   model.Add(root, 0, child1);
 
-  AssertObserverCount(1, 0, 0, 0);
+  AssertObserverCount(1, 0, 0);
 
   // Add two nodes under the |child1|.
   TreeNodeWithValue<int>* foo1 =
@@ -118,7 +111,7 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
   // Now remove the |child1| from root and release the memory.
   delete model.Remove(root, 0);
 
-  AssertObserverCount(0, 1, 0, 0);
+  AssertObserverCount(0, 1, 0);
 
   ASSERT_EQ(0, model.GetChildCount(root));
 }
@@ -287,6 +280,6 @@ TEST_F(TreeNodeModelTest, SetTitle) {
 
   const std::wstring title(L"root2");
   model.SetTitle(root, title);
-  AssertObserverCount(0, 0, 0, 1);
+  AssertObserverCount(0, 0, 1);
   EXPECT_EQ(WideToUTF16(title), root->GetTitleAsString16());
 }

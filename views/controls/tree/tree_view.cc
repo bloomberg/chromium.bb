@@ -291,44 +291,6 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
   }
 }
 
-namespace {
-
-// Callback function used to compare two items. The first two args are the
-// LPARAMs of the HTREEITEMs being compared. The last arg maps from LPARAM
-// to order. This is invoked from TreeNodeChildrenReordered.
-int CALLBACK CompareTreeItems(LPARAM item1_lparam,
-                              LPARAM item2_lparam,
-                              LPARAM map_as_lparam) {
-  std::map<int, int>& mapping =
-      *reinterpret_cast<std::map<int, int>*>(map_as_lparam);
-  return mapping[static_cast<int>(item1_lparam)] -
-         mapping[static_cast<int>(item2_lparam)];
-}
-
-}  // namespace
-
-void TreeView::TreeNodeChildrenReordered(TreeModel* model,
-                                         TreeModelNode* parent) {
-  DCHECK(parent);
-  if (model_->GetChildCount(parent) <= 1)
-    return;
-
-  TVSORTCB sort_details;
-  sort_details.hParent = GetTreeItemForNodeDuringMutation(parent);
-  if (!sort_details.hParent)
-    return;
-
-  std::map<int, int> lparam_to_order_map;
-  for (int i = 0; i < model_->GetChildCount(parent); ++i) {
-    TreeModelNode* node = model_->GetChild(parent, i);
-    lparam_to_order_map[GetNodeDetails(node)->id] = i;
-  }
-
-  sort_details.lpfnCompare = &CompareTreeItems;
-  sort_details.lParam = reinterpret_cast<LPARAM>(&lparam_to_order_map);
-  TreeView_SortChildrenCB(tree_view_, &sort_details, 0);
-}
-
 void TreeView::TreeNodeChanged(TreeModel* model, TreeModelNode* node) {
   if (node_to_details_map_.find(node) == node_to_details_map_.end()) {
     // User hasn't navigated to this entry yet. Ignore the change.

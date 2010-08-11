@@ -52,24 +52,17 @@ class CookiesView : public CookiesTreeModel::Observer,
   // Updates the display to show only the search results.
   void UpdateSearchResults();
 
-  // TreeModelObserver implementation.
+  // Begin TreeModelObserver implementation.
   virtual void TreeNodesAdded(TreeModel* model,
                               TreeModelNode* parent,
                               int start,
                               int count);
-
-  // TreeModelObserver implementation.
   virtual void TreeNodesRemoved(TreeModel* model,
                                 TreeModelNode* parent,
                                 int start,
                                 int count) {}
-
-  // TreeModelObserver implementation.
-  virtual void TreeNodeChildrenReordered(TreeModel* model,
-                                         TreeModelNode* parent) {}
-
-  // TreeModelObserver implementation.
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) {}
+  // End TreeModelObserver implementation.
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

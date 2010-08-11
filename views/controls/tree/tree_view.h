@@ -121,7 +121,8 @@ class TreeView : public NativeControl, TreeModelObserver {
   // true.
   void SetRootShown(bool root_visible);
 
-  // TreeModelObserver methods. Don't call these directly, instead your model
+  // Begin TreeModelObserver implementation.
+  // Don't call these directly, instead your model
   // should notify the observer TreeView adds to it.
   virtual void TreeNodesAdded(TreeModel* model,
                               TreeModelNode* parent,
@@ -131,9 +132,8 @@ class TreeView : public NativeControl, TreeModelObserver {
                                 TreeModelNode* parent,
                                 int start,
                                 int count);
-  virtual void TreeNodeChildrenReordered(TreeModel* model,
-                                         TreeModelNode* parent);
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node);
+  // End TreeModelObserver implementation.
 
   // Sets the controller, which may be null. TreeView does not take ownership
   // of the controller.

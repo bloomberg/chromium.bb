@@ -27,25 +27,17 @@ class CookiesTreeModelObserverBridge : public CookiesTreeModel::Observer {
  public:
   explicit CookiesTreeModelObserverBridge(CookiesWindowController* controller);
 
-  // Notification that nodes were added to the specified parent.
+  // Begin TreeModelObserver implementation.
   virtual void TreeNodesAdded(TreeModel* model,
                               TreeModelNode* parent,
                               int start,
                               int count);
-
-  // Notification that nodes were removed from the specified parent.
   virtual void TreeNodesRemoved(TreeModel* model,
                                 TreeModelNode* parent,
                                 int start,
                                 int count);
-
-  // Notification the children of |parent| have been reordered. Note, only
-  // the direct children of |parent| have been reordered, not descendants.
-  virtual void TreeNodeChildrenReordered(TreeModel* model,
-                                         TreeModelNode* parent);
-
-  // Notification that the contents of a node has changed.
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node);
+  // End TreeModelObserver implementation.
 
   virtual void TreeModelBeginBatch(CookiesTreeModel* model);
   virtual void TreeModelEndBatch(CookiesTreeModel* model);

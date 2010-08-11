@@ -278,11 +278,6 @@ void TreeAdapter::TreeNodesRemoved(TreeModel* model,
   delegate_->OnAnyModelUpdate();
 }
 
-void TreeAdapter::TreeNodeChildrenReordered(TreeModel* model,
-                                            TreeModelNode* parent) {
-  NOTIMPLEMENTED();
-}
-
 void TreeAdapter::TreeNodeChanged(TreeModel* model, TreeModelNode* node) {
   delegate_->OnAnyModelUpdateStart();
   GtkTreeIter iter;

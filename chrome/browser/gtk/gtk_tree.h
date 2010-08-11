@@ -95,7 +95,6 @@ class TableAdapter : public TableModelObserver {
 
 // A helper class for populating a GtkTreeStore from a TreeModel.
 // TODO(mattm): support SetRootShown(true)
-// TODO(mattm): implement TreeNodeChildrenReordered
 class TreeAdapter : public TreeModelObserver {
  public:
   // Column ids for |tree_store_|.
@@ -131,7 +130,7 @@ class TreeAdapter : public TreeModelObserver {
   // Get the TreeModelNode corresponding to iter in the tree store.
   TreeModelNode* GetNode(GtkTreeIter* iter);
 
-  // TreeModelObserver implementation.
+  // Begin TreeModelObserver implementation.
   virtual void TreeNodesAdded(TreeModel* model,
                               TreeModelNode* parent,
                               int start,
@@ -140,9 +139,8 @@ class TreeAdapter : public TreeModelObserver {
                                 TreeModelNode* parent,
                                 int start,
                                 int count);
-  virtual void TreeNodeChildrenReordered(TreeModel* model,
-                                         TreeModelNode* parent);
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node);
+  // End TreeModelObserver implementation.
 
  private:
   // Fill the tree store values for a given node.

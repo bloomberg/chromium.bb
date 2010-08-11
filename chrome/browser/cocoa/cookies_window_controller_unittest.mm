@@ -275,56 +275,6 @@ TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
   EXPECT_NSEQ(@"A", title);
 }
 
-TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
-  const GURL url = GURL("http://foo.com");
-  TestingProfile* profile = browser_helper_.profile();
-  net::CookieMonster* cm = profile->GetCookieMonster();
-  cm->SetCookie(url, "A=B");
-  cm->SetCookie(url, "C=D");
-  cm->SetCookie(url, "E=F");
-
-  controller_.reset(
-      [[CookiesWindowController alloc] initWithProfile:profile
-                                        databaseHelper:database_helper_
-                                         storageHelper:local_storage_helper_
-                                        appcacheHelper:appcache_helper_]);
-
-  // Root --> foo.com --> Cookies.
-  NSMutableArray* cocoa_children =
-      [[[[[[controller_ cocoaTreeModel] children] objectAtIndex:0]
-          children] objectAtIndex:0] mutableChildren];
-  EXPECT_EQ(3U, [cocoa_children count]);
-
-  // Check default ordering.
-  CocoaCookieTreeNode* node = [cocoa_children objectAtIndex:0];
-  EXPECT_NSEQ(@"A", [[node details] name]);
-  node =  [cocoa_children objectAtIndex:1];
-  EXPECT_NSEQ(@"C", [[node details] name]);
-  node =  [cocoa_children objectAtIndex:2];
-  EXPECT_NSEQ(@"E", [[node details] name]);
-
-  CookiesTreeModel* model = [controller_ treeModel];
-  // Root --> foo.com --> Cookies.
-  CookieTreeNode* parent = model->GetRoot()->GetChild(0)->GetChild(0);
-
-  // Reorder the nodes.
-  CookieTreeNode* node_e = parent->Remove(2);
-  CookieTreeNode* node_c = parent->Remove(1);
-  parent->Add(0, node_e);
-  parent->Add(2, node_c);
-
-  // Notify the observer of the reordering.
-  [controller_ modelObserver]->TreeNodeChildrenReordered(model, parent);
-
-  // Check the new order.
-  node = [cocoa_children objectAtIndex:0];
-  EXPECT_NSEQ(@"E", [[node details] name]);
-  node =  [cocoa_children objectAtIndex:1];
-  EXPECT_NSEQ(@"A", [[node details] name]);
-  node =  [cocoa_children objectAtIndex:2];
-  EXPECT_NSEQ(@"C", [[node details] name]);
-}
-
 TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
   const GURL url = GURL("http://foo.com");
   TestingProfile* profile = browser_helper_.profile();
