@@ -470,7 +470,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
 }
 
 // Test that Storage panel can be shown.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowStoragePanel) {
+// Started failing with 65072:65129 WebKit roll. See http://crbug.com/51768
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestShowStoragePanel) {
   RunTest("testShowStoragePanel", kDebuggerTestPage);
 }
 
