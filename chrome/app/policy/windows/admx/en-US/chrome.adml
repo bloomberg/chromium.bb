@@ -44,6 +44,18 @@ If you enable this setting, Google Chrome ignores all proxy-related options spec
       <string id="ProxyServerUseSystem">Use system proxy settings</string>
       <string id="ProxyBypassList">Comma-separated list of bypass rules:</string>
       <string id="ProxyPacUrl">URL to a proxy .pac file:</string>
+      <string id="ExtensionInstallBlacklist">Configure extension installation blacklist</string>
+      <string id="ExtensionInstallWhitelist">Configure extension installation whitelist</string>
+      <string id="ExtensionInstallBlacklist_Explain">Allows you to specify which extensions the users can NOT install.
+
+A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.</string>
+      <string id="ExtensionInstallWhitelist_Explain">Allows you to specify which extensions are not subject to the blacklist.
+
+A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.
+
+By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.</string>
+      <string id="ExtensionInstallBlacklistDesc">Specify extension ids the user should be prevented from installing (or * for all).</string>
+      <string id="ExtensionInstallWhitelistDesc">Specify extension ids to excempt from the blacklist.</string>
       <string id="AlternateErrorPagesEnabled">Enable alternate error pages</string>
       <string id="AlternateErrorPagesEnabled_Explain">Enables the use of alternate error pages that are built into Google Chrome (such as 'page not found') and prevents users from changing this setting.
 
@@ -135,6 +147,12 @@ If you enable this setting, users cannot change or override this setting in Goog
         <textBox refId="ProxyBypassList">
           <label>Comma-separated list of bypass rules:</label>
         </textBox>
+      </presentation>
+      <presentation id="ExtensionInstallBlacklist">
+        <listBox refId="ExtensionInstallBlacklistDesc">Specify extension ids the user should be prevented from installing (or * for all).</listBox>
+      </presentation>
+      <presentation id="ExtensionInstallWhitelist">
+        <listBox refId="ExtensionInstallWhitelistDesc">Specify extension ids to excempt from the blacklist.</listBox>
       </presentation>
     </presentationTable>
   </resources>

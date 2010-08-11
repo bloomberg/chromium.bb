@@ -158,6 +158,31 @@ CLASS MACHINE
               VALUENAME "ProxyBypassList"
            END PART
        END POLICY
+
+       POLICY !!ExtensionInstallBlacklist
+           #if version >= 4
+             SUPPORTED !!SUPPORTED_WINXPSP2
+           #endif
+           EXPLAIN !!ExtensionInstallBlacklist_Explain
+           KEYNAME "Software\Policies\Google\Chrome\ExtensionInstallBlacklist"
+
+           PART !!ExtensionInstallBlacklistDesc LISTBOX
+              VALUEPREFIX " "
+           END PART
+       END POLICY
+
+       POLICY !!ExtensionInstallWhitelist
+           #if version >= 4
+             SUPPORTED !!SUPPORTED_WINXPSP2
+           #endif
+           EXPLAIN !!ExtensionInstallWhitelist_Explain
+           KEYNAME "Software\Policies\Google\Chrome\ExtensionInstallWhitelist"
+
+           PART !!ExtensionInstallWhitelistDesc LISTBOX
+              VALUEPREFIX " "
+           END PART
+       END POLICY
+
     END CATEGORY
   END CATEGORY
 
@@ -194,6 +219,15 @@ ProxyServerManual="Manually specify proxy settings"
 ProxyServerUseSystem="Use system proxy settings"
 ProxyBypassList="Comma-separated list of bypass rules:"
 ProxyPacUrl="URL to a proxy .pac file:"
+ExtensionInstallBlacklist="Configure extension installation blacklist"
+ExtensionInstallWhitelist="Configure extension installation whitelist"
+ExtensionInstallBlacklist_Explain="Allows you to specify which extensions the users can NOT install.\n\n\
+A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist."
+ExtensionInstallWhitelist_Explain="Allows you to specify which extensions are not subject to the blacklist.\n\n\
+A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.\n\n\
+By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy."
+ExtensionInstallBlacklistDesc="Specify extension ids the user should be prevented from installing (or * for all)."
+ExtensionInstallWhitelistDesc="Specify extension ids to excempt from the blacklist."
 AlternateErrorPagesEnabled="Enable alternate error pages"
 AlternateErrorPagesEnabled_Explain="Enables the use of alternate error pages that are built \
 into Google Chrome (such as 'page not found') and prevents users from changing this setting.\n\n\
