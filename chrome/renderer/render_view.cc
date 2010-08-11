@@ -2393,6 +2393,10 @@ WebCookieJar* RenderView::cookieJar() {
   return &cookie_jar_;
 }
 
+void RenderView::frameDetached(WebFrame* frame) {
+  autofill_helper_.FrameDetached(frame);
+}
+
 void RenderView::willClose(WebFrame* frame) {
   if (!frame->parent()) {
     const GURL& url = frame->url();
@@ -2404,6 +2408,7 @@ void RenderView::willClose(WebFrame* frame) {
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   navigation_state->user_script_idle_scheduler()->Cancel();
 
+  // TODO(jhawkins): Remove once frameDetached is called by WebKit.
   autofill_helper_.FrameWillClose(frame);
 }
 

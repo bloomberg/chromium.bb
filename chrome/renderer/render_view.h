@@ -437,6 +437,7 @@ class RenderView : public RenderWidget,
       WebKit::WebFrame* frame,
       WebKit::WebApplicationCacheHostClient* client);
   virtual WebKit::WebCookieJar* cookieJar();
+  virtual void frameDetached(WebKit::WebFrame* frame);
   virtual void willClose(WebKit::WebFrame* frame);
   virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);

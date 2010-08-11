@@ -19,12 +19,12 @@ class WebInputElement;
 class WebString;
 }
 
-// AutoFillHelper deals with autofill related communications between WebKit and
+// AutoFillHelper deals with AutoFill related communications between WebKit and
 // the browser.  There is one AutofillHelper per RenderView.
 // This code was originally part of RenderView.
-// Note that autofill encompasses:
+// Note that AutoFill encompasses:
 // - single text field suggestions, that we usually refer to as Autocomplete
-// - entire form fill based on one field entry, refered as form AutoFill.
+// - entire form fill based on one field entry, referred to as form AutoFill.
 
 class AutoFillHelper {
  public:
@@ -40,7 +40,7 @@ class AutoFillHelper {
   void RemoveAutocompleteSuggestion(const WebKit::WebString& name,
                                     const WebKit::WebString& value);
 
-  // Called when we have received Autofill suggestions from the browser.
+  // Called when we have received AutoFill suggestions from the browser.
   void SuggestionsReceived(int query_id,
                            const std::vector<string16>& values,
                            const std::vector<string16>& labels,
@@ -76,8 +76,13 @@ class AutoFillHelper {
   // frame and sends them to the browser for parsing.
   void FrameContentsAvailable(WebKit::WebFrame* frame);
 
-  // Called before a frame is closed.  Gives us an oppotunity to clean-up.
+  // Called before a frame is closed. Gives us an opportunity to clean up.
+  // DEPRECATED.
   void FrameWillClose(WebKit::WebFrame* frame);
+
+  // Called when |frame| is detached from the view. Gives us an opportunity to
+  // clean up.
+  void FrameDetached(WebKit::WebFrame* frame);
 
  private:
   enum AutoFillAction {
