@@ -7,8 +7,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/glue/webaccessibility.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 
 TEST(RenderMessagesUnittest, WebAccessibility) {
   // Test a simple case.

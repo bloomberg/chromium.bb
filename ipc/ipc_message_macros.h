@@ -845,20 +845,23 @@ LogFunction g_log_function_mapping[LastMsgIndex];
 
 #define IPC_SYNC_MESSAGE_CONTROL0_0(msg_class) \
   class msg_class : public IPC::MessageWithReply<Tuple0, Tuple0 > { \
-    public:                                                         \
-      enum { ID = msg_class##__ID };                                \
-      msg_class();                                                  \
-      ~msg_class();                                                 \
-      static void Log(const Message* msg, std::wstring* l);         \
+   public: \
+   enum { ID = msg_class##__ID }; \
+    msg_class() \
+        : IPC::MessageWithReply<Tuple0, Tuple0 >( \
+            MSG_ROUTING_CONTROL, ID, \
+            MakeTuple(), MakeTuple()) {} \
   };
 
-#define IPC_SYNC_MESSAGE_CONTROL0_1(msg_class, type1_out)               \
+#define IPC_SYNC_MESSAGE_CONTROL0_1(msg_class, type1_out) \
   class msg_class : public IPC::MessageWithReply<Tuple0, Tuple1<type1_out&> > { \
-    public:                                                             \
-      enum { ID = msg_class##__ID };                                    \
-      msg_class(type1_out* arg1);                                       \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+   public: \
+   enum { ID = msg_class##__ID }; \
+    msg_class(type1_out* arg1) \
+        : IPC::MessageWithReply<Tuple0, Tuple1<type1_out&> >( \
+            MSG_ROUTING_CONTROL, \
+            ID, \
+            MakeTuple(), MakeRefTuple(*arg1)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL0_2(msg_class, type1_out, type2_out) \
@@ -866,9 +869,11 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       public IPC::MessageWithReply<Tuple0, Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(type1_out* arg1, type2_out* arg2);                         \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(type1_out* arg1, type2_out* arg2) \
+        : IPC::MessageWithReply<Tuple0, Tuple2<type1_out&, type2_out&> >( \
+            MSG_ROUTING_CONTROL, \
+            ID, \
+            MakeTuple(), MakeRefTuple(*arg1, *arg2)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL0_3(msg_class, type1_out, type2_out, type3_out) \
@@ -877,29 +882,33 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> >{ \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(type1_out* arg1, type2_out* arg2, type3_out* arg3);    \
-   ~msg_class();                                                        \
-   static void Log(const Message* msg, std::wstring* l);                \
+    msg_class(type1_out* arg1, type2_out* arg2, type3_out* arg3) \
+        : IPC::MessageWithReply<Tuple0,  \
+            Tuple3<type1_out&, type2_out&, type3_out&> >(MSG_ROUTING_CONTROL, \
+            ID, \
+            MakeTuple(), MakeRefTuple(*arg1, *arg2, *arg3)) {} \
   };
 
-#define IPC_SYNC_MESSAGE_CONTROL1_0(msg_class, type1_in)                \
-  class msg_class :                                                     \
-      public IPC::MessageWithReply<Tuple1<type1_in>, Tuple0 > {         \
-    public:                                                             \
-      enum { ID = msg_class##__ID };                                    \
-      msg_class(const type1_in& arg1);                                  \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+#define IPC_SYNC_MESSAGE_CONTROL1_0(msg_class, type1_in) \
+  class msg_class : \
+      public IPC::MessageWithReply<Tuple1<type1_in>, Tuple0 > { \
+   public: \
+   enum { ID = msg_class##__ID }; \
+    msg_class(const type1_in& arg1) \
+        : IPC::MessageWithReply<Tuple1<type1_in>, Tuple0 >( \
+            MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1), MakeTuple()) {} \
   };
 
-#define IPC_SYNC_MESSAGE_CONTROL1_1(msg_class, type1_in, type1_out)     \
-  class msg_class :                                                     \
+#define IPC_SYNC_MESSAGE_CONTROL1_1(msg_class, type1_in, type1_out) \
+  class msg_class : \
       public IPC::MessageWithReply<Tuple1<type1_in>, Tuple1<type1_out&> > { \
-    public:                                                             \
-      enum { ID = msg_class##__ID };                                    \
-      msg_class(const type1_in& arg1, type1_out* arg2);                 \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+   public: \
+   enum { ID = msg_class##__ID }; \
+    msg_class(const type1_in& arg1, type1_out* arg2) \
+        : IPC::MessageWithReply<Tuple1<type1_in>, Tuple1<type1_out&> >( \
+            MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1), MakeRefTuple(*arg2)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL1_2(msg_class, type1_in, type1_out, type2_out) \
@@ -907,9 +916,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       public IPC::MessageWithReply<Tuple1<type1_in>, Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, type1_out* arg2, type2_out* arg3);   \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(const type1_in& arg1, type1_out* arg2, type2_out* arg3) \
+        : IPC::MessageWithReply<Tuple1<type1_in>, Tuple2<type1_out&, type2_out&> >( \
+            MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1), MakeRefTuple(*arg2, *arg3)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL1_3(msg_class, type1_in, type1_out, type2_out, type3_out) \
@@ -918,29 +928,33 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> >{ \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4) \
+        : IPC::MessageWithReply<Tuple1<type1_in>, \
+            Tuple3<type1_out&, type2_out&, type3_out&> >(MSG_ROUTING_CONTROL, \
+            ID, \
+            MakeRefTuple(arg1), MakeRefTuple(*arg2, *arg3, *arg4)) {} \
   };
 
-#define IPC_SYNC_MESSAGE_CONTROL2_0(msg_class, type1_in, type2_in)      \
-  class msg_class :                                                     \
+#define IPC_SYNC_MESSAGE_CONTROL2_0(msg_class, type1_in, type2_in) \
+  class msg_class : \
       public IPC::MessageWithReply<Tuple2<type1_in, type2_in>, Tuple0 > { \
-    public:                                                             \
-      enum { ID = msg_class##__ID };                                    \
-      msg_class(const type1_in& arg1, const type2_in& arg2);            \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+   public: \
+   enum { ID = msg_class##__ID }; \
+    msg_class(const type1_in& arg1, const type2_in& arg2) \
+        : IPC::MessageWithReply<Tuple2<type1_in, type2_in>, Tuple0 >( \
+            MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1, arg2), MakeTuple()) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL2_1(msg_class, type1_in, type2_in, type1_out) \
-  class msg_class :                                                     \
+  class msg_class : \
       public IPC::MessageWithReply<Tuple2<type1_in, type2_in>, Tuple1<type1_out&> > { \
-    public:                                                             \
-      enum { ID = msg_class##__ID };                                    \
-      msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+   public: \
+   enum { ID = msg_class##__ID }; \
+    msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3) \
+        : IPC::MessageWithReply<Tuple2<type1_in, type2_in>, Tuple1<type1_out&> >( \
+            MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL2_2(msg_class, type1_in, type2_in, type1_out, type2_out) \
@@ -949,9 +963,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4) \
+        : IPC::MessageWithReply<Tuple2<type1_in, type2_in>, \
+            Tuple2<type1_out&, type2_out&> >(MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3, *arg4)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL2_3(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out) \
@@ -960,9 +975,11 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4, type3_out* arg5); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4, type3_out* arg5) \
+        : IPC::MessageWithReply<Tuple2<type1_in, type2_in>, \
+            Tuple3<type1_out&, type2_out&, type3_out&> >(MSG_ROUTING_CONTROL, \
+            ID, \
+            MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3, *arg4, *arg5)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL3_1(msg_class, type1_in, type2_in, type3_in, type1_out) \
@@ -971,9 +988,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple1<type1_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4) \
+        : IPC::MessageWithReply<Tuple3<type1_in, type2_in, type3_in>, \
+            Tuple1<type1_out&> >(MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1, arg2, arg3), MakeRefTuple(*arg4)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL3_2(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out) \
@@ -982,9 +1000,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5) \
+        : IPC::MessageWithReply<Tuple3<type1_in, type2_in, type3_in>, \
+            Tuple2<type1_out&, type2_out&> >(MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1, arg2, arg3), MakeRefTuple(*arg4, *arg5)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL3_3(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out) \
@@ -993,9 +1012,11 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5, type3_out* arg6); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5, type3_out* arg6) \
+        : IPC::MessageWithReply<Tuple3<type1_in, type2_in, type3_in>, \
+            Tuple3<type1_out&, type2_out&, type3_out&> >(MSG_ROUTING_CONTROL, \
+            ID, \
+            MakeRefTuple(arg1, arg2, arg3), MakeRefTuple(*arg4, *arg5, *arg6)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL4_1(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out) \
@@ -1004,9 +1025,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple1<type1_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg6); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg6) \
+        : IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in, type4_in>, \
+            Tuple1<type1_out&> >(MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1, arg2, arg3, arg4), MakeRefTuple(*arg6)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL4_2(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out) \
@@ -1015,27 +1037,30 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
-  };
-
-#define IPC_SYNC_MESSAGE_ROUTED0_0(msg_class) \
-  class msg_class : public IPC::MessageWithReply<Tuple0, Tuple0 > { \
-   public: \
-   enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id);     \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6) \
+        : IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in, type4_in>, \
+            Tuple2<type1_out&, type2_out&> >(MSG_ROUTING_CONTROL, ID, \
+            MakeRefTuple(arg1, arg2, arg3, arg4), MakeRefTuple(*arg5, *arg6)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED0_1(msg_class, type1_out) \
   class msg_class : public IPC::MessageWithReply<Tuple0, Tuple1<type1_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, type1_out* arg1);  \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, type1_out* arg1) \
+        : IPC::MessageWithReply<Tuple0, Tuple1<type1_out&> >( \
+            routing_id, ID, \
+            MakeTuple(), MakeRefTuple(*arg1)) {} \
+  };
+
+#define IPC_SYNC_MESSAGE_ROUTED0_0(msg_class) \
+  class msg_class : public IPC::MessageWithReply<Tuple0, Tuple0 > { \
+   public: \
+   enum { ID = msg_class##__ID }; \
+    msg_class(int routing_id) \
+        : IPC::MessageWithReply<Tuple0, Tuple0 >( \
+            routing_id, ID, \
+            MakeTuple(), MakeTuple()) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED0_2(msg_class, type1_out, type2_out) \
@@ -1043,9 +1068,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       public IPC::MessageWithReply<Tuple0, Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, type1_out* arg1, type2_out* arg2); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, type1_out* arg1, type2_out* arg2) \
+        : IPC::MessageWithReply<Tuple0, Tuple2<type1_out&, type2_out&> >( \
+            routing_id, ID, \
+            MakeTuple(), MakeRefTuple(*arg1, *arg2)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED0_3(msg_class, type1_out, type2_out, type3_out) \
@@ -1054,9 +1080,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> >{ \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, type1_out* arg1, type2_out* arg2, type3_out* arg3); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, type1_out* arg1, type2_out* arg2, type3_out* arg3) \
+        : IPC::MessageWithReply<Tuple0,  \
+            Tuple3<type1_out&, type2_out&, type3_out&> >(routing_id, ID, \
+            MakeTuple(), MakeRefTuple(*arg1, *arg2, *arg3)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_0(msg_class, type1_in) \
@@ -1064,9 +1091,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       public IPC::MessageWithReply<Tuple1<type1_in>, Tuple0 > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1) \
+        : IPC::MessageWithReply<Tuple1<type1_in>, Tuple0 >( \
+            routing_id, ID, \
+            MakeRefTuple(arg1), MakeTuple()) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_1(msg_class, type1_in, type1_out) \
@@ -1074,9 +1102,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       public IPC::MessageWithReply<Tuple1<type1_in>, Tuple1<type1_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, type1_out* arg2);    \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, type1_out* arg2) \
+        : IPC::MessageWithReply<Tuple1<type1_in>, Tuple1<type1_out&> >( \
+            routing_id, ID, \
+            MakeRefTuple(arg1), MakeRefTuple(*arg2)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_2(msg_class, type1_in, type1_out, type2_out) \
@@ -1084,9 +1113,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       public IPC::MessageWithReply<Tuple1<type1_in>, Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, type1_out* arg2, type2_out* arg3); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, type1_out* arg2, type2_out* arg3) \
+        : IPC::MessageWithReply<Tuple1<type1_in>, Tuple2<type1_out&, type2_out&> >( \
+            routing_id, ID, \
+            MakeRefTuple(arg1), MakeRefTuple(*arg2, *arg3)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_3(msg_class, type1_in, type1_out, type2_out, type3_out) \
@@ -1095,9 +1125,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> >{ \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4) \
+        : IPC::MessageWithReply<Tuple1<type1_in>, \
+            Tuple3<type1_out&, type2_out&, type3_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1), MakeRefTuple(*arg2, *arg3, *arg4)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_4(msg_class, type1_in, type1_out, type2_out, type3_out, type4_out) \
@@ -1106,9 +1137,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >{ \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4, type4_out* arg5); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4, type4_out* arg5) \
+        : IPC::MessageWithReply<Tuple1<type1_in>, \
+            Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1), MakeRefTuple(*arg2, *arg3, *arg4, *arg5)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED2_0(msg_class, type1_in, type2_in) \
@@ -1116,9 +1148,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       public IPC::MessageWithReply<Tuple2<type1_in, type2_in>, Tuple0 > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2) \
+        : IPC::MessageWithReply<Tuple2<type1_in, type2_in>, Tuple0 >( \
+            routing_id, ID, \
+            MakeRefTuple(arg1, arg2), MakeTuple()) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED2_1(msg_class, type1_in, type2_in, type1_out) \
@@ -1126,9 +1159,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       public IPC::MessageWithReply<Tuple2<type1_in, type2_in>, Tuple1<type1_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3) \
+        : IPC::MessageWithReply<Tuple2<type1_in, type2_in>, Tuple1<type1_out&> >( \
+            routing_id, ID, \
+            MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED2_2(msg_class, type1_in, type2_in, type1_out, type2_out) \
@@ -1137,9 +1171,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4) \
+        : IPC::MessageWithReply<Tuple2<type1_in, type2_in>, \
+            Tuple2<type1_out&, type2_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3, *arg4)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED2_3(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out) \
@@ -1148,9 +1183,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4, type3_out* arg5); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4, type3_out* arg5) \
+        : IPC::MessageWithReply<Tuple2<type1_in, type2_in>, \
+            Tuple3<type1_out&, type2_out&, type3_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2), MakeRefTuple(*arg3, *arg4, *arg5)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED3_0(msg_class, type1_in, type2_in, type3_in) \
@@ -1158,10 +1194,11 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       public IPC::MessageWithReply<Tuple3<type1_in, type2_in, type3_in>, Tuple0 > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
-    };
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3) \
+        : IPC::MessageWithReply<Tuple3<type1_in, type2_in, type3_in>, Tuple0>( \
+            routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3), MakeTuple()) {} \
+  };
 
 #define IPC_SYNC_MESSAGE_ROUTED3_1(msg_class, type1_in, type2_in, type3_in, type1_out) \
   class msg_class : \
@@ -1169,9 +1206,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple1<type1_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4) \
+        : IPC::MessageWithReply<Tuple3<type1_in, type2_in, type3_in>, \
+            Tuple1<type1_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3), MakeRefTuple(*arg4)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED3_2(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out) \
@@ -1180,9 +1218,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5) \
+        : IPC::MessageWithReply<Tuple3<type1_in, type2_in, type3_in>, \
+            Tuple2<type1_out&, type2_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3), MakeRefTuple(*arg4, *arg5)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED3_3(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out) \
@@ -1191,9 +1230,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5, type3_out* arg6); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5, type3_out* arg6) \
+        : IPC::MessageWithReply<Tuple3<type1_in, type2_in, type3_in>, \
+            Tuple3<type1_out&, type2_out&, type3_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3), MakeRefTuple(*arg4, *arg5, *arg6)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED4_0(msg_class, type1_in, type2_in, type3_in, type4_in) \
@@ -1202,9 +1242,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple0 > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4) \
+        : IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in, type4_in>, \
+            Tuple0 >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3, arg4), MakeTuple()) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED4_1(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out) \
@@ -1213,9 +1254,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple1<type1_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg6); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg6) \
+        : IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in, type4_in>, \
+            Tuple1<type1_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3, arg4), MakeRefTuple(*arg6)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED4_2(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out) \
@@ -1224,9 +1266,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6) \
+        : IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in, type4_in>, \
+            Tuple2<type1_out&, type2_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3, arg4), MakeRefTuple(*arg5, *arg6)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED4_3(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out) \
@@ -1235,9 +1278,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6, type3_out* arg7); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6, type3_out* arg7) \
+      : IPC::MessageWithReply<Tuple4<type1_in, type2_in, type3_in, type4_in>, \
+          Tuple3<type1_out&, type2_out&, type3_out&> >(routing_id, ID, \
+          MakeRefTuple(arg1, arg2, arg3, arg4), MakeRefTuple(*arg5, *arg6, *arg7)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED5_0(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in) \
@@ -1246,9 +1290,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple0 > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type5_in& arg5); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type5_in& arg5) \
+        : IPC::MessageWithReply<Tuple5<type1_in, type2_in, type3_in, type4_in, type5_in>, \
+            Tuple0 >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3, arg4, arg5), MakeTuple()) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED5_1(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out) \
@@ -1257,9 +1302,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple1<type1_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type5_in& arg5, type1_out* arg6); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type5_in& arg5, type1_out* arg6) \
+        : IPC::MessageWithReply<Tuple5<type1_in, type2_in, type3_in, type4_in, type5_in>, \
+            Tuple1<type1_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3, arg4, arg5), MakeRefTuple(*arg6)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED5_2(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out) \
@@ -1268,9 +1314,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple2<type1_out&, type2_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type4_in& arg5, type1_out* arg6, type2_out* arg7); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type4_in& arg5, type1_out* arg6, type2_out* arg7) \
+        : IPC::MessageWithReply<Tuple5<type1_in, type2_in, type3_in, type4_in, type5_in>, \
+            Tuple2<type1_out&, type2_out&> >(routing_id, ID, \
+            MakeRefTuple(arg1, arg2, arg3, arg4, arg5), MakeRefTuple(*arg6, *arg7)) {} \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED5_3(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out) \
@@ -1279,9 +1326,10 @@ LogFunction g_log_function_mapping[LastMsgIndex];
           Tuple3<type1_out&, type2_out&, type3_out&> > { \
    public: \
    enum { ID = msg_class##__ID }; \
-   msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type4_in& arg5, type1_out* arg6, type2_out* arg7, type3_out* arg8); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type4_in& arg5, type1_out* arg6, type2_out* arg7, type3_out* arg8) \
+      : IPC::MessageWithReply<Tuple5<type1_in, type2_in, type3_in, type4_in, type5_in>, \
+          Tuple3<type1_out&, type2_out&, type3_out&> >(routing_id, ID, \
+          MakeRefTuple(arg1, arg2, arg3, arg4, arg5), MakeRefTuple(*arg6, *arg7, *arg8)) {} \
   };
 
 #endif  // #if defined()

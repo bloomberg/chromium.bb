@@ -26,38 +26,80 @@
 
 #include "ipc/ipc_message_utils.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
-
-namespace WebKit {
-struct WebCompositionUnderline;
-struct WebFindOptions;
-struct WebRect;
-struct WebScreenInfo;
-}
 
 namespace IPC {
 
 template <>
 struct ParamTraits<WebKit::WebRect> {
   typedef WebKit::WebRect param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.x);
+    WriteParam(m, p.y);
+    WriteParam(m, p.width);
+    WriteParam(m, p.height);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->x) &&
+      ReadParam(m, iter, &p->y) &&
+      ReadParam(m, iter, &p->width) &&
+      ReadParam(m, iter, &p->height);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.x, l);
+    l->append(L", ");
+    LogParam(p.y, l);
+    l->append(L", ");
+    LogParam(p.width, l);
+    l->append(L", ");
+    LogParam(p.height, l);
+    l->append(L")");
+  }
 };
 
 template <>
 struct ParamTraits<WebKit::WebScreenInfo> {
   typedef WebKit::WebScreenInfo param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.depth);
+    WriteParam(m, p.depthPerComponent);
+    WriteParam(m, p.isMonochrome);
+    WriteParam(m, p.rect);
+    WriteParam(m, p.availableRect);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->depth) &&
+      ReadParam(m, iter, &p->depthPerComponent) &&
+      ReadParam(m, iter, &p->isMonochrome) &&
+      ReadParam(m, iter, &p->rect) &&
+      ReadParam(m, iter, &p->availableRect);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.depth, l);
+    l->append(L", ");
+    LogParam(p.depthPerComponent, l);
+    l->append(L", ");
+    LogParam(p.isMonochrome, l);
+    l->append(L", ");
+    LogParam(p.rect, l);
+    l->append(L", ");
+    LogParam(p.availableRect, l);
+    l->append(L")");
+  }
 };
 
 template <>
@@ -99,9 +141,26 @@ struct ParamTraits<WebKit::WebPopupType> {
 template <>
 struct ParamTraits<WebKit::WebFindOptions> {
   typedef WebKit::WebFindOptions param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.forward);
+    WriteParam(m, p.matchCase);
+    WriteParam(m, p.findNext);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->forward) &&
+      ReadParam(m, iter, &p->matchCase) &&
+      ReadParam(m, iter, &p->findNext);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.forward, l);
+    l->append(L", ");
+    LogParam(p.matchCase, l);
+    l->append(L", ");
+    LogParam(p.findNext, l);
+    l->append(L")");
+  }
 };
 
 template <>
@@ -319,9 +378,30 @@ template <>
 template <>
 struct ParamTraits<WebKit::WebCompositionUnderline> {
   typedef WebKit::WebCompositionUnderline param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.startOffset);
+    WriteParam(m, p.endOffset);
+    WriteParam(m, p.color);
+    WriteParam(m, p.thick);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->startOffset) &&
+        ReadParam(m, iter, &p->endOffset) &&
+        ReadParam(m, iter, &p->color) &&
+        ReadParam(m, iter, &p->thick);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.startOffset, l);
+    l->append(L",");
+    LogParam(p.endOffset, l);
+    l->append(L":");
+    LogParam(p.color, l);
+    l->append(L":");
+    LogParam(p.thick, l);
+    l->append(L")");
+  }
 };
 
 template <>

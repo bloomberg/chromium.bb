@@ -25,19 +25,6 @@ MessageWithTuple<ParamType>::MessageWithTuple(
 // subclass needs to have Log() to call Read(), which instantiates the above
 // template.
 
-template <class SendParamType, class ReplyParamType>
-MessageWithReply<SendParamType, ReplyParamType>::MessageWithReply(
-    int32 routing_id, uint32 type,
-    const RefSendParam& send,
-    const ReplyParam& reply)
-    : SyncMessage(routing_id, type, PRIORITY_NORMAL,
-                  new ParamDeserializer<ReplyParam>(reply)) {
-  WriteParam(this, send);
-}
-
-// TODO(erg): Migrate ReadSendParam()/ReadReplyParam() here when we can force
-// the visibility/linkage.
-
 }  // namespace IPC
 
 #endif  // IPC_IPC_MESSAGE_UTILS_IMPL_H_

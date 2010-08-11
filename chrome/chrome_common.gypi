@@ -286,7 +286,6 @@
         'common/visitedlink_common.h',
         'common/web_database_observer_impl.cc',
         'common/web_database_observer_impl.h',
-        'common/webkit_param_traits.cc',
         'common/webkit_param_traits.h',
         'common/webmessageportchannel_impl.cc',
         'common/webmessageportchannel_impl.h',
