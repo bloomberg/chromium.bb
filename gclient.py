@@ -747,29 +747,21 @@ solutions = [
     return 0
 
   def PrintRevInfo(self):
-    """Output revision info mapping for the client and its dependencies.
-
-    This allows the capture of an overall "revision" for the source tree that
-    can be used to reproduce the same tree in the future. It is only useful for
-    "unpinned dependencies", i.e. DEPS/deps references without a svn revision
-    number or a git hash. A git branch name isn't "pinned" since the actual
-    commit can change.
-
-    The --snapshot option allows creating a .gclient file to reproduce the tree.
-    """
     if not self.dependencies:
       raise gclient_utils.Error('No solution specified')
     # Load all the settings.
     self.RunCommandRecursively(self._options, {}, None, [], None)
 
-    def GetURLAndRev(name, original_url):
-      """Returns the revision-qualified SCM url."""
-      if original_url is None:
+    def GetURLAndRev(dep):
+      """Returns the revision-qualified SCM url for a Dependency."""
+      if dep.parsed_url is None:
         return None
-      if isinstance(original_url, self.FileImpl):
-        original_url = original_url.file_location
+      if isinstance(dep.parsed_url, self.FileImpl):
+        original_url = dep.parsed_url.file_location
+      else:
+        original_url = dep.parsed_url
       url, _ = gclient_utils.SplitUrlRevision(original_url)
-      scm = gclient_scm.CreateSCM(original_url, self.root_dir(), name)
+      scm = gclient_scm.CreateSCM(original_url, self.root_dir(), dep.name)
       if not os.path.isdir(scm.checkout_path):
         return None
       return '%s@%s' % (url, scm.revinfo(self._options, [], None))
@@ -779,11 +771,11 @@ solutions = [
       # First level at .gclient
       for d in self.dependencies:
         entries = {}
-        def GrabDeps(sol):
+        def GrabDeps(dep):
           """Recursively grab dependencies."""
-          for i in sol.dependencies:
-            entries[i.name] = GetURLAndRev(i.name, i.parsed_url)
-            GrabDeps(i)
+          for d in dep.dependencies:
+            entries[d.name] = GetURLAndRev(d)
+            GrabDeps(d)
         GrabDeps(d)
         custom_deps = []
         for k in sorted(entries.keys()):
@@ -802,10 +794,10 @@ solutions = [
       print(self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient})
     else:
       entries = sorted(self.tree(False), key=lambda i: i.name)
-      for entry in entries:
-        entry_url = GetURLAndRev(entry.name, entry.parsed_url)
-        line = '%s: %s' % (entry.name, entry_url)
-        if not entry is entries[-1]:
+      for d in entries:
+        entry_url = GetURLAndRev(d)
+        line = '%s: %s' % (d.name, entry_url)
+        if not d is entries[-1]:
           line += ';'
         print line
     logging.info(str(self))
