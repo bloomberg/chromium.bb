@@ -174,6 +174,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
                        '-fno-stack-protector',
                        '-fdiagnostics-show-option',
                        '-pedantic',
+                       '-D__linux__',
                        extraflag,
                        ],
               ASFLAGS=[extraflag],
