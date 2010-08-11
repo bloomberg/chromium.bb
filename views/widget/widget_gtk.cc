@@ -1182,6 +1182,10 @@ gboolean WidgetGtk::OnKeyEvent(GtkWidget* widget, GdkEventKey* event) {
   if (!handled)
     handled = HandleKeyboardEvent(event);
 
+  // Dispatch the key event for bindings processing.
+  if (!handled && GTK_IS_WINDOW(widget))
+    handled = gtk_bindings_activate_event(GTK_OBJECT(widget), event);
+
   // Always return true for toplevel window to prevents GtkWindow's default key
   // event handler.
   return GTK_IS_WINDOW(widget) ? true : handled;
