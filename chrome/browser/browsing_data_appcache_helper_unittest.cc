@@ -85,3 +85,18 @@ TEST(CannedBrowsingDataAppCacheHelperTest, Unique) {
   ASSERT_EQ(1u, collection[manifest.GetOrigin()].size());
   EXPECT_EQ(manifest, collection[manifest.GetOrigin()].at(0).manifest_url);
 }
+
+TEST(CannedBrowsingDataAppCacheHelperTest, Empty) {
+  TestingProfile profile;
+
+  GURL manifest("http://example.com/manifest.xml");
+
+  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper =
+      new CannedBrowsingDataAppCacheHelper(&profile);
+
+  ASSERT_TRUE(helper->empty());
+  helper->AddAppCache(manifest);
+  ASSERT_FALSE(helper->empty());
+  helper->Reset();
+  ASSERT_TRUE(helper->empty());
+}

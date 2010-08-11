@@ -86,3 +86,18 @@ TEST(CannedBrowsingDataLocalStorageTest, Unique) {
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(FilePath(file).value(), result[0].file_path.BaseName().value());
 }
+
+TEST(CannedBrowsingDataLocalStorageTest, Empty) {
+  TestingProfile profile;
+
+  const GURL origin("http://host1:1/");
+
+  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper =
+      new CannedBrowsingDataLocalStorageHelper(&profile);
+
+  ASSERT_TRUE(helper->empty());
+  helper->AddLocalStorage(origin);
+  ASSERT_FALSE(helper->empty());
+  helper->Reset();
+  ASSERT_TRUE(helper->empty());
+}

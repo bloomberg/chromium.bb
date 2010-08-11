@@ -127,6 +127,10 @@ void CannedBrowsingDataAppCacheHelper::Reset() {
   info_collection_->infos_by_origin.clear();
 }
 
+bool CannedBrowsingDataAppCacheHelper::empty() const {
+  return info_collection_->infos_by_origin.empty();
+}
+
 void CannedBrowsingDataAppCacheHelper::StartFetching(
     Callback0::Type* completion_callback) {
   completion_callback->Run();

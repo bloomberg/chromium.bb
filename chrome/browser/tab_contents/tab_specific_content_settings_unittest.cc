@@ -11,18 +11,25 @@ namespace {
 class TestContentSettingsDelegate
     : public TabSpecificContentSettings::Delegate {
  public:
-  TestContentSettingsDelegate() : settings_changed_(false) {}
+  TestContentSettingsDelegate()
+      : settings_changed_(false), content_blocked_(false) {}
   virtual ~TestContentSettingsDelegate() {}
 
-  void Reset() { settings_changed_ = false; }
+  void Reset() { settings_changed_ = content_blocked_ = false; }
 
   bool SettingsChanged() { return settings_changed_; }
 
+  bool ContentBlocked() { return content_blocked_; }
+
   // TabSpecificContentSettings::Delegate implementation.
-  virtual void OnContentSettingsChange() { settings_changed_ = true; }
+  virtual void OnContentSettingsAccessed(bool content_was_blocked) {
+    settings_changed_ = true;
+    content_blocked_ = content_was_blocked;
+  }
 
  private:
   bool settings_changed_;
+  bool content_blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentSettingsDelegate);
 };
@@ -45,13 +52,16 @@ TEST(TabSpecificContentSettingsTest, BlockedContent) {
 
   // Set a cookie, block access to images, block a popup.
   content_settings.OnCookieAccessed(GURL("http://google.com"), "A=B", false);
-  EXPECT_FALSE(test_delegate.SettingsChanged());
+  EXPECT_TRUE(test_delegate.SettingsChanged());
+  EXPECT_FALSE(test_delegate.ContentBlocked());
   test_delegate.Reset();
   content_settings.OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
   EXPECT_TRUE(test_delegate.SettingsChanged());
+  EXPECT_TRUE(test_delegate.ContentBlocked());
   test_delegate.Reset();
   content_settings.SetPopupsBlocked(true);
   EXPECT_TRUE(test_delegate.SettingsChanged());
+  EXPECT_TRUE(test_delegate.ContentBlocked());
   test_delegate.Reset();
 
   // Check that only the respective content types are affected.
@@ -67,6 +77,7 @@ TEST(TabSpecificContentSettingsTest, BlockedContent) {
   // Reset blocked content settings.
   content_settings.ClearBlockedContentSettings();
   EXPECT_TRUE(test_delegate.SettingsChanged());
+  EXPECT_FALSE(test_delegate.ContentBlocked());
   EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
   EXPECT_FALSE(
       content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
@@ -75,4 +86,27 @@ TEST(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_FALSE(
       content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+}
+
+TEST(TabSpecificContentSettingsTest, AllowedContent) {
+  TestContentSettingsDelegate test_delegate;
+  TestingProfile profile;
+  TabSpecificContentSettings content_settings(&test_delegate, &profile);
+
+  ASSERT_FALSE(
+      content_settings.IsContentAccessed(CONTENT_SETTINGS_TYPE_IMAGES));
+  ASSERT_FALSE(
+      content_settings.IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+  ASSERT_FALSE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+  content_settings.OnCookieAccessed(GURL("http://google.com"), "A=B", false);
+  ASSERT_TRUE(
+      content_settings.IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+  ASSERT_FALSE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+  content_settings.OnCookieAccessed(GURL("http://google.com"), "C=D", true);
+  ASSERT_TRUE(
+      content_settings.IsContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES));
+  ASSERT_TRUE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 }

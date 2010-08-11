@@ -28,9 +28,12 @@ class TabSpecificContentSettings
  public:
   class Delegate {
    public:
-    // Invoked when content settings managed by the TabSpecificContentSettings
-    // object change.
-    virtual void OnContentSettingsChange() = 0;
+    // Invoked when content settings for resources in the tab contents
+    // associated with this TabSpecificContentSettings object were accessed.
+    // |content_was_blocked| is true, if a content settings type was blocked
+    // (as opposed to just accessed). Currently, this parameter is checked in
+    // unit tests only.
+    virtual void OnContentSettingsAccessed(bool content_was_blocked) = 0;
 
     virtual ~Delegate() {}
   };
@@ -52,6 +55,10 @@ class TabSpecificContentSettings
   // Returns whether a particular kind of content has been blocked for this
   // page.
   bool IsContentBlocked(ContentSettingsType content_type) const;
+
+  // Returns whether a particular kind of content has been accessed. Currently
+  // only tracks cookies.
+  bool IsContentAccessed(ContentSettingsType content_type) const;
 
   // Returns the GeolocationSettingsState that controls the
   // geolocation API usage on this page.
@@ -113,6 +120,8 @@ class TabSpecificContentSettings
 
     CookiesTreeModel* GetCookiesTreeModel();
 
+    bool empty() const;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(LocalSharedObjectsContainer);
 
@@ -123,8 +132,13 @@ class TabSpecificContentSettings
     scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
   };
 
+  void OnContentAccessed(ContentSettingsType type);
+
   // Stores which content setting types actually have blocked content.
   bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
+
+  // Stores which content setting types actually were accessed.
+  bool content_accessed_[CONTENT_SETTINGS_NUM_TYPES];
 
   // Stores the blocked/allowed cookies.
   LocalSharedObjectsContainer allowed_local_shared_objects_;

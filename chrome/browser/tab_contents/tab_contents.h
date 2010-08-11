@@ -819,8 +819,8 @@ class TabContents : public PageNavigator,
   void GenerateKeywordIfNecessary(
       const ViewHostMsg_FrameNavigate_Params& params);
 
-  // ContentBlockedDelegate::Delegate implementation.
-  virtual void OnContentSettingsChange();
+  // TabSpecificContentSettings::Delegate implementation.
+  virtual void OnContentSettingsAccessed(bool content_was_blocked);
 
   // RenderViewHostDelegate ----------------------------------------------------
 
