@@ -177,6 +177,9 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
     return true;
   }
 
+  // Overridden from InfoBarDelegate:
+  virtual Type GetInfoBarType() { return PAGE_ACTION_TYPE; }
+
  private:
   // The origin we are asking for permissions on.
   GURL origin_;
