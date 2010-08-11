@@ -30,7 +30,11 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
 
   // Gets the list of input methods from the given input descriptors.
   // The return value will look like:
-  // [{'id': 'pinyin', 'displayName': 'Pinyin', 'languageCode': 'zh-CW'}, ...]
+  // [{'id': 'pinyin', 'displayName': 'Pinyin',
+  //   'languageCodeSet': {'zh-CW': true}},  ...]
+  //
+  // Note that true in languageCodeSet does not mean anything. We just use
+  // the dictionary as a set.
   static ListValue* GetInputMethodList(
       const InputMethodDescriptors& descriptors);
 

@@ -90,9 +90,26 @@ ListValue* LanguageOptionsHandler::GetInputMethodList(
         input_method::GetInputMethodDisplayNameFromId(descriptor.id);
 
     DictionaryValue* dictionary = new DictionaryValue();
-    dictionary->SetString(L"id", UTF8ToWide(descriptor.id));
-    dictionary->SetString(L"displayName", UTF8ToWide(display_name));
-    dictionary->SetString(L"languageCode", UTF8ToWide(language_code));
+    dictionary->SetString("id", descriptor.id);
+    dictionary->SetString("displayName", display_name);
+
+    // One input method can be associated with multiple languages, hence
+    // we use a dictionary here.
+    DictionaryValue* language_codes = new DictionaryValue();
+    language_codes->SetBoolean(language_code, true);
+    // Check kExtraLanguages to see if there are languages associated with
+    // this input method. If these are present, add these.
+    for (size_t j = 0; j < arraysize(input_method::kExtraLanguages); ++j) {
+      const std::string extra_input_method_id =
+          input_method::kExtraLanguages[j].input_method_id;
+      const std::string extra_language_code =
+          input_method::kExtraLanguages[j].language_code;
+      if (extra_input_method_id == descriptor.id) {
+        language_codes->SetBoolean(extra_language_code, true);
+      }
+    }
+    dictionary->Set("languageCodeSet", language_codes);
+
     input_method_list->Append(dictionary);
   }
 

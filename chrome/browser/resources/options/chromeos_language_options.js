@@ -101,7 +101,7 @@ cr.define('options', function() {
         label.appendChild(input);
         label.appendChild(document.createTextNode(inputMethod.displayName));
         label.style.display = 'none';
-        label.languageCode = inputMethod.languageCode;
+        label.languageCodeSet = inputMethod.languageCodeSet;
         // Add the configure button if the config page is present for this
         // input method.
         if (inputMethod.id in INPUT_METHOD_ID_TO_CONFIG_PAGE_NAME) {
@@ -223,7 +223,7 @@ cr.define('options', function() {
       var inputMethodList = $('language-options-input-method-list');
       var labels = inputMethodList.querySelectorAll('label');
       for (var i = 0; i < labels.length; i++) {
-        if (labels[i].languageCode == languageCode) {
+        if (languageCode in labels[i].languageCodeSet) {
           labels[i].style.display = 'block';
         } else {
           labels[i].style.display = 'none';
@@ -312,7 +312,7 @@ cr.define('options', function() {
       var inputMethodList = templateData.inputMethodList;
       for (var i = 0; i < inputMethodList.length; i++) {
         var inputMethod = inputMethodList[i];
-        if (inputMethod.languageCode == languageCode) {
+        if (languageCode in inputMethod.languageCodeSet) {
           enginesToBeRemoved[inputMethod.id] = true;
         }
       }

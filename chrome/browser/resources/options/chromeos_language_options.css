@@ -50,15 +50,19 @@
   min-width: 360px;
 }
 
+#language-options-input-method-list button {
+  display: block;
+  -webkit-margin-start: 20px;
+}
+
+#language-options-input-method-list label {
+  margin: 4px 0;
+}
+
 #language-options-list {
   -webkit-box-flex: 1;
   padding: 0;
   width: 100%;
-}
-
-#language-options-input-method-list button {
-  display: block;
-  -webkit-margin-start: 20px;
 }
 
 #language-options-list li {

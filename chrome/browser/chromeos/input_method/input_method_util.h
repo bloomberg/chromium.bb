@@ -15,8 +15,8 @@
 namespace chromeos {
 namespace input_method {
 
-// The list of language that do not have associated input methods. For
-// these languages, we associate input methods here.
+// The list of language that do not have associated input methods in IBus.
+// For these languages, we associate input methods here.
 const struct ExtraLanguage {
   const char* language_code;
   const char* input_method_id;
