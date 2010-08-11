@@ -337,6 +337,8 @@ class NotificationBridge : public NotificationObserver {
   view_id_util::SetID(forwardButton_, VIEW_ID_FORWARD_BUTTON);
   view_id_util::SetID(homeButton_, VIEW_ID_HOME_BUTTON);
   view_id_util::SetID(wrenchButton_, VIEW_ID_APP_MENU);
+
+  [self addAccessibilityDescriptions];
 }
 
 - (void)addAccessibilityDescriptions {
