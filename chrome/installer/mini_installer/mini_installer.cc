@@ -146,14 +146,16 @@ bool ReadValueFromRegistry(HKEY root_key, const wchar_t *sub_key,
 
 // This function sets the flag in registry to indicate that Google Update
 // should try full installer next time. If the current installer works, this
-// flag is cleared by setup.exe at the end of install.
-void SetFullInstallerFlag(HKEY root_key) {
+// flag is cleared by setup.exe at the end of install. The flag will by default
+// be written to HKCU, but if --system-level is included in the command line,
+// it will be written to HKLM instead.
+void SetFullInstallerFlag() {
   HKEY key;
   wchar_t ap_registry_key[128];
   const wchar_t* app_guid = google_update::kAppGuid;
+  HKEY root_key = HKEY_CURRENT_USER;
 
   int args_num;
-
   wchar_t* cmd_line = ::GetCommandLine();
   wchar_t** args = ::CommandLineToArgvW(cmd_line, &args_num);
   for (int i = 1; i < args_num; ++i) {
@@ -161,6 +163,8 @@ void SetFullInstallerFlag(HKEY root_key) {
       app_guid = google_update::kSxSAppGuid;
     else if (0 == ::lstrcmpi(args[i], L"--chrome-frame"))
       app_guid = google_update::kChromeFrameAppGuid;
+    else if (0 == ::lstrcmpi(args[i], L"--system-level"))
+      root_key = HKEY_LOCAL_MACHINE;
   }
 
   if (!SafeStrCopy(ap_registry_key, _countof(ap_registry_key),
@@ -528,10 +532,10 @@ int WMain(HMODULE module) {
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Set the magic suffix in registry to try full installer next time. We ignore
-  // any errors here and we try to set the suffix for user level as well as
-  // system level. This only applies to Google Chrome distribution.
-  SetFullInstallerFlag(HKEY_LOCAL_MACHINE);
-  SetFullInstallerFlag(HKEY_CURRENT_USER);
+  // any errors here and we try to set the suffix for user level unless
+  // --system-level is on the command line in which case we set it for system
+  // level instead. This only applies to the Google Chrome distribution.
+  SetFullInstallerFlag();
 #endif
 
   wchar_t archive_path[MAX_PATH] = {0};
