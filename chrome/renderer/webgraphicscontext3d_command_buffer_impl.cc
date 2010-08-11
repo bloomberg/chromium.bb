@@ -10,6 +10,7 @@
 
 #include <algorithm>
 
+#include "base/string_tokenizer.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/common/chrome_switches.h"
@@ -205,6 +206,26 @@ void WebGraphicsContext3DCommandBufferImpl::synthesizeGLError(
       synthetic_errors_.end()) {
     synthetic_errors_.push_back(error);
   }
+}
+
+static bool supports_extension(const char *ext_name) {
+  const char* extensions = (const char *) glGetString(GL_EXTENSIONS);
+  CStringTokenizer t(extensions, extensions + strlen(extensions), " ");
+  while (t.GetNext()) {
+    if (t.token() == ext_name) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::supportsBGRA() {
+  static bool is_supported =
+    supports_extension("GL_EXT_texture_format_BGRA8888");
+  // TODO(senorblanco):  Also check for GL_EXT_read_format_bgra.  It's
+  // actually supported by the command buffer, it's just not reported in
+  // the extensions string.
+  return is_supported;
 }
 
 // Helper macros to reduce the amount of code.

@@ -336,6 +336,7 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void deleteTexture(unsigned);
 
   virtual void synthesizeGLError(unsigned long error);
+  virtual bool supportsBGRA();
 
  private:
   // The GGL context we use for OpenGL rendering.
