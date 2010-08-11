@@ -260,7 +260,7 @@ bool NPObjectProxy::Invoke(NPIdentifier id,
                                         &ret_length,
                                         ret_bytes);
   // Free the serialized args.
-  delete args_bytes;
+  delete[] args_bytes;
   // Check that the RPC layer worked correctly.
   if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
@@ -318,7 +318,7 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
                                                &ret_length,
                                                ret_bytes);
   // Free the serialized args.
-  delete args_bytes;
+  delete[] args_bytes;
   // Check that the RPC layer worked correctly.
   if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
@@ -425,7 +425,7 @@ bool NPObjectProxy::SetProperty(NPIdentifier id, const NPVariant* value) {
                                              arg_bytes,
                                              &success);
   // Free the serialized args.
-  delete arg_bytes;
+  delete[] arg_bytes;
   // Check that the RPC layer worked correctly.
   if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
@@ -550,7 +550,7 @@ bool NPObjectProxy::Construct(const NPVariant* args,
                                            &ret_length,
                                            ret_bytes);
   // Free the serialized args.
-  delete args_bytes;
+  delete[] args_bytes;
   // Check that the RPC layer worked correctly.
   if (NACL_SRPC_RESULT_OK != srpc_result) {
     return false;
