@@ -2487,12 +2487,20 @@
   fun:_ZN4base14EnsureNSPRInitEv
 }
 {
-  bug_34554
+  bug_34554_a
   Memcheck:Leak
   fun:malloc
   ...
   fun:_ZN7WebCore13MutationEvent6createERKNS_12AtomicStringEbN3WTF10PassRefPtrINS_4NodeEEERKNS_6StringESA_SA_t
   fun:_ZN7WebCore4Node28dispatchSubtreeModifiedEventEv
+}
+{
+   bug_34554_b
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN7WebCore13MutationEvent6createERKN3WTF12AtomicStringEbNS1_10PassRefPtrINS_4NodeEEERKNS1_6StringESA_SA_t
+   fun:_ZN7WebCore4Node28dispatchSubtreeModifiedEventEv
 }
 {
   bug_34570
