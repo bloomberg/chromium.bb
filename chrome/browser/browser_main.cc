@@ -175,6 +175,9 @@ void BrowserMainParts::EarlyInitialization() {
   PrefetchFieldTrial();
   InitializeSSL();
 
+  if (parsed_command_line().HasSwitch(switches::kEnableDNSSECCerts))
+    net::SSLConfigService::EnableDNSSEC();
+
   PostEarlyInitialization();
 }
 

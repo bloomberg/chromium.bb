@@ -75,6 +75,7 @@ bool SSLConfigServiceWin::GetSSLConfigNow(SSLConfig* config) {
   config->ssl2_enabled = ((protocols & SSL2) != 0);
   config->ssl3_enabled = ((protocols & SSL3) != 0);
   config->tls1_enabled = ((protocols & TLS1) != 0);
+  config->dnssec_enabled = SSLConfigService::dnssec_enabled();
 
   return true;
 }

@@ -110,6 +110,7 @@ extern const char kEnableContentPrefetch[];
 extern const char kEnableCookiePrompt[];
 extern const char kEnableDeviceMotion[];
 extern const char kEnableDeviceOrientation[];
+extern const char kEnableDNSSECCerts[];
 extern const char kEnableExperimentalExtensionApis[];
 extern const char kEnableExperimentalWebGL[];
 extern const char kEnableExtensionTimelineApi[];

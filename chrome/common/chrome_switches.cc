@@ -333,6 +333,8 @@ const char kEnableDeviceMotion[]            = "enable-device-motion";
 // Enables device orientation events.
 const char kEnableDeviceOrientation[]       = "enable-device-orientation";
 
+const char kEnableDNSSECCerts[]             = "enable-dnssec-certs";
+
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
     "enable-experimental-extension-apis";

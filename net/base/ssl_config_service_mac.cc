@@ -95,6 +95,7 @@ bool SSLConfigServiceMac::GetSSLConfigNow(SSLConfig* config) {
                                              kSSL3EnabledDefaultValue);
   config->tls1_enabled = SSLVersionIsEnabled(kTLS1EnabledKey,
                                              kTLS1EnabledDefaultValue);
+  config->dnssec_enabled = SSLConfigService::dnssec_enabled();
 
   return true;
 }
