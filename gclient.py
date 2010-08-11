@@ -793,11 +793,16 @@ solutions = [
       # Print the snapshot configuration file
       print(self.DEFAULT_SNAPSHOT_FILE_TEXT % {'solution_list': new_gclient})
     else:
-      entries = sorted(self.tree(False), key=lambda i: i.name)
-      for d in entries:
-        entry_url = GetURLAndRev(d)
-        line = '%s: %s' % (d.name, entry_url)
-        if not d is entries[-1]:
+      entries = {}
+      for d in self.tree(False):
+        if self._options.actual:
+          entries[d.name] = GetURLAndRev(d)
+        else:
+          entries[d.name] = d.parsed_url
+      keys = sorted(entries.keys())
+      for x in keys:
+        line = '%s: %s' % (x, entries[x])
+        if x is not keys[-1]:
           line += ';'
         print line
     logging.info(str(self))
@@ -1110,9 +1115,13 @@ def CMDrevinfo(parser, args):
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
                          'references')
+  parser.add_option('-a', '--actual', action='store_true',
+                    help='gets the actual checked out revisions instead of the '
+                         'ones specified in the DEPS and .gclient files')
   parser.add_option('-s', '--snapshot', action='store_true',
                     help='creates a snapshot .gclient file of the current '
-                         'version of all repositories to reproduce the tree')
+                         'version of all repositories to reproduce the tree, '
+                         'implies -a')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
   if not client:
