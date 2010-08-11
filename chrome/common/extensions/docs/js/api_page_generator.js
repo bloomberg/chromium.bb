@@ -331,6 +331,10 @@ function isArray(type) {
   return type.type == 'array';
 }
 
+function isFunction(type) {
+  return type.type == 'function';
+}
+
 function getTypeRef(type) {
   return type["$ref"];
 }
@@ -424,7 +428,7 @@ function getCallbackParameters(parameters) {
 }
 
 function shouldExpandObject(object) {
-  return (object.type == "object" && object.properties)
+  return (object.type == "object" && object.properties);
 }
 
 function getPropertyListFromObject(object) {

@@ -2503,7 +2503,57 @@
   },
   {
     "namespace": "contextMenus",
-    "types": [],
+    "types": [
+      {
+        "id": "OnClickData",
+        "type": "object",
+        "description": "Information sent when a context menu item is clicked.",
+        "properties": {
+          "menuItemId": {
+            "type": "integer",
+            "description": "The id of the menu item that was clicked."
+          },
+          "parentMenuItemId": {
+            "type": "integer",
+            "optional": true,
+            "description": "The parent id, if any, for the item clicked."
+          },
+          "mediaType": {
+            "type": "string",
+            "optional": true,
+            "description": "One of 'image', 'video', or 'audio' if the context menu was activated on one of these types of elements."
+          },
+          "linkUrl": {
+            "type": "string",
+            "optional": true,
+            "description": "If the element is a link, the url it points to."
+          },
+          "srcUrl": {
+            "type": "string",
+            "optional": true,
+            "description": "Will be present for elements with a 'src' url."
+          },
+          "pageUrl": {
+            "type": "string",
+            "description": "The url of the page where the menu item was clicked."
+          },
+          "frameUrl": {
+            "type": "string",
+            "optional": true,
+            "description": " The url of the frame of the element where the context menu was clicked, if it was in a frame."
+          },
+          "selectionText": {
+            "type": "string",
+            "optional": true,
+            "description": "The text for the context selection, if any."
+          },   
+          "editable": {
+            "type": "string",                   
+            "description": "A flag indicating whether the element is editable (text input, textarea, etc.)."
+          }
+        }
+      }
+    ],
     "functions": [
       {
         "name": "create",
@@ -2543,7 +2593,19 @@
               "onclick": {
                 "type": "function",
                 "optional": true,
-                "description": "Function to be called back when your menu item is clicked."
+                "description": "A function that will be called back when the menu item is clicked.",
+                "parameters": [
+                  {
+                    "name": "info",
+                    "$ref": "OnClickData",
+                    "description": "Information about the item clicked and the context where the click happened."
+                  },
+                  {
+                    "name": "tab",
+                    "$ref": "Tab",
+                    "description": "The details of the tab where the click took place."
+                  }
+                ]            
               },
               "parentId": {
                 "type": "integer",
