@@ -1547,3 +1547,12 @@
    fun:ogl_render_layer_
    fun:ogl_render_layers
 }
+{
+   bug_51786
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7tabpose7TileSet5BuildEP13TabStripModel
+   fun:-[TabposeWindow setUpLayers:slomo:]
+   fun:-[TabposeWindow initForWindow:rect:slomo:tabStripModel:]
+   fun:_ZN31TabposeWindowTest_TestShow_Test8TestBodyEv
+}
