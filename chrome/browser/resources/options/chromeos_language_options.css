@@ -76,6 +76,7 @@
   /* Place the button in the center. */
   display: block;
   margin: auto;
+  margin-top: 15px;
 }
 
 #add-language-overlay-page {
