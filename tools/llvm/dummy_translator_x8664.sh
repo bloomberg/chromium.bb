@@ -8,11 +8,15 @@ set -o errexit
 
 readonly DEMO_ROOT=$(dirname $0)
 
+readonly BIN_ROOT=${DEMO_ROOT}/bin
+readonly LIB_ROOT=${DEMO_ROOT}/lib
+readonly SCRIPT_ROOT=${DEMO_ROOT}/script
+
 # Executables
-readonly LLC=${DEMO_ROOT}/llc
-readonly AS=${DEMO_ROOT}/as
-readonly LD=${DEMO_ROOT}/ld
-readonly SEL_LDR=${DEMO_ROOT}/sel_ldr
+readonly LLC=${BIN_ROOT}/llc
+readonly AS=${BIN_ROOT}/as
+readonly LD=${BIN_ROOT}/ld
+readonly SEL_LDR=${BIN_ROOT}/sel_ldr
 
 # Flags
 readonly LLC_X8664_FLAGS=(-march=x86-64
@@ -23,27 +27,26 @@ readonly AS_X8664_FLAGS=(--64 \
                          -n \
                          -mtune=core2)
 
-readonly LD_SCRIPT=${DEMO_ROOT}/ld_script
+readonly LD_SCRIPT=${SCRIPT_ROOT}/ld_script
 
 readonly LD_FLAGS=(--native-client \
                    -nostdlib \
                    -T ${LD_SCRIPT} \
                    -static)
 
-readonly NATIVE_OBJS=(${DEMO_ROOT}/crt1.o \
-                      ${DEMO_ROOT}/crti.o \
-                      ${DEMO_ROOT}/intrinsics.o)
+readonly NATIVE_OBJS=(${LIB_ROOT}/crt1.o \
+                      ${LIB_ROOT}/crti.o)
 
-readonly NATIVE_LIBS=(${DEMO_ROOT}/libcrt_platform.a \
-                      ${DEMO_ROOT}/crtn.o \
-                      -L ${DEMO_ROOT} \
+readonly NATIVE_LIBS=(${LIB_ROOT}/libcrt_platform.a \
+                      ${LIB_ROOT}/crtn.o \
+                      -L ${LIB_ROOT} \
                       -lgcc)
 
 # Main
 
 # Avoid reference to undefined $1.
-if [ $# != 1 ]; then
-  echo "Usage: ./translator <bitcode file>"
+if [ $# != 2 ]; then
+  echo "Usage: ./translator <bitcode file> <nexe>"
   exit -1
 fi
 
@@ -73,6 +76,6 @@ ${LLC} ${LLC_X8664_FLAGS[@]} -f $1 -o asm_combined
 
 ${SEL_LDR} -d -- ${AS} ${AS_X8664_FLAGS[@]} asm_combined -o obj_combined
 
-${LD} ${LD_FLAGS[@]} ${NATIVE_OBJS[@]} obj_combined ${NATIVE_LIBS[@]}
+${LD} ${LD_FLAGS[@]} ${NATIVE_OBJS[@]} obj_combined ${NATIVE_LIBS[@]} -o $2
 
 echo "translation complete"

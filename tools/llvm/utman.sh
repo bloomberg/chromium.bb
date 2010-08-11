@@ -1770,72 +1770,72 @@ build-sandboxed-translators() {
   StepBanner "32-bit X86" "Sandboxing"
   StepBanner "----------" "----------"
   binutils-sb x8632
-  cp tools/llvm/dummy_translator_x8632.sh "${PNACL_CLIENT_TC_X8632}/translator"
   echo ""
 
   StepBanner "64-bit X86" "Sandboxing"
   StepBanner "----------" "----------"
   binutils-sb x8664
-  cp tools/llvm/dummy_translator_x8664.sh "${PNACL_CLIENT_TC_X8664}/translator"
   echo ""
 }
 
-# TODO(abetul): Make sure this works with arm when it's ready to demo.
-# TODO(abetul): Replace ld and llc with sandboxed executables.
+# TODO(abetul): Missing arm translator work.
 #+-------------------------------------------------------------------------
-#@ copy-translator-to-dir <arch> <dir> - Copies <arch> translator components to <dir>
-copy-translator-to-dir() {
-  StepBanner "COPY TRANSLATOR TO DIRECTORY"
-
-  if [ $# != 2 ]; then
-    echo "Usage copy-translator-to-dir <arch> <dir>"
-    exit -1
-  fi
+#@ install-translators - Installs unsandboxed translator components
+install-translators() {
+  StepBanner "INSTALL UNSANDBOXED TRANSLATOR COMPONENTS"
 
   assert-dir "${PNACL_CLIENT_TC_X8632}" \
         "Run this script with build-sandboxed-translators"
   assert-dir "${PNACL_CLIENT_TC_X8664}" \
         "Run this script with build-sandboxed-translators"
 
-  local arch=$1
-  local dir_name=$2
-  local bindir="${PNACL_CLIENT_TC_ROOT}/${arch}"
-  assert-dir "${bindir}" "Unsupported arch. Choose one of: x8632, x8664"
-
-  mkdir -p "${dir_name}"
-
+# TODO(abetul): Replace llc's with 32/64 bit sandboxed executables.
   assert-file "${TARGET_ROOT}/bin/llc" "Install PNaCl toolchain."
-  cp "${TARGET_ROOT}/bin/llc" "${dir_name}"
+  cp "${TARGET_ROOT}/bin/llc" "${PNACL_CLIENT_TC_X8632}/bin"
+  cp "${TARGET_ROOT}/bin/llc" "${PNACL_CLIENT_TC_X8664}/bin"
 
-  assert-file "${bindir}/bin/as" \
-        "Run this script with build-sandboxed-translators"
-  cp "${bindir}/bin/as" "${dir_name}"
-
+# TODO(abetul): Replace ld's with 32/64 bit sandboxed executables.
   assert-file "${TARGET_ROOT}/bin/arm-none-linux-gnueabi-ld" \
         "Install PNaCl toolchain."
-  cp "${TARGET_ROOT}/bin/arm-none-linux-gnueabi-ld" "${dir_name}/ld"
+  cp "${TARGET_ROOT}/bin/arm-none-linux-gnueabi-ld" \
+        "${PNACL_CLIENT_TC_X8632}/bin/ld"
+  cp "${TARGET_ROOT}/bin/arm-none-linux-gnueabi-ld" \
+        "${PNACL_CLIENT_TC_X8664}/bin/ld"
 
-  assert-dir "${PNACL_TOOLCHAIN_ROOT}/libs-${arch}" \
+  scons-build-sel_ldr x86-32
+  cp "./scons-out/opt-linux-x86-32/staging/sel_ldr" \
+        "${PNACL_CLIENT_TC_X8632}/bin"
+
+  scons-build-sel_ldr x86-64
+  cp "./scons-out/opt-linux-x86-64/staging/sel_ldr" \
+        "${PNACL_CLIENT_TC_X8664}/bin"
+
+  mkdir -p ${PNACL_CLIENT_TC_X8632}/lib
+  mkdir -p ${PNACL_CLIENT_TC_X8664}/lib
+
+  assert-dir "${PNACL_TOOLCHAIN_ROOT}/libs-x8632" \
         "Install PNaCl toolchain."
-  cp "${PNACL_TOOLCHAIN_ROOT}/libs-${arch}/"* "${dir_name}/."
+  cp "${PNACL_TOOLCHAIN_ROOT}/libs-x8632/"* "${PNACL_CLIENT_TC_X8632}/lib/."
 
-  assert-file "$(pwd)/tools/llvm/ld_script_${arch}_untrusted" \
+  assert-dir "${PNACL_TOOLCHAIN_ROOT}/libs-x8664" \
+        "Install PNaCl toolchain."
+  cp "${PNACL_TOOLCHAIN_ROOT}/libs-x8664/"* "${PNACL_CLIENT_TC_X8664}/lib/."
+
+  mkdir -p ${PNACL_CLIENT_TC_X8632}/script
+  mkdir -p ${PNACL_CLIENT_TC_X8664}/script
+
+  assert-file "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
         "Install NaCl toolchain."
-  cp "$(pwd)/tools/llvm/ld_script_${arch}_untrusted" "${dir_name}/ld_script"
+  cp "$(pwd)/tools/llvm/ld_script_x8632_untrusted" \
+        "${PNACL_CLIENT_TC_X8632}/script/ld_script"
 
-  assert-file "${bindir}/translator" \
-        "Run this script with build-sandboxed-translators"
-  cp "${bindir}/translator" "${dir_name}"
+  assert-file "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
+        "Install NaCl toolchain."
+  cp "$(pwd)/tools/llvm/ld_script_x8664_untrusted" \
+        "${PNACL_CLIENT_TC_X8664}/script/ld_script"
 
-  if [ ${arch} == "x8632" ]; then
-    assert-file "./scons-out/opt-linux-x86-32/staging/sel_ldr" \
-          "Install NaCl toolchain."
-    cp "./scons-out/opt-linux-x86-32/staging/sel_ldr" "${dir_name}"
-  else
-    assert-file "./scons-out/opt-linux-x86-64/staging/sel_ldr" \
-          "Install NaCl toolchain."
-    cp "./scons-out/opt-linux-x86-64/staging/sel_ldr" "${dir_name}"
-  fi
+  cp tools/llvm/dummy_translator_x8632.sh "${PNACL_CLIENT_TC_X8632}/translator"
+  cp tools/llvm/dummy_translator_x8664.sh "${PNACL_CLIENT_TC_X8664}/translator"
 
   echo "Done"
 }
@@ -2381,6 +2381,11 @@ if ${UTMAN_DEBUG}; then
                        --verbose
                        sdl=none
                        bitcode=1)
+
+  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
+                               bitcode=1
+                               sdl=none
+                               --verbose)
 else
   readonly SCONS_ARGS=(MODE=nacl,opt-linux
                        sdl=none
@@ -2388,12 +2393,24 @@ else
                        sysinfo=
                        bitcode=1
                        -j${UTMAN_CONCURRENCY})
+
+  readonly SCONS_ARGS_SEL_LDR=(MODE=opt-linux
+                               bitcode=1
+                               sdl=none
+                               naclsdk_validate=0
+                               sysinfo=
+                               -j${UTMAN_CONCURRENCY})
 fi
 
 #@ show-tests            - see what tests can be run
 show-tests() {
   StepBanner "SHOWING TESTS"
   cat $(find tests -name nacl.scons) | grep -o 'run_[A-Za-z_-]*' | sort | uniq
+}
+
+scons-build-sel_ldr () {
+  local  platform=$1
+  ./scons platform=${platform} ${SCONS_ARGS_SEL_LDR[@]} sel_ldr
 }
 
 scons-clean-pnacl-build-dir () {
