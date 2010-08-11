@@ -40,6 +40,7 @@ class HtmlDialogWindowControllerTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
+    CocoaTest::BootstrapCocoa();
     title_ = L"Mock Title";
     size_ = gfx::Size(50, 100);
     gurl_ = GURL("");
@@ -51,7 +52,6 @@ class HtmlDialogWindowControllerTest : public BrowserWithTestWindowTest {
   GURL gurl_;
 
   // Order here is important.
-  CocoaTestHelper cocoa_helper_;
   MockDelegate delegate_;
 };
 
@@ -65,8 +65,7 @@ using ::testing::SetArgumentPointee;
 
 TEST_F(HtmlDialogWindowControllerTest, showDialog) {
   // We want to make sure html_dialog_window_controller below gets
-  // destroyed before cocoa_helper_ and delegate_, so we specify our
-  // own autorelease pool.
+  // destroyed before delegate_, so we specify our own autorelease pool.
   //
   // TODO(dmaclach): Remove this once
   // http://code.google.com/p/chromium/issues/detail?id=26133 is fixed.
