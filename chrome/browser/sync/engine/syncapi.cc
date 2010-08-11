@@ -13,7 +13,6 @@
 
 #include "base/basictypes.h"
 #include "base/base64.h"
-#include "base/histogram.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -1036,22 +1035,6 @@ class SyncManager::SyncInternal
   // Called only by our NetworkChangeNotifier.
   virtual void OnIPAddressChanged();
 
- private:
-  // Try to authenticate using a LSID cookie.
-  void AuthenticateWithLsid(const std::string& lsid);
-
-  // Try to authenticate using persisted credentials from a previous successful
-  // authentication. If no such credentials exist, calls OnAuthError on the
-  // client to collect credentials. Otherwise, there exist local credentials
-  // that were once used for a successful auth, so we'll try to re-use these.
-  // Failure of that attempt will be communicated as normal using OnAuthError.
-  // Since this entry point will bypass normal GAIA authentication and try to
-  // authenticate directly with the sync service using a cached token,
-  // authentication failure will generally occur due to expired credentials, or
-  // possibly because of a password change.
-  bool AuthenticateForUser(const std::string& username,
-                           const std::string& auth_token);
-
   bool InitialSyncEndedForAllEnabledTypes() {
     syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
     if (!lookup.good()) {
@@ -1068,6 +1051,22 @@ class SyncManager::SyncInternal
     }
     return true;
   }
+
+ private:
+  // Try to authenticate using a LSID cookie.
+  void AuthenticateWithLsid(const std::string& lsid);
+
+  // Try to authenticate using persisted credentials from a previous successful
+  // authentication. If no such credentials exist, calls OnAuthError on the
+  // client to collect credentials. Otherwise, there exist local credentials
+  // that were once used for a successful auth, so we'll try to re-use these.
+  // Failure of that attempt will be communicated as normal using OnAuthError.
+  // Since this entry point will bypass normal GAIA authentication and try to
+  // authenticate directly with the sync service using a cached token,
+  // authentication failure will generally occur due to expired credentials, or
+  // possibly because of a password change.
+  bool AuthenticateForUser(const std::string& username,
+                           const std::string& auth_token);
 
   // Helper to call OnAuthError when no authentication credentials are
   // available.
@@ -1267,6 +1266,10 @@ void SyncManager::Authenticate(const char* username, const char* password,
     const char* captcha) {
   data_->Authenticate(std::string(username), std::string(password),
                       std::string(captcha));
+}
+
+bool SyncManager::InitialSyncEndedForAllEnabledTypes() {
+  return data_->InitialSyncEndedForAllEnabledTypes();
 }
 
 void SyncManager::StartSyncing() {
@@ -1522,17 +1525,8 @@ bool SyncManager::SyncInternal::AuthenticateForUser(
   // We optimize by opening the directory before the "fresh" authentication
   // attempt completes so that we can immediately begin processing changes.
   if (!dir_manager()->Open(username_for_share())) {
-    // TODO(tim): Cue a refresh if the db was corrupt.
     if (observer_)
       observer_->OnStopSyncingPermanently();
-
-#if defined(OS_WIN)
-      UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedWin", 1);
-#elif defined(OS_MACOSX)
-      UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedMac", 1);
-#else
-      UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedNotWinMac", 1);
-#endif
     return false;
   }
 

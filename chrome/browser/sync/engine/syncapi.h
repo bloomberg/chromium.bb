@@ -754,6 +754,12 @@ class SyncManager {
   // Returns empty if there is no such username.
   const std::string& GetAuthenticatedUsername();
 
+  // Check if the database has been populated with a full "initial" download of
+  // sync items for each data type currently present in the routing info.
+  // Prerequisite for calling this is that OnInitializationComplete has been
+  // called.
+  bool InitialSyncEndedForAllEnabledTypes();
+
   // Submit credentials to GAIA for verification. On success, both |username|
   // and the obtained auth token are persisted on disk for future re-use.
   // If authentication fails, OnAuthProblem is called on our Observer.

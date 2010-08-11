@@ -156,8 +156,16 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
       EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
           WillOnce(ReturnNewDataTypeManager());
 
+      // Creating model safe workers will request the history service and
+      // password store.  I couldn't manage to convince gmock that splitting up
+      // the expectations to match the class responsibilities was a good thing,
+      // so we set them all together here.
+      EXPECT_CALL(profile_, GetHistoryService(_)).
+         WillOnce(Return(static_cast<HistoryService*>(NULL)));
+
       EXPECT_CALL(profile_, GetPasswordStore(_)).
-          WillOnce(Return(password_store_.get()));
+          Times(2).
+          WillRepeatedly(Return(password_store_.get()));
 
       EXPECT_CALL(observer_,
           Observe(

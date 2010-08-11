@@ -40,6 +40,7 @@ using base::Time;
 using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillModelAssociator;
+using browser_sync::SyncBackendHostForProfileSyncTest;
 using syncable::WriteTransaction;
 using testing::_;
 using testing::DoAll;
@@ -142,6 +143,9 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
           new AutofillDataTypeController(&factory_,
                                          &profile_,
                                          service_.get());
+
+     SyncBackendHostForProfileSyncTest::
+         SetDefaultExpectationsForWorkerCreation(&profile_);
 
       EXPECT_CALL(factory_, CreateAutofillSyncComponents(_, _, _, _)).
           WillOnce(MakeAutofillSyncComponents(service_.get(),

@@ -14,6 +14,7 @@
 
 #include "base/file_util.h"
 #include "base/hash_tables.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
@@ -283,11 +284,34 @@ bool DirectoryBackingStore::BeginLoad() {
   DCHECK(load_dbhandle_ == NULL);
   bool ret = OpenAndConfigureHandleHelper(&load_dbhandle_);
   if (ret)
-    return ret;
+    return true;
   // Something's gone wrong. Nuke the database and try again.
   LOG(ERROR) << "Sync database " << backing_filepath_.value()
-             << " corrupt.";
-  return false;
+             << " corrupt. Deleting and recreating.";
+  file_util::Delete(backing_filepath_, false);
+  bool failed_again = !OpenAndConfigureHandleHelper(&load_dbhandle_);
+
+  // Using failed_again here lets us distinguish from cases where corruption
+  // occurred even when re-opening a fresh directory (they'll go in a separate
+  // double weight histogram bucket).  Failing twice in a row means we disable
+  // sync, so it's useful to see this number separately.
+  int bucket = failed_again ? 2 : 1;
+#if defined(OS_WIN)
+  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedWin", bucket);
+#elif defined(OS_MACOSX)
+  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedMac", bucket);
+#else
+  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedNotWinMac", bucket);
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedLinux", bucket);
+#elif defined(OS_CHROMEOS)
+  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedCros", bucket);
+#else
+  UMA_HISTOGRAM_COUNTS_100("Sync.DirectoryOpenFailedOther", bucket);
+#endif  // OS_LINUX && !OS_CHROMEOS
+#endif  // OS_WIN
+  return !failed_again;
 }
 
 void DirectoryBackingStore::EndLoad() {

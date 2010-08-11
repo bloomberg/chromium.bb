@@ -321,10 +321,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void RegisterPreferences();
   void ClearPreferences();
 
-  // Tests need to override this.  If |delete_sync_data_folder| is true, then
-  // this method will delete all previous "Sync Data" folders. (useful if the
-  // folder is partial/corrupt)
-  virtual void InitializeBackend(bool delete_sync_data_folder);
+  // Test need to override this to create backends that allow setting up
+  // initial conditions, such as populating sync nodes.
+  virtual void CreateBackend();
 
   const browser_sync::DataTypeController::TypeMap& data_type_controllers() {
     return data_type_controllers_;
@@ -350,6 +349,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest,
                            UnrecoverableErrorSuspendsService);
+
+  // If |delete_sync_data_folder| is true, then this method will delete all
+  // previous "Sync Data" folders. (useful if the folder is partial/corrupt).
+  void InitializeBackend(bool delete_sync_data_folder);
 
   // Initializes the various settings from the command line.
   void InitSettings();
