@@ -88,8 +88,6 @@ def _RunCommand(cmd, dry_run, shell=False, echo_cmd=True):
   """Runs the command if dry_run is false, otherwise just prints the command."""
   if echo_cmd:
     print cmd
-  # TODO(wtc): Check the return value of subprocess.call, which is the return
-  # value of the command.
   if not dry_run:
     return subprocess.call(cmd, shell=shell)
   else:
@@ -171,19 +169,20 @@ def main(options, args):
     use_shell_during_make = True
     os.chdir('src')
     _RunCommand('pwd', options.dry_run, shell=True)
-    cmd = '%s/cov-build --dir %s make BUILDTYPE=%s' % (
+    cmd = '%s/cov-build --dir %s make BUILDTYPE=%s chrome' % (
       options.coverity_bin_dir, options.coverity_intermediate_dir,
       options.target)
   elif sys.platform == 'win32':
-    cmd = '%s\\cov-build.exe --dir %s devenv.com %s\\%s /build %s' % (
+    cmd = ('%s\\cov-build.exe --dir %s devenv.com %s\\%s /build %s '
+           '/project chrome.vcproj') % (
       options.coverity_bin_dir, options.coverity_intermediate_dir,
       options.source_dir, options.solution_file, options.target)
   elif sys.platform == 'darwin':
     use_shell_during_make = True
-    os.chdir('src/build')
+    os.chdir('src/chrome')
     _RunCommand('pwd', options.dry_run, shell=True)
-    cmd = ('%s/cov-build --dir %s xcodebuild -project all.xcodeproj '
-           '-configuration %s -target All') % (
+    cmd = ('%s/cov-build --dir %s xcodebuild -project chrome.xcodeproj '
+           '-configuration %s -target chrome') % (
       options.coverity_bin_dir, options.coverity_intermediate_dir,
       options.target)
 
