@@ -49,7 +49,7 @@ deps = {
     "http://google-cache-invalidation-api.googlecode.com/svn/trunk@35",
 
   "src/tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@839",
+    "http://gyp.googlecode.com/svn/trunk@840",
 
   "src/v8":
     "http://v8.googlecode.com/svn/trunk@5214",
