@@ -133,9 +133,6 @@ class RWHVMEditCommandHelper;
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
 - (void)setToolTipAtMousePoint:(NSString *)string;
-// Makes sure that the initial layer setup for accelerated plugin drawing has
-// been done. Can be called multiple times.
-- (void)ensureAcceleratedPluginLayer;
 // Triggers a refresh of the accelerated plugin layer; should be called whenever
 // the shared surface for one of the plugins is updated.
 - (void)drawAcceleratedPluginLayer;
@@ -243,10 +240,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       int32 height,
       TransportDIB::Handle transport_dib);
   virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
-  // Draws the current GPU-accelerated plug-in instances into the given context.
-  virtual void DrawAcceleratedSurfaceInstances(CGLContextObj context);
+  void DrawAcceleratedSurfaceInstance(
+      CGLContextObj context, gfx::PluginWindowHandle plugin_handle);
   // Informs the plug-in instances that their drawing context has changed.
-  virtual void AcceleratedSurfaceContextChanged();
+  void ForceTextureReload();
 
   virtual void SetVisuallyDeemphasized(bool deemphasized);
 
@@ -304,6 +301,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // release it when told to destroy (for example, because a pop-up menu has
   // closed).
   RenderWidgetHostViewCocoa* cocoa_view_;
+
+  typedef std::map<gfx::PluginWindowHandle, NSView*> PluginViewMap;
+  PluginViewMap plugin_views_;  // Weak values.
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;

@@ -79,10 +79,6 @@ class AcceleratedSurfaceContainerMac {
   // Whether this accelerated surface's content is supposed to be opaque.
   bool opaque_;
 
-  // The x and y coordinates of the plugin window on the web page.
-  int x_;
-  int y_;
-
   // The IOSurfaceRef, if any, that has been handed from the GPU
   // plugin process back to the browser process for drawing.
   // This is held as a CFTypeRef because we can't refer to the

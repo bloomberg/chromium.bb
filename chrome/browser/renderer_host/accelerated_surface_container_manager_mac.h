@@ -37,7 +37,7 @@ class AcceleratedSurfaceContainerManagerMac {
   // Indicates whether a "root" PluginWindowHandle has been allocated,
   // which means that we are using accelerated compositing and should
   // short-circuit the normal drawing process.
-  bool HasRootContainer();
+  bool IsRootContainer(gfx::PluginWindowHandle id);
 
   // Sets the size and backing store of the plugin instance.  There are two
   // versions: the IOSurface version is used on systems where the IOSurface
@@ -59,6 +59,7 @@ class AcceleratedSurfaceContainerManagerMac {
   // Draws all of the managed plugin containers into the given OpenGL
   // context, which must already be current.
   void Draw(CGLContextObj context,
+            gfx::PluginWindowHandle id,
             bool draw_root_container);
 
   // Causes the next Draw call on each container to trigger a texture upload.

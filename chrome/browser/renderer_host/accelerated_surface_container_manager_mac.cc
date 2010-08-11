@@ -38,8 +38,10 @@ void AcceleratedSurfaceContainerManagerMac::DestroyFakePluginWindowHandle(
   plugin_window_to_container_map_.erase(id);
 }
 
-bool AcceleratedSurfaceContainerManagerMac::HasRootContainer() {
-  return root_container_ != NULL;
+bool AcceleratedSurfaceContainerManagerMac::IsRootContainer(
+    gfx::PluginWindowHandle id) {
+  AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
+  return root_container_ == container;
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetSizeAndIOSurface(
@@ -50,17 +52,6 @@ void AcceleratedSurfaceContainerManagerMac::SetSizeAndIOSurface(
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container) {
     container->SetSizeAndIOSurface(width, height, io_surface_identifier);
-    if (container == root_container_) {
-      // Fake up a WebPluginGeometry for the root window to set the
-      // container's size; we will never get a notification from the
-      // browser about the root window, only plugins.
-      webkit_glue::WebPluginGeometry geom;
-      gfx::Rect rect(0, 0, width, height);
-      geom.window_rect = rect;
-      geom.clip_rect = rect;
-      geom.visible = true;
-      container->MoveTo(geom);
-    }
   }
 }
 
@@ -82,6 +73,7 @@ void AcceleratedSurfaceContainerManagerMac::MovePluginContainer(
 }
 
 void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context,
+                                                 gfx::PluginWindowHandle id,
                                                  bool draw_root_container) {
   // Clean up old texture objects. This is essentially a pre-emptive
   // cleanup, as the resources will be released when the OpenGL
@@ -109,19 +101,9 @@ void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context,
 
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-  // Draw the root container, if any, first.
-  if (draw_root_container && root_container_) {
-    root_container_->Draw(context);
-  }
-
-  for (PluginWindowToContainerMap::const_iterator i =
-          plugin_window_to_container_map_.begin();
-       i != plugin_window_to_container_map_.end(); ++i) {
-    AcceleratedSurfaceContainerMac* container = i->second;
-    if (container != root_container_) {
-      container->Draw(context);
-    }
-  }
+  AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
+  CHECK(container);
+  container->Draw(context);
 
   // Unbind any texture from the texture target to ensure that the
   // next time through we will have to re-bind the texture and thereby

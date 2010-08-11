@@ -14,8 +14,6 @@ AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
     bool opaque)
     : manager_(manager),
       opaque_(opaque),
-      x_(0),
-      y_(0),
       surface_(NULL),
       width_(0),
       height_(0),
@@ -64,8 +62,6 @@ void AcceleratedSurfaceContainerMac::SetSizeAndTransportDIB(
 
 void AcceleratedSurfaceContainerMac::MoveTo(
     const webkit_glue::WebPluginGeometry& geom) {
-  x_ = geom.window_rect.x();
-  y_ = geom.window_rect.y();
   // TODO(kbr): may need to pay attention to cutout rects.
   if (geom.visible)
     clipRect_ = geom.clip_rect;
@@ -145,8 +141,6 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     int clipY = clipRect_.y();
     int clipWidth = clipRect_.width();
     int clipHeight = clipRect_.height();
-    int x = x_ + clipX;
-    int y = y_ + clipY;
 
     if (opaque_) {
       // Pepper 3D's output is currently considered opaque even if the
@@ -158,10 +152,10 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
       glColorMask(false, false, false, true);
       glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
       glBegin(GL_TRIANGLE_STRIP);
-      glVertex3f(x, y, 0);
-      glVertex3f(x + clipWidth, y, 0);
-      glVertex3f(x, y + clipHeight, 0);
-      glVertex3f(x + clipWidth, y + clipHeight, 0);
+      glVertex3f(0, 0, 0);
+      glVertex3f(clipWidth, 0, 0);
+      glVertex3f(0, clipHeight, 0);
+      glVertex3f(clipWidth, clipHeight, 0);
       glEnd();
 
       // Now draw the color channels from the incoming texture.
@@ -177,14 +171,19 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
     glBindTexture(target, texture_);
     glEnable(target);
     glBegin(GL_TRIANGLE_STRIP);
-    glTexCoord2f(clipX, height_ - clipY);
-    glVertex3f(x, y, 0);
-    glTexCoord2f(clipX + clipWidth, height_ - clipY);
-    glVertex3f(x + clipWidth, y, 0);
-    glTexCoord2f(clipX, height_ - clipY - clipHeight);
-    glVertex3f(x, y + clipHeight, 0);
-    glTexCoord2f(clipX + clipWidth, height_ - clipY - clipHeight);
-    glVertex3f(x + clipWidth, y + clipHeight, 0);
+
+      glTexCoord2f(clipX, height_ - clipY);
+      glVertex3f(0, 0, 0);
+
+      glTexCoord2f(clipX + clipWidth, height_ - clipY);
+      glVertex3f(clipWidth, 0, 0);
+
+      glTexCoord2f(clipX, height_ - clipY - clipHeight);
+      glVertex3f(0, clipHeight, 0);
+
+      glTexCoord2f(clipX + clipWidth, height_ - clipY - clipHeight);
+      glVertex3f(clipWidth, clipHeight, 0);
+
     glEnd();
     glDisable(target);
   }

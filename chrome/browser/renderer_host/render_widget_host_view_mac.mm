@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/logging.h"
+#import "base/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -127,51 +128,152 @@ void DisablePasswordInput() {
 
 }  // namespace
 
-// AcceleratedPluginLayer ------------------------------------------------------
+// AcceleratedPluginView ------------------------------------------------------
 
-// This subclass of CAOpenGLLayer hosts the output of accelerated plugins on
+// This subclass of NSView hosts the output of accelerated plugins on
 // the page.
 
-@interface AcceleratedPluginLayer : CAOpenGLLayer {
+@interface AcceleratedPluginView : NSView {
+  scoped_nsobject<NSOpenGLPixelFormat> glPixelFormat_;
+  CGLPixelFormatObj cglPixelFormat_;  // weak, backed by |glPixelFormat_|.
+  scoped_nsobject<NSOpenGLContext> glContext_;
+  CGLContextObj cglContext_;  // weak, backed by |glContext_|.
+
+  CVDisplayLinkRef displayLink_;  // Owned by us.
+
   RenderWidgetHostViewMac* renderWidgetHostView_;  // weak
+  gfx::PluginWindowHandle pluginHandle_;  // weak
+
+  // True if the backing IO surface was updated since we last painted.
+  BOOL surfaceWasSwapped_;
 }
 
-- (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
+- (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r
+                         pluginHandle:(gfx::PluginWindowHandle)pluginHandle;
+- (void)drawView;
+
+// This _must_ be atomic, since it's accessed from several threads.
+@property BOOL surfaceWasSwapped;
 @end
 
-@implementation AcceleratedPluginLayer
-- (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
-  self = [super init];
-  if (self != nil) {
+@implementation AcceleratedPluginView : NSView
+@synthesize surfaceWasSwapped = surfaceWasSwapped_;
+
+- (CVReturn)getFrameForTime:(const CVTimeStamp*)outputTime {
+  // There is no autorelease pool when this method is called because it will be
+  // called from a background thread.
+  base::ScopedNSAutoreleasePool pool;
+
+  if (![self surfaceWasSwapped])
+    return kCVReturnSuccess;
+
+  [self drawView];
+  [self setSurfaceWasSwapped:NO];
+  return kCVReturnSuccess;
+}
+
+// This is the renderer output callback function
+static CVReturn MyDisplayLinkCallback(
+    CVDisplayLinkRef displayLink,
+    const CVTimeStamp* now,
+    const CVTimeStamp* outputTime,
+    CVOptionFlags flagsIn,
+    CVOptionFlags* flagsOut,
+    void* displayLinkContext) {
+  CVReturn result =
+      [(AcceleratedPluginView*)displayLinkContext getFrameForTime:outputTime];
+  return result;
+}
+
+- (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r
+                         pluginHandle:(gfx::PluginWindowHandle)pluginHandle {
+  if ((self = [super initWithFrame:NSZeroRect])) {
     renderWidgetHostView_ = r;
+    pluginHandle_ = pluginHandle;
+
+    [self setAutoresizingMask:NSViewMaxXMargin|NSViewMinYMargin];
+
+    NSOpenGLPixelFormatAttribute attributes[] =
+        { NSOpenGLPFAAccelerated, NSOpenGLPFADoubleBuffer, 0};
+
+    glPixelFormat_.reset([[NSOpenGLPixelFormat alloc]
+        initWithAttributes:attributes]);
+    glContext_.reset([[NSOpenGLContext alloc] initWithFormat:glPixelFormat_
+                                                shareContext:nil]);
+
+    cglContext_ = (CGLContextObj)[glContext_ CGLContextObj];
+    cglPixelFormat_ = (CGLPixelFormatObj)[glPixelFormat_ CGLPixelFormatObj];
+
+    // Draw at beam vsync.
+    GLint swapInterval = 1;
+    [glContext_ setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
+
+
+    // Set up a display link to do OpenGL rendering on a background thread.
+    CVDisplayLinkCreateWithActiveCGDisplays(&displayLink_);
+    CVDisplayLinkSetOutputCallback(displayLink_, &MyDisplayLinkCallback, self);
+    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
+        displayLink_, cglContext_, cglPixelFormat_);
+    CVDisplayLinkStart(displayLink_);
   }
   return self;
 }
 
-- (void)drawInCGLContext:(CGLContextObj)glContext
-             pixelFormat:(CGLPixelFormatObj)pixelFormat
-            forLayerTime:(CFTimeInterval)timeInterval
-             displayTime:(const CVTimeStamp *)timeStamp {
-  renderWidgetHostView_->DrawAcceleratedSurfaceInstances(glContext);
-  [super drawInCGLContext:glContext
-              pixelFormat:pixelFormat
-             forLayerTime:timeInterval
-              displayTime:timeStamp];
+- (void)drawView {
+  // Called on a background thread. Synchronized via the CGL context lock.
+  CGLLockContext(cglContext_);
+
+  renderWidgetHostView_->DrawAcceleratedSurfaceInstance(
+      cglContext_, pluginHandle_);
+
+  CGLFlushDrawable(cglContext_);
+  CGLUnlockContext(cglContext_);
 }
 
-- (void)setFrame:(CGRect)rect {
-  // The frame we get when the superlayer resizes doesn't make sense, so ignore
-  // it and just match the superlayer's size. See the email thread referenced in
-  // ensureAcceleratedPluginLayer for an explanation of why the superlayer
-  // isn't trustworthy.
-  [CATransaction begin];
-  [CATransaction setValue:[NSNumber numberWithInt:0]
-                   forKey:kCATransactionAnimationDuration];
-  if ([self superlayer])
-    [super setFrame:[[self superlayer] bounds]];
-  else
-    [super setFrame:rect];
-  [CATransaction commit];
+- (void)drawRect:(NSRect)rect {
+  [self drawView];
+}
+
+- (void)globalFrameDidChange:(NSNotification*)notification {
+  CGLLockContext(cglContext_);
+  [glContext_ update];
+
+  // You would think that -update updates the viewport. You would be wrong.
+  CGLSetCurrentContext(cglContext_);
+  NSSize size = [self frame].size;
+  glViewport(0, 0, size.width, size.height);
+
+  CGLUnlockContext(cglContext_);
+}
+
+- (void)renewGState {
+  // Synchronize with window server to avoid flashes or corrupt drawing.
+  [[self window] disableScreenUpdatesUntilFlush];
+  [self globalFrameDidChange:nil];
+  [super renewGState];
+}
+
+- (void)lockFocus {
+  [super lockFocus];
+
+  // If we're using OpenGL, make sure it is connected and that the display link
+  // is running.
+  if ([glContext_ view] != self) {
+    [glContext_ setView:self];
+
+    [[NSNotificationCenter defaultCenter]
+         addObserver:self
+            selector:@selector(globalFrameDidChange:)
+                name:NSViewGlobalFrameDidChangeNotification
+              object:self];
+  }
+  [glContext_ makeCurrentContext];
+}
+
+- (void)dealloc {
+  CVDisplayLinkRelease(displayLink_);
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
 }
 @end
 
@@ -316,12 +418,27 @@ void RenderWidgetHostViewMac::MovePluginWindows(
       webkit_glue::WebPluginGeometry geom = *iter;
       // Ignore bogus moves which claim to move the plugin to (0, 0)
       // with width and height (0, 0)
-      if (geom.window_rect.x() != 0 ||
-          geom.window_rect.y() != 0 ||
-          geom.window_rect.width() != 0 ||
-          geom.window_rect.height() != 0) {
-        plugin_container_manager_.MovePluginContainer(geom);
+      if (geom.window_rect.x() == 0 &&
+          geom.window_rect.y() == 0 &&
+          geom.window_rect.IsEmpty()) {
+        continue;
       }
+
+      gfx::Rect rect = geom.window_rect;
+      if (geom.visible) {
+        rect.set_x(rect.x() + geom.clip_rect.x());
+        rect.set_y(rect.y() + geom.clip_rect.y());
+        rect.set_width(geom.clip_rect.width());
+        rect.set_height(geom.clip_rect.height());
+      }
+
+      PluginViewMap::iterator it = plugin_views_.find(geom.window);
+      CHECK(plugin_views_.end() != it);
+      NSRect new_rect([cocoa_view_ RectToNSRect:rect]);
+      [it->second setFrame:new_rect];
+      [it->second setNeedsDisplay:YES];
+
+      plugin_container_manager_.MovePluginContainer(geom);
     }
   }
 }
@@ -470,8 +587,12 @@ void RenderWidgetHostViewMac::Destroy() {
   if (!is_popup_menu_) {
     // Depth-first destroy all popups. Use ShutdownHost() to enforce
     // deepest-first ordering.
-    for (RenderWidgetHostViewCocoa* subview in [cocoa_view_ subviews]) {
-      [subview renderWidgetHostViewMac]->ShutdownHost();
+    for (NSView* subview in [cocoa_view_ subviews]) {
+      if (![subview isKindOfClass:[RenderWidgetHostViewCocoa class]])
+        continue;  // Skip plugin views.
+
+      [static_cast<RenderWidgetHostViewCocoa*>(subview)
+          renderWidgetHostViewMac]->ShutdownHost();
     }
 
     // We've been told to destroy.
@@ -615,14 +736,28 @@ void RenderWidgetHostViewMac::KillSelf() {
 gfx::PluginWindowHandle
 RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque,
                                                         bool root) {
-  // Make sure we have a layer for the plugin to draw into.
-  [cocoa_view_ ensureAcceleratedPluginLayer];
+  // Create an NSView to host the plugin's/compositor's pixels.
+  gfx::PluginWindowHandle handle =
+      plugin_container_manager_.AllocateFakePluginWindowHandle(opaque, root);
 
-  return plugin_container_manager_.AllocateFakePluginWindowHandle(opaque, root);
+  scoped_nsobject<NSView> plugin_view(
+      [[AcceleratedPluginView alloc] initWithRenderWidgetHostViewMac:this
+                                                        pluginHandle:handle]);
+  [plugin_view setHidden:YES];
+
+  [cocoa_view_ addSubview:plugin_view];
+  plugin_views_[handle] = plugin_view;
+
+  return handle;
 }
 
 void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
     gfx::PluginWindowHandle window) {
+  PluginViewMap::iterator it = plugin_views_.find(window);
+  CHECK(plugin_views_.end() != it);
+  [it->second removeFromSuperview];
+  plugin_views_.erase(it);
+
   plugin_container_manager_.DestroyFakePluginWindowHandle(window);
 }
 
@@ -631,10 +766,26 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
+  PluginViewMap::iterator it = plugin_views_.find(window);
+  CHECK(plugin_views_.end() != it);
+
   plugin_container_manager_.SetSizeAndIOSurface(window,
                                                 width,
                                                 height,
                                                 io_surface_identifier);
+
+  if (plugin_container_manager_.IsRootContainer(window)) {
+    // Fake up a WebPluginGeometry for the root window to set the
+    // container's size; we will never get a notification from the
+    // browser about the root window, only plugins.
+    webkit_glue::WebPluginGeometry geom;
+    gfx::Rect rect(0, 0, width, height);
+    geom.window = window;
+    geom.window_rect = rect;
+    geom.clip_rect = rect;
+    geom.visible = true;
+    MovePluginWindows(std::vector<webkit_glue::WebPluginGeometry>(1, geom));
+  }
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
@@ -642,6 +793,9 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
+  PluginViewMap::iterator it = plugin_views_.find(window);
+  CHECK(plugin_views_.end() != it);
+
   plugin_container_manager_.SetSizeAndTransportDIB(window,
                                                    width,
                                                    height,
@@ -650,32 +804,38 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
-  [cocoa_view_ drawAcceleratedPluginLayer];
-  if (GetRenderWidgetHost()->is_gpu_rendering_active()) {
-    // Additionally dirty the entire region of the view to make AppKit
-    // and Core Animation think that our CALayer needs to repaint
-    // itself.
-    [cocoa_view_ setNeedsDisplayInRect:[cocoa_view_ frame]];
-  }
+  PluginViewMap::iterator it = plugin_views_.find(window);
+  CHECK(plugin_views_.end() != it);
+  CHECK([it->second isKindOfClass:[AcceleratedPluginView class]]);
+
+  AcceleratedPluginView* view = static_cast<AcceleratedPluginView*>(it->second);
+  [view setHidden:NO];
+  [view setSurfaceWasSwapped:YES];
 }
 
-void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstances(
-    CGLContextObj context) {
+void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
+      CGLContextObj context, gfx::PluginWindowHandle plugin_handle) {
+  // Called on the display link thread.
+  PluginViewMap::iterator it = plugin_views_.find(plugin_handle);
+  CHECK(plugin_views_.end() != it);
+
   CGLSetCurrentContext(context);
-  gfx::Rect rect = GetWindowRect();
+  // TODO(thakis): Pixel or view coordinates?
+  NSSize size = [it->second frame].size;
+
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   // Note that we place the origin at the upper left corner with +y
   // going down
-  glOrtho(0, rect.width(), rect.height(), 0, -1, 1);
+  glOrtho(0, size.width, size.height, 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
   plugin_container_manager_.Draw(
-      context, GetRenderWidgetHost()->is_gpu_rendering_active());
+      context, plugin_handle, GetRenderWidgetHost()->is_gpu_rendering_active());
 }
 
-void RenderWidgetHostViewMac::AcceleratedSurfaceContextChanged() {
+void RenderWidgetHostViewMac::ForceTextureReload() {
   plugin_container_manager_.ForceTextureReload();
 }
 
@@ -925,7 +1085,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   [self keyEvent:theEvent wasKeyEquivalent:NO];
 }
 
-- (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv {
+- (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv {
   DCHECK([theEvent type] != NSKeyDown ||
          !equiv == !([theEvent modifierFlags] & NSCommandKeyMask));
 
@@ -1127,8 +1287,12 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   // If this view can be the key view, it is not a popup. Therefore, if it has
   // any children, they are popups that need to be canceled.
   if (canBeKeyView_) {
-    for (RenderWidgetHostViewCocoa* subview in [self subviews]) {
-      subview->renderWidgetHostView_->KillSelf();
+    for (NSView* subview in [self subviews]) {
+      if (![subview isKindOfClass:[RenderWidgetHostViewCocoa class]])
+        continue;  // Skip plugin views.
+
+      [static_cast<RenderWidgetHostViewCocoa*>(subview)
+          renderWidgetHostViewMac]->KillSelf();
     }
   }
 }
@@ -1981,9 +2145,12 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     NSWindow* newWindow = [self window];
     // Pointer comparison only, since we don't know if lastWindow_ is still
     // valid.
-    if (newWindow && (newWindow != lastWindow_)) {
-      lastWindow_ = newWindow;
-      renderWidgetHostView_->WindowFrameChanged();
+    if (newWindow) {
+      if (newWindow != lastWindow_) {
+        lastWindow_ = newWindow;
+        renderWidgetHostView_->WindowFrameChanged();
+      }
+      renderWidgetHostView_->ForceTextureReload();
     }
   }
 
@@ -2047,48 +2214,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
       ForwardEditCommand("PasteAndMatchStyle", "");
   }
-}
-
-- (void)ensureAcceleratedPluginLayer {
-  if (acceleratedPluginLayer_.get())
-    return;
-
-  AcceleratedPluginLayer* pluginLayer = [[AcceleratedPluginLayer alloc]
-      initWithRenderWidgetHostViewMac:renderWidgetHostView_.get()];
-  acceleratedPluginLayer_.reset(pluginLayer);
-  // Make our layer resize to fit the superlayer
-  pluginLayer.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
-  // Make the view layer-backed so that there will be a layer to hang the
-  // |layer| off of. This is not the "right" way to host a sublayer in a view,
-  // but the right way would require making the whole view's drawing system
-  // layer-based (using setLayer:). We don't want to do that (at least not
-  // yet) so instead we override setLayer: and re-bind our plugin layer each
-  // time the view's layer changes. For discussion see:
-  // http://lists.apple.com/archives/Cocoa-dev/2009/Feb/msg01132.html
-  [self setWantsLayer:YES];
-  [self attachPluginLayer];
-}
-
-- (void)attachPluginLayer {
-  CALayer* pluginLayer = acceleratedPluginLayer_.get();
-  if (!pluginLayer)
-    return;
-
-  CALayer* rootLayer = [self layer];
-  DCHECK(rootLayer != nil);
-  [pluginLayer setFrame:NSRectToCGRect([self bounds])];
-  [rootLayer addSublayer:pluginLayer];
-  renderWidgetHostView_->AcceleratedSurfaceContextChanged();
-}
-
-- (void)setLayer:(CALayer *)newLayer {
-  CALayer* pluginLayer = acceleratedPluginLayer_.get();
-  if (!newLayer && [pluginLayer superlayer])
-    [pluginLayer removeFromSuperlayer];
-
-  [super setLayer:newLayer];
-  if ([self layer])
-    [self attachPluginLayer];
 }
 
 - (void)drawAcceleratedPluginLayer {

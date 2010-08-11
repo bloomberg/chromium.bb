@@ -212,8 +212,6 @@ class RenderWidgetHostView {
       TransportDIB::Handle transport_dib) = 0;
   virtual void AcceleratedSurfaceBuffersSwapped(
       gfx::PluginWindowHandle window) = 0;
-  // Draws the current GPU-accelerated plug-in instances into the given context.
-  virtual void DrawAcceleratedSurfaceInstances(CGLContextObj context) = 0;
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
