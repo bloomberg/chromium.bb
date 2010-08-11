@@ -219,3 +219,4 @@ void BasicRenderer::StopPlayback() {
 }
 
 }  // namespace media
+

@@ -87,3 +87,4 @@ bool AdjustD3DDeviceBackBufferDimensions(IDirect3DDevice9* device,
 }
 
 }  // namespace media
+
