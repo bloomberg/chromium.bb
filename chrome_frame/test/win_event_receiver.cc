@@ -10,7 +10,10 @@
 #include "chrome_frame/function_stub.h"
 
 // WinEventReceiver methods
-WinEventReceiver::WinEventReceiver() : hook_(NULL), hook_stub_(NULL) {
+WinEventReceiver::WinEventReceiver()
+    : listener_(NULL),
+      hook_(NULL),
+      hook_stub_(NULL) {
 }
 
 WinEventReceiver::~WinEventReceiver() {
