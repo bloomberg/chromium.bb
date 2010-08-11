@@ -72,6 +72,11 @@ void OmxVideoDecoder::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
                        &OmxVideoDecodeEngine::FillThisBuffer, frame));
 }
 
+bool OmxVideoDecoder::ProvidesBuffer() {
+  if (!omx_engine_.get()) return false;
+  return omx_engine_->ProvidesBuffer();
+}
+
 void OmxVideoDecoder::Stop(FilterCallback* callback) {
   omx_engine_->Stop(
      NewRunnableMethod(this,
@@ -92,9 +97,19 @@ void OmxVideoDecoder::PauseCompleteTask(FilterCallback* callback) {
   AutoCallbackRunner done_runner(callback);
 }
 
+void OmxVideoDecoder::Flush(FilterCallback* callback) {
+  omx_engine_->Flush(
+       NewRunnableMethod(this,
+                         &OmxVideoDecoder::FlushCompleteTask, callback));
+}
+
+void OmxVideoDecoder::FlushCompleteTask(FilterCallback* callback) {
+  AutoCallbackRunner done_runner(callback);
+}
+
 void OmxVideoDecoder::Seek(base::TimeDelta time,
                            FilterCallback* callback) {
-  omx_engine_->Flush(
+  omx_engine_->Seek(
      NewRunnableMethod(this,
                        &OmxVideoDecoder::SeekCompleteTask, callback));
 }

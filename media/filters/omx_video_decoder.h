@@ -30,8 +30,10 @@ class OmxVideoDecoder : public VideoDecoder {
   virtual void Initialize(DemuxerStream* stream, FilterCallback* callback);
   virtual void Stop(FilterCallback* callback);
   virtual void Pause(FilterCallback* callback);
+  virtual void Flush(FilterCallback* callback);
   virtual void Seek(base::TimeDelta time, FilterCallback* callback);
   virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
+  virtual bool ProvidesBuffer();
   virtual const MediaFormat& media_format() { return media_format_; }
 
  private:
@@ -47,6 +49,7 @@ class OmxVideoDecoder : public VideoDecoder {
 
   void StopCompleteTask(FilterCallback* callback);
   void PauseCompleteTask(FilterCallback* callback);
+  void FlushCompleteTask(FilterCallback* callback);
   void SeekCompleteTask(FilterCallback* callback);
 
   // TODO(hclam): This is very ugly that we keep reference instead of
