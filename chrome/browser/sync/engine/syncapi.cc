@@ -893,7 +893,8 @@ class SyncManager::SyncInternal
         notification_pending_(false),
         initialized_(false),
         use_chrome_async_socket_(false),
-        notification_method_(browser_sync::kDefaultNotificationMethod) {
+        notification_method_(browser_sync::kDefaultNotificationMethod),
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   }
 
@@ -1133,6 +1134,14 @@ class SyncManager::SyncInternal
     return true;
   }
 
+  void CheckServerReachable() {
+    if (connection_manager()) {
+      connection_manager()->CheckServerReachable();
+    } else {
+      NOTREACHED() << "Should be valid connection manager!";
+    }
+  }
+
   // We couple the DirectoryManager and username together in a UserShare member
   // so we can return a handle to share_ to clients of the API for use when
   // constructing any transaction type.
@@ -1215,6 +1224,8 @@ class SyncManager::SyncInternal
 
   bool use_chrome_async_socket_;
   browser_sync::NotificationMethod notification_method_;
+
+  ScopedRunnableMethodFactory<SyncManager::SyncInternal> method_factory_;
 };
 const int SyncManager::SyncInternal::kDefaultNudgeDelayMilliseconds = 200;
 const int SyncManager::SyncInternal::kPreferencesNudgeDelayMilliseconds = 2000;
@@ -1349,7 +1360,8 @@ bool SyncManager::SyncInternal::Init(
   net::NetworkChangeNotifier::AddObserver(this);
   // TODO(akalin): CheckServerReachable() can block, which may cause jank if we
   // try to shut down sync.  Fix this.
-  connection_manager()->CheckServerReachable();
+  core_message_loop_->PostTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(&SyncInternal::CheckServerReachable));
 
   // NOTIFICATION_SERVER uses a substantially different notification method, so
   // it has its own MediatorThread implementation.  Everything else just uses
@@ -1590,6 +1602,8 @@ void SyncManager::Shutdown() {
 }
 
 void SyncManager::SyncInternal::Shutdown() {
+  method_factory_.RevokeAll();
+
   // We NULL out talk_mediator_ so that any tasks pumped below do not
   // trigger further XMPP actions.
   //
