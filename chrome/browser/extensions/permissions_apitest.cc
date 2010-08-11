@@ -41,3 +41,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExperimentalPermissionsFail) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FavIconPermission) {
   ASSERT_TRUE(RunExtensionTest("permissions/favicon")) << message_;
 }
+
+// TODO(gregoryd): run the NaCl test on all systems once
+// http://code.google.com/p/chromium/issues/detail?id=51335 is fixed.
+// Meanwhile we run it on Mac OSX only, since we can be sure that an x86-32 NaCl
+// module will work there.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NaClPermissionEnabled) {
+  ASSERT_TRUE(RunExtensionTest("permissions/nacl_enabled")) << message_;
+}
+#endif
