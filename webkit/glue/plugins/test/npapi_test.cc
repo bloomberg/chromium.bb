@@ -66,24 +66,55 @@ EXPORT NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* pFuncs) {
   return NPAPIClient::PluginClient::GetEntryPoints(pFuncs);
 }
 
-EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* pFuncs) {
-  return NPAPIClient::PluginClient::Initialize(pFuncs);
-}
-
 EXPORT NPError API_CALL NP_Shutdown() {
   return NPAPIClient::PluginClient::Shutdown();
 }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
+EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* npnFuncs) {
+  return NPAPIClient::PluginClient::Initialize(npnFuncs);
+}
+#elif defined(OS_POSIX)
+EXPORT NPError API_CALL NP_Initialize(NPNetscapeFuncs* npnFuncs,
+                                      NPPluginFuncs* nppFuncs) {
+  NPError error = NPAPIClient::PluginClient::Initialize(npnFuncs);
+  if (error == NPERR_NO_ERROR) {
+    error = NP_GetEntryPoints(nppFuncs);
+  }
+  return error;
+}
+
+EXPORT NPError API_CALL NP_GetValue(NPP instance, NPPVariable variable,
+                                    void* value) {
+  NPError err = NPERR_NO_ERROR;
+
+  switch (variable) {
+    case NPPVpluginNameString:
+      *(static_cast<const char**>(value)) = "NPAPI Test Plugin";
+      break;
+    case NPPVpluginDescriptionString:
+      *(static_cast<const char**>(value)) =
+          "Simple NPAPI plug-in for Chromium unit tests";
+      break;
+    case NPPVpluginNeedsXEmbed:
+      *(static_cast<NPBool*>(value)) = true;
+      break;
+    default:
+      err = NPERR_GENERIC_ERROR;
+      break;
+  }
+
+  return err;
+}
+
 EXPORT const char* API_CALL NP_GetMIMEDescription(void) {
   // The layout test LayoutTests/fast/js/navigator-mimeTypes-length.html
   // asserts that the number of mimetypes handled by plugins should be
   // greater than the number of plugins.  We specify a mimetype here so
   // this plugin has at least one.
-  return "application/x-npapi-test-netscape:npapitestnetscape:"
-         "npapi test netscape content";
+  return "application/vnd.npapi-test:npapitest:test npapi";
 }
-#endif
+#endif  // OS_POSIX
 } // extern "C"
 
 namespace WebCore {
