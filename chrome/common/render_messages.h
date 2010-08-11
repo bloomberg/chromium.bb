@@ -829,6 +829,16 @@ struct ViewMsg_ExtensionExtentsUpdated_Params {
   std::vector<ViewMsg_ExtensionExtentInfo> extension_apps;
 };
 
+struct ViewMsg_DeviceOrientationUpdated_Params {
+  // These fields have the same meaning as in device_orientation::Orientation.
+  bool can_provide_alpha;
+  double alpha;
+  bool can_provide_beta;
+  double beta;
+  bool can_provide_gamma;
+  double gamma;
+};
+
 // Values that may be OR'd together to form the 'flags' parameter of the
 // ViewMsg_EnablePreferredSizeChangedMode message.
 enum ViewHostMsg_EnablePreferredSizeChangedMode_Flags {
@@ -3363,6 +3373,44 @@ struct ParamTraits<webkit_glue::WebAccessibility> {
   }
 };
 
+// Traits for ViewMsg_DeviceOrientationUpdated_Params
+// structure to pack/unpack.
+template <>
+struct ParamTraits<ViewMsg_DeviceOrientationUpdated_Params> {
+  typedef ViewMsg_DeviceOrientationUpdated_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.can_provide_alpha);
+    WriteParam(m, p.alpha);
+    WriteParam(m, p.can_provide_beta);
+    WriteParam(m, p.beta);
+    WriteParam(m, p.can_provide_gamma);
+    WriteParam(m, p.gamma);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->can_provide_alpha) &&
+      ReadParam(m, iter, &p->alpha) &&
+      ReadParam(m, iter, &p->can_provide_beta) &&
+      ReadParam(m, iter, &p->beta) &&
+      ReadParam(m, iter, &p->can_provide_gamma) &&
+      ReadParam(m, iter, &p->gamma);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"(");
+    LogParam(p.can_provide_alpha, l);
+    l->append(L", ");
+    LogParam(p.alpha, l);
+    l->append(L", ");
+    LogParam(p.can_provide_beta, l);
+    l->append(L", ");
+    LogParam(p.beta, l);
+    l->append(L", ");
+    LogParam(p.can_provide_gamma, l);
+    l->append(L", ");
+    LogParam(p.gamma, l);
+    l->append(L")");
+  }
+};
 }  // namespace IPC
 
 #define MESSAGES_INTERNAL_FILE "chrome/common/render_messages_internal.h"

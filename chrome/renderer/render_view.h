@@ -55,6 +55,7 @@
 
 class AudioMessageFilter;
 class DictionaryValue;
+class DeviceOrientationDispatcher;
 class DevToolsAgent;
 class DevToolsClient;
 class FilePath;
@@ -417,6 +418,7 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebGeolocationService* geolocationService();
   virtual WebKit::WebSpeechInputController* speechInputController(
       WebKit::WebSpeechInputListener* listener);
+  virtual WebKit::WebDeviceOrientationClient* deviceOrientationClient();
 
   // WebKit::WebFrameClient implementation -------------------------------------
 
@@ -1225,6 +1227,9 @@ class RenderView : public RenderWidget,
 
   // The speech dispatcher attached to this view, lazily initialized.
   scoped_ptr<SpeechInputDispatcher> speech_input_dispatcher_;
+
+  // Device orientation dispatcher attached to this view; lazily initialized.
+  scoped_ptr<DeviceOrientationDispatcher> device_orientation_dispatcher_;
 
   // Misc ----------------------------------------------------------------------
 

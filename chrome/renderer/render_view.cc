@@ -43,6 +43,7 @@
 #include "chrome/renderer/about_handler.h"
 #include "chrome/renderer/audio_message_filter.h"
 #include "chrome/renderer/blocked_plugin.h"
+#include "chrome/renderer/device_orientation_dispatcher.h"
 #include "chrome/renderer/devtools_agent.h"
 #include "chrome/renderer/devtools_client.h"
 #include "chrome/renderer/extension_groups.h"
@@ -652,6 +653,10 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
   }
   if (speech_input_dispatcher_.get() &&
       speech_input_dispatcher_->OnMessageReceived(message)) {
+    return;
+  }
+  if (device_orientation_dispatcher_.get() &&
+      device_orientation_dispatcher_->OnMessageReceived(message)) {
     return;
   }
 
@@ -5398,6 +5403,12 @@ WebKit::WebSpeechInputController* RenderView::speechInputController(
   if (!speech_input_dispatcher_.get())
     speech_input_dispatcher_.reset(new SpeechInputDispatcher(this, listener));
   return speech_input_dispatcher_.get();
+}
+
+WebKit::WebDeviceOrientationClient* RenderView::deviceOrientationClient() {
+  if (!device_orientation_dispatcher_.get())
+    device_orientation_dispatcher_.reset(new DeviceOrientationDispatcher(this));
+  return device_orientation_dispatcher_.get();
 }
 
 bool RenderView::IsNonLocalTopLevelNavigation(

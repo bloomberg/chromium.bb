@@ -993,6 +993,10 @@ IPC_BEGIN_MESSAGES(View)
   // ViewHostMsg_SpeechInput_StartRecognition.
   IPC_MESSAGE_ROUTED0(ViewMsg_SpeechInput_RecognitionComplete)
 
+  // Notification that the device's orientation has changed.
+  IPC_MESSAGE_ROUTED1(ViewMsg_DeviceOrientationUpdated,
+                      ViewMsg_DeviceOrientationUpdated_Params)
+
 IPC_END_MESSAGES(View)
 
 
@@ -2607,6 +2611,17 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // speech recognizer. If speech recognition is not happening nor or is
   // happening on behalf of some other render view, this call does nothing.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_SpeechInput_StopRecording,
+                       int /* render_view_id */)
+
+  //---------------------------------------------------------------------------
+  // Device orientation services messages:
+
+  // A RenderView requests to start receiving device orientation updates.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StartUpdating,
+                       int /* render_view_id */)
+
+  // A RenderView requests to stop receiving device orientation updates.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StopUpdating,
                        int /* render_view_id */)
 
 IPC_END_MESSAGES(ViewHost)

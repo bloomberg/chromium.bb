@@ -26,6 +26,7 @@
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/clipboard_dispatcher.h"
+#include "chrome/browser/device_orientation/dispatcher_host.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
@@ -235,9 +236,10 @@ ResourceMessageFilter::ResourceMessageFilter(
           new speech_input::SpeechInputDispatcherHost(this->id()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
           GeolocationDispatcherHost::New(
-              this->id(), profile->GetGeolocationPermissionContext()))) {
+              this->id(), profile->GetGeolocationPermissionContext()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(device_orientation_dispatcher_host_(
+          new device_orientation::DispatcherHost(this->id()))) {
   request_context_ = profile_->GetRequestContext();
-
   DCHECK(request_context_);
   DCHECK(media_request_context_);
   DCHECK(audio_renderer_host_.get());
@@ -336,7 +338,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       mp_dispatcher->OnMessageReceived(
           msg, this, next_route_id_callback(), &msg_is_ok) ||
       geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      speech_input_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
+      speech_input_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      device_orientation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.
@@ -1674,4 +1677,3 @@ void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
     delete this;
   }
 }
-

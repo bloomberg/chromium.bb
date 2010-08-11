@@ -87,6 +87,8 @@
         'renderer/blocked_plugin.h',
         'renderer/cookie_message_filter.cc',
         'renderer/cookie_message_filter.h',
+        'renderer/device_orientation_dispatcher.cc',
+        'renderer/device_orientation_dispatcher.h',
         'renderer/devtools_agent.cc',
         'renderer/devtools_agent.h',
         'renderer/devtools_agent_filter.cc',

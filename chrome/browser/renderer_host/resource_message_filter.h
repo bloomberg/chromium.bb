@@ -53,6 +53,10 @@ namespace base {
 class SharedMemory;
 }
 
+namespace device_orientation {
+class DispatcherHost;
+}
+
 namespace file_util {
 struct FileInfo;
 }
@@ -451,6 +455,10 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Used to handle geolocation-related messages.
   scoped_refptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;
+
+  // Used to handle device orientation related messages.
+  scoped_refptr<device_orientation::DispatcherHost>
+      device_orientation_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };
