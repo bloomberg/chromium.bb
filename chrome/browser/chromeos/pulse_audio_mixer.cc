@@ -21,8 +21,6 @@ namespace chromeos {
 // synchronously get the value back.
 //
 // TODO(davej): Serialize volume/mute to preserve settings when restarting?
-// TODO(davej): Check if we need some thread safety mechanism (will someone be
-// calling GetVolume while another process is calling SetVolume?)
 
 namespace {
 
@@ -30,14 +28,15 @@ const int kInvalidDeviceId = -1;
 
 // Used for passing custom data to the PulseAudio callbacks.
 struct CallbackWrapper {
-  pa_threaded_mainloop* mainloop;
-  void* data;
+  PulseAudioMixer* instance;
+  bool done;
+  void* userdata;
 };
 
 }  // namespace
 
 // AudioInfo contains all the values we care about when getting info for a
-// Sink (output device) used by GetAudioInfo()
+// Sink (output device) used by GetAudioInfo().
 struct PulseAudioMixer::AudioInfo {
   pa_cvolume cvolume;
   bool muted;
@@ -46,6 +45,8 @@ struct PulseAudioMixer::AudioInfo {
 PulseAudioMixer::PulseAudioMixer()
     : device_id_(kInvalidDeviceId),
       last_channels_(0),
+      mainloop_lock_count_(0),
+      mixer_state_lock_(),
       mixer_state_(UNINITIALIZED),
       pa_context_(NULL),
       pa_mainloop_(NULL),
@@ -55,6 +56,7 @@ PulseAudioMixer::PulseAudioMixer()
 PulseAudioMixer::~PulseAudioMixer() {
   PulseAudioFree();
   thread_->Stop();
+  thread_.reset();
 }
 
 bool PulseAudioMixer::Init(InitDoneCallback* callback) {
@@ -75,25 +77,27 @@ bool PulseAudioMixer::InitSync() {
 }
 
 double PulseAudioMixer::GetVolumeDb() const {
-  if (CheckState() != READY)
-    return pa_sw_volume_to_dB(0);  // this returns -inf
+  if (!MainloopLockIfReady())
+    return pa_sw_volume_to_dB(0);  // this returns -inf.
   AudioInfo data;
   GetAudioInfo(&data);
+  MainloopUnlock();
   return pa_sw_volume_to_dB(data.cvolume.values[0]);
 }
 
-void PulseAudioMixer::GetVolumeDbAsync(GetVolumeCallback* callback,
+bool PulseAudioMixer::GetVolumeDbAsync(GetVolumeCallback* callback,
                                        void* user) {
   if (CheckState() != READY)
-    return;
+    return false;
   thread_->message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(this,
                         &PulseAudioMixer::DoGetVolume,
                         callback, user));
+  return true;
 }
 
 void PulseAudioMixer::SetVolumeDb(double vol_db) {
-  if (CheckState() != READY)
+  if (!MainloopLockIfReady())
     return;
 
   // last_channels_ determines the number of channels on the main output device,
@@ -107,30 +111,29 @@ void PulseAudioMixer::SetVolumeDb(double vol_db) {
   pa_operation* pa_op;
   pa_cvolume cvolume;
   pa_cvolume_set(&cvolume, last_channels_, pa_sw_volume_from_dB(vol_db));
-  pa_threaded_mainloop_lock(pa_mainloop_);
   pa_op = pa_context_set_sink_volume_by_index(pa_context_, device_id_,
                                               &cvolume, NULL, NULL);
   pa_operation_unref(pa_op);
-  pa_threaded_mainloop_unlock(pa_mainloop_);
+  MainloopUnlock();
 }
 
 bool PulseAudioMixer::IsMute() const {
-  if (CheckState() != READY)
+  if (!MainloopLockIfReady())
     return false;
   AudioInfo data;
   GetAudioInfo(&data);
+  MainloopUnlock();
   return data.muted;
 }
 
 void PulseAudioMixer::SetMute(bool mute) {
-  if (CheckState() != READY)
+  if (!MainloopLockIfReady())
     return;
   pa_operation* pa_op;
-  pa_threaded_mainloop_lock(pa_mainloop_);
   pa_op = pa_context_set_sink_mute_by_index(pa_context_, device_id_,
                                             mute ? 1 : 0, NULL, NULL);
   pa_operation_unref(pa_op);
-  pa_threaded_mainloop_unlock(pa_mainloop_);
+  MainloopUnlock();
 }
 
 PulseAudioMixer::State PulseAudioMixer::CheckState() const {
@@ -158,13 +161,6 @@ void PulseAudioMixer::DoGetVolume(GetVolumeCallback* callback,
 }
 
 bool PulseAudioMixer::InitThread() {
-  {
-    AutoLock lock(mixer_state_lock_);
-    if (mixer_state_ != UNINITIALIZED)
-      return false;
-    mixer_state_ = INITIALIZING;
-  }
-
   if (thread_ == NULL) {
     thread_.reset(new base::Thread("PulseAudioMixer"));
     if (!thread_->Start()) {
@@ -175,17 +171,12 @@ bool PulseAudioMixer::InitThread() {
   return true;
 }
 
-struct ConnectToPulseCallbackData {
-  PulseAudioMixer* instance;
-  bool connect_done;
-};
-
 // static
 void PulseAudioMixer::ConnectToPulseCallbackThunk(
     pa_context* context, void* userdata) {
-  ConnectToPulseCallbackData* data =
-      static_cast<ConnectToPulseCallbackData*>(userdata);
-  data->instance->OnConnectToPulseCallback(context, &data->connect_done);
+  CallbackWrapper* data =
+      static_cast<CallbackWrapper*>(userdata);
+  data->instance->OnConnectToPulseCallback(context, &data->done);
 }
 
 void PulseAudioMixer::OnConnectToPulseCallback(
@@ -196,12 +187,19 @@ void PulseAudioMixer::OnConnectToPulseCallback(
       state == PA_CONTEXT_TERMINATED) {
     // Connection process has reached a terminal state. Wake PulseAudioInit().
     *connect_done = true;
-    pa_threaded_mainloop_signal(pa_mainloop_, 0);
+    MainloopSignal();
   }
 }
 
 bool PulseAudioMixer::PulseAudioInit() {
   pa_context_state_t state = PA_CONTEXT_FAILED;
+
+  {
+    AutoLock lock(mixer_state_lock_);
+    if (mixer_state_ != UNINITIALIZED)
+      return false;
+    mixer_state_ = INITIALIZING;
+  }
 
   while (true) {
     // Create connection to default server.
@@ -216,7 +214,8 @@ bool PulseAudioMixer::PulseAudioInit() {
       break;
     }
 
-    pa_threaded_mainloop_lock(pa_mainloop_);
+    if (!MainloopSafeLock())
+      return false;
 
     while (true) {
       pa_mainloop_api* pa_mlapi = pa_threaded_mainloop_get_api(pa_mainloop_);
@@ -231,10 +230,11 @@ bool PulseAudioMixer::PulseAudioInit() {
         break;
       }
 
-      ConnectToPulseCallbackData data;
-      data.instance = this;
-      data.connect_done = false;
+      MainloopUnlock();
+      if (!MainloopSafeLock())
+        return false;
 
+      CallbackWrapper data = {this, false, NULL};
       pa_context_set_state_callback(pa_context_,
                                     &ConnectToPulseCallbackThunk,
                                     &data);
@@ -245,13 +245,13 @@ bool PulseAudioMixer::PulseAudioInit() {
       } else {
         // Wait until we have a completed connection or fail.
         do {
-          pa_threaded_mainloop_wait(pa_mainloop_);
-        } while (!data.connect_done);
+          MainloopWait();
+        } while (!data.done);
 
         state = pa_context_get_state(pa_context_);
 
         if (state == PA_CONTEXT_FAILED) {
-          LOG(ERROR) << "PulseAudio context connection failed";
+          LOG(ERROR) << "PulseAudio connection failed (daemon not running?)";
         } else if (state == PA_CONTEXT_TERMINATED) {
           LOG(ERROR) << "PulseAudio connection terminated early";
         } else if (state != PA_CONTEXT_READY) {
@@ -263,13 +263,16 @@ bool PulseAudioMixer::PulseAudioInit() {
       break;
     }
 
-    pa_threaded_mainloop_unlock(pa_mainloop_);
+    MainloopUnlock();
 
     if (state != PA_CONTEXT_READY)
       break;
 
-    last_channels_ = 0;
+    if (!MainloopSafeLock())
+      return false;
     GetDefaultPlaybackDevice();
+    MainloopUnlock();
+
     if (device_id_ == kInvalidDeviceId)
       break;
 
@@ -285,16 +288,23 @@ bool PulseAudioMixer::PulseAudioInit() {
 void PulseAudioMixer::PulseAudioFree() {
   if (!pa_mainloop_)
     return;
-  DCHECK_NE(mixer_state_, UNINITIALIZED);
-  set_mixer_state(SHUTTING_DOWN);
 
+  {
+    AutoLock lock(mixer_state_lock_);
+    DCHECK_NE(mixer_state_, UNINITIALIZED);
+    if (mixer_state_ == SHUTTING_DOWN)
+      return;
+    // If still initializing on another thread, this will cause it to exit.
+    mixer_state_ = SHUTTING_DOWN;
+  }
+
+  MainloopLock();
   if (pa_context_) {
-    pa_threaded_mainloop_lock(pa_mainloop_);
     pa_context_disconnect(pa_context_);
     pa_context_unref(pa_context_);
-    pa_threaded_mainloop_unlock(pa_mainloop_);
     pa_context_ = NULL;
   }
+  MainloopUnlock();
 
   pa_threaded_mainloop_stop(pa_mainloop_);
   pa_threaded_mainloop_free(pa_mainloop_);
@@ -303,42 +313,52 @@ void PulseAudioMixer::PulseAudioFree() {
   set_mixer_state(UNINITIALIZED);
 }
 
-void PulseAudioMixer::CompleteOperationAndUnlock(pa_operation* pa_op) const {
+void PulseAudioMixer::CompleteOperation(pa_operation* pa_op,
+                                        bool* done) const {
   // After starting any operation, this helper checks if it started OK, then
   // waits for it to complete by iterating through the mainloop until the
   // operation is not running anymore.
   CHECK(pa_op);
 
   while (pa_operation_get_state(pa_op) == PA_OPERATION_RUNNING) {
-    pa_threaded_mainloop_wait(pa_mainloop_);
+    // If operation still running, but we got what we needed, cancel it now.
+    if (*done) {
+      pa_operation_cancel(pa_op);
+      break;
+    }
+    MainloopWait();
   }
   pa_operation_unref(pa_op);
-  pa_threaded_mainloop_unlock(pa_mainloop_);
 }
 
+// Must be called with mainloop lock held
 void PulseAudioMixer::GetDefaultPlaybackDevice() {
+  DCHECK_GT(mainloop_lock_count_, 0);
   DCHECK(pa_context_);
   DCHECK(pa_context_get_state(pa_context_) == PA_CONTEXT_READY);
 
-  pa_threaded_mainloop_lock(pa_mainloop_);
+  CallbackWrapper data = {this, false, NULL};
+
   pa_operation* pa_op = pa_context_get_sink_info_list(pa_context_,
                                         EnumerateDevicesCallback,
-                                        this);
-  CompleteOperationAndUnlock(pa_op);
+                                        &data);
+  CompleteOperation(pa_op, &data.done);
   return;
 }
 
 void PulseAudioMixer::OnEnumerateDevices(const pa_sink_info* sink_info,
-                                         int eol) {
-  // If eol is set to a positive number, you're at the end of the list.
-  if (eol > 0)
+                                         int eol, bool* done) {
+  if (device_id_ != kInvalidDeviceId)
     return;
 
   // TODO(davej): Should we handle cases of more than one output sink device?
-  if (device_id_ == kInvalidDeviceId)
-    device_id_ = sink_info->index;
 
-  pa_threaded_mainloop_signal(pa_mainloop_, 0);
+  // eol is < 0 for error, > 0 for end of list, ==0 while listing.
+  if (eol == 0) {
+    device_id_ = sink_info->index;
+  }
+  *done = true;
+  MainloopSignal();
 }
 
 // static
@@ -346,19 +366,20 @@ void PulseAudioMixer::EnumerateDevicesCallback(pa_context* unused,
                                                const pa_sink_info* sink_info,
                                                int eol,
                                                void* userdata) {
-  PulseAudioMixer* inst = static_cast<PulseAudioMixer*>(userdata);
-  inst->OnEnumerateDevices(sink_info, eol);
+  CallbackWrapper* data =
+      static_cast<CallbackWrapper*>(userdata);
+  data->instance->OnEnumerateDevices(sink_info, eol, &data->done);
 }
 
+// Must be called with lock held
 void PulseAudioMixer::GetAudioInfo(AudioInfo* info) const {
-  CallbackWrapper cb_data = {pa_mainloop_, info};
-  pa_threaded_mainloop_lock(pa_mainloop_);
-  pa_operation* pa_op;
-  pa_op = pa_context_get_sink_info_by_index(pa_context_,
-                                            device_id_,
-                                            GetAudioInfoCallback,
-                                            &cb_data);
-  CompleteOperationAndUnlock(pa_op);
+  DCHECK_GT(mainloop_lock_count_, 0);
+  CallbackWrapper data = {const_cast<PulseAudioMixer*>(this), false, info};
+  pa_operation* pa_op = pa_context_get_sink_info_by_index(pa_context_,
+                                                          device_id_,
+                                                          GetAudioInfoCallback,
+                                                          &data);
+  CompleteOperation(pa_op, &data.done);
 }
 
 // static
@@ -366,15 +387,58 @@ void PulseAudioMixer::GetAudioInfoCallback(pa_context* unused,
                                            const pa_sink_info* sink_info,
                                            int eol,
                                            void* userdata) {
-  CallbackWrapper* cb_data = static_cast<CallbackWrapper*>(userdata);
-  AudioInfo* data = static_cast<AudioInfo*>(cb_data->data);
+  CallbackWrapper* data = static_cast<CallbackWrapper*>(userdata);
+  AudioInfo* info = static_cast<AudioInfo*>(data->userdata);
 
   // Copy just the information we care about.
   if (eol == 0) {
-    data->cvolume = sink_info->volume;
-    data->muted = sink_info->mute ? true : false;
+    info->cvolume = sink_info->volume;
+    info->muted = sink_info->mute ? true : false;
+    data->done = true;
   }
-  pa_threaded_mainloop_signal(cb_data->mainloop, 0);
+  data->instance->MainloopSignal();
+}
+
+inline void PulseAudioMixer::MainloopLock() const {
+  pa_threaded_mainloop_lock(pa_mainloop_);
+  ++mainloop_lock_count_;
+}
+
+inline void PulseAudioMixer::MainloopUnlock() const {
+  --mainloop_lock_count_;
+  pa_threaded_mainloop_unlock(pa_mainloop_);
+}
+
+// Must be called with the lock held.
+inline void PulseAudioMixer::MainloopWait() const {
+  DCHECK_GT(mainloop_lock_count_, 0);
+  pa_threaded_mainloop_wait(pa_mainloop_);
+}
+
+// Must be called with the lock held.
+inline void PulseAudioMixer::MainloopSignal() const {
+  DCHECK_GT(mainloop_lock_count_, 0);
+  pa_threaded_mainloop_signal(pa_mainloop_, 0);
+}
+
+inline bool PulseAudioMixer::MainloopSafeLock() const {
+  AutoLock lock(mixer_state_lock_);
+  if ((mixer_state_ == SHUTTING_DOWN) || (!pa_mainloop_))
+    return false;
+  pa_threaded_mainloop_lock(pa_mainloop_);
+  ++mainloop_lock_count_;
+  return true;
+}
+
+inline bool PulseAudioMixer::MainloopLockIfReady() const {
+  AutoLock lock(mixer_state_lock_);
+  if (mixer_state_ != READY)
+    return false;
+  if (!pa_mainloop_)
+    return false;
+  pa_threaded_mainloop_lock(pa_mainloop_);
+  ++mainloop_lock_count_;
+  return true;
 }
 
 }  // namespace chromeos

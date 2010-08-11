@@ -110,6 +110,7 @@ AudioHandler::AudioHandler()
 }
 
 AudioHandler::~AudioHandler() {
+  mixer_.reset();
 };
 
 bool AudioHandler::VerifyMixerConnection() {
