@@ -139,27 +139,4 @@ void NaClOpPrint(struct Gio* f, NaClOp* operand);
  */
 void NaClInstPrint(struct Gio* f,  NaClInst* inst);
 
-/* Prints out the given instruction to the given file. If index >= 0,
- * print out a comment, with the value of index, before the printed
- * instruction Lookahead is used to convert the next_rule pointer into
- * a symbolic reference using the name "g_Opcodes", plus the index and
- * the lookahead.
- */
-void NaClInstPrintTablegen(struct Gio* f, int index,
-                           NaClInst* inst, int lookahead);
-
-/* Prints out the given instruction to the given file. If index >= 0,
- * print out a comment, with the value of index, before the printed
- * instruction. Lookahead is used to convert the next_rule pointer into
- * a symbolic reference using the name "g_Opcodes", plus the index defined by
- * the lookahead. Argument as_array_element is true if the element is
- * assumed to be in an array static initializer. If argument simplify is
- * true, then the element is for documentation purposes only (as a single
- * element), and simplify the output to only contain (user-readable)
- * useful information.
- */
-void NaClInstPrintTableDriver(struct Gio* f, Bool as_array_element,
-                              Bool simplify,
-                              int index, NaClInst* inst, int lookahead);
-
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H_ */

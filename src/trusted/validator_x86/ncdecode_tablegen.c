@@ -23,8 +23,10 @@
 #include <time.h>
 #include <string.h>
 
+#define NEEDSNACLINSTTYPESTRING
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
+#include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
 #include "native_client/src/include/portability.h"
@@ -68,6 +70,11 @@ static const char* NaClRunModeName(NaClRunMode mode) {
 
 /* Defines the run mode files that should be generated. */
 static NaClRunMode FLAGS_run_mode = NaClRunModeSize;
+
+/* Defines whether the output of the instruction set should
+ * be as a header file, or human readable (for documentation).
+ */
+static Bool NACL_FLAGS_human_readable = FALSE;
 
 /* Holds the current instruction prefix. */
 static NaClInstPrefix current_opcode_prefix = NoPrefix;
@@ -129,9 +136,8 @@ const char* NaClPrefixTable[NCDTABLESIZE];
  * execution of the program.
  */
 static void NaClFatalInst(const char* message) {
-  struct Gio* g = NaClLogGetGio();
-  gprintf(g, "Prefix: %s\n", NaClInstPrefixName(current_opcode_prefix));
-  NaClInstPrint(g, current_inst);
+  NaClLog(LOG_INFO, "Prefix: %s\n", NaClInstPrefixName(current_opcode_prefix));
+  NaClInstPrint(NaClLogGetGio(), current_inst);
   NaClFatal(message);
 }
 
@@ -139,12 +145,11 @@ static void NaClFatalInst(const char* message) {
  * error message. Then aborts the execution of the program.
  */
 static void NaClFatalOp(int index, const char* message) {
-  struct Gio* g = NaClLogGetGio();
   if (0 <= index && index <= current_inst->num_operands) {
-    gprintf(g, "On operand %d: %s\n", index,
+    NaClLog(LOG_ERROR, "On operand %d: %s\n", index,
             NaClOpKindName(current_inst->operands[index].kind));
   } else {
-    gprintf(g, "On operand %d:\n", index);
+    NaClLog(LOG_ERROR, "On operand %d:\n", index);
   }
   NaClFatalInst(message);
 }
@@ -658,10 +663,8 @@ void NaClDefOp(
     NaClOpKind kind,
     NaClOpFlags flags) {
   int index = current_inst->num_operands;
-  DEBUG(
-      struct Gio* g = NaClLogGetGio();
-      gprintf(g, "  %s:", NaClOpKindName(kind));
-      NaClPrintlnOpFlags(g, flags));
+  DEBUG(NaClLog(LOG_INFO, "  %s:", NaClOpKindName(kind));
+        NaClPrintlnOpFlags(NaClLogGetGio(), flags));
   if (NACL_MAX_NUM_OPERANDS <= index) {
     NaClFatalOp(index, "NaClOpcode defines too many operands...\n");
   }
@@ -728,10 +731,8 @@ void NaClAddOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
 }
 
 void NaClRemoveOpFlags(uint8_t operand_index, NaClOpFlags more_flags) {
-  DEBUG(
-      struct Gio* g = NaClLogGetGio();
-      gprintf(g, "Removing flags:");
-      NaClPrintlnOpFlags(g, more_flags));
+  DEBUG(NaClLog(LOG_INFO, "Removing flags:");
+        NaClPrintlnOpFlags(NaClLogGetGio(), more_flags));
   if (operand_index <= current_inst->num_operands) {
     current_inst->operands[operand_index].flags &= ~more_flags;
     NaClApplySanityChecksToOp(operand_index);
@@ -1021,12 +1022,10 @@ static void NaClDefInstInternal(
     flags |= NACL_IFLAG(OpcodeInModRm) | NACL_IFLAG(ModRmModIsnt0x3);
   }
 
-  DEBUG(
-      struct Gio* g = NaClLogGetGio();
-      gprintf(g, "Define %s %"NACL_PRIx8": %s(%d)",
-              NaClInstPrefixName(current_opcode_prefix),
-              opcode, NaClMnemonicName(name), name);
-      NaClIFlagsPrint(g, flags));
+  DEBUG(NaClLog(LOG_INFO, "Define %s %"NACL_PRIx8": %s(%d)",
+                NaClInstPrefixName(current_opcode_prefix),
+                opcode, NaClMnemonicName(name), name);
+        NaClIFlagsPrint(NaClLogGetGio(), flags));
 
   if (NaClMnemonicEnumSize <= name) {
     NaClFatal("Badly defined mnemonic name");
@@ -1041,7 +1040,7 @@ static void NaClDefInstInternal(
   if (NULL == current_inst_mrm) {
     NaClFatal("NaClDefInst: malloc failed");
   }
-  DEBUG(gprintf(NaClLogGetGio(),
+  DEBUG(NaClLog(LOG_INFO,
                 "current = %p\n", (void*) current_inst_mrm));
   current_inst_mrm->next = NULL;
   current_inst = &(current_inst_mrm->inst);
@@ -1067,7 +1066,7 @@ static void NaClDefInstInternal(
 
   if (NULL == current_inst_node) {
     /* Install NaClOpcode. */
-    DEBUG(gprintf(NaClLogGetGio(), "  standard install\n"));
+    DEBUG(NaClLog(LOG_INFO, "  standard install\n"));
     if (NULL == NaClInstTable[opcode][current_opcode_prefix]) {
       NaClInstTable[opcode][current_opcode_prefix] = current_inst;
     } else {
@@ -1081,7 +1080,7 @@ static void NaClDefInstInternal(
     NaClInstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode,
                                 NACL_NO_MODRM_OPCODE_INDEX);
   } else if (NULL == current_inst_node->matching_inst) {
-    DEBUG(gprintf(NaClLogGetGio(), "  instruction sequence install\n"));
+    DEBUG(NaClLog(LOG_INFO, "  instruction sequence install\n"));
     current_inst_node->matching_inst = current_inst;
   } else {
     NaClFatalInst(
@@ -1115,7 +1114,7 @@ static int NaClExtractByte(const char* chars, const char* opcode_seq) {
   for (i = 0; i < 2; ++i) {
     char ch = *(chars++);
     if ('\0' == ch) {
-      gprintf(NaClLogGetGio(),
+      NaClLog(LOG_ERROR,
               "Odd number of characters in opcode sequence: '%s'\n",
               opcode_seq);
       NaClFatal("Fix before continuing!");
@@ -1145,7 +1144,7 @@ static NaClInstNode* NaClInstallInstSeq(int index,
                                         NaClInstNode** root_ptr) {
   NaClInstNode* root = *root_ptr;
   if (index > NACL_MAX_BYTES_PER_X86_INSTRUCTION) {
-    gprintf(NaClLogGetGio(),
+    NaClLog(LOG_ERROR,
             "Too many bytes specified for opcode sequence: '%s'\n",
             opcode_seq);
     NaClFatal("Fix before continuing!\n");
@@ -1168,7 +1167,7 @@ void NaClDefInstSeq(const char* opcode_seq) {
    * call to NaClDefInst.
    */
   if (NULL != current_cand_inst_node) {
-    gprintf(NaClLogGetGio(),
+    NaClLog(LOG_ERROR,
             "Multiple definitions for opcode sequence: '%s'\n", opcode_seq);
     NaClFatal("Fix before continuing!");
   }
@@ -1180,7 +1179,7 @@ void NaClDefInstSeq(const char* opcode_seq) {
 void NaClAddIFlags(NaClIFlags more_flags) {
   DEBUG(
       struct Gio* g = NaClLogGetGio();
-      gprintf(g, "Adding instruction flags:");
+      NaClLog(LOG_INFO, "Adding instruction flags:");
       NaClIFlagsPrint(g, more_flags);
       gprintf(g, "\n"));
   current_inst->flags |= more_flags;
@@ -1362,7 +1361,7 @@ static void NaClFatalChoiceCount(const int expected,
                                  NaClMrmInst* insts) {
   struct Gio* g = NaClLogGetGio();
   NaClPrintInstDescriptor(g, prefix, opcode, modrm_index);
-  gprintf(g, "Expected %d rules but found %d:\n", expected, found);
+  NaClLog(LOG_ERROR, "Expected %d rules but found %d:\n", expected, found);
   while (NULL != insts) {
     NaClInstPrint(g, &(insts->inst));
     insts = insts->next;
@@ -1430,6 +1429,104 @@ static void NaClSimplifyIfApplicable() {
       }
     }
   }
+}
+
+/* Prints out the set of defined instruction flags. */
+static void NaClIFlagsPrintInternal(struct Gio* f, NaClIFlags flags) {
+  if (flags) {
+    int i;
+    Bool first = TRUE;
+    for (i = 0; i < NaClIFlagEnumSize; ++i) {
+      if (flags & NACL_IFLAG(i)) {
+        if (first) {
+          first = FALSE;
+        } else {
+          gprintf(f, " | ");
+        }
+        gprintf(f, "NACL_IFLAG(%s)", NaClIFlagName(i));
+      }
+    }
+  } else {
+    gprintf(f, "NACL_EMPTY_IFLAGS");
+  }
+}
+
+/* Prints out the set of defined Operand flags. */
+static void NaClOpFlagsPrintInternal(struct Gio* f, NaClOpFlags flags) {
+  if (flags) {
+    NaClOpFlag i;
+    Bool first = TRUE;
+    for (i = 0; i < NaClOpFlagEnumSize; ++i) {
+      if (flags & NACL_OPFLAG(i)) {
+        if (first) {
+          first = FALSE;
+        } else {
+          gprintf(f, " | ");
+        }
+        gprintf(f, "NACL_OPFLAG(%s)", NaClOpFlagName(i));
+      }
+    }
+  } else {
+    gprintf(f, "NACL_EMPTY_OPFLAGS");
+  }
+}
+
+/* Print out the opcode operand. */
+static void NaClOpPrintInternal(struct Gio* f, NaClOp* operand) {
+  gprintf(f, "{ %s, ", NaClOpKindName(operand->kind));
+  NaClOpFlagsPrintInternal(f, operand->flags);
+  gprintf(f, " },\n");
+}
+
+/* Prints out the given instruction to the given file. If index >= 0,
+ * print out a comment, with the value of index, before the printed
+ * instruction. Lookahead is used to convert the next_rule pointer into
+ * a symbolic reference using the name "g_Opcodes", plus the index defined by
+ * the lookahead. Argument as_array_element is true if the element is
+ * assumed to be in an array static initializer.
+ */
+static void NaClInstPrintInternal(struct Gio* f, Bool as_array_element,
+                                  int index, NaClInst* inst, int lookahead) {
+  int i;
+  gprintf(f, "  /* %d */\n", index);
+  gprintf(f, "  { %s,", NaClInstPrefixName(inst->prefix));
+  gprintf(f, " %"NACL_PRIu8", {", inst->num_opcode_bytes);
+  for (i = 0; i < NACL_MAX_OPCODE_BYTES; ++i) {
+    if (i > 0) gprintf(f, ",");
+    gprintf(f," 0x%02x", inst->opcode[i]);
+  }
+  gprintf(f, " }, %s,\n", kNaClInstTypeString[inst->insttype]);
+  gprintf(f, "    ");
+  NaClIFlagsPrintInternal(f, inst->flags);
+  gprintf(f, ",\n");
+  gprintf(f, "    Inst%s,\n", NaClMnemonicName(inst->name));
+  gprintf(f, "    %u, {\n", inst->num_operands);
+  for (i = 0; i < NACL_MAX_NUM_OPERANDS; ++i) {
+    gprintf(f, "      ");
+    NaClOpPrintInternal(f, inst->operands + i);
+  }
+  gprintf(f, "    },\n");
+  if (index < 0 || NULL == inst->next_rule) {
+    gprintf(f, "    NULL\n");
+  } else {
+    gprintf(f, "    g_Opcodes + %d\n", lookahead);
+  }
+  if (as_array_element) {
+    gprintf(f, "  }%s\n", index < 0 ? ";" : ",");
+  } else {
+    gprintf(f, "  };\n");
+  }
+}
+
+/* Prints out the given instruction to the given file. If index >= 0,
+ * print out a comment, with the value of index, before the printed
+ * instruction Lookahead is used to convert the next_rule pointer into
+ * a symbolic reference using the name "g_Opcodes", plus the index and
+ * the lookahead.
+ */
+void NaClInstPrintTablegen(struct Gio* f, int index,
+                           NaClInst* inst, int lookahead) {
+  NaClInstPrintInternal(f, TRUE, index, inst, lookahead);
 }
 
 /* Generate header information, based on the executable name in argv0,
@@ -1548,7 +1645,7 @@ static void NaClPrintInstsInInstTrie(int current_index,
   int index;
   if (NULL == root) return;
   if (NULL != root->matching_inst) {
-    NaClInstPrintTablegen(f, current_index, root->matching_inst, 0);
+    NaClInstPrintInternal(f, TRUE, current_index, root->matching_inst, 0);
     current_index++;
   }
   for (index = 0; index < NACL_NUM_BYTE_VALUES; ++index) {
@@ -1604,7 +1701,7 @@ static void NaClPrintDecodeTables(struct Gio* f) {
 
   /* Print out the undefined opcode */
   gprintf(f, "static NaClInst g_Undefined_Opcode = \n");
-  NaClInstPrintTableDriver(f, FALSE, FALSE, 0, undefined_inst, 0);
+  NaClInstPrintInternal(f, FALSE, 0, undefined_inst, 0);
 
   /* Now print lookup table of rules. */
   gprintf(f,
@@ -1636,15 +1733,93 @@ static void NaClPrintDecodeTables(struct Gio* f) {
   NaClPrintInstSeqTrie(num_opcodes, inst_node_root, f);
 }
 
+/* Print out the sequence of bytes used to encode an instruction sequence. */
+static void PrintInstructionSequence(
+    struct Gio* f, uint8_t* inst_sequence, int length) {
+  int i;
+  for (i = 0; i < length; ++i) {
+    if (i > 0) gprintf(f, " ");
+    gprintf(f, "%02x", inst_sequence[i]);
+  }
+}
+
+/* Print out instruction sequences defined for the given (Trie) node,
+ * and all of its descendants.
+ * Note: To keep recursive base cases simple, we allow one more byte
+ * in the instruction sequence that is actually possible.
+ */
+static void PrintHardCodedInstructionsNode(
+    struct Gio* f, NaClInstNode* node,
+    uint8_t inst_sequence[NACL_MAX_BYTES_PER_X86_INSTRUCTION+1], int length) {
+  int i;
+  if (NULL == node) return;
+  if (NACL_MAX_BYTES_PER_X86_INSTRUCTION < length) {
+    struct Gio* glog = NaClLogGetGio();
+    NaClLog(LOG_ERROR, "%s", "");
+    PrintInstructionSequence(glog, inst_sequence, length);
+    gprintf(glog, "\n");
+    NaClFatal("Hard coded instruction too long, aborting\n");
+  }
+  if (NULL != node->matching_inst) {
+    gprintf(f, "  --- ");
+    PrintInstructionSequence(f, inst_sequence, length);
+    gprintf(f, " ---\n");
+    NaClInstPrint(f, node->matching_inst);
+    gprintf(f, "\n");
+  }
+  for (i = 0; i < 256; ++i) {
+    inst_sequence[length] = (uint8_t) i;
+    PrintHardCodedInstructionsNode(f, node->succs[i], inst_sequence, length+1);
+  }
+}
+
+/* Walks over specifically encoded instruction trie, and prints
+ * out corresponding implemented instructions.
+ */
+static void NaClPrintHardCodedInstructions(struct Gio* f) {
+  uint8_t inst_sequence[NACL_MAX_BYTES_PER_X86_INSTRUCTION+1];
+  PrintHardCodedInstructionsNode(f, inst_node_root, inst_sequence, 0);
+  PrintHardCodedInstructionsNode(f, NULL, inst_sequence, 0);
+}
+
+/* Prints out documentation on the modeled instruction set. */
+static void NaClPrintInstructionSet(struct Gio* f) {
+  NaClInstPrefix prefix;
+  int i;
+  gprintf(f, "Target: %s\n", NaClRunModeName(FLAGS_run_mode));
+  gprintf(f, "\n");
+  gprintf(f, "*** Hard coded instructions ***\n");
+  gprintf(f, "\n");
+  NaClPrintHardCodedInstructions(f);
+
+  for (prefix = NoPrefix; prefix < NaClInstPrefixEnumSize;  ++prefix) {
+    Bool printed_rules = FALSE;
+    gprintf(f, "*** %s ***\n", NaClInstPrefixName(prefix));
+    gprintf(f, "\n");
+    for (i = 0; i < NCDTABLESIZE; ++i) {
+      Bool is_first = TRUE;
+      NaClInst* inst = NaClInstTable[i][prefix];
+      while (NULL != inst) {
+        if (is_first) {
+          gprintf(f, "  --- %02x ---\n", i);
+          is_first = FALSE;
+        }
+        NaClInstPrint(f, inst);
+        printed_rules = TRUE;
+        inst = inst->next_rule;
+      }
+    }
+    if (printed_rules) gprintf(f, "\n");
+  }
+}
+
 /* Open the given file using the given directives (how). */
-static struct Gio* NaClMustOpen(const char* fname, const char* how) {
-  struct GioFile* g = malloc(sizeof(struct GioFile));
-  if (g == NULL) {
-    gprintf(NaClLogGetGio(), "could not fopen(%s, %s)\n", fname, how);
+static void NaClMustOpen(struct GioFile* g,
+                         const char* fname, const char* how) {
+  if (!GioFileCtor(g, fname, how)) {
+    NaClLog(LOG_ERROR, "could not fopen(%s, %s)\n", fname, how);
     NaClFatal("exiting now");
   }
-  GioFileCtor(g, fname, how);
-  return (struct Gio*) g;
 }
 
 /* Recognizes flags in argv, processes them, and then removes them.
@@ -1660,6 +1835,9 @@ static int NaClGrokFlags(int argc, const char* argv[]) {
       FLAGS_run_mode = X86_32;
     } else if (0 == strcmp("-m64", argv[i])) {
       FLAGS_run_mode = X86_64;
+    } else if (GrokBoolFlag("-documentation", argv[i],
+                            &NACL_FLAGS_human_readable)) {
+      continue;
     } else {
       argv[new_argc++] = argv[i];
     }
@@ -1667,13 +1845,26 @@ static int NaClGrokFlags(int argc, const char* argv[]) {
   return new_argc;
 }
 
+static void GenerateTables(struct Gio* f, const char* cmd,
+                           const char* filename) {
+  if (NACL_FLAGS_human_readable) {
+    NaClPrintInstructionSet(f);
+  } else {
+    /* Generate header file defining instruction set. */
+    NaClPrintHeader(f, cmd, filename);
+    NaClPrintDecodeTables(f);
+  }
+}
+
 int main(const int argc, const char* argv[]) {
-  struct Gio* g;
+  struct GioFile gfile;
+  struct Gio* g = (struct Gio*) &gfile;
   int new_argc = NaClGrokFlags(argc, argv);
-  if ((new_argc != 2) || (FLAGS_run_mode == NaClRunModeSize)) {
+  if ((new_argc < 1) || (new_argc > 2) ||
+      (FLAGS_run_mode == NaClRunModeSize)) {
     fprintf(stderr,
             "ERROR: usage: ncdecode_tablegen <architecture_flag> "
-            "file\n");
+            "[-documentation] [file]\n");
     return -1;
   }
 
@@ -1682,12 +1873,14 @@ int main(const int argc, const char* argv[]) {
   NaClSimplifyIfApplicable();
   NaClVerifyInstCounts();
 
-  g = NaClMustOpen(argv[1], "w");
-  NaClPrintHeader(g, argv[0], argv[1]);
-  NaClPrintDecodeTables(g);
+  if (new_argc == 1) {
+    GioFileRefCtor(&gfile, stdout);
+    GenerateTables(g, argv[0], "<stdout>");
+  } else {
+    NaClMustOpen(&gfile, argv[1], "w");
+    GenerateTables(g, argv[0], argv[1]);
+  }
   NaClLogModuleFini();
   GioFileDtor(g);
-  free(g);
-
   return 0;
 }

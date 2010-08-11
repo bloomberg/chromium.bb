@@ -117,7 +117,10 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
      'ncdecode_sse.c',
      'ncdecodeX87.c'
     ],
-    EXTRA_LIBS=['gio', 'platform', 'ncopcode_utils'])
+    EXTRA_LIBS=['utils',
+                'gio',
+                'platform',
+                'ncopcode_utils'])
 
 env.Requires(ncdecode_tablegen, crt)
 
@@ -395,7 +398,6 @@ def __AddNcvalSfiTests(test_readwrite):
       ext = 'rval'
     else:
       ext = 'val'
-    golden_files = Glob(TESTDATA_DIR + '*.' + ext)
     for base in __GoldenBases(ext):
       command = [ncval[0], '--use_iter', '--hex_text=-', '--max-errors=1000']
       if test_readwrite:
@@ -411,3 +413,19 @@ def __AddNcvalSfiTests(test_readwrite):
 
 __AddNcvalSfiTests(True)
 __AddNcvalSfiTests(False)
+
+# Run test to see if we have changed the set of modeled instructions.
+def __AddModeledInstsTest():
+  test = 'test'
+  base = 'modeled_insts'
+  ext = 'txt'
+  command = [ncdecode_tablegen[0],
+             '-m%s' % (env['TARGET_SUBARCH']),
+             '-documentation']
+  model = env.CommandTest(
+      __OutTestFile(test, base, ext),
+      command,
+      stdout_golden = __BaseTestFile(base, ext))
+  __AddTest(test, base, ext, model, ['small_tests', 'validator_tests'])
+
+__AddModeledInstsTest()

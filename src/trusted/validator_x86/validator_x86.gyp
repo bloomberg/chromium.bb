@@ -396,6 +396,7 @@
       'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
       'dependencies': [
         'ncopcode_utils',
+        '<(DEPTH)/native_client/src/shared/utils/utils.gyp:utils',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio'
       ],

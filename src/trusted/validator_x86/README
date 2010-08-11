@@ -61,3 +61,6 @@ by specifying an input file with instructions to decode. Options are:
    > ncdis -self_document -commands=testdata/32/ncdis_iter_test.input
 or
    > ncdis -use_iter -self_document -commands=testdata/64/ncdis_iter_test.input
+
+* To see the set of modeled instructions used by the iterator model of the
+decoder and validator, see testdata/XX/README (where XX is 32 or 64).
