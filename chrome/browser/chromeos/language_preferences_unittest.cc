@@ -131,6 +131,10 @@ TEST(LanguagePreferencesTest, TestDefaultValuesOfIntegerRangePrefs) {
       kChewingIntegerPrefs, kNumChewingIntegerPrefs));
   EXPECT_TRUE(CheckDefaultValueOfIntegerRangePrefs(
       kMozcIntegerPrefs, kNumMozcIntegerPrefs));
+  EXPECT_TRUE(CheckDefaultValueOfIntegerRangePrefs(
+      &kXkbAutoRepeatDelayPref, 1));
+  EXPECT_TRUE(CheckDefaultValueOfIntegerRangePrefs(
+      &kXkbAutoRepeatIntervalPref, 1));
 }
 
 }  // namespace chromeos

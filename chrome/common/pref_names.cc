@@ -336,6 +336,16 @@ const char kLanguageMozcSuggestionsSize[] =
 // DOM UI) is implemented. See crosbug.com/2636.
 const char kLanguageXkbModifierRemap[] = "settings.language.xkb_modifier_remap";
 
+// A boolean pref which determines whether key repeat is enabled.
+const char kLanguageXkbAutoRepeatEnabled[] =
+    "settings.language.xkb_auto_repeat_enabled";
+// A integer pref which determines key repeat delay (in ms).
+const char kLanguageXkbAutoRepeatDelay[] =
+    "settings.language.xkb_auto_repeat_delay";
+// A integer pref which determines key repeat interval (in ms).
+const char kLanguageXkbAutoRepeatInterval[] =
+    "settings.language.xkb_auto_repeat_interval";
+
 // A boolean pref which determines whether accessibility is enabled.
 const char kAccessibilityEnabled[] = "settings.accessibility";
 

@@ -75,6 +75,11 @@ class Preferences : public NotificationObserver {
                                         const char* name,
                                         const std::string& value);
 
+  // Updates the initial key repeat delay and key repeat interval following
+  // current prefs values. We set the delay and interval at once since an
+  // underlying XKB API requires it.
+  void UpdateAutoRepeatRate();
+
   BooleanPrefMember tap_to_click_enabled_;
   BooleanPrefMember vert_edge_scroll_enabled_;
   BooleanPrefMember accessibility_enabled_;
@@ -101,6 +106,9 @@ class Preferences : public NotificationObserver {
       kNumMozcMultipleChoicePrefs];
   IntegerPrefMember language_mozc_integer_prefs_[kNumMozcIntegerPrefs];
   IntegerPrefMember language_xkb_modifier_remap_;
+  BooleanPrefMember language_xkb_auto_repeat_enabled_;
+  IntegerPrefMember language_xkb_auto_repeat_delay_pref_;
+  IntegerPrefMember language_xkb_auto_repeat_interval_pref_;
 
   DISALLOW_COPY_AND_ASSIGN(Preferences);
 };

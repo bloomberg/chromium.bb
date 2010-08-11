@@ -47,7 +47,8 @@ SettingsPageSection::SettingsPageSection(Profile* profile, int title_msg_id)
       title_msg_id_(title_msg_id),
       // Using 1000 so that it does not clash with ids defined in subclasses.
       single_column_view_set_id_(1000),
-      double_column_view_set_id_(1001) {
+      double_column_view_set_id_(1001),
+      quad_column_view_set_id_(1003) {
 }
 
 void SettingsPageSection::InitControlLayout() {
@@ -88,6 +89,19 @@ void SettingsPageSection::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  column_set = child_layout->AddColumnSet(quad_column_view_set_id_);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
   InitContents(child_layout);

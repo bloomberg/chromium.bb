@@ -87,6 +87,11 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(
       kXkbModifierMultipleChoicePrefs.pref_name,
       kXkbModifierMultipleChoicePrefs.default_pref_value);
+  prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled, true);
+  prefs->RegisterIntegerPref(kXkbAutoRepeatDelayPref.pref_name,
+                             kXkbAutoRepeatDelayPref.default_pref_value);
+  prefs->RegisterIntegerPref(kXkbAutoRepeatIntervalPref.pref_name,
+                             kXkbAutoRepeatIntervalPref.default_pref_value);
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -143,6 +148,12 @@ void Preferences::Init(PrefService* prefs) {
   }
   language_xkb_modifier_remap_.Init(
       kXkbModifierMultipleChoicePrefs.pref_name, prefs, this);
+  language_xkb_auto_repeat_enabled_.Init(
+      prefs::kLanguageXkbAutoRepeatEnabled, prefs, this);
+  language_xkb_auto_repeat_delay_pref_.Init(
+      kXkbAutoRepeatDelayPref.pref_name, prefs, this);
+  language_xkb_auto_repeat_interval_pref_.Init(
+      kXkbAutoRepeatIntervalPref.pref_name, prefs, this);
 
   std::string locale(g_browser_process->GetApplicationLocale());
   // Add input methods based on the application locale when the user first
@@ -333,6 +344,14 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     }
     CrosLibrary::Get()->GetKeyboardLibrary()->RemapModifierKeys(modifier_map);
   }
+  if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
+    const bool enabled = language_xkb_auto_repeat_enabled_.GetValue();
+    CrosLibrary::Get()->GetKeyboardLibrary()->SetAutoRepeatEnabled(enabled);
+  }
+  if (!pref_name || ((*pref_name == prefs::kLanguageXkbAutoRepeatDelay) ||
+                     (*pref_name == prefs::kLanguageXkbAutoRepeatInterval))) {
+    UpdateAutoRepeatRate();
+  }
 }
 
 void Preferences::SetLanguageConfigBoolean(const char* section,
@@ -390,6 +409,16 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
   // We should call the cros API even when |value| is empty, to disable default
   // config.
   SetLanguageConfigStringList(section, name, split_values);
+}
+
+void Preferences::UpdateAutoRepeatRate() {
+  AutoRepeatRate rate;
+  rate.initial_delay_in_ms = language_xkb_auto_repeat_delay_pref_.GetValue();
+  rate.repeat_interval_in_ms =
+      language_xkb_auto_repeat_interval_pref_.GetValue();
+  DCHECK(rate.initial_delay_in_ms > 0);
+  DCHECK(rate.repeat_interval_in_ms > 0);
+  CrosLibrary::Get()->GetKeyboardLibrary()->SetAutoRepeatRate(rate);
 }
 
 }  // namespace chromeos
