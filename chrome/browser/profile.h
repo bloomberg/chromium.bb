@@ -37,6 +37,7 @@ class AutocompleteClassifier;
 class BackgroundContentsService;
 class BookmarkModel;
 class BrowserThemeProvider;
+class ChromeAppCacheService;
 class ChromeURLRequestContextGetter;
 class DesktopNotificationService;
 class DownloadManager;
@@ -153,6 +154,9 @@ class Profile {
   // Return the original "recording" profile. This method returns this if the
   // profile is not off the record.
   virtual Profile* GetOriginalProfile() = 0;
+
+  // Returns a pointer to the ChromeAppCacheService instance for this profile.
+  virtual ChromeAppCacheService* GetAppCacheService() = 0;
 
   // Returns a pointer to the DatabaseTracker instance for this profile.
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() = 0;

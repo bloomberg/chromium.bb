@@ -108,6 +108,7 @@ class TestingProfile : public Profile {
   virtual bool HasOffTheRecordProfile() { return false; }
 
   virtual Profile* GetOriginalProfile() { return this; }
+  virtual ChromeAppCacheService* GetAppCacheService() { return NULL; }
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual VisitedLinkMaster* GetVisitedLinkMaster() { return NULL; }
   virtual ExtensionsService* GetExtensionsService() { return NULL; }

@@ -393,6 +393,7 @@ class ChromeURLRequestContextFactory {
   // user scripts.
   FilePath user_script_dir_path_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<net::TransportSecurityState> transport_security_state_;

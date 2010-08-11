@@ -33,6 +33,7 @@ class ProfileImpl : public Profile,
   virtual void DestroyOffTheRecordProfile();
   virtual bool HasOffTheRecordProfile();
   virtual Profile* GetOriginalProfile();
+  virtual ChromeAppCacheService* GetAppCacheService();
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker();
   virtual history::TopSites* GetTopSites();
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
@@ -211,6 +212,10 @@ class ProfileImpl : public Profile,
   // Set to true when ShutdownSessionService is invoked. If true
   // GetSessionService won't recreate the SessionService.
   bool shutdown_session_service_;
+
+  // The AppCacheService for this profile, shared by all requests contexts
+  // associated with this profile. Should only be used on the IO thread.
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
 
   // The main database tracker for this profile.
   // Should be used only on the file thread.

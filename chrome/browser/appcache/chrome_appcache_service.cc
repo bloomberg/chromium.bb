@@ -45,31 +45,45 @@ class ChromeAppCacheService::PromptDelegate
 
 // ----------------------------------------------------------------------------
 
-ChromeAppCacheService::ChromeAppCacheService(
-    const FilePath& profile_path,
-    ChromeURLRequestContext* request_context) {
+ChromeAppCacheService::ChromeAppCacheService() {
+}
+
+void ChromeAppCacheService::InitializeOnIOThread(
+    const FilePath& profile_path, bool is_incognito,
+    scoped_refptr<HostContentSettingsMap> content_settings_map) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(request_context);
 
   if (!has_initialized_thread_ids) {
     has_initialized_thread_ids = true;
     appcache::AppCacheThread::Init(ChromeThread::DB, ChromeThread::IO);
   }
 
-  host_contents_settings_map_ = request_context->host_content_settings_map();
+  host_contents_settings_map_ = content_settings_map;
   registrar_.Add(
       this, NotificationType::PURGE_MEMORY, NotificationService::AllSources());
 
   // Init our base class.
-  Initialize(request_context->is_off_the_record() ?
-                 FilePath() : profile_path.Append(chrome::kAppCacheDirname),
-             ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
-  set_request_context(request_context);
+  Initialize(
+      is_incognito ? FilePath() : profile_path.Append(chrome::kAppCacheDirname),
+      ChromeThread::GetMessageLoopProxyForThread(ChromeThread::CACHE));
   set_appcache_policy(this);
 }
 
 ChromeAppCacheService::~ChromeAppCacheService() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+}
+
+void ChromeAppCacheService::SetOriginQuotaInMemory(
+    const GURL& origin, int64 quota) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (storage())
+    storage()->SetOriginQuotaInMemory(origin, quota);
+}
+
+void ChromeAppCacheService::ResetOriginQuotaInMemory(const GURL& origin) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (storage())
+    storage()->ResetOriginQuotaInMemory(origin);
 }
 
 // static

@@ -168,6 +168,19 @@ class OffTheRecordProfileImpl : public Profile,
     return profile_;
   }
 
+  virtual ChromeAppCacheService* GetAppCacheService() {
+    if (!appcache_service_) {
+      appcache_service_ = new ChromeAppCacheService;
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(appcache_service_.get(),
+                            &ChromeAppCacheService::InitializeOnIOThread,
+                            GetPath(), IsOffTheRecord(),
+                            make_scoped_refptr(GetHostContentSettingsMap())));
+    }
+    return appcache_service_;
+  }
+
   virtual webkit_database::DatabaseTracker* GetDatabaseTracker() {
     if (!db_tracker_) {
       db_tracker_ = new webkit_database::DatabaseTracker(
@@ -530,6 +543,8 @@ class OffTheRecordProfileImpl : public Profile,
 
   // Time we were started.
   Time start_time_;
+
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
 
   // The main database tracker for this profile.
   // Should be used only on the file thread.

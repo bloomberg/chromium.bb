@@ -302,9 +302,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   context->set_cookie_policy(
       new ChromeCookiePolicy(host_content_settings_map_));
 
-  // Create a new AppCacheService.
-  context->set_appcache_service(
-      new ChromeAppCacheService(profile_dir_path_, context));
+  appcache_service_->set_request_context(context);
 
 #if defined(USE_NSS)
   // TODO(ukai): find a better way to set the URLRequestContext for OCSP.
@@ -410,9 +408,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   context->set_ftp_transaction_factory(
       new net::FtpNetworkLayer(context->host_resolver()));
 
-  // Create a separate AppCacheService for OTR mode.
-  context->set_appcache_service(
-      new ChromeAppCacheService(profile_dir_path_, context));
+  appcache_service_->set_request_context(context);
 
   context->set_net_log(io_thread_globals->net_log.get());
   return context;
@@ -501,9 +497,6 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
     cache->set_enable_range_support(false);
 
   context->set_http_transaction_factory(cache);
-
-  // Use the same appcache service as the profile's main context.
-  context->set_appcache_service(main_context->appcache_service());
 
   return context;
 }
@@ -984,11 +977,9 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
     user_script_dir_path_ = profile->GetUserScriptMaster()->user_script_dir();
 
   ssl_config_service_ = profile->GetSSLConfigService();
-
   profile_dir_path_ = profile->GetPath();
-
   cookie_monster_delegate_ = new ChromeCookieMonsterDelegate(profile);
-
+  appcache_service_ = profile->GetAppCacheService();
   database_tracker_ = profile->GetDatabaseTracker();
 }
 
@@ -1012,6 +1003,7 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_transport_security_state(
       transport_security_state_);
   context->set_ssl_config_service(ssl_config_service_);
+  context->set_appcache_service(appcache_service_);
   context->set_database_tracker(database_tracker_);
 }
 

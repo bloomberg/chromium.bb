@@ -75,7 +75,8 @@ void AppCacheStorage::LoadResponseInfo(
 void AppCacheStorage::SetOriginQuotaInMemory(const GURL& origin, int64 quota) {
   DCHECK(quota >= 0);
   DCHECK(origin == origin.GetOrigin());
-  in_memory_quotas_[origin] = quota;
+  if (IsSchemeSupported(origin))
+    in_memory_quotas_[origin] = quota;
 }
 
 void AppCacheStorage::ResetOriginQuotaInMemory(const GURL& origin) {

@@ -535,6 +535,19 @@ Profile* ProfileImpl::GetOriginalProfile() {
   return this;
 }
 
+ChromeAppCacheService* ProfileImpl::GetAppCacheService() {
+  if (!appcache_service_) {
+    appcache_service_ = new ChromeAppCacheService;
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(appcache_service_.get(),
+                          &ChromeAppCacheService::InitializeOnIOThread,
+                          GetPath(), IsOffTheRecord(),
+                          make_scoped_refptr(GetHostContentSettingsMap())));
+  }
+  return appcache_service_;
+}
+
 webkit_database::DatabaseTracker* ProfileImpl::GetDatabaseTracker() {
   if (!db_tracker_) {
     db_tracker_ = new webkit_database::DatabaseTracker(
