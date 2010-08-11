@@ -321,7 +321,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestExtensionInstallWhitelistHKCU) {
   ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
   ListValue* value = reinterpret_cast<ListValue*>(i->second);
   std::string str_value;
-  EXPECT_EQ(2, value->GetSize());
+  ASSERT_EQ(2U, value->GetSize());
   EXPECT_TRUE(value->GetString(0, &str_value));
   EXPECT_STREQ("abc", str_value.c_str());
   EXPECT_TRUE(value->GetString(1, &str_value));
@@ -342,7 +342,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestExtensionInstallWhitelistHKLM) {
   ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
   ListValue* value = reinterpret_cast<ListValue*>(i->second);
   std::string str_value;
-  EXPECT_EQ(2, value->GetSize());
+  ASSERT_EQ(2U, value->GetSize());
   EXPECT_TRUE(value->GetString(0, &str_value));
   EXPECT_STREQ("abc", str_value.c_str());
   EXPECT_TRUE(value->GetString(1, &str_value));
@@ -364,7 +364,7 @@ TEST_F(ConfigurationPolicyProviderWinTest,
   ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
   ListValue* value = reinterpret_cast<ListValue*>(i->second);
   std::string str_value;
-  EXPECT_EQ(1, value->GetSize());
+  ASSERT_EQ(1U, value->GetSize());
   EXPECT_TRUE(value->GetString(0, &str_value));
   EXPECT_STREQ("def", str_value.c_str());
 }
@@ -383,7 +383,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, TestExtensionInstallBlacklistHKLM) {
   ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
   ListValue* value = reinterpret_cast<ListValue*>(i->second);
   std::string str_value;
-  EXPECT_EQ(2, value->GetSize());
+  ASSERT_EQ(2U, value->GetSize());
   EXPECT_TRUE(value->GetString(0, &str_value));
   EXPECT_STREQ("abc", str_value.c_str());
   EXPECT_TRUE(value->GetString(1, &str_value));

@@ -117,3 +117,33 @@ TEST(ConfigurationPolicyProviderMacTest, TestHomepageIsNewTabPagePolicy) {
   EXPECT_EQ(true, value);
 }
 
+TEST(ConfigurationPolicyProviderMacTest, TestExtensionInstallBlacklist) {
+  scoped_cftyperef<CFMutableArrayRef> blacklist(
+      CFArrayCreateMutable(kCFAllocatorDefault,
+                           2,
+                           &kCFTypeArrayCallBacks));
+  CFArrayAppendValue(blacklist.get(), CFSTR("abc"));
+  CFArrayAppendValue(blacklist.get(), CFSTR("def"));
+
+  MockConfigurationPolicyStore store;
+  TestConfigurationPolicyProviderMac provider;
+  provider.AddTestItem
+      (ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
+       blacklist.get(),
+       true);
+  provider.Provide(&store);
+
+  const MockConfigurationPolicyStore::PolicyMap& map(store.policy_map());
+  MockConfigurationPolicyStore::PolicyMap::const_iterator i =
+      map.find(ConfigurationPolicyStore::kPolicyExtensionInstallDenyList);
+  ASSERT_TRUE(i != map.end());
+  ASSERT_TRUE(i->second->IsType(Value::TYPE_LIST));
+  ListValue* value = reinterpret_cast<ListValue*>(i->second);
+  std::string str_value;
+  ASSERT_EQ(2U, value->GetSize());
+  EXPECT_TRUE(value->GetString(0, &str_value));
+  EXPECT_STREQ("abc", str_value.c_str());
+  EXPECT_TRUE(value->GetString(1, &str_value));
+  EXPECT_STREQ("def", str_value.c_str());
+}
+
