@@ -48,8 +48,10 @@ const wchar_t kChromeFrameAttachTabPattern[] = L"*?attach_external_tab&*";
 
 static const wchar_t kChromeFrameConfigKey[] =
     L"Software\\Google\\ChromeFrame";
-static const wchar_t kChromeFrameOptinUrlsKey[] = L"OptinUrls";
+static const wchar_t kRenderInGCFUrlList[] = L"RenderInGcfUrls";
+static const wchar_t kRenderInHostUrlList[] = L"RenderInHostUrls";
 static const wchar_t kEnableGCFProtocol[] = L"EnableGCFProtocol";
+static const wchar_t kEnableGCFRendererByDefault[] = L"IsDefaultRenderer";
 static const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
 
 static const wchar_t kChromeFrameNPAPIKey[] =
@@ -696,19 +698,40 @@ bool DeleteConfigValue(const wchar_t* value_name) {
 }
 
 bool IsOptInUrl(const wchar_t* url) {
+  // TODO(tommi): Unit test.
   RegKey config_key;
   if (!config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_READ))
     return false;
 
-  RegistryValueIterator optin_urls_list(config_key.Handle(),
-                                        kChromeFrameOptinUrlsKey);
-  while (optin_urls_list.Valid()) {
-    if (MatchPatternWide(url, optin_urls_list.Name()))
-      return true;
-    ++optin_urls_list;
+  bool load_in_chrome_frame = false;
+
+  const wchar_t* url_list_name = NULL;
+  int render_in_cf_by_default = FALSE;
+  config_key.ReadValueDW(kEnableGCFRendererByDefault,
+                         reinterpret_cast<DWORD*>(&render_in_cf_by_default));
+  if (render_in_cf_by_default) {
+    url_list_name = kRenderInHostUrlList;
+    load_in_chrome_frame = true;  // change the default to true.
+  } else {
+    url_list_name = kRenderInGCFUrlList;
   }
 
-  return false;
+  bool match_found = false;
+  RegistryValueIterator url_list(config_key.Handle(), url_list_name);
+  while (!match_found && url_list.Valid()) {
+    if (MatchPatternWide(url, url_list.Name())) {
+      match_found = true;
+    } else {
+      ++url_list;
+    }
+  }
+
+  if (match_found) {
+    // The lists are there to opt out of whatever is the default.
+    load_in_chrome_frame = !load_in_chrome_frame;
+  }
+
+  return load_in_chrome_frame;
 }
 
 HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,

@@ -420,7 +420,7 @@ HRESULT ProtData::ReportProgress(IInternetProtocolSink* delegate,
       } else if (renderer_type_ == OTHER) {
         // Suggested mime type is not "text/html" - we are not interested in
         // this request anymore.
-        FireSugestedMimeType(delegate);
+        FireSuggestedMimeType(delegate);
       } else {
         // Suggested mime type is "text/html"; We will try to sniff the
         // HTML content in ReportData.
@@ -460,7 +460,7 @@ HRESULT ProtData::ReportData(IInternetProtocolSink* delegate,
   }
 
   if (renderer_type_ == OTHER) {
-    FireSugestedMimeType(delegate);
+    FireSuggestedMimeType(delegate);
   }
 
   // This is the first data notification we forward, since up to now we hold
@@ -481,7 +481,7 @@ HRESULT ProtData::ReportResult(IInternetProtocolSink* delegate, HRESULT result,
   if (renderer_type_ == UNDETERMINED) {
     DLOG(INFO) << "ReportResult received but renderer type is yet unknown.";
     renderer_type_ = OTHER;
-    FireSugestedMimeType(delegate);
+    FireSuggestedMimeType(delegate);
   }
 
   HRESULT hr = S_OK;
@@ -517,7 +517,7 @@ void ProtData::SaveSuggestedMimeType(LPCWSTR status_text) {
   suggested_mime_type_.Allocate(status_text);
 }
 
-void ProtData::FireSugestedMimeType(IInternetProtocolSink* delegate) {
+void ProtData::FireSuggestedMimeType(IInternetProtocolSink* delegate) {
   if (has_server_mime_type_) {
     DLOG(INFO) << "Forwarding BINDSTATUS_SERVER_MIMETYPEAVAILABLE "
         << suggested_mime_type_;

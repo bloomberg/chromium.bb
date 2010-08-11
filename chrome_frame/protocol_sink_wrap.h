@@ -174,7 +174,7 @@ class ProtData : public base::RefCounted<ProtData> {
 
   HRESULT FillBuffer();
   void SaveSuggestedMimeType(LPCWSTR status_text);
-  void FireSugestedMimeType(IInternetProtocolSink* delegate);
+  void FireSuggestedMimeType(IInternetProtocolSink* delegate);
   void SaveReferrer(IInternetProtocolSink* delegate);
 };
 
