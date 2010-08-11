@@ -649,7 +649,7 @@ void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
     bool process_startup,
     const std::vector<GURL>& urls_to_open) {
   // If we're starting up in "background mode" (no open browser window) then
-  // just shutdown.
+  // don't open any browser windows.
   if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow)) {
     BrowserList::StartKeepAlive();
     // Keep the app alive while the system initializes, then allow it to
