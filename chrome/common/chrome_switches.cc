@@ -157,6 +157,9 @@ const char kDisableExtensionsFileAccessCheck[] =
 // Suppresses support for the Geolocation javascript API.
 const char kDisableGeolocation[]            = "disable-geolocation";
 
+// Disable the GLSL translator.
+const char kDisableGLSLTranslator[]         = "disable-glsl-translator";
+
 // Suppresses hang monitor dialogs in renderer processes.
 const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
@@ -362,9 +365,6 @@ const char kEnableInMemoryURLIndex[]        = "enable-in-memory-url-index";
 // allow support independent of application testing.
 // This flag overrides "disable-ipv6" which appears elswhere in this file.
 const char kEnableIPv6[]                    = "enable-ipv6";
-
-// Enable the GLSL translator.
-const char kEnableGLSLTranslator[]          = "enable-glsl-translator";
 
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
