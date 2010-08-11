@@ -21,8 +21,8 @@ namespace browser {
 // when the dialog closes in call cases; if the user cancels the dialog, we call
 // with a NULL certificate.
 //
-// Note: constrained dialog currently only implemented on Linux. On other
-// platforms, a window-modal dialog will be used.
+// Note: constrained dialog currently only implemented on Linux and OS X. On
+// Windows, a window-modal dialog will be used.
 void ShowSSLClientCertificateSelector(
     TabContents* parent,
     net::SSLCertRequestInfo* cert_request_info,

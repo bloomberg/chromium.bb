@@ -11,15 +11,21 @@
 
 ConstrainedWindowMacDelegate::~ConstrainedWindowMacDelegate() {}
 
+NSArray* ConstrainedWindowMacDelegateSystemSheet::GetSheetParameters(
+    id delegate,
+    SEL didEndSelector) {
+  return [NSArray arrayWithObjects:
+      [NSNull null],  // window, must be [NSNull null]
+      delegate,
+      [NSValue valueWithPointer:didEndSelector],
+      [NSValue valueWithPointer:NULL],  // context info for didEndSelector_.
+      nil];
+}
+
 void ConstrainedWindowMacDelegateSystemSheet::RunSheet(
     GTMWindowSheetController* sheetController,
     NSView* view) {
-  NSArray* params = [NSArray arrayWithObjects:
-      [NSNull null],  // window, must be [NSNull null]
-      delegate_.get(),
-      [NSValue valueWithPointer:didEndSelector_],
-      [NSValue valueWithPointer:NULL],  // context info for didEndSelector_.
-      nil];
+  NSArray* params = GetSheetParameters(delegate_.get(), didEndSelector_);
   [sheetController beginSystemSheet:systemSheet_
                        modalForView:view
                      withParameters:params];

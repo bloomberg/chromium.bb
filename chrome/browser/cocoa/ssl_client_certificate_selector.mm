@@ -15,11 +15,62 @@
 #import "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/cocoa/constrained_window_mac.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
+
+namespace {
+
+class ConstrainedSFChooseIdentityPanel
+    : public ConstrainedWindowMacDelegateSystemSheet {
+ public:
+  ConstrainedSFChooseIdentityPanel(SFChooseIdentityPanel* panel,
+                                   id delegate, SEL didEndSelector,
+                                   NSArray* identities, NSString* message)
+      : ConstrainedWindowMacDelegateSystemSheet(delegate, didEndSelector),
+        identities_([identities retain]),
+        message_([message retain]) {
+    set_sheet(panel);
+  }
+
+  virtual ~ConstrainedSFChooseIdentityPanel() {
+    // As required by ConstrainedWindowMacDelegate, close the sheet if
+    // it's still open.
+    if (is_sheet_open()) {
+      [NSApp endSheet:sheet()
+           returnCode:NSFileHandlingPanelCancelButton];
+    }
+  }
+
+  // ConstrainedWindowMacDelegateSystemSheet implementation:
+  virtual void DeleteDelegate() {
+    delete this;
+  }
+
+  // SFChooseIdentityPanel's beginSheetForWindow: method has more arguments
+  // than the usual one. Also pass the panel through contextInfo argument
+  // because the callback has the wrong signature.
+  virtual NSArray* GetSheetParameters(id delegate, SEL didEndSelector) {
+    return [NSArray arrayWithObjects:
+        [NSNull null],  // window, must be [NSNull null]
+        delegate,
+        [NSValue valueWithPointer:didEndSelector],
+        [NSValue valueWithPointer:sheet()],
+        identities_.get(),
+        message_.get(),
+        nil];
+  }
+
+ private:
+  scoped_nsobject<NSArray> identities_;
+  scoped_nsobject<NSString> message_;
+  DISALLOW_COPY_AND_ASSIGN(ConstrainedSFChooseIdentityPanel);
+};
+
+}  // namespace
 
 @interface SSLClientCertificateSelectorCocoa : NSObject {
  @private
@@ -31,11 +82,13 @@
   scoped_nsobject<NSMutableArray> identities_;
   // The corresponding list of certificates.
   std::vector<scoped_refptr<net::X509Certificate> > certificates_;
+  // The currently open dialog.
+  ConstrainedWindow* window_;
 }
 
 - (id)initWithHandler:(SSLClientAuthHandler*)handler
       certRequestInfo:(net::SSLCertRequestInfo*)certRequestInfo;
-- (void)displayDialog:(gfx::NativeWindow)parent;
+- (void)displayDialog:(TabContents*)parent;
 @end
 
 namespace browser {
@@ -50,7 +103,7 @@ void ShowSSLClientCertificateSelector(
       [[[SSLClientCertificateSelectorCocoa alloc]
           initWithHandler:delegate
           certRequestInfo:cert_request_info] autorelease];
-  [selector displayDialog:parent->GetMessageBoxRootWindow()];
+  [selector displayDialog:parent];
 }
 
 }  // namespace browser
@@ -64,6 +117,7 @@ void ShowSSLClientCertificateSelector(
   if ((self = [super init])) {
     handler_ = handler;
     certRequestInfo_ = certRequestInfo;
+    window_ = NULL;
   }
   return self;
 }
@@ -85,6 +139,9 @@ void ShowSSLClientCertificateSelector(
 
   // Finally, tell the backend which identity (or none) the user selected.
   handler_->CertificateSelected(cert);
+  // Close the constrained window.
+  DCHECK(window_);
+  window_->CloseConstrainedWindow();
 
   // Now that the panel has closed, release it. Note that the autorelease is
   // needed. After this callback returns, the panel is still accessed, so a
@@ -92,7 +149,8 @@ void ShowSSLClientCertificateSelector(
   [panel autorelease];
 }
 
-- (void)displayDialog:(gfx::NativeWindow)parent {
+- (void)displayDialog:(TabContents*)parent {
+  DCHECK(!window_);
   // Create an array of CFIdentityRefs for the certificates:
   size_t numCerts = certRequestInfo_->client_certs.size();
   identities_.reset([[NSMutableArray alloc] initWithCapacity:numCerts]);
@@ -129,25 +187,14 @@ void ShowSSLClientCertificateSelector(
     CFRelease(sslPolicy);
   }
 
+  window_ =
+      parent->CreateConstrainedDialog(new ConstrainedSFChooseIdentityPanel(
+          panel, self,
+          @selector(sheetDidEnd:returnCode:context:),
+          identities_, title));
   // Note: SFChooseIdentityPanel does not take a reference to itself while the
   // sheet is open. Don't release the ownership claim until the sheet has ended
   // in |-sheetDidEnd:returnCode:context:|.
-  if (parent) {
-    // Open the cert panel as a sheet on the browser window. |panel| is passed
-    // to itself as contextInfo because the didEndSelector has the wrong
-    // signature; the NSWindow argument is the parent window. The panel also
-    // retains a reference to its delegate, so no self retain is needed.
-    [panel beginSheetForWindow:parent
-                 modalDelegate:self
-                didEndSelector:@selector(sheetDidEnd:returnCode:context:)
-                   contextInfo:panel
-                    identities:identities_
-                       message:title];
-  } else {
-    // No available browser window, so run independently as a (blocking) dialog.
-    int returnCode = [panel runModalForIdentities:identities_ message:title];
-    [self sheetDidEnd:panel returnCode:returnCode context:panel];
-  }
 }
 
 @end
