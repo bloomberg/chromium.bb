@@ -45,6 +45,13 @@ const wchar_t kExtensionDidEscalatePermissions[] = L"install_warning_on_enable";
 // object read from the Preferences file, containing a list of toolstrip URLs.
 const wchar_t kExtensionShelf[] = L"extensions.shelf";
 
+// A preference that tracks admin policy regarding which extensions the user
+// can and can not install. This preference is a list object, containing
+// strings that list extension ids. Denylist can contain "*" meaning all
+// extensions.
+const wchar_t kExtensionInstallAllowList[] = L"extensions.install.allowlist";
+const wchar_t kExtensionInstallDenyList[] = L"extensions.install.denylist";
+
 // A preference that tracks browser action toolbar configuration. This is a list
 // object stored in the Preferences file. The extensions are stored by ID.
 const wchar_t kExtensionToolbar[] = L"extensions.toolbar";
@@ -233,6 +240,41 @@ bool ExtensionPrefs::IsExtensionBlacklisted(const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id, kPrefBlacklist);
 }
 
+bool ExtensionPrefs::IsExtensionAllowedByPolicy(
+    const std::string& extension_id) {
+  std::string string_value;
+
+  // Check the whitelist first.
+  const ListValue* whitelist = prefs_->GetList(kExtensionInstallAllowList);
+  if (whitelist) {
+    for (ListValue::const_iterator it = whitelist->begin();
+         it != whitelist->end(); ++it) {
+      if (!(*it)->GetAsString(&string_value))
+        LOG(WARNING) << "Failed to read whitelist string.";
+      else if (string_value == extension_id)
+        return true;
+    }
+  }
+
+  // Then check the blacklist (the admin blacklist, not the Google blacklist).
+  const ListValue* blacklist = prefs_->GetList(kExtensionInstallDenyList);
+  if (blacklist) {
+    for (ListValue::const_iterator it = blacklist->begin();
+         it != blacklist->end(); ++it) {
+      if (!(*it)->GetAsString(&string_value)) {
+        LOG(WARNING) << "Failed to read blacklist string.";
+      } else {
+        if (string_value == "*")
+          return false;  // Only whitelisted extensions are allowed.
+        if (string_value == extension_id)
+          return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 bool ExtensionPrefs::DidExtensionEscalatePermissions(
     const std::string& extension_id) {
   return ReadExtensionPrefBoolean(extension_id,
@@ -247,7 +289,7 @@ void ExtensionPrefs::SetDidExtensionEscalatePermissions(
 }
 
 void ExtensionPrefs::UpdateBlacklist(
-  const std::set<std::string>& blacklist_set) {
+    const std::set<std::string>& blacklist_set) {
   std::vector<std::string> remove_pref_ids;
   std::set<std::string> used_id_set;
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
@@ -785,4 +827,6 @@ void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterListPref(kExtensionToolbar);
   prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize, -1);
   prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate);
+  prefs->RegisterListPref(kExtensionInstallAllowList);
+  prefs->RegisterListPref(kExtensionInstallDenyList);
 }

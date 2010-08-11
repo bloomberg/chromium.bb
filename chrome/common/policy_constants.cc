@@ -31,6 +31,8 @@ const char kPasswordManagerEnabled[] = "PasswordManagerEnabled";
 const char kDisabledPluginsList[] = "DisabledPluginsList";
 const char kApplicationLocaleValue[] = "ApplicationLocaleValue";
 const char kSyncDisabled[] = "SyncDisabled";
+const char kExtensionInstallAllowList[] = "ExtensionInstallWhitelist";
+const char kExtensionInstallDenyList[] = "ExtensionInstallBlacklist";
 
 }  // namespace key
 

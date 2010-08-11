@@ -33,6 +33,8 @@ extern const char kPasswordManagerEnabled[];
 extern const char kDisabledPluginsList[];
 extern const char kApplicationLocaleValue[];
 extern const char kSyncDisabled[];
+extern const char kExtensionInstallAllowList[];
+extern const char kExtensionInstallDenyList[];
 
 }  // namespace key
 

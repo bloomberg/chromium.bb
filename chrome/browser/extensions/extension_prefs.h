@@ -90,6 +90,10 @@ class ExtensionPrefs {
   // Based on extension id, checks prefs to see if it is blacklisted.
   bool IsExtensionBlacklisted(const std::string& id);
 
+  // Is the extension with |extension_id| allowed by policy (checking both
+  // whitelist and blacklist).
+  bool IsExtensionAllowedByPolicy(const std::string& extension_id);
+
   // Returns the last value set via SetLastPingDay. If there isn't such a
   // pref, the returned Time will return true for is_null().
   base::Time LastPingDay(const std::string& extension_id) const;
@@ -149,7 +153,6 @@ class ExtensionPrefs {
   PrefService* pref_service() const { return prefs_; }
 
  private:
-
   // Converts absolute paths in the pref to paths relative to the
   // install_directory_.
   void MakePathsRelative();

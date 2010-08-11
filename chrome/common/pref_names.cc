@@ -814,6 +814,14 @@ const char kShowExtensionShelf[] = "extensions.shelf.show_on_all_tabs";
 const char kBrowserActionContainerWidth[] =
     "extensions.browseractions.container.width";
 
+// A whitelist of extension the user can install. This is controlled by the
+// administrator.
+const char kExtensionInstallAllowList[] = "extensions.install.allowlist";
+// A blacklist, containing extensions the user cannot install.  This is
+// controlled by the administrator. This list should not be confused with
+// the extension blacklist, which is Google controlled.
+const char kExtensionInstallDenyList[] = "extensions.install.denylist";
+
 // Time of the last, and next scheduled, extensions auto-update checks.
 const char kLastExtensionsUpdateCheck[] = "extensions.autoupdate.last_check";
 const char kNextExtensionsUpdateCheck[] = "extensions.autoupdate.next_check";

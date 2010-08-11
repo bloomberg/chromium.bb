@@ -12,7 +12,9 @@
 #include "base/object_watcher.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
+#include "base/string_number_conversions.h"
 #include "base/string_piece.h"
+#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -56,53 +58,66 @@ ConfigurationPolicyProviderWin::ConfigurationPolicyProviderWin() {
 }
 
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyString(
-    const wchar_t* value_name, string16* result) {
+    const string16& name, int index, string16* result) {
   DWORD value_size = 0;
   DWORD key_type = 0;
   scoped_array<uint8> buffer;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
-  if (hkcu_policy_key.ReadValue(value_name, 0, &value_size, &key_type)) {
-    if (key_type != REG_SZ)
-      return false;
-    // According to the Microsoft documentation, the string
-    // buffer may not be explicitly 0-terminated. Allocate a
-    // slightly larger buffer and prefill to zeros to guarantee
-    // the 0-termination.
-    buffer.reset(new uint8[value_size + 2]);
-    memset(buffer.get(), 0, value_size + 2);
-    hkcu_policy_key.ReadValue(value_name, buffer.get(), &value_size);
-  } else {
-    RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
-    if (hklm_policy_key.ReadValue(value_name, 0, &value_size, &key_type)) {
-      if (key_type != REG_SZ)
-        return false;
-      // According to the Microsoft documentation, the string
-      // buffer may not be explicitly 0-terminated. Allocate a
-      // slightly larger buffer and prefill to zeros to guarantee
-      // the 0-termination.
-      buffer.reset(new uint8[value_size + 2]);
-      memset(buffer.get(), 0, value_size + 2);
-      hklm_policy_key.ReadValue(value_name, buffer.get(), &value_size);
-    } else {
+  RegKey policy_key;
+  string16 location = string16(policy::kRegistrySubKey);
+  string16 value_name = name;
+
+  if (index > 0) {
+    // This is a list value, treat |name| as a subkey.
+    location += ASCIIToUTF16("\\") + name;
+    value_name = base::IntToString16(index);
+  }
+
+  // First try the global policy.
+  if (!policy_key.Open(HKEY_LOCAL_MACHINE, location.c_str()) ||
+      !policy_key.ReadValue(value_name.c_str(), 0, &value_size, &key_type)) {
+    policy_key.Close();
+    // Fall back on user-specific policy.
+    if (!policy_key.Open(HKEY_CURRENT_USER, location.c_str()) ||
+        !policy_key.ReadValue(value_name.c_str(), 0, &value_size, &key_type)) {
       return false;
     }
   }
 
+  if (key_type != REG_SZ)
+    return false;
+
+  // According to the Microsoft documentation, the string
+  // buffer may not be explicitly 0-terminated. Allocate a
+  // slightly larger buffer and pre-fill to zeros to guarantee
+  // the 0-termination.
+  buffer.reset(new uint8[value_size + 2]);
+  memset(buffer.get(), 0, value_size + 2);
+  policy_key.ReadValue(value_name.c_str(), buffer.get(), &value_size);
   result->assign(reinterpret_cast<const wchar_t*>(buffer.get()));
   return true;
 }
 
+
+bool ConfigurationPolicyProviderWin::GetRegistryPolicyStringList(
+    const string16& key, ListValue* result) {
+  int index = 0;
+  string16 policy_string;
+  while (GetRegistryPolicyString(key, ++index,  &policy_string))
+    result->Append(Value::CreateStringValue(policy_string));
+  return true;
+}
+
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyBoolean(
-    const wchar_t* value_name, bool* result) {
+    const string16& value_name, bool* result) {
   DWORD value;
   RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
-  if (hkcu_policy_key.ReadValueDW(value_name, &value)) {
+  if (hkcu_policy_key.ReadValueDW(value_name.c_str(), &value)) {
     *result = value != 0;
     return true;
   }
 
   RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
-  if (hklm_policy_key.ReadValueDW(value_name, &value)) {
+  if (hklm_policy_key.ReadValueDW(value_name.c_str(), &value)) {
     *result = value != 0;
     return true;
   }
@@ -110,16 +125,16 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyBoolean(
 }
 
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
-    const wchar_t* value_name, uint32* result) {
+    const string16& value_name, uint32* result) {
   DWORD value;
   RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
-  if (hkcu_policy_key.ReadValueDW(value_name, &value)) {
+  if (hkcu_policy_key.ReadValueDW(value_name.c_str(), &value)) {
     *result = value;
     return true;
   }
 
   RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
-  if (hklm_policy_key.ReadValueDW(value_name, &value)) {
+  if (hklm_policy_key.ReadValueDW(value_name.c_str(), &value)) {
     *result = value;
     return true;
   }
@@ -133,29 +148,37 @@ bool ConfigurationPolicyProviderWin::Provide(
   for (PolicyValueMap::const_iterator current = mapping->begin();
        current != mapping->end(); ++current) {
     std::wstring name = UTF8ToWide(current->name);
-    std::wstring string_value;
-    uint32 int_value;
-    bool bool_value;
     switch (current->value_type) {
-      case Value::TYPE_STRING:
-        if (GetRegistryPolicyString(name.c_str(), &string_value)) {
-          store->Apply(
-              current->policy_type,
-              Value::CreateStringValue(string_value));
+      case Value::TYPE_STRING: {
+        std::wstring string_value;
+        if (GetRegistryPolicyString(name.c_str(), -1, &string_value)) {
+          store->Apply(current->policy_type,
+                       Value::CreateStringValue(string_value));
         }
         break;
-      case Value::TYPE_BOOLEAN:
+      }
+      case Value::TYPE_LIST: {
+        scoped_ptr<ListValue> list_value(new ListValue);
+        if (GetRegistryPolicyStringList(name.c_str(), list_value.get()))
+          store->Apply(current->policy_type, list_value.release());
+        break;
+      }
+      case Value::TYPE_BOOLEAN: {
+        bool bool_value;
         if (GetRegistryPolicyBoolean(name.c_str(), &bool_value)) {
           store->Apply(current->policy_type,
                        Value::CreateBooleanValue(bool_value));
         }
         break;
-      case Value::TYPE_INTEGER:
+      }
+      case Value::TYPE_INTEGER: {
+        uint32 int_value;
         if (GetRegistryPolicyInteger(name.c_str(), &int_value)) {
           store->Apply(current->policy_type,
                        Value::CreateIntegerValue(int_value));
         }
         break;
+      }
       default:
         NOTREACHED();
         return false;

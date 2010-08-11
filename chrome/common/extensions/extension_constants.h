@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -101,6 +101,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidCssList;
   extern const char* kInvalidDefaultLocale;
   extern const char* kInvalidDescription;
+  extern const char* kDisabledByPolicy;
   extern const char* kInvalidDevToolsPage;
   extern const char* kInvalidGlob;
   extern const char* kInvalidGlobList;

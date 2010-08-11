@@ -201,6 +201,12 @@ void CrxInstaller::ConfirmInstall() {
     return;
   }
 
+  if (!frontend_->extension_prefs()->IsExtensionAllowedByPolicy(
+      extension_->id())) {
+    ReportFailureFromUIThread("This extension is blacklisted by admin policy.");
+    return;
+  }
+
   GURL overlapping_url;
   Extension* overlapping_extension =
       frontend_->GetExtensionByOverlappingWebExtent(extension_->web_extent());

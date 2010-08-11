@@ -51,11 +51,22 @@ class ConfigurationPolicyProviderWin : public ConfigurationPolicyProvider {
  private:
   scoped_ptr<GroupPolicyChangeWatcher> watcher_;
 
-  // Methods to perfrom type-specific policy lookups in the registry.
+  // Methods to perform type-specific policy lookups in the registry.
   // HKLM is checked first, then HKCU.
-  bool GetRegistryPolicyString(const wchar_t* value_name, string16* result);
-  bool GetRegistryPolicyBoolean(const wchar_t* value_name, bool* result);
-  bool GetRegistryPolicyInteger(const wchar_t* value_name, uint32* result);
+
+  // Reads a string registry value |name| and puts the resulting string in
+  // |result|. If |index| > 0, |name| is the name of a subkey and the value
+  // read is named |index|. Note: A subkey is used for lists to work around
+  // a problem with the Group Policy Editor, where one list value overwrites
+  // another if they appear under the same key (even if they have different
+  // names).
+  bool GetRegistryPolicyString(const string16& name,
+                               int index,
+                               string16* result);
+  // Gets a list value contained under |key| one level below the policy root.
+  bool GetRegistryPolicyStringList(const string16& key, ListValue* result);
+  bool GetRegistryPolicyBoolean(const string16& value_name, bool* result);
+  bool GetRegistryPolicyInteger(const string16& value_name, uint32* result);
 };
 
 #endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_WIN_H_

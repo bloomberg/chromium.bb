@@ -32,6 +32,8 @@ class ConfigurationPolicyStore {
     kPolicyPasswordManagerEnabled,
     kPolicySyncDisabled,
     kPolicyApplicationLocale,
+    kPolicyExtensionInstallAllowList,
+    kPolicyExtensionInstallDenyList,
 
     // A policy for allowing administrators to forcibly disable
     // specific plugins. This policy is a comma-separated list of
@@ -45,7 +47,7 @@ class ConfigurationPolicyStore {
   static const int kPolicyManuallyConfiguredProxyMode = 2;
   static const int kPolicyUseSystemProxyMode = 3;
 
-  // A |ConfigurationPolicyProvider| specifes the value of a policy setting
+  // A |ConfigurationPolicyProvider| specifies the value of a policy setting
   // through a call to |Apply|.
   // The configuration policy pref store takes over the ownership of |value|.
   virtual void Apply(PolicyType policy, Value* value) = 0;

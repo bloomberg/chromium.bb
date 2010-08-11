@@ -299,8 +299,8 @@ extern const char kDisableExtensions[];
 extern const char kShowExtensionShelf[];
 extern const char kBrowserActionContainerWidth[];
 
-extern const char kLastExtensionsUpdateCheck[];
-extern const char kNextExtensionsUpdateCheck[];
+extern const char kExtensionInstallAllowList[];
+extern const char kExtensionInstallDenyList[];
 
 extern const char kExtensionBlacklistUpdateVersion[];
 

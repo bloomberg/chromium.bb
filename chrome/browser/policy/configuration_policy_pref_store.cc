@@ -43,6 +43,10 @@ const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
       prefs::kMetricsReportingEnabled },
   { Value::TYPE_STRING, kPolicyApplicationLocale,
       prefs::kApplicationLocale},
+  { Value::TYPE_LIST, kPolicyExtensionInstallAllowList,
+      prefs::kExtensionInstallAllowList},
+  { Value::TYPE_LIST, kPolicyExtensionInstallDenyList,
+      prefs::kExtensionInstallDenyList},
 };
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry

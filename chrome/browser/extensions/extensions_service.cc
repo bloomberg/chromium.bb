@@ -567,7 +567,9 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
                                                bool write_to_prefs) {
   std::string error;
   Extension* extension = NULL;
-  if (info.extension_manifest.get()) {
+  if (!extension_prefs_->IsExtensionAllowedByPolicy(info.extension_id)) {
+    error = errors::kDisabledByPolicy;
+  } else if (info.extension_manifest.get()) {
     scoped_ptr<Extension> tmp(new Extension(info.extension_path));
     bool require_key = info.extension_location != Extension::LOAD;
     if (tmp->InitFromValue(*info.extension_manifest, require_key, &error))

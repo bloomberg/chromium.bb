@@ -50,6 +50,10 @@ const InternalPolicyValueMapEntry kPolicyValueMap[] = {
       Value::TYPE_STRING, policy::key::kApplicationLocaleValue },
   { ConfigurationPolicyStore::kPolicySyncDisabled,
       Value::TYPE_BOOLEAN, policy::key::kSyncDisabled },
+  { ConfigurationPolicyStore::kPolicyExtensionInstallAllowList,
+      Value::TYPE_LIST, policy::key::kExtensionInstallAllowList },
+  { ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
+      Value::TYPE_LIST, policy::key::kExtensionInstallDenyList },
 };
 
 }  // namespace

@@ -1523,6 +1523,37 @@ TEST_F(ExtensionsServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   EXPECT_NE(std::string(good0), loaded_[1]->id());
 }
 
+// Will not install extension blacklisted by policy.
+TEST_F(ExtensionsServiceTest, BlacklistedByPolicyWillNotInstall) {
+  InitializeEmptyExtensionsService();
+
+  ListValue* whitelist = prefs_->GetMutableList(
+      L"extensions.install.allowlist");
+  ListValue* blacklist = prefs_->GetMutableList(
+      L"extensions.install.denylist");
+  ASSERT_TRUE(whitelist != NULL && blacklist != NULL);
+
+  // Blacklist everything.
+  blacklist->Append(Value::CreateStringValue("*"));
+
+  // Blacklist prevents us from installing good_crx.
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  service_->InstallExtension(path);
+  loop_.RunAllPending();
+  EXPECT_EQ(0u, service_->extensions()->size());
+
+  // Now whitelist this particular extension.
+  whitelist->Append(Value::CreateStringValue(good_crx));
+
+  // Ensure we can now install good_crx.
+  service_->InstallExtension(path);
+  loop_.RunAllPending();
+  EXPECT_EQ(1u, service_->extensions()->size());
+}
+
 // Tests disabling extensions
 TEST_F(ExtensionsServiceTest, DisableExtension) {
   InitializeEmptyExtensionsService();
