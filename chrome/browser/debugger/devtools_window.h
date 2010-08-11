@@ -25,6 +25,7 @@ class BrowserWindow;
 class Profile;
 class RenderViewHost;
 class TabContents;
+class Value;
 
 class DevToolsWindow
     : public DevToolsClientHost,
@@ -65,7 +66,9 @@ class DevToolsWindow
   void DoAction();
   GURL GetDevToolsUrl();
   void UpdateTheme();
-
+  void AddDevToolsExtensionsToClient();
+  void CallClientFunction(const std::wstring& function_name,
+                          const Value& arg);
   // Overridden from TabContentsDelegate.
   virtual void OpenURLFromTab(TabContents* source,
                               const GURL& url,

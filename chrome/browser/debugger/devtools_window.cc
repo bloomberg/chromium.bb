@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/string_number_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -11,6 +13,8 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
@@ -243,14 +247,43 @@ void DevToolsWindow::SetAttachedWindow() {
                          L"WebInspector.setAttachedWindow(false);");
 }
 
+
+void DevToolsWindow::AddDevToolsExtensionsToClient() {
+  ListValue results;
+  const ExtensionsService* extension_service = tab_contents_->profile()->
+      GetOriginalProfile()->GetExtensionsService();
+  const ExtensionList* extensions = extension_service->extensions();
+
+  for (ExtensionList::const_iterator extension = extensions->begin();
+       extension != extensions->end(); ++extension) {
+    if ((*extension)->devtools_url().is_empty())
+      continue;
+    DictionaryValue* extension_info = new DictionaryValue();
+    extension_info->Set(L"startPage",
+        new StringValue((*extension)->devtools_url().spec()));
+    results.Append(extension_info);
+  }
+  CallClientFunction(L"WebInspector.addExtensions", results);
+}
+
+void DevToolsWindow::CallClientFunction(const std::wstring& function_name,
+                                         const Value& arg) {
+  std::string json;
+  base::JSONWriter::Write(&arg, false, &json);
+  std::wstring javascript = function_name + L"(" + UTF8ToWide(json) + L");";
+  tab_contents_->render_view_host()->
+      ExecuteJavascriptInWebFrame(L"", javascript);
+}
+
 void DevToolsWindow::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
-  if (type == NotificationType::LOAD_STOP) {
+  if (type == NotificationType::LOAD_STOP && !is_loaded_) {
     SetAttachedWindow();
     is_loaded_ = true;
     UpdateTheme();
     DoAction();
+    AddDevToolsExtensionsToClient();
   } else if (type == NotificationType::TAB_CLOSING) {
     if (Source<NavigationController>(source).ptr() ==
             &tab_contents_->controller()) {
