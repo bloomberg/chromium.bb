@@ -13,10 +13,16 @@ import suppressions
 
 
 def ReadReportsFromFile(filename):
+  """ Returns a list of (report_hash, report) and the URL of the report on the
+  waterfall.
+  """
   input_file = file(filename, 'r')
+  # reports is a list of (error hash, report) pairs.
   reports = []
   in_suppression = False
   cur_supp = []
+  # This stores the last error hash found while reading the file.
+  last_hash = ""
   for line in input_file:
     line = line.strip()
     line = line.replace("</span><span class=\"stdout\">", "")
@@ -26,14 +32,22 @@ def ReadReportsFromFile(filename):
     if in_suppression:
       if line == "}":
         cur_supp += ["}"]
-        reports += ["\n".join(cur_supp)]
+        reports += [[last_hash, "\n".join(cur_supp)]]
         in_suppression = False
         cur_supp = []
+        last_hash = ""
       else:
         cur_supp += [" "*3 + line]
     elif line == "{":
       in_suppression = True
       cur_supp = ["{"]
+    elif line.find("Suppression (error hash=#") == 0:
+      last_hash = line[25:33]
+      # Work around an (fixed) bug in memcheck_analyze.py.
+      # TODO(jochen): delete this after a couple of days.
+      if last_hash[0] == '-':
+        last_hash = line[26:34]
+  # The line at the end of the file is assumed to store the URL of the report.
   return reports,line
 
 suppressions_root = path_utils.ScriptDir()
@@ -48,11 +62,13 @@ mac_suppressions = suppressions.ReadSuppressionsFromFile(supp_filename)
 
 # all_reports is a map {report: list of urls containing this report}
 all_reports = defaultdict(list)
+report_hashes = {}
 
 for f in sys.argv[1:]:
   f_reports, url = ReadReportsFromFile(f)
-  for report in f_reports:
+  for (hash, report) in f_reports:
     all_reports[report] += [url]
+    report_hashes[report] = hash
 
 reports_count = 0
 for r in all_reports:
@@ -75,6 +91,7 @@ for r in all_reports:
     for url in all_reports[r]:
       print "  %s" % url
     print "didn't match any suppressions:"
+    print "Suppression (error hash=#%s#):" % (report_hashes[r])
     print r
     print "==================================="
 
