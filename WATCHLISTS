@@ -182,8 +182,6 @@
                   'pam+watch@chromium.org'],
     'net': ['darin-cc@chromium.org', 'cbentzel+watch@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
-    'installer': ['kuchhal@chromium.org'],
-    'importer': ['kuchhal@chromium.org'],
     'media': ['ajwong@chromium.org', 'fbarchard@chromium.org',
               'hclam@chromium.org', 'scherkus@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
