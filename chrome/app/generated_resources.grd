@@ -8596,6 +8596,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the remove button for removing a language">
         Remove
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_INPUT_METHOD"
+               desc="Warning invoked when the user tries to remove the last input method">
+        Please add another input method before removing this one.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_LANGUAGE"
+               desc="Warning invoked when the user tries to remove the last language">
+        Please add another language before removing this one.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE"
                desc="The label is used for a button that changes the UI
                      language of Chrome OS">

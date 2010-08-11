@@ -89,9 +89,7 @@ cr.define('options.language', function() {
      * Removes the currently selected language.
      */
     removeSelectedLanguage: function() {
-      if (this.selectionModel.selectedIndex >= 0 &&
-          // Don't allow removing the last language.
-          this.dataModel.length > 1) {
+      if (this.selectionModel.selectedIndex >= 0) {
         this.dataModel.splice(this.selectionModel.selectedIndex, 1);
         // Once the selected item is removed, there will be no selected item.
         // Select the item pointed by the lead index.

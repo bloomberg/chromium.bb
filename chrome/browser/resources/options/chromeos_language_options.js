@@ -275,6 +275,14 @@ cr.define('options', function() {
      * @private
      */
     handleCheckboxClick_ : function(e) {
+      var checkbox = e.target;
+      if (this.preloadEngines_.length == 1 && !checkbox.checked) {
+        // Don't allow disabling the last input method.
+        // TODO(satorux): Show the message in a nicer way once we get a mock
+        // from UX. crosbug.com/5547.
+        alert(localStrings.getString('please_add_another_input_method'));
+        checkbox.checked = true;
+      }
       this.updatePreloadEnginesFromCheckboxes_();
       this.savePreloadEnginesPref_();
     },
@@ -297,13 +305,19 @@ cr.define('options', function() {
       var languageOptionsList = $('language-options-list');
       var languageCode = languageOptionsList.getSelectedLanguageCode();
       // Disable input methods associated with |languageCode|.
-      this.removePreloadEnginesByLanguageCode_(languageCode);
+      if (!this.removePreloadEnginesByLanguageCode_(languageCode)) {
+        // TODO(satorux): Show the message in a nicer way once we get a mock
+        // from UX. crosbug.com/5546.
+        alert(localStrings.getString('please_add_another_language'));
+        return;
+      }
       languageOptionsList.removeSelectedLanguage();
     },
 
     /**
      * Removes preload engines associated with the given language code.
      * @param {string} languageCode Language code (ex. "fr").
+     * @return {boolean} Returns true on success.
      * @private
      */
     removePreloadEnginesByLanguageCode_: function(languageCode) {
@@ -320,12 +334,18 @@ cr.define('options', function() {
       // Update the preload engine list with the to-be-removed set.
       var newPreloadEngines = [];
       for (var i = 0; i < this.preloadEngines_.length; i++) {
-        if (!this.preloadEngines_[i] in enginesToBeRemoved) {
+        if (!(this.preloadEngines_[i] in enginesToBeRemoved)) {
           newPreloadEngines.push(this.preloadEngines_[i]);
         }
       }
+      // Don't allow this operation if it causes the number of preload
+      // engines to be zero.
+      if (newPreloadEngines.length == 0) {
+        return false;
+      }
       this.preloadEngines_ = newPreloadEngines;
       this.savePreloadEnginesPref_();
+      return true;
     },
 
     /**
@@ -402,7 +422,7 @@ cr.define('options', function() {
    */
   LanguageOptions.uiLanguageSaved = function() {
     // TODO(satorux): Show the message in a nicer way once we get a mock
-    // from UX.
+    // from UX. crosbug.com/5545.
     alert(localStrings.getString('restart_required'));
   };
 
