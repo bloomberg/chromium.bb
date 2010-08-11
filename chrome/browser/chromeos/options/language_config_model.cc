@@ -213,10 +213,6 @@ void LanguageConfigModel::GetInputMethodIdsFromLanguageCode(
   input_method_ids->clear();
   input_method::GetInputMethodIdsFromLanguageCode(
       language_code, input_method::kAllInputMethods, input_method_ids);
-
-  // Reorder the input methods.
-  input_method::ReorderInputMethodIdsForLanguageCode(
-      language_code, input_method_ids);
 }
 
 void LanguageConfigModel::NotifyPrefChanged() {

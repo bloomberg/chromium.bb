@@ -234,20 +234,6 @@ const char* kIso639VariantMapping[][2] = {
   {"slo", "slk"},
 };
 
-// The list defines pairs of language code and the default input method
-// id. The list is used for reordering input method ids.
-//
-// TODO(satorux): We may need to handle secondary, and ternary input
-// methods, rather than handling the default input method only.
-const struct LanguageDefaultInputMethodId {
-  const char* language_code;
-  const char* input_method_id;
-} kLanguageDefaultInputMethodIds[] = {
-  { "en-US", "xkb:us::eng", },  // US - English
-  { "fr",    "xkb:fr::fra", },  // France - French
-  { "de",    "xkb:de::ger", },  // Germany - German
-};
-
 // The comparator is used for sorting language codes by their
 // corresponding language names, using the ICU collator.
 struct CompareLanguageCodesByLanguageName
@@ -267,6 +253,7 @@ struct CompareLanguageCodesByLanguageName
     return l10n_util::StringComparator<std::wstring>(collator_)(key1, key2);
   }
 
+ private:
   icu::Collator* collator_;
 };
 
@@ -296,6 +283,7 @@ struct CompareInputMethodIdsByLanguageName
     return comparator_(language_code_1, language_code_2);
   }
 
+ private:
   const CompareLanguageCodesByLanguageName comparator_;
   const std::map<std::string, std::string>& id_to_language_code_map_;
 };
@@ -544,24 +532,6 @@ void SortInputMethodIdsByNamesInternal(
   std::stable_sort(input_method_ids->begin(), input_method_ids->end(),
                    CompareInputMethodIdsByLanguageName(
                        collator.get(), id_to_language_code_map));
-}
-
-void ReorderInputMethodIdsForLanguageCode(
-    const std::string& language_code,
-    std::vector<std::string>* input_method_ids) {
-  for (size_t i = 0; i < arraysize(kLanguageDefaultInputMethodIds); ++i) {
-    if (language_code == kLanguageDefaultInputMethodIds[i].language_code) {
-      std::vector<std::string>::iterator iter =
-          std::find(input_method_ids->begin(), input_method_ids->end(),
-                    kLanguageDefaultInputMethodIds[i].input_method_id);
-      // If it's not on the top of |input_method_id|, swap it with the top one.
-      if (iter != input_method_ids->end() &&
-          iter != input_method_ids->begin()) {
-        std::swap(*input_method_ids->begin(), *iter);
-      }
-      break;  // Don't have to check other language codes.
-    }
-  }
 }
 
 bool GetInputMethodIdsFromLanguageCode(

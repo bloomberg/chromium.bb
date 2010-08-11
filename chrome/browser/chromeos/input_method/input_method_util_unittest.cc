@@ -224,59 +224,6 @@ TEST(LanguageConfigModelTest, SortInputMethodIdsByNamesInternal) {
   ASSERT_EQ("m17n:latn-pre",  input_method_ids[4]);  // Others
 }
 
-TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_DE) {
-  std::vector<std::string> input_method_ids;
-  input_method_ids.push_back("xkb:ch::ger");  // Switzerland - German
-  input_method_ids.push_back("xkb:de::ger");  // Germany - German
-  ReorderInputMethodIdsForLanguageCode("de", &input_method_ids);
-  // The list should be reordered.
-  ASSERT_EQ(2U, input_method_ids.size());
-  EXPECT_EQ("xkb:de::ger", input_method_ids[0]);
-  EXPECT_EQ("xkb:ch::ger", input_method_ids[1]);
-}
-
-TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_FR) {
-  std::vector<std::string> input_method_ids;
-  input_method_ids.push_back("xkb:be::fra");  // Belgium - French
-  input_method_ids.push_back("xkb:fr::fra");  // France - French
-  ReorderInputMethodIdsForLanguageCode("fr", &input_method_ids);
-  // The list should be reordered.
-  ASSERT_EQ(2U, input_method_ids.size());
-  EXPECT_EQ("xkb:fr::fra", input_method_ids[0]);
-  EXPECT_EQ("xkb:be::fra", input_method_ids[1]);
-}
-
-TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_EN_US) {
-  std::vector<std::string> input_method_ids;
-  input_method_ids.push_back("xkb:us:dvorak:eng");  // US - Dvorak - English
-  input_method_ids.push_back("xkb:us::eng");  // US - English
-  ReorderInputMethodIdsForLanguageCode("en-US", &input_method_ids);
-  // The list should be reordered.
-  ASSERT_EQ(2U, input_method_ids.size());
-  EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
-  EXPECT_EQ("xkb:us:dvorak:eng", input_method_ids[1]);
-}
-
-TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_FI) {
-  std::vector<std::string> input_method_ids;
-  input_method_ids.push_back("xkb:fi::fin");  // Finland - Finnish
-  ReorderInputMethodIdsForLanguageCode("fi", &input_method_ids);
-  // There is no rule for reordering for Finnish.
-  ASSERT_EQ(1U, input_method_ids.size());
-  EXPECT_EQ("xkb:fi::fin", input_method_ids[0]);
-}
-
-TEST(InputMethodUtilTest, ReorderInputMethodIdsForLanguageCode_Noop) {
-  std::vector<std::string> input_method_ids;
-  input_method_ids.push_back("xkb:fr::fra");  // France - French
-  input_method_ids.push_back("xkb:be::fra");  // Belgium - French
-  // If the list is already sorted, nothing should happen.
-  ReorderInputMethodIdsForLanguageCode("fr", &input_method_ids);
-  ASSERT_EQ(2U, input_method_ids.size());
-  EXPECT_EQ("xkb:fr::fra", input_method_ids[0]);
-  EXPECT_EQ("xkb:be::fra", input_method_ids[1]);
-}
-
 TEST(LanguageConfigModelTest, GetInputMethodIdsForLanguageCode) {
   std::multimap<std::string, std::string> language_code_to_ids_map;
   language_code_to_ids_map.insert(std::make_pair("ja", "mozc"));

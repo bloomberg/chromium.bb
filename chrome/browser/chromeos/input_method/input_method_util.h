@@ -115,15 +115,6 @@ void SortLanguageCodesByNames(std::vector<std::string>* language_codes);
 // using the unicode string comparator. Uses stable sorting.
 void SortInputMethodIdsByNames(std::vector<std::string>* input_method_ids);
 
-// Reorders the given input method ids for the language code. For
-// example, if |language_codes| is "fr" and |input_method_ids| contains
-// ["xkb:be::fra", and "xkb:fr::fra"], the list is reordered to
-// ["xkb:fr::fra", and "xkb:be::fra"], so that French keyboard layout
-// comes before Belgian keyboard layout.
-void ReorderInputMethodIdsForLanguageCode(
-    const std::string& language_code,
-    std::vector<std::string>* input_method_ids);
-
 enum InputMethodType {
   kKeyboardLayoutsOnly,
   kAllInputMethods,
