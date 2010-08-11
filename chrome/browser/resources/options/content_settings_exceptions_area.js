@@ -9,12 +9,14 @@ cr.define('options.contentSettings', function() {
 
   /**
    * Creates a new exceptions list item.
+   * @param {string} contentType The type of the list.
    * @param {Array} exception A pair of the form [filter, setting].
    * @constructor
    * @extends {cr.ui.ListItem}
    */
-  function ExceptionsListItem(exception) {
+  function ExceptionsListItem(contentType, exception) {
     var el = cr.doc.createElement('li');
+    el.contentType = contentType;
     el.dataItem = exception;
     el.__proto__ = ExceptionsListItem.prototype;
     el.decorate();
@@ -50,10 +52,18 @@ cr.define('options.contentSettings', function() {
       var select = cr.doc.createElement('select');
       var optionAllow = cr.doc.createElement('option');
       optionAllow.textContent = templateData.allowException;
+      select.appendChild(optionAllow);
       var optionBlock = cr.doc.createElement('option');
       optionBlock.textContent = templateData.blockException;
-      select.appendChild(optionAllow);
       select.appendChild(optionBlock);
+
+      if (this.contentType == 'cookies') {
+        var optionSession = cr.doc.createElement('option');
+        optionSession.textContent = templateData.sessionException;
+        select.appendChild(optionSession);
+        this.optionSession = optionSession;
+      }
+
       this.appendChild(select);
       select.className = 'exceptionSetting hidden';
 
@@ -82,10 +92,8 @@ cr.define('options.contentSettings', function() {
       // Handle events on the editable nodes.
       input.oninput = function(event) {
         listItem.inputValidityKnown = false;
-        if (listItem.parentNode) {
-          chrome.send('checkExceptionPatternValidity',
-                      [listItem.parentNode.contentType, input.value]);
-        }
+        chrome.send('checkExceptionPatternValidity',
+                    [listItem.contentType, input.value]);
       };
 
       var eventsToStop =
@@ -203,6 +211,8 @@ cr.define('options.contentSettings', function() {
         this.optionAllow.selected = true;
       else if (this.setting == 'block')
         this.optionBlock.selected = true;
+      else if (this.setting == 'session')
+        this.optionSession.selected = true;
     },
 
     /**
@@ -226,6 +236,7 @@ cr.define('options.contentSettings', function() {
       var select = this.select;
       var optionAllow = this.optionAllow;
       var optionBlock = this.optionBlock;
+      var optionSession = this.optionSession;
 
       // Check that we have a valid pattern and if not we do not change the
       // editing mode.
@@ -254,6 +265,8 @@ cr.define('options.contentSettings', function() {
           this.setting = 'allow';
         else if (optionBlock.selected)
           this.setting = 'block';
+        else if (optionSession.selected)
+          this.setting = 'session';
         settingLabel.textContent = this.settingForDisplay();
 
         this.removeAttribute('editing');
@@ -292,7 +305,7 @@ cr.define('options.contentSettings', function() {
      * @param {Object} entry The element from the data model for this row.
      */
     createItem: function(entry) {
-      return new ExceptionsListItem(entry);
+      return new ExceptionsListItem(this.contentType, entry);
     },
 
     /**

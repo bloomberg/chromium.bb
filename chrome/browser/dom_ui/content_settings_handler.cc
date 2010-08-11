@@ -72,6 +72,8 @@ std::string ContentSettingToString(ContentSetting setting) {
       return "ask";
     case CONTENT_SETTING_BLOCK:
       return "block";
+    case CONTENT_SETTING_SESSION_ONLY:
+      return "session";
 
     default:
       NOTREACHED();
@@ -86,6 +88,8 @@ ContentSetting ContentSettingFromString(const std::string& name) {
     return CONTENT_SETTING_ASK;
   if (name == "block")
     return CONTENT_SETTING_BLOCK;
+  if (name == "session")
+    return CONTENT_SETTING_SESSION_ONLY;
 
   NOTREACHED();
   return CONTENT_SETTING_DEFAULT;
@@ -111,6 +115,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ALLOW_BUTTON));
   localized_strings->SetString("blockException",
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
+  localized_strings->SetString("sessionException",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON));
   localized_strings->SetString("addExceptionRow",
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ADD_BUTTON));
   localized_strings->SetString("removeExceptionRow",
