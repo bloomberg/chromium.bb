@@ -34,6 +34,9 @@ TEST(InputMethodUtilTest, NormalizeLanguageCode) {
   // TODO(yusukes): test all language codes that IBus provides.
   EXPECT_EQ("ja", NormalizeLanguageCode("ja"));
   EXPECT_EQ("ja", NormalizeLanguageCode("jpn"));
+  // In the past "t" had a meaning of "other language" for some m17n latin
+  // input methods for testing purpose, but it is no longer used. We test "t"
+  // here as just an "unknown" language.
   EXPECT_EQ("t", NormalizeLanguageCode("t"));
   EXPECT_EQ("zh-CN", NormalizeLanguageCode("zh-CN"));
   EXPECT_EQ("zh-CN", NormalizeLanguageCode("zh_CN"));
@@ -74,12 +77,6 @@ TEST(InputMethodUtilTest, GetLanguageCodeFromDescriptor) {
       InputMethodDescriptor("xkb:uk::eng", "United Kingdom", "us", "eng")));
 }
 
-TEST(InputMethodUtilTest, MaybeRewriteLanguageName) {
-  EXPECT_EQ(L"English", MaybeRewriteLanguageName(L"English"));
-  EXPECT_EQ(l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS),
-            MaybeRewriteLanguageName(L"t"));
-}
-
 TEST(InputMethodUtilTest, GetKeyboardLayoutName) {
   // Unsupported cases
   EXPECT_EQ("", GetKeyboardLayoutName("UNSUPPORTED_ID"));
@@ -88,8 +85,6 @@ TEST(InputMethodUtilTest, GetKeyboardLayoutName) {
   EXPECT_EQ("", GetKeyboardLayoutName("mozc"));
   EXPECT_EQ("", GetKeyboardLayoutName("mozc-jp"));
   EXPECT_EQ("", GetKeyboardLayoutName("pinyin"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:t:latn-pre"));
-  EXPECT_EQ("", GetKeyboardLayoutName("m17n:t:latn-post"));
   EXPECT_EQ("", GetKeyboardLayoutName("m17n:ar:kbd"));
   EXPECT_EQ("", GetKeyboardLayoutName("m17n:he:kbd"));
   EXPECT_EQ("", GetKeyboardLayoutName("m17n:hi:itrans"));
@@ -143,16 +138,10 @@ TEST(InputMethodUtilTest, GetKeyboardLayoutName) {
 
 TEST(InputMethodUtilTest, GetLanguageDisplayNameFromCode) {
   EXPECT_EQ(L"Finnish", GetLanguageDisplayNameFromCode("fi"));
-  // MaybeRewriteLanguageName() should be applied.
-  EXPECT_EQ(l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS),
-            GetLanguageDisplayNameFromCode("t"));
 }
 
 TEST(InputMethodUtilTest, GetLanguageNativeDisplayNameFromCode) {
   EXPECT_EQ(L"suomi", GetLanguageNativeDisplayNameFromCode("fi"));
-  // MaybeRewriteLanguageName() should be applied.
-  EXPECT_EQ(l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS),
-            GetLanguageNativeDisplayNameFromCode("t"));
 }
 
 TEST(InputMethodUtilTest, SortLanguageCodesByNames) {
@@ -162,6 +151,7 @@ TEST(InputMethodUtilTest, SortLanguageCodesByNames) {
 
   language_codes.push_back("ja");
   language_codes.push_back("fr");
+  // For "t", see the comment in NormalizeLanguageCode test.
   language_codes.push_back("t");
   SortLanguageCodesByNames(&language_codes);
   ASSERT_EQ(3U, language_codes.size());
@@ -185,7 +175,6 @@ TEST(LanguageConfigModelTest, SortInputMethodIdsByNamesInternal) {
   id_to_language_code_map.insert(std::make_pair("mozc-jp", "ja"));
   id_to_language_code_map.insert(std::make_pair("xkb:jp::jpn", "ja"));
   id_to_language_code_map.insert(std::make_pair("xkb:fr::fra", "fr"));
-  id_to_language_code_map.insert(std::make_pair("m17n:latn-pre", "t"));
 
   std::vector<std::string> input_method_ids;
   // Check if this function can handle an empty list.
@@ -194,34 +183,30 @@ TEST(LanguageConfigModelTest, SortInputMethodIdsByNamesInternal) {
 
   input_method_ids.push_back("mozc");           // Japanese
   input_method_ids.push_back("xkb:fr::fra");    // French
-  input_method_ids.push_back("m17n:latn-pre");  // Others
   SortInputMethodIdsByNamesInternal(id_to_language_code_map,
                                     &input_method_ids);
-  ASSERT_EQ(3U, input_method_ids.size());
+  ASSERT_EQ(2U, input_method_ids.size());
   ASSERT_EQ("xkb:fr::fra", input_method_ids[0]);     // French
   ASSERT_EQ("mozc", input_method_ids[1]);            // Japanese
-  ASSERT_EQ("m17n:latn-pre",  input_method_ids[2]);  // Others
 
   // Add a duplicate entry and see if it works.
   // Note that SortInputMethodIdsByNamesInternal uses std::stable_sort.
   input_method_ids.push_back("xkb:jp::jpn");  // also Japanese
   SortInputMethodIdsByNamesInternal(id_to_language_code_map,
                                     &input_method_ids);
-  ASSERT_EQ(4U, input_method_ids.size());
+  ASSERT_EQ(3U, input_method_ids.size());
   ASSERT_EQ("xkb:fr::fra", input_method_ids[0]);     // French
   ASSERT_EQ("mozc", input_method_ids[1]);            // Japanese
   ASSERT_EQ("xkb:jp::jpn", input_method_ids[2]);     // Japanese
-  ASSERT_EQ("m17n:latn-pre",  input_method_ids[3]);  // Others
 
   input_method_ids.push_back("mozc-jp");  // also Japanese
   SortInputMethodIdsByNamesInternal(id_to_language_code_map,
                                     &input_method_ids);
-  ASSERT_EQ(5U, input_method_ids.size());
+  ASSERT_EQ(4U, input_method_ids.size());
   ASSERT_EQ("xkb:fr::fra", input_method_ids[0]);     // French
   ASSERT_EQ("mozc", input_method_ids[1]);            // Japanese
   ASSERT_EQ("xkb:jp::jpn", input_method_ids[2]);     // Japanese
   ASSERT_EQ("mozc-jp", input_method_ids[3]);         // Japanese
-  ASSERT_EQ("m17n:latn-pre",  input_method_ids[4]);  // Others
 }
 
 TEST(LanguageConfigModelTest, GetInputMethodIdsForLanguageCode) {

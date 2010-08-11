@@ -36,8 +36,7 @@ std::wstring AddLanguageComboboxModel::GetItemAt(int index) {
     return l10n_util::GetString(
         IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_COMBOBOX);
   }
-  return input_method::MaybeRewriteLanguageName(
-      GetLanguageNameAt(GetLanguageIndex(index)));
+  return GetLanguageNameAt(GetLanguageIndex(index));
 }
 
 int AddLanguageComboboxModel::GetLanguageIndex(int index) const {

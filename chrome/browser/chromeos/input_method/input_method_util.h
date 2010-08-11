@@ -75,12 +75,6 @@ std::string GetLanguageCodeFromDescriptor(
 // "pinyin"            => ""
 std::string GetKeyboardLayoutName(const std::string& input_method_id);
 
-// Rewrites the language name and returns the modified version if
-// necessary. Otherwise, returns the given language name as is.
-// In particular, this rewrites the special language name used for input
-// methods that don't fall under any other languages.
-std::wstring MaybeRewriteLanguageName(const std::wstring& language_name);
-
 // Converts an input method ID to a language code of the IME. Returns "Eng"
 // when |input_method_id| is unknown.
 // Example: "hangul" => "ko"

@@ -153,10 +153,6 @@ const struct EnglishToResouceId {
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VIQR_INPUT_METHOD },
   { "vni (m17n)",
     IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VNI_INPUT_METHOD },
-  { "latn-post (m17n)",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_LATIN_POST_INPUT_METHOD },
-  { "latn-pre (m17n)",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_LATIN_PRE_INPUT_METHOD },
   { "Bopomofo", IDS_OPTIONS_SETTINGS_LANGUAGES_BOPOMOFO_INPUT_METHOD },
   { "Chewing", IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_INPUT_METHOD },
   { "Pinyin", IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_INPUT_METHOD },
@@ -435,16 +431,6 @@ std::string GetLanguageCodeFromDescriptor(
   return language_code;
 }
 
-std::wstring MaybeRewriteLanguageName(const std::wstring& language_name) {
-  // "t" is used as the language code for input methods that don't fall
-  // under any other languages.
-  if (language_name == L"t") {
-    return l10n_util::GetString(
-        IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS);
-  }
-  return language_name;
-}
-
 std::string GetLanguageCodeFromInputMethodId(
     const std::string& input_method_id) {
   // The code should be compatible with one of codes used for UI languages,
@@ -481,17 +467,14 @@ std::wstring GetLanguageDisplayNameFromCode(const std::string& language_code) {
   if (!g_browser_process) {
     return L"";
   }
-  return MaybeRewriteLanguageName(UTF16ToWide(
-      l10n_util::GetDisplayNameForLocale(
-          language_code, g_browser_process->GetApplicationLocale(),
-          true)));
+  return UTF16ToWide(l10n_util::GetDisplayNameForLocale(
+      language_code, g_browser_process->GetApplicationLocale(), true));
 }
 
 std::wstring GetLanguageNativeDisplayNameFromCode(
     const std::string& language_code) {
-  return MaybeRewriteLanguageName(UTF16ToWide(
-      l10n_util::GetDisplayNameForLocale(
-          language_code, language_code, true)));
+  return UTF16ToWide(l10n_util::GetDisplayNameForLocale(
+      language_code, language_code, true));
 }
 
 void SortLanguageCodesByNames(std::vector<std::string>* language_codes) {

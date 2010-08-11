@@ -8593,11 +8593,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for the remove button for removing a language">
         Remove
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_OTHERS"
-               desc="The label is used for categorizing input methods that
-                     that don't fall under any other languages">
-        Others
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE"
                desc="The label is used for a button that changes the UI
                      language of Chrome OS">
@@ -8650,14 +8645,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_VIETNAMESE_VNI_INPUT_METHOD"
                desc="The label for the Vietnamese input method">
         Vietnamese input method (VNI)
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_LATIN_POST_INPUT_METHOD"
-               desc="The label for the 'latn-post' input method">
-        Latin input method using postfix modifiers
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_LATIN_PRE_INPUT_METHOD"
-               desc="The label for the 'latn-pre' input method">
-        Latin input method using prefix modifiers
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_BOPOMOFO_INPUT_METHOD"
                desc="The label for the Bopomofo (Zhuyin) traditional Chinese input method">

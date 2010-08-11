@@ -92,12 +92,6 @@ const struct {
   { "chewing", "\xe9\x85\xb7" },  // U+9177
   { "m17n:zh:cangjie", "\xe5\x80\x89" },  // U+5009
   // TODO(yusukes): Add m17n:zh:quick if there's a good Hanzi character for it.
-
-  // Handle "m17n:t" input methods here since ICU is not able to handle the
-  // language code "t". Note: most users use either latn-pre or latn-post
-  // methods, not both. The same is true for mozc/mozc-jp.
-  { "m17n:t:latn-pre", "LAT" },
-  { "m17n:t:latn-post", "LAT" },
 };
 const size_t kMappingFromIdToIndicatorTextLen =
     ARRAYSIZE_UNSAFE(kMappingFromIdToIndicatorText);
@@ -638,20 +632,13 @@ std::wstring LanguageMenuButton::GetTextForMenu(
   const std::string language_code
       = input_method::GetLanguageCodeFromDescriptor(input_method);
 
-  std::wstring text;
-  if (language_code == "t") {
-    text = UTF8ToWide(input_method.display_name);
-  }
-
   // For the drop-down menu and tooltip, we'll show language names like
   // "Chinese (Simplified)" and "Japanese", instead of input method names
   // like "Pinyin" and "Mozc".
-  if (text.empty()) {
-    text = GetLanguageName(language_code);
-    if (add_method_name) {
-      text += L" - ";
-      text += input_method::GetString(input_method.display_name);
-    }
+  std::wstring text = GetLanguageName(language_code);
+  if (add_method_name) {
+    text += L" - ";
+    text += input_method::GetString(input_method.display_name);
   }
   DCHECK(!text.empty());
   return text;

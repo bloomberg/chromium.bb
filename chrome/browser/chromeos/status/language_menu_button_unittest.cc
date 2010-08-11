@@ -63,11 +63,6 @@ TEST(LanguageMenuButtonTest, GetTextForIndicatorTest) {
     EXPECT_EQ(UTF8ToWide("TW"),
               LanguageMenuButton::GetTextForIndicator(desc));
   }
-  {
-    InputMethodDescriptor desc("m17n:t:latn-pre", "latn-pre", "us", "t");
-    EXPECT_EQ(L"LAT",
-              LanguageMenuButton::GetTextForIndicator(desc));
-  }
 }
 
 TEST(LanguageMenuButtonTest, GetTextForTooltipTest) {
@@ -87,11 +82,6 @@ TEST(LanguageMenuButtonTest, GetTextForTooltipTest) {
     // You can safely ignore the "Resouce ID is not found for: unregistered
     // string" error.
     EXPECT_EQ(L"xx - unregistered string",
-              LanguageMenuButton::GetTextForMenu(desc, kAddMethodName));
-  }
-  {
-    InputMethodDescriptor desc("m17n:t:latn-pre", "latn-pre", "us", "t");
-    EXPECT_EQ(L"latn-pre",
               LanguageMenuButton::GetTextForMenu(desc, kAddMethodName));
   }
 }
