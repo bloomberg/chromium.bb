@@ -70,6 +70,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
+#include "chrome/browser/tab_contents/match_preview.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -2942,6 +2943,16 @@ Browser* Browser::GetBrowser() {
 void Browser::ContentTypeChanged(TabContents* source) {
   if (source == GetSelectedTabContents())
     UpdateZoomCommandsForTabState();
+}
+
+void Browser::CommitMatchPreview(TabContents* source) {
+  int index = tabstrip_model_.GetIndexOfTabContents(source);
+  DCHECK_NE(-1, index);
+  TabContents* preview_contents =
+      source->match_preview()->ReleasePreviewContents();
+  // TabStripModel takes ownership of preview_contents.
+  tabstrip_model_.ReplaceTabContentsAt(
+      index, preview_contents, TabStripModelObserver::REPLACE_MATCH_PREVIEW);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

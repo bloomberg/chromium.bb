@@ -15,6 +15,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog_queue.h"
+#include "chrome/browser/autocomplete/autocomplete_popup_model.h"
+#include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
@@ -27,6 +29,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/tab_contents/match_preview.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/view_ids.h"
@@ -126,6 +129,71 @@ static gfx::NativeWindow GetNormalBrowserWindowForBrowser(Browser* browser,
   return browser->window()->GetNativeHandle();
 }
 #endif  // defined(OS_CHROMEOS)
+
+// ContentsContainer is responsible for managing the TabContents views.
+// ContentsContainer has up to two children: one for the currently active
+// TabContents and one for the match preview TabContents.
+class BrowserView::ContentsContainer : public views::View {
+ public:
+  ContentsContainer(BrowserView* browser_view, views::View* active)
+      : browser_view_(browser_view),
+        active_(active),
+        preview_(NULL) {
+    AddChildView(active_);
+  }
+
+  // Makes the preview view the active view and nulls out the old active view.
+  // It's assumed the caller will delete or remove the old active view
+  // separately.
+  void MakePreviewContentsActiveContents() {
+    active_ = preview_;
+    preview_ = NULL;
+    Layout();
+  }
+
+  // Sets the preview view. This does not delete the old.
+  void SetPreview(views::View* preview) {
+    if (preview == preview_)
+      return;
+
+    if (preview_)
+      RemoveChildView(preview_);
+    preview_ = preview;
+    if (preview_)
+      AddChildView(preview_);
+
+    Layout();
+  }
+
+  virtual void Layout() {
+    // The active view always gets the full bounds.
+    active_->SetBounds(0, 0, width(), height());
+
+    if (preview_) {
+      // The preview view gets the full width and is positioned beneath the
+      // bottom of the autocompleted popup.
+      int max_autocomplete_y = browser_view_->toolbar()->location_bar()->
+          location_entry()->model()->popup_model()->view()->GetMaxYCoordinate();
+      gfx::Point screen_origin;
+      views::View::ConvertPointToScreen(this, &screen_origin);
+      DCHECK_GT(max_autocomplete_y, screen_origin.y());
+      int preview_origin = max_autocomplete_y - screen_origin.y();
+      if (preview_origin < height()) {
+        preview_->SetBounds(0, preview_origin, width(),
+                            height() - preview_origin);
+      } else {
+        preview_->SetBounds(0, 0, 0, 0);
+      }
+    }
+  }
+
+ private:
+  BrowserView* browser_view_;
+  views::View* active_;
+  views::View* preview_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentsContainer);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // BookmarkExtensionBackground, private:
@@ -416,6 +484,8 @@ BrowserView::BrowserView(Browser* browser)
       infobar_container_(NULL),
       contents_container_(NULL),
       devtools_container_(NULL),
+      preview_container_(NULL),
+      contents_(NULL),
       contents_split_(NULL),
       initialized_(false),
       ignore_layout_(true),
@@ -518,7 +588,7 @@ gfx::Rect BrowserView::GetToolbarBounds() const {
 }
 
 gfx::Rect BrowserView::GetClientAreaBounds() const {
-  gfx::Rect container_bounds = contents_container_->bounds();
+  gfx::Rect container_bounds = contents_->bounds();
   gfx::Point container_origin = container_bounds.origin();
   ConvertPointToView(this, GetParent(), &container_origin);
   container_bounds.set_origin(container_origin);
@@ -1320,12 +1390,36 @@ ToolbarView* BrowserView::GetToolbarView() const {
 void BrowserView::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED &&
-      *Details<std::string>(details).ptr() == prefs::kShowBookmarkBar) {
-    if (MaybeShowBookmarkBar(browser_->GetSelectedTabContents()))
-      Layout();
-  } else {
-    NOTREACHED() << "Got a notification we didn't register for!";
+  switch (type.value) {
+    case NotificationType::PREF_CHANGED:
+      if (*Details<std::string>(details).ptr() == prefs::kShowBookmarkBar &&
+          MaybeShowBookmarkBar(browser_->GetSelectedTabContents())) {
+        Layout();
+      }
+      break;
+
+    case NotificationType::MATCH_PREVIEW_TAB_CONTENTS_CREATED:
+      if (Source<TabContents>(source).ptr() ==
+          browser_->GetSelectedTabContents()) {
+        ShowMatchPreview();
+      }
+      break;
+
+    case NotificationType::TAB_CONTENTS_DESTROYED: {
+      if (MatchPreview::IsEnabled()) {
+        TabContents* selected_contents = browser_->GetSelectedTabContents();
+        if (selected_contents &&
+            selected_contents->match_preview()->preview_contents() ==
+            Source<TabContents>(source).ptr()) {
+          HideMatchPreview();
+        }
+      }
+      break;
+    }
+
+    default:
+      NOTREACHED() << "Got a notification we didn't register for!";
+      break;
   }
 }
 
@@ -1360,34 +1454,29 @@ void BrowserView::TabSelectedAt(TabContents* old_contents,
                                 bool user_gesture) {
   DCHECK(old_contents != new_contents);
 
-  // Update various elements that are interested in knowing the current
-  // TabContents.
+  ProcessTabSelected(new_contents, true);
+}
 
-  // When we toggle the NTP floating bookmarks bar and/or the info bar,
-  // we don't want any TabContents to be attached, so that we
-  // avoid an unnecessary resize and re-layout of a TabContents.
-  contents_container_->ChangeTabContents(NULL);
-  infobar_container_->ChangeTabContents(new_contents);
-  UpdateUIForContents(new_contents);
-  contents_container_->ChangeTabContents(new_contents);
-
-  UpdateDevToolsForContents(new_contents);
-  // TODO(beng): This should be called automatically by ChangeTabContents, but I
-  //             am striving for parity now rather than cleanliness. This is
-  //             required to make features like Duplicate Tab, Undo Close Tab,
-  //             etc not result in sad tab.
-  new_contents->DidBecomeSelected();
-  if (BrowserList::GetLastActive() == browser_ &&
-      !browser_->tabstrip_model()->closing_all() && GetWindow()->IsVisible()) {
-    // We only restore focus if our window is visible, to avoid invoking blur
-    // handlers when we are eventually shown.
-    new_contents->view()->RestoreFocus();
+void BrowserView::TabReplacedAt(TabContents* old_contents,
+                                TabContents* new_contents,
+                                int index,
+                                TabStripModelObserver::TabReplaceType type) {
+  if (type != TabStripModelObserver::REPLACE_MATCH_PREVIEW ||
+      index != browser_->tabstrip_model()->selected_index()) {
+    return;
   }
 
-  // Update all the UI bits.
-  UpdateTitleBar();
-  UpdateToolbar(new_contents, true);
-  UpdateUIForContents(new_contents);
+  // Swap the 'active' and 'preview' and delete what was the active.
+  contents_->MakePreviewContentsActiveContents();
+  TabContentsContainer* old_container = contents_container_;
+  contents_container_ = preview_container_;
+  old_container->ChangeTabContents(NULL);
+  delete old_container;
+  preview_container_ = NULL;
+
+  // Update the UI for what was the preview contents and is now active. Pass in
+  // false to ProcessTabSelected as new_contents is already parented correctly.
+  ProcessTabSelected(new_contents, false);
 }
 
 void BrowserView::TabStripEmpty() {
@@ -1759,11 +1848,12 @@ void BrowserView::Init() {
   AddChildView(infobar_container_);
 
   contents_container_ = new TabContentsContainer;
+  contents_ = new ContentsContainer(this, contents_container_);
   devtools_container_ = new TabContentsContainer;
   devtools_container_->SetID(VIEW_ID_DEV_TOOLS_DOCKED);
   devtools_container_->SetVisible(false);
   contents_split_ = new views::SingleSplitView(
-      contents_container_,
+      contents_,
       devtools_container_,
       views::SingleSplitView::VERTICAL_SPLIT);
   contents_split_->SetID(VIEW_ID_CONTENTS_SPLIT);
@@ -1808,6 +1898,13 @@ void BrowserView::Init() {
 
   // We're now initialized and ready to process Layout requests.
   ignore_layout_ = false;
+
+  registrar_.Add(this,
+                 NotificationType::MATCH_PREVIEW_TAB_CONTENTS_CREATED,
+                 NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::TAB_CONTENTS_DESTROYED,
+                 NotificationService::AllSources());
 }
 
 #if defined(OS_WIN)
@@ -2232,6 +2329,60 @@ void BrowserView::InitHangMonitor() {
                              hung_plugin_detect_freq);
   }
 #endif
+}
+
+void BrowserView::ShowMatchPreview() {
+  if (!preview_container_)
+    preview_container_ = new TabContentsContainer();
+  contents_->SetPreview(preview_container_);
+  preview_container_->ChangeTabContents(
+      browser_->GetSelectedTabContents()->match_preview()->preview_contents());
+}
+
+void BrowserView::HideMatchPreview() {
+  if (!preview_container_)
+    return;
+
+  // The contents must be changed before SetPreview is invoked.
+  preview_container_->ChangeTabContents(NULL);
+  contents_->SetPreview(NULL);
+  delete preview_container_;
+  preview_container_ = NULL;
+}
+
+void BrowserView::ProcessTabSelected(TabContents* new_contents,
+                                     bool change_tab_contents) {
+
+  // Update various elements that are interested in knowing the current
+  // TabContents.
+
+  // When we toggle the NTP floating bookmarks bar and/or the info bar,
+  // we don't want any TabContents to be attached, so that we
+  // avoid an unnecessary resize and re-layout of a TabContents.
+  if (change_tab_contents)
+    contents_container_->ChangeTabContents(NULL);
+  infobar_container_->ChangeTabContents(new_contents);
+  UpdateUIForContents(new_contents);
+  if (change_tab_contents)
+    contents_container_->ChangeTabContents(new_contents);
+
+  UpdateDevToolsForContents(new_contents);
+  // TODO(beng): This should be called automatically by ChangeTabContents, but I
+  //             am striving for parity now rather than cleanliness. This is
+  //             required to make features like Duplicate Tab, Undo Close Tab,
+  //             etc not result in sad tab.
+  new_contents->DidBecomeSelected();
+  if (BrowserList::GetLastActive() == browser_ &&
+      !browser_->tabstrip_model()->closing_all() && GetWindow()->IsVisible()) {
+    // We only restore focus if our window is visible, to avoid invoking blur
+    // handlers when we are eventually shown.
+    new_contents->view()->RestoreFocus();
+  }
+
+  // Update all the UI bits.
+  UpdateTitleBar();
+  UpdateToolbar(new_contents, true);
+  UpdateUIForContents(new_contents);
 }
 
 #if !defined(OS_CHROMEOS)

@@ -82,6 +82,13 @@ void TabStripModelObserver::TabReplacedAt(TabContents* old_contents,
                                           int index) {
 }
 
+void TabStripModelObserver::TabReplacedAt(TabContents* old_contents,
+                                          TabContents* new_contents,
+                                          int index,
+                                          TabReplaceType type) {
+  TabReplacedAt(old_contents, new_contents, index);
+}
+
 void TabStripModelObserver::TabPinnedStateChanged(TabContents* contents,
                                                   int index) {
 }
@@ -231,6 +238,13 @@ void TabStripModel::InsertTabContentsAt(int index,
 
   if (foreground)
     ChangeSelectedContentsFrom(selected_contents, index, false);
+}
+
+void TabStripModel::ReplaceTabContentsAt(
+    int index,
+    TabContents* new_contents,
+    TabStripModelObserver::TabReplaceType type) {
+  delete ReplaceTabContentsAtImpl(index, new_contents, type);
 }
 
 void TabStripModel::ReplaceNavigationControllerAt(
@@ -1043,14 +1057,10 @@ bool TabStripModel::ShouldMakePhantomOnClose(int index) {
 }
 
 void TabStripModel::MakePhantom(int index) {
-  TabContents* old_contents = GetContentsAt(index);
-  TabContents* new_contents = old_contents->CloneAndMakePhantom();
-
-  contents_data_[index]->contents = new_contents;
-
-  // And notify observers.
-  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabReplacedAt(old_contents, new_contents, index));
+  // MakePhantom is called when the TabContents is being destroyed so we don't
+  // need to do anything with the returned value from ReplaceTabContentsAtImpl.
+  ReplaceTabContentsAtImpl(index, GetContentsAt(index)->CloneAndMakePhantom(),
+                           TabStripModelObserver::REPLACE_MADE_PHANTOM);
 
   if (selected_index_ == index && HasNonPhantomTabs()) {
     // Change the selection, otherwise we're going to force the phantom tab
@@ -1094,4 +1104,21 @@ bool TabStripModel::OpenerMatches(const TabContentsData* data,
                                   const NavigationController* opener,
                                   bool use_group) {
   return data->opener == opener || (use_group && data->group == opener);
+}
+
+TabContents* TabStripModel::ReplaceTabContentsAtImpl(
+    int index,
+    TabContents* new_contents,
+    TabStripModelObserver::TabReplaceType type) {
+  // TODO: this should reset group/opener of any tabs that point at
+  // old_contents.
+  DCHECK(ContainsIndex(index));
+
+  TabContents* old_contents = GetContentsAt(index);
+
+  contents_data_[index]->contents = new_contents;
+
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                    TabReplacedAt(old_contents, new_contents, index, type));
+  return old_contents;
 }

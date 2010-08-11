@@ -54,6 +54,18 @@ class TabStripModelObserver {
     ALL
   };
 
+  // Enum used by ReplaceTabContentsAt.
+  // TODO(sky): TabReplaceType should be declared outside the scope of
+  // the observer. I need to put all the enums in a namespace and cleanup this
+  // file.
+  enum TabReplaceType {
+    // The replace is the result of the tab being made phantom.
+    REPLACE_MADE_PHANTOM,
+
+    // The replace is the result of the match preview being committed.
+    REPLACE_MATCH_PREVIEW
+  };
+
   // A new TabContents was inserted into the TabStripModel at the specified
   // index. |foreground| is whether or not it was opened in the foreground
   // (selected).
@@ -100,8 +112,18 @@ class TabStripModelObserver {
   // The tab contents was replaced at the specified index. This is invoked when
   // a tab becomes phantom. See description of phantom tabs in class description
   // of TabStripModel for details.
+  // TODO(sky): nuke this in favor of the 4 arg variant.
   virtual void TabReplacedAt(TabContents* old_contents,
-                             TabContents* new_contents, int index);
+                             TabContents* new_contents,
+                             int index);
+
+  // The tab contents was replaced at the specified index. |type| describes
+  // the type of replace.
+  // This invokes TabReplacedAt with three args.
+  virtual void TabReplacedAt(TabContents* old_contents,
+                             TabContents* new_contents,
+                             int index,
+                             TabReplaceType type);
 
   // Invoked when the pinned state of a tab changes. This is not invoked if the
   // tab ends up moving as a result of the mini state changing.
@@ -433,6 +455,12 @@ class TabStripModel : public NotificationObserver {
   void ReplaceNavigationControllerAt(int index,
                                      NavigationController* controller);
 
+  // Replaces the tab contents at |index| with |new_contents|. |type| is passed
+  // to the observer. This deletes the TabContents currently at |index|.
+  void ReplaceTabContentsAt(int index,
+                            TabContents* new_contents,
+                            TabStripModelObserver::TabReplaceType type);
+
   // Detaches the TabContents at the specified index from this strip. The
   // TabContents is not destroyed, just removed from display. The caller is
   // responsible for doing something with it (e.g. stuffing it into another
@@ -724,6 +752,13 @@ class TabStripModel : public NotificationObserver {
   static bool OpenerMatches(const TabContentsData* data,
                             const NavigationController* opener,
                             bool use_group);
+
+  // Does the work for ReplaceTabContentsAt returning the old TabContents.
+  // The caller owns the returned TabContents.
+  TabContents* ReplaceTabContentsAtImpl(
+      int index,
+      TabContents* new_contents,
+      TabStripModelObserver::TabReplaceType type);
 
   // Our delegate.
   TabStripModelDelegate* delegate_;

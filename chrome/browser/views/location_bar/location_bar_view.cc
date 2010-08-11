@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/tab_contents/match_preview.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/location_bar/content_setting_image_view.h"
@@ -712,6 +713,13 @@ void LocationBarView::OnChanged() {
           location_entry_->GetIcon()));
   Layout();
   SchedulePaint();
+
+  if (MatchPreview::IsEnabled() && GetTabContents() &&
+      !profile_->IsOffTheRecord()) {
+    GURL url = location_entry_->model()->user_input_in_progress() ?
+        location_entry_->model()->CurrentURL() : GURL();
+    GetTabContents()->match_preview()->Update(url);
+  }
 }
 
 void LocationBarView::OnInputInProgress(bool in_progress) {

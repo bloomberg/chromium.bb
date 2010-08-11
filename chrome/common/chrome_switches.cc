@@ -376,6 +376,9 @@ const char kEnableGPURendering[]            = "enable-gpu-rendering";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
+// Is match preview enabled?
+const char kEnableMatchPreview[]            = "enable-match-preview";
+
 // Allows reporting memory info (JS heap size) to page.
 const char kEnableMemoryInfo[]              = "enable-memory-info";
 

@@ -167,5 +167,8 @@ void TabContentsDelegate::UpdatePreferredSize(const gfx::Size& pref_size) {
 void TabContentsDelegate::ContentTypeChanged(TabContents* source) {
 }
 
+void TabContentsDelegate::CommitMatchPreview(TabContents* source) {
+}
+
 TabContentsDelegate::~TabContentsDelegate() {
 }

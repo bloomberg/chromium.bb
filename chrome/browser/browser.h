@@ -741,6 +741,7 @@ class Browser : public TabStripModelDelegate,
                                        int32 page_id);
   virtual Browser* GetBrowser();
   virtual void ContentTypeChanged(TabContents* source);
+  virtual void CommitMatchPreview(TabContents* source);
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);

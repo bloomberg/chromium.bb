@@ -277,6 +277,11 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // PDF using the internal PDF plugin.
   virtual void ContentTypeChanged(TabContents* source);
 
+  // Sent when the user does a gesture that results in committing the match
+  // preview. The delegate should replace |source| with the |source|'s match
+  // preview TabContents.
+  virtual void CommitMatchPreview(TabContents* source);
+
  protected:
   virtual ~TabContentsDelegate();
 };

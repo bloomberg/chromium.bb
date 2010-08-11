@@ -24,6 +24,7 @@
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/unhandled_keyboard_event_handler.h"
+#include "chrome/common/notification_registrar.h"
 #include "gfx/native_widget_types.h"
 #include "views/window/client_view.h"
 #include "views/window/window_delegate.h"
@@ -335,6 +336,10 @@ class BrowserView : public BrowserBubbleHost,
                              TabContents* new_contents,
                              int index,
                              bool user_gesture);
+  virtual void TabReplacedAt(TabContents* old_contents,
+                             TabContents* new_contents,
+                             int index,
+                             TabStripModelObserver::TabReplaceType type);
   virtual void TabStripEmpty();
 
   // Overridden from menus::SimpleMenuModel::Delegate:
@@ -412,6 +417,8 @@ class BrowserView : public BrowserBubbleHost,
  private:
   friend class BrowserViewLayout;
 
+  class ContentsContainer;
+
 #if defined(OS_WIN)
   // Creates the system menu.
   void InitSystemMenu();
@@ -477,8 +484,17 @@ class BrowserView : public BrowserBubbleHost,
   // Initialize the hung plugin detector.
   void InitHangMonitor();
 
-  // Initialize class statics.
-  static void InitClass();
+  // Shows the match preview for the selected tab contents.
+  void ShowMatchPreview();
+
+  // Hides the match preview for the selected tab contents.
+  void HideMatchPreview();
+
+  // Invoked from TabSelectedAt or when the match preview is made active.  Is
+  // |change_tab_contents| is true, |new_contents| is added to the view
+  // hierarchy, if |change_tab_contents| is false, it's assumed |new_contents|
+  // has already been added to the view hierarchy.
+  void ProcessTabSelected(TabContents* new_contents, bool change_tab_contents);
 
   // Last focused view that issued a tab traversal.
   int last_focused_view_storage_id_;
@@ -514,6 +530,12 @@ class BrowserView : public BrowserBubbleHost,
 
   // The view that contains devtools window for the selected TabContents.
   TabContentsContainer* devtools_container_;
+
+  // The view that contains the match preview TabContents.
+  TabContentsContainer* preview_container_;
+
+  // The view managing both the contents_container_ and preview_container_.
+  ContentsContainer* contents_;
 
   // Split view containing the contents container and devtools container.
   views::SingleSplitView* contents_split_;
@@ -575,6 +597,8 @@ class BrowserView : public BrowserBubbleHost,
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 
   scoped_ptr<AccessibleViewHelper> accessible_view_helper_;
+
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };
