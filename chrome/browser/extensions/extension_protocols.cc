@@ -65,50 +65,6 @@ class URLRequestResourceBundleJob : public URLRequestSimpleJob {
   int resource_id_;
 };
 
-// Returns true if an chrome-extension:// resource should be allowed to load.
-bool AllowExtensionResourceLoad(URLRequest* request,
-                                ChromeURLRequestContext* context,
-                                const std::string& scheme) {
-  const ResourceDispatcherHostRequestInfo* info =
-      ResourceDispatcherHost::InfoForRequest(request);
-
-  GURL origin_url(info->frame_origin());
-
-  // chrome:// URLs are always allowed to load chrome-extension:// resources.
-  // The app launcher in the NTP uses this feature, as does dev tools.
-  if (origin_url.SchemeIs(chrome::kChromeUIScheme))
-    return true;
-
-  // Disallow loading of packaged resources for hosted apps. We don't allow
-  // hybrid hosted/packaged apps.
-  if (context->ExtensionHasWebExtent(request->url().host()))
-    return false;
-
-  // chrome-extension:// pages can load resources from extensions and packaged
-  // apps. This is allowed for legacy reasons.
-  if (origin_url.SchemeIs(chrome::kExtensionScheme))
-    return true;
-
-  // Extension resources should only be loadable from web pages which the
-  // extension has host permissions to (and therefore could be running script
-  // in, which might need access to the extension resources).
-  ExtensionExtent host_permissions =
-      context->GetEffectiveHostPermissionsForExtension(request->url().host());
-  if (!origin_url.is_empty() && !host_permissions.ContainsURL(origin_url))
-    return false;
-
-  // Don't allow toplevel navigations to extension resources in incognito mode.
-  // This is because an extension must run in a single process, and an
-  // incognito tab prevents that.
-  if (context->is_off_the_record() &&
-      info->resource_type() == ResourceType::MAIN_FRAME) {
-    return false;
-  }
-
-  // Otherwise, the resource load is allowed.
-  return true;
-}
-
 }  // namespace
 
 // Factory registered with URLRequest to create URLRequestJobs for extension://
@@ -118,8 +74,35 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
   ChromeURLRequestContext* context =
       static_cast<ChromeURLRequestContext*>(request->context());
 
+  const ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request);
+
+  // Extension resources should only be loadable from web pages which the
+  // extension has host permissions to (and therefore could be running script
+  // in, which might need access to the extension resources).
+  //
+  // chrome:// pages are exempt. We allow them to load any extension resource.
+  // This is used for, eg, the app launcher in the NTP.
+  //
+  // chrome-extension:// pages are also exempt, mostly for legacy reasons. Some
+  // extensions did this to integrate with each other before we added this code.
+  GURL origin_url(info->frame_origin());
+  if (!origin_url.is_empty() &&
+      !origin_url.SchemeIs(chrome::kChromeUIScheme) &&
+      !origin_url.SchemeIs(chrome::kExtensionScheme)) {
+    ExtensionExtent host_permissions =
+        context->GetEffectiveHostPermissionsForExtension(
+            request->url().host());
+    if (!host_permissions.ContainsURL(GURL(info->frame_origin())))
+      return new URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
+  }
+
+  // Don't allow toplevel navigations to extension resources in incognito mode.
+  // This is because an extension must run in a single process, and an
+  // incognito tab prevents that.
   // TODO(mpcomplete): better error code.
-  if (!AllowExtensionResourceLoad(request, context, scheme))
+  if (context->is_off_the_record() &&
+      info && info->resource_type() == ResourceType::MAIN_FRAME)
     return new URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
 
   // chrome-extension://extension-id/resource/path.js

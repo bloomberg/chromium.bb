@@ -424,7 +424,6 @@ class Extension {
   bool LoadLaunchFullscreen(const DictionaryValue* manifest,
                             std::string* error);
   bool LoadLaunchURL(const DictionaryValue* manifest, std::string* error);
-  bool EnsureNotHybridApp(const DictionaryValue* manifest, std::string* error);
 
   // Helper method to load an ExtensionAction from the page_action or
   // browser_action entries in the manifest.

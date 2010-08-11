@@ -79,10 +79,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   // Gets the path to the directory for the specified extension.
   FilePath GetPathForExtension(const std::string& id);
 
-  // Returns true if the specified extension exists and has a non-empty web
-  // extent.
-  bool ExtensionHasWebExtent(const std::string& id);
-
   // Returns an empty string if the extension with |id| doesn't have a default
   // locale.
   std::string GetDefaultLocaleForExtension(const std::string& id);
