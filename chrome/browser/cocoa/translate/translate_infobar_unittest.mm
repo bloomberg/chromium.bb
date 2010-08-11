@@ -66,15 +66,21 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
 
 class TranslationInfoBarTest : public CocoaTest {
  public:
+  BrowserTestHelper browser_helper_;
+  scoped_ptr<TabContents> tab_contents;
   scoped_ptr<MockTranslateInfoBarDelegate> infobar_delegate;
   scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
-  BrowserTestHelper browser_helper_;
 
  public:
   // Each test gets a single Mock translate delegate for the lifetime of
   // the test.
   virtual void SetUp() {
     CocoaTest::SetUp();
+   tab_contents.reset(
+        new TabContents(browser_helper_.profile(),
+                        NULL,
+                        MSG_ROUTING_NONE,
+                        NULL));
     CreateInfoBar();
   }
 
@@ -83,13 +89,6 @@ class TranslationInfoBarTest : public CocoaTest {
   }
 
   void CreateInfoBar(TranslateInfoBarDelegate::Type type) {
-    SiteInstance* instance =
-        SiteInstance::CreateSiteInstance(browser_helper_.profile());
-    scoped_ptr<TabContents> tab_contents(
-        new TabContents(browser_helper_.profile(),
-                        instance,
-                        MSG_ROUTING_NONE,
-                        NULL));
     TranslateErrors::Type error = TranslateErrors::NONE;
     if (type == TranslateInfoBarDelegate::TRANSLATION_ERROR)
       error = TranslateErrors::NETWORK;
