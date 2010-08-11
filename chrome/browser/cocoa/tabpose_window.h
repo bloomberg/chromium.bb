@@ -61,6 +61,9 @@ class TabStripModel;
   // the tabstrip model.
   scoped_nsobject<NSArray> allThumbnailLayers_;
 
+  scoped_nsobject<NSArray> allFaviconLayers_;
+  scoped_nsobject<NSArray> allTitleLayers_;
+
   // Manages the state of all layers.
   scoped_ptr<tabpose::TileSet> tileSet_;
 }

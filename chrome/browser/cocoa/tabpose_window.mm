@@ -6,8 +6,14 @@
 
 #import <QuartzCore/QuartzCore.h>
 
+#include "app/resource_bundle.h"
+#include "base/mac_util.h"
+#include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "grit/app_resources.h"
+#include "skia/ext/skia_utils_mac.h"
 
 const int kTopGradientHeight  = 15;
 
@@ -109,6 +115,24 @@ class Tile {
   NSRect GetStartRectRelativeTo(const Tile& tile) const;
   NSRect thumb_rect() const { return thumb_rect_; }
 
+  NSRect favicon_rect() const { return favicon_rect_; }
+  SkBitmap favicon() const;
+
+  // This changes |title_rect| and |favicon_rect| such that the favicon is on
+  // the font's baseline and that the minimum distance between thumb rect and
+  // favicon and title rects doesn't change.
+  // The view code
+  // 1. queries desired font size by calling |title_font_size()|
+  // 2. loads that font
+  // 3. calls |set_font_metrics()| which updates the title rect
+  // 4. receives the title rect and puts the title on it with the font from 2.
+  void set_font_metrics(CGFloat ascender, CGFloat descender);
+  CGFloat title_font_size() const { return title_font_size_; }
+
+  NSRect title_rect() const { return title_rect_; }
+
+  // Returns an unelided title. The view logic is responsible for eliding.
+  const string16& title() const { return contents_->GetTitle(); }
  private:
   friend class TileSet;
 
@@ -116,6 +140,13 @@ class Tile {
   // and devtools.
   NSRect thumb_rect_;
   NSRect start_thumb_rect_;
+
+  NSRect favicon_rect_;
+
+  CGFloat title_font_size_;
+  NSRect title_rect_;
+
+  TabContents* contents_;  // weak
 };
 
 NSRect Tile::GetStartRectRelativeTo(const Tile& tile) const {
@@ -123,6 +154,31 @@ NSRect Tile::GetStartRectRelativeTo(const Tile& tile) const {
   rect.origin.x -= tile.start_thumb_rect_.origin.x;
   rect.origin.y -= tile.start_thumb_rect_.origin.y;
   return rect;
+}
+
+SkBitmap Tile::favicon() const {
+  if (contents_->is_app()) {
+    SkBitmap* icon = contents_->GetExtensionAppIcon();
+    if (icon)
+      return *icon;
+  }
+  return contents_->GetFavIcon();
+}
+
+// Changes |title_rect| and |favicon_rect| such that the favicon is on the
+// font's baseline and that the minimum distance between thumb rect and
+// favicon and title rects doesn't change.
+void Tile::set_font_metrics(CGFloat ascender, CGFloat descender) {
+  title_rect_.origin.y -= ascender + descender - NSHeight(title_rect_);
+  title_rect_.size.height = ascender + descender;
+
+  if (NSHeight(favicon_rect_) < ascender) {
+    // Move favicon down.
+    favicon_rect_.origin.y = title_rect_.origin.y + descender;
+  } else {
+    // Move title down.
+    title_rect_.origin.y = favicon_rect_.origin.y - descender;
+  }
 }
 
 // A tileset is responsible for owning and laying out all |Tile|s shown in a
@@ -139,11 +195,12 @@ class TileSet {
   void set_selected_index(int index);
   void ResetSelectedIndex() { selected_index_ = initial_index_; }
 
-  const Tile& selected_tile() const { return tiles_[selected_index()]; }
-  const Tile& tile_at(int index) const { return tiles_[index]; }
+  const Tile& selected_tile() const { return *tiles_[selected_index()]; }
+  Tile& tile_at(int index) { return *tiles_[index]; }
+  const Tile& tile_at(int index) const { return *tiles_[index]; }
 
  private:
-  std::vector<Tile> tiles_;  // Doesn't change often, hence values are fine.
+  std::vector<Tile*> tiles_;
 
   int selected_index_;
   int initial_index_;
@@ -152,6 +209,10 @@ class TileSet {
 void TileSet::Build(TabStripModel* source_model) {
   selected_index_ = initial_index_ = source_model->selected_index();
   tiles_.resize(source_model->count());
+  for (size_t i = 0; i < tiles_.size(); ++i) {
+    tiles_[i] = new Tile;
+    tiles_[i]->contents_ = source_model->GetTabContentsAt(i);
+  }
 }
 
 void TileSet::Layout(NSRect containing_rect) {
@@ -163,9 +224,19 @@ void TileSet::Layout(NSRect containing_rect) {
   const int kSmallPaddingRight = 30;
   const int kSmallPaddingBottom = 30;
 
+  // Favicon / title area.
+  const int kThumbTitlePaddingY = 6;
+  const int kFaviconSize = 16;
+  const int kTitleHeight = 14;  // Font size.
+  const int kTitleExtraHeight = kThumbTitlePaddingY + kTitleHeight;
+  const int kFaviconExtraHeight = kThumbTitlePaddingY + kFaviconSize;
+  const int kFaviconTitleDistanceX = 6;
+  const int kFooterExtraHeight =
+      std::max(kFaviconExtraHeight, kTitleExtraHeight);
+
   // Room between the tiles.
   const int kSmallPaddingX = 15;
-  const int kSmallPaddingY = 13;
+  const int kSmallPaddingY = kFooterExtraHeight;
 
   // Aspect ratio of the containing rect.
   CGFloat aspect = NSWidth(containing_rect) / NSHeight(containing_rect);
@@ -190,8 +261,9 @@ void TileSet::Layout(NSRect containing_rect) {
   // TODO(thakis): It might be good enough to choose |count_x| and |count_y|
   //   such that count_x / count_y is roughly equal to |aspect|?
   double fny = FitNRectsWithAspectIntoBoundingSizeWithConstantPadding(
-      tile_count, aspect, container_width, container_height,
-      kSmallPaddingX, kSmallPaddingY);
+      tile_count, aspect,
+      container_width, container_height - kFooterExtraHeight,
+      kSmallPaddingX, kSmallPaddingY + kFooterExtraHeight);
   int count_y(roundf(fny));
   int count_x(ceilf(tile_count / float(count_y)));
   int last_row_count_x = tile_count - count_x * (count_y - 1);
@@ -205,7 +277,7 @@ void TileSet::Layout(NSRect containing_rect) {
             kSmallPaddingX);
   int small_height =
       floor((container_height + kSmallPaddingY) / float(count_y) -
-            kSmallPaddingY);
+            (kSmallPaddingY + kFooterExtraHeight));
 
   // |small_width / small_height| has only roughly an aspect ratio of |aspect|.
   // Shrink the thumbnail rect to make the aspect ratio fit exactly, and add
@@ -215,7 +287,8 @@ void TileSet::Layout(NSRect containing_rect) {
   if (aspect > small_width/float(small_height)) {
     small_height = small_width / aspect;
     CGFloat all_tiles_height =
-        (small_height + kSmallPaddingY) * count_y - kSmallPaddingY;
+        (small_height + kSmallPaddingY + kFooterExtraHeight) * count_y -
+        (kSmallPaddingY + kFooterExtraHeight);
     smallExtraPaddingTop = (container_height - all_tiles_height)/2;
   } else {
     small_width = small_height * aspect;
@@ -227,7 +300,8 @@ void TileSet::Layout(NSRect containing_rect) {
   // Compute inter-tile padding in the zoomed-out view.
   CGFloat scale_small_to_big = NSWidth(containing_rect) / float(small_width);
   CGFloat big_padding_x = kSmallPaddingX * scale_small_to_big;
-  CGFloat big_padding_y = kSmallPaddingY * scale_small_to_big;
+  CGFloat big_padding_y =
+      (kSmallPaddingY + kFooterExtraHeight) * scale_small_to_big;
 
   // Now all dimensions are known. Lay out all tiles on a regular grid:
   // X X X X
@@ -236,22 +310,40 @@ void TileSet::Layout(NSRect containing_rect) {
   for (int row = 0, i = 0; i < tile_count; ++row) {
     for (int col = 0; col < count_x && i < tile_count; ++col, ++i) {
       // Compute the smalled, zoomed-out thumbnail rect.
-      tiles_[i].thumb_rect_.size = NSMakeSize(small_width, small_height);
+      tiles_[i]->thumb_rect_.size = NSMakeSize(small_width, small_height);
 
       int small_x = col * (small_width + kSmallPaddingX) +
                     kSmallPaddingLeft + smallExtraPaddingLeft;
-      int small_y = row * (small_height + kSmallPaddingY) +
+      int small_y = row * (small_height + kSmallPaddingY + kFooterExtraHeight) +
                     kSmallPaddingTop + smallExtraPaddingTop;
 
-      tiles_[i].thumb_rect_.origin = NSMakePoint(
+      tiles_[i]->thumb_rect_.origin = NSMakePoint(
           small_x, NSHeight(containing_rect) - small_y - small_height);
 
+      tiles_[i]->favicon_rect_.size = NSMakeSize(kFaviconSize, kFaviconSize);
+      tiles_[i]->favicon_rect_.origin = NSMakePoint(
+          small_x,
+          NSHeight(containing_rect) -
+              (small_y + small_height + kFaviconExtraHeight));
+
+      // Align lower left corner of title rect with lower left corner of favicon
+      // for now. The final position is computed later by
+      // |Tile::set_font_metrics()|.
+      tiles_[i]->title_font_size_ = kTitleHeight;
+      tiles_[i]->title_rect_.origin = NSMakePoint(
+          NSMaxX(tiles_[i]->favicon_rect()) + kFaviconTitleDistanceX,
+          NSMinY(tiles_[i]->favicon_rect()));
+      tiles_[i]->title_rect_.size = NSMakeSize(
+          small_width -
+              NSWidth(tiles_[i]->favicon_rect()) - kFaviconTitleDistanceX,
+          kTitleHeight);
+
       // Compute the big, pre-zoom thumbnail rect.
-      tiles_[i].start_thumb_rect_.size = containing_rect.size;
+      tiles_[i]->start_thumb_rect_.size = containing_rect.size;
 
       int big_x = col * (NSWidth(containing_rect) + big_padding_x);
       int big_y = row * (NSHeight(containing_rect) + big_padding_y);
-      tiles_[i].start_thumb_rect_.origin = NSMakePoint(big_x, -big_y);
+      tiles_[i]->start_thumb_rect_.origin = NSMakePoint(big_x, -big_y);
     }
   }
 
@@ -265,8 +357,10 @@ void TileSet::Layout(NSRect containing_rect) {
   CGFloat big_last_row_shift_x =
       last_row_empty_tiles_x * (NSWidth(containing_rect) + big_padding_x) / 2;
   for (int i = tile_count - last_row_count_x; i < tile_count; ++i) {
-    tiles_[i].thumb_rect_.origin.x += small_last_row_shift_x;
-    tiles_[i].start_thumb_rect_.origin.x += big_last_row_shift_x;
+    tiles_[i]->thumb_rect_.origin.x += small_last_row_shift_x;
+    tiles_[i]->start_thumb_rect_.origin.x += big_last_row_shift_x;
+    tiles_[i]->favicon_rect_.origin.x += small_last_row_shift_x;
+    tiles_[i]->title_rect_.origin.x += small_last_row_shift_x;
   }
 }
 
@@ -377,7 +471,7 @@ void AnimateCALayerFrameFromTo(
   ScopedCAActionDisabler disabler;
   const tabpose::Tile& tile = tileSet_->tile_at(newIndex);
   selectionHighlight_.frame =
-      NSRectToCGRect(NSInsetRect(tile.thumb_rect(), -6, -6));
+      NSRectToCGRect(NSInsetRect(tile.thumb_rect(), -5, -5));
 
   tileSet_->set_selected_index(newIndex);
 }
@@ -419,9 +513,17 @@ void AnimateCALayerFrameFromTo(
   tileSet_->Build(tabStripModel_);
   tileSet_->Layout(bgLayerRect);
 
+  NSImage* defaultFavIcon = ResourceBundle::GetSharedInstance().GetNSImageNamed(
+      IDR_DEFAULT_FAVICON);
+
   allThumbnailLayers_.reset(
       [[NSMutableArray alloc] initWithCapacity:tabStripModel_->count()]);
+  allFaviconLayers_.reset(
+      [[NSMutableArray alloc] initWithCapacity:tabStripModel_->count()]);
+  allTitleLayers_.reset(
+      [[NSMutableArray alloc] initWithCapacity:tabStripModel_->count()]);
   for (int i = 0; i < tabStripModel_->count(); ++i) {
+    const tabpose::Tile& tile = tileSet_->tile_at(i);
     CALayer* layer = [CALayer layer];
 
     // Background color as placeholder for now.
@@ -429,8 +531,8 @@ void AnimateCALayerFrameFromTo(
 
     AnimateCALayerFrameFromTo(
         layer,
-        tileSet_->tile_at(i).GetStartRectRelativeTo(tileSet_->selected_tile()),
-        tileSet_->tile_at(i).thumb_rect(),
+        tile.GetStartRectRelativeTo(tileSet_->selected_tile()),
+        tile.thumb_rect(),
         kDefaultAnimationDuration * (slomo ? kSlomoFactor : 1),
         i == tileSet_->selected_index() ? self : nil);
 
@@ -447,6 +549,37 @@ void AnimateCALayerFrameFromTo(
 
     [bgLayer_ addSublayer:layer];
     [allThumbnailLayers_ addObject:layer];
+
+    // Favicon and title.
+    NSFont* font = [NSFont systemFontOfSize:tile.title_font_size()];
+    tileSet_->tile_at(i).set_font_metrics([font ascender], -[font descender]);
+
+    NSImage* ns_favicon = gfx::SkBitmapToNSImage(tile.favicon());
+    // Either we don't have a valid favicon or there was some issue converting
+    // it from an SkBitmap. Either way, just show the default.
+    if (!ns_favicon)
+      ns_favicon = defaultFavIcon;
+    scoped_cftyperef<CGImageRef> favicon(
+        mac_util::CopyNSImageToCGImage(ns_favicon));
+
+    CALayer* faviconLayer = [CALayer layer];
+    faviconLayer.frame = NSRectToCGRect(tile.favicon_rect());
+    faviconLayer.contents = (id)favicon.get();
+    faviconLayer.zPosition = 1;  // On top of the thumb shadow.
+    faviconLayer.hidden = YES;
+    [bgLayer_ addSublayer:faviconLayer];
+    [allFaviconLayers_ addObject:faviconLayer];
+
+    CATextLayer* titleLayer = [CATextLayer layer];
+    titleLayer.frame = NSRectToCGRect(tile.title_rect());
+    titleLayer.string = base::SysUTF16ToNSString(tile.title());
+    titleLayer.fontSize = [font pointSize];
+    titleLayer.truncationMode = kCATruncationEnd;
+    titleLayer.font = font;
+    titleLayer.zPosition = 1;  // On top of the thumb shadow.
+    titleLayer.hidden = YES;
+    [bgLayer_ addSublayer:titleLayer];
+    [allTitleLayers_ addObject:titleLayer];
   }
   [self selectTileAtIndex:tileSet_->selected_index()];
 }
@@ -538,6 +671,10 @@ void AnimateCALayerFrameFromTo(
     [self selectedLayer].zPosition = 1;
 
     selectionHighlight_.hidden = YES;
+    for (CALayer* layer in allFaviconLayers_.get())
+      layer.hidden = YES;
+    for (CALayer* layer in allTitleLayers_.get())
+      layer.hidden = YES;
 
     // Running animations with shadows is slow, so turn shadows off before
     // running the exit animation.
@@ -579,6 +716,10 @@ void AnimateCALayerFrameFromTo(
       state_ = tabpose::kFadedIn;
 
       selectionHighlight_.hidden = NO;
+      for (CALayer* layer in allFaviconLayers_.get())
+        layer.hidden = NO;
+      for (CALayer* layer in allTitleLayers_.get())
+        layer.hidden = NO;
 
       // Running animations with shadows is slow, so turn shadows on only after
       // the animation is done.
