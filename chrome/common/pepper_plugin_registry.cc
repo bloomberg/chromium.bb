@@ -105,22 +105,21 @@ void PepperPluginRegistry::GetExtraPlugins(
   // available or not; but (on Linux) this function is always called
   // once before we're sandboxed.  So the first time through test if
   // the file is available and then skip the check on subsequent calls
-  // if not.
-  static bool skip_pdf_plugin = false;
+  // if yes.
+  static bool skip_pdf_file_check = false;
   FilePath path;
-  if (!skip_pdf_plugin && PathService::Get(chrome::FILE_PDF_PLUGIN, &path)) {
-    if (!file_util::PathExists(path)) {
-      skip_pdf_plugin = true;
-      return;
-    }
+  if (PathService::Get(chrome::FILE_PDF_PLUGIN, &path)) {
+    if (skip_pdf_file_check || file_util::PathExists(path)) {
+      PepperPluginInfo pdf;
+      pdf.path = path;
+      pdf.name = "Chrome PDF Viewer";
+      pdf.mime_types.push_back("application/pdf");
+      pdf.file_extensions = "pdf";
+      pdf.type_descriptions = "Portable Document Format";
+      plugins->push_back(pdf);
 
-    PepperPluginInfo pdf;
-    pdf.path = path;
-    pdf.name = "Chrome PDF Viewer";
-    pdf.mime_types.push_back("application/pdf");
-    pdf.file_extensions = "pdf";
-    pdf.type_descriptions = "Portable Document Format";
-    plugins->push_back(pdf);
+      skip_pdf_file_check = true;
+    }
   }
 }
 
