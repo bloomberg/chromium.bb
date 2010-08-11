@@ -259,18 +259,16 @@ bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(
 bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
   // Wait for the OnAuthError() callback.
   EXPECT_EQ(wait_state_, WAITING_FOR_ON_AUTH_ERROR);
-  if (!AwaitStatusChangeWithTimeout(30,
-      "Waiting for the OnAuthError() callback.")) {
-    return false;
-  }
+  EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
+      "Waiting for the OnAuthError() callback.")) <<
+      "OnAuthError() not seen after 30 seconds.";
 
   // Enter GAIA credentials and wait for the OnBackendInitialized() callback.
   service_->backend()->Authenticate(username_, password_, std::string());
   EXPECT_EQ(wait_state_, WAITING_FOR_ON_BACKEND_INITIALIZED);
-  if (!AwaitStatusChangeWithTimeout(30,
-      "Waiting for OnBackendInitialized().")) {
-    return false;
-  }
+  EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
+      "Waiting for OnBackendInitialized().")) <<
+      "OnBackendInitialized() not seen after 30 seconds.";
 
   // Choose datatypes to be synced and wait for notifications_enabled to be set
   // to true.
@@ -281,10 +279,9 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
   }
   service_->OnUserChoseDatatypes(true, set);
   EXPECT_EQ(wait_state_, WAITING_FOR_NOTIFICATIONS_ENABLED);
-  if (!AwaitStatusChangeWithTimeout(30,
-      "Waiting for notifications_enabled to be set to true.")) {
-    return false;
-  }
+  EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
+      "Waiting for notifications_enabled to be set to true.")) <<
+      "notifications_enabled not set to true after 30 seconds.";
 
   return true;
 }

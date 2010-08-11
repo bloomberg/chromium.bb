@@ -130,12 +130,10 @@ bool LiveSyncTest::SetupClients() {
   for (int i = 0; i < num_clients_; ++i) {
     profiles_.push_back(MakeProfile(
         StringPrintf(FILE_PATH_LITERAL("Profile%d"), i)));
-    if (GetProfile(i) == NULL)
-      return false;
+    EXPECT_FALSE(GetProfile(i) == NULL) << "GetProfile(" << i << ") failed.";
     clients_.push_back(new ProfileSyncServiceTestHarness(
         GetProfile(i), username_, password_));
-    if (GetClient(i) == NULL)
-      return false;
+    EXPECT_FALSE(GetClient(i) == NULL) << "GetClient(" << i << ") failed.";
   }
 
   // Create the verifier profile.
@@ -146,15 +144,14 @@ bool LiveSyncTest::SetupClients() {
 bool LiveSyncTest::SetupSync() {
   // Create sync profiles and clients if they haven't already been created.
   if (profiles_.empty()) {
-    if (!SetupClients())
-      return false;
+    EXPECT_TRUE(SetupClients()) << "SetupClients() failed.";
   }
 
   // Sync each of the profiles.
   for (int i = 0; i < num_clients_; ++i) {
-    if (!GetClient(i)->SetupSync())
-      return false;
+    EXPECT_TRUE(GetClient(i)->SetupSync()) << "SetupSync() failed.";
   }
+
   return true;
 }
 
