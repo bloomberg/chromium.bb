@@ -15,7 +15,13 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::AnyNumber;
+using testing::AtLeast;
+using testing::Mock;
 
 #if defined(OS_MACOSX)
 // TODO(tony): Tests are flaky on mac.  http://crbug.com/38188
@@ -32,21 +38,19 @@ const int kWaitForEventTime = 500;
 // Maximum amount of time to wait on a test.
 const int kMaxTestTimeMs = 10 * 1000;
 
+// A mock FileWatcher::Delegate for testing.
+class TestDelegate : public FileWatcher::Delegate {
+ public:
+  MOCK_METHOD1(OnFileChanged, void(const FilePath&));
+};
+
 class FileWatcherTest : public testing::Test {
  public:
   // Implementation of FileWatcher on Mac requires UI loop.
   FileWatcherTest()
       : loop_(MessageLoop::TYPE_UI),
         ui_thread_(ChromeThread::UI, &loop_),
-        file_thread_(ChromeThread::FILE, &loop_),
-        notified_delegates_(0),
-        expected_notified_delegates_(0) {
-  }
-
-  void OnTestDelegateFirstNotification() {
-    notified_delegates_++;
-    if (notified_delegates_ >= expected_notified_delegates_)
-      MessageLoop::current()->Quit();
+        file_thread_(ChromeThread::FILE, &loop_) {
   }
 
  protected:
@@ -57,6 +61,10 @@ class FileWatcherTest : public testing::Test {
     // test suite to hang.
     loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
                           kMaxTestTimeMs);
+  }
+
+  virtual void TearDown() {
+    loop_.RunAllPending();
   }
 
   FilePath test_file() {
@@ -73,24 +81,12 @@ class FileWatcherTest : public testing::Test {
     return write_size == static_cast<int>(content.length());
   }
 
-  void SetExpectedNumberOfNotifiedDelegates(int n) {
-    notified_delegates_ = 0;
-    expected_notified_delegates_ = n;
-  }
-
-  void VerifyExpectedNumberOfNotifiedDelegates() {
+  void VerifyDelegate(TestDelegate* delegate) {
     // Check that we get at least the expected number of notified delegates.
-    if (expected_notified_delegates_ - notified_delegates_ > 0)
-      loop_.Run();
-    EXPECT_EQ(expected_notified_delegates_, notified_delegates_);
-  }
-
-  void VerifyNoExtraNotifications() {
-    // Check that we get no more than the expected number of notified delegates.
     loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
                           kWaitForEventTime);
     loop_.Run();
-    EXPECT_EQ(expected_notified_delegates_, notified_delegates_);
+    Mock::VerifyAndClearExpectations(delegate);
   }
 
   // We need this function for reliable tests on Mac OS X. FSEvents API
@@ -107,54 +103,17 @@ class FileWatcherTest : public testing::Test {
   ChromeThread ui_thread_;
   ChromeThread file_thread_;
   scoped_ptr<ScopedTempDir> temp_dir_;
-
-  // The number of test delegates which received their notification.
-  int notified_delegates_;
-
-  // The number of notified test delegates after which we quit the message loop.
-  int expected_notified_delegates_;
 };
-
-class TestDelegate : public FileWatcher::Delegate {
- public:
-  explicit TestDelegate(FileWatcherTest* test)
-      : test_(test),
-        got_notification_(false) {
-  }
-
-  bool got_notification() const {
-    return got_notification_;
-  }
-
-  void reset() {
-    got_notification_ = false;
-  }
-
-  virtual void OnFileChanged(const FilePath& path) {
-    EXPECT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    if (!got_notification_)
-      test_->OnTestDelegateFirstNotification();
-    got_notification_ = true;
-  }
-
- private:
-  // Hold a pointer to current test fixture to inform it on first notification.
-  FileWatcherTest* test_;
-
-  // Set to true after first notification.
-  bool got_notification_;
-};
-
 
 // Basic test: Create the file and verify that we notice.
 TEST_F(FileWatcherTest, MAYBE(NewFile)) {
   FileWatcher watcher;
-  TestDelegate delegate(this);
-  ASSERT_TRUE(watcher.Watch(test_file(), &delegate));
+  scoped_refptr<TestDelegate> delegate(new TestDelegate);
+  ASSERT_TRUE(watcher.Watch(test_file(), delegate.get()));
 
-  SetExpectedNumberOfNotifiedDelegates(1);
+  EXPECT_CALL(*delegate, OnFileChanged(_)).Times(AtLeast(1));
   ASSERT_TRUE(WriteTestFile("content"));
-  VerifyExpectedNumberOfNotifiedDelegates();
+  VerifyDelegate(delegate.get());
 }
 
 // Verify that modifying the file is caught.
@@ -162,47 +121,45 @@ TEST_F(FileWatcherTest, MAYBE(ModifiedFile)) {
   ASSERT_TRUE(WriteTestFile("content"));
 
   FileWatcher watcher;
-  TestDelegate delegate(this);
-  ASSERT_TRUE(watcher.Watch(test_file(), &delegate));
+  scoped_refptr<TestDelegate> delegate(new TestDelegate);
+  ASSERT_TRUE(watcher.Watch(test_file(), delegate.get()));
 
   // Now make sure we get notified if the file is modified.
-  SetExpectedNumberOfNotifiedDelegates(1);
+  EXPECT_CALL(*delegate, OnFileChanged(_)).Times(AtLeast(1));
   ASSERT_TRUE(WriteTestFile("new content"));
-  VerifyExpectedNumberOfNotifiedDelegates();
+  VerifyDelegate(delegate.get());
 }
 
 TEST_F(FileWatcherTest, MAYBE(DeletedFile)) {
   ASSERT_TRUE(WriteTestFile("content"));
 
   FileWatcher watcher;
-  TestDelegate delegate(this);
-  ASSERT_TRUE(watcher.Watch(test_file(), &delegate));
+  scoped_refptr<TestDelegate> delegate(new TestDelegate);
+  ASSERT_TRUE(watcher.Watch(test_file(), delegate.get()));
 
   // Now make sure we get notified if the file is deleted.
-  SetExpectedNumberOfNotifiedDelegates(1);
+  EXPECT_CALL(*delegate, OnFileChanged(_)).Times(AtLeast(1));
   file_util::Delete(test_file(), false);
   SyncIfPOSIX();
-  VerifyExpectedNumberOfNotifiedDelegates();
+  VerifyDelegate(delegate.get());
 }
 
 // Verify that letting the watcher go out of scope stops notifications.
 TEST_F(FileWatcherTest, MAYBE(Unregister)) {
-  TestDelegate delegate(this);
+  scoped_refptr<TestDelegate> delegate(new TestDelegate);
 
   {
     FileWatcher watcher;
-    ASSERT_TRUE(watcher.Watch(test_file(), &delegate));
+    ASSERT_TRUE(watcher.Watch(test_file(), delegate.get()));
 
     // And then let it fall out of scope, clearing its watch.
   }
 
   // Write a file to the test dir.
-  SetExpectedNumberOfNotifiedDelegates(0);
+  EXPECT_CALL(*delegate, OnFileChanged(_)).Times(0);
   ASSERT_TRUE(WriteTestFile("content"));
-  VerifyExpectedNumberOfNotifiedDelegates();
-  VerifyNoExtraNotifications();
+  VerifyDelegate(delegate.get());
 }
-
 
 namespace {
 // Used by the DeleteDuringNotify test below.
@@ -227,26 +184,52 @@ class Deleter : public FileWatcher::Delegate {
 // Verify that deleting a watcher during the callback doesn't crash.
 TEST_F(FileWatcherTest, MAYBE(DeleteDuringNotify)) {
   FileWatcher* watcher = new FileWatcher;
-  Deleter deleter(watcher, &loop_);  // Takes ownership of watcher.
-  ASSERT_TRUE(watcher->Watch(test_file(), &deleter));
+  // Takes ownership of watcher.
+  scoped_refptr<Deleter> deleter(new Deleter(watcher, &loop_));
+  ASSERT_TRUE(watcher->Watch(test_file(), deleter.get()));
 
   ASSERT_TRUE(WriteTestFile("content"));
   loop_.Run();
 
   // We win if we haven't crashed yet.
   // Might as well double-check it got deleted, too.
-  ASSERT_TRUE(deleter.watcher_.get() == NULL);
+  ASSERT_TRUE(deleter->watcher_.get() == NULL);
+}
+
+// Verify that deleting the watcher works even if there is a pending
+// notification.
+//
+// It's hard to test this, since both a change event and deletion of the file
+// watcher must happen before the task that runs the callback executes. The code
+// below only triggers the situation with the Linux implementation. Change
+// detection runs on a separate thread in the Linux implementation, so we can
+// schedule the FileWatcher deletion in advance. For Mac and Windows, the
+// DeleteTask runs before the message loop processes the platform-specific
+// change notifications, so the whole FileWatcher is destroyed before the
+// callback gets scheduled.
+TEST_F(FileWatcherTest, MAYBE(DestroyWithPendingNotification)) {
+  scoped_refptr<TestDelegate> delegate(new TestDelegate);
+  EXPECT_CALL(*delegate, OnFileChanged(_)).Times(AnyNumber());
+  FileWatcher* watcher = new FileWatcher;
+  ASSERT_TRUE(watcher->Watch(test_file(), delegate.get()));
+  ASSERT_TRUE(WriteTestFile("content"));
+  ChromeThread::DeleteSoon(ChromeThread::FILE, FROM_HERE, watcher);
+  // Success if there is no crash or DCHECK when running the callback.
+  VerifyDelegate(delegate.get());
 }
 
 TEST_F(FileWatcherTest, MAYBE(MultipleWatchersSingleFile)) {
   FileWatcher watcher1, watcher2;
-  TestDelegate delegate1(this), delegate2(this);
-  ASSERT_TRUE(watcher1.Watch(test_file(), &delegate1));
-  ASSERT_TRUE(watcher2.Watch(test_file(), &delegate2));
+  scoped_refptr<TestDelegate> delegate1(new TestDelegate);
+  scoped_refptr<TestDelegate> delegate2(new TestDelegate);
+  ASSERT_TRUE(watcher1.Watch(test_file(), delegate1.get()));
+  ASSERT_TRUE(watcher2.Watch(test_file(), delegate2.get()));
 
-  SetExpectedNumberOfNotifiedDelegates(2);
+  EXPECT_CALL(*delegate1, OnFileChanged(_)).Times(AtLeast(1));
+  EXPECT_CALL(*delegate2, OnFileChanged(_)).Times(AtLeast(1));
   ASSERT_TRUE(WriteTestFile("content"));
-  VerifyExpectedNumberOfNotifiedDelegates();
+  VerifyDelegate(delegate1.get());
+  VerifyDelegate(delegate2.get());
 }
 
 // Verify that watching a file who's parent directory doesn't exist

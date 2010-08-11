@@ -27,7 +27,7 @@ class FileWatcherImpl : public FileWatcher::PlatformDelegate,
   virtual ~FileWatcherImpl();
 
   // Delegate to notify upon changes.
-  FileWatcher::Delegate* delegate_;
+  scoped_refptr<FileWatcher::Delegate> delegate_;
 
   // Path we're watching (passed to delegate).
   FilePath path_;

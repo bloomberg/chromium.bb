@@ -93,7 +93,7 @@ class FileWatcherImpl : public FileWatcher::PlatformDelegate {
 
  private:
   // Delegate to notify upon changes.
-  FileWatcher::Delegate* delegate_;
+  scoped_refptr<FileWatcher::Delegate> delegate_;
 
   // Watch returned by InotifyReader.
   InotifyReader::Watch watch_;
@@ -102,24 +102,6 @@ class FileWatcherImpl : public FileWatcher::PlatformDelegate {
   FilePath path_;
 
   DISALLOW_COPY_AND_ASSIGN(FileWatcherImpl);
-};
-
-class FileWatcherImplNotifyTask : public Task {
- public:
-  FileWatcherImplNotifyTask(FileWatcher::Delegate* delegate,
-                            const FilePath& path)
-      : delegate_(delegate), path_(path) {
-  }
-
-  virtual void Run() {
-    delegate_->OnFileChanged(path_);
-  }
-
- private:
-  FileWatcher::Delegate* delegate_;
-  FilePath path_;
-
-  DISALLOW_COPY_AND_ASSIGN(FileWatcherImplNotifyTask);
 };
 
 class InotifyReaderTask : public Task {
@@ -293,7 +275,8 @@ void FileWatcherImpl::OnInotifyEvent(const inotify_event* event) {
     return;
 
   ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-      new FileWatcherImplNotifyTask(delegate_, path_));
+      NewRunnableMethod(delegate_.get(), &FileWatcher::Delegate::OnFileChanged,
+                        path_));
 }
 
 bool FileWatcherImpl::Watch(const FilePath& path,

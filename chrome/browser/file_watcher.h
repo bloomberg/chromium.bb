@@ -25,7 +25,10 @@ class FilePath;
 // 2s of the file having changed.
 class FileWatcher {
  public:
-  class Delegate {
+  // Declares the callback client code implements to receive notifications. Note
+  // that implementations of this interface should not keep a reference to the
+  // corresponding FileWatcher object to prevent a reference cycle.
+  class Delegate : public base::RefCountedThreadSafe<Delegate> {
    public:
     virtual ~Delegate() {}
     virtual void OnFileChanged(const FilePath& path) = 0;

@@ -18,58 +18,88 @@ const char kUserStyleSheetFile[] = "Custom.css";
 
 }  // namespace
 
-UserStyleSheetWatcher::UserStyleSheetWatcher(const FilePath& profile_path)
-    : profile_path_(profile_path),
-      has_loaded_(false) {
-  // Listen for when the first render view host is created.  If we load
-  // too fast, the first tab won't hear the notification and won't get
-  // the user style sheet.
-  registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
-                 NotificationService::AllSources());
+// UserStyleSheetLoader is responsible for loading  the user style sheet on the
+// file thread and sends a notification when the style sheet is loaded. It is
+// a helper to UserStyleSheetWatcher. The reference graph is as follows:
+//
+// .-----------------------.    owns    .-------------.
+// | UserStyleSheetWatcher |----------->| FileWatcher |
+// '-----------------------'            '-------------'
+//             |                               |
+//             V                               |
+//  .----------------------.                   |
+//  | UserStyleSheetLoader |<------------------'
+//  '----------------------'
+//
+// FileWatcher's reference to UserStyleSheetLoader is used for delivering the
+// change notifications. Since they happen asynchronously, UserStyleSheetWatcher
+// and its FileWatcher may be destroyed while a callback to UserStyleSheetLoader
+// is in progress, in which case the UserStyleSheetLoader object outlives the
+// watchers.
+class UserStyleSheetLoader : public FileWatcher::Delegate {
+ public:
+  UserStyleSheetLoader();
+  virtual ~UserStyleSheetLoader() {}
+
+  GURL user_style_sheet() const {
+    return user_style_sheet_;
+  }
+
+  // Load the user style sheet on the file thread and convert it to a
+  // base64 URL.  Posts the base64 URL back to the UI thread.
+  void LoadStyleSheet(const FilePath& style_sheet_file);
+
+  // Send out a notification if the stylesheet has already been loaded.
+  void NotifyLoaded();
+
+  // FileWatcher::Delegate interface
+  virtual void OnFileChanged(const FilePath& path);
+
+ private:
+  // Called on the UI thread after the stylesheet has loaded.
+  void SetStyleSheet(const GURL& url);
+
+  // The user style sheet as a base64 data:// URL.
+  GURL user_style_sheet_;
+
+  // Whether the stylesheet has been loaded.
+  bool has_loaded_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserStyleSheetLoader);
+};
+
+UserStyleSheetLoader::UserStyleSheetLoader()
+    : has_loaded_(false) {
 }
 
-void UserStyleSheetWatcher::Observe(NotificationType type,
-    const NotificationSource& source, const NotificationDetails& details) {
-  DCHECK(type == NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB);
-
+void UserStyleSheetLoader::NotifyLoaded() {
   if (has_loaded_) {
     NotificationService::current()->Notify(
         NotificationType::USER_STYLE_SHEET_UPDATED,
-        Source<UserStyleSheetWatcher>(this),
+        Source<UserStyleSheetLoader>(this),
         NotificationService::NoDetails());
   }
-
-  registrar_.RemoveAll();
 }
 
-void UserStyleSheetWatcher::OnFileChanged(const FilePath& path) {
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &UserStyleSheetWatcher::LoadStyleSheet,
-                        profile_path_));
+void UserStyleSheetLoader::OnFileChanged(const FilePath& path) {
+  LoadStyleSheet(path);
 }
 
-void UserStyleSheetWatcher::Init() {
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &UserStyleSheetWatcher::LoadStyleSheet,
-                        profile_path_));
-}
-
-void UserStyleSheetWatcher::LoadStyleSheet(const FilePath& profile_path) {
+void UserStyleSheetLoader::LoadStyleSheet(const FilePath& style_sheet_file) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   // We keep the user style sheet in a subdir so we can watch for changes
   // to the file.
-  FilePath style_sheet_dir = profile_path.AppendASCII(kStyleSheetDir);
+  FilePath style_sheet_dir = style_sheet_file.DirName();
   if (!file_util::DirectoryExists(style_sheet_dir)) {
     if (!file_util::CreateDirectory(style_sheet_dir))
       return;
   }
   // Create the file if it doesn't exist.
-  FilePath css_file = style_sheet_dir.AppendASCII(kUserStyleSheetFile);
-  if (!file_util::PathExists(css_file))
-    file_util::WriteFile(css_file, "", 0);
+  if (!file_util::PathExists(style_sheet_file))
+    file_util::WriteFile(style_sheet_file, "", 0);
 
   std::string css;
-  bool rv = file_util::ReadFileToString(css_file, &css);
+  bool rv = file_util::ReadFileToString(style_sheet_file, &css);
   GURL style_sheet_url;
   if (rv && !css.empty()) {
     std::string css_base64;
@@ -81,23 +111,56 @@ void UserStyleSheetWatcher::LoadStyleSheet(const FilePath& profile_path) {
     }
   }
   ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &UserStyleSheetWatcher::SetStyleSheet,
+      NewRunnableMethod(this, &UserStyleSheetLoader::SetStyleSheet,
                         style_sheet_url));
-
-  if (!file_watcher_.get()) {
-    file_watcher_.reset(new FileWatcher);
-    file_watcher_->Watch(profile_path_.AppendASCII(kStyleSheetDir)
-                         .AppendASCII(kUserStyleSheetFile), this);
-  }
 }
 
-void UserStyleSheetWatcher::SetStyleSheet(const GURL& url) {
+void UserStyleSheetLoader::SetStyleSheet(const GURL& url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   has_loaded_ = true;
   user_style_sheet_ = url;
-  NotificationService::current()->Notify(
-      NotificationType::USER_STYLE_SHEET_UPDATED,
-      Source<UserStyleSheetWatcher>(this),
-      NotificationService::NoDetails());
+  NotifyLoaded();
+}
+
+UserStyleSheetWatcher::UserStyleSheetWatcher(const FilePath& profile_path)
+    : profile_path_(profile_path),
+      loader_(new UserStyleSheetLoader) {
+  // Listen for when the first render view host is created.  If we load
+  // too fast, the first tab won't hear the notification and won't get
+  // the user style sheet.
+  registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB,
+                 NotificationService::AllSources());
+}
+
+UserStyleSheetWatcher::~UserStyleSheetWatcher() {
+}
+
+void UserStyleSheetWatcher::Init() {
+  // Make sure we run on the file thread.
+  if (!ChromeThread::CurrentlyOn(ChromeThread::FILE)) {
+    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+        NewRunnableMethod(this, &UserStyleSheetWatcher::Init));
+    return;
+  }
+
+  if (!file_watcher_.get()) {
+    file_watcher_.reset(new FileWatcher);
+    file_watcher_->Watch(profile_path_.AppendASCII(kStyleSheetDir)
+                         .AppendASCII(kUserStyleSheetFile), loader_.get());
+    FilePath style_sheet_file = profile_path_.AppendASCII(kStyleSheetDir)
+                                             .AppendASCII(kUserStyleSheetFile);
+    loader_->LoadStyleSheet(style_sheet_file);
+  }
+}
+
+GURL UserStyleSheetWatcher::user_style_sheet() const {
+  return loader_->user_style_sheet();
+}
+
+void UserStyleSheetWatcher::Observe(NotificationType type,
+    const NotificationSource& source, const NotificationDetails& details) {
+  DCHECK(type == NotificationType::RENDER_VIEW_HOST_CREATED_FOR_TAB);
+  loader_->NotifyLoaded();
+  registrar_.RemoveAll();
 }
