@@ -165,6 +165,7 @@ class PlatformVideoDecoderImpl
       : input_buffer_size_(0),
         next_dib_id_(0),
         dib_(NULL) {
+    memset(&decoder_config_, 0, sizeof(decoder_config_));
     memset(&flush_callback_, 0, sizeof(flush_callback_));
   }
 
