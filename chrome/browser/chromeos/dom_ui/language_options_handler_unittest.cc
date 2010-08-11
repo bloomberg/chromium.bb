@@ -149,4 +149,13 @@ TEST(LanguageOptionsHandlerTest, GetLanguageList) {
             native_display_name);
 }
 
+TEST(LanguageOptionsHandlerTest, GetUiLanguageCodeSet) {
+  scoped_ptr<DictionaryValue> dictionary(
+      LanguageOptionsHandler::GetUiLanguageCodeSet());
+  EXPECT_TRUE(dictionary->HasKey("en-US"));
+  // Note that we don't test a false case, as such an expectation will
+  // fail when we add support for the language.
+  // EXPECT_FALSE(dictionary->HasKey("no"));
+}
+
 }  // namespace chromeos

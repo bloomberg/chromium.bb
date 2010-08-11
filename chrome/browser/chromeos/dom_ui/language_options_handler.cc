@@ -44,6 +44,10 @@ void LanguageOptionsHandler::GetLocalizedValues(
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES));
   localized_strings->SetString(L"remove_button",
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
+  localized_strings->SetString(L"cannot_be_displayed_in_this_language",
+      l10n_util::GetStringF(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE,
+          l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
   localized_strings->SetString(L"is_displayed_in_this_language",
       l10n_util::GetStringF(
           IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
@@ -64,6 +68,7 @@ void LanguageOptionsHandler::GetLocalizedValues(
       UTF8ToWide(g_browser_process->GetApplicationLocale()));
   localized_strings->Set(L"inputMethodList", GetInputMethodList(*descriptors));
   localized_strings->Set(L"languageList", GetLanguageList(*descriptors));
+  localized_strings->Set(L"uiLanguageCodeSet", GetUiLanguageCodeSet());
 }
 
 void LanguageOptionsHandler::RegisterMessages() {
@@ -150,6 +155,16 @@ ListValue* LanguageOptionsHandler::GetLanguageList(
   }
 
   return language_list;
+}
+
+DictionaryValue* LanguageOptionsHandler::GetUiLanguageCodeSet() {
+  DictionaryValue* dictionary = new DictionaryValue();
+  const std::vector<std::string>& available_locales =
+      l10n_util::GetAvailableLocales();
+  for (size_t i = 0; i < available_locales.size(); ++i) {
+    dictionary->SetBoolean(available_locales[i], true);
+  }
+  return dictionary;
 }
 
 void LanguageOptionsHandler::UiLanguageChangeCallback(

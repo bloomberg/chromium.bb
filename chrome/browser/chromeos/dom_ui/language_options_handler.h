@@ -40,6 +40,14 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   //  ...]
   static ListValue* GetLanguageList(const InputMethodDescriptors& descriptors);
 
+  // Gets the set of language codes that can be used as UI language.
+  // The return value will look like:
+  // {'en-US': true, 'fi': true, 'fr': true, ...}
+  //
+  // Note that true in languageCodeSet does not mean anything. We just use
+  // the dictionary as a set.
+  static DictionaryValue* GetUiLanguageCodeSet();
+
  private:
   // Called when the UI language is changed.
   // |value| will be the language code as string (ex. "fr").

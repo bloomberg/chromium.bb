@@ -8602,6 +8602,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The label for a language that is currently used for UI">
         <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> is displayed in this language
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE"
+               desc="The label for a language that cannot be used for UI">
+        <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> cannot be displayed in this language
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_M17N_STANDARD_INPUT_METHOD"
                desc="The label for a input method">
         Standard input method

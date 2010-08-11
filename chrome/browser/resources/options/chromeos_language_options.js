@@ -192,8 +192,9 @@ cr.define('options', function() {
         uiLanguageButton.className = 'text-button';
         // Remove the event listner.
         uiLanguageButton.onclick = undefined;
-      } else {
-        // Otherwise, users can click on the button to change the UI language.
+      } else if (languageCode in templateData.uiLanguageCodeSet) {
+        // If the language is supported as UI language, users can click on
+        // the button to change the UI language.
         uiLanguageButton.textContent =
             localStrings.getString('display_in_this_language');
         uiLanguageButton.className = '';
@@ -201,6 +202,13 @@ cr.define('options', function() {
         uiLanguageButton.onclick = function(e) {
           chrome.send('uiLanguageChange', [languageCode]);
         }
+      } else {
+        // If the language is not supported as UI language, the button
+        // just says that Chromium OS cannot be displayed in this language.
+        uiLanguageButton.textContent =
+            localStrings.getString('cannot_be_displayed_in_this_language');
+        uiLanguageButton.className = 'text-button';
+        uiLanguageButton.onclick = undefined;
       }
     },
 
