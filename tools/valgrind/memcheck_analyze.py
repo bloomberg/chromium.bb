@@ -495,7 +495,7 @@ class MemcheckAnalyzer:
                 # ... but we saw it in earlier reports, e.g. previous UI test
                 cur_report_errors.add("This error was already printed "
                                       "in some other test, see 'hash=#%X#'" % \
-                                      (error.__hash__() & 0xffffffffffffffff)
+                                      (error.__hash__() & 0xffffffffffffffff))
               else:
                 # ... and we haven't seen it in other tests as well
                 self._errors.add(error)
