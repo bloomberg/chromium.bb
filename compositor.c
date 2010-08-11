@@ -186,6 +186,8 @@ destroy_surface(struct wl_resource *resource, struct wl_client *client)
 		l->func(l, surface);
 
 	free(surface);
+
+	wlsc_compositor_schedule_repaint(compositor);
 }
 
 static void
@@ -419,11 +421,7 @@ static void
 surface_destroy(struct wl_client *client,
 		struct wl_surface *surface)
 {
-	struct wlsc_surface *es = (struct wlsc_surface *) surface;
-
 	wl_resource_destroy(&surface->base, client);
-
-	wlsc_compositor_schedule_repaint(es->compositor);
 }
 
 static void
