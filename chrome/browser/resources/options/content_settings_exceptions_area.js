@@ -89,21 +89,16 @@ cr.define('options.contentSettings', function() {
       this.updateEditables();
 
       var listItem = this;
+      this.ondblclick = function(event) {
+        listItem.editing = true;
+      };
+
       // Handle events on the editable nodes.
       input.oninput = function(event) {
         listItem.inputValidityKnown = false;
         chrome.send('checkExceptionPatternValidity',
                     [listItem.contentType, input.value]);
       };
-
-      var eventsToStop =
-          ['mousedown', 'mouseup', 'contextmenu', 'dblclick', 'paste'];
-      eventsToStop.forEach(function(type) {
-        input.addEventListener(type, function(e) {
-            e.stopPropagation();
-          });
-        }
-      );
 
       // Handles enter and escape which trigger reset and commit respectively.
       function handleKeydown(e) {
@@ -116,6 +111,8 @@ cr.define('options.contentSettings', function() {
           case 'U+001B':  // Esc
             // Reset the inputs.
             listItem.updateEditables();
+            if (listItem.pattern)
+              listItem.maybeSetPatternValidity(listItem.pattern, true);
           case 'Enter':
             if (listItem.parentNode)
               listItem.parentNode.focus();
@@ -241,8 +238,15 @@ cr.define('options.contentSettings', function() {
       // Check that we have a valid pattern and if not we do not change the
       // editing mode.
       if (!editing && (!this.inputValidityKnown || !this.inputIsValid)) {
-        input.focus();
-        input.select();
+        if (this.pattern) {
+          input.focus();
+          input.select();
+        } else {
+          // Just delete this row if it was added via the Add button.
+          var model = listItem.parentNode.dataModel;
+          model.splice(model.indexOf(listItem.dataItem), 1);
+        }
+
         return;
       }
 
@@ -258,18 +262,25 @@ cr.define('options.contentSettings', function() {
         input.focus();
         input.select();
       } else {
+        this.removeAttribute('editing');
+
         var newPattern = input.value;
 
-        this.pattern = patternLabel.textContent = newPattern;
+        var newSetting;
         if (optionAllow.selected)
-          this.setting = 'allow';
+          newSetting = 'allow';
         else if (optionBlock.selected)
-          this.setting = 'block';
+          newSetting = 'block';
         else if (optionSession.selected)
-          this.setting = 'session';
-        settingLabel.textContent = this.settingForDisplay();
+          newSetting = 'session';
 
-        this.removeAttribute('editing');
+        // Empty edit - do nothing.
+        if (pattern == newPattern && newSetting == this.setting)
+          return;
+
+        this.pattern = patternLabel.textContent = newPattern;
+        this.setting = newSetting;
+        settingLabel.textContent = this.settingForDisplay();
 
         var contentType = this.parentNode.contentType;
 
