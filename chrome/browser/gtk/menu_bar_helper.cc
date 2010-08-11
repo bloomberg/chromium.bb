@@ -122,8 +122,8 @@ gboolean MenuBarHelper::OnMenuMotionNotify(GtkWidget* menu,
       gint last_y = y;
       if (!gtk_widget_translate_coordinates(
           last_button, button, last_x, last_y, &x, &y)) {
-        NOTREACHED();
-        return FALSE;
+        // |button| may not be realized.
+        continue;
       }
     }
 
