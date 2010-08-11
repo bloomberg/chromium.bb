@@ -185,6 +185,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
   ASSERT_TRUE(LoadExtension(test_data_dir_
     .AppendASCII("origin_privileges").AppendASCII("extension")));
 
+  // A web host that has permission.
   ui_test_utils::NavigateToURL(browser(),
       GURL("http://a.com:1337/files/extensions/origin_privileges/index.html"));
   std::string result;
@@ -194,6 +195,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
       &result);
   EXPECT_EQ(result, "Loaded");
 
+  // A web host that does not have permission.
   ui_test_utils::NavigateToURL(browser(),
       GURL("http://b.com:1337/files/extensions/origin_privileges/index.html"));
   ui_test_utils::ExecuteJavaScriptAndExtractString(
@@ -201,6 +203,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
       L"window.domAutomationController.send(document.title)",
       &result);
   EXPECT_EQ(result, "Image failed to load");
+
+  // A different extension. Extensions should always be able to load each
+  // other's resources.
+  ASSERT_TRUE(LoadExtension(test_data_dir_
+    .AppendASCII("origin_privileges").AppendASCII("extension2")));
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("chrome-extension://pbkkcbgdkliohhfaeefcijaghglkahja/index.html"));
+  ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(document.title)",
+      &result);
+  EXPECT_EQ(result, "Loaded");
 }
 
 // Tests that we can load extension pages into the tab area and they can call

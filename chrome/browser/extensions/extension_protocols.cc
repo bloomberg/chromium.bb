@@ -77,13 +77,22 @@ static URLRequestJob* CreateExtensionURLRequestJob(URLRequest* request,
   const ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
 
-  // Don't allow extension resources to be loaded from origins which are not
-  // present in the extension's effective host permissions with the exception
-  // of empty origins and extension schemes.
-  if (!info->frame_origin().empty() &&
-      !GURL(info->frame_origin()).SchemeIs(chrome::kExtensionScheme)) {
+  // Extension resources should only be loadable from web pages which the
+  // extension has host permissions to (and therefore could be running script
+  // in, which might need access to the extension resources).
+  //
+  // chrome:// pages are exempt. We allow them to load any extension resource.
+  // This is used for, eg, the app launcher in the NTP.
+  //
+  // chrome-extension:// pages are also exempt, mostly for legacy reasons. Some
+  // extensions did this to integrate with each other before we added this code.
+  GURL origin_url(info->frame_origin());
+  if (!origin_url.is_empty() &&
+      !origin_url.SchemeIs(chrome::kChromeUIScheme) &&
+      !origin_url.SchemeIs(chrome::kExtensionScheme)) {
     ExtensionExtent host_permissions =
-      context->GetEffectiveHostPermissionsForExtension(request->url().host());
+        context->GetEffectiveHostPermissionsForExtension(
+            request->url().host());
     if (!host_permissions.ContainsURL(GURL(info->frame_origin())))
       return new URLRequestErrorJob(request, net::ERR_ADDRESS_UNREACHABLE);
   }
