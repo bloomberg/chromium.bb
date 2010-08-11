@@ -244,6 +244,7 @@ int main() {
           ("--with-headers=%s" %
            os.path.join(src["linux_headers"].dest_path, "include")),
           "--enable-kernel=2.2.0"],
+      make_cmd=["make", "-d"],
       use_install_root=True)
 
   modules["wrappers"] = btarget.SourceTarget(

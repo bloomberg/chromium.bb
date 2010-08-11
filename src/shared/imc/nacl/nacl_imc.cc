@@ -63,7 +63,7 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
                      flags);
 }
 
-int SendDatagramTo(Handle handle, const MessageHeader* message, int flags,
+int SendDatagramTo(const MessageHeader* message, int flags,
                    const SocketAddress* name) {
   return -1;  // TODO(bsy): how to implement this for NaCl?
 }
