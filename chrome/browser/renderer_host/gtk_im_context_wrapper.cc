@@ -16,7 +16,9 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/gtk/gtk_util.h"
+#if !defined(TOOLKIT_VIEWS)
 #include "chrome/browser/gtk/menu_gtk.h"
+#endif
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -247,6 +249,9 @@ void GtkIMContextWrapper::OnFocusOut() {
     host_view_->GetRenderWidgetHost()->SetInputMethodActive(false);
 }
 
+#if !defined(TOOLKIT_VIEWS)
+// Not defined for views because the views context menu doesn't
+// implement input methods yet.
 void GtkIMContextWrapper::AppendInputMethodsContextMenu(MenuGtk* menu) {
   gboolean show_input_method_menu = TRUE;
 
@@ -265,6 +270,7 @@ void GtkIMContextWrapper::AppendInputMethodsContextMenu(MenuGtk* menu) {
   menu->AppendSeparator();
   menu->AppendMenuItem(IDC_INPUT_METHODS_MENU, menuitem);
 }
+#endif
 
 void GtkIMContextWrapper::CancelComposition() {
   if (!is_enabled_)

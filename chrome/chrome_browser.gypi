@@ -3565,8 +3565,6 @@
                 ['include', '^browser/gtk/keyword_editor_view.h'],
                 ['include', '^browser/gtk/list_store_favicon_loader.cc'],
                 ['include', '^browser/gtk/list_store_favicon_loader.h'],
-                ['include', '^browser/gtk/menu_gtk.cc'],
-                ['include', '^browser/gtk/menu_gtk.h'],
                 ['include', '^browser/gtk/meta_frames.cc'],
                 ['include', '^browser/gtk/meta_frames.h'],
                 ['include', '^browser/gtk/nine_box.cc'],

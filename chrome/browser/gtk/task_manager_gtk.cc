@@ -23,7 +23,6 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/gtk_tree.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/memory_purger.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_switches.h"
@@ -32,6 +31,12 @@
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "views/controls/menu/menu_2.h"
+#else
+#include "chrome/browser/gtk/menu_gtk.h"
+#endif
 
 namespace {
 
@@ -212,18 +217,32 @@ class TaskManagerGtk::ContextMenuController
       menu_model_->AddCheckItemWithStringId(
           i, TaskManagerColumnIDToResourceID(i));
     }
+#if defined(TOOLKIT_VIEWS)
+    menu_.reset(new views::Menu2(menu_model_.get()));
+#else
     menu_.reset(new MenuGtk(NULL, menu_model_.get()));
+#endif
   }
 
   virtual ~ContextMenuController() {}
 
+#if defined(TOOLKIT_VIEWS)
+  void RunMenu(const gfx::Point& point) {
+    menu_->RunContextMenuAt(point);
+  }
+#else
   void RunMenu() {
     menu_->PopupAsContext(gtk_get_current_event_time());
   }
+#endif
 
   void Cancel() {
     task_manager_ = NULL;
+#if defined(TOOLKIT_VIEWS)
+    menu_->CancelMenu();
+#else
     menu_->Cancel();
+#endif
   }
 
  private:
@@ -260,7 +279,11 @@ class TaskManagerGtk::ContextMenuController
 
   // The model and view for the right click context menu.
   scoped_ptr<menus::SimpleMenuModel> menu_model_;
+#if defined(TOOLKIT_VIEWS)
+  scoped_ptr<views::Menu2> menu_;
+#else
   scoped_ptr<MenuGtk> menu_;
+#endif
 
   // The TaskManager the context menu was brought up for. Set to NULL when the
   // menu is canceled.
@@ -710,12 +733,21 @@ void TaskManagerGtk::KillSelectedProcesses() {
   g_list_free(paths);
 }
 
+#if defined(TOOLKIT_VIEWS)
+void TaskManagerGtk::ShowContextMenu(const gfx::Point& point) {
+  if (!menu_controller_.get())
+    menu_controller_.reset(new ContextMenuController(this));
+
+  menu_controller_->RunMenu(point);
+}
+#else
 void TaskManagerGtk::ShowContextMenu() {
   if (!menu_controller_.get())
     menu_controller_.reset(new ContextMenuController(this));
 
   menu_controller_->RunMenu();
 }
+#endif
 
 void TaskManagerGtk::ActivateFocusedTab() {
   GtkTreeSelection* selection = gtk_tree_view_get_selection(
@@ -889,8 +921,14 @@ gboolean TaskManagerGtk::OnButtonPressEvent(GtkWidget* widget,
 
 gboolean TaskManagerGtk::OnButtonReleaseEvent(GtkWidget* widget,
                                               GdkEventButton* event) {
-  if (event->button == 3)
+  if (event->button == 3) {
+#if defined(TOOLKIT_VIEWS)
+    gfx::Point pt(event->x_root, event->y_root);
+    ShowContextMenu(pt);
+#else
     ShowContextMenu();
+#endif
+  }
 
   return FALSE;
 }

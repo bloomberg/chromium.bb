@@ -15,6 +15,12 @@
 #include "chrome/browser/task_manager.h"
 #include "grit/generated_resources.h"
 
+#if defined(TOOLKIT_VIEWS)
+namespace gfx {
+class Point;
+}
+#endif
+
 class TaskManagerGtk : public TaskManagerModelObserver {
  public:
   TaskManagerGtk();
@@ -60,7 +66,11 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   void KillSelectedProcesses();
 
   // Opens the context menu used to select the task manager columns.
+#if defined(TOOLKIT_VIEWS)
+  void ShowContextMenu(const gfx::Point& point);
+#else
   void ShowContextMenu();
+#endif
 
   // Activates the tab associated with the focused row.
   void ActivateFocusedTab();

@@ -20,7 +20,9 @@ namespace gfx {
 class Rect;
 }
 
+#if !defined(TOOLKIT_VIEWS)
 class MenuGtk;
+#endif
 class RenderWidgetHostViewGtk;
 struct NativeWebKeyboardEvent;
 typedef struct _GtkIMContext GtkIMContext;
@@ -50,7 +52,11 @@ class GtkIMContextWrapper {
   void OnFocusIn();
   void OnFocusOut();
 
+#if !defined(TOOLKIT_VIEWS)
+  // Not defined for views because the views context menu doesn't
+  // implement input methods yet.
   void AppendInputMethodsContextMenu(MenuGtk* menu);
+#endif
 
   void CancelComposition();
 

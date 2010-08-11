@@ -24,7 +24,9 @@ class RenderWidgetHost;
 class GpuViewHost;
 class GtkIMContextWrapper;
 class GtkKeyBindingsHandler;
+#if !defined(TOOLKIT_VIEWS)
 class MenuGtk;
+#endif
 struct NativeWebKeyboardEvent;
 
 #if defined(OS_CHROMEOS)
@@ -97,9 +99,11 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // RenderWidgetHost::ForwardEditCommandsForNextKeyEvent().
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& event);
 
+#if !defined(TOOLKIT_VIEWS)
   // Appends the input methods context menu to the specified |menu| object as a
   // submenu.
   void AppendInputMethodsContextMenu(MenuGtk* menu);
+#endif
 
  private:
   friend class RenderWidgetHostViewGtkWidget;

@@ -748,9 +748,11 @@ void RenderWidgetHostViewGtk::ShowingContextMenu(bool showing) {
   is_showing_context_menu_ = showing;
 }
 
+#if !defined(TOOLKIT_VIEWS)
 void RenderWidgetHostViewGtk::AppendInputMethodsContextMenu(MenuGtk* menu) {
   im_context_->AppendInputMethodsContextMenu(menu);
 }
+#endif
 
 bool RenderWidgetHostViewGtk::NeedsInputGrab() {
   return popup_type_ == WebKit::WebPopupTypeSelect;
