@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/json/json_reader.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
@@ -25,7 +26,8 @@ PreferenceChangeProcessor::PreferenceChangeProcessor(
     UnrecoverableErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       pref_service_(NULL),
-      model_associator_(model_associator) {
+      model_associator_(model_associator),
+      processing_pref_change_(false) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(model_associator);
   DCHECK(error_handler);
@@ -43,27 +45,31 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
   DCHECK(NotificationType::PREF_CHANGED == type);
   DCHECK_EQ(pref_service_, Source<PrefService>(source).ptr());
 
+  // Avoid recursion.
+  if (processing_pref_change_)
+    return;
+
+  AutoReset<bool> guard(&processing_pref_change_, true);
   std::string* name = Details<std::string>(details).ptr();
   const PrefService::Preference* preference =
       pref_service_->FindPreference((*name).c_str());
   DCHECK(preference);
-
-  // TODO(mnissler): Detect preference->IsUserControlled() state changes here
-  // and call into PreferenceModelAssociator to associate/disassociate sync
-  // nodes when the state changes.
-
-  // Do not pollute sync data with values coming from policy, extensions or the
-  // commandline.
-  if (!preference->IsUserModifiable())
+  int64 sync_id = model_associator_->GetSyncIdFromChromeId(*name);
+  bool user_modifiable = preference->IsUserModifiable();
+  if (!user_modifiable) {
+    // We do not track preferences the user cannot change.
+    model_associator_->Disassociate(sync_id);
     return;
+  }
 
   sync_api::WriteTransaction trans(share_handle());
   sync_api::WriteNode node(&trans);
 
-  // Since we don't create sync nodes for preferences that still have
-  // their default values, this changed preference may not have a sync
-  // node yet.  If not, create it.
-  int64 sync_id = model_associator_->GetSyncIdFromChromeId(*name);
+  // Since we don't create sync nodes for preferences that are not under control
+  // of the user or still have their default value, this changed preference may
+  // not have a sync node yet. If so, we create a node. Similarly, a preference
+  // may become user-modifiable (e.g. due to laxer policy configuration), in
+  // which case we also need to create a sync node and associate it.
   if (sync_api::kInvalidId == sync_id) {
     sync_api::ReadNode root(&trans);
     if (!root.InitByTagLookup(browser_sync::kPreferencesTag)) {
@@ -71,20 +77,21 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
       return;
     }
 
-    if (!node.InitUniqueByCreation(syncable::PREFERENCES, root, *name)) {
-      error_handler()->OnUnrecoverableError(
-          FROM_HERE,
-          "Failed to create preference sync node.");
-      return;
-    }
-
-    model_associator_->Associate(preference, node.GetId());
-  } else {
-    if (!node.InitByIdLookup(sync_id)) {
+    // InitPrefNodeAndAssociate takes care of writing the value to the sync
+    // node if appropriate.
+    if (!model_associator_->InitPrefNodeAndAssociate(&trans,
+                                                     root,
+                                                     preference)) {
       error_handler()->OnUnrecoverableError(FROM_HERE,
-                                            "Preference node lookup failed.");
-      return;
+                                            "Can't create sync node.");
     }
+    return;
+  }
+
+  if (!node.InitByIdLookup(sync_id)) {
+    error_handler()->OnUnrecoverableError(FROM_HERE,
+                                          "Preference node lookup failed.");
+    return;
   }
 
   if (!PreferenceModelAssociator::WritePreferenceToNode(

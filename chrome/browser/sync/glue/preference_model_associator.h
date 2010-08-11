@@ -21,6 +21,7 @@ class Value;
 
 namespace sync_api {
 class WriteNode;
+class WriteTransaction;
 }
 
 namespace browser_sync {
@@ -45,6 +46,12 @@ class PreferenceModelAssociator
   const std::set<std::string>& synced_preferences() {
     return synced_preferences_;
   }
+
+  // Create an association for a given preference. A sync node is created if
+  // necessary and the value is read from or written to the node as appropriate.
+  bool InitPrefNodeAndAssociate(sync_api::WriteTransaction* trans,
+                                const sync_api::BaseNode& root,
+                                const PrefService::Preference* pref);
 
   // PerDataTypeAssociatorInterface implementation.
   //

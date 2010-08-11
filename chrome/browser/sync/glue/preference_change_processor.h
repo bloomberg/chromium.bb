@@ -58,6 +58,9 @@ class PreferenceChangeProcessor : public ChangeProcessor,
   // The two models should be associated according to this ModelAssociator.
   PreferenceModelAssociator* model_associator_;
 
+  // Whether we are currently processing a preference change notification.
+  bool processing_pref_change_;
+
   DISALLOW_COPY_AND_ASSIGN(PreferenceChangeProcessor);
 };
 

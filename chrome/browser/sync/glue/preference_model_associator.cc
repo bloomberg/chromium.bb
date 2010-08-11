@@ -43,6 +43,68 @@ PreferenceModelAssociator::~PreferenceModelAssociator() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
+bool PreferenceModelAssociator::InitPrefNodeAndAssociate(
+    sync_api::WriteTransaction* trans,
+    const sync_api::BaseNode& root,
+    const PrefService::Preference* pref) {
+  DCHECK(pref);
+
+  PrefService* pref_service = sync_service_->profile()->GetPrefs();
+  base::JSONReader reader;
+  std::string tag = pref->name();
+  sync_api::WriteNode node(trans);
+  if (node.InitByClientTagLookup(syncable::PREFERENCES, tag)) {
+    // The server has a value for the preference.
+    const sync_pb::PreferenceSpecifics& preference(
+        node.GetPreferenceSpecifics());
+    DCHECK_EQ(tag, preference.name());
+
+    if (pref->IsUserModifiable()) {
+      scoped_ptr<Value> value(
+          reader.JsonToValue(preference.value(), false, false));
+      std::string pref_name = preference.name();
+      if (!value.get()) {
+        LOG(ERROR) << "Failed to deserialize preference value: "
+                   << reader.GetErrorMessage();
+        return false;
+      }
+
+      // Merge the server value of this preference with the local value.
+      scoped_ptr<Value> new_value(MergePreference(*pref, *value));
+
+      // Update the local preference based on what we got from the
+      // sync server.
+      if (!pref->GetValue()->Equals(new_value.get()))
+        pref_service->Set(pref_name.c_str(), *new_value);
+
+      AfterUpdateOperations(pref_name);
+
+      // If the merge resulted in an updated value, write it back to
+      // the sync node.
+      if (!value->Equals(new_value.get()) &&
+          !WritePreferenceToNode(pref->name(), *new_value, &node))
+        return false;
+    }
+    Associate(pref, node.GetId());
+  } else if (pref->IsUserControlled()) {
+    // The server doesn't have a value, but we have a user-controlled value,
+    // so we push it to the server.
+    sync_api::WriteNode write_node(trans);
+    if (!write_node.InitUniqueByCreation(syncable::PREFERENCES, root, tag)) {
+      LOG(ERROR) << "Failed to create preference sync node.";
+      return false;
+    }
+
+    // Update the sync node with the local value for this preference.
+    if (!WritePreferenceToNode(pref->name(), *pref->GetValue(), &write_node))
+      return false;
+
+    Associate(pref, write_node.GetId());
+  }
+
+  return true;
+}
+
 bool PreferenceModelAssociator::AssociateModels() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   PrefService* pref_service = sync_service_->profile()->GetPrefs();
@@ -63,63 +125,11 @@ bool PreferenceModelAssociator::AssociateModels() {
     return false;
   }
 
-  base::JSONReader reader;
   for (std::set<std::string>::iterator it = synced_preferences_.begin();
        it != synced_preferences_.end(); ++it) {
-    const std::string& tag = *it;
     const PrefService::Preference* pref =
-        pref_service->FindPreference(tag.c_str());
-    DCHECK(pref);
-
-    sync_api::WriteNode node(&trans);
-    if (node.InitByClientTagLookup(syncable::PREFERENCES, tag)) {
-      // The server has a value for the preference.
-      const sync_pb::PreferenceSpecifics& preference(
-          node.GetPreferenceSpecifics());
-      DCHECK_EQ(tag, preference.name());
-
-      if (pref->IsUserModifiable()) {
-        scoped_ptr<Value> value(
-            reader.JsonToValue(preference.value(), false, false));
-        std::string pref_name = preference.name();
-        if (!value.get()) {
-          LOG(ERROR) << "Failed to deserialize preference value: "
-                     << reader.GetErrorMessage();
-          return false;
-        }
-
-        // Merge the server value of this preference with the local value.
-        scoped_ptr<Value> new_value(MergePreference(*pref, *value));
-
-        // Update the local preference based on what we got from the
-        // sync server.
-        if (!pref->GetValue()->Equals(new_value.get()))
-          pref_service->Set(pref_name.c_str(), *new_value);
-
-        AfterUpdateOperations(pref_name);
-
-        // If the merge resulted in an updated value, write it back to
-        // the sync node.
-        if (!value->Equals(new_value.get()) &&
-            !WritePreferenceToNode(pref->name(), *new_value, &node))
-          return false;
-      }
-      Associate(pref, node.GetId());
-    } else if (pref->IsUserControlled()) {
-      // The server doesn't have a value, but we have a user-controlled value,
-      // so we push it to the server.
-      sync_api::WriteNode write_node(&trans);
-      if (!write_node.InitUniqueByCreation(syncable::PREFERENCES, root, tag)) {
-        LOG(ERROR) << "Failed to create preference sync node.";
-        return false;
-      }
-
-      // Update the sync node with the local value for this preference.
-      if (!WritePreferenceToNode(pref->name(), *pref->GetValue(), &write_node))
-        return false;
-
-      Associate(pref, write_node.GetId());
-    }
+        pref_service->FindPreference((*it).c_str());
+    InitPrefNodeAndAssociate(&trans, root, pref);
   }
   return true;
 }
