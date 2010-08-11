@@ -295,7 +295,7 @@ void DesktopNotificationService::Observe(NotificationType type,
                                          const NotificationDetails& details) {
   DCHECK(NotificationType::PREF_CHANGED == type);
   PrefService* prefs = profile_->GetPrefs();
-  std::wstring* name = Details<std::wstring>(details).ptr();
+  std::string* name = Details<std::string>(details).ptr();
 
   if (0 == name->compare(prefs::kDesktopNotificationAllowedOrigins)) {
     std::vector<GURL> allowed_origins(GetAllowedOrigins());

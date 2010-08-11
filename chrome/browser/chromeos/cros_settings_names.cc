@@ -6,12 +6,12 @@
 
 namespace chromeos {
 
-const wchar_t kCrosSettingsPrefix[]     = L"cros.";
+const char kCrosSettingsPrefix[]     = "cros.";
 
-const wchar_t kAccountsPrefAllowBWSI[]  = L"cros.accounts.allowBWSI";
-const wchar_t kAccountsPrefAllowGuest[] = L"cros.accounts.allowGuest";
-const wchar_t kAccountsPrefShowUserNamesOnSignIn[]
-    = L"cros.accounts.showUserNamesOnSignIn";
-const wchar_t kAccountsPrefUsers[]      = L"cros.accounts.users";
+const char kAccountsPrefAllowBWSI[]  = "cros.accounts.allowBWSI";
+const char kAccountsPrefAllowGuest[] = "cros.accounts.allowGuest";
+const char kAccountsPrefShowUserNamesOnSignIn[]
+    = "cros.accounts.showUserNamesOnSignIn";
+const char kAccountsPrefUsers[]      = "cros.accounts.users";
 
 }  // namespace chromeos

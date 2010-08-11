@@ -169,82 +169,146 @@ void PrefService::ScheduleSavePersistentPrefs() {
   pref_value_store_->ScheduleWritePrefs();
 }
 
-void PrefService::RegisterBooleanPref(const wchar_t* path,
+void PrefService::RegisterBooleanPref(const char* path,
                                       bool default_value) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateBooleanValue(default_value));
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterIntegerPref(const wchar_t* path,
-                                      int default_value) {
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterBooleanPref(const wchar_t* path, bool default_value) {
+  RegisterBooleanPref(WideToUTF8(path).c_str(), default_value);
+}
+
+void PrefService::RegisterIntegerPref(const char* path, int default_value) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateIntegerValue(default_value));
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterRealPref(const wchar_t* path,
-                                   double default_value) {
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterIntegerPref(const wchar_t* path, int default_value) {
+  RegisterIntegerPref(WideToUTF8(path).c_str(), default_value);
+}
+
+void PrefService::RegisterRealPref(const char* path, double default_value) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateRealValue(default_value));
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterStringPref(const wchar_t* path,
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterRealPref(const wchar_t* path,
+                                   double default_value) {
+  RegisterRealPref(WideToUTF8(path).c_str(), default_value);
+}
+
+void PrefService::RegisterStringPref(const char* path,
                                      const std::string& default_value) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateStringValue(default_value));
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterFilePathPref(const wchar_t* path,
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterStringPref(const wchar_t* path,
+                                     const std::string& default_value) {
+  RegisterStringPref(WideToUTF8(path).c_str(), default_value);
+}
+
+void PrefService::RegisterFilePathPref(const char* path,
                                        const FilePath& default_value) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateStringValue(default_value.value()));
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterListPref(const wchar_t* path) {
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterFilePathPref(const wchar_t* path,
+                                       const FilePath& default_value) {
+  RegisterFilePathPref(WideToUTF8(path).c_str(), default_value);
+}
+
+void PrefService::RegisterListPref(const char* path) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       new ListValue);
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterDictionaryPref(const wchar_t* path) {
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterListPref(const wchar_t* path) {
+  RegisterListPref(WideToUTF8(path).c_str());
+}
+
+void PrefService::RegisterDictionaryPref(const char* path) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       new DictionaryValue());
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterLocalizedBooleanPref(const wchar_t* path,
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterDictionaryPref(const wchar_t* path) {
+  RegisterDictionaryPref(WideToUTF8(path).c_str());
+}
+
+void PrefService::RegisterLocalizedBooleanPref(const char* path,
                                                int locale_default_message_id) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       CreateLocaleDefaultValue(Value::TYPE_BOOLEAN, locale_default_message_id));
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterLocalizedIntegerPref(const wchar_t* path,
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterLocalizedBooleanPref(const wchar_t* path,
+                                               int locale_default_message_id) {
+  RegisterLocalizedBooleanPref(WideToUTF8(path).c_str(),
+                               locale_default_message_id);
+}
+
+void PrefService::RegisterLocalizedIntegerPref(const char* path,
                                                int locale_default_message_id) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       CreateLocaleDefaultValue(Value::TYPE_INTEGER, locale_default_message_id));
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterLocalizedRealPref(const wchar_t* path,
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterLocalizedIntegerPref(const wchar_t* path,
+                                               int locale_default_message_id) {
+  RegisterLocalizedIntegerPref(WideToUTF8(path).c_str(),
+                               locale_default_message_id);
+}
+
+void PrefService::RegisterLocalizedRealPref(const char* path,
                                             int locale_default_message_id) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       CreateLocaleDefaultValue(Value::TYPE_REAL, locale_default_message_id));
   RegisterPreference(pref);
 }
 
-void PrefService::RegisterLocalizedStringPref(const wchar_t* path,
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterLocalizedRealPref(const wchar_t* path,
+                                            int locale_default_message_id) {
+  RegisterLocalizedRealPref(WideToUTF8(path).c_str(),
+                            locale_default_message_id);
+}
+
+void PrefService::RegisterLocalizedStringPref(const char* path,
                                               int locale_default_message_id) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       CreateLocaleDefaultValue(Value::TYPE_STRING, locale_default_message_id));
   RegisterPreference(pref);
 }
 
-bool PrefService::GetBoolean(const wchar_t* path) const {
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterLocalizedStringPref(const wchar_t* path,
+                                              int locale_default_message_id) {
+  RegisterLocalizedStringPref(WideToUTF8(path).c_str(),
+                              locale_default_message_id);
+}
+
+bool PrefService::GetBoolean(const char* path) const {
   DCHECK(CalledOnValidThread());
 
   bool result = false;
@@ -259,7 +323,12 @@ bool PrefService::GetBoolean(const wchar_t* path) const {
   return result;
 }
 
-int PrefService::GetInteger(const wchar_t* path) const {
+// TODO(viettrungluu): deprecate:
+bool PrefService::GetBoolean(const wchar_t* path) const {
+  return GetBoolean(WideToUTF8(path).c_str());
+}
+
+int PrefService::GetInteger(const char* path) const {
   DCHECK(CalledOnValidThread());
 
   int result = 0;
@@ -274,7 +343,12 @@ int PrefService::GetInteger(const wchar_t* path) const {
   return result;
 }
 
-double PrefService::GetReal(const wchar_t* path) const {
+// TODO(viettrungluu): deprecate:
+int PrefService::GetInteger(const wchar_t* path) const {
+  return GetInteger(WideToUTF8(path).c_str());
+}
+
+double PrefService::GetReal(const char* path) const {
   DCHECK(CalledOnValidThread());
 
   double result = 0.0;
@@ -289,7 +363,12 @@ double PrefService::GetReal(const wchar_t* path) const {
   return result;
 }
 
-std::string PrefService::GetString(const wchar_t* path) const {
+// TODO(viettrungluu): deprecate:
+double PrefService::GetReal(const wchar_t* path) const {
+  return GetReal(WideToUTF8(path).c_str());
+}
+
+std::string PrefService::GetString(const char* path) const {
   DCHECK(CalledOnValidThread());
 
   std::string result;
@@ -304,7 +383,12 @@ std::string PrefService::GetString(const wchar_t* path) const {
   return result;
 }
 
-FilePath PrefService::GetFilePath(const wchar_t* path) const {
+// TODO(viettrungluu): deprecate:
+std::string PrefService::GetString(const wchar_t* path) const {
+  return GetString(WideToUTF8(path).c_str());
+}
+
+FilePath PrefService::GetFilePath(const char* path) const {
   DCHECK(CalledOnValidThread());
 
   FilePath::StringType result;
@@ -323,19 +407,35 @@ FilePath PrefService::GetFilePath(const wchar_t* path) const {
   return FilePath(result);
 }
 
-bool PrefService::HasPrefPath(const wchar_t* path) const {
+// TODO(viettrungluu): deprecate:
+FilePath PrefService::GetFilePath(const wchar_t* path) const {
+  return GetFilePath(WideToUTF8(path).c_str());
+}
+
+bool PrefService::HasPrefPath(const char* path) const {
   return pref_value_store_->HasPrefPath(path);
 }
 
+// TODO(viettrungluu): deprecate:
+bool PrefService::HasPrefPath(const wchar_t* path) const {
+  return HasPrefPath(WideToUTF8(path).c_str());
+}
+
 const PrefService::Preference* PrefService::FindPreference(
-    const wchar_t* pref_name) const {
+    const char* pref_name) const {
   DCHECK(CalledOnValidThread());
   Preference p(NULL, pref_name, NULL);
   PreferenceSet::const_iterator it = prefs_.find(&p);
   return it == prefs_.end() ? NULL : *it;
 }
 
-bool PrefService::IsManagedPreference(const wchar_t* pref_name) const {
+// TODO(viettrungluu): deprecate:
+const PrefService::Preference* PrefService::FindPreference(
+    const wchar_t* pref_name) const {
+  return FindPreference(WideToUTF8(pref_name).c_str());
+}
+
+bool PrefService::IsManagedPreference(const char* pref_name) const {
   const Preference* pref = FindPreference(pref_name);
   if (pref && pref->IsManaged()) {
     return true;
@@ -343,18 +443,23 @@ bool PrefService::IsManagedPreference(const wchar_t* pref_name) const {
   return false;
 }
 
-void PrefService::FireObserversIfChanged(const wchar_t* path,
+// TODO(viettrungluu): deprecate:
+bool PrefService::IsManagedPreference(const wchar_t* pref_name) const {
+  return IsManagedPreference(WideToUTF8(pref_name).c_str());
+}
+
+void PrefService::FireObserversIfChanged(const char* path,
                                          const Value* old_value) {
   if (PrefIsChanged(path, old_value))
     FireObservers(path);
 }
 
-void PrefService::FireObservers(const wchar_t* path) {
+void PrefService::FireObservers(const char* path) {
   DCHECK(CalledOnValidThread());
 
-  // Convert path to a std::wstring because the Details constructor requires a
+  // Convert path to a std::string because the Details constructor requires a
   // class.
-  std::wstring path_str(path);
+  std::string path_str(path);
   PrefObserverMap::iterator observer_iterator = pref_observers_.find(path_str);
   if (observer_iterator == pref_observers_.end())
     return;
@@ -364,11 +469,11 @@ void PrefService::FireObservers(const wchar_t* path) {
   while ((observer = it.GetNext()) != NULL) {
     observer->Observe(NotificationType::PREF_CHANGED,
                       Source<PrefService>(this),
-                      Details<std::wstring>(&path_str));
+                      Details<std::string>(&path_str));
   }
 }
 
-bool PrefService::PrefIsChanged(const wchar_t* path,
+bool PrefService::PrefIsChanged(const char* path,
                                 const Value* old_value) {
   Value* new_value = NULL;
   pref_value_store_->GetValue(path, &new_value);
@@ -376,7 +481,7 @@ bool PrefService::PrefIsChanged(const wchar_t* path,
   return (!new_value || !old_value->Equals(new_value));
 }
 
-const DictionaryValue* PrefService::GetDictionary(const wchar_t* path) const {
+const DictionaryValue* PrefService::GetDictionary(const char* path) const {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -390,7 +495,12 @@ const DictionaryValue* PrefService::GetDictionary(const wchar_t* path) const {
   return static_cast<const DictionaryValue*>(value);
 }
 
-const ListValue* PrefService::GetList(const wchar_t* path) const {
+// TODO(viettrungluu): deprecate:
+const DictionaryValue* PrefService::GetDictionary(const wchar_t* path) const {
+  return GetDictionary(WideToUTF8(path).c_str());
+}
+
+const ListValue* PrefService::GetList(const char* path) const {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -404,7 +514,12 @@ const ListValue* PrefService::GetList(const wchar_t* path) const {
   return static_cast<const ListValue*>(value);
 }
 
-void PrefService::AddPrefObserver(const wchar_t* path,
+// TODO(viettrungluu): deprecate:
+const ListValue* PrefService::GetList(const wchar_t* path) const {
+  return GetList(WideToUTF8(path).c_str());
+}
+
+void PrefService::AddPrefObserver(const char* path,
                                   NotificationObserver* obs) {
   DCHECK(CalledOnValidThread());
 
@@ -438,7 +553,13 @@ void PrefService::AddPrefObserver(const wchar_t* path,
   observer_list->AddObserver(obs);
 }
 
-void PrefService::RemovePrefObserver(const wchar_t* path,
+// TODO(viettrungluu): deprecate:
+void PrefService::AddPrefObserver(const wchar_t* path,
+                                  NotificationObserver* obs) {
+  AddPrefObserver(WideToUTF8(path).c_str(), obs);
+}
+
+void PrefService::RemovePrefObserver(const char* path,
                                      NotificationObserver* obs) {
   DCHECK(CalledOnValidThread());
 
@@ -449,6 +570,12 @@ void PrefService::RemovePrefObserver(const wchar_t* path,
 
   NotificationObserverList* observer_list = observer_iterator->second;
   observer_list->RemoveObserver(obs);
+}
+
+// TODO(viettrungluu): deprecate:
+void PrefService::RemovePrefObserver(const wchar_t* path,
+                                     NotificationObserver* obs) {
+  RemovePrefObserver(WideToUTF8(path).c_str(), obs);
 }
 
 void PrefService::RegisterPreference(Preference* pref) {
@@ -462,7 +589,7 @@ void PrefService::RegisterPreference(Preference* pref) {
   prefs_.insert(pref);
 }
 
-void PrefService::ClearPref(const wchar_t* path) {
+void PrefService::ClearPref(const char* path) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -478,7 +605,12 @@ void PrefService::ClearPref(const wchar_t* path) {
     FireObservers(path);
 }
 
-void PrefService::Set(const wchar_t* path, const Value& value) {
+// TODO(viettrungluu): deprecate:
+void PrefService::ClearPref(const wchar_t* path) {
+  ClearPref(WideToUTF8(path).c_str());
+}
+
+void PrefService::Set(const char* path, const Value& value) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -509,7 +641,12 @@ void PrefService::Set(const wchar_t* path, const Value& value) {
   FireObserversIfChanged(path, old_value.get());
 }
 
-void PrefService::SetBoolean(const wchar_t* path, bool value) {
+// TODO(viettrungluu): deprecate:
+void PrefService::Set(const wchar_t* path, const Value& value) {
+  Set(WideToUTF8(path).c_str(), value);
+}
+
+void PrefService::SetBoolean(const char* path, bool value) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -533,7 +670,12 @@ void PrefService::SetBoolean(const wchar_t* path, bool value) {
   FireObserversIfChanged(path, old_value.get());
 }
 
-void PrefService::SetInteger(const wchar_t* path, int value) {
+// TODO(viettrungluu): deprecate:
+void PrefService::SetBoolean(const wchar_t* path, bool value) {
+  SetBoolean(WideToUTF8(path).c_str(), value);
+}
+
+void PrefService::SetInteger(const char* path, int value) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -557,7 +699,12 @@ void PrefService::SetInteger(const wchar_t* path, int value) {
   FireObserversIfChanged(path, old_value.get());
 }
 
-void PrefService::SetReal(const wchar_t* path, double value) {
+// TODO(viettrungluu): deprecate:
+void PrefService::SetInteger(const wchar_t* path, int value) {
+  SetInteger(WideToUTF8(path).c_str(), value);
+}
+
+void PrefService::SetReal(const char* path, double value) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -581,7 +728,12 @@ void PrefService::SetReal(const wchar_t* path, double value) {
   FireObserversIfChanged(path, old_value.get());
 }
 
-void PrefService::SetString(const wchar_t* path, const std::string& value) {
+// TODO(viettrungluu): deprecate:
+void PrefService::SetReal(const wchar_t* path, double value) {
+  SetReal(WideToUTF8(path).c_str(), value);
+}
+
+void PrefService::SetString(const char* path, const std::string& value) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -605,7 +757,12 @@ void PrefService::SetString(const wchar_t* path, const std::string& value) {
   FireObserversIfChanged(path, old_value.get());
 }
 
-void PrefService::SetFilePath(const wchar_t* path, const FilePath& value) {
+// TODO(viettrungluu): deprecate:
+void PrefService::SetString(const wchar_t* path, const std::string& value) {
+  SetString(WideToUTF8(path).c_str(), value);
+}
+
+void PrefService::SetFilePath(const char* path, const FilePath& value) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -637,7 +794,12 @@ void PrefService::SetFilePath(const wchar_t* path, const FilePath& value) {
   FireObserversIfChanged(path, old_value.get());
 }
 
-void PrefService::SetInt64(const wchar_t* path, int64 value) {
+// TODO(viettrungluu): deprecate:
+void PrefService::SetFilePath(const wchar_t* path, const FilePath& value) {
+  SetFilePath(WideToUTF8(path).c_str(), value);
+}
+
+void PrefService::SetInt64(const char* path, int64 value) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -661,7 +823,12 @@ void PrefService::SetInt64(const wchar_t* path, int64 value) {
   FireObserversIfChanged(path, old_value.get());
 }
 
-int64 PrefService::GetInt64(const wchar_t* path) const {
+// TODO(viettrungluu): deprecate:
+void PrefService::SetInt64(const wchar_t* path, int64 value) {
+  SetInt64(WideToUTF8(path).c_str(), value);
+}
+
+int64 PrefService::GetInt64(const char* path) const {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -678,13 +845,23 @@ int64 PrefService::GetInt64(const wchar_t* path) const {
   return val;
 }
 
-void PrefService::RegisterInt64Pref(const wchar_t* path, int64 default_value) {
+// TODO(viettrungluu): deprecate:
+int64 PrefService::GetInt64(const wchar_t* path) const {
+  return GetInt64(WideToUTF8(path).c_str());
+}
+
+void PrefService::RegisterInt64Pref(const char* path, int64 default_value) {
   Preference* pref = new Preference(pref_value_store_.get(), path,
       Value::CreateStringValue(base::Int64ToString(default_value)));
   RegisterPreference(pref);
 }
 
-DictionaryValue* PrefService::GetMutableDictionary(const wchar_t* path) {
+// TODO(viettrungluu): deprecate:
+void PrefService::RegisterInt64Pref(const wchar_t* path, int64 default_value) {
+  RegisterInt64Pref(WideToUTF8(path).c_str(), default_value);
+}
+
+DictionaryValue* PrefService::GetMutableDictionary(const char* path) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -709,7 +886,12 @@ DictionaryValue* PrefService::GetMutableDictionary(const wchar_t* path) {
   return dict;
 }
 
-ListValue* PrefService::GetMutableList(const wchar_t* path) {
+// TODO(viettrungluu): deprecate:
+DictionaryValue* PrefService::GetMutableDictionary(const wchar_t* path) {
+  return GetMutableDictionary(WideToUTF8(path).c_str());
+}
+
+ListValue* PrefService::GetMutableList(const char* path) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -733,7 +915,12 @@ ListValue* PrefService::GetMutableList(const wchar_t* path) {
   return list;
 }
 
-Value* PrefService::GetPrefCopy(const wchar_t* path) {
+// TODO(viettrungluu): deprecate:
+ListValue* PrefService::GetMutableList(const wchar_t* path) {
+  return GetMutableList(WideToUTF8(path).c_str());
+}
+
+Value* PrefService::GetPrefCopy(const char* path) {
   DCHECK(CalledOnValidThread());
 
   const Preference* pref = FindPreference(path);
@@ -745,7 +932,7 @@ Value* PrefService::GetPrefCopy(const wchar_t* path) {
 // PrefService::Preference
 
 PrefService::Preference::Preference(PrefValueStore* pref_value_store,
-                                    const wchar_t* name,
+                                    const char* name,
                                     Value* default_value)
       : type_(Value::TYPE_NULL),
         name_(name),
@@ -811,7 +998,7 @@ void PrefService::FireObserversForRefreshedManagedPrefs(
   for (current = changed_prefs_paths.begin();
        current != changed_prefs_paths.end();
        ++current) {
-    FireObservers(UTF8ToWide(current->data()).data());
+    FireObservers(current->c_str());
   }
 }
 

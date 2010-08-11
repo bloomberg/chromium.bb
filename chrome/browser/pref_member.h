@@ -41,7 +41,7 @@ class PrefMemberBase : public NotificationObserver {
   virtual ~PrefMemberBase();
 
   // See PrefMember<> for description.
-  void Init(const wchar_t* pref_name, PrefService* prefs,
+  void Init(const char* pref_name, PrefService* prefs,
             NotificationObserver* observer);
 
   // See PrefMember<> for description.
@@ -57,12 +57,12 @@ class PrefMemberBase : public NotificationObserver {
   // This methods is used to do the actual sync with pref of the specified type.
   virtual void UpdateValueFromPref() = 0;
 
-  const std::wstring& pref_name() const { return pref_name_; }
+  const std::string& pref_name() const { return pref_name_; }
   PrefService* prefs() { return prefs_; }
 
  // Ordered the members to compact the class instance.
  private:
-  std::wstring pref_name_;
+  std::string pref_name_;
   NotificationObserver* observer_;
   PrefService* prefs_;
 
@@ -84,7 +84,7 @@ class PrefMember : public subtle::PrefMemberBase {
 
   // Do the actual initialization of the class.  |observer| may be null if you
   // don't want any notifications of changes.
-  void Init(const wchar_t* pref_name, PrefService* prefs,
+  void Init(const char* pref_name, PrefService* prefs,
             NotificationObserver* observer) {
     subtle::PrefMemberBase::Init(pref_name, prefs, observer);
   }

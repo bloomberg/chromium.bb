@@ -120,7 +120,7 @@ GeneralPageGtk::~GeneralPageGtk() {
 ///////////////////////////////////////////////////////////////////////////////
 // GeneralPageGtk, OptionsPageBase overrides:
 
-void GeneralPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
+void GeneralPageGtk::NotifyPrefChanged(const std::string* pref_name) {
   initializing_ = true;
   if (!pref_name || *pref_name == prefs::kRestoreOnStartup) {
     PrefService* prefs = profile()->GetPrefs();

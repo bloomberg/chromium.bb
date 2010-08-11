@@ -16,9 +16,9 @@ class CoreChromeOSOptionsHandler : public ::CoreOptionsHandler {
 
  protected:
   // ::CoreOptionsHandler Implementation
-  virtual Value* FetchPref(const std::wstring& pref_name);
-  virtual void ObservePref(const std::wstring& pref_name);
-  virtual void SetPref(const std::wstring& pref_name,
+  virtual Value* FetchPref(const std::string& pref_name);
+  virtual void ObservePref(const std::string& pref_name);
+  virtual void SetPref(const std::string& pref_name,
                        Value::ValueType pref_type,
                        const std::string& value_string);
 

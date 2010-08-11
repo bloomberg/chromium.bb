@@ -294,7 +294,7 @@ void FontsPageView::InitControlLayout() {
   layout->AddView(encoding_contents_);
 }
 
-void FontsPageView::NotifyPrefChanged(const std::wstring* pref_name) {
+void FontsPageView::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kWebKitFixedFontFamily) {
     fixed_width_font_size_pixel_ = fixed_width_size_.GetValue();
     fixed_width_font_display_view_->SetFontType(

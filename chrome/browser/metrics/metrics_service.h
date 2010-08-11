@@ -334,11 +334,11 @@ class MetricsService : public NotificationObserver,
                        const NotificationDetails& details);
 
   // Reads, increments and then sets the specified integer preference.
-  void IncrementPrefValue(const wchar_t* path);
+  void IncrementPrefValue(const char* path);
 
   // Reads, increments and then sets the specified long preference that is
   // stored as a string.
-  void IncrementLongPrefsValue(const wchar_t* path);
+  void IncrementLongPrefsValue(const char* path);
 
   // Records a renderer process crash.
   void LogRendererCrash();
@@ -353,8 +353,8 @@ class MetricsService : public NotificationObserver,
   // in node. The pref key for the number of bookmarks in num_bookmarks_key and
   // the pref key for number of folders in num_folders_key.
   void LogBookmarks(const BookmarkNode* node,
-                    const wchar_t* num_bookmarks_key,
-                    const wchar_t* num_folders_key);
+                    const char* num_bookmarks_key,
+                    const char* num_folders_key);
 
   // Sets preferences for the number of bookmarks in model.
   void LogBookmarks(BookmarkModel* model);
@@ -392,7 +392,7 @@ class MetricsService : public NotificationObserver,
                           const NotificationDetails& details);
 
   // Sets the value of the specified path in prefs and schedules a save.
-  void RecordBooleanPrefValue(const wchar_t* path, bool value);
+  void RecordBooleanPrefValue(const char* path, bool value);
 
   NotificationRegistrar registrar_;
 

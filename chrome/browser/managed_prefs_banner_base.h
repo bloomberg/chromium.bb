@@ -36,14 +36,14 @@ class ManagedPrefsBannerBase : public NotificationObserver {
   bool DetermineVisibility() const;
 
   // Add a local state preference as visibility trigger.
-  void AddLocalStatePref(const wchar_t* pref);
+  void AddLocalStatePref(const char* pref);
   // Remove a local state preference from being a visibility trigger.
-  void RemoveLocalStatePref(const wchar_t* pref);
+  void RemoveLocalStatePref(const char* pref);
 
   // Add a user preference as visibility trigger.
-  void AddUserPref(const wchar_t* pref);
+  void AddUserPref(const char* pref);
   // Remove a user preference from being a visibility trigger.
-  void RemoveUserPref(const wchar_t* pref);
+  void RemoveUserPref(const char* pref);
 
  protected:
   // Update banner visibility. This is called whenever a preference change is

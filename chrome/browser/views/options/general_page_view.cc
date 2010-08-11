@@ -348,7 +348,7 @@ void GeneralPageView::InitControlLayout() {
   show_home_button_.Init(prefs::kShowHomeButton, profile()->GetPrefs(), this);
 }
 
-void GeneralPageView::NotifyPrefChanged(const std::wstring* pref_name) {
+void GeneralPageView::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kRestoreOnStartup) {
     PrefService* prefs = profile()->GetPrefs();
     const SessionStartupPref startup_pref =

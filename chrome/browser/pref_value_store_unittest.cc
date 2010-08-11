@@ -18,18 +18,18 @@ using testing::Mock;
 
 // Names of the preferences used in this test program.
 namespace prefs {
-  const wchar_t kCurrentThemeID[] = L"extensions.theme.id";
-  const wchar_t kDeleteCache[] = L"browser.clear_data.cache";
-  const wchar_t kHomepage[] = L"homepage";
-  const wchar_t kMaxTabs[] = L"tabs.max_tabs";
-  const wchar_t kMissingPref[] = L"this.pref.does_not_exist";
-  const wchar_t kRecommendedPref[] = L"this.pref.recommended_value_only";
-  const wchar_t kSampleDict[] = L"sample.dict";
-  const wchar_t kSampleList[] = L"sample.list";
+  const char kCurrentThemeID[] = "extensions.theme.id";
+  const char kDeleteCache[] = "browser.clear_data.cache";
+  const char kHomepage[] = "homepage";
+  const char kMaxTabs[] = "tabs.max_tabs";
+  const char kMissingPref[] = "this.pref.does_not_exist";
+  const char kRecommendedPref[] = "this.pref.recommended_value_only";
+  const char kSampleDict[] = "sample.dict";
+  const char kSampleList[] = "sample.list";
 
   // This must match the actual pref name so the command-line store knows about
   // it.
-  const wchar_t kApplicationLocale[] = L"intl.app_locale";
+  const char kApplicationLocale[] = "intl.app_locale";
 }
 
 // Potentailly expected values of all preferences used in this test program.
@@ -38,24 +38,24 @@ namespace prefs {
 namespace user_pref {
   const int kMaxTabsValue = 31;
   const bool kDeleteCacheValue = true;
-  const std::wstring kCurrentThemeIDValue = L"abcdefg";
-  const std::wstring kHomepageValue = L"http://www.google.com";
-  const std::wstring kApplicationLocaleValue = L"is-WRONG";
+  const char kCurrentThemeIDValue[] = "abcdefg";
+  const char kHomepageValue[] = "http://www.google.com";
+  const char kApplicationLocaleValue[] = "is-WRONG";
 }
 
 namespace enforced_pref {
-  const std::wstring kHomepageValue = L"http://www.topeka.com";
+  const std::string kHomepageValue = "http://www.topeka.com";
 }
 
 namespace extension_pref {
-  const std::wstring kCurrentThemeIDValue = L"set by extension";
-  const std::wstring kHomepageValue = L"http://www.chromium.org";
+  const char kCurrentThemeIDValue[] = "set by extension";
+  const char kHomepageValue[] = "http://www.chromium.org";
 }
 
 namespace command_line_pref {
-  const std::wstring kApplicationLocaleValue = L"hi-MOM";
-  const std::wstring kCurrentThemeIDValue = L"zyxwvut";
-  const std::wstring kHomepageValue = L"http://www.ferretcentral.org";
+  const char kApplicationLocaleValue[] = "hi-MOM";
+  const char kCurrentThemeIDValue[] = "zyxwvut";
+  const char kHomepageValue[] = "http://www.ferretcentral.org";
 }
 
 namespace recommended_pref {
@@ -115,7 +115,7 @@ class PrefValueStoreTest : public testing::Test {
   DictionaryValue* CreateEnforcedPrefs() {
     DictionaryValue* enforced_prefs = new DictionaryValue();
     enforced_prefs->SetString(prefs::kHomepage, enforced_pref::kHomepageValue);
-    expected_differing_paths_.push_back(WideToUTF8(prefs::kHomepage));
+    expected_differing_paths_.push_back(prefs::kHomepage);
     return enforced_prefs;
   }
 
@@ -150,10 +150,10 @@ class PrefValueStoreTest : public testing::Test {
     // Expected differing paths must be added in lexicographic order
     // to work properly
     expected_differing_paths_.push_back("tabs");
-    expected_differing_paths_.push_back(WideToUTF8(prefs::kMaxTabs));
+    expected_differing_paths_.push_back(prefs::kMaxTabs);
     expected_differing_paths_.push_back("this");
     expected_differing_paths_.push_back("this.pref");
-    expected_differing_paths_.push_back(WideToUTF8(prefs::kRecommendedPref));
+    expected_differing_paths_.push_back(prefs::kRecommendedPref);
     return recommended_prefs;  }
 
   DictionaryValue* CreateSampleDictValue() {
@@ -225,7 +225,7 @@ TEST_F(PrefValueStoreTest, GetValue) {
   // extension-defined value.
   value = NULL;
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomepage, &value));
-  std::wstring actual_str_value;
+  std::string actual_str_value;
   EXPECT_TRUE(value->GetAsString(&actual_str_value));
   EXPECT_EQ(enforced_pref::kHomepageValue, actual_str_value);
 
@@ -308,7 +308,7 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   pref_value_store_->SetUserPrefValue(prefs::kHomepage, new_value);
 
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomepage, &actual_value));
-  std::wstring value_str;
+  std::string value_str;
   actual_value->GetAsString(&value_str);
   ASSERT_EQ(enforced_pref::kHomepageValue, value_str);
 
@@ -331,7 +331,7 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   pref_value_store_->SetUserPrefValue(prefs::kSampleDict, expected_dict_value);
 
   actual_value = NULL;
-  std::wstring key(prefs::kSampleDict);
+  std::string key(prefs::kSampleDict);
   pref_value_store_->GetValue(key , &actual_value);
 
   ASSERT_EQ(expected_dict_value, actual_value);

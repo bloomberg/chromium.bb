@@ -14,7 +14,7 @@
 
 namespace browser_sync {
 
-static const wchar_t* kSynchronizedPreferences[] = {
+static const char* kSynchronizedPreferences[] = {
   // Options dialog: Basics tab.
   prefs::kRestoreOnStartup,
   prefs::kURLsToRestoreOnStartup,

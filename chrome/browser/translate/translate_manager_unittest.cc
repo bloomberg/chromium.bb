@@ -185,12 +185,12 @@ class TranslateManagerTest : public RenderViewHostTestHarness,
                                             std::string());
   }
 
-  void SetPrefObserverExpectation(const wchar_t* path) {
+  void SetPrefObserverExpectation(const char* path) {
     EXPECT_CALL(
         pref_observer_,
         Observe(NotificationType(NotificationType::PREF_CHANGED),
                 _,
-                Property(&Details<std::wstring>::ptr, Pointee(path))));
+                Property(&Details<std::string>::ptr, Pointee(path))));
   }
 
   NotificationObserverMock pref_observer_;

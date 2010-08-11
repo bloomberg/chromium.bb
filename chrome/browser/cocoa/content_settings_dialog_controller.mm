@@ -45,7 +45,7 @@ ContentSettingsDialogController* g_instance = nil;
 
 // Callback when preferences are changed. |prefName| is the name of the
 // pref that has changed.
-- (void)prefChanged:(std::wstring*)prefName;
+- (void)prefChanged:(std::string*)prefName;
 
 @end
 
@@ -63,7 +63,7 @@ class PrefObserverBridge : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     if (!disabled_ && type == NotificationType::PREF_CHANGED) {
-      [controller_ prefChanged:Details<std::wstring>(details).ptr()];
+      [controller_ prefChanged:Details<std::string>(details).ptr()];
     }
   }
 
@@ -504,7 +504,7 @@ class PrefObserverDisabler {
 
 // Callback when preferences are changed. |prefName| is the name of the
 // pref that has changed and should not be NULL.
-- (void)prefChanged:(std::wstring*)prefName {
+- (void)prefChanged:(std::string*)prefName {
   DCHECK(prefName);
   if (!prefName) return;
   if (*prefName == prefs::kClearSiteDataOnExit) {

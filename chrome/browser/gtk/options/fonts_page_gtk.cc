@@ -120,7 +120,7 @@ void FontsPageGtk::InitDefaultEncodingComboBox() {
   }
 }
 
-void FontsPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
+void FontsPageGtk::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kWebKitSerifFontFamily ||
       *pref_name == prefs::kWebKitDefaultFontSize) {
     gtk_font_button_set_font_name(GTK_FONT_BUTTON(serif_font_button_),

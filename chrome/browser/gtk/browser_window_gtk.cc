@@ -1141,7 +1141,7 @@ void BrowserWindowGtk::Observe(NotificationType type,
       break;
 
     case NotificationType::PREF_CHANGED: {
-      std::wstring* pref_name = Details<std::wstring>(details).ptr();
+      std::string* pref_name = Details<std::string>(details).ptr();
       if (*pref_name == prefs::kUseCustomChromeFrame) {
         UpdateCustomFrame();
       } else {
@@ -1750,27 +1750,27 @@ void BrowserWindowGtk::SaveWindowPosition() {
   if (!g_browser_process->local_state())
     return;
 
-  std::wstring window_name = browser_->GetWindowPlacementKey();
+  std::string window_name = browser_->GetWindowPlacementKey();
   DictionaryValue* window_preferences =
       g_browser_process->local_state()->GetMutableDictionary(
           window_name.c_str());
   // Note that we store left/top for consistency with Windows, but that we
   // *don't* obey them; we only use them for computing width/height.  See
   // comments in SetGeometryHints().
-  window_preferences->SetInteger(L"left", restored_bounds_.x());
-  window_preferences->SetInteger(L"top", restored_bounds_.y());
-  window_preferences->SetInteger(L"right", restored_bounds_.right());
-  window_preferences->SetInteger(L"bottom", restored_bounds_.bottom());
-  window_preferences->SetBoolean(L"maximized", IsMaximized());
+  window_preferences->SetInteger("left", restored_bounds_.x());
+  window_preferences->SetInteger("top", restored_bounds_.y());
+  window_preferences->SetInteger("right", restored_bounds_.right());
+  window_preferences->SetInteger("bottom", restored_bounds_.bottom());
+  window_preferences->SetBoolean("maximized", IsMaximized());
 
   scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_info_provider(
       WindowSizer::CreateDefaultMonitorInfoProvider());
   gfx::Rect work_area(
       monitor_info_provider->GetMonitorWorkAreaMatching(restored_bounds_));
-  window_preferences->SetInteger(L"work_area_left", work_area.x());
-  window_preferences->SetInteger(L"work_area_top", work_area.y());
-  window_preferences->SetInteger(L"work_area_right", work_area.right());
-  window_preferences->SetInteger(L"work_area_bottom", work_area.bottom());
+  window_preferences->SetInteger("work_area_left", work_area.x());
+  window_preferences->SetInteger("work_area_top", work_area.y());
+  window_preferences->SetInteger("work_area_right", work_area.right());
+  window_preferences->SetInteger("work_area_bottom", work_area.bottom());
 }
 
 // static

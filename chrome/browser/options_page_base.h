@@ -50,7 +50,7 @@ class OptionsPageBase : public NotificationObserver {
   // the specific pref that changed, or NULL if all pref UI should be
   // validated. This should be called during setup, but with NULL as the
   // parameter to allow initial state to be set.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name) { }
+  virtual void NotifyPrefChanged(const std::string* pref_name) {}
 
  private:
   // The Profile associated with this page.

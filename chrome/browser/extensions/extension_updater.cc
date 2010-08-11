@@ -334,7 +334,7 @@ ExtensionUpdater::~ExtensionUpdater() {
 }
 
 static void EnsureInt64PrefRegistered(PrefService* prefs,
-                                      const wchar_t name[]) {
+                                      const char name[]) {
   if (!prefs->FindPreference(name))
     prefs->RegisterInt64Pref(name, 0);
 }

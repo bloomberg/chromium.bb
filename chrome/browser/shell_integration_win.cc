@@ -17,6 +17,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -224,8 +225,8 @@ bool MigrateChromiumShortcutsTask::GetExpectedAppId(
 
   std::wstring app_name;
   if (command_line.HasSwitch(switches::kApp)) {
-    app_name = web_app::GenerateApplicationNameFromURL(
-        GURL(command_line.GetSwitchValueASCII(switches::kApp)));
+    app_name = UTF8ToWide(web_app::GenerateApplicationNameFromURL(
+        GURL(command_line.GetSwitchValueASCII(switches::kApp))));
   } else {
     app_name = BrowserDistribution::GetDistribution()->GetBrowserAppId();
   }

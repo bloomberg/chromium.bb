@@ -1121,7 +1121,7 @@ void ProfileImpl::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
   if (NotificationType::PREF_CHANGED == type) {
-    std::wstring* pref_name_in = Details<std::wstring>(details).ptr();
+    std::string* pref_name_in = Details<std::string>(details).ptr();
     PrefService* prefs = Source<PrefService>(source).ptr();
     DCHECK(pref_name_in && prefs);
     if (*pref_name_in == prefs::kSpellCheckDictionary ||

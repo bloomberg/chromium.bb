@@ -150,7 +150,7 @@ void ContentPageGtk::OnStateChanged() {
 // If |pref_name| is NULL, set the state of all the widgets. (This is used
 // in ContentPageGtk() above to initialize the dialog.) Otherwise, reset the
 // state of the widget for the given preference name, as it has changed.
-void ContentPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
+void ContentPageGtk::NotifyPrefChanged(const std::string* pref_name) {
   initializing_ = true;
   if (!pref_name || *pref_name == prefs::kPasswordManagerEnabled) {
     if (ask_to_save_passwords_.GetValue()) {

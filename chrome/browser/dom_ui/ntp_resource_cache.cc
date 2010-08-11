@@ -176,7 +176,7 @@ void NTPResourceCache::Observe(NotificationType type,
     new_tab_incognito_css_ = NULL;
     new_tab_css_ = NULL;
   } else if (NotificationType::PREF_CHANGED == type) {
-    std::wstring* pref_name = Details<std::wstring>(details).ptr();
+    std::string* pref_name = Details<std::string>(details).ptr();
     if (*pref_name == prefs::kShowBookmarkBar ||
         *pref_name == prefs::kHomePageIsNewTabPage ||
         *pref_name == prefs::kNTPShownSections) {

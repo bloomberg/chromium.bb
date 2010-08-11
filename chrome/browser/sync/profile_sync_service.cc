@@ -389,7 +389,7 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 }
 
 // static
-const wchar_t* ProfileSyncService::GetPrefNameForDataType(
+const char* ProfileSyncService::GetPrefNameForDataType(
     syncable::ModelType data_type) {
   switch (data_type) {
     case syncable::BOOKMARKS:
@@ -664,7 +664,7 @@ void ProfileSyncService::ChangePreferredDataTypes(
     syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
     if (!registered_types.count(model_type))
       continue;
-    const wchar_t* pref_name = GetPrefNameForDataType(model_type);
+    const char* pref_name = GetPrefNameForDataType(model_type);
     if (!pref_name)
       continue;
     profile_->GetPrefs()->SetBoolean(pref_name,
@@ -689,7 +689,7 @@ void ProfileSyncService::GetPreferredDataTypes(
     syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
     if (!registered_types.count(model_type))
       continue;
-    const wchar_t* pref_name = GetPrefNameForDataType(model_type);
+    const char* pref_name = GetPrefNameForDataType(model_type);
     if (!pref_name)
       continue;
     if (profile_->GetPrefs()->GetBoolean(pref_name))
@@ -795,7 +795,7 @@ void ProfileSyncService::Observe(NotificationType type,
       break;
     }
     case NotificationType::PREF_CHANGED: {
-      std::wstring* pref_name = Details<std::wstring>(details).ptr();
+      std::string* pref_name = Details<std::string>(details).ptr();
       if (*pref_name == prefs::kSyncManaged) {
         FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
         if (*pref_sync_managed_)

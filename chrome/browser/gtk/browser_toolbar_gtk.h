@@ -160,7 +160,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                        GdkEventExpose*);
 
   // Updates preference-dependent state.
-  void NotifyPrefChanged(const std::wstring* pref);
+  void NotifyPrefChanged(const std::string* pref);
 
   // Start the upgrade notification animation if we have detected an upgrade
   // and the current toolbar is focused.

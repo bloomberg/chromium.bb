@@ -180,10 +180,10 @@ void Preferences::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED)
-    NotifyPrefChanged(Details<std::wstring>(details).ptr());
+    NotifyPrefChanged(Details<std::string>(details).ptr());
 }
 
-void Preferences::NotifyPrefChanged(const std::wstring* pref_name) {
+void Preferences::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kTapToClickEnabled) {
     CrosLibrary::Get()->GetSynapticsLibrary()->SetBoolParameter(
         PARAM_BOOL_TAP_TO_CLICK,

@@ -18,8 +18,8 @@ class AbstractPreferenceMergeTest : public testing::Test {
   }
 
   void SetContentPattern(DictionaryValue* patterns_dict,
-                         const std::wstring& expression,
-                         const std::wstring& content_type,
+                         const std::string& expression,
+                         const std::string& content_type,
                          int setting) {
     DictionaryValue* expression_dict;
     bool found =
@@ -34,12 +34,12 @@ class AbstractPreferenceMergeTest : public testing::Test {
         Value::CreateIntegerValue(setting));
   }
 
-  void SetPrefToNull(const std::wstring& pref_name) {
+  void SetPrefToNull(const std::string& pref_name) {
     scoped_ptr<Value> null_value(Value::CreateNullValue());
     pref_service_->Set(pref_name.c_str(), *null_value);
   }
 
-  void SetPrefToEmpty(const std::wstring& pref_name) {
+  void SetPrefToEmpty(const std::string& pref_name) {
     scoped_ptr<Value> empty_value;
     const PrefService::Preference* pref =
         pref_service_->FindPreference(pref_name.c_str());
@@ -198,11 +198,11 @@ TEST_F(ListPreferenceMergeTest, Equals) {
 class DictionaryPreferenceMergeTest : public AbstractPreferenceMergeTest {
  protected:
   DictionaryPreferenceMergeTest() :
-      expression0_(L"expression0"),
-      expression1_(L"expression1"),
-      expression2_(L"expression2"),
-      content_type0_(L"content_type0"),
-      content_type1_(L"content_type1") {}
+      expression0_("expression0"),
+      expression1_("expression1"),
+      expression2_("expression2"),
+      content_type0_("content_type0"),
+      content_type1_("content_type1") {}
 
   virtual void SetUp() {
     AbstractPreferenceMergeTest::SetUp();
@@ -211,11 +211,11 @@ class DictionaryPreferenceMergeTest : public AbstractPreferenceMergeTest {
     SetContentPattern(&server_patterns_, expression1_, content_type0_, 1);
   }
 
-  std::wstring expression0_;
-  std::wstring expression1_;
-  std::wstring expression2_;
-  std::wstring content_type0_;
-  std::wstring content_type1_;
+  std::string expression0_;
+  std::string expression1_;
+  std::string expression2_;
+  std::string content_type0_;
+  std::string content_type1_;
   DictionaryValue server_patterns_;
 };
 
@@ -340,11 +340,11 @@ TEST_F(DictionaryPreferenceMergeTest, ConflictButServerWins) {
 class IndividualPreferenceMergeTest : public AbstractPreferenceMergeTest {
  protected:
   IndividualPreferenceMergeTest() :
-      url0_(L"http://example.com/server0"),
-      url1_(L"http://example.com/server1"),
-      expression0_(L"expression0"),
-      expression1_(L"expression1"),
-      content_type0_(L"content_type0") {}
+      url0_("http://example.com/server0"),
+      url1_("http://example.com/server1"),
+      expression0_("expression0"),
+      expression1_("expression1"),
+      content_type0_("content_type0") {}
 
   virtual void SetUp() {
     AbstractPreferenceMergeTest::SetUp();
@@ -352,7 +352,7 @@ class IndividualPreferenceMergeTest : public AbstractPreferenceMergeTest {
     SetContentPattern(&server_patterns_, expression0_, content_type0_, 1);
   }
 
-  bool MergeListPreference(const wchar_t* pref) {
+  bool MergeListPreference(const char* pref) {
     ListValue* local_list_value = pref_service_->GetMutableList(pref);
     local_list_value->Append(Value::CreateStringValue(url1_));
 
@@ -366,7 +366,7 @@ class IndividualPreferenceMergeTest : public AbstractPreferenceMergeTest {
     return merged_value->Equals(&expected);
   }
 
-  bool MergeDictionaryPreference(const wchar_t* pref) {
+  bool MergeDictionaryPreference(const char* pref) {
     DictionaryValue* local_dict_value =
         pref_service_->GetMutableDictionary(pref);
     SetContentPattern(local_dict_value, expression1_, content_type0_, 1);
@@ -381,11 +381,11 @@ class IndividualPreferenceMergeTest : public AbstractPreferenceMergeTest {
     return merged_value->Equals(&expected);
   }
 
-  std::wstring url0_;
-  std::wstring url1_;
-  std::wstring expression0_;
-  std::wstring expression1_;
-  std::wstring content_type0_;
+  std::string url0_;
+  std::string url1_;
+  std::string expression0_;
+  std::string expression1_;
+  std::string content_type0_;
   ListValue server_url_list_;
   DictionaryValue server_patterns_;
 };

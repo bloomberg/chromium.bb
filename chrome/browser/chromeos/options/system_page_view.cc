@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -214,7 +214,7 @@ class TouchpadSection : public SettingsPageSection,
  protected:
   // SettingsPageSection overrides:
   virtual void InitContents(GridLayout* layout);
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
  private:
   // The View that contains the contents of the section.
@@ -328,7 +328,7 @@ void TouchpadSection::InitContents(GridLayout* layout) {
                     profile()->GetPrefs(), this);
 }
 
-void TouchpadSection::NotifyPrefChanged(const std::wstring* pref_name) {
+void TouchpadSection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kTapToClickEnabled) {
     bool enabled =  tap_to_click_enabled_.GetValue();
     enable_tap_to_click_checkbox_->SetChecked(enabled);
@@ -364,7 +364,7 @@ class LanguageSection : public SettingsPageSection,
   };
   // Overridden from SettingsPageSection:
   virtual void InitContents(GridLayout* layout);
-  void NotifyPrefChanged(const std::wstring* pref_name);
+  void NotifyPrefChanged(const std::string* pref_name);
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
@@ -424,7 +424,7 @@ void LanguageSection::ItemChanged(views::Combobox* sender,
   xkb_pref_.SetValue(new_index);
 }
 
-void LanguageSection::NotifyPrefChanged(const std::wstring* pref_name) {
+void LanguageSection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kLanguageXkbModifierRemap) {
     const int id = xkb_pref_.GetValue();
     if (id >= 0) {
@@ -450,7 +450,7 @@ class AccessibilitySection : public SettingsPageSection,
 
   // Overridden from SettingsPageSection:
   virtual void InitContents(GridLayout* layout);
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
  private:
   // The View that contains the contents of the section.
@@ -495,7 +495,7 @@ void AccessibilitySection::ButtonPressed(
   }
 }
 
-void AccessibilitySection::NotifyPrefChanged(const std::wstring* pref_name) {
+void AccessibilitySection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kAccessibilityEnabled) {
     bool enabled = accessibility_enabled_.GetValue();
     accessibility_checkbox_->SetChecked(enabled);

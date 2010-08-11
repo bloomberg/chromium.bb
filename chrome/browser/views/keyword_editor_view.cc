@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
@@ -129,7 +130,7 @@ std::wstring KeywordEditorView::GetWindowTitle() const {
 }
 
 std::wstring KeywordEditorView::GetWindowName() const {
-  return prefs::kKeywordEditorWindowPlacement;
+  return UTF8ToWide(prefs::kKeywordEditorWindowPlacement);
 }
 
 int KeywordEditorView::GetDialogButtons() const {

@@ -126,7 +126,7 @@ class Browser : public TabStripModelDelegate,
   // app. |app_name| is required and is used to identify the window to the
   // shell.  |extension| is optional. If supplied, we create a window with
   // a bigger icon and title text, that supports tabs.
-  static Browser* CreateForApp(const std::wstring& app_name,
+  static Browser* CreateForApp(const std::string& app_name,
                                Extension* extension,
                                Profile* profile,
                                bool is_panel);
@@ -261,7 +261,7 @@ class Browser : public TabStripModelDelegate,
   // State Storage and Retrieval for UI ///////////////////////////////////////
 
   // Save and restore the window position.
-  std::wstring GetWindowPlacementKey() const;
+  std::string GetWindowPlacementKey() const;
   bool ShouldSaveWindowPlacement() const;
   void SaveWindowPlacement(const gfx::Rect& bounds, bool maximized);
   gfx::Rect GetSavedWindowBounds() const;
@@ -901,7 +901,7 @@ class Browser : public TabStripModelDelegate,
 
   // Create a preference dictionary for the provided application name. This is
   // done only once per application name / per session.
-  static void RegisterAppPrefs(const std::wstring& app_name);
+  static void RegisterAppPrefs(const std::string& app_name);
 
   // Shared code between Reload() and ReloadIgnoringCache().
   void ReloadInternal(WindowOpenDisposition disposition, bool ignore_cache);
@@ -969,7 +969,7 @@ class Browser : public TabStripModelDelegate,
 
   // An optional application name which is used to retrieve and save window
   // positions.
-  std::wstring app_name_;
+  std::string app_name_;
 
   // Unique identifier of this browser for session restore. This id is only
   // unique within the current session, and is not guaranteed to be unique

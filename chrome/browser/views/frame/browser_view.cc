@@ -1321,7 +1321,7 @@ void BrowserView::Observe(NotificationType type,
                           const NotificationSource& source,
                           const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED &&
-      *Details<std::wstring>(details).ptr() == prefs::kShowBookmarkBar) {
+      *Details<std::string>(details).ptr() == prefs::kShowBookmarkBar) {
     if (MaybeShowBookmarkBar(browser_->GetSelectedTabContents()))
       Layout();
   } else {
@@ -1503,7 +1503,7 @@ bool BrowserView::ExecuteWindowsCommand(int command_id) {
 }
 
 std::wstring BrowserView::GetWindowName() const {
-  return browser_->GetWindowPlacementKey();
+  return UTF8ToWide(browser_->GetWindowPlacementKey());
 }
 
 void BrowserView::SaveWindowPlacement(const gfx::Rect& bounds,

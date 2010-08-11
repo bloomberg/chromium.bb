@@ -14,7 +14,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/language_order_table_model.h"
@@ -398,14 +398,14 @@ void LanguagesPageView::InitControlLayout() {
                             profile()->GetPrefs(), this);
 }
 
-void LanguagesPageView::NotifyPrefChanged(const std::wstring* pref_name) {
+void LanguagesPageView::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kAcceptLanguages) {
     language_order_table_model_->SetAcceptLanguagesString(
         accept_languages_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kApplicationLocale) {
     int index = ui_language_model_->GetSelectedLanguageIndex(
-        prefs::kApplicationLocale);
+        UTF8ToWide(prefs::kApplicationLocale));
     if (-1 == index) {
       // The pref value for locale isn't valid.  Use the current app locale
       // (which is what we're currently using).
@@ -418,7 +418,7 @@ void LanguagesPageView::NotifyPrefChanged(const std::wstring* pref_name) {
   }
   if (!pref_name || *pref_name == prefs::kSpellCheckDictionary) {
     int index = dictionary_language_model_->GetSelectedLanguageIndex(
-        prefs::kSpellCheckDictionary);
+        UTF8ToWide(prefs::kSpellCheckDictionary));
 
     // If the index for the current language cannot be found, it is due to
     // the fact that the pref-member value for the last dictionary language
@@ -435,7 +435,7 @@ void LanguagesPageView::NotifyPrefChanged(const std::wstring* pref_name) {
       dictionary_language_.SetValue(
           SpellCheckCommon::GetLanguageFromLanguageRegion(lang_region));
       index = dictionary_language_model_->GetSelectedLanguageIndex(
-          prefs::kSpellCheckDictionary);
+          UTF8ToWide(prefs::kSpellCheckDictionary));
     }
 
     change_dictionary_language_combobox_->SetSelectedItem(index);

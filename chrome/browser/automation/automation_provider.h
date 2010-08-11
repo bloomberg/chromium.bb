@@ -738,25 +738,25 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   // Sets the int value for preference with name |name|.
   void SetIntPreference(int handle,
-                        const std::wstring& name,
+                        const std::string& name,
                         int value,
                         bool* success);
 
   // Sets the string value for preference with name |name|.
   void SetStringPreference(int handle,
-                           const std::wstring& name,
+                           const std::string& name,
                            const std::string& value,
                            bool* success);
 
   // Gets the bool value for preference with name |name|.
   void GetBooleanPreference(int handle,
-                            const std::wstring& name,
+                            const std::string& name,
                             bool* success,
                             bool* value);
 
   // Sets the bool value for preference with name |name|.
   void SetBooleanPreference(int handle,
-                            const std::wstring& name,
+                            const std::string& name,
                             bool value,
                             bool* success);
 

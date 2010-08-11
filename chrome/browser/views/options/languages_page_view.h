@@ -52,7 +52,7 @@ class LanguagesPageView : public OptionsPageView,
  protected:
   // OptionsPageView implementation:
   virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   // views::Combobox::Listener implementation:
   virtual void ItemChanged(views::Combobox* sender,

@@ -21,7 +21,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
   // changes to any of the options pages doesn't require updating this list
   // manually.
   PrefService* prefs = profile->GetPrefs();
-  const wchar_t* kUserPrefs[] = {
+  const char* kUserPrefs[] = {
     prefs::kAcceptLanguages,
     prefs::kAlternateErrorPagesEnabled,
     prefs::kClearSiteDataOnExit,
@@ -82,7 +82,7 @@ void OptionsUtil::ResetToDefaults(Profile* profile) {
   // settings they'll either inadvertedly enable this logging or disable it.
   // One is undesirable for them, one is undesirable for us. For now, we just
   // don't reset it.
-  const wchar_t* kLocalStatePrefs[] = {
+  const char* kLocalStatePrefs[] = {
     prefs::kApplicationLocale,
   };
   for (size_t i = 0; i < arraysize(kLocalStatePrefs); ++i)

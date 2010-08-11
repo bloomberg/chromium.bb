@@ -32,13 +32,13 @@ enum WindowSizeAutosaverState {
 @interface WindowSizeAutosaver : NSObject {
   NSWindow* window_;  // weak
   PrefService* prefService_;  // weak
-  const wchar_t* path_;
+  const char* path_;
   WindowSizeAutosaverState state_;
 }
 
 - (id)initWithWindow:(NSWindow*)window
          prefService:(PrefService*)prefs
-                path:(const wchar_t*)path
+                path:(const char*)path
                state:(WindowSizeAutosaverState)state;
 @end
 

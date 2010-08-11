@@ -2200,10 +2200,10 @@ void AutomationProvider::GetPrefsInfo(Browser* browser,
 void AutomationProvider::SetPrefs(Browser* browser,
                                   DictionaryValue* args,
                                   IPC::Message* reply_message) {
-  std::wstring path;
+  std::string path;
   Value* val;
   AutomationJSONReply reply(this, reply_message);
-  if (args->GetString(L"path", &path) && args->Get("value", &val)) {
+  if (args->GetString("path", &path) && args->Get("value", &val)) {
     PrefService* pref_service = profile_->GetPrefs();
     const PrefService::Preference* pref =
         pref_service->FindPreference(path.c_str());
@@ -2933,7 +2933,7 @@ void AutomationProvider::WaitUntilTranslateComplete(
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   if (!translate_bar) {
-    return_value->SetBoolean(L"translation_success", false);
+    return_value->SetBoolean("translation_success", false);
     AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
     return;
   }
@@ -2947,7 +2947,7 @@ void AutomationProvider::WaitUntilTranslateComplete(
 
   // Otherwise send back the success or failure of the attempted translation.
   return_value->SetBoolean(
-      L"translation_success",
+      "translation_success",
       translate_bar->type() == TranslateInfoBarDelegate::AFTER_TRANSLATE);
   AutomationJSONReply(this, reply_message).SendSuccess(return_value.get());
 }
@@ -3937,7 +3937,7 @@ void AutomationProvider::WaitForNavigation(int handle,
 }
 
 void AutomationProvider::SetIntPreference(int handle,
-                                          const std::wstring& name,
+                                          const std::string& name,
                                           int value,
                                           bool* success) {
   *success = false;
@@ -3949,7 +3949,7 @@ void AutomationProvider::SetIntPreference(int handle,
 }
 
 void AutomationProvider::SetStringPreference(int handle,
-                                             const std::wstring& name,
+                                             const std::string& name,
                                              const std::string& value,
                                              bool* success) {
   *success = false;
@@ -3961,7 +3961,7 @@ void AutomationProvider::SetStringPreference(int handle,
 }
 
 void AutomationProvider::GetBooleanPreference(int handle,
-                                              const std::wstring& name,
+                                              const std::string& name,
                                               bool* success,
                                               bool* value) {
   *success = false;
@@ -3974,7 +3974,7 @@ void AutomationProvider::GetBooleanPreference(int handle,
 }
 
 void AutomationProvider::SetBooleanPreference(int handle,
-                                              const std::wstring& name,
+                                              const std::string& name,
                                               bool value,
                                               bool* success) {
   *success = false;

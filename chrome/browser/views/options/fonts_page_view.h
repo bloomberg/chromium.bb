@@ -55,7 +55,7 @@ class FontsPageView : public OptionsPageView,
  protected:
   // OptionsPageView implementation:
   virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
  private:
   enum FontTypeBeingChanged {

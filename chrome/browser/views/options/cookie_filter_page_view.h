@@ -28,7 +28,7 @@ class CookieFilterPageView : public ContentFilterPageView,
   virtual void InitControlLayout();
 
   // OptionsPageView implementation:
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

@@ -21,19 +21,19 @@ ManagedPrefsBannerBase::ManagedPrefsBannerBase(PrefService* local_state,
   Init(local_state, user_prefs, page);
 }
 
-void ManagedPrefsBannerBase::AddLocalStatePref(const wchar_t* pref) {
+void ManagedPrefsBannerBase::AddLocalStatePref(const char* pref) {
   local_state_set_->AddPref(pref);
 }
 
-void ManagedPrefsBannerBase::RemoveLocalStatePref(const wchar_t* pref) {
+void ManagedPrefsBannerBase::RemoveLocalStatePref(const char* pref) {
   local_state_set_->RemovePref(pref);
 }
 
-void ManagedPrefsBannerBase::AddUserPref(const wchar_t* pref) {
+void ManagedPrefsBannerBase::AddUserPref(const char* pref) {
   user_pref_set_->AddPref(pref);
 }
 
-void ManagedPrefsBannerBase::RemoveUserPref(const wchar_t* pref) {
+void ManagedPrefsBannerBase::RemoveUserPref(const char* pref) {
   user_pref_set_->RemovePref(pref);
 }
 
@@ -79,7 +79,7 @@ void ManagedPrefsBannerBase::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   if (NotificationType::PREF_CHANGED == type) {
-    std::wstring* pref = Details<std::wstring>(details).ptr();
+    std::string* pref = Details<std::string>(details).ptr();
     if (pref && (local_state_set_->IsObserved(*pref) ||
                  user_pref_set_->IsObserved(*pref)))
       OnUpdateVisibility();

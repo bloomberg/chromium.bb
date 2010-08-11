@@ -1716,14 +1716,14 @@ void MetricsService::LogLoadComplete(NotificationType type,
                                 load_details->load_time());
 }
 
-void MetricsService::IncrementPrefValue(const wchar_t* path) {
+void MetricsService::IncrementPrefValue(const char* path) {
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
   int value = pref->GetInteger(path);
   pref->SetInteger(path, value + 1);
 }
 
-void MetricsService::IncrementLongPrefsValue(const wchar_t* path) {
+void MetricsService::IncrementLongPrefsValue(const char* path) {
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
   int64 value = pref->GetInt64(path);
@@ -1800,8 +1800,8 @@ static void CountBookmarks(const BookmarkNode* node,
 }
 
 void MetricsService::LogBookmarks(const BookmarkNode* node,
-                                  const wchar_t* num_bookmarks_key,
-                                  const wchar_t* num_folders_key) {
+                                  const char* num_bookmarks_key,
+                                  const char* num_folders_key) {
   DCHECK(node);
   int num_bookmarks = 0;
   int num_folders = 0;
@@ -1847,18 +1847,20 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
     }
 
     DictionaryValue* plugin_dict = static_cast<DictionaryValue*>(*value_iter);
-    std::wstring plugin_name;
+    std::string plugin_name;
     plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
     if (plugin_name.empty()) {
       NOTREACHED();
       continue;
     }
 
-    if (child_process_stats_buffer_.find(plugin_name) ==
+    // TODO(viettrungluu): remove conversions
+    if (child_process_stats_buffer_.find(UTF8ToWide(plugin_name)) ==
         child_process_stats_buffer_.end())
       continue;
 
-    ChildProcessStats stats = child_process_stats_buffer_[plugin_name];
+    ChildProcessStats stats =
+        child_process_stats_buffer_[UTF8ToWide(plugin_name)];
     if (stats.process_launches) {
       int launches = 0;
       plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
@@ -1878,7 +1880,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
       plugin_dict->SetInteger(prefs::kStabilityPluginInstances, instances);
     }
 
-    child_process_stats_buffer_.erase(plugin_name);
+    child_process_stats_buffer_.erase(UTF8ToWide(plugin_name));
   }
 
   // Now go through and add dictionaries for plugins that didn't already have
@@ -1892,7 +1894,8 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
     if (ChildProcessInfo::PLUGIN_PROCESS != stats.process_type)
       continue;
 
-    std::wstring plugin_name = cache_iter->first;
+    // TODO(viettrungluu): remove conversion
+    std::string plugin_name = WideToUTF8(cache_iter->first);
 
     DictionaryValue* plugin_dict = new DictionaryValue;
 
@@ -1917,7 +1920,7 @@ bool MetricsService::CanLogNotification(NotificationType type,
   return !BrowserList::IsOffTheRecordSessionActive();
 }
 
-void MetricsService::RecordBooleanPrefValue(const wchar_t* path, bool value) {
+void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
   DCHECK(IsSingleThreaded());
 
   PrefService* pref = g_browser_process->local_state();

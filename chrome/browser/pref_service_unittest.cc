@@ -26,7 +26,7 @@ using testing::Property;
 class TestPrefObserver : public NotificationObserver {
  public:
   TestPrefObserver(const PrefService* prefs,
-                   const std::wstring& pref_name,
+                   const std::string& pref_name,
                    const std::string& new_pref_value)
       : observer_fired_(false),
         prefs_(prefs),
@@ -41,9 +41,9 @@ class TestPrefObserver : public NotificationObserver {
     EXPECT_EQ(type.value, NotificationType::PREF_CHANGED);
     PrefService* prefs_in = Source<PrefService>(source).ptr();
     EXPECT_EQ(prefs_in, prefs_);
-    std::wstring* pref_name_in = Details<std::wstring>(details).ptr();
+    std::string* pref_name_in = Details<std::string>(details).ptr();
     EXPECT_EQ(*pref_name_in, pref_name_);
-    EXPECT_EQ(new_pref_value_, prefs_in->GetString(L"homepage"));
+    EXPECT_EQ(new_pref_value_, prefs_in->GetString("homepage"));
     observer_fired_ = true;
   }
 
@@ -57,7 +57,7 @@ class TestPrefObserver : public NotificationObserver {
  private:
   bool observer_fired_;
   const PrefService* prefs_;
-  const std::wstring pref_name_;
+  const std::string pref_name_;
   std::string new_pref_value_;
 };
 
@@ -65,9 +65,9 @@ class TestPrefObserver : public NotificationObserver {
 #if defined(OS_WIN)
 TEST(PrefServiceTest, LocalizedPrefs) {
   TestingPrefService prefs;
-  const wchar_t kBoolean[] = L"boolean";
-  const wchar_t kInteger[] = L"integer";
-  const wchar_t kString[] = L"string";
+  const char kBoolean[] = "boolean";
+  const char kInteger[] = "integer";
+  const char kString[] = "string";
   prefs.RegisterLocalizedBooleanPref(kBoolean, IDS_LOCALE_BOOL);
   prefs.RegisterLocalizedIntegerPref(kInteger, IDS_LOCALE_INT);
   prefs.RegisterLocalizedStringPref(kString, IDS_LOCALE_STRING);
@@ -89,7 +89,7 @@ TEST(PrefServiceTest, LocalizedPrefs) {
 TEST(PrefServiceTest, NoObserverFire) {
   TestingPrefService prefs;
 
-  const wchar_t pref_name[] = L"homepage";
+  const char pref_name[] = "homepage";
   prefs.RegisterStringPref(pref_name, "");
 
   const std::string new_pref_value("http://www.google.com/");
@@ -124,7 +124,7 @@ TEST(PrefServiceTest, NoObserverFire) {
 TEST(PrefServiceTest, HasPrefPath) {
   TestingPrefService prefs;
 
-  const wchar_t path[] = L"fake.path";
+  const char path[] = "fake.path";
 
   // Shouldn't initially have a path.
   EXPECT_FALSE(prefs.HasPrefPath(path));
@@ -140,10 +140,10 @@ TEST(PrefServiceTest, HasPrefPath) {
 }
 
 TEST(PrefServiceTest, Observers) {
-  const wchar_t pref_name[] = L"homepage";
+  const char pref_name[] = "homepage";
 
   TestingPrefService prefs;
-  prefs.SetUserPref(pref_name, Value::CreateStringValue(L"http://www.cnn.com"));
+  prefs.SetUserPref(pref_name, Value::CreateStringValue("http://www.cnn.com"));
   prefs.RegisterStringPref(pref_name, "");
 
   const std::string new_pref_value("http://www.google.com/");
@@ -180,7 +180,7 @@ TEST(PrefServiceTest, Observers) {
 
 class PrefServiceSetValueTest : public testing::Test {
  protected:
-  static const wchar_t name_[];
+  static const char name_[];
   static const char value_[];
 
   PrefServiceSetValueTest()
@@ -194,17 +194,17 @@ class PrefServiceSetValueTest : public testing::Test {
   void SetExpectPrefChanged() {
     EXPECT_CALL(observer_,
                 Observe(NotificationType(NotificationType::PREF_CHANGED), _,
-                        Property(&Details<std::wstring>::ptr,
+                        Property(&Details<std::string>::ptr,
                                  Pointee(name_string_))));
   }
 
   TestingPrefService prefs_;
-  std::wstring name_string_;
+  std::string name_string_;
   scoped_ptr<Value> null_value_;
   NotificationObserverMock observer_;
 };
 
-const wchar_t PrefServiceSetValueTest::name_[] = L"name";
+const char PrefServiceSetValueTest::name_[] = "name";
 const char PrefServiceSetValueTest::value_[] = "value";
 
 TEST_F(PrefServiceSetValueTest, SetStringValue) {

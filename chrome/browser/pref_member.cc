@@ -23,7 +23,7 @@ PrefMemberBase::~PrefMemberBase() {
 }
 
 
-void PrefMemberBase::Init(const wchar_t* pref_name, PrefService* prefs,
+void PrefMemberBase::Init(const char* pref_name, PrefService* prefs,
                           NotificationObserver* observer) {
   DCHECK(pref_name);
   DCHECK(prefs);

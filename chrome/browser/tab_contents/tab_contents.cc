@@ -162,7 +162,7 @@ const float kMaxHeightFactor = 0.6;
 const int kJavascriptMessageExpectedDelay = 1000;
 
 // The list of prefs we want to observe.
-const wchar_t* kPrefsToObserve[] = {
+const char* kPrefsToObserve[] = {
   prefs::kAlternateErrorPagesEnabled,
   prefs::kWebKitJavaEnabled,
   prefs::kWebKitJavascriptEnabled,
@@ -3072,12 +3072,12 @@ void TabContents::Observe(NotificationType type,
       break;
     }
     case NotificationType::PREF_CHANGED: {
-      std::wstring* pref_name_in = Details<std::wstring>(details).ptr();
+      std::string* pref_name_in = Details<std::string>(details).ptr();
       DCHECK(Source<PrefService>(source).ptr() == profile()->GetPrefs());
       if (*pref_name_in == prefs::kAlternateErrorPagesEnabled) {
         UpdateAlternateErrorPageURL();
       } else if (*pref_name_in == prefs::kDefaultCharset ||
-          StartsWithASCII(WideToUTF8(*pref_name_in), "webkit.webprefs.", true)
+          StartsWithASCII(*pref_name_in, "webkit.webprefs.", true)
           ) {
         UpdateWebPreferences();
       } else {

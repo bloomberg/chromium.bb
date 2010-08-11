@@ -61,7 +61,7 @@ void ShownSectionsHandler::Observe(NotificationType type,
                                    const NotificationSource& source,
                                    const NotificationDetails& details) {
   DCHECK(NotificationType::PREF_CHANGED == type);
-  std::wstring* pref_name = Details<std::wstring>(details).ptr();
+  std::string* pref_name = Details<std::string>(details).ptr();
   DCHECK(*pref_name == prefs::kNTPShownSections);
 
   int sections = pref_service_->GetInteger(prefs::kNTPShownSections);

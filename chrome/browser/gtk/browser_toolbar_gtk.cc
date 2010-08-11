@@ -377,7 +377,7 @@ void BrowserToolbarGtk::Observe(NotificationType type,
                                 const NotificationSource& source,
                                 const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED) {
-    NotifyPrefChanged(Details<std::wstring>(details).ptr());
+    NotifyPrefChanged(Details<std::string>(details).ptr());
   } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
     // Update the spacing around the menu buttons
     bool use_gtk = theme_provider_->UseGtkTheme();
@@ -627,7 +627,7 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
     home_page_.SetValue(url.spec());
 }
 
-void BrowserToolbarGtk::NotifyPrefChanged(const std::wstring* pref) {
+void BrowserToolbarGtk::NotifyPrefChanged(const std::string* pref) {
   if (!pref || *pref == prefs::kShowHomeButton) {
     if (show_home_button_.GetValue() && !ShouldOnlyShowLocation()) {
       gtk_widget_show(home_->widget());

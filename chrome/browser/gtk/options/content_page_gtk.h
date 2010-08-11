@@ -34,7 +34,7 @@ class ContentPageGtk : public OptionsPageBase,
   void UpdateSyncControls();
 
   // Overridden from OptionsPageBase.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   // Overridden from OptionsPageBase.
   virtual void Observe(NotificationType type,

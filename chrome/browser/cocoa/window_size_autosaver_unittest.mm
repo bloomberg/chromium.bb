@@ -18,7 +18,7 @@ namespace {
 class WindowSizeAutosaverTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
-    path_ = L"WindowSizeAutosaverTest";
+    path_ = "WindowSizeAutosaverTest";
     window_ =
         [[NSWindow alloc] initWithContentRect:NSMakeRect(100, 101, 150, 151)
                                     styleMask:NSTitledWindowMask
@@ -35,7 +35,7 @@ class WindowSizeAutosaverTest : public CocoaTest {
  public:
   BrowserTestHelper browser_helper_;
   NSWindow* window_;
-  const wchar_t* path_;
+  const char* path_;
 };
 
 TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
@@ -87,12 +87,12 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
   EXPECT_TRUE(pref->GetDictionary(path_) != NULL);
   int x, y;
   DictionaryValue* windowPref = pref->GetMutableDictionary(path_);
-  EXPECT_FALSE(windowPref->GetInteger(L"left", &x));
-  EXPECT_FALSE(windowPref->GetInteger(L"right", &x));
-  EXPECT_FALSE(windowPref->GetInteger(L"top", &x));
-  EXPECT_FALSE(windowPref->GetInteger(L"bottom", &x));
-  ASSERT_TRUE(windowPref->GetInteger(L"x", &x));
-  ASSERT_TRUE(windowPref->GetInteger(L"y", &y));
+  EXPECT_FALSE(windowPref->GetInteger("left", &x));
+  EXPECT_FALSE(windowPref->GetInteger("right", &x));
+  EXPECT_FALSE(windowPref->GetInteger("top", &x));
+  EXPECT_FALSE(windowPref->GetInteger("bottom", &x));
+  ASSERT_TRUE(windowPref->GetInteger("x", &x));
+  ASSERT_TRUE(windowPref->GetInteger("y", &y));
   EXPECT_EQ(300, x);
   EXPECT_EQ(310, y);
 }
@@ -146,12 +146,12 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
   EXPECT_TRUE(pref->GetDictionary(path_) != NULL);
   int x1, y1, x2, y2;
   DictionaryValue* windowPref = pref->GetMutableDictionary(path_);
-  EXPECT_FALSE(windowPref->GetInteger(L"x", &x1));
-  EXPECT_FALSE(windowPref->GetInteger(L"y", &x1));
-  ASSERT_TRUE(windowPref->GetInteger(L"left", &x1));
-  ASSERT_TRUE(windowPref->GetInteger(L"right", &x2));
-  ASSERT_TRUE(windowPref->GetInteger(L"top", &y1));
-  ASSERT_TRUE(windowPref->GetInteger(L"bottom", &y2));
+  EXPECT_FALSE(windowPref->GetInteger("x", &x1));
+  EXPECT_FALSE(windowPref->GetInteger("y", &x1));
+  ASSERT_TRUE(windowPref->GetInteger("left", &x1));
+  ASSERT_TRUE(windowPref->GetInteger("right", &x2));
+  ASSERT_TRUE(windowPref->GetInteger("top", &y1));
+  ASSERT_TRUE(windowPref->GetInteger("bottom", &y2));
   EXPECT_EQ(300, x1);
   EXPECT_EQ(310, y1);
   EXPECT_EQ(300 + 250, x2);
@@ -164,10 +164,10 @@ TEST_F(WindowSizeAutosaverTest, DoesNotRestoreButClearsEmptyRect) {
   ASSERT_TRUE(pref != NULL);
 
   DictionaryValue* windowPref = pref->GetMutableDictionary(path_);
-  windowPref->SetInteger(L"left", 50);
-  windowPref->SetInteger(L"right", 50);
-  windowPref->SetInteger(L"top", 60);
-  windowPref->SetInteger(L"bottom", 60);
+  windowPref->SetInteger("left", 50);
+  windowPref->SetInteger("right", 50);
+  windowPref->SetInteger("top", 60);
+  windowPref->SetInteger("bottom", 60);
 
   {
     // Window rect shouldn't change...
@@ -186,12 +186,12 @@ TEST_F(WindowSizeAutosaverTest, DoesNotRestoreButClearsEmptyRect) {
   // ...and it should be gone from the profile, too.
   EXPECT_TRUE(pref->GetDictionary(path_) != NULL);
   int x1, y1, x2, y2;
-  EXPECT_FALSE(windowPref->GetInteger(L"x", &x1));
-  EXPECT_FALSE(windowPref->GetInteger(L"y", &x1));
-  ASSERT_FALSE(windowPref->GetInteger(L"left", &x1));
-  ASSERT_FALSE(windowPref->GetInteger(L"right", &x2));
-  ASSERT_FALSE(windowPref->GetInteger(L"top", &y1));
-  ASSERT_FALSE(windowPref->GetInteger(L"bottom", &y2));
+  EXPECT_FALSE(windowPref->GetInteger("x", &x1));
+  EXPECT_FALSE(windowPref->GetInteger("y", &x1));
+  ASSERT_FALSE(windowPref->GetInteger("left", &x1));
+  ASSERT_FALSE(windowPref->GetInteger("right", &x2));
+  ASSERT_FALSE(windowPref->GetInteger("top", &y1));
+  ASSERT_FALSE(windowPref->GetInteger("bottom", &y2));
 }
 
 }  // namespace

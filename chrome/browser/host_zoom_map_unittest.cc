@@ -40,7 +40,7 @@ class HostZoomMapTest : public testing::Test {
         pref_observer_,
         Observe(NotificationType(NotificationType::PREF_CHANGED),
                 _,
-                Property(&Details<std::wstring>::ptr,
+                Property(&Details<std::string>::ptr,
                          Pointee(per_host_zoom_levels_pref_))));
   }
 
@@ -48,7 +48,7 @@ class HostZoomMapTest : public testing::Test {
   ChromeThread ui_thread_;
   TestingProfile profile_;
   PrefService* prefs_;
-  std::wstring per_host_zoom_levels_pref_;  // For the observe matcher.
+  std::string per_host_zoom_levels_pref_;  // For the observe matcher.
   GURL url_;
   std::string host_;
   NotificationObserverMock pref_observer_;

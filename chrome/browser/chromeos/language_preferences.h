@@ -15,7 +15,7 @@ namespace chromeos {
 
 template <typename DataType>
 struct LanguageMultipleChoicePreference {
-  const wchar_t* pref_name;  // Chrome preference name.
+  const char* pref_name;  // Chrome preference name.
   DataType default_pref_value;
   const char* ibus_config_name;
   // Currently we have 10 combobox items at most.
@@ -28,14 +28,14 @@ struct LanguageMultipleChoicePreference {
 };
 
 struct LanguageBooleanPrefs {
-  const wchar_t* pref_name;  // Chrome preference name.
+  const char* pref_name;  // Chrome preference name.
   bool default_pref_value;
   const char* ibus_config_name;
   int message_id;
 };
 
 struct LanguageIntegerRangePreference {
-  const wchar_t* pref_name;  // Chrome preference name.
+  const char* pref_name;  // Chrome preference name.
   int default_pref_value;
   int min_pref_value;
   int max_pref_value;
@@ -242,7 +242,7 @@ const LanguageMultipleChoicePreference<int> kPinyinDoublePinyinSchema = {
 };
 
 const struct {
-  const wchar_t* pref_name;  // Chrome preference name.
+  const char* pref_name;  // Chrome preference name.
   int default_pref_value;
   const char* ibus_config_name;
   // TODO(yusukes): Add message_id if needed.
@@ -421,7 +421,7 @@ const size_t kNumMozcIntegerPrefs = arraysize(kMozcIntegerPrefs);
 
 // A string Chrome preference (Local State) of the preferred keyboard layout in
 // the login screen.
-const wchar_t kPreferredKeyboardLayout[] = L"PreferredKeyboardLayout";
+const char kPreferredKeyboardLayout[] = "PreferredKeyboardLayout";
 
 // A input method name that corresponds the hardware keyboard layout.
 // TODO(yusukes): just assuming US qwerty keyboard is not always correct.

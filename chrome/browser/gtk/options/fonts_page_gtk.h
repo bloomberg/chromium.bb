@@ -32,7 +32,7 @@ class FontsPageGtk : public OptionsPageBase {
   void InitDefaultEncodingComboBox();
 
   // Overridden from OptionsPageBase.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   // Retrieve the font selection from the button and save it to the prefs.  Also
   // ensure the button(s) are displayed in the proper size, as the

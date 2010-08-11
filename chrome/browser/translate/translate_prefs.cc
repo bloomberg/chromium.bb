@@ -9,16 +9,16 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/scoped_pref_update.h"
 
-const wchar_t TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
-    L"translate_language_blacklist";
-const wchar_t TranslatePrefs::kPrefTranslateSiteBlacklist[] =
-    L"translate_site_blacklist";
-const wchar_t TranslatePrefs::kPrefTranslateWhitelists[] =
-    L"translate_whitelists";
-const wchar_t TranslatePrefs::kPrefTranslateDeniedCount[] =
-    L"translate_denied_count";
-const wchar_t TranslatePrefs::kPrefTranslateAcceptedCount[] =
-    L"translate_accepted_count";
+const char TranslatePrefs::kPrefTranslateLanguageBlacklist[] =
+    "translate_language_blacklist";
+const char TranslatePrefs::kPrefTranslateSiteBlacklist[] =
+    "translate_site_blacklist";
+const char TranslatePrefs::kPrefTranslateWhitelists[] =
+    "translate_whitelists";
+const char TranslatePrefs::kPrefTranslateDeniedCount[] =
+    "translate_denied_count";
+const char TranslatePrefs::kPrefTranslateAcceptedCount[] =
+    "translate_accepted_count";
 
 // TranslatePrefs: public: -----------------------------------------------------
 
@@ -226,13 +226,13 @@ bool TranslatePrefs::IsValueInList(const ListValue* list,
   return false;
 }
 
-bool TranslatePrefs::IsValueBlacklisted(const wchar_t* pref_id,
+bool TranslatePrefs::IsValueBlacklisted(const char* pref_id,
     const std::string& value) {
   const ListValue* blacklist = prefs_->GetList(pref_id);
   return (blacklist && !blacklist->empty() && IsValueInList(blacklist, value));
 }
 
-void TranslatePrefs::BlacklistValue(const wchar_t* pref_id,
+void TranslatePrefs::BlacklistValue(const char* pref_id,
     const std::string& value) {
   ListValue* blacklist = prefs_->GetMutableList(pref_id);
   if (!blacklist) {
@@ -243,7 +243,7 @@ void TranslatePrefs::BlacklistValue(const wchar_t* pref_id,
   prefs_->ScheduleSavePersistentPrefs();
 }
 
-void TranslatePrefs::RemoveValueFromBlacklist(const wchar_t* pref_id,
+void TranslatePrefs::RemoveValueFromBlacklist(const char* pref_id,
     const std::string& value) {
   ListValue* blacklist = prefs_->GetMutableList(pref_id);
   if (!blacklist) {

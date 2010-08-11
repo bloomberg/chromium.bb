@@ -49,7 +49,7 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   struct PolicyToPreferenceMapEntry {
     Value::ValueType value_type;
     PolicyType policy_type;
-    const wchar_t* preference_path;  // A DictionaryValue path, not a file path.
+    const char* preference_path;  // A DictionaryValue path, not a file path.
   };
 
   static const PolicyToPreferenceMapEntry simple_policy_map_[];

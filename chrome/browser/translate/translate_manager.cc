@@ -242,7 +242,7 @@ void TranslateManager::Observe(NotificationType type,
       break;
     }
     case NotificationType::PREF_CHANGED: {
-      DCHECK(*Details<std::wstring>(details).ptr() == prefs::kAcceptLanguages);
+      DCHECK(*Details<std::string>(details).ptr() == prefs::kAcceptLanguages);
       PrefService* prefs = Source<PrefService>(source).ptr();
       InitAcceptLanguages(prefs);
       break;

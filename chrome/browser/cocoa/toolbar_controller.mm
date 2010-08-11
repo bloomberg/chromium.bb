@@ -80,7 +80,7 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 @interface ToolbarController(Private)
 - (void)addAccessibilityDescriptions;
 - (void)initCommandStatus:(CommandUpdater*)commands;
-- (void)prefChanged:(std::wstring*)prefName;
+- (void)prefChanged:(std::string*)prefName;
 - (BackgroundGradientView*)backgroundGradientView;
 - (void)toolbarFrameChanged;
 - (void)pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:(BOOL)animate;
@@ -166,7 +166,7 @@ class NotificationBridge : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     if (type == NotificationType::PREF_CHANGED)
-      [controller_ prefChanged:Details<std::wstring>(details).ptr()];
+      [controller_ prefChanged:Details<std::string>(details).ptr()];
     else if (type == NotificationType::UPGRADE_RECOMMENDED)
       [controller_ badgeWrenchMenu];
   }
@@ -583,7 +583,7 @@ class NotificationBridge : public NotificationObserver {
   [wrenchMenuController_ insertUpdateAvailableItem];
 }
 
-- (void)prefChanged:(std::wstring*)prefName {
+- (void)prefChanged:(std::string*)prefName {
   if (!prefName) return;
   if (*prefName == prefs::kShowHomeButton) {
     [self showOptionalHomeButton];

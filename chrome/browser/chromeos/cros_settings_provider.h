@@ -17,14 +17,14 @@ class CrosSettingsProvider {
 
   // Sets |in_value| to given |path| in cros settings.
   // Note that this takes ownership of |in_value|.
-  virtual void Set(const std::wstring& path, Value* in_value) = 0;
+  virtual void Set(const std::string& path, Value* in_value) = 0;
 
   // Gets settings value of given |path| to |out_value|.
   // Note that |out_value| is still owned by this class.
-  virtual bool Get(const std::wstring& path, Value** out_value) const = 0;
+  virtual bool Get(const std::string& path, Value** out_value) const = 0;
 
   // Gets the namespace prefix provided by this provider
-  virtual bool HandlesSetting(const std::wstring& path) = 0;
+  virtual bool HandlesSetting(const std::string& path) = 0;
 };
 
 }  // namespace chromeos

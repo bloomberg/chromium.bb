@@ -360,7 +360,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
 
-  static const wchar_t* GetPrefNameForDataType(syncable::ModelType data_type);
+  static const char* GetPrefNameForDataType(syncable::ModelType data_type);
 
   // Time at which we begin an attempt a GAIA authorization.
   base::TimeTicks auth_start_time_;

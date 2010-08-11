@@ -8,12 +8,12 @@
 
 namespace chromeos {
 
-extern const wchar_t kCrosSettingsPrefix[];
+extern const char kCrosSettingsPrefix[];
 
-extern const wchar_t kAccountsPrefAllowBWSI[];
-extern const wchar_t kAccountsPrefAllowGuest[];
-extern const wchar_t kAccountsPrefShowUserNamesOnSignIn[];
-extern const wchar_t kAccountsPrefUsers[];
+extern const char kAccountsPrefAllowBWSI[];
+extern const char kAccountsPrefAllowGuest[];
+extern const char kAccountsPrefShowUserNamesOnSignIn[];
+extern const char kAccountsPrefUsers[];
 
 }  // namespace chromeos
 

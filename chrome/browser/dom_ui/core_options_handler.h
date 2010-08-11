@@ -33,18 +33,18 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
  protected:
   // Fetches a pref value of given |pref_name|.
   // Note that caller owns the returned Value.
-  virtual Value* FetchPref(const std::wstring& pref_name);
+  virtual Value* FetchPref(const std::string& pref_name);
 
   // Observes a pref of given |pref_name|.
-  virtual void ObservePref(const std::wstring& pref_name);
+  virtual void ObservePref(const std::string& pref_name);
 
   // Sets a pref value |value_string| of |pref_type| to given |pref_name|.
-  virtual void SetPref(const std::wstring& pref_name,
+  virtual void SetPref(const std::string& pref_name,
                        Value::ValueType pref_type,
                        const std::string& value_string);
 
  private:
-  typedef std::multimap<std::wstring, std::wstring> PreferenceCallbackMap;
+  typedef std::multimap<std::string, std::wstring> PreferenceCallbackMap;
   // Callback for the "coreOptionsInitialize" message.  This message will
   // trigger the Initialize() method of all other handlers so that final
   // setup can be performed before the page is shown.
@@ -70,7 +70,7 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
 
   void HandleSetPref(const Value* value, Value::ValueType type);
 
-  void NotifyPrefChanged(const std::wstring* pref_name);
+  void NotifyPrefChanged(const std::string* pref_name);
 
   PreferenceCallbackMap pref_callback_map_;
   DISALLOW_COPY_AND_ASSIGN(CoreOptionsHandler);

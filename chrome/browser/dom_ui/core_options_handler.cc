@@ -25,7 +25,7 @@ CoreOptionsHandler::~CoreOptionsHandler() {
   // Remove registered preference change notification observers.
   DCHECK(dom_ui_);
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
-  std::wstring last_pref;
+  std::string last_pref;
   for (PreferenceCallbackMap::const_iterator iter = pref_callback_map_.begin();
        iter != pref_callback_map_.end();
        ++iter) {
@@ -89,7 +89,7 @@ void CoreOptionsHandler::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED)
-    NotifyPrefChanged(Details<std::wstring>(details).ptr());
+    NotifyPrefChanged(Details<std::string>(details).ptr());
 }
 
 void CoreOptionsHandler::RegisterMessages() {
@@ -113,7 +113,7 @@ void CoreOptionsHandler::HandleInitialize(const Value* value) {
   (static_cast<OptionsUI*>(dom_ui_))->InitializeHandlers();
 }
 
-Value* CoreOptionsHandler::FetchPref(const std::wstring& pref_name) {
+Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
   DCHECK(dom_ui_);
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
 
@@ -123,14 +123,14 @@ Value* CoreOptionsHandler::FetchPref(const std::wstring& pref_name) {
   return pref ? pref->GetValue()->DeepCopy() : Value::CreateNullValue();
 }
 
-void CoreOptionsHandler::ObservePref(const std::wstring& pref_name) {
+void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
   DCHECK(dom_ui_);
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
 
   pref_service->AddPrefObserver(pref_name.c_str(), this);
 }
 
-void CoreOptionsHandler::SetPref(const std::wstring& pref_name,
+void CoreOptionsHandler::SetPref(const std::string& pref_name,
                                  Value::ValueType pref_type,
                                  const std::string& value_string) {
   DCHECK(dom_ui_);
@@ -185,7 +185,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
     if (!list_member->IsType(Value::TYPE_STRING))
       continue;
 
-    std::wstring pref_name;
+    std::string pref_name;
     if (!list_member->GetAsString(&pref_name))
       continue;
 
@@ -219,7 +219,7 @@ void CoreOptionsHandler::HandleObservePrefs(const Value* value) {
       break;
 
     // Just ignore bad pref identifiers for now.
-    std::wstring pref_name;
+    std::string pref_name;
     if (!list_member->IsType(Value::TYPE_STRING) ||
         !list_member->GetAsString(&pref_name))
       continue;
@@ -256,7 +256,7 @@ void CoreOptionsHandler::HandleSetPref(const Value* value,
   if (param_values->GetSize() != 2)
     return;
 
-  std::wstring pref_name;
+  std::string pref_name;
   if (!param_values->GetString(0, &pref_name))
     return;
 
@@ -267,7 +267,7 @@ void CoreOptionsHandler::HandleSetPref(const Value* value,
   SetPref(pref_name, type, value_string);
 }
 
-void CoreOptionsHandler::NotifyPrefChanged(const std::wstring* pref_name) {
+void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
   DCHECK(pref_name);
   DCHECK(dom_ui_);
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();

@@ -31,7 +31,7 @@ class DevToolsWindow
       public NotificationObserver,
       public TabContentsDelegate {
  public:
-  static const std::wstring kDevToolsApp;
+  static const char kDevToolsApp[];
   static TabContents* GetDevToolsContents(TabContents* inspected_tab);
 
   DevToolsWindow(Profile* profile, RenderViewHost* inspected_rvh, bool docked);

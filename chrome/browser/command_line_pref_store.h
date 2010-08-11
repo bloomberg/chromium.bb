@@ -37,7 +37,7 @@ class CommandLinePrefStore : public PrefStore {
 
   struct StringSwitchToPreferenceMapEntry {
     const char* switch_name;
-    const wchar_t* preference_path;
+    const char* preference_path;
   };
   static const StringSwitchToPreferenceMapEntry string_switch_map_[];
 
@@ -45,7 +45,7 @@ class CommandLinePrefStore : public PrefStore {
   // is present.
   struct BooleanSwitchToPreferenceMapEntry {
     const char* switch_name;
-    const wchar_t* preference_path;
+    const char* preference_path;
     bool set_value;
   };
   static const BooleanSwitchToPreferenceMapEntry boolean_switch_map_[];

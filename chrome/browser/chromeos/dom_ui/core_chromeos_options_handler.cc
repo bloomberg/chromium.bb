@@ -10,7 +10,7 @@
 
 namespace chromeos {
 
-Value* CoreChromeOSOptionsHandler::FetchPref(const std::wstring& pref_name) {
+Value* CoreChromeOSOptionsHandler::FetchPref(const std::string& pref_name) {
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::CoreOptionsHandler::FetchPref(pref_name);
 
@@ -19,14 +19,14 @@ Value* CoreChromeOSOptionsHandler::FetchPref(const std::wstring& pref_name) {
   return pref_value ? pref_value->DeepCopy() : Value::CreateNullValue();
 }
 
-void CoreChromeOSOptionsHandler::ObservePref(const std::wstring& pref_name) {
+void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::CoreOptionsHandler::ObservePref(pref_name);
 
   // TODO(xiyuan): Change this when CrosSettings supports observers.
 }
 
-void CoreChromeOSOptionsHandler::SetPref(const std::wstring& pref_name,
+void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
                                          Value::ValueType pref_type,
                                          const std::string& value_string) {
   if (!CrosSettings::IsCrosSettings(pref_name))

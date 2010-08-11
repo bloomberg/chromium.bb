@@ -400,7 +400,7 @@ bool BrowserProxy::SetShelfVisible(bool is_visible) {
                                                             is_visible));
 }
 
-bool BrowserProxy::SetIntPreference(const std::wstring& name, int value) {
+bool BrowserProxy::SetIntPreference(const std::string& name, int value) {
   if (!is_valid())
     return false;
 
@@ -411,7 +411,7 @@ bool BrowserProxy::SetIntPreference(const std::wstring& name, int value) {
   return result;
 }
 
-bool BrowserProxy::SetStringPreference(const std::wstring& name,
+bool BrowserProxy::SetStringPreference(const std::string& name,
                                        const std::string& value) {
   if (!is_valid())
     return false;
@@ -423,7 +423,7 @@ bool BrowserProxy::SetStringPreference(const std::wstring& name,
   return result;
 }
 
-bool BrowserProxy::GetBooleanPreference(const std::wstring& name,
+bool BrowserProxy::GetBooleanPreference(const std::string& name,
                                         bool* value) {
   if (!is_valid())
     return false;
@@ -435,7 +435,7 @@ bool BrowserProxy::GetBooleanPreference(const std::wstring& name,
   return result;
 }
 
-bool BrowserProxy::SetBooleanPreference(const std::wstring& name,
+bool BrowserProxy::SetBooleanPreference(const std::string& name,
                                         bool value) {
   if (!is_valid())
     return false;
@@ -620,7 +620,7 @@ bool BrowserProxy::GetInitialLoadTimes(float* min_start_time,
   DictionaryValue* values_dict = static_cast<DictionaryValue*>(values.get());
 
   Value* tabs_value;
-  if (!values_dict->Get(L"tabs", &tabs_value) ||
+  if (!values_dict->Get("tabs", &tabs_value) ||
       tabs_value->GetType() != Value::TYPE_LIST)
     return false;
 
@@ -638,11 +638,11 @@ bool BrowserProxy::GetInitialLoadTimes(float* min_start_time,
     tab_dict = static_cast<DictionaryValue*>(tab_value);
 
     double temp;
-    if (!tab_dict->GetReal(L"load_start_ms", &temp))
+    if (!tab_dict->GetReal("load_start_ms", &temp))
       return false;
     start_ms = static_cast<float>(temp);
     // load_stop_ms can only be null if WaitForInitialLoads did not run.
-    if (!tab_dict->GetReal(L"load_stop_ms", &temp))
+    if (!tab_dict->GetReal("load_stop_ms", &temp))
       return false;
     stop_ms = static_cast<float>(temp);
 

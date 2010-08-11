@@ -16,9 +16,9 @@ namespace chromeos {
 
 class UserCrosSettingsProvider : public CrosSettingsProvider {
  public:
-  virtual void Set(const std::wstring& path, Value* in_value);
-  virtual bool Get(const std::wstring& path, Value** out_value) const;
-  virtual bool HandlesSetting(const std::wstring& path);
+  virtual void Set(const std::string& path, Value* in_value);
+  virtual bool Get(const std::string& path, Value** out_value) const;
+  virtual bool HandlesSetting(const std::string& path);
   UserCrosSettingsProvider();
 
  private:

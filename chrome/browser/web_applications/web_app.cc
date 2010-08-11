@@ -373,7 +373,7 @@ bool CreateShortcutTask::CreateShortcut() {
 
   // Generates app id from web app url and profile path.
   std::wstring app_id = ShellIntegration::GetAppId(
-      web_app::GenerateApplicationNameFromURL(shortcut_info_.url),
+      UTF8ToWide(web_app::GenerateApplicationNameFromURL(shortcut_info_.url)),
       profile_path_);
 
   FilePath shortcut_to_pin;
@@ -630,7 +630,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
   if (!shortcut_files_.empty()) {
     // Generates app id from web app url and profile path.
     std::wstring app_id = ShellIntegration::GetAppId(
-        web_app::GenerateApplicationNameFromURL(shortcut_info_.url),
+        UTF8ToWide(web_app::GenerateApplicationNameFromURL(shortcut_info_.url)),
         profile_path_);
 
     // Sanitize description
@@ -681,12 +681,12 @@ DISABLE_RUNNABLE_METHOD_REFCOUNT(UpdateShortcutWorker);
 
 namespace web_app {
 
-std::wstring GenerateApplicationNameFromURL(const GURL& url) {
+std::string GenerateApplicationNameFromURL(const GURL& url) {
   std::string t;
   t.append(url.host());
   t.append("_");
   t.append(url.path());
-  return UTF8ToWide(t);
+  return t;
 }
 
 void CreateShortcut(

@@ -47,7 +47,7 @@ class PreferenceChangeProcessor : public ChangeProcessor,
   virtual void StopImpl();
 
  private:
-  Value* ReadPreference(sync_api::ReadNode* node, std::wstring* name);
+  Value* ReadPreference(sync_api::ReadNode* node, std::string* name);
 
   void StartObserving();
   void StopObserving();

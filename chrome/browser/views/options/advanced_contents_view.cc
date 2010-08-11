@@ -437,7 +437,7 @@ class PrivacySection : public AdvancedSection,
  protected:
   // OptionsPageView overrides:
   virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
  private:
   // Controls for this section:
@@ -644,7 +644,7 @@ void PrivacySection::InitControlLayout() {
 #endif
 }
 
-void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
+void PrivacySection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kAlternateErrorPagesEnabled) {
     enable_link_doctor_checkbox_->SetChecked(
         alternate_error_pages_.GetValue());
@@ -787,7 +787,7 @@ class SecuritySection : public AdvancedSection,
  protected:
   // OptionsPageView overrides:
   virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
  private:
   // Controls for this section:
@@ -883,7 +883,7 @@ void SecuritySection::InitControlLayout() {
 }
 
 // This method is called with a null pref_name when the dialog is initialized.
-void SecuritySection::NotifyPrefChanged(const std::wstring* pref_name) {
+void SecuritySection::NotifyPrefChanged(const std::string* pref_name) {
   // These SSL options are system settings and stored in the OS.
   if (!pref_name) {
     net::SSLConfig config;
@@ -947,7 +947,7 @@ class NetworkSection : public AdvancedSection,
  protected:
   // OptionsPageView overrides:
   virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
  private:
   // Controls for this section:
@@ -1008,7 +1008,7 @@ void NetworkSection::InitControlLayout() {
   NotifyPrefChanged(NULL);
 }
 
-void NetworkSection::NotifyPrefChanged(const std::wstring* pref_name) {
+void NetworkSection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || proxy_prefs_->IsObserved(*pref_name)) {
     change_proxies_button_->SetEnabled(!proxy_prefs_->IsManaged());
   }
@@ -1040,7 +1040,7 @@ class DownloadSection : public AdvancedSection,
  protected:
   // OptionsPageView overrides.
   virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
  private:
   // Controls for this section.
@@ -1189,7 +1189,7 @@ void DownloadSection::InitControlLayout() {
                         this);
 }
 
-void DownloadSection::NotifyPrefChanged(const std::wstring* pref_name) {
+void DownloadSection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory)
     UpdateDownloadDirectoryDisplay();
 
@@ -1226,7 +1226,7 @@ class TranslateSection : public AdvancedSection,
  protected:
   // OptionsPageView overrides:
   virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
  private:
   // Control for this section:
@@ -1272,7 +1272,7 @@ void TranslateSection::InitControlLayout() {
   enable_translate_.Init(prefs::kEnableTranslate, profile()->GetPrefs(), this);
 }
 
-void TranslateSection::NotifyPrefChanged(const std::wstring* pref_name) {
+void TranslateSection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kEnableTranslate)
     enable_translate_checkbox_->SetChecked(enable_translate_.GetValue());
 }

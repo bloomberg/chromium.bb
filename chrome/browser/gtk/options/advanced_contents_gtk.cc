@@ -153,7 +153,7 @@ class DownloadSection : public OptionsPageBase {
 
  private:
   // Overridden from OptionsPageBase.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   // Callbacks for the widgets.
   static void OnDownloadLocationChanged(GtkFileChooser* widget,
@@ -268,7 +268,7 @@ DownloadSection::DownloadSection(Profile* profile)
   NotifyPrefChanged(NULL);
 }
 
-void DownloadSection::NotifyPrefChanged(const std::wstring* pref_name) {
+void DownloadSection::NotifyPrefChanged(const std::string* pref_name) {
   pref_changing_ = true;
   if (!pref_name || *pref_name == prefs::kDownloadDefaultDirectory) {
     gtk_file_chooser_set_current_folder(
@@ -351,7 +351,7 @@ class NetworkSection : public OptionsPageBase {
 
  private:
   // Overridden from OptionsPageBase.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   struct ProxyConfigCommand {
     std::string binary;
@@ -409,7 +409,7 @@ NetworkSection::NetworkSection(Profile* profile)
   NotifyPrefChanged(NULL);
 }
 
-void NetworkSection::NotifyPrefChanged(const std::wstring* pref_name) {
+void NetworkSection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || proxy_prefs_->IsObserved(*pref_name))
     gtk_widget_set_sensitive(change_proxies_button_,
                              !proxy_prefs_->IsManaged());
@@ -520,7 +520,7 @@ class TranslateSection : public OptionsPageBase {
 
  private:
   // Overridden from OptionsPageBase.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   CHROMEGTK_CALLBACK_0(TranslateSection, void, OnTranslateClicked);
 
@@ -566,7 +566,7 @@ TranslateSection::TranslateSection(Profile* profile)
   NotifyPrefChanged(NULL);
 }
 
-void TranslateSection::NotifyPrefChanged(const std::wstring* pref_name) {
+void TranslateSection::NotifyPrefChanged(const std::string* pref_name) {
   pref_changing_ = true;
   if (!pref_name || *pref_name == prefs::kEnableTranslate) {
     gtk_toggle_button_set_active(
@@ -601,7 +601,7 @@ class PrivacySection : public OptionsPageBase {
 
  private:
   // Overridden from OptionsPageBase.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   // Try to make the the crash stats consent and the metrics upload
   // permission match the |reporting_enabled_checkbox_|.
@@ -887,7 +887,7 @@ void PrivacySection::OnLoggingChange(GtkWidget* widget,
   privacy_section->enable_metrics_recording_.SetValue(enabled);
 }
 
-void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
+void PrivacySection::NotifyPrefChanged(const std::string* pref_name) {
   pref_changing_ = true;
   if (!pref_name || *pref_name == prefs::kAlternateErrorPagesEnabled) {
     gtk_toggle_button_set_active(
@@ -961,7 +961,7 @@ class SecuritySection : public OptionsPageBase {
 
  private:
   // Overridden from OptionsPageBase.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   // The callback functions for the options widgets.
   static void OnManageCertificatesClicked(GtkButton* button,
@@ -1055,7 +1055,7 @@ SecuritySection::SecuritySection(Profile* profile)
   NotifyPrefChanged(NULL);
 }
 
-void SecuritySection::NotifyPrefChanged(const std::wstring* pref_name) {
+void SecuritySection::NotifyPrefChanged(const std::string* pref_name) {
   pref_changing_ = true;
   if (!pref_name || *pref_name == prefs::kCertRevocationCheckingEnabled) {
     gtk_toggle_button_set_active(

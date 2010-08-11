@@ -42,7 +42,7 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
 
 PrefValueStore::~PrefValueStore() {}
 
-bool PrefValueStore::GetValue(const std::wstring& name,
+bool PrefValueStore::GetValue(const std::string& name,
                               Value** out_value) const {
   // Check the |PrefStore|s in order of their priority from highest to lowest
   // to find the value of the preference described by the given preference name.
@@ -87,9 +87,9 @@ PrefStore::PrefReadError PrefValueStore::ReadPrefs() {
   return result;
 }
 
-bool PrefValueStore::HasPrefPath(const wchar_t* path) const {
+bool PrefValueStore::HasPrefPath(const char* path) const {
   Value* tmp_value = NULL;
-  const std::wstring name(path);
+  const std::string name(path);
   bool rv = GetValue(name, &tmp_value);
   return rv;
 }
@@ -97,7 +97,7 @@ bool PrefValueStore::HasPrefPath(const wchar_t* path) const {
 // Note the |DictionaryValue| referenced by the |PrefStore| user_prefs_
 // (returned by the method prefs()) takes the ownership of the Value referenced
 // by in_value.
-void PrefValueStore::SetUserPrefValue(const wchar_t* name, Value* in_value) {
+void PrefValueStore::SetUserPrefValue(const char* name, Value* in_value) {
   pref_stores_[USER]->prefs()->Set(name, in_value);
 }
 
@@ -105,38 +105,38 @@ bool PrefValueStore::ReadOnly() {
   return pref_stores_[USER]->ReadOnly();
 }
 
-void PrefValueStore::RemoveUserPrefValue(const wchar_t* name) {
+void PrefValueStore::RemoveUserPrefValue(const char* name) {
   if (pref_stores_[USER].get()) {
     pref_stores_[USER]->prefs()->Remove(name, NULL);
   }
 }
 
-bool PrefValueStore::PrefValueInManagedStore(const wchar_t* name) {
+bool PrefValueStore::PrefValueInManagedStore(const char* name) {
   return PrefValueInStore(name, MANAGED);
 }
 
-bool PrefValueStore::PrefValueInExtensionStore(const wchar_t* name) {
+bool PrefValueStore::PrefValueInExtensionStore(const char* name) {
   return PrefValueInStore(name, EXTENSION);
 }
 
-bool PrefValueStore::PrefValueInUserStore(const wchar_t* name) {
+bool PrefValueStore::PrefValueInUserStore(const char* name) {
   return PrefValueInStore(name, USER);
 }
 
-bool PrefValueStore::PrefValueFromExtensionStore(const wchar_t* name) {
+bool PrefValueStore::PrefValueFromExtensionStore(const char* name) {
   return ControllingPrefStoreForPref(name) == EXTENSION;
 }
 
-bool PrefValueStore::PrefValueFromUserStore(const wchar_t* name) {
+bool PrefValueStore::PrefValueFromUserStore(const char* name) {
   return ControllingPrefStoreForPref(name) == USER;
 }
 
-bool PrefValueStore::PrefValueUserModifiable(const wchar_t* name) {
+bool PrefValueStore::PrefValueUserModifiable(const char* name) {
   PrefStoreType effective_store = ControllingPrefStoreForPref(name);
   return effective_store >= USER || effective_store == INVALID;
 }
 
-bool PrefValueStore::PrefValueInStore(const wchar_t* name, PrefStoreType type) {
+bool PrefValueStore::PrefValueInStore(const char* name, PrefStoreType type) {
   if (!pref_stores_[type].get()) {
     // No store of that type set, so this pref can't be in it.
     return false;
@@ -146,7 +146,7 @@ bool PrefValueStore::PrefValueInStore(const wchar_t* name, PrefStoreType type) {
 }
 
 PrefValueStore::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
-    const wchar_t* name) {
+    const char* name) {
   for (int i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
     if (PrefValueInStore(name, static_cast<PrefStoreType>(i)))
       return static_cast<PrefStoreType>(i);

@@ -60,7 +60,7 @@ class GeneralPageView : public OptionsPageView,
 
   // OptionsPageView implementation:
   virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
   virtual void HighlightGroup(OptionsGroup highlight_group);
 
  private:

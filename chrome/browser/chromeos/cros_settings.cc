@@ -17,28 +17,28 @@ CrosSettings* CrosSettings::Get() {
   return Singleton<CrosSettings>::get();
 }
 
-bool CrosSettings::IsCrosSettings(const std::wstring& path) {
-  return StartsWith(path, kCrosSettingsPrefix, true);
+bool CrosSettings::IsCrosSettings(const std::string& path) {
+  return StartsWithASCII(path, kCrosSettingsPrefix, true);
 }
 
-void CrosSettings::SetBoolean(const std::wstring& path, bool in_value) {
+void CrosSettings::SetBoolean(const std::string& path, bool in_value) {
   Set(path, Value::CreateBooleanValue(in_value));
 }
 
-void CrosSettings::SetInteger(const std::wstring& path, int in_value) {
+void CrosSettings::SetInteger(const std::string& path, int in_value) {
   Set(path, Value::CreateIntegerValue(in_value));
 }
 
-void CrosSettings::SetReal(const std::wstring& path, double in_value) {
+void CrosSettings::SetReal(const std::string& path, double in_value) {
   Set(path, Value::CreateRealValue(in_value));
 }
 
-void CrosSettings::SetString(const std::wstring& path,
+void CrosSettings::SetString(const std::string& path,
                              const std::string& in_value) {
   Set(path, Value::CreateStringValue(in_value));
 }
 
-bool CrosSettings::GetBoolean(const std::wstring& path,
+bool CrosSettings::GetBoolean(const std::string& path,
                               bool* bool_value) const {
   Value* value;
   if (!Get(path, &value))
@@ -63,7 +63,7 @@ bool CrosSettings::RemoveProvider(CrosSettingsProvider* provider) {
 }
 
 CrosSettingsProvider* CrosSettings::GetProvider(
-    const std::wstring& path) const {
+    const std::string& path) const {
   for (size_t i = 0; i < providers_.size(); ++i) {
     if (providers_[i]->HandlesSetting(path)){
       return providers_[i];
@@ -72,7 +72,7 @@ CrosSettingsProvider* CrosSettings::GetProvider(
   return NULL;
 }
 
-void CrosSettings::Set(const std::wstring& path, Value* in_value) {
+void CrosSettings::Set(const std::string& path, Value* in_value) {
   CrosSettingsProvider* provider;
   provider = GetProvider(path);
   if (provider) {
@@ -80,7 +80,7 @@ void CrosSettings::Set(const std::wstring& path, Value* in_value) {
   }
 }
 
-bool CrosSettings::Get(const std::wstring& path, Value** out_value) const {
+bool CrosSettings::Get(const std::string& path, Value** out_value) const {
   CrosSettingsProvider* provider;
   provider = GetProvider(path);
   if (provider) {
@@ -89,7 +89,7 @@ bool CrosSettings::Get(const std::wstring& path, Value** out_value) const {
   return false;
 }
 
-bool CrosSettings::GetInteger(const std::wstring& path,
+bool CrosSettings::GetInteger(const std::string& path,
                               int* out_value) const {
   Value* value;
   if (!Get(path, &value))
@@ -98,7 +98,7 @@ bool CrosSettings::GetInteger(const std::wstring& path,
   return value->GetAsInteger(out_value);
 }
 
-bool CrosSettings::GetReal(const std::wstring& path,
+bool CrosSettings::GetReal(const std::string& path,
                            double* out_value) const {
   Value* value;
   if (!Get(path, &value))
@@ -107,7 +107,7 @@ bool CrosSettings::GetReal(const std::wstring& path,
   return value->GetAsReal(out_value);
 }
 
-bool CrosSettings::GetString(const std::wstring& path,
+bool CrosSettings::GetString(const std::string& path,
                              std::string* out_value) const {
   Value* value;
   if (!Get(path, &value))

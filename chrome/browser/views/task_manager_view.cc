@@ -553,7 +553,7 @@ std::wstring TaskManagerView::GetWindowTitle() const {
 }
 
 std::wstring TaskManagerView::GetWindowName() const {
-  return prefs::kTaskManagerWindowPlacement;
+  return UTF8ToWide(prefs::kTaskManagerWindowPlacement);
 }
 
 int TaskManagerView::GetDialogButtons() const {

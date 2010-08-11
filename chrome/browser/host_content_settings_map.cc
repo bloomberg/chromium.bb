@@ -505,10 +505,10 @@ void HostContentSettingsMap::SetContentSetting(
 
   {
     AutoLock auto_lock(lock_);
-    if (!map_to_modify->count(pattern.AsString()))
-      (*map_to_modify)[pattern.AsString()].content_settings = ContentSettings();
+    if (!map_to_modify->count(pattern_str))
+      (*map_to_modify)[pattern_str].content_settings = ContentSettings();
     HostContentSettings::iterator
-        i(map_to_modify->find(pattern.AsString()));
+        i(map_to_modify->find(pattern_str));
     ContentSettings& settings = i->second.content_settings;
     if (RequiresResourceIdentifier(content_type)) {
       settings.settings[content_type] = CONTENT_SETTING_DEFAULT;
@@ -725,7 +725,7 @@ void HostContentSettingsMap::Observe(NotificationType type,
     if (updating_preferences_)
       return;
 
-    std::wstring* name = Details<std::wstring>(details).ptr();
+    std::string* name = Details<std::string>(details).ptr();
     if (prefs::kDefaultContentSettings == *name) {
       ReadDefaultSettings(true);
     } else if (prefs::kContentSettingsPatterns == *name) {

@@ -103,23 +103,23 @@ TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsLoaded) {
 
   // Retrieve the expected rect values from "Preferences"
   int bottom = 0;
-  std::wstring kBrowserWindowPlacement(prefs::kBrowserWindowPlacement);
-  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + L".bottom",
+  std::string kBrowserWindowPlacement(prefs::kBrowserWindowPlacement);
+  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + ".bottom",
       &bottom));
   EXPECT_EQ(bottom, bounds.y() + bounds.height());
 
   int top = 0;
-  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + L".top",
+  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + ".top",
       &top));
   EXPECT_EQ(top, bounds.y());
 
   int left = 0;
-  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + L".left",
+  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + ".left",
       &left));
   EXPECT_EQ(left, bounds.x());
 
   int right = 0;
-  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + L".right",
+  EXPECT_TRUE(root_dict->GetInteger(kBrowserWindowPlacement + ".right",
       &right));
   EXPECT_EQ(right, bounds.x() + bounds.width());
 
@@ -127,7 +127,7 @@ TEST_F(PreferenceServiceTest, PreservedWindowPlacementIsLoaded) {
   bool is_window_maximized = false;
   ASSERT_TRUE(window->IsMaximized(&is_window_maximized));
   bool is_maximized = false;
-  EXPECT_TRUE(root_dict->GetBoolean(kBrowserWindowPlacement + L".maximized",
+  EXPECT_TRUE(root_dict->GetBoolean(kBrowserWindowPlacement + ".maximized",
       &is_maximized));
   EXPECT_EQ(is_maximized, is_window_maximized);
 }

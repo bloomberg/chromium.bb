@@ -179,7 +179,7 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
                                      const NotificationSource& source,
                                      const NotificationDetails& details) {
   if (type == NotificationType::PREF_CHANGED) {
-    std::wstring* pref_name = Details<std::wstring>(details).ptr();
+    std::string* pref_name = Details<std::string>(details).ptr();
     if (*pref_name == prefs::kDownloadDefaultDirectory) {
       SetupDownloadLocationPath();
     } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {

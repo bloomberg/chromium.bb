@@ -33,17 +33,17 @@ UserCrosSettingsProvider::UserCrosSettingsProvider()
   Set(kAccountsPrefUsers, user_list);
 }
 
-void UserCrosSettingsProvider::Set(const std::wstring& path, Value* in_value) {
+void UserCrosSettingsProvider::Set(const std::string& path, Value* in_value) {
   dict_->Set(path, in_value);
 }
 
-bool UserCrosSettingsProvider::Get(const std::wstring& path,
+bool UserCrosSettingsProvider::Get(const std::string& path,
                                    Value** out_value) const {
   return dict_->Get(path, out_value);
 }
 
-bool UserCrosSettingsProvider::HandlesSetting(const std::wstring& path) {
-  return ::StartsWith(path, std::wstring(L"cros.accounts"), true);
+bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
+  return ::StartsWithASCII(path, "cros.accounts", true);
 }
 
 }  // namespace chromeos

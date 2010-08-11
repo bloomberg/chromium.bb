@@ -59,7 +59,7 @@ class LanguagesPageGtk
   int FirstSelectedRowNum();
 
   // Overridden from OptionsPageBase.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
   // Callbacks for accept languages widgets.
   CHROMEG_CALLBACK_0(LanguagesPageGtk, void, OnSelectionChanged,

@@ -16,7 +16,7 @@
 // and persistent state from the browser window and the user's profile.
 class DefaultStateProvider : public WindowSizer::StateProvider {
  public:
-  explicit DefaultStateProvider(const std::wstring& app_name, Browser* browser)
+  explicit DefaultStateProvider(const std::string& app_name, Browser* browser)
       : app_name_(app_name),
         browser_(browser) {
   }
@@ -27,9 +27,9 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
                                   gfx::Rect* work_area) const {
     DCHECK(bounds && maximized);
 
-    std::wstring key(prefs::kBrowserWindowPlacement);
+    std::string key(prefs::kBrowserWindowPlacement);
     if (!app_name_.empty()) {
-      key.append(L"_");
+      key.append("_");
       key.append(app_name_);
     }
 
@@ -41,11 +41,11 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     int top = 0, left = 0, bottom = 0, right = 0;
     bool has_prefs =
         wp_pref &&
-        wp_pref->GetInteger(L"top", &top) &&
-        wp_pref->GetInteger(L"left", &left) &&
-        wp_pref->GetInteger(L"bottom", &bottom) &&
-        wp_pref->GetInteger(L"right", &right) &&
-        wp_pref->GetBoolean(L"maximized", maximized);
+        wp_pref->GetInteger("top", &top) &&
+        wp_pref->GetInteger("left", &left) &&
+        wp_pref->GetInteger("bottom", &bottom) &&
+        wp_pref->GetInteger("right", &right) &&
+        wp_pref->GetBoolean("maximized", maximized);
     bounds->SetRect(left, top, std::max(0, right - left),
                     std::max(0, bottom - top));
 
@@ -54,10 +54,10 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
     int work_area_bottom = 0;
     int work_area_right = 0;
     if (wp_pref) {
-      wp_pref->GetInteger(L"work_area_top", &work_area_top);
-      wp_pref->GetInteger(L"work_area_left", &work_area_left);
-      wp_pref->GetInteger(L"work_area_bottom", &work_area_bottom);
-      wp_pref->GetInteger(L"work_area_right", &work_area_right);
+      wp_pref->GetInteger("work_area_top", &work_area_top);
+      wp_pref->GetInteger("work_area_left", &work_area_left);
+      wp_pref->GetInteger("work_area_bottom", &work_area_bottom);
+      wp_pref->GetInteger("work_area_right", &work_area_right);
     }
     work_area->SetRect(work_area_left, work_area_top,
                       std::max(0, work_area_right - work_area_left),
@@ -99,7 +99,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
   }
 
  private:
-  std::wstring app_name_;
+  std::string app_name_;
 
   // If set, is used as the reference browser for GetLastActiveWindowState.
   Browser* browser_;
@@ -123,7 +123,7 @@ WindowSizer::~WindowSizer() {
 }
 
 // static
-void WindowSizer::GetBrowserWindowBounds(const std::wstring& app_name,
+void WindowSizer::GetBrowserWindowBounds(const std::string& app_name,
                                          const gfx::Rect& specified_bounds,
                                          Browser* browser,
                                          gfx::Rect* window_bounds,
@@ -136,7 +136,7 @@ void WindowSizer::GetBrowserWindowBounds(const std::wstring& app_name,
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, private:
 
-WindowSizer::WindowSizer(const std::wstring& app_name) {
+WindowSizer::WindowSizer(const std::string& app_name) {
   Init(new DefaultStateProvider(app_name, NULL),
        CreateDefaultMonitorInfoProvider());
 }

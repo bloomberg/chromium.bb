@@ -208,8 +208,8 @@ class TabContentsTest : public RenderViewHostTestHarness {
                                Value::CreateBooleanValue(true));
     pref_services->SetUserPref(prefs::kWebKitStandardFontIsSerif,
                                Value::CreateBooleanValue(true));
-    pref_services->SetUserPref(L"webkit.webprefs.foo",
-                               Value::CreateStringValue(L"bar"));
+    pref_services->SetUserPref("webkit.webprefs.foo",
+                               Value::CreateStringValue("bar"));
 
     RenderViewHostTestHarness::SetUp();
   }

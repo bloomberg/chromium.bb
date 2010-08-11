@@ -312,7 +312,7 @@ Browser* Browser::CreateForType(Type type, Profile* profile) {
 }
 
 // static
-Browser* Browser::CreateForApp(const std::wstring& app_name,
+Browser* Browser::CreateForApp(const std::string& app_name,
                                Extension* extension,
                                Profile* profile,
                                bool is_panel) {
@@ -360,7 +360,7 @@ void Browser::CreateBrowserWindow() {
   // name.  See http://crbug.com/7028.
   win_util::SetAppIdForWindow(
       type_ & TYPE_APP ?
-      ShellIntegration::GetAppId(app_name_, profile_->GetPath()) :
+      ShellIntegration::GetAppId(UTF8ToWide(app_name_), profile_->GetPath()) :
       ShellIntegration::GetChromiumAppId(profile_->GetPath()),
       window()->GetNativeHandle());
 #endif
@@ -571,7 +571,7 @@ TabContents* Browser::OpenApplicationWindow(
   }
 
   // TODO(erikkay) this can't be correct for extensions
-  std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
+  std::string app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
 
   bool as_panel = extension && (container == Extension::LAUNCH_PANEL);
@@ -673,10 +673,10 @@ void Browser::OpenExtensionsWindow(Profile* profile) {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, State Storage and Retrieval for UI:
 
-std::wstring Browser::GetWindowPlacementKey() const {
-  std::wstring name(prefs::kBrowserWindowPlacement);
+std::string Browser::GetWindowPlacementKey() const {
+  std::string name(prefs::kBrowserWindowPlacement);
   if (!app_name_.empty()) {
-    name.append(L"_");
+    name.append("_");
     name.append(app_name_);
   }
   return name;
@@ -775,8 +775,7 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
 void Browser::FormatTitleForDisplay(string16* title) {
   size_t current_index = 0;
   size_t match_index;
-  while ((match_index = title->find(L'\n', current_index)) !=
-         std::wstring::npos) {
+  while ((match_index = title->find(L'\n', current_index)) != string16::npos) {
     title->replace(match_index, 1, string16());
     current_index = match_index;
   }
@@ -2748,7 +2747,7 @@ bool Browser::IsApplication() const {
 
 void Browser::ConvertContentsToApplication(TabContents* contents) {
   const GURL& url = contents->controller().GetActiveEntry()->url();
-  std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
+  std::string app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
 
   DetachContents(contents);
@@ -3085,7 +3084,7 @@ void Browser::Observe(NotificationType type,
     }
 
     case NotificationType::PREF_CHANGED: {
-      if (*(Details<std::wstring>(details).ptr()) == prefs::kUseVerticalTabs)
+      if (*(Details<std::string>(details).ptr()) == prefs::kUseVerticalTabs)
         UseVerticalTabsChanged();
       else
         NOTREACHED();
@@ -4026,12 +4025,12 @@ void Browser::TabDetachedAtImpl(TabContents* contents, int index,
 }
 
 // static
-void Browser::RegisterAppPrefs(const std::wstring& app_name) {
+void Browser::RegisterAppPrefs(const std::string& app_name) {
   // A set of apps that we've already started.
-  static std::set<std::wstring>* g_app_names = NULL;
+  static std::set<std::string>* g_app_names = NULL;
 
   if (!g_app_names)
-    g_app_names = new std::set<std::wstring>;
+    g_app_names = new std::set<std::string>;
 
   // Only register once for each app name.
   if (g_app_names->find(app_name) != g_app_names->end())
@@ -4039,8 +4038,8 @@ void Browser::RegisterAppPrefs(const std::wstring& app_name) {
   g_app_names->insert(app_name);
 
   // We need to register the window position pref.
-  std::wstring window_pref(prefs::kBrowserWindowPlacement);
-  window_pref.append(L"_");
+  std::string window_pref(prefs::kBrowserWindowPlacement);
+  window_pref.append("_");
   window_pref.append(app_name);
   PrefService* prefs = g_browser_process->local_state();
   DCHECK(prefs);

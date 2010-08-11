@@ -35,7 +35,7 @@ class GeneralPageGtk : public OptionsPageBase,
 
  private:
   // Overridden from OptionsPageBase
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
   virtual void HighlightGroup(OptionsGroup highlight_group);
 
   // Initialize the option group widgets, return their container

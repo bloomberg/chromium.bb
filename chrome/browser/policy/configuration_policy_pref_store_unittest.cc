@@ -17,74 +17,74 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
   void ApplyStringPolicyValue(
       ConfigurationPolicyPrefStore* store,
       ConfigurationPolicyStore::PolicyType type,
-      const wchar_t* policy_value);
+      const char* policy_value);
 
   // The following three methods test a policy which controls a string
   // preference.
   // Checks that by default, it's an empty string.
-  void TestStringPolicyGetDefault(const wchar_t* pref_name);
+  void TestStringPolicyGetDefault(const char* pref_name);
   // Checks that values can be set.
-  void TestStringPolicySetValue(const wchar_t* pref_name,
+  void TestStringPolicySetValue(const char* pref_name,
                                 ConfigurationPolicyStore::PolicyType type);
   // A wrapper that calls the above two methods.
-  void TestStringPolicy(const wchar_t* pref_name,
+  void TestStringPolicy(const char* pref_name,
                         ConfigurationPolicyStore::PolicyType type);
 
   // The following three methods test a policy which controls a boolean
   // preference.
   // Checks that there's no deafult.
-  void TestBooleanPolicyGetDefault(const wchar_t* pref_name);
+  void TestBooleanPolicyGetDefault(const char* pref_name);
   // Checks that values can be set.
-  void TestBooleanPolicySetValue(const wchar_t* pref_name,
+  void TestBooleanPolicySetValue(const char* pref_name,
                                  ConfigurationPolicyStore::PolicyType type);
   // A wrapper that calls the above two methods.
-  void TestBooleanPolicy(const wchar_t* pref_name,
+  void TestBooleanPolicy(const char* pref_name,
                          ConfigurationPolicyStore::PolicyType type);
 
   // The following three methods test a policy which controls an integer
   // preference.
   // Checks that by default, it's 0.
-  void TestIntegerPolicyGetDefault(const wchar_t* pref_name);
+  void TestIntegerPolicyGetDefault(const char* pref_name);
   // Checks that values can be set.
-  void TestIntegerPolicySetValue(const wchar_t* pref_name,
+  void TestIntegerPolicySetValue(const char* pref_name,
                                  ConfigurationPolicyStore::PolicyType type);
   // A wrapper that calls the above two methods.
-  void TestIntegerPolicy(const wchar_t* pref_name,
+  void TestIntegerPolicy(const char* pref_name,
                          ConfigurationPolicyStore::PolicyType type);
 };
 
 void ConfigurationPolicyPrefStoreTest::ApplyStringPolicyValue(
     ConfigurationPolicyPrefStore* store,
     ConfigurationPolicyStore::PolicyType type,
-    const wchar_t* policy_value) {
+    const char* policy_value) {
   store->Apply(type, Value::CreateStringValue(policy_value));
 }
 
 void ConfigurationPolicyPrefStoreTest::TestStringPolicyGetDefault(
-    const wchar_t* pref_name) {
+    const char* pref_name) {
   ConfigurationPolicyPrefStore store(NULL, NULL);
-  std::wstring result;
+  std::string result;
   store.prefs()->GetString(pref_name, &result);
-  EXPECT_EQ(result, L"");
+  EXPECT_EQ(result, "");
 }
 
 void ConfigurationPolicyPrefStoreTest::TestStringPolicySetValue(
-    const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
+    const char* pref_name, ConfigurationPolicyStore::PolicyType type) {
   ConfigurationPolicyPrefStore store(NULL, NULL);
-  ApplyStringPolicyValue(&store, type, L"http://chromium.org");
-  std::wstring result;
+  ApplyStringPolicyValue(&store, type, "http://chromium.org");
+  std::string result;
   store.prefs()->GetString(pref_name, &result);
-  EXPECT_EQ(result, L"http://chromium.org");
+  EXPECT_EQ(result, "http://chromium.org");
 }
 
 void ConfigurationPolicyPrefStoreTest::TestStringPolicy(
-    const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
+    const char* pref_name, ConfigurationPolicyStore::PolicyType type) {
   TestStringPolicyGetDefault(pref_name);
   TestStringPolicySetValue(pref_name, type);
 }
 
 void ConfigurationPolicyPrefStoreTest::TestBooleanPolicyGetDefault(
-    const wchar_t* pref_name) {
+    const char* pref_name) {
   ConfigurationPolicyPrefStore store(NULL, NULL);
   bool result = false;
   store.prefs()->GetBoolean(pref_name, &result);
@@ -95,7 +95,7 @@ void ConfigurationPolicyPrefStoreTest::TestBooleanPolicyGetDefault(
 }
 
 void ConfigurationPolicyPrefStoreTest::TestBooleanPolicySetValue(
-    const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
+    const char* pref_name, ConfigurationPolicyStore::PolicyType type) {
   ConfigurationPolicyPrefStore store(NULL, NULL);
   store.Apply(type, Value::CreateBooleanValue(false));
   bool result = true;
@@ -109,13 +109,13 @@ void ConfigurationPolicyPrefStoreTest::TestBooleanPolicySetValue(
 }
 
 void ConfigurationPolicyPrefStoreTest::TestBooleanPolicy(
-    const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
+    const char* pref_name, ConfigurationPolicyStore::PolicyType type) {
   TestBooleanPolicyGetDefault(pref_name);
   TestBooleanPolicySetValue(pref_name, type);
 }
 
 void ConfigurationPolicyPrefStoreTest::TestIntegerPolicyGetDefault(
-    const wchar_t* pref_name) {
+    const char* pref_name) {
   ConfigurationPolicyPrefStore store(NULL, NULL);
   int result = 0;
   store.prefs()->GetInteger(pref_name, &result);
@@ -123,7 +123,7 @@ void ConfigurationPolicyPrefStoreTest::TestIntegerPolicyGetDefault(
 }
 
 void ConfigurationPolicyPrefStoreTest::TestIntegerPolicySetValue(
-    const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
+    const char* pref_name, ConfigurationPolicyStore::PolicyType type) {
   ConfigurationPolicyPrefStore store(NULL, NULL);
   store.Apply(type, Value::CreateIntegerValue(2));
   int result = 0;
@@ -132,7 +132,7 @@ void ConfigurationPolicyPrefStoreTest::TestIntegerPolicySetValue(
 }
 
 void ConfigurationPolicyPrefStoreTest::TestIntegerPolicy(
-    const wchar_t* pref_name, ConfigurationPolicyStore::PolicyType type) {
+    const char* pref_name, ConfigurationPolicyStore::PolicyType type) {
   TestIntegerPolicyGetDefault(pref_name);
   TestIntegerPolicySetValue(pref_name, type);
 }
@@ -209,15 +209,15 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestSettingsProxyConfig) {
 
   // Ensure that all traces of the command-line specified proxy
   // switches have been overriden.
-  std::wstring string_result;
+  std::string string_result;
   EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyBypassList,
                                        &string_result));
-  EXPECT_EQ(string_result, L"http://chromium3.org");
+  EXPECT_EQ(string_result, "http://chromium3.org");
 
   EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
-  EXPECT_EQ(string_result, L"http://chromium.org/test.pac");
+  EXPECT_EQ(string_result, "http://chromium.org/test.pac");
   EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
-  EXPECT_EQ(string_result, L"http://chromium2.org");
+  EXPECT_EQ(string_result, "http://chromium2.org");
   bool bool_result;
   EXPECT_TRUE(store.prefs()->GetBoolean(prefs::kNoProxyServer, &bool_result));
   EXPECT_TRUE(bool_result);
@@ -244,7 +244,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigManualOverride) {
       Value::CreateIntegerValue(
           ConfigurationPolicyStore::kPolicyManuallyConfiguredProxyMode));
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
-      Value::CreateStringValue(L"http://chromium.org/override"));
+      Value::CreateStringValue("http://chromium.org/override"));
 
   ConfigurationPolicyPrefStore store(&command_line,
                                      provider.release());
@@ -252,10 +252,10 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigManualOverride) {
 
   // Ensure that all traces of the command-line specified proxy
   // switches have been overriden.
-  std::wstring string_result;
+  std::string string_result;
   EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyBypassList,
                                        &string_result));
-  EXPECT_EQ(string_result, L"http://chromium.org/override");
+  EXPECT_EQ(string_result, "http://chromium.org/override");
 
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
@@ -273,7 +273,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigNoProxy) {
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
-      Value::CreateStringValue(L"http://chromium.org/override"));
+      Value::CreateStringValue("http://chromium.org/override"));
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
       Value::CreateIntegerValue(
           ConfigurationPolicyStore::kPolicyNoProxyServerMode));
@@ -281,7 +281,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigNoProxy) {
   ConfigurationPolicyPrefStore store(&command_line, provider.release());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
-  std::wstring string_result;
+  std::string string_result;
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
                                         &string_result));
 
@@ -305,12 +305,12 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
       Value::CreateIntegerValue(
           ConfigurationPolicyStore::kPolicyNoProxyServerMode));
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
-      Value::CreateStringValue(L"http://chromium.org/override"));
+      Value::CreateStringValue("http://chromium.org/override"));
 
   ConfigurationPolicyPrefStore store(&command_line, provider.release());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
-  std::wstring string_result;
+  std::string string_result;
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
                                         &string_result));
 
@@ -330,7 +330,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigAutoDetect) {
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
-      Value::CreateStringValue(L"http://chromium.org/override"));
+      Value::CreateStringValue("http://chromium.org/override"));
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
       Value::CreateIntegerValue(
           ConfigurationPolicyStore::kPolicyAutoDetectProxyMode));
@@ -340,10 +340,10 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigAutoDetect) {
 
   // Ensure that all traces of the command-line specified proxy
   // switches have been overriden.
-  std::wstring string_result;
+  std::string string_result;
   EXPECT_TRUE(store.prefs()->GetString(prefs::kProxyBypassList,
                                        &string_result));
-  EXPECT_EQ(string_result, L"http://chromium.org/override");
+  EXPECT_EQ(string_result, "http://chromium.org/override");
 
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
@@ -361,7 +361,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfiguseSystem) {
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
-      Value::CreateStringValue(L"http://chromium.org/override"));
+      Value::CreateStringValue("http://chromium.org/override"));
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyServerMode,
       Value::CreateIntegerValue(
           ConfigurationPolicyStore::kPolicyUseSystemProxyMode));
@@ -369,10 +369,10 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfiguseSystem) {
   ConfigurationPolicyPrefStore store(&command_line, provider.release());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
-  std::wstring string_result;
+  std::string string_result;
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
                                        &string_result));
-  EXPECT_EQ(string_result, L"");
+  EXPECT_EQ(string_result, "");
 
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
@@ -392,15 +392,15 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
       Value::CreateIntegerValue(
           ConfigurationPolicyStore::kPolicyUseSystemProxyMode));
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
-      Value::CreateStringValue(L"http://chromium.org/override"));
+      Value::CreateStringValue("http://chromium.org/override"));
 
   ConfigurationPolicyPrefStore store(&command_line, provider.release());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
-  std::wstring string_result;
+  std::string string_result;
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyBypassList,
                                        &string_result));
-  EXPECT_EQ(string_result, L"");
+  EXPECT_EQ(string_result, "");
 
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyPacUrl, &string_result));
   EXPECT_FALSE(store.prefs()->GetString(prefs::kProxyServer, &string_result));
@@ -420,7 +420,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
   ConfigurationPolicyPrefStore store(&command_line, provider.release());
   ApplyStringPolicyValue(&store,
       ConfigurationPolicyStore::kPolicyDisabledPlugins,
-      L"plugin1");
+      "plugin1");
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
   ListValue* plugin_blacklist = NULL;
@@ -448,7 +448,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
   ConfigurationPolicyPrefStore store(&command_line, provider.release());
   ApplyStringPolicyValue(&store,
                          ConfigurationPolicyStore::kPolicyDisabledPlugins,
-                         L"plugin1,plugin2\\,");
+                         "plugin1,plugin2\\,");
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
   ListValue* plugin_blacklist = NULL;

@@ -321,7 +321,7 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 @interface PreferencesWindowController(Private)
 // Callback when preferences are changed. |prefName| is the name of the
 // pref that has changed.
-- (void)prefChanged:(std::wstring*)prefName;
+- (void)prefChanged:(std::string*)prefName;
 // Callback when sync state has changed.  syncService_ needs to be
 // queried to find out what happened.
 - (void)syncStateChanged;
@@ -372,7 +372,7 @@ class PrefObserverBridge : public NotificationObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
     if (type == NotificationType::PREF_CHANGED)
-      [controller_ prefChanged:Details<std::wstring>(details).ptr()];
+      [controller_ prefChanged:Details<std::string>(details).ptr()];
   }
 
   // Overridden from ProfileSyncServiceObserver.
@@ -877,7 +877,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 // Windows, we don't need to use this method for initializing, that's handled by
 // Cocoa Bindings.
 // Handles prefs for the "Basics" panel.
-- (void)basicsPrefChanged:(std::wstring*)prefName {
+- (void)basicsPrefChanged:(std::string*)prefName {
   if (*prefName == prefs::kRestoreOnStartup) {
     const SessionStartupPref startupPref =
         SessionStartupPref::GetStartupPref(prefs_);
@@ -1201,7 +1201,7 @@ const int kDisabledIndex = 1;
 // that has changed. Unlike on Windows, we don't need to use this method for
 // initializing, that's handled by Cocoa Bindings.
 // Handles prefs for the "Personal Stuff" panel.
-- (void)userDataPrefChanged:(std::wstring*)prefName {
+- (void)userDataPrefChanged:(std::string*)prefName {
   if (*prefName == prefs::kPasswordManagerEnabled) {
     [self setPasswordManagerEnabledIndex:askSavePasswords_.GetValue() ?
         kEnabledIndex : kDisabledIndex];
@@ -1359,7 +1359,7 @@ const int kDisabledIndex = 1;
 // that has changed. Unlike on Windows, we don't need to use this method for
 // initializing, that's handled by Cocoa Bindings.
 // Handles prefs for the "Under the hood" panel.
-- (void)underHoodPrefChanged:(std::wstring*)prefName {
+- (void)underHoodPrefChanged:(std::string*)prefName {
   if (*prefName == prefs::kAlternateErrorPagesEnabled) {
     [self setShowAlternateErrorPages:
         alternateErrorPages_.GetValue() ? YES : NO];
@@ -1733,7 +1733,7 @@ const int kDisabledIndex = 1;
 
 // Callback when preferences are changed. |prefName| is the name of the
 // pref that has changed and should not be NULL.
-- (void)prefChanged:(std::wstring*)prefName {
+- (void)prefChanged:(std::string*)prefName {
   DCHECK(prefName);
   if (!prefName) return;
   [self basicsPrefChanged:prefName];

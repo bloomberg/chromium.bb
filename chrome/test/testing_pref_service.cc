@@ -28,45 +28,45 @@ TestingPrefService::TestingPrefService()
           NULL)) {
 }
 
-const Value* TestingPrefService::GetManagedPref(const wchar_t* path) {
+const Value* TestingPrefService::GetManagedPref(const char* path) {
   return GetPref(managed_prefs_, path);
 }
 
-void TestingPrefService::SetManagedPref(const wchar_t* path, Value* value) {
+void TestingPrefService::SetManagedPref(const char* path, Value* value) {
   SetPref(managed_prefs_, path, value);
 }
 
-void TestingPrefService::RemoveManagedPref(const wchar_t* path) {
+void TestingPrefService::RemoveManagedPref(const char* path) {
   RemovePref(managed_prefs_, path);
 }
 
-const Value* TestingPrefService::GetUserPref(const wchar_t* path) {
+const Value* TestingPrefService::GetUserPref(const char* path) {
   return GetPref(user_prefs_, path);
 }
 
-void TestingPrefService::SetUserPref(const wchar_t* path, Value* value) {
+void TestingPrefService::SetUserPref(const char* path, Value* value) {
   SetPref(user_prefs_, path, value);
 }
 
-void TestingPrefService::RemoveUserPref(const wchar_t* path) {
+void TestingPrefService::RemoveUserPref(const char* path) {
   RemovePref(user_prefs_, path);
 }
 
 const Value* TestingPrefService::GetPref(PrefStore* pref_store,
-                                         const wchar_t* path) {
+                                         const char* path) {
   Value* result;
   return pref_store->prefs()->Get(path, &result) ? result : NULL;
 }
 
 void TestingPrefService::SetPref(PrefStore* pref_store,
-                                 const wchar_t* path,
+                                 const char* path,
                                  Value* value) {
   pref_store->prefs()->Set(path, value);
   FireObservers(path);
 }
 
 void TestingPrefService::RemovePref(PrefStore* pref_store,
-                                    const wchar_t* path) {
+                                    const char* path) {
   pref_store->prefs()->Remove(path, NULL);
   FireObservers(path);
 }

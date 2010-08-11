@@ -26,7 +26,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 
-const std::wstring DevToolsWindow::kDevToolsApp = L"DevToolsApp";
+const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
 // static
 TabContents* DevToolsWindow::GetDevToolsContents(TabContents* inspected_tab) {
@@ -195,9 +195,9 @@ RenderViewHost* DevToolsWindow::GetRenderViewHost() {
 
 void DevToolsWindow::CreateDevToolsBrowser() {
   // TODO(pfeldman): Make browser's getter for this key static.
-  std::wstring wp_key = L"";
+  std::string wp_key;
   wp_key.append(prefs::kBrowserWindowPlacement);
-  wp_key.append(L"_");
+  wp_key.append("_");
   wp_key.append(kDevToolsApp);
 
   PrefService* prefs = g_browser_process->local_state();

@@ -18,19 +18,19 @@ PrefSetObserver::~PrefSetObserver() {
     pref_service_->RemovePrefObserver(i->c_str(), this);
 }
 
-void PrefSetObserver::AddPref(const std::wstring& pref) {
+void PrefSetObserver::AddPref(const std::string& pref) {
   if (!prefs_.count(pref) && pref_service_->FindPreference(pref.c_str())) {
     prefs_.insert(pref);
     pref_service_->AddPrefObserver(pref.c_str(), this);
   }
 }
 
-void PrefSetObserver::RemovePref(const std::wstring& pref) {
+void PrefSetObserver::RemovePref(const std::string& pref) {
   if (prefs_.erase(pref))
     pref_service_->RemovePrefObserver(pref.c_str(), this);
 }
 
-bool PrefSetObserver::IsObserved(const std::wstring& pref) {
+bool PrefSetObserver::IsObserved(const std::string& pref) {
   return prefs_.count(pref) > 0;
 }
 

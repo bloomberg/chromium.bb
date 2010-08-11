@@ -234,7 +234,7 @@ void AutoFillDialog::Observe(NotificationType type,
                              const NotificationSource& source,
                              const NotificationDetails& details) {
   DCHECK_EQ(NotificationType::PREF_CHANGED, type.value);
-  const std::wstring* pref_name = Details<std::wstring>(details).ptr();
+  const std::string* pref_name = Details<std::string>(details).ptr();
   if (!pref_name || *pref_name == prefs::kAutoFillEnabled) {
     gtk_toggle_button_set_active(
           GTK_TOGGLE_BUTTON(form_autofill_enable_check_),

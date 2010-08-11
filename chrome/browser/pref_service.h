@@ -34,7 +34,6 @@ class ScopedPrefUpdate;
 class PrefService : public NonThreadSafe,
                     public NotificationObserver {
  public:
-
   // A helper class to store all the information associated with a preference.
   class Preference {
    public:
@@ -45,7 +44,7 @@ class PrefService : public NonThreadSafe,
     // your own, use the PrefService::Register*Pref methods instead.
     // |default_value| will be owned by the Preference object.
     Preference(PrefValueStore* pref_value_store,
-               const wchar_t* name,
+               const char* name,
                Value* default_value);
     ~Preference() {}
 
@@ -53,7 +52,7 @@ class PrefService : public NonThreadSafe,
 
     // Returns the name of the Preference (i.e., the key, e.g.,
     // browser.window_placement).
-    const std::wstring name() const { return name_; }
+    const std::string name() const { return name_; }
 
     // Returns the value of the Preference.  If there is no user specified
     // value, it returns the default value.
@@ -92,7 +91,7 @@ class PrefService : public NonThreadSafe,
     friend class PrefService;
 
     Value::ValueType type_;
-    std::wstring name_;
+    std::string name_;
     scoped_ptr<Value> default_value_;
 
     // A reference to the pref service's pref_value_store_.
@@ -128,7 +127,8 @@ class PrefService : public NonThreadSafe,
 
   // Returns true if the preference for the given preference name is available
   // and is managed.
-  bool IsManagedPreference(const wchar_t* pref_name) const;
+  bool IsManagedPreference(const char* pref_name) const;
+  /*DEPRECATED*/bool IsManagedPreference(const wchar_t* pref_name) const;
 
   // Writes the data to disk. The return value only reflects whether
   // serialization was successful; we don't know whether the data actually made
@@ -141,66 +141,103 @@ class PrefService : public NonThreadSafe,
   void ScheduleSavePersistentPrefs();
 
   // Make the PrefService aware of a pref.
-  void RegisterBooleanPref(const wchar_t* path,
-                           bool default_value);
-  void RegisterIntegerPref(const wchar_t* path,
-                           int default_value);
-  void RegisterRealPref(const wchar_t* path,
-                        double default_value);
-  void RegisterStringPref(const wchar_t* path,
-                          const std::string& default_value);
-  void RegisterFilePathPref(const wchar_t* path,
-                            const FilePath& default_value);
-  void RegisterListPref(const wchar_t* path);
-  void RegisterDictionaryPref(const wchar_t* path);
+  void RegisterBooleanPref(const char* path, bool default_value);
+  void RegisterIntegerPref(const char* path, int default_value);
+  void RegisterRealPref(const char* path, double default_value);
+  void RegisterStringPref(const char* path, const std::string& default_value);
+  void RegisterFilePathPref(const char* path, const FilePath& default_value);
+  void RegisterListPref(const char* path);
+  void RegisterDictionaryPref(const char* path);
+  /*DEPRECATED*/void RegisterBooleanPref(const wchar_t* path,
+                                         bool default_value);
+  /*DEPRECATED*/void RegisterIntegerPref(const wchar_t* path,
+                                         int default_value);
+  /*DEPRECATED*/void RegisterRealPref(const wchar_t* path,
+                                      double default_value);
+  /*DEPRECATED*/void RegisterStringPref(const wchar_t* path,
+                                        const std::string& default_value);
+  /*DEPRECATED*/void RegisterFilePathPref(const wchar_t* path,
+                                          const FilePath& default_value);
+  /*DEPRECATED*/void RegisterListPref(const wchar_t* path);
+  /*DEPRECATED*/void RegisterDictionaryPref(const wchar_t* path);
 
   // These varients use a default value from the locale dll instead.
-  void RegisterLocalizedBooleanPref(const wchar_t* path,
+  void RegisterLocalizedBooleanPref(const char* path,
                                     int locale_default_message_id);
-  void RegisterLocalizedIntegerPref(const wchar_t* path,
+  void RegisterLocalizedIntegerPref(const char* path,
                                     int locale_default_message_id);
-  void RegisterLocalizedRealPref(const wchar_t* path,
+  void RegisterLocalizedRealPref(const char* path,
                                  int locale_default_message_id);
-  void RegisterLocalizedStringPref(const wchar_t* path,
+  void RegisterLocalizedStringPref(const char* path,
                                    int locale_default_message_id);
+  /*DEPRECATED*/void RegisterLocalizedBooleanPref(const wchar_t* path,
+                                                 int locale_default_message_id);
+  /*DEPRECATED*/void RegisterLocalizedIntegerPref(const wchar_t* path,
+                                                 int locale_default_message_id);
+  /*DEPRECATED*/void RegisterLocalizedRealPref(const wchar_t* path,
+                                               int locale_default_message_id);
+  /*DEPRECATED*/void RegisterLocalizedStringPref(const wchar_t* path,
+                                                 int locale_default_message_id);
 
   // If the path is valid and the value at the end of the path matches the type
   // specified, it will return the specified value.  Otherwise, the default
   // value (set when the pref was registered) will be returned.
-  bool GetBoolean(const wchar_t* path) const;
-  int GetInteger(const wchar_t* path) const;
-  double GetReal(const wchar_t* path) const;
-  std::string GetString(const wchar_t* path) const;
-  FilePath GetFilePath(const wchar_t* path) const;
+  bool GetBoolean(const char* path) const;
+  int GetInteger(const char* path) const;
+  double GetReal(const char* path) const;
+  std::string GetString(const char* path) const;
+  FilePath GetFilePath(const char* path) const;
+  /*DEPRECATED*/bool GetBoolean(const wchar_t* path) const;
+  /*DEPRECATED*/int GetInteger(const wchar_t* path) const;
+  /*DEPRECATED*/double GetReal(const wchar_t* path) const;
+  /*DEPRECATED*/std::string GetString(const wchar_t* path) const;
+  /*DEPRECATED*/FilePath GetFilePath(const wchar_t* path) const;
 
   // Returns the branch if it exists.  If it's not a branch or the branch does
   // not exist, returns NULL.
-  const DictionaryValue* GetDictionary(const wchar_t* path) const;
-  const ListValue* GetList(const wchar_t* path) const;
+  const DictionaryValue* GetDictionary(const char* path) const;
+  const ListValue* GetList(const char* path) const;
+  /*DEPRECATED*/const DictionaryValue* GetDictionary(const wchar_t* path) const;
+  /*DEPRECATED*/const ListValue* GetList(const wchar_t* path) const;
 
   // If the pref at the given path changes, we call the observer's Observe
   // method with NOTIFY_PREF_CHANGED.
-  virtual void AddPrefObserver(const wchar_t* path, NotificationObserver* obs);
-  void RemovePrefObserver(const wchar_t* path, NotificationObserver* obs);
+  virtual void AddPrefObserver(const char* path, NotificationObserver* obs);
+  void RemovePrefObserver(const char* path, NotificationObserver* obs);
+  /*DEPRECATED*/virtual void AddPrefObserver(const wchar_t* path,
+                                             NotificationObserver* obs);
+  /*DEPRECATED*/void RemovePrefObserver(const wchar_t* path,
+                                        NotificationObserver* obs);
 
   // Removes a user pref and restores the pref to its default value.
-  void ClearPref(const wchar_t* path);
+  void ClearPref(const char* path);
+  /*DEPRECATED*/void ClearPref(const wchar_t* path);
 
   // If the path is valid (i.e., registered), update the pref value in the user
   // prefs.
-  void Set(const wchar_t* path, const Value& value);
-  void SetBoolean(const wchar_t* path, bool value);
-  void SetInteger(const wchar_t* path, int value);
-  void SetReal(const wchar_t* path, double value);
-  void SetString(const wchar_t* path, const std::string& value);
-  void SetFilePath(const wchar_t* path, const FilePath& value);
+  void Set(const char* path, const Value& value);
+  void SetBoolean(const char* path, bool value);
+  void SetInteger(const char* path, int value);
+  void SetReal(const char* path, double value);
+  void SetString(const char* path, const std::string& value);
+  void SetFilePath(const char* path, const FilePath& value);
+  /*DEPRECATED*/void Set(const wchar_t* path, const Value& value);
+  /*DEPRECATED*/void SetBoolean(const wchar_t* path, bool value);
+  /*DEPRECATED*/void SetInteger(const wchar_t* path, int value);
+  /*DEPRECATED*/void SetReal(const wchar_t* path, double value);
+  /*DEPRECATED*/void SetString(const wchar_t* path, const std::string& value);
+  /*DEPRECATED*/void SetFilePath(const wchar_t* path, const FilePath& value);
 
   // Int64 helper methods that actually store the given value as a string.
   // Note that if obtaining the named value via GetDictionary or GetList, the
   // Value type will be TYPE_STRING.
-  void SetInt64(const wchar_t* path, int64 value);
-  int64 GetInt64(const wchar_t* path) const;
-  void RegisterInt64Pref(const wchar_t* path, int64 default_value);
+  void SetInt64(const char* path, int64 value);
+  int64 GetInt64(const char* path) const;
+  void RegisterInt64Pref(const char* path, int64 default_value);
+  /*DEPRECATED*/void SetInt64(const wchar_t* path, int64 value);
+  /*DEPRECATED*/int64 GetInt64(const wchar_t* path) const;
+  /*DEPRECATED*/void RegisterInt64Pref(const wchar_t* path,
+                                       int64 default_value);
 
   // Used to set the value of dictionary or list values in the pref tree.  This
   // will create a dictionary or list if one does not exist in the pref tree.
@@ -209,14 +246,17 @@ class PrefService : public NonThreadSafe,
   // WARNING: Changes to the dictionary or list will not automatically notify
   // pref observers.
   // Use a ScopedPrefUpdate to update observers on changes.
-  DictionaryValue* GetMutableDictionary(const wchar_t* path);
-  ListValue* GetMutableList(const wchar_t* path);
+  DictionaryValue* GetMutableDictionary(const char* path);
+  ListValue* GetMutableList(const char* path);
+  /*DEPRECATED*/DictionaryValue* GetMutableDictionary(const wchar_t* path);
+  /*DEPRECATED*/ListValue* GetMutableList(const wchar_t* path);
 
   // Returns true if a value has been set for the specified path.
   // NOTE: this is NOT the same as FindPreference. In particular
   // FindPreference returns whether RegisterXXX has been invoked, where as
   // this checks if a value exists for the path.
-  bool HasPrefPath(const wchar_t* path) const;
+  bool HasPrefPath(const char* path) const;
+  /*DEPRECATED*/bool HasPrefPath(const wchar_t* path) const;
 
   class PreferencePathComparator {
    public:
@@ -229,22 +269,24 @@ class PrefService : public NonThreadSafe,
 
   // A helper method to quickly look up a preference.  Returns NULL if the
   // preference is not registered.
-  const Preference* FindPreference(const wchar_t* pref_name) const;
+  const Preference* FindPreference(const char* pref_name) const;
+  /*DEPRECATED*/const Preference* FindPreference(
+                    const wchar_t* pref_name) const;
 
   // For the given pref_name, fire any observer of the pref only if |old_value|
   // is different from the current value.  Virtual so it can be mocked for a
   // unit test.
-  virtual void FireObserversIfChanged(const wchar_t* pref_name,
+  virtual void FireObserversIfChanged(const char* pref_name,
                                       const Value* old_value);
 
   bool read_only() const { return pref_value_store_->ReadOnly(); }
 
  protected:
   // For the given pref_name, fire any observer of the pref.
-  void FireObservers(const wchar_t* pref_name);
+  void FireObservers(const char* pref_name);
 
   // This should only be accessed by subclasses for unit-testing.
-  bool PrefIsChanged(const wchar_t* path, const Value* old_value);
+  bool PrefIsChanged(const char* path, const Value* old_value);
 
  private:
   // Add a preference to the PreferenceMap.  If the pref already exists, return
@@ -253,7 +295,7 @@ class PrefService : public NonThreadSafe,
 
   // Returns a copy of the current pref value.  The caller is responsible for
   // deleting the returned object.
-  Value* GetPrefCopy(const wchar_t* pref_name);
+  Value* GetPrefCopy(const char* pref_name);
 
   // Load from disk.  Returns a non-zero error code on failure.
   PrefStore::PrefReadError LoadPersistentPrefs();
@@ -292,7 +334,7 @@ class PrefService : public NonThreadSafe,
   // A map from pref names to a list of observers.  Observers get fired in the
   // order they are added.
   typedef ObserverList<NotificationObserver> NotificationObserverList;
-  typedef base::hash_map<std::wstring, NotificationObserverList*>
+  typedef base::hash_map<std::string, NotificationObserverList*>
       PrefObserverMap;
   PrefObserverMap pref_observers_;
 

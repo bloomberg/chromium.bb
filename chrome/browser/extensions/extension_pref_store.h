@@ -38,7 +38,7 @@ class ExtensionPrefStore : public PrefStore,
   // must be called each time an extension API tries to set a preference.
   // The ExtensionPrefStore will take ownership of the |pref_value|.
   virtual void InstallExtensionPref(Extension* extension,
-                                    const wchar_t* pref_path,
+                                    const char* pref_path,
                                     Value* pref_value);
 
   // Removes an extension and all its preference settings from this PrefStore.
@@ -54,7 +54,7 @@ class ExtensionPrefStore : public PrefStore,
   // The nested pairs are <extension, <pref_path, pref_value> >. This is here,
   // rather than in (say) notification_type.h, to keep the dependency on
   // std::pair out of the many places that include notification_type.h.
-  typedef std::pair<Extension*, std::pair<const wchar_t*, Value*> >
+  typedef std::pair<Extension*, std::pair<const char*, Value*> >
       ExtensionPrefDetails;
 
  protected:
@@ -69,12 +69,12 @@ class ExtensionPrefStore : public PrefStore,
 
  private:
   // Maps preference paths to their values.
-  typedef std::map<const wchar_t*, Value*> PrefValueMap;
+  typedef std::map<const char*, Value*> PrefValueMap;
 
   // Applies the highest-priority extension's setting for the given preference
   // path to the |prefs_| store, or clears the setting there if no extensions
   // wish to control it.
-  void UpdateOnePref(const wchar_t* path);
+  void UpdateOnePref(const char* path);
 
   // Updates each preference in the key set of the |pref_values| map.
   void UpdatePrefs(const PrefValueMap* pref_values);

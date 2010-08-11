@@ -41,7 +41,7 @@ class Preferences : public NotificationObserver {
   // This will set the OS settings when the preference changes.
   // If this method is called with NULL, it will set all OS settings to what's
   // stored in the preferences.
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
 
  private:
   // Writes boolean |value| to the input method (IBus) configuration daemon.

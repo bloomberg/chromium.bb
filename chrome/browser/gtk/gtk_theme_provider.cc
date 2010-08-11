@@ -345,7 +345,7 @@ void GtkThemeProvider::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   if ((type == NotificationType::PREF_CHANGED) &&
-      (*Details<std::wstring>(details).ptr() == prefs::kUsesSystemTheme))
+      (*Details<std::string>(details).ptr() == prefs::kUsesSystemTheme))
     use_gtk_ = profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
 }
 

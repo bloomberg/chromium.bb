@@ -228,7 +228,7 @@ void ContentPageView::InitControlLayout() {
   show_passwords_button_->SetEnabled(enablePasswordManagerElements);
 }
 
-void ContentPageView::NotifyPrefChanged(const std::wstring* pref_name) {
+void ContentPageView::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kPasswordManagerEnabled) {
     if (ask_to_save_passwords_.GetValue()) {
       passwords_asktosave_radio_->SetChecked(true);

@@ -662,7 +662,7 @@ void ChromeURLRequestContextGetter::Observe(
   CheckCurrentlyOnMainThread();
 
   if (NotificationType::PREF_CHANGED == type) {
-    std::wstring* pref_name_in = Details<std::wstring>(details).ptr();
+    std::string* pref_name_in = Details<std::string>(details).ptr();
     PrefService* prefs = Source<PrefService>(source).ptr();
     DCHECK(pref_name_in && prefs);
     if (*pref_name_in == prefs::kAcceptLanguages) {
@@ -1019,7 +1019,7 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
 
 net::ProxyConfig* CreateProxyConfig(const PrefService* pref_service) {
   // Scan for all "enable" type proxy switches.
-  static const wchar_t* proxy_prefs[] = {
+  static const char* proxy_prefs[] = {
     prefs::kProxyPacUrl,
     prefs::kProxyServer,
     prefs::kProxyBypassList,

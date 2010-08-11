@@ -43,7 +43,7 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
   DCHECK(NotificationType::PREF_CHANGED == type);
   DCHECK_EQ(pref_service_, Source<PrefService>(source).ptr());
 
-  std::wstring* name = Details<std::wstring>(details).ptr();
+  std::string* name = Details<std::string>(details).ptr();
   const PrefService::Preference* preference =
       pref_service_->FindPreference((*name).c_str());
   DCHECK(preference);
@@ -71,8 +71,7 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
       return;
     }
 
-    std::string tag = WideToUTF8(*name);
-    if (!node.InitUniqueByCreation(syncable::PREFERENCES, root, tag)) {
+    if (!node.InitUniqueByCreation(syncable::PREFERENCES, root, *name)) {
       error_handler()->OnUnrecoverableError(
           FROM_HERE,
           "Failed to create preference sync node.");
@@ -127,7 +126,7 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     }
     DCHECK(syncable::PREFERENCES == node.GetModelType());
 
-    std::wstring name;
+    std::string name;
     scoped_ptr<Value> value(ReadPreference(&node, &name));
     // Skip values we can't deserialize.
     if (!value.get())
@@ -138,7 +137,7 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     // client and a Windows client, the Windows client does not
     // support kShowPageOptionsButtons.  Ignore updates from these
     // preferences.
-    const wchar_t* pref_name = name.c_str();
+    const char* pref_name = name.c_str();
     if (model_associator_->synced_preferences().count(pref_name) == 0)
       continue;
 
@@ -171,7 +170,7 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
 
 Value* PreferenceChangeProcessor::ReadPreference(
     sync_api::ReadNode* node,
-    std::wstring* name) {
+    std::string* name) {
   const sync_pb::PreferenceSpecifics& preference(
       node->GetPreferenceSpecifics());
   base::JSONReader reader;
@@ -182,7 +181,7 @@ Value* PreferenceChangeProcessor::ReadPreference(
     error_handler()->OnUnrecoverableError(FROM_HERE, err);
     return NULL;
   }
-  *name = UTF8ToWide(preference.name());
+  *name = preference.name();
   return value.release();
 }
 
@@ -201,7 +200,7 @@ void PreferenceChangeProcessor::StopImpl() {
 
 void PreferenceChangeProcessor::StartObserving() {
   DCHECK(pref_service_);
-  for (std::set<std::wstring>::const_iterator it =
+  for (std::set<std::string>::const_iterator it =
       model_associator_->synced_preferences().begin();
       it != model_associator_->synced_preferences().end(); ++it) {
     pref_service_->AddPrefObserver((*it).c_str(), this);
@@ -210,7 +209,7 @@ void PreferenceChangeProcessor::StartObserving() {
 
 void PreferenceChangeProcessor::StopObserving() {
   DCHECK(pref_service_);
-  for (std::set<std::wstring>::const_iterator it =
+  for (std::set<std::string>::const_iterator it =
       model_associator_->synced_preferences().begin();
       it != model_associator_->synced_preferences().end(); ++it) {
     pref_service_->RemovePrefObserver((*it).c_str(), this);

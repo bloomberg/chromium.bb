@@ -53,8 +53,7 @@ TEST_F(PrefSetObserverTest, IsManaged) {
 }
 
 MATCHER_P(PrefNameDetails, name, "details references named preference") {
-  std::wstring* pstr =
-      reinterpret_cast<const Details<std::wstring>&>(arg).ptr();
+  std::string* pstr = reinterpret_cast<const Details<std::string>&>(arg).ptr();
   return pstr && *pstr == name;
 }
 

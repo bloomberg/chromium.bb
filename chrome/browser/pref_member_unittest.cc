@@ -12,10 +12,10 @@
 
 namespace {
 
-static const wchar_t kBoolPref[] = L"bool";
-static const wchar_t kIntPref[] = L"int";
-static const wchar_t kRealPref[] = L"real";
-static const wchar_t kStringPref[] = L"string";
+static const char kBoolPref[] = "bool";
+static const char kIntPref[] = "int";
+static const char kRealPref[] = "real";
+static const char kStringPref[] = "string";
 
 void RegisterTestPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(kBoolPref, false);
@@ -37,7 +37,7 @@ class PrefMemberTestClass : public NotificationObserver {
     DCHECK(NotificationType::PREF_CHANGED == type);
     PrefService* prefs_in = Source<PrefService>(source).ptr();
     EXPECT_EQ(prefs_in, prefs_);
-    std::wstring* pref_name_in = Details<std::wstring>(details).ptr();
+    std::string* pref_name_in = Details<std::string>(details).ptr();
     EXPECT_EQ(*pref_name_in, kStringPref);
     EXPECT_EQ(str_.GetValue(), prefs_->GetString(kStringPref));
     ++observe_cnt_;

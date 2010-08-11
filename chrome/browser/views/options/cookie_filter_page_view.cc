@@ -83,7 +83,7 @@ void CookieFilterPageView::InitControlLayout() {
 ///////////////////////////////////////////////////////////////////////////////
 // CookieFilterPageView, OptionsPageView implementation:
 
-void CookieFilterPageView::NotifyPrefChanged(const std::wstring* pref_name) {
+void CookieFilterPageView::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kClearSiteDataOnExit) {
     clear_on_close_check_->SetChecked(
         clear_site_data_on_exit_.GetValue());

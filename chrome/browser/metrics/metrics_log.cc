@@ -158,13 +158,13 @@ void MetricsLog::WritePluginStabilityElements(PrefService* pref) {
       }
       DictionaryValue* plugin_dict = static_cast<DictionaryValue*>(*iter);
 
-      std::wstring plugin_name;
+      std::string plugin_name;
       plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
 
       OPEN_ELEMENT_FOR_SCOPE("pluginstability");
       // Use "filename" instead of "name", otherwise we need to update the
       // UMA servers.
-      WriteAttribute("filename", CreateBase64Hash(WideToUTF8(plugin_name)));
+      WriteAttribute("filename", CreateBase64Hash(plugin_name));
 
       int launches = 0;
       plugin_dict->GetInteger(prefs::kStabilityPluginLaunches, &launches);
@@ -352,7 +352,7 @@ void MetricsLog::RecordEnvironment(
 
 void MetricsLog::WriteAllProfilesMetrics(
     const DictionaryValue& all_profiles_metrics) {
-  const std::string profile_prefix(WideToUTF8(prefs::kProfilePrefix));
+  const std::string profile_prefix(prefs::kProfilePrefix);
   for (DictionaryValue::key_iterator i = all_profiles_metrics.begin_keys();
        i != all_profiles_metrics.end_keys(); ++i) {
     const std::string& key_name = *i;

@@ -240,7 +240,7 @@ std::wstring PageInfoWindowView::GetWindowTitle() const {
 }
 
 std::wstring PageInfoWindowView::GetWindowName() const {
-  return prefs::kPageInfoWindowPlacement;
+  return UTF8ToWide(prefs::kPageInfoWindowPlacement);
 }
 
 views::View* PageInfoWindowView::GetContentsView() {

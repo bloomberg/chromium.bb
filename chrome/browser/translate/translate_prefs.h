@@ -17,11 +17,11 @@ class PrefService;
 
 class TranslatePrefs {
  public:
-  static const wchar_t kPrefTranslateLanguageBlacklist[];
-  static const wchar_t kPrefTranslateSiteBlacklist[];
-  static const wchar_t kPrefTranslateWhitelists[];
-  static const wchar_t kPrefTranslateDeniedCount[];
-  static const wchar_t kPrefTranslateAcceptedCount[];
+  static const char kPrefTranslateLanguageBlacklist[];
+  static const char kPrefTranslateSiteBlacklist[];
+  static const char kPrefTranslateWhitelists[];
+  static const char kPrefTranslateDeniedCount[];
+  static const char kPrefTranslateAcceptedCount[];
 
   explicit TranslatePrefs(PrefService* user_prefs);
 
@@ -62,10 +62,9 @@ class TranslatePrefs {
 
  private:
   static void MigrateTranslateWhitelists(PrefService* user_prefs);
-  bool IsValueBlacklisted(const wchar_t* pref_id, const std::string& value);
-  void BlacklistValue(const wchar_t* pref_id, const std::string& value);
-  void RemoveValueFromBlacklist(const wchar_t* pref_id,
-      const std::string& value);
+  bool IsValueBlacklisted(const char* pref_id, const std::string& value);
+  void BlacklistValue(const char* pref_id, const std::string& value);
+  void RemoveValueFromBlacklist(const char* pref_id, const std::string& value);
   bool IsValueInList(const ListValue* list, const std::string& value);
   bool IsLanguageWhitelisted(const std::string& original_language,
       std::string* target_language);

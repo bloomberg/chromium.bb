@@ -314,7 +314,7 @@ bool CreateWindowFunction::RunImpl() {
   //
   // NOTE(rafaelw): It's ok if GetCurrentBrowser() returns NULL here.
   // GetBrowserWindowBounds will default to saved "default" values for the app.
-  WindowSizer::GetBrowserWindowBounds(std::wstring(), empty_bounds,
+  WindowSizer::GetBrowserWindowBounds(std::string(), empty_bounds,
                                       GetCurrentBrowser(), &bounds,
                                       &maximized);
 

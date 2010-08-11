@@ -12,7 +12,7 @@
 #include "chrome/common/pref_names.h"
 
 static void ValidateFontFamily(PrefService* prefs,
-                               const wchar_t* family_pref_name) {
+                               const char* family_pref_name) {
   // The native font settings dialog saved fonts by the font name, rather
   // than the family name.  This worked for the old dialog since
   // -[NSFont fontWithName:size] accepted a font or family name, but the

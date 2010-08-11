@@ -30,7 +30,7 @@ class CookieFilterPageGtk : public OptionsPageBase {
 
  private:
   // Overridden from OptionsPageBase
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+  virtual void NotifyPrefChanged(const std::string* pref_name);
   virtual void HighlightGroup(OptionsGroup highlight_group);
 
   CHROMEGTK_CALLBACK_0(CookieFilterPageGtk, void, OnCookiesAllowToggled);

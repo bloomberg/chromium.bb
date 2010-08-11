@@ -83,7 +83,7 @@ class MockPrefService : public PrefService {
         fired_observers_(false) {}
 
   // Tracks whether the observers would have been notified.
-  virtual void FireObserversIfChanged(const wchar_t* pref_name,
+  virtual void FireObserversIfChanged(const char* pref_name,
                                       const Value* old_value) {
     fired_observers_ = PrefIsChanged(pref_name, old_value);
   }
@@ -92,10 +92,10 @@ class MockPrefService : public PrefService {
 };
 
 // Use static constants to avoid confusing std::map with hard-coded strings.
-static const wchar_t* kPref1 = L"path1.subpath";
-static const wchar_t* kPref2 = L"path2";
-static const wchar_t* kPref3 = L"path3";
-static const wchar_t* kPref4 = L"path4";
+static const char* kPref1 = "path1.subpath";
+static const char* kPref2 = "path2";
+static const char* kPref3 = "path3";
+static const char* kPref4 = "path4";
 
 }  // namespace
 

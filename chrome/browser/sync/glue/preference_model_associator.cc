@@ -64,11 +64,11 @@ bool PreferenceModelAssociator::AssociateModels() {
   }
 
   base::JSONReader reader;
-  for (std::set<std::wstring>::iterator it = synced_preferences_.begin();
+  for (std::set<std::string>::iterator it = synced_preferences_.begin();
        it != synced_preferences_.end(); ++it) {
-    std::string tag = WideToUTF8(*it);
+    const std::string& tag = *it;
     const PrefService::Preference* pref =
-        pref_service->FindPreference((*it).c_str());
+        pref_service->FindPreference(tag.c_str());
     DCHECK(pref);
 
     sync_api::WriteNode node(&trans);
@@ -81,7 +81,7 @@ bool PreferenceModelAssociator::AssociateModels() {
       if (pref->IsUserModifiable()) {
         scoped_ptr<Value> value(
             reader.JsonToValue(preference.value(), false, false));
-        std::wstring pref_name = UTF8ToWide(preference.name());
+        std::string pref_name = preference.name();
         if (!value.get()) {
           LOG(ERROR) << "Failed to deserialize preference value: "
                      << reader.GetErrorMessage();
@@ -156,7 +156,7 @@ bool PreferenceModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 }
 
 int64 PreferenceModelAssociator::GetSyncIdFromChromeId(
-    const std::wstring preference_name) {
+    const std::string preference_name) {
   PreferenceNameToSyncIdMap::const_iterator iter =
       id_map_.find(preference_name);
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
@@ -195,14 +195,15 @@ bool PreferenceModelAssociator::GetSyncIdForTaggedNode(const std::string& tag,
 Value* PreferenceModelAssociator::MergePreference(
     const PrefService::Preference& local_pref,
     const Value& server_value) {
-  if (local_pref.name() == prefs::kURLsToRestoreOnStartup ||
-      local_pref.name() == prefs::kDesktopNotificationAllowedOrigins ||
-      local_pref.name() == prefs::kDesktopNotificationDeniedOrigins) {
+  const std::string& name(local_pref.name());
+  if (name == prefs::kURLsToRestoreOnStartup ||
+      name == prefs::kDesktopNotificationAllowedOrigins ||
+      name == prefs::kDesktopNotificationDeniedOrigins) {
     return MergeListValues(*local_pref.GetValue(), server_value);
   }
 
-  if (local_pref.name() == prefs::kContentSettingsPatterns ||
-      local_pref.name() == prefs::kGeolocationContentSettings) {
+  if (name == prefs::kContentSettingsPatterns ||
+      name == prefs::kGeolocationContentSettings) {
     return MergeDictionaryValues(*local_pref.GetValue(), server_value);
   }
 
@@ -211,7 +212,7 @@ Value* PreferenceModelAssociator::MergePreference(
 }
 
 bool PreferenceModelAssociator::WritePreferenceToNode(
-    const std::wstring& name,
+    const std::string& name,
     const Value& value,
     sync_api::WriteNode* node) {
   std::string serialized;
@@ -222,10 +223,11 @@ bool PreferenceModelAssociator::WritePreferenceToNode(
   }
 
   sync_pb::PreferenceSpecifics preference;
-  preference.set_name(WideToUTF8(name));
+  preference.set_name(name);
   preference.set_value(serialized);
   node->SetPreferenceSpecifics(preference);
-  node->SetTitle(name);
+  // TODO(viettrungluu): eliminate conversion (it's temporary)
+  node->SetTitle(UTF8ToWide(name));
   return true;
 }
 
@@ -290,7 +292,7 @@ Value* PreferenceModelAssociator::MergeDictionaryValues(
 }
 
 void PreferenceModelAssociator::AfterUpdateOperations(
-    const std::wstring& pref_name) {
+    const std::string& pref_name) {
   // The bookmark bar visibility preference requires a special
   // notification to update the UI.
   if (0 == pref_name.compare(prefs::kShowBookmarkBar)) {

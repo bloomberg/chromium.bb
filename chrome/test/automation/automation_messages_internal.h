@@ -812,7 +812,7 @@ IPC_BEGIN_MESSAGES(Automation)
   // This messages sets an int-value preference.
   IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_SetIntPreference,
                              int /* browser handle */,
-                             std::wstring /* pref name */,
+                             std::string /* pref name */,
                              int /* value */,
                              bool /* success */)
 
@@ -831,21 +831,21 @@ IPC_BEGIN_MESSAGES(Automation)
   // This messages sets a string-value preference.
   IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_SetStringPreference,
                              int /* browser handle */,
-                             std::wstring /* pref name */,
+                             std::string /* pref name */,
                              std::string /* pref value */,
                              bool)
 
   // This messages gets a boolean-value preference.
   IPC_SYNC_MESSAGE_ROUTED2_2(AutomationMsg_GetBooleanPreference,
                              int /* browser handle */,
-                             std::wstring /* pref name */,
+                             std::string /* pref name */,
                              bool /* success */,
                              bool /* pref value */)
 
   // This messages sets a boolean-value preference.
   IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_SetBooleanPreference,
                              int /* browser handle */,
-                             std::wstring /* pref name */,
+                             std::string /* pref name */,
                              bool /* pref value */,
                              bool /* success */)
 

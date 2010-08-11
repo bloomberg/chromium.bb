@@ -94,13 +94,11 @@ void HostZoomMap::SetZoomLevel(const GURL& url, int level) {
     ScopedPrefUpdate update(profile_->GetPrefs(), prefs::kPerHostZoomLevels);
     DictionaryValue* host_zoom_dictionary =
         profile_->GetPrefs()->GetMutableDictionary(prefs::kPerHostZoomLevels);
-    std::wstring wide_host(UTF8ToWide(host));
     if (level == 0) {
-      host_zoom_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
+      host_zoom_dictionary->RemoveWithoutPathExpansion(host, NULL);
     } else {
       host_zoom_dictionary->SetWithoutPathExpansion(
-          wide_host,
-          Value::CreateIntegerValue(level));
+          host, Value::CreateIntegerValue(level));
     }
   }
   updating_preferences_ = false;
@@ -150,7 +148,7 @@ void HostZoomMap::Observe(
     if (updating_preferences_)
       return;
 
-    std::wstring* name = Details<std::wstring>(details).ptr();
+    std::string* name = Details<std::string>(details).ptr();
     if (prefs::kPerHostZoomLevels == *name) {
       Load();
       return;

@@ -683,7 +683,7 @@ class NotificationType {
     WEB_APP_INSTALL_CHANGED,
 
     // This is sent to a pref observer when a pref is changed. The source is the
-    // PrefService and the details a std::wstring of the changed path.
+    // PrefService and the details a std::string of the changed path.
     PREF_CHANGED,
 
     // Sent when a default request context has been created, so calling

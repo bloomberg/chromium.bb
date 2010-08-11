@@ -24,7 +24,7 @@ ExtensionPrefStore::~ExtensionPrefStore() {
 }
 
 void ExtensionPrefStore::InstallExtensionPref(Extension* extension,
-                                              const wchar_t* new_pref_path,
+                                              const char* new_pref_path,
                                               Value* new_pref_value) {
   ExtensionStack::iterator i;
   for (i = extension_stack_.begin(); i != extension_stack_.end(); ++i) {
@@ -84,7 +84,7 @@ void ExtensionPrefStore::GetExtensionIDs(std::vector<std::string>* result) {
 // a given preference, among other optimizations. But probably fewer than 10
 // installed extensions will be trying to control any preferences, so stick
 // with this simpler algorithm until it causes a problem.
-void ExtensionPrefStore::UpdateOnePref(const wchar_t* path) {
+void ExtensionPrefStore::UpdateOnePref(const char* path) {
   scoped_ptr<Value> old_value;
   PrefService* pref_service = GetPrefService();
 

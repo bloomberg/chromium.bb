@@ -22,12 +22,12 @@ class PrefSetObserver : public NotificationObserver {
   virtual ~PrefSetObserver();
 
   // Add a |pref| to the set of preferences to observe.
-  void AddPref(const std::wstring& pref);
+  void AddPref(const std::string& pref);
   // Remove |pref| from the set of observed peferences.
-  void RemovePref(const std::wstring& pref);
+  void RemovePref(const std::string& pref);
 
   // Check whether |pref| is in the set of observed preferences.
-  bool IsObserved(const std::wstring& pref);
+  bool IsObserved(const std::string& pref);
   // Check whether any of the observed preferences has the managed bit set.
   bool IsManaged();
 
@@ -42,7 +42,7 @@ class PrefSetObserver : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  typedef std::set<std::wstring> PrefSet;
+  typedef std::set<std::string> PrefSet;
   PrefSet prefs_;
 
   PrefService* pref_service_;
