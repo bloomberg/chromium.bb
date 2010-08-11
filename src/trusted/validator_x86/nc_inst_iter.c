@@ -13,6 +13,8 @@
 #include <assert.h>
 
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
+
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_trans.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
@@ -82,16 +84,16 @@ NaClInstState* NaClInstIterGetLookbackState(NaClInstIter* iter,
 }
 
 Bool NaClInstIterHasNext(NaClInstIter* iter) {
-  DEBUG(printf("iter has next index %"NACL_PRIxNaClMemorySize
-               " < %"NACL_PRIxNaClMemorySize"\n",
-               iter->index, iter->segment->size));
+  DEBUG(NaClLog(LOG_INFO, "iter has next index %"NACL_PRIxNaClMemorySize
+                " < %"NACL_PRIxNaClMemorySize"\n",
+                iter->index, iter->segment->size));
   return iter->index < iter->segment->size;
 }
 
 void NaClInstIterAdvance(NaClInstIter* iter) {
   NaClInstState* state;
   if (iter->index >= iter->segment->size) {
-    fprintf(stderr, "*ERROR* NaClInstIterAdvance with no next element.\n");
+    NaClLog(LOG_FATAL, "*ERROR* NaClInstIterAdvance with no next element.\n");
     exit(1);
   }
   state = NaClInstIterGetState(iter);
@@ -99,16 +101,16 @@ void NaClInstIterAdvance(NaClInstIter* iter) {
   ++iter->inst_count;
   iter->buffer_index = (iter->buffer_index + 1) % iter->buffer_size;
   DEBUG(
-      printf(
-          "iter advance: index %"NACL_PRIxNaClMemorySize", "
-          "buffer index %"NACL_PRIuS"\n",
-          iter->index, iter->buffer_index));
+      NaClLog(LOG_INFO,
+              "iter advance: index %"NACL_PRIxNaClMemorySize", "
+              "buffer index %"NACL_PRIuS"\n",
+              iter->index, iter->buffer_index));
   iter->buffer[iter->buffer_index].inst = NULL;
 }
 
 uint8_t* NaClInstIterGetInstMemory(NaClInstIter* iter) {
   if (iter->index >= iter->segment->size) {
-    fprintf(stderr,
+    NaClLog(LOG_FATAL,
             "*ERROR* NaClInstIterGetInstMemory with no next element.\n");
     exit(1);
   }

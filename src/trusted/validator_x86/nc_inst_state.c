@@ -15,6 +15,8 @@
 #include <assert.h>
 
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
+
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state_internal.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_trans.h"
@@ -47,7 +49,8 @@ static void NaClInstStateInit(NaClInstIter* iter, NaClInstState* state) {
     limit = NACL_MAX_BYTES_PER_X86_INSTRUCTION;
   }
   state->length_limit = (uint8_t) limit;
-  DEBUG(printf("length limit = %"NACL_PRIu8"\n", state->length_limit));
+  DEBUG(NaClLog(LOG_INFO,
+                "length limit = %"NACL_PRIu8"\n", state->length_limit));
   state->num_prefix_bytes = 0;
   state->rexprefix = 0;
   state->num_rex_prefixes = 0;
@@ -119,12 +122,14 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
     next_byte = state->mpc[state->length];
     prefix_form = kNaClPrefixTable[next_byte];
     if (prefix_form == 0) break;
-    DEBUG(printf("Consume prefix[%d]: %02"NACL_PRIx8" => %"NACL_PRIx32"\n",
-                 i, next_byte, prefix_form));
+    DEBUG(NaClLog(LOG_INFO,
+                  "Consume prefix[%d]: %02"NACL_PRIx8" => %"NACL_PRIx32"\n",
+                  i, next_byte, prefix_form));
     state->prefix_mask |= prefix_form;
     ++state->num_prefix_bytes;
     ++state->length;
-    DEBUG(printf("  prefix mask: %08"NACL_PRIx32"\n", state->prefix_mask));
+    DEBUG(NaClLog(LOG_INFO,
+                  "  prefix mask: %08"NACL_PRIx32"\n", state->prefix_mask));
 
     /* If the prefix byte is a REX prefix, record its value, since
      * bits 5-8 of this prefix bit may be needed later.
@@ -132,7 +137,8 @@ static Bool NaClConsumePrefixBytes(NaClInstState* state) {
     if (NACL_TARGET_SUBARCH == 64) {
       if (prefix_form == kPrefixREX) {
         state->rexprefix = next_byte;
-        DEBUG(printf("  rexprefix = %02"NACL_PRIx8"\n", state->rexprefix));
+        DEBUG(NaClLog(LOG_INFO,
+                      "  rexprefix = %02"NACL_PRIx8"\n", state->rexprefix));
         ++state->num_rex_prefixes;
         rex_index = i;
       }
@@ -303,8 +309,9 @@ static void NaClConsumeInstBytes(NaClInstState* state,
       desc->matched_prefix = NoPrefix;
       break;
   }
-  DEBUG(printf("matched prefix = %s\n",
-               NaClInstPrefixName(desc->matched_prefix)));
+  DEBUG(NaClLog(LOG_INFO,
+                "matched prefix = %s\n",
+                NaClInstPrefixName(desc->matched_prefix)));
 }
 
 /* Compute the operand and address sizes for the instruction. Then, verify
@@ -313,7 +320,8 @@ static void NaClConsumeInstBytes(NaClInstState* state,
  */
 static Bool NaClConsumeAndCheckOperandSize(NaClInstState* state) {
   state->operand_size = NaClExtractOpSize(state);
-  DEBUG(printf("operand size = %"NACL_PRIu8"\n", state->operand_size));
+  DEBUG(NaClLog(LOG_INFO,
+                "operand size = %"NACL_PRIu8"\n", state->operand_size));
   if (state->inst->flags &
       (NACL_IFLAG(OperandSize_w) | NACL_IFLAG(OperandSize_v) |
        NACL_IFLAG(OperandSize_o))) {
@@ -336,9 +344,10 @@ static Bool NaClConsumeAndCheckOperandSize(NaClInstState* state) {
       /* The flags associated with the opcode (instruction) don't
        * allow the computed sizes, abort the  match of the instruction.
        */
-      DEBUG(printf("Operand size %"NACL_PRIu8
-                   " doesn't match flag requirement!\n",
-                   state->operand_size));
+      DEBUG(NaClLog(LOG_INFO,
+                    "Operand size %"NACL_PRIu8
+                    " doesn't match flag requirement!\n",
+                    state->operand_size));
       return FALSE;
     }
   }
@@ -347,7 +356,8 @@ static Bool NaClConsumeAndCheckOperandSize(NaClInstState* state) {
 
 static Bool NaClConsumeAndCheckAddressSize(NaClInstState* state) {
   state->address_size = NaClExtractAddressSize(state);
-  DEBUG(printf("Address size = %"NACL_PRIu8"\n", state->address_size));
+  DEBUG(NaClLog(LOG_INFO,
+                "Address size = %"NACL_PRIu8"\n", state->address_size));
   if (state->inst->flags &
       (NACL_IFLAG(AddressSize_w) | NACL_IFLAG(AddressSize_v) |
        NACL_IFLAG(AddressSize_o))) {
@@ -370,9 +380,10 @@ static Bool NaClConsumeAndCheckAddressSize(NaClInstState* state) {
       /* The flags associated with the opcode (instruction) don't
        * allow the computed sizes, abort the  match of the instruction.
        */
-      DEBUG(printf("Address size %"NACL_PRIu8
-                   " doesn't match flag requirement!\n",
-                   state->address_size));
+      DEBUG(NaClLog(LOG_INFO,
+                    "Address size %"NACL_PRIu8
+                    " doesn't match flag requirement!\n",
+                    state->address_size));
       return FALSE;
     }
   }
@@ -399,7 +410,7 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
     uint8_t byte;
     /* Has modrm byte. */
     if (state->length >= state->length_limit) {
-      DEBUG(printf("Can't read mod/rm, no more bytes!\n"));
+      DEBUG(NaClLog(LOG_INFO, "Can't read mod/rm, no more bytes!\n"));
       return FALSE;
     }
     byte = state->mpc[state->length];
@@ -408,12 +419,12 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
      */
     if (modrm_mod(byte) == 0x3) {
       if (state->inst->flags & NACL_IFLAG(ModRmModIsnt0x3)) {
-        DEBUG(printf("Can't match, modrm mod field is 0x3\n"));
+        DEBUG(NaClLog(LOG_INFO, "Can't match, modrm mod field is 0x3\n"));
         return FALSE;
       }
     } else {
       if (state->inst->flags & NACL_IFLAG(ModRmModIs0x3)) {
-        DEBUG(printf("Can't match, modrm mod field not 0x3\n"));
+        DEBUG(NaClLog(LOG_INFO, "Can't match, modrm mod field not 0x3\n"));
         return FALSE;
       }
     }
@@ -423,7 +434,7 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
     state->first_disp_byte = 0;
     state->sib = 0;
     state->has_sib = FALSE;
-    DEBUG(printf("consume modrm = %02"NACL_PRIx8"\n", state->modrm));
+    DEBUG(NaClLog(LOG_INFO, "consume modrm = %02"NACL_PRIx8"\n", state->modrm));
 
     /* Consume the remaining opcode value in the mod/rm byte
      * if applicable.
@@ -435,10 +446,10 @@ static Bool NaClConsumeModRm(NaClInstState* state) {
       if (modrm_opcode(state->modrm) !=
           (state->inst->operands[0].kind - Opcode0)) {
         DEBUG(
-            printf(
-                "Discarding, opcode in mrm byte (%02"NACL_PRIx8") "
-                "does not match\n",
-                modrm_opcode(state->modrm)));
+            NaClLog(LOG_INFO,
+                    "Discarding, opcode in mrm byte (%02"NACL_PRIx8") "
+                    "does not match\n",
+                    modrm_opcode(state->modrm)));
         return FALSE;
       }
     }
@@ -466,17 +477,18 @@ static Bool NaClConsumeSib(NaClInstState* state) {
    */
   state->sib = 0;
   state->has_sib = NaClInstRequiresSib(state);
-  DEBUG(printf("has sib = %d\n", (int) state->has_sib));
+  DEBUG(NaClLog(LOG_INFO, "has sib = %d\n", (int) state->has_sib));
   if (state->has_sib) {
     if (state->length >= state->length_limit) {
-      DEBUG(printf("Can't consume sib, no more bytes!\n"));
+      DEBUG(NaClLog(LOG_INFO, "Can't consume sib, no more bytes!\n"));
       return FALSE;
     }
     /* Read the SIB byte and record. */
     state->sib = state->mpc[state->length++];
-    DEBUG(printf("sib = %02"NACL_PRIx8"\n", state->sib));
+    DEBUG(NaClLog(LOG_INFO, "sib = %02"NACL_PRIx8"\n", state->sib));
     if (sib_base(state->sib) == 0x05 && modrm_mod(state->modrm) > 2) {
-      DEBUG(printf("Sib byte implies modrm.mod field <= 2, match fails\n"));
+      DEBUG(NaClLog(LOG_INFO,
+                    "Sib byte implies modrm.mod field <= 2, match fails\n"));
       return FALSE;
     }
   }
@@ -533,12 +545,13 @@ static Bool NaClConsumeDispBytes(NaClInstState* state) {
    * walk past the end of the code segment.
    */
   state->num_disp_bytes = NaClGetNumDispBytes(state);
-  DEBUG(printf("num disp bytes = %"NACL_PRIu8"\n", state->num_disp_bytes));
+  DEBUG(NaClLog(LOG_INFO,
+                "num disp bytes = %"NACL_PRIu8"\n", state->num_disp_bytes));
   state->first_disp_byte = state->length;
   if (state->num_disp_bytes > 0) {
     int new_length = state->length + state->num_disp_bytes;
     if (new_length > state->length_limit) {
-      DEBUG(printf("Can't consume disp, no more bytes!\n"));
+      DEBUG(NaClLog(LOG_INFO, "Can't consume disp, no more bytes!\n"));
       return FALSE;
     }
     /* Read the displacement bytes. */
@@ -589,7 +602,8 @@ static int NaClGetNumImmed2Bytes(NaClInstState* state) {
 static Bool NaClConsumeImmediateBytes(NaClInstState* state) {
   /* find out how many immediate bytes are expected. */
   state->num_imm_bytes = NaClGetNumImmedBytes(state);
-  DEBUG(printf("num immediate bytes = %"NACL_PRIu8"\n", state->num_imm_bytes));
+  DEBUG(NaClLog(LOG_INFO,
+                "num immediate bytes = %"NACL_PRIu8"\n", state->num_imm_bytes));
   state->first_imm_byte = 0;
   if (state->num_imm_bytes > 0) {
     int new_length;
@@ -598,7 +612,7 @@ static Bool NaClConsumeImmediateBytes(NaClInstState* state) {
      */
     new_length = state->length + state->num_imm_bytes;
     if (new_length > state->length_limit) {
-      DEBUG(printf("Can't consume immediate, no more bytes!\n"));
+      DEBUG(NaClLog(LOG_INFO, "Can't consume immediate, no more bytes!\n"));
       return FALSE;
     }
     /* Read the immediate bytes. */
@@ -607,8 +621,8 @@ static Bool NaClConsumeImmediateBytes(NaClInstState* state) {
   }
   /* Before returning, see if second immediate value specified. */
   state->num_imm2_bytes = NaClGetNumImmed2Bytes(state);
-  DEBUG(printf("num immediate 2 bytes = %"NACL_PRIu8"\n",
-               state->num_imm2_bytes));
+  DEBUG(NaClLog(LOG_INFO, "num immediate 2 bytes = %"NACL_PRIu8"\n",
+                state->num_imm2_bytes));
   if (state->num_imm2_bytes > 0) {
     int new_length;
     /* Before reading immediate bytes, be sure that we don't walk
@@ -616,7 +630,7 @@ static Bool NaClConsumeImmediateBytes(NaClInstState* state) {
      */
     new_length = state->length + state->num_imm2_bytes;
     if (new_length > state->length_limit) {
-      DEBUG(printf("Can't consume 2nd immediate, no more bytes!\n"));
+      DEBUG(NaClLog(LOG_INFO, "Can't consume 2nd immediate, no more bytes!\n"));
       return FALSE;
     }
     /* Read the immediate bytes. */
@@ -636,11 +650,11 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
       uint32_t i;
       Bool has_lockable_dest = FALSE;
       NaClExpVector* vector = NaClInstStateExpVector(state);
-      DEBUG(printf("checking if lock valid on:\n");
-            NaClExpVectorPrint(stdout, vector));
+      DEBUG(NaClLog(LOG_INFO, "checking if lock valid on:\n");
+            NaClExpVectorPrint(NaClLogGetGio(), vector));
       for (i = 0; i < vector->number_expr_nodes; ++i) {
         NaClExp* node = &vector->node[i];
-        DEBUG(printf("  checking node %d\n", i));
+        DEBUG(NaClLog(LOG_INFO, "  checking node %d\n", i));
         if ((NACL_EMPTY_EFLAGS != (node->flags & NACL_EFLAG(ExprDest))) &&
             (node->kind == ExprMemOffset)) {
           has_lockable_dest = TRUE;
@@ -648,12 +662,12 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
         }
       }
       if (!has_lockable_dest) {
-        DEBUG(printf("Instruction doesn't allow lock prefix "
-                     "on non-memory destination"));
+        DEBUG(NaClLog(LOG_INFO, "Instruction doesn't allow lock prefix "
+                      "on non-memory destination"));
         return FALSE;
       }
     } else {
-      DEBUG(printf("Instruction doesn't allow lock prefix\n"));
+      DEBUG(NaClLog(LOG_INFO, "Instruction doesn't allow lock prefix\n"));
       return FALSE;
     }
   }
@@ -667,7 +681,7 @@ static Bool NaClValidatePrefixFlags(NaClInstState* state) {
            0 == (state->rexprefix & 0x8)) ||
           ((state->inst->flags & NACL_IFLAG(OpcodeHasRexR)) &&
            0 == (state->rexprefix & 0x4))) {
-        DEBUG(printf("can't match REX prefix requirement\n"));
+        DEBUG(NaClLog(LOG_INFO, "can't match REX prefix requirement\n"));
         return FALSE;
       }
     }
@@ -714,8 +728,8 @@ static NaClInst* NaClGetNextInstCandidates(NaClInstState* state,
     desc->opcode_byte = state->mpc[*opcode_length - 1];
   }
   cand_insts = g_OpcodeTable[desc->matched_prefix][desc->opcode_byte];
-  DEBUG(printf("Lookup candidates using [%s][%x]\n",
-               NaClInstPrefixName(desc->matched_prefix), desc->opcode_byte));
+  DEBUG(NaClLog(LOG_INFO, "Lookup candidates using [%s][%x]\n",
+                NaClInstPrefixName(desc->matched_prefix), desc->opcode_byte));
   switch (desc->matched_prefix) {
     case Prefix660F:
       desc->matched_prefix = Prefix0F;
@@ -755,7 +769,8 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
   next_byte = state->mpc[state->length];
   root = g_OpcodeSeq[0].succs[next_byte];
   if (NULL == root) return FALSE;
-  DEBUG(printf("NaClConsume opcode char: %"NACL_PRIx8"\n", next_byte));
+  DEBUG(NaClLog(LOG_INFO,
+                "NaClConsume opcode char: %"NACL_PRIx8"\n", next_byte));
 
   /* If this point is reached, we are committed to attempting
    * a match, and must reset state if it fails.
@@ -765,13 +780,14 @@ static Bool NaClConsumeOpcodeSequence(NaClInstState* state) {
     state->length++;
     if (NULL != root->matching_inst) {
       state->inst = root->matching_inst;
-      DEBUG(printf("matched inst sequence!\n"));
+      DEBUG(NaClLog(LOG_INFO, "matched inst sequence!\n"));
       return TRUE;
     }
     next_byte = state->mpc[state->length];
     root = root->succs[next_byte];
     if (root == NULL) break;
-    DEBUG(printf("NaClConsume opcode char: %"NACL_PRIx8"\n", next_byte));
+    DEBUG(NaClLog(LOG_INFO,
+                  "NaClConsume opcode char: %"NACL_PRIx8"\n", next_byte));
   } while (state->length <= state->length_limit);
 
   /* If reached, we updated the state, but did not find a match. Hence, revert
@@ -822,8 +838,8 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
         while (cand_insts != NULL) {
           NaClClearInstState(state, opcode_length);
           state->inst = cand_insts;
-          DEBUG(printf("try opcode pattern:\n"));
-          DEBUG(NaClInstPrint(stdout, state->inst));
+          DEBUG(NaClLog(LOG_INFO, "try opcode pattern:\n"));
+          DEBUG(NaClInstPrint(NaClLogGetGio(), state->inst));
           if (NaClConsumeAndCheckOperandSize(state) &&
               NaClConsumeAndCheckAddressSize(state) &&
               NaClConsumeModRm(state) &&
@@ -841,7 +857,7 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
           }
         }
         DEBUG(if (! found_match) {
-            printf("no more candidates for this prefix\n");
+            NaClLog(LOG_INFO, "no more candidates for this prefix\n");
           });
       }
     }
@@ -851,7 +867,7 @@ void NaClDecodeInst(NaClInstIter* iter, NaClInstState* state) {
    * forcing field opcode to be non-NULL.
    */
   if (!found_match) {
-    DEBUG(printf("no instruction found, converting to undefined\n"));
+    DEBUG(NaClLog(LOG_INFO, "no instruction found, converting to undefined\n"));
 
     /* Can't figure out instruction, give up. */
     NaClClearInstState(state, opcode_length);

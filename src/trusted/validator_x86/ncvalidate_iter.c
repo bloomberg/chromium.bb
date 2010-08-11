@@ -35,16 +35,21 @@
  */
 int NACL_FLAGS_max_reported_errors = 100;
 
+int NaClValidatorStateGetMaxReportedErrors(NaClValidatorState* state) {
+  return state->quit_after_error_count;
+}
+
+void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState* state,
+                                            int new_value) {
+  state->quit_after_error_count = new_value;
+}
+
 /* Returns true if an error message should be printed for the given level, in
  * the current validator state.
  */
 static Bool NaClPrintValidatorMessages(NaClValidatorState* state, int level) {
   return ((NULL == state) || (state->quit_after_error_count != 0)) &&
       (level <= NaClLogGetVerbosity());
-}
-
-FILE* NaClValidatorStateLogFile(NaClValidatorState* state) {
-  return state->log_file;
 }
 
 static const char *NaClLogLevelLabel(int level) {
@@ -150,13 +155,13 @@ void NaClValidatorInstMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
+    struct Gio* g = NaClLogGetGio();
 
     NaClLogLock();
-
     /* TODO(karl): empty fmt strings not allowed */
     NaClLog_mu(level, "VALIDATOR: %s", "");
     /* TODO(karl) - Make printing of instruction state possible via format. */
-    NaClInstStateInstPrint(NaClValidatorStateLogFile(state), inst);
+    NaClInstStateInstPrint(g, inst);
 
     va_start(ap, format);
     NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
@@ -231,27 +236,22 @@ void NaClRegisterValidator(NaClValidator validator,
 NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
                                              const NaClMemorySize sz,
                                              const uint8_t alignment,
-                                             const NaClOpKind base_register,
-                                             int max_reported_errors,
-                                             FILE* log_file) {
+                                             const NaClOpKind base_register) {
   NaClValidatorState* state;
   NaClValidatorState* return_value = NULL;
   NaClPcAddress vlimit = vbase + sz;
   NaClValidatorInit();
-  DEBUG(printf("Validator Create: vbase = %"NACL_PRIxNaClPcAddress", "
-               "sz = %"NACL_PRIxNaClMemorySize", alignment = %u, vlimit = %"
-               NACL_PRIxNaClPcAddress"\n",
-               vbase, sz, alignment, vlimit));
+  DEBUG(NaClLog(LOG_INFO,
+                "Validator Create: vbase = %"NACL_PRIxNaClPcAddress", "
+                "sz = %"NACL_PRIxNaClMemorySize", alignment = %u, vlimit = %"
+                NACL_PRIxNaClPcAddress"\n",
+                vbase, sz, alignment, vlimit));
   if (vlimit <= vbase) return NULL;
   if (alignment != 16 && alignment != 32) return NULL;
   state = (NaClValidatorState*) malloc(sizeof(NaClValidatorState));
   if (state != NULL) {
     int i;
     return_value = state;
-    state->log_file = log_file;
-    state->old_log_stream = NaClLogGetGio();
-    GioFileRefCtor(&state->log_stream, log_file);
-    NaClLogSetGio((struct Gio*) &state->log_stream);
     state->vbase = vbase;
     state->sz = sz;
     state->alignment = alignment;
@@ -260,7 +260,7 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
     GetCPUFeatures(&(state->cpu_features));
     state->base_register = base_register;
     state->validates_ok = TRUE;
-    state->quit_after_error_count = max_reported_errors;
+    state->quit_after_error_count = NACL_FLAGS_max_reported_errors;
     state->number_validators = nacl_g_num_validators;
     for (i = 0; i < state->number_validators; ++i) {
       NaClValidatorDefinition* defn = &validators[i];
@@ -288,7 +288,9 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
  */
 static void NaClApplyValidators(NaClValidatorState* state, NaClInstIter* iter) {
   int i;
-  DEBUG(NaClInstStateInstPrint(stdout, NaClInstIterGetState(iter)));
+  DEBUG(
+      NaClLog(LOG_INFO, "iter state:\n");
+      NaClInstStateInstPrint(NaClLogGetGio(), NaClInstIterGetState(iter)));
   if (NaClValidatorQuit(state)) return;
   for (i = 0; i < state->number_validators; ++i) {
     validators[i].validator(state, iter, state->local_memory[i]);
@@ -302,7 +304,7 @@ static void NaClApplyValidators(NaClValidatorState* state, NaClInstIter* iter) {
 static void NaClApplyPostValidators(NaClValidatorState* state,
                                     NaClInstIter* iter) {
   int i;
-  DEBUG(printf("applying post validators...\n"));
+  DEBUG(NaClLog(LOG_INFO, "applying post validators...\n"));
   if (NaClValidatorQuit(state)) return;
   for (i = 0; i < state->number_validators; ++i) {
     if (NULL != validators[i].post_validate) {
@@ -311,6 +313,8 @@ static void NaClApplyPostValidators(NaClValidatorState* state,
     }
   }
 }
+
+static void NaClValidatorStatePrintStats(NaClValidatorState* state);
 
 /* The maximum lookback for the instruction iterator of the segment. */
 static const size_t kLookbackSize = 4;
@@ -328,18 +332,19 @@ void NaClValidateSegment(uint8_t* mbase, NaClPcAddress vbase,
   }
   NaClApplyPostValidators(state, iter);
   NaClInstIterDestroy(iter);
+  NaClValidatorStatePrintStats(state);
 }
 
 Bool NaClValidatesOk(NaClValidatorState* state) {
   return state->validates_ok;
 }
 
-void NaClValidatorStatePrintStats(FILE* file, NaClValidatorState* state) {
+static void NaClValidatorStatePrintStats(NaClValidatorState* state) {
   int i;
   for (i = 0; i < state->number_validators; i++) {
     NaClValidatorDefinition* defn = &validators[i];
     if (defn->print_stats != NULL) {
-      defn->print_stats(file, state, state->local_memory[i]);
+      defn->print_stats(state, state->local_memory[i]);
     }
   }
 }
@@ -353,11 +358,6 @@ void NaClValidatorStateDestroy(NaClValidatorState* state) {
       defn->destroy_memory(state, defn_memory);
     }
   }
-  /* Flush the current log stream, to make sure messages are
-   * printed, then revert to old log stream, and delete state.
-   */
-  GioFileFlush(NaClLogGetGio());
-  NaClLogSetGio(state->old_log_stream);
   free(state);
 }
 

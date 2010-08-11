@@ -394,7 +394,11 @@
         ]
       },
       'include_dirs': ['<(SHARED_INTERMEDIATE_DIR)'],
-      'dependencies': ['ncopcode_utils'],
+      'dependencies': [
+        'ncopcode_utils',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio'
+      ],
       'conditions': [
         ['OS=="win"', {
           'msvs_settings': {
@@ -477,7 +481,9 @@
         'ncopcode_utils',
         'ncopcode_utils_gen',
         'ncvalidate',
-        '<(DEPTH)/native_client/src/shared/utils/utils.gyp:utils'
+        '<(DEPTH)/native_client/src/shared/utils/utils.gyp:utils',
+        '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio'
       ],
     },
   ],
@@ -497,6 +503,8 @@
             'ncdecode_table',
             'ncdecode_tablegen',
             'ncopcode_utils64',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64'
           ],
           'actions': [
             {

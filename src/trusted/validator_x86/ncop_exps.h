@@ -35,7 +35,7 @@ typedef uint32_t NaClExpFlags;
 #define NACL_EMPTY_EFLAGS ((NaClExpFlags) 0)
 
 /* Print out the set of defined expr flags. */
-void NaClPrintExpFlags(FILE* file, NaClExpFlags flags);
+void NaClPrintExpFlags(struct Gio* file, NaClExpFlags flags);
 
 /* Defines a node in the vector of expressions, corresponding to the flattened
  * (preorder) tree.
@@ -99,10 +99,10 @@ NaClOpKind NaClGetExpRegister(NaClExp* node);
 NaClOpKind NaClGetExpVectorRegister(NaClExpVector* vector, int node);
 
 /* Print out the contents of the given vector of nodes to the given file. */
-void NaClExpVectorPrint(FILE* file, NaClExpVector* vector);
+void NaClExpVectorPrint(struct Gio* file, NaClExpVector* vector);
 
 /* Print out the disassembled instruction in the given instruction state. */
-void NaClInstStateInstPrint(FILE* file, struct NaClInstState* state);
+void NaClInstStateInstPrint(struct Gio* file, struct NaClInstState* state);
 
 /* Same functionality as NaClInstStateInstPrint(), but puts the
  * result in a string. This function is to be used for comparing output on

@@ -11,6 +11,8 @@
 #include <sys/stat.h>
 
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
+
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/utils/types.h"
@@ -19,14 +21,18 @@
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
+ *
+ * WARNING: Debugging messages inside of print messages must be sent to the
+ * same gio stream as being printed, since they may be used by another
+ * nacl log message that has locked the access to NaClLogGetGio().
  */
 #define DEBUGGING 0
 
 #include "native_client/src/shared/utils/debugging.h"
 
-void NaClPrintExpFlags(FILE* file, NaClExpFlags flags) {
+void NaClPrintExpFlags(struct Gio* file, NaClExpFlags flags) {
   if (flags == 0) {
-    fprintf(file, "0");
+    gprintf(file, "0");
   } else {
     NaClExpFlag f;
     Bool is_first = TRUE;
@@ -35,9 +41,9 @@ void NaClPrintExpFlags(FILE* file, NaClExpFlags flags) {
         if (is_first) {
           is_first = FALSE;
         } else {
-          fprintf(file, " | ");
+          gprintf(file, " | ");
         }
-        fprintf(file, "%s", NaClExpFlagName(f));
+        gprintf(file, "%s", NaClExpFlagName(f));
       }
     }
   }
@@ -81,14 +87,14 @@ NaClOpKind NaClGetExpVectorRegister(NaClExpVector* vector,
   return NaClGetExpRegister(&vector->node[node]);
 }
 
-static int NaClPrintDisassembledExp(FILE* file,
+static int NaClPrintDisassembledExp(struct Gio* file,
                                     NaClExpVector* vector,
                                     uint32_t index);
 
 /* Print the characters in the given string using lower case. */
-static void NaClPrintLower(FILE* file, char* str) {
+static void NaClPrintLower(struct Gio* file, char* str) {
   while (*str) {
-    putc(tolower(*str), file);
+    gprintf(file, "%c", tolower(*str));
     ++str;
   }
 }
@@ -105,71 +111,71 @@ static int32_t NaClGetSignExtendedValue(NaClExp* node) {
 }
 
 /* Print out the given (constant) expression node to the given file. */
-static void NaClPrintDisassembledConst(FILE* file, NaClExp* node) {
+static void NaClPrintDisassembledConst(struct Gio* file, NaClExp* node) {
   assert(node->kind == ExprConstant);
   if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
-    fprintf(file, "0x%"NACL_PRIx32, node->value);
+    gprintf(file, "0x%"NACL_PRIx32, node->value);
   } else if (node->flags & NACL_EFLAG(ExprSignedHex)) {
     int32_t value = NaClGetSignExtendedValue(node);
     if (value < 0) {
       value = -value;
-      fprintf(file, "-0x%"NACL_PRIx32, value);
+      gprintf(file, "-0x%"NACL_PRIx32, value);
     } else {
-      fprintf(file, "0x%"NACL_PRIx32, value);
+      gprintf(file, "0x%"NACL_PRIx32, value);
     }
   } else if (node->flags & NACL_EFLAG(ExprUnsignedInt)) {
-    fprintf(file, "%"NACL_PRIu32, node->value);
+    gprintf(file, "%"NACL_PRIu32, node->value);
   } else {
     /* Assume ExprSignedInt. */
-    fprintf(file, "%"NACL_PRId32, (int32_t) NaClGetSignExtendedValue(node));
+    gprintf(file, "%"NACL_PRId32, (int32_t) NaClGetSignExtendedValue(node));
   }
 }
 
 /* Print out the given (64-bit constant) expression node to the given file. */
 static void NaClPrintDisassembledConst64(
-    FILE* file, NaClExpVector* vector, int index) {
+    struct Gio* file, NaClExpVector* vector, int index) {
   NaClExp* node;
   uint64_t value;
   node = &vector->node[index];
   assert(node->kind == ExprConstant64);
   value = NaClGetExpConstant(vector, index);
   if (node->flags & NACL_EFLAG(ExprUnsignedHex)) {
-    fprintf(file, "0x%"NACL_PRIx64, value);
+    gprintf(file, "0x%"NACL_PRIx64, value);
   } else if (node->flags & NACL_EFLAG(ExprSignedHex)) {
     int64_t val = (int64_t) value;
     if (val < 0) {
       val = -val;
-      fprintf(file, "-0x%"NACL_PRIx64, val);
+      gprintf(file, "-0x%"NACL_PRIx64, val);
     } else {
-      fprintf(file, "0x%"NACL_PRIx64, val);
+      gprintf(file, "0x%"NACL_PRIx64, val);
     }
   } else if (node->flags & NACL_EFLAG(ExprUnsignedInt)) {
-    fprintf(file, "%"NACL_PRIu64, value);
+    gprintf(file, "%"NACL_PRIu64, value);
   } else {
-    fprintf(file, "%"NACL_PRId64, (int64_t) value);
+    gprintf(file, "%"NACL_PRId64, (int64_t) value);
   }
 }
 
 /* Print out the disassembled representation of the given register
  * to the given file.
  */
-static void NaClPrintDisassembledRegKind(FILE* file, NaClOpKind reg) {
+static void NaClPrintDisassembledRegKind(struct Gio* file, NaClOpKind reg) {
   const char* name = NaClOpKindName(reg);
   char* str = strstr(name, "Reg");
-  putc('%', file);
+  gprintf(file, "%c", '%');
   NaClPrintLower(file, str == NULL ? (char*) name : str + strlen("Reg"));
 }
 
-static INLINE void NaClPrintDisassembledReg(FILE* file, NaClExp* node) {
+static INLINE void NaClPrintDisassembledReg(struct Gio* file, NaClExp* node) {
   NaClPrintDisassembledRegKind(file, NaClGetExpRegister(node));
 }
 
-void NaClExpVectorPrint(FILE* file, NaClExpVector* vector) {
+void NaClExpVectorPrint(struct Gio* file, NaClExpVector* vector) {
   uint32_t i;
-  fprintf(file, "NaClExpVector[%d] = {\n", vector->number_expr_nodes);
+  gprintf(file, "NaClExpVector[%d] = {\n", vector->number_expr_nodes);
   for (i = 0; i < vector->number_expr_nodes; i++) {
     NaClExp* node = &vector->node[i];
-    fprintf(file, "  { %s[%d] , ",
+    gprintf(file, "  { %s[%d] , ",
             NaClExpKindName(node->kind),
             NaClExpKindRank(node->kind));
     switch (node->kind) {
@@ -183,20 +189,20 @@ void NaClExpVectorPrint(FILE* file, NaClExpVector* vector) {
         NaClPrintDisassembledConst64(file, vector, i);
         break;
       default:
-        fprintf(file, "%"NACL_PRIu32, node->value);
+        gprintf(file, "%"NACL_PRIu32, node->value);
         break;
     }
-    fprintf(file, ", ");
+    gprintf(file, ", ");
     NaClPrintExpFlags(file, node->flags);
-    fprintf(file, " },\n");
+    gprintf(file, " },\n");
   }
-  fprintf(file, "};\n");
+  gprintf(file, "};\n");
 }
 
 /* Print out the given (memory offset) expression node to the given file.
  * Returns the index of the node following the given (indexed) memory offset.
  */
-static int NaClPrintDisassembledMemOffset(FILE* file,
+static int NaClPrintDisassembledMemOffset(struct Gio* file,
                                       NaClExpVector* vector,
                                       int index) {
   int r1_index = index + 1;
@@ -208,21 +214,21 @@ static int NaClPrintDisassembledMemOffset(FILE* file,
   int scale = (int) NaClGetExpConstant(vector, scale_index);
   uint64_t disp = NaClGetExpConstant(vector, disp_index);
   assert(ExprMemOffset == vector->node[index].kind);
-  fprintf(file,"[");
+  gprintf(file,"[");
   if (r1 != RegUnknown) {
     NaClPrintDisassembledRegKind(file, r1);
   }
   if (r2 != RegUnknown) {
     if (r1 != RegUnknown) {
-      fprintf(file, "+");
+      gprintf(file, "+");
     }
     NaClPrintDisassembledRegKind(file, r2);
-    fprintf(file, "*%d", scale);
+    gprintf(file, "*%d", scale);
   }
   if (disp != 0) {
     if ((r1 != RegUnknown || r2 != RegUnknown) &&
         !NaClIsExpNegativeConstant(vector, disp_index)) {
-      fprintf(file, "+");
+      gprintf(file, "+");
     }
     /* Recurse to handle print using format flags. */
     NaClPrintDisassembledExp(file, vector, disp_index);
@@ -230,7 +236,7 @@ static int NaClPrintDisassembledMemOffset(FILE* file,
     /* be sure to generate case: [0x0]. */
     NaClPrintDisassembledExp(file, vector, disp_index);
   }
-  fprintf(file, "]");
+  gprintf(file, "]");
   return disp_index + NaClExpWidth(vector, disp_index);
 }
 
@@ -238,13 +244,13 @@ static int NaClPrintDisassembledMemOffset(FILE* file,
  * given file. Returns the index of the node following the
  * given (indexed) segment address.
  */
-static int NaClPrintDisassembledSegmentAddr(FILE* file,
+static int NaClPrintDisassembledSegmentAddr(struct Gio* file,
                                             NaClExpVector* vector,
                                             int index) {
   assert(ExprSegmentAddress == vector->node[index].kind);
   index = NaClPrintDisassembledExp(file, vector, index + 1);
   if (vector->node[index].kind != ExprMemOffset) {
-    fprintf(file, ":");
+    gprintf(file, ":");
   }
   return NaClPrintDisassembledExp(file, vector, index);
 }
@@ -253,7 +259,7 @@ static int NaClPrintDisassembledSegmentAddr(FILE* file,
  * Returns the index of the node following the given indexed
  * expression.
  */
-static int NaClPrintDisassembledExp(FILE* file,
+static int NaClPrintDisassembledExp(struct Gio* file,
                                     NaClExpVector* vector,
                                     uint32_t index) {
   NaClExp* node;
@@ -261,7 +267,7 @@ static int NaClPrintDisassembledExp(FILE* file,
   node = &vector->node[index];
   switch (node->kind) {
     default:
-      fprintf(file, "undefined");
+      gprintf(file, "undefined");
       return index + 1;
     case ExprRegister:
       NaClPrintDisassembledReg(file, node);
@@ -284,7 +290,7 @@ static int NaClPrintDisassembledExp(FILE* file,
 /* Print the given instruction opcode of the give state, to the
  * given file.
  */
-static void NaClPrintDisassembled(FILE* file,
+static void NaClPrintDisassembled(struct Gio* file,
                                   NaClInstState* state,
                                   NaClInst* inst) {
   uint32_t tree_index = 0;
@@ -295,10 +301,10 @@ static void NaClPrintDisassembled(FILE* file,
     if (vector->node[tree_index].kind != OperandReference ||
         (0 == (vector->node[tree_index].flags & NACL_EFLAG(ExprImplicit)))) {
       if (is_first) {
-        putc(' ', file);
+        gprintf(file, " ");
         is_first = FALSE;
       } else {
-        fprintf(file, ", ");
+        gprintf(file, ", ");
       }
       tree_index = NaClPrintDisassembledExp(file, vector, tree_index);
     } else {
@@ -307,44 +313,54 @@ static void NaClPrintDisassembled(FILE* file,
   }
 }
 
-void NaClInstStateInstPrint(FILE* file, NaClInstState* state) {
+void NaClInstStateInstPrint(struct Gio* file, NaClInstState* state) {
   int i;
   NaClInst* inst;
 
   /* Print out the address and the inst bytes. */
   int length = NaClInstStateLength(state);
-  DEBUG(NaClInstPrint(stdout, NaClInstStateInst(state)));
-  DEBUG(NaClExpVectorPrint(stdout, NaClInstStateExpVector(state)));
-  fprintf(file, "%"NACL_PRIxNaClPcAddressAll": ", NaClInstStateVpc(state));
+
+  DEBUG(NaClInstPrint(file, NaClInstStateInst(state)));
+  DEBUG(NaClExpVectorPrint(file, NaClInstStateExpVector(state)));
+  gprintf(file, "%"NACL_PRIxNaClPcAddressAll": ", NaClInstStateVpc(state));
   for (i = 0; i < length; ++i) {
-    fprintf(file, "%02"NACL_PRIx8" ", NaClInstStateByte(state, i));
+    gprintf(file, "%02"NACL_PRIx8" ", NaClInstStateByte(state, i));
   }
   for (i = length; i < NACL_MAX_BYTES_PER_X86_INSTRUCTION; ++i) {
-    fprintf(file, "   ");
+    gprintf(file, "   ");
   }
 
   /* Print out the assembly instruction it disassembles to. */
   inst = NaClInstStateInst(state);
   NaClPrintDisassembled(file, state, inst);
-  putc('\n', file);
+  gprintf(file, "\n");
 }
 
 char* NaClInstStateInstructionToString(struct NaClInstState* state) {
-  FILE* file;
+  struct GioFile gfile;
   char* out_string;
   struct stat st;
   size_t file_size;
   size_t fread_items;
+  FILE* file = NULL;
+  struct Gio* g = NULL;
 
   do {
     file = fopen("out_file", "w");
     if (file == NULL) break;
 
+    g = (struct Gio*) &gfile;
+    if (0 == GioFileRefCtor(&gfile, file)) {
+      GioFileDtor(g);
+      g = NULL;
+      break;
+    }
+
 #if NACL_LINUX || NACL_OSX
     chmod("out_file", S_IRUSR | S_IWUSR);
 #endif
 
-    NaClInstStateInstPrint(file, state);
+    NaClInstStateInstPrint(g, state);
     fclose(file);
 
     if (stat("out_file", &st)) break;
@@ -361,13 +377,17 @@ char* NaClInstStateInstructionToString(struct NaClInstState* state) {
     fread_items = fread(out_string, file_size, 1, file);
     if (fread_items != 1) break;
 
-    fclose(file);
+    GioFileClose(g);
     unlink("out_file");
     out_string[file_size] = 0;
     return out_string;
   } while (0);
 
   /* failure */
+  if (g != NULL) {
+    GioFileClose(g);
+    file = NULL;
+  }
   if (file != NULL) fclose(file);
   unlink("out_file");
   return NULL;

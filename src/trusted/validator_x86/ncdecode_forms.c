@@ -10,8 +10,10 @@
 
 #include <assert.h>
 
-#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_forms.h"
+
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
 /* To turn on debugging of instruction decoding, change value of
@@ -50,7 +52,7 @@ const char* NaClInstCatName(NaClInstCat cat) {
  * given the category of instruction.
  */
 static NaClOpFlags NaClGetArg1Flags(NaClInstCat icat) {
-  DEBUG(printf("NaClGetArg1Flags(%s)\n", NaClInstCatName(icat)));
+  DEBUG(NaClLog(LOG_INFO, "NaClGetArg1Flags(%s)\n", NaClInstCatName(icat)));
   switch (icat) {
     case Move:
       return NACL_OPFLAG(OpSet);
@@ -81,12 +83,12 @@ static NaClOpFlags NaClGetArg1Flags(NaClInstCat icat) {
  * value of zero implies the argument is not visible.
  */
 static NaClOpFlags NaClGetArg2PlusFlags(NaClInstCat icat, int visible_index) {
-  DEBUG(printf("NaClGetArgsPlusFlags(%s, %d)\n",
-               NaClInstCatName(icat), visible_index));
+  DEBUG(NaClLog(LOG_INFO, "NaClGetArgsPlusFlags(%s, %d)\n",
+                NaClInstCatName(icat), visible_index));
   switch (icat) {
     case UnarySet:
     case UnaryUpdate:
-      printf("icat = %s\n", NaClInstCatName(icat));
+      NaClLog(LOG_INFO, "icat = %s\n", NaClInstCatName(icat));
       NaClFatal("Illegal to use unary categorization for binary operation");
       /* NOT REACHED */
       return NACL_EMPTY_OPFLAGS;
@@ -124,8 +126,8 @@ static NaClOpFlags NaClGetIcatFlags(NaClInstCat icat,
                                     int operand_index,
                                     int visible_count) {
   NaClOpFlags flags = NACL_EMPTY_OPFLAGS;
-  DEBUG(printf("NaClGetIcatFlags(%s, %d, %d)\n",
-               NaClInstCatName(icat), operand_index, visible_count));
+  DEBUG(NaClLog(LOG_INFO, "NaClGetIcatFlags(%s, %d, %d)\n",
+                NaClInstCatName(icat), operand_index, visible_count));
   if (operand_index == 1) {
     flags = NaClGetArg1Flags(icat);
   } else {

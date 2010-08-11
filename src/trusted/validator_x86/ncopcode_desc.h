@@ -11,6 +11,7 @@
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H_
 
 #include <stdio.h>
+#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/trusted/validator_x86/ncdecode.h"
 #include "native_client/src/shared/utils/types.h"
 
@@ -35,7 +36,7 @@ typedef uint64_t NaClIFlags;
 #define NACL_EMPTY_IFLAGS ((NaClIFlags) 0)
 
 /* Prints out the set of defined instruction flags. */
-void NaClIFlagsPrint(FILE* out, NaClIFlags flags);
+void NaClIFlagsPrint(struct Gio* out, NaClIFlags flags);
 
 /* Defines integer to represent sets of possible operand flags. */
 typedef uint32_t NaClOpFlags;
@@ -47,7 +48,7 @@ typedef uint32_t NaClOpFlags;
 #define NACL_EMPTY_OPFLAGS ((NaClOpFlags) 0)
 
 /* Prints out the set of defined OPerand flags. */
-void NaClOpFlagsPrint(FILE* out, NaClOpFlags flags);
+void NaClOpFlagsPrint(struct Gio* out, NaClOpFlags flags);
 
 /* Defines integer to represent sets of possible instruction disallow
  * flags.
@@ -129,14 +130,14 @@ uint8_t NaClGetInstNumberOperands(NaClInst* inst);
 NaClOp* NaClGetInstOperand(NaClInst* inst, uint8_t index);
 
 /* Print out the given operand structure to the given file. */
-void NaClOpPrint(FILE* f, NaClOp* operand);
+void NaClOpPrint(struct Gio* f, NaClOp* operand);
 
 /* Print out the given instruction to the given file. However, always
  * print the value NULL for next_rule, even if the value is non-null. This
  * function should be used to print out an individual opcode (instruction)
  * pattern.
  */
-void NaClInstPrint(FILE* f,  NaClInst* inst);
+void NaClInstPrint(struct Gio* f,  NaClInst* inst);
 
 /* Prints out the given instruction to the given file. If index >= 0,
  * print out a comment, with the value of index, before the printed
@@ -144,7 +145,7 @@ void NaClInstPrint(FILE* f,  NaClInst* inst);
  * a symbolic reference using the name "g_Opcodes", plus the index and
  * the lookahead.
  */
-void NaClInstPrintTablegen(FILE* f, int index,
+void NaClInstPrintTablegen(struct Gio* f, int index,
                            NaClInst* inst, int lookahead);
 
 /* Prints out the given instruction to the given file. If index >= 0,
@@ -157,7 +158,8 @@ void NaClInstPrintTablegen(FILE* f, int index,
  * element), and simplify the output to only contain (user-readable)
  * useful information.
  */
-void NaClInstPrintTableDriver(FILE* f, Bool as_array_element, Bool simplify,
+void NaClInstPrintTableDriver(struct Gio* f, Bool as_array_element,
+                              Bool simplify,
                               int index, NaClInst* inst, int lookahead);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOPCODE_DESC_H_ */

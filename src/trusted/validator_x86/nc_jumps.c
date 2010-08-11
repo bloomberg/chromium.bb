@@ -94,7 +94,8 @@ static void NaClAddressSetAdd(NaClAddressSet set, NaClPcAddress address,
                               NaClValidatorState* state) {
   if (NaClCheckAddressRange(address, state)) {
     NaClPcAddress offset = address - state->vbase;
-    DEBUG(printf("Address set add: %"NACL_PRIxNaClPcAddress"\n", address));
+    DEBUG(NaClLog(LOG_INFO,
+                  "Address set add: %"NACL_PRIxNaClPcAddress"\n", address));
     set[NaClPcAddressToOffset(offset)] |= NaClPcAddressToMask(offset);
   }
 }
@@ -176,14 +177,14 @@ static void NaClAddJumpToJumpSets(NaClValidatorState* state,
    * good (unless we later find it jumping into a pseudo instruction).
    * Otherwise, only allow if 0 mod 32.
    */
-  DEBUG(printf("Add jump to jump sets: %"
-               NACL_PRIxNaClPcAddress" -> %"NACL_PRIxNaClPcAddress"\n",
-               from_address, to_address));
+  DEBUG(NaClLog(LOG_INFO, "Add jump to jump sets: %"
+                NACL_PRIxNaClPcAddress" -> %"NACL_PRIxNaClPcAddress"\n",
+                from_address, to_address));
   if (state->vbase <= to_address && to_address < state->vlimit) {
     /* Remember address for checking later. */
-    DEBUG(printf("Add jump to target: %"NACL_PRIxNaClPcAddress
-                 " -> %"NACL_PRIxNaClPcAddress"\n",
-                 from_address, to_address));
+    DEBUG(NaClLog(LOG_INFO, "Add jump to target: %"NACL_PRIxNaClPcAddress
+                  " -> %"NACL_PRIxNaClPcAddress"\n",
+                  from_address, to_address));
     NaClAddressSetAdd(jump_sets->actual_targets, to_address, state);
   }
   /* The range check may not be strictly necessary given that we have
@@ -299,9 +300,9 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
   NaClExpVector* nodes;
   NaClExp* node;
   jump_reg = NaClGetExpRegister(reg);
-  DEBUG(fprintf(stderr, "checking indirect jump: ");
-        NaClInstStateInstPrint(stderr, inst);
-        fprintf(stderr, "jump_reg = %s\n", NaClOpKindName(jump_reg)));
+  DEBUG(NaClLog(LOG_INFO, "checking indirect jump: ");
+        NaClInstStateInstPrint(NaClLogGetGio(), inst);
+        gprintf(NaClLogGetGio(), "jump_reg = %s\n", NaClOpKindName(jump_reg)));
 
   /* Do the following block exactly once. Use loop so that "break" can
    * be used for premature exit of block.
@@ -310,44 +311,44 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
     /* Check and in 3 instruction sequence. */
     if (!NaClInstIterHasLookbackState(iter, 2)) break;
     and_state = NaClInstIterGetLookbackState(iter, 2);
-    DEBUG(fprintf(stderr, "and?: ");
-          NaClInstStateInstPrint(stderr, and_state));
+    DEBUG(NaClLog(LOG_INFO, "and?: ");
+          NaClInstStateInstPrint(NaClLogGetGio(), and_state));
     and_inst = NaClInstStateInst(and_state);
     if (0x83 != and_inst->opcode[0] || InstAnd != and_inst->name) break;
-    DEBUG(fprintf(stderr, "and instruction\n"));
+    DEBUG(NaClLog(LOG_INFO, "and instruction\n"));
 
     /* Extract the values of the two operands for the and. */
     if (!NaClExtractBinaryOperandIndices(and_state, &op_1, &op_2)) break;
-    DEBUG(fprintf(stderr, "binary and\n"));
+    DEBUG(NaClLog(LOG_INFO, "binary and\n"));
 
     /* Extract the destination register of the and. */
     nodes = NaClInstStateExpVector(and_state);
     node = &nodes->node[op_1];
     if (ExprRegister != node->kind) break;
     and_reg = NaClGetExpRegister(node);
-    DEBUG(fprintf(stderr, "and_reg = %s\n", NaClOpKindName(and_reg)));
+    DEBUG(NaClLog(LOG_INFO, "and_reg = %s\n", NaClOpKindName(and_reg)));
     and_64_reg = NaClGet64For32BitReg(and_reg);
-    DEBUG(fprintf(stderr, "and_64_reg = %s\n", NaClOpKindName(and_64_reg)));
+    DEBUG(NaClLog(LOG_INFO, "and_64_reg = %s\n", NaClOpKindName(and_64_reg)));
     if (RegUnknown == and_64_reg) break;
-    DEBUG(fprintf(stderr, "registers match!\n"));
+    DEBUG(NaClLog(LOG_INFO, "registers match!\n"));
 
     /* Check that the mask is ok. */
     mask = NaClGetJumpMask(state);
-    DEBUG(fprintf(stderr, "mask = %"NACL_PRIx8"\n", mask));
+    DEBUG(NaClLog(LOG_INFO, "mask = %"NACL_PRIx8"\n", mask));
     assert(0 != mask);  /* alignment must be either 16 or 32. */
     node = &nodes->node[op_2];
     if (ExprConstant != node->kind || mask != node->value) break;
-    DEBUG(fprintf(stderr, "is mask constant\n"));
+    DEBUG(NaClLog(LOG_INFO, "is mask constant\n"));
 
     /* Check middle (i.e. lea/add) instruction in 3 instruction sequence. */
     middle_state = NaClInstIterGetLookbackState(iter, 1);
-    DEBUG(fprintf(stderr, "middle inst: ");
-          NaClInstStateInstPrint(stderr, middle_state));
+    DEBUG(NaClLog(LOG_INFO, "middle inst: ");
+          NaClInstStateInstPrint(NaClLogGetGio(), middle_state));
     middle_inst = NaClInstStateInst(middle_state);
 
     /* Extract the values of the two operands for the lea/add instruction. */
     if (!NaClExtractBinaryOperandIndices(middle_state, &op_1, &op_2)) break;
-    DEBUG(fprintf(stderr, "middle is binary, op_1 index = %d\n", op_1));
+    DEBUG(NaClLog(LOG_INFO, "middle is binary, op_1 index = %d\n", op_1));
 
     /* Extract the destination register of the lea/and, and verify that
      * it is a register.
@@ -358,7 +359,7 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
 
     /* Compare the middle destination register to the jump register. */
     middle_reg = NaClGetExpRegister(node);
-    DEBUG(fprintf(stderr, "middle reg = %s\n", NaClOpKindName(middle_reg)));
+    DEBUG(NaClLog(LOG_INFO, "middle reg = %s\n", NaClOpKindName(middle_reg)));
     if (middle_reg != jump_reg) break;
 
     if (InstLea == middle_inst->name) {
@@ -382,7 +383,7 @@ static void NaClAddRegisterJumpIndirect64(NaClValidatorState* state,
     }
 
     /* If reached, indirect jump is properly masked. */
-    DEBUG(printf("Protect indirect jump instructions\n"));
+    DEBUG(NaClLog(LOG_INFO, "Protect indirect jump instructions\n"));
     NaClMarkInstructionJumpIllegal(state, middle_state);
     NaClMarkInstructionJumpIllegal(state, inst);
     return;
@@ -458,7 +459,7 @@ static void NaClAddRegisterJumpIndirect32(NaClValidatorState* state,
     if (ExprConstant != node->kind || mask != node->value) break;
 
     /* If reached, indirect jump is properly masked. */
-    DEBUG(printf("Protect register jump indirect\n"));
+    DEBUG(NaClLog(LOG_INFO, "Protect register jump indirect\n"));
     NaClMarkInstructionJumpIllegal(state, inst_state);
     return;
   } while(0);
@@ -485,8 +486,8 @@ static void NaClAddExprJumpTarget(NaClValidatorState* state,
                                   NaClJumpSets* jump_sets) {
   uint32_t i;
   NaClExpVector* vector = NaClInstStateExpVector(inst_state);
-  DEBUG(fprintf(stderr, "jump checking: ");
-        NaClInstStateInstPrint(stderr, inst_state));
+  DEBUG(NaClLog(LOG_INFO, "jump checking: ");
+        NaClInstStateInstPrint(NaClLogGetGio(), inst_state));
   for (i = 0; i < vector->number_expr_nodes; ++i) {
     if (vector->node[i].flags & NACL_EFLAG(ExprJumpTarget)) {
       switch (vector->node[i].kind) {
@@ -545,7 +546,8 @@ static void NaClValidateCallAlignment(NaClValidatorState* state,
    */
   NaClPcAddress next_pc = pc + NaClInstStateLength(inst_state);
   if (next_pc & state->alignment_mask) {
-    DEBUG(printf("Call alignment: pc = %"NACL_PRIxNaClPcAddress", "
+    DEBUG(NaClLog(LOG_INFO,
+                  "Call alignment: pc = %"NACL_PRIxNaClPcAddress", "
                  "next_pc=%"NACL_PRIxNaClPcAddress", "
                  "mask = %"NACL_PRIxNaClPcAddress"\n",
                  pc, next_pc, state->alignment_mask));
@@ -572,7 +574,9 @@ static void NaClRememberIp(NaClValidatorState* state,
     NaClValidatorInstMessage(LOG_ERROR, state, inst_state,
                              "Instruction pc out of range\n");
   } else {
-    DEBUG(printf("Add possible jump address: %"NACL_PRIxNaClPcAddress"\n", pc));
+    DEBUG(NaClLog(LOG_INFO,
+                  "Add possible jump address: %"NACL_PRIxNaClPcAddress"\n",
+                  pc));
     NaClAddressSetAdd(jump_sets->possible_targets, pc, state);
   }
 }
@@ -625,12 +629,12 @@ void NaClJumpValidator(NaClValidatorState* state,
 static Bool IsNaClReachableAddress(NaClValidatorState* state,
                                    NaClPcAddress addr,
                                    NaClJumpSets* jump_sets) {
-  DEBUG(printf("possible contains: %d\n",
-               (int) NaClAddressSetContains(jump_sets->possible_targets,
-                                            addr, state)));
-  DEBUG(printf("removed contains: %d\n",
-               (int) NaClAddressSetContains(jump_sets->removed_targets,
-                                            addr, state)));
+  DEBUG(NaClLog(LOG_INFO, "possible contains: %d\n",
+                (int) NaClAddressSetContains(jump_sets->possible_targets,
+                                             addr, state)));
+  DEBUG(NaClLog(LOG_INFO, "removed contains: %d\n",
+                (int) NaClAddressSetContains(jump_sets->removed_targets,
+                                             addr, state)));
   return NaClAddressSetContains(jump_sets->possible_targets, addr, state) &&
       !NaClAddressSetContains(jump_sets->removed_targets, addr, state);
 }
@@ -650,7 +654,9 @@ void NaClJumpValidatorSummarize(NaClValidatorState* state,
       state->vbase, state->vlimit);
   for (addr = state->vbase; addr < state->vlimit; addr++) {
     if (NaClAddressSetContains(jump_sets->actual_targets, addr, state)) {
-      DEBUG(printf("Checking jump address: %"NACL_PRIxNaClPcAddress"\n", addr));
+      DEBUG(NaClLog(LOG_INFO,
+                    "Checking jump address: %"NACL_PRIxNaClPcAddress"\n",
+                    addr));
       if (!IsNaClReachableAddress(state, addr, jump_sets)) {
         NaClValidatorPcAddressMessage(LOG_ERROR, state, addr,
                                       "Bad jump target\n");
@@ -668,7 +674,8 @@ void NaClJumpValidatorSummarize(NaClValidatorState* state,
                          state->vbase);
   } else {
     for (addr = state->vbase; addr < state->vlimit; addr += state->alignment) {
-      DEBUG(printf("Checking block address: %"NACL_PRIxNaClPcAddress"\n",
+      DEBUG(NaClLog(LOG_INFO,
+                    "Checking block address: %"NACL_PRIxNaClPcAddress"\n",
                    addr));
       if (!IsNaClReachableAddress(state, addr, jump_sets)) {
         NaClValidatorPcAddressMessage(
@@ -699,7 +706,8 @@ void NaClMarkInstructionJumpIllegal(struct NaClValidatorState* state,
         (NaClJumpSets*)
         NaClGetValidatorLocalMemory((NaClValidator) NaClJumpValidator,
                                     state);
-    DEBUG(printf("Mark instruction as jump illegal: %"NACL_PRIxNaClPcAddress
+    DEBUG(NaClLog(LOG_INFO,
+                  "Mark instruction as jump illegal: %"NACL_PRIxNaClPcAddress
                  "\n",
                  pc));
     NaClAddressSetAdd(jump_sets->removed_targets, pc, state);

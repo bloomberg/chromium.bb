@@ -6,6 +6,7 @@
 
 #include "native_client/src/trusted/validator_x86/ncdis_segments.h"
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_iter.h"
 #include "native_client/src/trusted/validator_x86/nc_segment.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
@@ -19,14 +20,15 @@ void NaClDisassembleSegment(uint8_t* mbase, NaClPcAddress vbase,
   if (NACL_FLAGS_use_iter) {
     NaClSegment segment;
     NaClInstIter* iter;
+    struct Gio* gout = NaClLogGetGio();
     NaClSegmentInitialize(mbase, vbase, size, &segment);
     for (iter = NaClInstIterCreate(&segment); NaClInstIterHasNext(iter);
          NaClInstIterAdvance(iter)) {
       NaClInstState* state = NaClInstIterGetState(iter);
-      NaClInstStateInstPrint(stdout, state);
+      NaClInstStateInstPrint(gout, state);
       if (NACL_FLAGS_internal) {
-        NaClInstPrint(stdout, NaClInstStateInst(state));
-        NaClExpVectorPrint(stdout, NaClInstStateExpVector(state));
+        NaClInstPrint(gout, NaClInstStateInst(state));
+        NaClExpVectorPrint(gout, NaClInstStateExpVector(state));
       }
     }
     NaClInstIterDestroy(iter);

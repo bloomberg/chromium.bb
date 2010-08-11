@@ -117,7 +117,7 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
      'ncdecode_sse.c',
      'ncdecodeX87.c'
     ],
-    EXTRA_LIBS=['ncopcode_utils'])
+    EXTRA_LIBS=['gio', 'platform', 'ncopcode_utils'])
 
 env.Requires(ncdecode_tablegen, crt)
 
@@ -200,7 +200,10 @@ ncdis = env.ComponentProgram('ncdis',
                                          'utils',
                                          'ncvalidate',
                                          'ncopcode_utils',
-                                         'nchelper'])
+                                         'nchelper',
+                                         'ncdis_util',
+                                         'platform',
+                                         'gio'])
 
 env.Requires(ncdis, crt)
 

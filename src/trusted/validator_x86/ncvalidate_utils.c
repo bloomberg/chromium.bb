@@ -8,6 +8,7 @@
 
 #include "native_client/src/trusted/validator_x86/ncvalidate_utils.h"
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 
@@ -73,28 +74,32 @@ Bool NaClOperandOneIsRegisterSet(NaClInstState* inst,
    */
   Bool result = FALSE;
   NaClExpVector* vector = NaClInstStateExpVector(inst);
-  DEBUG(printf("->NaClOperandOneIsRegisterSet %s\n", NaClOpKindName(reg_name)));
-  DEBUG(NaClExpVectorPrint(stdout, vector));
+  DEBUG(NaClLog(LOG_INFO,
+                "->NaClOperandOneIsRegisterSet %s\n",
+                NaClOpKindName(reg_name)));
+  DEBUG(NaClExpVectorPrint(NaClLogGetGio(), vector));
   if (vector->number_expr_nodes >= 2) {
     NaClExp* op_reg = &vector->node[1];
     result = (ExprRegister == op_reg->kind &&
               reg_name == NaClGetExpRegister(op_reg) &&
               (op_reg->flags & NACL_EFLAG(ExprSet)));
   }
-  DEBUG(printf("<-NaClOperandOneIsRegisterSet = %"NACL_PRIdBool"\n", result));
+  DEBUG(NaClLog(LOG_INFO,
+                "<-NaClOperandOneIsRegisterSet = %"NACL_PRIdBool"\n", result));
   return result;
 }
 
 Bool NaClOperandOneZeroExtends(NaClInstState* state) {
   Bool result = FALSE;
   NaClInst* inst = NaClInstStateInst(state);
-  DEBUG(printf("->NaClOperandOneZeroExtends\n"));
-  DEBUG(NaClInstPrint(stdout, inst));
+  DEBUG(NaClLog(LOG_INFO, "->NaClOperandOneZeroExtends\n"));
+  DEBUG(NaClInstPrint(NaClLogGetGio(), inst));
   result = (1 <= NaClGetInstNumberOperands(inst) &&
             (NaClGetInstOperand(inst, 0)->flags &
              NACL_OPFLAG(OperandZeroExtends_v)) &&
             4 == NaClInstStateOperandSize(state));
-  DEBUG(printf("<-NcOPerandOneZeroExtends = %"NACL_PRIdBool"\n", result));
+  DEBUG(NaClLog(LOG_INFO,
+                "<-NcOPerandOneZeroExtends = %"NACL_PRIdBool"\n", result));
   return result;
 }
 

@@ -8,8 +8,11 @@
  * nc_opcode_histogram.c - Collects histogram information while validating.
  */
 
+#include <stdio.h>
+
 #include "native_client/src/trusted/validator_x86/nc_opcode_histogram.h"
 
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
@@ -51,23 +54,30 @@ void NaClOpcodeHistogramRecord(NaClValidatorState* state,
   }
 }
 
-void NaClOpcodeHistogramPrintStats(FILE* f,
-                                   NaClValidatorState* state,
+#define LINE_SIZE 1024
+
+void NaClOpcodeHistogramPrintStats(NaClValidatorState* state,
                                    NaClOpcodeHistogram* histogram) {
   int i;
+  char line[LINE_SIZE];
+  int line_size = LINE_SIZE;
   int printed_in_this_row = 0;
-  fprintf(f, "\nOpcode Histogram:\n");
+  NaClValidatorMessage(LOG_INFO, state, "Opcode Histogram:\n");
   for (i = 0; i < 256; ++i) {
     if (0 != histogram->opcode_histogram[i]) {
-      fprintf(f, "%"NACL_PRId32"\t0x%02x\t", histogram->opcode_histogram[i], i);
+      if (line_size < LINE_SIZE) {
+        line_size -= SNPRINTF(line, line_size, "%"NACL_PRId32"\t0x%02x\t",
+                              histogram->opcode_histogram[i], i);
+      }
       ++printed_in_this_row;
       if (printed_in_this_row > 3) {
         printed_in_this_row = 0;
-        fprintf(f, "\n");
+        NaClValidatorMessage(LOG_INFO, state, "%s\n", line);
+        line_size = LINE_SIZE;
       }
     }
   }
   if (0 != printed_in_this_row) {
-    fprintf(f, "\n");
+    NaClValidatorMessage(LOG_INFO, state, "%s\n", line);
   }
 }

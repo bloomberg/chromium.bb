@@ -16,6 +16,7 @@
 
 #include "native_client/src/shared/utils/types.h"
 #include "native_client/src/shared/utils/flags.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
 #include "native_client/src/trusted/validator_x86/nc_read_segment.h"
 #include "native_client/src/trusted/validator_x86/ncdis_segments.h"
@@ -111,7 +112,6 @@ static int AnalyzeSections(ncfile *ncf) {
   }
   return -badsections;
 }
-
 
 static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
   if (AnalyzeSections(ncf) < 0) {
@@ -347,16 +347,18 @@ static void ExtractTokensAndAddToArgv(
  */
 static void PrintUpToPound(const char text[]) {
   int i;
+  struct Gio* g = NaClLogGetGio();
   for (i = 0; i < MAX_INPUT_LINE; ++i) {
     char ch = text[i];
     switch (ch) {
       case '#':
-        putchar(ch);
+        gprintf(g, "%c", ch);
         return;
       case '\0':
         return;
       default:
-        putchar(ch);
+        gprintf(g, "%c", ch);
+        break;
     }
   }
 }
@@ -484,7 +486,16 @@ static void ProcessCommandLine(int argc, const char* argv[]) {
 }
 
 int main(int argc, const char *argv[]) {
+  struct GioFile gout_file;
+  struct Gio* gout = (struct Gio*) &gout_file;
+  if (!GioFileRefCtor(&gout_file, stdout)) {
+    fprintf(stderr, "Unable to create gio file for stdout!\n");
+    return 1;
+  }
+  NaClLogModuleInitExtended(LOG_INFO, gout);
   NCDecodeRegisterCallbacks(PrintInstStdout, NULL, NULL, NULL);
   ProcessCommandLine(argc, argv);
+  NaClLogModuleFini();
+  GioFileDtor(gout);
   return 0;
 }

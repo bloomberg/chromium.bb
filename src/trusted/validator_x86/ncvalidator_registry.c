@@ -5,6 +5,8 @@
  */
 
 #include "native_client/src/trusted/validator_x86/ncvalidator_registry.h"
+
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/nc_jumps.h"
 #include "native_client/src/trusted/validator_x86/nc_cpu_checks.h"
 #include "native_client/src/trusted/validator_x86/nc_illegal.h"
@@ -25,15 +27,16 @@ Bool NACL_FLAGS_validator_trace_verbose = FALSE;
 static void NaClValidatorTrace(NaClValidatorState* state,
                                NaClInstIter* iter,
                                void* local_memory) {
+  struct Gio* g = NaClLogGetGio();
   NaClInstState* inst_state = NaClInstIterGetState(iter);
   if (NACL_FLAGS_validator_trace_verbose) {
-    printf("-> ");
+    gprintf(g, "-> ");
   }
-  printf("visit: ");
-  NaClInstStateInstPrint(stdout, inst_state);
+  gprintf(g, "visit: ");
+  NaClInstStateInstPrint(g, inst_state);
   if (NACL_FLAGS_validator_trace_verbose) {
-    NaClInstPrint(stdout, NaClInstStateInst(inst_state));
-    NaClExpVectorPrint(stdout, NaClInstStateExpVector(inst_state));
+    NaClInstPrint(g, NaClInstStateInst(inst_state));
+    NaClExpVectorPrint(g, NaClInstStateExpVector(inst_state));
   }
 }
 
@@ -41,7 +44,7 @@ static void NaClValidatorPostTrace(NaClValidatorState* state,
                                    NaClInstIter* iter,
                                    void* local_memory) {
   if (NACL_FLAGS_validator_trace_verbose) {
-    printf("<- visit\n");
+    gprintf(NaClLogGetGio(), "<- visit\n");
   }
 }
 
@@ -60,8 +63,8 @@ void NaClValidatorInit() {
 
   NaClRegisterValidator(
       (NaClValidator) NaClCpuCheck,
-      (NaClValidatorPostValidate) NULL,
-      (NaClValidatorPrintStats) NaClCpuCheckSummary,
+      (NaClValidatorPostValidate) NaClCpuCheckSummary,
+      (NaClValidatorPrintStats) NULL,
       (NaClValidatorMemoryCreate) NaClCpuCheckMemoryCreate,
       (NaClValidatorMemoryDestroy) NaClCpuCheckMemoryDestroy);
 

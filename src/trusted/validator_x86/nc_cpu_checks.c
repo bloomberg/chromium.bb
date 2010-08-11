@@ -165,8 +165,8 @@ void NaClCpuCheck(struct NaClValidatorState* state,
   }
 }
 
-void NaClCpuCheckSummary(FILE* file,
-                         NaClValidatorState* state,
+void NaClCpuCheckSummary(NaClValidatorState* state,
+                         NaClInstIter* iter,
                          NaClCpuCheckState* checked_features) {
   /* The name of the flag is misleading; f_386 requires not just    */
   /* 386 instructions but also the CPUID instruction is supported.  */

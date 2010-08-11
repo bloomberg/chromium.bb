@@ -16,8 +16,6 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_OPCODE_HISTOGRAPH_H__
 #define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_OPCODE_HISTOGRAPH_H__
 
-#include <stdio.h>
-
 /* Defines a validator state. */
 struct NaClValidatorState;
 
@@ -45,8 +43,7 @@ void NaClOpcodeHistogramRecord(struct NaClValidatorState* state,
                                struct NaClOpcodeHistogram* histogram);
 
 /* Validator print function to print out collected histogram. */
-void NaClOpcodeHistogramPrintStats(FILE* f,
-                                   struct NaClValidatorState* state,
+void NaClOpcodeHistogramPrintStats(struct NaClValidatorState* state,
                                    struct NaClOpcodeHistogram* histogram);
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NC_OPCODE_HISTOGRAPH_H__ */

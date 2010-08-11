@@ -70,7 +70,8 @@ static Bool NaClIsValidMemOffset(
   NaClExp* node = &vector->node[node_index];
 
   if (ExprMemOffset != node->kind) return FALSE;
-  DEBUG(printf("found MemOffset at node %"NACL_PRIu32"\n", node_index));
+  DEBUG(NaClLog(LOG_INFO,
+                "found MemOffset at node %"NACL_PRIu32"\n", node_index));
   /* Only allow memory offset nodes with address size 64. */
   if (NACL_EMPTY_EFLAGS == (node->flags & NACL_EFLAG(ExprSize64))) {
     if (print_messages) {
@@ -79,10 +80,10 @@ static Bool NaClIsValidMemOffset(
     }
     return FALSE;
   }
-  DEBUG(printf("found 64 bit address for MemOffset\n"));
+  DEBUG(NaClLog(LOG_INFO, "found 64 bit address for MemOffset\n"));
   base_reg_index = node_index + 1;
   base_reg = NaClGetExpVectorRegister(vector, base_reg_index);
-  DEBUG(printf("base reg = %s\n", NaClOpKindName(base_reg)));
+  DEBUG(NaClLog(LOG_INFO, "base reg = %s\n", NaClOpKindName(base_reg)));
   if (base_reg != state->base_register &&
       base_reg != RegRSP &&
       base_reg != RegRBP &&
@@ -96,11 +97,11 @@ static Bool NaClIsValidMemOffset(
     }
     return FALSE;
   }
-  DEBUG(printf("  => base register is valid\n"));
+  DEBUG(NaClLog(LOG_INFO, "  => base register is valid\n"));
   index_reg_index = base_reg_index + NaClExpWidth(vector, base_reg_index);
   index_reg_node = &vector->node[index_reg_index];
   index_reg = NaClGetExpRegister(index_reg_node);
-  DEBUG(printf("index reg = %s\n", NaClOpKindName(index_reg)));
+  DEBUG(NaClLog(LOG_INFO, "index reg = %s\n", NaClOpKindName(index_reg)));
   if (RegUnknown != index_reg) {
     Bool index_reg_is_good = FALSE;
     if ((base_reg != RegRIP) &&
@@ -109,13 +110,14 @@ static Bool NaClIsValidMemOffset(
       NaClInstState* prev_inst =
           NaClInstIterGetLookbackState(iter, lookback_index + 1);
       DEBUG({
-          printf("prev inst:\n");
-          NaClInstPrint(stdout, NaClInstStateInst(prev_inst));
-          NaClExpVectorPrint(stdout, NaClInstStateExpVector(prev_inst));
+          struct Gio* g = NaClLogGetGio();
+          NaClLog(LOG_INFO, "prev inst:\n");
+          NaClInstPrint(g, NaClInstStateInst(prev_inst));
+          NaClExpVectorPrint(g, NaClInstStateExpVector(prev_inst));
         });
       if (NaClAssignsRegisterWithZeroExtends(
               prev_inst, NaClGet32For64BitReg(index_reg))) {
-        DEBUG(printf("zero extends - safe!\n"));
+        DEBUG(NaClLog(LOG_INFO, "zero extends - safe!\n"));
         NaClMarkInstructionJumpIllegal(state, inst);
         index_reg_is_good = TRUE;
       }
@@ -130,7 +132,7 @@ static Bool NaClIsValidMemOffset(
   }
   scale_index = index_reg_index + NaClExpWidth(vector, index_reg_index);
   disp_index = scale_index + NaClExpWidth(vector, scale_index);
-  DEBUG(printf("disp index = %d\n", disp_index));
+  DEBUG(NaClLog(LOG_INFO, "disp index = %d\n", disp_index));
   if (ExprConstant != vector->node[disp_index].kind) {
     if ((base_reg != RegRIP) ||
         (ExprConstant64 == vector->node[disp_index].kind)) {
@@ -152,19 +154,20 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
   NaClExpVector* vector = NaClInstStateExpVector(inst_state);
 
   DEBUG({
-      printf("-> Validating store\n");
-      NaClInstStateInstPrint(stdout, inst_state);
-      NaClInstPrint(stdout, NaClInstStateInst(inst_state));
-      NaClExpVectorPrint(stdout, NaClInstStateExpVector(inst_state));
+      struct Gio* g = NaClLogGetGio();
+      NaClLog(LOG_INFO, "-> Validating store\n");
+      NaClInstStateInstPrint(g, inst_state);
+      NaClInstPrint(g, NaClInstStateInst(inst_state));
+      NaClExpVectorPrint(g, NaClInstStateExpVector(inst_state));
     });
 
   /* Look for assignments on a memory offset. */
   for (i = 0; i < vector->number_expr_nodes; ++i) {
     NaClExp* node = &vector->node[i];
     if (NaClValidatorQuit(state)) break;
-    DEBUG(printf("processing argument %"NACL_PRIu32"\n", i));
+    DEBUG(NaClLog(LOG_INFO, "processing argument %"NACL_PRIu32"\n", i));
     if (IsPossibleSandboxingNode(node)) {
-      DEBUG(printf("found possible sandboxing reference\n"));
+      DEBUG(NaClLog(LOG_INFO, "found possible sandboxing reference\n"));
       if (NaClIsValidMemOffset(state, iter, 0, inst_state, vector, i, TRUE)) {
         continue;
       } else if (ExprSegmentAddress == node->kind) {
@@ -182,7 +185,8 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
          */
         int seg_prefix_reg_index;
         NaClOpKind seg_prefix_reg;
-        DEBUG(printf("found segment assign at node %"NACL_PRIu32"\n", i));
+        DEBUG(NaClLog(LOG_INFO,
+                      "found segment assign at node %"NACL_PRIu32"\n", i));
 
         /* Only allow if 64 bit segment addresses. */
         if (NACL_EMPTY_EFLAGS == (node->flags & NACL_EFLAG(ExprSize64))) {
@@ -207,12 +211,13 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
               NaClInstState* prev_inst_state =
                   NaClInstIterGetLookbackState(iter, 1);
               NaClInst* prev_inst = NaClInstStateInst(prev_inst_state);
-              DEBUG(printf("look at previous\n"));
+              DEBUG(NaClLog(LOG_INFO, "look at previous\n"));
               if (InstLea == prev_inst->name) {
                 int seg_reg_index = NaClGetExpKidIndex(vector, i, 1);
                 NaClOpKind seg_reg =
                     NaClGetExpVectorRegister(vector, seg_reg_index);
-                DEBUG(printf("seg reg = %s\n", NaClOpKindName(seg_reg)));
+                DEBUG(NaClLog(LOG_INFO,
+                              "seg reg = %s\n", NaClOpKindName(seg_reg)));
                 if (seg_reg_index < (int) vector->number_expr_nodes) {
                   NaClExpVector* prev_vector =
                       NaClInstStateExpVector(prev_inst_state);
@@ -221,7 +226,8 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
                    * index 1.
                    */
                   NaClOpKind lea_reg = NaClGetExpVectorRegister(prev_vector, 1);
-                  DEBUG(printf("lea reg = %s\n", NaClOpKindName(lea_reg)));
+                  DEBUG(NaClLog(LOG_INFO,
+                                "lea reg = %s\n", NaClOpKindName(lea_reg)));
                   if (lea_reg == seg_reg) {
                     /* Move to first argument which should be a memory
                      * address.
@@ -232,7 +238,7 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
                       memoff_index =
                           NaClGetExpKidIndex(prev_vector, memoff_index, 0);
                       if (memoff_index < (int) prev_vector->number_expr_nodes) {
-                        DEBUG(printf("check mem offset!\n"));
+                        DEBUG(NaClLog(LOG_INFO, "check mem offset!\n"));
                         if (NaClIsValidMemOffset(state,
                                                  iter,
                                                  1,
@@ -284,5 +290,5 @@ void NaClMemoryReferenceValidator(NaClValidatorState* state,
       }
     }
   }
-  DEBUG(printf("<- Validating store\n"));
+  DEBUG(NaClLog(LOG_INFO, "<- Validating store\n"));
 }

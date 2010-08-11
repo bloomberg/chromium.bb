@@ -31,9 +31,10 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
   NaClInst* inst = NaClInstStateInst(inst_state);
   NaClDisallowsFlags disallows_flags = NACL_EMPTY_DISALLOWS_FLAGS;
   DEBUG({
-      printf("->NaClValidateInstructionLegal\n");
-      NaClInstPrint(stdout, NaClInstStateInst(inst_state));
-      NaClExpVectorPrint(stdout, NaClInstStateExpVector(inst_state));
+      struct Gio* g = NaClLogGetGio();
+      NaClLog(LOG_INFO, "->NaClValidateInstructionLegal\n");
+      NaClInstPrint(g, NaClInstStateInst(inst_state));
+      NaClExpVectorPrint(g, NaClInstStateExpVector(inst_state));
     });
 
   /* Don't allow more than one (non-REX) prefix. */
@@ -44,7 +45,7 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
   if (!NaClInstStateIsValid(inst_state)) {
     is_legal = FALSE;
     disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedInvalid);
-    DEBUG(printf("invalid instruction opcode found\n"));
+    DEBUG(NaClLog(LOG_INFO, "invalid instruction opcode found\n"));
   }
 
   /* Note: Explicit NOP sequences that use multiple 66 values are
@@ -53,7 +54,7 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
   if (num_prefix_bytes > 1) {
     is_legal = FALSE;
     disallows_flags |= NACL_DISALLOWS_FLAG(NaClTooManyPrefixBytes);
-    DEBUG(printf("too many prefix bytes\n"));
+    DEBUG(NaClLog(LOG_INFO, "too many prefix bytes\n"));
   }
 
   /* Check other forms to disallow. */
@@ -72,18 +73,18 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
     case NACLi_UNDEFINED:
       is_legal = FALSE;
       disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedIllegal);
-      DEBUG(printf("mark instruction as NaCl illegal\n"));
+      DEBUG(NaClLog(LOG_INFO, "mark instruction as NaCl illegal\n"));
       break;
     case NACLi_INVALID:
       is_legal = FALSE;
       disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedInvalid);
-      DEBUG(printf("invalid instruction opcode found\n"));
+      DEBUG(NaClLog(LOG_INFO, "invalid instruction opcode found\n"));
       break;
     case NACLi_SYSCALL:
     case NACLi_SYSENTER:
       is_legal = FALSE;
       disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedSystem);
-      DEBUG(printf("system instruction not allowed\n"));
+      DEBUG(NaClLog(LOG_INFO, "system instruction not allowed\n"));
       break;
     default:
       break;
@@ -91,7 +92,7 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
   if (NACL_IFLAG(NaClIllegal) & inst->flags) {
     is_legal = FALSE;
     disallows_flags |= NACL_DISALLOWS_FLAG(NaClMarkedIllegal);
-    DEBUG(printf("mark instruction as NaCl illegal\n"));
+    DEBUG(NaClLog(LOG_INFO, "mark instruction as NaCl illegal\n"));
   }
   if (inst_state->num_rex_prefixes > 1) {
     /* NOTE: does not apply to NOP, since they are parsed using
@@ -104,12 +105,12 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
      */
     is_legal = FALSE;
     disallows_flags |= NACL_DISALLOWS_FLAG(NaClMultipleRexPrefix);
-    DEBUG(printf("multiple use of REX prefix not allowed\n"));
+    DEBUG(NaClLog(LOG_INFO, "multiple use of REX prefix not allowed\n"));
   }
   if (inst_state->prefix_mask & kPrefixADDR16) {
     is_legal = FALSE;
     disallows_flags |= NACL_DISALLOWS_FLAG(NaClCantUsePrefix67);
-    DEBUG(printf("use of 67 (ADDR16) prefix not allowed\n"));
+    DEBUG(NaClLog(LOG_INFO, "use of 67 (ADDR16) prefix not allowed\n"));
   }
   if (NACL_TARGET_SUBARCH == 64) {
     /* Don't allow CS, DS, ES, or SS prefix overrides,
@@ -123,7 +124,7 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
           (inst->flags & NACL_IFLAG(IgnorePrefixSEGCS))) {
         is_legal = FALSE;
         disallows_flags |= NACL_DISALLOWS_FLAG(NaClHasBadSegmentPrefix);
-        DEBUG(printf("segment prefix disallowed\n"));
+        DEBUG(NaClLog(LOG_INFO, "segment prefix disallowed\n"));
       }
     }
   }
@@ -199,6 +200,7 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
                                "Illegal native client instruction\n");
     }
   }
-  DEBUG(printf("<-NaClValidateInstructionLegal: is_legal = %"NACL_PRIdBool"\n",
-               is_legal));
+  DEBUG(NaClLog(LOG_INFO,
+                "<-NaClValidateInstructionLegal: is_legal = %"NACL_PRIdBool"\n",
+                is_legal));
 }

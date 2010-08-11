@@ -37,7 +37,7 @@ NaClOp* NaClGetInstOperand(NaClInst* inst, uint8_t index) {
   return &inst->operands[index];
 }
 
-void NaClOpFlagsPrint(FILE* f, NaClOpFlags flags) {
+void NaClOpFlagsPrint(struct Gio* f, NaClOpFlags flags) {
   if (flags) {
     NaClOpFlag i;
     Bool first = TRUE;
@@ -46,23 +46,23 @@ void NaClOpFlagsPrint(FILE* f, NaClOpFlags flags) {
         if (first) {
           first = FALSE;
         } else {
-          fprintf(f, " | ");
+          gprintf(f, " | ");
         }
-        fprintf(f, "NACL_OPFLAG(%s)", NaClOpFlagName(i));
+        gprintf(f, "NACL_OPFLAG(%s)", NaClOpFlagName(i));
       }
     }
   } else {
-    fprintf(f, "NACL_EMPTY_OPFLAGS");
+    gprintf(f, "NACL_EMPTY_OPFLAGS");
   }
 }
 
-void NaClOpPrint(FILE* f, NaClOp* operand) {
-  fprintf(f, "{ %s, ", NaClOpKindName(operand->kind));
+void NaClOpPrint(struct Gio* f, NaClOp* operand) {
+  gprintf(f, "{ %s, ", NaClOpKindName(operand->kind));
   NaClOpFlagsPrint(f, operand->flags);
-  fprintf(f, " },\n");
+  gprintf(f, " },\n");
 }
 
-void NaClIFlagsPrint(FILE* f, NaClIFlags flags) {
+void NaClIFlagsPrint(struct Gio* f, NaClIFlags flags) {
   if (flags) {
     int i;
     Bool first = TRUE;
@@ -71,17 +71,17 @@ void NaClIFlagsPrint(FILE* f, NaClIFlags flags) {
         if (first) {
           first = FALSE;
         } else {
-          fprintf(f, " | ");
+          gprintf(f, " | ");
         }
-        fprintf(f, "NACL_IFLAG(%s)", NaClIFlagName(i));
+        gprintf(f, "NACL_IFLAG(%s)", NaClIFlagName(i));
       }
     }
   } else {
-    fprintf(f, "NACL_EMPTY_IFLAGS");
+    gprintf(f, "NACL_EMPTY_IFLAGS");
   }
 }
 
-void NaClInstPrintTableDriver(FILE* f, Bool as_array_element,
+void NaClInstPrintTableDriver(struct Gio* f, Bool as_array_element,
                               Bool simplify, int index,
                               NaClInst* inst, int lookahead) {
   int i;
@@ -90,62 +90,63 @@ void NaClInstPrintTableDriver(FILE* f, Bool as_array_element,
    * so that the instruction mnemonic is easier to read.
    */
   if (!simplify && index >= 0) {
-    fprintf(f, "  /* %d */\n", index);
+    gprintf(f, "  /* %d */\n", index);
   }
 
-  fprintf(f, "  { %s,", NaClInstPrefixName(inst->prefix));
+  gprintf(f, "  { %s,", NaClInstPrefixName(inst->prefix));
   if (!simplify) {
-    fprintf(f, " %"NACL_PRIu8",", inst->num_opcode_bytes);
+    gprintf(f, " %"NACL_PRIu8",", inst->num_opcode_bytes);
   }
-  fprintf(f, " { ");
+  gprintf(f, " { ");
   for (i = 0; i < NACL_MAX_OPCODE_BYTES; ++i) {
     if (!simplify || i < inst->num_opcode_bytes) {
-      if (i > 0) fprintf(f, ",");
-      fprintf(f," 0x%02x", inst->opcode[i]);
+      if (i > 0) gprintf(f, ",");
+      gprintf(f," 0x%02x", inst->opcode[i]);
     }
   }
-  fprintf(f, " },");
+  gprintf(f, " },");
   if (simplify) {
-    fprintf(f, " %s, ", NaClMnemonicName(inst->name));
+    gprintf(f, " %s, ", NaClMnemonicName(inst->name));
   }
-  fprintf(f, " %s,\n", kNaClInstTypeString[inst->insttype]);
-  fprintf(f, "    ");
+  gprintf(f, " %s,\n", kNaClInstTypeString[inst->insttype]);
+  gprintf(f, "    ");
   NaClIFlagsPrint(f, inst->flags);
-  fprintf(f, ",\n");
+  gprintf(f, ",\n");
   if (!simplify) {
-    fprintf(f, "    Inst%s,\n", NaClMnemonicName(inst->name));
+    gprintf(f, "    Inst%s,\n", NaClMnemonicName(inst->name));
   }
   if (!simplify) {
-    fprintf(f, "    %u, {\n", inst->num_operands);
+    gprintf(f, "    %u, {\n", inst->num_operands);
   }
   for (i = 0; i < NACL_MAX_NUM_OPERANDS; ++i) {
     if (!simplify || i < inst->num_operands) {
-      if (!simplify) fprintf(f, "  ");
-      fprintf(f, "    ");
+      if (!simplify) gprintf(f, "  ");
+      gprintf(f, "    ");
       NaClOpPrint(f, inst->operands + i);
     }
   }
   if (simplify) {
-    fprintf(f, "  };\n");
+    gprintf(f, "  };\n");
   } else {
-    fprintf(f, "    },\n");
+    gprintf(f, "    },\n");
     if (index < 0 || NULL == inst->next_rule) {
-      fprintf(f, "    NULL\n");
+      gprintf(f, "    NULL\n");
     } else {
-      fprintf(f, "    g_Opcodes + %d\n", lookahead);
+      gprintf(f, "    g_Opcodes + %d\n", lookahead);
     }
     if (as_array_element) {
-      fprintf(f, "  }%s\n", index < 0 ? ";" : ",");
+      gprintf(f, "  }%s\n", index < 0 ? ";" : ",");
     } else {
-      fprintf(f, "  };\n");
+      gprintf(f, "  };\n");
     }
   }
 }
 
-void NaClInstPrintTablegen(FILE* f, int index, NaClInst* inst, int lookahead) {
+void NaClInstPrintTablegen(struct Gio* f, int index, NaClInst* inst,
+                           int lookahead) {
   NaClInstPrintTableDriver(f, TRUE, FALSE, index, inst, lookahead);
 }
 
-void NaClInstPrint(FILE* f, NaClInst* inst) {
+void NaClInstPrint(struct Gio* f, NaClInst* inst) {
   NaClInstPrintTableDriver(f, FALSE, TRUE, -1, inst, 0);
 }

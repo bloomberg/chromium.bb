@@ -45,12 +45,6 @@ struct NaClValidatorState {
   int number_validators;
   /* Holds the cpu features of the machine it is running on. */
   CPUFeatures cpu_features;
-  /* Holds the log file to use. */
-  FILE* log_file;
-  /* Holds the corresponding Gio handle for logging. */
-  struct GioFile log_stream;
-  /* Holds the log file before building the validator state. */
-  struct Gio* old_log_stream;
 };
 
 #endif

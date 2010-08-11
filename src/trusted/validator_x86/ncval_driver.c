@@ -100,7 +100,6 @@ Bool NaClRunValidator(int argc, const char* argv[],
   Bool return_value;
 
   argc = NaClRunValidatorGrokFlags(argc, argv);
-  NaClLogModuleInit();
 
   if (NACL_FLAGS_warnings) {
     NaClLogSetVerbosity(LOG_WARNING);
@@ -128,7 +127,6 @@ Bool NaClRunValidator(int argc, const char* argv[],
         (double)(clock_l - clock_0) /  (double)CLOCKS_PER_SEC,
         (double)(clock_v - clock_l) /  (double)CLOCKS_PER_SEC);
   }
-  NaClLogModuleFini();
   return return_value;
 }
 
@@ -149,14 +147,11 @@ static Bool NaClValidateAnalyzeBytes(NaClValidateBytes* data) {
   state = NaClValidatorStateCreate(data->base,
                                    data->num_bytes,
                                    (uint8_t) NACL_FLAGS_block_alignment,
-                                   nacl_base_register,
-                                   NACL_FLAGS_max_reported_errors,
-                                   stdout);
+                                   nacl_base_register);
   if (NULL == state) {
     NaClValidatorMessage(LOG_FATAL, NULL, "Unable to create validator state");
   }
   NaClValidateSegment(data->bytes, data->base, data->num_bytes, state);
-  NaClValidatorStatePrintStats(stdout, state);
   return_value = NaClValidatesOk(state);
   NaClValidatorStateDestroy(state);
   return return_value;

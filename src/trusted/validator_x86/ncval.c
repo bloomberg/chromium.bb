@@ -202,9 +202,7 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NaClValidatorStateCreate(vbase, vlimit - vbase,
-                                    ncf->ncalign, nacl_base_register,
-                                    NACL_FLAGS_max_reported_errors,
-                                    stderr);
+                                    ncf->ncalign, nacl_base_register);
   if (vstate == NULL) {
     NaClValidatorMessage(LOG_FATAL, vstate, "Unable to create validator state");
   }
@@ -213,7 +211,6 @@ static Bool AnalyzeSfiCodeSegments(ncfile *ncf, const char *fname) {
   } else {
     AnalyzeSfiSections(ncf, vstate);
   }
-  NaClValidatorStatePrintStats(stdout, vstate);
   if (NaClValidatesOk(vstate)) {
     NaClValidatorMessage(LOG_INFO, vstate, "***module %s is safe***\n", fname);
   } else {
@@ -292,15 +289,12 @@ typedef struct NaClValidatorByteArray {
   NaClMemorySize num_bytes;
 } NaClValidatorByteArray;
 
-static struct GioFile gio_err_stream;
-
 static void SfiHexFatal(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 static void SfiHexFatal(const char* format, ...) {
   va_list ap;
   va_start(ap, format);
-  gprintf((struct Gio*) &gio_err_stream, "Fatal: ");
-  gvprintf((struct Gio*) &gio_err_stream, format, ap);
+  NaClLogV(LOG_FATAL, format, ap);
   va_end(ap);
   /* always succed, so that the testing framework works. */
   exit(0);
@@ -427,8 +421,16 @@ static int GrokFlags(int argc, const char* argv[]) {
 int main(int argc, const char *argv[]) {
   int result = 0;
   int i;
+  struct GioFile gio_out_stream;
+  struct Gio* gout = (struct Gio*) &gio_out_stream;
+  if (!GioFileRefCtor(&gio_out_stream, stdout)) {
+    fprintf(stderr, "Unable to create gio file for stdout!\n");
+    return 1;
+  }
+  NaClLogModuleInitExtended(LOG_INFO, gout);
 
   argc = GrokFlags(argc, argv);
+
   if (FLAGS_use_iter) {
     Bool success = FALSE;
     argc = NaClRunValidatorGrokFlags(argc, argv);
@@ -441,7 +443,6 @@ int main(int argc, const char *argv[]) {
       result = (success ? 0 : 1);
     } else {
       NaClValidatorByteArray data;
-      GioFileRefCtor(&gio_err_stream, stdout);
       NaClLogDisableTimestamp();
       argc = ValidateSfiHexLoad(argc, argv, &data);
       success = NaClRunValidatorBytes(
@@ -451,9 +452,9 @@ int main(int argc, const char *argv[]) {
       result = 0;
     }
     if (success) {
-      printf("***module is safe***\n");
+      gprintf(NaClLogGetGio(), "***module is safe***\n");
     } else {
-      printf("***MODULE IS UNSAFE***\n");
+      gprintf(NaClLogGetGio(), "***MODULE IS UNSAFE***\n");
     }
   } else if (64 == NACL_TARGET_SUBARCH) {
     SegmentFatal("Can only run %s using -use_iter=false flag on 64 bit code\n",
@@ -488,5 +489,7 @@ int main(int argc, const char *argv[]) {
       nc_freefile(ncf);
     }
   }
+  NaClLogModuleFini();
+  GioFileDtor(gout);
   return result;
 }
