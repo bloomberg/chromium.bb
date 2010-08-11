@@ -344,6 +344,9 @@ STDAPI CustomRegistration(UINT reg_flags, BOOL reg) {
     // _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_ACTIVEX, reg)
     // because there is specific OLEMISC replacement.
     hr = ChromeFrameActivex::UpdateRegistry(reg);
+    // TODO(amit): Move elevation policy registration from ActiveX rgs
+    // into a separate rgs.
+    RefreshElevationPolicy();
   }
 
   if ((hr == S_OK) && (flags & GCF_PROTOCOL)) {
