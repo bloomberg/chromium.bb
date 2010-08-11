@@ -108,8 +108,12 @@ bool SpeechRecognitionRequest::Send(const std::string& audio_data) {
       url_fetcher_id_for_tests, url_, URLFetcher::POST, this));
   url_fetcher_->set_upload_data(kMimeRawAudio, audio_data);
   url_fetcher_->set_request_context(url_context_);
+
+  // The speech recognition API does not require user identification as part
+  // of requests, so we don't send cookies or auth data for these requests to
+  // prevent any accidental connection between users who are logged into the
+  // domain for other services (e.g. bookmark sync) with the speech requests.
   url_fetcher_->set_load_flags(
-      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
       net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
       net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->Start();
