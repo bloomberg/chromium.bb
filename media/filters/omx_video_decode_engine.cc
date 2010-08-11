@@ -255,17 +255,6 @@ void OmxVideoDecodeEngine::PortFlushDone(int port) {
     ComponentFlushDone();
 }
 
-void OmxVideoDecodeEngine::Seek(Task* done_cb) {
-  message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecodeEngine::SeekTask, done_cb));
-}
-
-void OmxVideoDecodeEngine::SeekTask(Task* done_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  AutoTaskRunner done_runner(done_cb);
-  // TODO(jiesun): add real logic here.
-}
-
 VideoFrame::Format OmxVideoDecodeEngine::GetSurfaceFormat() const {
   // TODO(jiesun): Both OmxHeaderType and EGLImage surface type could have
   // different surface formats.
@@ -680,10 +669,6 @@ void OmxVideoDecodeEngine::FillThisBuffer(
     StopOnError();
     return;
   }
-}
-
-bool OmxVideoDecodeEngine::ProvidesBuffer() const {
-  return !uses_egl_image_;
 }
 
 // Reconfigure port
