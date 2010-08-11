@@ -130,4 +130,5 @@ void CannedBrowsingDataAppCacheHelper::Reset() {
 void CannedBrowsingDataAppCacheHelper::StartFetching(
     Callback0::Type* completion_callback) {
   completion_callback->Run();
+  delete completion_callback;
 }

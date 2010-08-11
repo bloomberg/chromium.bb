@@ -8,9 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-class TestCompletionCallback
-    : public CallbackRunner<Tuple1<
-          const std::vector<BrowsingDataDatabaseHelper::DatabaseInfo>& > > {
+class TestCompletionCallback {
  public:
   TestCompletionCallback()
       : have_result_(false) {
@@ -22,11 +20,10 @@ class TestCompletionCallback
     return result_;
   }
 
-  virtual void RunWithParams(
-      const Tuple1<const std::vector<
-          BrowsingDataDatabaseHelper::DatabaseInfo>& >& params) {
+  void callback(const std::vector<
+          BrowsingDataDatabaseHelper::DatabaseInfo>& info) {
     have_result_ = true;
-    result_ = params.a;
+    result_ = info;
   }
 
  private:
@@ -55,7 +52,8 @@ TEST(CannedBrowsingDataDatabaseTest, AddDatabase) {
   helper->AddDatabase(origin2, db3, "");
 
   TestCompletionCallback callback;
-  helper->StartFetching(&callback);
+  helper->StartFetching(
+      NewCallback(&callback, &TestCompletionCallback::callback));
   ASSERT_TRUE(callback.have_result());
 
   std::vector<BrowsingDataDatabaseHelper::DatabaseInfo> result =
@@ -83,7 +81,8 @@ TEST(CannedBrowsingDataDatabaseTest, Unique) {
   helper->AddDatabase(origin, db, "");
 
   TestCompletionCallback callback;
-  helper->StartFetching(&callback);
+  helper->StartFetching(
+      NewCallback(&callback, &TestCompletionCallback::callback));
   ASSERT_TRUE(callback.have_result());
 
   std::vector<BrowsingDataDatabaseHelper::DatabaseInfo> result =

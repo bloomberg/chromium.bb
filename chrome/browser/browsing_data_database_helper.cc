@@ -150,4 +150,5 @@ void CannedBrowsingDataDatabaseHelper::Reset() {
 void CannedBrowsingDataDatabaseHelper::StartFetching(
     Callback1<const std::vector<DatabaseInfo>& >::Type* callback) {
   callback->Run(database_info_);
+  delete callback;
 }

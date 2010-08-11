@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-class TestCompletionCallback : public CallbackRunner<Tuple0> {
+class TestCompletionCallback {
  public:
   TestCompletionCallback()
       : have_result_(false) {
@@ -17,9 +17,10 @@ class TestCompletionCallback : public CallbackRunner<Tuple0> {
 
   bool have_result() const { return have_result_; }
 
-  virtual void RunWithParams(const Tuple0& params) {
+  void callback() {
     have_result_ = true;
   }
+
  private:
   bool have_result_;
 };
@@ -40,7 +41,8 @@ TEST(CannedBrowsingDataAppCacheHelperTest, SetInfo) {
   helper->AddAppCache(manifest3);
 
   TestCompletionCallback callback;
-  helper->StartFetching(&callback);
+  helper->StartFetching(
+      NewCallback(&callback, &TestCompletionCallback::callback));
   ASSERT_TRUE(callback.have_result());
 
   std::map<GURL, appcache::AppCacheInfoVector>& collection =
@@ -71,7 +73,8 @@ TEST(CannedBrowsingDataAppCacheHelperTest, Unique) {
   helper->AddAppCache(manifest);
 
   TestCompletionCallback callback;
-  helper->StartFetching(&callback);
+  helper->StartFetching(
+      NewCallback(&callback, &TestCompletionCallback::callback));
   ASSERT_TRUE(callback.have_result());
 
   std::map<GURL, appcache::AppCacheInfoVector>& collection =

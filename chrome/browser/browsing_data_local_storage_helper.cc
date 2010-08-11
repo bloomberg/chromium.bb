@@ -155,4 +155,5 @@ void CannedBrowsingDataLocalStorageHelper::Reset() {
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
     Callback1<const std::vector<LocalStorageInfo>& >::Type* callback) {
   callback->Run(local_storage_info_);
+  delete callback;
 }
