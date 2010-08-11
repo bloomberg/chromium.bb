@@ -21,6 +21,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "base/trace_event.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -163,6 +164,8 @@ AutomationProvider::AutomationProvider(Profile* profile)
       profile_(profile),
       reply_message_(NULL),
       popup_menu_waiter_(NULL) {
+  TRACE_EVENT_BEGIN("AutomationProvider::AutomationProvider", 0, "");
+
   browser_tracker_.reset(new AutomationBrowserTracker(this));
   extension_tracker_.reset(new AutomationExtensionTracker(this));
   tab_tracker_.reset(new AutomationTabTracker(this));
@@ -175,6 +178,8 @@ AutomationProvider::AutomationProvider(Profile* profile)
   extension_test_result_observer_.reset(
       new ExtensionTestResultNotificationObserver(this));
   g_browser_process->AddRefModule();
+
+  TRACE_EVENT_END("AutomationProvider::AutomationProvider", 0, "");
 }
 
 AutomationProvider::~AutomationProvider() {
@@ -195,6 +200,8 @@ AutomationProvider::~AutomationProvider() {
 }
 
 void AutomationProvider::ConnectToChannel(const std::string& channel_id) {
+  TRACE_EVENT_BEGIN("AutomationProvider::ConnectToChannel", 0, "");
+
   automation_resource_message_filter_ = new AutomationResourceMessageFilter;
   channel_.reset(
       new IPC::SyncChannel(channel_id, IPC::Channel::MODE_CLIENT, this,
@@ -209,6 +216,8 @@ void AutomationProvider::ConnectToChannel(const std::string& channel_id) {
 
   // Send a hello message with our current automation protocol version.
   channel_->Send(new AutomationMsg_Hello(0, version_string.c_str()));
+
+  TRACE_EVENT_END("AutomationProvider::ConnectToChannel", 0, "");
 }
 
 void AutomationProvider::SetExpectedTabCount(size_t expected_tabs) {

@@ -19,6 +19,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/thread_local.h"
+#include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/child_process_logging.h"
@@ -221,6 +222,8 @@ RenderThread::RenderThread(const std::string& channel_name)
 }
 
 void RenderThread::Init() {
+  TRACE_EVENT_BEGIN("RenderThread::Init", 0, "");
+
   lazy_tls.Pointer()->Set(this);
 #if defined(OS_WIN)
   // If you are running plugins in this thread you need COM active but in
@@ -276,6 +279,8 @@ void RenderThread::Init() {
   }
 
   GpuVideoServiceHost::get()->OnRendererThreadInit(MessageLoop::current());
+
+  TRACE_EVENT_END("RenderThread::Init", 0, "");
 }
 
 RenderThread::~RenderThread() {

@@ -8,6 +8,7 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/trace_event.h"
 #include "base/win_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_provider.h"
@@ -618,6 +619,8 @@ void ExternalTabContainer::Observe(NotificationType type,
         const LoadNotificationDetails* load =
             Details<LoadNotificationDetails>(details).ptr();
         if (load != NULL && PageTransition::IsMainFrame(load->origin())) {
+          TRACE_EVENT_END("ExternalTabContainer::Navigate", 0,
+                          load->url().spec());
           automation_->Send(new AutomationMsg_TabLoaded(0, tab_handle_,
                                                         load->url()));
         }
@@ -865,6 +868,8 @@ void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {
     NOTREACHED();
     return;
   }
+
+  TRACE_EVENT_BEGIN("ExternalTabContainer::Navigate", 0, url.spec());
 
   tab_contents_->controller().LoadURL(url, referrer,
                                       PageTransition::START_PAGE);

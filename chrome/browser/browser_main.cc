@@ -26,6 +26,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
+#include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -443,6 +444,8 @@ void HandleTestParameters(const CommandLine& command_line) {
 }
 
 void RunUIMessageLoop(BrowserProcess* browser_process) {
+  TRACE_EVENT_BEGIN("BrowserMain:MESSAGE_LOOP", 0, "");
+
 #if defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
@@ -451,6 +454,8 @@ void RunUIMessageLoop(BrowserProcess* browser_process) {
 #elif defined(OS_POSIX)
   MessageLoopForUI::current()->Run();
 #endif
+
+  TRACE_EVENT_END("BrowserMain:MESSAGE_LOOP", 0, "");
 }
 
 void AddFirstRunNewTabs(BrowserInit* browser_init,
@@ -810,6 +815,7 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 
 // Main routine for running as the Browser process.
 int BrowserMain(const MainFunctionParams& parameters) {
+  TRACE_EVENT_BEGIN("BrowserMain", 0, "");
   scoped_ptr<BrowserMainParts>
       parts(BrowserMainParts::CreateBrowserMainParts(parameters));
 
@@ -1442,5 +1448,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   ignore_result(browser_process.release());
   browser_shutdown::Shutdown();
 
+  TRACE_EVENT_END("BrowserMain", 0, 0);
   return result_code;
 }

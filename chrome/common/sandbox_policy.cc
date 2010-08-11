@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "base/trace_event.h"
 #include "base/win_util.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -445,6 +446,8 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return 0;
   }
 
+  TRACE_EVENT_BEGIN("StartProcessWithAccess", 0, type_str);
+
   bool in_sandbox =
       (type != ChildProcessInfo::NACL_BROKER_PROCESS) &&
       !browser_command_line.HasSwitch(switches::kNoSandbox) &&
@@ -522,11 +525,15 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return 0;
   }
 
+  TRACE_EVENT_BEGIN("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
+
   result = g_broker_services->SpawnTarget(
       cmd_line->program().c_str(),
       cmd_line->command_line_string().c_str(),
       policy, &target);
   policy->Release();
+
+  TRACE_EVENT_END("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
   if (sandbox::SBOX_ALL_OK != result)
     return 0;

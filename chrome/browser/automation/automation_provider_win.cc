@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/keyboard_codes.h"
+#include "base/trace_event.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_extension_function.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"
@@ -301,6 +302,8 @@ void AutomationProvider::CreateExternalTab(
     const IPC::ExternalTabSettings& settings,
     gfx::NativeWindow* tab_container_window, gfx::NativeWindow* tab_window,
     int* tab_handle) {
+  TRACE_EVENT_BEGIN("AutomationProvider::CreateExternalTab", 0, "");
+
   *tab_handle = 0;
   *tab_container_window = NULL;
   *tab_window = NULL;
@@ -325,6 +328,8 @@ void AutomationProvider::CreateExternalTab(
   } else {
     external_tab_container->Uninitialize();
   }
+
+  TRACE_EVENT_END("AutomationProvider::CreateExternalTab", 0, "");
 }
 
 bool AutomationProvider::AddExternalTab(ExternalTabContainer* external_tab) {
@@ -433,6 +438,8 @@ void AutomationProvider::ConnectExternalTab(
     gfx::NativeWindow* tab_container_window,
     gfx::NativeWindow* tab_window,
     int* tab_handle) {
+  TRACE_EVENT_BEGIN("AutomationProvider::ConnectExternalTab", 0, "");
+
   *tab_handle = 0;
   *tab_container_window = NULL;
   *tab_window = NULL;
@@ -455,6 +462,8 @@ void AutomationProvider::ConnectExternalTab(
   } else {
     external_tab_container->Uninitialize();
   }
+
+  TRACE_EVENT_END("AutomationProvider::ConnectExternalTab", 0, "");
 }
 
 void AutomationProvider::TerminateSession(int handle, bool* success) {

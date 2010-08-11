@@ -19,6 +19,7 @@
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
+#include "base/trace_event.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_switches.h"
@@ -176,6 +177,8 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
 
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
+  TRACE_EVENT_BEGIN("RendererMain", 0, "");
+
   const CommandLine& parsed_command_line = parameters.command_line_;
   base::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool_;
 
@@ -287,9 +290,12 @@ int RendererMain(const MainFunctionParams& parameters) {
     if (run_loop) {
       if (pool)
         pool->Recycle();
+      TRACE_EVENT_BEGIN("RendererMain.START_MSG_LOOP", 0, 0);
       MessageLoop::current()->Run();
+      TRACE_EVENT_END("RendererMain.START_MSG_LOOP", 0, 0);
     }
   }
   platform.PlatformUninitialize();
+  TRACE_EVENT_END("RendererMain", 0, "");
   return 0;
 }

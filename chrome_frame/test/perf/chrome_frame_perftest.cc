@@ -1195,7 +1195,8 @@ class EtwPerfSession {
 
   void Start() {
     // To ensure there is no session leftover from crashes, previous runs, etc.
-    // EtwTraceController::Stop(L"cf_perf", NULL);
+    EtwTraceProperties ignore;
+    EtwTraceController::Stop(L"cf_perf", &ignore);
     ASSERT_TRUE(file_util::CreateTemporaryFile(&etl_log_file_));
     ASSERT_HRESULT_SUCCEEDED(controller_.StartFileSession(L"cf_perf",
         etl_log_file_.value().c_str(), false));
@@ -1205,8 +1206,11 @@ class EtwPerfSession {
         ~(base::CAPTURE_STACK_TRACE)));
   }
 
+  HRESULT Stop() {
+    return controller_.Stop(NULL);
+  }
+
   void AnalyzeOutput(TracedEvents* delegate) {
-    EXPECT_HRESULT_SUCCEEDED(controller_.Stop(NULL));
     EtwConsumer consumer;
     consumer.set_delegate(delegate);
     consumer.OpenFileSession(etl_log_file_.value().c_str());
@@ -1307,7 +1311,7 @@ bool RunSingleTestOutOfProc(const std::string& test_name) {
   if (!base::LaunchApp(cmd_line, false, false, &process_handle))
     return false;
 
-  int test_terminate_timeout_ms = 30 * 1000;
+  int test_terminate_timeout_ms = 60 * 1000;
   int exit_code = 0;
   if (!base::WaitForExitCodeWithTimeout(process_handle, &exit_code,
     test_terminate_timeout_ms)) {
@@ -1325,7 +1329,13 @@ bool RunSingleTestOutOfProc(const std::string& test_name) {
 
 TEST(TestAsPerfTest, MetaTag_createproxy) {
   const int kNumCycles = 10;
-  MonitorTracePair monitor[kNumCycles];
+  MonitorTracePair create_proxy_monitor[kNumCycles];
+  MonitorTracePair browser_main_start_monitor[kNumCycles];
+  MonitorTracePair browser_main_loop_monitor[kNumCycles];
+  MonitorTracePair automation_provider_start_monitor[kNumCycles];
+  MonitorTracePair automation_provider_connect_monitor[kNumCycles];
+  MonitorTracePair automation_provider_createtab_monitor[kNumCycles];
+  MonitorTracePair external_tab_navigate_monitor[kNumCycles];
 
   for (int i = 0; i < kNumCycles; ++i) {
     EtwPerfSession perf_session;
@@ -1334,17 +1344,86 @@ TEST(TestAsPerfTest, MetaTag_createproxy) {
         "ChromeFrameTestWithWebServer.FullTabModeIE_MetaTag"));
     // Since we cannot have array of objects with a non-default constructor,
     // dedicated method is used to initialize watched event.
-    monitor[i].set_interesting_event("chromeframe.createproxy");
-    perf_session.AnalyzeOutput(&monitor[i]);
+    create_proxy_monitor[i].set_interesting_event("chromeframe.createproxy");
+    browser_main_start_monitor[i].set_interesting_event("BrowserMain");
+    browser_main_loop_monitor[i].set_interesting_event(
+        "BrowserMain:MESSAGE_LOOP");
+    automation_provider_start_monitor[i].set_interesting_event(
+        "AutomationProvider::AutomationProvider");
+    automation_provider_connect_monitor[i].set_interesting_event(
+        "AutomationProvider::ConnectToChannel");
+    external_tab_navigate_monitor[i].set_interesting_event(
+        "ExternalTabContainer::Navigate");
+
+    ASSERT_HRESULT_SUCCEEDED(perf_session.Stop());
+
+    perf_session.AnalyzeOutput(&create_proxy_monitor[i]);
+    perf_session.AnalyzeOutput(&browser_main_start_monitor[i]);
+    perf_session.AnalyzeOutput(&browser_main_loop_monitor[i]);
+    perf_session.AnalyzeOutput(&automation_provider_start_monitor[i]);
+    perf_session.AnalyzeOutput(&automation_provider_connect_monitor[i]);
+    perf_session.AnalyzeOutput(&external_tab_navigate_monitor[i]);
   }
 
   // Print results
   std::string times;
   for (int i = 0; i < kNumCycles; ++i) {
-    ASSERT_TRUE(monitor[i].is_valid());
-    StringAppendF(&times, "%.2f,", monitor[i].duration().InMillisecondsF());
+    ASSERT_TRUE(create_proxy_monitor[i].is_valid());
+    StringAppendF(&times, "%.2f,",
+                  create_proxy_monitor[i].duration().InMillisecondsF());
   }
 
   bool important = false;
   PrintResultList("createproxy", "", "t", times, "ms", important);
+
+  times.clear();
+
+  for (int i = 0; i < kNumCycles; ++i) {
+    ASSERT_TRUE(browser_main_start_monitor[i].is_valid());
+    StringAppendF(&times, "%.2f,",
+                  browser_main_start_monitor[i].duration().InMillisecondsF());
+  }
+
+  PrintResultList("browserstart", "", "t", times, "ms", important);
+  times.clear();
+
+  for (int i = 0; i < kNumCycles; ++i) {
+    ASSERT_TRUE(browser_main_loop_monitor[i].is_valid());
+    StringAppendF(&times, "%.2f,",
+                  browser_main_loop_monitor[i].duration().InMillisecondsF());
+  }
+
+  PrintResultList("browserloop", "", "t", times, "ms", important);
+  times.clear();
+
+  for (int i = 0; i < kNumCycles; ++i) {
+    ASSERT_TRUE(automation_provider_start_monitor[i].is_valid());
+    StringAppendF(
+        &times, "%.2f,",
+        automation_provider_start_monitor[i].duration().InMillisecondsF());
+  }
+
+  PrintResultList("automationproviderstart", "", "t", times, "ms", important);
+  times.clear();
+
+  for (int i = 0; i < kNumCycles; ++i) {
+    ASSERT_TRUE(automation_provider_connect_monitor[i].is_valid());
+    StringAppendF(
+        &times, "%.2f,",
+        automation_provider_connect_monitor[i].duration().InMillisecondsF());
+  }
+
+  PrintResultList("automationproviderconnect", "", "t", times, "ms",
+                  important);
+  times.clear();
+
+  for (int i = 0; i < kNumCycles; ++i) {
+    ASSERT_TRUE(external_tab_navigate_monitor[i].is_valid());
+    StringAppendF(
+        &times, "%.2f,",
+        external_tab_navigate_monitor[i].duration().InMillisecondsF());
+  }
+
+  PrintResultList("externaltabnavigate", "", "t", times, "ms", important);
+  times.clear();
 }
