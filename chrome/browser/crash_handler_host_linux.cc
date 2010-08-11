@@ -87,7 +87,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   // The length of the control message:
   static const unsigned kControlMsgSize =
-      CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(struct ucred));
+      CMSG_SPACE(2*sizeof(int)) + CMSG_SPACE(sizeof(struct ucred));
   // The length of the regular payload:
   static const unsigned kCrashContextSize =
       sizeof(ExceptionHandler::CrashContext);
