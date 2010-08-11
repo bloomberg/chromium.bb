@@ -497,6 +497,12 @@ def QuoteIfNecessary(string):
   return string
 
 
+def StringToMakefileVariable(string):
+  """Convert a string to a value that is acceptable as a make variable name."""
+  # TODO: replace other metacharacters that we encounter.
+  return string.replace(' ', '_')
+
+
 srcdir_prefix = ''
 def Sourceify(path):
   """Convert a path to its source directory form."""
@@ -656,7 +662,7 @@ class MakefileWriter:
     part_of_all: flag indicating this target is part of 'all'
     """
     for action in actions:
-      name = self.target + '_' + action['action_name']
+      name = self.target + '_' + StringToMakefileVariable(action['action_name'])
       self.WriteLn('### Rules for action "%s":' % action['action_name'])
       inputs = action['inputs']
       outputs = action['outputs']
@@ -725,7 +731,7 @@ class MakefileWriter:
     part_of_all: flag indicating this target is part of 'all'
     """
     for rule in rules:
-      name = self.target + '_' + rule['rule_name']
+      name = self.target + '_' + StringToMakefileVariable(rule['rule_name'])
       count = 0
       self.WriteLn('### Generated for rule %s:' % name)
 
