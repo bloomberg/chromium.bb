@@ -8,6 +8,7 @@
 #include "base/thread.h"
 #include "base/waitable_event.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_unittest.h"

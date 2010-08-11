@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/host_resolver_impl.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/ssl_config_service_defaults.h"

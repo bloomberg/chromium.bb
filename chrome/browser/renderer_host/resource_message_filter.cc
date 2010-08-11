@@ -75,6 +75,7 @@
 #include "gfx/native_widget_types.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/file_stream.h"
+#include "net/base/io_buffer.h"
 #include "net/base/keygen_handler.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_util.h"

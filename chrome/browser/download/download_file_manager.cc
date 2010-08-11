@@ -20,6 +20,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/io_buffer.h"
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
