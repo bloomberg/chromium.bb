@@ -7,17 +7,24 @@
 #include <algorithm>
 #include <string>
 
+#include <d3d9.h>
+#include <evr.h>
+#include <initguid.h>
 #include <mfapi.h>
 #include <mferror.h>
+#include <mfidl.h>
+#include <shlwapi.h>
 #include <wmcodecdsp.h>
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/scoped_comptr_win.h"
 #include "media/base/video_frame.h"
 
-#pragma comment(lib, "dxva2.lib")
 #pragma comment(lib, "d3d9.lib")
+#pragma comment(lib, "dxva2.lib")
+#pragma comment(lib, "evr.lib")
 #pragma comment(lib, "mfuuid.lib")
 #pragma comment(lib, "mfplat.lib")
 
@@ -29,7 +36,7 @@ static IMFTransform* GetH264Decoder() {
   // Use __uuidof() to avoid linking to a library just for the CLSID.
   IMFTransform* dec;
   HRESULT hr = CoCreateInstance(__uuidof(CMSH264DecoderMFT), NULL,
-                                 CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&dec));
+                                CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&dec));
   if (FAILED(hr)) {
     LOG(ERROR) << "CoCreateInstance failed " << std::hex << std::showbase << hr;
     return NULL;
@@ -49,16 +56,24 @@ static IMFSample* CreateEmptySample() {
   return sample.Detach();
 }
 
-// Creates a Media Foundation sample with one buffer of length |buffer_length|.
-static IMFSample* CreateEmptySampleWithBuffer(int buffer_length) {
+// Creates a Media Foundation sample with one buffer of length |buffer_length|
+// on a |align|-byte boundary. Alignment must be a perfect power of 2 or 0.
+// If |align| is 0, then no alignment is specified.
+static IMFSample* CreateEmptySampleWithBuffer(int buffer_length, int align) {
   CHECK_GT(buffer_length, 0);
   ScopedComPtr<IMFSample> sample;
   sample.Attach(CreateEmptySample());
-  if (sample.get() == NULL)
+  if (!sample.get())
     return NULL;
   ScopedComPtr<IMFMediaBuffer> buffer;
   HRESULT hr;
-  hr = MFCreateMemoryBuffer(buffer_length, buffer.Receive());
+  if (align == 0) {
+    // Note that MFCreateMemoryBuffer is same as MFCreateAlignedMemoryBuffer
+    // with the align argument being 0.
+    hr = MFCreateMemoryBuffer(buffer_length, buffer.Receive());
+  } else {
+    hr = MFCreateAlignedMemoryBuffer(buffer_length, align-1, buffer.Receive());
+  }
   if (FAILED(hr)) {
     LOG(ERROR) << "Unable to create an empty buffer";
     return NULL;
@@ -73,17 +88,20 @@ static IMFSample* CreateEmptySampleWithBuffer(int buffer_length) {
 
 // Creates a Media Foundation sample with one buffer containing a copy of the
 // given Annex B stream data.
-// If duration and sample_time are not known, provide 0.
-// min_size specifies the minimum size of the buffer (might be required by
+// If duration and sample time are not known, provide 0.
+// |min_size| specifies the minimum size of the buffer (might be required by
 // the decoder for input). The times here should be given in 100ns units.
+// |alignment| specifies the buffer in the sample to be aligned. If no
+// alignment is required, provide 0 or 1.
 static IMFSample* CreateInputSample(uint8* stream, int size,
                                     int64 timestamp, int64 duration,
-                                    int min_size) {
-  CHECK(stream != NULL);
+                                    int min_size, int alignment) {
+  CHECK(stream);
   CHECK_GT(size, 0);
   ScopedComPtr<IMFSample> sample;
-  sample.Attach(CreateEmptySampleWithBuffer(std::max(min_size, size)));
-  if (sample.get() == NULL) {
+  sample.Attach(CreateEmptySampleWithBuffer(std::max(min_size, size),
+                                            alignment));
+  if (!sample.get()) {
     LOG(ERROR) << "Failed to create empty buffer for input";
     return NULL;
   }
@@ -138,7 +156,9 @@ MftH264Decoder::MftH264Decoder(bool use_dxva)
       use_dxva_(use_dxva),
       drain_message_sent_(false),
       in_buffer_size_(0),
+      in_buffer_alignment_(0),
       out_buffer_size_(0),
+      out_buffer_alignment_(0),
       frames_read_(0),
       frames_decoded_(0),
       width_(0),
@@ -148,6 +168,13 @@ MftH264Decoder::MftH264Decoder(bool use_dxva)
 }
 
 MftH264Decoder::~MftH264Decoder() {
+  // |decoder_| has to be destroyed before the library uninitialization.
+  if (decoder_)
+    decoder_->Release();
+  if (FAILED(MFShutdown())) {
+    LOG(WARNING) << "Warning: MF failed to shutdown";
+  }
+  CoUninitialize();
 }
 
 bool MftH264Decoder::Init(IDirect3DDeviceManager9* dev_manager,
@@ -156,12 +183,16 @@ bool MftH264Decoder::Init(IDirect3DDeviceManager9* dev_manager,
                           int aspect_num, int aspect_denom,
                           ReadInputCallback* read_input_cb,
                           OutputReadyCallback* output_avail_cb) {
-  CHECK(read_input_cb != NULL);
-  CHECK(output_avail_cb != NULL);
   if (initialized_)
     return true;
+  if (!read_input_cb || !output_avail_cb) {
+    LOG(ERROR) << "No callback provided";
+    return false;
+  }
   read_input_callback_.reset(read_input_cb);
   output_avail_callback_.reset(output_avail_cb);
+  if (!InitComMfLibraries())
+    return false;
   if (!InitDecoder(dev_manager, frame_rate_num, frame_rate_denom,
                    width, height, aspect_num, aspect_denom))
     return false;
@@ -176,17 +207,17 @@ bool MftH264Decoder::Init(IDirect3DDeviceManager9* dev_manager,
 bool MftH264Decoder::SendInput(uint8* data, int size, int64 timestamp,
                                int64 duration) {
   CHECK(initialized_);
-  CHECK(data != NULL);
+  CHECK(data);
   CHECK_GT(size, 0);
   if (drain_message_sent_) {
     LOG(ERROR) << "Drain message was already sent, but trying to send more "
-                  "input to decoder";
+               << "input to decoder";
     return false;
   }
   ScopedComPtr<IMFSample> sample;
   sample.Attach(CreateInputSample(data, size, timestamp, duration,
-                                  in_buffer_size_));
-  if (sample.get() == NULL) {
+                                  in_buffer_size_, in_buffer_alignment_));
+  if (!sample.get()) {
     LOG(ERROR) << "Failed to convert input stream to sample";
     return false;
   }
@@ -214,8 +245,9 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
   ScopedComPtr<IMFSample> output_sample;
   if (!use_dxva_) {
     // If DXVA is enabled, the decoder will allocate the sample for us.
-    output_sample.Attach(CreateEmptySampleWithBuffer(out_buffer_size_));
-    if (output_sample.get() == NULL) {
+    output_sample.Attach(CreateEmptySampleWithBuffer(out_buffer_size_,
+                                                     out_buffer_alignment_));
+    if (!output_sample.get()) {
       LOG(ERROR) << "GetSample: failed to create empty output sample";
       return kNoMemory;
     }
@@ -225,7 +257,7 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
   DWORD status;
   for (;;) {
     output_data_buffer.dwStreamID = 0;
-    output_data_buffer.pSample = output_sample;
+    output_data_buffer.pSample = output_sample.get();
     output_data_buffer.dwStatus = 0;
     output_data_buffer.pEvents = NULL;
     hr = decoder_->ProcessOutput(0,            // No flags
@@ -233,7 +265,7 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
                                  &output_data_buffer,
                                  &status);
     IMFCollection* events = output_data_buffer.pEvents;
-    if (events != NULL) {
+    if (events) {
       LOG(INFO) << "Got events from ProcessOuput, but discarding";
       events->Release();
     }
@@ -243,6 +275,7 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
       if (hr == MF_E_TRANSFORM_STREAM_CHANGE) {
         if (!SetDecoderOutputMediaType(output_format_)) {
           LOG(ERROR) << "Failed to reset output type";
+          MessageLoop::current()->Quit();
           return kResetOutputStreamFailed;
          } else {
           LOG(INFO) << "Reset output type done";
@@ -254,18 +287,21 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
         // anymore output then we know the decoder has processed everything.
         if (drain_message_sent_) {
           LOG(INFO) << "Drain message was already sent + no output => done";
+          MessageLoop::current()->Quit();
           return kNoMoreOutput;
         } else {
           if (!ReadAndProcessInput()) {
             LOG(INFO) << "Failed to read/process input. Sending drain message";
             if (!SendDrainMessage()) {
               LOG(ERROR) << "Failed to send drain message";
+              MessageLoop::current()->Quit();
               return kNoMoreOutput;
             }
           }
           continue;
         }
       } else {
+        MessageLoop::current()->Quit();
         return kUnspecifiedError;
       }
     } else {
@@ -275,9 +311,10 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
         // If dxva is enabled, we did not provide a sample to ProcessOutput,
         // i.e. output_sample is NULL.
         output_sample.Attach(output_data_buffer.pSample);
-        if (output_sample.get() == NULL) {
+        if (!output_sample.get()) {
           LOG(ERROR) << "Output sample using DXVA is NULL - ProcessOutput did "
                      << "not provide it!";
+          MessageLoop::current()->Quit();
           return kOutputSampleError;
         }
       }
@@ -287,6 +324,7 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
       if (FAILED(hr)) {
         LOG(ERROR) << "Failed to get sample duration or timestamp "
                    << std::hex << hr;
+        MessageLoop::current()->Quit();
         return kOutputSampleError;
       }
 
@@ -300,16 +338,19 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
       hr = output_sample->GetBufferCount(&buf_count);
       if (FAILED(hr)) {
         LOG(ERROR) << "Failed to get buff count, hr = " << std::hex << hr;
+        MessageLoop::current()->Quit();
         return kOutputSampleError;
       }
       if (buf_count == 0) {
         LOG(ERROR) << "buf_count is 0, dropping sample";
+        MessageLoop::current()->Quit();
         return kOutputSampleError;
       }
       ScopedComPtr<IMFMediaBuffer> out_buffer;
       hr = output_sample->GetBufferByIndex(0, out_buffer.Receive());
       if (FAILED(hr)) {
         LOG(ERROR) << "Failed to get decoded output buffer";
+        MessageLoop::current()->Quit();
         return kOutputSampleError;
       }
 
@@ -317,10 +358,10 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
       // of using the data field.
       // In NV12, there are only 2 planes - the Y plane, and the interleaved UV
       // plane. Both have the same strides.
-      uint8* null_data[2] = { NULL, NULL };
-      int32 strides[2] = { stride_, output_format_ == MFVideoFormat_NV12 ?
-                                    stride_ :
-                                    stride_ / 2 };
+      uint8* null_data[3] = { NULL, NULL, NULL };
+      int32 uv_stride = output_format_ == MFVideoFormat_NV12 ? stride_
+                                                             : stride_ / 2;
+      int32 strides[3] = { stride_, uv_stride, uv_stride };
       scoped_refptr<VideoFrame> decoded_frame;
       VideoFrame::CreateFrameExternal(
           use_dxva_ ? VideoFrame::TYPE_DIRECT3DSURFACE :
@@ -336,7 +377,7 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
           base::TimeDelta::FromMicroseconds(duration),
           out_buffer.Detach(),
           &decoded_frame);
-      CHECK(decoded_frame.get() != NULL);
+      CHECK(decoded_frame.get());
       frames_decoded_++;
       output_avail_callback_->Run(decoded_frame);
       return kOutputOk;
@@ -346,12 +387,28 @@ MftH264Decoder::DecoderOutputState MftH264Decoder::GetOutput() {
 
 // Private methods
 
+bool MftH264Decoder::InitComMfLibraries() {
+  HRESULT hr;
+  hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "CoInit fail";
+    return false;
+  }
+  hr = MFStartup(MF_VERSION, MFSTARTUP_FULL);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "MFStartup fail";
+    CoUninitialize();
+    return false;
+  }
+  return true;
+}
+
 bool MftH264Decoder::InitDecoder(IDirect3DDeviceManager9* dev_manager,
                                  int frame_rate_num, int frame_rate_denom,
                                  int width, int height,
                                  int aspect_num, int aspect_denom) {
-  decoder_.Attach(GetH264Decoder());
-  if (!decoder_.get())
+  decoder_ = GetH264Decoder();
+  if (!decoder_)
     return false;
   if (use_dxva_ && !SetDecoderD3d9Manager(dev_manager))
     return false;
@@ -365,9 +422,15 @@ bool MftH264Decoder::InitDecoder(IDirect3DDeviceManager9* dev_manager,
 
 bool MftH264Decoder::SetDecoderD3d9Manager(
     IDirect3DDeviceManager9* dev_manager) {
-  DCHECK(use_dxva_) << "SetDecoderD3d9Manager should only be called if DXVA is "
-                    << "enabled";
-  CHECK(dev_manager != NULL);
+  if (!use_dxva_) {
+    LOG(ERROR) << "SetDecoderD3d9Manager should only be called if DXVA is "
+               << "enabled";
+    return false;
+  }
+  if (!dev_manager) {
+    LOG(ERROR) << "dev_manager cannot be NULL";
+    return false;
+  }
   HRESULT hr;
   hr = decoder_->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER,
       reinterpret_cast<ULONG_PTR>(dev_manager));
@@ -382,7 +445,7 @@ bool MftH264Decoder::SetDecoderMediaTypes(int frame_rate_num,
                                           int frame_rate_denom,
                                           int width, int height,
                                           int aspect_num, int aspect_denom) {
-  DCHECK(decoder_.get());
+  DCHECK(decoder_);
   if (!SetDecoderInputMediaType(frame_rate_num, frame_rate_denom,
                                 width, height,
                                 aspect_num, aspect_denom))
@@ -519,7 +582,7 @@ bool MftH264Decoder::SendStartMessage() {
 // to do it ourselves and make sure they're the correct size.
 // Exception is when dxva is enabled, the decoder will allocate output.
 bool MftH264Decoder::GetStreamsInfoAndBufferReqs() {
-  DCHECK(decoder_.get());
+  DCHECK(decoder_);
   HRESULT hr;
   MFT_INPUT_STREAM_INFO input_stream_info;
   hr = decoder_->GetInputStreamInfo(0, &input_stream_info);
@@ -539,7 +602,7 @@ bool MftH264Decoder::GetStreamsInfoAndBufferReqs() {
   LOG(INFO) << "Min buffer size: " << input_stream_info.cbSize;
   LOG(INFO) << "Max lookahead: " << input_stream_info.cbMaxLookahead;
   LOG(INFO) << "Alignment: " << input_stream_info.cbAlignment;
-  CHECK_EQ(input_stream_info.cbAlignment, 0u);
+  in_buffer_alignment_ = input_stream_info.cbAlignment;
   in_buffer_size_ = input_stream_info.cbSize;
 
   MFT_OUTPUT_STREAM_INFO output_stream_info;
@@ -558,7 +621,7 @@ bool MftH264Decoder::GetStreamsInfoAndBufferReqs() {
   CHECK_EQ(output_stream_info.dwFlags, use_dxva_ ? 0x107u : 0x7u);
   LOG(INFO) << "Min buffer size: " << output_stream_info.cbSize;
   LOG(INFO) << "Alignment: " << output_stream_info.cbAlignment;
-  CHECK_EQ(output_stream_info.cbAlignment, 0u);
+  out_buffer_alignment_ = output_stream_info.cbAlignment;
   out_buffer_size_ = output_stream_info.cbSize;
 
   return true;
@@ -571,7 +634,7 @@ bool MftH264Decoder::ReadAndProcessInput() {
   int64 timestamp;
   read_input_callback_->Run(&input_stream_dummy, &size, &timestamp, &duration);
   scoped_array<uint8> input_stream(input_stream_dummy);
-  if (input_stream.get() == NULL) {
+  if (!input_stream.get()) {
     LOG(INFO) << "No more input";
     return false;
   } else {

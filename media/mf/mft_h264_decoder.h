@@ -19,6 +19,7 @@
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_comptr_win.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 struct IDirect3DDeviceManager9;
 struct IMFTransform;
@@ -28,10 +29,8 @@ namespace media {
 class VideoFrame;
 
 // A decoder that takes samples of Annex B streams then outputs decoded frames.
-class MftH264Decoder {
+class MftH264Decoder : public base::RefCountedThreadSafe<MftH264Decoder> {
  public:
-  typedef Callback4<uint8**, int*, int64*, int64*>::Type ReadInputCallback;
-  typedef Callback1<scoped_refptr<VideoFrame> >::Type OutputReadyCallback;
   enum DecoderOutputState {
     kOutputOk = 0,
     kResetOutputStreamFailed,
@@ -40,6 +39,9 @@ class MftH264Decoder {
     kNoMemory,
     kOutputSampleError
   };
+  typedef Callback4<uint8**, int*, int64*, int64*>::Type ReadInputCallback;
+  typedef Callback1<scoped_refptr<VideoFrame> >::Type OutputReadyCallback;
+
   explicit MftH264Decoder(bool use_dxva);
   ~MftH264Decoder();
 
@@ -80,6 +82,13 @@ class MftH264Decoder {
   int height() const { return height_; }
 
  private:
+  friend class MftH264DecoderTest;
+  FRIEND_TEST(MftH264DecoderTest, SendDrainMessageBeforeInitDeathTest);
+  FRIEND_TEST(MftH264DecoderTest, SendDrainMessageAtInit);
+  FRIEND_TEST(MftH264DecoderTest, DrainOnEndOfInputStream);
+  FRIEND_TEST(MftH264DecoderTest, NoOutputOnGarbageInput);
+
+  bool InitComMfLibraries();
   bool InitDecoder(IDirect3DDeviceManager9* dev_manager,
                    int frame_rate_num, int frame_rate_denom,
                    int width, int height,
@@ -101,16 +110,20 @@ class MftH264Decoder {
   // Returns: true if the drain message was sent successfully.
   bool SendDrainMessage();
 
+  // |output_error_callback_| should stop the message loop.
   scoped_ptr<ReadInputCallback> read_input_callback_;
   scoped_ptr<OutputReadyCallback> output_avail_callback_;
-  ScopedComPtr<IMFTransform> decoder_;
+  IMFTransform* decoder_;
   bool initialized_;
   bool use_dxva_;
   bool drain_message_sent_;
 
-  // Minimum input and output buffer sizes as required by the decoder.
+  // Minimum input and output buffer sizes/alignment required by the decoder.
+  // If |buffer_alignment_| is zero, then the buffer needs not be aligned.
   int in_buffer_size_;
+  int in_buffer_alignment_;
   int out_buffer_size_;
+  int out_buffer_alignment_;
   int frames_read_;
   int frames_decoded_;
   int width_;

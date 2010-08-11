@@ -11,8 +11,6 @@ H.264 decoder using callbacks.
 
 Requirements: Windows 7
 
-Note: Rendering coming in next patch
-
 Note1: On some video files, there is a mysterious 1-off decoded frame count
 when DXVA is enabled.
 
