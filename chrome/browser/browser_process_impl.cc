@@ -724,11 +724,16 @@ bool BrowserProcessImpl::CanAutorestartForUpdate() const {
 // or if it does not make sense when restarting a background instance to
 // pick up an automatic update, be sure to add it to this list.
 const char* const kSwitchesToRemoveOnAutorestart[] = {
-    switches::kApp,
-    switches::kFirstRun,
-    switches::kImport,
-    switches::kImportFromFile,
-    switches::kMakeDefaultBrowser
+  switches::kApp,
+  switches::kFirstRun,
+  switches::kImport,
+  switches::kImportFromFile,
+  switches::kMakeDefaultBrowser
+};
+
+const char* const kSwitchesToAddOnAutorestart[] = {
+  switches::kNoStartupWindow,
+  switches::kRestoreBackgroundContents
 };
 
 void BrowserProcessImpl::RestartPersistentInstance() {
@@ -755,8 +760,11 @@ void BrowserProcessImpl::RestartPersistentInstance() {
       }
   }
 
-  if (!new_cl->HasSwitch(switches::kRestoreBackgroundContents))
-    new_cl->AppendSwitch(switches::kRestoreBackgroundContents);
+  // Ensure that our desired switches are set on the new process.
+  for (size_t i = 0; i < arraysize(kSwitchesToAddOnAutorestart); i++) {
+    if (!new_cl->HasSwitch(kSwitchesToAddOnAutorestart[i]))
+      new_cl->AppendSwitch(kSwitchesToAddOnAutorestart[i]);
+  }
 
   DLOG(WARNING) << "Shutting down current instance of the browser.";
   BrowserList::CloseAllBrowsersAndExit();

@@ -648,6 +648,17 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationWindow(Profile* profile) {
 void BrowserInit::LaunchWithProfile::ProcessLaunchURLs(
     bool process_startup,
     const std::vector<GURL>& urls_to_open) {
+  // If we're starting up in "background mode" (no open browser window) then
+  // just shutdown.
+  if (process_startup && command_line_.HasSwitch(switches::kNoStartupWindow)) {
+    BrowserList::StartKeepAlive();
+    // Keep the app alive while the system initializes, then allow it to
+    // shutdown if no other module wants to keep it running.
+    MessageLoop::current()->PostTask(
+       FROM_HERE, NewRunnableFunction(BrowserList::EndKeepAlive));
+    return;
+  }
+
   if (process_startup && ProcessStartupURLs(urls_to_open)) {
     // ProcessStartupURLs processed the urls, nothing else to do.
     return;
@@ -943,7 +954,9 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
       // If there are any extra parameters, we expect each one to generate a
       // new tab; if there are none then we get one homepage tab.
       int expected_tab_count = 1;
-      if (command_line.HasSwitch(switches::kRestoreLastSession)) {
+      if (command_line.HasSwitch(switches::kNoStartupWindow)) {
+        expected_tab_count = 0;
+      } else if (command_line.HasSwitch(switches::kRestoreLastSession)) {
         std::string restore_session_value(
             command_line.GetSwitchValueASCII(switches::kRestoreLastSession));
         base::StringToInt(restore_session_value, &expected_tab_count);

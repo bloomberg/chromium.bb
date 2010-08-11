@@ -691,6 +691,10 @@ const char kNoProxyServer[]                 = "no-proxy-server";
 // Runs the renderer outside the sandbox.
 const char kNoSandbox[]                     = "no-sandbox";
 
+// Does not automatically open a browser window on startup (used when launching
+// Chrome for the purpose of hosting background apps).
+const char kNoStartupWindow[]               = "no-startup-window";
+
 // Don't use TopSites; use old ThumbnailDatabase code instead.
 const char kNoTopSites[]                    = "no-top-sites";
 

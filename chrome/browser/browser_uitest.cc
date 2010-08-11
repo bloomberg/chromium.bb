@@ -354,4 +354,29 @@ TEST_F(RunInBackgroundTest, RunInBackgroundBasicTest) {
   EXPECT_EQ(1, window_count);
 }
 
+// Tests to ensure that the browser continues running in the background after
+// the last window closes.
+class NoStartupWindowTest : public UITest {
+ public:
+  NoStartupWindowTest() {
+    launch_arguments_.AppendSwitch(switches::kNoStartupWindow);
+    launch_arguments_.AppendSwitch(switches::kKeepAliveForTest);
+  }
+};
+
+TEST_F(NoStartupWindowTest, NoStartupWindowBasicTest) {
+  // No browser window should be started by default.
+  int window_count;
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  EXPECT_EQ(0, window_count);
+
+  // Starting a browser window should work just fine.
+  ASSERT_TRUE(IsBrowserRunning());
+  ASSERT_TRUE(automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, true));
+  ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+  EXPECT_EQ(1, window_count);
+}
+
+
+
 }  // namespace
