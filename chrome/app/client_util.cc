@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/file_util.h"
+#include "base/trace_event.h"
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -137,7 +138,9 @@ HMODULE LoadChromeWithDirectory(std::wstring* dir) {
       key = NULL;
     }
     if (pre_read) {
+      TRACE_EVENT_BEGIN("PreReadImage", 0, "");
       file_util::PreReadImage(dir->c_str(), pre_read_size, pre_read_step_size);
+      TRACE_EVENT_END("PreReadImage", 0, "");
     }
   }
 #endif  // NDEBUG
