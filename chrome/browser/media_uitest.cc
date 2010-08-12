@@ -47,7 +47,7 @@ class MediaTest : public UITest {
   }
 };
 
-TEST_F(MediaTest, VideoBearTheora) {
+TEST_F(MediaTest, FLAKY_VideoBearTheora) {
   PlayVideo("bear.ogv");
 }
 
