@@ -331,6 +331,10 @@ void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
       tab_contents_, GetOriginalLanguageCode(), GetTargetLanguageCode());
 }
 
+bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
+  return !GetMessageInfoBarButtonText().empty();
+}
+
 bool TranslateInfoBarDelegate::ShouldShowNeverTranslateButton() {
   DCHECK(type_ == BEFORE_TRANSLATE);
   return prefs_.GetTranslationDeniedCount(GetOriginalLanguageCode()) >= 3;

@@ -10,24 +10,15 @@ using TranslateInfoBarUtilities::MoveControl;
 
 @implementation TranslateMessageInfobarController
 
-- (id)initWithDelegate:(InfoBarDelegate*)delegate {
-  if ((self = [super initWithDelegate:delegate])) {
-    TranslateInfoBarDelegate* delegate = [self delegate];
-    if (delegate->IsError())
-      state_ = TranslateInfoBarDelegate::TRANSLATION_ERROR;
-    else
-      state_ = TranslateInfoBarDelegate::TRANSLATING;
-  }
-  return self;
-}
-
 - (void)layout {
-  [optionsPopUp_ setHidden:YES];
   [self removeOkCancelButtons];
-  MoveControl(label1_, tryAgainButton_, spaceBetweenControls_ * 2, true);
+  MoveControl(label1_, translateMessageButton_, spaceBetweenControls_ * 2, true);
   TranslateInfoBarDelegate* delegate = [self delegate];
-  if (delegate->IsError())
-    MoveControl(label1_, tryAgainButton_, spaceBetweenControls_ * 2, true);
+  if ([self delegate]->ShouldShowMessageInfoBarButton()) {
+    string16 buttonText = delegate->GetMessageInfoBarButtonText();
+    [translateMessageButton_ setTitle:base::SysUTF16ToNSString(buttonText)];
+    [translateMessageButton_ sizeToFit];
+  }
 }
 
 - (void)adjustOptionsButtonSizeAndVisibilityForView:(NSView*)lastView {
@@ -37,8 +28,8 @@ using TranslateInfoBarUtilities::MoveControl;
 - (NSArray*)visibleControls {
   NSMutableArray* visibleControls =
       [NSMutableArray arrayWithObjects:label1_.get(), nil];
-  if (state_ == TranslateInfoBarDelegate::TRANSLATION_ERROR)
-    [visibleControls addObject:tryAgainButton_];
+  if ([self delegate]->ShouldShowMessageInfoBarButton())
+    [visibleControls addObject:translateMessageButton_];
   return visibleControls;
 }
 
@@ -53,6 +44,10 @@ using TranslateInfoBarUtilities::MoveControl;
   if (![optionsPopUp_ isHidden])
     return false;
   return [super verifyLayout];
+}
+
+- (BOOL)shouldShowOptionsPopUp {
+  return NO;
 }
 
 @end

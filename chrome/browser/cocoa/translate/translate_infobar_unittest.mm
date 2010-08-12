@@ -154,7 +154,8 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
   // that the target on that is setup correctly.
   for (NSUInteger i = 1; i < [optionsMenuItems count]; ++i) {
     NSMenuItem* item = [optionsMenuItems objectAtIndex:i];
-    EXPECT_EQ([item target], infobar_controller.get());
+    if (![item isSeparatorItem])
+      EXPECT_EQ([item target], infobar_controller.get());
   }
   NSMenuItem* alwaysTranslateLanguateItem = [optionsMenuItems objectAtIndex:1];
   NSMenuItem* neverTranslateLanguateItem = [optionsMenuItems objectAtIndex:2];

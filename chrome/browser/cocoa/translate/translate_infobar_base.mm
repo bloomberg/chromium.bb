@@ -83,17 +83,21 @@ NSTextField* CreateLabel(NSRect bounds) {
 // Adds an item with the specified properties to |menu|.
 void AddMenuItem(NSMenu *menu, id target, SEL selector, NSString* title,
     int tag, bool enabled, bool checked) {
-  NSMenuItem* item = [[[NSMenuItem alloc]
+  if (tag == -1) {
+    [menu addItem:[NSMenuItem separatorItem]];
+  } else {
+    NSMenuItem* item = [[[NSMenuItem alloc]
       initWithTitle:title
              action:selector
       keyEquivalent:@""] autorelease];
-  [item setTag:tag];
-  [menu addItem:item];
-  [item setTarget:target];
-  if (checked)
-    [item setState:NSOnState];
-  if (!enabled)
-    [item setEnabled:NO];
+    [item setTag:tag];
+    [menu addItem:item];
+    [item setTarget:target];
+    if (checked)
+      [item setState:NSOnState];
+    if (!enabled)
+      [item setEnabled:NO];
+  }
 }
 
 }  // namespace TranslateInfoBarUtilities
@@ -178,7 +182,6 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
       targetLanguageMenuModel_.reset(
           new LanguagesMenuModel([self delegate],
                                  LanguagesMenuModel::TARGET));
-      optionsMenuModel_.reset(new OptionsMenuModel([self delegate]));
   }
   return self;
 }
@@ -202,8 +205,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
                                                       pullsDown:NO]);
   toLanguagePopUp_.reset([[NSPopUpButton alloc] initWithFrame:bogusFrame
                                                      pullsDown:NO]);
-  showOriginalButton_.reset([[NSButton alloc] initWithFrame:bogusFrame]);
-  tryAgainButton_.reset([[NSButton alloc] initWithFrame:bogusFrame]);
+  showOriginalButton_.reset([[NSButton alloc] init]);
+  translateMessageButton_.reset([[NSButton alloc] init]);
 }
 
 - (void)sourceLanguageModified:(NSInteger)newLanguageIdx {
@@ -234,6 +237,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   [self loadLabelText];
   [self clearAllControls];
   [self showVisibleControls:[self visibleControls]];
+  [optionsPopUp_ setHidden:![self shouldShowOptionsPopUp]];
   [self layout];
   [self adjustOptionsButtonSizeAndVisibilityForView:
       [[self visibleControls] lastObject]];
@@ -304,6 +308,9 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 }
 
 - (void)rebuildOptionsMenu:(BOOL)hideTitle {
+  if (![self shouldShowOptionsPopUp])
+     return;
+
   // The options model doesn't know how to handle state transitions, so rebuild
   // it each time through here.
   optionsMenuModel_.reset(
@@ -332,6 +339,10 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
                 enabled,
                 checked);
   }
+}
+
+- (BOOL)shouldShowOptionsPopUp {
+  return YES;
 }
 
 - (void)populateLanguageMenus {
@@ -415,7 +426,6 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 
   // Set up "Show original" and "Try again" buttons.
   [showOriginalButton_ setFrame:okButtonFrame];
-  [tryAgainButton_ setFrame:okButtonFrame];
 
   // Set each of the buttons and popups to the NSTexturedRoundedBezelStyle
   // (metal-looking) style.
@@ -436,13 +446,11 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 
   [showOriginalButton_ setTarget:self];
   [showOriginalButton_ setAction:@selector(showOriginal:)];
-  [tryAgainButton_ setTarget:self];
-  [tryAgainButton_ setAction:@selector(ok:)];
+  [translateMessageButton_ setTarget:self];
+  [translateMessageButton_ setAction:@selector(messageButtonPressed:)];
 
   [showOriginalButton_
       setTitle:GetNSStringWithFixup(IDS_TRANSLATE_INFOBAR_REVERT)];
-  [tryAgainButton_
-      setTitle:GetNSStringWithFixup(IDS_TRANSLATE_INFOBAR_RETRY)];
 
   // Add and configure controls that are visible in all modes.
   [optionsPopUp_ setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin |
@@ -505,6 +513,10 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   [super dismiss:nil];
 }
 
+- (void)messageButtonPressed:(id)sender {
+  [self delegate]->MessageInfoBarButtonPressed();
+}
+
 - (IBAction)showOriginal:(id)sender {
   [self delegate]->RevertTranslation();
 }
@@ -559,7 +571,7 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
 - (NSArray*)allControls {
   return [NSArray arrayWithObjects:label1_.get(),fromLanguagePopUp_.get(),
       label2_.get(), toLanguagePopUp_.get(), label3_.get(), okButton_,
-      cancelButton_, showOriginalButton_.get(), tryAgainButton_.get(),
+      cancelButton_, showOriginalButton_.get(), translateMessageButton_.get(),
       nil];
 }
 
@@ -567,8 +579,8 @@ InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   return [optionsPopUp_ menu];
 }
 
-- (NSButton*)tryAgainButton {
-  return tryAgainButton_.get();
+- (NSButton*)translateMessageButton {
+  return translateMessageButton_.get();
 }
 
 - (bool)verifyLayout {
