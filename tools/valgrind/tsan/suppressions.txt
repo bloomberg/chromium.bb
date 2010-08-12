@@ -14,12 +14,6 @@
 }
 
 {
-  bug_25915
-  ThreadSanitizer:Race
-  fun:*browser_sync*BookmarkModelWorker*
-}
-
-{
   bug_37496
   ThreadSanitizer:Race
   ...
@@ -36,6 +30,22 @@
   bug_46642b
   ThreadSanitizer:Race
   fun:*media*PipelineImpl*GetCurrentTime*
+}
+
+{
+  bug_51890a
+  ThreadSanitizer:Race
+  ...
+  fun:history::TopSites::GenerateCanonicalURLs*
+  fun:history::TopSites::StoreMostVisited*
+}
+
+{
+  bug_51890b
+  ThreadSanitizer:Race
+  ...
+  fun:history::TopSites::SetPageThumbnail*
+  fun:TabContents::UpdateThumbnail*
 }
 
 ############################
