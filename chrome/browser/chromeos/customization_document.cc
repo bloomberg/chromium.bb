@@ -16,22 +16,22 @@
 
 namespace {
 
-const wchar_t kVersionAttr[] = L"version";
-const wchar_t kProductSkuAttr[] = L"product_sku";
-const wchar_t kInitialLocaleAttr[] = L"initial_locale";
-const wchar_t kInitialTimezoneAttr[] = L"initial_timezone";
-const wchar_t kBackgroundColorAttr[] = L"background_color";
-const wchar_t kRegistrationUrlAttr[] = L"registration_url";
-const wchar_t kSetupContentAttr[] = L"setup_content";
-const wchar_t kContentLocaleAttr[] = L"content_locale";
-const wchar_t kHelpPageAttr[] = L"help_page";
-const wchar_t kEulaPageAttr[] = L"eula_page";
-const wchar_t kAppMenuAttr[] = L"app_menu";
-const wchar_t kInitialStartPageAttr[] = L"initial_start_page";
-const wchar_t kSectionTitleAttr[] = L"section_title";
-const wchar_t kWebAppsAttr[] = L"web_apps";
-const wchar_t kSupportPageAttr[] = L"support_page";
-const wchar_t kExtensionsAttr[] = L"extensions";
+const char kVersionAttr[] = "version";
+const char kProductSkuAttr[] = "product_sku";
+const char kInitialLocaleAttr[] = "initial_locale";
+const char kInitialTimezoneAttr[] = "initial_timezone";
+const char kBackgroundColorAttr[] = "background_color";
+const char kRegistrationUrlAttr[] = "registration_url";
+const char kSetupContentAttr[] = "setup_content";
+const char kContentLocaleAttr[] = "content_locale";
+const char kHelpPageAttr[] = "help_page";
+const char kEulaPageAttr[] = "eula_page";
+const char kAppMenuAttr[] = "app_menu";
+const char kInitialStartPageAttr[] = "initial_start_page";
+const char kSectionTitleAttr[] = "section_title";
+const char kWebAppsAttr[] = "web_apps";
+const char kSupportPageAttr[] = "support_page";
+const char kExtensionsAttr[] = "extensions";
 
 const char kAcceptedManifestVersion[] = "1.0";
 
