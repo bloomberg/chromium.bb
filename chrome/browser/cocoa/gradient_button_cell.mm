@@ -579,9 +579,9 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 
     if (isTemplate && themeProvider && themeProvider->UsingDefaultTheme()) {
       scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-      [shadow setShadowColor:themeProvider->GetNSColor(
+      [shadow.get() setShadowColor:themeProvider->GetNSColor(
           BrowserThemeProvider::COLOR_TOOLBAR_BEZEL, true)];
-      [shadow setShadowOffset:NSMakeSize(0.0, -1.0)];
+      [shadow.get() setShadowOffset:NSMakeSize(0.0, -1.0)];
       [shadow setShadowBlurRadius:1.0];
       [shadow set];
     }
