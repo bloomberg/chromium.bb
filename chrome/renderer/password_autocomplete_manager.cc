@@ -221,38 +221,35 @@ void PasswordAutocompleteManager::FrameClosing(const WebKit::WebFrame* frame) {
   }
 }
 
-void PasswordAutocompleteManager::TextFieldDidBeginEditing(
-    const WebKit::WebInputElement& element) {
-}
-
-void PasswordAutocompleteManager::TextFieldDidEndEditing(
+bool PasswordAutocompleteManager::TextFieldDidEndEditing(
     const WebKit::WebInputElement& element) {
   LoginToPasswordInfoMap::const_iterator iter =
       login_to_password_info_.find(element);
   if (iter == login_to_password_info_.end())
-    return;
+    return false;
 
   const webkit_glue::PasswordFormFillData& fill_data =
       iter->second.fill_data;
 
   // If wait_for_username is false, we should have filled when the text changed.
   if (!fill_data.wait_for_username)
-    return;
+    return false;
 
   WebKit::WebInputElement password = iter->second.password_field;
   if (!IsElementEditable(password))
-    return;
+    return false;
 
   WebKit::WebInputElement username = element;  // We need a non-const.
   FillUserNameAndPassword(&username, &password, fill_data, true);
+  return true;
 }
 
-void PasswordAutocompleteManager::TextDidChangeInTextField(
+bool PasswordAutocompleteManager::TextDidChangeInTextField(
     const WebKit::WebInputElement& element) {
   LoginToPasswordInfoMap::const_iterator iter =
       login_to_password_info_.find(element);
   if (iter == login_to_password_info_.end())
-    return;
+    return false;
 
   // The input text is being changed, so any autocompleted password is now
   // outdated.
@@ -266,25 +263,25 @@ void PasswordAutocompleteManager::TextDidChangeInTextField(
 
   // If wait_for_username is true we will fill when the username loses focus.
   if (iter->second.fill_data.wait_for_username)
-    return;
+    return false;
 
   if (!element.isEnabledFormControl() ||
       element.inputType() != WebKit::WebInputElement::Text ||
       !element.autoComplete() || element.isReadOnly()) {
-    return;
+    return false;
   }
 
   // Don't inline autocomplete if the user is deleting, that would be confusing.
   if (iter->second.backspace_pressed_last)
-    return;
+    return false;
 
   WebKit::WebString name = element.nameForAutofill();
   if (name.isEmpty())
-    return;    // If the field has no name, then we won't have values.
+    return false;  // If the field has no name, then we won't have values.
 
   // Don't attempt to autocomplete with values that are too large.
   if (element.value().length() > kMaximumTextSizeForAutocomplete)
-    return;
+    return false;
 
   // We post a task for doing the autocomplete as the caret position is not set
   // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
@@ -292,6 +289,7 @@ void PasswordAutocompleteManager::TextDidChangeInTextField(
   MessageLoop::current()->PostTask(FROM_HERE, method_factory_.NewRunnableMethod(
       &PasswordAutocompleteManager::PerformInlineAutocomplete,
       element, password, iter->second.fill_data));
+  return true;
 }
 
 void PasswordAutocompleteManager::TextFieldHandlingKeyDown(
@@ -305,6 +303,11 @@ void PasswordAutocompleteManager::TextFieldHandlingKeyDown(
   int win_key_code = event.windowsKeyCode;
   iter->second.backspace_pressed_last =
       (win_key_code == base::VKEY_BACK || win_key_code == base::VKEY_DELETE);
+}
+
+bool PasswordAutocompleteManager::InputElementClicked(
+    const WebKit::WebInputElement& element, bool already_focused) {
+  return false;
 }
 
 bool PasswordAutocompleteManager::FillPassword(

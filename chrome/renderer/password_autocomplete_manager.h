@@ -54,11 +54,19 @@ class PasswordAutocompleteManager {
   void SendPasswordForms(WebKit::WebFrame* frame, bool only_visible);
 
   // WebViewClient editor related calls forwarded by the RenderView.
-  void TextFieldDidBeginEditing(const WebKit::WebInputElement& element);
-  void TextFieldDidEndEditing(const WebKit::WebInputElement& element);
-  void TextDidChangeInTextField(const WebKit::WebInputElement& element);
+  // If they return true, it indicates the event was consumed and should not
+  // be used for any other autofill activity.
+  bool TextFieldDidEndEditing(const WebKit::WebInputElement& element);
+  bool TextDidChangeInTextField(const WebKit::WebInputElement& element);
   void TextFieldHandlingKeyDown(const WebKit::WebInputElement& element,
                                 const WebKit::WebKeyboardEvent& event);
+
+  // Called when an input element in the page has been clicked.
+  // |already_focused| is true if |element| was focused before it was clicked.
+  // Returns true if the call triggered a suggestion popup.
+  // TODO(jcivelli): http://crbug.com/51644 Implement behavior.
+  bool InputElementClicked(const WebKit::WebInputElement& element,
+                           bool already_focused);
 
  private:
   struct PasswordInfo {

@@ -30,11 +30,11 @@ class AutoFillHelper {
  public:
   explicit AutoFillHelper(RenderView* render_view);
 
-  // Queries the browser for Autocomplete suggestion for the given |node|.
-  // (Autocomplete means suggestions for a single text input.)
-  void QueryAutocompleteSuggestions(const WebKit::WebNode& node,
-                                    const WebKit::WebString& name,
-                                    const WebKit::WebString& value);
+  // Queries the browser for Autocomplete and AutoFill suggestions for the given
+  // |node|.
+  void QueryAutoFillSuggestions(const WebKit::WebNode& node,
+                                const WebKit::WebString& name,
+                                const WebKit::WebString& value);
 
   // Removes the Autocomplete suggestion |value| for the field names |name|.
   void RemoveAutocompleteSuggestion(const WebKit::WebString& name,
@@ -84,12 +84,31 @@ class AutoFillHelper {
   // clean up.
   void FrameDetached(WebKit::WebFrame* frame);
 
+  // WebViewClient editor call forwarded by the RenderView.
+  void TextDidChangeInTextField(const WebKit::WebInputElement& element);
+
+  // Called when an input element in the page has been clicked.
+  // |already_focused| is true if |element| was focused before it was clicked.
+  void InputElementClicked(const WebKit::WebInputElement& element,
+                           bool already_focused);
+
  private:
   enum AutoFillAction {
     AUTOFILL_NONE,     // No state set.
     AUTOFILL_FILL,     // Fill the AutoFill form data.
     AUTOFILL_PREVIEW,  // Preview the AutoFill form data.
   };
+
+  // Shows the autocomplete suggestions for |element|.
+  // This call is asynchronous and may or may not lead to the showing of a
+  // suggestion popup (no popup is shown if there are no available suggestions).
+  // |autofill_on_empty_values| specifies whether suggestions should be shown
+  // when |element| contains no text.
+  // |requires_caret_at_end| specifies whether suggestions should be shown when
+  // the caret is not after the last character in |element|.
+  void ShowSuggestions(const WebKit::WebInputElement& element,
+                       bool autofill_on_empty_values,
+                       bool requires_caret_at_end);
 
   // Queries the AutoFillManager for form data for the form containing |node|.
   // |value| is the current text in the field, and |unique_id| is the selected

@@ -9,6 +9,7 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
@@ -21,6 +22,14 @@ using WebKit::WebInputElement;
 using WebKit::WebNode;
 using WebKit::WebString;
 
+namespace {
+
+// The size above which we stop triggering autofill for an input text field
+// (so to avoid sending long strings through IPC).
+const size_t kMaximumTextSizeForAutoFill = 1000;
+
+}  // namespace
+
 AutoFillHelper::AutoFillHelper(RenderView* render_view)
     : render_view_(render_view),
       autofill_query_id_(0),
@@ -29,9 +38,9 @@ AutoFillHelper::AutoFillHelper(RenderView* render_view)
       suggestions_options_index_(-1) {
 }
 
-void AutoFillHelper::QueryAutocompleteSuggestions(const WebNode& node,
-                                                  const WebString& name,
-                                                  const WebString& value) {
+void AutoFillHelper::QueryAutoFillSuggestions(const WebNode& node,
+                                              const WebString& name,
+                                              const WebString& value) {
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
   autofill_query_node_ = node;
@@ -202,6 +211,50 @@ void AutoFillHelper::FrameWillClose(WebFrame* frame) {
 
 void AutoFillHelper::FrameDetached(WebFrame* frame) {
   form_manager_.ResetFrame(frame);
+}
+
+void AutoFillHelper::TextDidChangeInTextField(const WebInputElement& element) {
+  ShowSuggestions(element, false, true);
+}
+
+void AutoFillHelper::InputElementClicked(const WebInputElement& element,
+                                         bool already_focused) {
+  if (already_focused)
+    ShowSuggestions(element, true, false);
+}
+
+void AutoFillHelper::ShowSuggestions(
+    const WebInputElement& const_element,
+    bool autofill_on_empty_values,
+    bool requires_caret_at_end) {
+  // We need to call non-const methods.
+  WebInputElement element(const_element);
+  if (!element.isEnabledFormControl() ||
+      element.inputType() != WebInputElement::Text ||
+      element.inputType() == WebInputElement::Password ||
+      !element.autoComplete() || element.isReadOnly()) {
+    return;
+  }
+
+  WebString name = element.nameForAutofill();
+  if (name.isEmpty())  // If the field has no name, then we won't have values.
+    return;
+
+  // Don't attempt to autofill with values that are too large.
+  WebString value = element.value();
+  if (value.length() > kMaximumTextSizeForAutoFill)
+    return;
+
+  if (!autofill_on_empty_values && value.isEmpty())
+    return;
+
+  if (requires_caret_at_end &&
+      (element.selectionStart() != element.selectionEnd() ||
+       element.selectionEnd() != static_cast<int>(value.length()))) {
+    return;
+  }
+
+  QueryAutoFillSuggestions(element, name, value);
 }
 
 void AutoFillHelper::QueryAutoFillFormData(const WebNode& node,

@@ -448,7 +448,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       view_type_(ViewType::INVALID),
       browser_window_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(pepper_delegate_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(autofill_method_factory_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(translate_helper_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(password_autocomplete_manager_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(autofill_helper_(this)),
@@ -1761,8 +1762,8 @@ void RenderView::didStopLoading() {
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo, page_id_,
-                                        false),
+      page_info_method_factory_.NewRunnableMethod(
+          &RenderView::CapturePageInfo, page_id_, false),
       kDelayForCaptureMs);
 }
 
@@ -1815,13 +1816,6 @@ void RenderView::didExecuteCommand(const WebString& command_name) {
   UserMetricsRecordAction(name);
 }
 
-void RenderView::textFieldDidBeginEditing(
-    const WebKit::WebInputElement& element) {
-#if defined(WEBKIT_BUG_41283_IS_FIXED)
-  password_autocomplete_manager_.TextFieldDidBeginEditing(element);
-#endif
-}
-
 void RenderView::textFieldDidEndEditing(
     const WebKit::WebInputElement& element) {
 #if defined(WEBKIT_BUG_41283_IS_FIXED)
@@ -1831,8 +1825,22 @@ void RenderView::textFieldDidEndEditing(
 
 void RenderView::textFieldDidChange(const WebKit::WebInputElement& element) {
 #if defined(WEBKIT_BUG_41283_IS_FIXED)
-  password_autocomplete_manager_.TextDidChangeInTextField(element);
+  // We post a task for doing the AutoFill as the caret position is not set
+  // properly at this point (http://bugs.webkit.org/show_bug.cgi?id=16976) and
+  // it is needed to trigger autofill.
+  autofill_method_factory_.RevokeAll();
+  MessageLoop::current()->PostTask(
+        FROM_HERE,
+        autofill_method_factory_.NewRunnableMethod(
+            &RenderView::TextFieldDidChangeImpl, element));
 #endif
+}
+
+void RenderView::TextFieldDidChangeImpl(
+    const WebKit::WebInputElement& element) {
+  if (password_autocomplete_manager_.TextDidChangeInTextField(element))
+    return;
+  autofill_helper_.TextDidChangeInTextField(element);
 }
 
 void RenderView::textFieldDidReceiveKeyDown(
@@ -1866,6 +1874,17 @@ bool RenderView::handleCurrentKeyboardEvent() {
   }
 
   return did_execute_command;
+}
+
+void RenderView::inputElementClicked(const WebKit::WebInputElement& element,
+                                     bool already_focused) {
+#if defined(WEBKIT_BUG_41283_IS_FIXED)
+  if (password_autocomplete_manager_.InputElementClicked(element,
+                                                         already_focused)) {
+    return;
+  }
+  autofill_helper_.InputElementClicked(element, already_focused);
+#endif
 }
 
 void RenderView::spellCheck(const WebString& text,
@@ -2133,7 +2152,7 @@ void RenderView::didUpdateInspectorSetting(const WebString& key,
 void RenderView::queryAutofillSuggestions(const WebNode& node,
                                           const WebString& name,
                                           const WebString& value) {
-  autofill_helper_.QueryAutocompleteSuggestions(node, name, value);
+  autofill_helper_.QueryAutoFillSuggestions(node, name, value);
 }
 
 void RenderView::removeAutofillSuggestions(const WebString& name,
@@ -2676,7 +2695,7 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   // TODO(gavinp): catch the important case of navigation in a new
   // renderer process.
   if (webview()) {
-    if( WebFrame* old_frame = webview()->mainFrame()) {
+    if (WebFrame* old_frame = webview()->mainFrame()) {
       const GURL referrer(
           original_request.httpHeaderField(WebString::fromUTF8("Referer")));
       if (!referrer.is_empty() &&
@@ -2872,8 +2891,8 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
 
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        method_factory_.NewRunnableMethod(&RenderView::CapturePageInfo,
-                                          page_id_, true),
+        page_info_method_factory_.NewRunnableMethod(
+            &RenderView::CapturePageInfo, page_id_, true),
         kDelayForForcedCaptureMs);
   } else {
     // Inspect the navigation_state on this frame to see if the navigation

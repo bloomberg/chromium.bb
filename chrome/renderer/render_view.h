@@ -342,13 +342,14 @@ class RenderView : public RenderWidget,
   virtual bool isSelectTrailingWhitespaceEnabled();
   virtual void didChangeSelection(bool is_selection_empty);
   virtual void didExecuteCommand(const WebKit::WebString& command_name);
-  virtual void textFieldDidBeginEditing(const WebKit::WebInputElement& element);
   virtual void textFieldDidEndEditing(const WebKit::WebInputElement& element);
   virtual void textFieldDidChange(const WebKit::WebInputElement& element);
   virtual void textFieldDidReceiveKeyDown(
       const WebKit::WebInputElement& element,
       const WebKit::WebKeyboardEvent& event);
   virtual bool handleCurrentKeyboardEvent();
+  virtual void inputElementClicked(const WebKit::WebInputElement& element,
+                                   bool already_focused);
   virtual void spellCheck(const WebKit::WebString& text,
                           int& offset,
                           int& length);
@@ -689,6 +690,10 @@ class RenderView : public RenderWidget,
   // Adds search provider from the given OpenSearch description URL as a
   // keyword search.
   void AddGURLSearchProvider(const GURL& osd_url, bool autodetected);
+
+  // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
+  // http://bugs.webkit.org/show_bug.cgi?id=16976
+  void TextFieldDidChangeImpl(const WebKit::WebInputElement& element);
 
   // IPC message handlers ------------------------------------------------------
   //
@@ -1189,7 +1194,8 @@ class RenderView : public RenderWidget,
 
   // Helper objects ------------------------------------------------------------
 
-  ScopedRunnableMethodFactory<RenderView> method_factory_;
+  ScopedRunnableMethodFactory<RenderView> page_info_method_factory_;
+  ScopedRunnableMethodFactory<RenderView> autofill_method_factory_;
 
   // Responsible for translating the page contents to other languages.
   TranslateHelper translate_helper_;
