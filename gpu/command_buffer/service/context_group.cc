@@ -65,13 +65,32 @@ bool ContextGroup::Initialize() {
         GL_COMPRESSED_RGBA_S3TC_DXT1_EXT);
   }
 
+  bool enable_texture_format_bgra8888 = false;
+  bool enable_read_format_bgra = false;
   // Check if we should allow GL_EXT_texture_format_BGRA8888
   if (strstr(extensions, "GL_EXT_texture_format_BGRA8888") ||
-      strstr(extensions, "GL_APPLE_texture_format_BGRA8888") ||
-      strstr(extensions, "GL_EXT_bgra")) {
+      strstr(extensions, "GL_APPLE_texture_format_BGRA8888")) {
+    enable_texture_format_bgra8888 = true;
+  }
+
+  if (strstr(extensions, "GL_EXT_bgra")) {
+    enable_texture_format_bgra8888 = true;
+    enable_read_format_bgra = true;
+  }
+
+  if (strstr(extensions, "GL_EXT_read_format_bgra")) {
+    enable_read_format_bgra = true;
+  }
+
+  if (enable_texture_format_bgra8888) {
     AddExtensionString("GL_EXT_texture_format_BGRA8888");
     validators_.texture_internal_format.AddValue(GL_BGRA_EXT);
     validators_.texture_format.AddValue(GL_BGRA_EXT);
+  }
+
+  if (enable_read_format_bgra) {
+    AddExtensionString("GL_EXT_read_format_bgra");
+    validators_.read_pixel_format.AddValue(GL_BGRA_EXT);
   }
 
   // Check if we should allow GL_OES_texture_npot

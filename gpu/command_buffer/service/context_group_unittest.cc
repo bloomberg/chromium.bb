@@ -136,6 +136,8 @@ TEST_F(ContextGroupTest, InitializeNoExtensions) {
       GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
   EXPECT_FALSE(group_.validators()->compressed_texture_format.IsValid(
       GL_COMPRESSED_RGBA_S3TC_DXT1_EXT));
+  EXPECT_FALSE(group_.validators()->read_pixel_format.IsValid(
+      GL_BGRA_EXT));
 }
 
 TEST_F(ContextGroupTest, InitializeNPOTExtensionGLES) {
@@ -190,9 +192,13 @@ TEST_F(ContextGroupTest, InitializeEXT_texture_format_BGRA8888GL) {
   group_.Initialize();
   EXPECT_THAT(group_.extensions(),
               HasSubstr("GL_EXT_texture_format_BGRA8888"));
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_EXT_read_format_bgra"));
   EXPECT_TRUE(group_.validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_TRUE(group_.validators()->texture_internal_format.IsValid(
+      GL_BGRA_EXT));
+  EXPECT_TRUE(group_.validators()->read_pixel_format.IsValid(
       GL_BGRA_EXT));
 }
 
@@ -204,6 +210,19 @@ TEST_F(ContextGroupTest, InitializeEXT_texture_format_BGRA8888Apple) {
   EXPECT_TRUE(group_.validators()->texture_format.IsValid(
       GL_BGRA_EXT));
   EXPECT_TRUE(group_.validators()->texture_internal_format.IsValid(
+      GL_BGRA_EXT));
+}
+
+TEST_F(ContextGroupTest, InitializeEXT_read_format_bgra) {
+  SetupInitExpectations("GL_EXT_read_format_bgra");
+  group_.Initialize();
+  EXPECT_THAT(group_.extensions(),
+              HasSubstr("GL_EXT_read_format_bgra"));
+  EXPECT_FALSE(group_.validators()->texture_format.IsValid(
+      GL_BGRA_EXT));
+  EXPECT_FALSE(group_.validators()->texture_internal_format.IsValid(
+      GL_BGRA_EXT));
+  EXPECT_TRUE(group_.validators()->read_pixel_format.IsValid(
       GL_BGRA_EXT));
 }
 
