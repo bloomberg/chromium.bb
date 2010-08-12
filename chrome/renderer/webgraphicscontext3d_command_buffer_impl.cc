@@ -221,10 +221,8 @@ static bool supports_extension(const char *ext_name) {
 
 bool WebGraphicsContext3DCommandBufferImpl::supportsBGRA() {
   static bool is_supported =
-    supports_extension("GL_EXT_texture_format_BGRA8888");
-  // TODO(senorblanco):  Also check for GL_EXT_read_format_bgra.  It's
-  // actually supported by the command buffer, it's just not reported in
-  // the extensions string.
+    supports_extension("GL_EXT_texture_format_BGRA8888") &&
+    supports_extension("GL_EXT_read_format_bgra");
   return is_supported;
 }
 
