@@ -1,0 +1,15 @@
+div.autofill-section {
+  display: block;
+  padding: 1em 0 0;
+}
+
+#profileSelectContainer {
+  display: -webkit-box;
+}
+
+#profileSelectLeftColumn {
+  -webkit-box-flex: 1;
+}
+#profileSelectLeftColumn select {
+  width: 100%;
+}

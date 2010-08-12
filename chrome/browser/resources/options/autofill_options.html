@@ -4,4 +4,35 @@
     &gt;
     <span i18n-content="autoFillOptionsTitle"></span>
   </h1>
+
+  <div class="autofill-section">
+    <label><input id="autoFillEnabled" pref="autofill.enabled"type="checkbox">
+        <span i18n-content="autoFillEnabled"></span></label>
+  </div>
+
+  <div class="autofill-section" id="profileSelectContainer">
+    <div id="profileSelectLeftColumn">
+      <select id="profileList" size="10" multiple>
+        <option value="addressesHeader" disabled
+            i18n-content="addressesHeader"></option>
+        <option value="addressesBlankOption" disabled></option>
+        <option value="creditCardsHeader" disabled
+            i18n-content="creditCardsHeader"></option>
+        <option value="creditCardsBlankOption" disabled></option>
+      </select>
+    </div>
+    <div id="profileSelectRightColumn">
+      <div><button id="addAddressButton" i18n-content="addAddressButton">
+          </button></div>
+      <div><button id="addCreditCardButton" i18n-content="addCreditCardButton">
+          </button></div>
+      <div><button id="editButton" i18n-content="editButton"></button></div>
+      <div><button id="removeButton" i18n-content="deleteButton"></button></div>
+    </div>
+  </div>
+
+  <div class="autofill-section">
+    <a href="http://www.google.com/support/chrome/bin/answer.py?answer=142893"
+        target=”_blank” i18n-content="helpButton"></a>
+  </div>
 </div>
