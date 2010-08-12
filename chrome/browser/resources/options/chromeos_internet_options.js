@@ -38,6 +38,10 @@ cr.define('options', function() {
       $('wirelessList').load(templateData.wirelessList);
       options.internet.NetworkElement.decorate($('rememberedList'));
       $('rememberedList').load(templateData.rememberedList);
+
+      $('wiredSection').hidden = (templateData.wiredList.length == 0);
+      $('wirelessSection').hidden = (templateData.wirelessList.length == 0);
+      $('rememberedSection').hidden = (templateData.rememberedList.length == 0);
     }
   };
 
@@ -48,6 +52,10 @@ cr.define('options', function() {
     $('wiredList').load(data.wiredList);
     $('wirelessList').load(data.wirelessList);
     $('rememberedList').load(data.rememberedList);
+
+    $('wiredSection').hidden = (data.wiredList.length == 0);
+    $('wirelessSection').hidden = (data.wirelessList.length == 0);
+    $('rememberedSection').hidden = (data.rememberedList.length == 0);
   };
 
   // Export

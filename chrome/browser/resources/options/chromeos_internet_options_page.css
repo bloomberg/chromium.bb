@@ -11,6 +11,10 @@
   width: auto;
 }
 
+#internetPage > section[hidden] {
+  display: none;
+}
+
 .networks {
   -webkit-margin-start: 15px;
   padding: 2px;

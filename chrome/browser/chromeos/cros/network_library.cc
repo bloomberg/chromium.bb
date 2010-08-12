@@ -405,9 +405,9 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void ConnectToWifiNetwork(WifiNetwork network,
-                                                const std::string& password,
-                                                const std::string& identity,
-                                                const std::string& certpath) {
+                            const std::string& password,
+                            const std::string& identity,
+                            const std::string& certpath) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       ConnectToNetworkWithCertInfo(network.service_path().c_str(),
                        password.empty() ? NULL : password.c_str(),
@@ -417,10 +417,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
   }
 
   void ConnectToWifiNetwork(const std::string& ssid,
-                                                const std::string& password,
-                                                const std::string& identity,
-                                                const std::string& certpath,
-                                                bool auto_connect) {
+                            const std::string& password,
+                            const std::string& identity,
+                            const std::string& certpath,
+                            bool auto_connect) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       // First create a service from hidden network.
       ServiceInfo* service = GetWifiService(ssid.c_str(),
@@ -449,8 +449,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  void DisconnectFromWirelessNetwork(
-      const WirelessNetwork& network) {
+  void DisconnectFromWirelessNetwork(const WirelessNetwork& network) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       DisconnectFromNetwork(network.service_path().c_str());
     }
@@ -487,31 +486,30 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  void ForgetWirelessNetwork(
-      const std::string& service_path) {
+  void ForgetWirelessNetwork(const std::string& service_path) {
     if (CrosLibrary::Get()->EnsureLoaded()) {
       DeleteRememberedService(service_path.c_str());
     }
   }
 
   virtual bool ethernet_available() const {
-      return available_devices_ & (1 << TYPE_ETHERNET);
+    return available_devices_ & (1 << TYPE_ETHERNET);
   }
   virtual bool wifi_available() const {
-      return available_devices_ & (1 << TYPE_WIFI);
+    return available_devices_ & (1 << TYPE_WIFI);
   }
   virtual bool cellular_available() const {
-      return available_devices_ & (1 << TYPE_CELLULAR);
+    return available_devices_ & (1 << TYPE_CELLULAR);
   }
 
   virtual bool ethernet_enabled() const {
-      return enabled_devices_ & (1 << TYPE_ETHERNET);
+    return enabled_devices_ & (1 << TYPE_ETHERNET);
   }
   virtual bool wifi_enabled() const {
-      return enabled_devices_ & (1 << TYPE_WIFI);
+    return enabled_devices_ & (1 << TYPE_WIFI);
   }
   virtual bool cellular_enabled() const {
-      return enabled_devices_ & (1 << TYPE_CELLULAR);
+    return enabled_devices_ & (1 << TYPE_CELLULAR);
   }
 
   virtual bool offline_mode() const { return offline_mode_; }
@@ -548,8 +546,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
   }
 
-  NetworkIPConfigVector GetIPConfigs(
-      const std::string& device_path) {
+  NetworkIPConfigVector GetIPConfigs(const std::string& device_path) {
     NetworkIPConfigVector ipconfig_vector;
     if (!device_path.empty()) {
       IPConfigStatus* ipconfig_status = ListIPConfigs(device_path.c_str());
@@ -584,8 +581,10 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
 
     output.append("<h3>Ethernet:</h3><table border=1>");
-    output.append("<tr>" + ToHtmlTableHeader(&ethernet_) + "</tr>");
-    output.append("<tr>" + ToHtmlTableRow(&ethernet_) + "</tr>");
+    if (ethernet_enabled()) {
+      output.append("<tr>" + ToHtmlTableHeader(&ethernet_) + "</tr>");
+      output.append("<tr>" + ToHtmlTableRow(&ethernet_) + "</tr>");
+    }
 
     output.append("</table><h3>Wifi:</h3><table border=1>");
     for (size_t i = 0; i < wifi_networks_.size(); ++i) {
@@ -818,8 +817,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     return (iter != networks.end()) ? &(*iter) : NULL;
   }
 
-  void EnableNetworkDeviceType(ConnectionType device,
-                                                   bool enable) {
+  void EnableNetworkDeviceType(ConnectionType device, bool enable) {
     if (!CrosLibrary::Get()->EnsureLoaded())
       return;
 

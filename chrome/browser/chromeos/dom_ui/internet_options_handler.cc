@@ -225,21 +225,25 @@ ListValue* InternetOptionsHandler::GetWiredList() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   ListValue* list = new ListValue();
 
-  const chromeos::EthernetNetwork& ethernet_network = cros->ethernet_network();
-  SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
-  if (!ethernet_network.connecting() &&
-      !ethernet_network.connected()) {
-    icon = chromeos::NetworkMenuButton::IconForDisplay(icon,
-        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
+  // If ethernet is not enabled, then don't add anything.
+  if (cros->ethernet_enabled()) {
+    const chromeos::EthernetNetwork& ethernet_network =
+        cros->ethernet_network();
+    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
+    if (!ethernet_network.connecting() &&
+        !ethernet_network.connected()) {
+      icon = chromeos::NetworkMenuButton::IconForDisplay(icon,
+          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
+    }
+    list->Append(GetNetwork(
+        ethernet_network.service_path(),
+        icon,
+        l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
+        ethernet_network.connecting(),
+        ethernet_network.connected(),
+        chromeos::TYPE_ETHERNET,
+        false));
   }
-  list->Append(GetNetwork(
-      ethernet_network.service_path(),
-      icon,
-      l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
-      ethernet_network.connecting(),
-      ethernet_network.connected(),
-      chromeos::TYPE_ETHERNET,
-      false));
   return list;
 }
 
@@ -286,14 +290,17 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
         false));
   }
 
-  list->Append(GetNetwork(
-      kOtherNetworksFakePath,
-      SkBitmap(),
-      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
-      false,
-      false,
-      chromeos::TYPE_WIFI,
-      false));
+  // Add "Other..." if wifi is enabled.
+  if (cros->wifi_enabled()) {
+    list->Append(GetNetwork(
+        kOtherNetworksFakePath,
+        SkBitmap(),
+        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
+        false,
+        false,
+        chromeos::TYPE_WIFI,
+        false));
+  }
 
   return list;
 }

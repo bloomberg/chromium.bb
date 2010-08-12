@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/status/network_menu_button.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "app/l10n_util.h"
@@ -347,26 +348,28 @@ void NetworkMenuButton::InitMenuItems() {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  // Ethernet
-  string16 label = l10n_util::GetStringUTF16(
-                       IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-  SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
-  SkBitmap badge = cros->ethernet_connecting() || cros->ethernet_connected() ?
-      SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-  int flag = (cros->ethernet_connecting() || cros->ethernet_connected()) ?
-      FLAG_ETHERNET | FLAG_ASSOCIATED : FLAG_ETHERNET;
-  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      IconForDisplay(icon, badge), std::string(), flag));
+  // Ethernet (if enabled, which means it's available))
+  if (cros->ethernet_enabled()) {
+    string16 label = l10n_util::GetStringUTF16(
+        IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
+    SkBitmap badge = cros->ethernet_connecting() || cros->ethernet_connected() ?
+        SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+    int flag = (cros->ethernet_connecting() || cros->ethernet_connected()) ?
+        FLAG_ETHERNET | FLAG_ASSOCIATED : FLAG_ETHERNET;
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+        IconForDisplay(icon, badge), std::string(), flag));
+  }
 
   // Wifi
   const WifiNetworkVector& wifi_networks = cros->wifi_networks();
   // Wifi networks ssids.
   for (size_t i = 0; i < wifi_networks.size(); ++i) {
-    label = ASCIIToUTF16(wifi_networks[i].name());
+    string16 label = ASCIIToUTF16(wifi_networks[i].name());
     SkBitmap icon = IconForNetworkStrength(wifi_networks[i].strength(), true);
     SkBitmap badge = wifi_networks[i].encrypted() ?
         *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : SkBitmap();
-    flag = (wifi_networks[i].name() == cros->wifi_name()) ?
+    int flag = (wifi_networks[i].name() == cros->wifi_name()) ?
         FLAG_WIFI | FLAG_ASSOCIATED : FLAG_WIFI;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
         IconForDisplay(icon, badge), wifi_networks[i].service_path(), flag));
@@ -376,12 +379,12 @@ void NetworkMenuButton::InitMenuItems() {
   const CellularNetworkVector& cell_networks = cros->cellular_networks();
   // Cellular networks ssids.
   for (size_t i = 0; i < cell_networks.size(); ++i) {
-    label = ASCIIToUTF16(cell_networks[i].name());
+    string16 label = ASCIIToUTF16(cell_networks[i].name());
     SkBitmap icon = IconForNetworkStrength(cell_networks[i].strength(), true);
     // TODO(chocobo): Check cellular network 3g/edge.
     SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
 //    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
-    flag = (cell_networks[i].name() == cros->cellular_name()) ?
+    int flag = (cell_networks[i].name() == cros->cellular_name()) ?
         FLAG_CELLULAR | FLAG_ASSOCIATED : FLAG_CELLULAR;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
         IconForDisplay(icon, badge), cell_networks[i].service_path(), flag));
@@ -389,18 +392,21 @@ void NetworkMenuButton::InitMenuItems() {
 
   // No networks available message.
   if (wifi_networks.empty() && cell_networks.empty()) {
-    label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
-                l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
+    string16 label = l10n_util::GetStringFUTF16(
+        IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
         SkBitmap(), std::string(), FLAG_DISABLED));
   }
 
-  // Other networks
-  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND,
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
-      IconForDisplay(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
-                     SkBitmap()),
-      std::string(), FLAG_OTHER_NETWORK));
+  // Add "Other..." if wifi is enabled.
+  if (cros->wifi_enabled()) {
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND,
+        l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_OTHER_NETWORKS),
+        IconForDisplay(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0),
+                       SkBitmap()),
+        std::string(), FLAG_OTHER_NETWORK));
+  }
 
   if (cros->wifi_available() || cros->cellular_available()) {
     // Separator.
@@ -410,7 +416,7 @@ void NetworkMenuButton::InitMenuItems() {
     if (cros->wifi_available()) {
       int id = cros->wifi_enabled() ? IDS_STATUSBAR_NETWORK_DEVICE_DISABLE :
                                       IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
-      label = l10n_util::GetStringFUTF16(id,
+      string16 label = l10n_util::GetStringFUTF16(id,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
       menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
           SkBitmap(), std::string(), FLAG_TOGGLE_WIFI));
@@ -420,7 +426,7 @@ void NetworkMenuButton::InitMenuItems() {
     if (cros->cellular_available()) {
       int id = cros->cellular_enabled() ? IDS_STATUSBAR_NETWORK_DEVICE_DISABLE :
                                       IDS_STATUSBAR_NETWORK_DEVICE_ENABLE;
-      label = l10n_util::GetStringFUTF16(id,
+      string16 label = l10n_util::GetStringFUTF16(id,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
       menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
           SkBitmap(), std::string(), FLAG_TOGGLE_CELLULAR));
@@ -447,7 +453,7 @@ void NetworkMenuButton::InitMenuItems() {
 
     // Network settings.
     if (host_->ShouldOpenButtonOptions(this)) {
-      label =
+      string16 label =
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG);
       menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
           SkBitmap(), std::string(), FLAG_OPTIONS));
