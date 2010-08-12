@@ -15,14 +15,14 @@
 class ContentSettingBubbleModel;
 @class InfoBubbleView;
 
-namespace content_blocked_bubble {
+namespace content_setting_bubble {
 // For every "show popup" button, remember the index of the popup tab contents
 // it should open when clicked.
 typedef std::map<NSButton*, int> PopupLinks;
 }
 
 // Manages a "content blocked" bubble.
-@interface ContentBlockedBubbleController : BaseBubbleController {
+@interface ContentSettingBubbleController : BaseBubbleController {
  @private
   IBOutlet NSTextField* titleLabel_;
   IBOutlet NSMatrix* allowBlockRadioGroup_;
@@ -38,12 +38,12 @@ typedef std::map<NSButton*, int> PopupLinks;
   IBOutlet NSButton* infoButton_;
 
   scoped_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
-  content_blocked_bubble::PopupLinks popupLinks_;
+  content_setting_bubble::PopupLinks popupLinks_;
 }
 
 // Creates and shows a content blocked bubble. Takes ownership of
 // |contentSettingBubbleModel| but not of the other objects.
-+ (ContentBlockedBubbleController*)
++ (ContentSettingBubbleController*)
     showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
     parentWindow:(NSWindow*)parentWindow
       anchoredAt:(NSPoint)anchoredAt;

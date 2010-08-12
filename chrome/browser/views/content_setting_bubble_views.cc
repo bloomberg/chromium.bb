@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/content_blocked_bubble_contents.h"
+#include "chrome/browser/views/content_setting_bubble_views.h"
 
 #if defined(OS_LINUX)
 #include <gdk/gdk.h>

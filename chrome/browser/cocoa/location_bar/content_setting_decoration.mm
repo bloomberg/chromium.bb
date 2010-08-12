@@ -8,7 +8,7 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
-#import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
+#import "chrome/browser/cocoa/content_setting_bubble_cocoa.h"
 #import "chrome/browser/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/content_setting_bubble_model.h"
@@ -94,7 +94,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           tabContents, profile_,
           content_setting_image_model_->get_content_settings_type());
-  [ContentBlockedBubbleController showForModel:model
+  [ContentSettingBubbleController showForModel:model
                                    parentWindow:[field window]
                                      anchoredAt:anchor];
   return true;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
+#import "chrome/browser/cocoa/content_setting_bubble_cocoa.h"
 
 #include "app/l10n_util.h"
 #include "base/command_line.h"
@@ -80,7 +80,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 
 }  // namespace
 
-@interface ContentBlockedBubbleController(Private)
+@interface ContentSettingBubbleController(Private)
 - (id)initWithModel:(ContentSettingBubbleModel*)settingsBubbleModel
        parentWindow:(NSWindow*)parentWindow
          anchoredAt:(NSPoint)anchoredAt;
@@ -99,14 +99,14 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 - (void)clearGeolocationForCurrentHost:(id)sender;
 @end
 
-@implementation ContentBlockedBubbleController
+@implementation ContentSettingBubbleController
 
-+ (ContentBlockedBubbleController*)
++ (ContentSettingBubbleController*)
     showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
     parentWindow:(NSWindow*)parentWindow
       anchoredAt:(NSPoint)anchor {
   // Autoreleases itself on bubble close.
-  return [[ContentBlockedBubbleController alloc]
+  return [[ContentSettingBubbleController alloc]
              initWithModel:contentSettingBubbleModel
               parentWindow:parentWindow
                 anchoredAt:anchor];
@@ -460,7 +460,7 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 }
 
 - (void)popupLinkClicked:(id)sender {
-  content_blocked_bubble::PopupLinks::iterator i(popupLinks_.find(sender));
+  content_setting_bubble::PopupLinks::iterator i(popupLinks_.find(sender));
   DCHECK(i != popupLinks_.end());
   contentSettingBubbleModel_->OnPopupClicked(i->second);
 }
@@ -470,4 +470,4 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [self close];
 }
 
-@end  // ContentBlockedBubbleController
+@end  // ContentSettingBubbleController

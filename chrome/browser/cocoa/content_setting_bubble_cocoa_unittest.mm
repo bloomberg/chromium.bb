@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
+#import "chrome/browser/cocoa/content_setting_bubble_cocoa.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -25,11 +25,11 @@ class DummyContentSettingBubbleModel : public ContentSettingBubbleModel {
   }
 };
 
-class ContentBlockedBubbleControllerTest : public CocoaTest {
+class ContentSettingBubbleControllerTest : public CocoaTest {
 };
 
 // Check that the bubble doesn't crash or leak for any settings type
-TEST_F(ContentBlockedBubbleControllerTest, Init) {
+TEST_F(ContentSettingBubbleControllerTest, Init) {
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (i == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
       continue;  // Notifications have no bubble.
@@ -47,7 +47,7 @@ TEST_F(ContentBlockedBubbleControllerTest, Init) {
     else
       [parent.get() orderBack:nil];
 
-    ContentBlockedBubbleController* controller = [ContentBlockedBubbleController
+    ContentSettingBubbleController* controller = [ContentSettingBubbleController
         showForModel:new DummyContentSettingBubbleModel(settingsType)
         parentWindow:parent
          anchoredAt:NSMakePoint(50, 20)];

@@ -16,7 +16,7 @@
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/browser_list.h"
-#import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
+#import "chrome/browser/cocoa/content_setting_bubble_cocoa.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
