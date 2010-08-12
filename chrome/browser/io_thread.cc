@@ -111,17 +111,9 @@ class LoggingNetworkChangeObserver
   virtual void OnIPAddressChanged() {
     LOG(INFO) << "Observed a change to the network IP addresses";
 
-    net::NetLog::Source global_source;
-
-    // TODO(eroman): We shouldn't need to assign an ID to this source, since
-    //               conceptually it is the "global event stream". However
-    //               currently the javascript does a grouping on source id, so
-    //               the display will look weird if we don't give it one.
-    global_source.id = net_log_->NextID();
-
     net_log_->AddEntry(net::NetLog::TYPE_NETWORK_IP_ADDRESSSES_CHANGED,
                        base::TimeTicks::Now(),
-                       global_source,
+                       net::NetLog::Source(),
                        net::NetLog::PHASE_NONE,
                        NULL);
   }

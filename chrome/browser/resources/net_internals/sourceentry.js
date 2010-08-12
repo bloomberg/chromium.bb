@@ -9,7 +9,8 @@
  *
  * @constructor
  */
-function SourceEntry(parentView) {
+function SourceEntry(parentView, id) {
+  this.id_ = id;
   this.entries_ = [];
   this.parentView_ = parentView;
   this.isSelected_ = false;
@@ -126,6 +127,8 @@ SourceEntry.prototype.createRow_ = function() {
   checkbox.type = 'checkbox';
 
   var idCell = addNode(tr, 'td');
+  idCell.style.textAlign = 'right';
+
   var typeCell = addNode(tr, 'td');
   var descriptionCell = addNode(tr, 'td');
 
@@ -141,7 +144,10 @@ SourceEntry.prototype.createRow_ = function() {
   tr.onmouseout = this.onMouseout_.bind(this);
 
   // Set the cell values to match this source's data.
-  addTextNode(idCell, this.getSourceId());
+  if (this.getSourceId() >= 0)
+    addTextNode(idCell, this.getSourceId());
+  else
+    addTextNode(idCell, "-");
   var sourceTypeString = this.getSourceTypeString();
   addTextNode(typeCell, sourceTypeString);
   addTextNode(descriptionCell, this.getDescription());
@@ -210,7 +216,7 @@ SourceEntry.prototype.getSelectionCheckbox = function() {
 };
 
 SourceEntry.prototype.getSourceId = function() {
-  return this.entries_[0].source.id;
+  return this.id_;
 };
 
 SourceEntry.prototype.remove = function() {

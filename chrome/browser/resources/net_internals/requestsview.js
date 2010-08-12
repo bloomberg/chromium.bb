@@ -32,6 +32,9 @@ function RequestsView(tableBodyId, filterInputId, filterCountId,
                       topbarId, middleboxId, bottombarId, sizerId) {
   View.call(this);
 
+  // Next unique id to be assigned to a log entry without a source.
+  this.nextId_ = -1;
+
   // Initialize the sub-views.
   var leftPane = new TopMidBottomView(new DivView(topbarId),
                                       new DivView(middleboxId),
@@ -103,12 +106,20 @@ RequestsView.prototype.setFilter_ = function(filterText) {
 };
 
 RequestsView.prototype.onLogEntryAdded = function(logEntry) {
+  var id = logEntry.source.id;
+
+  // Assign a unique source ID, if it has no source.
+  if (logEntry.source.type == LogSourceType.NONE) {
+    id = this.nextId_;
+    --this.nextId_;
+  }
+
   // Lookup the source.
-  var sourceEntry = this.sourceIdToEntryMap_[logEntry.source.id];
+  var sourceEntry = this.sourceIdToEntryMap_[id];
 
   if (!sourceEntry) {
-    sourceEntry = new SourceEntry(this);
-    this.sourceIdToEntryMap_[logEntry.source.id] = sourceEntry;
+    sourceEntry = new SourceEntry(this, id);
+    this.sourceIdToEntryMap_[id] = sourceEntry;
     this.incrementPrefilterCount(1);
   }
 

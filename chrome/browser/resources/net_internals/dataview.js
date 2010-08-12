@@ -146,14 +146,19 @@ DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
   // Group the events into buckets by source ID, and buckets by source type.
   var sourceIds = [];
   var sourceIdToEventList = {};
-  var sourceTypeToSourceIdList = {}
+  var sourceTypeToSourceIdList = {};
+
+  // Lists used for actual output.
+  var eventLists = [];
 
   for (var i = 0; i < allEvents.length; ++i) {
     var e = allEvents[i];
     var eventList = sourceIdToEventList[e.source.id];
     if (!eventList) {
       eventList = [];
-      sourceIdToEventList[e.source.id] = eventList;
+      eventLists.push(eventList);
+      if (e.source.type != LogSourceType.NONE)
+        sourceIdToEventList[e.source.id] = eventList;
 
       // Update sourceIds
       sourceIds.push(e.source.id);
@@ -170,10 +175,11 @@ DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
   }
 
 
-  // For each source (ordered by when that source was first started).
-  for (var i = 0; i < sourceIds.length; ++i) {
-    var sourceId = sourceIds[i];
-    var eventList = sourceIdToEventList[sourceId];
+  // For each source or event without a source (ordered by when the first
+  // output event for that source happened).
+  for (var i = 0; i < eventLists.length; ++i) {
+    var eventList = eventLists[i];
+    var sourceId = eventList[0].source.id;
     var sourceType = eventList[0].source.type;
 
     var startDate = g_browser.convertTimeTicksToDate(eventList[0].time);
