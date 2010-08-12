@@ -946,15 +946,22 @@ void AutoFillCreditCardEditor::OnInsertTextIntoNumber(GtkEditable* editable,
                                                       gint new_text_length,
                                                       gint* position) {
   if (!edited_number_) {
-    // This is the first edit to the number, reset the text so that any
-    // obfuscated text is removed.
+    // This is the first edit to the number. If |editable| is not empty, reset
+    // the text so that any obfuscated text is removed.
     edited_number_ = true;
+
+    if (GetEntryText(GTK_WIDGET(editable)).empty())
+      return;
+
     g_signal_stop_emission_by_name(editable, "insert-text");
 
     if (new_text_length < 0)
       new_text_length = strlen(new_text);
     gtk_entry_set_text(GTK_ENTRY(number_),
                        std::string(new_text, new_text_length).c_str());
+
+    // Sets the cursor after the last character in |editable|.
+    gtk_editable_set_position(editable, -1);
   }
 }
 
