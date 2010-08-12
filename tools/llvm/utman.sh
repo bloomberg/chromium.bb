@@ -89,7 +89,6 @@ readonly TC_SRC_LIBSTDCPP="${TC_SRC_LLVM_GCC}/llvm-gcc-4.2/libstdc++-v3"
 # These should be absolute paths.
 readonly TC_BUILD_LLVM="${TC_BUILD}/llvm"
 readonly TC_BUILD_LLVM_GCC1="${TC_BUILD}/llvm-gcc-stage1"
-readonly TC_BUILD_LLVM_TOOLS_X8632_SB="${TC_BUILD}/llvm-tools-x8632-sandboxed"
 readonly TC_BUILD_BINUTILS_ARM="${TC_BUILD}/binutils-arm"
 readonly TC_BUILD_BINUTILS_LIBERTY_X86="${TC_BUILD}/binutils-liberty-x86"
 readonly TC_BUILD_NEWLIB_ARM="${TC_BUILD}/newlib-arm"
@@ -1587,90 +1586,116 @@ binutils-liberty-x86-install() {
 #########################################################################
 
 #+-------------------------------------------------------------------------
-#+ llvm-tools-x8632-sb       - Build and install x8632 llvm tools (sandboxed)
-llvm-tools-x8632-sb() {
-  StepBanner "LLVM-TOOLS-X8632-SB"
-
+#+ llvm-tools-sb       - Build and install llvm tools (sandboxed) for x86
+llvm-tools-sb() {
   local srcdir="${TC_SRC_LLVM}"
 
   assert-dir "${srcdir}" "You need to checkout llvm."
 
-  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
-    echo "ERROR: install Native Client toolchain"
+  if [ $# != 1 ]; then
+    echo "ERROR: Usage llvm-tools-sb <arch>"
     exit -1
   fi
 
-  llvm-tools-x8632-sb-clean
-  llvm-tools-x8632-sb-configure
-  llvm-tools-x8632-sb-make
-  llvm-tools-x8632-sb-install
+  local arch=$1
+  if [ ${arch} != "x8632" ] && [ ${arch} != "x8664" ]; then
+    echo "ERROR: Unsupported arch. Choose one of: x8632, x8664"
+    exit -1
+  fi
+
+  if [ ! -d ${NACL_TOOLCHAIN} ] ; then
+    echo "ERROR: Install Native Client toolchain"
+    exit -1
+  fi
+
+  llvm-tools-sb-clean ${arch}
+  llvm-tools-sb-configure ${arch}
+  llvm-tools-sb-make ${arch}
+  llvm-tools-sb-install ${arch}
 }
 
-llvm-tools-x8632-sb-needs-configure() {
-  [ ! -f "${TC_BUILD_LLVM_TOOLS_X8632_SB}/config.status" ]
+llvm-tools-sb-needs-configure() {
+  local arch=$1
+  [ ! -f "${TC_BUILD}/llvm-tools-${arch}-sandboxed/config.status" ]
   return $?
 }
 
-#+ llvm-tools-x8632-sb-clean - Clean x8632 llvm tools (sandboxed)
-llvm-tools-x8632-sb-clean() {
-  StepBanner "LLVM-TOOLS-X8632-SB" "Clean"
-  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+# llvm-tools-sb-clean - Clean llvm tools (sandboxed) for x86
+llvm-tools-sb-clean() {
+  local arch=$1
+  StepBanner "LLVM-TOOLS-SB" "Clean ${arch}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
 
   rm -rf "${objdir}"
   mkdir -p "${objdir}"
 }
 
-#+ llvm-tools-x8632-sb-configure - Configure x8632 llvm tools (sandboxed)
-llvm-tools-x8632-sb-configure() {
-  StepBanner "LLVM-TOOLS-X8632-SB" "Configure"
+# llvm-tools-sb-configure - Configure llvm tools (sandboxed) for x86
+llvm-tools-sb-configure() {
+  local arch=$1
+  StepBanner "LLVM-TOOLS-SB" "Configure ${arch}"
   local srcdir="${TC_SRC_LLVM}"
-  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
+  local installdir="${PNACL_CLIENT_TC_ROOT}/${arch}"
+  local bitsize=""
+  local nacl=""
+  local target""
 
+  if [ ${arch} == "x8632" ]; then
+    bitsize=32
+    nacl=nacl
+    target=x86
+  elif [ ${arch} == "x8664" ]; then
+    bitsize=64
+    nacl=nacl64
+    target=x86_64
+  fi
+
+  local flags="-m${bitsize} -O2 -static -I${NACL_TOOLCHAIN}/${nacl}/include"
   spushd ${objdir}
   RunWithLog \
-    llvm.tools.x8632.sandboxed.configure \
-    env -i \
-    PATH="/usr/bin:/bin" \
-    AR="${NACL_TOOLCHAIN}/bin/nacl-ar" \
-    AS="${NACL_TOOLCHAIN}/bin/nacl-as" \
-    CC="${NACL_TOOLCHAIN}/bin/nacl-gcc -m32 -O2 -static -I${NACL_TOOLCHAIN}/nacl/include" \
-    CXX="${NACL_TOOLCHAIN}/bin/nacl-g++ -m32 -O2 -static -I${NACL_TOOLCHAIN}/nacl/include" \
-    EMULATOR_FOR_BUILD="$(pwd)/scons-out/opt-linux-x86-32/staging/sel_ldr -d" \
-    LD="${NACL_TOOLCHAIN}/bin/nacl-ld" \
-    RANLIB="${NACL_TOOLCHAIN}/bin/nacl-ranlib" \
-    LDFLAGS="-s" \
-    ${srcdir}/llvm-trunk/configure \
-                             --prefix=${PNACL_CLIENT_TC_X8632} \
-                             --host=nacl \
-                             --target=${CROSS_TARGET_ARM} \
-                             --disable-jit \
-                             --enable-optimized \
-                             --enable-targets=x86,x86_64 \
-                             --enable-static \
-                             --enable-threads=no \
-                             --enable-pic=no \
-                             --enable-shared=no \
-                             --with-sysroot=${NEWLIB_INSTALL_DIR}
+      llvm.tools.${arch}.sandboxed.configure \
+      env -i \
+      PATH="/usr/bin:/bin" \
+      AR="${NACL_TOOLCHAIN}/bin/${nacl}-ar" \
+      AS="${NACL_TOOLCHAIN}/bin/${nacl}-as" \
+      CC="${NACL_TOOLCHAIN}/bin/${nacl}-gcc ${flags}" \
+      CXX="${NACL_TOOLCHAIN}/bin/${nacl}-g++ ${flags}" \
+      LD="${NACL_TOOLCHAIN}/bin/${nacl}-ld" \
+      RANLIB="${NACL_TOOLCHAIN}/bin/${nacl}-ranlib" \
+      LDFLAGS="-s" \
+      ${srcdir}/llvm-trunk/configure \
+        --prefix=${installdir} \
+        --host=nacl \
+        --disable-jit \
+        --enable-optimized \
+        --target=${CROSS_TARGET_ARM} \
+        --enable-targets=${target} \
+        --enable-pic=no \
+        --enable-static \
+        --enable-shared=no
   spopd
 }
 
-llvm-tools-x8632-sb-needs-make() {
+llvm-tools-sb-needs-make() {
+  local arch=$1
   local srcdir="${TC_SRC_LLVM}"
-  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
 
   ts-modified "$srcdir" "$objdir"
   return $?
 }
 
-#+ llvm-tools-x8632-sb-make - Make x8632 llvm tools (sandboxed)
-llvm-tools-x8632-sb-make() {
-  StepBanner "LLVM-TOOLS-X8632-SB" "Make"
-  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+# llvm-tools-sb-make - Make llvm tools (sandboxed) for x86
+llvm-tools-sb-make() {
+  local arch=$1
+  StepBanner "LLVM-TOOLS-SB" "Make ${arch}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
   spushd ${objdir}
 
   ts-touch-open "${objdir}"
 
-  RunWithLog llvm.tools.x8632.sandboxed.make \
+  RunWithLog llvm.tools.${arch}.sandboxed.make \
     env -i PATH="/usr/bin:/bin" \
     make VERBOSE=1 tools-only
 
@@ -1679,13 +1704,14 @@ llvm-tools-x8632-sb-make() {
   spopd
 }
 
-#+ llvm-tools-x8632-sb-install - Install x8632 llvm tools (sandboxed)
-llvm-tools-x8632-sb-install() {
-  StepBanner "LLVM-TOOLS-X8632-SB" "Install"
-  local objdir="${TC_BUILD_LLVM_TOOLS_X8632_SB}"
+# llvm-tools-sb-install - Install llvm tools (sandboxed) for x86
+llvm-tools-sb-install() {
+  local arch=$1
+  StepBanner "LLVM-TOOLS-SB" "Install ${arch}"
+  local objdir="${TC_BUILD}/llvm-tools-${arch}-sandboxed"
   spushd ${objdir}
 
-  RunWithLog llvm.tools.x8632.sandboxed.install \
+  RunWithLog llvm.tools.${arch}.sandboxed.install \
     env -i PATH="/usr/bin:/bin" \
     make install
 
