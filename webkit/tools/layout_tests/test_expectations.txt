@@ -4,5 +4,3 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
-
-BUG51785 : http/tests/loading/bad-scheme-subframe.html = TEXT PASS
