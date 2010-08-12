@@ -72,7 +72,7 @@ void LowBatteryObserver::PowerChanged(PowerLibrary* object) {
 
 void LowBatteryObserver::Show(base::TimeDelta remaining, bool urgent) {
   notification_.Show(l10n_util::GetStringFUTF16(IDS_LOW_BATTERY_MESSAGE,
-      WideToUTF16(TimeFormat::TimeRemaining(remaining))), urgent);
+      TimeFormat::TimeRemaining(remaining)), urgent);
   remaining_ = remaining.InMinutes();
 }
 

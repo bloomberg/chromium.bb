@@ -10,10 +10,12 @@
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_piece.h"
 #include "base/thread.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
@@ -263,16 +265,18 @@ void BrowsingHistoryHandler::QueryComplete(
     // and snippet, browse results need day and time information).
     if (search_text_.empty()) {
       // Figure out the relative date string.
-      std::wstring date_str = TimeFormat::RelativeDate(page.visit_time(),
-                                                       &midnight_today);
+      string16 date_str = TimeFormat::RelativeDate(page.visit_time(),
+                                                   &midnight_today);
       if (date_str.empty()) {
-        date_str = base::TimeFormatFriendlyDate(page.visit_time());
+        date_str =
+            WideToUTF16Hack(base::TimeFormatFriendlyDate(page.visit_time()));
       } else {
-        date_str = l10n_util::GetStringF(
+        date_str = l10n_util::GetStringFUTF16(
             IDS_HISTORY_DATE_WITH_RELATIVE_TIME,
-            date_str, base::TimeFormatFriendlyDate(page.visit_time()));
+            date_str,
+            WideToUTF16Hack(base::TimeFormatFriendlyDate(page.visit_time())));
       }
-      page_value->SetString("dateRelativeDay", WideToUTF16Hack(date_str));
+      page_value->SetString("dateRelativeDay", date_str);
       page_value->SetString("dateTimeOfDay",
           WideToUTF16Hack(base::TimeFormatTimeOfDay(page.visit_time())));
     } else {

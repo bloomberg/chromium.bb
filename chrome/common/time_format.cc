@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/stl_util-inl.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
@@ -254,11 +255,10 @@ icu::PluralFormat* TimeFormatter::createFallbackFormat(
 
 Singleton<TimeFormatter> time_formatter;
 
-static std::wstring FormatTimeImpl(const TimeDelta& delta,
-                                   FormatType format_type) {
+static string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
   if (delta.ToInternalValue() < 0) {
     NOTREACHED() << "Negative duration";
-    return std::wstring();
+    return string16();
   }
 
   int number;
@@ -296,31 +296,31 @@ static std::wstring FormatTimeImpl(const TimeDelta& delta,
   // With the fallback added, this should never fail.
   DCHECK(U_SUCCESS(error));
   int capacity = time_string.length() + 1;
-  string16 result_utf16;
+  string16 result;
   time_string.extract(static_cast<UChar*>(
-                      WriteInto(&result_utf16, capacity)),
+                      WriteInto(&result, capacity)),
                       capacity, error);
   DCHECK(U_SUCCESS(error));
-  return UTF16ToWide(result_utf16);
+  return result;
 }
 
 // static
-std::wstring TimeFormat::TimeElapsed(const TimeDelta& delta) {
+string16 TimeFormat::TimeElapsed(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_ELAPSED);
 }
 
 // static
-std::wstring TimeFormat::TimeRemaining(const TimeDelta& delta) {
+string16 TimeFormat::TimeRemaining(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_REMAINING);
 }
 
 // static
-std::wstring TimeFormat::TimeRemainingShort(const TimeDelta& delta) {
+string16 TimeFormat::TimeRemainingShort(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_SHORT);
 }
 
 // static
-std::wstring TimeFormat::RelativeDate(
+string16 TimeFormat::RelativeDate(
     const Time& time,
     const Time* optional_midnight_today) {
   Time midnight_today = optional_midnight_today ? *optional_midnight_today :
@@ -328,10 +328,10 @@ std::wstring TimeFormat::RelativeDate(
 
   // Filter out "today" and "yesterday"
   if (time >= midnight_today)
-    return l10n_util::GetString(IDS_PAST_TIME_TODAY);
+    return l10n_util::GetStringUTF16(IDS_PAST_TIME_TODAY);
   else if (time >= midnight_today -
                    TimeDelta::FromMicroseconds(Time::kMicrosecondsPerDay))
-    return l10n_util::GetString(IDS_PAST_TIME_YESTERDAY);
+    return l10n_util::GetStringUTF16(IDS_PAST_TIME_YESTERDAY);
 
-  return std::wstring();
+  return string16();
 }

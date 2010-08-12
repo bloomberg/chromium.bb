@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/save_package.h"
@@ -31,7 +32,8 @@ std::wstring DownloadItemModel::GetStatusText() {
   int64 total = download_->total_bytes();
 
   DataUnits amount_units = GetByteDisplayUnits(total);
-  const std::wstring simple_size = FormatBytes(size, amount_units, false);
+  const string16 simple_size = WideToUTF16Hack(FormatBytes(size, amount_units,
+                                                           false));
 
   // In RTL locales, we render the text "size/total" in an RTL context. This
   // is problematic since a string such as "123/456 MB" is displayed
@@ -42,38 +44,38 @@ std::wstring DownloadItemModel::GetStatusText() {
   base::i18n::GetDisplayStringInLTRDirectionality(&simple_total);
 
   TimeDelta remaining;
-  std::wstring simple_time;
+  string16 simple_time;
   if (download_->state() == DownloadItem::IN_PROGRESS &&
       download_->is_paused()) {
-    simple_time = l10n_util::GetString(IDS_DOWNLOAD_PROGRESS_PAUSED);
+    simple_time = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
   } else if (download_->TimeRemaining(&remaining)) {
     simple_time = download_->open_when_complete() ?
                       TimeFormat::TimeRemainingShort(remaining) :
                       TimeFormat::TimeRemaining(remaining);
   }
 
-  std::wstring status_text;
+  string16 status_text;
   switch (download_->state()) {
     case DownloadItem::IN_PROGRESS:
       if (download_->open_when_complete()) {
         if (simple_time.empty()) {
           status_text =
-              l10n_util::GetString(IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE);
+              l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE);
         } else {
-          status_text = l10n_util::GetStringF(IDS_DOWNLOAD_STATUS_OPEN_IN,
-                                              simple_time);
+          status_text = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_OPEN_IN,
+                                                   simple_time);
         }
       } else {
         if (simple_time.empty()) {
           // Instead of displaying "0 B" we keep the "Starting..." string.
           status_text = (size == 0) ?
-              l10n_util::GetString(IDS_DOWNLOAD_STATUS_STARTING) :
-              FormatBytes(size, GetByteDisplayUnits(size), true);
+              l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING) :
+              WideToUTF16Hack(FormatBytes(size, GetByteDisplayUnits(size),
+                                          true));
         } else {
-          status_text = l10n_util::GetStringF(IDS_DOWNLOAD_STATUS_IN_PROGRESS,
-                                              simple_size,
-                                              simple_total,
-                                              simple_time);
+          status_text = l10n_util::GetStringFUTF16(
+              IDS_DOWNLOAD_STATUS_IN_PROGRESS, simple_size,
+              WideToUTF16Hack(simple_total), simple_time);
         }
       }
       break;
@@ -81,7 +83,7 @@ std::wstring DownloadItemModel::GetStatusText() {
       status_text.clear();
       break;
     case DownloadItem::CANCELLED:
-      status_text = l10n_util::GetString(IDS_DOWNLOAD_STATUS_CANCELED);
+      status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELED);
       break;
     case DownloadItem::REMOVING:
       break;
@@ -89,7 +91,7 @@ std::wstring DownloadItemModel::GetStatusText() {
       NOTREACHED();
   }
 
-  return status_text;
+  return UTF16ToWideHack(status_text);
 }
 
 // -----------------------------------------------------------------------------

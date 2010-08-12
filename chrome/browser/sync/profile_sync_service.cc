@@ -593,7 +593,7 @@ string16 ProfileSyncService::GetLastSyncedTimeString() const {
   if (last_synced < base::TimeDelta::FromMinutes(1))
     return l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW);
 
-  return WideToUTF16Hack(TimeFormat::TimeElapsed(last_synced));
+  return TimeFormat::TimeElapsed(last_synced);
 }
 
 string16 ProfileSyncService::GetAuthenticatedUsername() const {
