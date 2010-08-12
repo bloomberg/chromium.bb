@@ -212,6 +212,20 @@ class GLES2DecoderTestBase : public testing::Test {
   void DoVertexAttribPointer(
       GLuint index, GLint size, GLenum type, GLsizei stride, GLuint offset);
 
+  void SetupExpectationsForFramebufferAttachment(
+    GLuint clear_bits,
+    GLclampf restore_red,
+    GLclampf restore_green,
+    GLclampf restore_blue,
+    GLclampf restore_alpha,
+    GLuint restore_color_mask,
+    GLuint restore_stencil,
+    GLuint restore_stencil_front_mask,
+    GLuint restore_stencil_back_mask,
+    GLclampf restore_depth,
+    GLboolean restore_depth_mask,
+    bool restore_scissor_test);
+
   GLvoid* BufferOffset(unsigned i) {
     return static_cast<int8 *>(NULL)+(i);
   }

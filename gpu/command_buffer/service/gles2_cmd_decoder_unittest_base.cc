@@ -236,6 +236,86 @@ void GLES2DecoderTestBase::SetBucketAsCString(
   }
 }
 
+void GLES2DecoderTestBase::SetupExpectationsForFramebufferAttachment(
+    GLuint clear_bits,
+    GLclampf restore_red,
+    GLclampf restore_green,
+    GLclampf restore_blue,
+    GLclampf restore_alpha,
+    GLuint restore_color_mask,
+    GLuint restore_stencil,
+    GLuint restore_stencil_front_mask,
+    GLuint restore_stencil_back_mask,
+    GLclampf restore_depth,
+    GLboolean restore_depth_mask,
+    bool restore_scissor_test) {
+  InSequence sequence;
+  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
+      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+      .RetiresOnSaturation();
+  if ((clear_bits & GL_COLOR_BUFFER_BIT) != 0) {
+    EXPECT_CALL(*gl_, ClearColor(0, 0, 0, 0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, ColorMask(1, 1, 1, 1))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if ((clear_bits & GL_STENCIL_BUFFER_BIT) != 0) {
+    EXPECT_CALL(*gl_, ClearStencil(0))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, StencilMask(static_cast<GLuint>(-1)))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if ((clear_bits & GL_DEPTH_BUFFER_BIT) != 0) {
+    EXPECT_CALL(*gl_, ClearDepth(1.0f))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, DepthMask(1))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  EXPECT_CALL(*gl_, Disable(GL_SCISSOR_TEST))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, Clear(clear_bits))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearColor(
+      restore_red, restore_green, restore_blue, restore_alpha))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ColorMask(
+      ((restore_color_mask & 0x1000) != 0) ? 1 : 0,
+      ((restore_color_mask & 0x0100) != 0) ? 1 : 0,
+      ((restore_color_mask & 0x0010) != 0) ? 1 : 0,
+      ((restore_color_mask & 0x0001) != 0) ? 1 : 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearStencil(restore_stencil))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_FRONT, restore_stencil_front_mask))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, StencilMaskSeparate(GL_BACK, restore_stencil_back_mask))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, ClearDepth(restore_depth))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DepthMask(restore_depth_mask))
+      .Times(1)
+      .RetiresOnSaturation();
+  if (restore_scissor_test) {
+    EXPECT_CALL(*gl_, Enable(GL_SCISSOR_TEST))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+}
+
 void GLES2DecoderTestBase::SetupShaderForUniform() {
   static AttribInfo attribs[] = {
     { "foo", 1, GL_FLOAT, 1, },
