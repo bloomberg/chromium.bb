@@ -34,31 +34,13 @@ cr.define('options', function() {
 
       // Setup option values for the time period select control.
       $('clearBrowsingDataTimePeriod').initializeValues(
-          templateData.clearBrowsingDataTimeList);
-
-      var checkboxes = document.querySelectorAll(
-          '#checkboxListData input[type=checkbox]');
-      var handler = cr.bind(this.updateButtonState_, this);
-      for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].onclick = handler;
-      }
-      self.updateButtonState_();
+          templateData.clearBrowsingDataTimeList)
 
       // Setup click handler for the clear(Ok) button.
       $('clearBrowsingDataCommit').onclick = function(event) {
         chrome.send('performClearBrowserData');
       };
-    },
-
-    updateButtonState_: function() {
-      var checkboxMask = '';
-      var checkboxes = document.querySelectorAll(
-          '#checkboxListData input[type=checkbox]');
-      for (var i = 0; i < checkboxes.length; i++) {
-        checkboxMask += checkboxes[i].checked ? '1' : '0';
-      }
-      $('clearBrowsingDataCommit').disabled = checkboxMask.indexOf('1') == -1;
-    },
+    }
   };
 
   //
