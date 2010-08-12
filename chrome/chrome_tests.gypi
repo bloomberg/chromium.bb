@@ -480,6 +480,10 @@
             'test/nacl_security_tests/nacl_security_tests_win.cc',
           ],
         },],
+        # set fPIC for linux in case it isn't set.
+        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm") and linux_fpic!=1', {
+          'cflags': ['-fPIC'],
+        },],
       ],
     },
     {
@@ -2476,8 +2480,10 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
+    # Build on linux x86_64 only if linux_fpic==1
     ['OS=="mac" or (OS=="win" and component=="static_library") '
-     'or (OS=="linux" and target_arch==python_arch)', {
+     'or (OS=="linux" and target_arch==python_arch '
+     'and (target_arch!="x64" or linux_fpic==1))', {
       'targets': [
         {
           # Documentation: http://dev.chromium.org/developers/pyauto
