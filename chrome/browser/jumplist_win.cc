@@ -359,7 +359,7 @@ HRESULT UpdateTaskCategory(ScopedComPtr<ICustomDestinationList> list,
   // this item.
   scoped_refptr<ShellLinkItem> incognito(new ShellLinkItem);
   incognito->SetArguments(
-      CommandLine::PrefixedSwitchString(switches::kIncognito));
+      ASCIIToWide(std::string("--") + switches::kIncognito));
   std::wstring incognito_title(l10n_util::GetString(IDS_NEW_INCOGNITO_WINDOW));
   ReplaceSubstringsAfterOffset(&incognito_title, 0, L"&", L"");
   incognito->SetTitle(incognito_title);
