@@ -47,7 +47,6 @@ readonly CROSS_TARGET_X86_64=x86_64-none-linux-gnu
 readonly REAL_CROSS_TARGET=pnacl
 
 readonly INSTALL_ROOT="$(pwd)/toolchain/linux_arm-untrusted"
-readonly TARGET_ROOT="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
 readonly ARM_ARCH=armv7-a
 readonly ARM_FPU=vfp3
 readonly INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
@@ -55,7 +54,6 @@ readonly GCC_VER="4.2.1"
 
 # NOTE: NEWLIB_INSTALL_DIR also server as a SYSROOT
 readonly NEWLIB_INSTALL_DIR="${INSTALL_ROOT}/arm-newlib"
-readonly DRIVER_INSTALL_DIR="${INSTALL_ROOT}/${CROSS_TARGET_ARM}"
 
 # This toolchain currenlty builds only on linux.
 # TODO(abetul): Remove the restriction on developer's OS choices.
@@ -119,11 +117,20 @@ readonly PNACL_CLIENT_TC_ROOT="$(pwd)/toolchain/sandboxed_translators"
 readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
 readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 
-# Current milestones within each Hg repo:
-readonly LLVM_REV=de95d2b6c570
-readonly LLVM_GCC_REV=408df9d0016a
-readonly NEWLIB_REV=c74ed6d22b4f
-readonly BINUTILS_REV=16784627cbf4
+readonly UTMAN_EXPERIMENTAL=${UTMAN_EXPERIMENTAL:-false}
+if ! ${UTMAN_EXPERIMENTAL}; then
+  # Current milestones within each Hg repo:
+  readonly LLVM_REV=de95d2b6c570
+  readonly LLVM_GCC_REV=408df9d0016a
+  readonly NEWLIB_REV=c74ed6d22b4f
+  readonly BINUTILS_REV=16784627cbf4
+else
+  # Experimental milestones
+  readonly LLVM_REV=9c091b447285
+  readonly LLVM_GCC_REV=4e2927c6f57a
+  readonly NEWLIB_REV=c74ed6d22b4f
+  readonly BINUTILS_REV=79db169b3d17
+fi
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -153,7 +160,7 @@ readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-as
 readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ld
 readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-nm
 readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ranlib
-readonly ILLEGAL_TOOL=${DRIVER_INSTALL_DIR}/llvm-fake-illegal
+readonly ILLEGAL_TOOL=${INSTALL_DIR}/llvm-fake-illegal
 
 setup-tools-common() {
   AR_FOR_SFI_TARGET="${CROSS_TARGET_AR}"
@@ -166,6 +173,7 @@ setup-tools-common() {
   CFLAGS_FOR_SFI_TARGET="${CPPFLAGS_FOR_SFI_TARGET} \
                          -march=${ARM_ARCH} \
                          -ffixed-r9"
+
   # C++ flags
   CXXFLAGS_FOR_SFI_TARGET=${CFLAGS_FOR_SFI_TARGET}
 
@@ -224,16 +232,16 @@ setup-tools-common() {
 # NOTE: we need to rethink the setup mechanism when we want to
 #       produce libgcc for other archs
 setup-tools-arm() {
-  CC_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfigcc -arch arm"
-  CXX_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfig++ -arch arm"
+  CC_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-fake-sfigcc -arch arm"
+  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-fake-sfig++ -arch arm"
   # NOTE: this should not be needed, since we do not really fully link anything
   LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
 }
 
 setup-tools-bitcode() {
-  CC_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfigcc -emit-llvm"
-  CXX_FOR_SFI_TARGET="${DRIVER_INSTALL_DIR}/llvm-fake-sfig++ -emit-llvm"
+  CC_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-fake-sfigcc -emit-llvm"
+  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-fake-sfig++ -emit-llvm"
   # NOTE: this should not be needed, since we do not really fully link anything
   LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
@@ -295,13 +303,24 @@ hg-status-common() {
 
 #@ hg-freshness-check    - Make sure all repos are at the stable revision
 hg-freshness-check() {
-  hg-pull
   StepBanner "HG-FRESHNESS-CHECK" "Checking for updates..."
+
+  # Leave this global and mutable
+  FRESHNESS_WARNING=false
 
   hg-freshness-check-common "${TC_SRC_LLVM}"       ${LLVM_REV}
   hg-freshness-check-common "${TC_SRC_LLVM_GCC}"   ${LLVM_GCC_REV}
   hg-freshness-check-common "${TC_SRC_NEWLIB}"     ${NEWLIB_REV}
   hg-freshness-check-common "${TC_SRC_BINUTILS}"   ${BINUTILS_REV}
+
+  if ${FRESHNESS_WARNING}; then
+    echo -n "Continue build [Y/N]? "
+    read YESNO
+    if [ "${YESNO}" != "Y" ] && [ "${YESNO}" != "y" ]; then
+      echo "Cancelled build."
+      exit -1
+    fi
+  fi
 }
 
 hg-freshness-check-common() {
@@ -315,21 +334,14 @@ hg-freshness-check-common() {
   spopd
   if [ "${HGREV[0]}" != "$rev" ]; then
     echo "*******************************************************************"
-    echo "* Repository hg/${name} is not at the 'stable' revision.           "
-    echo "* If this is intentional, enter Y to continue building.            "
-    echo "* If not, try: './tools/llvm/utman.sh hg-update-stable-${name}'    "
+    echo "* Warning: hg/${name} is not at the 'stable' revision.             "
     echo "*******************************************************************"
 
     # TODO(pdox): Make this a BUILDBOT flag
     if ${UTMAN_DEBUG}; then
       "hg-update-stable-${name}"
     else
-      echo -n "Continue build [Y/N]? "
-      read YESNO
-      if [ "${YESNO}" != "Y" ] && [ "${YESNO}" != "y" ]; then
-        echo "Cancelled build."
-        exit -1
-      fi
+      FRESHNESS_WARNING=true
     fi
   fi
 }
@@ -761,9 +773,9 @@ untrusted_sdk() {
 prune() {
   StepBanner "PRUNE" "Pruning llvm sourcery tree"
 
-  SubBanner "Size before: $(du -msc "${TARGET_ROOT}")"
-  rm  -f "${TARGET_ROOT}"/lib/lib*.a
-  SubBanner "Size after: $(du -msc "${TARGET_ROOT}")"
+  SubBanner "Size before: $(du -msc "${INSTALL_DIR}")"
+  rm  -f "${INSTALL_DIR}"/lib/lib*.a
+  SubBanner "Size after: $(du -msc "${INSTALL_DIR}")"
 }
 
 #+ tarball <filename>    - Produce tarball file
@@ -913,20 +925,20 @@ llvm-install() {
 #+-------------------------------------------------------------------------
 #+ gcc-stage1            - build and install pre-gcc
 gcc-stage1() {
-  StepBanner "GCC-STAGE1"
   local target=$1
+  StepBanner "GCC-${target}"
 
   if gcc-stage1-needs-configure ${target}; then
     gcc-stage1-clean ${target}
     gcc-stage1-configure ${target}
   else
-    SkipBanner "GCC-STAGE1" "configure"
+    SkipBanner "GCC-${target}" "configure"
   fi
 
   if gcc-stage1-needs-make ${target}; then
     gcc-stage1-make ${target}
   else
-    SkipBanner "GCC-STAGE1" "make"
+    SkipBanner "GCC-${target}" "make"
   fi
 
   gcc-stage1-install ${target}
@@ -934,7 +946,7 @@ gcc-stage1() {
 
 #+ gcc-stage1-sysroot    - setup initial sysroot
 gcc-stage1-sysroot() {
-  StepBanner "GCC-STAGE1" "Setting up initial sysroot"
+  StepBanner "GCC" "Setting up initial sysroot"
 
   local sys_include="${INSTALL_DIR}/${CROSS_TARGET_ARM}/include"
   local sys_include2="${INSTALL_DIR}/${CROSS_TARGET_ARM}/sys-include"
@@ -947,8 +959,9 @@ gcc-stage1-sysroot() {
 
 #+ gcc-stage1-clean      - Clean gcc stage 1
 gcc-stage1-clean() {
-  StepBanner "GCC-STAGE1" "Clean"
   local target=$1
+
+  StepBanner "GCC-${target}" "Clean"
   local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
   rm -rf "${objdir}"
 }
@@ -962,7 +975,7 @@ gcc-stage1-needs-configure() {
 #+ gcc-stage1-configure  - Configure GCC stage 1
 gcc-stage1-configure() {
   local target=$1
-  StepBanner "GCC-STAGE1" "Configure $target"
+  StepBanner "GCC-${target}" "Configure ${target}"
 
   local srcdir="${TC_SRC_LLVM_GCC}"
   local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
@@ -1030,14 +1043,17 @@ gcc-stage1-needs-make() {
 }
 
 gcc-stage1-make() {
-  StepBanner "GCC-STAGE1" "Make"
-
   local target=$1
   local srcdir="${TC_SRC_LLVM_GCC}"
   local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
   spushd ${objdir}
 
+  StepBanner "GCC-${target}" "Make (Stage 1)"
+
   ts-touch-open "${objdir}"
+
+  # In case it is still patched from an interrupted make
+  xgcc-unpatch-nofail "${target}"
 
   local ar
   local ranlib
@@ -1057,8 +1073,8 @@ gcc-stage1-make() {
   esac
 
   mkdir -p "${objdir}/dummy-bin"
-  ln -s ${ar} "${objdir}/dummy-bin/${target}-ar"
-  ln -s ${ranlib} "${objdir}/dummy-bin/${target}-ranlib"
+  ln -sf ${ar} "${objdir}/dummy-bin/${target}-ar"
+  ln -sf ${ranlib} "${objdir}/dummy-bin/${target}-ranlib"
 
   # NOTE: we add ${INSTALL_DIR}/bin to PATH
   RunWithLog llvm-pregcc-${target}.make \
@@ -1068,8 +1084,13 @@ gcc-stage1-make() {
               CFLAGS="-Dinhibit_libc" \
               make ${MAKE_OPTS} all-gcc
 
-  xgcc-patch ${target}
+  xgcc-patch "${target}"
 
+  RunWithLog libgcc.clean \
+      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
+             make clean-target-libgcc
+
+  StepBanner "GCC-${target}" "Make (Stage 2)"
   # NOTE: This builds more than what we need right now. For example,
   # libstdc++ is unused (we always use the bitcode one). This might change
   # when we start supporting shared libraries.
@@ -1080,12 +1101,16 @@ gcc-stage1-make() {
               CFLAGS="-Dinhibit_libc" \
               make ${MAKE_OPTS} all
 
-  rm gcc/xgcc
-  mv gcc/xgcc-real gcc/xgcc
+  xgcc-unpatch "${target}"
 
   ts-touch-commit "${objdir}"
 
   spopd
+}
+
+is-ELF() {
+  local F=$(file "$1")
+  [[ "${F}" =~ "ELF" ]]
 }
 
 #+ xgcc-patch          - Patch xgcc and clean libgcc
@@ -1093,49 +1118,96 @@ xgcc-patch() {
   # This is a hack. Ideally gcc would be configured with a pnacl-nacl target
   # and xgcc would produce sfi code automatically. This is not the case, so
   # we cheat gcc's build by replacing xgcc behind its back.
-  local target=$1
-  StepBanner "GCC-STAGE1" "Patching xgcc and cleaning libgcc $target"
-
+  local target="$1"
+  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+  local XGCC="${objdir}/gcc/xgcc"
+  local XGCC_REAL="${XGCC}-real"
   local arch=""
   local driver=""
 
-  case ${target} in
-      arm-*)
-          arch="arm"
-          ;;
-      i686-*)
+  StepBanner "GCC-${target}" "Patching xgcc and cleaning libgcc $target"
 
-          arch="x86-32"
-          ;;
-      x86_64-*)
-          arch="x86-64"
-          ;;
-  esac
-  mv gcc/xgcc gcc/xgcc-real
+  # Make sure XGCC exists
+  if [ ! -f "${XGCC}" ] ; then
+    Abort "xgcc-patch" "Real xgcc does not exist."
+    return
+  fi
+
+  # Make sure it is a real ELF file
+  if ! is-ELF "${XGCC}" ; then
+    Abort "xgcc-patch" "xgcc already patched"
+    return
+  fi
+
   # N.B:
   # * We have to use the arch cc1 istead of the more common practice of using
   # the ARM cc1 for everything. The reason is that the ARM cc1 will reject a
   # asm that uses ebx for example
   # * Because of the previous item, we have to use the arch driver bacuse
   # the ARM driver will pass options like -mfpu that the x86 cc1 cannot handle.
-  cat > gcc/xgcc <<EOF
+  case ${target} in
+      arm-*)    arch="arm" ;;
+      i686-*)   arch="x86-32" ;;
+      x86_64-*) arch="x86-64" ;;
+  esac
+
+  mv "${XGCC}" "${XGCC_REAL}"
+  cat > "${XGCC}" <<EOF
 #!/bin/sh
-
-DIR="\$(readlink -mn \${0%/*})"
-DIR2="\${DIR}/../../../../toolchain/linux_arm-untrusted/arm-none-linux-gnueabi"
-\${DIR2}/llvm-fake-sfigcc --driver=\${DIR}/xgcc-real -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
+XGCC="\$(readlink -m \${0})"
+${INSTALL_DIR}/llvm-fake-sfigcc \\
+--driver="\${XGCC}-real" -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
 EOF
-  chmod 755 gcc/xgcc
 
-  RunWithLog libgcc-${target}.clean \
-      env -i PATH=/usr/bin/:/bin:${INSTALL_DIR}/bin \
-             make clean-target-libgcc
+  chmod 755 "${XGCC}"
+
+}
+
+xgcc-unpatch() {
+  local target="$1"
+  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+  local XGCC="${objdir}/gcc/xgcc"
+  local XGCC_REAL="${XGCC}-real"
+
+  StepBanner "GCC-${target}" "Unpatching xgcc"
+
+  # Make sure XGCC exists
+  if [ ! -f "${XGCC}" ] ; then
+    Abort "xgcc-unpatch" "Real xgcc does not exist."
+    return
+  fi
+
+  # Make sure it isn't a real ELF file
+  if is-ELF "${XGCC}" ; then
+    Abort "xgcc-unpatch" "xgcc already unpatched?"
+    return
+  fi
+
+  rm "${XGCC}"
+  mv "${XGCC_REAL}" "${XGCC}"
+}
+
+xgcc-unpatch-nofail() {
+  local target="$1"
+  local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
+  local XGCC="${objdir}/gcc/xgcc"
+  local XGCC_REAL="${XGCC}-real"
+
+  # If the old patch file exists, delete it.
+  if [ -f "${XGCC}" ] && ! is-ELF "${XGCC}"; then
+    rm "${XGCC}"
+  fi
+
+  # If there's a real one around, move it back.
+  if [ -f "${XGCC_REAL}" ]; then
+    mv "${XGCC_REAL}" "${XGCC}"
+  fi
 }
 
 #+ gcc-stage1-install    - Install GCC stage 1
 gcc-stage1-install() {
   local target=$1
-  StepBanner "GCC-STAGE1" "Install $target"
+  StepBanner "GCC-${target}" "Install ${target}"
 
   local objdir="${TC_BUILD_LLVM_GCC1}-${target}"
   spushd "${TC_BUILD_LLVM_GCC1}-${target}"
@@ -1790,16 +1862,16 @@ install-translators() {
         "Run this script with build-sandboxed-translators"
 
 # TODO(abetul): Replace llc's with 32/64 bit sandboxed executables.
-  assert-file "${TARGET_ROOT}/bin/llc" "Install PNaCl toolchain."
-  cp "${TARGET_ROOT}/bin/llc" "${PNACL_CLIENT_TC_X8632}/bin"
-  cp "${TARGET_ROOT}/bin/llc" "${PNACL_CLIENT_TC_X8664}/bin"
+  assert-file "${INSTALL_DIR}/bin/llc" "Install PNaCl toolchain."
+  cp "${INSTALL_DIR}/bin/llc" "${PNACL_CLIENT_TC_X8632}/bin"
+  cp "${INSTALL_DIR}/bin/llc" "${PNACL_CLIENT_TC_X8664}/bin"
 
 # TODO(abetul): Replace ld's with 32/64 bit sandboxed executables.
-  assert-file "${TARGET_ROOT}/bin/arm-none-linux-gnueabi-ld" \
+  assert-file "${INSTALL_DIR}/bin/arm-none-linux-gnueabi-ld" \
         "Install PNaCl toolchain."
-  cp "${TARGET_ROOT}/bin/arm-none-linux-gnueabi-ld" \
+  cp "${INSTALL_DIR}/bin/arm-none-linux-gnueabi-ld" \
         "${PNACL_CLIENT_TC_X8632}/bin/ld"
-  cp "${TARGET_ROOT}/bin/arm-none-linux-gnueabi-ld" \
+  cp "${INSTALL_DIR}/bin/arm-none-linux-gnueabi-ld" \
         "${PNACL_CLIENT_TC_X8664}/bin/ld"
 
   scons-build-sel_ldr x86-32
@@ -2138,20 +2210,20 @@ driver() {
 # We need to adjust the start address and aligment of nacl arm modules
 linker-install() {
    StepBanner "DRIVER" "Installing untrusted ld script"
-   cp tools/llvm/ld_script_arm_untrusted ${TARGET_ROOT}
+   cp tools/llvm/ld_script_arm_untrusted ${INSTALL_DIR}
 }
 
 # the driver is a simple python script which changes its behavior
 # depending under the name it is invoked as
 llvm-fake-install() {
-  StepBanner "DRIVER" "Installing driver adaptors to ${DRIVER_INSTALL_DIR}"
+  StepBanner "DRIVER" "Installing driver adaptors to ${INSTALL_DIR}"
   # TODO(robertm): move the driver to their own dir
-  #rm -rf  ${DRIVER_INSTALL_DIR}
-  #mkdir -p ${DRIVER_INSTALL_DIR}
-  cp tools/llvm/llvm-fake.py ${DRIVER_INSTALL_DIR}
+  #rm -rf  ${INSTALL_DIR}
+  #mkdir -p ${INSTALL_DIR}
+  cp tools/llvm/llvm-fake.py ${INSTALL_DIR}
   for s in sfigcc sfig++ bcld illegal nop ; do
     local t="llvm-fake-$s"
-    ln -fs llvm-fake.py ${DRIVER_INSTALL_DIR}/$t
+    ln -fs llvm-fake.py ${INSTALL_DIR}/$t
   done
 }
 
@@ -2215,7 +2287,7 @@ organize-native-code() {
 
   readonly arm_src=${INSTALL_ROOT}
   readonly x86_src=${NACL_TOOLCHAIN}
-  readonly arm_llvm_gcc=${TARGET_ROOT}
+  readonly arm_llvm_gcc=${INSTALL_DIR}
 
   StepBanner "PNaCl" "arm native code: ${PNACL_ARM_ROOT}"
   mkdir -p ${PNACL_ARM_ROOT}
@@ -2625,13 +2697,24 @@ StepBanner() {
     echo ""
     echo "-------------------------------------------------------------------"
     local padding=$(RepeatStr ' ' 28)
-    echo "$padding${module}"
+    echo "${padding}${module}"
     echo "-------------------------------------------------------------------"
   else
     shift 1
     local padding=$(RepeatStr ' ' $((20-${#module})) )
-    echo "${module}$padding" "$@"
+    echo "${module}${padding}" "$@"
   fi
+}
+
+Abort() {
+  local module="$1"
+
+  shift 1
+  local padding=$(RepeatStr ' ' $((20-${#module})) )
+  echo
+  echo "${module}${padding} ERROR:" "$@"
+  echo
+  exit -1
 }
 
 RepeatStr() {

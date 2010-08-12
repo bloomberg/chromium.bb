@@ -24,28 +24,32 @@ import struct
 import subprocess
 import sys
 
-# enable this for manual debugging of this script only
-# NOTE: Setting VERBOSE to "1" is useful for debugging.
-#       But it HAS to be zero in order to work with the llvm-gcc
-#       bootstrapping process. "Configure" is running the compiler in
-#       diagnostic mode and configure reads information that the driver
-#       generates on stdout and stderr
-VERBOSE = 0
+# This script resides in directory:
+# native_client/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi
 
-OUT=[sys.stderr]
-# if you want a log of all the action, remove comment below:
-OUT.append(open('/tmp/fake.log', 'a'))
+# BASE is "native_client/toolchain/linux_arm-untrusted"
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
+
+# BASE_NACL is "native_client" directory.
+BASE_NACL = os.path.dirname(os.path.dirname(BASE))
+
+assert os.path.basename(BASE) == "linux_arm-untrusted"
+assert os.path.basename(BASE_NACL) == "native_client"
+
+# Enable logging to llvm-fake.log
+# It's not safe to output debug information to stderr, because "configure"
+# runs this script and parses the output.
+# Instead, automatically log to 'toolchain/hg-log/llvm-fake.log'.
+VERBOSE = 1
+logfp = open(BASE_NACL + '/toolchain/hg-log/llvm-fake.log', 'a')
+OUT = [ logfp ]
 
 
 ######################################################################
 # Misc
 ######################################################################
 
-# e.g. $NACL/toolchain/linux_arm-untrusted
-BASE = os.path.dirname(os.path.dirname(sys.argv[0]))
-
 BASE_ARM = BASE + '/arm-none-linux-gnueabi'
-
 
 LD_SCRIPT_ARM = BASE_ARM + '/ld_script_arm_untrusted'
 
@@ -231,6 +235,11 @@ global_assemblers = {
 # Code
 ######################################################################
 
+def LogStart():
+  if VERBOSE:
+    for o in OUT:
+      print >> o, '-'*60
+
 def LogInfo(m):
   if VERBOSE:
     for o in OUT:
@@ -288,7 +297,7 @@ def SfiCompile(argv, arch, assembler, as_flags):
 
   triple=global_pnacl_triples[arch]
   llc = [LLC] + global_config_flags['LLC'][arch] + ['-mtriple=%s' % triple]
-  llc += ['-f', filename + '.opt.bc', '-o', filename + '.s']
+  llc += [ filename + '.opt.bc', '-o', filename + '.s']
   Run(llc)
 
   Assemble(assembler, as_flags,
@@ -610,7 +619,7 @@ def BitcodeToNative(argv, arch):
   if not os.path.isfile(LLC):
     LogFatal('You must create a symlink "%s" to your llc executable' % LLC)
 
-  Run([LLC] + llc_flags + ['-f', bitcode_combined, '-o', asm_combined])
+  Run([LLC] + llc_flags + [bitcode_combined, '-o', asm_combined])
 
   Run([ascom] + as_flags + [asm_combined, '-o', obj_combined])
 
@@ -656,6 +665,8 @@ def main(argv):
     else:
       new_argv.append(arg)
   argv = new_argv
+
+  LogStart()
 
   # mechanism to overwrite some global settings, e.g.:
   #  --pnacl-driver-set-AS_X8632=-a,-b,3
