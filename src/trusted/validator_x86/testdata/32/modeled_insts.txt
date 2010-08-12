@@ -3110,1271 +3110,1271 @@ Target: x86-32 bit mode
 *** PrefixF20F ***
 
   --- 10 ---
-  0f 10                       SSE2 OpcodeUsesModRm
+  f2 0f 10                    SSE2 OpcodeUsesModRm
     Movsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 11 ---
-  0f 11                       SSE2 OpcodeUsesModRm
+  f2 0f 11                    SSE2 OpcodeUsesModRm
     Movsd $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 12 ---
-  0f 12                       SSE3 OpcodeUsesModRm
+  f2 0f 12                    SSE3 OpcodeUsesModRm
     Movddup $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 13 ---
-  0f 13                       INVALID 
+  f2 0f 13                    INVALID 
   --- 14 ---
-  0f 14                       INVALID 
+  f2 0f 14                    INVALID 
   --- 15 ---
-  0f 15                       INVALID 
+  f2 0f 15                    INVALID 
   --- 16 ---
-  0f 16                       INVALID 
+  f2 0f 16                    INVALID 
   --- 17 ---
-  0f 17                       INVALID 
+  f2 0f 17                    INVALID 
   --- 28 ---
-  0f 28                       INVALID 
+  f2 0f 28                    INVALID 
   --- 29 ---
-  0f 29                       INVALID 
+  f2 0f 29                    INVALID 
   --- 2a ---
-  0f 2a                       SSE2 OpcodeUsesModRm
+  f2 0f 2a                    SSE2 OpcodeUsesModRm
     Cvtsi2sd $G(xmm), $E
       Xmm_G_Operand           OpSet OpDest
       E_Operand               OpUse
   --- 2b ---
-  0f 2b                       SSE4A ModRmModIsnt0x3 OpcodeUsesModRm
+  f2 0f 2b                    SSE4A ModRmModIsnt0x3 OpcodeUsesModRm
     Movntsd $M, $G(xmm)
       Mo_Operand              OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 2c ---
-  0f 2c                       SSE2 OpcodeUsesModRm
+  f2 0f 2c                    SSE2 OpcodeUsesModRm
     Cvttsd2si $G, $E(xmm)
       G_Operand               OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 2d ---
-  0f 2d                       SSE2 OpcodeUsesModRm
+  f2 0f 2d                    SSE2 OpcodeUsesModRm
     Cvtsd2si $G, $E(xmm)
       G_Operand               OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 2e ---
-  0f 2e                       INVALID 
+  f2 0f 2e                    INVALID 
   --- 2f ---
-  0f 2f                       INVALID 
+  f2 0f 2f                    INVALID 
   --- 50 ---
-  0f 50                       INVALID 
+  f2 0f 50                    INVALID 
   --- 51 ---
-  0f 51                       SSE2 OpcodeUsesModRm
+  f2 0f 51                    SSE2 OpcodeUsesModRm
     Sqrtsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 52 ---
-  0f 52                       INVALID 
+  f2 0f 52                    INVALID 
   --- 53 ---
-  0f 53                       INVALID 
+  f2 0f 53                    INVALID 
   --- 54 ---
-  0f 54                       INVALID 
+  f2 0f 54                    INVALID 
   --- 55 ---
-  0f 55                       INVALID 
+  f2 0f 55                    INVALID 
   --- 56 ---
-  0f 56                       INVALID 
+  f2 0f 56                    INVALID 
   --- 57 ---
-  0f 57                       INVALID 
+  f2 0f 57                    INVALID 
   --- 58 ---
-  0f 58                       SSE2 OpcodeUsesModRm
+  f2 0f 58                    SSE2 OpcodeUsesModRm
     Addsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 59 ---
-  0f 59                       SSE2 OpcodeUsesModRm
+  f2 0f 59                    SSE2 OpcodeUsesModRm
     Mulsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5a ---
-  0f 5a                       SSE2 OpcodeUsesModRm
+  f2 0f 5a                    SSE2 OpcodeUsesModRm
     Cvtsd2ss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5b ---
-  0f 5b                       INVALID 
+  f2 0f 5b                    INVALID 
   --- 5c ---
-  0f 5c                       SSE2 OpcodeUsesModRm
+  f2 0f 5c                    SSE2 OpcodeUsesModRm
     Subsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5d ---
-  0f 5d                       SSE2 OpcodeUsesModRm
+  f2 0f 5d                    SSE2 OpcodeUsesModRm
     Minsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5e ---
-  0f 5e                       SSE2 OpcodeUsesModRm
+  f2 0f 5e                    SSE2 OpcodeUsesModRm
     Divsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5f ---
-  0f 5f                       SSE2 OpcodeUsesModRm
+  f2 0f 5f                    SSE2 OpcodeUsesModRm
     Maxsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 60 ---
-  0f 60                       INVALID 
+  f2 0f 60                    INVALID 
   --- 61 ---
-  0f 61                       INVALID 
+  f2 0f 61                    INVALID 
   --- 62 ---
-  0f 62                       INVALID 
+  f2 0f 62                    INVALID 
   --- 63 ---
-  0f 63                       INVALID 
+  f2 0f 63                    INVALID 
   --- 64 ---
-  0f 64                       INVALID 
+  f2 0f 64                    INVALID 
   --- 65 ---
-  0f 65                       INVALID 
+  f2 0f 65                    INVALID 
   --- 66 ---
-  0f 66                       INVALID 
+  f2 0f 66                    INVALID 
   --- 67 ---
-  0f 67                       INVALID 
+  f2 0f 67                    INVALID 
   --- 70 ---
-  0f 70                       SSE2 OpcodeUsesModRm OpcodeHasImmed_b
+  f2 0f 70                    SSE2 OpcodeUsesModRm OpcodeHasImmed_b
     Pshuflw $G(xmm), $E(xmm), $I
       Xmm_Go_Operand          OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
       I_Operand               OpUse
   --- 71 ---
-  0f 71                       INVALID 
+  f2 0f 71                    INVALID 
   --- 72 ---
-  0f 72                       INVALID 
+  f2 0f 72                    INVALID 
   --- 73 ---
-  0f 73                       INVALID 
+  f2 0f 73                    INVALID 
   --- 74 ---
-  0f 74                       INVALID 
+  f2 0f 74                    INVALID 
   --- 75 ---
-  0f 75                       INVALID 
+  f2 0f 75                    INVALID 
   --- 76 ---
-  0f 76                       INVALID 
+  f2 0f 76                    INVALID 
   --- 77 ---
-  0f 77                       INVALID 
+  f2 0f 77                    INVALID 
   --- 78 ---
-  0f 78                       SSE4A ModRmModIs0x3 OpcodeUsesModRm OpcodeHasImmed_b OpcodeHasImmed2_b
+  f2 0f 78                    SSE4A ModRmModIs0x3 OpcodeUsesModRm OpcodeHasImmed_b OpcodeHasImmed2_b
     Insertq $G(xmm), $E(xmm), $I, $I
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
       I2_Operand              OpUse
   --- 79 ---
-  0f 79                       SSE4A ModRmModIs0x3 OpcodeUsesModRm
+  f2 0f 79                    SSE4A ModRmModIs0x3 OpcodeUsesModRm
     Insertq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 7a ---
-  0f 7a                       INVALID 
+  f2 0f 7a                    INVALID 
   --- 7b ---
-  0f 7b                       INVALID 
+  f2 0f 7b                    INVALID 
   --- 7c ---
-  0f 7c                       SSE3 OpcodeUsesModRm
+  f2 0f 7c                    SSE3 OpcodeUsesModRm
     Haddps $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 7d ---
-  0f 7d                       SSE3 OpcodeUsesModRm
+  f2 0f 7d                    SSE3 OpcodeUsesModRm
     Hsubps $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 7e ---
-  0f 7e                       INVALID 
+  f2 0f 7e                    INVALID 
   --- 7f ---
-  0f 7f                       INVALID 
+  f2 0f 7f                    INVALID 
   --- ae ---
-  0f ae                       INVALID 
+  f2 0f ae                    INVALID 
   --- b8 ---
-  0f b8                       INVALID 
+  f2 0f b8                    INVALID 
   --- b9 ---
-  0f b9                       INVALID 
+  f2 0f b9                    INVALID 
   --- ba ---
-  0f ba                       INVALID 
+  f2 0f ba                    INVALID 
   --- bb ---
-  0f bb                       INVALID 
+  f2 0f bb                    INVALID 
   --- bc ---
-  0f bc                       INVALID 
+  f2 0f bc                    INVALID 
   --- bd ---
-  0f bd                       INVALID 
+  f2 0f bd                    INVALID 
   --- be ---
-  0f be                       INVALID 
+  f2 0f be                    INVALID 
   --- bf ---
-  0f bf                       INVALID 
+  f2 0f bf                    INVALID 
   --- c2 ---
-  0f c2                       SSE2 OpcodeUsesModRm OpcodeHasImmed_b
+  f2 0f c2                    SSE2 OpcodeUsesModRm OpcodeHasImmed_b
     Cmpsd_xmm $G(xmm), $E(xmm), $I
       Xmm_G_Operand           OpSet
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   --- c3 ---
-  0f c3                       INVALID 
+  f2 0f c3                    INVALID 
   --- c4 ---
-  0f c4                       INVALID 
+  f2 0f c4                    INVALID 
   --- c5 ---
-  0f c5                       INVALID 
+  f2 0f c5                    INVALID 
   --- c6 ---
-  0f c6                       INVALID 
+  f2 0f c6                    INVALID 
   --- d0 ---
-  0f d0                       SSE3 OpcodeUsesModRm
+  f2 0f d0                    SSE3 OpcodeUsesModRm
     Addsubps $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d1 ---
-  0f d1                       INVALID 
+  f2 0f d1                    INVALID 
   --- d2 ---
-  0f d2                       INVALID 
+  f2 0f d2                    INVALID 
   --- d3 ---
-  0f d3                       INVALID 
+  f2 0f d3                    INVALID 
   --- d4 ---
-  0f d4                       INVALID 
+  f2 0f d4                    INVALID 
   --- d5 ---
-  0f d5                       INVALID 
+  f2 0f d5                    INVALID 
   --- d6 ---
-  0f d6                       SSE2 ModRmModIs0x3 OpcodeUsesModRm
+  f2 0f d6                    SSE2 ModRmModIs0x3 OpcodeUsesModRm
     Movdq2q $G(mmx), $E(xmm)
       Mmx_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d7 ---
-  0f d7                       INVALID 
+  f2 0f d7                    INVALID 
   --- d8 ---
-  0f d8                       INVALID 
+  f2 0f d8                    INVALID 
   --- d9 ---
-  0f d9                       INVALID 
+  f2 0f d9                    INVALID 
   --- da ---
-  0f da                       INVALID 
+  f2 0f da                    INVALID 
   --- db ---
-  0f db                       INVALID 
+  f2 0f db                    INVALID 
   --- dc ---
-  0f dc                       INVALID 
+  f2 0f dc                    INVALID 
   --- dd ---
-  0f dd                       INVALID 
+  f2 0f dd                    INVALID 
   --- de ---
-  0f de                       INVALID 
+  f2 0f de                    INVALID 
   --- df ---
-  0f df                       INVALID 
+  f2 0f df                    INVALID 
   --- e0 ---
-  0f e0                       INVALID 
+  f2 0f e0                    INVALID 
   --- e1 ---
-  0f e1                       INVALID 
+  f2 0f e1                    INVALID 
   --- e2 ---
-  0f e2                       INVALID 
+  f2 0f e2                    INVALID 
   --- e3 ---
-  0f e3                       INVALID 
+  f2 0f e3                    INVALID 
   --- e4 ---
-  0f e4                       INVALID 
+  f2 0f e4                    INVALID 
   --- e5 ---
-  0f e5                       INVALID 
+  f2 0f e5                    INVALID 
   --- e6 ---
-  0f e6                       SSE2 OpcodeUsesModRm
+  f2 0f e6                    SSE2 OpcodeUsesModRm
     Cvtpd2dq $G(xmm), $E(xmm)
       Xmm_Go_Operand          OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e7 ---
-  0f e7                       INVALID 
+  f2 0f e7                    INVALID 
   --- e8 ---
-  0f e8                       INVALID 
+  f2 0f e8                    INVALID 
   --- e9 ---
-  0f e9                       INVALID 
+  f2 0f e9                    INVALID 
   --- ea ---
-  0f ea                       INVALID 
+  f2 0f ea                    INVALID 
   --- eb ---
-  0f eb                       INVALID 
+  f2 0f eb                    INVALID 
   --- ec ---
-  0f ec                       INVALID 
+  f2 0f ec                    INVALID 
   --- ed ---
-  0f ed                       INVALID 
+  f2 0f ed                    INVALID 
   --- ee ---
-  0f ee                       INVALID 
+  f2 0f ee                    INVALID 
   --- ef ---
-  0f ef                       INVALID 
+  f2 0f ef                    INVALID 
   --- f0 ---
-  0f f0                       SSE3 ModRmModIsnt0x3 OpcodeUsesModRm
+  f2 0f f0                    SSE3 ModRmModIsnt0x3 OpcodeUsesModRm
     Lddqu $G(xmm), $M
       Xmm_G_Operand           OpSet OpDest
       Mdq_Operand             OpUse
   --- f1 ---
-  0f f1                       INVALID 
+  f2 0f f1                    INVALID 
   --- f2 ---
-  0f f2                       INVALID 
+  f2 0f f2                    INVALID 
   --- f3 ---
-  0f f3                       INVALID 
+  f2 0f f3                    INVALID 
   --- f4 ---
-  0f f4                       INVALID 
+  f2 0f f4                    INVALID 
   --- f5 ---
-  0f f5                       INVALID 
+  f2 0f f5                    INVALID 
   --- f6 ---
-  0f f6                       INVALID 
+  f2 0f f6                    INVALID 
   --- f7 ---
-  0f f7                       INVALID 
+  f2 0f f7                    INVALID 
   --- f8 ---
-  0f f8                       INVALID 
+  f2 0f f8                    INVALID 
   --- f9 ---
-  0f f9                       INVALID 
+  f2 0f f9                    INVALID 
   --- fa ---
-  0f fa                       INVALID 
+  f2 0f fa                    INVALID 
   --- fb ---
-  0f fb                       INVALID 
+  f2 0f fb                    INVALID 
   --- fc ---
-  0f fc                       INVALID 
+  f2 0f fc                    INVALID 
   --- fd ---
-  0f fd                       INVALID 
+  f2 0f fd                    INVALID 
   --- fe ---
-  0f fe                       INVALID 
+  f2 0f fe                    INVALID 
   --- ff ---
-  0f ff                       INVALID 
+  f2 0f ff                    INVALID 
 
 *** PrefixF30F ***
 
   --- 10 ---
-  0f 10                       SSE OpcodeUsesModRm
+  f3 0f 10                    SSE OpcodeUsesModRm
     Movss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 11 ---
-  0f 11                       SSE OpcodeUsesModRm
+  f3 0f 11                    SSE OpcodeUsesModRm
     Movss $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 12 ---
-  0f 12                       SSE3 OpcodeUsesModRm
+  f3 0f 12                    SSE3 OpcodeUsesModRm
     Movsldup $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 13 ---
-  0f 13                       INVALID 
+  f3 0f 13                    INVALID 
   --- 14 ---
-  0f 14                       INVALID 
+  f3 0f 14                    INVALID 
   --- 15 ---
-  0f 15                       INVALID 
+  f3 0f 15                    INVALID 
   --- 16 ---
-  0f 16                       SSE3 OpcodeUsesModRm
+  f3 0f 16                    SSE3 OpcodeUsesModRm
     Movshdup $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 17 ---
-  0f 17                       INVALID 
+  f3 0f 17                    INVALID 
   --- 28 ---
-  0f 28                       INVALID 
+  f3 0f 28                    INVALID 
   --- 29 ---
-  0f 29                       INVALID 
+  f3 0f 29                    INVALID 
   --- 2a ---
-  0f 2a                       SSE OpcodeUsesModRm
+  f3 0f 2a                    SSE OpcodeUsesModRm
     Cvtsi2ss $G(xmm), $E
       Xmm_G_Operand           OpSet OpDest
       E_Operand               OpUse
   --- 2b ---
-  0f 2b                       SSE4A ModRmModIsnt0x3 OpcodeUsesModRm
+  f3 0f 2b                    SSE4A ModRmModIsnt0x3 OpcodeUsesModRm
     Movntss $M, $G(xmm)
       Mv_Operand              OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 2c ---
-  0f 2c                       SSE OpcodeUsesModRm
+  f3 0f 2c                    SSE OpcodeUsesModRm
     Cvttss2si $G, $E(xmm)
       G_Operand               OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 2d ---
-  0f 2d                       SSE OpcodeUsesModRm
+  f3 0f 2d                    SSE OpcodeUsesModRm
     Cvtss2si $G, $E(xmm)
       G_Operand               OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 2e ---
-  0f 2e                       INVALID 
+  f3 0f 2e                    INVALID 
   --- 2f ---
-  0f 2f                       INVALID 
+  f3 0f 2f                    INVALID 
   --- 50 ---
-  0f 50                       INVALID 
+  f3 0f 50                    INVALID 
   --- 51 ---
-  0f 51                       SSE OpcodeUsesModRm
+  f3 0f 51                    SSE OpcodeUsesModRm
     Sqrtss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 52 ---
-  0f 52                       SSE OpcodeUsesModRm
+  f3 0f 52                    SSE OpcodeUsesModRm
     Rsqrtss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 53 ---
-  0f 53                       SSE OpcodeUsesModRm
+  f3 0f 53                    SSE OpcodeUsesModRm
     Rcpss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 54 ---
-  0f 54                       INVALID 
+  f3 0f 54                    INVALID 
   --- 55 ---
-  0f 55                       INVALID 
+  f3 0f 55                    INVALID 
   --- 56 ---
-  0f 56                       INVALID 
+  f3 0f 56                    INVALID 
   --- 57 ---
-  0f 57                       INVALID 
+  f3 0f 57                    INVALID 
   --- 58 ---
-  0f 58                       SSE OpcodeUsesModRm
+  f3 0f 58                    SSE OpcodeUsesModRm
     Addss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 59 ---
-  0f 59                       SSE OpcodeUsesModRm
+  f3 0f 59                    SSE OpcodeUsesModRm
     Mulss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5a ---
-  0f 5a                       SSE2 OpcodeUsesModRm
+  f3 0f 5a                    SSE2 OpcodeUsesModRm
     Cvtss2sd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5b ---
-  0f 5b                       SSE2 OpcodeUsesModRm
+  f3 0f 5b                    SSE2 OpcodeUsesModRm
     Cvttps2dq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5c ---
-  0f 5c                       SSE OpcodeUsesModRm
+  f3 0f 5c                    SSE OpcodeUsesModRm
     Subss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5d ---
-  0f 5d                       SSE OpcodeUsesModRm
+  f3 0f 5d                    SSE OpcodeUsesModRm
     Minss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5e ---
-  0f 5e                       SSE OpcodeUsesModRm
+  f3 0f 5e                    SSE OpcodeUsesModRm
     Divss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5f ---
-  0f 5f                       SSE OpcodeUsesModRm
+  f3 0f 5f                    SSE OpcodeUsesModRm
     Maxss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 60 ---
-  0f 60                       INVALID 
+  f3 0f 60                    INVALID 
   --- 61 ---
-  0f 61                       INVALID 
+  f3 0f 61                    INVALID 
   --- 62 ---
-  0f 62                       INVALID 
+  f3 0f 62                    INVALID 
   --- 63 ---
-  0f 63                       INVALID 
+  f3 0f 63                    INVALID 
   --- 64 ---
-  0f 64                       INVALID 
+  f3 0f 64                    INVALID 
   --- 65 ---
-  0f 65                       INVALID 
+  f3 0f 65                    INVALID 
   --- 66 ---
-  0f 66                       INVALID 
+  f3 0f 66                    INVALID 
   --- 67 ---
-  0f 67                       INVALID 
+  f3 0f 67                    INVALID 
   --- 6f ---
-  0f 6f                       SSE2 OpcodeUsesModRm
+  f3 0f 6f                    SSE2 OpcodeUsesModRm
     Movdqu $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 70 ---
-  0f 70                       SSE2 OpcodeUsesModRm OpcodeHasImmed_b
+  f3 0f 70                    SSE2 OpcodeUsesModRm OpcodeHasImmed_b
     Pshufhw $G(xmm), $E(xmm), $I
       Xmm_Go_Operand          OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
       I_Operand               OpUse
   --- 71 ---
-  0f 71                       INVALID 
+  f3 0f 71                    INVALID 
   --- 72 ---
-  0f 72                       INVALID 
+  f3 0f 72                    INVALID 
   --- 73 ---
-  0f 73                       INVALID 
+  f3 0f 73                    INVALID 
   --- 74 ---
-  0f 74                       INVALID 
+  f3 0f 74                    INVALID 
   --- 75 ---
-  0f 75                       INVALID 
+  f3 0f 75                    INVALID 
   --- 76 ---
-  0f 76                       INVALID 
+  f3 0f 76                    INVALID 
   --- 77 ---
-  0f 77                       INVALID 
+  f3 0f 77                    INVALID 
   --- 78 ---
-  0f 78                       INVALID 
+  f3 0f 78                    INVALID 
   --- 79 ---
-  0f 79                       INVALID 
+  f3 0f 79                    INVALID 
   --- 7a ---
-  0f 7a                       INVALID 
+  f3 0f 7a                    INVALID 
   --- 7b ---
-  0f 7b                       INVALID 
+  f3 0f 7b                    INVALID 
   --- 7c ---
-  0f 7c                       INVALID 
+  f3 0f 7c                    INVALID 
   --- 7d ---
-  0f 7d                       INVALID 
+  f3 0f 7d                    INVALID 
   --- 7e ---
-  0f 7e                       SSE2 OpcodeUsesModRm
+  f3 0f 7e                    SSE2 OpcodeUsesModRm
     Movq $G(xmm), $E(xmm)
       Xmm_Go_Operand          OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 7f ---
-  0f 7f                       SSE2 OpcodeUsesModRm
+  f3 0f 7f                    SSE2 OpcodeUsesModRm
     Movdqu $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
   --- ae ---
-  0f ae                       INVALID 
+  f3 0f ae                    INVALID 
   --- b9 ---
-  0f b9                       INVALID 
+  f3 0f b9                    INVALID 
   --- ba ---
-  0f ba                       INVALID 
+  f3 0f ba                    INVALID 
   --- bb ---
-  0f bb                       INVALID 
+  f3 0f bb                    INVALID 
   --- bc ---
-  0f bc                       INVALID 
+  f3 0f bc                    INVALID 
   --- bd ---
-  0f bd                       INVALID 
+  f3 0f bd                    INVALID 
   --- be ---
-  0f be                       INVALID 
+  f3 0f be                    INVALID 
   --- bf ---
-  0f bf                       INVALID 
+  f3 0f bf                    INVALID 
   --- c2 ---
-  0f c2                       SSE OpcodeUsesModRm OpcodeHasImmed_b
+  f3 0f c2                    SSE OpcodeUsesModRm OpcodeHasImmed_b
     Cmpss $G(xmm), $E(xmm), $I
       Xmm_G_Operand           OpSet
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   --- c3 ---
-  0f c3                       INVALID 
+  f3 0f c3                    INVALID 
   --- c4 ---
-  0f c4                       INVALID 
+  f3 0f c4                    INVALID 
   --- c5 ---
-  0f c5                       INVALID 
+  f3 0f c5                    INVALID 
   --- c6 ---
-  0f c6                       INVALID 
+  f3 0f c6                    INVALID 
   --- d0 ---
-  0f d0                       INVALID 
+  f3 0f d0                    INVALID 
   --- d1 ---
-  0f d1                       INVALID 
+  f3 0f d1                    INVALID 
   --- d2 ---
-  0f d2                       INVALID 
+  f3 0f d2                    INVALID 
   --- d3 ---
-  0f d3                       INVALID 
+  f3 0f d3                    INVALID 
   --- d4 ---
-  0f d4                       INVALID 
+  f3 0f d4                    INVALID 
   --- d5 ---
-  0f d5                       INVALID 
+  f3 0f d5                    INVALID 
   --- d6 ---
-  0f d6                       SSE2 ModRmModIs0x3 OpcodeUsesModRm
+  f3 0f d6                    SSE2 ModRmModIs0x3 OpcodeUsesModRm
     Movq2dq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d7 ---
-  0f d7                       INVALID 
+  f3 0f d7                    INVALID 
   --- d8 ---
-  0f d8                       INVALID 
+  f3 0f d8                    INVALID 
   --- d9 ---
-  0f d9                       INVALID 
+  f3 0f d9                    INVALID 
   --- da ---
-  0f da                       INVALID 
+  f3 0f da                    INVALID 
   --- db ---
-  0f db                       INVALID 
+  f3 0f db                    INVALID 
   --- dc ---
-  0f dc                       INVALID 
+  f3 0f dc                    INVALID 
   --- dd ---
-  0f dd                       INVALID 
+  f3 0f dd                    INVALID 
   --- de ---
-  0f de                       INVALID 
+  f3 0f de                    INVALID 
   --- df ---
-  0f df                       INVALID 
+  f3 0f df                    INVALID 
   --- e0 ---
-  0f e0                       INVALID 
+  f3 0f e0                    INVALID 
   --- e1 ---
-  0f e1                       INVALID 
+  f3 0f e1                    INVALID 
   --- e2 ---
-  0f e2                       INVALID 
+  f3 0f e2                    INVALID 
   --- e3 ---
-  0f e3                       INVALID 
+  f3 0f e3                    INVALID 
   --- e4 ---
-  0f e4                       INVALID 
+  f3 0f e4                    INVALID 
   --- e5 ---
-  0f e5                       INVALID 
+  f3 0f e5                    INVALID 
   --- e6 ---
-  0f e6                       SSE2 OpcodeUsesModRm
+  f3 0f e6                    SSE2 OpcodeUsesModRm
     Cvtdq2pd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- e7 ---
-  0f e7                       INVALID 
+  f3 0f e7                    INVALID 
   --- e8 ---
-  0f e8                       INVALID 
+  f3 0f e8                    INVALID 
   --- e9 ---
-  0f e9                       INVALID 
+  f3 0f e9                    INVALID 
   --- ea ---
-  0f ea                       INVALID 
+  f3 0f ea                    INVALID 
   --- eb ---
-  0f eb                       INVALID 
+  f3 0f eb                    INVALID 
   --- ec ---
-  0f ec                       INVALID 
+  f3 0f ec                    INVALID 
   --- ed ---
-  0f ed                       INVALID 
+  f3 0f ed                    INVALID 
   --- ee ---
-  0f ee                       INVALID 
+  f3 0f ee                    INVALID 
   --- ef ---
-  0f ef                       INVALID 
+  f3 0f ef                    INVALID 
   --- f0 ---
-  0f f0                       INVALID 
+  f3 0f f0                    INVALID 
   --- f1 ---
-  0f f1                       INVALID 
+  f3 0f f1                    INVALID 
   --- f2 ---
-  0f f2                       INVALID 
+  f3 0f f2                    INVALID 
   --- f3 ---
-  0f f3                       INVALID 
+  f3 0f f3                    INVALID 
   --- f4 ---
-  0f f4                       INVALID 
+  f3 0f f4                    INVALID 
   --- f5 ---
-  0f f5                       INVALID 
+  f3 0f f5                    INVALID 
   --- f6 ---
-  0f f6                       INVALID 
+  f3 0f f6                    INVALID 
   --- f7 ---
-  0f f7                       INVALID 
+  f3 0f f7                    INVALID 
   --- f8 ---
-  0f f8                       INVALID 
+  f3 0f f8                    INVALID 
   --- f9 ---
-  0f f9                       INVALID 
+  f3 0f f9                    INVALID 
   --- fa ---
-  0f fa                       INVALID 
+  f3 0f fa                    INVALID 
   --- fb ---
-  0f fb                       INVALID 
+  f3 0f fb                    INVALID 
   --- fc ---
-  0f fc                       INVALID 
+  f3 0f fc                    INVALID 
   --- fd ---
-  0f fd                       INVALID 
+  f3 0f fd                    INVALID 
   --- fe ---
-  0f fe                       INVALID 
+  f3 0f fe                    INVALID 
   --- ff ---
-  0f ff                       INVALID 
+  f3 0f ff                    INVALID 
 
 *** Prefix660F ***
 
   --- 10 ---
-  0f 10                       SSE2 OpcodeUsesModRm
+  66 0f 10                    SSE2 OpcodeUsesModRm
     Movupd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 11 ---
-  0f 11                       SSE2 OpcodeUsesModRm
+  66 0f 11                    SSE2 OpcodeUsesModRm
     Movupd $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 12 ---
-  0f 12                       SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
+  66 0f 12                    SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
     Movlpd $G(xmm), $M
       Xmm_G_Operand           OpSet OpDest
       Mo_Operand              OpUse
   --- 13 ---
-  0f 13                       SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
+  66 0f 13                    SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
     Movlpd $M, $G(xmm)
       Mo_Operand              OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 14 ---
-  0f 14                       SSE2 OpcodeUsesModRm
+  66 0f 14                    SSE2 OpcodeUsesModRm
     Unpcklpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 15 ---
-  0f 15                       SSE2 OpcodeUsesModRm
+  66 0f 15                    SSE2 OpcodeUsesModRm
     Unpckhpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 16 ---
-  0f 16                       SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
+  66 0f 16                    SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
     Movhpd $G(xmm), $M
       Xmm_G_Operand           OpSet OpDest
       Mo_Operand              OpUse
   --- 17 ---
-  0f 17                       SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
+  66 0f 17                    SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
     Movhpd $M, $G(xmm)
       Mo_Operand              OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 28 ---
-  0f 28                       SSE2 OpcodeUsesModRm
+  66 0f 28                    SSE2 OpcodeUsesModRm
     Movapd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 29 ---
-  0f 29                       SSE2 OpcodeUsesModRm
+  66 0f 29                    SSE2 OpcodeUsesModRm
     Movapd $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 2a ---
-  0f 2a                       SSE2 OpcodeUsesModRm
+  66 0f 2a                    SSE2 OpcodeUsesModRm
     Cvtpi2pd $G(xmm), $E(mmx)
       Xmm_G_Operand           OpSet OpDest
       Mmx_E_Operand           OpUse
   --- 2b ---
-  0f 2b                       SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
+  66 0f 2b                    SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
     Movntpd $M, $G(xmm)
       Mdq_Operand             OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 2c ---
-  0f 2c                       SSE2 OpcodeUsesModRm
+  66 0f 2c                    SSE2 OpcodeUsesModRm
     Cvttpd2pi $G(mmx), $E(xmm)
       Mmx_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 2d ---
-  0f 2d                       SSE2 OpcodeUsesModRm
+  66 0f 2d                    SSE2 OpcodeUsesModRm
     Cvtpd2pi $G(mmx), $E(xmm)
       Mmx_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 2e ---
-  0f 2e                       SSE2 OpcodeUsesModRm
+  66 0f 2e                    SSE2 OpcodeUsesModRm
     Ucomisd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
   --- 2f ---
-  0f 2f                       SSE2 OpcodeUsesModRm
+  66 0f 2f                    SSE2 OpcodeUsesModRm
     Comisd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
   --- 50 ---
-  0f 50                       SSE2 ModRmModIs0x3 OpcodeUsesModRm
+  66 0f 50                    SSE2 ModRmModIs0x3 OpcodeUsesModRm
     Movmskpd $G, $E(xmm)
       Gv_Operand              OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 51 ---
-  0f 51                       SSE2 OpcodeUsesModRm
+  66 0f 51                    SSE2 OpcodeUsesModRm
     Sqrtpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 52 ---
-  0f 52                       INVALID 
+  66 0f 52                    INVALID 
   --- 53 ---
-  0f 53                       INVALID 
+  66 0f 53                    INVALID 
   --- 54 ---
-  0f 54                       SSE2 OpcodeUsesModRm
+  66 0f 54                    SSE2 OpcodeUsesModRm
     Andpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 55 ---
-  0f 55                       SSE2 OpcodeUsesModRm
+  66 0f 55                    SSE2 OpcodeUsesModRm
     Andnpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 56 ---
-  0f 56                       SSE2 OpcodeUsesModRm
+  66 0f 56                    SSE2 OpcodeUsesModRm
     Orpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 57 ---
-  0f 57                       SSE2 OpcodeUsesModRm
+  66 0f 57                    SSE2 OpcodeUsesModRm
     Xorpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 58 ---
-  0f 58                       SSE2 OpcodeUsesModRm
+  66 0f 58                    SSE2 OpcodeUsesModRm
     Addpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 59 ---
-  0f 59                       SSE2 OpcodeUsesModRm
+  66 0f 59                    SSE2 OpcodeUsesModRm
     Mulpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5a ---
-  0f 5a                       SSE2 OpcodeUsesModRm
+  66 0f 5a                    SSE2 OpcodeUsesModRm
     Cvtpd2ps $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5b ---
-  0f 5b                       SSE2 OpcodeUsesModRm
+  66 0f 5b                    SSE2 OpcodeUsesModRm
     Cvtps2dq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5c ---
-  0f 5c                       SSE2 OpcodeUsesModRm
+  66 0f 5c                    SSE2 OpcodeUsesModRm
     Subpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5d ---
-  0f 5d                       SSE2 OpcodeUsesModRm
+  66 0f 5d                    SSE2 OpcodeUsesModRm
     Minpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5e ---
-  0f 5e                       SSE2 OpcodeUsesModRm
+  66 0f 5e                    SSE2 OpcodeUsesModRm
     Divpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 5f ---
-  0f 5f                       SSE2 OpcodeUsesModRm
+  66 0f 5f                    SSE2 OpcodeUsesModRm
     Maxpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 60 ---
-  0f 60                       SSE2 OpcodeUsesModRm
+  66 0f 60                    SSE2 OpcodeUsesModRm
     Punpcklbw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 61 ---
-  0f 61                       SSE2 OpcodeUsesModRm
+  66 0f 61                    SSE2 OpcodeUsesModRm
     Punpcklwd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 62 ---
-  0f 62                       SSE2 OpcodeUsesModRm
+  66 0f 62                    SSE2 OpcodeUsesModRm
     Punpckldq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 63 ---
-  0f 63                       SSE2 OpcodeUsesModRm
+  66 0f 63                    SSE2 OpcodeUsesModRm
     Packsswb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 64 ---
-  0f 64                       SSE2 OpcodeUsesModRm
+  66 0f 64                    SSE2 OpcodeUsesModRm
     Pcmpgtb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 65 ---
-  0f 65                       SSE2 OpcodeUsesModRm
+  66 0f 65                    SSE2 OpcodeUsesModRm
     Pcmpgtw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 66 ---
-  0f 66                       SSE2 OpcodeUsesModRm
+  66 0f 66                    SSE2 OpcodeUsesModRm
     Pcmpgtd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 67 ---
-  0f 67                       SSE2 OpcodeUsesModRm
+  66 0f 67                    SSE2 OpcodeUsesModRm
     Packuswb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 68 ---
-  0f 68                       SSE2 OpcodeUsesModRm
+  66 0f 68                    SSE2 OpcodeUsesModRm
     Punpckhbw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 69 ---
-  0f 69                       SSE2 OpcodeUsesModRm
+  66 0f 69                    SSE2 OpcodeUsesModRm
     Punpckhwd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 6a ---
-  0f 6a                       SSE2 OpcodeUsesModRm
+  66 0f 6a                    SSE2 OpcodeUsesModRm
     Punpckhdq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 6b ---
-  0f 6b                       SSE2 OpcodeUsesModRm
+  66 0f 6b                    SSE2 OpcodeUsesModRm
     Packssdw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 6c ---
-  0f 6c                       SSE2 OpcodeUsesModRm
+  66 0f 6c                    SSE2 OpcodeUsesModRm
     Punpcklqdq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 6d ---
-  0f 6d                       SSE2 OpcodeUsesModRm
+  66 0f 6d                    SSE2 OpcodeUsesModRm
     Punpckhqdq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_Eo_Operand          OpUse
   --- 6e ---
-  0f 6e                       SSE2 OpcodeUsesModRm
+  66 0f 6e                    SSE2 OpcodeUsesModRm
     Movd $G(xmm), $E
       Xmm_G_Operand           OpSet OpDest
       E_Operand               OpUse
   --- 6f ---
-  0f 6f                       SSE2 OpcodeUsesModRm
+  66 0f 6f                    SSE2 OpcodeUsesModRm
     Movdqa $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 70 ---
-  0f 70                       SSE2 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f 70                    SSE2 OpcodeUsesModRm OpcodeHasImmed_b
     Pshufd $G(xmm), $E(xmm), $I
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   --- 71 ---
-  0f 71 / 0                   INVALID OpcodeInModRm
-  0f 71 / 1                   INVALID OpcodeInModRm
-  0f 71 / 2                   SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 71 / 0                INVALID OpcodeInModRm
+  66 0f 71 / 1                INVALID OpcodeInModRm
+  66 0f 71 / 2                SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Psrlw $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
-  0f 71 / 3                   INVALID OpcodeInModRm
-  0f 71 / 4                   SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 71 / 3                INVALID OpcodeInModRm
+  66 0f 71 / 4                SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Psraw $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
-  0f 71 / 5                   INVALID OpcodeInModRm
-  0f 71 / 6                   SSE3 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 71 / 5                INVALID OpcodeInModRm
+  66 0f 71 / 6                SSE3 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Psllw $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
-  0f 71 / 7                   INVALID OpcodeInModRm
+  66 0f 71 / 7                INVALID OpcodeInModRm
   --- 72 ---
-  0f 72 / 0                   INVALID OpcodeInModRm
-  0f 72 / 1                   INVALID OpcodeInModRm
-  0f 72 / 2                   SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 72 / 0                INVALID OpcodeInModRm
+  66 0f 72 / 1                INVALID OpcodeInModRm
+  66 0f 72 / 2                SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Psrld $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
-  0f 72 / 3                   INVALID OpcodeInModRm
-  0f 72 / 4                   SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 72 / 3                INVALID OpcodeInModRm
+  66 0f 72 / 4                SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Psrad $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
-  0f 72 / 5                   INVALID OpcodeInModRm
-  0f 72 / 6                   SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 72 / 5                INVALID OpcodeInModRm
+  66 0f 72 / 6                SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Pslld $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
-  0f 72 / 7                   INVALID OpcodeInModRm
+  66 0f 72 / 7                INVALID OpcodeInModRm
   --- 73 ---
-  0f 73 / 0                   INVALID OpcodeInModRm
-  0f 73 / 1                   INVALID OpcodeInModRm
-  0f 73 / 2                   SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 73 / 0                INVALID OpcodeInModRm
+  66 0f 73 / 1                INVALID OpcodeInModRm
+  66 0f 73 / 2                SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Psrlq $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
-  0f 73 / 3                   SSE2x OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 73 / 3                SSE2x OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Psrldq $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
-  0f 73 / 4                   INVALID OpcodeInModRm
-  0f 73 / 5                   INVALID OpcodeInModRm
-  0f 73 / 6                   SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 73 / 4                INVALID OpcodeInModRm
+  66 0f 73 / 5                INVALID OpcodeInModRm
+  66 0f 73 / 6                SSE2 OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Psllq $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
-  0f 73 / 7                   SSE2x OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
+  66 0f 73 / 7                SSE2x OpcodeInModRm ModRmModIs0x3 OpcodeHasImmed_b
     Pslldq $E(xmm), $I
       Xmm_E_Operand           OpUse OpSet OpDest
       I_Operand               OpUse
   --- 74 ---
-  0f 74                       SSE2 OpcodeUsesModRm
+  66 0f 74                    SSE2 OpcodeUsesModRm
     Pcmpeqb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 75 ---
-  0f 75                       SSE2 OpcodeUsesModRm
+  66 0f 75                    SSE2 OpcodeUsesModRm
     Pcmpeqw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 76 ---
-  0f 76                       SSE2 OpcodeUsesModRm
+  66 0f 76                    SSE2 OpcodeUsesModRm
     Pcmpeqd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 77 ---
-  0f 77                       INVALID 
+  66 0f 77                    INVALID 
   --- 78 ---
-  0f 78 / 0                   SSE4A OpcodeInModRm OpcodeHasImmed_b OpcodeHasImmed2_b
+  66 0f 78 / 0                SSE4A OpcodeInModRm OpcodeHasImmed_b OpcodeHasImmed2_b
     Extrq $G(xmm), $I, $I
       Xmm_G_Operand           OpUse OpSet OpDest AllowGOperandWithOpcodeInModRm
       I_Operand               OpUse
       I2_Operand              OpUse
-  0f 78 / 1                   INVALID OpcodeInModRm
-  0f 78 / 2                   INVALID OpcodeInModRm
-  0f 78 / 3                   INVALID OpcodeInModRm
-  0f 78 / 4                   INVALID OpcodeInModRm
-  0f 78 / 5                   INVALID OpcodeInModRm
-  0f 78 / 6                   INVALID OpcodeInModRm
-  0f 78 / 7                   INVALID OpcodeInModRm
+  66 0f 78 / 1                INVALID OpcodeInModRm
+  66 0f 78 / 2                INVALID OpcodeInModRm
+  66 0f 78 / 3                INVALID OpcodeInModRm
+  66 0f 78 / 4                INVALID OpcodeInModRm
+  66 0f 78 / 5                INVALID OpcodeInModRm
+  66 0f 78 / 6                INVALID OpcodeInModRm
+  66 0f 78 / 7                INVALID OpcodeInModRm
   --- 79 ---
-  0f 79                       SSE4A ModRmModIs0x3 OpcodeUsesModRm
+  66 0f 79                    SSE4A ModRmModIs0x3 OpcodeUsesModRm
     Extrq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 7a ---
-  0f 7a                       INVALID 
+  66 0f 7a                    INVALID 
   --- 7b ---
-  0f 7b                       INVALID 
+  66 0f 7b                    INVALID 
   --- 7c ---
-  0f 7c                       SSE2 OpcodeUsesModRm
+  66 0f 7c                    SSE2 OpcodeUsesModRm
     Haddpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 7d ---
-  0f 7d                       SSE2 OpcodeUsesModRm
+  66 0f 7d                    SSE2 OpcodeUsesModRm
     Hsubpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 7e ---
-  0f 7e                       SSE2 OpcodeUsesModRm
+  66 0f 7e                    SSE2 OpcodeUsesModRm
     Movd $E, $G(xmm)
       E_Operand               OpSet OpDest
       Xmm_G_Operand           OpUse
   --- 7f ---
-  0f 7f                       SSE2 OpcodeUsesModRm
+  66 0f 7f                    SSE2 OpcodeUsesModRm
     Movdqa $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
   --- ae ---
-  0f ae                       INVALID 
+  66 0f ae                    INVALID 
   --- b8 ---
-  0f b8                       INVALID 
+  66 0f b8                    INVALID 
   --- b9 ---
-  0f b9                       INVALID 
+  66 0f b9                    INVALID 
   --- ba ---
-  0f ba                       INVALID 
+  66 0f ba                    INVALID 
   --- bb ---
-  0f bb                       INVALID 
+  66 0f bb                    INVALID 
   --- bc ---
-  0f bc                       INVALID 
+  66 0f bc                    INVALID 
   --- bd ---
-  0f bd                       INVALID 
+  66 0f bd                    INVALID 
   --- be ---
-  0f be                       INVALID 
+  66 0f be                    INVALID 
   --- bf ---
-  0f bf                       INVALID 
+  66 0f bf                    INVALID 
   --- c3 ---
-  0f c3                       INVALID 
+  66 0f c3                    INVALID 
   --- c4 ---
-  0f c4                       SSE OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w
+  66 0f c4                    SSE OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w
     Pinsrw $G(xmm), $E, $I
       Xmm_G_Operand           OpSet OpDest
       E_Operand               OpUse
       I_Operand               OpUse
   --- c5 ---
-  0f c5                       SSE41 ModRmModIs0x3 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f c5                    SSE41 ModRmModIs0x3 OpcodeUsesModRm OpcodeHasImmed_b
     Pextrw $G, $E(xmm), $I
       Gv_Operand              OpSet OpDest OperandZeroExtends_v
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   --- c6 ---
-  0f c6                       SSE2 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f c6                    SSE2 OpcodeUsesModRm OpcodeHasImmed_b
     Shufpd $G(xmm), $E(xmm), $I
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   --- d0 ---
-  0f d0                       SSE3 OpcodeUsesModRm
+  66 0f d0                    SSE3 OpcodeUsesModRm
     Addsubpd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d1 ---
-  0f d1                       SSE2 OpcodeUsesModRm
+  66 0f d1                    SSE2 OpcodeUsesModRm
     Psrlw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d2 ---
-  0f d2                       SSE2 OpcodeUsesModRm
+  66 0f d2                    SSE2 OpcodeUsesModRm
     Psrld $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d3 ---
-  0f d3                       SSE2 OpcodeUsesModRm
+  66 0f d3                    SSE2 OpcodeUsesModRm
     Psrlq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d4 ---
-  0f d4                       SSE2 OpcodeUsesModRm
+  66 0f d4                    SSE2 OpcodeUsesModRm
     Paddq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d5 ---
-  0f d5                       SSE2 OpcodeUsesModRm
+  66 0f d5                    SSE2 OpcodeUsesModRm
     Pmullw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d6 ---
-  0f d6                       SSE2 OpcodeUsesModRm
+  66 0f d6                    SSE2 OpcodeUsesModRm
     Movq $E(xmm), $G(xmm)
       Xmm_Eo_Operand          OpUse OpSet OpDest
       Xmm_Go_Operand          OpUse
   --- d7 ---
-  0f d7                       SSE2 ModRmModIs0x3 OpcodeUsesModRm
+  66 0f d7                    SSE2 ModRmModIs0x3 OpcodeUsesModRm
     Pmovmskb $G, $E(xmm)
       Gv_Operand              OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d8 ---
-  0f d8                       SSE2 OpcodeUsesModRm
+  66 0f d8                    SSE2 OpcodeUsesModRm
     Psubusb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- d9 ---
-  0f d9                       SSE2 OpcodeUsesModRm
+  66 0f d9                    SSE2 OpcodeUsesModRm
     Psubusw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- da ---
-  0f da                       SSE2 OpcodeUsesModRm
+  66 0f da                    SSE2 OpcodeUsesModRm
     Pminub $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- db ---
-  0f db                       SSE2 OpcodeUsesModRm
+  66 0f db                    SSE2 OpcodeUsesModRm
     Pand $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- dc ---
-  0f dc                       SSE2 OpcodeUsesModRm
+  66 0f dc                    SSE2 OpcodeUsesModRm
     Paddusb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- dd ---
-  0f dd                       SSE2 OpcodeUsesModRm
+  66 0f dd                    SSE2 OpcodeUsesModRm
     Paddusw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- de ---
-  0f de                       SSE2 OpcodeUsesModRm
+  66 0f de                    SSE2 OpcodeUsesModRm
     Pmaxub $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- df ---
-  0f df                       SSE2 OpcodeUsesModRm
+  66 0f df                    SSE2 OpcodeUsesModRm
     Pandn $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e0 ---
-  0f e0                       SSE2 OpcodeUsesModRm
+  66 0f e0                    SSE2 OpcodeUsesModRm
     Pavgb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e1 ---
-  0f e1                       SSE2 OpcodeUsesModRm
+  66 0f e1                    SSE2 OpcodeUsesModRm
     Psraw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e2 ---
-  0f e2                       SSE2 OpcodeUsesModRm
+  66 0f e2                    SSE2 OpcodeUsesModRm
     Psrad $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e3 ---
-  0f e3                       SSE2 OpcodeUsesModRm
+  66 0f e3                    SSE2 OpcodeUsesModRm
     Pavgw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e4 ---
-  0f e4                       SSE2 OpcodeUsesModRm
+  66 0f e4                    SSE2 OpcodeUsesModRm
     Pmulhuw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e5 ---
-  0f e5                       SSE2 OpcodeUsesModRm
+  66 0f e5                    SSE2 OpcodeUsesModRm
     Pmulhw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e6 ---
-  0f e6                       SSE2 OpcodeUsesModRm
+  66 0f e6                    SSE2 OpcodeUsesModRm
     Cvttpd2dq $G(xmm), $E(xmm)
       Xmm_Go_Operand          OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e7 ---
-  0f e7                       SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
+  66 0f e7                    SSE2 ModRmModIsnt0x3 OpcodeUsesModRm
     Movntdq $M, $G(xmm)
       Mdq_Operand             OpSet OpDest
       Xmm_G_Operand           OpUse
   --- e8 ---
-  0f e8                       SSE2 OpcodeUsesModRm
+  66 0f e8                    SSE2 OpcodeUsesModRm
     Psubsb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- e9 ---
-  0f e9                       SSE2 OpcodeUsesModRm
+  66 0f e9                    SSE2 OpcodeUsesModRm
     Psubsw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- ea ---
-  0f ea                       SSE2 OpcodeUsesModRm
+  66 0f ea                    SSE2 OpcodeUsesModRm
     Pminsw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- eb ---
-  0f eb                       SSE2 OpcodeUsesModRm
+  66 0f eb                    SSE2 OpcodeUsesModRm
     Por $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- ec ---
-  0f ec                       SSE2 OpcodeUsesModRm
+  66 0f ec                    SSE2 OpcodeUsesModRm
     Paddsb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- ed ---
-  0f ed                       SSE2 OpcodeUsesModRm
+  66 0f ed                    SSE2 OpcodeUsesModRm
     Paddsw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- ee ---
-  0f ee                       SSE2 OpcodeUsesModRm
+  66 0f ee                    SSE2 OpcodeUsesModRm
     Pmaxsw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- ef ---
-  0f ef                       SSE2 OpcodeUsesModRm
+  66 0f ef                    SSE2 OpcodeUsesModRm
     Pxor $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- f0 ---
-  0f f0                       INVALID 
+  66 0f f0                    INVALID 
   --- f1 ---
-  0f f1                       SSE2 OpcodeUsesModRm
+  66 0f f1                    SSE2 OpcodeUsesModRm
     Psllw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- f2 ---
-  0f f2                       SSE2 OpcodeUsesModRm
+  66 0f f2                    SSE2 OpcodeUsesModRm
     Pslld $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- f3 ---
-  0f f3                       SSE2 OpcodeUsesModRm
+  66 0f f3                    SSE2 OpcodeUsesModRm
     Psllq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- f4 ---
-  0f f4                       SSE2 OpcodeUsesModRm
+  66 0f f4                    SSE2 OpcodeUsesModRm
     Pmuludq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- f5 ---
-  0f f5                       SSE2 OpcodeUsesModRm
+  66 0f f5                    SSE2 OpcodeUsesModRm
     Pmaddwd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- f6 ---
-  0f f6                       SSE2 OpcodeUsesModRm
+  66 0f f6                    SSE2 OpcodeUsesModRm
     Psadbw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- f7 ---
-  0f f7                       SSE2 ModRmModIs0x3 OpcodeUsesModRm
+  66 0f f7                    SSE2 ModRmModIs0x3 OpcodeUsesModRm
     Maskmovdqu $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
       RegDS_EDI               OpUse OpImplicit
   --- f8 ---
-  0f f8                       SSE2 OpcodeUsesModRm
+  66 0f f8                    SSE2 OpcodeUsesModRm
     Psubb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- f9 ---
-  0f f9                       SSE2 OpcodeUsesModRm
+  66 0f f9                    SSE2 OpcodeUsesModRm
     Psubw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- fa ---
-  0f fa                       SSE2 OpcodeUsesModRm
+  66 0f fa                    SSE2 OpcodeUsesModRm
     Psubd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- fb ---
-  0f fb                       SSE2 OpcodeUsesModRm
+  66 0f fb                    SSE2 OpcodeUsesModRm
     Psubq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- fc ---
-  0f fc                       SSE2 OpcodeUsesModRm
+  66 0f fc                    SSE2 OpcodeUsesModRm
     Paddb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- fd ---
-  0f fd                       SSE2 OpcodeUsesModRm
+  66 0f fd                    SSE2 OpcodeUsesModRm
     Paddw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- fe ---
-  0f fe                       SSE2 OpcodeUsesModRm
+  66 0f fe                    SSE2 OpcodeUsesModRm
     Paddd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- ff ---
-  0f ff                       INVALID 
+  66 0f ff                    INVALID 
 
 *** Prefix0F0F ***
 
@@ -4399,22 +4399,22 @@ Target: x86-32 bit mode
 *** Prefix660F38 ***
 
   --- 08 ---
-  0f 38 08                    SSSE3 OpcodeUsesModRm
+  66 0f 38 08                 SSSE3 OpcodeUsesModRm
     Psignb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 09 ---
-  0f 38 09                    SSSE3 OpcodeUsesModRm
+  66 0f 38 09                 SSSE3 OpcodeUsesModRm
     Psignw $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 0a ---
-  0f 38 0a                    SSSE3 OpcodeUsesModRm
+  66 0f 38 0a                 SSSE3 OpcodeUsesModRm
     Psignd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
   --- 17 ---
-  0f 38 17                    SSE41 OpcodeUsesModRm
+  66 0f 38 17                 SSE41 OpcodeUsesModRm
     Ptest $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
@@ -4426,47 +4426,47 @@ Target: x86-32 bit mode
 *** Prefix660F3A ***
 
   --- 14 ---
-  0f 3a 14                    SSE41 OpcodeUsesModRm OpcodeHasImmed OperandSize_b
+  66 0f 3a 14                 SSE41 OpcodeUsesModRm OpcodeHasImmed OperandSize_b
     Pextrb $E, $G(xmm), $I
       E_Operand               OpSet OperandZeroExtends_v
       Xmm_G_Operand           OpUse
       I_Operand               OpUse
   --- 15 ---
-  0f 3a 15                    SSE41 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w
+  66 0f 3a 15                 SSE41 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w
     Pextrw $E, $G(xmm), $I
       E_Operand               OpSet OperandZeroExtends_v
       Xmm_G_Operand           OpUse
       I_Operand               OpUse
   --- 16 ---
-  0f 3a 16                    SSE41 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_v
+  66 0f 3a 16                 SSE41 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_v
     Pextrd $E, $G(xmm), $I
       E_Operand               OpSet
       Xmm_G_Operand           OpUse
       I_Operand               OpUse
-  0f 3a 16                    SSE41 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f 3a 16                 SSE41 OpcodeUsesModRm OpcodeHasImmed_b
     Pextrq $E, $G(xmm), $I
       E_Operand               OpSet
       Xmm_G_Operand           OpUse
       I_Operand               OpUse
   --- 20 ---
-  0f 3a 20                    SSE41 OpcodeUsesModRm OpcodeHasImmed OperandSize_b
+  66 0f 3a 20                 SSE41 OpcodeUsesModRm OpcodeHasImmed OperandSize_b
     Pinsrb $G(xmm), $E, $I
       Xmm_G_Operand           OpSet
       E_Operand               OpUse
       I_Operand               OpUse
   --- 22 ---
-  0f 3a 22                    SSE41 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_v
+  66 0f 3a 22                 SSE41 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_v
     Pinsrd $G(xmm), $E, $I
       Xmm_G_Operand           OpSet
       E_Operand               OpUse
       I_Operand               OpUse
-  0f 3a 22                    SSE41 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f 3a 22                 SSE41 OpcodeUsesModRm OpcodeHasImmed_b
     Pinsrq $G(xmm), $E, $I
       Xmm_G_Operand           OpSet
       E_Operand               OpUse
       I_Operand               OpUse
   --- 60 ---
-  0f 3a 60                    SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
+  66 0f 3a 60                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
     Pcmpestrm $G(xmm), $E(xmm), $I
       RegXMM0                 OpSet OpImplicit
       RegEAX                  OpSet OpImplicit
@@ -4474,7 +4474,7 @@ Target: x86-32 bit mode
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
-  0f 3a 60                    SSE42 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f 3a 60                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b
     Pcmpestrm $G(xmm), $E(xmm), $I
       RegXMM0                 OpSet OpImplicit
       RegRAX                  OpSet OpImplicit
@@ -4483,7 +4483,7 @@ Target: x86-32 bit mode
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   --- 61 ---
-  0f 3a 61                    SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
+  66 0f 3a 61                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
     Pcmpestri $G(xmm), $E(xmm), $I
       RegECX                  OpSet OpImplicit
       RegEAX                  OpSet OpImplicit
@@ -4491,7 +4491,7 @@ Target: x86-32 bit mode
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
-  0f 3a 61                    SSE42 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f 3a 61                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b
     Pcmpestri $G(xmm), $E(xmm), $I
       RegRCX                  OpSet OpImplicit
       RegRAX                  OpSet OpImplicit
@@ -4500,18 +4500,18 @@ Target: x86-32 bit mode
       Xmm_E_Operand           OpUse
       I_Operand               OpUse
   --- 62 ---
-  0f 3a 62                    SSE42 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f 3a 62                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b
     Pcmpistrm $G(xmm), $E(xmm)
       RegXMM0                 OpSet OpImplicit
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
   --- 63 ---
-  0f 3a 63                    SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
+  66 0f 3a 63                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
     Pcmpistri $G(xmm), $E(xmm)
       RegECX                  OpSet OpImplicit
       Xmm_G_Operand           OpUse
       Xmm_E_Operand           OpUse
-  0f 3a 63                    SSE42 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f 3a 63                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b
     Pcmpistri $G(xmm), $E(xmm)
       RegRCX                  OpSet OpImplicit
       Xmm_G_Operand           OpUse

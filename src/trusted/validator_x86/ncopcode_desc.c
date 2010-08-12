@@ -86,12 +86,52 @@ void NaClIFlagsPrint(struct Gio* f, NaClIFlags flags) {
   }
 }
 
+/* Returns a string defining bytes of the given prefix that are considered
+ * prefix bytes, independent of the opcode.
+ */
+static const char* OpcodePrefixBytes(NaClInstPrefix prefix) {
+  switch(prefix) {
+    case NoPrefix:
+    case Prefix0F:
+    case Prefix0F0F:
+    case Prefix0F38:
+    case Prefix0F3A:
+    case PrefixD8:
+    case PrefixD9:
+    case PrefixDA:
+    case PrefixDB:
+    case PrefixDC:
+    case PrefixDD:
+    case PrefixDE:
+    case PrefixDF:
+    default:  /* This shouldn't happen, but be safe. */
+      return "";
+    case PrefixF20F:
+    case PrefixF20F38:
+      return "f2";
+    case PrefixF30F:
+      return "f3";
+    case Prefix660F:
+    case Prefix660F38:
+    case Prefix660F3A:
+      return "66";
+  }
+}
+
 void NaClInstPrint(struct Gio* f, NaClInst* inst) {
   int i;
   int count = 2;
   Bool simplified_opcode_ext = FALSE;
+  /* Add prefix bytes if defined by prefix. */
+  const char* prefix = OpcodePrefixBytes(inst->prefix);
+  int prefix_len = (int) strlen(prefix);
+  gprintf(f, "  %s", prefix);
+  if (prefix_len > 0) {
+    count += prefix_len + 1;
+    gprintf(f, " ");
+  }
 
-  gprintf(f, "  ");
+  /* Add opcode bytes. */
   for (i = 0; i < inst->num_opcode_bytes; ++i) {
     if (i > 0) {
       gprintf(f, " ");
@@ -101,10 +141,7 @@ void NaClInstPrint(struct Gio* f, NaClInst* inst) {
     count += 2;
   }
 
-  /* If opcode continues in modrm byte, and printing in
-   * more human readable form, then add the value to this
-   * list.
-   */
+  /* If opcode continues in modrm byte, then add the value to this list. */
   if ((0 < inst->num_operands) &&
       (inst->operands[0].flags & NACL_OPFLAG(OperandExtendsOpcode))) {
     if (inst->flags & NACL_IFLAG(OpcodeInModRm)) {

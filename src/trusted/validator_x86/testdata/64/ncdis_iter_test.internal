@@ -617,7 +617,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 66 0f 38 08 2c 25 00 00 00 00                psignb %xmm5, [0x0]
-  0f 38 08                    SSSE3 OpcodeUsesModRm
+  66 0f 38 08                 SSSE3 OpcodeUsesModRm
     Psignb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -632,7 +632,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x0, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: 66 44 0f 38 08 2c 00                         psignb %xmm13, [%rax+%rax*1]
-  0f 38 08                    SSSE3 OpcodeUsesModRm
+  66 0f 38 08                 SSSE3 OpcodeUsesModRm
     Psignb $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -1733,7 +1733,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x57af37, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: f2 0f 10 05 b5 dc 15 00                      movsd %xmm0, [%rip+0x15dcb5]
-  0f 10                       SSE2 OpcodeUsesModRm
+  f2 0f 10                    SSE2 OpcodeUsesModRm
     Movsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -1748,7 +1748,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x15dcb5, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: f2 0f 11 54 24 10                            movsd [%rsp+0x10], %xmm2
-  0f 11                       SSE2 OpcodeUsesModRm
+  f2 0f 11                    SSE2 OpcodeUsesModRm
     Movsd $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
@@ -1763,7 +1763,7 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %xmm2, ExprUsed },
 };
 0000000000000000: f3 0f 10 02                                  movss %xmm0, [%rdx]
-  0f 10                       SSE OpcodeUsesModRm
+  f3 0f 10                    SSE OpcodeUsesModRm
     Movss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -1778,7 +1778,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: f3 0f 11 44 24 0c                            movss [%rsp+0xc], %xmm0
-  0f 11                       SSE OpcodeUsesModRm
+  f3 0f 11                    SSE OpcodeUsesModRm
     Movss $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
@@ -1793,7 +1793,7 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %xmm0, ExprUsed },
 };
 0000000000000000: f3 0f 10 4c 24 1c                            movss %xmm1, [%rsp+0x1c]
-  0f 10                       SSE OpcodeUsesModRm
+  f3 0f 10                    SSE OpcodeUsesModRm
     Movss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -1808,7 +1808,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x1c, ExprSize8 | ExprSignedHex },
 };
 0000000000000000: f3 0f 11 44 24 0c                            movss [%rsp+0xc], %xmm0
-  0f 11                       SSE OpcodeUsesModRm
+  f3 0f 11                    SSE OpcodeUsesModRm
     Movss $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
@@ -1823,7 +1823,7 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %xmm0, ExprUsed },
 };
 0000000000000000: f2 0f 5f cf                                  maxsd %xmm1, %xmm7
-  0f 5f                       SSE2 OpcodeUsesModRm
+  f2 0f 5f                    SSE2 OpcodeUsesModRm
     Maxsd $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -1888,7 +1888,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 66 0f 6e 11                                  movd %xmm2, [%rcx]
-  0f 6e                       SSE2 OpcodeUsesModRm
+  66 0f 6e                    SSE2 OpcodeUsesModRm
     Movd $G(xmm), $E
       Xmm_G_Operand           OpSet OpDest
       E_Operand               OpUse
@@ -1938,7 +1938,7 @@ NaClExpVector[8] = {
 NaClExpVector[0] = {
 };
 0000000000000000: f2 0f c2 c7 01                               cmpsd_xmm %xmm0, %xmm7, 0x1
-  0f c2                       SSE2 OpcodeUsesModRm OpcodeHasImmed_b
+  f2 0f c2                    SSE2 OpcodeUsesModRm OpcodeHasImmed_b
     Cmpsd_xmm $G(xmm), $E(xmm), $I
       Xmm_G_Operand           OpSet
       Xmm_E_Operand           OpUse
@@ -1952,7 +1952,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x1, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: f2 0f c2 0d 67 87 10 00 05                   cmpsd_xmm %xmm1, [%rip+0x108767], 0x5
-  0f c2                       SSE2 OpcodeUsesModRm OpcodeHasImmed_b
+  f2 0f c2                    SSE2 OpcodeUsesModRm OpcodeHasImmed_b
     Cmpsd_xmm $G(xmm), $E(xmm), $I
       Xmm_G_Operand           OpSet
       Xmm_E_Operand           OpUse
@@ -1970,7 +1970,7 @@ NaClExpVector[10] = {
   { ExprConstant[0] , 0x5, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: f3 0f c2 c7 01                               cmpss %xmm0, %xmm7, 0x1
-  0f c2                       SSE OpcodeUsesModRm OpcodeHasImmed_b
+  f3 0f c2                    SSE OpcodeUsesModRm OpcodeHasImmed_b
     Cmpss $G(xmm), $E(xmm), $I
       Xmm_G_Operand           OpSet
       Xmm_E_Operand           OpUse
@@ -1984,7 +1984,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x1, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: f3 0f c2 0d 67 87 10 00 05                   cmpss %xmm1, [%rip+0x108767], 0x5
-  0f c2                       SSE OpcodeUsesModRm OpcodeHasImmed_b
+  f3 0f c2                    SSE OpcodeUsesModRm OpcodeHasImmed_b
     Cmpss $G(xmm), $E(xmm), $I
       Xmm_G_Operand           OpSet
       Xmm_E_Operand           OpUse
@@ -2080,7 +2080,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
 };
 0000000000000000: f3 0f 6f 05 f9 77 0f 00                      movdqu %xmm0, [%rip+0xf77f9]
-  0f 6f                       SSE2 OpcodeUsesModRm
+  f3 0f 6f                    SSE2 OpcodeUsesModRm
     Movdqu $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -2095,7 +2095,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0xf77f9, ExprSize32 | ExprSignedHex },
 };
 0000000000000000: f3 0f 6f 11                                  movdqu %xmm2, [%rcx]
-  0f 6f                       SSE2 OpcodeUsesModRm
+  f3 0f 6f                    SSE2 OpcodeUsesModRm
     Movdqu $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -2110,7 +2110,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: f3 0f 7f 0e                                  movdqu [%rsi], %xmm1
-  0f 7f                       SSE2 OpcodeUsesModRm
+  f3 0f 7f                    SSE2 OpcodeUsesModRm
     Movdqu $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
@@ -2140,7 +2140,7 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %mmx1, ExprUsed },
 };
 0000000000000000: 66 0f 29 0c 24                               movapd [%rsp], %xmm1
-  0f 29                       SSE2 OpcodeUsesModRm
+  66 0f 29                    SSE2 OpcodeUsesModRm
     Movapd $E(xmm), $G(xmm)
       Xmm_E_Operand           OpSet OpDest
       Xmm_G_Operand           OpUse
@@ -2155,7 +2155,7 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %xmm1, ExprUsed },
 };
 0000000000000000: f3 0f 51 d0                                  sqrtss %xmm2, %xmm0
-  0f 51                       SSE OpcodeUsesModRm
+  f3 0f 51                    SSE OpcodeUsesModRm
     Sqrtss $G(xmm), $E(xmm)
       Xmm_G_Operand           OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -2600,7 +2600,7 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
 };
 0000000000000000: 66 0f 78 c1 02 04                            extrq %xmm0, 0x2, 0x4
-  0f 78 / 0                   SSE4A OpcodeInModRm OpcodeHasImmed_b OpcodeHasImmed2_b
+  66 0f 78 / 0                SSE4A OpcodeInModRm OpcodeHasImmed_b OpcodeHasImmed2_b
     Extrq $G(xmm), $I, $I
       Xmm_G_Operand           OpUse OpSet OpDest AllowGOperandWithOpcodeInModRm
       I_Operand               OpUse
@@ -2614,7 +2614,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x4, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: f2 0f 78 ca 02 04                            insertq %xmm1, %xmm2, 0x2, 0x4
-  0f 78                       SSE4A ModRmModIs0x3 OpcodeUsesModRm OpcodeHasImmed_b OpcodeHasImmed2_b
+  f2 0f 78                    SSE4A ModRmModIs0x3 OpcodeUsesModRm OpcodeHasImmed_b OpcodeHasImmed2_b
     Insertq $G(xmm), $E(xmm), $I, $I
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -2631,7 +2631,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x4, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 66 0f 79 ca                                  extrq %xmm1, %xmm2
-  0f 79                       SSE4A ModRmModIs0x3 OpcodeUsesModRm
+  66 0f 79                    SSE4A ModRmModIs0x3 OpcodeUsesModRm
     Extrq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -2642,7 +2642,7 @@ NaClExpVector[4] = {
   { ExprRegister[0] , %xmm2, ExprUsed },
 };
 0000000000000000: f2 0f 79 ca                                  insertq %xmm1, %xmm2
-  0f 79                       SSE4A ModRmModIs0x3 OpcodeUsesModRm
+  f2 0f 79                    SSE4A ModRmModIs0x3 OpcodeUsesModRm
     Insertq $G(xmm), $E(xmm)
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
@@ -2679,7 +2679,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x3020100, ExprSize32 | ExprUnsignedHex },
 };
 0000000000000000: 66 0f 3a 60 00 01                            pcmpestrm %xmm0, [%rax], 0x1
-  0f 3a 60                    SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
+  66 0f 3a 60                 SSE42 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w OperandSize_v
     Pcmpestrm $G(xmm), $E(xmm), $I
       RegXMM0                 OpSet OpImplicit
       RegEAX                  OpSet OpImplicit
@@ -2952,7 +2952,7 @@ NaClExpVector[8] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 66 0f 3a 15 00 00                            pextrw [%rax], %xmm0, 0x0
-  0f 3a 15                    SSE41 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w
+  66 0f 3a 15                 SSE41 OpcodeUsesModRm OpcodeHasImmed_b OperandSize_w
     Pextrw $E, $G(xmm), $I
       E_Operand               OpSet OperandZeroExtends_v
       Xmm_G_Operand           OpUse
@@ -3041,23 +3041,23 @@ NaClExpVector[2] = {
   { ExprRegister[0] , %st0, ExprSet | ExprUsed },
 };
 0000000000000000: 66 0f 52                                     invalid
-  0f 52                       INVALID 
+  66 0f 52                    INVALID 
 NaClExpVector[0] = {
 };
 0000000000000000: 66 0f 53                                     invalid
-  0f 53                       INVALID 
+  66 0f 53                    INVALID 
 NaClExpVector[0] = {
 };
 0000000000000000: f2 0f 52                                     invalid
-  0f 52                       INVALID 
+  f2 0f 52                    INVALID 
 NaClExpVector[0] = {
 };
 0000000000000000: f2 0f 53                                     invalid
-  0f 53                       INVALID 
+  f2 0f 53                    INVALID 
 NaClExpVector[0] = {
 };
 0000000000000000: 66 0f 78 00 00 00                            extrq %xmm0, 0x0, 0x0
-  0f 78 / 0                   SSE4A OpcodeInModRm OpcodeHasImmed_b OpcodeHasImmed2_b
+  66 0f 78 / 0                SSE4A OpcodeInModRm OpcodeHasImmed_b OpcodeHasImmed2_b
     Extrq $G(xmm), $I, $I
       Xmm_G_Operand           OpUse OpSet OpDest AllowGOperandWithOpcodeInModRm
       I_Operand               OpUse
@@ -3208,7 +3208,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0x0, ExprUsed | ExprSize8 | ExprUnsignedHex },
 };
 0000000000000000: 66 0f c6 d2 00                               shufpd %xmm2, %xmm2, 0x0
-  0f c6                       SSE2 OpcodeUsesModRm OpcodeHasImmed_b
+  66 0f c6                    SSE2 OpcodeUsesModRm OpcodeHasImmed_b
     Shufpd $G(xmm), $E(xmm), $I
       Xmm_G_Operand           OpUse OpSet OpDest
       Xmm_E_Operand           OpUse
