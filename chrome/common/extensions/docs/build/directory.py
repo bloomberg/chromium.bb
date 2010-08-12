@@ -416,7 +416,7 @@ class Sample(dict):
           path = os.path.realpath(os.path.join(root, file_name))
           path = path.replace(base_path, '')[1:]
           source_paths.append(path)
-    return source_paths
+    return sorted(source_paths)
 
   def _parse_description(self):
     """ Returns a localized description of the extension.
