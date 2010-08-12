@@ -2366,6 +2366,8 @@
         'browser/speech/speech_input_manager.h',
         'browser/speech/speech_recognition_request.cc',
         'browser/speech/speech_recognition_request.h',
+        'browser/speech/speech_recognizer.cc',
+        'browser/speech/speech_recognizer.h',
         'browser/spellcheck_host.cc',
         'browser/spellcheck_host.h',
         'browser/spellchecker_linux.cc',
