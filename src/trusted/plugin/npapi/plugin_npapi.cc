@@ -489,6 +489,7 @@ void PluginNpapi::ShutdownMultimedia() {
   PLUGIN_PRINTF(("PluginNpapi::ShutdownMultimedia:"
                  " deleting multimedia_channel_\n"));
   delete multimedia_channel_;
+  multimedia_channel_ = NULL;
 }
 
 void PluginNpapi::StartProxiedExecution(NaClSrpcChannel* srpc_channel) {

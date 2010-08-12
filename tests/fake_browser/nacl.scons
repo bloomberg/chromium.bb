@@ -15,6 +15,9 @@ simplest_hello_world_prog = env.File('${STAGING_DIR}/hello_world.nexe')
 async_message_prog = env.ComponentProgram(
     'async_message_test.nexe', 'async_message_test.c')
 
+spin_prog = env.ComponentProgram(
+    'spin.nexe', 'spin.c', EXTRA_LIBS=['srpc', 'pthread'])
+
 
 if 'TRUSTED_ENV' not in env:
   Return()
@@ -59,7 +62,8 @@ node = env.CommandTest('fake_browser_test.out',
                         "srpc_hw.nexe", srpc_hello_world_prog,
                         "npapi_hw.nexe", npapi_hello_world_prog,
                         "async_message_test.nexe", async_message_prog,
-                        "hello_world.nexe", simplest_hello_world_prog],
+                        "hello_world.nexe", simplest_hello_world_prog,
+                        "spin.nexe", spin_prog],
                        'medium',
                        osenv=('NACL_SEL_LDR=%s,NACLLOG=%s'
                               % (sel_ldr, log_file)),

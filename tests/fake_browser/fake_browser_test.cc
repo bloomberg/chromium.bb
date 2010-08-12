@@ -643,6 +643,37 @@ void TestMissingSrpcInit() {
   DestroyPluginInstance(plugin_instance, false);
 }
 
+// This tests for a memory and thread leak.  See:
+// http://code.google.com/p/nativeclient/issues/detail?id=791
+// The leak is detected by valgrind, using "--leak-check=full
+// --show-reachable=yes", but not by this test on its own.
+void TestOverlappingLaunch() {
+  printf("Test assigning to src twice...\n");
+  const char* nexe_url = "http://localhost/spin.nexe";
+
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPP plugin_instance = new NPP_t;
+  CheckRetval(plugin_funcs.newp(mime_type, plugin_instance, NP_EMBED,
+                                0, NULL, NULL, NULL));
+
+  NPObject* plugin_obj;
+  CheckRetval(plugin_funcs.getvalue(plugin_instance,
+                                    NPPVpluginScriptableNPObject, &plugin_obj));
+  NPVariant url;
+  STRINGZ_TO_NPVARIANT(nexe_url, url);
+  // Assign to the "src" attribute twice.  The second assignment is
+  // done before the download triggered by the first completes.
+  CHECK(fb_NPN_SetProperty(plugin_instance, plugin_obj,
+                           fb_NPN_GetStringIdentifier("src"), &url));
+  CHECK(fb_NPN_SetProperty(plugin_instance, plugin_obj,
+                           fb_NPN_GetStringIdentifier("src"), &url));
+  fb_NPN_ReleaseObject(plugin_obj);
+  // Now allow the download to complete.
+  RunQueuedCallbacks(plugin_instance);
+
+  DestroyPluginInstance(plugin_instance, false);
+}
+
 void TestAsyncMessages() {
   printf("Test asynchronous messages...\n");
   const char* nexe_url = "http://localhost/async_message_test.nexe";
@@ -814,6 +845,8 @@ int main(int argc, char** argv) {
   TestHelloWorldMethod("http://localhost/npapi_hw.nexe", true);
 
   TestMissingSrpcInit();
+
+  TestOverlappingLaunch();
 
   TestAsyncMessages();
 

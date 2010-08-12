@@ -308,6 +308,10 @@ bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
 
 bool Plugin::SetSrcPropertyImpl(const nacl::string& url) {
   PLUGIN_PRINTF(("Plugin::SetProperty (unloading previous)\n"));
+  // We do not actually need to shut down the process here when
+  // initiating the (asynchronous) download.  It is more important to
+  // shut down the old process when the download completes and a new
+  // process is launched.
   ShutDownSubprocess();
   return RequestNaClModule(url);
 }
@@ -528,6 +532,13 @@ bool Plugin::Load(nacl::string logical_url,
     browser_interface->Alert(instance_id(), error_string);
     return false;
   }
+
+  // Ensure that we do not leak the ServiceRuntime object for an
+  // existing subprocess.  Ensure that any associated listener threads
+  // do not go unjoined, because if they outlive the Plugin object,
+  // they will not be memory safe.
+  ShutDownSubprocess();
+
   // Load a file via a forked sel_ldr process.
   service_runtime_ = new(std::nothrow) ServiceRuntime(browser_interface, this);
   if (NULL == service_runtime_) {
