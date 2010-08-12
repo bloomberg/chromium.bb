@@ -52,7 +52,7 @@
 namespace {
 
 // A boolean pref of the OOBE complete flag.
-const wchar_t kOobeComplete[] = L"OobeComplete";
+const char kOobeComplete[] = "OobeComplete";
 
 // Path to OEM partner startup customization manifest.
 const char kStartupCustomizationManifestPath[] =

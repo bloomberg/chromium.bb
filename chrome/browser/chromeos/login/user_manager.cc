@@ -30,9 +30,9 @@ namespace chromeos {
 namespace {
 
 // A vector pref of the users who have logged into the device.
-const wchar_t kLoggedInUsers[] = L"LoggedInUsers";
+const char kLoggedInUsers[] = "LoggedInUsers";
 // A dictionary that maps usernames to file paths to their images.
-const wchar_t kUserImages[] = L"UserImages";
+const char kUserImages[] = "UserImages";
 
 // Incognito user is represented by an empty string (since some code already
 // depends on that and it's hard to figure out what).
