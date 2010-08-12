@@ -429,16 +429,16 @@ class GClientSmokeSVN(GClientSmokeBase):
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
-    out = ('src: %(base)s/src;\n'
-           'src/file/other: File("%(base)s/other/DEPS");\n'
-           'src/other: %(base)s/other;\n'
+    out = ('src: %(base)s/src\n'
+           'src/file/other: File("%(base)s/other/DEPS")\n'
+           'src/other: %(base)s/other\n'
            'src/third_party/foo: %(base)s/third_party/foo@1\n' %
           { 'base': self.svn_base + 'trunk' })
     self.check((out, '', 0), results)
     results = self.gclient(['revinfo', '--deps', 'mac', '--actual'])
-    out = ('src: %(base)s/src@2;\n'
-           'src/file/other: %(base)s/other/DEPS@2;\n'
-           'src/other: %(base)s/other@2;\n'
+    out = ('src: %(base)s/src@2\n'
+           'src/file/other: %(base)s/other/DEPS@2\n'
+           'src/other: %(base)s/other@2\n'
            'src/third_party/foo: %(base)s/third_party/foo@1\n' %
           { 'base': self.svn_base + 'trunk' })
     self.check((out, '', 0), results)
@@ -633,8 +633,8 @@ class GClientSmokeGIT(GClientSmokeBase):
     self.gclient(['config', self.git_base + 'repo_1', '--name', 'src'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
-    out = ('src: %(base)srepo_1;\n'
-           'src/repo2: %(base)srepo_2@%(hash2)s;\n'
+    out = ('src: %(base)srepo_1\n'
+           'src/repo2: %(base)srepo_2@%(hash2)s\n'
            'src/repo2/repo_renamed: %(base)srepo_3\n' %
           {
             'base': self.git_base,
@@ -644,8 +644,8 @@ class GClientSmokeGIT(GClientSmokeBase):
           })
     self.check((out, '', 0), results)
     results = self.gclient(['revinfo', '--deps', 'mac', '--actual'])
-    out = ('src: %(base)srepo_1@%(hash1)s;\n'
-           'src/repo2: %(base)srepo_2@%(hash2)s;\n'
+    out = ('src: %(base)srepo_1@%(hash1)s\n'
+           'src/repo2: %(base)srepo_2@%(hash2)s\n'
            'src/repo2/repo_renamed: %(base)srepo_3@%(hash3)s\n' %
           {
             'base': self.git_base,
@@ -736,12 +736,12 @@ class GClientSmokeBoth(GClientSmokeBase):
         '"url": "' + self.git_base + 'repo_1"}]'])
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
-    out = ('src: %(svn_base)s/src/;\n'
-           'src-git: %(git_base)srepo_1;\n'
-           'src/file/other: File("%(svn_base)s/other/DEPS");\n'
-           'src/other: %(svn_base)s/other;\n'
-           'src/repo2: %(git_base)srepo_2@%(hash2)s;\n'
-           'src/repo2/repo_renamed: %(git_base)srepo_3;\n'
+    out = ('src: %(svn_base)s/src/\n'
+           'src-git: %(git_base)srepo_1\n'
+           'src/file/other: File("%(svn_base)s/other/DEPS")\n'
+           'src/other: %(svn_base)s/other\n'
+           'src/repo2: %(git_base)srepo_2@%(hash2)s\n'
+           'src/repo2/repo_renamed: %(git_base)srepo_3\n'
            'src/third_party/foo: %(svn_base)s/third_party/foo@1\n') % {
                'svn_base': self.svn_base + 'trunk',
                'git_base': self.git_base,
@@ -751,12 +751,12 @@ class GClientSmokeBoth(GClientSmokeBase):
           }
     self.check((out, '', 0), results)
     results = self.gclient(['revinfo', '--deps', 'mac', '--actual'])
-    out = ('src: %(svn_base)s/src/@2;\n'
-           'src-git: %(git_base)srepo_1@%(hash1)s;\n'
-           'src/file/other: %(svn_base)s/other/DEPS@2;\n'
-           'src/other: %(svn_base)s/other@2;\n'
-           'src/repo2: %(git_base)srepo_2@%(hash2)s;\n'
-           'src/repo2/repo_renamed: %(git_base)srepo_3@%(hash3)s;\n'
+    out = ('src: %(svn_base)s/src/@2\n'
+           'src-git: %(git_base)srepo_1@%(hash1)s\n'
+           'src/file/other: %(svn_base)s/other/DEPS@2\n'
+           'src/other: %(svn_base)s/other@2\n'
+           'src/repo2: %(git_base)srepo_2@%(hash2)s\n'
+           'src/repo2/repo_renamed: %(git_base)srepo_3@%(hash3)s\n'
            'src/third_party/foo: %(svn_base)s/third_party/foo@1\n') % {
                'svn_base': self.svn_base + 'trunk',
                'git_base': self.git_base,
@@ -857,13 +857,13 @@ class GClientSmokeFromCheckout(GClientSmokeBase):
     self.gclient(['sync', '--deps', 'mac'])
     results = self.gclient(['revinfo', '--deps', 'mac'])
     expected = (
-        './: None;\nfoo/bar: svn://127.0.0.1/svn/trunk/third_party/foo@1\n',
+        './: None\nfoo/bar: svn://127.0.0.1/svn/trunk/third_party/foo@1\n',
         '', 0)
     self.check(expected, results)
     # TODO(maruel): To be added after the refactor.
     #results = self.gclient(['revinfo', '--snapshot'])
     #expected = (
-    #    './: None;\nfoo/bar: svn://127.0.0.1/svn/trunk/third_party/foo@1\n',
+    #    './: None\nfoo/bar: svn://127.0.0.1/svn/trunk/third_party/foo@1\n',
     #    '', 0)
     #self.check(expected, results)
 

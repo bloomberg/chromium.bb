@@ -914,10 +914,7 @@ solutions = [
           entries[d.name] = d.parsed_url
       keys = sorted(entries.keys())
       for x in keys:
-        line = '%s: %s' % (x, entries[x])
-        if x is not keys[-1]:
-          line += ';'
-        print line
+        print('%s: %s' % (x, entries[x]))
     logging.info(str(self))
 
   def ParseDepsFile(self):
