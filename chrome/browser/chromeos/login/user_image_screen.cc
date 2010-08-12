@@ -71,6 +71,7 @@ void UserImageScreen::OnOK(const SkBitmap& image) {
   UserManager* user_manager = UserManager::Get();
   if (user_manager) {
     // TODO(avayvod): Check that there's logged in user actually.
+    user_manager->SetLoggedInUserImage(image);
     const UserManager::User& user = user_manager->logged_in_user();
     user_manager->SaveUserImage(user.email(), image);
   }

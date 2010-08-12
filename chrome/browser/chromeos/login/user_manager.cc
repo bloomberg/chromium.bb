@@ -206,6 +206,13 @@ void UserManager::RemoveUser(const std::string& email) {
   prefs->SavePersistentPrefs();
 }
 
+void UserManager::SetLoggedInUserImage(const SkBitmap& image) {
+  if (logged_in_user_.email().empty())
+    return;
+  logged_in_user_.set_image(image);
+  OnImageLoaded(logged_in_user_.email(), image);
+}
+
 void UserManager::SaveUserImage(const std::string& username,
                                 const SkBitmap& image) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));

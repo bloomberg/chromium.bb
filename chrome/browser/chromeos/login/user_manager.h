@@ -71,6 +71,10 @@ class UserManager : public UserImageLoader::Delegate {
     return logged_in_user_;
   }
 
+  // Sets image for logged-in user and sends LOGIN_USER_IMAGE_CHANGED
+  // notification about the image changed via NotificationService.
+  void SetLoggedInUserImage(const SkBitmap& image);
+
   // Saves image to file and saves image path in local state preferences.
   void SaveUserImage(const std::string& username,
                      const SkBitmap& image);

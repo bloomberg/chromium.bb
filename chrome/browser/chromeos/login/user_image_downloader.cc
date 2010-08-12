@@ -85,8 +85,12 @@ void UserImageDownloader::OnURLFetchComplete(const URLFetcher* source,
 void UserImageDownloader::OnImageDecoded(const SkBitmap& decoded_image) {
   // Save the image to file and its path to preferences.
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-  if (user_manager)
+  if (user_manager) {
+    if (user_manager->logged_in_user().email() == username_) {
+      user_manager->SetLoggedInUserImage(decoded_image);
+    }
     user_manager->SaveUserImage(username_, decoded_image);
+  }
 }
 
 bool UserImageDownloader::GetImageURL(const std::string& json_data,
