@@ -51,6 +51,6 @@ TEST_F(MediaTest, VideoBearTheora) {
   PlayVideo("bear.ogv");
 }
 
-TEST_F(MediaTest, VideoBearSilentTheora) {
+TEST_F(MediaTest, FLAKY_VideoBearSilentTheora) {
   PlayVideo("bear_silent.ogv");
 }
