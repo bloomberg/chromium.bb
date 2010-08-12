@@ -15,7 +15,7 @@ namespace chromeos {
 
 // This interface defines interaction with the ChromeOS power library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
-// library class like this: PowerLibrary::Get()
+// library class like this: chromeos::CrosLibrary::Get()->GetPowerLibrary()
 class PowerLibrary {
  public:
   class Observer {
@@ -43,7 +43,8 @@ class PowerLibrary {
   // The amount of time until battery is full.
   virtual base::TimeDelta battery_time_to_full() const = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static PowerLibrary* GetImpl(bool stub);
 };
 

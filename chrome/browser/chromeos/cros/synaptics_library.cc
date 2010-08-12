@@ -9,11 +9,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 
 namespace chromeos {
-// This class handles the interaction with the ChromeOS synaptics library APIs.
-// Users can get an instance of this library class like this:
-//   SynapticsLibrary::Get()
-// For a list of SynapticsPrameters, see chromeos_synaptics.h
-// in third_party/cros or /usr/include/cros
+
 class SynapticsLibraryImpl : public SynapticsLibrary {
  public:
   SynapticsLibraryImpl() {}

@@ -36,7 +36,8 @@ class ScreenLockLibrary {
   // Notifies PowerManager that screen is unlocked.
   virtual void NotifyScreenUnlockCompleted() = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static ScreenLockLibrary* GetImpl(bool stub);
 };
 

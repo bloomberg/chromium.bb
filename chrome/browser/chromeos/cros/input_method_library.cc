@@ -43,9 +43,6 @@ const char kDefaultKeyboardLayout[] = "us";
 
 namespace chromeos {
 
-// This class handles the interaction with the ChromeOS language library APIs.
-// Classes can add themselves as observers. Users can get an instance of this
-// library class like this: InputMethodLibrary::Get()
 class InputMethodLibraryImpl : public InputMethodLibrary {
  public:
   InputMethodLibraryImpl()

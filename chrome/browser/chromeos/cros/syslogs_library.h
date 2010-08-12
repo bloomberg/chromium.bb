@@ -20,7 +20,8 @@ class SyslogsLibrary {
   // System logs gathered for userfeedback
   virtual LogDictionaryType* GetSyslogs(FilePath* tmpfilename)  = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static SyslogsLibrary* GetImpl(bool stub);
 };
 

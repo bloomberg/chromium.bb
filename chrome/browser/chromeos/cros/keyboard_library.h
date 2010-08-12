@@ -54,7 +54,8 @@ class KeyboardLibrary {
   // interval in ms.  Returns true on success.
   virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static KeyboardLibrary* GetImpl(bool stub);
 };
 

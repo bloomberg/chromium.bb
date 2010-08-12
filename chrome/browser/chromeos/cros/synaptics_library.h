@@ -13,7 +13,7 @@ namespace chromeos {
 
 // This interface defines interaction with the ChromeOS synaptics library APIs.
 // Users can get an instance of this library class like this:
-//   SynapticsLibrary::Get()
+//   chromeos::CrosLibrary::Get()->GetSynapticsLibrary()
 // For a list of SynapticsPrameters, see chromeos_synaptics.h
 // in third_party/cros or /usr/include/cros
 class SynapticsLibrary {
@@ -26,7 +26,8 @@ class SynapticsLibrary {
   // Value should be between 1 and 10 inclusive.
   virtual void SetRangeParameter(SynapticsParameter param, int value) = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static SynapticsLibrary* GetImpl(bool stub);
 };
 

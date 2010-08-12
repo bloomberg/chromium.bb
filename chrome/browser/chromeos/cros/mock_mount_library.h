@@ -18,9 +18,6 @@
 
 namespace chromeos {
 
-// This class handles the interaction with the ChromeOS mount library APIs.
-// Classes can add themselves as observers. Users can get an instance of this
-// library class like this: MountLibrary::Get().
 class MockMountLibrary : public MountLibrary {
  public:
   MockMountLibrary();

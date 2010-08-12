@@ -19,7 +19,8 @@ namespace chromeos {
 
 // This class handles the interaction with the ChromeOS language library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
-// library class like this: InputMethodLibrary::Get()
+// library class like this:
+//   chromeos::CrosLibrary::Get()->GetInputMethodLibrary()
 class InputMethodLibrary {
  public:
   class Observer {
@@ -96,7 +97,8 @@ class InputMethodLibrary {
 
   virtual const ImePropertyList& current_ime_properties() const = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static InputMethodLibrary* GetImpl(bool stub);
 };
 

@@ -28,7 +28,8 @@ class SpeechSynthesisLibrary {
   // it started successfully.
   virtual void InitTts(InitStatusCallback) = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static SpeechSynthesisLibrary* GetImpl(bool stub);
 };
 

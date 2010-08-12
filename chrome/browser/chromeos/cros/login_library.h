@@ -33,7 +33,8 @@ class LoginLibrary {
   // indicated by |unique_id|.
   virtual bool StopSession(const std::string& unique_id /* unused */) = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static LoginLibrary* GetImpl(bool stub);
 };
 

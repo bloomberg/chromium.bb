@@ -224,6 +224,9 @@ struct NetworkIPConfig {
 };
 typedef std::vector<NetworkIPConfig> NetworkIPConfigVector;
 
+// This class handles the interaction with the ChromeOS network library APIs.
+// Classes can add themselves as observers. Users can get an instance of the
+// library like this: chromeos::CrosLibrary::Get()->GetNetworkLibrary()
 class NetworkLibrary {
  public:
   class Observer {
@@ -363,7 +366,8 @@ class NetworkLibrary {
   // The page will have a meta refresh of |refresh| seconds if |refresh| > 0.
   virtual std::string GetHtmlInfo(int refresh) = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static NetworkLibrary* GetImpl(bool stub);
 };
 

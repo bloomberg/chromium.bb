@@ -18,7 +18,7 @@ namespace chromeos {
 
 // This class handles the interaction with the ChromeOS mount library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
-// library class like this: MountLibrary::Get().
+// library class like this: chromeos::CrosLibrary::Get()->GetMountLibrary()
 class MountLibrary {
  public:
   // Used to house an instance of each found mount device.
@@ -60,7 +60,8 @@ class MountLibrary {
   virtual const DiskVector& disks() const = 0;
   virtual bool MountPath(const char* device_path) = 0;
 
-  // Get library implementation.
+  // Factory function, creates a new instance and returns ownership.
+  // For normal usage, access the singleton via CrosLibrary::Get().
   static MountLibrary* GetImpl(bool stub);
 };
 
