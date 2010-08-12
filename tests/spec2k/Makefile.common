@@ -164,33 +164,39 @@ $(IT).pnacl_translator.opt.arm: $(IT).opt.bc
 ######################################################################
 # BITCODE - BACKEND - X8632
 BC_X8632=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-32
+BC_X8632_FINAL=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcfinal -arch x86-32
 BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8632/translator
 
 $(IT).pnacl.x8632: $(IT).bc
 	$(BC_X8632)  $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
 
 $(IT).pnacl_translator.x8632: $(IT).bc
+	$(BC_X8632_FINAL) $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $(IT)
 	$(BC_X8632_TRANSLATOR) $(IT).bc $@
 
 $(IT).pnacl.opt.x8632: $(IT).opt.bc
 	$(BC_X8632) $(PNACL) $(IT).opt.bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
 
-$(IT).pnacl_translator.opt.x8632: $(IT).bc
+$(IT).pnacl_translator.opt.x8632: $(IT).opt.bc
+	$(BC_X8632_FINAL) $(PNACL) $(IT).opt.bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $(IT).opt
 	$(BC_X8632_TRANSLATOR) $(IT).opt.bc $@
 
 ######################################################################
 # BITCODE - BACKEND - X8664
 BC_X8664=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-64
+BC_X8664_FINAL=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcfinal -arch x86-64
 BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8664/translator
 
 $(IT).pnacl.x8664: $(IT).bc
 	$(BC_X8664) $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
 
 $(IT).pnacl_translator.x8664: $(IT).bc
+	$(BC_X8664_FINAL) $(PNACL) $(IT).bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $(IT)
 	$(BC_X8664_TRANSLATOR) $(IT).bc $@
 
 $(IT).pnacl.opt.x8664: $(IT).opt.bc
 	$(BC_X8664) $(PNACL) $(IT).opt.bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $@
 
-$(IT).pnacl_translator.opt.x8664: $(IT).bc
+$(IT).pnacl_translator.opt.x8664: $(IT).opt.bc
+	$(BC_X8664_FINAL) $(PNACL) $(IT).opt.bc -L$(LIB_BC_PATH) $(LIBS_BC) -o $(IT).opt
 	$(BC_X8664_TRANSLATOR) $(IT).opt.bc $@
