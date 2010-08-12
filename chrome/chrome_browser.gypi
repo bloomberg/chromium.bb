@@ -1390,6 +1390,8 @@
         'browser/extensions/extension_toolstrip_api.h',
         'browser/extensions/extension_updater.cc',
         'browser/extensions/extension_updater.h',
+        'browser/extensions/extension_web_navigation_api_constants.cc',
+        'browser/extensions/extension_web_navigation_api_constants.h',
         'browser/extensions/extensions_quota_service.cc',
         'browser/extensions/extensions_quota_service.h',
         'browser/extensions/extensions_service.cc',
