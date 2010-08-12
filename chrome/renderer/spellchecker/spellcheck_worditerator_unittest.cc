@@ -129,3 +129,26 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
   }
 }
 
+// Tests whether our SpellcheckWordIterator extracts an empty word without
+// getting stuck in an infinite loop when inputting a Khmer text. (This is a
+// regression test for Issue 46278.)
+TEST(SpellcheckWordIteratorTest, RuleSetConsistency) {
+  SpellcheckCharAttribute attributes;
+  attributes.SetDefaultLanguage("en-US");
+
+  const wchar_t kTestText[] = L"\x1791\x17c1\x002e";
+  string16 input(WideToUTF16(kTestText));
+
+  SpellcheckWordIterator iterator;
+  EXPECT_TRUE(iterator.Initialize(&attributes, input.c_str(), input.length(),
+                                  true));
+
+  // When SpellcheckWordIterator uses an inconsistent ICU ruleset, the following
+  // iterator.GetNextWord() call gets stuck in an infinite loop. Therefore, this
+  // test succeeds if this call returns without timeouts.
+  string16 actual_word;
+  int actual_start, actual_end;
+  EXPECT_FALSE(iterator.GetNextWord(&actual_word, &actual_start, &actual_end));
+  EXPECT_EQ(0, actual_start);
+  EXPECT_EQ(0, actual_end);
+}

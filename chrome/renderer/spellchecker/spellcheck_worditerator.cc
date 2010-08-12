@@ -67,9 +67,8 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
       "$Numeric      = [\\p{Word_Break = Numeric}];"
       "$ExtendNumLet = [\\p{Word_Break = ExtendNumLet}];"
 
-      "$dictionary   = [:LineBreak = Complex_Context:];"
       "$Control        = [\\p{Grapheme_Cluster_Break = Control}]; "
-      "$ALetterPlus  = %s;"
+      "%s"
 
       "$KatakanaEx     = $Katakana     ($Extend |  $Format)*;"
       "$ALetterEx      = $ALetterPlus  ($Extend |  $Format)*;"
@@ -117,13 +116,11 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
       "($Extend | $Format)+ .?;"
       "($MidLetter | $MidNumLet) $BackALetterEx;"
       "($MidNum | $MidNumLet) $BackNumericEx;"
-      "$dictionary $dictionary;"
 
       "!!safe_forward;"
       "($Extend | $Format)+ .?;"
       "($MidLetterEx | $MidNumLetEx) $ALetterEx;"
-      "($MidNumEx | $MidNumLetEx) $NumericEx;"
-      "$dictionary $dictionary;";
+      "($MidNumEx | $MidNumLetEx) $NumericEx;";
 
   // Retrieve the script codes used by the given language from ICU. When the
   // given language consists of two or more scripts, we just use the first
@@ -145,8 +142,10 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
   if (!aletter)
     aletter = "Latin";
 
-  const char kWithDictionary[] = "[$ALetter [$dictionary-$Extend-$Control]]";
-  const char kWithoutDictionary[] = "$ALetter";
+  const char kWithDictionary[] =
+      "$dictionary   = [:LineBreak = Complex_Context:];"
+      "$ALetterPlus  = [$ALetter [$dictionary-$Extend-$Control]];";
+  const char kWithoutDictionary[] = "$ALetterPlus  = $ALetter;";
   const char* aletter_plus = kWithoutDictionary;
   if (script_code_ == USCRIPT_HANGUL || script_code_ == USCRIPT_THAI)
     aletter_plus = kWithDictionary;
@@ -158,9 +157,9 @@ void SpellcheckCharAttribute::CreateRuleSets(const std::string& language) {
       "$ALetterEx ($MidLetterEx | $MidNumLetEx) $ALetterEx {200};";
   const char kDisallowContraction[] = "";
 
-  ruleset_allow_contraction_ = UTF8ToUTF16(StringPrintf(kRuleTemplate,
+  ruleset_allow_contraction_ = ASCIIToUTF16(StringPrintf(kRuleTemplate,
       aletter, aletter_plus, kAllowContraction));
-  ruleset_disallow_contraction_ = UTF8ToUTF16(StringPrintf(kRuleTemplate,
+  ruleset_disallow_contraction_ = ASCIIToUTF16(StringPrintf(kRuleTemplate,
       aletter, aletter_plus, kDisallowContraction));
 }
 
