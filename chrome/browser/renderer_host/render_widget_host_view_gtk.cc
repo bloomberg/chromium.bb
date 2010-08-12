@@ -490,8 +490,24 @@ void RenderWidgetHostViewGtk::InitAsPopup(
 
   gtk_container_add(GTK_CONTAINER(popup), view_.get());
 
+  requested_size_ = gfx::Size(std::min(pos.width(), kMaxWindowWidth),
+                              std::min(pos.height(), kMaxWindowHeight));
+  host_->WasResized();
+  gtk_widget_set_size_request(view_.get(), requested_size_.width(),
+                              requested_size_.height());
+
+  gtk_window_set_default_size(GTK_WINDOW(popup), -1, -1);
+  // Don't allow the window to be resized. This also forces the window to
+  // shrink down to the size of its child contents.
+  gtk_window_set_resizable(GTK_WINDOW(popup), FALSE);
+  gtk_window_move(GTK_WINDOW(popup), pos.x(), pos.y());
+  gtk_widget_show_all(popup);
+
   // If we are not activatable, we don't want to grab keyboard input,
   // and webkit will manage our destruction.
+  // For unknown reason, calling gtk_grab_add() before realizing the widget may
+  // cause an assertion failure. See http://crbug.com/51834. So we do it after
+  // showing the popup.
   if (NeedsInputGrab()) {
     // Grab all input for the app. If a click lands outside the bounds of the
     // popup, WebKit will notice and destroy us. Before doing this we need
@@ -521,19 +537,6 @@ void RenderWidgetHostViewGtk::InitAsPopup(
       gdk_keyboard_grab(parent_->window, TRUE, GDK_CURRENT_TIME);
     }
   }
-
-  requested_size_ = gfx::Size(std::min(pos.width(), kMaxWindowWidth),
-                              std::min(pos.height(), kMaxWindowHeight));
-  host_->WasResized();
-  gtk_widget_set_size_request(view_.get(), requested_size_.width(),
-                              requested_size_.height());
-
-  gtk_window_set_default_size(GTK_WINDOW(popup), -1, -1);
-  // Don't allow the window to be resized. This also forces the window to
-  // shrink down to the size of its child contents.
-  gtk_window_set_resizable(GTK_WINDOW(popup), FALSE);
-  gtk_window_move(GTK_WINDOW(popup), pos.x(), pos.y());
-  gtk_widget_show_all(popup);
 
   // TODO(brettw) possibly enable out-of-process painting here as well
   // (see InitAsChild).
