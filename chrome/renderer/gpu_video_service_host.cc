@@ -8,6 +8,12 @@
 #include "chrome/renderer/gpu_video_decoder_host.h"
 #include "chrome/renderer/render_thread.h"
 
+GpuVideoServiceHost::GpuVideoServiceHost()
+    : router_(NULL),
+      message_loop_(NULL) {
+  memset(&service_info_, 0, sizeof(service_info_));
+}
+
 void GpuVideoServiceHost::OnChannelError() {
   LOG(ERROR) << "GpuVideoServiceHost::OnChannelError";
   channel_host_.release();

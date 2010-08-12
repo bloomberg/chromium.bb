@@ -34,9 +34,7 @@ class GpuVideoServiceHost : public IPC::Channel::Listener,
   void DestroyVideoDecoder(scoped_refptr<GpuVideoDecoderHost>);
 
  private:
-  GpuVideoServiceHost() : message_loop_(NULL) {
-    service_info_.service_available_ = 0;
-  }
+  GpuVideoServiceHost();
 
   scoped_refptr<GpuChannelHost> channel_host_;
   MessageRouter* router_;

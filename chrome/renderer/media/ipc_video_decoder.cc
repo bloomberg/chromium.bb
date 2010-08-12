@@ -63,7 +63,7 @@ void IpcVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   gpu_video_decoder_host_ = gpu_video_service_host->CreateVideoDecoder(this);
 
   // Initialize hardware decoder.
-  GpuVideoDecoderInitParam param;
+  GpuVideoDecoderInitParam param = {0};
   param.width_ = width_;
   param.height_ = height_;
   if (!gpu_video_decoder_host_->Initialize(param)) {

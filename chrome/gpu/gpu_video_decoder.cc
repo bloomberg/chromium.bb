@@ -35,7 +35,10 @@ GpuVideoDecoder::GpuVideoDecoder(
     GpuChannel* channel,
     base::ProcessHandle handle)
     : decoder_host_route_id_(param->decoder_host_route_id_),
-      channel_(channel), renderer_handle_(handle) {
+      channel_(channel),
+      renderer_handle_(handle) {
+  memset(&init_param_, 0, sizeof(init_param_));
+  memset(&done_param_, 0, sizeof(done_param_));
 }
 
 void GpuVideoDecoder::OnInitialize(const GpuVideoDecoderInitParam& param) {

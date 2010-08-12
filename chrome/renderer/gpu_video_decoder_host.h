@@ -63,14 +63,8 @@ class GpuVideoDecoderHost
   GpuVideoDecoderHost(GpuVideoServiceHost* service_host,
                       GpuChannelHost* channel_host,
                       EventHandler* event_handler,
-                      GpuVideoDecoderInfoParam decoder_info)
-      : gpu_video_service_host_(service_host),
-        channel_host_(channel_host),
-        event_handler_(event_handler),
-        decoder_info_(decoder_info),
-        buffer_id_serial_(0),
-        state_(kStateUninitialized),
-        input_buffer_busy_(false) {}
+                      GpuVideoDecoderInfoParam decoder_info);
+
   friend class GpuVideoServiceHost;
 
   // Input message handler.
