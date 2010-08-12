@@ -1793,7 +1793,7 @@ void BrowserView::InitTabStrip(TabStripModel* model) {
   }
 
   BrowserTabStripController* tabstrip_controller =
-      new BrowserTabStripController(model);
+      new BrowserTabStripController(browser_.get(), model);
 
   if (UseVerticalTabs())
     tabstrip_ = new SideTabStrip(tabstrip_controller);

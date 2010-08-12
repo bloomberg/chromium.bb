@@ -373,7 +373,8 @@ bool CreateWindowFunction::RunImpl() {
   Browser* new_window = new Browser(window_type, window_profile);
   new_window->CreateBrowserWindow();
   new_window->AddTabWithURL(url, GURL(), PageTransition::LINK, -1,
-                            TabStripModel::ADD_SELECTED, NULL, std::string());
+                            TabStripModel::ADD_SELECTED, NULL, std::string(),
+                            &new_window);
 
   new_window->window()->SetBounds(bounds);
   new_window->window()->Show();
@@ -581,15 +582,17 @@ bool CreateTabFunction::RunImpl() {
                              TabStripModel::ADD_NONE;
   add_types |= TabStripModel::ADD_FORCE_INDEX;
   TabContents* contents = browser->AddTabWithURL(url, GURL(),
-      PageTransition::LINK, index, add_types, NULL, std::string());
-  index = tab_strip->GetIndexOfTabContents(contents);
+      PageTransition::LINK, index, add_types, NULL, std::string(), &browser);
+  index = browser->tabstrip_model()->GetIndexOfTabContents(contents);
 
   if (selected)
     contents->Focus();
 
   // Return data about the newly created tab.
   if (has_callback())
-    result_.reset(ExtensionTabUtil::CreateTabValue(contents, tab_strip, index));
+    result_.reset(ExtensionTabUtil::CreateTabValue(contents,
+                                                   browser->tabstrip_model(),
+                                                   index));
 
   return true;
 }

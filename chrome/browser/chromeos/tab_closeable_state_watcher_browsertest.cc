@@ -36,7 +36,8 @@ class TabCloseableStateWatcherTest : public InProcessBrowserTest {
   // Wrapper for Browser::AddTabWithURL
   void AddTabWithURL(Browser* browser, const GURL& url) {
     browser->AddTabWithURL(url, GURL(), PageTransition::TYPED, 0,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           TabStripModel::ADD_SELECTED, NULL, std::string(),
+                           &browser);
     // Wait for page to finish loading.
     ui_test_utils::WaitForNavigation(
         &browser->GetSelectedTabContents()->controller());

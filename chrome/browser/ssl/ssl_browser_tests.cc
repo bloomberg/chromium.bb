@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureContentTwoTabs) {
       "files/ssl/page_displays_insecure_content.html");
   TabContents* tab2 = browser()->AddTabWithURL(url, GURL(),
       PageTransition::TYPED, 0, TabStripModel::ADD_SELECTED,
-      tab1->GetSiteInstance(), std::string());
+      tab1->GetSiteInstance(), std::string(), NULL);
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
   // The new tab has insecure content.
@@ -531,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
       https_server->TestServerPage("files/ssl/page_runs_insecure_content.html");
   TabContents* tab2 = browser()->AddTabWithURL(url, GURL(),
       PageTransition::TYPED, 0, TabStripModel::ADD_SELECTED,
-      tab1->GetSiteInstance(), std::string());
+      tab1->GetSiteInstance(), std::string(), NULL);
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
 
   // The new tab has insecure content.
@@ -693,10 +693,14 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestCloseTabWithUnsafePopup) {
   // Let's add another tab to make sure the browser does not exit when we close
   // the first tab.
   GURL url = http_server->TestServerPage("files/ssl/google.html");
+  Browser* browser_used = NULL;
   TabContents* tab2 = browser()->AddTabWithURL(
       url, GURL(), PageTransition::TYPED, 0, TabStripModel::ADD_SELECTED, NULL,
-      std::string());
+      std::string(), &browser_used);
   ui_test_utils::WaitForNavigation(&(tab2->controller()));
+
+  // Ensure that the tab was created in the correct browser.
+  EXPECT_EQ(browser(), browser_used);
 
   // Close the first tab.
   browser()->CloseTabContents(tab1);

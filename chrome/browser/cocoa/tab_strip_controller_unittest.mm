@@ -68,6 +68,8 @@ class TestTabStripDelegate : public TabStripModelDelegate {
   virtual bool UseVerticalTabs() const { return false; }
 
   virtual void ToggleUseVerticalTabs() {}
+
+  virtual bool LargeIconsPermitted() const { return true; }
 };
 
 class TabStripControllerTest : public CocoaTest {

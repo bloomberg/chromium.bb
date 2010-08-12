@@ -448,7 +448,7 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
   // TODO(eroman): should we have referrer here?
   browser->AddTabWithURL(
       url, GURL(), PageTransition::LINK, -1, TabStripModel::ADD_SELECTED, NULL,
-      std::string());
+      std::string(), &browser);
   browser->window()->Show();
 }
 
@@ -538,10 +538,10 @@ TabContents* Browser::OpenApplication(Profile* profile,
     case Extension::LAUNCH_WINDOW:
     case Extension::LAUNCH_PANEL:
       tab = Browser::OpenApplicationWindow(profile, extension, container,
-                                           GURL());
+                                           GURL(), &browser);
       break;
     case Extension::LAUNCH_TAB: {
-      tab = Browser::OpenApplicationTab(profile, extension);
+      tab = Browser::OpenApplicationTab(profile, extension, &browser);
       break;
     }
     default:
@@ -549,7 +549,6 @@ TabContents* Browser::OpenApplication(Profile* profile,
       break;
   }
   if (tab) {
-    Browser* browser = tab->delegate()->GetBrowser();
     if (browser && extension && extension->launch_fullscreen())
       browser->window()->SetFullscreen(true);
   }
@@ -561,7 +560,8 @@ TabContents* Browser::OpenApplicationWindow(
     Profile* profile,
     Extension* extension,
     Extension::LaunchContainer container,
-    const GURL& url_input) {
+    const GURL& url_input,
+    Browser** browser) {
   GURL url;
   if (!url_input.is_empty()) {
     if (extension)
@@ -577,15 +577,15 @@ TabContents* Browser::OpenApplicationWindow(
   RegisterAppPrefs(app_name);
 
   bool as_panel = extension && (container == Extension::LAUNCH_PANEL);
-  Browser* browser = Browser::CreateForApp(app_name, extension, profile,
-                                           as_panel);
-  TabContents* tab_contents = browser->AddTabWithURL(
+  Browser* local_browser = Browser::CreateForApp(app_name, extension, profile,
+                                                 as_panel);
+  TabContents* tab_contents = local_browser->AddTabWithURL(
       url, GURL(), PageTransition::START_PAGE, -1, TabStripModel::ADD_SELECTED,
-      NULL, std::string());
+      NULL, std::string(), &local_browser);
 
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   tab_contents->render_view_host()->SyncRendererPrefs();
-  browser->window()->Show();
+  local_browser->window()->Show();
 
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
@@ -598,33 +598,42 @@ TabContents* Browser::OpenApplicationWindow(
     // OnDidGetApplicationInfo, which calls
     // web_app::UpdateShortcutForTabContents when it sees UPDATE_SHORTCUT as
     // pending web app action.
-    browser->pending_web_app_action_ = UPDATE_SHORTCUT;
+    local_browser->pending_web_app_action_ = UPDATE_SHORTCUT;
   }
+
+  if (browser)
+    *browser = local_browser;
 
   return tab_contents;
 }
 
 // static
 TabContents* Browser::OpenApplicationWindow(Profile* profile,
-                                            GURL& url) {
-  return OpenApplicationWindow(profile, NULL, Extension::LAUNCH_WINDOW, url);
+                                            GURL& url, Browser** browser) {
+  return OpenApplicationWindow(profile, NULL, Extension::LAUNCH_WINDOW, url,
+                               browser);
 }
 
 // static
 TabContents* Browser::OpenApplicationTab(Profile* profile,
-                                         Extension* extension) {
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
-  if (!browser || browser->type() != Browser::TYPE_NORMAL)
+                                         Extension* extension,
+                                         Browser** browser) {
+  Browser* local_browser = BrowserList::GetLastActiveWithProfile(profile);
+  if (!local_browser || local_browser->type() != Browser::TYPE_NORMAL)
     return NULL;
 
   // TODO(erikkay): This doesn't seem like the right transition in all cases.
   PageTransition::Type transition = PageTransition::START_PAGE;
   GURL url = extension->GetFullLaunchURL();
   TabContents* tab_contents =
-      browser->CreateTabContentsForURL(url, GURL(), profile,
-                                       transition, false, NULL);
+      local_browser->CreateTabContentsForURL(url, GURL(), profile,
+                                             transition, false, NULL);
   tab_contents->SetExtensionApp(extension);
-  browser->AddTab(tab_contents, transition);
+  local_browser->AddTab(tab_contents, transition);
+
+  if (browser)
+    *browser = local_browser;
+
   return tab_contents;
 }
 
@@ -881,7 +890,8 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
                                     int index,
                                     int add_types,
                                     SiteInstance* instance,
-                                    const std::string& extension_app_id) {
+                                    const std::string& extension_app_id,
+                                    Browser** browser_used) {
   TabContents* contents = NULL;
   if (CanSupportWindowFeature(FEATURE_TABSTRIP) || tabstrip_model()->empty()) {
     GURL url_to_load = url;
@@ -899,6 +909,9 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
       // TabStripModel::AddTabContents invokes HideContents if not foreground.
       contents->WasHidden();
     }
+
+    if (browser_used)
+      *browser_used = this;
   } else {
     // We're in an app window or a popup window. Find an existing browser to
     // open this URL in, creating one if none exists.
@@ -907,8 +920,11 @@ TabContents* Browser::AddTabWithURL(const GURL& url,
     if (!b)
       b = Browser::Create(profile_);
     contents = b->AddTabWithURL(url, referrer, transition, index, add_types,
-                                instance, extension_app_id);
+                                instance, extension_app_id, &b);
     b->window()->Show();
+
+    if (browser_used)
+      *browser_used = b;
   }
   return contents;
 }
@@ -1036,7 +1052,7 @@ void Browser::ShowSingletonTab(const GURL& url) {
 
   // Otherwise, just create a new tab.
   AddTabWithURL(url, GURL(), PageTransition::AUTO_BOOKMARK, -1,
-                TabStripModel::ADD_SELECTED, NULL, std::string());
+                TabStripModel::ADD_SELECTED, NULL, std::string(), NULL);
 }
 
 void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
@@ -1847,7 +1863,7 @@ void Browser::OpenUpdateChromeDialog() {
 void Browser::OpenHelpTab() {
   GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kHelpContentUrl));
   AddTabWithURL(help_url, GURL(), PageTransition::AUTO_BOOKMARK, -1,
-                TabStripModel::ADD_SELECTED, NULL, std::string());
+                TabStripModel::ADD_SELECTED, NULL, std::string(), NULL);
 }
 
 void Browser::OpenThemeGalleryTabAndActivate() {
@@ -2200,7 +2216,7 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
   TabContents* tab_contents = AddTabWithURL(
       GURL(chrome::kChromeUINewTabURL), GURL(), PageTransition::TYPED, index,
       foreground ? TabStripModel::ADD_SELECTED : TabStripModel::ADD_NONE, NULL,
-      std::string());
+      std::string(), NULL);
   tab_contents->set_new_tab_start_time(new_tab_start_time);
   return tab_contents;
 }
@@ -2388,6 +2404,13 @@ bool Browser::CanCloseTab() const {
 void Browser::ToggleUseVerticalTabs() {
   use_vertical_tabs_.SetValue(!UseVerticalTabs());
   UseVerticalTabsChanged();
+}
+
+bool Browser::LargeIconsPermitted() const {
+  // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
+  // for those windows, we already have a big icon in the top-left outside any
+  // tab. Having big tab icons too looks kinda redonk.
+  return TYPE_EXTENSION_APP != type();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2949,10 +2972,6 @@ void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
   }
 
   pending_web_app_action_ = NONE;
-}
-
-Browser* Browser::GetBrowser() {
-  return this;
 }
 
 void Browser::ContentTypeChanged(TabContents* source) {
@@ -3763,7 +3782,7 @@ bool Browser::HandleCrossAppNavigation(TabContents* source,
     if (destination_extension->launch_container() ==
         Extension::LAUNCH_WINDOW) {
       Browser::OpenApplicationWindow(profile_, destination_extension,
-                                     Extension::LAUNCH_WINDOW, url);
+                                     Extension::LAUNCH_WINDOW, url, NULL);
       return true;
     }
   }
@@ -3917,7 +3936,8 @@ void Browser::OpenURLAtIndex(TabContents* source,
     Browser* browser = Browser::Create(profile_);
     new_contents = browser->AddTabWithURL(
         url, referrer, transition, index,
-        TabStripModel::ADD_SELECTED | add_types, instance, std::string());
+        TabStripModel::ADD_SELECTED | add_types, instance, std::string(),
+        &browser);
     browser->window()->Show();
   } else if ((disposition == CURRENT_TAB) && current_tab) {
     tabstrip_model_.TabNavigating(current_tab, transition);
@@ -3952,7 +3972,7 @@ void Browser::OpenURLAtIndex(TabContents* source,
     if (disposition != NEW_BACKGROUND_TAB)
       add_types |= TabStripModel::ADD_SELECTED;
     new_contents = AddTabWithURL(url, referrer, transition, index, add_types,
-                                 instance, std::string());
+                                 instance, std::string(), NULL);
   }
 
   if (disposition != NEW_BACKGROUND_TAB && source_tab_was_frontmost &&

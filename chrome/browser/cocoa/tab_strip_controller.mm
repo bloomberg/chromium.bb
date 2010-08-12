@@ -1653,7 +1653,7 @@ private:
       browser_->AddTabWithURL(url, GURL(), PageTransition::TYPED, index,
                               TabStripModel::ADD_SELECTED |
                                   TabStripModel::ADD_FORCE_INDEX,
-                              NULL, std::string());
+                              NULL, std::string(), NULL);
       break;
     case CURRENT_TAB:
       UserMetrics::RecordAction(UserMetricsAction("Tab_DropURLOnTab"),

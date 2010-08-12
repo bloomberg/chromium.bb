@@ -93,11 +93,9 @@ void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
 }
 
 void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
-  Browser* browser = NULL;
-  TabContentsDelegate* delegate = dom_ui_->tab_contents()->delegate();
-  if (delegate)
-    browser = delegate->GetBrowser();
-  DCHECK(browser);
+  // TODO(beng): This is an improper direct dependency on Browser. Route this
+  // through some sort of delegate.
+  Browser* browser = BrowserList::FindBrowserWithProfile(dom_ui_->GetProfile());
   views::Window* window = views::Window::CreateChromeWindow(
       browser->window()->GetNativeHandle(), gfx::Rect(), view);
   window->SetIsAlwaysOnTop(true);

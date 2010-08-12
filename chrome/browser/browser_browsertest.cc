@@ -204,8 +204,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
   ui_test_utils::NavigateToURL(browser(), url);
+  Browser* browser_used = NULL;
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, 0,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           TabStripModel::ADD_SELECTED, NULL, std::string(),
+                           &browser_used);
+  EXPECT_EQ(browser(), browser_used);
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(0, browser()->selected_index());
   TabContents* second_tab = browser()->GetTabContentsAt(1);
@@ -230,8 +233,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
 
   // There is one initial tab.
   for (int ix = 0; ix != 33; ++ix) {
+    Browser* browser_used = NULL;
     browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, 0,
-                             TabStripModel::ADD_SELECTED, NULL, std::string());
+                             TabStripModel::ADD_SELECTED, NULL, std::string(),
+                             &browser_used);
+    EXPECT_EQ(browser(), browser_used);
   }
   EXPECT_EQ(34, browser()->tab_count());
 
@@ -698,7 +704,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   ASSERT_EQ(NULL, Browser::FindAppTab(browser(), extension_app_));
 
   // Open a tab with the app.
-  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_);
+  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_,
+                                                 NULL);
   ASSERT_TRUE(WaitForTab(tab));
   ASSERT_EQ(2, browser()->tab_count());
 
@@ -755,7 +762,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenPanel) {
 
   // Open the app in a panel.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_PANEL, GURL());
+                                 Extension::LAUNCH_PANEL, GURL(), NULL);
   Browser* app_panel = BrowserList::GetLastActive();
   ASSERT_TRUE(app_panel);
   ASSERT_NE(app_panel, browser()) << "New browser should have opened.";
@@ -788,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenWindow) {
 
   // Open a window with the app.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_WINDOW, GURL());
+                                 Extension::LAUNCH_WINDOW, GURL(), NULL);
   Browser* app_window = BrowserList::GetLastActive();
   ASSERT_TRUE(app_window);
   ASSERT_NE(app_window, browser()) << "New browser should have opened.";
@@ -816,7 +823,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_WindowBeforeTab) {
   ASSERT_EQ(1, browser()->tab_count());
 
   // Open a tab with the app.
-  Browser::OpenApplicationTab(profile_, extension_app_);
+  Browser::OpenApplicationTab(profile_, extension_app_, NULL);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   ASSERT_EQ(2, browser()->tab_count());
   int app_tab_index = browser()->selected_index();
@@ -824,7 +831,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_WindowBeforeTab) {
 
   // Open a window with the app.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_WINDOW, GURL());
+                                 Extension::LAUNCH_WINDOW, GURL(), NULL);
   Browser* app_window = BrowserList::GetLastActive();
   ASSERT_TRUE(app_window);
   ASSERT_NE(app_window, browser()) << "New browser should have opened.";
@@ -845,7 +852,8 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_PanelBeforeTab) {
   ASSERT_EQ(1, browser()->tab_count());
 
   // Open a tab with the app.
-  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_);
+  TabContents* tab = Browser::OpenApplicationTab(profile_, extension_app_,
+                                                 NULL);
   ASSERT_TRUE(WaitForTab(tab));
   ASSERT_EQ(2, browser()->tab_count());
   int app_tab_index = browser()->selected_index();
@@ -853,7 +861,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_PanelBeforeTab) {
 
   // Open a panel with the app.
   Browser::OpenApplicationWindow(profile_, extension_app_,
-                                 Extension::LAUNCH_PANEL, GURL());
+                                 Extension::LAUNCH_PANEL, GURL(), NULL);
   Browser* app_panel = BrowserList::GetLastActive();
   ASSERT_TRUE(app_panel);
   ASSERT_NE(app_panel, browser()) << "New browser should have opened.";
@@ -873,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_TabInFocusedWindow) {
 
   ASSERT_EQ(1, browser()->tab_count());
 
-  Browser::OpenApplicationTab(profile_, extension_app_);
+  Browser::OpenApplicationTab(profile_, extension_app_, NULL);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
   ASSERT_EQ(2, browser()->tab_count());
   int app_tab_index = browser()->selected_index();
@@ -883,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_TabInFocusedWindow) {
   Browser* extra_browser = CreateBrowser(profile_);
   ASSERT_EQ(extra_browser, BrowserList::GetLastActive());
 
-  Browser::OpenApplicationTab(profile_, extension_app_);
+  Browser::OpenApplicationTab(profile_, extension_app_, NULL);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(extra_browser));
   ASSERT_EQ(2, extra_browser->tab_count());
   app_tab_index = extra_browser->selected_index();
@@ -931,9 +939,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   EXPECT_EQ(1, popup_browser->tab_count());
 
   // Now try opening another tab in the popup browser.
+  Browser* browser_used = NULL;
   popup_browser->AddTabWithURL(
       GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
-      TabStripModel::ADD_SELECTED, NULL, std::string());
+      TabStripModel::ADD_SELECTED, NULL, std::string(), &browser_used);
+  EXPECT_EQ(popup_browser, browser_used);
 
   // The popup should still only have one tab.
   EXPECT_EQ(1, popup_browser->tab_count());
@@ -950,7 +960,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   // Now try opening another tab in the app browser.
   app_browser->AddTabWithURL(
       GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
-      TabStripModel::ADD_SELECTED, NULL, std::string());
+      TabStripModel::ADD_SELECTED, NULL, std::string(), &browser_used);
+  EXPECT_EQ(app_browser, browser_used);
 
   // The popup should still only have one tab.
   EXPECT_EQ(1, app_browser->tab_count());
@@ -967,7 +978,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest2, NoTabsInPopups) {
   // Now try opening another tab in the app popup browser.
   app_popup_browser->AddTabWithURL(
       GURL(chrome::kAboutBlankURL), GURL(), PageTransition::TYPED, -1,
-      TabStripModel::ADD_SELECTED, NULL, std::string());
+      TabStripModel::ADD_SELECTED, NULL, std::string(), &browser_used);
+  EXPECT_EQ(app_popup_browser, browser_used);
 
   // The popup should still only have one tab.
   EXPECT_EQ(1, app_popup_browser->tab_count());

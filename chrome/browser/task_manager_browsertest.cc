@@ -101,8 +101,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeTabContentsChanges) {
   // Open a new tab and make sure we notice that.
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
+  Browser* browser_used = NULL;
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, 0,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           TabStripModel::ADD_SELECTED, NULL, std::string(),
+                           &browser_used);
+  EXPECT_EQ(browser(), browser_used);
   WaitForResourceChange(3);
 
   // Close the tab and verify that we notice.
@@ -247,7 +250,8 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   GURL url(ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                      FilePath(kTitle1File)));
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, 0,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           TabStripModel::ADD_SELECTED, NULL, std::string(),
+                           NULL);
   WaitForResourceChange(3);
 
   // Check that we get some value for the cache columns.

@@ -112,9 +112,11 @@ class BrowserTabStripController::TabContextMenuContents
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, public:
 
-BrowserTabStripController::BrowserTabStripController(TabStripModel* model)
+BrowserTabStripController::BrowserTabStripController(Browser* browser,
+                                                     TabStripModel* model)
     : model_(model),
-      tabstrip_(NULL) {
+      tabstrip_(NULL),
+      browser_(browser) {
   model_->AddObserver(this);
 
   notification_registrar_.Add(this,
@@ -269,12 +271,7 @@ void BrowserTabStripController::CreateNewTab() {
   UserMetrics::RecordAction(UserMetricsAction("NewTab_Button"),
                             model_->profile());
 
-  TabContents* selected_tab = model_->GetSelectedTabContents();
-  if (!selected_tab)
-    return;
-
-  Browser* browser = selected_tab->delegate()->GetBrowser();
-  if (browser->OpenAppsPanelAsNewTab())
+  if (browser_ && browser_->OpenAppsPanelAsNewTab())
     return;
 
   model_->delegate()->AddBlankTab(true);
@@ -368,7 +365,13 @@ void BrowserTabStripController::SetTabRendererDataFromModel(
     TabContents* contents,
     int model_index,
     TabRendererData* data) {
-  SkBitmap* app_icon = contents->GetExtensionAppIcon();
+  SkBitmap* app_icon = NULL;
+
+  // Extension App icons are slightly larger than favicons, so only allow
+  // them if permitted by the model.
+  if (model_->delegate()->LargeIconsPermitted())
+    app_icon = contents->GetExtensionAppIcon();
+
   if (app_icon)
     data->favicon = *app_icon;
   else

@@ -89,7 +89,8 @@ class FindInPageTest : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
-  scoped_refptr<net::HTTPTestServer> server(net::HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   // First we navigate to our test page (tab A).
@@ -99,8 +100,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   browser()->Find();
 
   // Open another tab (tab B).
+  Browser* browser_used = NULL;
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           TabStripModel::ADD_SELECTED, NULL, std::string(),
+                           &browser_used);
+  EXPECT_EQ(browser(), browser_used);
 
   browser()->Find();
   EXPECT_EQ(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD, GetFocusedViewID());
@@ -126,7 +130,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
 }
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
-  scoped_refptr<net::HTTPTestServer> server(net::HTTPTestServer::CreateServer(kDocRoot));
+  scoped_refptr<net::HTTPTestServer> server(
+      net::HTTPTestServer::CreateServer(kDocRoot));
   ASSERT_TRUE(NULL != server.get());
 
   GURL url = server->TestServerPage("title1.html");

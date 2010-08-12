@@ -175,7 +175,8 @@
                         -1, //  To indicate tab is inserted at end.
                         TabStripModel::ADD_SELECTED,
                         NULL,
-                        std::string());
+                        std::string(),
+                        NULL);
   tabContents->set_new_tab_start_time(newTabStartTime);
 
   [aTab setTabContent:tabContents];
@@ -196,7 +197,8 @@
                         index,
                         TabStripModel::ADD_SELECTED,
                         NULL,
-                        std::string());
+                        std::string(),
+                        NULL);
   tabContents->set_new_tab_start_time(newTabStartTime);
 
   [aTab setTabContent:tabContents];

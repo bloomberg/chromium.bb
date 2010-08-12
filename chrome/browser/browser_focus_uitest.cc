@@ -261,8 +261,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
 
   // Create several tabs.
   for (int i = 0; i < 4; ++i) {
+    Browser* browser_used = NULL;
     browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                             TabStripModel::ADD_SELECTED, NULL, std::string());
+                             TabStripModel::ADD_SELECTED, NULL, std::string(),
+                             &browser_used);
+    EXPECT_EQ(browser(), browser_used);
   }
 
   // Alternate focus for the tab.
@@ -344,8 +347,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   browser()->FocusLocationBar();
 
   // Create a 2nd tab.
+  Browser* browser_used = NULL;
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
-                           TabStripModel::ADD_SELECTED, NULL, std::string());
+                           TabStripModel::ADD_SELECTED, NULL, std::string(),
+                           &browser_used);
+  EXPECT_EQ(browser(), browser_used);
 
   // Focus should be on the recently opened tab page.
   ASSERT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER_FOCUS_VIEW));
@@ -765,7 +771,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
   // Open about:blank, focus should be on the location bar.
   browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::LINK,
                            -1, TabStripModel::ADD_SELECTED, NULL,
-                           std::string());
+                           std::string(),
+                           NULL);
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 }
 

@@ -388,7 +388,7 @@ void AppLauncher::AddTabWithURL(const GURL& url,
   browser_->AddTabWithURL(
       url, GURL(), transition, -1,
       TabStripModel::ADD_SELECTED | TabStripModel::ADD_FORCE_INDEX, NULL,
-      std::string());
+      std::string(), NULL);
 }
 
 void AppLauncher::Resize(const gfx::Size& contents_size) {

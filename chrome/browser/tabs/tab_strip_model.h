@@ -263,6 +263,9 @@ class TabStripModelDelegate {
   // Toggles the use of the vertical tabstrip.
   virtual void ToggleUseVerticalTabs() = 0;
 
+  // Returns true if the tab strip can use large icons.
+  virtual bool LargeIconsPermitted() const = 0;
+
  protected:
   virtual ~TabStripModelDelegate() {}
 };

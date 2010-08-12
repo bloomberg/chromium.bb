@@ -110,7 +110,6 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual bool ShouldAddNavigationsToHistory() const { return false; }
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id) {}
-  virtual Browser* GetBrowser() { return NULL; }
   virtual gfx::NativeWindow GetFrameNativeWindow() {
     return match_preview_->host_->delegate() ?
         match_preview_->host_->delegate()->GetFrameNativeWindow() : NULL;
