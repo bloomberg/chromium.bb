@@ -18,7 +18,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
-#include "base/scoped_comptr_win.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 struct IDirect3DDeviceManager9;
@@ -26,21 +25,23 @@ struct IMFTransform;
 
 namespace media {
 
+class DataBuffer;
 class VideoFrame;
 
 // A decoder that takes samples of Annex B streams then outputs decoded frames.
 class MftH264Decoder : public base::RefCountedThreadSafe<MftH264Decoder> {
  public:
-  enum DecoderOutputState {
-    kOutputOk = 0,
-    kResetOutputStreamFailed,
+  enum Error {
+    kResetOutputStreamFailed = 0,
     kNoMoreOutput,
     kUnspecifiedError,
     kNoMemory,
     kOutputSampleError
   };
-  typedef Callback4<uint8**, int*, int64*, int64*>::Type ReadInputCallback;
+  typedef Callback1<scoped_refptr<DataBuffer>*>::Type
+      ReadInputCallback;
   typedef Callback1<scoped_refptr<VideoFrame> >::Type OutputReadyCallback;
+  typedef Callback1<Error>::Type OutputErrorCallback;
 
   explicit MftH264Decoder(bool use_dxva);
   ~MftH264Decoder();
@@ -58,18 +59,14 @@ class MftH264Decoder : public base::RefCountedThreadSafe<MftH264Decoder> {
             int width, int height,
             int aspect_num, int aspect_denom,
             ReadInputCallback* read_input_cb,
-            OutputReadyCallback* output_avail_cb);
-
-  // Sends an Annex B stream to the decoder. The times here should be given
-  // in 100ns units. This creates a IMFSample, copies the stream over to the
-  // sample, and sends the sample to the decoder.
-  // Returns: true if the sample was sent successfully.
-  bool SendInput(uint8* data, int size, int64 timestamp, int64 duration);
+            OutputReadyCallback* output_avail_cb,
+            OutputErrorCallback* output_error_cb);
 
   // Tries to get an output sample from the decoder, and if successful, calls
-  // the callback with the sample.
-  // Returns: status of the decoder.
-  DecoderOutputState GetOutput();
+  // the callback with the sample, or status of the decoder if an error
+  // occurred.
+  void GetOutput();
+  bool Flush();
 
   bool initialized() const { return initialized_; }
   bool use_dxva() const { return use_dxva_; }
@@ -103,7 +100,15 @@ class MftH264Decoder : public base::RefCountedThreadSafe<MftH264Decoder> {
   bool SetDecoderOutputMediaType(const GUID subtype);
   bool SendStartMessage();
   bool GetStreamsInfoAndBufferReqs();
-  bool ReadAndProcessInput();
+  bool ReadInput();
+
+  // Sends an Annex B stream to the decoder. The times here should be given
+  // in 100ns units. This creates a IMFSample, copies the stream over to the
+  // sample, and sends the sample to the decoder.
+  // Returns: true if the sample was sent successfully.
+  bool SendInput(const uint8* data, int size, int64 timestamp, int64 duration);
+
+  bool SendEndOfStreamMessage();
 
   // Sends a drain message to the decoder to indicate no more input will be
   // sent. SendInput() should not be called after calling this method.
@@ -113,10 +118,12 @@ class MftH264Decoder : public base::RefCountedThreadSafe<MftH264Decoder> {
   // |output_error_callback_| should stop the message loop.
   scoped_ptr<ReadInputCallback> read_input_callback_;
   scoped_ptr<OutputReadyCallback> output_avail_callback_;
+  scoped_ptr<OutputErrorCallback> output_error_callback_;
   IMFTransform* decoder_;
   bool initialized_;
   bool use_dxva_;
   bool drain_message_sent_;
+  bool next_frame_discontinuous_;
 
   // Minimum input and output buffer sizes/alignment required by the decoder.
   // If |buffer_alignment_| is zero, then the buffer needs not be aligned.

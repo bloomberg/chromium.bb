@@ -11,8 +11,8 @@
 
 #include <algorithm>
 
-#include "base/scoped_comptr_win.h"
 #include "base/logging.h"
+#include "media/base/data_buffer.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/bitstream_converter.h"
 
@@ -26,7 +26,7 @@ FFmpegFileReader::FFmpegFileReader(const std::string& filename)
       codec_context_(NULL),
       target_stream_(-1),
       converter_(NULL),
-      end_of_stream_(false) {
+      last_timestamp_(0) {
 }
 
 FFmpegFileReader::~FFmpegFileReader() {
@@ -92,15 +92,9 @@ bool FFmpegFileReader::Initialize() {
   return true;
 }
 
-void FFmpegFileReader::Read(uint8** output, int* size) {
-  Read2(output, size, NULL, NULL);
-}
-
-void FFmpegFileReader::Read2(uint8** output, int* size, int64* timestamp,
-                            int64* duration) {
+void FFmpegFileReader::Read(scoped_refptr<DataBuffer>* output) {
   if (!format_context_ || !codec_context_ || target_stream_ == -1) {
-    *size = 0;
-    *output = NULL;
+    *output = new DataBuffer(0);
     return;
   }
   AVPacket packet;
@@ -108,49 +102,34 @@ void FFmpegFileReader::Read2(uint8** output, int* size, int64* timestamp,
   while (!found) {
     int result = av_read_frame(format_context_, &packet);
     if (result < 0) {
-      *output = NULL;
-      *size = 0;
-      end_of_stream_ = true;
+      *output = new DataBuffer(0);
       return;
     }
     if (packet.stream_index == target_stream_) {
       if (converter_.get() && !converter_->ConvertPacket(&packet)) {
         LOG(ERROR) << "failed to convert AVPacket";
       }
-      *output = new uint8[packet.size];
-      if (*output == NULL) {
-        LOG(ERROR) << "Failed to allocate buffer for annex b stream";
-        *size = 0;
-        return;
-      }
-      *size = packet.size;
-      memcpy(*output, packet.data, packet.size);
-      if (duration) {
-        if (packet.duration == 0) {
-          LOG(WARNING) << "Packet duration not known";
-        }
-        // This is in AVCodecContext::time_base units
-        *duration = ConvertFFmpegTimeBaseTo100Ns(packet.duration);
-      }
-      if (timestamp) {
-        if (packet.pts == AV_NOPTS_VALUE) {
-          LOG(ERROR) << "Packet presentation time not known";
-          *timestamp = 0L;
-        } else {
-          // This is in AVCodecContext::time_base units
-          *timestamp = ConvertFFmpegTimeBaseTo100Ns(packet.pts);
-        }
-      }
+      last_timestamp_ = std::max(last_timestamp_, packet.pts);
+      CopyPacketToBuffer(&packet, output);
       found = true;
     }
     av_free_packet(&packet);
   }
 }
 
+bool FFmpegFileReader::SeekForward(int64 seek_amount_us) {
+  if (!format_context_ || !codec_context_ || target_stream_ == -1) {
+    return false;
+  }
+  int64 new_us = TimeBaseToMicroseconds(last_timestamp_) + seek_amount_us;
+  int64 new_timestamp = MicrosecondsToTimeBase(new_us);
+  last_timestamp_ = new_timestamp;
+  return av_seek_frame(format_context_, target_stream_, new_timestamp, 0) >= 0;
+}
+
 bool FFmpegFileReader::GetFrameRate(int* num, int* denom) const {
   if (!codec_context_)
     return false;
-
   *denom = codec_context_->time_base.num;
   *num = codec_context_->time_base.den;
   if (*denom == 0) {
@@ -185,16 +164,49 @@ bool FFmpegFileReader::GetAspectRatio(int* num, int* denom) const {
   return true;
 }
 
-int64 FFmpegFileReader::ConvertFFmpegTimeBaseTo100Ns(
+int64 FFmpegFileReader::TimeBaseToMicroseconds(
     int64 time_base_unit) const {
   // FFmpeg units after time base conversion seems to be actually given in
   // milliseconds (instead of seconds...) so we need to multiply it by a factor
-  // of 10,000 to convert it into units compatible with MF.
+  // of 1,000.
   // Note we need to double this because the frame rate is doubled in
   // ffmpeg.
   CHECK(codec_context_) << "Codec context needs to be initialized";
-  return time_base_unit * 20000 * codec_context_->time_base.num /
+  return time_base_unit * 2000 * codec_context_->time_base.num /
          codec_context_->time_base.den;
+}
+
+int64 FFmpegFileReader::MicrosecondsToTimeBase(
+    int64 time_base_unit) const {
+  // ffmpeg.
+  CHECK(codec_context_) << "Codec context needs to be initialized";
+  return time_base_unit * codec_context_->time_base.den / 2000 /
+         codec_context_->time_base.num;
+}
+
+void FFmpegFileReader::CopyPacketToBuffer(AVPacket* packet,
+                                          scoped_refptr<DataBuffer>* output) {
+  uint8* buffer = new uint8[packet->size];
+  if (buffer == NULL) {
+    LOG(ERROR) << "Failed to allocate buffer for annex b stream";
+    *output = NULL;
+    return;
+  }
+  memcpy(buffer, packet->data, packet->size);
+  *output = new DataBuffer(buffer, packet->size);
+  if (packet->pts != AV_NOPTS_VALUE) {
+    (*output)->SetTimestamp(
+        base::TimeDelta::FromMicroseconds(
+            TimeBaseToMicroseconds(packet->pts)));
+  } else {
+    (*output)->SetTimestamp(StreamSample::kInvalidTimestamp);
+  }
+  if (packet->duration == 0) {
+    LOG(WARNING) << "Packet duration not known";
+  }
+  (*output)->SetDuration(
+      base::TimeDelta::FromMicroseconds(
+          TimeBaseToMicroseconds(packet->duration)));
 }
 
 }  // namespace media

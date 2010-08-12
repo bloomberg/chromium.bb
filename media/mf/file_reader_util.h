@@ -12,15 +12,17 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_handle.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 
 struct AVCodecContext;
 struct AVFormatContext;
+struct AVPacket;
 
 namespace media {
 
 class BitstreamConverter;
+class DataBuffer;
 
 // A class to help reading and parsing input file for use in omx_test.
 class FileReader {
@@ -32,7 +34,7 @@ class FileReader {
 
   // Read the file into |output|, and output the number of bytes read to
   // |size|.
-  virtual void Read(uint8** output, int* size) = 0;
+  virtual void Read(scoped_refptr<DataBuffer>* output) = 0;
 };
 
 class FFmpegFileReader : public FileReader {
@@ -40,26 +42,25 @@ class FFmpegFileReader : public FileReader {
   explicit FFmpegFileReader(const std::string& filename);
   virtual ~FFmpegFileReader();
   virtual bool Initialize();
-  virtual void Read(uint8** output, int* size);
+  virtual void Read(scoped_refptr<DataBuffer>* output);
+  virtual bool SeekForward(int64 seek_amount_us);
 
-  // Reads a video packet, converts it into Annex B stream, and allocates a
-  // buffer to |*output| and copies the contents into it. Timestamp and
-  // duration are given in 100-ns units.
-  void Read2(uint8** output, int* size, int64* timestamp, int64* duration);
   bool GetFrameRate(int* num, int* denom) const;
   bool GetWidth(int* width) const;
   bool GetHeight(int* height) const;
   bool GetAspectRatio(int* num, int* denom) const;
-  int64 ConvertFFmpegTimeBaseTo100Ns(int64 time_base_unit) const;
-  bool end_of_stream() const { return end_of_stream_; }
+  int64 TimeBaseToMicroseconds(int64 time_base_unit) const;
+  int64 MicrosecondsToTimeBase(int64 time_base_unit) const;
 
  private:
+  void CopyPacketToBuffer(AVPacket* packet, scoped_refptr<DataBuffer>* output);
+
   std::string filename_;
   AVFormatContext* format_context_;
   AVCodecContext* codec_context_;
   int target_stream_;
-  scoped_ptr<media::BitstreamConverter> converter_;
-  bool end_of_stream_;
+  scoped_ptr<BitstreamConverter> converter_;
+  int64 last_timestamp_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegFileReader);
 };

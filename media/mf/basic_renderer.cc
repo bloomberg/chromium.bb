@@ -10,7 +10,6 @@
 
 #include "base/message_loop.h"
 #include "base/scoped_comptr_win.h"
-#include "base/time.h"
 #include "media/base/yuv_convert.h"
 
 // For MFGetService and MF_BUFFER_SERVICE (getting D3D surface from buffer)
@@ -173,7 +172,7 @@ void NullRenderer::StartPlayback() {
                                    &MftH264Decoder::GetOutput));
 }
 
-void NullRenderer::StopPlayback() {
+void NullRenderer::OnDecodeError(MftH264Decoder::Error error) {
   MessageLoop::current()->Quit();
 }
 
@@ -189,6 +188,10 @@ BasicRenderer::BasicRenderer(MftH264Decoder* decoder,
 BasicRenderer::~BasicRenderer() {}
 
 void BasicRenderer::ProcessFrame(scoped_refptr<VideoFrame> frame) {
+  MessageLoopForUI::current()->PostDelayedTask(
+      FROM_HERE, NewRunnableMethod(decoder_.get(),
+                                   &MftH264Decoder::GetOutput),
+                                   frame->GetDuration().InMilliseconds());
   if (device_ != NULL) {
     if (!PaintD3D9BufferOntoWindow(device_,
              static_cast<IMFMediaBuffer*>(frame->private_buffer()))) {
@@ -202,10 +205,6 @@ void BasicRenderer::ProcessFrame(scoped_refptr<VideoFrame> frame) {
     }
   }
   ReleaseOutputBuffer(frame);
-  MessageLoopForUI::current()->PostDelayedTask(
-      FROM_HERE, NewRunnableMethod(decoder_.get(),
-                                   &MftH264Decoder::GetOutput),
-                                   frame->GetDuration().InMilliseconds());
 }
 
 void BasicRenderer::StartPlayback() {
@@ -214,7 +213,7 @@ void BasicRenderer::StartPlayback() {
                                    &MftH264Decoder::GetOutput));
 }
 
-void BasicRenderer::StopPlayback() {
+void BasicRenderer::OnDecodeError(MftH264Decoder::Error error) {
   MessageLoopForUI::current()->Quit();
 }
 

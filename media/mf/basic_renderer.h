@@ -23,7 +23,7 @@ class MftRenderer : public base::RefCountedThreadSafe<MftRenderer> {
   virtual ~MftRenderer() {}
   virtual void ProcessFrame(scoped_refptr<VideoFrame> frame) = 0;
   virtual void StartPlayback() = 0;
-  virtual void StopPlayback() = 0;
+  virtual void OnDecodeError(MftH264Decoder::Error error) = 0;
 
  protected:
   scoped_refptr<MftH264Decoder> decoder_;
@@ -36,7 +36,7 @@ class NullRenderer : public MftRenderer {
   virtual ~NullRenderer();
   virtual void ProcessFrame(scoped_refptr<VideoFrame> frame);
   virtual void StartPlayback();
-  virtual void StopPlayback();
+  virtual void OnDecodeError(MftH264Decoder::Error error);
 };
 
 // This renderer does a basic playback by drawing to |window_|. It tries to
@@ -48,7 +48,7 @@ class BasicRenderer : public MftRenderer {
   virtual ~BasicRenderer();
   virtual void ProcessFrame(scoped_refptr<VideoFrame> frame);
   virtual void StartPlayback();
-  virtual void StopPlayback();
+  virtual void OnDecodeError(MftH264Decoder::Error error);
 
  private:
   HWND window_;

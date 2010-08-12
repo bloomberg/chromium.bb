@@ -50,6 +50,7 @@ void usage() {
       "Usage: mft_h264_decoder [--enable-dxva] [--render] --input-file=FILE\n"
       "enable-dxva: Enables hardware accelerated decoding\n"
       "render: Render to window\n"
+      "During rendering, press spacebar to skip forward at least 5 seconds.\n"
       "To display this message: mft_h264_decoder --help";
   fprintf(stderr, "%s\n", usage_msg);
 }
@@ -105,6 +106,31 @@ static HWND CreateDrawWindow(int width, int height) {
   return window;
 }
 
+class WindowObserver : public base::MessagePumpWin::Observer {
+ public:
+  WindowObserver(FFmpegFileReader* reader, MftH264Decoder* decoder)
+      : reader_(reader),
+        decoder_(decoder) {
+  }
+
+  virtual void WillProcessMessage(const MSG& msg) {
+    if (msg.message == WM_CHAR && msg.wParam == ' ') {
+      if (!decoder_->Flush()) {
+        LOG(ERROR) << "Flush failed";
+      }
+      // Seek forward 5 seconds.
+      reader_->SeekForward(5000000);
+    }
+  }
+
+  virtual void DidProcessMessage(const MSG& msg) {
+  }
+
+ private:
+  FFmpegFileReader* reader_;
+  MftH264Decoder* decoder_;
+};
+
 static int Run(bool use_dxva, bool render, const std::string& input_file) {
   // If we are not rendering, we need a window anyway to create a D3D device,
   // so we will just use the desktop window. (?)
@@ -147,7 +173,7 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
   }
   scoped_refptr<MftH264Decoder> mft(new MftH264Decoder(use_dxva));
   scoped_refptr<MftRenderer> renderer;
-    if (render) {
+  if (render) {
     renderer = new BasicRenderer(mft.get(), window, device);
   } else {
     renderer = new NullRenderer(mft.get());
@@ -160,11 +186,14 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
                  frame_rate_num, frame_rate_denom,
                  width, height,
                  aspect_ratio_num, aspect_ratio_denom,
-                 NewCallback(reader.get(), &FFmpegFileReader::Read2),
-                 NewCallback(renderer.get(), &MftRenderer::ProcessFrame))) {
+                 NewCallback(reader.get(), &FFmpegFileReader::Read),
+                 NewCallback(renderer.get(), &MftRenderer::ProcessFrame),
+                 NewCallback(renderer.get(),
+                             &MftRenderer::OnDecodeError))) {
     LOG(ERROR) << "Failed to initialize mft";
     return -1;
   }
+  scoped_ptr<WindowObserver> observer;
   // If rendering, resize the window to fit the video frames.
   if (render) {
     RECT rect;
@@ -177,6 +206,8 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
                     rect.bottom - rect.top, TRUE)) {
       LOG(WARNING) << "Warning: Failed to resize window";
     }
+    observer.reset(new WindowObserver(reader.get(), mft.get()));
+    MessageLoopForUI::current()->AddObserver(observer.get());
   }
   if (use_dxva) {
     // Reset the device's back buffer dimensions to match the window's
@@ -190,6 +221,7 @@ static int Run(bool use_dxva, bool render, const std::string& input_file) {
     }
   }
   Time decode_start(Time::Now());
+
   MessageLoopForUI::current()->PostTask(FROM_HERE,
       NewRunnableMethod(renderer.get(), &MftRenderer::StartPlayback));
   MessageLoopForUI::current()->Run(NULL);
