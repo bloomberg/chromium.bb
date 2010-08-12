@@ -442,6 +442,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   void StopInputMethodProcesses() {
     ime_running_ = false;
     if (ime_handle_) {
+      chromeos::ChangeInputMethod(input_method_status_connection_,
+                                  kHardwareKeyboardLayout);
       kill(ime_handle_, SIGTERM);
       ime_handle_ = 0;
     }
