@@ -768,8 +768,8 @@ std::string AboutSync() {
     browser_sync::ModelSafeRoutingInfo::const_iterator it = routes.begin();
     for (; it != routes.end(); ++it) {
       DictionaryValue* val = new DictionaryValue;
-      val->SetString(L"model_type", ModelTypeToString(it->first));
-      val->SetString(L"group", ModelSafeGroupToString(it->second));
+      val->SetString("model_type", ModelTypeToString(it->first));
+      val->SetString("group", ModelSafeGroupToString(it->second));
       routing_info->Append(val);
     }
   }
@@ -787,18 +787,18 @@ std::string AboutSys() {
   DictionaryValue strings;
   chromeos::SyslogsLibrary* syslogs_lib =
       chromeos::CrosLibrary::Get()->GetSyslogsLibrary();
-  scoped_ptr<chromeos::LogDictionaryType> sys_info_;
+  scoped_ptr<chromeos::LogDictionaryType> sys_info;
   if (syslogs_lib)
-    sys_info_.reset(syslogs_lib->GetSyslogs(new FilePath()));
-  if (sys_info_.get()) {
+    sys_info.reset(syslogs_lib->GetSyslogs(new FilePath()));
+  if (sys_info.get()) {
      ListValue* details = new ListValue();
      strings.Set("details", details);
      chromeos::LogDictionaryType::iterator it;
 
-     for (it = sys_info_.get()->begin(); it != sys_info_.get()->end(); ++it) {
+     for (it = sys_info.get()->begin(); it != sys_info.get()->end(); ++it) {
        DictionaryValue* val = new DictionaryValue;
-       val->SetString(L"stat_name", (*it).first);
-       val->SetString(L"stat_value", (*it).second);
+       val->SetString("stat_name", (*it).first);
+       val->SetString("stat_value", (*it).second);
        details->Append(val);
      }
   }
