@@ -57,6 +57,48 @@
     </table>
   </section>
   <section>
+    <h3 i18n-content="keyboard"></h3>
+    <table class="option-control-table">
+       <tr>
+         <td class="option-name" colspan="4"><label><input
+             id="repeat-keys-check"
+             pref="settings.language.xkb_auto_repeat_enabled"
+             type="checkbox"><span
+               i18n-content="repeat_keys"></span></label></td>
+       </tr>
+       <tr>
+         <td class="option-name" i18n-content="repeat_delay"></td>
+         <td class="option-value">
+           <label><span i18n-content="repeat_delay_short"></span></label>
+         </td>
+         <td class="option-value">
+           <input id="repeat-delay-range" type="range"
+               i18n-values="min:repeat_delay_min;max:repeat_delay_max"
+               pref="settings.language.xkb_auto_repeat_delay"
+               class="touch-slider">
+         </td>
+         <td class="option-value">
+           <label><span i18n-content="repeat_delay_long"></span></label>
+         </td>
+       </tr>
+       <tr>
+         <td class="option-name" i18n-content="repeat_speed"></td>
+         <td class="option-value">
+           <label><span i18n-content="repeat_speed_fast"></span></label>
+         </td>
+         <td class="option-value">
+           <input id="repeat-speed-range" type="range"
+               i18n-values="min:repeat_speed_min;max:repeat_speed_max"
+               pref="settings.language.xkb_auto_repeat_interval"
+               class="touch-slider">
+         </td>
+         <td class="option-value">
+           <label><span i18n-content="repeat_speed_slow"></span></label>
+         </td>
+       </tr>
+    </table>
+  </section>
+  <section>
     <h3 i18n-content="accessibility_title"></h3>
     <table class="option-control-table">
       <tr>

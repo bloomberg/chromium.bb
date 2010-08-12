@@ -8,9 +8,11 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/stl_util-inl.h"
+#include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -91,6 +93,42 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE));
   localized_strings->SetString(L"language_customize",
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE));
+
+  localized_strings->SetString(L"keyboard",
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_KEYBOARD));
+  localized_strings->SetString(L"repeat_keys",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_ENABLED));
+  localized_strings->SetString(L"repeat_delay",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY));
+  localized_strings->SetString(L"repeat_delay_short",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY_SHORT));
+  localized_strings->SetString(L"repeat_delay_long",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY_LONG));
+  localized_strings->SetString(L"repeat_delay_min",
+      UTF8ToWide(base::IntToString(
+          chromeos::kXkbAutoRepeatDelayPref.min_pref_value)));
+  localized_strings->SetString(L"repeat_delay_max",
+      UTF8ToWide(base::IntToString(
+          chromeos::kXkbAutoRepeatDelayPref.max_pref_value)));
+  localized_strings->SetString(L"repeat_speed",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED));
+  localized_strings->SetString(L"repeat_speed_fast",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST));
+  localized_strings->SetString(L"repeat_speed_slow",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_SLOW));
+  localized_strings->SetString(L"repeat_speed_min",
+      UTF8ToWide(base::IntToString(
+          chromeos::kXkbAutoRepeatIntervalPref.min_pref_value)));
+  localized_strings->SetString(L"repeat_speed_max",
+      UTF8ToWide(base::IntToString(
+          chromeos::kXkbAutoRepeatIntervalPref.max_pref_value)));
 
   localized_strings->SetString(L"accessibility_title",
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY));
