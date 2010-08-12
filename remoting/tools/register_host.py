@@ -11,12 +11,16 @@ import getpass
 import os
 import urllib
 import urllib2
-import uuid
+import random
 import socket
 import sys
 
 import gaia_auth
 import keygen
+
+def random_uuid():
+  return ("%04x%04x-%04x-%04x-%04x-%04x%04x%04x" %
+    tuple(map(lambda x: random.randrange(0,65536), range(8))))
 
 server = 'www-googleapis-test.sandbox.google.com'
 url = 'http://' + server + '/chromoting/v1/@me/hosts'
@@ -31,7 +35,7 @@ password = getpass.getpass("Password: ")
 xapi_auth = gaia_auth.GaiaAuthenticator('chromoting')
 xapi_token = xapi_auth.authenticate(email, password)
 
-host_id = str(uuid.uuid1())
+host_id = random_uuid()
 print "HostId:", host_id
 host_name = socket.gethostname()
 print "HostName:", host_name
