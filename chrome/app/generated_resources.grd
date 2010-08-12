@@ -8086,6 +8086,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EULA_SYSTEM_SECURITY_SETTINGS_LINK" desc="Link from the EULA wizard screen">
 	System security settings
       </message>
+      <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Tooltip for options managed by centrally-administered policy">
+	This option is controlled by an enterprise policy. Please contact your administrator for more information.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CHEWING_SETTINGS_TITLE"
                desc="The title for the Chewing input settings dialog. Please note that 'Chewing' here is name of an input method and not 'an act of biting and grinding with the teeth'.">
         Chewing Input Settings

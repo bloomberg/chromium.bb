@@ -153,6 +153,11 @@ static GURL GetOemEulaPagePath() {
 }
 
 void EulaView::Init() {
+  // Handle preference that enables crash/statistics reporting. We do
+  // not monitor its change in background since we are in OOBE wizard.
+  metrics_reporting_enabled_.Init(prefs::kMetricsReportingEnabled,
+                                  g_browser_process->local_state(), NULL);
+
   // Use rounded rect background.
   views::Painter* painter = CreateWizardPainter(
       &BorderDefinition::kScreenBorder);
@@ -189,9 +194,10 @@ void EulaView::Init() {
   usage_statistics_checkbox_ = new views::Checkbox();
   usage_statistics_checkbox_->SetMultiLine(true);
   usage_statistics_checkbox_->SetChecked(
-      g_browser_process->local_state()->GetBoolean(
-          prefs::kMetricsReportingEnabled));
+      metrics_reporting_enabled_.GetValue());
   layout->AddView(usage_statistics_checkbox_);
+  usage_statistics_checkbox_->SetEnabled(
+      metrics_reporting_enabled_.IsManaged());
 
   layout->StartRow(0, SINGLE_LINK_WITH_SHIFT_ROW);
   learn_more_link_ = new views::Link();
@@ -252,6 +258,12 @@ void EulaView::UpdateLocalizedStrings() {
   if (!oem_eula_page_.is_empty())
     LoadEulaView(oem_eula_view_, oem_eula_label_, oem_eula_page_);
 
+  // Set tooltip for usage statistics checkbox if the metric is unmanaged.
+  if (!usage_statistics_checkbox_->IsEnabled()) {
+    usage_statistics_checkbox_->SetTooltipText(
+        l10n_util::GetString(IDS_OPTION_DISABLED_BY_POLICY));
+  }
+
   // Load other labels from resources.
   usage_statistics_checkbox_->SetLabel(
       l10n_util::GetString(IDS_EULA_CHECKBOX_ENABLE_LOGGING));
@@ -280,11 +292,8 @@ void EulaView::ButtonPressed(views::Button* sender, const views::Event& event) {
   if (sender == continue_button_) {
     if (usage_statistics_checkbox_) {
       const bool enable_reporting = usage_statistics_checkbox_->checked();
-      PrefService* prefs = g_browser_process->local_state();
-      if (prefs->GetBoolean(prefs::kMetricsReportingEnabled) !=
-          enable_reporting) {
-        prefs->SetBoolean(prefs::kMetricsReportingEnabled, enable_reporting);
-        prefs->SavePersistentPrefs();
+      if (metrics_reporting_enabled_.GetValue() != enable_reporting) {
+        metrics_reporting_enabled_.SetValueIfNotManaged(enable_reporting);
         OptionsUtil::ResolveMetricsReportingEnabled(enable_reporting);
 #if defined(USE_LINUX_BREAKPAD)
         if (enable_reporting)
