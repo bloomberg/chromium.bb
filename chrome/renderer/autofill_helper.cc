@@ -170,8 +170,10 @@ void AutoFillHelper::DidAcceptAutoFillSuggestion(const WebNode& node,
 
     // Set the suggested value to update input element value immediately in UI.
     // The |setValue| call has update delayed until element loses focus.
-    element.setSuggestedValue(value);
-    element.setValue(value);
+    string16 substring = value;
+    substring = substring.substr(0, element.maxLength());
+    element.setSuggestedValue(substring);
+    element.setValue(substring);
 
     WebFrame* webframe = node.document().frame();
     if (webframe)
