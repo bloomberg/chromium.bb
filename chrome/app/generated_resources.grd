@@ -6926,6 +6926,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_SEARCH_HINT_OMNIBOX_TEXT" desc="The text displayed selected in the omnibox once the user clicked the 'Show Me' button on the omnibox search hint infobar.">
         Type your search query here
       </message>
+      
+      <!-- Remoting strings -->
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_REMOTING_SETUP_LABEL" desc="The label that appears on the remoting setup menu.">
+          Set up remoting...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_REMOTING_SETUP_LABEL" desc="In Title Case. The label that appears on the remoting setup menu.">
+          Set Up Remoting...
+        </message>
+      </if>
+      <message name="IDS_REMOTING_SETUP_DIALOG_TITLE" desc="Title of the remoting setup dialog.">
+        Set up remoting
+      </message>
+      
 
       <!-- Sync strings -->
 
