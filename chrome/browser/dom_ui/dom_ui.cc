@@ -38,7 +38,6 @@ std::wstring GetJavascript(const std::wstring& function_name,
 DOMUI::DOMUI(TabContents* contents)
     : hide_favicon_(false),
       force_bookmark_bar_visible_(false),
-      force_extension_shelf_visible_(false),
       focus_location_bar_by_default_(false),
       should_hide_url_(false),
       link_transition_type_(PageTransition::LINK),

@@ -13,11 +13,10 @@
 #define MAYBE_Popup Popup
 #endif
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Popup) {
+// Disabled for some rewriting.   http://crbug.com/51821
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Popup) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExtensionToolstrips);
 
   ASSERT_TRUE(RunExtensionTest("popup")) << message_;
 }

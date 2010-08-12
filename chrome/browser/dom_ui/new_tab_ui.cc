@@ -445,7 +445,6 @@ NewTabUI::NewTabUI(TabContents* contents)
   // Override some options on the DOM UI.
   hide_favicon_ = true;
   force_bookmark_bar_visible_ = true;
-  force_extension_shelf_visible_ = true;
   focus_location_bar_by_default_ = true;
   should_hide_url_ = true;
   overridden_title_ = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);

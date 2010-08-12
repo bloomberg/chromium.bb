@@ -1911,10 +1911,6 @@ void RenderViewHost::BlockExtensionRequest(int request_id) {
                         "Access to extension API denied.");
 }
 
-void RenderViewHost::ViewTypeChanged(ViewType::Type type) {
-  Send(new ViewMsg_NotifyRenderViewType(routing_id(), type));
-}
-
 void RenderViewHost::UpdateBrowserWindowId(int window_id) {
   Send(new ViewMsg_UpdateBrowserWindowId(routing_id(), window_id));
 }

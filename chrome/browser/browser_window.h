@@ -87,17 +87,14 @@ class BrowserWindow {
   //             BrowserView.
   virtual void SelectedTabToolbarSizeChanged(bool is_animating) = 0;
 
-  // Notification for the Extension Shelf changing its size.
-  virtual void SelectedTabExtensionShelfSizeChanged() = 0;
-
   // Inform the frame that the selected tab favicon or title has changed. Some
   // frames may need to refresh their title bar.
   virtual void UpdateTitleBar() = 0;
 
-  // Invoked when the visibility of the bookmark bar or extension shelf changes.
-  // NOTE: this is NOT sent when the user toggles the visibility of one of
-  // these shelves, but rather when the user transitions from a page that forces
-  // the shelves to be visibile to one that doesn't have them visible (or
+  // Invoked when the visibility of the bookmark bar.
+  // NOTE: this is NOT sent when the user toggles the visibility of this,
+  // but rather when the user transitions from a page that forces
+  // it to be visibile to one that doesn't have it visible (or
   // vice-versa).
   // TODO(sky): see about routing visibility pref changing through here too.
   virtual void ShelfVisibilityChanged() = 0;
@@ -189,9 +186,6 @@ class BrowserWindow {
 
   // Shows or hides the bookmark bar depending on its current visibility.
   virtual void ToggleBookmarkBar() = 0;
-
-  // Shows or hides the extension shelf depending on its current visibility.
-  virtual void ToggleExtensionShelf() = 0;
 
   // Shows the About Chrome dialog box.
   virtual views::Window* ShowAboutChromeDialog() = 0;

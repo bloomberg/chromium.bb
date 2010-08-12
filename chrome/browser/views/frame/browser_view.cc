@@ -10,6 +10,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -37,7 +38,6 @@
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/download_shelf_view.h"
-#include "chrome/browser/views/extensions/extension_shelf.h"
 #include "chrome/browser/views/frame/browser_view_layout.h"
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
 #include "chrome/browser/views/status_bubble_views.h"
@@ -488,12 +488,12 @@ BrowserView::BrowserView(Browser* browser)
       contents_(NULL),
       contents_split_(NULL),
       initialized_(false),
-      ignore_layout_(true),
+      ignore_layout_(true)
 #if defined(OS_WIN)
-      hung_window_detector_(&hung_plugin_action_),
-      ticker_(0),
+      ,hung_window_detector_(&hung_plugin_action_),
+      ticker_(0)
 #endif
-      extension_shelf_(NULL) {
+                 {
   browser_->tabstrip_model()->AddObserver(this);
 }
 
@@ -807,10 +807,6 @@ void BrowserView::SelectedTabToolbarSizeChanged(bool is_animating) {
   }
 }
 
-void BrowserView::SelectedTabExtensionShelfSizeChanged() {
-  Layout();
-}
-
 void BrowserView::UpdateTitleBar() {
   frame_->GetWindow()->UpdateWindowTitle();
   if (ShouldShowWindowIcon() && !loading_animation_timer_.IsRunning())
@@ -1066,10 +1062,6 @@ void BrowserView::ConfirmAddSearchProvider(const TemplateURL* template_url,
 
 void BrowserView::ToggleBookmarkBar() {
   bookmark_utils::ToggleWhenVisible(browser_->profile());
-}
-
-void BrowserView::ToggleExtensionShelf() {
-  ExtensionShelf::ToggleWhenExtensionShelfVisible(browser_->profile());
 }
 
 views::Window* BrowserView::ShowAboutChromeDialog() {
@@ -1872,16 +1864,6 @@ void BrowserView::Init() {
 
   status_bubble_.reset(new StatusBubbleViews(GetWidget()));
 
-  if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
-    extension_shelf_ = new ExtensionShelf(browser_.get());
-    extension_shelf_->set_background(
-        new BookmarkExtensionBackground(this, extension_shelf_,
-                                        browser_.get()));
-    extension_shelf_->
-        SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_EXTENSIONS));
-    AddChildView(extension_shelf_);
-  }
-
 #if defined(OS_WIN)
   InitSystemMenu();
 
@@ -2112,11 +2094,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
   // Notify bookmark bar, so it can set itself to the appropriate drawing state.
   if (bookmark_bar_view_.get())
     bookmark_bar_view_->OnFullscreenToggled(fullscreen);
-
-  // Notify extension shelf, so it can set itself to the appropriate drawing
-  // state.
-  if (extension_shelf_)
-    extension_shelf_->OnFullscreenToggled(fullscreen);
 
   // Toggle fullscreen mode.
 #if defined(OS_WIN)

@@ -53,10 +53,6 @@ class ViewIDTest : public InProcessBrowserTest {
     }
 
     for (int i = VIEW_ID_TOOLBAR; i < VIEW_ID_PREDEFINED_COUNT; ++i) {
-      // Extension shelf is being removed, http://crbug.com/30178.
-      if (i == VIEW_ID_DEV_EXTENSION_SHELF)
-        continue;
-
       // Mac implementation does not support following ids yet.
       if (i == VIEW_ID_STAR_BUTTON ||
           i == VIEW_ID_AUTOCOMPLETE ||

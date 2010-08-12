@@ -33,10 +33,6 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
   browser()->ShowFindBar();
 
   for (int i = VIEW_ID_TOOLBAR; i < VIEW_ID_PREDEFINED_COUNT; ++i) {
-    // Extension shelf is being removed, http://crbug.com/25106.
-    if (i == VIEW_ID_DEV_EXTENSION_SHELF)
-      continue;
-
     // The following ids are used only in views implementation.
     if (i == VIEW_ID_CONTENTS_SPLIT ||
         i == VIEW_ID_INFO_BAR_CONTAINER ||

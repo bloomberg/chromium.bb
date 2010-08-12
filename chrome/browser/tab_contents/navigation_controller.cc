@@ -36,8 +36,7 @@
 namespace {
 
 const int kInvalidateAllButShelves =
-    0xFFFFFFFF & ~(TabContents::INVALIDATE_BOOKMARK_BAR |
-                   TabContents::INVALIDATE_EXTENSION_SHELF);
+    0xFFFFFFFF & ~TabContents::INVALIDATE_BOOKMARK_BAR;
 
 // Invoked when entries have been pruned, or removed. For example, if the
 // current entries are [google, digg, yahoo], with the current entry google,

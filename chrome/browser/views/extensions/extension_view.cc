@@ -120,13 +120,7 @@ void ExtensionView::ShowIfCompletelyLoaded() {
   // We wait to show the ExtensionView until it has loaded, and the view has
   // actually been created. These can happen in different orders.
   if (host_->did_stop_loading()) {
-    // For toolstrips, also wait until our parent has given us a background.
-    if (host_->GetRenderViewType() == ViewType::EXTENSION_TOOLSTRIP &&
-        render_view_host()->view()->background().empty()) {
-      return;
-    }
     SetVisible(true);
-
     UpdatePreferredSize(pending_preferred_size_);
   }
 }

@@ -442,9 +442,6 @@ class RenderViewHost : public RenderWidgetHost {
   // permission.
   void BlockExtensionRequest(int request_id);
 
-  // Notifies the renderer that its view type has changed.
-  void ViewTypeChanged(ViewType::Type type);
-
   // Tells the renderer which browser window it is being attached to.
   void UpdateBrowserWindowId(int window_id);
 

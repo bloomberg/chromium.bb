@@ -94,17 +94,6 @@ ExtensionHost* ExtensionProcessManager::CreateView(const GURL& url,
   return NULL;
 }
 
-ExtensionHost* ExtensionProcessManager::CreateToolstrip(Extension* extension,
-                                                        const GURL& url,
-                                                        Browser* browser) {
-  return CreateView(extension, url, browser, ViewType::EXTENSION_TOOLSTRIP);
-}
-
-ExtensionHost* ExtensionProcessManager::CreateToolstrip(const GURL& url,
-                                                        Browser* browser) {
-  return CreateView(url, browser, ViewType::EXTENSION_TOOLSTRIP);
-}
-
 ExtensionHost* ExtensionProcessManager::CreatePopup(Extension* extension,
                                                     const GURL& url,
                                                     Browser* browser) {

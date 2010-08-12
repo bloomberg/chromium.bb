@@ -45,7 +45,7 @@ const char kBadAnchorArgument[] = "Invalid anchor argument.";
 const char kInvalidURLError[] = "Invalid URL.";
 const char kNotAnExtension[] = "Not an extension view.";
 const char kPopupsDisallowed[] =
-    "Popups are only supported from toolstrip or tab-contents views.";
+    "Popups are only supported from tab-contents views.";
 
 // Keys.
 const wchar_t kUrlKey[] = L"url";
@@ -356,12 +356,10 @@ void PopupShowFunction::Run() {
 }
 
 bool PopupShowFunction::RunImpl() {
-  // Popups may only be displayed from TAB_CONTENTS and EXTENSION_TOOLSTRIP
-  // views.
+  // Popups may only be displayed from TAB_CONTENTS.
   ViewType::Type view_type =
       dispatcher()->render_view_host()->delegate()->GetRenderViewType();
-  if (ViewType::EXTENSION_TOOLSTRIP != view_type &&
-      ViewType::TAB_CONTENTS != view_type) {
+  if (ViewType::TAB_CONTENTS != view_type) {
     error_ = kPopupsDisallowed;
     return false;
   }
@@ -444,11 +442,7 @@ bool PopupShowFunction::RunImpl() {
     window = GetCurrentBrowser()->window()->GetNativeHandle();
 
 #if defined(TOOLKIT_VIEWS)
-  // Pop-up from extension views (ExtensionShelf, etc.), and drop-down when
-  // in a TabContents view.
-  BubbleBorder::ArrowLocation arrow_location =
-      view_type == ViewType::TAB_CONTENTS ?
-          BubbleBorder::TOP_LEFT : BubbleBorder::BOTTOM_LEFT;
+  BubbleBorder::ArrowLocation arrow_location = BubbleBorder::TOP_LEFT;
 
   // ExtensionPopupHost manages it's own lifetime.
   ExtensionPopupHost* popup_host = new ExtensionPopupHost(dispatcher());
@@ -468,6 +462,7 @@ bool PopupShowFunction::RunImpl() {
   popup_->set_close_on_lost_focus(false);
   popup_host->set_popup(popup_);
 #endif  // defined(TOOLKIT_VIEWS)
+
   return true;
 }
 

@@ -128,16 +128,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, FLAKY_NoticeExtensionChanges) {
   // Browser and the New Tab Page.
   EXPECT_EQ(2, model()->ResourceCount());
 
-  // Loading an extension should result in a new resource being
-  // created for it.
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("common").AppendASCII("one_in_shelf")));
-  WaitForResourceChange(3);
-
-  // Make sure we also recognize extensions with just background pages.
+  // Loading an extension with a background page should result in a new
+  // resource being created for it.
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
-  WaitForResourceChange(4);
+  WaitForResourceChange(3);
 }
 
 // Times out on Vista; disabled to keep tests fast. http://crbug.com/44991

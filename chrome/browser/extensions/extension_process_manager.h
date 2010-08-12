@@ -40,10 +40,6 @@ class ExtensionProcessManager : public NotificationObserver {
   ExtensionHost* CreateView(const GURL& url,
                             Browser* browser,
                             ViewType::Type view_type);
-  ExtensionHost* CreateToolstrip(Extension* extension,
-                                 const GURL& url,
-                                 Browser* browser);
-  ExtensionHost* CreateToolstrip(const GURL& url, Browser* browser);
   ExtensionHost* CreatePopup(Extension* extension,
                              const GURL& url,
                              Browser* browser);

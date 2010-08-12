@@ -64,12 +64,6 @@ class DOMUI {
     return force_bookmark_bar_visible_;
   }
 
-  // Returns true if the extension shelf should be forced to being visible
-  // (if it contains any items), overriding the user's preference.
-  bool force_extension_shelf_visible() const {
-    return force_extension_shelf_visible_;
-  }
-
   // Returns true if the location bar should be focused by default rather than
   // the page contents. Some pages will want to use this to encourage the user
   // to type in the URL bar.
@@ -129,7 +123,6 @@ class DOMUI {
   // bool options default to false. See the public getters for more information.
   bool hide_favicon_;
   bool force_bookmark_bar_visible_;
-  bool force_extension_shelf_visible_;
   bool focus_location_bar_by_default_;
   bool should_hide_url_;
   string16 overridden_title_;  // Defaults to empty string.

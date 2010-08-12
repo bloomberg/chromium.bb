@@ -1176,27 +1176,6 @@ bool TabContents::ShouldShowBookmarkBar() {
   return false;  // Default.
 }
 
-bool TabContents::IsExtensionShelfAlwaysVisible() {
-  // See GetDOMUIForCurrentState() comment for more info. This case is very
-  // similar, but for non-first loads, we want to use the committed entry. This
-  // is so the bookmarks bar disappears at the same time the page does.
-  if (controller_.GetLastCommittedEntry()) {
-    // Not the first load, always use the committed DOM UI.
-    if (render_manager_.dom_ui())
-      return render_manager_.dom_ui()->force_extension_shelf_visible();
-    return false;  // Default.
-  }
-
-  // When it's the first load, we know either the pending one or the committed
-  // one will have the DOM UI in it (see GetDOMUIForCurrentState), and only one
-  // of them will be valid, so we can just check both.
-  if (render_manager_.pending_dom_ui())
-    return render_manager_.pending_dom_ui()->force_extension_shelf_visible();
-  if (render_manager_.dom_ui())
-    return render_manager_.dom_ui()->force_extension_shelf_visible();
-  return false;  // Default.
-}
-
 void TabContents::ToolbarSizeChanged(bool is_animating) {
   TabContentsDelegate* d = delegate();
   if (d)
@@ -2381,14 +2360,11 @@ void TabContents::DidNavigate(RenderViewHost* rvh,
 
   if (PageTransition::IsMainFrame(params.transition)) {
     bool was_bookmark_bar_visible = ShouldShowBookmarkBar();
-    bool was_extension_shelf_visible = IsExtensionShelfAlwaysVisible();
 
     render_manager_.DidNavigateMainFrame(rvh);
 
     if (was_bookmark_bar_visible != ShouldShowBookmarkBar())
       extra_invalidate_flags |= INVALIDATE_BOOKMARK_BAR;
-    if (was_extension_shelf_visible != IsExtensionShelfAlwaysVisible())
-      extra_invalidate_flags |= INVALIDATE_EXTENSION_SHELF;
   }
 
   // Update the site of the SiteInstance if it doesn't have one yet.

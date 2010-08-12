@@ -125,15 +125,6 @@ class Extension {
     bool is_public;  // False if only this extension can load this plugin.
   };
 
-  // A toolstrip and its associated mole.
-  struct ToolstripInfo {
-    ToolstripInfo() : mole_height(0) {}
-
-    GURL toolstrip;
-    GURL mole;
-    int mole_height;
-  };
-
   // The name of the manifest inside an extension.
   static const FilePath::CharType kManifestFilename[];
 
@@ -265,7 +256,7 @@ class Extension {
   const GURL& background_url() const { return background_url_; }
   const GURL& options_url() const { return options_url_; }
   const GURL& devtools_url() const { return devtools_url_; }
-  const std::vector<ToolstripInfo>& toolstrips() const { return toolstrips_; }
+  const std::vector<GURL>& toolstrips() const { return toolstrips_; }
   const std::vector<std::string>& api_permissions() const {
     return api_permissions_;
   }
@@ -495,7 +486,7 @@ class Extension {
   GURL devtools_url_;
 
   // Optional list of toolstrips_ and associated properties.
-  std::vector<ToolstripInfo> toolstrips_;
+  std::vector<GURL> toolstrips_;
 
   // The public key ('key' in the manifest) used to sign the contents of the
   // crx package ('signature' in the manifest)

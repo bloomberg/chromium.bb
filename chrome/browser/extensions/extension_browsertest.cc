@@ -44,11 +44,6 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
 
-  // There are a number of tests that still use toolstrips.  Rather than
-  // selectively enabling each of them, enable toolstrips for all extension
-  // tests.
-  command_line->AppendSwitch(switches::kEnableExtensionToolstrips);
-
 #if defined(OS_CHROMEOS)
   // This makes sure that we create the Default profile first, with no
   // ExtensionsService and then the real profile with one, as we do when

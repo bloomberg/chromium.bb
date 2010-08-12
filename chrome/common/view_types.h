@@ -15,8 +15,6 @@ class ViewType {
     INVALID,
     BACKGROUND_CONTENTS,
     TAB_CONTENTS,
-    EXTENSION_TOOLSTRIP,
-    EXTENSION_MOLE,
     EXTENSION_BACKGROUND_PAGE,
     EXTENSION_POPUP,
     EXTENSION_INFOBAR,
@@ -28,8 +26,6 @@ class ViewType {
   // Constant strings corresponding to the Type enumeration values.  Used
   // when converting JS arguments.
   static const char* kTabContents;
-  static const char* kToolstrip;
-  static const char* kMole;
   static const char* kBackgroundPage;
   static const char* kPopup;
   static const char* kInfobar;

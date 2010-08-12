@@ -44,7 +44,6 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_test_api.h"
-#include "chrome/browser/extensions/extension_toolstrip_api.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/extension_tts_api.h"
 #endif
@@ -182,10 +181,6 @@ void FactoryRegistry::ResetFunctions() {
 
   // Idle
   RegisterFunction<ExtensionIdleQueryStateFunction>();
-
-  // Toolstrips.
-  RegisterFunction<ToolstripExpandFunction>();
-  RegisterFunction<ToolstripCollapseFunction>();
 
   // I18N.
   RegisterFunction<GetAcceptLanguagesFunction>();
@@ -400,8 +395,8 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
                                              include_incognito);
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
-  // a toolstrip or background_page onload chrome.tabs api call can make it
-  // into here before the browser is sufficiently initialized to return here.
+  // a background_page onload chrome.tabs api call can make it into here
+  // before the browser is sufficiently initialized to return here.
   // A similar situation may arise during shutdown.
   // TODO(rafaelw): Delay creation of background_page until the browser
   // is available. http://code.google.com/p/chromium/issues/detail?id=13284

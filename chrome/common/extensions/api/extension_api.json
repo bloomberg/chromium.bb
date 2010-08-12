@@ -2148,46 +2148,6 @@
     ]
   },
   {
-    "namespace": "toolstrip",
-    "nodoc": true,
-    "types": [],
-    "functions": [
-      {
-        "name": "expand",
-        "type": "function",
-        "description": "",
-        "parameters": [
-          {
-            "type": "object",
-            "name": "expandInfo",
-            "properties": {
-              "height": { "type": "integer", "minimum": 0, "description": "The vertical pixel height required of the toolstrip area." },
-              "url": { "type": "string", "optional": true, "description": "If present, the toolstrip mole will change it's content to the provided URL. Otherwise, the current page will just be expanded in size." }
-            }
-          },
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
-        ]
-      },
-      {
-        "name": "collapse",
-        "type": "function",
-        "description": "",
-        "parameters": [
-          {
-            "type": "object",
-            "name": "collapseInfo",
-            "optional": true,
-            "properties": {
-              "url": { "type": "string", "optional": true, "description": "If present, the toolstrip mole will change it's content to the provided URL. Otherwise, the current page will just be collapsed in size." }
-            }
-          },
-          {"type": "function", "name": "callback", "optional": true, "parameters": []}
-        ]
-      }
-    ],
-    "events": []
-  },
-  {
     "namespace": "i18n",
     "unprivileged": true,
     "types": [],

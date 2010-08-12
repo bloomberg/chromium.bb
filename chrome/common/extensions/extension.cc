@@ -1257,10 +1257,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     options_url_ = GetResourceURL(options_str);
   }
 
-  // Initialize toolstrips (deprecated and optional).
-  // TODO(erikkay) remove this altogether.
+  // Initialize toolstrips.  This is deprecated for public use.
+  // NOTE(erikkay) Although deprecated, we intend to preserve this parsing
+  // code indefinitely.  Please contact me or Joi for details as to why.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionToolstrips) &&
+          switches::kEnableExperimentalExtensionApis) &&
       source.HasKey(keys::kToolstrips)) {
     ListValue* list_value;
     if (!source.GetList(keys::kToolstrips, &list_value)) {
@@ -1269,12 +1270,12 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     }
 
     for (size_t i = 0; i < list_value->GetSize(); ++i) {
-      ToolstripInfo toolstrip;
+      GURL toolstrip;
       DictionaryValue* toolstrip_value;
       std::string toolstrip_path;
       if (list_value->GetString(i, &toolstrip_path)) {
         // Support a simple URL value for backwards compatibility.
-        toolstrip.toolstrip = GetResourceURL(toolstrip_path);
+        toolstrip = GetResourceURL(toolstrip_path);
       } else if (list_value->GetDictionary(i, &toolstrip_value)) {
         if (!toolstrip_value->GetString(keys::kToolstripPath,
                                         &toolstrip_path)) {
@@ -1282,25 +1283,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
               errors::kInvalidToolstrip, base::IntToString(i));
           return false;
         }
-        toolstrip.toolstrip = GetResourceURL(toolstrip_path);
-        if (toolstrip_value->HasKey(keys::kToolstripMolePath)) {
-          std::string mole_path;
-          if (!toolstrip_value->GetString(keys::kToolstripMolePath,
-                                          &mole_path)) {
-            *error = ExtensionErrorUtils::FormatErrorMessage(
-                errors::kInvalidToolstrip, base::IntToString(i));
-            return false;
-          }
-          int height;
-          if (!toolstrip_value->GetInteger(keys::kToolstripMoleHeight,
-                                           &height) || (height < 0)) {
-            *error = ExtensionErrorUtils::FormatErrorMessage(
-                errors::kInvalidToolstrip, base::IntToString(i));
-            return false;
-          }
-          toolstrip.mole = GetResourceURL(mole_path);
-          toolstrip.mole_height = height;
-        }
+        toolstrip = GetResourceURL(toolstrip_path);
       } else {
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kInvalidToolstrip, base::IntToString(i));

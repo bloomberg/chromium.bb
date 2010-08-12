@@ -59,8 +59,6 @@ namespace extension_manifest_keys {
   extern const char* kThemeDisplayProperties;
   extern const char* kThemeImages;
   extern const char* kThemeTints;
-  extern const char* kToolstripMoleHeight;
-  extern const char* kToolstripMolePath;
   extern const char* kToolstripPath;
   extern const char* kToolstrips;
   extern const char* kType;

@@ -92,9 +92,6 @@ class ExtensionHost : public RenderViewHostDelegate,
     associated_tab_contents_ = associated_tab_contents;
   }
 
-  // Sets the the ViewType of this host (e.g. mole, toolstrip).
-  void SetRenderViewType(ViewType::Type type);
-
   // Returns true if the render view is initialized and didn't crash.
   bool IsRenderViewLive() const;
 
@@ -108,9 +105,6 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   // Insert a default style sheet for Extension Infobars.
   void InsertInfobarCSS();
-
-  // Insert the theme CSS for a toolstrip/mole.
-  void InsertThemedToolstripCSS();
 
   // Tell the renderer not to draw scrollbars on windows smaller than
   // |size_limit| in both width and height.
@@ -267,7 +261,7 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
 
-  // Only EXTENSION_TOOLSTRIP, EXTENSION_POPUP, and EXTENSION_BACKGROUND_PAGE
+  // Only EXTENSION_INFOBAR, EXTENSION_POPUP, and EXTENSION_BACKGROUND_PAGE
   // are used here, others are not hosted by ExtensionHost.
   ViewType::Type extension_host_type_;
 

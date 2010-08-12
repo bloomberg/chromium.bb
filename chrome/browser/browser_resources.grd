@@ -35,7 +35,6 @@ without changes to the corresponding grd file. eadee -->
       <if expr="os != 'darwin'">
         <include name="IDR_EXTENSIONS_INFOBAR_CSS" file="resources\extensions_infobar.css" flattenhtml="true" type="BINDATA" />
       </if>    
-      <include name="IDR_EXTENSIONS_TOOLSTRIP_THEME_CSS" file="resources\extensions_toolstrip.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_EXTENSIONS_UI_HTML" file="resources\extensions_ui.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GAIA_LOGIN_HTML" file="sync\resources\gaia_login.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_GMAIL_APP_MANIFEST" file="resources\gmail_app\manifest.json" type="BINDATA" />

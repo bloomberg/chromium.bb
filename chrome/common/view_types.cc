@@ -5,8 +5,6 @@
 #include "chrome/common/view_types.h"
 
 const char* ViewType::kTabContents = "TAB";
-const char* ViewType::kToolstrip = "TOOLSTRIP";
-const char* ViewType::kMole = "MOLE";
 const char* ViewType::kBackgroundPage = "BACKGROUND";
 const char* ViewType::kPopup = "POPUP";
 const char* ViewType::kInfobar = "INFOBAR";

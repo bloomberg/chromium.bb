@@ -141,10 +141,6 @@ void BrowserWindowCocoa::SelectedTabToolbarSizeChanged(bool is_animating) {
   // sort on Mac.
 }
 
-void BrowserWindowCocoa::SelectedTabExtensionShelfSizeChanged() {
-  NOTIMPLEMENTED();
-}
-
 void BrowserWindowCocoa::UpdateTitleBar() {
   NSString* newTitle =
       base::SysUTF16ToNSString(browser_->GetWindowTitleForCurrentTab());
@@ -274,10 +270,6 @@ bool BrowserWindowCocoa::IsToolbarVisible() const {
 // know what to do.
 void BrowserWindowCocoa::ToggleBookmarkBar() {
   bookmark_utils::ToggleWhenVisible(browser_->profile());
-}
-
-void BrowserWindowCocoa::ToggleExtensionShelf() {
-  NOTIMPLEMENTED();
 }
 
 void BrowserWindowCocoa::AddFindBar(

@@ -42,7 +42,6 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual BrowserWindowTesting* GetBrowserWindowTesting();
   virtual StatusBubble* GetStatusBubble();
   virtual void SelectedTabToolbarSizeChanged(bool is_animating);
-  virtual void SelectedTabExtensionShelfSizeChanged();
   virtual void UpdateTitleBar();
   virtual void ShelfVisibilityChanged();
   virtual void UpdateDevTools();
@@ -70,7 +69,6 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                         Profile* profile);
   virtual void ToggleBookmarkBar();
-  virtual void ToggleExtensionShelf();
   virtual views::Window* ShowAboutChromeDialog();
   virtual void ShowUpdateChromeDialog();
   virtual void ShowTaskManager();

@@ -59,8 +59,6 @@ using WebKit::WebDragOperationsMask;
 // static
 bool ExtensionHost::enable_dom_automation_ = false;
 
-static const char* kToolstripTextColorSubstitution = "$TEXT_COLOR$";
-
 // Helper class that rate-limits the creation of renderer processes for
 // ExtensionHosts, to avoid blocking the UI.
 class ExtensionHost::ProcessCreationQueue {
@@ -249,12 +247,6 @@ void ExtensionHost::Observe(NotificationType type,
       DCHECK(extension_->GetBackgroundPageReady());
       NavigateToURL(url_);
       break;
-    case NotificationType::BROWSER_THEME_CHANGED:
-      if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
-          extension_host_type_ == ViewType::EXTENSION_MOLE) {
-        InsertThemedToolstripCSS();
-      }
-      break;
     case NotificationType::RENDERER_PROCESS_CREATED:
       LOG(INFO) << "Sending EXTENSION_PROCESS_CREATED";
       NotificationService::current()->Notify(
@@ -325,8 +317,7 @@ void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
   // In both cases, we preserve the old URL and reset the EFD to NULL.  This
   // will leave the host in kind of a bad state with poor UI and errors, but
   // it's better than the alternative.
-  // TODO(erikkay) Perhaps we should display log errors or display a big 404
-  // in the toolstrip or something like that.
+  // TODO(erikkay) Perhaps we should display errors in developer mode.
   if (params.url.host() != extension_->id()) {
     extension_function_dispatcher_.reset(NULL);
     return;
@@ -350,36 +341,6 @@ void ExtensionHost::InsertInfobarCSS() {
       L"", css.as_string(), "InfobarThemeCSS");
 }
 
-void ExtensionHost::InsertThemedToolstripCSS() {
-  DCHECK(!is_background_page());
-
-  static const base::StringPiece toolstrip_theme_css(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_EXTENSIONS_TOOLSTRIP_THEME_CSS));
-
-  std::string css = toolstrip_theme_css.as_string();
-  ThemeProvider* theme_provider =
-      render_view_host()->process()->profile()->GetThemeProvider();
-
-  SkColor text_color = theme_provider ?
-      theme_provider->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT) :
-      SK_ColorBLACK;
-
-  std::string hex_color_string = StringPrintf(
-      "#%02x%02x%02x", SkColorGetR(text_color),
-                       SkColorGetG(text_color),
-                       SkColorGetB(text_color));
-  size_t pos = css.find(kToolstripTextColorSubstitution);
-  while (pos != std::string::npos) {
-    css.replace(pos, 12, hex_color_string);
-    pos = css.find(kToolstripTextColorSubstitution);
-  }
-
-  // As a toolstrip, inject our toolstrip CSS to make it easier for toolstrips
-  // to blend in with the chrome UI.
-  render_view_host()->InsertCSSInWebFrame(L"", css, "ToolstripThemeCSS");
-}
-
 void ExtensionHost::DisableScrollbarsForSmallWindows(
     const gfx::Size& size_limit) {
   render_view_host()->Send(new ViewMsg_DisableScrollbarsForSmallWindows(
@@ -389,9 +350,7 @@ void ExtensionHost::DisableScrollbarsForSmallWindows(
 void ExtensionHost::DidStopLoading() {
   bool notify = !did_stop_loading_;
   did_stop_loading_ = true;
-  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
-      extension_host_type_ == ViewType::EXTENSION_MOLE ||
-      extension_host_type_ == ViewType::EXTENSION_POPUP ||
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
 #if defined(TOOLKIT_VIEWS)
     if (view_.get())
@@ -409,9 +368,6 @@ void ExtensionHost::DidStopLoading() {
                           since_created_.Elapsed());
     } else if (extension_host_type_ == ViewType::EXTENSION_POPUP) {
       UMA_HISTOGRAM_TIMES("Extensions.PopupLoadTime",
-                          since_created_.Elapsed());
-    } else if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP) {
-      UMA_HISTOGRAM_TIMES("Extensions.ToolstripLoadTime",
                           since_created_.Elapsed());
     } else if (extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
       UMA_HISTOGRAM_TIMES("Extensions.InfobarLoadTime",
@@ -433,15 +389,6 @@ void ExtensionHost::DocumentAvailableInMainFrame(RenderViewHost* rvh) {
     switch (extension_host_type_) {
       case ViewType::EXTENSION_INFOBAR:
         InsertInfobarCSS();
-        break;
-      case ViewType::EXTENSION_TOOLSTRIP:
-      case ViewType::EXTENSION_MOLE:
-        // See also BROWSER_THEME_CHANGED in the Observe function.
-        InsertThemedToolstripCSS();
-
-        // Listen for browser changes so we can resend the CSS.
-        registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
-                       NotificationService::AllSources());
         break;
       default:
         break;  // No style sheet for other types, at the moment.
@@ -702,14 +649,6 @@ void ExtensionHost::HandleMouseLeave() {
 #endif
 }
 
-void ExtensionHost::SetRenderViewType(ViewType::Type type) {
-  DCHECK(type == ViewType::EXTENSION_MOLE ||
-         type == ViewType::EXTENSION_TOOLSTRIP ||
-         type == ViewType::EXTENSION_POPUP);
-  extension_host_type_ = type;
-  render_view_host()->ViewTypeChanged(extension_host_type_);
-}
-
 ViewType::Type ExtensionHost::GetRenderViewType() const {
   return extension_host_type_;
 }
@@ -727,9 +666,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   extension_function_dispatcher_.reset(
       ExtensionFunctionDispatcher::Create(render_view_host, this, url_));
 
-  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
-      extension_host_type_ == ViewType::EXTENSION_MOLE ||
-      extension_host_type_ == ViewType::EXTENSION_POPUP ||
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
     render_view_host->EnablePreferredSizeChangedMode(
         kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
@@ -740,9 +677,7 @@ int ExtensionHost::GetBrowserWindowID() const {
   // Hosts not attached to any browser window have an id of -1.  This includes
   // those mentioned below, and background pages.
   int window_id = extension_misc::kUnknownWindowId;
-  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
-      extension_host_type_ == ViewType::EXTENSION_MOLE ||
-      extension_host_type_ == ViewType::EXTENSION_POPUP ||
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP ||
       extension_host_type_ == ViewType::EXTENSION_INFOBAR) {
     // If the host is bound to a browser, then extract its window id.
     // Extensions hosted in ExternalTabContainer objects may not have

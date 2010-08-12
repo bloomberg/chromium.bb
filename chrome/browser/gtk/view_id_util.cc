@@ -107,9 +107,6 @@ const char* GetNameFromID(ViewID id) {
     case VIEW_ID_DEV_TOOLS_DOCKED:
       return "chrome-dev-tools-docked";
 
-    case VIEW_ID_DEV_EXTENSION_SHELF:
-      return "chrome-extension-shelf";
-
     // These are never hit because the tab container uses the delegate to
     // set its ID.
     case VIEW_ID_TAB_CONTAINER:

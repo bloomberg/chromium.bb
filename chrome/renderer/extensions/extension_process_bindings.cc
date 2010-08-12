@@ -201,13 +201,6 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
     if (match == ViewType::INVALID)
       return true;
 
-    // TODO(erikkay) for now, special case mole as a type of toolstrip.
-    // Perhaps this isn't the right long-term thing to do.
-    if (match == ViewType::EXTENSION_TOOLSTRIP &&
-        type == ViewType::EXTENSION_MOLE) {
-      return true;
-    }
-
     return false;
   }
 
@@ -289,17 +282,17 @@ class ExtensionImpl : public ExtensionBase {
     // a single pop-up view for a given extension.  By doing so, we can find
     // the pop-up view by simply searching for the only pop-up view present.
     // We also assume that if the current view is a pop-up, we can find the
-    // hosting view by searching for a TOOLSTRIP view.
+    // hosting view by searching for a tab contents view.
     if (args.Length() != 0)
       return v8::Undefined();
 
     if (viewtype_to_find != ViewType::EXTENSION_POPUP &&
-        viewtype_to_find != ViewType::EXTENSION_TOOLSTRIP) {
+        viewtype_to_find != ViewType::TAB_CONTENTS) {
       NOTREACHED() << "Requesting invalid view type.";
     }
 
-    // Disallow searching for a host view if we are a popup view, and likewise
-    // if we are a toolstrip view.
+    // Disallow searching for the same view type as the current view:
+    // Popups can only look for hosts, and hosts can only look for popups.
     RenderView* render_view = bindings_utils::GetRenderViewForCurrentContext();
     if (!render_view ||
         render_view->view_type() == viewtype_to_find) {
@@ -329,7 +322,7 @@ class ExtensionImpl : public ExtensionBase {
   }
 
   static v8::Handle<v8::Value> GetPopupParentWindow(const v8::Arguments& args) {
-    return PopupViewFinder(args, ViewType::EXTENSION_TOOLSTRIP);
+    return PopupViewFinder(args, ViewType::TAB_CONTENTS);
   }
 
   static v8::Handle<v8::Value> GetExtensionViews(const v8::Arguments& args) {
@@ -347,11 +340,7 @@ class ExtensionImpl : public ExtensionBase {
     StringToUpperASCII(&view_type_string);
     // |view_type| == ViewType::INVALID means getting any type of views.
     ViewType::Type view_type = ViewType::INVALID;
-    if (view_type_string == ViewType::kToolstrip) {
-      view_type = ViewType::EXTENSION_TOOLSTRIP;
-    } else if (view_type_string == ViewType::kMole) {
-      view_type = ViewType::EXTENSION_MOLE;
-    } else if (view_type_string == ViewType::kBackgroundPage) {
+    if (view_type_string == ViewType::kBackgroundPage) {
       view_type = ViewType::EXTENSION_BACKGROUND_PAGE;
     } else if (view_type_string == ViewType::kInfobar) {
       view_type = ViewType::EXTENSION_INFOBAR;
@@ -709,24 +698,3 @@ v8::Handle<v8::Value>
       v8::String::New(error_msg.c_str())));
 }
 
-// static
-void ExtensionProcessBindings::SetViewType(WebView* view,
-                                           ViewType::Type type) {
-  DCHECK(type == ViewType::EXTENSION_MOLE ||
-         type == ViewType::EXTENSION_TOOLSTRIP);
-  const char* type_str;
-  if (type == ViewType::EXTENSION_MOLE)
-    type_str = "mole";
-  else if (type == ViewType::EXTENSION_TOOLSTRIP)
-    type_str = "toolstrip";
-  else
-    return;
-
-  v8::HandleScope handle_scope;
-  WebFrame* frame = view->mainFrame();
-  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-  v8::Handle<v8::Value> argv[1];
-  argv[0] = v8::String::New(type_str);
-  bindings_utils::CallFunctionInContext(context, "setViewType",
-                                        arraysize(argv), argv);
-}

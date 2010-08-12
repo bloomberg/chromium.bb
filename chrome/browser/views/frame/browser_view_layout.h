@@ -58,15 +58,10 @@ class BrowserViewLayout : public views::LayoutManager {
   // Layout the TabContents container, between the coordinates |top| and
   // |bottom|.
   void LayoutTabContents(int top, int bottom);
-  int LayoutExtensionAndDownloadShelves();
 
   // Layout the Download Shelf, returns the coordinate of the top of the
   // control, for laying out the previous control.
   int LayoutDownloadShelf(int bottom);
-
-  // Layout the Extension Shelf, returns the coordinate of the top of the
-  // control, for laying out the previous control.
-  int LayoutExtensionShelf(int bottom);
 
   // See description above vertical_layout_rect_ for details.
   void set_vertical_layout_rect(const gfx::Rect& bounds) {
@@ -83,7 +78,6 @@ class BrowserViewLayout : public views::LayoutManager {
   views::View* contents_container_;
   views::View* infobar_container_;
   DownloadShelfView* download_shelf_;
-  ExtensionShelf* extension_shelf_;
   BookmarkBarView* active_bookmark_bar_;
 
   BrowserView* browser_view_;

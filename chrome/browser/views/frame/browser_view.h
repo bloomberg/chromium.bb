@@ -46,7 +46,6 @@ class BrowserBubble;
 class BrowserViewLayout;
 class DownloadShelfView;
 class EncodingMenuModel;
-class ExtensionShelf;
 class FullscreenExitBubble;
 class HtmlDialogUIDelegate;
 class InfoBarContainer;
@@ -152,9 +151,6 @@ class BrowserView : public BrowserBubbleHost,
   // Accessor for the Toolbar.
   ToolbarView* toolbar() const { return toolbar_; }
 
-  // Accessor for the ExtensionShelf.
-  ExtensionShelf* extension_shelf() const { return extension_shelf_; }
-
   // Returns true if various window components are visible.
   bool IsTabStripVisible() const;
 
@@ -251,7 +247,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual BrowserWindowTesting* GetBrowserWindowTesting();
   virtual StatusBubble* GetStatusBubble();
   virtual void SelectedTabToolbarSizeChanged(bool is_animating);
-  virtual void SelectedTabExtensionShelfSizeChanged();
   virtual void UpdateTitleBar();
   virtual void ShelfVisibilityChanged();
   virtual void UpdateDevTools();
@@ -279,7 +274,6 @@ class BrowserView : public BrowserBubbleHost,
   virtual void ConfirmAddSearchProvider(const TemplateURL* template_url,
                                       Profile* profile);
   virtual void ToggleBookmarkBar();
-  virtual void ToggleExtensionShelf();
   virtual views::Window* ShowAboutChromeDialog();
   virtual void ShowUpdateChromeDialog();
   virtual void ShowTaskManager();
@@ -591,9 +585,6 @@ class BrowserView : public BrowserBubbleHost,
 
   // The timer used to update frames for the Loading Animation.
   base::RepeatingTimer<BrowserView> loading_animation_timer_;
-
-  // A bottom bar for showing extensions.
-  ExtensionShelf* extension_shelf_;
 
   UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 

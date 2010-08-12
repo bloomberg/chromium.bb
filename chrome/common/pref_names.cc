@@ -808,9 +808,6 @@ const char kDisableVideoAndChat[] = "disable_video_chat";
 // Whether Extensions are enabled.
 const char kDisableExtensions[] = "extensions.disabled";
 
-// Boolean which specifies whether the Extension Shelf is visible on all tabs.
-const char kShowExtensionShelf[] = "extensions.shelf.show_on_all_tabs";
-
 // Integer boolean representing the width (in pixels) of the container for
 // browser actions.
 const char kBrowserActionContainerWidth[] =

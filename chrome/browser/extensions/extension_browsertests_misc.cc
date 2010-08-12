@@ -20,7 +20,6 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/extensions/extension_shelf.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #endif
 #include "chrome/common/chrome_paths.h"
@@ -72,110 +71,6 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
   EXPECT_EQ(expected_hosts, num_hosts);
   return host;
 }
-
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// See http://crbug.com/30151.
-#define Toolstrip DISABLED_Toolstrip
-#endif
-
-// Tests that toolstrips initializes properly and can run basic extension js.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
-  FilePath extension_test_data_dir = test_data_dir_.AppendASCII("good").
-      AppendASCII("Extensions").AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj").
-      AppendASCII("1.0.0.0");
-  ASSERT_TRUE(LoadExtension(extension_test_data_dir));
-
-  // At this point, there should be three ExtensionHosts loaded because this
-  // extension has two toolstrips and one background page. Find the one that is
-  // hosting toolstrip1.html.
-  ExtensionProcessManager* manager =
-      browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip1.html", 3);
-
-  // Tell it to run some JavaScript that tests that basic extension code works.
-  bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testTabsAPI()", &result);
-  EXPECT_TRUE(result);
-
-  // Test for compact language detection API. First navigate to a (static) html
-  // file with a French sentence. Then, run the test API in toolstrip1.html to
-  // actually call the language detection API through the existing extension,
-  // and verify that the language returned is indeed French.
-  FilePath language_url = extension_test_data_dir.AppendASCII(
-      "french_sentence.html");
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(language_url));
-
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testTabsLanguageAPI()", &result);
-  EXPECT_TRUE(result);
-}
-
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
-  FilePath extension_test_data_dir = test_data_dir_.AppendASCII("good").
-      AppendASCII("Extensions").AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj").
-      AppendASCII("1.0.0.0");
-  ASSERT_TRUE(LoadExtension(extension_test_data_dir));
-
-  // At this point, there should be three ExtensionHosts loaded because this
-  // extension has two toolstrips and one background page. Find the one that is
-  // hosting toolstrip1.html.
-  ExtensionProcessManager* manager =
-      browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip1.html", 3);
-
-  FilePath gettabs_url = extension_test_data_dir.AppendASCII(
-      "test_gettabs.html");
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GURL(gettabs_url.value()));
-
-  bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testgetToolstripsAPI()", &result);
-  EXPECT_TRUE(result);
-
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testgetBackgroundPageAPI()", &result);
-  EXPECT_TRUE(result);
-
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/"
-           "test_gettabs.html"));
-  result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      host->render_view_host(), L"", L"testgetExtensionTabsAPI()", &result);
-  EXPECT_TRUE(result);
-}
-
-#if defined(TOOLKIT_VIEWS)
-// http://crbug.com/29897 - for other UI toolkits?
-
-// Tests that the ExtensionShelf initializes properly, notices that
-// an extension loaded and has a view available, and then sets that up
-// properly.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Shelf) {
-  // When initialized, there are no extension views and the preferred height
-  // should be zero.
-  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-  ExtensionShelf* shelf = browser_view->extension_shelf();
-  ASSERT_TRUE(shelf);
-  EXPECT_EQ(shelf->GetChildViewCount(), 0);
-  EXPECT_EQ(shelf->GetPreferredSize().height(), 0);
-
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
-                    .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-                    .AppendASCII("1.0.0.0")));
-
-  // There should now be two extension views and preferred height of the view
-  // should be non-zero.
-  EXPECT_EQ(shelf->GetChildViewCount(), 2);
-  EXPECT_NE(shelf->GetPreferredSize().height(), 0);
-}
-#endif  // defined(TOOLKIT_VIEWS)
 
 // Tests that extension resources can be loaded from origins which the
 // extension specifies in permissions but not from others.
@@ -700,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   // Get the ExtensionHost that is hosting our toolstrip page.
   ExtensionProcessManager* manager =
       browser()->profile()->GetExtensionProcessManager();
-  ExtensionHost* host = FindHostWithPath(manager, "/toolstrip.html", 1);
+  ExtensionHost* host = FindHostWithPath(manager, "/bg.html", 1);
 
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(

@@ -111,10 +111,7 @@ class TabContents : public PageNavigator,
     INVALIDATE_PAGE_ACTIONS    = 1 << 3,  // Page action icons have changed.
     INVALIDATE_BOOKMARK_BAR    = 1 << 4,  // State of ShouldShowBookmarkBar
                                           // changed.
-    INVALIDATE_EXTENSION_SHELF = 1 << 5,  // State of
-                                          // IsExtensionShelfAlwaysVisible
-                                          // changed.
-    INVALIDATE_TITLE           = 1 << 6,  // The title changed.
+    INVALIDATE_TITLE           = 1 << 5,  // The title changed.
   };
 
   // |base_tab_contents| is used if we want to size the new tab contents view
@@ -465,9 +462,6 @@ class TabContents : public PageNavigator,
 
   // Returns true if a Bookmark Bar should be shown for this tab.
   virtual bool ShouldShowBookmarkBar();
-
-  // Returns whether the extension shelf should be visible.
-  virtual bool IsExtensionShelfAlwaysVisible();
 
   // Notifies the delegate that a download is about to be started.
   // This notification is fired before a local temporary file has been created.

@@ -41,10 +41,6 @@ const char kPrefBlacklist[] = "blacklist";
 // Indicates whether to show an install warning when the user enables.
 const char kExtensionDidEscalatePermissions[] = "install_warning_on_enable";
 
-// A preference that tracks extension shelf configuration.  This is a list
-// object read from the Preferences file, containing a list of toolstrip URLs.
-const char kExtensionShelf[] = "extensions.shelf";
-
 // A preference that tracks admin policy regarding which extensions the user
 // can and can not install. This preference is a list object, containing
 // strings that list extension ids. Denylist can contain "*" meaning all
@@ -438,29 +434,6 @@ void ExtensionPrefs::GetKilledExtensionIds(std::set<std::string>* killed_ids) {
   }
 }
 
-ExtensionPrefs::URLList ExtensionPrefs::GetShelfToolstripOrder() {
-  URLList urls;
-  const ListValue* toolstrip_urls = prefs_->GetList(kExtensionShelf);
-  if (toolstrip_urls) {
-    for (size_t i = 0; i < toolstrip_urls->GetSize(); ++i) {
-      std::string url;
-      if (toolstrip_urls->GetString(i, &url))
-        urls.push_back(GURL(url));
-    }
-  }
-  return urls;
-}
-
-void ExtensionPrefs::SetShelfToolstripOrder(const URLList& urls) {
-  ListValue* toolstrip_urls = prefs_->GetMutableList(kExtensionShelf);
-  toolstrip_urls->Clear();
-  for (size_t i = 0; i < urls.size(); ++i) {
-    GURL url = urls[i];
-    toolstrip_urls->Append(new StringValue(url.spec()));
-  }
-  prefs_->ScheduleSavePersistentPrefs();
-}
-
 std::vector<std::string> ExtensionPrefs::GetToolbarOrder() {
   std::vector<std::string> extension_ids;
   const ListValue* toolbar_order = prefs_->GetList(kExtensionToolbar);
@@ -821,7 +794,6 @@ std::set<std::string> ExtensionPrefs::GetIdleInstallInfoIds() {
 // static
 void ExtensionPrefs::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(kExtensionsPref);
-  prefs->RegisterListPref(kExtensionShelf);
   prefs->RegisterListPref(kExtensionToolbar);
   prefs->RegisterIntegerPref(prefs::kExtensionToolbarSize, -1);
   prefs->RegisterDictionaryPref(kExtensionsBlacklistUpdate);

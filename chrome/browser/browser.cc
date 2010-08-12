@@ -44,7 +44,7 @@
 #include "chrome/browser/extensions/crashed_extension_infobar.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_disabled_infobar_delegate.h"
-#include "chrome/browser/extensions/extension_shelf_model.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/find_bar.h"
@@ -354,9 +354,6 @@ Browser* Browser::CreateForDevTools(Profile* profile) {
 
 void Browser::CreateBrowserWindow() {
   DCHECK(!window_);
-
-  if (SupportsWindowFeature(FEATURE_EXTENSIONSHELF))
-    extension_shelf_model_.reset(new ExtensionShelfModel(this));
 
   window_ = BrowserWindow::CreateBrowserWindow(this);
 
@@ -1159,7 +1156,6 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
 
   if (type() == TYPE_NORMAL) {
     features |= FEATURE_BOOKMARKBAR;
-    features |= FEATURE_EXTENSIONSHELF;
   }
 
   if (!hide_ui_for_fullscreen) {
@@ -1731,12 +1727,6 @@ void Browser::ToggleBookmarkBar() {
   window_->ToggleBookmarkBar();
 }
 
-void Browser::ToggleExtensionShelf() {
-  UserMetrics::RecordAction(UserMetricsAction("ToggleExtensionShelf"),
-                            profile_);
-  window_->ToggleExtensionShelf();
-}
-
 void Browser::OpenBookmarkManager() {
   UserMetrics::RecordAction(UserMetricsAction("ShowBookmarkManager"), profile_);
   ShowBookmarkManagerTab();
@@ -1949,7 +1939,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod, 0);
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser, true);
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint, true);
-  prefs->RegisterBooleanPref(prefs::kShowExtensionShelf, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar, true);
@@ -2128,7 +2117,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_REPORT_BUG:            OpenBugReportDialog();            break;
 
     case IDC_SHOW_BOOKMARK_BAR:     ToggleBookmarkBar();              break;
-    case IDC_SHOW_EXTENSION_SHELF:  ToggleExtensionShelf();           break;
 
     case IDC_SHOW_BOOKMARK_MANAGER: OpenBookmarkManager();            break;
     case IDC_SHOW_APP_MENU:         ShowAppMenu();                    break;
@@ -2692,10 +2680,6 @@ void Browser::ToolbarSizeChanged(TabContents* source, bool is_animating) {
   }
 }
 
-void Browser::ExtensionShelfSizeChanged() {
-  window_->SelectedTabExtensionShelfSizeChanged();
-}
-
 void Browser::URLStarredChanged(TabContents* source, bool starred) {
   if (source == GetSelectedTabContents())
     window_->SetStarredState(starred);
@@ -3240,7 +3224,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_EXTENSION_SHELF, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
@@ -3418,11 +3401,9 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
         TabStripModelObserver::TITLE_NOT_LOADING);
   }
 
-  if (changed_flags & TabContents::INVALIDATE_BOOKMARK_BAR ||
-      changed_flags & TabContents::INVALIDATE_EXTENSION_SHELF) {
+  if (changed_flags & TabContents::INVALIDATE_BOOKMARK_BAR) {
     window()->ShelfVisibilityChanged();
-    changed_flags &= ~(TabContents::INVALIDATE_BOOKMARK_BAR |
-                       TabContents::INVALIDATE_EXTENSION_SHELF);
+    changed_flags &= ~TabContents::INVALIDATE_BOOKMARK_BAR;
   }
 
   // If the only updates were synchronously handled above, we're done.

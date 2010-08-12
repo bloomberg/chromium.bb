@@ -1602,14 +1602,12 @@
         'browser/extensions/extension_proxy_apitest.cc',
         'browser/extensions/extension_processes_apitest.cc',
         'browser/extensions/extension_rlz_apitest.cc',
-        'browser/extensions/extension_shelf_model_browsertest.cc',
         'browser/extensions/extension_startup_browsertest.cc',
         'browser/extensions/extension_storage_apitest.cc',
         'browser/extensions/extension_tabs_apitest.cc',
         'browser/extensions/extension_test_message_listener.cc',
         'browser/extensions/extension_test_message_listener.h',
         'browser/extensions/extension_toolbar_model_browsertest.cc',
-        'browser/extensions/extension_toolstrip_apitest.cc',
         'browser/extensions/extension_tts_apitest.cc',
         'browser/extensions/extension_webnavigation_apitest.cc',
         'browser/extensions/extension_webrequest_apitest.cc',
@@ -1714,7 +1712,6 @@
             'app/chrome_dll_version.rc.version',
             'browser/extensions/extension_popup_apitest.cc',
             'browser/extensions/extension_rlz_apitest.cc',
-            'browser/extensions/extension_shelf_model_browsertest.cc',
             # TODO(jam): http://crbug.com/15101 These tests fail on Linux and
             # Mac.
             'browser/child_process_security_policy_browsertest.cc',

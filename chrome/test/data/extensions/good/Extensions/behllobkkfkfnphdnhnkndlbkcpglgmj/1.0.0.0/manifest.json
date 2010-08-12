@@ -7,14 +7,6 @@
     "128": "icon_128.png"
   },
   "default_locale": "en_US",
-  "toolstrips": [
-    {
-      "path": "toolstrip1.html",
-      "mole": "lorem_ipsum.html",
-      "mole_height": 200
-    },
-    "toolstrip2.html"
-  ],
   "background_page": "backgroundpage.html",
   "permissions": ["tabs", "http://*.google.com/*", "https://*.google.com/*"],
   "content_scripts": [

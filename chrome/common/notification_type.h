@@ -476,11 +476,6 @@ class NotificationType {
     // NoDetails.
     BOOKMARK_BAR_VISIBILITY_PREF_CHANGED,
 
-    // This is sent when the user's preference (for when the extension shelf
-    // should be shown) changes. The source is the profile, and the details are
-    // NoDetails.
-    EXTENSION_SHELF_VISIBILITY_PREF_CHANGED,
-
     // Sent just before the installation confirm dialog is shown. The source
     // is the ExtensionInstallUI, the details are NoDetails.
     EXTENSION_WILL_SHOW_CONFIRM_DIALOG,
@@ -844,9 +839,6 @@ class NotificationType {
     // The details are an ExtensionHost* and the source is a Profile*. Not sent
     // during browser shutdown.
     EXTENSION_PROCESS_TERMINATED,
-
-    // Sent when the contents or order of toolstrips in the shelf model change.
-    EXTENSION_SHELF_MODEL_CHANGED,
 
     // Sent when a background page is ready so other components can load.
     EXTENSION_BACKGROUND_PAGE_READY,

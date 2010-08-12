@@ -32,7 +32,6 @@
 
 class BrowserWindow;
 class Extension;
-class ExtensionShelfModel;
 class FindBarController;
 class PrefService;
 class Profile;
@@ -87,8 +86,7 @@ class Browser : public TabStripModelDelegate,
     FEATURE_LOCATIONBAR = 8,
     FEATURE_BOOKMARKBAR = 16,
     FEATURE_INFOBAR = 32,
-    FEATURE_DOWNLOADSHELF = 64,
-    FEATURE_EXTENSIONSHELF = 128
+    FEATURE_DOWNLOADSHELF = 64
   };
 
   // Maximized state on creation.
@@ -175,9 +173,6 @@ class Browser : public TabStripModelDelegate,
   ToolbarModel* toolbar_model() { return &toolbar_model_; }
   const SessionID& session_id() const { return session_id_; }
   CommandUpdater* command_updater() { return &command_updater_; }
-  ExtensionShelfModel* extension_shelf_model() {
-    return extension_shelf_model_.get();
-  }
 
   // Get the FindBarController for this browser, creating it if it does not
   // yet exist.
@@ -384,10 +379,6 @@ class Browser : public TabStripModelDelegate,
   // part of an animation.
   void ToolbarSizeChanged(bool is_animating);
 
-  // Notification that the extension shelf has changed size (as a result of
-  // becoming detached or attached).
-  void ExtensionShelfSizeChanged();
-
   // Replaces the state of the currently selected tab with the session
   // history restored from the SessionRestore system.
   void ReplaceRestoredTab(
@@ -508,7 +499,6 @@ class Browser : public TabStripModelDelegate,
   void OpenBugReportDialog();
 
   void ToggleBookmarkBar();
-  void ToggleExtensionShelf();
 
   void OpenBookmarkManager();
   void ShowAppMenu();
@@ -984,9 +974,6 @@ class Browser : public TabStripModelDelegate,
 
   // The model for the toolbar view.
   ToolbarModel toolbar_model_;
-
-  // The model for the extension shelf.
-  scoped_ptr<ExtensionShelfModel> extension_shelf_model_;
 
   // UI update coalescing and handling ////////////////////////////////////////
 

@@ -79,9 +79,6 @@ class StartupTest : public UITest {
     data_dir = data_dir.AppendASCII("extensions").AppendASCII("profiles").
         AppendASCII(profile);
     set_template_user_data(data_dir);
-
-    // For now, these tests still depend on toolstrips.
-    launch_arguments_.AppendSwitch(switches::kEnableExtensionToolstrips);
   }
 
   // Runs a test which loads |tab_count| tabs on startup, either as command line
@@ -340,20 +337,6 @@ TEST_F(StartupTest, PerfExtensionEmpty) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("empty");
   RunStartupTest("warm", "extension_empty", WARM, NOT_IMPORTANT,
-                 UITest::DEFAULT_THEME, 1, 0);
-}
-
-TEST_F(StartupTest, PerfExtensionToolstrips1) {
-  SetUpWithFileURL();
-  SetUpWithExtensionsProfile("toolstrips1");
-  RunStartupTest("warm", "extension_toolstrip1", WARM, NOT_IMPORTANT,
-                 UITest::DEFAULT_THEME, 1, 0);
-}
-
-TEST_F(StartupTest, PerfExtensionToolstrips50) {
-  SetUpWithFileURL();
-  SetUpWithExtensionsProfile("toolstrips50");
-  RunStartupTest("warm", "extension_toolstrip50", WARM, NOT_IMPORTANT,
                  UITest::DEFAULT_THEME, 1, 0);
 }
 

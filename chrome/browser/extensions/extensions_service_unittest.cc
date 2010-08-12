@@ -246,11 +246,6 @@ ExtensionsServiceTestBase::~ExtensionsServiceTestBase() {
 
 void ExtensionsServiceTestBase::InitializeExtensionsService(
     const FilePath& pref_file, const FilePath& extensions_install_dir) {
-  // Must setup the commandline here, since Extension caches the switch value
-  // when the prefs are registered.
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExtensionToolstrips);
-
   ExtensionTestingProfile* profile = new ExtensionTestingProfile();
   // Create a preference service that only contains user defined
   // preference values.
@@ -685,8 +680,6 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
 
   Extension* extension = loaded_[0];
   const UserScriptList& scripts = extension->content_scripts();
-  const std::vector<Extension::ToolstripInfo>& toolstrips =
-      extension->toolstrips();
   ASSERT_EQ(2u, scripts.size());
   EXPECT_EQ(3u, scripts[0].url_patterns().size());
   EXPECT_EQ("file://*",
@@ -722,14 +715,6 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   ASSERT_EQ(2u, permissions.size());
   EXPECT_EQ("http://*.google.com/*", permissions[0].GetAsString());
   EXPECT_EQ("https://*.google.com/*", permissions[1].GetAsString());
-  ASSERT_EQ(2u, toolstrips.size());
-  EXPECT_EQ(extension->GetResourceURL("toolstrip1.html"),
-            toolstrips[0].toolstrip);
-  EXPECT_EQ(extension->GetResourceURL("lorem_ipsum.html"),
-            toolstrips[0].mole);
-  EXPECT_EQ(200, toolstrips[0].mole_height);
-  EXPECT_EQ(extension->GetResourceURL("toolstrip2.html"),
-            toolstrips[1].toolstrip);
 
   EXPECT_EQ(std::string(good1), loaded_[1]->id());
   EXPECT_EQ(std::string("My extension 2"), loaded_[1]->name());

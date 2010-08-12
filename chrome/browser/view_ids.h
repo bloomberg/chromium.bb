@@ -62,9 +62,6 @@ enum ViewID {
   // Docked dev tools.
   VIEW_ID_DEV_TOOLS_DOCKED,
 
-  // Bottom extension shelf.
-  VIEW_ID_DEV_EXTENSION_SHELF,
-
   // The contents split.
   VIEW_ID_CONTENTS_SPLIT,
 

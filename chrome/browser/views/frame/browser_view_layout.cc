@@ -9,7 +9,6 @@
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/download_shelf_view.h"
-#include "chrome/browser/views/extensions/extension_shelf.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/side_tab_strip.h"
@@ -45,7 +44,6 @@ BrowserViewLayout::BrowserViewLayout()
       contents_container_(NULL),
       infobar_container_(NULL),
       download_shelf_(NULL),
-      extension_shelf_(NULL),
       active_bookmark_bar_(NULL),
       browser_view_(NULL),
       find_bar_y_(0) {
@@ -199,7 +197,6 @@ void BrowserViewLayout::Installed(views::View* host) {
   contents_container_ = NULL;
   infobar_container_ = NULL;
   download_shelf_ = NULL;
-  extension_shelf_ = NULL;
   active_bookmark_bar_ = NULL;
   tabstrip_ = NULL;
   browser_view_ = static_cast<BrowserView*>(host);
@@ -218,9 +215,6 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
       break;
     case VIEW_ID_DOWNLOAD_SHELF:
       download_shelf_ = static_cast<DownloadShelfView*>(view);
-      break;
-    case VIEW_ID_DEV_EXTENSION_SHELF:
-      extension_shelf_ = static_cast<ExtensionShelf*>(view);
       break;
     case VIEW_ID_BOOKMARK_BAR:
       active_bookmark_bar_ = static_cast<BookmarkBarView*>(view);
@@ -247,7 +241,7 @@ void BrowserViewLayout::Layout(views::View* host) {
   int top = LayoutTabStrip();
   top = LayoutToolbar(top);
   top = LayoutBookmarkAndInfoBars(top);
-  int bottom = LayoutExtensionAndDownloadShelves();
+  int bottom = LayoutDownloadShelf(browser_view_->height());
   LayoutTabContents(top, bottom);
   // This must be done _after_ we lay out the TabContents since this
   // code calls back into us to find the bounding box the find bar
@@ -368,24 +362,6 @@ void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
                              vertical_layout_rect_.width(), bottom - top);
 }
 
-int BrowserViewLayout::LayoutExtensionAndDownloadShelves() {
-  // If we're showing the Extension bar in detached style, then we
-  // need to show Download shelf _above_ the Extension bar, since
-  // the Extension bar is styled to look like it's part of the page.
-  //
-  // TODO(Oshima): confirm this comment.
-  int bottom = browser_view_->height();
-  if (extension_shelf_) {
-    if (extension_shelf_->IsDetached()) {
-      bottom = LayoutDownloadShelf(bottom);
-      return LayoutExtensionShelf(bottom);
-    }
-    // Otherwise, Extension shelf first, Download shelf second.
-    bottom = LayoutExtensionShelf(bottom);
-  }
-  return LayoutDownloadShelf(bottom);
-}
-
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
   // Re-layout the shelf either if it is visible or if it's close animation
   // is currently running.
@@ -404,17 +380,3 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
   return bottom;
 }
 
-int BrowserViewLayout::LayoutExtensionShelf(int bottom) {
-  if (extension_shelf_) {
-    bool visible = browser()->SupportsWindowFeature(
-        Browser::FEATURE_EXTENSIONSHELF);
-    int height =
-        visible ? extension_shelf_->GetPreferredSize().height() : 0;
-    extension_shelf_->SetVisible(visible && height != 0);
-    extension_shelf_->SetBounds(vertical_layout_rect_.x(), bottom - height,
-                                vertical_layout_rect_.width(), height);
-    extension_shelf_->Layout();
-    bottom -= height;
-  }
-  return bottom;
-}

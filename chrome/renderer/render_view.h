@@ -925,9 +925,6 @@ class RenderView : public RenderWidget,
   // Decodes a data: URL image or returns an empty image in case of failure.
   SkBitmap ImageFromDataUrl(const GURL&) const;
 
-  // Inject toolstrip CSS for extension moles and toolstrips.
-  void InjectToolstripCSS();
-
   // Inserts a string of CSS in a particular frame. |id| can be specified to
   // give the CSS style element an id, and (if specified) will replace the
   // element with the same id.
@@ -1156,8 +1153,7 @@ class RenderView : public RenderWidget,
 
   // View ----------------------------------------------------------------------
 
-  // Type of view attached with RenderView, it could be INVALID, TAB_CONTENTS,
-  // EXTENSION_TOOLSTRIP, EXTENSION_BACKGROUND_PAGE, DEV_TOOLS_UI.
+  // Type of view attached with RenderView.  See view_types.h
   ViewType::Type view_type_;
 
   // Id number of browser window which RenderView is attached to. This is used
