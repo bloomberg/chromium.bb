@@ -23,19 +23,17 @@ namespace {
 // Test all the bookmark folders within.
 TEST_F(BookmarkFolderAppleScriptTest, BookmarkFolders) {
   NSArray* bookmarkFolders = [bookmarkBar_.get() bookmarkFolders];
-  BookmarkFolderAppleScript* folder1 = [bookmarkFolders objectAtIndex:0];
-  BookmarkFolderAppleScript* folder2 = [bookmarkFolders objectAtIndex:1];
 
   EXPECT_EQ(2U, [bookmarkFolders count]);
 
-  EXPECT_NSEQ(@"f1", [folder1 title]);
-  EXPECT_NSEQ(@"f2", [folder2 title]);
-  EXPECT_EQ([folder1 container], bookmarkBar_.get());
-  EXPECT_EQ([folder2 container], bookmarkBar_.get());
-  EXPECT_NSEQ(AppleScript::kBookmarkFoldersProperty,
-              [folder1 containerProperty]);
-  EXPECT_NSEQ(AppleScript::kBookmarkFoldersProperty,
-              [folder2 containerProperty]);
+  EXPECT_NSEQ(@"f1", [[bookmarkFolders objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"f2", [[bookmarkFolders objectAtIndex:1] title]);
+
+  for (BookmarkFolderAppleScript* bookmarkFolder in bookmarkFolders) {
+    EXPECT_EQ([bookmarkFolder container], bookmarkBar_.get());
+    EXPECT_NSEQ(AppleScript::kBookmarkFoldersProperty,
+                [bookmarkFolder containerProperty]);
+  }
 }
 
 // Insert a new bookmark folder.
@@ -92,21 +90,18 @@ TEST_F(BookmarkFolderAppleScriptTest, DeleteBookmarkFolders) {
 // Test all the bookmark items within.
 TEST_F(BookmarkFolderAppleScriptTest, BookmarkItems) {
   NSArray* bookmarkItems = [bookmarkBar_.get() bookmarkItems];
-  BookmarkItemAppleScript* item1 = [bookmarkItems objectAtIndex:0];
-  BookmarkItemAppleScript* item2 = [bookmarkItems objectAtIndex:1];
-  BookmarkItemAppleScript* item3 = [bookmarkItems objectAtIndex:2];
 
   EXPECT_EQ(3U, [bookmarkItems count]);
 
-  EXPECT_NSEQ(@"a", [item1 title]);
-  EXPECT_NSEQ(@"d", [item2 title]);
-  EXPECT_NSEQ(@"h", [item3 title]);
-  EXPECT_EQ([item1 container], bookmarkBar_.get());
-  EXPECT_EQ([item2 container], bookmarkBar_.get());
-  EXPECT_EQ([item3 container], bookmarkBar_.get());
-  EXPECT_NSEQ(AppleScript::kBookmarkItemsProperty, [item1 containerProperty]);
-  EXPECT_NSEQ(AppleScript::kBookmarkItemsProperty, [item2 containerProperty]);
-  EXPECT_NSEQ(AppleScript::kBookmarkItemsProperty, [item3 containerProperty]);
+  EXPECT_NSEQ(@"a", [[bookmarkItems objectAtIndex:0] title]);
+  EXPECT_NSEQ(@"d", [[bookmarkItems objectAtIndex:1] title]);
+  EXPECT_NSEQ(@"h", [[bookmarkItems objectAtIndex:2] title]);
+
+  for (BookmarkItemAppleScript* bookmarkItem in bookmarkItems) {
+    EXPECT_EQ([bookmarkItem container], bookmarkBar_.get());
+    EXPECT_NSEQ(AppleScript::kBookmarkItemsProperty,
+                [bookmarkItem containerProperty]);
+  }
 }
 
 // Insert a new bookmark item.

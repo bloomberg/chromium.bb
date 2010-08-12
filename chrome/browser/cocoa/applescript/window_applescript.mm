@@ -71,9 +71,6 @@
     scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithInt:browser_->session_id().id()]);
     [self setUniqueID:numID];
-    [self setContainer:
-      (BrowserCrApplication*)[BrowserCrApplication sharedApplication]
-              property:AppleScript::kWindowsProperty];
   }
   return self;
 }
@@ -92,8 +89,6 @@
     scoped_nsobject<NSNumber> numID(
         [[NSNumber alloc] initWithInt:browser_->session_id().id()]);
     [self setUniqueID:numID];
-    [self setContainer:NSApp
-              property:AppleScript::kWindowsProperty];
   }
   return self;
 }

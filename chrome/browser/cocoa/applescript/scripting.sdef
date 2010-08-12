@@ -16,9 +16,6 @@
 				<cocoa key="isActive"/>
 			</property>
 			<property name="version" code="vers" description="The version of the application." type="text" access="r"/>
-			<responds-to command="open">
-				<cocoa method="handleOpenScriptCommand:"/>
-			</responds-to>
 			<responds-to command="quit">
 				<cocoa method="handleQuitScriptCommand:"/>
 			</responds-to>
@@ -203,13 +200,13 @@
 			<responds-to command="redo">
 				<cocoa method="handlesRedoScriptCommand:"/>
 			</responds-to>
-			<responds-to command="cut">
+			<responds-to command="cut selection">
 				<cocoa method="handlesCutScriptCommand:"/>
 			</responds-to>
-			<responds-to command="copy">
+			<responds-to command="copy selection">
 				<cocoa method="handlesCopyScriptCommand:"/>
 			</responds-to>
-			<responds-to command="paste">
+			<responds-to command="paste selection">
 				<cocoa method="handlesPasteScriptCommand:"/>
 			</responds-to>
 			<responds-to command="select all">
@@ -276,7 +273,7 @@
 		<command name="copy selection" code="CrSuCop " description="Copy text.">
 			<direct-parameter type="specifier"/>
 		</command>
-		<command name="paste" code="CrSuPast" description="Paste text (If Possible).">
+		<command name="paste selection" code="CrSuPast" description="Paste text (If Possible).">
 			<direct-parameter type="specifier"/>
 		</command>
 		<command name="undo" code="CrSuUndo" description="Undo the last change.">

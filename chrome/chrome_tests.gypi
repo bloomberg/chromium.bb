@@ -1546,6 +1546,7 @@
         'browser/chromeos/tab_closeable_state_watcher_browsertest.cc',
         'browser/chromeos/update_browsertest.cc',
         'browser/cocoa/view_id_util_browsertest.mm',
+        'browser/cocoa/applescript/browsercrapplication+applescript_test.mm',
         'browser/cocoa/applescript/window_applescript_test.mm',
         'browser/crash_recovery_browsertest.cc',
         'browser/device_orientation/device_orientation_browsertest.cc',

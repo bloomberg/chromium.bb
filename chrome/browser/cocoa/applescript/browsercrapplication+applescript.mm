@@ -29,6 +29,8 @@
 
     scoped_nsobject<WindowAppleScript> window(
         [[WindowAppleScript alloc] initWithBrowser:*browserIterator]);
+    [window setContainer:NSApp
+                property:AppleScript::kWindowsProperty];
     [appleScriptWindows addObject:window];
   }
   // Windows sorted by their index value, which is obtained by calling

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import <Cocoa/Cocoa.h>
+
 #import "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
@@ -42,10 +44,6 @@ IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, CreationWithProfile) {
       [[WindowAppleScript alloc] initWithProfile:defaultProfile]);
   EXPECT_TRUE(aWindow.get());
   EXPECT_TRUE([aWindow.get() uniqueID]);
-  EXPECT_EQ([aWindow.get() container],
-            [BrowserCrApplication sharedApplication]);
-  EXPECT_NSEQ(AppleScript::kWindowsProperty,
-              [aWindow.get() containerProperty]);
 }
 
 // Create a window with no |Browser*|.
@@ -61,10 +59,6 @@ IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, CreationWithBrowser) {
       [[WindowAppleScript alloc] initWithBrowser:browser()]);
   EXPECT_TRUE(aWindow.get());
   EXPECT_TRUE([aWindow.get() uniqueID]);
-  EXPECT_EQ([aWindow.get() container],
-            [BrowserCrApplication sharedApplication]);
-  EXPECT_NSEQ(AppleScript::kWindowsProperty,
-              [aWindow.get() containerProperty]);
 }
 
 // Tabs within the window.
