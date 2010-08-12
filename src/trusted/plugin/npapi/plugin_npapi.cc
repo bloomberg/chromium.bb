@@ -433,6 +433,7 @@ void PluginNpapi::set_module(nacl::NPModule* module) {
   PLUGIN_PRINTF(("PluginNpapi::set_module(%p, %p)\n",
                  static_cast<void*>(this),
                  static_cast<void*>(module)));
+  delete module_;
   module_ = module;
   if (NULL != module_) {
     // Set the origins.
