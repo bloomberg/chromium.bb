@@ -52,7 +52,7 @@ bool CreateRegKeyWorkItem::Do() {
     key_path.assign(key_list_[i - 1]);
 
     if (key.CreateWithDisposition(predefined_root_, key_path.c_str(),
-                                  &disposition)) {
+                                  &disposition, KEY_READ)) {
       if (disposition == REG_OPENED_EXISTING_KEY) {
         if (key_created_) {
           // This should not happen. Someone created a subkey under the key

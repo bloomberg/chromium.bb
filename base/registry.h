@@ -22,12 +22,12 @@ class RegKey {
  public:
   RegKey(HKEY rootkey = NULL, const wchar_t* subkey = NULL,
          REGSAM access = KEY_READ);
-  ~RegKey() { Close(); }
+  ~RegKey();
 
   bool Create(HKEY rootkey, const wchar_t* subkey, REGSAM access = KEY_READ);
 
   bool CreateWithDisposition(HKEY rootkey, const wchar_t* subkey,
-                             DWORD* disposition, REGSAM access = KEY_READ);
+                             DWORD* disposition, REGSAM access);
 
   bool Open(HKEY rootkey, const wchar_t* subkey, REGSAM access = KEY_READ);
 

@@ -145,6 +145,10 @@ RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
   }
 }
 
+RegKey::~RegKey() {
+  Close();
+}
+
 void RegKey::Close() {
   StopWatching();
   if (key_) {
