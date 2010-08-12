@@ -1,3 +1,8 @@
+/* Copyright (c) 2010 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 #cbdThrobber {
   background-image: url("../../../../app/resources/throbber.png");
   width: 16px;
@@ -5,4 +10,8 @@
   margin: -3px 10px;
   display: inline-block;
   visibility: hidden;
+}
+
+#checkboxListData > label {
+  display: block;
 }

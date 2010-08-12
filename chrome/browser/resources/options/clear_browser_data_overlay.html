@@ -1,38 +1,39 @@
 <div class="page hidden" id="clearBrowserDataOverlay">
   <h1 i18n-content="clearBrowsingDataTitle"></h1>
   <h3 i18n-content="clearBrowsingDataLabel"></h3>
+    <div id="checkboxListData">
+      <label>
+        <input id="deleteBrowsingHistoryCheckbox"
+               pref="browser.clear_data.browsing_history" type="checkbox">
+        <span i18n-content="deleteBrowsingHistoryCheckbox"></span>
+      </label>
+      <label>
+        <input id="deleteDownloadHistoryCheckbox"
+               pref="browser.clear_data.download_history" type="checkbox">
+        <span i18n-content="deleteDownloadHistoryCheckbox"></span>
+      </label>
+      <label>
+        <input id="deleteCacheCheckbox"
+               pref="browser.clear_data.cache" type="checkbox">
+        <span i18n-content="deleteCacheCheckbox"></span>
+      </label>
+      <label>
+        <input id="deleteCookiesCheckbox"
+               pref="browser.clear_data.cookies" type="checkbox">
+        <span i18n-content="deleteCookiesCheckbox"></span>
+      </label>
+      <label>
+        <input id="deletePasswordsCheckbox"
+               pref="browser.clear_data.passwords" type="checkbox">
+        <span i18n-content="deletePasswordsCheckbox"></span>
+      </label>
+      <label>
+        <input id="deleteFormDataCheckbox"
+               pref="browser.clear_data.form_data" type="checkbox">
+        <span i18n-content="deleteFormDataCheckbox"></span>
+      </label>
+    </div>
   <table class="option-control-table">
-    <tr>
-      <td class="option-name"><label><input id="deleteBrowsingHistoryCheckbox"
-          pref="browser.clear_data.browsing_history" type="checkbox"><span
-          i18n-content="deleteBrowsingHistoryCheckbox"></span></label></td>
-    </tr>
-    <tr>
-      <td class="option-name"><label><input id="deleteDownloadHistoryCheckbox"
-          pref="browser.clear_data.download_history" type="checkbox"><span
-          i18n-content="deleteDownloadHistoryCheckbox"></span></label></td>
-    </tr>
-    <tr>
-      <td class="option-name"><label><input id="deleteCacheCheckbox"
-          pref="browser.clear_data.cache" type="checkbox"><span
-          i18n-content="deleteCacheCheckbox"></span></label>
-      </td>
-    </tr>
-    <tr>
-      <td class="option-name"><label><input id="deleteCookiesCheckbox"
-          pref="browser.clear_data.cookies" type="checkbox"><span
-          i18n-content="deleteCookiesCheckbox"></span></label></td>
-    </tr>
-    <tr>
-      <td class="option-name"><label><input id="deletePasswordsCheckbox"
-          pref="browser.clear_data.passwords" type="checkbox"><span
-          i18n-content="deletePasswordsCheckbox"></span></label></td>
-    </tr>
-    <tr>
-      <td class="option-name"><label><input id="deleteFormDataCheckbox"
-          pref="browser.clear_data.form_data" type="checkbox"><span
-          i18n-content="deleteFormDataCheckbox"></span></label></td>
-    </tr>
     <tr>
       <td>
         <label><span i18n-content="clearBrowsingDataTimeLabel"></span>
