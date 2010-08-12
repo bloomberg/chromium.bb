@@ -39,11 +39,9 @@ assert os.path.basename(BASE_NACL) == "native_client"
 # Enable logging to llvm-fake.log
 # It's not safe to output debug information to stderr, because "configure"
 # runs this script and parses the output.
-# Instead, automatically log to 'toolchain/hg-log/llvm-fake.log'.
-VERBOSE = 1
-logfp = open(BASE_NACL + '/toolchain/hg-log/llvm-fake.log', 'a')
-OUT = [ logfp ]
-
+# TODO(robertm): provide mechanims to write to other file
+VERBOSE = 0
+OUT=[sys.stderr]
 
 ######################################################################
 # Misc
