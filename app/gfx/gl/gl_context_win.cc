@@ -151,7 +151,7 @@ LRESULT CALLBACK IntermediateWindowProc(HWND window,
 }
 
 // Helper routine that does one-off initialization like determining the
-// pixel format and initializing glew.
+// pixel format and initializing the GL bindings.
 bool GLContext::InitializeOneOff() {
   static bool initialized = false;
   if (initialized)
