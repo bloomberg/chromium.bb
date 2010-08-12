@@ -14,6 +14,7 @@
 
 #include "app/gfx/gl/gl_context.h"
 #include "app/gfx/gl/gl_implementation.h"
+#include "base/at_exit.h"
 #include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
@@ -270,6 +271,21 @@ class FrameBuffer {
   GLuint id_;
   DISALLOW_COPY_AND_ASSIGN(FrameBuffer);
 };
+
+#if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
+void FinalizeShaderTranslator(void*) {
+  ShFinalize();
+}
+
+bool InitializeShaderTranslator() {
+  static bool initialized = false;
+  if (!initialized && ShInitialize()) {
+    base::AtExitManager::RegisterCallback(&FinalizeShaderTranslator, NULL);
+    initialized = true;
+  }
+  return initialized;
+}
+#endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 // }  // anonymous namespace.
 
 GLES2Decoder::GLES2Decoder(ContextGroup* group)
@@ -1661,9 +1677,8 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   }
 
 #if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
-  // Initialize GLSL ES to GLSL translator.
-  if (!ShInitialize()) {
-    DLOG(ERROR) << "Could not initialize GLSL translator.";
+  if (!InitializeShaderTranslator()) {
+    DLOG(ERROR) << "Could not initialize shader translator.";
     Destroy();
     return false;
   }
@@ -1694,7 +1709,6 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
       Destroy();
       return false;
   }
-
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER
 
   return true;
@@ -2031,10 +2045,6 @@ void GLES2DecoderImpl::Destroy() {
     ShDestruct(fragment_compiler_);
     fragment_compiler_ = NULL;
   }
-  // TODO(alokp): Move ShInitialize/ShFinalize where they are called only
-  // once per process. Currently they get called out-of-order leading to
-  // crashes.
-  // ShFinalize();
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER)
 
   if (context_.get()) {
