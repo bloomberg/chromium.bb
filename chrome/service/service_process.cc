@@ -11,6 +11,8 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_pref_store.h"
+#include "chrome/common/service_process_type.h"
+#include "chrome/common/service_process_util.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
 #include "chrome/service/service_ipc_server.h"
 #include "net/base/network_change_notifier.h"
@@ -62,22 +64,24 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop) {
   service_prefs_.reset(new JsonPrefStore(pref_path,
                                          file_thread_->message_loop_proxy()));
   service_prefs_->ReadPrefs();
-  // TODO(sanjeevr): We need to actually figure out the right way to determine
-  // a channel name. The below is to facilitate testing only.
-#if defined(OS_WIN)
-  std::string channel_name = WideToUTF8(user_data_dir.value());
-#elif defined(OS_POSIX)
-  std::string channel_name = user_data_dir.value();
-#endif  // defined(OS_WIN)
 
-  std::replace(channel_name.begin(), channel_name.end(), '\\', '!');
-  channel_name.append("_service_ipc");
-  ipc_server_.reset(new ServiceIPCServer(channel_name));
+  // TODO(hclam): Each type of service process should has it own instance of
+  // process and thus channel, but now we have only one process for all types
+  // so the type parameter doesn't matter now.
+  LOG(INFO) << "Starting Service Process IPC Server";
+  ipc_server_.reset(new ServiceIPCServer(
+      GetServiceProcessChannelName(kServiceProcessCloudPrint)));
   ipc_server_->Init();
-  return true;
+
+  // After the IPC server has started we can create the lock file to indicate
+  // that we have started.
+  bool ret = CreateServiceProcessLockFile(kServiceProcessCloudPrint);
+  DCHECK(ret) << "Failed to create service process lock file.";
+  return ret;
 }
 
 bool ServiceProcess::Teardown() {
+  // TODO(hclam): Remove this as this looks like dead code.
   if (service_prefs_.get()) {
     service_prefs_->WritePrefs();
     service_prefs_.reset();
@@ -98,7 +102,15 @@ bool ServiceProcess::Teardown() {
   // might use it have been shut down.
   network_change_notifier_.reset();
 
-  return true;
+  // Delete the service process lock file when it shuts down.
+  bool ret = DeleteServiceProcessLockFile(kServiceProcessCloudPrint);
+  DCHECK(ret) << "Failed to delete service process lock file.";
+  return ret;
+}
+
+void ServiceProcess::Shutdown() {
+  // Quit the main message loop.
+  main_message_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 
 CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {

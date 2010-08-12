@@ -1626,6 +1626,7 @@
         'browser/renderer_host/test/render_process_host_browsertest.cc',
         'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
         'browser/safe_browsing/safe_browsing_browsertest.cc',
+        'browser/service/service_process_control_browsertest.cc',
         'browser/sessions/session_restore_browsertest.cc',
         'browser/speech/enable_speech_input_switch_browsertest.cc',
         'browser/speech/speech_input_browsertest.cc',

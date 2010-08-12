@@ -65,6 +65,9 @@ class ServiceProcess {
     return &shutdown_event_;
   }
 
+  // Shutdown the service process. This is likely triggered by a IPC message.
+  void Shutdown();
+
   CloudPrintProxy* GetCloudPrintProxy();
 
 #if defined(ENABLE_REMOTING)
@@ -116,7 +119,7 @@ class ServiceProcess {
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;
 
-  // The main message loop for the service process.
+  // Pointer to the main message loop that host this object.
   MessageLoop* main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceProcess);

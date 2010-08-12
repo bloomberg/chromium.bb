@@ -66,6 +66,8 @@ void ServiceIPCServer::OnMessageReceived(const IPC::Message& msg) {
                         OnEnableCloudPrintProxyWithTokens)
     IPC_MESSAGE_HANDLER(ServiceMsg_DisableCloudPrintProxy,
                         OnDisableCloudPrintProxy)
+    IPC_MESSAGE_HANDLER(ServiceMsg_Hello, OnHello);
+    IPC_MESSAGE_HANDLER(ServiceMsg_Shutdown, OnShutdown);
   IPC_END_MESSAGE_MAP()
 }
 
@@ -83,3 +85,10 @@ void ServiceIPCServer::OnDisableCloudPrintProxy() {
   g_service_process->GetCloudPrintProxy()->DisableForUser();
 }
 
+void ServiceIPCServer::OnHello() {
+  channel_->Send(new ServiceHostMsg_GoodDay());
+}
+
+void ServiceIPCServer::OnShutdown() {
+  g_service_process->Shutdown();
+}
