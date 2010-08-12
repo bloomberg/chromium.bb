@@ -6,21 +6,21 @@
 
 namespace extension_cookies_api_constants {
 
-const wchar_t kCookieKey[] = L"cookie";
-const wchar_t kDomainKey[] = L"domain";
-const wchar_t kExpirationDateKey[] = L"expirationDate";
-const wchar_t kHostOnlyKey[] = L"hostOnly";
-const wchar_t kHttpOnlyKey[] = L"httpOnly";
-const wchar_t kIdKey[] = L"id";
-const wchar_t kNameKey[] = L"name";
-const wchar_t kPathKey[] = L"path";
-const wchar_t kRemovedKey[] = L"removed";
-const wchar_t kSecureKey[] = L"secure";
-const wchar_t kSessionKey[] = L"session";
-const wchar_t kStoreIdKey[] = L"storeId";
-const wchar_t kTabIdsKey[] = L"tabIds";
-const wchar_t kUrlKey[] = L"url";
-const wchar_t kValueKey[] = L"value";
+const char kCookieKey[] = "cookie";
+const char kDomainKey[] = "domain";
+const char kExpirationDateKey[] = "expirationDate";
+const char kHostOnlyKey[] = "hostOnly";
+const char kHttpOnlyKey[] = "httpOnly";
+const char kIdKey[] = "id";
+const char kNameKey[] = "name";
+const char kPathKey[] = "path";
+const char kRemovedKey[] = "removed";
+const char kSecureKey[] = "secure";
+const char kSessionKey[] = "session";
+const char kStoreIdKey[] = "storeId";
+const char kTabIdsKey[] = "tabIds";
+const char kUrlKey[] = "url";
+const char kValueKey[] = "value";
 
 const char kOnChanged[] = "cookies.onChanged";
 

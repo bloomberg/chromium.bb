@@ -94,12 +94,12 @@ class MatchFilter {
   // Returns true if the details dictionary contains a string with the given
   // key and value. Also returns true if the dictionary doesn't contain the
   // given key at all (trival match).
-  bool MatchesString(const wchar_t* key, const std::string& value);
+  bool MatchesString(const char* key, const std::string& value);
 
   // Returns true if the details dictionary contains a boolean with the given
   // key and value. Also returns true if the dictionary doesn't contain the
   // given key at all (trival match).
-  bool MatchesBoolean(const wchar_t* key, bool value);
+  bool MatchesBoolean(const char* key, bool value);
 
   // Returns true if the given cookie domain string matches the filter's
   // domain. Any cookie domain which is equal to or is a subdomain of the

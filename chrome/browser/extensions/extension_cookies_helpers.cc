@@ -129,15 +129,14 @@ MatchFilter::MatchFilter(const DictionaryValue* details)
 
 bool MatchFilter::MatchesCookie(
     const net::CookieMonster::CanonicalCookie& cookie) {
-  return
-      MatchesString(keys::kNameKey, cookie.Name()) &&
-      MatchesDomain(cookie.Domain()) &&
-      MatchesString(keys::kPathKey, cookie.Path()) &&
-      MatchesBoolean(keys::kSecureKey, cookie.IsSecure()) &&
-      MatchesBoolean(keys::kSessionKey, !cookie.DoesExpire());
+  return MatchesString(keys::kNameKey, cookie.Name()) &&
+         MatchesDomain(cookie.Domain()) &&
+         MatchesString(keys::kPathKey, cookie.Path()) &&
+         MatchesBoolean(keys::kSecureKey, cookie.IsSecure()) &&
+         MatchesBoolean(keys::kSessionKey, !cookie.DoesExpire());
 }
 
-bool MatchFilter::MatchesString(const wchar_t* key, const std::string& value) {
+bool MatchFilter::MatchesString(const char* key, const std::string& value) {
   if (!details_->HasKey(key))
     return true;
   std::string filter_value;
@@ -145,7 +144,7 @@ bool MatchFilter::MatchesString(const wchar_t* key, const std::string& value) {
           value == filter_value);
 }
 
-bool MatchFilter::MatchesBoolean(const wchar_t* key, bool value) {
+bool MatchFilter::MatchesBoolean(const char* key, bool value) {
   if (!details_->HasKey(key))
     return true;
   bool filter_value = false;

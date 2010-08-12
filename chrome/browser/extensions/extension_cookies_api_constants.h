@@ -11,21 +11,21 @@
 namespace extension_cookies_api_constants {
 
 // Keys.
-extern const wchar_t kCookieKey[];
-extern const wchar_t kDomainKey[];
-extern const wchar_t kExpirationDateKey[];
-extern const wchar_t kHostOnlyKey[];
-extern const wchar_t kHttpOnlyKey[];
-extern const wchar_t kIdKey[];
-extern const wchar_t kNameKey[];
-extern const wchar_t kPathKey[];
-extern const wchar_t kRemovedKey[];
-extern const wchar_t kSecureKey[];
-extern const wchar_t kSessionKey[];
-extern const wchar_t kStoreIdKey[];
-extern const wchar_t kTabIdsKey[];
-extern const wchar_t kUrlKey[];
-extern const wchar_t kValueKey[];
+extern const char kCookieKey[];
+extern const char kDomainKey[];
+extern const char kExpirationDateKey[];
+extern const char kHostOnlyKey[];
+extern const char kHttpOnlyKey[];
+extern const char kIdKey[];
+extern const char kNameKey[];
+extern const char kPathKey[];
+extern const char kRemovedKey[];
+extern const char kSecureKey[];
+extern const char kSessionKey[];
+extern const char kStoreIdKey[];
+extern const char kTabIdsKey[];
+extern const char kUrlKey[];
+extern const char kValueKey[];
 
 // Events.
 extern const char kOnChanged[];
