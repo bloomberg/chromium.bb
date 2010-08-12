@@ -46,8 +46,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FavIconPermission) {
 // http://code.google.com/p/chromium/issues/detail?id=51335 is fixed.
 // Meanwhile we run it on Mac OSX only, since we can be sure that an x86-32 NaCl
 // module will work there.
+// Mark as Flaky.  http://crbug.com/51861
 #if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NaClPermissionEnabled) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_NaClPermissionEnabled) {
   ASSERT_TRUE(RunExtensionTest("permissions/nacl_enabled")) << message_;
 }
 #endif
