@@ -42,7 +42,6 @@ ServiceRuntime::ServiceRuntime(
     async_send_desc(NULL),
     browser_interface_(browser_interface),
     default_socket_address_(NULL),
-    default_socket_(NULL),
     plugin_(plugin),
     runtime_channel_(NULL),
     subprocess_(NULL) {
@@ -193,23 +192,6 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     browser_interface_->Alert(plugin()->instance_id(), error.c_str());
     return false;
   }
-
-  // The second connect on the socket address is to the untrusted side
-  // of sel_ldr.
-  default_socket_ = portable_socket_address->Connect();
-  if (NULL == default_socket_) {
-    PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
-                   " (srpc channel connect failed)\n"));
-    // TODO(sehr): leaking raw_channel and runtime_channel_.
-    return false;
-  }
-  default_socket_->handle()->StartJSObjectProxy(plugin_);
-  plugin_->EnableVideo();
-  // Create the listener thread and initialize the nacl module.
-  if (!plugin_->InitializeModuleMultimedia(default_socket_, this)) {
-    // TODO(sehr): leaking raw_channel, runtime_channel_, and default_socket_.
-    return false;
-  }
   return true;
 }
 
@@ -322,9 +304,6 @@ void ServiceRuntime::Shutdown() {
   if (subprocess_ != NULL) {
     Kill();
   }
-  // This waits for the upcall thread to exit so it must come after we
-  // terminate the subprocess.
-  plugin_->ShutdownMultimedia();
 
   // Note that this does waitpid() to get rid of any zombie subprocess.
   delete subprocess_;
@@ -358,16 +337,6 @@ ScriptableHandle* ServiceRuntime::default_socket_address() const {
                      default_socket_address_))));
 
   return default_socket_address_;
-}
-
-ScriptableHandle* ServiceRuntime::default_socket() const {
-  PLUGIN_PRINTF(("ServiceRuntime::default_socket"
-                 " (this=%p, default_socket=%p)\n",
-                 static_cast<void*>(const_cast<ServiceRuntime*>(this)),
-                 static_cast<void*>(const_cast<ScriptableHandle*>(
-                     default_socket_))));
-
-  return default_socket_;
 }
 
 ScriptableHandle* ServiceRuntime::GetSocketAddress(

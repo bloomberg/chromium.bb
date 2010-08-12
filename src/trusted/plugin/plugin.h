@@ -106,8 +106,6 @@ class Plugin : public PortableHandle {
   ScriptableHandle* socket() const { return socket_; }
 
   // The Firefox plugin multimedia interface.
-  // Enable video there.
-  virtual void EnableVideo() { }
   // Create a listener thread and initialize the nacl module.
   virtual bool InitializeModuleMultimedia(ScriptableHandle* raw_channel,
                                           ServiceRuntime* service_runtime) {

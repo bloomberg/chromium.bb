@@ -424,6 +424,9 @@ void Plugin::ShutDownSubprocess() {
     delete service_runtime_;
     service_runtime_ = NULL;
   }
+  // This waits for the upcall thread to exit so it must come after we
+  // terminate the subprocess.
+  ShutdownMultimedia();
   if (receive_thread_running_) {
     NaClThreadJoin(&receive_thread_);
     receive_thread_running_ = false;
@@ -559,7 +562,20 @@ bool Plugin::Load(nacl::string logical_url,
   socket_address_ = service_runtime_->default_socket_address();
   PLUGIN_PRINTF(("Plugin::Load (established socket address %p)\n",
                  static_cast<void*>(socket_address_)));
-  socket_ = service_runtime_->default_socket();
+
+  socket_ = socket_address_->handle()->Connect();
+  if (socket_ == NULL) {
+    browser_interface->Alert(instance_id(),
+                             "Load: Failed to connect using SRPC");
+    return false;
+  }
+  socket_->handle()->StartJSObjectProxy(this);
+  // Create the listener thread and initialize the nacl module.
+  if (!InitializeModuleMultimedia(socket_, service_runtime_)) {
+    browser_interface->Alert(instance_id(),
+                             "Load: Failed to initialise multimedia");
+    return false;
+  }
   PLUGIN_PRINTF(("Plugin::Load (established socket %p)\n",
                  static_cast<void*>(socket_)));
   // Plugin takes ownership of socket_ from service_runtime_,

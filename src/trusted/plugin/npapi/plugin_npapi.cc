@@ -461,13 +461,10 @@ void PluginNpapi::set_module(nacl::NPModule* module) {
   }
 }
 
-void PluginNpapi::EnableVideo() {
-  video_->Enable();
-}
-
 bool PluginNpapi::InitializeModuleMultimedia(ScriptableHandle* raw_channel,
                                              ServiceRuntime* service_runtime) {
   PLUGIN_PRINTF(("PluginNpapi::InitializeModuleMultimedia\n"));
+  video_->Enable();
   multimedia_channel_ = new(std::nothrow) MultimediaSocket(browser_interface(),
                                                            service_runtime);
   if (NULL == multimedia_channel_) {

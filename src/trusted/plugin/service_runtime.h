@@ -48,7 +48,6 @@ class ServiceRuntime {
   bool Kill();
   bool Log(int severity, nacl::string msg);
   ScriptableHandle* default_socket_address() const;
-  ScriptableHandle* default_socket() const;
   ScriptableHandle* GetSocketAddress(Plugin* plugin, nacl::Handle channel);
   Plugin* plugin() const { return plugin_; }
   void Shutdown();
@@ -65,7 +64,6 @@ class ServiceRuntime {
   bool InitCommunication(nacl::Handle bootstrap_socket, nacl::DescWrapper* shm);
   BrowserInterface* browser_interface_;
   ScriptableHandle* default_socket_address_;
-  ScriptableHandle* default_socket_;
   Plugin* plugin_;
   SrtSocket* runtime_channel_;
   nacl::SelLdrLauncher* subprocess_;

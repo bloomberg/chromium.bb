@@ -61,7 +61,6 @@ class PluginNpapi : public nacl::NPInstance, public Plugin {
 
   // The multimedia API's video interface.
   VideoMap* video() const { return video_; }
-  virtual void EnableVideo();
   virtual bool InitializeModuleMultimedia(ScriptableHandle* raw_channel,
                                           ServiceRuntime* service_runtime);
   void ShutdownMultimedia();
