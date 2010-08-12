@@ -484,6 +484,96 @@
     "events": []
   },
   {
+    "namespace": "experimental.tts",
+    "nodoc": true,
+    "functions": [
+      {
+        "name": "speak",
+        "type": "function",
+        "description": "Speak text using a text-to-speech engine.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "utterance",
+            "description": "The text to speak."
+          },
+          {
+            "type": "object",
+            "name": "options",
+            "optional": true,
+            "description": "The speak options. This parameter is currently ignored.",
+            "properties": {
+              "languageName": {
+                "type": "string",
+                "optional": true,
+                "description": "The language name for synthesis specified in the form <language>-<locale>, e.g. en-US, en-GB, fr-CA, zh-CN, etc."
+              },
+              "gender": {
+                "type": "string",
+                "optional": true,
+                "description": "Gender of voice for synthesized speech.",
+                "enum": ["male", "female"]
+              },
+              "rate": {
+                "type": "float",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Speaking speed between 0 and 1 inclusive, with 0 being slowest and 1 being fastest."
+              },
+              "pitch": {
+                "type": "float",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Speaking pitch between 0 and 1 inclusive, with 0 being lowest and 1 being highest."
+              },
+              "volume": {
+                "type": "float",
+                "optional": true,
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Speaking volume between 0 and 1 inclusive, with 0 being lowest and 1 being highest."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "This function is called when speaking is finished.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "stop",
+        "type": "function",
+        "description": "Stop any current speech.",
+        "parameters": []
+      },
+      {
+        "name": "isSpeaking",
+        "type": "function",
+        "description": "Check if the engine is currently speaking.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "speaking",
+                "type": "boolean",
+                "description": "True if speaking, false otherwise."
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
     "namespace": "windows",
     "types": [
       {

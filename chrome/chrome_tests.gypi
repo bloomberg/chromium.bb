@@ -1604,6 +1604,7 @@
         'browser/extensions/extension_test_message_listener.h',
         'browser/extensions/extension_toolbar_model_browsertest.cc',
         'browser/extensions/extension_toolstrip_apitest.cc',
+        'browser/extensions/extension_tts_apitest.cc',
         'browser/extensions/extension_webnavigation_apitest.cc',
         'browser/extensions/extension_webrequest_apitest.cc',
         'browser/extensions/extension_websocket_apitest.cc',
@@ -1646,6 +1647,10 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
+            # Currently TTS extension API is supported only for chromeos.
+            # Remove the following exclude when support for other platforms
+            # is added.
+            ['exclude', 'browser/extensions/extension_tts_apitest.cc'],
           ],
           'sources!': [
             'browser/dom_ui/mediaplayer_browsertest.cc',

@@ -259,6 +259,7 @@ var chrome = chrome || {};
       "experimental.omnibox",
       "experimental.popup",
       "experimental.processes",
+      "experimental.tts",
       "experimental.proxy",
       "experimental.rlz",
       "experimental.webNavigation",

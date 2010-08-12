@@ -45,6 +45,9 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_toolstrip_api.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/extension_tts_api.h"
+#endif
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -230,6 +233,13 @@ void FactoryRegistry::ResetFunctions() {
   // Accessibility.
   RegisterFunction<GetFocusedControlFunction>();
   RegisterFunction<SetAccessibilityEnabledFunction>();
+
+#if defined(OS_CHROMEOS)
+  // Text-to-speech.
+  RegisterFunction<ExtensionTtsSpeakFunction>();
+  RegisterFunction<ExtensionTtsStopSpeakingFunction>();
+  RegisterFunction<ExtensionTtsIsSpeakingFunction>();
+#endif
 
   // Clipboard.
   RegisterFunction<ExecuteCopyClipboardFunction>();

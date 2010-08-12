@@ -707,4 +707,7 @@ var chrome = chrome || {};
 
   if (!chrome.experimental.accessibility)
     chrome.experimental.accessibility = {};
+
+  if (!chrome.experimental.tts)
+    chrome.experimental.tts = {};
 })();

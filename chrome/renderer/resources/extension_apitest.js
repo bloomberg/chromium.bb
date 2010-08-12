@@ -1,3 +1,7 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // extension_apitest.js
 // mini-framework for ExtensionApiTest browser tests
 
@@ -98,7 +102,15 @@ var chrome = chrome || {};
   };
 
   chrome.test.assertTrue = function(test, message) {
-    if (test !== true) {
+    chrome.test.assertBool(test, true, message);
+  };
+
+  chrome.test.assertFalse = function(test, message) {
+    chrome.test.assertBool(test, false, message);
+  };
+
+  chrome.test.assertBool = function(test, expected, message) {
+    if (test !== expected) {
       if (typeof(test) == "string") {
         if (message) {
           message = test + "\n" + message;
