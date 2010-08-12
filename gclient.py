@@ -49,7 +49,7 @@ Hooks
     ]
 """
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 import logging
 import optparse
@@ -244,7 +244,7 @@ class Dependency(GClientKeywords, WorkItem):
   DEPS_FILE = 'DEPS'
 
   def __init__(self, parent, name, url, safesync_url, custom_deps,
-               custom_vars, deps_file):
+               custom_vars, deps_file, should_process):
     GClientKeywords.__init__(self)
     self.parent = parent
     self.name = name
@@ -263,10 +263,8 @@ class Dependency(GClientKeywords, WorkItem):
     # If it is not set to True, the dependency wasn't processed for its child
     # dependency, i.e. its DEPS wasn't read.
     self.deps_parsed = False
-    # A direct reference is dependency that is referenced by a deps, deps_os or
-    # solution. A indirect one is one that was loaded with From() or that
-    # exceeded recursion limit.
-    self.direct_reference = False
+    # This dependency should be processed, i.e. checked out
+    self.should_process = should_process
     # This dependency has been processed, i.e. checked out
     self.processed = False
     # This dependency had its hook run
@@ -295,6 +293,7 @@ class Dependency(GClientKeywords, WorkItem):
 
     Manages From() keyword accordingly. Do not touch self.parsed_url nor
     self.url because it may called with other urls due to From()."""
+    assert self.parsed_url == None or not self.should_process, self.parsed_url
     overriden_url = self.get_custom_deps(self.name, url)
     if overriden_url != url:
       logging.info('%s, %s was overriden to %s' % (self.name, url,
@@ -310,7 +309,7 @@ class Dependency(GClientKeywords, WorkItem):
       sub_target = url.sub_target_name or self.name
       # Make sure the referenced dependency DEPS file is loaded and file the
       # inner referenced dependency.
-      ref.ParseDepsFile(False)
+      ref.ParseDepsFile()
       found_dep = None
       for d in ref.dependencies:
         if d.name == sub_target:
@@ -351,12 +350,9 @@ class Dependency(GClientKeywords, WorkItem):
     else:
       raise gclient_utils.Error('Unkown url type')
 
-  def ParseDepsFile(self, direct_reference):
+  def ParseDepsFile(self):
     """Parses the DEPS file for this dependency."""
-    if direct_reference:
-      # Maybe it was referenced earlier by a From() keyword but it's now
-      # directly referenced.
-      self.direct_reference = direct_reference
+    assert self.processed == True
     if self.deps_parsed:
       logging.debug('%s was already parsed' % self.name)
       return
@@ -423,14 +419,30 @@ class Dependency(GClientKeywords, WorkItem):
         raise gclient_utils.Error(
             'The same name "%s" appears multiple times in the deps section' %
                 name)
+      should_process = self.recursion_limit() > 0 and self.should_process
+      if should_process:
+        tree = dict((d.name, d) for d in self.tree(False))
+        if name in tree:
+          if url == tree[name].url:
+            logging.info('Won\'t process duplicate dependency %s' % tree[name])
+            # In theory we could keep it as a shadow of the other one. In
+            # practice, simply ignore it.
+            #should_process = False
+            continue
+          else:
+            raise gclient_utils.Error(
+                'Dependency %s specified more than once:\n  %s\nvs\n  %s' %
+                (name, tree[name].hierarchy(), self.hierarchy()))
       self.dependencies.append(Dependency(self, name, url, None, None, None,
-          None))
+          None, should_process))
     logging.debug('Loaded: %s' % str(self))
 
   def run(self, options, revision_overrides, command, args, work_queue):
     """Runs 'command' before parsing the DEPS in case it's a initial checkout
     or a revert."""
     assert self._file_list == []
+    if not self.should_process:
+      return
     # When running runhooks, there's no need to consult the SCM.
     # All known hooks are expected to run unconditionally regardless of working
     # copy state, so skip the SCM status check.
@@ -455,9 +467,9 @@ class Dependency(GClientKeywords, WorkItem):
                            for f in self._file_list]
       options.revision = None
     self.processed = True
-    if self.recursion_limit():
+    if self.recursion_limit() > 0:
       # Then we can parse the DEPS file.
-      self.ParseDepsFile(True)
+      self.ParseDepsFile()
       # Adjust the implicit dependency requirement; e.g. if a DEPS file contains
       # both src/foo and src/foo/bar, src/foo/bar is implicitly dependent of
       # src/foo. Yes, it's O(n^2)... It's important to do that before
@@ -476,9 +488,13 @@ class Dependency(GClientKeywords, WorkItem):
   def RunHooksRecursively(self, options):
     """Evaluates all hooks, running actions as needed. run()
     must have been called before to load the DEPS."""
+    assert self.hooks_ran == False
+    if not self.should_process or self.recursion_limit() <= 0:
+      # Don't run the hook when it is above recursion_limit.
+      return
     # If "--force" was specified, run all hooks regardless of what files have
     # changed.
-    if self.deps_hooks and self.direct_reference:
+    if self.deps_hooks:
       # TODO(maruel): If the user is using git or git-svn, then we don't know
       # what files have changed so we always run all hooks. It'd be nice to fix
       # that.
@@ -513,9 +529,8 @@ class Dependency(GClientKeywords, WorkItem):
           matching_file_list = [f for f in file_list if pattern.search(f)]
           if matching_file_list:
             self._RunHookAction(hook_dict, matching_file_list)
-    if self.recursion_limit():
-      for s in self.dependencies:
-        s.RunHooksRecursively(options)
+    for s in self.dependencies:
+      s.RunHooksRecursively(options)
 
   def _RunHookAction(self, hook_dict, matching_file_list):
     """Runs the action from a single hook."""
@@ -554,13 +569,13 @@ class Dependency(GClientKeywords, WorkItem):
     return self.parent.tree(include_all)
 
   def subtree(self, include_all):
+    """Breadth first"""
     result = []
-    # Add breadth-first.
-    if self.direct_reference or include_all:
-      for d in self.dependencies:
+    for d in self.dependencies:
+      if d.should_process or include_all:
         result.append(d)
-      for d in self.dependencies:
-        result.extend(d.subtree(include_all))
+    for d in self.dependencies:
+      result.extend(d.subtree(include_all))
     return result
 
   def get_custom_deps(self, name, url):
@@ -579,8 +594,8 @@ class Dependency(GClientKeywords, WorkItem):
   def __str__(self):
     out = []
     for i in ('name', 'url', 'parsed_url', 'safesync_url', 'custom_deps',
-              'custom_vars', 'deps_hooks', '_file_list', 'processed',
-              'hooks_ran', 'deps_parsed', 'requirements', 'direct_reference'):
+              'custom_vars', 'deps_hooks', '_file_list', 'should_process',
+              'processed', 'hooks_ran', 'deps_parsed', 'requirements'):
       # 'deps_file'
       if self.__dict__[i]:
         out.append('%s: %s' % (i, self.__dict__[i]))
@@ -655,7 +670,7 @@ solutions = [
     # Do not change previous behavior. Only solution level and immediate DEPS
     # are processed.
     self._recursion_limit = 2
-    Dependency.__init__(self, None, None, None, None, None, None, None)
+    Dependency.__init__(self, None, None, None, None, None, None, None, True)
     self._options = options
     if options.deps_os:
       enforced_os = options.deps_os.split(',')
@@ -677,12 +692,17 @@ solutions = [
       gclient_utils.SyntaxErrorToError('.gclient', e)
     for s in config_dict.get('solutions', []):
       try:
+        tree = dict((d.name, d) for d in self.tree(False))
+        if s['name'] in tree:
+          raise gclient_utils.Error(
+              'Dependency %s specified more than once in .gclient' % s['name'])
         self.dependencies.append(Dependency(
             self, s['name'], s['url'],
             s.get('safesync_url', None),
             s.get('custom_deps', {}),
             s.get('custom_vars', {}),
-            None))
+            None,
+            True))
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
@@ -900,7 +920,7 @@ solutions = [
         print line
     logging.info(str(self))
 
-  def ParseDepsFile(self, direct_reference):
+  def ParseDepsFile(self):
     """No DEPS to parse for a .gclient file."""
     raise gclient_utils.Error('Internal error')
 
