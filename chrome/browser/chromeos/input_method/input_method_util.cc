@@ -194,6 +194,7 @@ const struct EnglishToResouceId {
   { "Greece", IDS_STATUSBAR_LAYOUT_GREECE },
   { "Belgium", IDS_STATUSBAR_LAYOUT_BELGIUM },
   { "Bulgaria", IDS_STATUSBAR_LAYOUT_BULGARIA },
+  { "Bulgaria - Traditional phonetic", IDS_STATUSBAR_LAYOUT_BULGARIA_PHONETIC },
   { "Switzerland", IDS_STATUSBAR_LAYOUT_SWITZERLAND },
   { "Switzerland - French", IDS_STATUSBAR_LAYOUT_SWITZERLAND_FRENCH },
   { "Turkey", IDS_STATUSBAR_LAYOUT_TURKEY },
