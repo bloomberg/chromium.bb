@@ -120,6 +120,7 @@ void TopSites::ReadDatabase() {
 bool TopSites::SetPageThumbnail(const GURL& url,
                                 const SkBitmap& thumbnail,
                                 const ThumbnailScore& score) {
+  AutoLock lock(lock_);
   bool add_temp_thumbnail = false;
   if (canonical_urls_.find(url) == canonical_urls_.end()) {
     if (top_sites_.size() < kTopSitesNumber) {
@@ -148,7 +149,6 @@ bool TopSites::SetPageThumbnail(const GURL& url,
     return true;
   }
 
-  AutoLock lock(lock_);
   return SetPageThumbnailEncoded(url, thumbnail_data, score);
 }
 
@@ -607,6 +607,7 @@ void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
 
 void TopSites::StoreRedirectChain(const RedirectList& redirects,
                                   size_t destination) {
+  lock_.AssertAcquired();
   if (redirects.empty()) {
     NOTREACHED();
     return;
@@ -871,8 +872,8 @@ void TopSites::SetMockHistoryService(MockHistoryService* mhs) {
 void TopSites::Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
+  AutoLock lock(lock_);
   if (type == NotificationType::HISTORY_URLS_DELETED) {
-    AutoLock lock(lock_);
     Details<history::URLsDeletedDetails> deleted_details(details);
     if (deleted_details->all_history) {
       top_sites_.clear();
@@ -907,7 +908,6 @@ void TopSites::Observe(NotificationType type,
       GURL url = load_details->entry->url();
       if (canonical_urls_.find(url) == canonical_urls_.end() &&
           HistoryService::CanAddURL(url)) {
-        AutoLock lock(lock_);
         // Add this page to the known pages in case the thumbnail comes
         // in before we get the results.
         MostVisitedURL mv;
