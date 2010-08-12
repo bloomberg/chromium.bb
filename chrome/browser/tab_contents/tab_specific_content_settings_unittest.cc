@@ -55,8 +55,7 @@ TEST(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_TRUE(test_delegate.SettingsChanged());
   EXPECT_FALSE(test_delegate.ContentBlocked());
   test_delegate.Reset();
-  content_settings.OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
-                                    std::string());
+  content_settings.OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
   EXPECT_TRUE(test_delegate.SettingsChanged());
   EXPECT_TRUE(test_delegate.ContentBlocked());
   test_delegate.Reset();

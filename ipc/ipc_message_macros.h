@@ -113,7 +113,6 @@
 #undef IPC_SYNC_MESSAGE_CONTROL3_1
 #undef IPC_SYNC_MESSAGE_CONTROL3_2
 #undef IPC_SYNC_MESSAGE_CONTROL3_3
-#undef IPC_SYNC_MESSAGE_CONTROL3_4
 #undef IPC_SYNC_MESSAGE_CONTROL4_1
 #undef IPC_SYNC_MESSAGE_CONTROL4_2
 #undef IPC_SYNC_MESSAGE_ROUTED0_0
@@ -234,9 +233,6 @@
   msg_class##__ID,
 
 #define IPC_SYNC_MESSAGE_CONTROL3_3(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out) \
-  msg_class##__ID,
-
-#define IPC_SYNC_MESSAGE_CONTROL3_4(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out, type4_out) \
   msg_class##__ID,
 
 #define IPC_SYNC_MESSAGE_CONTROL4_1(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out) \
@@ -434,7 +430,6 @@ void class_name::OnMessageReceived(const IPC::Message& msg) \
 #undef IPC_SYNC_MESSAGE_CONTROL3_1
 #undef IPC_SYNC_MESSAGE_CONTROL3_2
 #undef IPC_SYNC_MESSAGE_CONTROL3_3
-#undef IPC_SYNC_MESSAGE_CONTROL3_4
 #undef IPC_SYNC_MESSAGE_CONTROL4_1
 #undef IPC_SYNC_MESSAGE_CONTROL4_2
 #undef IPC_SYNC_MESSAGE_ROUTED0_0
@@ -581,9 +576,6 @@ LogFunction g_log_function_mapping[LastMsgIndex];
 #define IPC_SYNC_MESSAGE_CONTROL3_3(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out) \
   IPC_MESSAGE_LOG(msg_class)
 
-#define IPC_SYNC_MESSAGE_CONTROL3_4(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out, type4_out) \
-  IPC_MESSAGE_LOG(msg_class)
-
 #define IPC_SYNC_MESSAGE_CONTROL4_1(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out) \
   IPC_MESSAGE_LOG(msg_class)
 
@@ -699,7 +691,6 @@ LogFunction g_log_function_mapping[LastMsgIndex];
 #undef IPC_SYNC_MESSAGE_CONTROL3_1
 #undef IPC_SYNC_MESSAGE_CONTROL3_2
 #undef IPC_SYNC_MESSAGE_CONTROL3_3
-#undef IPC_SYNC_MESSAGE_CONTROL3_4
 #undef IPC_SYNC_MESSAGE_CONTROL4_1
 #undef IPC_SYNC_MESSAGE_CONTROL4_2
 #undef IPC_SYNC_MESSAGE_ROUTED0_0
@@ -1003,17 +994,6 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    public: \
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5, type3_out* arg6); \
-      ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
-  };
-
-#define IPC_SYNC_MESSAGE_CONTROL3_4(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out, type4_out) \
-  class msg_class : \
-      public IPC::MessageWithReply<Tuple3<type1_in, type2_in, type3_in>, \
-          Tuple4<type1_out&, type2_out&, type3_out&, type4_out&> > { \
-   public: \
-   enum { ID = msg_class##__ID }; \
-   msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5, type3_out* arg6, type4_out* arg7); \
       ~msg_class();                                                     \
       static void Log(const Message* msg, std::wstring* l);             \
   };

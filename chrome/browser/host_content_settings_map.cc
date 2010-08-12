@@ -279,7 +279,7 @@ ContentSetting HostContentSettingsMap::GetNonDefaultContentSetting(
     return GetNonDefaultContentSettings(url).settings[content_type];
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableResourceContentSettings)) {
+      switches::kEnableClickToPlay)) {
     DCHECK(!resource_identifier.empty());
   }
 
@@ -405,8 +405,11 @@ void HostContentSettingsMap::GetSettingsForOneType(
     ContentSettingsType content_type,
     const std::string& resource_identifier,
     SettingsForOneType* settings) const {
-  DCHECK(RequiresResourceIdentifier(content_type) !=
-         resource_identifier.empty());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClickToPlay)) {
+    DCHECK(!RequiresResourceIdentifier(content_type) ||
+           !resource_identifier.empty());
+  }
   DCHECK(settings);
   settings->clear();
 
@@ -482,8 +485,11 @@ void HostContentSettingsMap::SetContentSetting(
     ContentSetting setting) {
   DCHECK(kTypeNames[content_type] != NULL);  // Don't call this for Geolocation.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(RequiresResourceIdentifier(content_type) !=
-         resource_identifier.empty());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableClickToPlay)) {
+    DCHECK(!RequiresResourceIdentifier(content_type) ||
+           !resource_identifier.empty());
+  }
 
   bool early_exit = false;
   std::string pattern_str(pattern.AsString());
@@ -650,12 +656,14 @@ void HostContentSettingsMap::ClearSettingsForOneType(
 
 bool HostContentSettingsMap::RequiresResourceIdentifier(
     ContentSettingsType content_type) const {
+// TODO(bauerb): Enable once all call sites are adopted.
+#if 0
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableResourceContentSettings)) {
+      switches::kEnableClickToPlay))
     return kRequiresResourceIdentifier[content_type];
-  } else {
+  else
+#endif
     return false;
-  }
 }
 
 void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {

@@ -560,11 +560,10 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
                                            const WebPluginParams& params) {
   WebPluginInfo info;
   bool found;
-  ContentSetting setting;
   std::string mime_type;
   Send(new ViewHostMsg_GetPluginInfo(
       params.url, frame->top()->url(), params.mimeType.utf8(), &found,
-      &info, &setting, &mime_type));
+      &info, &mime_type));
   if (!found || !info.enabled)
     return NULL;
   scoped_refptr<pepper::PluginModule> pepper_module =
@@ -2256,8 +2255,6 @@ void RenderView::runModal() {
 WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                     const WebPluginParams& params) {
   bool found = false;
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
   WebPluginInfo info;
   GURL url(params.url);
   std::string actual_mime_type;
@@ -2266,7 +2263,6 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                      params.mimeType.utf8(),
                                      &found,
                                      &info,
-                                     &setting,
                                      &actual_mime_type));
 
   if (!found)
@@ -2276,7 +2272,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   group->AddPlugin(info, 0);
 
   if (!info.enabled) {
-    if (cmd->HasSwitch(switches::kDisableOutdatedPlugins) &&
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableOutdatedPlugins) &&
         group->IsVulnerable()) {
       Send(new ViewHostMsg_DisabledOutdatedPlugin(routing_id_,
                                                   group->GetGroupName(),
@@ -2287,13 +2284,10 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   }
 
   if (info.path.value() != kDefaultPluginLibraryName) {
-    std::string resource;
-    if (cmd->HasSwitch(switches::kEnableResourceContentSettings)) {
-      resource = info.path.ToString();
-    }
-    if (setting == CONTENT_SETTING_BLOCK) {
-      DCHECK(cmd->HasSwitch(switches::kEnableClickToPlay));
-      DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
+    if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS)) {
+      DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClickToPlay));
+      didNotAllowPlugins(frame);
       return CreatePluginPlaceholder(frame, params, NULL);
     }
     scoped_refptr<pepper::PluginModule> pepper_module =
@@ -2301,10 +2295,8 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     if (pepper_module)
       return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kBlockNonSandboxedPlugins) &&
-        setting != CONTENT_SETTING_ALLOW) {
+            switches::kBlockNonSandboxedPlugins)) {
       Send(new ViewHostMsg_NonSandboxedPluginBlocked(routing_id_,
-                                                     resource,
                                                      group->GetGroupName()));
       return CreatePluginPlaceholder(frame, params, NULL);
     }
@@ -2447,7 +2439,7 @@ bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
   if (IsWhitelistedForContentSettings(frame))
     return true;
 
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES);
   return false;  // Other protocols fall through here.
 }
 
@@ -3248,11 +3240,11 @@ bool RenderView::allowDatabase(
   return result;
 }
 void RenderView::didNotAllowScript(WebKit::WebFrame* frame) {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 }
 
 void RenderView::didNotAllowPlugins(WebKit::WebFrame* frame) {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
 }
 
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
@@ -3803,12 +3795,10 @@ bool RenderView::AllowContentType(ContentSettingsType settings_type) {
     CONTENT_SETTING_BLOCK;
 }
 
-void RenderView::DidBlockContentType(ContentSettingsType settings_type,
-                                     const std::string& resource_identifier) {
+void RenderView::DidBlockContentType(ContentSettingsType settings_type) {
   if (!content_blocked_[settings_type]) {
     content_blocked_[settings_type] = true;
-    Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type,
-                                        resource_identifier));
+    Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
   }
 }
 

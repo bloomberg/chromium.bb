@@ -27,7 +27,6 @@
 #include "views/controls/separator.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
-#include "webkit/glue/plugins/plugin_list.h"
 
 class ContentSettingBubbleContents::Favicon : public views::ImageView {
  public:
@@ -199,24 +198,6 @@ void ContentSettingBubbleContents::InitControlLayout() {
         bubble_content.title));
     layout->StartRow(0, single_column_set_id);
     layout->AddView(title_label);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  }
-
-  const std::set<std::string>& plugins = bubble_content.resource_identifiers;
-  if (!plugins.empty()) {
-    for (std::set<std::string>::const_iterator it = plugins.begin();
-        it != plugins.end(); ++it) {
-      WebPluginInfo plugin;
-      std::wstring name;
-      if (NPAPI::PluginList::Singleton()->GetPluginInfoByPath(
-          FilePath::FromString(*it), &plugin)) {
-        name = UTF16ToWide(plugin.name);
-      } else {
-        name = UTF8ToWide(*it);
-      }
-      layout->StartRow(0, single_column_set_id);
-      layout->AddView(new views::Label(name));
-    }
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   }
 

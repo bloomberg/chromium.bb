@@ -47,8 +47,7 @@ class ContentSettingBubbleModelTest : public RenderViewHostTestHarness {
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
   TabSpecificContentSettings* content_settings =
       contents()->GetTabSpecificContentSettings();
-  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES,
-                                     std::string());
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -66,8 +65,7 @@ TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
 TEST_F(ContentSettingBubbleModelTest, Cookies) {
   TabSpecificContentSettings* content_settings =
       contents()->GetTabSpecificContentSettings();
-  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES,
-                                     std::string());
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -84,8 +82,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
 TEST_F(ContentSettingBubbleModelTest, Plugins) {
   TabSpecificContentSettings* content_settings =
       contents()->GetTabSpecificContentSettings();
-  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS,
-                                     std::string());
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(

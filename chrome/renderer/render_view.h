@@ -881,8 +881,7 @@ class RenderView : public RenderWidget,
       PluginGroup* group);
 
   // Sends an IPC notification that the specified content type was blocked.
-  void DidBlockContentType(ContentSettingsType settings_type,
-                           const std::string& resource_identifier);
+  void DidBlockContentType(ContentSettingsType settings_type);
 
   // This callback is triggered when DownloadImage completes, either
   // succesfully or with a failure. See DownloadImage for more details.

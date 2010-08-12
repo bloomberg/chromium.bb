@@ -24,7 +24,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/common/content_settings.h"
 #include "chrome/common/window_container_type.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -184,7 +183,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                        const std::string& mime_type,
                        bool* found,
                        WebPluginInfo* info,
-                       ContentSetting* setting,
                        std::string* actual_mime_type);
   void OnOpenChannelToPlugin(const GURL& url,
                              const std::string& mime_type,

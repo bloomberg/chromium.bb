@@ -20,7 +20,6 @@
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "webkit/glue/plugins/plugin_list.h"
 
 namespace {
 
@@ -89,7 +88,6 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
                                 title:(NSString*)title
                                  icon:(NSImage*)icon
                        referenceFrame:(NSRect)referenceFrame;
-- (void)initializeBlockedPluginsList;
 - (void)initializeTitle;
 - (void)initializeRadioGroup;
 - (void)initializePopupList;
@@ -149,10 +147,6 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   if (!titleLabel_)
     return;
 
-  NSString* label = base::SysUTF8ToNSString(
-      contentSettingBubbleModel_->bubble_content().title);
-  [titleLabel_ setStringValue:label];
-
   // Layout title post-localization.
   CGFloat deltaY = [GTMUILocalizerAndLayoutTweaker
       sizeToFitFixedWidthTextField:titleLabel_];
@@ -167,22 +161,20 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
 - (void)initializeRadioGroup {
   // Configure the radio group. For now, only deal with the
   // strictly needed case of group containing 2 radio buttons.
-  const ContentSettingBubbleModel::RadioGroup& radio_group =
+  // TODO(joth): Implement the generic case, getting localized strings from the
+  // bubble model instead of the xib, or remove it if it's never needed.
+  // http://crbug.com/38432
+  const ContentSettingBubbleModel::RadioGroup& radioGroup =
       contentSettingBubbleModel_->bubble_content().radio_group;
 
   // Select appropriate radio button.
   [allowBlockRadioGroup_ selectCellWithTag:
-      radio_group.default_item == 0 ? kAllowTag : kBlockTag];
+      radioGroup.default_item == 0 ? kAllowTag : kBlockTag];
 
-  const ContentSettingBubbleModel::RadioItems& radio_items =
-      radio_group.radio_items;
-  DCHECK_EQ(2u, radio_items.size()) << "Only 2 radio items per group supported";
-  // Set radio group labels from model.
+  // Copy |host_| into radio group label.
   NSCell* radioCell = [allowBlockRadioGroup_ cellWithTag:kAllowTag];
-  [radioCell setTitle:base::SysUTF8ToNSString(radio_items[0])];
-
-  radioCell = [allowBlockRadioGroup_ cellWithTag:kBlockTag];
-  [radioCell setTitle:base::SysUTF8ToNSString(radio_items[1])];
+  [radioCell setTitle:cocoa_l10n_util::ReplaceNSStringPlaceholders(
+      [radioCell title], UTF8ToUTF16(radioGroup.url.host()), NULL)];
 
   // Layout radio group labels post-localization.
   [GTMUILocalizerAndLayoutTweaker
@@ -225,37 +217,6 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [button setTarget:self];
   [button setAction:@selector(popupLinkClicked:)];
   return button;
-}
-
-- (void)initializeBlockedPluginsList {
-  NSMutableArray* pluginArray = [NSMutableArray array];
-  const std::set<std::string>& plugins =
-      contentSettingBubbleModel_->bubble_content().resource_identifiers;
-  if (plugins.empty()) {
-    int delta = NSMinY([titleLabel_ frame]) -
-                NSMinY([blockedResourcesField_ frame]);
-    [blockedResourcesField_ removeFromSuperview];
-    NSRect frame = [[self window] frame];
-    frame.size.height -= delta;
-    [[self window] setFrame:frame display:NO];
-  } else {
-    for (std::set<std::string>::iterator it = plugins.begin();
-         it != plugins.end(); ++it) {
-      WebPluginInfo plugin;
-      NSString* name;
-      if (NPAPI::PluginList::Singleton()->
-          GetPluginInfoByPath(FilePath(*it), &plugin)) {
-        name = base::SysUTF16ToNSString(plugin.name);
-      } else {
-        name = base::SysUTF8ToNSString(*it);
-      }
-      [pluginArray addObject:name];
-    }
-    [blockedResourcesField_
-        setStringValue:[pluginArray componentsJoinedByString:@"\n"]];
-    [GTMUILocalizerAndLayoutTweaker
-        sizeToFitFixedWidthTextField:blockedResourcesField_];
-  }
 }
 
 - (void)initializePopupList {
@@ -458,10 +419,8 @@ NSTextField* LabelWithFrame(NSString* text, const NSRect& frame) {
   [self initializeTitle];
 
   ContentSettingsType type = contentSettingBubbleModel_->content_type();
-  if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+  if (type == CONTENT_SETTINGS_TYPE_PLUGINS)
     [self sizeToFitLoadPluginsButton];
-    [self initializeBlockedPluginsList];
-  }
   if (type == CONTENT_SETTINGS_TYPE_COOKIES)
     [self removeInfoButton];
   if (allowBlockRadioGroup_)  // not bound in cookie bubble xib

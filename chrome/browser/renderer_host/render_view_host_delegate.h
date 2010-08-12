@@ -344,8 +344,7 @@ class RenderViewHostDelegate {
    public:
     // Called when content in the current page was blocked due to the user's
     // content settings.
-    virtual void OnContentBlocked(ContentSettingsType type,
-                                  const std::string& resource_identifier) = 0;
+    virtual void OnContentBlocked(ContentSettingsType type) = 0;
 
     // Called when a specific cookie in the current page was accessed.
     // |blocked_by_policy| should be true, if the cookie was blocked due to the
@@ -545,8 +544,7 @@ class RenderViewHostDelegate {
 
   class BlockedPlugin {
    public:
-    virtual void OnNonSandboxedPluginBlocked(const std::string& plugin,
-                                             const string16& name) = 0;
+    virtual void OnNonSandboxedPluginBlocked(const string16& name) = 0;
     virtual void OnBlockedPluginLoaded() = 0;
   };
 
