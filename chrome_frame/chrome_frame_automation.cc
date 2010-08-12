@@ -214,6 +214,16 @@ AutomationProxyCacheEntry::AutomationProxyCacheEntry(
 
 AutomationProxyCacheEntry::~AutomationProxyCacheEntry() {
   DLOG(INFO) << __FUNCTION__ << profile_name;
+  // Attempt to fix chrome_frame_tests crash seen at times on the IE6/IE7
+  // builders. It appears that there are cases when we can enter here when the
+  // AtExitManager is tearing down the global ProxyCache which causes a crash
+  // while tearing down the AutomationProxy object due to a NULL MessageLoop
+  // The AutomationProxy class uses the SyncChannel which assumes the existence
+  // of a MessageLoop instance.
+  // We leak the AutomationProxy pointer here to avoid a crash.
+  if (MessageLoop::current() == NULL) {
+    proxy_.release();
+  }
 }
 
 void AutomationProxyCacheEntry::StartSendUmaInterval(
