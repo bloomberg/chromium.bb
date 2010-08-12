@@ -296,10 +296,14 @@ void ProgramManager::ProgramInfo::GetProgramiv(GLenum pname, GLint* params) {
   }
 }
 
-void ProgramManager::ProgramInfo::AttachShader(
+bool ProgramManager::ProgramInfo::AttachShader(
     ShaderManager::ShaderInfo* info) {
-  attached_shaders_[ShaderTypeToIndex(info->shader_type())] =
-      ShaderManager::ShaderInfo::Ref(info);
+  int index = ShaderTypeToIndex(info->shader_type());
+  if (attached_shaders_[index] != NULL) {
+    return false;
+  }
+  attached_shaders_[index] = ShaderManager::ShaderInfo::Ref(info);
+  return true;
 }
 
 void ProgramManager::ProgramInfo::DetachShader(

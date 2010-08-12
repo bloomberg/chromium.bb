@@ -428,19 +428,19 @@ TEST_F(ProgramManagerWithShaderTest, AttachDetachShader) {
   ShaderManager::ShaderInfo* fshader = shader_manager.GetShaderInfo(
       kFShaderClientId);
   fshader->SetStatus(true, "");
-  program_info->AttachShader(vshader);
+  EXPECT_TRUE(program_info->AttachShader(vshader));
   EXPECT_FALSE(program_info->CanLink());
-  program_info->AttachShader(fshader);
+  EXPECT_TRUE(program_info->AttachShader(fshader));
   EXPECT_TRUE(program_info->CanLink());
   program_info->DetachShader(vshader);
   EXPECT_FALSE(program_info->CanLink());
-  program_info->AttachShader(vshader);
+  EXPECT_TRUE(program_info->AttachShader(vshader));
   EXPECT_TRUE(program_info->CanLink());
   program_info->DetachShader(fshader);
   EXPECT_FALSE(program_info->CanLink());
-  program_info->AttachShader(vshader);
+  EXPECT_FALSE(program_info->AttachShader(vshader));
   EXPECT_FALSE(program_info->CanLink());
-  program_info->AttachShader(fshader);
+  EXPECT_TRUE(program_info->AttachShader(fshader));
   EXPECT_TRUE(program_info->CanLink());
   vshader->SetStatus(false, "");
   EXPECT_FALSE(program_info->CanLink());

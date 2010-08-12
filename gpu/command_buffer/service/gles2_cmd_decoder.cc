@@ -2034,7 +2034,7 @@ void GLES2DecoderImpl::Destroy() {
   // TODO(alokp): Move ShInitialize/ShFinalize where they are called only
   // once per process. Currently they get called out-of-order leading to
   // crashes.
-  //ShFinalize();
+  // ShFinalize();
 #endif  // GLES2_GPU_SERVICE_TRANSLATE_SHADER)
 
   if (context_.get()) {
@@ -3714,7 +3714,12 @@ void GLES2DecoderImpl::DoAttachShader(
   if (!shader_info) {
     return;
   }
-  program_info->AttachShader(shader_info);
+  if (!program_info->AttachShader(shader_info)) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glAttachShader: can not attach more than"
+               " one shader of the same type.");
+    return;
+  }
   glAttachShader(program_info->service_id(), shader_info->service_id());
 }
 
