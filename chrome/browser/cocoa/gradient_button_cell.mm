@@ -570,15 +570,17 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     CGContextRef context =
         (CGContextRef)([[NSGraphicsContext currentContext] graphicsPort]);
 
-    ThemeProvider* themeProvider = [[controlView window] themeProvider];
+    BrowserThemeProvider* themeProvider = static_cast<BrowserThemeProvider*>(
+        [[controlView window] themeProvider]);
     NSColor* color = themeProvider ?
         themeProvider->GetNSColorTint(BrowserThemeProvider::TINT_BUTTONS,
                                       true) :
         [NSColor blackColor];
 
-    if (isTemplate) {
+    if (isTemplate && themeProvider && themeProvider->UsingDefaultTheme()) {
       scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-      [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.96 alpha:1.0]];
+      [shadow setShadowColor:themeProvider->GetNSColor(
+          BrowserThemeProvider::COLOR_TOOLBAR_BEZEL, true)];
       [shadow setShadowOffset:NSMakeSize(0.0, -1.0)];
       [shadow setShadowBlurRadius:1.0];
       [shadow set];

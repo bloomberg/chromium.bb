@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -129,7 +129,8 @@ private:
 
   // Paint button background image if there is one (otherwise the border won't
   // look right).
-  ThemeProvider* themeProvider = [[controlView window] themeProvider];
+  BrowserThemeProvider* themeProvider =
+      static_cast<BrowserThemeProvider*>([[controlView window] themeProvider]);
   if (themeProvider) {
     NSColor* backgroundImageColor =
         themeProvider->GetNSImageColorNamed(IDR_THEME_BUTTON_BACKGROUND, false);
@@ -171,8 +172,11 @@ private:
   }
 
   // Draw optional bezel below bottom stroke.
-  if ([self shouldDrawBezel]) {
-    [[NSColor colorWithCalibratedWhite:0.96 alpha:1.0] set];
+  if ([self shouldDrawBezel] && themeProvider &&
+      themeProvider->UsingDefaultTheme()) {
+
+    [themeProvider->GetNSColor(
+        BrowserThemeProvider::COLOR_TOOLBAR_BEZEL, true) set];
     NSRect bezelRect = NSMakeRect(cellFrame.origin.x,
                                   NSMaxY(cellFrame) - 0.5,
                                   NSWidth(cellFrame),

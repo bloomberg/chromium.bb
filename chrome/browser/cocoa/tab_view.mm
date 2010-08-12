@@ -627,7 +627,8 @@ const CGFloat kRapidCloseDist = 2.5;
   NSGraphicsContext* context = [NSGraphicsContext currentContext];
   [context saveGraphicsState];
 
-  ThemeProvider* themeProvider = [[self window] themeProvider];
+  BrowserThemeProvider* themeProvider =
+      static_cast<BrowserThemeProvider*>([[self window] themeProvider]);
   [context setPatternPhase:[[self window] themePatternPhase]];
 
   NSRect rect = [self bounds];
@@ -716,10 +717,14 @@ const CGFloat kRapidCloseDist = 2.5;
   BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
   CGFloat borderAlpha = selected ? (active ? 0.3 : 0.2) : 0.2;
   NSColor* borderColor = [NSColor colorWithDeviceWhite:0.0 alpha:borderAlpha];
-  NSColor* highlightColor = [NSColor colorWithCalibratedWhite:0.96 alpha:1.0];
+  NSColor* highlightColor = themeProvider ? themeProvider->GetNSColor(
+      themeProvider->UsingDefaultTheme() ?
+          BrowserThemeProvider::COLOR_TOOLBAR_BEZEL :
+          BrowserThemeProvider::COLOR_TOOLBAR, true) : nil;
 
-  // Draw the top inner highlight within the currently selected tab.
-  if (selected) {
+  // Draw the top inner highlight within the currently selected tab if using
+  // the default theme.
+  if (selected && themeProvider && themeProvider->UsingDefaultTheme()) {
     NSAffineTransform* highlightTransform = [NSAffineTransform transform];
     [highlightTransform translateXBy:1.0 yBy:-1.0];
     scoped_nsobject<NSBezierPath> highlightPath([path copy]);

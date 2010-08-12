@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/tab_strip_view.h"
 
 #include "base/mac_util.h"
+#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/view_id_util.h"
@@ -41,7 +42,18 @@
   [[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
   NSDivideRect(bounds, &borderRect, &contentRect, 1, NSMinYEdge);
-  [[NSColor colorWithCalibratedWhite:0.96 alpha:1.0] set];
+
+  BrowserThemeProvider* themeProvider =
+      static_cast<BrowserThemeProvider*>([[self window] themeProvider]);
+  if (!themeProvider)
+    return;
+
+  NSColor* bezelColor = themeProvider->GetNSColor(
+      themeProvider->UsingDefaultTheme() ?
+          BrowserThemeProvider::COLOR_TOOLBAR_BEZEL :
+          BrowserThemeProvider::COLOR_TOOLBAR, true);
+  [bezelColor set];
+  NSRectFill(borderRect);
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
 }
 

@@ -85,6 +85,7 @@ const SkColor kDefaultColorButtonBackground = SkColorSetARGB(0, 0, 0, 0);
 const SkColor kDefaultColorToolbarButtonStroke = SkColorSetARGB(75, 81, 81, 81);
 const SkColor kDefaultColorToolbarButtonStrokeInactive =
     SkColorSetARGB(75, 99, 99, 99);
+const SkColor kDefaultColorToolbarBezel = SkColorSetRGB(247, 247, 247);
 const SkColor kDefaultColorToolbarStroke = SkColorSetRGB(103, 103, 103);
 const SkColor kDefaultColorToolbarStrokeInactive = SkColorSetRGB(123, 123, 123);
 #endif
@@ -452,6 +453,8 @@ SkColor BrowserThemeProvider::GetDefaultColor(int id) {
       return kDefaultColorToolbarButtonStroke;
     case COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE:
       return kDefaultColorToolbarButtonStrokeInactive;
+    case COLOR_TOOLBAR_BEZEL:
+      return kDefaultColorToolbarBezel;
     case COLOR_TOOLBAR_STROKE:
       return kDefaultColorToolbarStroke;
     case COLOR_TOOLBAR_STROKE_INACTIVE:
