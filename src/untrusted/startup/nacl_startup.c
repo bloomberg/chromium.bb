@@ -13,8 +13,8 @@
 
 /* avoid including header files in order to make this independent of anything */
 /* @IGNORE_LINES_FOR_CODE_HYGIENE[10] */
-extern void _fini();
-extern void _init();
+extern void __libc_init_array();
+extern void __libc_fini_array();
 extern int main(int argc, char *argv[], char *envp[]);
 extern void __srpc_init();
 extern void __srpc_wait();
@@ -31,7 +31,7 @@ void __nacl_startup(int argc, char *argv[], char *envp[]) {
    * destructors are invoked from here.
    * Invoke __nacl_startup which ultimately calls main.
    */
-  atexit(_fini);
+  atexit(__libc_fini_array);
   /*
    * Initialize the pthreads library.  We need to do at least a minimal
    * amount of initialization (e.g., set up gs) to allow thread local
@@ -48,7 +48,7 @@ void __nacl_startup(int argc, char *argv[], char *envp[]) {
    * Execute the init section before starting main.  The C++ static
    * object constructors are invoked from here.
    */
-  _init();
+  __libc_init_array();
   /*
    * Initialize the SRPC module before starting main.  There is a weak
    * definition in libnacl that can be overridden by libsrpc.

@@ -213,8 +213,13 @@ setup-tools-common() {
     OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
   # NOTE: we do not expect the assembler or linker to be used to build newlib.a
+  #       hence the use of ILLEGAL_TOOL.
+  # NOTE: newlib's configure attempts to run readelf on some of the bitcode
+  #       files to determine settings like HAVE_INITFINI_ARRAY=1.
+  #       There is no clean way to force it to skip that test and always
+  #       enable the feature. So here we just enable the feature via CFLAGS.
   STD_ENV_FOR_NEWLIB=(
-    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET}"
+    CFLAGS_FOR_TARGET="${CFLAGS_FOR_SFI_TARGET} -DHAVE_INITFINI_ARRAY=1"
     CPPFLAGS_FOR_TARGET="${CPPFLAGS_FOR_SFI_TARGET}"
     CC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
     GCC_FOR_TARGET="${CC_FOR_SFI_TARGET}"
