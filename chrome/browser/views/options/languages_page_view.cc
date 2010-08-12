@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -405,7 +405,7 @@ void LanguagesPageView::NotifyPrefChanged(const std::string* pref_name) {
   }
   if (!pref_name || *pref_name == prefs::kApplicationLocale) {
     int index = ui_language_model_->GetSelectedLanguageIndex(
-        UTF8ToWide(prefs::kApplicationLocale));
+        prefs::kApplicationLocale);
     if (-1 == index) {
       // The pref value for locale isn't valid.  Use the current app locale
       // (which is what we're currently using).
@@ -418,7 +418,7 @@ void LanguagesPageView::NotifyPrefChanged(const std::string* pref_name) {
   }
   if (!pref_name || *pref_name == prefs::kSpellCheckDictionary) {
     int index = dictionary_language_model_->GetSelectedLanguageIndex(
-        UTF8ToWide(prefs::kSpellCheckDictionary));
+        prefs::kSpellCheckDictionary);
 
     // If the index for the current language cannot be found, it is due to
     // the fact that the pref-member value for the last dictionary language
@@ -435,7 +435,7 @@ void LanguagesPageView::NotifyPrefChanged(const std::string* pref_name) {
       dictionary_language_.SetValue(
           SpellCheckCommon::GetLanguageFromLanguageRegion(lang_region));
       index = dictionary_language_model_->GetSelectedLanguageIndex(
-          UTF8ToWide(prefs::kSpellCheckDictionary));
+          prefs::kSpellCheckDictionary);
     }
 
     change_dictionary_language_combobox_->SetSelectedItem(index);

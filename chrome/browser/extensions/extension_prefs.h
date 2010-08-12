@@ -163,7 +163,7 @@ class ExtensionPrefs {
 
   // Sets the pref |key| for extension |id| to |value|.
   void UpdateExtensionPref(const std::string& id,
-                           const std::wstring& key,
+                           const std::string& key,
                            Value* value);
 
   // Deletes the pref dictionary for extension |id|.
@@ -171,11 +171,11 @@ class ExtensionPrefs {
 
   // Reads a boolean pref from |ext| with key |pref_key|.
   // Return false if the value is false or kPrefBlacklist does not exist.
-  bool ReadBooleanFromPref(DictionaryValue* ext, const std::wstring& pref_key);
+  bool ReadBooleanFromPref(DictionaryValue* ext, const std::string& pref_key);
 
   // Reads a boolean pref |pref_key| from extension with id |extension_id|.
   bool ReadExtensionPrefBoolean(const std::string& extension_id,
-                                const std::wstring& pref_key);
+                                const std::string& pref_key);
 
   // Ensures and returns a mutable dictionary for extension |id|'s prefs.
   DictionaryValue* GetOrCreateExtensionPref(const std::string& id);

@@ -81,7 +81,7 @@ const FilePath::CharType Extension::kMessagesFilename[] =
     FILE_PATH_LITERAL("messages.json");
 
 // A list of all the keys allowed by themes.
-static const wchar_t* kValidThemeKeys[] = {
+static const char* kValidThemeKeys[] = {
   keys::kCurrentLocale,
   keys::kDefaultLocale,
   keys::kDescription,
@@ -362,7 +362,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
 bool Extension::LoadGlobsHelper(
     const DictionaryValue* content_script,
     int content_script_index,
-    const wchar_t* globs_property_name,
+    const char* globs_property_name,
     std::string* error,
     void(UserScript::*add_method)(const std::string& glob),
     UserScript *instance) {
@@ -373,7 +373,7 @@ bool Extension::LoadGlobsHelper(
   if (!content_script->GetList(globs_property_name, &list)) {
     *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidGlobList,
         base::IntToString(content_script_index),
-        WideToUTF8(globs_property_name));
+        globs_property_name);
     return false;
   }
 
@@ -382,7 +382,7 @@ bool Extension::LoadGlobsHelper(
     if (!list->GetString(i, &glob)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidGlob,
           base::IntToString(content_script_index),
-          WideToUTF8(globs_property_name),
+          globs_property_name,
           base::IntToString(i));
       return false;
     }
@@ -457,7 +457,7 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
   result->SetTitle(ExtensionAction::kDefaultTabId, title);
 
   // Read the action's |popup| (optional).
-  const wchar_t* popup_key = NULL;
+  const char* popup_key = NULL;
   if (extension_action->HasKey(keys::kPageActionDefaultPopup))
     popup_key = keys::kPageActionDefaultPopup;
 
@@ -467,8 +467,8 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
     if (popup_key) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidPageActionOldAndNewKeys,
-          WideToASCII(keys::kPageActionDefaultPopup),
-          WideToASCII(keys::kPageActionPopup));
+          keys::kPageActionDefaultPopup,
+          keys::kPageActionPopup);
       return NULL;
     }
     popup_key = keys::kPageActionPopup;
@@ -517,8 +517,7 @@ bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
   static bool theme_key_mapped = false;
   if (!theme_key_mapped) {
     for (size_t i = 0; i < arraysize(kValidThemeKeys); ++i) {
-      // TODO(viettrungluu): Make the constants |char*|s and avoid converting.
-      theme_keys[WideToUTF8(kValidThemeKeys[i])] = true;
+      theme_keys[kValidThemeKeys[i]] = true;
     }
     theme_key_mapped = true;
   }
@@ -549,7 +548,7 @@ bool Extension::LoadIsApp(const DictionaryValue* manifest,
 }
 
 bool Extension::LoadExtent(const DictionaryValue* manifest,
-                           const wchar_t* key,
+                           const char* key,
                            ExtensionExtent* extent,
                            const char* list_error,
                            const char* value_error,
@@ -996,13 +995,13 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
   }
 
   // Initialize name.
-  std::wstring localized_name;
+  string16 localized_name;
   if (!source.GetString(keys::kName, &localized_name)) {
     *error = errors::kInvalidName;
     return false;
   }
   base::i18n::AdjustStringForLocaleDirection(localized_name, &localized_name);
-  name_ = WideToUTF8(localized_name);
+  name_ = UTF16ToUTF8(localized_name);
 
   // Initialize description (if present).
   if (source.HasKey(keys::kDescription)) {
@@ -1081,12 +1080,12 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
     }
 
     for (size_t i = 0; i < arraysize(kIconSizes); ++i) {
-      std::wstring key = ASCIIToWide(base::IntToString(kIconSizes[i]));
+      std::string key = base::IntToString(kIconSizes[i]);
       if (icons_value->HasKey(key)) {
         std::string icon_path;
         if (!icons_value->GetString(key, &icon_path)) {
           *error = ExtensionErrorUtils::FormatErrorMessage(
-              errors::kInvalidIconPath, WideToASCII(key));
+              errors::kInvalidIconPath, key);
           return false;
         }
         icons_[kIconSizes[i]] = icon_path;

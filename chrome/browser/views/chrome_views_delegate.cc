@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "app/clipboard/clipboard.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/views/accessibility_event_router_views.h"
@@ -31,21 +32,21 @@ void ChromeViewsDelegate::SaveWindowPlacement(const std::wstring& window_name,
 
   DictionaryValue* window_preferences =
       g_browser_process->local_state()->GetMutableDictionary(
-          window_name.c_str());
-  window_preferences->SetInteger(L"left", bounds.x());
-  window_preferences->SetInteger(L"top", bounds.y());
-  window_preferences->SetInteger(L"right", bounds.right());
-  window_preferences->SetInteger(L"bottom", bounds.bottom());
-  window_preferences->SetBoolean(L"maximized", maximized);
+          WideToUTF8(window_name).c_str());
+  window_preferences->SetInteger("left", bounds.x());
+  window_preferences->SetInteger("top", bounds.y());
+  window_preferences->SetInteger("right", bounds.right());
+  window_preferences->SetInteger("bottom", bounds.bottom());
+  window_preferences->SetBoolean("maximized", maximized);
 
   scoped_ptr<WindowSizer::MonitorInfoProvider> monitor_info_provider(
       WindowSizer::CreateDefaultMonitorInfoProvider());
   gfx::Rect work_area(
       monitor_info_provider->GetMonitorWorkAreaMatching(bounds));
-  window_preferences->SetInteger(L"work_area_left", work_area.x());
-  window_preferences->SetInteger(L"work_area_top", work_area.y());
-  window_preferences->SetInteger(L"work_area_right", work_area.right());
-  window_preferences->SetInteger(L"work_area_bottom", work_area.bottom());
+  window_preferences->SetInteger("work_area_left", work_area.x());
+  window_preferences->SetInteger("work_area_top", work_area.y());
+  window_preferences->SetInteger("work_area_right", work_area.right());
+  window_preferences->SetInteger("work_area_bottom", work_area.bottom());
 }
 
 bool ChromeViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
@@ -54,12 +55,13 @@ bool ChromeViewsDelegate::GetSavedWindowBounds(const std::wstring& window_name,
     return false;
 
   const DictionaryValue* dictionary =
-      g_browser_process->local_state()->GetDictionary(window_name.c_str());
+      g_browser_process->local_state()->GetDictionary(
+          WideToUTF8(window_name).c_str());
   int left, top, right, bottom;
-  if (!dictionary || !dictionary->GetInteger(L"left", &left) ||
-      !dictionary->GetInteger(L"top", &top) ||
-      !dictionary->GetInteger(L"right", &right) ||
-      !dictionary->GetInteger(L"bottom", &bottom))
+  if (!dictionary || !dictionary->GetInteger("left", &left) ||
+      !dictionary->GetInteger("top", &top) ||
+      !dictionary->GetInteger("right", &right) ||
+      !dictionary->GetInteger("bottom", &bottom))
     return false;
 
   bounds->SetRect(left, top, right - left, bottom - top);
@@ -73,8 +75,9 @@ bool ChromeViewsDelegate::GetSavedMaximizedState(
     return false;
 
   const DictionaryValue* dictionary =
-      g_browser_process->local_state()->GetDictionary(window_name.c_str());
-  return dictionary && dictionary->GetBoolean(L"maximized", maximized) &&
+      g_browser_process->local_state()->GetDictionary(
+          WideToUTF8(window_name).c_str());
+  return dictionary && dictionary->GetBoolean("maximized", maximized) &&
       maximized;
 }
 

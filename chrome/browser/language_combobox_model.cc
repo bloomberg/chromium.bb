@@ -158,7 +158,7 @@ LanguageComboboxModel::LanguageComboboxModel(
 // shouldn't be reflected in this combo box.  We return -1 if the value in
 // the pref doesn't map to a know language (possible if the user edited the
 // prefs file manually).
-int LanguageComboboxModel::GetSelectedLanguageIndex(const std::wstring& prefs) {
+int LanguageComboboxModel::GetSelectedLanguageIndex(const std::string& prefs) {
   PrefService* local_state;
   if (!profile_)
     local_state = g_browser_process->local_state();

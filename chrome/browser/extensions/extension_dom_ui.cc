@@ -117,8 +117,8 @@ class ExtensionDOMUIImageLoadingTracker : public ImageLoadingTracker::Observer {
 
 }  // namespace
 
-const wchar_t ExtensionDOMUI::kExtensionURLOverrides[] =
-    L"extensions.chrome_url_overrides";
+const char ExtensionDOMUI::kExtensionURLOverrides[] =
+    "extensions.chrome_url_overrides";
 
 ExtensionDOMUI::ExtensionDOMUI(TabContents* tab_contents)
     : DOMUI(tab_contents) {

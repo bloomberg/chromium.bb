@@ -410,14 +410,14 @@ class Extension {
   // from an entry in the content_script lists of the manifest.
   bool LoadGlobsHelper(const DictionaryValue* content_script,
                        int content_script_index,
-                       const wchar_t* globs_property_name,
+                       const char* globs_property_name,
                        std::string* error,
                        void(UserScript::*add_method)(const std::string& glob),
                        UserScript *instance);
 
   // Helpers to load various chunks of the manifest.
   bool LoadIsApp(const DictionaryValue* manifest, std::string* error);
-  bool LoadExtent(const DictionaryValue* manifest, const wchar_t* key,
+  bool LoadExtent(const DictionaryValue* manifest, const char* key,
                   ExtensionExtent* extent, const char* list_error,
                   const char* value_error, std::string* error);
   bool LoadLaunchContainer(const DictionaryValue* manifest, std::string* error);

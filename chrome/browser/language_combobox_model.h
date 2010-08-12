@@ -88,7 +88,7 @@ class LanguageComboboxModel : public LanguageList, public ComboboxModel {
   // shouldn't be reflected in this combo box.  We return -1 if the value in
   // the pref doesn't map to a know language (possible if the user edited the
   // prefs file manually).
-  int GetSelectedLanguageIndex(const std::wstring& prefs);
+  int GetSelectedLanguageIndex(const std::string& prefs);
 
  private:
   // Profile.

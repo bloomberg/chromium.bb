@@ -321,7 +321,7 @@ void LanguagesPageGtk::NotifyPrefChanged(const std::string* pref_name) {
   }
   if (!pref_name || *pref_name == prefs::kSpellCheckDictionary) {
     int index = dictionary_language_model_->GetSelectedLanguageIndex(
-        UTF8ToWide(prefs::kSpellCheckDictionary));
+        prefs::kSpellCheckDictionary);
 
     // If not found, fall back from "language-region" to "language".
     if (index < 0) {
@@ -329,7 +329,7 @@ void LanguagesPageGtk::NotifyPrefChanged(const std::string* pref_name) {
       dictionary_language_.SetValue(
           SpellCheckCommon::GetLanguageFromLanguageRegion(lang_region));
       index = dictionary_language_model_->GetSelectedLanguageIndex(
-          UTF8ToWide(prefs::kSpellCheckDictionary));
+          prefs::kSpellCheckDictionary);
     }
 
     gtk_combo_box_set_active(GTK_COMBO_BOX(dictionary_language_combobox_),

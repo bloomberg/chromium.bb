@@ -370,7 +370,7 @@ TEST(ExtensionTest, InitFromValueValidNameInRTL) {
   input_value.SetString(keys::kVersion, "1.0.0.0");
   // No strong RTL characters in name.
   std::wstring name(L"Dictionary (by Google)");
-  input_value.SetString(keys::kName, name);
+  input_value.SetString(keys::kName, WideToUTF16Hack(name));
   EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
   EXPECT_EQ("", error);
   std::wstring localized_name(name);
@@ -379,7 +379,7 @@ TEST(ExtensionTest, InitFromValueValidNameInRTL) {
 
   // Strong RTL characters in name.
   name = L"Dictionary (\x05D1\x05D2"L" Google)";
-  input_value.SetString(keys::kName, name);
+  input_value.SetString(keys::kName, WideToUTF16Hack(name));
   EXPECT_TRUE(extension.InitFromValue(input_value, false, &error));
   EXPECT_EQ("", error);
   localized_name = name;
@@ -556,8 +556,8 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   ASSERT_STREQ(
       ExtensionErrorUtils::FormatErrorMessage(
           errors::kInvalidPageActionOldAndNewKeys,
-          WideToASCII(keys::kPageActionDefaultPopup),
-          WideToASCII(keys::kPageActionPopup)).c_str(),
+          keys::kPageActionDefaultPopup,
+          keys::kPageActionPopup).c_str(),
       error_msg.c_str());
   error_msg = "";
 

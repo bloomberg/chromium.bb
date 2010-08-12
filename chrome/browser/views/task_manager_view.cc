@@ -540,8 +540,8 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
     if (g_browser_process->local_state()) {
       DictionaryValue* window_preferences =
           g_browser_process->local_state()->GetMutableDictionary(
-              GetWindowName().c_str());
-      window_preferences->SetBoolean(L"always_on_top", is_always_on_top_);
+              WideToUTF8(GetWindowName()).c_str());
+      window_preferences->SetBoolean("always_on_top", is_always_on_top_);
     }
     return true;
   }
@@ -673,9 +673,10 @@ bool TaskManagerView::GetSavedAlwaysOnTopState(bool* always_on_top) const {
     return false;
 
   const DictionaryValue* dictionary =
-      g_browser_process->local_state()->GetDictionary(GetWindowName().c_str());
+      g_browser_process->local_state()->GetDictionary(
+          WideToUTF8(GetWindowName()).c_str());
   return dictionary &&
-      dictionary->GetBoolean(L"always_on_top", always_on_top) && always_on_top;
+      dictionary->GetBoolean("always_on_top", always_on_top) && always_on_top;
 }
 
 }  // namespace

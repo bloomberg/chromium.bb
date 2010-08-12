@@ -61,7 +61,7 @@ bool ShouldRelocalizeManifest(const ExtensionInfo& info) {
 }
 
 // Localizes manifest value for a given key.
-static bool LocalizeManifestValue(const std::wstring& key,
+static bool LocalizeManifestValue(const std::string& key,
                                   const ExtensionMessageBundle& messages,
                                   DictionaryValue* manifest,
                                   std::string* error) {
@@ -94,15 +94,15 @@ bool LocalizeManifest(const ExtensionMessageBundle& messages,
     return false;
 
   // Initialize browser_action.default_title
-  std::wstring key(keys::kBrowserAction);
-  key.append(L".");
+  std::string key(keys::kBrowserAction);
+  key.append(".");
   key.append(keys::kPageActionDefaultTitle);
   if (!LocalizeManifestValue(key, messages, manifest, error))
     return false;
 
   // Initialize page_action.default_title
   key.assign(keys::kPageAction);
-  key.append(L".");
+  key.append(".");
   key.append(keys::kPageActionDefaultTitle);
   if (!LocalizeManifestValue(key, messages, manifest, error))
     return false;

@@ -18,67 +18,68 @@ namespace {
 
 // A preference that keeps track of per-extension settings. This is a dictionary
 // object read from the Preferences file, keyed off of extension id's.
-const wchar_t kExtensionsPref[] = L"extensions.settings";
+const char kExtensionsPref[] = "extensions.settings";
 
 // Where an extension was installed from. (see Extension::Location)
-const wchar_t kPrefLocation[] = L"location";
+const char kPrefLocation[] = "location";
 
 // Enabled, disabled, killed, etc. (see Extension::State)
-const wchar_t kPrefState[] = L"state";
+const char kPrefState[] = "state";
 
 // The path to the current version's manifest file.
-const wchar_t kPrefPath[] = L"path";
+const char kPrefPath[] = "path";
 
 // The dictionary containing the extension's manifest.
-const wchar_t kPrefManifest[] = L"manifest";
+const char kPrefManifest[] = "manifest";
 
 // The version number.
-const wchar_t kPrefVersion[] = L"manifest.version";
+const char kPrefVersion[] = "manifest.version";
 
 // Indicates if an extension is blacklisted:
-const wchar_t kPrefBlacklist[] = L"blacklist";
+const char kPrefBlacklist[] = "blacklist";
 
 // Indicates whether to show an install warning when the user enables.
-const wchar_t kExtensionDidEscalatePermissions[] = L"install_warning_on_enable";
+const char kExtensionDidEscalatePermissions[] = "install_warning_on_enable";
 
 // A preference that tracks extension shelf configuration.  This is a list
 // object read from the Preferences file, containing a list of toolstrip URLs.
-const wchar_t kExtensionShelf[] = L"extensions.shelf";
+const char kExtensionShelf[] = "extensions.shelf";
 
 // A preference that tracks admin policy regarding which extensions the user
 // can and can not install. This preference is a list object, containing
 // strings that list extension ids. Denylist can contain "*" meaning all
 // extensions.
-const wchar_t kExtensionInstallAllowList[] = L"extensions.install.allowlist";
-const wchar_t kExtensionInstallDenyList[] = L"extensions.install.denylist";
+const char kExtensionInstallAllowList[] = "extensions.install.allowlist";
+const char kExtensionInstallDenyList[] = "extensions.install.denylist";
 
 // A preference that tracks browser action toolbar configuration. This is a list
 // object stored in the Preferences file. The extensions are stored by ID.
-const wchar_t kExtensionToolbar[] = L"extensions.toolbar";
+const char kExtensionToolbar[] = "extensions.toolbar";
 
 // The key for a serialized Time value indicating the start of the day (from the
 // server's perspective) an extension last included a "ping" parameter during
 // its update check.
-const wchar_t kLastPingDay[] = L"lastpingday";
+const char kLastPingDay[] = "lastpingday";
 
 // Path for settings specific to blacklist update.
-const wchar_t kExtensionsBlacklistUpdate[] = L"extensions.blacklistupdate";
+const char kExtensionsBlacklistUpdate[] = "extensions.blacklistupdate";
 
 // Path and sub-keys for the idle install info dictionary preference.
-const wchar_t kIdleInstallInfo[] = L"idle_install_info";
-const wchar_t kIdleInstallInfoCrxPath[] = L"crx_path";
-const wchar_t kIdleInstallInfoVersion[] = L"version";
-const wchar_t kIdleInstallInfoFetchTime[] = L"fetch_time";
+const char kIdleInstallInfo[] = "idle_install_info";
+const char kIdleInstallInfoCrxPath[] = "crx_path";
+const char kIdleInstallInfoVersion[] = "version";
+const char kIdleInstallInfoFetchTime[] = "fetch_time";
 
 
 // A preference that, if true, will allow this extension to run in incognito
 // mode.
-const wchar_t kPrefIncognitoEnabled[] = L"incognito";
+const char kPrefIncognitoEnabled[] = "incognito";
 
 // A preference to control whether an extension is allowed to inject script in
 // pages with file URLs.
-const wchar_t kPrefAllowFileAccess[] = L"allowFileAccess";
-}
+const char kPrefAllowFileAccess[] = "allowFileAccess";
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -207,7 +208,7 @@ DictionaryValue* ExtensionPrefs::CopyCurrentExtensions() {
 }
 
 bool ExtensionPrefs::ReadBooleanFromPref(
-    DictionaryValue* ext, const std::wstring& pref_key) {
+    DictionaryValue* ext, const std::string& pref_key) {
   if (!ext->HasKey(pref_key)) return false;
   bool bool_value = false;
   if (!ext->GetBoolean(pref_key, &bool_value)) {
@@ -219,7 +220,7 @@ bool ExtensionPrefs::ReadBooleanFromPref(
 }
 
 bool ExtensionPrefs::ReadExtensionPrefBoolean(
-    const std::string& extension_id, const std::wstring& pref_key) {
+    const std::string& extension_id, const std::string& pref_key) {
   const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
   if (!extensions)
     return false;
@@ -574,15 +575,15 @@ FilePath ExtensionPrefs::GetExtensionPath(const std::string& extension_id) {
   if (!dict || dict->empty())
     return FilePath();
 
-  std::wstring path;
-  if (!dict->GetString(ASCIIToWide(extension_id) + L"." + kPrefPath, &path))
+  std::string path;
+  if (!dict->GetString(extension_id + "." + kPrefPath, &path))
     return FilePath();
 
-  return install_directory_.Append(FilePath::FromWStringHack(path));
+  return install_directory_.Append(FilePath::FromWStringHack(UTF8ToWide(path)));
 }
 
 void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
-                                         const std::wstring& key,
+                                         const std::string& key,
                                          Value* data_value) {
   if (!Extension::IdIsValid(extension_id)) {
     NOTREACHED() << "Invalid extension_id " << extension_id;
@@ -593,10 +594,9 @@ void ExtensionPrefs::UpdateExtensionPref(const std::string& extension_id,
 }
 
 void ExtensionPrefs::DeleteExtensionPrefs(const std::string& extension_id) {
-  std::wstring id = ASCIIToWide(extension_id);
   DictionaryValue* dict = prefs_->GetMutableDictionary(kExtensionsPref);
-  if (dict->HasKey(id)) {
-    dict->Remove(id, NULL);
+  if (dict->HasKey(extension_id)) {
+    dict->Remove(extension_id, NULL);
     prefs_->ScheduleSavePersistentPrefs();
   }
 }
@@ -606,11 +606,10 @@ DictionaryValue* ExtensionPrefs::GetOrCreateExtensionPref(
   DCHECK(Extension::IdIsValid(extension_id));
   DictionaryValue* dict = prefs_->GetMutableDictionary(kExtensionsPref);
   DictionaryValue* extension = NULL;
-  std::wstring id = ASCIIToWide(extension_id);
-  if (!dict->GetDictionary(id, &extension)) {
+  if (!dict->GetDictionary(extension_id, &extension)) {
     // Extension pref does not exist, create it.
     extension = new DictionaryValue();
-    dict->Set(id, extension);
+    dict->Set(extension_id, extension);
   }
   return extension;
 }
@@ -621,8 +620,7 @@ DictionaryValue* ExtensionPrefs::GetExtensionPref(
   if (!dict)
     return NULL;
   DictionaryValue* extension = NULL;
-  std::wstring id = ASCIIToWide(extension_id);
-  dict->GetDictionary(id, &extension);
+  dict->GetDictionary(extension_id, &extension);
   return extension;
 }
 

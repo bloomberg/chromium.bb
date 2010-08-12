@@ -323,8 +323,8 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionDefaultTitleMsgs) {
   DictionaryValue manifest;
   manifest.SetString(keys::kName, "__MSG_name__");
   manifest.SetString(keys::kDescription, "__MSG_description__");
-  std::wstring action_title(keys::kBrowserAction);
-  action_title.append(L".");
+  std::string action_title(keys::kBrowserAction);
+  action_title.append(".");
   action_title.append(keys::kPageActionDefaultTitle);
   manifest.SetString(action_title, "__MSG_title__");
 
