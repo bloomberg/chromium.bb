@@ -26,8 +26,7 @@ const char kServicesCustomizationManifestUrl[] =
 
 // Name of local state option that tracks if services customization has been
 // applied.
-const wchar_t kServicesCustomizationAppliedPref[] =
-    L"ServicesCustomizationApplied";
+const char kServicesCustomizationAppliedPref[] = "ServicesCustomizationApplied";
 
 // Maximum number of retries to fetch file if network is not available.
 const int kMaxFetchRetries = 3;
