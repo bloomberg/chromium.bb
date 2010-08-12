@@ -84,9 +84,10 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
     prefs->RegisterIntegerPref(kMozcIntegerPrefs[i].pref_name,
                                kMozcIntegerPrefs[i].default_pref_value);
   }
-  prefs->RegisterIntegerPref(
-      kXkbModifierMultipleChoicePrefs.pref_name,
-      kXkbModifierMultipleChoicePrefs.default_pref_value);
+  prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapSearchKeyTo, kSearchKey);
+  prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapControlKeyTo,
+                             kLeftControlKey);
+  prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapAltKeyTo, kLeftAltKey);
   prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled, true);
   prefs->RegisterIntegerPref(kXkbAutoRepeatDelayPref.pref_name,
                              kXkbAutoRepeatDelayPref.default_pref_value);
@@ -146,8 +147,12 @@ void Preferences::Init(PrefService* prefs) {
     language_mozc_integer_prefs_[i].Init(
         kMozcIntegerPrefs[i].pref_name, prefs, this);
   }
-  language_xkb_modifier_remap_.Init(
-      kXkbModifierMultipleChoicePrefs.pref_name, prefs, this);
+  language_xkb_remap_search_key_to_.Init(
+      prefs::kLanguageXkbRemapSearchKeyTo, prefs, this);
+  language_xkb_remap_control_key_to_.Init(
+      prefs::kLanguageXkbRemapControlKeyTo, prefs, this);
+  language_xkb_remap_alt_key_to_.Init(
+      prefs::kLanguageXkbRemapAltKeyTo, prefs, this);
   language_xkb_auto_repeat_enabled_.Init(
       prefs::kLanguageXkbAutoRepeatEnabled, prefs, this);
   language_xkb_auto_repeat_delay_pref_.Init(
@@ -318,31 +323,10 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
                                language_mozc_integer_prefs_[i].GetValue());
     }
   }
-  if (!pref_name || *pref_name == kXkbModifierMultipleChoicePrefs.pref_name) {
-    chromeos::ModifierMap modifier_map;
-    const int remap_type = language_xkb_modifier_remap_.GetValue();
-    switch (remap_type) {
-      default:
-        LOG(ERROR) << "Unknown XKB remapping type: " << remap_type;
-        /* fall through */
-      case kNoRemap:
-        modifier_map.push_back(ModifierKeyPair(kSearchKey, kSearchKey));
-        modifier_map.push_back(
-            ModifierKeyPair(kLeftControlKey, kLeftControlKey));
-        modifier_map.push_back(ModifierKeyPair(kLeftAltKey, kLeftAltKey));
-        break;
-      case kSwapCtrlAndAlt:
-        modifier_map.push_back(ModifierKeyPair(kSearchKey, kSearchKey));
-        modifier_map.push_back(ModifierKeyPair(kLeftControlKey, kLeftAltKey));
-        modifier_map.push_back(ModifierKeyPair(kLeftAltKey, kLeftControlKey));
-        break;
-      case kSwapSearchAndCtrl:
-        modifier_map.push_back(ModifierKeyPair(kSearchKey, kLeftControlKey));
-        modifier_map.push_back(ModifierKeyPair(kLeftControlKey, kSearchKey));
-        modifier_map.push_back(ModifierKeyPair(kLeftAltKey, kLeftAltKey));
-        break;
-    }
-    CrosLibrary::Get()->GetKeyboardLibrary()->RemapModifierKeys(modifier_map);
+  if (!pref_name || (*pref_name == prefs::kLanguageXkbRemapSearchKeyTo ||
+                     *pref_name == prefs::kLanguageXkbRemapControlKeyTo ||
+                     *pref_name == prefs::kLanguageXkbRemapAltKeyTo)) {
+    UpdateModifierKeyMapping();
   }
   if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
     const bool enabled = language_xkb_auto_repeat_enabled_.GetValue();
@@ -409,6 +393,27 @@ void Preferences::SetLanguageConfigStringListAsCSV(const char* section,
   // We should call the cros API even when |value| is empty, to disable default
   // config.
   SetLanguageConfigStringList(section, name, split_values);
+}
+
+void Preferences::UpdateModifierKeyMapping() {
+  const int search_remap = language_xkb_remap_search_key_to_.GetValue();
+  const int control_remap = language_xkb_remap_control_key_to_.GetValue();
+  const int alt_remap = language_xkb_remap_alt_key_to_.GetValue();
+  if ((search_remap < kNumModifierKeys) && (search_remap >= 0) &&
+      (control_remap < kNumModifierKeys) && (control_remap >= 0) &&
+      (alt_remap < kNumModifierKeys) && (alt_remap >= 0)) {
+    chromeos::ModifierMap modifier_map;
+    modifier_map.push_back(
+        ModifierKeyPair(kSearchKey, ModifierKey(search_remap)));
+    modifier_map.push_back(
+        ModifierKeyPair(kLeftControlKey, ModifierKey(control_remap)));
+    modifier_map.push_back(
+        ModifierKeyPair(kLeftAltKey, ModifierKey(alt_remap)));
+    CrosLibrary::Get()->GetKeyboardLibrary()->RemapModifierKeys(modifier_map);
+  } else {
+    LOG(ERROR) << "Failed to remap modifier keys. Unexpected value(s): "
+               << search_remap << ", " << control_remap << ", " << alt_remap;
+  }
 }
 
 void Preferences::UpdateAutoRepeatRate() {

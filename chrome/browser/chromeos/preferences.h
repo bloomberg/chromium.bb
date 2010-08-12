@@ -75,6 +75,9 @@ class Preferences : public NotificationObserver {
                                         const char* name,
                                         const std::string& value);
 
+  // Updates the mapping of modifier keys following current prefs values.
+  void UpdateModifierKeyMapping();
+
   // Updates the initial key repeat delay and key repeat interval following
   // current prefs values. We set the delay and interval at once since an
   // underlying XKB API requires it.
@@ -105,7 +108,9 @@ class Preferences : public NotificationObserver {
   StringPrefMember language_mozc_multiple_choice_prefs_[
       kNumMozcMultipleChoicePrefs];
   IntegerPrefMember language_mozc_integer_prefs_[kNumMozcIntegerPrefs];
-  IntegerPrefMember language_xkb_modifier_remap_;
+  IntegerPrefMember language_xkb_remap_search_key_to_;
+  IntegerPrefMember language_xkb_remap_control_key_to_;
+  IntegerPrefMember language_xkb_remap_alt_key_to_;
   BooleanPrefMember language_xkb_auto_repeat_enabled_;
   IntegerPrefMember language_xkb_auto_repeat_delay_pref_;
   IntegerPrefMember language_xkb_auto_repeat_interval_pref_;

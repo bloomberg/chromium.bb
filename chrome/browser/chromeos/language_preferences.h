@@ -94,17 +94,18 @@ const LanguageIntegerRangePreference kChewingIntegerPrefs[] = {
 };
 const size_t kNumChewingIntegerPrefs = arraysize(kChewingIntegerPrefs);
 
-// Temporary solution for crosbug.com/2636. We'll implement a complete dialog
-// using DOMUI later.
+// TODO(yusukes): Temporary solution for View version of modifier key remapper.
+// Remove RemapType and kXkbModifierMultipleChoicePrefs when we finish to
+// migrate to DOMUI.
 enum RemapType {
   kNoRemap = 0,
   kSwapCtrlAndAlt = 1,
   kSwapSearchAndCtrl = 2,
 };
 const LanguageMultipleChoicePreference<int> kXkbModifierMultipleChoicePrefs = {
-  prefs::kLanguageXkbModifierRemap,
+  NULL,  // don't use this field since the config is associated with 3 prefs.
   kNoRemap,
-  "dummy",  // does not use the ibus configuration service.
+  NULL,  // does not use the ibus configuration service.
   {{ kNoRemap, IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_NO_REMAP },
    { kSwapCtrlAndAlt,
      IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_REMAP_CTRL_ALT },

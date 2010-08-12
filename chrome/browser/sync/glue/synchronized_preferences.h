@@ -176,8 +176,9 @@ static const char* kSynchronizedPreferences[] = {
   prefs::kLanguageXkbAutoRepeatDelay,
   prefs::kLanguageXkbAutoRepeatEnabled,
   prefs::kLanguageXkbAutoRepeatInterval,
-  // TODO(mazda): Remove kLanguageXkbModifierRemap when issue5152 gets fixed.
-  prefs::kLanguageXkbModifierRemap,
+  prefs::kLanguageXkbRemapAltKeyTo,
+  prefs::kLanguageXkbRemapControlKeyTo,
+  prefs::kLanguageXkbRemapSearchKeyTo,
 #endif
 };
 

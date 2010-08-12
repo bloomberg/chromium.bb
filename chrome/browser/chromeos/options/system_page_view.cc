@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/cros/system_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/options/language_config_util.h"
@@ -381,7 +382,9 @@ class LanguageSection : public SettingsPageSection,
   // Overridden from views::SliderListener.
   virtual void SliderValueChanged(views::Slider* sender);
 
-  IntegerPrefMember xkb_modifier_pref_;
+  IntegerPrefMember xkb_remap_search_key_pref_;
+  IntegerPrefMember xkb_remap_control_key_pref_;
+  IntegerPrefMember xkb_remap_alt_key_pref_;
   views::Combobox* xkb_modifier_combobox_;
   chromeos::LanguageComboboxModel<int> xkb_modifier_combobox_model_;
 
@@ -403,8 +406,12 @@ LanguageSection::LanguageSection(Profile* profile)
       xkb_modifier_combobox_model_(&kXkbModifierMultipleChoicePrefs),
       xkb_auto_repeat_delay_slider_(NULL),
       xkb_auto_repeat_interval_slider_(NULL) {
-  xkb_modifier_pref_.Init(
-      kXkbModifierMultipleChoicePrefs.pref_name, profile->GetPrefs(), this);
+  xkb_remap_search_key_pref_.Init(
+      prefs::kLanguageXkbRemapSearchKeyTo, profile->GetPrefs(), this);
+  xkb_remap_control_key_pref_.Init(
+      prefs::kLanguageXkbRemapControlKeyTo, profile->GetPrefs(), this);
+  xkb_remap_alt_key_pref_.Init(
+      prefs::kLanguageXkbRemapAltKeyTo, profile->GetPrefs(), this);
   xkb_auto_repeat_pref_.Init(
       prefs::kLanguageXkbAutoRepeatEnabled, profile->GetPrefs(), this);
   xkb_auto_repeat_delay_pref_.Init(
@@ -498,7 +505,26 @@ void LanguageSection::ItemChanged(views::Combobox* sender,
                                   int prev_index,
                                   int new_index) {
   LOG(INFO) << "Changing XKB modofier pref to " << new_index;
-  xkb_modifier_pref_.SetValue(new_index);
+  switch (new_index) {
+    default:
+      LOG(ERROR) << "Unexpected mapping: " << new_index;
+      /* fall through */
+    case kNoRemap:
+      xkb_remap_search_key_pref_.SetValue(kSearchKey);
+      xkb_remap_control_key_pref_.SetValue(kLeftControlKey);
+      xkb_remap_alt_key_pref_.SetValue(kLeftAltKey);
+      break;
+    case kSwapCtrlAndAlt:
+      xkb_remap_search_key_pref_.SetValue(kSearchKey);
+      xkb_remap_control_key_pref_.SetValue(kLeftAltKey);
+      xkb_remap_alt_key_pref_.SetValue(kLeftControlKey);
+      break;
+    case kSwapSearchAndCtrl:
+      xkb_remap_search_key_pref_.SetValue(kLeftControlKey);
+      xkb_remap_control_key_pref_.SetValue(kSearchKey);
+      xkb_remap_alt_key_pref_.SetValue(kLeftAltKey);
+      break;
+  }
 }
 
 void LanguageSection::SliderValueChanged(views::Slider* sender) {
@@ -510,10 +536,27 @@ void LanguageSection::SliderValueChanged(views::Slider* sender) {
 }
 
 void LanguageSection::NotifyPrefChanged(const std::string* pref_name) {
-  if (!pref_name || *pref_name == kXkbModifierMultipleChoicePrefs.pref_name) {
-    const int id = xkb_modifier_pref_.GetValue();
-    if (id >= 0) {
-      xkb_modifier_combobox_->SetSelectedItem(id);
+  if (!pref_name || (*pref_name == prefs::kLanguageXkbRemapSearchKeyTo ||
+                     *pref_name == prefs::kLanguageXkbRemapControlKeyTo ||
+                     *pref_name == prefs::kLanguageXkbRemapAltKeyTo)) {
+    const int search_remap = xkb_remap_search_key_pref_.GetValue();
+    const int control_remap = xkb_remap_control_key_pref_.GetValue();
+    const int alt_remap = xkb_remap_alt_key_pref_.GetValue();
+    if ((search_remap == kSearchKey) &&
+        (control_remap == kLeftControlKey) &&
+        (alt_remap == kLeftAltKey)) {
+      xkb_modifier_combobox_->SetSelectedItem(kNoRemap);
+    } else if ((search_remap == kLeftControlKey) &&
+               (control_remap == kSearchKey) &&
+               (alt_remap == kLeftAltKey)) {
+      xkb_modifier_combobox_->SetSelectedItem(kSwapSearchAndCtrl);
+    } else if ((search_remap == kSearchKey) &&
+               (control_remap == kLeftAltKey) &&
+               (alt_remap == kLeftControlKey)) {
+      xkb_modifier_combobox_->SetSelectedItem(kSwapCtrlAndAlt);
+    } else {
+      LOG(ERROR) << "Unexpected mapping. The prefs are updated by DOMUI?";
+      xkb_modifier_combobox_->SetSelectedItem(kNoRemap);
     }
   }
   if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {

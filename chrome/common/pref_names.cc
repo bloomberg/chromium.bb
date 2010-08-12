@@ -328,13 +328,15 @@ const char kLanguageMozcUseDictionarySuggest[] =
 const char kLanguageMozcSuggestionsSize[] =
     "settings.language.mozc_suggestions_size";
 
-// A integer pref which determines how we remap the XKB modifier keys.
-//   0: Do not remap.
-//   1: Swap Left Control and Left Alt.
-//   2: Swap Left Win (i.e. Search) and Left Control.
-// TODO(yusukes): Delete this pref when the final configration dialog (using
-// DOM UI) is implemented. See crosbug.com/2636.
-const char kLanguageXkbModifierRemap[] = "settings.language.xkb_modifier_remap";
+// A integer prefs which determine how we remap modifier keys (e.g. swap Alt-L
+// and Control-L.) Possible values for these prefs are 0-4. See ModifierKey enum
+// in src/third_party/cros/chrome_keyboard.h for details.
+const char kLanguageXkbRemapSearchKeyTo[] =
+    "settings.language.xkb_remap_search_key_to";
+const char kLanguageXkbRemapControlKeyTo[] =
+    "settings.language.xkb_remap_control_key_to";
+const char kLanguageXkbRemapAltKeyTo[] =
+    "settings.language.xkb_remap_alt_key_to";
 
 // A boolean pref which determines whether key repeat is enabled.
 const char kLanguageXkbAutoRepeatEnabled[] =
