@@ -115,7 +115,8 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
      'ncdecode_onebyte.c',
      'ncdecode_OF.c',
      'ncdecode_sse.c',
-     'ncdecodeX87.c'
+     'ncdecodeX87.c',
+     'force_cpp.cc'
     ],
     EXTRA_LIBS=['utils',
                 'gio',
@@ -198,7 +199,9 @@ if env['TARGET_SUBARCH'] == '32':
 
 # ======================================================================
 ncdis = env.ComponentProgram('ncdis',
-                             ['ncdis.c'],
+                             ['ncdis.c',
+                              'force_cpp.cc'
+                              ],
                              EXTRA_LIBS=['ncdis_util',
                                          'utils',
                                          'ncvalidate',
@@ -337,7 +340,9 @@ env.AddNodeToTestSuite(ncdis_internal_test,
 # ======================================================================
 # Segment register validator.
 ncval = env.ComponentProgram('ncval',
-                             ['ncval.c'],
+                             ['ncval.c',
+                              'force_cpp.cc'
+                              ],
                              EXTRA_LIBS=['ncdis_util',
                                          'ncvalidate_sfi',
                                          'ncvalidate',

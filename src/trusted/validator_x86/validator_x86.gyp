@@ -380,6 +380,7 @@
                   'ncdecode_OF.c',
                   'ncdecode_sse.c',
                   'ncdecodeX87.c',
+                  'force_cpp.cc'
       ],
       'cflags!': [
         '-Wextra',
@@ -474,7 +475,8 @@
       'target_name': 'ncdis',
       'type': 'executable',
       'sources': [
-        'ncdis.c'
+        'ncdis.c',
+        'force_cpp.cc'
       ],
       'dependencies': [
         'ncdis_util',
