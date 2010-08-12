@@ -589,8 +589,10 @@ void SafeBrowsingProtocolManager::OnChunkInserted() {
 
 void SafeBrowsingProtocolManager::ReportMalware(const GURL& malware_url,
                                                 const GURL& page_url,
-                                                const GURL& referrer_url) {
-  GURL report_url = MalwareReportUrl(malware_url, page_url, referrer_url);
+                                                const GURL& referrer_url,
+                                                bool is_subresource) {
+  GURL report_url = MalwareReportUrl(malware_url, page_url, referrer_url,
+                                     is_subresource);
   URLFetcher* report = new URLFetcher(report_url, URLFetcher::GET, this);
   report->set_load_flags(net::LOAD_DISABLE_CACHE);
   report->set_request_context(request_context_getter_);
@@ -680,13 +682,14 @@ GURL SafeBrowsingProtocolManager::MacKeyUrl() const {
 
 GURL SafeBrowsingProtocolManager::MalwareReportUrl(
     const GURL& malware_url, const GURL& page_url,
-    const GURL& referrer_url) const {
+    const GURL& referrer_url, bool is_subresource) const {
   std::string url = ComposeUrl(info_url_prefix_, "report", client_name_,
                                version_, additional_query_);
-  return GURL(StringPrintf("%s&evts=malblhit&evtd=%s&evtr=%s&evhr=%s",
+  return GURL(StringPrintf("%s&evts=malblhit&evtd=%s&evtr=%s&evhr=%s&evtb=%d",
       url.c_str(), EscapeQueryParamValue(malware_url.spec(), true).c_str(),
       EscapeQueryParamValue(page_url.spec(), true).c_str(),
-      EscapeQueryParamValue(referrer_url.spec(), true).c_str()));
+      EscapeQueryParamValue(referrer_url.spec(), true).c_str(),
+      is_subresource));
 }
 
 GURL SafeBrowsingProtocolManager::NextChunkUrl(const std::string& url) const {

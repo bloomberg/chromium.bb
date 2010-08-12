@@ -750,20 +750,24 @@ void SafeBrowsingService::DoDisplayBlockingPage(
   const MetricsService* metrics = g_browser_process->metrics_service();
   DCHECK(metrics);
   if (metrics && metrics->reporting_active() &&
-      resource.resource_type != ResourceType::MAIN_FRAME &&
       resource.threat_type == SafeBrowsingService::URL_MALWARE) {
     GURL page_url = wc->GetURL();
     GURL referrer_url;
     NavigationEntry* entry = wc->controller().GetActiveEntry();
     if (entry)
       referrer_url = entry->referrer();
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &SafeBrowsingService::ReportMalware,
-                          resource.url,
-                          page_url,
-                          referrer_url));
+
+    if (resource.url != page_url || !referrer_url.is_empty()) {
+      bool is_subresource = resource.resource_type != ResourceType::MAIN_FRAME;
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(this,
+                            &SafeBrowsingService::ReportMalware,
+                            resource.url,
+                            page_url,
+                            referrer_url,
+                            is_subresource));
+    }
   }
 
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
@@ -771,7 +775,8 @@ void SafeBrowsingService::DoDisplayBlockingPage(
 
 void SafeBrowsingService::ReportMalware(const GURL& malware_url,
                                         const GURL& page_url,
-                                        const GURL& referrer_url) {
+                                        const GURL& referrer_url,
+                                        bool is_subresource) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   if (!enabled_)
@@ -779,7 +784,8 @@ void SafeBrowsingService::ReportMalware(const GURL& malware_url,
 
   if (DatabaseAvailable()) {
     // Check if 'page_url' is already blacklisted (exists in our cache). Only
-    // report if it's not there.
+    // report if it's not there. This can happen if the user has ignored
+    // the warning for page_url and is now hitting a warning for a resource.
     std::string list;
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> full_hits;
@@ -789,5 +795,6 @@ void SafeBrowsingService::ReportMalware(const GURL& malware_url,
       return;
   }
 
-  protocol_manager_->ReportMalware(malware_url, page_url, referrer_url);
+  protocol_manager_->ReportMalware(malware_url, page_url, referrer_url,
+                                   is_subresource);
 }

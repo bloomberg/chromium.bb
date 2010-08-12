@@ -266,7 +266,8 @@ class SafeBrowsingService
   // service.
   void ReportMalware(const GURL& malware_url,
                      const GURL& page_url,
-                     const GURL& referrer_url);
+                     const GURL& referrer_url,
+                     bool is_subresource);
 
   CurrentChecks checks_;
 

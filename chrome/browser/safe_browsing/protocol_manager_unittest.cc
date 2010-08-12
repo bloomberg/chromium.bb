@@ -204,16 +204,18 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestMalwareReportUrl) {
   EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2&evts=malblhit&evtd=http%3A%2F%2Fmalware.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-            "url.com%2F",
-            pm.MalwareReportUrl(malware_url, page_url, referrer_url).spec());
+            "url.com%2F&evtb=1",
+            pm.MalwareReportUrl(malware_url, page_url, referrer_url,
+                                true).spec());
 
   pm.set_additional_query("&additional_query");
   EXPECT_EQ("http://info.prefix.com/foo/report?client=unittest&appver=1.0&"
             "pver=2.2&additional_query&evts=malblhit&"
             "evtd=http%3A%2F%2Fmalware.url.com%2F&"
             "evtr=http%3A%2F%2Fpage.url.com%2F&evhr=http%3A%2F%2Freferrer."
-            "url.com%2F",
-            pm.MalwareReportUrl(malware_url, page_url, referrer_url).spec());
+            "url.com%2F&evtb=0",
+            pm.MalwareReportUrl(malware_url, page_url, referrer_url,
+                                false).spec());
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestMacKeyUrl) {

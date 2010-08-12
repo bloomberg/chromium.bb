@@ -111,7 +111,8 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   // Reports a malware resource to the SafeBrowsing service.
   void ReportMalware(const GURL& malware_url,
                      const GURL& page_url,
-                     const GURL& referrer_url);
+                     const GURL& referrer_url,
+                     bool is_subresource);
 
   // Setter for additional_query_. To make sure the additional_query_ won't
   // be changed in the middle of an update, caller (e.g.: SafeBrowsingService)
@@ -154,7 +155,7 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   GURL MacKeyUrl() const;
   // Generates URL for reporting malware pages.
   GURL MalwareReportUrl(const GURL& malware_url, const GURL& page_url,
-                               const GURL& referrer_url) const;
+                        const GURL& referrer_url, bool is_subresource) const;
   // Composes a ChunkUrl based on input string.
   GURL NextChunkUrl(const std::string& input) const;
 
