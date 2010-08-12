@@ -5,26 +5,86 @@
 #include "chrome/browser/net/gaia/token_service.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/notification_service.h"
 
-void TokenService::Initialize(
-    const char* const source,
-    URLRequestContextGetter* getter,
-    const GaiaAuthConsumer::ClientLoginResult& credentials) {
-
-  credentials_ = credentials;
-  source_ = std::string(source);
-  sync_token_fetcher_.reset(new GaiaAuthenticator2(this, source_, getter));
-  talk_token_fetcher_.reset(new GaiaAuthenticator2(this, source_, getter));
+// Unfortunately kNumServices must be defined in the .h.
+const char* TokenService::kServices[] = {GaiaConstants::kSyncService,
+                                         GaiaConstants::kTalkService};
+TokenService::TokenService()
+    : token_loading_query_(NULL) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 }
 
-bool TokenService::AreCredentialsValid() const {
+TokenService::~TokenService() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  ResetCredentialsInMemory();
+}
+
+void TokenService::Initialize(const char* const source,
+                              Profile* profile) {
+
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  getter_ = profile->GetRequestContext();
+  // Since the user can create a bookmark in incognito, sync may be running.
+  // Thus we have to go for explicit access.
+  web_data_service_ = profile->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  source_ = std::string(source);
+}
+
+void TokenService::ResetCredentialsInMemory() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // Terminate any running fetchers. Callbacks will not return.
+  for (int i = 0; i < kNumServices; i++) {
+    fetchers_[i].reset();
+  }
+
+  // Cancel pending loads. Callbacks will not return.
+  if (token_loading_query_) {
+    web_data_service_->CancelRequest(token_loading_query_);
+    token_loading_query_ = NULL;
+  }
+
+  token_map_.clear();
+  credentials_ = GaiaAuthConsumer::ClientLoginResult();
+}
+
+void TokenService::UpdateCredentials(
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  credentials_ = credentials;
+
+  // Cancels any currently running requests.
+  for (int i = 0; i < kNumServices; i++) {
+    fetchers_[i].reset(new GaiaAuthenticator2(this, source_, getter_));
+  }
+}
+
+void TokenService::LoadTokensFromDB() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  token_loading_query_ = web_data_service_->GetAllTokens(this);
+}
+
+void TokenService::SaveAuthTokenToDB(const std::string& service,
+                                     const std::string& auth_token) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  web_data_service_->SetTokenForService(service, auth_token);
+}
+
+void TokenService::EraseTokensFromDB() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  web_data_service_->RemoveAllTokens();
+}
+
+const bool TokenService::AreCredentialsValid() const {
   return !credentials_.lsid.empty() && !credentials_.sid.empty();
 }
 
-bool TokenService::HasLsid() const {
+const bool TokenService::HasLsid() const {
   return !credentials_.lsid.empty();
 }
 
@@ -33,18 +93,18 @@ const std::string& TokenService::GetLsid() const {
 }
 
 void TokenService::StartFetchingTokens() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(AreCredentialsValid());
-  sync_token_fetcher_->StartIssueAuthToken(credentials_.sid,
-                                           credentials_.lsid,
-                                           GaiaConstants::kSyncService);
-  talk_token_fetcher_->StartIssueAuthToken(credentials_.sid,
-                                           credentials_.lsid,
-                                           GaiaConstants::kTalkService);
+  for (int i = 0; i < kNumServices; i++) {
+    fetchers_[i]->StartIssueAuthToken(credentials_.sid,
+                                      credentials_.lsid,
+                                      kServices[i]);
+  }
 }
 
 // Services dependent on a token will check if a token is available.
 // If it isn't, they'll go to sleep until they get a token event.
-bool TokenService::HasTokenForService(const char* const service) const {
+const bool TokenService::HasTokenForService(const char* const service) const {
   return token_map_.count(service) > 0;
 }
 
@@ -52,28 +112,96 @@ const std::string& TokenService::GetTokenForService(
     const char* const service) const {
 
   if (token_map_.count(service) > 0) {
-    // map[key] is not const
+    // Note map[key] is not const.
     return (*token_map_.find(service)).second;
   }
   return EmptyString();
 }
 
-void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
-                                           const std::string& auth_token) {
-  LOG(INFO) << "Got an authorization token for " << service;
-  token_map_[service] = auth_token;
+// Note that this can fire twice or more for any given service.
+// It can fire once from the DB read, and then once from the initial
+// fetcher. Future fetches can cause more notification firings.
+// The DB read will not however fire a notification if the fetcher
+// returned first. So it's always safe to use the latest notification.
+void TokenService::FireTokenAvailableNotification(
+    const std::string& service,
+    const std::string& auth_token) {
+
   TokenAvailableDetails details(service, auth_token);
   NotificationService::current()->Notify(
       NotificationType::TOKEN_AVAILABLE,
       Source<TokenService>(this),
       Details<const TokenAvailableDetails>(&details));
 }
-void TokenService::OnIssueAuthTokenFailure(const std::string& service,
-                                           const GaiaAuthError& error) {
-  LOG(WARNING) << "Auth token issuing failed for service:" << service;
+
+void TokenService::FireTokenRequestFailedNotification(
+    const std::string& service,
+    const GaiaAuthError& error) {
+
   TokenRequestFailedDetails details(service, error);
   NotificationService::current()->Notify(
       NotificationType::TOKEN_REQUEST_FAILED,
       Source<TokenService>(this),
       Details<const TokenRequestFailedDetails>(&details));
+}
+
+void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
+                                           const std::string& auth_token) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  LOG(INFO) << "Got an authorization token for " << service;
+  token_map_[service] = auth_token;
+  FireTokenAvailableNotification(service, auth_token);
+  SaveAuthTokenToDB(service, auth_token);
+}
+
+void TokenService::OnIssueAuthTokenFailure(const std::string& service,
+                                           const GaiaAuthError& error) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  LOG(WARNING) << "Auth token issuing failed for service:" << service;
+  FireTokenRequestFailedNotification(service, error);
+}
+
+void TokenService::OnWebDataServiceRequestDone(WebDataService::Handle h,
+                                               const WDTypedResult* result) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(token_loading_query_);
+  token_loading_query_ = NULL;
+
+  // If the fetch failed, there will be no result. In that case, we just don't
+  // load any tokens at all from the DB.
+  if (result) {
+    DCHECK(result->GetType() == TOKEN_RESULT);
+    const WDResult<std::map<std::string, std::string> > * token_result =
+        static_cast<const WDResult<std::map<std::string, std::string> > * > (
+            result);
+    LoadTokensIntoMemory(token_result->GetValue(), &token_map_);
+  }
+}
+
+// Load tokens from the db_token map into the in memory token map.
+void TokenService::LoadTokensIntoMemory(
+    const std::map<std::string, std::string>& db_tokens,
+    std::map<std::string, std::string>* in_memory_tokens) {
+
+  for (int i = 0; i < kNumServices; i++) {
+    // OnIssueAuthTokenSuccess should come from the same thread.
+    // If a token is already present in the map, it could only have
+    // come from a DB read or from IssueAuthToken. Since we should never
+    // fetch from the DB twice in a browser session, it must be from
+    // OnIssueAuthTokenSuccess, which is a live fetcher.
+    //
+    // Network fetched tokens take priority over DB tokens, so exclude tokens
+    // which have already been loaded by the fetcher.
+    if (!in_memory_tokens->count(kServices[i]) &&
+        db_tokens.count(kServices[i])) {
+      std::string db_token = db_tokens.find(kServices[i])->second;
+      if (!db_token.empty()) {
+        LOG(INFO) << "Loading " << kServices[i] << "token from DB:"
+            << db_token;
+        (*in_memory_tokens)[kServices[i]] = db_token;
+        FireTokenAvailableNotification(kServices[i], db_token);
+        // Failures are only for network errors.
+      }
+    }
+  }
 }

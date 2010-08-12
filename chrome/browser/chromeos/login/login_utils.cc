@@ -153,10 +153,15 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
       *(CommandLine::ForCurrentProcess()),
       logging::DELETE_OLD_LOG_FILE);
 
-  // Supply credentials for sync and others to use
-  profile->GetTokenService()->Initialize(GaiaConstants::kChromeOSSource,
-                                         profile->GetRequestContext(),
-                                         credentials);
+  // Supply credentials for sync and others to use. Load tokens from disk.
+  TokenService* token_service = profile->GetTokenService();
+  token_service->Initialize(GaiaConstants::kChromeOSSource,
+                            profile);
+  token_service->LoadTokensFromDB();
+  token_service->UpdateCredentials(credentials);
+  if (token_service->AreCredentialsValid()) {
+    token_service->StartFetchingTokens();
+  }
 
   // Take the credentials passed in and try to exchange them for
   // full-fledged Google authentication cookies.  This is

@@ -169,6 +169,15 @@ TestingProfile::TestingProfile(int count)
   file_util::CreateDirectory(path_);
 }
 
+TestingProfile::TestingProfile(const FilePath& path)
+    : start_time_(Time::Now()),
+      created_theme_provider_(false),
+      has_history_service_(false),
+      off_the_record_(false),
+      last_session_exited_cleanly_(true) {
+  path_ = path;
+}
+
 TestingProfile::~TestingProfile() {
   NotificationService::current()->Notify(
       NotificationType::PROFILE_DESTROYED,

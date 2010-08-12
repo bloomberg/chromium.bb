@@ -64,6 +64,7 @@ typedef enum {
   PASSWORD_IE7_RESULT,         // WDResult<IE7PasswordInfo>
 #endif
   WEB_APP_IMAGES,              // WDResult<WDAppImagesResult>
+  TOKEN_RESULT,                // WDResult<std::vector<std::string>>
   AUTOFILL_VALUE_RESULT,       // WDResult<std::vector<string16>>
   AUTOFILL_CHANGES,            // WDResult<std::vector<AutofillChange>>
   AUTOFILL_PROFILE_RESULT,     // WDResult<AutoFillProfile>
@@ -331,6 +332,22 @@ class WebDataService
 
   //////////////////////////////////////////////////////////////////////////////
   //
+  // Token Service
+  //
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Set a token to use for a specified service.
+  void SetTokenForService(const std::string& service,
+                          const std::string& token);
+
+  // Remove all tokens stored in the web database.
+  void RemoveAllTokens();
+
+  // Null on failure. Success is WDResult<std::vector<std::string> >
+  Handle GetAllTokens(WebDataServiceConsumer* consumer);
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
   // Password manager
   // NOTE: These methods are all deprecated; new clients should use
   // PasswordStore. These are only still here because Windows is (temporarily)
@@ -526,6 +543,17 @@ class WebDataService
   void SetWebAppHasAllImagesImpl(GenericRequest2<GURL, bool>* request);
   void RemoveWebAppImpl(GenericRequest<GURL>* request);
   void GetWebAppImagesImpl(GenericRequest<GURL>* request);
+
+  //////////////////////////////////////////////////////////////////////////////
+  //
+  // Token Service.
+  //
+  //////////////////////////////////////////////////////////////////////////////
+
+  void RemoveAllTokensImpl(GenericRequest<std::string>* request);
+  void SetTokenForServiceImpl(
+    GenericRequest2<std::string, std::string>* request);
+  void GetAllTokensImpl(GenericRequest<std::string>* request);
 
   //////////////////////////////////////////////////////////////////////////////
   //

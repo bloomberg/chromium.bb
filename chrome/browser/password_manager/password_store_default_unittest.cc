@@ -14,6 +14,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/signaling_task.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,17 +40,6 @@ class MockWebDataServiceConsumer : public WebDataServiceConsumer {
  public:
   MOCK_METHOD2(OnWebDataServiceRequestDone, void(WebDataService::Handle,
                                                  const WDTypedResult*));
-};
-
-class SignalingTask : public Task {
- public:
-  explicit SignalingTask(WaitableEvent* event) : event_(event) {
-  }
-  virtual void Run() {
-    event_->Signal();
-  }
- private:
-  WaitableEvent* event_;
 };
 
 class MockNotificationObserver : public NotificationObserver {
@@ -243,7 +233,8 @@ TEST_F(PasswordStoreDefaultTest, Migration) {
 
   // Initializing the PasswordStore should trigger a migration.
   scoped_refptr<PasswordStoreDefault> store(
-      new PasswordStoreDefault(login_db_.release(), profile_.get(), wds_.get()));
+      new PasswordStoreDefault(login_db_.release(),
+          profile_.get(), wds_.get()));
   store->Init();
 
   // Check that the migration preference has not been initialized;

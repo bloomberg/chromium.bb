@@ -204,8 +204,8 @@ TEST_F(ProfileSyncServiceStartupBootstrapTest, SKIP_MACOSX(StartFirstTime)) {
   result.sid = "sid";
   result.lsid = "lsid";
   profile_.GetTokenService()->Initialize("test",
-                                         profile_.GetRequestContext(),
-                                         result);
+                                         &profile_);
+  profile_.GetTokenService()->UpdateCredentials(result);
 
   // Will start sync even though setup hasn't been completed (since
   // setup is bypassed when bootstrapping is enabled).

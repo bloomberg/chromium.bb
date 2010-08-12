@@ -1148,6 +1148,66 @@ TEST_F(WebDatabaseTest, WebAppImages) {
   }
 }
 
+TEST_F(WebDatabaseTest, TokenServiceGetAllRemoveAll) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  std::map<std::string, std::string> out_map;
+  std::string service;
+  std::string service2;
+  service = "testservice";
+  service2 = "othertestservice";
+
+  EXPECT_TRUE(db.GetAllTokens(&out_map));
+  EXPECT_TRUE(out_map.empty());
+
+  // Check that get all tokens works
+  EXPECT_TRUE(db.SetTokenForService(service, "pepperoni"));
+  EXPECT_TRUE(db.SetTokenForService(service2, "steak"));
+  EXPECT_TRUE(db.GetAllTokens(&out_map));
+  EXPECT_EQ(out_map.find(service)->second, "pepperoni");
+  EXPECT_EQ(out_map.find(service2)->second, "steak");
+  out_map.clear();
+
+  // Purge
+  EXPECT_TRUE(db.RemoveAllTokens());
+  EXPECT_TRUE(db.GetAllTokens(&out_map));
+  EXPECT_TRUE(out_map.empty());
+
+  // Check that you can still add it back in
+  EXPECT_TRUE(db.SetTokenForService(service, "cheese"));
+  EXPECT_TRUE(db.GetAllTokens(&out_map));
+  EXPECT_EQ(out_map.find(service)->second, "cheese");
+}
+
+TEST_F(WebDatabaseTest, TokenServiceGetSet) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  std::map<std::string, std::string> out_map;
+  std::string service;
+  service = "testservice";
+
+  EXPECT_TRUE(db.GetAllTokens(&out_map));
+  EXPECT_TRUE(out_map.empty());
+
+  EXPECT_TRUE(db.SetTokenForService(service, "pepperoni"));
+  EXPECT_TRUE(db.GetAllTokens(&out_map));
+  EXPECT_EQ(out_map.find(service)->second, "pepperoni");
+  out_map.clear();
+
+  // try blanking it - won't remove it from the db though!
+  EXPECT_TRUE(db.SetTokenForService(service, ""));
+  EXPECT_TRUE(db.GetAllTokens(&out_map));
+  EXPECT_EQ(out_map.find(service)->second, "");
+  out_map.clear();
+
+  // try mutating it
+  EXPECT_TRUE(db.SetTokenForService(service, "ham"));
+  EXPECT_TRUE(db.GetAllTokens(&out_map));
+  EXPECT_EQ(out_map.find(service)->second, "ham");
+}
+
 TEST_F(WebDatabaseTest, AutoFillProfile) {
   WebDatabase db;
 

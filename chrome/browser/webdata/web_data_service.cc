@@ -190,6 +190,46 @@ WebDataService::Handle WebDataService::GetWebAppImages(
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+// Token Service
+//
+////////////////////////////////////////////////////////////////////////////////
+
+void WebDataService::SetTokenForService(const std::string& service,
+                                        const std::string& token) {
+  GenericRequest2<std::string, std::string>* request =
+      new GenericRequest2<std::string, std::string>(
+          this, GetNextRequestHandle(), NULL, service, token);
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this, &WebDataService::SetTokenForServiceImpl,
+                                 request));
+}
+
+void WebDataService::RemoveAllTokens() {
+  GenericRequest<std::string>* request =
+      new GenericRequest<std::string>(
+          this, GetNextRequestHandle(), NULL, std::string());
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::RemoveAllTokensImpl,
+                                 request));
+}
+
+// Null on failure. Success is WDResult<std::string>
+WebDataService::Handle WebDataService::GetAllTokens(
+    WebDataServiceConsumer* consumer) {
+
+  GenericRequest<std::string>* request =
+      new GenericRequest<std::string>(
+          this, GetNextRequestHandle(), consumer, std::string());
+  RegisterRequest(request);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &WebDataService::GetAllTokensImpl,
+                                 request));
+  return request->GetHandle();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
 // Password manager.
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -681,6 +721,49 @@ void WebDataService::GetWebAppImagesImpl(GenericRequest<GURL>* request) {
     db_->GetWebAppImages(request->GetArgument(), &result.images);
     request->SetResult(
         new WDResult<WDAppImagesResult>(WEB_APP_IMAGES, result));
+  }
+  request->RequestComplete();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// Token Service implementation.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+// argument std::string is unused
+void WebDataService::RemoveAllTokensImpl(
+    GenericRequest<std::string>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    if (db_->RemoveAllTokens()) {
+      ScheduleCommit();
+    }
+  }
+  request->RequestComplete();
+}
+
+void WebDataService::SetTokenForServiceImpl(
+    GenericRequest2<std::string, std::string>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    if (db_->SetTokenForService(request->GetArgument1(),
+                                request->GetArgument2())) {
+      ScheduleCommit();
+    }
+  }
+  request->RequestComplete();
+}
+
+// argument is unused
+void WebDataService::GetAllTokensImpl(
+    GenericRequest<std::string>* request) {
+  InitializeDatabaseIfNecessary();
+  if (db_ && !request->IsCancelled()) {
+    std::map<std::string, std::string> map;
+    db_->GetAllTokens(&map);
+    request->SetResult(
+        new WDResult<std::map<std::string, std::string> >(TOKEN_RESULT, map));
   }
   request->RequestComplete();
 }

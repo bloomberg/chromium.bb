@@ -45,6 +45,12 @@ class TestingProfile : public Profile {
   // time.
   explicit TestingProfile(int count);
 
+  // Creates a new profile specifying the target directory.
+  // Use this as a temporary solution for tests requiring a ScopedTempDir.
+  // This directory must already exist.
+  // TODO(chron): Use a ScopedTempDir. Remove constructor. BUG=51833
+  explicit TestingProfile(const FilePath& directory);
+
   virtual ~TestingProfile();
 
   // Creates the favicon service. Consequent calls would recreate the service.
