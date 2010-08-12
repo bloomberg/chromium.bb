@@ -51,7 +51,6 @@ HMODULE DllRedirector::GetFirstCFModule() {
     // TODO(amit): Remove this in future versions.
     if (reinterpret_cast<HMODULE>(DefWindowProc) == oldest_module) {
       WNDCLASSEX wnd_class = {0};
-      HMODULE oldest_module = NULL;
       HWND hwnd = CreateWindow(kBeaconWindowClassName, L"temp_window",
                                WS_POPUP, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
       DCHECK(IsWindow(hwnd));
