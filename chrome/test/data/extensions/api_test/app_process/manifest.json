@@ -2,8 +2,6 @@
   "name": "app_process",
   "version": "0.1",
   "description": "Tests that app URLs are grouped into the right process",
-  "background_page": "test.html",
-  "permissions": ["tabs"],
   "app": {
     "urls": [
       "http://localhost/files/extensions/api_test/app_process/path1",

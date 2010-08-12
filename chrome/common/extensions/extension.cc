@@ -71,6 +71,28 @@ static void ConvertHexadecimalToIDAlphabet(std::string* id) {
 const int kValidWebExtentSchemes =
     URLPattern::SCHEME_HTTP | URLPattern::SCHEME_HTTPS;
 
+// These keys are allowed by all crx files (apps, extensions, themes, etc).
+static const char* kBaseCrxKeys[] = {
+  keys::kCurrentLocale,
+  keys::kDefaultLocale,
+  keys::kDescription,
+  keys::kIcons,
+  keys::kName,
+  keys::kPublicKey,
+  keys::kSignature,
+  keys::kVersion,
+  keys::kUpdateURL
+};
+
+bool IsBaseCrxKey(const std::string& key) {
+  for (size_t i = 0; i < arraysize(kBaseCrxKeys); ++i) {
+    if (key == kBaseCrxKeys[i])
+      return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 const FilePath::CharType Extension::kManifestFilename[] =
@@ -79,19 +101,6 @@ const FilePath::CharType Extension::kLocaleFolder[] =
     FILE_PATH_LITERAL("_locales");
 const FilePath::CharType Extension::kMessagesFilename[] =
     FILE_PATH_LITERAL("messages.json");
-
-// A list of all the keys allowed by themes.
-static const char* kValidThemeKeys[] = {
-  keys::kCurrentLocale,
-  keys::kDefaultLocale,
-  keys::kDescription,
-  keys::kName,
-  keys::kPublicKey,
-  keys::kSignature,
-  keys::kTheme,
-  keys::kVersion,
-  keys::kUpdateURL
-};
 
 #if defined(OS_WIN)
 const char* Extension::kExtensionRegistryPath =
@@ -512,22 +521,9 @@ ExtensionAction* Extension::LoadExtensionActionHelper(
 }
 
 bool Extension::ContainsNonThemeKeys(const DictionaryValue& source) {
-  // Generate a map of allowable keys
-  static std::map<std::string, bool> theme_keys;
-  static bool theme_key_mapped = false;
-  if (!theme_key_mapped) {
-    for (size_t i = 0; i < arraysize(kValidThemeKeys); ++i) {
-      theme_keys[kValidThemeKeys[i]] = true;
-    }
-    theme_key_mapped = true;
-  }
-
-  // Go through all the root level keys and verify that they're in the map
-  // of keys allowable by themes. If they're not, then make a not of it for
-  // later.
-  for (DictionaryValue::key_iterator iter = source.begin_keys();
-       iter != source.end_keys(); ++iter) {
-    if (theme_keys.find(*iter) == theme_keys.end())
+  for (DictionaryValue::key_iterator key = source.begin_keys();
+       key != source.end_keys(); ++key) {
+    if (!IsBaseCrxKey(*key) && *key != keys::kTheme)
       return true;
   }
   return false;
@@ -717,6 +713,23 @@ bool Extension::LoadLaunchFullscreen(const DictionaryValue* manifest,
   if (!temp->GetAsBoolean(&launch_fullscreen_)) {
     *error = errors::kInvalidLaunchFullscreen;
     return false;
+  }
+
+  return true;
+}
+
+bool Extension::EnsureNotHybridApp(const DictionaryValue* manifest,
+                                   std::string* error) {
+  if (web_extent().is_empty())
+    return true;
+
+  for (DictionaryValue::key_iterator key = manifest->begin_keys();
+       key != manifest->end_keys(); ++key) {
+    if (!IsBaseCrxKey(*key) && *key != keys::kApp &&
+        *key != keys::kPermissions) {
+      *error = errors::kHostedAppsCannotIncludeExtensionFeatures;
+      return false;
+    }
   }
 
   return true;
@@ -1503,6 +1516,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       !LoadExtent(manifest_value_.get(), keys::kBrowseURLs, &browse_extent_,
                   errors::kInvalidBrowseURLs, errors::kInvalidBrowseURL,
                   error) ||
+      !EnsureNotHybridApp(manifest_value_.get(), error) ||
       !LoadLaunchURL(manifest_value_.get(), error) ||
       !LoadLaunchContainer(manifest_value_.get(), error) ||
       !LoadLaunchFullscreen(manifest_value_.get(), error)) {

@@ -58,50 +58,54 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(StartHTTPServer());
 
-  ASSERT_TRUE(RunExtensionTest("app_process")) << message_;
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
 
-  Extension* extension = GetSingleLoadedExtension();
-  ExtensionHost* host = browser()->profile()->GetExtensionProcessManager()->
-      GetBackgroundHostForExtension(extension);
-  ASSERT_TRUE(host);
+  // Open two tabs in the app, one outside it.
+  GURL base_url("http://localhost:1337/files/extensions/api_test/app_process/");
+  browser()->NewTab();
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
+  browser()->NewTab();
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
+  browser()->NewTab();
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path3/empty.html"));
 
   // The extension should have opened 3 new tabs. Including the original blank
   // tab, we now have 4 tabs. Two should be part of the extension app, and
   // grouped in the extension process.
   ASSERT_EQ(4, browser()->tab_count());
-  EXPECT_EQ(host->render_process_host(),
-            browser()->GetTabContentsAt(1)->render_view_host()->process());
-  EXPECT_EQ(host->render_process_host(),
+  RenderViewHost* host = browser()->GetTabContentsAt(1)->render_view_host();
+  EXPECT_TRUE(host->is_extension_process());
+
+  EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(2)->render_view_host()->process());
-  EXPECT_NE(host->render_process_host(),
+  EXPECT_NE(host->process(),
             browser()->GetTabContentsAt(3)->render_view_host()->process());
 
   // Now let's do the same using window.open. The same should happen.
-  GURL base_url("http://localhost:1337/files/extensions/api_test/app_process/");
-  WindowOpenHelper(browser(), host->render_view_host(),
+  WindowOpenHelper(browser(), host,
                    base_url.Resolve("path1/empty.html"));
-  WindowOpenHelper(browser(), host->render_view_host(),
+  WindowOpenHelper(browser(), host,
                    base_url.Resolve("path2/empty.html"));
-  WindowOpenHelper(browser(), host->render_view_host(),
+  WindowOpenHelper(browser(), host,
                    base_url.Resolve("path3/empty.html"));
 
   ASSERT_EQ(7, browser()->tab_count());
-  EXPECT_EQ(host->render_process_host(),
+  EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(4)->render_view_host()->process());
-  EXPECT_EQ(host->render_process_host(),
+  EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(5)->render_view_host()->process());
-  EXPECT_NE(host->render_process_host(),
+  EXPECT_NE(host->process(),
             browser()->GetTabContentsAt(6)->render_view_host()->process());
 
   // Now let's have these pages navigate, into or out of the extension web
   // extent. They should switch processes.
   const GURL& app_url(base_url.Resolve("path1/empty.html"));
   const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
-  NavigateTabHelper(browser()->GetTabContentsAt(1), non_app_url);
+  NavigateTabHelper(browser()->GetTabContentsAt(2), non_app_url);
   NavigateTabHelper(browser()->GetTabContentsAt(3), app_url);
-  EXPECT_NE(host->render_process_host(),
-            browser()->GetTabContentsAt(1)->render_view_host()->process());
-  EXPECT_EQ(host->render_process_host(),
+  EXPECT_NE(host->process(),
+            browser()->GetTabContentsAt(2)->render_view_host()->process());
+  EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(3)->render_view_host()->process());
 
   // Navigate the non-app tab into the browse extent. It should not enter the
@@ -109,10 +113,10 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   // Navigate the app tab into the browse extent. It should stay in the app
   // process.
   const GURL& browse_url(base_url.Resolve("path4/empty.html"));
-  NavigateTabHelper(browser()->GetTabContentsAt(1), browse_url);
+  NavigateTabHelper(browser()->GetTabContentsAt(2), browse_url);
   NavigateTabHelper(browser()->GetTabContentsAt(3), browse_url);
-  EXPECT_NE(host->render_process_host(),
-            browser()->GetTabContentsAt(1)->render_view_host()->process());
-  EXPECT_EQ(host->render_process_host(),
+  EXPECT_NE(host->process(),
+            browser()->GetTabContentsAt(2)->render_view_host()->process());
+  EXPECT_EQ(host->process(),
             browser()->GetTabContentsAt(3)->render_view_host()->process());
 }

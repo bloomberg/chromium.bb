@@ -323,6 +323,7 @@ class RenderViewHost : public RenderWidgetHost {
   int enabled_bindings() { return enabled_bindings_; }
 
   // See variable comment.
+  bool is_extension_process() { return is_extension_process_; }
   void set_is_extension_process(bool is_extension_process) {
     is_extension_process_ = is_extension_process;
   }
