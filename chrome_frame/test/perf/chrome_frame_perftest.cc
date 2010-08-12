@@ -1222,35 +1222,14 @@ class EtwPerfSession {
   EtwTraceController controller_;
 };
 
-class MonitorTracePair : public TracedEvents {
+// Base class for the tracing event helper classes.
+class MonitorTraceBase {
  public:
-  MonitorTracePair() : event_(NULL) {
-  }
-
-  void set_interesting_event(const char* event) {
-    event_ = event;
-  }
-
-  virtual void OnTraceEventBegin(EVENT_TRACE* event) {
-    if (IsMatchingEvent(event)) {
-      EXPECT_TRUE(start_.is_null());
-      start_ = base::Time::FromFileTime(
-        reinterpret_cast<FILETIME&>(event->Header.TimeStamp));
-    }
-  }
-
-  virtual void OnTraceEventEnd(EVENT_TRACE* event) {
-    if (IsMatchingEvent(event)) {
-      EXPECT_FALSE(start_.is_null());
-      EXPECT_TRUE(end_.is_null());
-      end_ = base::Time::FromFileTime(
-        reinterpret_cast<FILETIME&>(event->Header.TimeStamp));
-    }
-  }
-
-  bool IsMatchingEvent(EVENT_TRACE* event) {
-    return event->MofLength > event_.size() &&
-      (memcmp(event_.data(), event->MofData, event_.size() + 1) == 0);
+  static bool IsMatchingEvent(EVENT_TRACE* event,
+                              const base::StringPiece& event_to_compare) {
+    return event->MofLength > event_to_compare.size() &&
+      (memcmp(event_to_compare.data(), event->MofData,
+              event_to_compare.size() + 1) == 0);
   }
 
   bool is_valid() const {
@@ -1263,9 +1242,75 @@ class MonitorTracePair : public TracedEvents {
 
   base::Time start_;
   base::Time end_;
+};
+
+// This class measures the time between begin and end events of a particular
+// type.
+class MonitorTracePair : public MonitorTraceBase,
+                         public TracedEvents {
+ public:
+  MonitorTracePair() : event_(NULL) {
+  }
+
+  void set_interesting_event(const char* event) {
+    event_ = event;
+  }
+
+  virtual void OnTraceEventBegin(EVENT_TRACE* event) {
+    if (IsMatchingEvent(event, event_)) {
+      EXPECT_TRUE(start_.is_null());
+      start_ = base::Time::FromFileTime(
+          reinterpret_cast<FILETIME&>(event->Header.TimeStamp));
+    }
+  }
+
+  virtual void OnTraceEventEnd(EVENT_TRACE* event) {
+    if (IsMatchingEvent(event, event_)) {
+      EXPECT_FALSE(start_.is_null());
+      EXPECT_TRUE(end_.is_null());
+      end_ = base::Time::FromFileTime(
+        reinterpret_cast<FILETIME&>(event->Header.TimeStamp));
+    }
+  }
+
   base::StringPiece event_;
 };
 
+// This class measures the time between two events.
+class MonitorTraceBetweenEventPair : public MonitorTraceBase,
+                                     public TracedEvents {
+ public:
+  MonitorTraceBetweenEventPair() : event_end_(NULL),
+                                   event_start_(NULL) {
+  }
+
+  void set_start_event(const char* event) {
+    event_start_ = event;
+  }
+
+  void set_end_event(const char* event) {
+    event_end_ = event;
+  }
+
+  virtual void OnTraceEventBegin(EVENT_TRACE* event) {
+    if (IsMatchingEvent(event, event_start_)) {
+      EXPECT_TRUE(start_.is_null());
+      EXPECT_TRUE(end_.is_null());
+      start_ = base::Time::FromFileTime(
+        reinterpret_cast<FILETIME&>(event->Header.TimeStamp));
+    } else if (IsMatchingEvent(event, event_end_)) {
+      EXPECT_FALSE(start_.is_null());
+      EXPECT_TRUE(end_.is_null());
+      end_ = base::Time::FromFileTime(
+        reinterpret_cast<FILETIME&>(event->Header.TimeStamp));
+    }
+  }
+
+  virtual void OnTraceEventEnd(EVENT_TRACE* event) {}
+
+  base::StringPiece event_start_;
+  base::StringPiece event_end_;
+};
 
 // The very same as UITestBase::PrintResultXXXX without the need to
 // create an UITestBase instance.
@@ -1327,15 +1372,32 @@ bool RunSingleTestOutOfProc(const std::string& test_name) {
   return exit_code == 0;
 }
 
+template <class Monitor>
+void PrintPerfTestResults(const Monitor* monitor,
+                          int num_cycles,
+                          const char* result_name) {
+  std::string times;
+
+  for (int i = 0; i < num_cycles; ++i) {
+    ASSERT_TRUE(monitor[i].is_valid());
+    StringAppendF(&times, "%.2f,",
+                  monitor[i].duration().InMillisecondsF());
+  }
+
+  PrintResultList(result_name, "", "t", times, "ms", false);
+}
+
 TEST(TestAsPerfTest, MetaTag_createproxy) {
   const int kNumCycles = 10;
+
   MonitorTracePair create_proxy_monitor[kNumCycles];
-  MonitorTracePair browser_main_start_monitor[kNumCycles];
-  MonitorTracePair browser_main_loop_monitor[kNumCycles];
-  MonitorTracePair automation_provider_start_monitor[kNumCycles];
-  MonitorTracePair automation_provider_connect_monitor[kNumCycles];
-  MonitorTracePair automation_provider_createtab_monitor[kNumCycles];
+  MonitorTraceBetweenEventPair browser_main_start_monitor[kNumCycles];
+  MonitorTraceBetweenEventPair browser_main_loop_monitor[kNumCycles];
+  MonitorTraceBetweenEventPair automation_provider_start_monitor[kNumCycles];
+  MonitorTraceBetweenEventPair automation_provider_connect_monitor[kNumCycles];
   MonitorTracePair external_tab_navigate_monitor[kNumCycles];
+  MonitorTracePair pre_read_chrome_monitor[kNumCycles];
+  MonitorTraceBetweenEventPair renderer_main_monitor[kNumCycles];
 
   for (int i = 0; i < kNumCycles; ++i) {
     EtwPerfSession perf_session;
@@ -1345,15 +1407,29 @@ TEST(TestAsPerfTest, MetaTag_createproxy) {
     // Since we cannot have array of objects with a non-default constructor,
     // dedicated method is used to initialize watched event.
     create_proxy_monitor[i].set_interesting_event("chromeframe.createproxy");
-    browser_main_start_monitor[i].set_interesting_event("BrowserMain");
-    browser_main_loop_monitor[i].set_interesting_event(
-        "BrowserMain:MESSAGE_LOOP");
-    automation_provider_start_monitor[i].set_interesting_event(
+
+    browser_main_start_monitor[i].set_start_event("chromeframe.createproxy");
+    browser_main_start_monitor[i].set_end_event("BrowserMain");
+
+    browser_main_loop_monitor[i].set_start_event("BrowserMain");
+    browser_main_loop_monitor[i].set_end_event("BrowserMain:MESSAGE_LOOP");
+
+    automation_provider_start_monitor[i].set_start_event("BrowserMain");
+    automation_provider_start_monitor[i].set_end_event(
         "AutomationProvider::AutomationProvider");
-    automation_provider_connect_monitor[i].set_interesting_event(
+
+    automation_provider_connect_monitor[i].set_start_event(
+        "AutomationProvider::AutomationProvider");
+    automation_provider_connect_monitor[i].set_end_event(
         "AutomationProvider::ConnectToChannel");
+
     external_tab_navigate_monitor[i].set_interesting_event(
         "ExternalTabContainer::Navigate");
+
+    renderer_main_monitor[i].set_start_event("ExternalTabContainer::Navigate");
+    renderer_main_monitor[i].set_end_event("RendererMain");
+
+    pre_read_chrome_monitor[i].set_interesting_event("PreReadImage");
 
     ASSERT_HRESULT_SUCCEEDED(perf_session.Stop());
 
@@ -1363,67 +1439,25 @@ TEST(TestAsPerfTest, MetaTag_createproxy) {
     perf_session.AnalyzeOutput(&automation_provider_start_monitor[i]);
     perf_session.AnalyzeOutput(&automation_provider_connect_monitor[i]);
     perf_session.AnalyzeOutput(&external_tab_navigate_monitor[i]);
+    perf_session.AnalyzeOutput(&pre_read_chrome_monitor[i]);
+    perf_session.AnalyzeOutput(&renderer_main_monitor[i]);
   }
 
   // Print results
-  std::string times;
-  for (int i = 0; i < kNumCycles; ++i) {
-    ASSERT_TRUE(create_proxy_monitor[i].is_valid());
-    StringAppendF(&times, "%.2f,",
-                  create_proxy_monitor[i].duration().InMillisecondsF());
-  }
-
-  bool important = false;
-  PrintResultList("createproxy", "", "t", times, "ms", important);
-
-  times.clear();
-
-  for (int i = 0; i < kNumCycles; ++i) {
-    ASSERT_TRUE(browser_main_start_monitor[i].is_valid());
-    StringAppendF(&times, "%.2f,",
-                  browser_main_start_monitor[i].duration().InMillisecondsF());
-  }
-
-  PrintResultList("browserstart", "", "t", times, "ms", important);
-  times.clear();
-
-  for (int i = 0; i < kNumCycles; ++i) {
-    ASSERT_TRUE(browser_main_loop_monitor[i].is_valid());
-    StringAppendF(&times, "%.2f,",
-                  browser_main_loop_monitor[i].duration().InMillisecondsF());
-  }
-
-  PrintResultList("browserloop", "", "t", times, "ms", important);
-  times.clear();
-
-  for (int i = 0; i < kNumCycles; ++i) {
-    ASSERT_TRUE(automation_provider_start_monitor[i].is_valid());
-    StringAppendF(
-        &times, "%.2f,",
-        automation_provider_start_monitor[i].duration().InMillisecondsF());
-  }
-
-  PrintResultList("automationproviderstart", "", "t", times, "ms", important);
-  times.clear();
-
-  for (int i = 0; i < kNumCycles; ++i) {
-    ASSERT_TRUE(automation_provider_connect_monitor[i].is_valid());
-    StringAppendF(
-        &times, "%.2f,",
-        automation_provider_connect_monitor[i].duration().InMillisecondsF());
-  }
-
-  PrintResultList("automationproviderconnect", "", "t", times, "ms",
-                  important);
-  times.clear();
-
-  for (int i = 0; i < kNumCycles; ++i) {
-    ASSERT_TRUE(external_tab_navigate_monitor[i].is_valid());
-    StringAppendF(
-        &times, "%.2f,",
-        external_tab_navigate_monitor[i].duration().InMillisecondsF());
-  }
-
-  PrintResultList("externaltabnavigate", "", "t", times, "ms", important);
-  times.clear();
+  PrintPerfTestResults(create_proxy_monitor, kNumCycles, "createproxy");
+  PrintPerfTestResults(browser_main_start_monitor, kNumCycles,
+                       "createproxy:browserstart");
+  PrintPerfTestResults(browser_main_loop_monitor, kNumCycles,
+                       "browserstart:browserloop");
+  PrintPerfTestResults(automation_provider_start_monitor, kNumCycles,
+                       "browsermain:automationproviderstart");
+  PrintPerfTestResults(automation_provider_connect_monitor, kNumCycles,
+                       "automationproviderstart:automationproviderconnect");
+  PrintPerfTestResults(external_tab_navigate_monitor, kNumCycles,
+                       "externaltabnavigate");
+  PrintPerfTestResults(renderer_main_monitor, kNumCycles,
+                       "externaltabnavigate:renderermain");
+#ifdef NDEBUG
+  PrintPerfTestResults(pre_read_chrome_monitor, kNumCycles, "PreReadImage");
+#endif  // NDEBUG
 }
