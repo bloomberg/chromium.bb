@@ -12,20 +12,12 @@
 #include <map>
 #include <set>
 
-#include "base/file_path.h"
 #include "base/format_macros.h"
-#include "base/nullable_string16.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversions.h"
 #include "base/tuple.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
-#if defined(OS_POSIX)
-#include "ipc/file_descriptor_set_posix.h"
-#endif
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_message.h"
 
 // Used by IPC_BEGIN_MESSAGES so that each message class starts from a unique
@@ -68,13 +60,18 @@ enum IPCMessageStart {
 };
 
 class DictionaryValue;
+class FilePath;
 class ListValue;
+class NullableString16;
 
 namespace base {
 class Time;
+struct FileDescriptor;
 }
 
 namespace IPC {
+
+struct ChannelHandle;
 
 //-----------------------------------------------------------------------------
 // An iterator class for reading the fields contained within a Message.
@@ -598,27 +595,9 @@ struct ParamTraits<std::pair<A, B> > {
 template <>
 struct ParamTraits<NullableString16> {
   typedef NullableString16 param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.string());
-    WriteParam(m, p.is_null());
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    string16 string;
-    if (!ReadParam(m, iter, &string))
-      return false;
-    bool is_null;
-    if (!ReadParam(m, iter, &is_null))
-      return false;
-    *r = NullableString16(string, is_null);
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
-    LogParam(p.string(), l);
-    l->append(L", ");
-    LogParam(p.is_null(), l);
-    l->append(L")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::wstring* l);
 };
 
 // If WCHAR_T_IS_UTF16 is defined, then string16 is a std::wstring so we don't
@@ -709,19 +688,9 @@ struct ParamTraits<POINT> {
 template <>
 struct ParamTraits<FilePath> {
   typedef FilePath param_type;
-  static void Write(Message* m, const param_type& p) {
-    ParamTraits<FilePath::StringType>::Write(m, p.value());
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    FilePath::StringType value;
-    if (!ParamTraits<FilePath::StringType>::Read(m, iter, &value))
-      return false;
-    *r = FilePath(value);
-    return true;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    ParamTraits<FilePath::StringType>::Log(p.value(), l);
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::wstring* l);
 };
 
 #if defined(OS_POSIX)
@@ -743,35 +712,9 @@ struct ParamTraits<FilePath> {
 template<>
 struct ParamTraits<base::FileDescriptor> {
   typedef base::FileDescriptor param_type;
-  static void Write(Message* m, const param_type& p) {
-    const bool valid = p.fd >= 0;
-    WriteParam(m, valid);
-
-    if (valid) {
-      if (!m->WriteFileDescriptor(p))
-        NOTREACHED();
-    }
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    bool valid;
-    if (!ReadParam(m, iter, &valid))
-      return false;
-
-    if (!valid) {
-      r->fd = -1;
-      r->auto_close = false;
-      return true;
-    }
-
-    return m->ReadFileDescriptor(iter, r);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    if (p.auto_close) {
-      l->append(StringPrintf(L"FD(%d auto-close)", p.fd));
-    } else {
-      l->append(StringPrintf(L"FD(%d)", p.fd));
-    }
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::wstring* l);
 };
 #endif  // defined(OS_POSIX)
 
@@ -781,26 +724,9 @@ struct ParamTraits<base::FileDescriptor> {
 template<>
 struct ParamTraits<IPC::ChannelHandle> {
   typedef ChannelHandle param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.name);
-#if defined(OS_POSIX)
-    WriteParam(m, p.socket);
-#endif
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    return ReadParam(m, iter, &r->name)
-#if defined(OS_POSIX)
-        && ReadParam(m, iter, &r->socket)
-#endif
-        ;
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(ASCIIToWide(StringPrintf("ChannelHandle(%s", p.name.c_str())));
-#if defined(OS_POSIX)
-    ParamTraits<base::FileDescriptor>::Log(p.socket, l);
-#endif
-    l->append(L")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::wstring* l);
 };
 
 #if defined(OS_WIN)

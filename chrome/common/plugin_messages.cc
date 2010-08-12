@@ -4,6 +4,8 @@
 
 #include "chrome/common/plugin_messages.h"
 
+#include "ipc/ipc_channel_handle.h"
+
 #define MESSAGES_INTERNAL_IMPL_FILE \
   "chrome/common/plugin_messages_internal.h"
 #include "ipc/ipc_message_impl_macros.h"

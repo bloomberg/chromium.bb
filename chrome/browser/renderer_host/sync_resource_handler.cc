@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/renderer_host/sync_resource_handler.h"
+
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
+#include "net/http/http_response_headers.h"
 
 SyncResourceHandler::SyncResourceHandler(
     ResourceDispatcherHost::Receiver* receiver,

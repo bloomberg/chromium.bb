@@ -6,6 +6,7 @@
 
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
 
 namespace IPC {
@@ -94,6 +95,44 @@ void ParamTraits<WebKit::WebFindOptions>::Log(const param_type& p,
   LogParam(p.matchCase, l);
   l->append(L", ");
   LogParam(p.findNext, l);
+  l->append(L")");
+}
+
+void ParamTraits<WebKit::WebMediaPlayerAction>::Write(Message* m,
+                                                      const param_type& p) {
+  WriteParam(m, static_cast<int>(p.type));
+  WriteParam(m, p.enable);
+}
+
+bool ParamTraits<WebKit::WebMediaPlayerAction>::Read(const Message* m,
+                                                     void** iter,
+                                                     param_type* r) {
+  int temp;
+  if (!ReadParam(m, iter, &temp))
+    return false;
+  r->type = static_cast<param_type::Type>(temp);
+  return ReadParam(m, iter, &r->enable);
+}
+
+void ParamTraits<WebKit::WebMediaPlayerAction>::Log(const param_type& p,
+                                                    std::wstring* l) {
+  l->append(L"(");
+  switch (p.type) {
+    case WebKit::WebMediaPlayerAction::Play:
+      l->append(L"Play");
+      break;
+    case WebKit::WebMediaPlayerAction::Mute:
+      l->append(L"Mute");
+      break;
+    case WebKit::WebMediaPlayerAction::Loop:
+      l->append(L"Loop");
+      break;
+    default:
+      l->append(L"Unknown");
+      break;
+  }
+  l->append(L", ");
+  LogParam(p.enable, l);
   l->append(L")");
 }
 

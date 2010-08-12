@@ -36,6 +36,7 @@
 #include "gfx/size.h"
 #include "grit/generated_resources.h"
 #include "grit/renderer_resources.h"
+#include "ipc/ipc_channel_handle.h"
 #include "net/base/mime_util.h"
 #include "printing/native_metafile.h"
 #include "skia/ext/platform_canvas.h"

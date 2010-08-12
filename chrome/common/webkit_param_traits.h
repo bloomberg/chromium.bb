@@ -30,7 +30,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
@@ -38,6 +37,7 @@
 namespace WebKit {
 struct WebCompositionUnderline;
 struct WebFindOptions;
+struct WebMediaPlayerAction;
 struct WebRect;
 struct WebScreenInfo;
 }
@@ -269,37 +269,9 @@ struct ParamTraits<WebKit::WebDragOperation> {
 template <>
 struct ParamTraits<WebKit::WebMediaPlayerAction> {
   typedef WebKit::WebMediaPlayerAction param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p.type));
-    WriteParam(m, p.enable);
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int temp;
-    if (!ReadParam(m, iter, &temp))
-      return false;
-    r->type = static_cast<param_type::Type>(temp);
-    return ReadParam(m, iter, &r->enable);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
-    switch (p.type) {
-      case WebKit::WebMediaPlayerAction::Play:
-        l->append(L"Play");
-        break;
-      case WebKit::WebMediaPlayerAction::Mute:
-        l->append(L"Mute");
-        break;
-      case WebKit::WebMediaPlayerAction::Loop:
-        l->append(L"Loop");
-        break;
-      default:
-        l->append(L"Unknown");
-        break;
-    }
-    l->append(L", ");
-    LogParam(p.enable, l);
-    l->append(L")");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::wstring* l);
 };
 
 template <>
