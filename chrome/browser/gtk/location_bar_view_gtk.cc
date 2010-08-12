@@ -24,7 +24,6 @@
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/content_setting_image_model.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"

@@ -7,17 +7,17 @@
 namespace extension_accessibility_api_constants {
 
 // String keys for AccessibilityObject properties.
-const wchar_t kTypeKey[] = L"type";
-const wchar_t kNameKey[] = L"name";
-const wchar_t kDetailsKey[] = L"details";
-const wchar_t kValueKey[] = L"details.value";
-const wchar_t kPasswordKey[] = L"details.isPassword";
-const wchar_t kItemCountKey[] = L"details.itemCount";
-const wchar_t kItemIndexKey[] = L"details.itemIndex";
-const wchar_t kSelectionStartKey[] = L"details.selectionStart";
-const wchar_t kSelectionEndKey[] = L"details.selectionEnd";
-const wchar_t kCheckedKey[] = L"details.isChecked";
-const wchar_t kHasSubmenuKey[] = L"details.hasSubmenu";
+const char kTypeKey[] = "type";
+const char kNameKey[] = "name";
+const char kDetailsKey[] = "details";
+const char kValueKey[] = "details.value";
+const char kPasswordKey[] = "details.isPassword";
+const char kItemCountKey[] = "details.itemCount";
+const char kItemIndexKey[] = "details.itemIndex";
+const char kSelectionStartKey[] = "details.selectionStart";
+const char kSelectionEndKey[] = "details.selectionEnd";
+const char kCheckedKey[] = "details.isChecked";
+const char kHasSubmenuKey[] = "details.hasSubmenu";
 
 // Events.
 const char kOnWindowOpened[] = "experimental.accessibility.onWindowOpened";

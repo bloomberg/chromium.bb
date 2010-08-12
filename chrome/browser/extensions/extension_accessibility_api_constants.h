@@ -11,17 +11,17 @@
 namespace extension_accessibility_api_constants {
 
 // Keys.
-extern const wchar_t kTypeKey[];
-extern const wchar_t kNameKey[];
-extern const wchar_t kDetailsKey[];
-extern const wchar_t kValueKey[];
-extern const wchar_t kPasswordKey[];
-extern const wchar_t kItemCountKey[];
-extern const wchar_t kItemIndexKey[];
-extern const wchar_t kSelectionStartKey[];
-extern const wchar_t kSelectionEndKey[];
-extern const wchar_t kCheckedKey[];
-extern const wchar_t kHasSubmenuKey[];
+extern const char kTypeKey[];
+extern const char kNameKey[];
+extern const char kDetailsKey[];
+extern const char kValueKey[];
+extern const char kPasswordKey[];
+extern const char kItemCountKey[];
+extern const char kItemIndexKey[];
+extern const char kSelectionStartKey[];
+extern const char kSelectionEndKey[];
+extern const char kCheckedKey[];
+extern const char kHasSubmenuKey[];
 
 // Events.
 extern const char kOnWindowOpened[];
