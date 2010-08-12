@@ -2291,26 +2291,29 @@ organize-native-code() {
 
   StepBanner "PNaCl" "arm native code: ${PNACL_ARM_ROOT}"
   mkdir -p ${PNACL_ARM_ROOT}
-  cp -f ${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}/libgcc.a \
-    ${PNACL_ARM_ROOT}
-  cp -f ${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}/crtbegin.o \
-    ${PNACL_ARM_ROOT}
+  local startup_dir=${arm_llvm_gcc}/lib/gcc/arm-none-linux-gnueabi/${GCC_VER}
+  cp -f ${startup_dir}/libgcc.a \
+        ${startup_dir}/crtbegin.o \
+        ${startup_dir}/crtend.o \
+        ${PNACL_ARM_ROOT}
   DebugRun ls -l ${PNACL_ARM_ROOT}
 
   StepBanner "PNaCl" "x86-32 native code: ${PNACL_X8632_ROOT}"
   mkdir -p ${PNACL_X8632_ROOT}
-  cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}/libgcc.a \
-    ${PNACL_X8632_ROOT}
-  cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}/crtbegin.o \
-    ${PNACL_X8632_ROOT}
+  local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_32}/${GCC_VER}
+  cp -f ${startup_dir}/libgcc.a \
+        ${startup_dir}/crtbegin.o \
+        ${startup_dir}/crtend.o \
+        ${PNACL_X8632_ROOT}
   DebugRun ls -l ${PNACL_X8632_ROOT}
 
   StepBanner "PNaCl" "x86-64 native code: ${PNACL_X8664_ROOT}"
   mkdir -p ${PNACL_X8664_ROOT}
-  cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}/libgcc.a \
-    ${PNACL_X8664_ROOT}
-  cp -f ${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}/crtbegin.o \
-    ${PNACL_X8664_ROOT}
+  local startup_dir=${arm_llvm_gcc}/lib/gcc/${CROSS_TARGET_X86_64}/${GCC_VER}
+  cp -f ${startup_dir}/libgcc.a \
+        ${startup_dir}/crtbegin.o \
+        ${startup_dir}/crtend.o \
+        ${PNACL_X8664_ROOT}
   StepBanner "PNaCl" "x86-64 steal libcrt_platform.a  from nacl-gcc"
   # NOTE: we cannot build this ourselves:
   # http://code.google.com/p/nativeclient/issues/detail?id=797

@@ -500,6 +500,9 @@ def MassageFinalLinkCommandPnacl(args, native_dir, flags):
   if '-nostdlib' not in args:
     # NOTE: there is a circular dependency between libgcc and libc: raise()
     out.append(native_dir + '/libcrt_platform.a')
+
+    # c.f.: http://code.google.com/p/nativeclient/issues/detail?id=806
+    # out.append(native_dir + '/crtend.o')
     out.append(native_dir + '/crtn.o')
     out.append('-L' + native_dir)
     out.append('-lgcc')
