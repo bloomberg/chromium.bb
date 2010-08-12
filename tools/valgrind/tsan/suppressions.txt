@@ -33,18 +33,10 @@
 }
 
 {
-  bug_51890a
+  bug_51890
   ThreadSanitizer:Race
   ...
-  fun:history::TopSites::ReadDatabase*
-}
-
-{
-  bug_51890b
-  ThreadSanitizer:Race
-  ...
-  fun:history::TopSites::SetPageThumbnail*
-  fun:TabContents::UpdateThumbnail*
+  fun:history::TopSites::*
 }
 
 ############################
