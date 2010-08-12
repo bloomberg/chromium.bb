@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
+#include "gfx/gtk_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 
 using WebKit::WebCursorInfo;
@@ -171,18 +172,13 @@ GdkCursor* WebCursor::GetCustomCursor() const {
     return NULL;
   }
 
-  const guchar* data = reinterpret_cast<const guchar*>(&custom_data_[0]);
-  GdkPixbuf* pixbuf =
-      gdk_pixbuf_new_from_data(data,
-                               GDK_COLORSPACE_RGB,
-                               TRUE,  // has_alpha
-                               8,     // bits_per_sample
-                               custom_size_.width(),      // width
-                               custom_size_.height(),     // height
-                               custom_size_.width() * 4,  // row stride
-                               NULL,   // data destroy function
-                               NULL);  // data destroy function extra data
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                   custom_size_.width(), custom_size_.height());
+  bitmap.allocPixels();
+  memcpy(bitmap.getAddr32(0, 0), custom_data_.data(), custom_data_.size());
 
+  GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
   GdkCursor* cursor = gdk_cursor_new_from_pixbuf(gdk_display_get_default(),
                                                  pixbuf,
                                                  hotspot_.x(),
