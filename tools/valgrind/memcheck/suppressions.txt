@@ -4103,3 +4103,16 @@
    fun:_ZN9TestShell21BindJSObjectsToWindowEPN6WebKit8WebFrameE
    fun:_ZN19TestWebViewDelegate20didClearWindowObjectEPN6WebKit8WebFrameE
 }
+{
+   bug_51940
+   Memcheck:Param
+   pwrite64(buf)
+   fun:pwrite64
+   fun:_ZN10disk_cache4File5WriteEPKvjj
+   fun:_ZN10disk_cache4File5WriteEPKvjjPNS_14FileIOCallbackEPb
+   fun:_ZN10disk_cache9EntryImpl5FlushEiib
+   fun:_ZN10disk_cache9EntryImplD0Ev
+   fun:_ZN4base10RefCountedIN10disk_cache9EntryImplEE7ReleaseEv
+   fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
+   fun:_ZN10disk_cache9BackendIO16ExecuteOperationEv
+}

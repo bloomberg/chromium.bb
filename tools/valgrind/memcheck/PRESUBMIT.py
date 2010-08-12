@@ -21,14 +21,14 @@ def CheckChange(input_api, output_api):
     if skip_next_line:
       skip_next_line = False
       continue
+    if line == '{' or line == "Memcheck:Param":
+      skip_next_line = True
+      continue
     if (line.startswith('fun:') or line.startswith('obj:') or
         line.startswith('Memcheck:') or line == '}' or
         line == '...'):
       continue
     if func_re.match(line):
-      continue
-    if line == '{':
-      skip_next_line = True
       continue
     errors.append('"%s" is probably wrong: %s line %s' % (line, f.LocalPath(),
                                                           line_num))
