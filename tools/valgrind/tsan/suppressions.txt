@@ -36,8 +36,7 @@
   bug_51890a
   ThreadSanitizer:Race
   ...
-  fun:history::TopSites::GenerateCanonicalURLs*
-  fun:history::TopSites::StoreMostVisited*
+  fun:history::TopSites::ReadDatabase*
 }
 
 {
