@@ -566,6 +566,72 @@
    fun:signal_emit_unlocked_R
    fun:g_signal_emit_valist
 }
+{
+   bug_51327
+   Memcheck:Cond
+   fun:DecodeItem
+   ...
+   fun:SEC_QuickDERDecodeItem_Util
+   ...
+   fun:lg_PutMetaData
+   fun:sftkdb_ChangePassword
+   fun:NSC_InitPIN
+   fun:PK11_InitPin
+}
+{
+   bug_51332a
+   Memcheck:Leak
+   ...
+   fun:PORT_NewArena_Util
+   fun:sec_pkcs7_create_content_info
+   fun:SEC_PKCS7CreateData
+   fun:sec_pkcs12_encoder_start_context
+   fun:SEC_PKCS12Encode
+}
+{
+   bug_51332b
+   Memcheck:Leak
+   ...
+   fun:PORT_ArenaZAlloc_Util
+   fun:sec_pkcs7_create_content_info
+   fun:SEC_PKCS7CreateData
+   fun:sec_pkcs12_encoder_start_context
+   fun:SEC_PKCS12Encode
+}
+{
+   bug_51330
+   Memcheck:Leak
+   ...
+   fun:p12u_DigestOpen
+   ...
+   fun:SEC_PKCS12DecoderUpdate
+}
+{
+   bug_51328a
+   Memcheck:Leak
+   ...
+   fun:sec_pkcs12_decoder_asafes_notify
+   fun:sec_asn1d_notify_before
+   fun:SEC_ASN1DecoderUpdate_Util
+   fun:sec_pkcs12_decoder_asafes_callback
+   fun:sec_pkcs7_decoder_work_data
+   fun:SEC_ASN1DecoderUpdate_Util
+   fun:SEC_PKCS7DecoderUpdate
+   fun:sec_pkcs12_decode_asafes_cinfo_update
+   fun:SEC_ASN1DecoderUpdate_Util
+   fun:SEC_PKCS12DecoderUpdate
+}
+{
+   bug_51328b
+   Memcheck:Leak
+   ...
+   fun:PORT_NewArena_Util
+   fun:SEC_PKCS7DecoderStart
+   fun:sec_pkcs12_decoder_pfx_notify_proc
+   fun:sec_asn1d_notify_before
+   fun:SEC_ASN1DecoderUpdate_Util
+   fun:SEC_PKCS12DecoderUpdate
+}
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
@@ -2470,6 +2536,7 @@
 {
    bug_32624_c
    Memcheck:Leak
+   ...
    fun:malloc
    fun:PR_Malloc
    fun:PORT_Alloc_Util
