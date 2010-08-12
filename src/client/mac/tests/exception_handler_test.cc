@@ -1,4 +1,4 @@
-// Copyright (c) 2006, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,33 +27,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/*
-g++ -framework CoreFoundation -I../../.. ../../minidump_file_writer.cc ../../../common/convert_UTF.c ../../../common/string_conversion.cc ../../../common/mac/string_utilities.cc exception_handler.cc minidump_generator.cc exception_handler_test.cc -o exception_handler_test -mmacosx-version-min=10.4 ../../../common/mac/file_id.cc  dynamic_images.cc ../../../common/mac/macho_id.cc  ../../../common/mac/macho_walker.cc  -lcrypto ../../../common/mac/macho_utilities.cc 
-*/
+// exception_handler_test.cc: Unit tests for google_breakpad::ExceptionHandler
 
-#include <pthread.h>
-#include <pwd.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
-#include <CoreFoundation/CoreFoundation.h>
-
-#include "exception_handler.h"
-#include "minidump_generator.h"
+#include "breakpad_googletest_includes.h"
+#include "client/mac/handler/exception_handler.h"
+#include "client/mac/tests/auto_tempdir.h"
 
 using std::string;
+using google_breakpad::AutoTempDir;
 using google_breakpad::ExceptionHandler;
-
-static void *SleepyFunction(void *) {
-  while (1) {
-    sleep(10000);
-  }
-  return NULL;
-}
+using testing::Test;
 
 static void Crasher() {
   int *a = (int*)0x42;
 
-	fprintf(stdout, "Going to crash...\n");
+  fprintf(stdout, "Going to crash...\n");
   fprintf(stdout, "A = %d", *a);
 }
 
@@ -64,36 +55,47 @@ static void SoonToCrash() {
 static bool MDCallback(const char *dump_dir, const char *file_name,
                        void *context, bool success) {
   string path(dump_dir);
-  string dest(dump_dir);
+  path.append("/");
   path.append(file_name);
   path.append(".dmp");
 
-  fprintf(stdout, "Minidump: %s\n", path.c_str());
-  // Indicate that we've handled the callback
+  int fd = *reinterpret_cast<int*>(context);
+  (void)write(fd, path.c_str(), path.length() + 1);
+  close(fd);
   exit(0);
+  // not reached
+  return true;
 }
 
-int main(int argc, char * const argv[]) {
-  char buffer[PATH_MAX];
-
-  // Home dir
-  snprintf(buffer, sizeof(buffer), "/tmp/");
-
-  string path(buffer);
-  ExceptionHandler eh(path, NULL, MDCallback, NULL, true);
-  pthread_t t;
-
-  if (pthread_create(&t, NULL, SleepyFunction, NULL) == 0) {
-    pthread_detach(t);
-  } else {
-    perror("pthread_create");
+TEST(ExceptionHandler, InProcess) {
+  AutoTempDir tempDir;
+  // Give the child process a pipe to report back on.
+  int fds[2];
+  ASSERT_EQ(0, pipe(fds));
+  // Fork off a child process so it can crash.
+  pid_t pid = fork();
+  if (pid == 0) {
+    close(fds[0]);
+    ExceptionHandler eh(tempDir.path, NULL, MDCallback, &fds[1], true);
+    // crash
+    SoonToCrash();
+    // not reached
+    exit(1);
   }
+  ASSERT_NE(-1, pid);
+  // Wait for the background process to return the minidump file.
+  close(fds[1]);
+  char minidump_file[PATH_MAX];
+  ssize_t nbytes = read(fds[0], minidump_file, sizeof(minidump_file));
+  ASSERT_NE(0, nbytes);
+  // Ensure that minidump file exists and is > 0 bytes.
+  struct stat st;
+  ASSERT_EQ(0, stat(minidump_file, &st));
+  ASSERT_LT(0, st.st_size);
 
-//   // Dump a test
-//   eh.WriteMinidump();
-
-	// Test the handler
-  SoonToCrash();
-
-  return 0;
+  // Child process should have exited with a zero status.
+  int ret;
+  ASSERT_EQ(pid, waitpid(pid, &ret, 0));
+  EXPECT_NE(0, WIFEXITED(ret));
+  EXPECT_EQ(0, WEXITSTATUS(ret));
 }
