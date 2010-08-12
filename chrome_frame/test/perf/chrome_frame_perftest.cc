@@ -1446,17 +1446,17 @@ TEST(TestAsPerfTest, MetaTag_createproxy) {
   // Print results
   PrintPerfTestResults(create_proxy_monitor, kNumCycles, "createproxy");
   PrintPerfTestResults(browser_main_start_monitor, kNumCycles,
-                       "createproxy:browserstart");
+                       "browserstart");
   PrintPerfTestResults(browser_main_loop_monitor, kNumCycles,
-                       "browserstart:browserloop");
+                       "browserloop");
   PrintPerfTestResults(automation_provider_start_monitor, kNumCycles,
-                       "browsermain:automationproviderstart");
+                       "automationproviderstart");
   PrintPerfTestResults(automation_provider_connect_monitor, kNumCycles,
-                       "automationproviderstart:automationproviderconnect");
+                       "automationproviderconnect");
   PrintPerfTestResults(external_tab_navigate_monitor, kNumCycles,
                        "externaltabnavigate");
   PrintPerfTestResults(renderer_main_monitor, kNumCycles,
-                       "externaltabnavigate:renderermain");
+                       "beginrenderermain");
 #ifdef NDEBUG
   PrintPerfTestResults(pre_read_chrome_monitor, kNumCycles, "PreReadImage");
 #endif  // NDEBUG
