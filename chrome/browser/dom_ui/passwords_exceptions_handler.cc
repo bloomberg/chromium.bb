@@ -7,12 +7,15 @@
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/values.h"
-#include "chrome/browser/profile.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
+#include "net/base/net_util.h"
 
-PasswordsExceptionsHandler::PasswordsExceptionsHandler() {
+PasswordsExceptionsHandler::PasswordsExceptionsHandler()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(populater_(this)) {
 }
 
 PasswordsExceptionsHandler::~PasswordsExceptionsHandler() {
@@ -30,5 +33,47 @@ void PasswordsExceptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE));
 }
 
+void PasswordsExceptionsHandler::Initialize() {
+  profile_ = dom_ui_->GetProfile();
+  populater_.Populate();
+}
+
 void PasswordsExceptionsHandler::RegisterMessages() {
+}
+
+PasswordStore* PasswordsExceptionsHandler::GetPasswordStore() {
+  return profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+}
+
+void PasswordsExceptionsHandler::SetPasswordList(
+    const std::vector<webkit_glue::PasswordForm*>& result) {
+  ListValue autofillableLogins;
+  std::wstring languages =
+      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  password_list_ = result;
+  for (size_t i = 0; i < result.size(); ++i) {
+    ListValue* entry = new ListValue();
+    entry->Append(new StringValue(
+        WideToUTF8(net::FormatUrl(result[i]->origin, languages))));
+    entry->Append(new StringValue(
+        UTF16ToUTF8(result[i]->username_value)));
+    autofillableLogins.Append(entry);
+  }
+
+  dom_ui_->CallJavascriptFunction(
+      L"PasswordsExceptions.setAutofillableLogins", autofillableLogins);
+}
+
+void PasswordsExceptionsHandler::PasswordListPopulater::Populate() {
+  DCHECK(!pending_login_query_);
+  PasswordStore* store = page_->GetPasswordStore();
+  pending_login_query_ = store->GetAutofillableLogins(this);
+}
+
+void PasswordsExceptionsHandler::PasswordListPopulater::
+    OnPasswordStoreRequestDone(int handle,
+    const std::vector<webkit_glue::PasswordForm*>& result) {
+  DCHECK_EQ(pending_login_query_, handle);
+  pending_login_query_ = 0;
+  page_->SetPasswordList(result);
 }

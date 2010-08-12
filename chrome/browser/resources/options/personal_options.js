@@ -98,7 +98,7 @@ cr.define('options', function() {
     },
   };
 
-  PersonalOptions.syncStatusCallback = function(statusString){
+  PersonalOptions.syncStatusCallback = function(statusString) {
     PersonalOptions.getInstance().syncStatusCallback_(statusString);
   };
 

@@ -33,6 +33,21 @@ cr.define('options', function() {
       // TODO(sargrass): Exceptions filter page -------------------------
 
     },
+
+    setAutofillableLogins_: function(autofillableLogins) {
+      var ul = $('autofillableLoginsList');
+      for (var i = 0; i < autofillableLogins.length; i++) {
+        var entry = autofillableLogins[i];
+        var li = document.createElement('li');
+        li.textContent = "URL=" + entry[0] + " Username=" + entry[1];
+        ul.appendChild(li);
+      }
+    },
+  };
+
+  PasswordsExceptions.setAutofillableLogins = function(autofillableLogins) {
+    PasswordsExceptions.getInstance().setAutofillableLogins_(
+        autofillableLogins);
   };
 
   // Export
