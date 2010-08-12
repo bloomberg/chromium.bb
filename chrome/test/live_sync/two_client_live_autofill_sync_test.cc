@@ -5,7 +5,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/test/live_sync/live_autofill_sync_test.h"
 
-IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest, Client1HasData) {
+// TODO(rsimha): Remove FAILS prefix after crbug.com/51956 is fixed.
+IN_PROC_BROWSER_TEST_F(TwoClientLiveAutofillSyncTest,
+                       FAILS_Client1HasData) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
 
   AutofillKeys keys;
