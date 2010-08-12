@@ -131,7 +131,7 @@ void WindowGtk::Activate() {
 }
 
 void WindowGtk::Deactivate() {
-  // TODO(jcivelli): http://crbug.com/51364 Implement me.
+  gdk_window_lower(GTK_WIDGET(GetNativeView())->window);
 }
 
 void WindowGtk::Close() {

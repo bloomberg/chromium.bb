@@ -712,8 +712,7 @@ void BrowserWindowGtk::Activate() {
 }
 
 void BrowserWindowGtk::Deactivate() {
-  // TODO(jcivelli): http://crbug.com/51364 Implement me.
-  NOTIMPLEMENTED();
+  gdk_window_lower(GTK_WIDGET(window_)->window);
 }
 
 bool BrowserWindowGtk::IsActive() const {
