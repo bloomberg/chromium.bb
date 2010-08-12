@@ -57,7 +57,7 @@ class AutoTempDir {
     while ((entry = readdir(dir)) != NULL) {
       if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
 	continue;
-      string entryPath = path + "/" + entry->d_name;
+      std::string entryPath = path + "/" + entry->d_name;
       unlink(entryPath.c_str());
     }
     closedir(dir);
