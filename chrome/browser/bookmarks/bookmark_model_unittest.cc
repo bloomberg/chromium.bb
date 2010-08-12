@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -173,7 +173,7 @@ TEST_F(BookmarkModelTest, InitialState) {
 
 TEST_F(BookmarkModelTest, AddURL) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  const std::wstring title(L"foo");
+  const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
 
   const BookmarkNode* new_node = model.AddURL(root, 0, title, url);
@@ -181,7 +181,7 @@ TEST_F(BookmarkModelTest, AddURL) {
   observer_details.AssertEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->GetChildCount());
-  ASSERT_EQ(title, new_node->GetTitle());
+  ASSERT_EQ(title, new_node->GetTitleAsString16());
   ASSERT_TRUE(url == new_node->GetURL());
   ASSERT_EQ(BookmarkNode::URL, new_node->type());
   ASSERT_TRUE(new_node == model.GetMostRecentlyAddedNodeForURL(url));
@@ -192,14 +192,14 @@ TEST_F(BookmarkModelTest, AddURL) {
 
 TEST_F(BookmarkModelTest, AddGroup) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  const std::wstring title(L"foo");
+  const string16 title(ASCIIToUTF16("foo"));
 
   const BookmarkNode* new_node = model.AddGroup(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0);
   observer_details.AssertEquals(root, NULL, 0, -1);
 
   ASSERT_EQ(1, root->GetChildCount());
-  ASSERT_EQ(title, new_node->GetTitle());
+  ASSERT_EQ(title, new_node->GetTitleAsString16());
   ASSERT_EQ(BookmarkNode::FOLDER, new_node->type());
 
   EXPECT_TRUE(new_node->id() != root->id() &&
@@ -253,17 +253,17 @@ TEST_F(BookmarkModelTest, RemoveGroup) {
 
 TEST_F(BookmarkModelTest, SetTitle) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  std::wstring title(L"foo");
+  string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
   const BookmarkNode* node = model.AddURL(root, 0, title, url);
 
   ClearCounts();
 
-  title = L"foo2";
+  title = ASCIIToUTF16("foo2");
   model.SetTitle(node, title);
   AssertObserverCount(0, 0, 0, 1, 0);
   observer_details.AssertEquals(node, NULL, -1, -1);
-  EXPECT_EQ(title, node->GetTitle());
+  EXPECT_EQ(title, node->GetTitleAsString16());
 }
 
 TEST_F(BookmarkModelTest, SetURL) {
@@ -620,11 +620,11 @@ static void PopulateBookmarkNode(TestNode* parent,
     TestNode* child = parent->GetChild(i);
     if (child->value == BookmarkNode::FOLDER) {
       const BookmarkNode* new_bb_node =
-          model->AddGroup(bb_node, i, child->GetTitle());
+          model->AddGroup(bb_node, i, child->GetTitleAsString16());
       PopulateBookmarkNode(child, model, new_bb_node);
     } else {
-      model->AddURL(bb_node, i, child->GetTitle(),
-                    GURL("http://" + WideToASCII(child->GetTitle())));
+      model->AddURL(bb_node, i, child->GetTitleAsString16(),
+          GURL("http://" + UTF16ToASCII(child->GetTitleAsString16())));
     }
   }
 }
@@ -657,7 +657,8 @@ class BookmarkModelTestWithProfile : public testing::Test,
     for (int i = 0; i < expected->GetChildCount(); ++i) {
       TestNode* expected_child = expected->GetChild(i);
       const BookmarkNode* actual_child = actual->GetChild(i);
-      ASSERT_EQ(expected_child->GetTitle(), actual_child->GetTitle());
+      ASSERT_EQ(expected_child->GetTitleAsString16(),
+                actual_child->GetTitleAsString16());
       if (expected_child->value == BookmarkNode::FOLDER) {
         ASSERT_TRUE(actual_child->type() == BookmarkNode::FOLDER);
         // Recurse throught children.
@@ -804,29 +805,30 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
 
     const BookmarkNode* child = bbn->GetChild(0);
     ASSERT_EQ(BookmarkNode::URL, child->type());
-    ASSERT_EQ(L"Google", child->GetTitle());
+    ASSERT_EQ(ASCIIToUTF16("Google"), child->GetTitleAsString16());
     ASSERT_TRUE(child->GetURL() == GURL("http://www.google.com"));
 
     child = bbn->GetChild(1);
     ASSERT_TRUE(child->is_folder());
-    ASSERT_EQ(L"F1", child->GetTitle());
+    ASSERT_EQ(ASCIIToUTF16("F1"), child->GetTitleAsString16());
     ASSERT_EQ(2, child->GetChildCount());
 
     const BookmarkNode* parent = child;
     child = parent->GetChild(0);
     ASSERT_EQ(BookmarkNode::URL, child->type());
-    ASSERT_EQ(L"Google Advertising", child->GetTitle());
+    ASSERT_EQ(ASCIIToUTF16("Google Advertising"), child->GetTitleAsString16());
     ASSERT_TRUE(child->GetURL() == GURL("http://www.google.com/intl/en/ads/"));
 
     child = parent->GetChild(1);
     ASSERT_TRUE(child->is_folder());
-    ASSERT_EQ(L"F11", child->GetTitle());
+    ASSERT_EQ(ASCIIToUTF16("F11"), child->GetTitleAsString16());
     ASSERT_EQ(1, child->GetChildCount());
 
     parent = child;
     child = parent->GetChild(0);
     ASSERT_EQ(BookmarkNode::URL, child->type());
-    ASSERT_EQ(L"Google Business Solutions", child->GetTitle());
+    ASSERT_EQ(ASCIIToUTF16("Google Business Solutions"),
+              child->GetTitleAsString16());
     ASSERT_TRUE(child->GetURL() == GURL("http://www.google.com/services/"));
 
     parent = bb_model_->other_node();
@@ -834,12 +836,12 @@ class BookmarkModelTestWithProfile2 : public BookmarkModelTestWithProfile {
 
     child = parent->GetChild(0);
     ASSERT_TRUE(child->is_folder());
-    ASSERT_EQ(L"OF1", child->GetTitle());
+    ASSERT_EQ(ASCIIToUTF16("OF1"), child->GetTitleAsString16());
     ASSERT_EQ(0, child->GetChildCount());
 
     child = parent->GetChild(1);
     ASSERT_EQ(BookmarkNode::URL, child->type());
-    ASSERT_EQ(L"About Google", child->GetTitle());
+    ASSERT_EQ(ASCIIToUTF16("About Google"), child->GetTitleAsString16());
     ASSERT_TRUE(child->GetURL() ==
                 GURL("http://www.google.com/intl/en/about.html"));
 
@@ -972,8 +974,8 @@ TEST_F(BookmarkModelTest, Sort) {
 
   // Make sure the order matches (remember, 'a' and 'C' are folders and
   // come first).
-  EXPECT_TRUE(parent->GetChild(0)->GetTitle() == L"a");
-  EXPECT_TRUE(parent->GetChild(1)->GetTitle() == L"C");
-  EXPECT_TRUE(parent->GetChild(2)->GetTitle() == L"B");
-  EXPECT_TRUE(parent->GetChild(3)->GetTitle() == L"d");
+  EXPECT_EQ(parent->GetChild(0)->GetTitleAsString16(), ASCIIToUTF16("a"));
+  EXPECT_EQ(parent->GetChild(1)->GetTitleAsString16(), ASCIIToUTF16("C"));
+  EXPECT_EQ(parent->GetChild(2)->GetTitleAsString16(), ASCIIToUTF16("B"));
+  EXPECT_EQ(parent->GetChild(3)->GetTitleAsString16(), ASCIIToUTF16("d"));
 }
