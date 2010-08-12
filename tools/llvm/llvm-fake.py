@@ -635,6 +635,11 @@ def Incarnation_bcld_generic(argv):
   arch, argv = ExtractArch(argv)
   output = BitcodeToNative(argv, arch)
 
+def Incarnation_bc_final(argv):
+  arch, argv = ExtractArch(argv)
+  # second return value is ignored
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv, arch)
+
 ######################################################################
 # Dispatch based on name the scripts is invoked with
 ######################################################################
@@ -646,6 +651,9 @@ INCARNATIONS = {
    'llvm-fake-sfig++': Incarnation_gcclike,
 
    'llvm-fake-bcld' : Incarnation_bcld_generic,
+
+   # final bc i.e. translator ready
+   'llvm-fake-bcfinal' : Incarnation_bc_final,
 
    'llvm-fake-illegal': Incarnation_illegal,
    'llvm-fake-nop': Incarnation_nop,

@@ -2252,7 +2252,7 @@ llvm-fake-install() {
   #rm -rf  ${INSTALL_DIR}
   #mkdir -p ${INSTALL_DIR}
   cp tools/llvm/llvm-fake.py ${INSTALL_DIR}
-  for s in sfigcc sfig++ bcld illegal nop ; do
+  for s in sfigcc sfig++ bcld bcfinal illegal nop ; do
     local t="llvm-fake-$s"
     ln -fs llvm-fake.py ${INSTALL_DIR}/$t
   done
