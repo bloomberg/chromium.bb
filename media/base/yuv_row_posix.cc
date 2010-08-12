@@ -21,7 +21,6 @@ void FastConvertYUVToRGB32Row(const uint8* y_buf,  // rdi
                               uint8* rgb_buf,      // rcx
                               int width) {         // r8
   asm(
-  ".text\n"
   "jmp    convertend\n"
 "convertloop:"
   "movzb  (%1),%%r10\n"
@@ -81,7 +80,6 @@ void ScaleYUVToRGB32Row(const uint8* y_buf,  // rdi
                         int width,           // r8
                         int source_dx) {     // r9
   asm(
-  ".text\n"
   "xor    %%r11,%%r11\n"
   "sub    $0x2,%4\n"
   "js     scalenext\n"
@@ -151,7 +149,6 @@ void LinearScaleYUVToRGB32Row(const uint8* y_buf,
                               int width,
                               int source_dx) {
   asm(
-  ".text\n"
   "xor    %%r11,%%r11\n"   // x = 0
   "sub    $0x2,%4\n"
   "js     .lscalenext\n"
