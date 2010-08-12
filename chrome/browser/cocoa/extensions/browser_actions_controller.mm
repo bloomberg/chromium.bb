@@ -33,9 +33,7 @@ NSString* const kBrowserActionVisibilityChangedNotification =
 
 namespace {
 const CGFloat kAnimationDuration = 0.2;
-// When determining the opacity during a drag, we artificially reduce the
-// distance to the edge in order to make the fade more apparent.
-const CGFloat kButtonOpacityLeadPadding = 5.0;
+
 const CGFloat kChevronWidth = 14.0;
 
 // Image used for the overflow button.
@@ -543,7 +541,6 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 - (void)updateButtonOpacity {
   for (BrowserActionButton* button in [buttons_ allValues]) {
     NSRect buttonFrame = [button frame];
-    buttonFrame.origin.x += kButtonOpacityLeadPadding;
     if (NSContainsRect([containerView_ bounds], buttonFrame)) {
       if ([button alphaValue] != 1.0)
         [button setAlphaValue:1.0];
@@ -552,8 +549,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
     }
     CGFloat intersectionWidth =
         NSWidth(NSIntersectionRect([containerView_ bounds], buttonFrame));
-    CGFloat alpha = std::max(0.0f,
-        (intersectionWidth - kButtonOpacityLeadPadding) / NSWidth(buttonFrame));
+    CGFloat alpha = std::max(0.0f, intersectionWidth / NSWidth(buttonFrame));
     [button setAlphaValue:alpha];
     [button setNeedsDisplay:YES];
   }
