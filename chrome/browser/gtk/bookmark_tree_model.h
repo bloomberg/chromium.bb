@@ -8,6 +8,7 @@
 
 #include <string>
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 class BookmarkModel;
 class BookmarkNode;
@@ -69,8 +70,8 @@ const BookmarkNode* CommitTreeStoreDifferencesBetween(
 // Returns the id field of the row pointed to by |iter|.
 int64 GetIdFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);
 
-// Returns the title field of the row pointed to by |iter|.
-std::wstring GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);
+// Returns the title field in utf8 of the row pointed to by |iter|.
+string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);
 
 }  // namespace bookmark_utils
 

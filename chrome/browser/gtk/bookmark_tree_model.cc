@@ -49,12 +49,12 @@ void RecursiveResolve(BookmarkModel* bb_model, const BookmarkNode* bb_node,
   if (gtk_tree_model_iter_children(tree_model, &child_iter, parent_iter)) {
     do {
       int64 id = bookmark_utils::GetIdFromTreeIter(tree_model, &child_iter);
-      std::wstring title =
+      string16 title =
           bookmark_utils::GetTitleFromTreeIter(tree_model, &child_iter);
       const BookmarkNode* child_bb_node = NULL;
       if (id == 0) {
         child_bb_node = bb_model->AddGroup(bb_node, bb_node->GetChildCount(),
-                                           title);
+                                           UTF16ToWide(title));
       } else {
         // Existing node, reset the title (BBModel ignores changes if the title
         // is the same).
@@ -66,7 +66,7 @@ void RecursiveResolve(BookmarkModel* bb_model, const BookmarkNode* bb_node,
           }
         }
         DCHECK(child_bb_node);
-        bb_model->SetTitle(child_bb_node, title);
+        bb_model->SetTitle(child_bb_node, UTF16ToWide(title));
       }
       RecursiveResolve(bb_model, child_bb_node,
                        tree_model, &child_iter,
@@ -211,13 +211,13 @@ int64 GetIdFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
   return ret_val;
 }
 
-std::wstring GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
+string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
   GValue value = { 0, };
-  std::wstring ret_val;
+  string16 ret_val;
   gtk_tree_model_get_value(model, iter, FOLDER_NAME, &value);
   if (G_VALUE_HOLDS_STRING(&value)) {
     const gchar* utf8str = g_value_get_string(&value);
-    ret_val = UTF8ToWide(utf8str);
+    ret_val = UTF8ToUTF16(utf8str);
     g_value_unset(&value);
   } else {
     NOTREACHED() << "Impossible type mismatch";

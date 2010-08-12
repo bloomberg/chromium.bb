@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/pickle.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -51,7 +52,7 @@ void* AsVoid(const BookmarkNode* node) {
 }
 
 // Creates the widget hierarchy for a bookmark button.
-void PackButton(GdkPixbuf* pixbuf, const std::wstring& title, bool ellipsize,
+void PackButton(GdkPixbuf* pixbuf, const string16& title, bool ellipsize,
                 GtkThemeProvider* provider, GtkWidget* button) {
   GtkWidget* former_child = gtk_bin_get_child(GTK_BIN(button));
   if (former_child)
@@ -64,7 +65,7 @@ void PackButton(GdkPixbuf* pixbuf, const std::wstring& title, bool ellipsize,
   GtkWidget* box = gtk_hbox_new(FALSE, kBarButtonPadding);
   gtk_box_pack_start(GTK_BOX(box), image, FALSE, FALSE, 0);
 
-  std::string label_string = WideToUTF8(title);
+  std::string label_string = UTF16ToUTF8(title);
   if (!label_string.empty()) {
     GtkWidget* label = gtk_label_new(label_string.c_str());
     // Until we switch to vector graphics, force the font size.
@@ -99,11 +100,11 @@ const int kDragRepresentationWidth = 140;
 struct DragRepresentationData {
  public:
   GdkPixbuf* favicon;
-  std::wstring text;
+  string16 text;
   SkColor text_color;
 
   DragRepresentationData(GdkPixbuf* favicon,
-                         const std::wstring& text,
+                         const string16& text,
                          SkColor text_color)
       : favicon(favicon),
         text(text),
@@ -140,7 +141,7 @@ gboolean OnDragIconExpose(GtkWidget* sender,
   int text_width = sender->allocation.width - text_x;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-  canvas.DrawStringInt(data->text,
+  canvas.DrawStringInt(UTF16ToWide(data->text),
                        base_font, data->text_color,
                        text_x, 0, text_width, sender->allocation.height);
 
@@ -179,7 +180,7 @@ GdkPixbuf* GetPixbufForNode(const BookmarkNode* node, BookmarkModel* model,
 }
 
 GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
-                                 const std::wstring& title,
+                                 const string16& title,
                                  GtkThemeProvider* provider) {
   GtkWidget* window = gtk_window_new(GTK_WINDOW_POPUP);
 
@@ -222,7 +223,8 @@ GtkWidget* GetDragRepresentationForNode(const BookmarkNode* node,
                                         BookmarkModel* model,
                                         GtkThemeProvider* provider) {
   GdkPixbuf* pixbuf = GetPixbufForNode(node, model, provider->UseGtkTheme());
-  GtkWidget* widget = GetDragRepresentation(pixbuf, node->GetTitle(), provider);
+  GtkWidget* widget = GetDragRepresentation(pixbuf,
+      node->GetTitleAsString16(), provider);
   g_object_unref(pixbuf);
   return widget;
 }
@@ -231,7 +233,7 @@ void ConfigureButtonForNode(const BookmarkNode* node, BookmarkModel* model,
                             GtkWidget* button, GtkThemeProvider* provider) {
   GdkPixbuf* pixbuf = bookmark_utils::GetPixbufForNode(node, model,
                                                        provider->UseGtkTheme());
-  PackButton(pixbuf, node->GetTitle(), node != model->other_node(),
+  PackButton(pixbuf, node->GetTitleAsString16(), node != model->other_node(),
              provider, button);
   g_object_unref(pixbuf);
 

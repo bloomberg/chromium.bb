@@ -282,8 +282,8 @@ GURL BookmarkEditorGtk::GetInputURL() const {
                                  std::string());
 }
 
-std::wstring BookmarkEditorGtk::GetInputTitle() const {
-  return UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(name_entry_)));
+string16 BookmarkEditorGtk::GetInputTitle() const {
+  return UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(name_entry_)));
 }
 
 void BookmarkEditorGtk::ApplyEdits() {
@@ -308,11 +308,11 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
   bb_model_->RemoveObserver(this);
 
   GURL new_url(GetInputURL());
-  std::wstring new_title(GetInputTitle());
+  string16 new_title(GetInputTitle());
 
   if (!show_tree_ || !selected_parent) {
     bookmark_utils::ApplyEditsWithNoGroupChange(
-        bb_model_, parent_, details_, new_title, new_url);
+        bb_model_, parent_, details_, UTF16ToWide(new_title), new_url);
     return;
   }
 
@@ -328,7 +328,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
   }
 
   bookmark_utils::ApplyEditsWithPossibleGroupChange(
-      bb_model_, new_parent, details_, new_title, new_url);
+      bb_model_, new_parent, details_, UTF16ToWide(new_title), new_url);
 }
 
 void BookmarkEditorGtk::AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child) {

@@ -11,6 +11,7 @@
 #include "app/gtk_integers.h"
 #include "app/gtk_signal.h"
 #include "base/gtest_prod_util.h"
+#include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
@@ -79,7 +80,7 @@ class BookmarkEditorGtk : public BookmarkEditor,
   GURL GetInputURL() const;
 
   // Returns the title the user has input.
-  std::wstring GetInputTitle() const;
+  string16 GetInputTitle() const;
 
   // Invokes ApplyEdits with the selected node.
   //

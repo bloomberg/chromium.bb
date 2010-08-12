@@ -1004,8 +1004,8 @@ void LocationBarViewGtk::OnIconDragBegin(GtkWidget* sender,
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&favicon);
   if (!pixbuf)
     return;
-  drag_icon_ = bookmark_utils::GetDragRepresentation(pixbuf, GetTitle(),
-                                                     theme_provider_);
+  drag_icon_ = bookmark_utils::GetDragRepresentation(pixbuf,
+      WideToUTF16(GetTitle()), theme_provider_);
   g_object_unref(pixbuf);
   gtk_drag_set_icon_widget(context, drag_icon_, 0, 0);
 }

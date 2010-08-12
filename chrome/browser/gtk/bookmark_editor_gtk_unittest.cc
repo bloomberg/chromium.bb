@@ -115,21 +115,21 @@ TEST_F(BookmarkEditorGtkTest, ModelsMatch) {
   ASSERT_EQ(2, gtk_tree_model_iter_n_children(store, &bookmark_bar_node));
   ASSERT_TRUE(gtk_tree_model_iter_children(store, &child, &bookmark_bar_node));
   f1_iter = child;
-  ASSERT_EQ(L"F1", GetTitleFromTreeIter(store, &child));
+  ASSERT_EQ("F1", UTF16ToUTF8(GetTitleFromTreeIter(store, &child)));
   ASSERT_TRUE(gtk_tree_model_iter_next(store, &child));
-  ASSERT_EQ(L"F2", GetTitleFromTreeIter(store, &child));
+  ASSERT_EQ("F2", UTF16ToUTF8(GetTitleFromTreeIter(store, &child)));
   ASSERT_FALSE(gtk_tree_model_iter_next(store, &child));
 
   // F1 should have one child, F11
   ASSERT_EQ(1, gtk_tree_model_iter_n_children(store, &f1_iter));
   ASSERT_TRUE(gtk_tree_model_iter_children(store, &child, &f1_iter));
-  ASSERT_EQ(L"F11", GetTitleFromTreeIter(store, &child));
+  ASSERT_EQ("F11", UTF16ToUTF8(GetTitleFromTreeIter(store, &child)));
   ASSERT_FALSE(gtk_tree_model_iter_next(store, &child));
 
   // Other node should have one child (OF1).
   ASSERT_EQ(1, gtk_tree_model_iter_n_children(store, &other_node));
   ASSERT_TRUE(gtk_tree_model_iter_children(store, &child, &other_node));
-  ASSERT_EQ(L"OF1", GetTitleFromTreeIter(store, &child));
+  ASSERT_EQ("OF1", UTF16ToUTF8(GetTitleFromTreeIter(store, &child)));
   ASSERT_FALSE(gtk_tree_model_iter_next(store, &child));
 }
 

@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -271,12 +272,10 @@ void BookmarkBubbleGtk::ApplyEdits() {
   BookmarkModel* model = profile_->GetBookmarkModel();
   const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
   if (node) {
-    // NOTE: Would be nice to save a strlen and use gtk_entry_get_text_length,
-    // but it is fairly new and not always in our GTK version.
-    const std::wstring new_title(
-        UTF8ToWide(gtk_entry_get_text(GTK_ENTRY(name_entry_))));
+    const string16 new_title(
+        UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(name_entry_))));
 
-    if (new_title != node->GetTitle()) {
+    if (new_title != node->GetTitleAsString16()) {
       model->SetTitle(node, new_title);
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"),
