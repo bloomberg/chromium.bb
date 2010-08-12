@@ -599,7 +599,8 @@ class RenderViewHost : public RenderWidgetHost {
 
   void OnUserMetricsRecordAction(const std::string& action);
   void OnMissingPluginStatus(int status);
-  void OnNonSandboxedPluginBlocked(const string16& name);
+  void OnNonSandboxedPluginBlocked(const std::string& plugin,
+                                   const string16& name);
   void OnBlockedPluginLoaded();
   void OnCrashedPlugin(const FilePath& plugin_path);
   void OnDisabledOutdatedPlugin(const string16& name, const GURL& update_url);
@@ -651,7 +652,8 @@ class RenderViewHost : public RenderWidgetHost {
                         const std::string& original_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type);
-  void OnContentBlocked(ContentSettingsType type);
+  void OnContentBlocked(ContentSettingsType type,
+                        const std::string& resource_identifier);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url,
                              const string16& name,

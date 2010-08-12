@@ -1536,11 +1536,12 @@ void RenderViewHost::OnMissingPluginStatus(int status) {
     integration_delegate->OnMissingPluginStatus(status);
 }
 
-void RenderViewHost::OnNonSandboxedPluginBlocked(const string16& name) {
+void RenderViewHost::OnNonSandboxedPluginBlocked(const std::string& plugin,
+                                                 const string16& name) {
   RenderViewHostDelegate::BlockedPlugin* blocked_plugin_delegate =
       delegate_->GetBlockedPluginDelegate();
   if (blocked_plugin_delegate) {
-    blocked_plugin_delegate->OnNonSandboxedPluginBlocked(name);
+    blocked_plugin_delegate->OnNonSandboxedPluginBlocked(plugin, name);
   }
 }
 
@@ -1996,11 +1997,12 @@ void RenderViewHost::OnPageTranslated(int32 page_id,
                                          translated_lang, error_type);
 }
 
-void RenderViewHost::OnContentBlocked(ContentSettingsType type) {
+void RenderViewHost::OnContentBlocked(ContentSettingsType type,
+                                      const std::string& resource_identifier) {
   RenderViewHostDelegate::ContentSettings* content_settings_delegate =
       delegate_->GetContentSettingsDelegate();
   if (content_settings_delegate)
-    content_settings_delegate->OnContentBlocked(type);
+    content_settings_delegate->OnContentBlocked(type, resource_identifier);
 }
 
 void RenderViewHost::OnAppCacheAccessed(const GURL& manifest_url,

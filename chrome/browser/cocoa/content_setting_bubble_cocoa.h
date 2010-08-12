@@ -37,6 +37,8 @@ typedef std::map<NSButton*, int> PopupLinks;
   // The info button of the cookies bubble.
   IBOutlet NSButton* infoButton_;
 
+  IBOutlet NSTextField* blockedResourcesField_;
+
   scoped_ptr<ContentSettingBubbleModel> contentSettingBubbleModel_;
   content_setting_bubble::PopupLinks popupLinks_;
 }

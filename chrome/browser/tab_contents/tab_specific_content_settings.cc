@@ -47,12 +47,35 @@ bool TabSpecificContentSettings::IsContentAccessed(
   return content_accessed_[content_type];
 }
 
-void TabSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
+const std::set<std::string>&
+    TabSpecificContentSettings::BlockedResourcesForType(
+        ContentSettingsType content_type) const {
+  if (blocked_resources_[content_type].get()) {
+    return *blocked_resources_[content_type];
+  } else {
+    static std::set<std::string> empty_set;
+    return empty_set;
+  }
+}
+
+void TabSpecificContentSettings::AddBlockedResource(
+    ContentSettingsType content_type,
+    const std::string& resource_identifier) {
+  if (!blocked_resources_[content_type].get())
+    blocked_resources_[content_type].reset(new std::set<std::string>());
+  blocked_resources_[content_type]->insert(resource_identifier);
+}
+
+void TabSpecificContentSettings::OnContentBlocked(
+    ContentSettingsType type,
+    const std::string& resource_identifier) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   content_accessed_[type] = true;
   if (!content_blocked_[type]) {
     content_blocked_[type] = true;
+    if (!resource_identifier.empty())
+      AddBlockedResource(type, resource_identifier);
     if (delegate_)
       delegate_->OnContentSettingsAccessed(true);
   }
@@ -75,7 +98,7 @@ void TabSpecificContentSettings::OnCookieAccessed(
   if (blocked_by_policy) {
     blocked_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   } else {
     allowed_local_shared_objects_.cookies()->SetCookieWithOptions(
         url, cookie_line, options);
@@ -95,7 +118,7 @@ void TabSpecificContentSettings::OnLocalStorageAccessed(
   helper->AddLocalStorage(url);
 
   if (blocked_by_policy)
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   else
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
 }
@@ -109,7 +132,7 @@ void TabSpecificContentSettings::OnWebDatabaseAccessed(
   if (blocked_by_policy) {
     blocked_local_shared_objects_.databases()->AddDatabase(
         url, UTF16ToUTF8(name), UTF16ToUTF8(display_name));
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   } else {
     allowed_local_shared_objects_.databases()->AddDatabase(
         url, UTF16ToUTF8(name), UTF16ToUTF8(display_name));
@@ -121,7 +144,7 @@ void TabSpecificContentSettings::OnAppCacheAccessed(
     const GURL& manifest_url, bool blocked_by_policy) {
   if (blocked_by_policy) {
     blocked_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
+    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES, std::string());
   } else {
     allowed_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
     OnContentAccessed(CONTENT_SETTINGS_TYPE_COOKIES);
@@ -150,6 +173,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(
 
 void TabSpecificContentSettings::ClearBlockedContentSettings() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i) {
+    blocked_resources_[i].reset();
     content_blocked_[i] = false;
     content_accessed_[i] = false;
   }

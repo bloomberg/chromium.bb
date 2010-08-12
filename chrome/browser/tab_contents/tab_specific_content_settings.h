@@ -60,6 +60,9 @@ class TabSpecificContentSettings
   // only tracks cookies.
   bool IsContentAccessed(ContentSettingsType content_type) const;
 
+  const std::set<std::string>& BlockedResourcesForType(
+      ContentSettingsType content_type) const;
+
   // Returns the GeolocationSettingsState that controls the
   // geolocation API usage on this page.
   const GeolocationSettingsState& geolocation_settings_state() const {
@@ -78,7 +81,8 @@ class TabSpecificContentSettings
   }
 
   // RenderViewHostDelegate::ContentSettings implementation.
-  virtual void OnContentBlocked(ContentSettingsType type);
+  virtual void OnContentBlocked(ContentSettingsType type,
+                                const std::string& resource_identifier);
   virtual void OnCookieAccessed(const GURL& url,
                                 const std::string& cookie_line,
                                 bool blocked_by_policy);
@@ -132,6 +136,9 @@ class TabSpecificContentSettings
     scoped_refptr<CannedBrowsingDataLocalStorageHelper> session_storages_;
   };
 
+  void AddBlockedResource(ContentSettingsType content_type,
+                          const std::string& resource_identifier);
+
   void OnContentAccessed(ContentSettingsType type);
 
   // Stores which content setting types actually have blocked content.
@@ -139,6 +146,11 @@ class TabSpecificContentSettings
 
   // Stores which content setting types actually were accessed.
   bool content_accessed_[CONTENT_SETTINGS_NUM_TYPES];
+
+  // Stores the blocked resources for each content type.
+  // Currently only used for plugins.
+  scoped_ptr<std::set<std::string> >
+      blocked_resources_[CONTENT_SETTINGS_NUM_TYPES];
 
   // Stores the blocked/allowed cookies.
   LocalSharedObjectsContainer allowed_local_shared_objects_;

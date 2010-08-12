@@ -15,7 +15,8 @@ class BlockedPluginManager : public RenderViewHostDelegate::BlockedPlugin,
  public:
   explicit BlockedPluginManager(TabContents* tab_contents);
 
-  virtual void OnNonSandboxedPluginBlocked(const string16& name);
+  virtual void OnNonSandboxedPluginBlocked(const std::string& plugin,
+                                           const string16& name);
   virtual void OnBlockedPluginLoaded();
 
   // ConfirmInfoBarDelegate methods
@@ -25,12 +26,14 @@ class BlockedPluginManager : public RenderViewHostDelegate::BlockedPlugin,
   virtual std::wstring GetLinkText();
   virtual SkBitmap* GetIcon() const;
   virtual bool Accept();
+  virtual bool Cancel();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
  private:
   // Owns us.
   TabContents* tab_contents_;
   string16 name_;
+  std::string plugin_;
 };
 
 #endif  // CHROME_BROWSER_BLOCKED_PLUGIN_MANAGER_H_

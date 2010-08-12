@@ -29,20 +29,42 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
       : ContentSettingBubbleModel(tab_contents, profile, content_type) {
      // Notifications do not have a bubble.
      DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
+     SetBlockedResources();
      SetTitle();
      SetManageLink();
   }
 
  private:
+  void SetBlockedResources() {
+    TabSpecificContentSettings* settings =
+        tab_contents()->GetTabSpecificContentSettings();
+    const std::set<std::string>& resources = settings->BlockedResourcesForType(
+        content_type());
+    for (std::set<std::string>::const_iterator it = resources.begin();
+        it != resources.end(); ++it) {
+      AddBlockedResource(*it);
+    }
+  }
+
   void SetTitle() {
     static const int kBlockedTitleIDs[] = {
       IDS_BLOCKED_COOKIES_TITLE,
       IDS_BLOCKED_IMAGES_TITLE,
       IDS_BLOCKED_JAVASCRIPT_TITLE,
-      IDS_BLOCKED_PLUGINS_TITLE,
+      IDS_BLOCKED_PLUGINS_MESSAGE,
       IDS_BLOCKED_POPUPS_TITLE,
       0,  // Geolocation does not have an overall title.
       0,  // Notifications do not have a bubble.
+    };
+    // Fields as for kBlockedTitleIDs, above.
+    static const int kResourceSpecificBlockedTitleIDs[] = {
+      0,
+      0,
+      0,
+      IDS_BLOCKED_PLUGINS_TITLE,
+      0,
+      0,
+      0,
     };
     static const int kAccessedTitleIDs[] = {
       IDS_ACCESSED_COOKIES_TITLE,
@@ -57,6 +79,9 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
                    Need_a_setting_for_every_content_settings_type);
     COMPILE_ASSERT(arraysize(kBlockedTitleIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
+    COMPILE_ASSERT(arraysize(kResourceSpecificBlockedTitleIDs) ==
+        CONTENT_SETTINGS_NUM_TYPES,
+        Need_a_setting_for_every_content_settings_type);
     const int *title_ids = kBlockedTitleIDs;
     if (tab_contents() &&
         tab_contents()->GetTabSpecificContentSettings()->IsContentAccessed(
@@ -64,8 +89,11 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
         !tab_contents()->GetTabSpecificContentSettings()->IsContentBlocked(
             content_type()) &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableCookiePrompt))
+            switches::kEnableCookiePrompt)) {
       title_ids = kAccessedTitleIDs;
+    } else if (!bubble_content().resource_identifiers.empty()) {
+      title_ids = kResourceSpecificBlockedTitleIDs;
+    }
     if (title_ids[content_type()])
       set_title(l10n_util::GetStringUTF8(title_ids[content_type()]));
   }
@@ -151,6 +179,9 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
         &display_host_wide, NULL, NULL);
     std::string display_host(WideToUTF8(display_host_wide));
 
+    const std::set<std::string>& resources =
+        bubble_content().resource_identifiers;
+
     RadioGroup radio_group;
     radio_group.url = url;
 
@@ -158,16 +189,31 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
       0,  // We don't manage cookies here.
       IDS_BLOCKED_IMAGES_UNBLOCK,
       IDS_BLOCKED_JAVASCRIPT_UNBLOCK,
-      IDS_BLOCKED_PLUGINS_UNBLOCK,
+      IDS_BLOCKED_PLUGINS_UNBLOCK_ALL,
       IDS_BLOCKED_POPUPS_UNBLOCK,
       0,  // We don't manage geolocation here.
       0,  // Notifications do not have a bubble.
     };
     COMPILE_ASSERT(arraysize(kAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
                    Need_a_setting_for_every_content_settings_type);
+     // Fields as for kAllowIDs, above.
+    static const int kResourceSpecificAllowIDs[] = {
+      0,
+      0,
+      0,
+      IDS_BLOCKED_PLUGINS_UNBLOCK,
+      0,
+      0,
+      0,
+    };
+    COMPILE_ASSERT(
+        arraysize(kResourceSpecificAllowIDs) == CONTENT_SETTINGS_NUM_TYPES,
+        Need_a_setting_for_every_content_settings_type);
     std::string radio_allow_label;
+    const int* allowIDs = resources.empty() ?
+        kAllowIDs : kResourceSpecificAllowIDs;
     radio_allow_label = l10n_util::GetStringFUTF8(
-        kAllowIDs[content_type()], UTF8ToUTF16(display_host));
+        allowIDs[content_type()], UTF8ToUTF16(display_host));
 
     static const int kBlockIDs[] = {
       0,  // We don't manage cookies here.
@@ -186,18 +232,48 @@ class ContentSettingSingleRadioGroup : public ContentSettingTitleAndLinkModel {
 
     radio_group.radio_items.push_back(radio_allow_label);
     radio_group.radio_items.push_back(radio_block_label);
-    radio_group.default_item =
-        profile()->GetHostContentSettingsMap()->GetContentSetting(url,
-            content_type(), "") == CONTENT_SETTING_ALLOW ? 0 : 1;
+    HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
+    if (resources.empty()) {
+      ContentSetting setting = map->GetContentSetting(url, content_type(),
+                                                      std::string());
+      radio_group.default_item = (setting == CONTENT_SETTING_ALLOW) ? 0 : 1;
+    } else {
+      // The default item is "block" if at least one of the resources
+      // is blocked.
+      radio_group.default_item = 0;
+      for (std::set<std::string>::const_iterator it = resources.begin();
+           it != resources.end(); ++it) {
+        ContentSetting setting = map->GetContentSetting(
+            url, content_type(), *it);
+        if (setting == CONTENT_SETTING_BLOCK) {
+          radio_group.default_item = 1;
+          break;
+        }
+      }
+    }
     set_radio_group(radio_group);
   }
 
-  virtual void OnRadioClicked(int radio_index) {
+  void AddException(ContentSetting setting,
+                    const std::string& resource_identifier) {
     profile()->GetHostContentSettingsMap()->AddExceptionForURL(
-        bubble_content().radio_group.url,
-        content_type(),
-        "",
-        radio_index == 0 ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+        bubble_content().radio_group.url, content_type(), resource_identifier,
+        setting);
+  }
+
+  virtual void OnRadioClicked(int radio_index) {
+    ContentSetting setting =
+        radio_index == 0 ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
+    const std::set<std::string>& resources =
+        bubble_content().resource_identifiers;
+    if (resources.empty()) {
+      AddException(setting, std::string());
+    } else {
+      for (std::set<std::string>::const_iterator it = resources.begin();
+           it != resources.end(); ++it) {
+        AddException(setting, *it);
+      }
+    }
   }
 };
 
@@ -384,6 +460,11 @@ ContentSettingBubbleModel::ContentSettingBubbleModel(
 }
 
 ContentSettingBubbleModel::~ContentSettingBubbleModel() {
+}
+
+void ContentSettingBubbleModel::AddBlockedResource(
+    const std::string& resource_identifier) {
+  bubble_content_.resource_identifiers.insert(resource_identifier);
 }
 
 void ContentSettingBubbleModel::Observe(NotificationType type,
