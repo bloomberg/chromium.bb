@@ -8623,6 +8623,22 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Warning invoked when the user tries to remove the last language">
         Please add another language before removing this one.
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS"
+               desc="Explanatory message about how to add and order languages">
+        Add languages and drag to order them based on your preference.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_INSTRUCTIONS"
+               desc="Explanatory message about how to select input methods">
+        For text input, select a language to see available input methods.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT"
+               desc="Explanatory message about how to switch input methods">
+        Hit <ph name="HOTKEY_NAME">$1<ex>alt-shift</ex></ph> to switch between input methods.
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT"
+               desc="Explanatory message about how to select the previous input method">
+        Hit <ph name="HOTKEY_NAME">$1<ex>ctrl-space</ex></ph> to select the previous input method.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE"
                desc="The label is used for a button that changes the UI
                      language of Chrome OS">

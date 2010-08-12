@@ -24,6 +24,10 @@
   padding-bottom: 10px;
 }
 
+.language-options-header, .language-options-footer {
+  margin: 15px;
+}
+
 .language-options-left, .language-options-right {
   border: 1px solid #cccccc;
   vertical-align: top;

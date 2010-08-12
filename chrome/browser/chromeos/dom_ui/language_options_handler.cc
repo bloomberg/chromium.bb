@@ -50,6 +50,20 @@ void LanguageOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_LANGUAGE));
   localized_strings->SetString(L"remove_button",
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
+  localized_strings->SetString(L"add_language_instructions",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS));
+  localized_strings->SetString(L"input_method_instructions",
+      l10n_util::GetString(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_INSTRUCTIONS));
+  localized_strings->SetString(L"switch_input_methods_hint",
+      l10n_util::GetStringF(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT,
+          L"alt+shift"));
+  localized_strings->SetString(L"select_previous_input_method_hint",
+      l10n_util::GetStringF(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT,
+          L"ctrl+space"));
   localized_strings->SetString(L"cannot_be_displayed_in_this_language",
       l10n_util::GetStringF(
           IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE,
