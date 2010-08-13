@@ -74,7 +74,7 @@ class PanelController {
                            public views::ButtonListener {
    public:
     explicit TitleContentView(PanelController* panelController);
-    virtual ~TitleContentView() {}
+    virtual ~TitleContentView();
     virtual void Layout();
     virtual bool OnMousePressed(const views::MouseEvent& event);
     virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);

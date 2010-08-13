@@ -15,14 +15,18 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/notification_service.h"
+#include "cros/chromeos_wm_ipc_enums.h"
 #include "grit/app_resources.h"
+#include "gfx/canvas_skia.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "cros/chromeos_wm_ipc_enums.h"
+#include "third_party/skia/include/effects/SkGradientShader.h"
+#include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/event.h"
+#include "views/painter.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
@@ -40,20 +44,43 @@ static gfx::Font* inactive_font = NULL;
 
 namespace {
 
-const int kTitleWidth = 200;
-const int kTitleHeight = 20;
+const int kTitleHeight = 24;
 const int kTitleIconSize = 16;
-const int kTitleWidthPad = 2;
-const int kTitleHeightPad = 1;
-const int kButtonPad = 4;
+const int kTitleWidthPad = 4;
+const int kTitleHeightPad = 4;
+const int kTitleCornerRadius = 4;
+const int kTitleCloseButtonPad = 6;
+const SkColor kTitleActiveGradientStart = SK_ColorWHITE;
+const SkColor kTitleActiveGradientEnd = 0xffe7edf1;
+const SkColor kTitleActiveColor = SK_ColorBLACK;
+const SkColor kTitleInactiveColor = SK_ColorBLACK;
+const SkColor kTitleCloseButtonColor = SK_ColorBLACK;
 
-const SkColor kActiveGradientStart = 0xffebeff9;
-const SkColor kActiveGradientEnd = 0xffb3c4f6;
-const SkColor kInactiveGradientStart = 0xfff2f2f2;
-const SkColor kInactiveGradientEnd = 0xfff2f2f2;
-const SkColor kActiveColor = SK_ColorBLACK;
-const SkColor kInactiveColor = 0xff333333;
-const SkColor kCloseButtonColor = SK_ColorBLACK;
+// Used to draw the background of the panel title window.
+class TitleBackgroundPainter : public views::Painter {
+  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
+    SkRect rect = {0, 0, w, h};
+    SkPath path;
+    SkScalar corners[] = {
+        kTitleCornerRadius, kTitleCornerRadius,
+        kTitleCornerRadius, kTitleCornerRadius,
+        0, 0,
+        0, 0
+    };
+    path.addRoundRect(rect, corners);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    SkPoint p[2] = {{0, 0}, {0, h}};
+    SkColor colors[2] = {kTitleActiveGradientStart, kTitleActiveGradientEnd};
+    SkShader* s = SkGradientShader::CreateLinear(
+        p, colors, NULL, 2, SkShader::kClamp_TileMode, NULL);
+    paint.setShader(s);
+    // Need to unref shader, otherwise never deleted.
+    s->unref();
+    canvas->AsCanvasSkia()->drawPath(path, paint);
+  }
+};
 
 static bool resources_initialized;
 static void InitializeResources() {
@@ -63,8 +90,10 @@ static void InitializeResources() {
 
   resources_initialized = true;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  inactive_font = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont));
-  active_font = new gfx::Font(inactive_font->DeriveFont(0, gfx::Font::BOLD));
+  gfx::Font base_font = rb.GetFont(ResourceBundle::BaseFont);
+  // Title fonts are the same for active and inactive.
+  inactive_font = new gfx::Font(base_font.DeriveFont(0, gfx::Font::BOLD));
+  active_font = inactive_font;
   close_button_n = rb.GetBitmapNamed(IDR_TAB_CLOSE);
   close_button_m = rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK);
   close_button_h = rb.GetBitmapNamed(IDR_TAB_CLOSE_H);
@@ -93,10 +122,10 @@ void PanelController::Init(bool initial_focus,
                            const gfx::Rect& window_bounds,
                            XID creator_xid,
                            WmIpcPanelUserResizeType resize_type) {
-  gfx::Rect title_bounds(
-      0, 0, window_bounds.width(), kTitleHeight);
+  gfx::Rect title_bounds(0, 0, window_bounds.width(), kTitleHeight);
 
   title_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
+  title_window_->MakeTransparent();
   title_window_->Init(NULL, title_bounds);
   gtk_widget_set_size_request(title_window_->GetNativeView(),
                               title_bounds.width(), title_bounds.height());
@@ -286,13 +315,14 @@ void PanelController::OnCloseButtonPressed() {
 PanelController::TitleContentView::TitleContentView(
     PanelController* panel_controller)
         : panel_controller_(panel_controller) {
+  LOG(INFO) << "panel: c " << this;
   InitializeResources();
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL, close_button_n);
   close_button_->SetImage(views::CustomButton::BS_HOT, close_button_h);
   close_button_->SetImage(views::CustomButton::BS_PUSHED, close_button_p);
   close_button_->SetBackground(
-      kCloseButtonColor, close_button_n, close_button_m);
+      kTitleCloseButtonColor, close_button_n, close_button_m);
   AddChildView(close_button_);
 
   title_icon_ = new views::ImageView();
@@ -301,12 +331,15 @@ PanelController::TitleContentView::TitleContentView(
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(title_label_);
 
-  // Default to inactive
+  set_background(
+      views::Background::CreateBackgroundPainter(
+          true, new TitleBackgroundPainter()));
   OnFocusOut();
 }
 
 void PanelController::TitleContentView::Layout() {
-  int close_button_x = bounds().width() - (close_button_width + kButtonPad);
+  int close_button_x = bounds().width() -
+      (close_button_width + kTitleCloseButtonPad);
   close_button_->SetBounds(
       close_button_x,
       (bounds().height() - close_button_height) / 2,
@@ -314,15 +347,15 @@ void PanelController::TitleContentView::Layout() {
       close_button_height);
   title_icon_->SetBounds(
       kTitleWidthPad,
-      kTitleHeightPad * 2,
+      kTitleHeightPad,
       kTitleIconSize,
       kTitleIconSize);
   int title_x = kTitleWidthPad * 2 + kTitleIconSize;
   title_label_->SetBounds(
       title_x,
-      kTitleHeightPad,
-      close_button_x - (title_x + kButtonPad),
-      bounds().height() - kTitleHeightPad);
+      0,
+      close_button_x - (title_x + kTitleCloseButtonPad),
+      bounds().height());
 }
 
 bool PanelController::TitleContentView::OnMousePressed(
@@ -344,18 +377,14 @@ bool PanelController::TitleContentView::OnMouseDragged(
 }
 
 void PanelController::TitleContentView::OnFocusIn() {
-  set_background(views::Background::CreateVerticalGradientBackground(
-      kActiveGradientStart, kActiveGradientEnd));
-  title_label_->SetColor(kActiveColor);
+  title_label_->SetColor(kTitleActiveColor);
   title_label_->SetFont(*active_font);
   Layout();
   SchedulePaint();
 }
 
 void PanelController::TitleContentView::OnFocusOut() {
-  set_background(views::Background::CreateVerticalGradientBackground(
-      kInactiveGradientStart, kInactiveGradientEnd));
-  title_label_->SetColor(kInactiveColor);
+  title_label_->SetColor(kTitleInactiveColor);
   title_label_->SetFont(*inactive_font);
   Layout();
   SchedulePaint();
@@ -369,6 +398,10 @@ void PanelController::TitleContentView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (panel_controller_ && sender == close_button_)
     panel_controller_->OnCloseButtonPressed();
+}
+
+PanelController::TitleContentView::~TitleContentView() {
+  LOG(INFO) << "panel: delete " << this;
 }
 
 }  // namespace chromeos
