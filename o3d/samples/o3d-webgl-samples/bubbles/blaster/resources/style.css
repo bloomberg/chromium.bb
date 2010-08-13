@@ -1,0 +1,188 @@
+/**
+ Copyright 2010, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  position: relative;
+}
+
+body, p, td, a {
+  font-family: 'Inconsolata', Verdana, Arial, Tahoma;
+  color: #FFF;
+}
+
+a {
+  text-decoration: none;
+}
+
+a:hover {
+  color: yellow;
+}
+
+p {
+  margin: 5px 0;
+}
+
+ul {
+  margin-left: 15px;
+}
+
+/** The left hand side bubble viewer. */
+#bubble-manager {
+  min-width: 50px;
+  min-height: 300px;
+  height: 95%;
+  overflow: hidden;
+  padding: 10px;
+  position: absolute;
+  margin: 10px;
+  text-align: center;
+}
+
+/** The bubble images within */
+#bubble-bubbles img {
+  display: block;
+  margin: 3px auto;
+}
+
+/** Text div describing bubbles */
+#bubble-count {
+  font-size: 8pt;
+}
+
+/** Number of bubbles left */
+#bubble-count-span {
+  font-size: 18pt;
+}
+
+/** For bubbles that have been placed. */
+.used {
+  opacity: 0.5;
+  -moz-opacity: 0.5;
+}
+
+body {
+  background: -webkit-gradient(radial, center center, 0, center center,
+      400, from(#89EAF5), to(black));
+  background: -moz-radial-gradient(#89EAF5, black);
+}
+
+/** Links that float upper right corner */
+#options {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 15px;
+  font-size: 12pt;
+  z-index: 2;
+}
+
+#options ul {
+  list-style-type: none;
+}
+
+#options li {
+  margin: 5px;
+}
+
+/** Links and transitions */
+#options a {
+  padding: 3px 6px;
+  -webkit-transition: all 0.5s ease-in-out;
+  -moz-transition: all 0.5s ease-in-out;
+  -o-transition: all 0.5s ease-in-out;
+  -webkit-transition: all 0.5s ease-in-out;
+  transition: all 0.5s ease-in-out;
+}
+
+#options a:hover {
+  background: #333;
+  color: #FFF;
+  border-radius: 5px;
+}
+
+#level-description {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding-bottom: 30px;
+  font-size: 20pt;
+  font-weight: bold;
+}
+
+.main-container {
+  border: 0px solid red;
+}
+
+#progress {
+  position: absolute;
+  bottom: 0;
+  height: 10px;
+  width: 100%;
+  background: rgba(255, 0, 0, 0.2);
+  border-top: 1px solid #333;
+}
+
+#goal {
+  height: 100%;
+  background: rgba(0, 255, 0, 0.5);
+  border-right: 3px solid rgba(0, 200, 0, 0.5);
+}
+
+#help, #finalResult {
+  position: absolute;
+  z-index: 5;
+  border: 5px solid #888;
+  background: #FFF;
+  color: #000;
+  border-radius: 10px;
+  padding: 15px;
+  width: 400px;
+  left: 50%;
+  margin-left: -200px;
+  margin-top: 20%;
+}
+
+#help, #help *, #finalResult, #finalResult * {
+  font-family: Verdana, Arial, Tahoma, sans-serif;
+  font-size: 8pt;
+  color: #000;
+}

@@ -1,0 +1,165 @@
+<!--
+Copyright 2010, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>
+Bubble Blaster (Experimental)
+</title>
+
+<!-- CSS -->
+<link href='http://fonts.googleapis.com/css?family=Inconsolata'
+    rel='stylesheet' type='text/css'>
+<link href='resources/style.css' rel='stylesheet' type='text/css'>
+
+<!-- jQuery -->
+<script type="text/javascript"
+    src="../third_party/jquery/jquery-1.4.2.min.js"></script>
+
+<!-- O3D -->
+<script type="text/javascript" src="../../../o3d-webgl/base.js"></script>
+<script type="text/javascript" src="../../../o3djs/base.js"></script>
+
+<!-- Demo files -->
+<script type="text/javascript" src="js/camera.js"></script>
+<script type="text/javascript" src="js/bubble.js"></script>
+<script type="text/javascript" src="js/bubble-manager.js"></script>
+<script type="text/javascript" src="js/block.js"></script>
+<script type="text/javascript" src="js/level.js"></script>
+<script type="text/javascript" src="js/game.js"></script>
+<script type="text/javascript" src="js/main.js"></script>
+</head>
+<body onload="init();" onunload="uninit();" id="body">
+
+<!-- Contains the level name and number. -->
+<div id="level-description" class="main-container"></div>
+
+<!-- Bubble listing on the left. -->
+<div id="bubble-manager" class="main-container">
+  <div id="bubble-count">
+    <div id="bubble-count-span"></div> bubbles remaining
+  </div>
+  <div id="bubble-bubbles"></div>
+</div>
+
+<!-- Links in the upper right. -->
+<div id="options" class="main-container">
+  <ul>
+    <li><a id="link-help" href="#help">help</a></li>
+    <li><a id="link-restart" href="#restart">restart</a></li>
+  </ul>
+</div>
+
+<!--  Progress bar at the bottom -->
+<div id="progress">
+  <div id="goal" style="width: 0%"></div>
+</div>
+
+<!-- Help dialog. -->
+<div id="help" style="display:none;">
+  <b>Goal</b>
+  <p>Your mission is to use bubble "splats" to cover as much of the surface
+  area of the center target as possible.
+  </p>
+  <br />
+  <b>Controls</b>
+  <ul>
+    <li> <b>SPACE</b> :: releases the next bubble in your queue.</li>
+    <li> <b>wasd</b> :: rotates your position around the model.</li>
+  </ul>
+  <br />
+  <p>
+    <a href="#close-help" id="close-help">close</a>
+  </p>
+</div>
+
+<!-- Final result -->
+<div id="finalResult" style="display:none;">
+  <b>Game over!</b>
+  <p>You successfully covered <span id="final"></span> of the target.</p>
+</div>
+
+<!-- The o3d container -->
+<div id="o3d-main" style="width: 100%; height: 100%;"></div>
+
+<!-- Shader for the block. -->
+<textarea style="display:none;" id="blockShader">
+  attribute vec4 position;
+  attribute vec2 texCoord0;
+  uniform mat4 worldViewProjection;
+  varying vec4 pos;
+  varying vec2 tex;
+
+  /**
+   * The vertex shader simply transforms the input vertices to screen space.
+   */
+  void main() {
+    // Multiply the vertex positions by the worldViewProjection matrix to
+    // transform them to screen space.
+    gl_Position = worldViewProjection * position;
+    pos = position;
+    tex = texCoord0;
+  }
+
+  // #o3d SplitMarker
+  varying vec4 pos;
+  varying vec2 tex;
+  uniform sampler2D myTexture;
+  uniform vec4 bubblePosition[SIZE];
+
+  bool insideABubble(vec3 pos) {
+    bool count = false;
+    for (int i = 0; i < SIZE; i++) {
+      vec4 bubble = bubblePosition[i];
+      if (length(abs(pos.xyz - bubble.xyz)) < bubble.w) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * The fragment shader derives color based on the position.
+   */
+  void main() {
+    vec4 color = texture2D(myTexture, tex);
+    if (insideABubble(pos.xyz)) {
+      // inside the bubble
+      gl_FragColor = vec4((color.xyz / 2.0), 1.0);
+    } else {
+      gl_FragColor = vec4(color.xyz, 1.0);
+    }
+  }
+</textarea>
+</body>
+</html>
