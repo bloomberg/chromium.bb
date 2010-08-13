@@ -1,0 +1,3 @@
+# Test if we parse movlps instruction, and accept in validator:
+#
+0f 12 45 f0
