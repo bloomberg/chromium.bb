@@ -166,6 +166,9 @@ li.filebrowserow div.icon {
 
 .rightarrow {
   opacity: 0.5;
+  position: absolute;
+  right: 22px;
+  top: 8px;
 }
 
 .menuicon {
@@ -257,9 +260,12 @@ li.filebrowserow input.name {
 }
 
 li.filebrowserow span.namelink {
-  margin-top: 10px;
   margin-left: -22px;
   position: relative;
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   color:#0D0052;
   -webkit-transition: color 1.0s ease-out ;
 }
@@ -315,10 +321,19 @@ div.column {
   position: relative;
 }
 
-div.columnlist {
+div.columnlistadv {
   width: 100%;
   bottom: 0;
   top: 32px;
+  position: absolute;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+div.columnlist {
+  width: 100%;
+  bottom: 0;
+  top: 0;
   position: absolute;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -612,7 +627,7 @@ function enabledResult(info) {
   mediaPlayerEnabled = info.mpEnabled;
   mainColumn = $('main');
   if (!advancedEnabled) {
-    $('back').style.display = 'none';
+    $('header').style.display = 'none';
   }
   if(document.documentElement.clientWidth <= 600) {
     inFullMode = false;
@@ -1067,7 +1082,11 @@ function newDownload(results) {
       var dirId = $('list/dir/' + extracted[1]);
       if (dirId) {
         element = createNewItem(extracted[2], results[x].file_path, false);
-        dirId.appendChild(element);
+        if (dirId.firstChild) {
+          dirId.insertBefore(element, dirId.firstChild);
+        } else {
+          dirId.appendChild(element);
+        }
         element.scrollIntoView();
       }
     }
@@ -1082,7 +1101,11 @@ function downloadUpdated(results) {
       var dirId = $('list/dir/' + extracted[1]);
       if (dirId) {
         element = createNewItem(extracted[2], results[x].file_path, false);
-        dirId.appendChild(element);
+        if (dirId.firstChild) {
+          dirId.insertBefore(element, dirId.firstChild);
+        } else {
+          dirId.appendChild(element);
+        }
         element.scrollIntoView();
       }
     }
@@ -1171,7 +1194,8 @@ function dialogNewFolderClick() {
   var main = divArray[divArray.length - 1];
   var list;
   for (var x = 0; x < main.childNodes.length; x++ ) {
-    if (main.childNodes[x].className == 'columnlist') {
+    if (main.childNodes[x].className == 'columnlist' ||
+        main.childNodes[x].className == 'columnlistadv') {
       list = main.childNodes[x].firstChild;
       break;
     }
@@ -1431,6 +1455,7 @@ var elementIdCounter = 0;
 function createNewItem(title, path, isDirectory) {
   var element = document.createElement('li');
   element.className = 'filebrowserow';
+  element.title = title;
   /*element.id = 'listItem' + elementIdCounter;*/
   element.id = path;
   elementIdCounter++;
@@ -1518,27 +1543,34 @@ function createNewList(title, results, main, path) {
   clearChildren(main);
 
   var mainList = document.createElement('div');
-  mainList.className = 'columnlist';
+  if (advancedEnabled) {
+    mainList.className = 'columnlistadv';
+  } else {
+    mainList.className = 'columnlist';
+  }
   var list = document.createElement('ul');
   list.className = 'filebrowselist';
   list.id = 'list/dir/' + path;
-  var header = document.createElement('div');
-  header.className = 'header';
-  var divTitle = document.createElement('div');
-  divTitle.className = 'title';
-  if (inFullMode) {
-    divTitle.style['text-align'] = 'center';
+  document.title = title;
+  if (advancedEnabled) {
+    var header = document.createElement('div');
+    header.className = 'header';
+    var divTitle = document.createElement('div');
+    divTitle.className = 'title';
+    if (inFullMode) {
+      divTitle.style['text-align'] = 'center';
+    }
+    divTitle.innerHTML = title;
+    if (inFullMode && (path.length != 0)) {
+      var popOutButton = document.createElement('div');
+      popOutButton.innerHTML = '&prod;';
+      popOutButton.className = 'popout';
+      popOutButton.onclick = partial(popout, path);
+      header.appendChild(popOutButton);
+    }
+    header.appendChild(divTitle);
+    main.appendChild(header);
   }
-  divTitle.innerHTML = title;
-  if (inFullMode && (path.length != 0)) {
-    var popOutButton = document.createElement('div');
-    popOutButton.innerHTML = '&prod;';
-    popOutButton.className = 'popout';
-    popOutButton.onclick = partial(popout, path);
-    header.appendChild(popOutButton);
-  }
-  header.appendChild(divTitle);
-  main.appendChild(header);
   main.appendChild(mainList);
   for (var x=0; x < results.length; x++) {
     var element = createNewItem(results[x].title,

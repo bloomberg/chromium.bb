@@ -627,16 +627,22 @@ void FilebrowseHandler::EnqueueMediaFile(const Value* value) {
 
 void FilebrowseHandler::HandleIsAdvancedEnabled(const Value* value) {
 #if defined(OS_CHROMEOS)
-  Profile* profile = BrowserList::GetLastActive()->profile();
-  PrefService* pref_service = profile->GetPrefs();
-  bool is_enabled = pref_service->GetBoolean(
-      prefs::kLabsAdvancedFilesystemEnabled);
-  bool mp_enabled = pref_service->GetBoolean(prefs::kLabsMediaplayerEnabled);
+  Browser* browser = BrowserList::GetLastActive();
+  bool is_enabled = false;
+  bool mp_enabled = false;
+  if (browser) {
+    Profile* profile = browser->profile();
+    PrefService* pref_service = profile->GetPrefs();
+    is_enabled = pref_service->GetBoolean(
+        prefs::kLabsAdvancedFilesystemEnabled);
+    mp_enabled = pref_service->GetBoolean(prefs::kLabsMediaplayerEnabled);
+  }
   DictionaryValue info_value;
   info_value.SetBoolean("enabled", is_enabled);
   info_value.SetBoolean("mpEnabled", mp_enabled);
   dom_ui_->CallJavascriptFunction(L"enabledResult",
                                   info_value);
+
 #endif
 }
 void FilebrowseHandler::HandleRefreshDirectory(const Value* value) {
@@ -875,7 +881,18 @@ void FilebrowseHandler::GetChildrenForPath(FilePath& path, bool is_refresh) {
   }
 
   is_refresh_ = is_refresh;
-  lister_ = new net::DirectoryLister(currentpath_, this);
+  FilePath default_download_path;
+  if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,
+                        &default_download_path)) {
+    NOTREACHED();
+  }
+  if (currentpath_ == default_download_path) {
+    lister_ = new net::DirectoryLister(currentpath_,
+                                       net::DirectoryLister::DATE,
+                                       this);
+  } else {
+    lister_ = new net::DirectoryLister(currentpath_, this);
+  }
   lister_->Start();
 }
 
