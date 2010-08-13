@@ -232,18 +232,18 @@ void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
   // This ensures cancelation of requests when either the consumer or the
   // provider is deleted. Deletion of requests is also guaranteed.
   AddRequest(request, consumer);
-  if (waiting_for_results_) {
-    // A request came in before we have any top sites.
-    // We have to keep track of the requests ourselves.
-    pending_callbacks_.insert(request);
-    return;
-  }
-  if (request->canceled())
-    return;
-
   MostVisitedURLList filtered_urls;
   {
     AutoLock lock(lock_);
+    if (waiting_for_results_) {
+      // A request came in before we have any top sites.
+      // We have to keep track of the requests ourselves.
+      pending_callbacks_.insert(request);
+      return;
+    }
+    if (request->canceled())
+      return;
+
     ApplyBlacklistAndPinnedURLs(top_sites_, &filtered_urls);
   }
   request->ForwardResult(GetTopSitesCallback::TupleType(filtered_urls));
@@ -800,6 +800,7 @@ void TopSites::ClearProfile() {
 }
 
 base::TimeDelta TopSites::GetUpdateDelay() {
+  AutoLock lock(lock_);
   if (top_sites_.size() == 0)
     return base::TimeDelta::FromSeconds(30);
 
