@@ -6,6 +6,6 @@
 
 namespace extension_processes_api_constants {
 
-const wchar_t kIdKey[] = L"id";
+const char kIdKey[] = "id";
 
 }  // namespace extension_processes_api_constants

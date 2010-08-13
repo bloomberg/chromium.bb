@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,11 @@
 namespace extension_page_actions_module_constants {
 
 // Keys.
-extern const wchar_t kTabIdKey[];
-extern const wchar_t kUrlKey[];
-extern const wchar_t kTitleKey[];
-extern const wchar_t kIconIdKey[];
-extern const wchar_t kButtonKey[];
+extern const char kTabIdKey[];
+extern const char kUrlKey[];
+extern const char kTitleKey[];
+extern const char kIconIdKey[];
+extern const char kButtonKey[];
 
 };  // namespace extension_page_actions_module_constants
 

@@ -11,7 +11,7 @@
 namespace extension_processes_api_constants {
 
 // Keys used in serializing tab data & events.
-extern const wchar_t kIdKey[];
+extern const char kIdKey[];
 
 };  // namespace extension_processes_api_constants
 
