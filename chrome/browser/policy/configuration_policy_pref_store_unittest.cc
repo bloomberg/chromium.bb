@@ -246,8 +246,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigManualOverride) {
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
       Value::CreateStringValue("http://chromium.org/override"));
 
-  ConfigurationPolicyPrefStore store(&command_line,
-                                     provider.release());
+  ConfigurationPolicyPrefStore store(&command_line, provider.get());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
   // Ensure that all traces of the command-line specified proxy
@@ -278,7 +277,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigNoProxy) {
       Value::CreateIntegerValue(
           ConfigurationPolicyStore::kPolicyNoProxyServerMode));
 
-  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  ConfigurationPolicyPrefStore store(&command_line, provider.get());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
   std::string string_result;
@@ -307,7 +306,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
       Value::CreateStringValue("http://chromium.org/override"));
 
-  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  ConfigurationPolicyPrefStore store(&command_line, provider.get());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
   std::string string_result;
@@ -335,7 +334,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfigAutoDetect) {
       Value::CreateIntegerValue(
           ConfigurationPolicyStore::kPolicyAutoDetectProxyMode));
 
-  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  ConfigurationPolicyPrefStore store(&command_line, provider.get());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
   // Ensure that all traces of the command-line specified proxy
@@ -366,7 +365,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest, TestPolicyProxyConfiguseSystem) {
       Value::CreateIntegerValue(
           ConfigurationPolicyStore::kPolicyUseSystemProxyMode));
 
-  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  ConfigurationPolicyPrefStore store(&command_line, provider.get());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
   std::string string_result;
@@ -394,7 +393,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
   provider->AddPolicy(ConfigurationPolicyStore::kPolicyProxyBypassList,
       Value::CreateStringValue("http://chromium.org/override"));
 
-  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  ConfigurationPolicyPrefStore store(&command_line, provider.get());
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
   std::string string_result;
@@ -417,7 +416,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
   scoped_ptr<MockConfigurationPolicyProvider> provider(
       new MockConfigurationPolicyProvider());
 
-  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  ConfigurationPolicyPrefStore store(&command_line, provider.get());
   ApplyStringPolicyValue(&store,
       ConfigurationPolicyStore::kPolicyDisabledPlugins,
       "plugin1");
@@ -445,7 +444,7 @@ TEST_F(ConfigurationPolicyPrefStoreTest,
   scoped_ptr<MockConfigurationPolicyProvider> provider(
      new MockConfigurationPolicyProvider());
 
-  ConfigurationPolicyPrefStore store(&command_line, provider.release());
+  ConfigurationPolicyPrefStore store(&command_line, provider.get());
   ApplyStringPolicyValue(&store,
                          ConfigurationPolicyStore::kPolicyDisabledPlugins,
                          "plugin1,plugin2\\,");

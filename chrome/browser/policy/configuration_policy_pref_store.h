@@ -23,8 +23,8 @@ class CommandLine;
 class ConfigurationPolicyPrefStore : public PrefStore,
                                      public ConfigurationPolicyStore {
  public:
-  // The ConfigurationPolicyPrefStore takes the ownership of the passed
-  // |provider|.
+  // The ConfigurationPolicyPrefStore does not take ownership of the
+  // passed-in |provider|.
   ConfigurationPolicyPrefStore(const CommandLine* command_line,
                                ConfigurationPolicyProvider* provider);
   virtual ~ConfigurationPolicyPrefStore() { }
@@ -56,7 +56,7 @@ class ConfigurationPolicyPrefStore : public PrefStore,
   static const PolicyToPreferenceMapEntry proxy_policy_map_[];
 
   const CommandLine* command_line_;
-  scoped_ptr<ConfigurationPolicyProvider> provider_;
+  ConfigurationPolicyProvider* provider_;
   scoped_ptr<DictionaryValue> prefs_;
 
   // Set to false until the first proxy-relevant policy is applied. Allows

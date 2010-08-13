@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/singleton.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -23,6 +24,67 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+
+namespace {
+
+// Manages the lifecycle of the shared platform-specific policy providers
+// for managed and recommended policy. Instantiated as a Singleton.
+class ConfigurationPolicyProviderKeeper {
+ public:
+  ConfigurationPolicyProviderKeeper()
+      : managed_provider_(CreateManagedProvider()),
+        recommended_provider_(CreateRecommendedProvider()) {
+  }
+  virtual ~ConfigurationPolicyProviderKeeper() {}
+
+  ConfigurationPolicyProvider* managed_provider() const {
+    return managed_provider_.get();
+  }
+
+  ConfigurationPolicyProvider* recommended_provider() const {
+    return recommended_provider_.get();
+  }
+
+ private:
+  scoped_ptr<ConfigurationPolicyProvider> managed_provider_;
+  scoped_ptr<ConfigurationPolicyProvider> recommended_provider_;
+
+  static ConfigurationPolicyProvider* CreateManagedProvider() {
+#if defined(OS_WIN)
+    return new ConfigurationPolicyProviderWin();
+#elif defined(OS_MACOSX)
+    return new ConfigurationPolicyProviderMac();
+#elif defined(OS_POSIX)
+    FilePath config_dir_path;
+    if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+      return new ConfigDirPolicyProvider(
+          config_dir_path.Append(FILE_PATH_LITERAL("managed")));
+    } else {
+      return new DummyConfigurationPolicyProvider();
+    }
+#else
+    return new DummyConfigurationPolicyProvider();
+#endif
+  }
+
+  static ConfigurationPolicyProvider* CreateRecommendedProvider() {
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+    FilePath config_dir_path;
+    if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+      return new ConfigDirPolicyProvider(
+          config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
+    } else {
+      return new DummyConfigurationPolicyProvider();
+    }
+#else
+    return new DummyConfigurationPolicyProvider();
+#endif
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderKeeper);
+};
+
+}
 
 const ConfigurationPolicyPrefStore::PolicyToPreferenceMapEntry
     ConfigurationPolicyPrefStore::simple_policy_map_[] = {
@@ -112,50 +174,24 @@ PrefStore::PrefReadError ConfigurationPolicyPrefStore::ReadPrefs() {
   proxy_configuration_specified_ = false;
   command_line_proxy_settings_cleared_ = false;
 
-  return (provider_.get() == NULL || provider_->Provide(this)) ?
+  return (provider_ == NULL || provider_->Provide(this)) ?
       PrefStore::PREF_READ_ERROR_NONE : PrefStore::PREF_READ_ERROR_OTHER;
 }
 
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore() {
-  ConfigurationPolicyProvider* provider;
-#if defined(OS_WIN)
-  provider = new ConfigurationPolicyProviderWin();
-#elif defined(OS_MACOSX)
-  provider = new ConfigurationPolicyProviderMac();
-#elif defined(OS_POSIX)
-  FilePath config_dir_path;
-  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path))
-    provider = new ConfigDirPolicyProvider(
-        config_dir_path.Append(FILE_PATH_LITERAL("managed")));
-  else
-    provider = new DummyConfigurationPolicyProvider();
-#else
-  provider = new DummyConfigurationPolicyProvider();
-#endif
-
   return new ConfigurationPolicyPrefStore(CommandLine::ForCurrentProcess(),
-                                          provider);
+      Singleton<ConfigurationPolicyProviderKeeper>::get()->managed_provider());
 }
 
 // static
 ConfigurationPolicyPrefStore*
 ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore() {
-  ConfigurationPolicyProvider* provider;
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-  FilePath config_dir_path;
-  if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path))
-    provider = new ConfigDirPolicyProvider(
-        config_dir_path.Append(FILE_PATH_LITERAL("recommended")));
-  else
-    provider = new DummyConfigurationPolicyProvider();
-#else
-  provider = new DummyConfigurationPolicyProvider();
-#endif
-
+  ConfigurationPolicyProviderKeeper* manager =
+      Singleton<ConfigurationPolicyProviderKeeper>::get();
   return new ConfigurationPolicyPrefStore(CommandLine::ForCurrentProcess(),
-                                          provider);
+      manager->recommended_provider());
 }
 
 bool ConfigurationPolicyPrefStore::ApplyProxyPolicy(PolicyType policy,
