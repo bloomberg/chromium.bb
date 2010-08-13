@@ -69,6 +69,9 @@ void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
   initialize_callback_.reset(callback);
   demuxer_stream_ = demuxer_stream;
 
+  // We require bit stream converter for openmax hardware decoder.
+  demuxer_stream->EnableBitstreamConverter();
+
   // Get the AVStream by querying for the provider interface.
   AVStreamProvider* av_stream_provider;
   if (!demuxer_stream->QueryInterface(&av_stream_provider)) {

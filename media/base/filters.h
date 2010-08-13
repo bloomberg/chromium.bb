@@ -256,6 +256,8 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
     return (NULL != i);
   };
 
+  virtual void EnableBitstreamConverter() = 0;
+
  protected:
   // Optional method that is implemented by filters that support extended
   // interfaces.  The filter should return a pointer to the interface
