@@ -4,6 +4,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#if 0
 #include <deque>
 
 #include "base/callback.h"
@@ -482,3 +483,4 @@ TEST_F(OmxCodecTest, RecycleInputBuffers) {
 // requests and reply from FillThisBuffer() arrives out of order.
 
 }  // namespace media
+#endif

@@ -85,18 +85,15 @@ static void ResetParamHeader(const OmxVideoDecodeEngine& dec, T* param) {
 
 void OmxVideoDecodeEngine::Initialize(
     MessageLoop* message_loop,
-    AVStream* av_stream,
-    EmptyThisBufferCallback* empty_buffer_callback,
-    FillThisBufferCallback* fill_buffer_callback,
-    Task* done_cb) {
+    VideoDecodeEngine::EventHandler* event_handler,
+    const VideoCodecConfig& config) {
+  DCHECK_EQ(message_loop, MessageLoop::current());
+
   message_loop_ = message_loop;
-  fill_this_buffer_callback_.reset(fill_buffer_callback);
-  empty_this_buffer_callback_.reset(empty_buffer_callback);
+  event_handler_ = event_handler;
 
-  AutoTaskRunner done_runner(done_cb);
-
-  width_ = av_stream->codec->width;
-  height_ = av_stream->codec->height;
+  width_ = config.width_;
+  height_ = config.height_;
 
   // TODO(wjia): Find the right way to determine the codec type.
   OmxConfigurator::MediaFormat input_format, output_format;
@@ -107,9 +104,22 @@ void OmxVideoDecodeEngine::Initialize(
   configurator_.reset(
       new OmxDecoderConfigurator(input_format, output_format));
 
-  message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecodeEngine::InitializeTask));
+  // TODO(jiesun): We already ensure Initialize() is called in thread context,
+  // We should try to merge the following function into this function.
   client_state_ = kClientInitializing;
+  InitializeTask();
+
+  VideoCodecInfo info;
+  // TODO(jiesun): ridiculous, we never fail initialization?
+  info.success_ = true;
+  info.provides_buffers_ = !uses_egl_image_;
+  info.stream_info_.surface_type_ =
+      uses_egl_image_ ? VideoFrame::TYPE_EGL_IMAGE
+                      : VideoFrame::TYPE_SYSTEM_MEMORY;
+  info.stream_info_.surface_format_ = GetSurfaceFormat();
+  info.stream_info_.surface_width_ = config.width_;
+  info.stream_info_.surface_height_ = config.height_;
+  event_handler_->OnInitializeComplete(info);
 }
 
 // This method handles only input buffer, without coupling with output
@@ -145,24 +155,13 @@ void OmxVideoDecodeEngine::EmptyThisBuffer(scoped_refptr<Buffer> buffer) {
   // Try to feed buffers into the decoder.
   EmptyBufferTask();
 
-  if (il_state_ == kIlPause && input_pending_request_ == 0) {
-    if (pause_callback_.get()) {
-      pause_callback_->Run();
-      pause_callback_.reset();
-    }
-  }
+  if (il_state_ == kIlPause && input_pending_request_ == 0)
+    StartFlush();
 }
 
-void OmxVideoDecodeEngine::Pause(Task* done_cb) {
-  message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecodeEngine::PauseTask, done_cb));
-}
-
-void OmxVideoDecodeEngine::PauseTask(Task* done_cb) {
+void OmxVideoDecodeEngine::Flush() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(il_state_, kIlExecuting);
-
-  pause_callback_.reset(done_cb);
 
   client_state_ = kClientFlushing;
 
@@ -178,28 +177,18 @@ void OmxVideoDecodeEngine::PauseFromExecuting(OMX_STATETYPE state) {
   il_state_ = kIlPause;
 
   if (input_pending_request_ == 0 ) {
-    if (pause_callback_.get()) {
-      pause_callback_->Run();
-      pause_callback_.reset(NULL);
-    }
+    StartFlush();
   }
 }
 
-void OmxVideoDecodeEngine::Flush(Task* done_cb) {
-  message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecodeEngine::FlushTask, done_cb));
-}
-
-void OmxVideoDecodeEngine::FlushTask(Task* done_cb) {
+void OmxVideoDecodeEngine::StartFlush() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (client_state_ != kClientFlushing) {
     // TODO(jiesun): how to prevent initial seek.
-    AutoTaskRunner done_runner(done_cb);
+    event_handler_->OnFlushComplete();
     return;
   }
-
-  flush_callback_.reset(done_cb);
 
   // TODO(jiesun): return buffers to filter who allocate them.
   while (!output_frames_ready_.empty())
@@ -235,9 +224,11 @@ bool OmxVideoDecodeEngine::OutputPortFlushed() {
 }
 
 void OmxVideoDecodeEngine::ComponentFlushDone() {
-  if (flush_callback_.get()) {
-    flush_callback_->Run();
-    flush_callback_.reset(NULL);
+  // use these flags to ensure only callback once.
+  if (input_port_flushed_ && output_port_flushed_) {
+    event_handler_->OnFlushComplete();
+    input_port_flushed_ = false;
+    output_port_flushed_ = false;
 
     InitialReadBuffer();
     OnStateSetEventFunc = &OmxVideoDecodeEngine::DoneSetStateExecuting;
@@ -255,15 +246,10 @@ void OmxVideoDecodeEngine::PortFlushDone(int port) {
     ComponentFlushDone();
 }
 
-void OmxVideoDecodeEngine::Seek(Task* done_cb) {
-  message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecodeEngine::SeekTask, done_cb));
-}
-
-void OmxVideoDecodeEngine::SeekTask(Task* done_cb) {
+void OmxVideoDecodeEngine::Seek() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  AutoTaskRunner done_runner(done_cb);
   // TODO(jiesun): add real logic here.
+  event_handler_->OnSeekComplete();
 }
 
 VideoFrame::Format OmxVideoDecodeEngine::GetSurfaceFormat() const {
@@ -272,36 +258,19 @@ VideoFrame::Format OmxVideoDecodeEngine::GetSurfaceFormat() const {
   return uses_egl_image_ ? VideoFrame::RGBA : VideoFrame::YV12;
 }
 
-VideoDecodeEngine::State OmxVideoDecodeEngine::state() const {
+void OmxVideoDecodeEngine::Uninitialize() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  switch (client_state_) {
-    case kClientNotInitialized:
-      return kCreated;
-      break;
-    case kClientInitializing:
-    case kClientRunning:
-    case kClientPausing:
-    case kClientFlushing:
-      return kNormal;
-      break;
-    case kClientStopping:
-    case kClientStopped:
-      return kStopped;
-      break;
-    case kClientError:
-      return kError;
-      break;
+  if (client_state_ == kClientError) {
+    OnStopDone();
+    return;
   }
-  return kError;
-}
 
-void OmxVideoDecodeEngine::Stop(Task* done_cb) {
-  // TODO(wjia): make this call in the thread.
-  // DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  message_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecodeEngine::StopTask, done_cb));
+  // TODO(wjia): add more state checking
+  if (kClientRunning == client_state_) {
+    client_state_ = kClientStopping;
+    DeinitFromExecuting(OMX_StateExecuting);
+  }
 
   // TODO(wjia): When FillThisBuffer() is added, engine state should be
   // kStopping here. engine state should be set to kStopped in OnStopDone();
@@ -319,7 +288,7 @@ void OmxVideoDecodeEngine::FinishEmptyBuffer(scoped_refptr<Buffer> buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!input_queue_has_eos_) {
-    empty_this_buffer_callback_->Run(buffer);
+    event_handler_->OnEmptyBufferCallback(buffer);
     ++input_pending_request_;
   }
 }
@@ -331,7 +300,7 @@ void OmxVideoDecodeEngine::FinishFillBuffer(OMX_BUFFERHEADERTYPE* buffer) {
   // EOF
   if (!buffer) {
     VideoFrame::CreateEmptyFrame(&frame);
-    fill_this_buffer_callback_->Run(frame);
+    event_handler_->OnFillBufferCallback(frame);
     return;
   }
 
@@ -362,22 +331,17 @@ void OmxVideoDecodeEngine::FinishFillBuffer(OMX_BUFFERHEADERTYPE* buffer) {
   frame->SetDuration(frame->GetTimestamp() - last_pts_);
   last_pts_ = frame->GetTimestamp();
 
-  fill_this_buffer_callback_->Run(frame);
+  event_handler_->OnFillBufferCallback(frame);
 }
 
 void OmxVideoDecodeEngine::OnStopDone() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
-  if (!stop_callback_.get())
-    return;
-  stop_callback_->Run();
-  stop_callback_.reset();
+  event_handler_->OnUninitializeComplete();
 }
 
 // Function sequence for initializing
 void OmxVideoDecodeEngine::InitializeTask() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-  DCHECK_EQ(client_state_, kClientInitializing);
   DCHECK_EQ(il_state_, kIlNone);
 
   il_state_ = kIlNone;
@@ -648,7 +612,7 @@ void OmxVideoDecodeEngine::FillThisBuffer(
     return;
 
   if (!CanAcceptOutput()) {
-    fill_this_buffer_callback_->Run(video_frame);
+    event_handler_->OnFillBufferCallback(video_frame);
     return;
   }
 
@@ -680,10 +644,6 @@ void OmxVideoDecodeEngine::FillThisBuffer(
     StopOnError();
     return;
   }
-}
-
-bool OmxVideoDecodeEngine::ProvidesBuffer() const {
-  return !uses_egl_image_;
 }
 
 // Reconfigure port
@@ -807,24 +767,6 @@ void OmxVideoDecodeEngine::OnPortEnableEventRun(int port) {
   if (kClientError == client_state_) {
     StopOnError();
     return;
-  }
-}
-
-// Functions for stopping
-void OmxVideoDecodeEngine::StopTask(Task* task) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  stop_callback_.reset(task);
-
-  if (client_state_ == kClientError) {
-    OnStopDone();
-    return;
-  }
-
-  // TODO(wjia): add more state checking
-  if (kClientRunning == client_state_) {
-    client_state_ = kClientStopping;
-    DeinitFromExecuting(OMX_StateExecuting);
   }
 }
 

@@ -19,8 +19,7 @@ namespace media {
 
 FFmpegVideoDecodeEngine::FFmpegVideoDecodeEngine()
     : codec_context_(NULL),
-      av_stream_(NULL),
-      state_(kCreated) {
+      av_stream_(NULL) {
 }
 
 FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine() {
@@ -28,17 +27,8 @@ FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine() {
 
 void FFmpegVideoDecodeEngine::Initialize(
     MessageLoop* message_loop,
-    AVStream* av_stream,
-    EmptyThisBufferCallback* empty_buffer_callback,
-    FillThisBufferCallback* fill_buffer_callback,
-    Task* done_cb) {
-  AutoTaskRunner done_runner(done_cb);
-  CHECK(state_ == kCreated);
-  // TODO(jiesun): |empty_buffer_callback| is not used yet until we had path to
-  // recycle input buffer.
-  fill_this_buffer_callback_.reset(fill_buffer_callback);
-  empty_this_buffer_callback_.reset(empty_buffer_callback);
-
+    VideoDecodeEngine::EventHandler* event_handler,
+    const VideoCodecConfig& config) {
   // Always try to use three threads for video decoding.  There is little reason
   // not to since current day CPUs tend to be multi-core and we measured
   // performance benefits on older machines such as P4s with hyperthreading.
@@ -52,7 +42,7 @@ void FFmpegVideoDecodeEngine::Initialize(
   static const int kMaxDecodeThreads = 16;
 
 
-  av_stream_ = av_stream;
+  av_stream_ = static_cast<AVStream*>(config.opaque_context_);
   codec_context_ = av_stream_->codec;
   codec_context_->flags2 |= CODEC_FLAG2_FAST;  // Enable faster H264 decode.
   // Enable motion vector search (potentially slow), strong deblocking filter
@@ -78,15 +68,21 @@ void FFmpegVideoDecodeEngine::Initialize(
   // may change the size of AVFrame, causing stack corruption.  The solution is
   // to let FFmpeg allocate the structure via avcodec_alloc_frame().
   av_frame_.reset(avcodec_alloc_frame());
-
+  VideoCodecInfo info;
+  info.success_ = false;
+  info.provides_buffers_ = false;
+  info.stream_info_.surface_type_ = VideoFrame::TYPE_SYSTEM_MEMORY;
+  info.stream_info_.surface_format_ = GetSurfaceFormat();
+  info.stream_info_.surface_width_ = config.width_;
+  info.stream_info_.surface_height_ = config.height_;
   if (codec &&
       avcodec_thread_init(codec_context_, decode_threads) >= 0 &&
       avcodec_open(codec_context_, codec) >= 0 &&
       av_frame_.get()) {
-    state_ = kNormal;
-  } else {
-    state_ = kError;
+    info.success_ = true;
   }
+  event_handler_ = event_handler;
+  event_handler_->OnInitializeComplete(info);
 }
 
 // TODO(fbarchard): Find way to remove this memcpy of the entire image.
@@ -121,11 +117,7 @@ void FFmpegVideoDecodeEngine::EmptyThisBuffer(
 
 void FFmpegVideoDecodeEngine::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
   scoped_refptr<Buffer> buffer;
-  empty_this_buffer_callback_->Run(buffer);
-}
-
-bool FFmpegVideoDecodeEngine::ProvidesBuffer() const {
-  return false;
+  event_handler_->OnEmptyBufferCallback(buffer);
 }
 
 // Try to decode frame when both input and output are ready.
@@ -160,16 +152,17 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
               << buffer->GetDuration().InMicroseconds() << " us"
               << " , packet size: "
               << buffer->GetDataSize() << " bytes";
-    fill_this_buffer_callback_->Run(video_frame);
+    // TODO(jiesun): call event_handler_->OnError() instead.
+    event_handler_->OnFillBufferCallback(video_frame);
     return;
   }
 
   // If frame_decoded == 0, then no frame was produced.
   if (frame_decoded == 0) {
     if (buffer->IsEndOfStream())  // We had started flushing.
-      fill_this_buffer_callback_->Run(video_frame);
+      event_handler_->OnFillBufferCallback(video_frame);
     else
-      empty_this_buffer_callback_->Run(buffer);
+      event_handler_->OnEmptyBufferCallback(buffer);
     return;
   }
 
@@ -179,8 +172,8 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   if (!av_frame_->data[VideoFrame::kYPlane] ||
       !av_frame_->data[VideoFrame::kUPlane] ||
       !av_frame_->data[VideoFrame::kVPlane]) {
-    // TODO(jiesun): this is also an error case handled as normal.
-    fill_this_buffer_callback_->Run(video_frame);
+    // TODO(jiesun): call event_handler_->OnError() instead.
+    event_handler_->OnFillBufferCallback(video_frame);
     return;
   }
 
@@ -212,8 +205,8 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
                           duration,
                           &video_frame);
   if (!video_frame.get()) {
-    // TODO(jiesun): this is also an error case handled as normal.
-    fill_this_buffer_callback_->Run(video_frame);
+    // TODO(jiesun): call event_handler_->OnError() instead.
+    event_handler_->OnFillBufferCallback(video_frame);
     return;
   }
 
@@ -226,28 +219,21 @@ void FFmpegVideoDecodeEngine::DecodeFrame(scoped_refptr<Buffer> buffer) {
   CopyPlane(VideoFrame::kUPlane, video_frame.get(), av_frame_.get());
   CopyPlane(VideoFrame::kVPlane, video_frame.get(), av_frame_.get());
 
-  fill_this_buffer_callback_->Run(video_frame);
+  event_handler_->OnFillBufferCallback(video_frame);
 }
 
-void FFmpegVideoDecodeEngine::Stop(Task* done_cb) {
+void FFmpegVideoDecodeEngine::Uninitialize() {
   // TODO(jiesun): Release buffers when we support buffer recycling.
-  AutoTaskRunner done_runner(done_cb);
+  event_handler_->OnUninitializeComplete();
 }
 
-void FFmpegVideoDecodeEngine::Pause(Task* done_cb) {
-  // TODO(jiesun): Stop out-going buffer exchange when we support
-  // buffer recycling.
-  AutoTaskRunner done_runner(done_cb);
-}
-
-void FFmpegVideoDecodeEngine::Flush(Task* done_cb) {
-  AutoTaskRunner done_runner(done_cb);
-
+void FFmpegVideoDecodeEngine::Flush() {
   avcodec_flush_buffers(codec_context_);
+  event_handler_->OnFlushComplete();
 }
 
-void FFmpegVideoDecodeEngine::Seek(Task* done_cb) {
-  AutoTaskRunner done_runner(done_cb);
+void FFmpegVideoDecodeEngine::Seek() {
+  event_handler_->OnSeekComplete();
 }
 
 VideoFrame::Format FFmpegVideoDecodeEngine::GetSurfaceFormat() const {

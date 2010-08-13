@@ -7,29 +7,29 @@
 
 #include <queue>
 
+#include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/base/media_format.h"
+#include "media/filters/video_decode_engine.h"
 
 class MessageLoop;
 
 namespace media {
 
 class Buffer;
-class FilterFactory;
-class OmxVideoDecodeEngine;
 class VideoFrame;
 
-class OmxVideoDecoder : public VideoDecoder {
+class OmxVideoDecoder : public VideoDecoder,
+                        public VideoDecodeEngine::EventHandler {
  public:
   static FilterFactory* CreateFactory();
   static bool IsMediaFormatSupported(const MediaFormat& media_format);
 
-  OmxVideoDecoder(OmxVideoDecodeEngine* engine);
+  OmxVideoDecoder(VideoDecodeEngine* engine);
   virtual ~OmxVideoDecoder();
 
   virtual void Initialize(DemuxerStream* stream, FilterCallback* callback);
   virtual void Stop(FilterCallback* callback);
-  virtual void Pause(FilterCallback* callback);
   virtual void Flush(FilterCallback* callback);
   virtual void Seek(base::TimeDelta time, FilterCallback* callback);
   virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
@@ -37,34 +37,33 @@ class OmxVideoDecoder : public VideoDecoder {
   virtual const MediaFormat& media_format() { return media_format_; }
 
  private:
-  virtual void DoInitialize(DemuxerStream* stream, FilterCallback* callback);
-
-  // Called after the decode engine has successfully decoded something.
-  void FillBufferCallback(scoped_refptr<VideoFrame> frame);
-
-  // Called after the decode engine has consumed an input buffer.
-  void EmptyBufferCallback(scoped_refptr<Buffer> buffer);
-
-  void InitCompleteTask(FilterCallback* callback);
-
-  void StopCompleteTask(FilterCallback* callback);
-  void PauseCompleteTask(FilterCallback* callback);
-  void FlushCompleteTask(FilterCallback* callback);
-  void SeekCompleteTask(FilterCallback* callback);
+  // VideoDecodeEngine::EventHandler interface.
+  virtual void OnInitializeComplete(const VideoCodecInfo& info);
+  virtual void OnUninitializeComplete();
+  virtual void OnFlushComplete();
+  virtual void OnSeekComplete();
+  virtual void OnError();
+  virtual void OnFormatChange(VideoStreamInfo stream_info);
+  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer);
+  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame);
 
   // TODO(hclam): This is very ugly that we keep reference instead of
   // scoped_refptr.
   void DemuxCompleteTask(Buffer* buffer);
 
-  // Calls |omx_engine_|'s EmptyThisBuffer() method on the right thread.
-  void EmptyBufferTask(scoped_refptr<Buffer> buffer);
-
-  DemuxerStream* demuxer_stream_;
-  bool supports_egl_image_;
-  scoped_refptr<OmxVideoDecodeEngine> omx_engine_;
+  // Pointer to the demuxer stream that will feed us compressed buffers.
+  scoped_refptr<DemuxerStream> demuxer_stream_;
+  scoped_refptr<VideoDecodeEngine> omx_engine_;
   MediaFormat media_format_;
   size_t width_;
   size_t height_;
+
+  scoped_ptr<FilterCallback> initialize_callback_;
+  scoped_ptr<FilterCallback> uninitialize_callback_;
+  scoped_ptr<FilterCallback> flush_callback_;
+  scoped_ptr<FilterCallback> seek_callback_;
+
+  VideoCodecInfo info_;
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecoder);
 };

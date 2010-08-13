@@ -46,7 +46,8 @@ using media::YuvFileReader;
 // decoder.
 // TODO(wjia): AVStream should be replaced with a new structure which is
 // neutral to any video decoder. Also change media.gyp correspondingly.
-class TestApp : public base::RefCountedThreadSafe<TestApp> {
+class TestApp : public base::RefCountedThreadSafe<TestApp>,
+                public media::VideoDecodeEngine::EventHandler {
  public:
   TestApp(AVStream* av_stream,
           FileSink* file_sink,
@@ -72,10 +73,9 @@ class TestApp : public base::RefCountedThreadSafe<TestApp> {
     return true;
   }
 
-  void InitializeDoneCallback() {
-  }
+  virtual void OnInitializeComplete(const media::VideoCodecInfo& info) {}
 
-  void StopCallback() {
+  virtual void OnUninitializeComplete() {
     // If this callback is received, mark the |stopped_| flag so that we don't
     // feed more buffers into the decoder.
     // We need to exit the current message loop because we have no more work
@@ -85,12 +85,24 @@ class TestApp : public base::RefCountedThreadSafe<TestApp> {
     message_loop_.Quit();
   }
 
-  void ErrorCallback() {
+  virtual void OnError() {
     // In case of error, this method is called. Mark the error flag and
     // exit the message loop because we have no more work to do.
     LOG(ERROR) << "Error callback received!";
     error_ = true;
     message_loop_.Quit();
+  }
+
+  virtual void OnFlushComplete() {
+    NOTIMPLEMENTED();
+  }
+
+  virtual void OnSeekComplete() {
+    NOTIMPLEMENTED();
+  }
+
+  virtual void OnFormatChange(media::VideoStreamInfo stream_info) {
+    NOTIMPLEMENTED();
   }
 
   void FormatCallback(
@@ -108,7 +120,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp> {
                              input_format.video_header.height);
   }
 
-  void FeedDoneCallback(scoped_refptr<Buffer> buffer) {
+  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
     // We receive this callback when the decoder has consumed an input buffer.
     // In this case, delete the previous buffer and enqueue a new one.
     // There are some conditions we don't want to enqueue, for example when
@@ -119,7 +131,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp> {
       FeedInputBuffer();
   }
 
-  void DecodeDoneCallback(scoped_refptr<VideoFrame> frame) {
+  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
     // This callback is received when the decoder has completed a decoding
     // task and given us some output data. The frame is owned by the decoder.
     if (stopped_ || error_)
@@ -130,7 +142,7 @@ class TestApp : public base::RefCountedThreadSafe<TestApp> {
 
     // If we are reading to the end, then stop.
     if (frame->IsEndOfStream()) {
-      engine_->Stop(NewRunnableMethod(this, &TestApp::StopCallback));
+      engine_->Uninitialize();
       return;
     }
 
@@ -158,13 +170,26 @@ class TestApp : public base::RefCountedThreadSafe<TestApp> {
 
     // Setup the |engine_| with the message loop of the current thread. Also
     // setup codec format and callbacks.
+    media::VideoCodecConfig config;
+    switch (av_stream_->codec->codec_id) {
+      case CODEC_ID_VC1:
+        config.codec_ = media::kCodecVC1; break;
+      case CODEC_ID_H264:
+        config.codec_ = media::kCodecH264; break;
+      case CODEC_ID_THEORA:
+        config.codec_ = media::kCodecTheora; break;
+      case CODEC_ID_MPEG2VIDEO:
+        config.codec_ = media::kCodecMPEG2; break;
+      case CODEC_ID_MPEG4:
+        config.codec_ = media::kCodecMPEG4; break;
+      default:
+        NOTREACHED(); break;
+    }
+    config.opaque_context_ = NULL;
+    config.width_ = av_stream_->codec->width;
+    config.height_ = av_stream_->codec->height;
     engine_ = new OmxVideoDecodeEngine();
-    engine_->Initialize(&message_loop_,
-                        av_stream_.get(),
-                        NewCallback(this, &TestApp::FeedDoneCallback),
-                        NewCallback(this, &TestApp::DecodeDoneCallback),
-                        NewRunnableMethod(this,
-                                          &TestApp::InitializeDoneCallback));
+    engine_->Initialize(&message_loop_, this, config);
 
     // Execute the message loop so that we can run tasks on it. This call
     // will return when we call message_loop_.Quit().

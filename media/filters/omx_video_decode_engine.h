@@ -29,29 +29,20 @@ namespace media {
 
 class Buffer;
 
-class OmxVideoDecodeEngine :
-    public VideoDecodeEngine,
-    public base::RefCountedThreadSafe<OmxVideoDecodeEngine> {
+class OmxVideoDecodeEngine : public VideoDecodeEngine {
  public:
   OmxVideoDecodeEngine();
   virtual ~OmxVideoDecodeEngine();
 
   // Implementation of the VideoDecodeEngine Interface.
   virtual void Initialize(MessageLoop* message_loop,
-                          AVStream* av_stream,
-                          EmptyThisBufferCallback* empty_buffer_callback,
-                          FillThisBufferCallback* fill_buffer_callback,
-                          Task* done_cb);
+                          VideoDecodeEngine::EventHandler* event_handler,
+                          const VideoCodecConfig& config);
   virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
-  virtual void FillThisBuffer(scoped_refptr<VideoFrame> video_frame);
-  virtual bool ProvidesBuffer() const;
-  virtual void Stop(Task* done_cb);
-  virtual void Pause(Task* done_cb);
-  virtual void Flush(Task* done_cb);
-  virtual void Seek(Task* done_cb);
-  virtual VideoFrame::Format GetSurfaceFormat() const;
-
-  virtual State state() const;
+  virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
+  virtual void Uninitialize();
+  virtual void Flush();
+  virtual void Seek();
 
   // Subclass can provide a different value.
   virtual int current_omx_spec_version() const { return 0x00000101; }
@@ -96,14 +87,6 @@ class OmxVideoDecodeEngine :
   // Helper method to perform tasks when this object is stopped.
   void OnStopDone();
 
-  // Methods to be executed in |message_loop_|, they correspond to the
-  // public methods.
-  void InitializeTask();
-  void StopTask(Task* task);
-  void PauseTask(Task* task);
-  void FlushTask(Task* task);
-  void SeekTask(Task* task);
-
   // Transition method sequence for initialization
   bool CreateComponent();
   void DoneSetStateIdle(OMX_STATETYPE state);
@@ -118,10 +101,13 @@ class OmxVideoDecodeEngine :
   void DeinitFromIdle(OMX_STATETYPE state);
   void DeinitFromLoaded(OMX_STATETYPE state);
   void PauseFromExecuting(OMX_STATETYPE state);
+  void StartFlush();
   void PortFlushDone(int port);
   void ComponentFlushDone();
 
   void StopOnError();
+
+  void InitializeTask();
 
   // Methods to free input and output buffers.
   bool AllocateInputBuffers();
@@ -164,6 +150,7 @@ class OmxVideoDecodeEngine :
   OMX_STATETYPE GetComponentState();
   void SendOutputBufferToComponent(OMX_BUFFERHEADERTYPE *omx_buffer);
   bool TransitionToState(OMX_STATETYPE new_state);
+  virtual VideoFrame::Format GetSurfaceFormat() const;
 
   // Method to handle events
   void EventHandlerCompleteTask(OMX_EVENTTYPE event,
@@ -234,12 +221,6 @@ class OmxVideoDecodeEngine :
 
   OMX_HANDLETYPE component_handle_;
   scoped_ptr<media::OmxConfigurator> configurator_;
-  scoped_ptr<EmptyThisBufferCallback> empty_this_buffer_callback_;
-  scoped_ptr<FillThisBufferCallback> fill_this_buffer_callback_;
-
-  scoped_ptr<Task> stop_callback_;
-  scoped_ptr<Task> flush_callback_;
-  scoped_ptr<Task> pause_callback_;
 
   // Free input OpenMAX buffers that can be used to take input bitstream from
   // demuxer.
@@ -264,6 +245,7 @@ class OmxVideoDecodeEngine :
   bool input_port_enabled_;
   bool need_setup_output_port_;
   OmxIlPortState output_port_state_;
+  VideoDecodeEngine::EventHandler* event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(OmxVideoDecodeEngine);
 };

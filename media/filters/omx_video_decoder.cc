@@ -17,7 +17,7 @@ namespace media {
 
 // static
 FilterFactory* OmxVideoDecoder::CreateFactory() {
-  return new FilterFactoryImpl1<OmxVideoDecoder, OmxVideoDecodeEngine*>(
+  return new FilterFactoryImpl1<OmxVideoDecoder, VideoDecodeEngine*>(
       new OmxVideoDecodeEngine());
 }
 
@@ -40,116 +40,186 @@ bool OmxVideoDecoder::IsMediaFormatSupported(const MediaFormat& format) {
   return false;
 }
 
-OmxVideoDecoder::OmxVideoDecoder(OmxVideoDecodeEngine* engine)
-    : omx_engine_(engine) {
-#if defined(ENABLE_EGLIMAGE)
-  supports_egl_image_ = true;
-#else
-  supports_egl_image_ = false;
-#endif
+OmxVideoDecoder::OmxVideoDecoder(VideoDecodeEngine* engine)
+    : omx_engine_(engine), width_(0), height_(0) {
   DCHECK(omx_engine_.get());
+  memset(&info_, 0, sizeof(info_));
 }
 
 OmxVideoDecoder::~OmxVideoDecoder() {
   // TODO(hclam): Make sure OmxVideoDecodeEngine is stopped.
 }
 
-void OmxVideoDecoder::Initialize(DemuxerStream* stream,
+void OmxVideoDecoder::Initialize(DemuxerStream* demuxer_stream,
                                  FilterCallback* callback) {
-  message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this,
-                        &OmxVideoDecoder::DoInitialize,
-                        stream,
-                        callback));
-}
+  if (MessageLoop::current() != message_loop()) {
+    message_loop()->PostTask(
+        FROM_HERE,
+        NewRunnableMethod(this,
+                          &OmxVideoDecoder::Initialize,
+                          demuxer_stream,
+                          callback));
+    return;
+  }
 
-void OmxVideoDecoder::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
-  DCHECK(omx_engine_.get());
-  message_loop()->PostTask(
-     FROM_HERE,
-     NewRunnableMethod(omx_engine_.get(),
-                       &OmxVideoDecodeEngine::FillThisBuffer, frame));
-}
-
-bool OmxVideoDecoder::ProvidesBuffer() {
-  if (!omx_engine_.get()) return false;
-  return omx_engine_->ProvidesBuffer();
-}
-
-void OmxVideoDecoder::Stop(FilterCallback* callback) {
-  omx_engine_->Stop(
-     NewRunnableMethod(this,
-                       &OmxVideoDecoder::StopCompleteTask, callback));
-}
-
-void OmxVideoDecoder::StopCompleteTask(FilterCallback* callback) {
-  AutoCallbackRunner done_runner(callback);
-}
-
-void OmxVideoDecoder::Pause(FilterCallback* callback) {
-  omx_engine_->Pause(
-       NewRunnableMethod(this,
-                         &OmxVideoDecoder::PauseCompleteTask, callback));
-}
-
-void OmxVideoDecoder::PauseCompleteTask(FilterCallback* callback) {
-  AutoCallbackRunner done_runner(callback);
-}
-
-void OmxVideoDecoder::Flush(FilterCallback* callback) {
-  omx_engine_->Flush(
-       NewRunnableMethod(this,
-                         &OmxVideoDecoder::FlushCompleteTask, callback));
-}
-
-void OmxVideoDecoder::FlushCompleteTask(FilterCallback* callback) {
-  AutoCallbackRunner done_runner(callback);
-}
-
-void OmxVideoDecoder::Seek(base::TimeDelta time,
-                           FilterCallback* callback) {
-  omx_engine_->Seek(
-     NewRunnableMethod(this,
-                       &OmxVideoDecoder::SeekCompleteTask, callback));
-}
-
-void OmxVideoDecoder::SeekCompleteTask(FilterCallback* callback) {
-  AutoCallbackRunner done_runner(callback);
-}
-
-void OmxVideoDecoder::DoInitialize(DemuxerStream* demuxer_stream,
-                                   FilterCallback* callback) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
+  DCHECK(!demuxer_stream_);
+  DCHECK(!initialize_callback_.get());
+
+  initialize_callback_.reset(callback);
+  demuxer_stream_ = demuxer_stream;
 
   // Get the AVStream by querying for the provider interface.
   AVStreamProvider* av_stream_provider;
   if (!demuxer_stream->QueryInterface(&av_stream_provider)) {
+    VideoCodecInfo info = {0};
+    OmxVideoDecoder::OnInitializeComplete(info);
     return;
   }
   AVStream* av_stream = av_stream_provider->GetAVStream();
 
+  // TODO(jiesun): shouldn't we check this in demuxer?
   width_ = av_stream->codec->width;
   height_ = av_stream->codec->height;
   if (width_ > Limits::kMaxDimension ||
       height_ > Limits::kMaxDimension ||
       (width_ * height_) > Limits::kMaxCanvas) {
+    VideoCodecInfo info = {0};
+    OmxVideoDecoder::OnInitializeComplete(info);
     return;
   }
 
-  // Savs the demuxer stream.
-  demuxer_stream_ = demuxer_stream;
-
-  // Initialize the decode engine.
-  omx_engine_->Initialize(
-      message_loop(),
-      av_stream,
-      NewCallback(this, &OmxVideoDecoder::EmptyBufferCallback),
-      NewCallback(this, &OmxVideoDecoder::FillBufferCallback),
-      NewRunnableMethod(this, &OmxVideoDecoder::InitCompleteTask, callback));
+  VideoCodecConfig config;
+  switch (av_stream->codec->codec_id) {
+    case CODEC_ID_VC1:
+      config.codec_ = kCodecVC1; break;
+    case CODEC_ID_H264:
+      config.codec_ = kCodecH264; break;
+    case CODEC_ID_THEORA:
+      config.codec_ = kCodecTheora; break;
+    case CODEC_ID_MPEG2VIDEO:
+      config.codec_ = kCodecMPEG2; break;
+    case CODEC_ID_MPEG4:
+      config.codec_ = kCodecMPEG4; break;
+    default:
+      NOTREACHED();
+  }
+  config.opaque_context_ = NULL;
+  config.width_ = width_;
+  config.height_ = height_;
+  omx_engine_->Initialize(message_loop(), this, config);
 }
 
-void OmxVideoDecoder::FillBufferCallback(scoped_refptr<VideoFrame> frame) {
+void OmxVideoDecoder::OnInitializeComplete(const VideoCodecInfo& info) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
+  DCHECK(initialize_callback_.get());
+
+  info_ = info;  // Save a copy.
+  AutoCallbackRunner done_runner(initialize_callback_.release());
+
+  if (info.success_) {
+    media_format_.SetAsString(MediaFormat::kMimeType,
+                              mime_type::kUncompressedVideo);
+    media_format_.SetAsInteger(MediaFormat::kWidth, width_);
+    media_format_.SetAsInteger(MediaFormat::kHeight, height_);
+    media_format_.SetAsInteger(
+        MediaFormat::kSurfaceType,
+        static_cast<int>(info.stream_info_.surface_type_));
+    media_format_.SetAsInteger(
+        MediaFormat::kSurfaceFormat,
+        static_cast<int>(info.stream_info_.surface_format_));
+  } else {
+    host()->SetError(PIPELINE_ERROR_DECODE);
+  }
+}
+
+void OmxVideoDecoder::Stop(FilterCallback* callback) {
+  if (MessageLoop::current() != message_loop()) {
+    message_loop()->PostTask(FROM_HERE,
+                             NewRunnableMethod(this,
+                                               &OmxVideoDecoder::Stop,
+                                               callback));
+    return;
+  }
+
+  DCHECK_EQ(MessageLoop::current(), message_loop());
+  DCHECK(!uninitialize_callback_.get());
+
+  uninitialize_callback_.reset(callback);
+  omx_engine_->Uninitialize();
+}
+
+void OmxVideoDecoder::OnUninitializeComplete() {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
+  DCHECK(uninitialize_callback_.get());
+
+  AutoCallbackRunner done_runner(uninitialize_callback_.release());
+}
+
+void OmxVideoDecoder::Flush(FilterCallback* callback) {
+  if (MessageLoop::current() != message_loop()) {
+    message_loop()->PostTask(FROM_HERE,
+                             NewRunnableMethod(this,
+                                               &OmxVideoDecoder::Flush,
+                                               callback));
+    return;
+  }
+
+  DCHECK_EQ(MessageLoop::current(), message_loop());
+  DCHECK(!flush_callback_.get());
+
+  flush_callback_.reset(callback);
+
+  omx_engine_->Flush();
+}
+
+
+void OmxVideoDecoder::OnFlushComplete() {
+  DCHECK(flush_callback_.get());
+
+  AutoCallbackRunner done_runner(flush_callback_.release());
+}
+
+void OmxVideoDecoder::Seek(base::TimeDelta time,
+                           FilterCallback* callback) {
+  if (MessageLoop::current() != message_loop()) {
+     message_loop()->PostTask(FROM_HERE,
+                              NewRunnableMethod(this,
+                                                &OmxVideoDecoder::Seek,
+                                                time,
+                                                callback));
+     return;
+  }
+
+  DCHECK_EQ(MessageLoop::current(), message_loop());
+  DCHECK(!seek_callback_.get());
+
+  seek_callback_.reset(callback);
+  omx_engine_->Seek();
+}
+
+void OmxVideoDecoder::OnSeekComplete() {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
+  DCHECK(seek_callback_.get());
+
+  AutoCallbackRunner done_runner(seek_callback_.release());
+}
+
+void OmxVideoDecoder::OnError() {
+  NOTIMPLEMENTED();
+}
+void OmxVideoDecoder::OnFormatChange(VideoStreamInfo stream_info) {
+  NOTIMPLEMENTED();
+}
+
+void OmxVideoDecoder::OnEmptyBufferCallback(scoped_refptr<Buffer> buffer) {
+  DCHECK_EQ(message_loop(), MessageLoop::current());
+
+  // Issue more demux.
+  demuxer_stream_->Read(NewCallback(this, &OmxVideoDecoder::DemuxCompleteTask));
+}
+
+void OmxVideoDecoder::OnFillBufferCallback(scoped_refptr<VideoFrame> frame) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
 
   // Invoke the FillBufferDoneCallback with the frame.
@@ -157,35 +227,17 @@ void OmxVideoDecoder::FillBufferCallback(scoped_refptr<VideoFrame> frame) {
   fill_buffer_done_callback()->Run(frame);
 }
 
-void OmxVideoDecoder::EmptyBufferCallback(scoped_refptr<Buffer> buffer) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  // Issue more demux.
-  demuxer_stream_->Read(NewCallback(this, &OmxVideoDecoder::DemuxCompleteTask));
+void OmxVideoDecoder::FillThisBuffer(scoped_refptr<VideoFrame> frame) {
+  DCHECK(omx_engine_.get());
+  message_loop()->PostTask(
+     FROM_HERE,
+     NewRunnableMethod(omx_engine_.get(),
+                       &VideoDecodeEngine::FillThisBuffer, frame));
 }
 
-void OmxVideoDecoder::InitCompleteTask(FilterCallback* callback) {
-  DCHECK_EQ(message_loop(), MessageLoop::current());
-
-  // Check the status of the decode engine.
-  if (omx_engine_->state() == VideoDecodeEngine::kError) {
-    host()->SetError(PIPELINE_ERROR_DECODE);
-  } else {
-    media_format_.SetAsString(MediaFormat::kMimeType,
-                              mime_type::kUncompressedVideo);
-    // TODO(jiesun): recycle OmxHeadType instead of copy back.
-    media_format_.SetAsInteger(MediaFormat::kSurfaceType,
-        supports_egl_image_ ? VideoFrame::TYPE_EGL_IMAGE
-                            : VideoFrame::TYPE_SYSTEM_MEMORY);
-    media_format_.SetAsInteger(MediaFormat::kWidth, width_);
-    media_format_.SetAsInteger(MediaFormat::kHeight, height_);
-    VideoFrame::Format format = omx_engine_->GetSurfaceFormat();
-    media_format_.SetAsInteger(MediaFormat::kSurfaceFormat,
-                               static_cast<int>(format));
-  }
-
-  callback->Run();
-  delete callback;
+bool OmxVideoDecoder::ProvidesBuffer() {
+  DCHECK(info_.success_);
+  return info_.provides_buffers_;
 }
 
 void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {
@@ -195,7 +247,7 @@ void OmxVideoDecoder::DemuxCompleteTask(Buffer* buffer) {
   message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(omx_engine_.get(),
-                        &OmxVideoDecodeEngine::EmptyThisBuffer, ref_buffer));
+                        &VideoDecodeEngine::EmptyThisBuffer, ref_buffer));
 }
 
 }  // namespace media

@@ -23,20 +23,13 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
 
   // Implementation of the VideoDecodeEngine Interface.
   virtual void Initialize(MessageLoop* message_loop,
-                          AVStream* av_stream,
-                          EmptyThisBufferCallback* empty_buffer_callback,
-                          FillThisBufferCallback* fill_buffer_callback,
-                          Task* done_cb);
+                          VideoDecodeEngine::EventHandler* event_handler,
+                          const VideoCodecConfig& config);
   virtual void EmptyThisBuffer(scoped_refptr<Buffer> buffer);
   virtual void FillThisBuffer(scoped_refptr<VideoFrame> frame);
-  virtual bool ProvidesBuffer() const;
-  virtual void Stop(Task* done_cb);
-  virtual void Pause(Task* done_cb);
-  virtual void Flush(Task* done_cb);
-  virtual void Seek(Task* done_cb);
-  virtual VideoFrame::Format GetSurfaceFormat() const;
-
-  virtual State state() const { return state_; }
+  virtual void Uninitialize();
+  virtual void Flush();
+  virtual void Seek();
 
   virtual AVCodecContext* codec_context() const { return codec_context_; }
 
@@ -44,15 +37,14 @@ class FFmpegVideoDecodeEngine : public VideoDecodeEngine {
     codec_context_ = context;
   }
 
+  VideoFrame::Format GetSurfaceFormat() const;
  private:
   void DecodeFrame(scoped_refptr<Buffer> buffer);
 
   AVCodecContext* codec_context_;
   AVStream* av_stream_;
-  State state_;
   scoped_ptr_malloc<AVFrame, ScopedPtrAVFree> av_frame_;
-  scoped_ptr<FillThisBufferCallback> fill_this_buffer_callback_;
-  scoped_ptr<EmptyThisBufferCallback> empty_this_buffer_callback_;
+  VideoDecodeEngine::EventHandler* event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegVideoDecodeEngine);
 };
