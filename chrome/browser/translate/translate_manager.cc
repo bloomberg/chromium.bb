@@ -187,6 +187,13 @@ void TranslateManager::Observe(NotificationType type,
         NOTREACHED();
         return;
       }
+      if (!load_details->is_main_frame &&
+          controller->tab_contents()->language_state().translation_declined()) {
+        // Some sites (such as Google map) may trigger sub-frame navigations
+        // when the user interacts with the page.  We don't want to show a new
+        // infobar if the user already dismissed one in that case.
+        return;
+      }
       if (entry->transition_type() != PageTransition::RELOAD &&
           load_details->type != NavigationType::SAME_PAGE) {
         return;

@@ -618,7 +618,7 @@ TEST_F(TranslateManagerTest, ReloadFromLocationBar) {
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
 
-// Tests that a close translate infobar does not reappear when navigating
+// Tests that a closed translate infobar does not reappear when navigating
 // in-page.
 TEST_F(TranslateManagerTest, CloseInfoBarInPageNavigation) {
   // Simulate navigating to a page and getting its language.
@@ -637,6 +637,33 @@ TEST_F(TranslateManagerTest, CloseInfoBarInPageNavigation) {
                      true);
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }
+
+// Tests that a closed translate infobar does not reappear when navigating
+// in a subframe. (http://crbug.com/48215)
+TEST_F(TranslateManagerTest, CloseInfoBarInSubframeNavigation) {
+  // Simulate navigating to a page and getting its language.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, "Le Google", "fr", true);
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // Simulate a sub-frame auto-navigating.
+  rvh()->SendNavigateWithTransition(1, GURL("http://pub.com"),
+                                    PageTransition::AUTO_SUBFRAME);
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Simulate the user navigating in a sub-frame.
+  rvh()->SendNavigateWithTransition(2, GURL("http://pub.com"),
+                                    PageTransition::MANUAL_SUBFRAME);
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Navigate out of page, a new infobar should show.
+  SimulateNavigation(GURL("http://www.google.fr/foot"), 3, "Le Google", "fr",
+                     true);
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+}
+
+
 
 // Tests that denying translation is sticky when navigating in page.
 TEST_F(TranslateManagerTest, DenyTranslateInPageNavigation) {

@@ -18,11 +18,14 @@ LanguageState::LanguageState(NavigationController* nav_controller)
 LanguageState::~LanguageState() {
 }
 
-void LanguageState::DidNavigate(bool reload, bool in_page) {
-  in_page_navigation_ = in_page;
-  if (in_page)
+void LanguageState::DidNavigate(
+    const NavigationController::LoadCommittedDetails& details) {
+  in_page_navigation_ = details.is_in_page;
+  if (in_page_navigation_ || !details.is_main_frame)
     return;  // Don't reset our states, the page has not changed.
 
+  bool reload = details.entry->transition_type() == PageTransition::RELOAD ||
+                details.type == NavigationType::SAME_PAGE;
   if (reload) {
     // We might not get a LanguageDetermined notifications on reloads. Make sure
     // to keep the original language and to set current_lang_ so
