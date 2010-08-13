@@ -110,7 +110,7 @@ class BaseTab : public AnimationDelegate,
 
   views::ImageButton* close_button() const { return close_button_; }
 
-  // Paints the icon at the specified x-coordinate.
+  // Paints the icon at the specified coordinates, mirrored for RTL if needed.
   void PaintIcon(gfx::Canvas* canvas, int x, int y);
   void PaintTitle(gfx::Canvas* canvas, SkColor title_color);
 

@@ -95,27 +95,20 @@ class DockView : public views::View {
     SkBitmap* high_icon = rb.GetBitmapNamed(IDR_DOCK_HIGH);
     SkBitmap* wide_icon = rb.GetBitmapNamed(IDR_DOCK_WIDE);
 
+    canvas->Save();
     bool rtl_ui = base::i18n::IsRTL();
     if (rtl_ui) {
       // Flip canvas to draw the mirrored tab images for RTL UI.
-      canvas->Save();
       canvas->TranslateInt(width(), 0);
       canvas->ScaleInt(-1, 1);
     }
-    int x_of_active_tab = -1;
-    int x_of_inactive_tab = -1;
+    int x_of_active_tab = width() / 2 + kTabSpacing / 2;
+    int x_of_inactive_tab = width() / 2 - high_icon->width() - kTabSpacing / 2;
     switch (type_) {
       case DockInfo::LEFT_OF_WINDOW:
       case DockInfo::LEFT_HALF:
-        if (!rtl_ui) {
-          x_of_active_tab = width() / 2 - high_icon->width() - kTabSpacing / 2;
-          x_of_inactive_tab = width() / 2 + kTabSpacing / 2;
-        } else {
-          // Adjust x axis for RTL UI after flippping canvas.
-          x_of_active_tab = width() / 2 + kTabSpacing / 2;
-          x_of_inactive_tab = width() / 2 - high_icon->width() -
-                              kTabSpacing / 2;
-        }
+        if (!rtl_ui)
+          std::swap(x_of_active_tab, x_of_inactive_tab);
         canvas->DrawBitmapInt(*high_icon, x_of_active_tab,
                               (height() - high_icon->height()) / 2);
         if (type_ == DockInfo::LEFT_OF_WINDOW) {
@@ -127,15 +120,8 @@ class DockView : public views::View {
 
       case DockInfo::RIGHT_OF_WINDOW:
       case DockInfo::RIGHT_HALF:
-        if (!rtl_ui) {
-          x_of_active_tab = width() / 2 + kTabSpacing / 2;
-          x_of_inactive_tab = width() / 2 - high_icon->width() -
-                              kTabSpacing / 2;
-        } else {
-          // Adjust x axis for RTL UI after flippping canvas.
-          x_of_active_tab = width() / 2 - high_icon->width() - kTabSpacing / 2;
-          x_of_inactive_tab = width() / 2 + kTabSpacing / 2;
-        }
+        if (rtl_ui)
+          std::swap(x_of_active_tab, x_of_inactive_tab);
         canvas->DrawBitmapInt(*high_icon, x_of_active_tab,
                               (height() - high_icon->height()) / 2);
         if (type_ == DockInfo::RIGHT_OF_WINDOW) {
@@ -171,8 +157,7 @@ class DockView : public views::View {
         NOTREACHED();
         break;
     }
-    if (rtl_ui)
-      canvas->Restore();
+    canvas->Restore();
   }
 
  private:

@@ -356,10 +356,8 @@ void BaseTab::AdvanceLoadingAnimation(TabRendererData::NetworkState old_state,
 
 void BaseTab::PaintIcon(gfx::Canvas* canvas, int x, int y) {
   if (base::i18n::IsRTL()) {
-    if (!data().favicon.isNull())
-      x = width() - x - data().favicon.width();
-    else
-      x = width() - x - kFavIconSize;
+    x = width() - x -
+        (data().favicon.isNull() ? kFavIconSize : data().favicon.width());
   }
 
   int favicon_x = x;

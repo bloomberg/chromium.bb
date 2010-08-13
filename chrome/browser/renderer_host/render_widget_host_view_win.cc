@@ -691,19 +691,17 @@ void RenderWidgetHostViewWin::DrawResizeCorner(const gfx::Rect& paint_rect,
     canvas.getDevice()->accessBitmap(true).eraseARGB(0, 0, 0, 0);
     int x = resize_corner_rect.x() + resize_corner_rect.width() -
         bitmap->width();
-    bool rtl_dir = base::i18n::IsRTL();
-    if (rtl_dir) {
+    canvas.save();
+    if (base::i18n::IsRTL()) {
       canvas.TranslateInt(bitmap->width(), 0);
       canvas.ScaleInt(-1, 1);
-      canvas.save();
       x = 0;
     }
     canvas.DrawBitmapInt(*bitmap, 0, 0);
     canvas.getTopPlatformDevice().drawToHDC(dc, x,
         resize_corner_rect.y() + resize_corner_rect.height() -
         bitmap->height(), NULL);
-    if (rtl_dir)
-      canvas.restore();
+    canvas.restore();
   }
 }
 

@@ -507,14 +507,13 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
 
   // Paint the background images.
   int x = kLeftPadding;
-  bool rtl_ui = base::i18n::IsRTL();
-  if (rtl_ui) {
+  canvas->Save();
+  if (base::i18n::IsRTL()) {
     // Since we do not have the mirrored images for
     // (hot_)body_image_set->top_left, (hot_)body_image_set->left,
     // (hot_)body_image_set->bottom_left, and drop_down_image_set,
     // for RTL UI, we flip the canvas to draw those images mirrored.
     // Consequently, we do not need to mirror the x-axis of those images.
-    canvas->Save();
     canvas->TranslateInt(width(), 0);
     canvas->ScaleInt(-1, 1);
   }
@@ -556,13 +555,6 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
                  x, box_y_, box_height_,
                  hot_body_image_set_.top_right->width());
     canvas->Restore();
-    if (rtl_ui) {
-      canvas->Restore();
-      canvas->Save();
-      // Flip it for drawing drop-down images for RTL locales.
-      canvas->TranslateInt(width(), 0);
-      canvas->ScaleInt(-1, 1);
-    }
   }
 
   x += body_image_set->top_right->width();
@@ -590,12 +582,10 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
     }
   }
 
-  if (rtl_ui) {
-    // Restore the canvas to avoid file name etc. text are drawn flipped.
-    // Consequently, the x-axis of following canvas->DrawXXX() method should be
-    // mirrored so the text and images are down in the right positions.
-    canvas->Restore();
-  }
+  // Restore the canvas to avoid file name etc. text are drawn flipped.
+  // Consequently, the x-axis of following canvas->DrawXXX() method should be
+  // mirrored so the text and images are down in the right positions.
+  canvas->Restore();
 
   // Print the text, left aligned and always print the file extension.
   // Last value of x was the end of the right image, just before the button.
