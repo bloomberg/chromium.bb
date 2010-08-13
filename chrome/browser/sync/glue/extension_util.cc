@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "base/stl_util-inl.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/sync/protocol/extension_specifics.pb.h"
@@ -17,17 +18,25 @@
 
 namespace browser_sync {
 
-bool IsExtensionSyncable(const Extension& extension) {
+ExtensionType GetExtensionType(const Extension& extension) {
   if (extension.is_theme()) {
-    return false;
+    return THEME;
   }
 
   // TODO(akalin): Add Extensions::is_app().
   if (!extension.GetFullLaunchURL().is_empty()) {
-    // We have an app.
-    return false;
+    return APP;
   }
 
+  if (extension.converted_from_user_script()) {
+    return USER_SCRIPT;
+  }
+
+  // Otherwise, we just have a regular extension.
+  return EXTENSION;
+}
+
+bool IsExtensionValid(const Extension& extension) {
   // TODO(akalin): Figure out if we need to allow some other types.
   if (extension.location() != Extension::INTERNAL) {
     // We have a non-standard location.
@@ -55,6 +64,13 @@ bool IsExtensionSyncable(const Extension& extension) {
   }
 
   return true;
+}
+
+bool IsExtensionValidAndSyncable(const Extension& extension,
+                                 const ExtensionTypeSet& allowed_types) {
+  return
+      IsExtensionValid(extension) &&
+      ContainsKey(allowed_types, GetExtensionType(extension));
 }
 
 std::string ExtensionSpecificsToString(
@@ -167,7 +183,7 @@ void GetExtensionSpecifics(const Extension& extension,
 void GetExtensionSpecificsHelper(const Extension& extension,
                                  bool enabled, bool incognito_enabled,
                                  sync_pb::ExtensionSpecifics* specifics) {
-  DCHECK(IsExtensionSyncable(extension));
+  DCHECK(IsExtensionValid(extension));
   const std::string& id = extension.id();
   specifics->set_id(id);
   specifics->set_version(extension.VersionString());
@@ -180,7 +196,7 @@ void GetExtensionSpecificsHelper(const Extension& extension,
 
 bool IsExtensionOutdated(const Extension& extension,
                          const sync_pb::ExtensionSpecifics& specifics) {
-  DCHECK(IsExtensionSyncable(extension));
+  DCHECK(IsExtensionValid(extension));
   DcheckIsExtensionSpecificsValid(specifics);
   scoped_ptr<Version> specifics_version(
       Version::GetVersionFromString(specifics.version()));
@@ -197,7 +213,7 @@ void SetExtensionProperties(
   DcheckIsExtensionSpecificsValid(specifics);
   CHECK(extensions_service);
   CHECK(extension);
-  DCHECK(IsExtensionSyncable(*extension));
+  DCHECK(IsExtensionValid(*extension));
   const std::string& id = extension->id();
   GURL update_url(specifics.update_url());
   if (update_url != extension->update_url()) {

@@ -6,9 +6,14 @@
 #define CHROME_BROWSER_SYNC_GLUE_EXTENSION_UTIL_H_
 #pragma once
 
+// This file contains some low-level utility functions used by
+// extensions sync.
+
+#include <set>
 #include <string>
 
 class Extension;
+class ExtensionTypeSet;
 class ExtensionsService;
 
 namespace sync_pb {
@@ -17,8 +22,26 @@ class ExtensionSpecifics;
 
 namespace browser_sync {
 
+enum ExtensionType {
+  THEME,
+  EXTENSION,
+  USER_SCRIPT,
+  APP,
+};
+
+typedef std::set<ExtensionType> ExtensionTypeSet;
+
+// Returns the type of the given extension.
+//
+// TODO(akalin): Might be useful to move this into extension.cc.
+ExtensionType GetExtensionType(const Extension& extension);
+
 // Returns whether or not the given extension is one we want to sync.
-bool IsExtensionSyncable(const Extension& extension);
+bool IsExtensionValid(const Extension& extension);
+
+// Returns whether or not the given extension is one we want to sync.
+bool IsExtensionValidAndSyncable(const Extension& extension,
+                                 const ExtensionTypeSet& allowed_types);
 
 // Stringifies the given ExtensionSpecifics.
 std::string ExtensionSpecificsToString(

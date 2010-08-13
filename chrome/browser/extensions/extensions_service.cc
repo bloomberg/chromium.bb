@@ -37,6 +37,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/extension_util.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
@@ -962,8 +963,15 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
           NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
       return;
     }
+    // TODO(akalin): When we do apps sync, we have to work with its
+    // traits, too.
+    const browser_sync::ExtensionSyncTraits extension_sync_traits =
+        browser_sync::GetExtensionSyncTraits();
+    // If an extension is a theme, we bypass the valid/syncable check
+    // as themes are harmless.
     if (!extension->is_theme() &&
-        !browser_sync::IsExtensionSyncable(*extension)) {
+        !browser_sync::IsExtensionValidAndSyncable(
+            *extension, extension_sync_traits.allowed_extension_types)) {
       // We're an extension installed via sync that is unsyncable,
       // i.e. we may have been syncable previously.  We block these
       // installs.  We'll have to update the clause above if we decide
@@ -978,7 +986,8 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
       // TODO(akalin): Remove this check once we've put in UI to
       // approve synced extensions.
       LOG(WARNING)
-          << "Not installing non-syncable extension " << extension->id();
+          << "Not installing invalid or unsyncable extension "
+          << extension->id();
       // Delete the extension directory since we're not going to
       // load it.
       ChromeThread::PostTask(

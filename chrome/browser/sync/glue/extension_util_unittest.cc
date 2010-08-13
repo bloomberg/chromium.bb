@@ -36,13 +36,10 @@ const char kName2[] = "MyExtension2";
 class ExtensionUtilTest : public testing::Test {
 };
 
-void MakePossiblySyncableExtension(bool is_theme,
-                                   const GURL& update_url,
-                                   const GURL& launch_url,
-                                   bool converted_from_user_script,
-                                   Extension::Location location,
-                                   int num_plugins,
-                                   Extension* extension) {
+void MakeExtension(bool is_theme, const GURL& update_url,
+                   const GURL& launch_url, bool converted_from_user_script,
+                   Extension::Location location, int num_plugins,
+                   Extension* extension) {
   DictionaryValue source;
   source.SetString(extension_manifest_keys::kName,
                    "PossiblySyncableExtension");
@@ -75,67 +72,145 @@ void MakePossiblySyncableExtension(bool is_theme,
   extension->set_location(location);
 }
 
-TEST_F(ExtensionUtilTest, IsSyncableExtension) {
+TEST_F(ExtensionUtilTest, GetExtensionType) {
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), GURL(), false,
-                                  Extension::INTERNAL, 0, &extension);
-    EXPECT_TRUE(IsExtensionSyncable(extension));
+    MakeExtension(false, GURL(), GURL(), false,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_EQ(EXTENSION, GetExtensionType(extension));
   }
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(kValidUpdateUrl1), GURL(),
-                                  true, Extension::INTERNAL, 0, &extension);
-    EXPECT_TRUE(IsExtensionSyncable(extension));
+    MakeExtension(true, GURL(), GURL(), false,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_EQ(THEME, GetExtensionType(extension));
   }
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), GURL(), true,
-                                  Extension::INTERNAL, 0, &extension);
-    EXPECT_TRUE(IsExtensionSyncable(extension));
+    MakeExtension(false, GURL(), GURL(), true,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_EQ(USER_SCRIPT, GetExtensionType(extension));
   }
   {
     FilePath file_path(kExtensionFilePath);
     Extension extension(file_path);
-    MakePossiblySyncableExtension(true, GURL(), GURL(), false,
-                                  Extension::INTERNAL, 0, &extension);
-    EXPECT_FALSE(IsExtensionSyncable(extension));
-  }
-  // TODO(akalin): Test with a non-empty launch_url once apps are
-  // enabled by default.
-  {
-    FilePath file_path(kExtensionFilePath);
-    Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), GURL(), false,
-                                  Extension::EXTERNAL_PREF, 0, &extension);
-    EXPECT_FALSE(IsExtensionSyncable(extension));
-  }
-  {
-    FilePath file_path(kExtensionFilePath);
-    Extension extension(file_path);
-    MakePossiblySyncableExtension(
-        false, GURL("http://third-party.update_url.com"), GURL(), true,
-        Extension::INTERNAL, 0, &extension);
-    EXPECT_FALSE(IsExtensionSyncable(extension));
-  }
-  {
-    FilePath file_path(kExtensionFilePath);
-    Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), GURL(), true,
-                                  Extension::INTERNAL, 1, &extension);
-    EXPECT_FALSE(IsExtensionSyncable(extension));
-  }
-  {
-    FilePath file_path(kExtensionFilePath);
-    Extension extension(file_path);
-    MakePossiblySyncableExtension(false, GURL(), GURL(), true,
-                                  Extension::INTERNAL, 2, &extension);
-    EXPECT_FALSE(IsExtensionSyncable(extension));
+    MakeExtension(false, GURL(),
+                  GURL("http://www.google.com"), false,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_EQ(APP, GetExtensionType(extension));
   }
 }
+
+TEST_F(ExtensionUtilTest, IsExtensionValid) {
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(), GURL(), false,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_TRUE(IsExtensionValid(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(kValidUpdateUrl1), GURL(),
+                  true, Extension::INTERNAL, 0, &extension);
+    EXPECT_TRUE(IsExtensionValid(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(), GURL(), true,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_TRUE(IsExtensionValid(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(true, GURL(), GURL(), false,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_TRUE(IsExtensionValid(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(),
+                  GURL("http://www.google.com"), false,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_TRUE(IsExtensionValid(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(), GURL(), false,
+                  Extension::EXTERNAL_PREF, 0, &extension);
+    EXPECT_FALSE(IsExtensionValid(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(
+        false, GURL("http://third-party.update_url.com"), GURL(), true,
+        Extension::INTERNAL, 0, &extension);
+    EXPECT_FALSE(IsExtensionValid(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(), GURL(), true,
+                  Extension::INTERNAL, 1, &extension);
+    EXPECT_FALSE(IsExtensionValid(extension));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(), GURL(), true,
+                  Extension::INTERNAL, 2, &extension);
+    EXPECT_FALSE(IsExtensionValid(extension));
+  }
+}
+
+TEST_F(ExtensionUtilTest, IsExtensionValidAndSyncable) {
+  ExtensionTypeSet allowed_extension_types;
+  allowed_extension_types.insert(EXTENSION);
+  allowed_extension_types.insert(APP);
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(), GURL(), false,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_TRUE(IsExtensionValidAndSyncable(
+        extension, allowed_extension_types));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(),
+                  GURL("http://www.google.com"), false,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_TRUE(IsExtensionValidAndSyncable(
+        extension, allowed_extension_types));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(), GURL(), true,
+                  Extension::INTERNAL, 0, &extension);
+    EXPECT_FALSE(IsExtensionValidAndSyncable(
+        extension, allowed_extension_types));
+  }
+  {
+    FilePath file_path(kExtensionFilePath);
+    Extension extension(file_path);
+    MakeExtension(false, GURL(), GURL(), false,
+                  Extension::EXTERNAL_PREF, 0, &extension);
+    EXPECT_FALSE(IsExtensionValidAndSyncable(
+        extension, allowed_extension_types));
+  }
+}
+
 
 TEST_F(ExtensionUtilTest, IsExtensionSpecificsUnset) {
   {

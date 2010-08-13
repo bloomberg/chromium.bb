@@ -9,9 +9,11 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/extension_model_associator.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/sync/glue/extension_sync.h"
 #include "chrome/browser/sync/glue/extension_util.h"
+#include "chrome/browser/sync/protocol/extension_specifics.pb.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
@@ -19,14 +21,12 @@
 namespace browser_sync {
 
 ExtensionChangeProcessor::ExtensionChangeProcessor(
-    UnrecoverableErrorHandler* error_handler,
-    ExtensionModelAssociator* extension_model_associator)
+    UnrecoverableErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
-      extension_model_associator_(extension_model_associator),
+      traits_(GetExtensionSyncTraits()),
       profile_(NULL) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(error_handler);
-  DCHECK(extension_model_associator_);
 }
 
 ExtensionChangeProcessor::~ExtensionChangeProcessor() {
@@ -43,32 +43,45 @@ void ExtensionChangeProcessor::Observe(NotificationType type,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(running());
   DCHECK(profile_);
-  switch (type.value) {
-    case NotificationType::EXTENSION_LOADED:
-    case NotificationType::EXTENSION_UPDATE_DISABLED:
-    case NotificationType::EXTENSION_UNLOADED:
-    case NotificationType::EXTENSION_UNLOADED_DISABLED: {
-      DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
-      Extension* extension = Details<Extension>(details).ptr();
-      CHECK(extension);
-      // Ignore non-syncable extensions.
-      if (!IsExtensionSyncable(*extension)) {
-        return;
-      }
-      const std::string& id = extension->id();
-      LOG(INFO) << "Got change notification of type " << type.value
-                << " for extension " << id;
-      if (!extension_model_associator_->OnClientUpdate(id)) {
-        std::string error = std::string("Client update failed for ") + id;
-        error_handler()->OnUnrecoverableError(FROM_HERE, error);
-        return;
-      }
-      break;
+  if ((type != NotificationType::EXTENSION_LOADED) &&
+      (type != NotificationType::EXTENSION_UPDATE_DISABLED) &&
+      (type != NotificationType::EXTENSION_UNLOADED) &&
+      (type != NotificationType::EXTENSION_UNLOADED_DISABLED)) {
+    LOG(DFATAL) << "Received unexpected notification of type "
+                << type.value;
+    return;
+  }
+  DCHECK_EQ(Source<Profile>(source).ptr(), profile_);
+  const Extension* extension = Details<Extension>(details).ptr();
+  CHECK(extension);
+  // Ignore non-syncable extensions.
+  if (!IsExtensionValidAndSyncable(
+          *extension, traits_.allowed_extension_types)) {
+    return;
+  }
+  const std::string& id = extension->id();
+  LOG(INFO) << "Got notification of type " << type.value
+            << " for extension " << id;
+  ExtensionsService* extensions_service =
+      GetExtensionsServiceFromProfile(profile_);
+  // Whether an extension is loaded or not isn't an indicator of
+  // whether it's installed or not; some extension actions unload and
+  // then reload an extension to force listeners to update.
+  bool extension_installed =
+      (extensions_service->GetExtensionById(id, true) != NULL);
+  if (extension_installed) {
+    LOG(INFO) << "Extension " << id
+              << " is installed; updating server data";
+    std::string error;
+    if (!UpdateServerData(traits_, *extension,
+                          profile_->GetProfileSyncService(), &error)) {
+      error_handler()->OnUnrecoverableError(FROM_HERE, error);
     }
-    default:
-      LOG(DFATAL) << "Received unexpected notification of type "
-                  << type.value;
-      break;
+  } else {
+    LOG(INFO) << "Extension " << id
+              << " is not installed; removing server data";
+    RemoveServerData(traits_, *extension,
+                     profile_->GetProfileSyncService());
   }
 }
 
@@ -80,6 +93,8 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
   if (!running()) {
     return;
   }
+  ExtensionsService* extensions_service =
+      GetExtensionsServiceFromProfile(profile_);
   for (int i = 0; i < change_count; ++i) {
     const sync_api::SyncManager::ChangeRecord& change = changes[i];
     switch (change.action) {
@@ -93,9 +108,9 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
           error_handler()->OnUnrecoverableError(FROM_HERE, error.str());
           return;
         }
-        DCHECK_EQ(node.GetModelType(), syncable::EXTENSIONS);
+        DCHECK_EQ(node.GetModelType(), traits_.model_type);
         const sync_pb::ExtensionSpecifics& specifics =
-            node.GetExtensionSpecifics();
+            (*traits_.extension_specifics_getter)(node);
         if (!IsExtensionSpecificsValid(specifics)) {
           std::string error =
               std::string("Invalid server specifics: ") +
@@ -104,15 +119,17 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
           return;
         }
         StopObserving();
-        extension_model_associator_->OnServerUpdate(specifics);
+        UpdateClient(traits_, specifics, extensions_service);
         StartObserving();
         break;
       }
       case sync_api::SyncManager::ChangeRecord::ACTION_DELETE: {
-        StopObserving();
-        if (change.specifics.HasExtension(sync_pb::extension)) {
-          extension_model_associator_->OnServerRemove(
-              change.specifics.GetExtension(sync_pb::extension).id());
+        sync_pb::ExtensionSpecifics specifics;
+        if ((*traits_.extension_specifics_entity_getter)(
+                change.specifics, &specifics)) {
+          StopObserving();
+          RemoveFromClient(traits_, specifics.id(), extensions_service);
+          StartObserving();
         } else {
           std::stringstream error;
           error << "Could not get extension ID for deleted node "
@@ -120,7 +137,6 @@ void ExtensionChangeProcessor::ApplyChangesFromSyncModel(
           error_handler()->OnUnrecoverableError(FROM_HERE, error.str());
           LOG(DFATAL) << error.str();
         }
-        StartObserving();
         break;
       }
     }

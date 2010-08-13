@@ -9,17 +9,18 @@
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_registrar.h"
 
+class ExtensionsService;
 class NotificationDetails;
 class NotificationSource;
 class Profile;
 
 namespace browser_sync {
 
-class ExtensionModelAssociator;
 class UnrecoverableErrorHandler;
 
 // This class is responsible for taking changes from the
@@ -29,13 +30,9 @@ class UnrecoverableErrorHandler;
 class ExtensionChangeProcessor : public ChangeProcessor,
                                  public NotificationObserver {
  public:
-  // Does not take ownership of either argument.
-  //
-  // TODO(akalin): Create a Delegate interface and take that instead.
-  // That'll enable us to unit test this class.
-  ExtensionChangeProcessor(
-      UnrecoverableErrorHandler* error_handler,
-      ExtensionModelAssociator* extension_model_associator);
+  // Does not take ownership of |error_handler|.
+  explicit ExtensionChangeProcessor(
+      UnrecoverableErrorHandler* error_handler);
   virtual ~ExtensionChangeProcessor();
 
   // NotificationObserver implementation.
@@ -60,8 +57,8 @@ class ExtensionChangeProcessor : public ChangeProcessor,
   void StartObserving();
   void StopObserving();
 
-  ExtensionModelAssociator* extension_model_associator_;
   NotificationRegistrar notification_registrar_;
+  const ExtensionSyncTraits traits_;
   // Owner of the ExtensionService.  Non-NULL iff |running()| is true.
   Profile* profile_;
 

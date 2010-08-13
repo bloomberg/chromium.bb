@@ -166,7 +166,7 @@ ProfileSyncFactoryImpl::CreateExtensionSyncComponents(
   ExtensionModelAssociator* model_associator =
       new ExtensionModelAssociator(profile_sync_service);
   ExtensionChangeProcessor* change_processor =
-      new ExtensionChangeProcessor(error_handler, model_associator);
+      new ExtensionChangeProcessor(error_handler);
   return SyncComponents(model_associator, change_processor);
 }
 
