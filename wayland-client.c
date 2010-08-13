@@ -345,25 +345,19 @@ handle_event(struct wl_display *display,
 	if (id == 1)
 		proxy = &display->proxy;
 	else
-		proxy = (struct wl_proxy *)
-			wl_hash_table_lookup(display->objects, id);
+		proxy = wl_hash_table_lookup(display->objects, id);
 
-	if (proxy != NULL) {
-		if (wl_list_empty(&proxy->listener_list)) {
-			printf("proxy found for object %d, opcode %d, but no listeners\n",
-			       id, opcode);
-		}
+	if (proxy == NULL)
+		return;
 
-		wl_list_for_each(listener, &proxy->listener_list, link)
-			wl_connection_demarshal(display->connection,
-						size,
-						display->objects,
-						listener->implementation[opcode],
-						listener->data,
-						&proxy->base, 
-						&proxy->base.interface->events[opcode]);
-
-	}
+	wl_list_for_each(listener, &proxy->listener_list, link)
+		wl_connection_demarshal(display->connection,
+					size,
+					display->objects,
+					listener->implementation[opcode],
+					listener->data,
+					&proxy->base, 
+					&proxy->base.interface->events[opcode]);
 
 	wl_connection_consume(display->connection, size);
 }
