@@ -65,7 +65,7 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
-static bool ShouldReloadExtensionManifest(const ExtensionInfo& info) {
+bool ShouldReloadExtensionManifest(const ExtensionInfo& info) {
   // Always reload LOAD extension manifests, because they can change on disk
   // independent of the manifest in our prefs.
   if (info.extension_location == Extension::LOAD)
@@ -73,6 +73,26 @@ static bool ShouldReloadExtensionManifest(const ExtensionInfo& info) {
 
   // Otherwise, reload the manifest it needs to be relocalized.
   return extension_l10n_util::ShouldRelocalizeManifest(info);
+}
+
+void GetExplicitOriginsInExtent(Extension* extension,
+                                std::vector<GURL>* origins) {
+  typedef std::vector<URLPattern> PatternList;
+  std::set<GURL> set;
+  const PatternList& patterns = extension->web_extent().patterns();
+  for (PatternList::const_iterator pattern = patterns.begin();
+       pattern != patterns.end(); ++pattern) {
+    if (pattern->match_subdomains() || pattern->match_all_urls())
+      continue;
+    GURL origin = GURL(pattern->GetAsString()).GetOrigin();
+    if (origin.is_valid())
+      set.insert(origin);
+  }
+
+  for (std::set<GURL>::const_iterator unique = set.begin();
+       unique != set.end(); ++unique) {
+    origins->push_back(*unique);
+  }
 }
 
 }  // namespace
@@ -618,17 +638,8 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
     profile_->RegisterExtensionWithRequestContexts(extension);
 
     // Check if this permission requires unlimited storage quota
-    if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission)) {
-      string16 origin_identifier =
-          webkit_database::DatabaseUtil::GetOriginIdentifier(extension->url());
-      ChromeThread::PostTask(
-          ChromeThread::FILE, FROM_HERE,
-          NewRunnableMethod(
-              profile_->GetDatabaseTracker(),
-              &webkit_database::DatabaseTracker::SetOriginQuotaInMemory,
-              origin_identifier,
-              kint64max));
-    }
+    if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
+      GrantUnlimitedStorage(extension);
   }
 
   LOG(INFO) << "Sending EXTENSION_LOADED";
@@ -652,15 +663,65 @@ void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
 
     // Check if this permission required unlimited storage quota, reset its
     // in-memory quota.
-    if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission)) {
+    if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission))
+      RevokeUnlimitedStorage(extension);
+  }
+}
+
+void ExtensionsService::GrantUnlimitedStorage(Extension* extension) {
+  DCHECK(extension->HasApiPermission(Extension::kUnlimitedStoragePermission));
+  std::vector<GURL> origins;
+  GetExplicitOriginsInExtent(extension, &origins);
+  origins.push_back(extension->url());
+
+  for (size_t i = 0; i < origins.size(); ++i) {
+    const GURL& origin = origins[i];
+    if (++unlimited_storage_map_[origin] == 1) {
       string16 origin_identifier =
-          webkit_database::DatabaseUtil::GetOriginIdentifier(extension->url());
+          webkit_database::DatabaseUtil::GetOriginIdentifier(origin);
+      ChromeThread::PostTask(
+          ChromeThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              profile_->GetDatabaseTracker(),
+              &webkit_database::DatabaseTracker::SetOriginQuotaInMemory,
+              origin_identifier,
+              kint64max));
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              profile_->GetAppCacheService(),
+              &ChromeAppCacheService::SetOriginQuotaInMemory,
+              origin,
+              kint64max));
+    }
+  }
+}
+
+void ExtensionsService::RevokeUnlimitedStorage(Extension* extension) {
+  DCHECK(extension->HasApiPermission(Extension::kUnlimitedStoragePermission));
+  std::vector<GURL> origins;
+  GetExplicitOriginsInExtent(extension, &origins);
+  origins.push_back(extension->url());
+
+  for (size_t i = 0; i < origins.size(); ++i) {
+    const GURL& origin = origins[i];
+    DCHECK(unlimited_storage_map_[origin] > 0);
+    if (--unlimited_storage_map_[origin] == 0) {
+      unlimited_storage_map_.erase(origin);
+      string16 origin_identifier =
+          webkit_database::DatabaseUtil::GetOriginIdentifier(origin);
       ChromeThread::PostTask(
           ChromeThread::FILE, FROM_HERE,
           NewRunnableMethod(
               profile_->GetDatabaseTracker(),
               &webkit_database::DatabaseTracker::ResetOriginQuotaInMemory,
               origin_identifier));
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(
+              profile_->GetAppCacheService(),
+              &ChromeAppCacheService::ResetOriginQuotaInMemory,
+              origin));
     }
   }
 }

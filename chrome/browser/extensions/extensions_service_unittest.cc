@@ -23,6 +23,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -227,8 +228,22 @@ class ExtensionTestingProfile : public TestingProfile {
   }
   virtual ExtensionsService* GetExtensionsService() { return service_; }
 
+  virtual ChromeAppCacheService* GetAppCacheService() {
+    if (!appcache_service_) {
+      appcache_service_ = new ChromeAppCacheService;
+      ChromeThread::PostTask(
+          ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(appcache_service_.get(),
+                            &ChromeAppCacheService::InitializeOnIOThread,
+                            GetPath(), IsOffTheRecord(),
+                            make_scoped_refptr(GetHostContentSettingsMap())));
+    }
+    return appcache_service_;
+  }
+
  private:
   ExtensionsService* service_;
+  scoped_refptr<ChromeAppCacheService> appcache_service_;
 };
 
 // Our message loop may be used in tests which require it to be an IO loop.
@@ -236,6 +251,7 @@ ExtensionsServiceTestBase::ExtensionsServiceTestBase()
     : total_successes_(0),
       loop_(MessageLoop::TYPE_IO),
       ui_thread_(ChromeThread::UI, &loop_),
+      db_thread_(ChromeThread::DB, &loop_),
       webkit_thread_(ChromeThread::WEBKIT, &loop_),
       file_thread_(ChromeThread::FILE, &loop_),
       io_thread_(ChromeThread::IO, &loop_) {
@@ -1164,6 +1180,66 @@ TEST_F(ExtensionsServiceTest, InstallApps) {
   // TODO(aa): bring this back when overlap is fixed. http://crbug.com/47445.
   // PackAndInstallExtension(extensions_path.AppendASCII("app3"), false);
   // ValidatePrefKeyCount(pref_count);
+}
+
+TEST_F(ExtensionsServiceTest, InstallAppsWithUnlimtedStorage) {
+  InitializeEmptyExtensionsService();
+  EXPECT_TRUE(service_->extensions()->empty());
+  EXPECT_TRUE(service_->unlimited_storage_map_.empty());
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  int pref_count = 0;
+  ChromeAppCacheService* appcache_service = profile_->GetAppCacheService();
+
+  // Install app1 with unlimited storage.
+  PackAndInstallExtension(extensions_path.AppendASCII("app1"), true);
+  ValidatePrefKeyCount(++pref_count);
+  ASSERT_EQ(1u, service_->extensions()->size());
+  Extension* extension = service_->extensions()->at(0);
+  const std::string id1 = extension->id();
+  EXPECT_TRUE(extension->HasApiPermission(
+                  Extension::kUnlimitedStoragePermission));
+  EXPECT_TRUE(extension->web_extent().ContainsURL(
+                  extension->GetFullLaunchURL()));
+  const GURL origin1(extension->GetFullLaunchURL().GetOrigin());
+  EXPECT_EQ(kint64max,
+            appcache_service->storage()->GetOriginQuotaInMemory(origin1));
+  EXPECT_FALSE(service_->unlimited_storage_map_.empty());
+
+  // Install app2 from the same origin with unlimited storage.
+  PackAndInstallExtension(extensions_path.AppendASCII("app2"), true);
+  ValidatePrefKeyCount(++pref_count);
+  ASSERT_EQ(2u, service_->extensions()->size());
+  extension = service_->extensions()->at(1);
+  const std::string id2 = extension->id();
+  EXPECT_TRUE(extension->HasApiPermission(
+                  Extension::kUnlimitedStoragePermission));
+  EXPECT_TRUE(extension->web_extent().ContainsURL(
+                  extension->GetFullLaunchURL()));
+  const GURL origin2(extension->GetFullLaunchURL().GetOrigin());
+  EXPECT_EQ(origin1, origin2);
+  EXPECT_EQ(kint64max,
+            appcache_service->storage()->GetOriginQuotaInMemory(origin2));
+  EXPECT_FALSE(service_->unlimited_storage_map_.empty());
+
+  // Uninstall one of them, unlimited storage should still be granted
+  // to the origin.
+  service_->UninstallExtension(id1, false);
+  loop_.RunAllPending();
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(kint64max,
+            appcache_service->storage()->GetOriginQuotaInMemory(origin1));
+  EXPECT_FALSE(service_->unlimited_storage_map_.empty());
+
+  // Uninstall the other, unlimited storage should be revoked.
+  service_->UninstallExtension(id2, false);
+  loop_.RunAllPending();
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(-1L,
+            appcache_service->storage()->GetOriginQuotaInMemory(origin2));
+  EXPECT_TRUE(service_->unlimited_storage_map_.empty());
 }
 
 // Test that when an extension version is reinstalled, nothing happens.

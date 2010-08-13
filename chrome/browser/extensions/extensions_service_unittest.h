@@ -45,6 +45,7 @@ class ExtensionsServiceTestBase : public testing::Test {
   size_t total_successes_;
   MessageLoop loop_;
   ChromeThread ui_thread_;
+  ChromeThread db_thread_;
   ChromeThread webkit_thread_;
   ChromeThread file_thread_;
   ChromeThread io_thread_;

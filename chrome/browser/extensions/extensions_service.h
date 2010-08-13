@@ -384,6 +384,10 @@ class ExtensionsService
   // Helper method. Loads extension from prefs.
   void LoadInstalledExtension(const ExtensionInfo& info, bool relocalize);
 
+  // Helper methods to configure the storage services accordingly.
+  void GrantUnlimitedStorage(Extension* extension);
+  void RevokeUnlimitedStorage(Extension* extension);
+
   // The profile this ExtensionsService is part of.
   Profile* profile_;
 
@@ -446,9 +450,16 @@ class ExtensionsService
   typedef std::vector<ComponentExtensionInfo> RegisteredComponentExtensions;
   RegisteredComponentExtensions component_extension_manifests_;
 
+  // Collection of origins we've granted unlimited storage to. This is a
+  // map from origin to the number of extensions requiring unlimited
+  // storage within that origin.
+  typedef std::map<GURL, int> UnlimitedStorageMap;
+  UnlimitedStorageMap unlimited_storage_map_;
+
   FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
                            UpdatePendingExtensionAlreadyInstalled);
-
+  FRIEND_TEST_ALL_PREFIXES(ExtensionsServiceTest,
+                           InstallAppsWithUnlimtedStorage);
   DISALLOW_COPY_AND_ASSIGN(ExtensionsService);
 };
 
