@@ -21,6 +21,7 @@ import password_specifics_pb2
 import preference_specifics_pb2
 import theme_specifics_pb2
 import typed_url_specifics_pb2
+import session_specifics_pb2
 import sync_pb2
 
 # An enumeration of the various kinds of data that can be synced.
@@ -35,9 +36,9 @@ ALL_TYPES = (
     NIGORI,
     PASSWORD,
     PREFERENCE,
-    # SESSION,
+    SESSION,
     THEME,
-    TYPED_URL) = range(9)
+    TYPED_URL) = range(10)
 
 # Given a sync type from ALL_TYPES, find the extension token corresponding
 # to that datatype.  Note that TOP_LEVEL has no such token.
@@ -48,7 +49,7 @@ SYNC_TYPE_TO_EXTENSION = {
     NIGORI: nigori_specifics_pb2.nigori,
     PASSWORD: password_specifics_pb2.password,
     PREFERENCE: preference_specifics_pb2.preference,
-    # SESSION: session_specifics_pb2.session,     # Disabled
+    SESSION: session_specifics_pb2.session,
     THEME: theme_specifics_pb2.theme,
     TYPED_URL: typed_url_specifics_pb2.typed_url,
     }
@@ -166,9 +167,8 @@ class SyncDataModel(object):
                     parent_tag='google_chrome', sync_type=EXTENSIONS),
       PermanentItem('google_chrome_passwords', name='Passwords',
                     parent_tag='google_chrome', sync_type=PASSWORD),
-      # TODO(rsimha): Disabled since the protocol does not support it yet.
-      # PermanentItem('google_chrome_sessions', name='Sessions',
-      #               parent_tag='google_chrome', SESSION),
+      PermanentItem('google_chrome_sessions', name='Sessions',
+                    parent_tag='google_chrome', sync_type=SESSION),
       PermanentItem('google_chrome_themes', name='Themes',
                     parent_tag='google_chrome', sync_type=THEME),
       PermanentItem('google_chrome_typed_urls', name='Typed URLs',
