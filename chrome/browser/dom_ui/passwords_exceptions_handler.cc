@@ -11,6 +11,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 
@@ -25,12 +26,30 @@ void PasswordsExceptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
-  localized_strings->SetString("passwordsExceptionsTitle",
+  localized_strings->SetString("savedPasswordsExceptionsTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE));
   localized_strings->SetString("passwordsTabTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE));
   localized_strings->SetString("exceptionsTabTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE));
+  localized_strings->SetString("passwordsSiteColumn",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN));
+  localized_strings->SetString("passwordsUsernameColumn",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_USERNAME_COLUMN));
+  localized_strings->SetString("passwordsRemoveButton",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_REMOVE_BUTTON));
+  localized_strings->SetString("passwordsRemoveAllButton",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON));
+  localized_strings->SetString("passwordsShowButton",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON));
+  localized_strings->SetString("passwordsHideButton",
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON));
+  localized_strings->SetString("passwordsRemoveAllTitle",
+      l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS));
+  localized_strings->SetString("passwordsRemoveAllWarning",
+      l10n_util::GetStringUTF16(
+          IDS_PASSWORDS_PAGE_VIEW_TEXT_DELETE_ALL_PASSWORDS));
 }
 
 void PasswordsExceptionsHandler::Initialize() {

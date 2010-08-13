@@ -50,7 +50,8 @@ cr.define('options', function() {
         imagesExceptionsList.redraw();
       };
 
-      var exceptionsAreas = document.querySelectorAll('div[contentType]');
+      var exceptionsAreas =
+          document.querySelectorAll('#contentSettingsPage div[contentType]');
       for (var i = 0; i < exceptionsAreas.length; i++) {
         options.contentSettings.ExceptionsArea.decorate(exceptionsAreas[i]);
       }
