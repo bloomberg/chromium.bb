@@ -11,16 +11,16 @@
 namespace extension_web_navigation_api_constants {
 
 // Keys.
-extern const wchar_t kErrorKey[];
-extern const wchar_t kFrameIdKey[];
-extern const wchar_t kRequestIdKey[];
-extern const wchar_t kSourceTabIdKey[];
-extern const wchar_t kSourceUrlKey[];
-extern const wchar_t kTabIdKey[];
-extern const wchar_t kTargetUrlKey[];
-extern const wchar_t kTimeStampKey[];
-extern const wchar_t kTransitionTypeKey[];
-extern const wchar_t kUrlKey[];
+extern const char kErrorKey[];
+extern const char kFrameIdKey[];
+extern const char kRequestIdKey[];
+extern const char kSourceTabIdKey[];
+extern const char kSourceUrlKey[];
+extern const char kTabIdKey[];
+extern const char kTargetUrlKey[];
+extern const char kTimeStampKey[];
+extern const char kTransitionTypeKey[];
+extern const char kUrlKey[];
 
 // Events.
 extern const char kOnBeforeNavigate[];

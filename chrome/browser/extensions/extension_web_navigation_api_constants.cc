@@ -6,16 +6,16 @@
 
 namespace extension_web_navigation_api_constants {
 
-const wchar_t kErrorKey[] = L"error";
-const wchar_t kFrameIdKey[] = L"frameId";
-const wchar_t kRequestIdKey[] = L"requestId";
-const wchar_t kSourceTabIdKey[] = L"sourceTabId";
-const wchar_t kSourceUrlKey[] = L"sourceUrl";
-const wchar_t kTabIdKey[] = L"tabId";
-const wchar_t kTargetUrlKey[] = L"targetUrl";
-const wchar_t kTimeStampKey[] = L"timeStamp";
-const wchar_t kTransitionTypeKey[] = L"transitionType";
-const wchar_t kUrlKey[] = L"url";
+const char kErrorKey[] = "error";
+const char kFrameIdKey[] = "frameId";
+const char kRequestIdKey[] = "requestId";
+const char kSourceTabIdKey[] = "sourceTabId";
+const char kSourceUrlKey[] = "sourceUrl";
+const char kTabIdKey[] = "tabId";
+const char kTargetUrlKey[] = "targetUrl";
+const char kTimeStampKey[] = "timeStamp";
+const char kTransitionTypeKey[] = "transitionType";
+const char kUrlKey[] = "url";
 
 const char kOnBeforeNavigate[] = "experimental.webNavigation.onBeforeNavigate";
 const char kOnBeforeRetarget[] = "experimental.webNavigation.onBeforeRetarget";
