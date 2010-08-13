@@ -390,7 +390,7 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   if (!include_incognito)
     profile = profile->GetOriginalProfile();
 
-  browser = BrowserList::FindBrowserWithType(profile, Browser::TYPE_ANY,
+  browser = BrowserList::FindBrowserWithType(profile, Browser::TYPE_NORMAL,
                                              include_incognito);
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
