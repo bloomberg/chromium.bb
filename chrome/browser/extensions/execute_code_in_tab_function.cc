@@ -114,6 +114,8 @@ void ExecuteCodeInTabFunction::DidLoadFile(bool success,
     Execute(data);
   } else {
 #if defined(OS_POSIX)
+    // TODO(viettrungluu): bug: there's no particular reason the path should be
+    // UTF-8, in which case this may fail.
     error_ = ExtensionErrorUtils::FormatErrorMessage(keys::kLoadFileError,
         resource_.relative_path().value());
 #elif defined(OS_WIN)

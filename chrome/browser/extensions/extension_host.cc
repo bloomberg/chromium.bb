@@ -21,7 +21,6 @@
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"

@@ -122,7 +122,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetString(keys::kStatusKey, GetTabStatusText(contents->is_loading()));
   result->SetBoolean(keys::kSelectedKey,
                      tab_strip && tab_index == tab_strip->selected_index());
-  result->SetString(keys::kTitleKey, UTF16ToWide(contents->GetTitle()));
+  result->SetString(keys::kTitleKey, contents->GetTitle());
   result->SetBoolean(keys::kIncognitoKey,
                      contents->profile()->IsOffTheRecord());
 

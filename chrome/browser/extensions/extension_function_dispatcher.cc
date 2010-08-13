@@ -41,7 +41,6 @@
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_rlz_module.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
-#include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/extension_tts_api.h"
