@@ -56,6 +56,7 @@ cr.define('options', function() {
                             cr.bind(this.handleVisibleChange_, this));
 
       this.initializeInputMethodList_();
+      this.initializeLanguageCodeToInputMehotdIdsMap_();
 
       // Set up add button.
       $('language-options-add-button').onclick = function(e) {
@@ -79,6 +80,9 @@ cr.define('options', function() {
     // (i.e. active input methods).
     preloadEnginesPref: 'settings.language.preload_engines',
     preloadEngines_: [],
+    // The map of language code to input method IDs, like:
+    // {'ja': ['mozc', 'mozc-jp'], 'zh-CN': ['pinyin'], ...}
+    languageCodeToInputMethodIdsMap_: {},
 
     /**
      * Initializes the input method list.
@@ -171,9 +175,9 @@ cr.define('options', function() {
      * @private
      */
     handleLanguageOptionsListSave_: function(e) {
-      // TODO(satorux): Handle this event to sort the preload engines per
-      // the saved languages. For instance, suppose we have two languages
-      // and associated input methods:
+      // Handle this event to sort the preload engines per the saved
+      // languages. For instance, suppose we have two languages and
+      // associated input methods:
       //
       // - Korean: hangul
       // - Chinese: pinyin
@@ -181,6 +185,57 @@ cr.define('options', function() {
       // The preloadEngines preference should look like "hangul,pinyin".
       // If the user reverse the order, the preference should be reorderd
       // to "pinyin,hangul".
+      var languageOptionsList = $('language-options-list');
+      var languageCodes = languageOptionsList.getLanguageCodes();
+
+      // Convert the list into a dictonary for simpler lookup.
+      var preloadEngineSet = {};
+      for (var i = 0; i < this.preloadEngines_.length; i++) {
+        preloadEngineSet[this.preloadEngines_[i]] = true;
+      }
+
+      // Create the new preload engine list per the language codes.
+      var newPreloadEngines = [];
+      for (var i = 0; i < languageCodes.length; i++) {
+        var languageCode = languageCodes[i];
+        var inputMethodIds = this.languageCodeToInputMethodIdsMap_[
+            languageCode];
+        // Check if we have active input methods associated with the language.
+        for (var j = 0; j < inputMethodIds.length; j++) {
+          var inputMethodId = inputMethodIds[j];
+          if (inputMethodId in preloadEngineSet) {
+            // If we have, add it to the new engine list.
+            newPreloadEngines.push(inputMethodId);
+            // And delete it from the set. This is necessary as one input
+            // method can be associated with more than one language thus
+            // we should avoid having duplicates in the new list.
+            delete preloadEngineSet[inputMethodId];
+          }
+        }
+      }
+
+      this.preloadEngines_ = newPreloadEngines;
+      this.savePreloadEnginesPref_();
+    },
+
+    /**
+     * Initializes the map of language code to input method IDs.
+     * @private
+     */
+    initializeLanguageCodeToInputMehotdIdsMap_: function() {
+      var inputMethodList = templateData.inputMethodList;
+      for (var i = 0; i < inputMethodList.length; i++) {
+        var inputMethod = inputMethodList[i];
+        for (var languageCode in inputMethod.languageCodeSet) {
+          if (languageCode in this.languageCodeToInputMethodIdsMap_) {
+            this.languageCodeToInputMethodIdsMap_[languageCode].push(
+                inputMethod.id);
+          } else {
+            this.languageCodeToInputMethodIdsMap_[languageCode] =
+                [inputMethod.id];
+          }
+        }
+      }
     },
 
     /**
