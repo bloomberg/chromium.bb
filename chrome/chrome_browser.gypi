@@ -1969,6 +1969,8 @@
         'browser/net/load_timing_observer.h',
         'browser/net/metadata_url_request.cc',
         'browser/net/metadata_url_request.h',
+        'browser/net/net_log_logger.cc',
+        'browser/net/net_log_logger.h',
         'browser/net/passive_log_collector.cc',
         'browser/net/passive_log_collector.h',
         'browser/net/preconnect.cc',

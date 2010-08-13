@@ -78,35 +78,6 @@ disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
   return http_cache->GetCurrentBackend();
 }
 
-// Serializes the specified event to a DictionaryValue.
-Value* EntryToDictionaryValue(net::NetLog::EventType type,
-                              const base::TimeTicks& time,
-                              const net::NetLog::Source& source,
-                              net::NetLog::EventPhase phase,
-                              net::NetLog::EventParameters* params) {
-  DictionaryValue* entry_dict = new DictionaryValue();
-
-  // Set the entry time. (Note that we send it as a string since integers
-  // might overflow).
-  entry_dict->SetString("time", TickCountToString(time));
-
-  // Set the entry source.
-  DictionaryValue* source_dict = new DictionaryValue();
-  source_dict->SetInteger("id", source.id);
-  source_dict->SetInteger("type", static_cast<int>(source.type));
-  entry_dict->Set("source", source_dict);
-
-  // Set the event info.
-  entry_dict->SetInteger("type", static_cast<int>(type));
-  entry_dict->SetInteger("phase", static_cast<int>(phase));
-
-  // Set the event-specific parameters.
-  if (params)
-    entry_dict->Set("params", params->ToValue());
-
-  return entry_dict;
-}
-
 Value* ExperimentToValue(const ConnectionTester::Experiment& experiment) {
   DictionaryValue* dict = new DictionaryValue();
 
@@ -734,11 +705,12 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetPassiveLogEntries(
   ListValue* list = new ListValue();
   for (size_t i = 0; i < passive_entries.size(); ++i) {
     const PassiveLogCollector::Entry& e = passive_entries[i];
-    list->Append(EntryToDictionaryValue(e.type,
-                                        e.time,
-                                        e.source,
-                                        e.phase,
-                                        e.params));
+    list->Append(net::NetLog::EntryToDictionaryValue(e.type,
+                                                     e.time,
+                                                     e.source,
+                                                     e.phase,
+                                                     e.params,
+                                                     false));
   }
 
   CallJavascriptFunction(L"g_browser.receivedPassiveLogEntries", list);
@@ -794,7 +766,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnAddEntry(
 
   CallJavascriptFunction(
       L"g_browser.receivedLogEntry",
-      EntryToDictionaryValue(type, time, source, phase, params));
+      net::NetLog::EntryToDictionaryValue(type, time, source, phase, params,
+                                          false));
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTestSuite() {

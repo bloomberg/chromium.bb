@@ -11,6 +11,7 @@
 #include "net/base/net_log.h"
 
 class LoadTimingObserver;
+class NetLogLogger;
 class PassiveLogCollector;
 
 // ChromeNetLog is an implementation of NetLog that dispatches network log
@@ -62,6 +63,7 @@ class ChromeNetLog : public net::NetLog {
   uint32 next_id_;
   scoped_ptr<PassiveLogCollector> passive_collector_;
   scoped_ptr<LoadTimingObserver> load_timing_observer_;
+  scoped_ptr<NetLogLogger> net_log_logger_;
   ObserverList<Observer, true> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetLog);

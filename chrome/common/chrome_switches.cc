@@ -288,6 +288,9 @@ const char kDomAutomationController[]       = "dom-automation";
 // scripts.
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
+// Enable displaying net log events on the command line.
+extern const char kLogNetLog[]             = "log-net-log";
+
 // Enable gpu-accelerated compositing.
 const char kEnableAcceleratedCompositing[]  = "enable-accelerated-compositing";
 

@@ -6,11 +6,14 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/load_timing_observer.h"
+#include "chrome/browser/net/net_log_logger.h"
 #include "chrome/browser/net/passive_log_collector.h"
+#include "chrome/common/chrome_switches.h"
 
 ChromeNetLog::ChromeNetLog()
     : next_id_(1),
@@ -19,12 +22,21 @@ ChromeNetLog::ChromeNetLog()
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   AddObserver(passive_collector_.get());
   AddObserver(load_timing_observer_.get());
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kLogNetLog)) {
+    net_log_logger_.reset(new NetLogLogger());
+    AddObserver(net_log_logger_.get());
+  }
 }
 
 ChromeNetLog::~ChromeNetLog() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   RemoveObserver(passive_collector_.get());
   RemoveObserver(load_timing_observer_.get());
+  if (net_log_logger_.get()) {
+    RemoveObserver(net_log_logger_.get());
+  }
 }
 
 void ChromeNetLog::AddEntry(EventType type,
