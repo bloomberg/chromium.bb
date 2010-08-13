@@ -107,7 +107,7 @@ class MockLoginUtils : public LoginUtils {
     EXPECT_EQ(expected_username_, username);
   }
 
-  virtual void CompleteOffTheRecordLogin() {
+  virtual void CompleteOffTheRecordLogin(const GURL& start_url) {
   }
 
   virtual Authenticator* CreateAuthenticator(LoginStatusConsumer* consumer) {

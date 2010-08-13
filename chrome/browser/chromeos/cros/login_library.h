@@ -33,6 +33,9 @@ class LoginLibrary {
   // indicated by |unique_id|.
   virtual bool StopSession(const std::string& unique_id /* unused */) = 0;
 
+  // Restarts the job with specified command line string.
+  virtual bool RestartJob(int pid, const std::string& command_line) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via CrosLibrary::Get().
   static LoginLibrary* GetImpl(bool stub);

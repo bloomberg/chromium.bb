@@ -30,6 +30,10 @@ class LoginLibraryImpl : public LoginLibrary {
     return chromeos::StopSession("");
   }
 
+  bool RestartJob(int pid, const std::string& command_line) {
+    return chromeos::RestartJob(pid, command_line.c_str());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginLibraryImpl);
 };
@@ -43,6 +47,7 @@ class LoginLibraryStubImpl : public LoginLibrary {
   bool StartSession(const std::string& user_email,
                     const std::string& unique_id /* unused */) { return true; }
   bool StopSession(const std::string& unique_id /* unused */) { return true; }
+  bool RestartJob(int pid, const std::string& command_line) { return true; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginLibraryStubImpl);

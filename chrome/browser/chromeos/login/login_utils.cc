@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
+#include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/browser_init.h"
 #include "chrome/browser/browser_process.h"
@@ -70,7 +71,7 @@ class LoginUtilsImpl : public LoginUtils,
 
   // Invoked after the tmpfs is successfully mounted.
   // Launches a browser in the off the record (incognito) mode.
-  virtual void CompleteOffTheRecordLogin();
+  virtual void CompleteOffTheRecordLogin(const GURL& start_url);
 
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.
@@ -174,21 +175,40 @@ void LoginUtilsImpl::CompleteLogin(const std::string& username,
   auth_token_ = credentials.token;
 }
 
-void LoginUtilsImpl::CompleteOffTheRecordLogin() {
+void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
   LOG(INFO) << "Completing off the record login";
 
   UserManager::Get()->OffTheRecordUserLoggedIn();
   ConnectToPreferredNetwork();
 
   if (CrosLibrary::Get()->EnsureLoaded()) {
-    CrosLibrary::Get()->GetLoginLibrary()->StartSession(
-        UserManager::Get()->logged_in_user().email(),
-        "");
+    // For BWSI we ask session manager to restart Chrome with --bwsi flag.
+    // We keep only some of the arguments of this process.
+    static const char* kForwardSwitches[] = {
+        switches::kLoggingLevel,
+        switches::kEnableLogging,
+        switches::kUserDataDir,
+        switches::kScrollPixels,
+        switches::kEnableGView,
+        switches::kNoFirstRun,
+        switches::kLoginProfile
+    };
+    const CommandLine& browser_command_line =
+        *CommandLine::ForCurrentProcess();
+    CommandLine command_line(browser_command_line.GetProgram());
+    command_line.CopySwitchesFrom(browser_command_line,
+                                  kForwardSwitches,
+                                  arraysize(kForwardSwitches));
+    command_line.AppendSwitch(switches::kBWSI);
+    command_line.AppendSwitchASCII(
+        switches::kLoginUser,
+        UserManager::Get()->logged_in_user().email());
+    if (start_url.is_valid())
+      command_line.AppendLooseValue(UTF8ToWide(start_url.spec()));
+    CrosLibrary::Get()->GetLoginLibrary()->RestartJob(
+        getpid(),
+        command_line.command_line_string());
   }
-
-  // Session manager should restart Chrome in BWSI mode now if we exit
-  // uncleanly.
-  exit(1);
 }
 
 Authenticator* LoginUtilsImpl::CreateAuthenticator(

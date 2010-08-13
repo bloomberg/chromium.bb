@@ -11,6 +11,7 @@
 
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 
+class GURL;
 class Profile;
 
 namespace chromeos {
@@ -46,8 +47,9 @@ class LoginUtils {
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
 
   // Invoked after the tmpfs is successfully mounted.
-  // Launches a browser in the off the record (incognito) mode.
-  virtual void CompleteOffTheRecordLogin() = 0;
+  // Asks session manager to restart Chrome in Browse Without Sign In mode.
+  // |start_url| is url for launched browser to open.
+  virtual void CompleteOffTheRecordLogin(const GURL& start_url) = 0;
 
   // Creates and returns the authenticator to use. The caller owns the returned
   // Authenticator and must delete it when done.

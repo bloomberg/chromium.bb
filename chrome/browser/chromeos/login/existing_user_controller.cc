@@ -388,8 +388,7 @@ void ExistingUserController::OnLoginSuccess(const std::string& username,
 }
 
 void ExistingUserController::OnOffTheRecordLoginSuccess() {
-  AppendStartUrlToCmdline();
-  LoginUtils::Get()->CompleteOffTheRecordLogin();
+  LoginUtils::Get()->CompleteOffTheRecordLogin(start_url_);
 }
 
 void ExistingUserController::OnPasswordChangeDetected(
