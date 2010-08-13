@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -82,13 +82,6 @@ class SavePackageTest : public RenderViewHostTestHarness {
   FilePath EnsureMimeExtension(const FilePath& name,
                                const FilePath::StringType& content_mime_type) {
     return SavePackage::EnsureMimeExtension(name, content_mime_type);
-  }
-
-  FilePath GetSuggestedNameForSaveAs(const FilePath& title,
-      bool ensure_html_extension,
-      const FilePath::StringType& contents_mime_type) {
-    return SavePackage::GetSuggestedNameForSaveAs(title, ensure_html_extension,
-                                                  contents_mime_type);
   }
 
   GURL GetUrlToBeSaved() {
@@ -289,26 +282,63 @@ TEST_F(SavePackageTest, TestEnsureMimeExtension) {
 // http://www.foo.com/a/path/name.txt will turn into file:
 // "http www.foo.com a path name.txt", when we want to save it as "name.txt".
 
-static const struct {
-  const FilePath::CharType* page_title;
+static const struct SuggestedSaveNameTestCase {
+  const char* page_url;
+  const string16 page_title;
   const FilePath::CharType* expected_name;
   bool ensure_html_extension;
 } kSuggestedSaveNames[] = {
-  {FPL("A page title"), FPL("A page title") FPL_HTML_EXTENSION, true},
-  {FPL("A page title with.ext"), FPL("A page title with.ext"), false},
-  {FPL("http://www.foo.com/path/title.txt"), FPL("title.txt"), false},
-  {FPL("http://www.foo.com/path/"), FPL("path"), false},
-  {FPL("http://www.foo.com/"), FPL("www.foo.com"), false},
+  // Title overrides the URL.
+  { "http://foo.com",
+    ASCIIToUTF16("A page title"),
+    FPL("A page title") FPL_HTML_EXTENSION,
+    true
+  },
+  // Extension is preserved.
+  { "http://foo.com",
+    ASCIIToUTF16("A page title with.ext"),
+    FPL("A page title with.ext"),
+    false
+  },
+  // If the title matches the URL, use the last component of the URL.
+  { "http://foo.com/bar",
+    ASCIIToUTF16("http://foo.com/bar"),
+    FPL("bar"),
+    false
+  },
+  // If the title matches the URL, but there is no "filename" component,
+  // use the domain.
+  { "http://foo.com",
+    ASCIIToUTF16("http://foo.com"),
+    FPL("foo.com"),
+    false
+  },
+  // Make sure fuzzy matching works.
+  { "http://foo.com/bar",
+    ASCIIToUTF16("foo.com/bar"),
+    FPL("bar"),
+    false
+  },
+  // A URL-like title that does not match the title is respected in full.
+  { "http://foo.com",
+    ASCIIToUTF16("http://www.foo.com/path/title.txt"),
+    FPL("http   www.foo.com path title.txt"),
+    false
+  },
 };
 
 TEST_F(SavePackageTest, TestSuggestedSaveNames) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSuggestedSaveNames); ++i) {
-    FilePath title = FilePath(kSuggestedSaveNames[i].page_title);
-    FilePath save_name =
-        GetSuggestedNameForSaveAs(title,
-                                  kSuggestedSaveNames[i].ensure_html_extension,
-                                  FilePath::StringType());
-    EXPECT_EQ(save_name.value(), kSuggestedSaveNames[i].expected_name);
+  for (size_t i = 0; i < arraysize(kSuggestedSaveNames); ++i) {
+    scoped_refptr<SavePackage> save_package(
+        new SavePackage(NULL, FilePath(), FilePath()));
+    save_package->page_url_ = GURL(kSuggestedSaveNames[i].page_url);
+    save_package->title_ = kSuggestedSaveNames[i].page_title;
+
+    FilePath save_name = save_package->GetSuggestedNameForSaveAs(
+        kSuggestedSaveNames[i].ensure_html_extension,
+        FilePath::StringType());
+    EXPECT_EQ(kSuggestedSaveNames[i].expected_name, save_name.value()) <<
+        "Test case " << i;
   }
 }
 

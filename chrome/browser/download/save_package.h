@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
@@ -85,12 +86,12 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Constructor for user initiated page saving. This constructor results in a
   // SavePackage that will generate and sanitize a suggested name for the user
   // in the "Save As" dialog box.
-  explicit SavePackage(TabContents* web_content);
+  explicit SavePackage(TabContents* tab_contents);
 
   // This contructor is used only for testing. We can bypass the file and
   // directory name generation / sanitization by providing well known paths
   // better suited for tests.
-  SavePackage(TabContents* web_content,
+  SavePackage(TabContents* tab_contents,
               SavePackageType save_type,
               const FilePath& file_full_path,
               const FilePath& directory_full_path);
@@ -225,7 +226,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
 
   // Helper function for preparing suggested name for the SaveAs Dialog. The
   // suggested name is determined by the web document's title.
-  static FilePath GetSuggestedNameForSaveAs(const FilePath& name,
+  FilePath GetSuggestedNameForSaveAs(
       bool can_save_as_complete,
       const FilePath::StringType& contents_mime_type);
 
@@ -269,6 +270,9 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   FilePath saved_main_file_path_;
   FilePath saved_main_directory_path_;
 
+  // The title of the page the user wants to save.
+  string16 title_;
+
   // Indicates whether the actual saving job is finishing or not.
   bool finished_;
 
@@ -307,6 +311,7 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   friend class SavePackageTest;
+  FRIEND_TEST_ALL_PREFIXES(SavePackageTest, TestSuggestedSaveNames);
 
   ScopedRunnableMethodFactory<SavePackage> method_factory_;
 
