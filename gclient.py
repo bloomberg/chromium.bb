@@ -49,8 +49,9 @@ Hooks
     ]
 """
 
-__version__ = "0.5.2"
+__version__ = "0.6"
 
+import copy
 import logging
 import optparse
 import os
@@ -355,12 +356,13 @@ class Dependency(GClientKeywords, gclient_utils.WorkItem):
                          args + [self.parsed_url.GetFilename()],
                          self._file_list)
       else:
+        # Create a shallow copy to mutate revision.
+        options = copy.copy(options)
         options.revision = revision_overrides.get(self.name)
         scm = gclient_scm.CreateSCM(self.parsed_url, self.root_dir(), self.name)
         scm.RunCommand(command, options, args, self._file_list)
         self._file_list = [os.path.join(self.name, f.strip())
                            for f in self._file_list]
-      options.revision = None
     self.processed = True
     if self.recursion_limit() > 0:
       # Then we can parse the DEPS file.
@@ -710,7 +712,7 @@ solutions = [
     pm = None
     if command == 'update' and not self._options.verbose:
       pm = Progress('Syncing projects', 1)
-    work_queue = gclient_utils.ExecutionQueue(pm)
+    work_queue = gclient_utils.ExecutionQueue(self._options.jobs, pm)
     for s in self.dependencies:
       work_queue.enqueue(s)
     work_queue.flush(self._options, revision_overrides, command, args,
@@ -755,7 +757,7 @@ solutions = [
     if not self.dependencies:
       raise gclient_utils.Error('No solution specified')
     # Load all the settings.
-    work_queue = gclient_utils.ExecutionQueue(None)
+    work_queue = gclient_utils.ExecutionQueue(self._options.jobs, None)
     for s in self.dependencies:
       work_queue.enqueue(s)
     work_queue.flush(self._options, {}, None, [], work_queue)
@@ -1168,6 +1170,8 @@ def Main(argv):
         '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
         for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')]))
     parser = optparse.OptionParser(version='%prog ' + __version__)
+    parser.add_option('-j', '--jobs', default=1, type='int',
+                      help='Specify how many SCM commands can run in parallel')
     parser.add_option('-v', '--verbose', action='count', default=0,
                       help='Produces additional output for diagnostics. Can be '
                            'used up to three times for more logging info.')
@@ -1186,6 +1190,8 @@ def Main(argv):
       logging.basicConfig(level=level,
           format='%(module)s(%(lineno)d) %(funcName)s:%(message)s')
       options.entries_filename = options.config_filename + '_entries'
+      if options.jobs < 1:
+        parser.error('--jobs must be 1 or higher')
 
       # These hacks need to die.
       if not hasattr(options, 'revisions'):
