@@ -226,6 +226,37 @@ class RenderWidgetHostViewGtkWidget {
   static gboolean ButtonPressReleaseEvent(
       GtkWidget* widget, GdkEventButton* event,
       RenderWidgetHostViewGtk* host_view) {
+#if defined (OS_CHROMEOS)
+    // We support buttons 8 & 9 for scrolling with an attached USB mouse
+    // in ChromeOS. We do this separately from the builtin scrolling support
+    // because we want to support the user's expectations about the amount
+    // scrolled on each event. xorg.conf on chromeos specifies buttons
+    // 8 & 9 for the scroll wheel for the attached USB mouse.
+    if (event->type == GDK_BUTTON_RELEASE &&
+        (event->button == 8 || event->button == 9)) {
+      GdkEventScroll scroll_event;
+      scroll_event.type = GDK_SCROLL;
+      scroll_event.window = event->window;
+      scroll_event.send_event = event->send_event;
+      scroll_event.time = event->time;
+      scroll_event.x = event->x;
+      scroll_event.y = event->y;
+      scroll_event.state = event->state;
+      if (event->state & GDK_SHIFT_MASK) {
+        scroll_event.direction =
+            event->button == 8 ? GDK_SCROLL_LEFT : GDK_SCROLL_RIGHT;
+      } else {
+        scroll_event.direction =
+            event->button == 8 ? GDK_SCROLL_UP : GDK_SCROLL_DOWN;
+      }
+      scroll_event.device = event->device;
+      scroll_event.x_root = event->x_root;
+      scroll_event.y_root = event->y_root;
+      WebMouseWheelEvent web_event =
+          WebInputEventFactory::mouseWheelEvent(&scroll_event);
+      host_view->GetRenderWidgetHost()->ForwardWheelEvent(web_event);
+    }
+#endif
     if (!(event->button == 1 || event->button == 2 || event->button == 3))
       return FALSE;  // We do not forward any other buttons to the renderer.
     if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS)
