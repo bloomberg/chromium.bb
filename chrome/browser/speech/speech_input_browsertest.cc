@@ -29,9 +29,9 @@ const char* kTestResult = "Pictures of the moon";
 
 class FakeSpeechInputManager : public SpeechInputManager {
  public:
-  explicit FakeSpeechInputManager(Listener* listener)
+  explicit FakeSpeechInputManager(Delegate* delegate)
       : render_view_id_(0),
-        listener_(listener) {
+        delegate_(delegate) {
   }
 
   // SpeechInputManager methods.
@@ -54,21 +54,21 @@ class FakeSpeechInputManager : public SpeechInputManager {
  private:
   void SetFakeRecognitionResult() {
     if (render_view_id_) {  // Do a check in case we were cancelled..
-      listener_->DidCompleteRecording(render_view_id_);
-      listener_->SetRecognitionResult(render_view_id_,
+      delegate_->DidCompleteRecording(render_view_id_);
+      delegate_->SetRecognitionResult(render_view_id_,
                                       ASCIIToUTF16(kTestResult));
-      listener_->DidCompleteRecognition(render_view_id_);
+      delegate_->DidCompleteRecognition(render_view_id_);
       render_view_id_ = 0;
     }
   }
 
   int render_view_id_;
-  Listener* listener_;
+  Delegate* delegate_;
 };
 
 // Factory method.
-SpeechInputManager* fakeManagerFactory(SpeechInputManager::Listener* listener) {
-  return new FakeSpeechInputManager(listener);
+SpeechInputManager* fakeManagerFactory(SpeechInputManager::Delegate* delegate) {
+  return new FakeSpeechInputManager(delegate);
 }
 
 class SpeechInputBrowserTest : public InProcessBrowserTest {

@@ -18,7 +18,7 @@ namespace speech_input {
 class SpeechInputManager {
  public:
   // Implemented by the dispatcher host to relay events to the render views.
-  class Listener {
+  class Delegate {
   public:
     virtual void SetRecognitionResult(int render_view_id,
                                       const string16& value) = 0;
@@ -27,9 +27,9 @@ class SpeechInputManager {
   };
 
   // Factory method to create new instances.
-  static SpeechInputManager* Create(Listener* listener);
+  static SpeechInputManager* Create(Delegate* delegate);
   // Factory method definition useful for tests.
-  typedef SpeechInputManager* (FactoryMethod)(Listener*);
+  typedef SpeechInputManager* (FactoryMethod)(Delegate*);
 
   virtual ~SpeechInputManager() {}
 
@@ -38,6 +38,12 @@ class SpeechInputManager {
   virtual void CancelRecognition(int render_view_id) = 0;
   virtual void StopRecording(int render_view_id) = 0;
 };
+
+// This typedef is to workaround the issue with certain versions of
+// Visual Studio where it gets confused between multiple Delegate
+// classes and gives a C2500 error. (I saw this error on the try bots -
+// the workaround was not needed for my machine).
+typedef SpeechInputManager::Delegate SpeechInputManagerDelegate;
 
 }  // namespace speech_input
 
