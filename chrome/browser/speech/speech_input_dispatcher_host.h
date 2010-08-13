@@ -18,11 +18,11 @@ namespace speech_input {
 // It's the complement of SpeechInputDispatcher (owned by RenderView).
 class SpeechInputDispatcherHost
     : public base::RefCountedThreadSafe<SpeechInputDispatcherHost>,
-      public SpeechInputManager::Delegate {
+      public SpeechInputManager::Listener {
  public:
   explicit SpeechInputDispatcherHost(int resource_message_filter_process_id);
 
-  // SpeechInputManager::Delegate methods.
+  // SpeechInputManager::Listener methods.
   void SetRecognitionResult(int render_view_id, const string16& result);
   void DidCompleteRecording(int render_view_id);
   void DidCompleteRecognition(int render_view_id);
