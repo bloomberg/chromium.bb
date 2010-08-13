@@ -18,8 +18,14 @@ MessageWithTuple<ParamType>::MessageWithTuple(
   WriteParam(this, p);
 }
 
-// TODO(erg): Migrate MessageWithTuple<ParamType>::Read() here once I figure
-// out why having the definition here doesn't export the symbols.
+template <class ParamType>
+bool MessageWithTuple<ParamType>::Read(const Message* msg, Param* p) {
+  void* iter = NULL;
+  if (ReadParam(msg, &iter, p))
+    return true;
+  NOTREACHED() << "Error deserializing message " << msg->type();
+  return false;
+}
 
 // We can't migrate the template for Log() to MessageWithTuple, because each
 // subclass needs to have Log() to call Read(), which instantiates the above
@@ -35,8 +41,19 @@ MessageWithReply<SendParamType, ReplyParamType>::MessageWithReply(
   WriteParam(this, send);
 }
 
-// TODO(erg): Migrate ReadSendParam()/ReadReplyParam() here when we can force
-// the visibility/linkage.
+template <class SendParamType, class ReplyParamType>
+bool MessageWithReply<SendParamType, ReplyParamType>::ReadSendParam(
+    const Message* msg, SendParam* p) {
+  void* iter = SyncMessage::GetDataIterator(msg);
+  return ReadParam(msg, &iter, p);
+}
+
+template <class SendParamType, class ReplyParamType>
+bool MessageWithReply<SendParamType, ReplyParamType>::ReadReplyParam(
+    const Message* msg, typename TupleTypes<ReplyParam>::ValueTuple* p) {
+  void* iter = SyncMessage::GetDataIterator(msg);
+  return ReadParam(msg, &iter, p);
+}
 
 }  // namespace IPC
 

@@ -200,7 +200,7 @@
                                                                         \
   void msg_class::Log(const Message* msg, std::wstring* l) {            \
     if (msg->is_sync()) {                                               \
-      SendParam p;                                                      \
+      TupleTypes<SendParam>::ValueTuple p;                              \
       if (ReadSendParam(msg, &p))                                       \
         IPC::LogParam(p, l);                                            \
                                                                         \

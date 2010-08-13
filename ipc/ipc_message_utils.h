@@ -20,6 +20,21 @@
 #include "base/utf_string_conversions.h"
 #include "ipc/ipc_sync_message.h"
 
+#if defined(COMPILER_GCC)
+// GCC "helpfully" tries to inline template methods in release mode. Except we
+// want the majority of the template junk being expanded once in the
+// implementation file (and only provide the definitions in
+// ipc_message_utils_impl.h in those files) and exported, instead of expanded
+// at every call site. Special note: GCC happily accepts the attribute before
+// the method declaration, but only acts on it if it is after.
+#define IPC_MSG_NOINLINE  __attribute__((noinline));
+#elif defined(COMPILER_MSVC)
+// MSVC++ doesn't do this.
+#define IPC_MSG_NOINLINE
+#else
+#error "Please add the noinline property for your new compiler here."
+#endif
+
 // Used by IPC_BEGIN_MESSAGES so that each message class starts from a unique
 // base.  Messages have unique IDs across channels in order for the IPC logging
 // code to figure out the message class from its ID.
@@ -960,16 +975,7 @@ class MessageWithTuple : public Message {
   // those translation units.
   MessageWithTuple(int32 routing_id, uint32 type, const RefParam& p);
 
-  // TODO(erg): Migrate this method into ipc_message_utils_impl.h once I figure
-  // out why just having the template in that file and the forward declaration
-  // here breaks the release build.
-  static bool Read(const Message* msg, Param* p) {
-    void* iter = NULL;
-    if (ReadParam(msg, &iter, p))
-      return true;
-    NOTREACHED() << "Error deserializing message " << msg->type();
-    return false;
-  }
+  static bool Read(const Message* msg, Param* p) IPC_MSG_NOINLINE;
 
   // Generic dispatcher.  Should cover most cases.
   template<class T, class Method>
@@ -1160,20 +1166,10 @@ class MessageWithReply : public SyncMessage {
 
   MessageWithReply(int32 routing_id, uint32 type,
                    const RefSendParam& send, const ReplyParam& reply);
-
-  // TODO(erg): Migrate these ReadSendParam/ReadReplyParam() methods to
-  // ipc_message_utils_impl.h once I figure out how to get the linkage correct
-  // in the release builds.
-  static bool ReadSendParam(const Message* msg, SendParam* p) {
-    void* iter = SyncMessage::GetDataIterator(msg);
-    return ReadParam(msg, &iter, p);
-  }
-
-  static bool ReadReplyParam(const Message* msg,
-                             typename TupleTypes<ReplyParam>::ValueTuple* p) {
-    void* iter = SyncMessage::GetDataIterator(msg);
-    return ReadParam(msg, &iter, p);
-  }
+  static bool ReadSendParam(const Message* msg, SendParam* p) IPC_MSG_NOINLINE;
+  static bool ReadReplyParam(
+      const Message* msg,
+      typename TupleTypes<ReplyParam>::ValueTuple* p) IPC_MSG_NOINLINE;
 
   template<class T, class Method>
   static bool Dispatch(const Message* msg, T* obj, Method func) {
