@@ -47,13 +47,14 @@
       <button id="autofill_options" i18n-content="autofill_options"></button>
     </div>
   </section>
+<if expr="not pp_ifdef('chromeos')">
   <section>
     <h3 i18n-content="browsing_data"></h3>
     <div>
       <button id="import_data" i18n-content="import_data"></button>
     </div>
   </section>
-
+</if>
 <if expr="not pp_ifdef('toolkit_views') and (os == 'linux2' or os.find('bsd') != -1)">
   <section>
     <h3 i18n-content="appearance"></h3>

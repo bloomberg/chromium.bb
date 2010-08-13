@@ -44,9 +44,11 @@ cr.define('options', function() {
       $('defaultSearchManageEnginesButton').onclick = function(event) {
         OptionsPage.showPageByName('searchEngines');
       };
-      $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
-        chrome.send('becomeDefaultBrowser');
-      };
+      if (!cr.isChromeOS) {
+        $('defaultBrowserUseAsDefaultButton').onclick = function(event) {
+          chrome.send('becomeDefaultBrowser');
+        };
+      }
 
       // Initialize control enabled states.
       Preferences.getInstance().addEventListener('session.restore_on_startup',

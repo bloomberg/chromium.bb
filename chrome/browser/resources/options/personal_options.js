@@ -66,9 +66,11 @@ cr.define('options', function() {
         OptionsPage.showPageByName('autoFillOptions');
       };
 
-      $('import_data').onclick = function(event) {
-          OptionsPage.showOverlay('importDataOverlay');
-      };
+      if (!cr.isChromeOS) {
+        $('import_data').onclick = function(event) {
+            OptionsPage.showOverlay('importDataOverlay');
+        };
+      }
 
       if(!cr.isChromeOS && navigator.platform.match(/linux|BSD/i)) {
         $('themes_GTK_button').onclick = function(event) {
