@@ -36,7 +36,7 @@ DictionaryValue* GetNodeDictionary(const BookmarkNode* node,
       dict->SetReal(keys::kDateGroupModifiedKey, floor(t.ToDoubleT() * 1000));
   }
 
-  dict->SetString(keys::kTitleKey, node->GetTitle());
+  dict->SetString(keys::kTitleKey, node->GetTitleAsString16());
   if (!node->date_added().is_null()) {
     // Javascript Date wants milliseconds since the epoch, ToDoubleT is
     // seconds.

@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
-#include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
 #include "chrome/browser/extensions/extension_clipboard_api.h"
 #include "chrome/browser/extensions/extension_context_menu_api.h"

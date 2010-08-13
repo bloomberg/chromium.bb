@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/sha1.h"
 #include "base/stl_util-inl.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
@@ -171,7 +172,7 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChanged(
   // for now we only include title and url.  The ideal thing would be to change
   // BookmarkModel to indicate what changed.
   DictionaryValue* object_args = new DictionaryValue();
-  object_args->SetString(keys::kTitleKey, node->GetTitle());
+  object_args->SetString(keys::kTitleKey, node->GetTitleAsString16());
   if (node->is_url())
     object_args->SetString(keys::kUrlKey, node->GetURL().spec());
   args.Append(object_args);
@@ -416,7 +417,7 @@ bool CreateBookmarkFunction::RunImpl() {
     }
   }
 
-  std::wstring title;
+  string16 title;
   json->GetString(keys::kTitleKey, &title);  // Optional.
   std::string url_string;
   json->GetString(keys::kUrlKey, &url_string);  // Optional.
@@ -544,7 +545,7 @@ bool UpdateBookmarkFunction::RunImpl() {
   DictionaryValue* updates;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &updates));
 
-  std::wstring title;
+  string16 title;
   std::string url_string;
 
   // Optional but we need to distinguish non present from an empty title.
@@ -628,12 +629,12 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
       return;
 
     std::string bucket_id = WideToUTF8(parent->GetTitle());
-    std::wstring title;
+    std::string title;
     json->GetString(keys::kTitleKey, &title);
     std::string url_string;
     json->GetString(keys::kUrlKey, &url_string);
 
-    bucket_id += WideToUTF8(title);
+    bucket_id += title;
     bucket_id += url_string;
     // 20 bytes (SHA1 hash length) is very likely less than most of the
     // |bucket_id| strings we construct here, so we hash it to save space.

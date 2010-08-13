@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,21 +6,21 @@
 
 namespace extension_bookmarks_module_constants {
 
-const wchar_t kIdKey[] = L"id";
-const wchar_t kIndexKey[] = L"index";
-const wchar_t kParentIdKey[] = L"parentId";
-const wchar_t kOldIndexKey[] = L"oldIndex";
-const wchar_t kOldParentIdKey[] = L"oldParentId";
-const wchar_t kUrlKey[] = L"url";
-const wchar_t kTitleKey[] = L"title";
-const wchar_t kChildrenKey[] = L"children";
-const wchar_t kChildIdsKey[] = L"childIds";
-const wchar_t kRecursiveKey[] = L"recursive";
-const wchar_t kDateAddedKey[] = L"dateAdded";
-const wchar_t kDateGroupModifiedKey[] = L"dateGroupModified";
+const char kIdKey[] = "id";
+const char kIndexKey[] = "index";
+const char kParentIdKey[] = "parentId";
+const char kOldIndexKey[] = "oldIndex";
+const char kOldParentIdKey[] = "oldParentId";
+const char kUrlKey[] = "url";
+const char kTitleKey[] = "title";
+const char kChildrenKey[] = "children";
+const char kChildIdsKey[] = "childIds";
+const char kRecursiveKey[] = "recursive";
+const char kDateAddedKey[] = "dateAdded";
+const char kDateGroupModifiedKey[] = "dateGroupModified";
 // TODO(arv): Move bookmark manager related constants out of this file.
-const wchar_t kSameProfileKey[] = L"sameProfile";
-const wchar_t kElementsKey[] = L"elements";
+const char kSameProfileKey[] = "sameProfile";
+const char kElementsKey[] = "elements";
 
 const char kNoNodeError[] = "Can't find bookmark for id.";
 const char kNoParentError[] = "Can't find parent bookmark for id.";
