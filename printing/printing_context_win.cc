@@ -16,23 +16,6 @@
 
 using base::Time;
 
-namespace {
-
-// Retrieves the content of a GetPrinter call.
-void GetPrinterHelper(HANDLE printer, int level, scoped_array<uint8>* buffer) {
-  DWORD buf_size = 0;
-  GetPrinter(printer, level, NULL, 0, &buf_size);
-  if (buf_size) {
-    buffer->reset(new uint8[buf_size]);
-    memset(buffer->get(), 0, buf_size);
-    if (!GetPrinter(printer, level, buffer->get(), buf_size, &buf_size)) {
-      buffer->reset();
-    }
-  }
-}
-
-}  // namespace
-
 namespace printing {
 
 class PrintingContext::CallbackHandler : public IPrintDialogCallback,
@@ -144,7 +127,8 @@ PrintingContext::PrintingContext()
       dialog_box_(NULL),
       dialog_box_dismissed_(false),
       in_print_job_(false),
-      abort_printing_(false) {
+      abort_printing_(false),
+      print_dialog_func_(&PrintDlgEx) {
 }
 
 PrintingContext::~PrintingContext() {
@@ -203,7 +187,7 @@ PrintingContext::Result PrintingContext::AskUserForSettings(
   }
 
   {
-    if (PrintDlgEx(&dialog_options) != S_OK) {
+    if ((*print_dialog_func_)(&dialog_options) != S_OK) {
       ResetSettings();
       return FAILED;
     }
@@ -438,7 +422,7 @@ bool PrintingContext::GetPrinterSettings(HANDLE printer,
   if (buffer.get()) {
     PRINTER_INFO_9* info_9 = reinterpret_cast<PRINTER_INFO_9*>(buffer.get());
     if (info_9->pDevMode != NULL) {
-      if (!AllocateContext(device_name, info_9->pDevMode)) {
+      if (!AllocateContext(device_name, info_9->pDevMode, &context_)) {
         ResetSettings();
         return false;
       }
@@ -452,7 +436,7 @@ bool PrintingContext::GetPrinterSettings(HANDLE printer,
   if (buffer.get()) {
     PRINTER_INFO_8* info_8 = reinterpret_cast<PRINTER_INFO_8*>(buffer.get());
     if (info_8->pDevMode != NULL) {
-      if (!AllocateContext(device_name, info_8->pDevMode)) {
+      if (!AllocateContext(device_name, info_8->pDevMode, &context_)) {
         ResetSettings();
         return false;
       }
@@ -467,7 +451,7 @@ bool PrintingContext::GetPrinterSettings(HANDLE printer,
   if (buffer.get()) {
     PRINTER_INFO_2* info_2 = reinterpret_cast<PRINTER_INFO_2*>(buffer.get());
     if (info_2->pDevMode != NULL) {
-      if (!AllocateContext(device_name, info_2->pDevMode)) {
+      if (!AllocateContext(device_name, info_2->pDevMode, &context_)) {
         ResetSettings();
         return false;
       }
@@ -480,11 +464,13 @@ bool PrintingContext::GetPrinterSettings(HANDLE printer,
   return false;
 }
 
+// static
 bool PrintingContext::AllocateContext(const std::wstring& printer_name,
-                                      const DEVMODE* dev_mode) {
-  context_ = CreateDC(L"WINSPOOL", printer_name.c_str(), NULL, dev_mode);
-  DCHECK(context_);
-  return context_ != NULL;
+                                      const DEVMODE* dev_mode,
+                                      gfx::NativeDrawingContext* context) {
+  *context = CreateDC(L"WINSPOOL", printer_name.c_str(), NULL, dev_mode);
+  DCHECK(*context);
+  return *context != NULL;
 }
 
 PrintingContext::Result PrintingContext::ParseDialogResultEx(
@@ -530,8 +516,8 @@ PrintingContext::Result PrintingContext::ParseDialogResultEx(
       }
       success = InitializeSettings(*dev_mode,
                                    device_name,
-                                   dialog_options.lpPageRanges,
-                                   dialog_options.nPageRanges,
+                                   page_ranges,
+                                   num_page_ranges,
                                    print_selection_only);
     }
 
@@ -614,6 +600,20 @@ PrintingContext::Result PrintingContext::ParseDialogResult(
     GlobalFree(dialog_options.hDevNames);
 
   return context_ ? OK : FAILED;
+}
+
+// static
+void PrintingContext::GetPrinterHelper(HANDLE printer, int level,
+                                       scoped_array<uint8>* buffer) {
+  DWORD buf_size = 0;
+  GetPrinter(printer, level, NULL, 0, &buf_size);
+  if (buf_size) {
+    buffer->reset(new uint8[buf_size]);
+    memset(buffer->get(), 0, buf_size);
+    if (!GetPrinter(printer, level, buffer->get(), buf_size, &buf_size)) {
+      buffer->reset();
+    }
+  }
 }
 
 }  // namespace printing
