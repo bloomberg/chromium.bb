@@ -1132,6 +1132,8 @@
         'browser/dom_ui/bookmarks_ui.h',
         'browser/dom_ui/chrome_url_data_manager.cc',
         'browser/dom_ui/chrome_url_data_manager.h',
+        'browser/dom_ui/about_page_handler.cc',
+        'browser/dom_ui/about_page_handler.h',
         'browser/dom_ui/add_startup_page_handler.cc',
         'browser/dom_ui/add_startup_page_handler.h',
         'browser/dom_ui/advanced_options_handler.cc',
@@ -2978,6 +2980,7 @@
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
+            ['exclude', 'browser/dom_ui/chrome_about_ui.cc'],
             ['exclude', 'browser/dom_ui/filebrowse_ui.cc'],
             ['exclude', 'browser/dom_ui/mediaplayer_ui.cc'],
             ['exclude', 'browser/dom_ui/slideshow_ui.cc'],

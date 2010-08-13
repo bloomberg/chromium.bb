@@ -62,6 +62,7 @@ const char kAboutVersionURL[] = "about:version";
 // to be used for testing.
 const char kAboutBrowserCrash[] = "about:inducebrowsercrashforrealz";
 
+const char kChromeUIAboutURL[] = "chrome://options/about";
 const char kChromeUIAppLauncherURL[] = "chrome://newtab/#mode=app-launcher";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
 const char kChromeUIDevToolsURL[] = "chrome://devtools/";

@@ -5535,6 +5535,33 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_LEARN_MORE_LABEL" desc="In the options dialog, we have links to the support web pages where the user can learn more about a feature.">
         Learn more
       </message>
+      
+      <!-- The About page is now part of options. -->
+      <message name="IDS_ABOUT_PAGE_TITLE" desc="Title used for about options panel">
+      	About
+      </message>
+      <message name="IDS_ABOUT_PAGE_LOADING" desc="Label used for async data before data is available. Example is Chrome OS version.">
+      	Loading&#x2026;
+      </message>
+      <message name="IDS_ABOUT_PAGE_MORE_INFO" desc="Title for _More_info_ link.">
+      	More Info
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL" desc="The channel label under _More_Info_.">
+      	Channel
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_RELEASE" desc="The release option in the channel select.">
+      	Release
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_BETA" desc="The beta option in the channel select.">
+      	Beta
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT" desc="The development option in the channel select.">
+      	Development
+      </message>
+      <message name="IDS_ABOUT_PAGE_CHECK_NOW" desc="Button title for checking for updates now.">
+      	Check For Update
+      </message>
+      
 
       <!-- Views displays group titles and their contents side-by-side -->
       <!-- and includes a colon as a result (Mac needs this too).  GTK -->
