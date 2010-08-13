@@ -36,7 +36,7 @@ static const PluginGroupDefinition kGroupDefinitions[] = {
 // TODO(panayiotis): We should group "RealJukebox NS Plugin" with the rest of
 // the RealPlayer files.
 static const PluginGroupDefinition kGroupDefinitions[] = {
-  { "Quicktime", "QuickTime Plug-in", "", "", "7.6.6",
+  { "Quicktime", "QuickTime Plug-in", "", "", "7.6.7",
     "http://www.apple.com/quicktime/download/" },
   { "Java 6", "Java", "", "6", "6.0.200",
     "http://www.java.com/" },
@@ -351,4 +351,3 @@ void PluginGroup::Enable(bool enable) {
     }
   }
 }
-
