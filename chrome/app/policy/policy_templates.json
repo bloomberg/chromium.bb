@@ -1,0 +1,138 @@
+{
+# policy_templates.json - Metafile for policy templates
+#
+# This file is used as input to generate the following policy templates:
+# ADM (TODO(gfeher): MCX,ADMX,DOC)
+#
+# Policy templates are user interface definitions or documents about the
+# policies that can be used to configure Chrome. Each policy is a name-value
+# pair where the value has a given type. Chrome looks up the values using the
+# names of the policies. In the user interface where the values can be set,
+# related policies might appear together in policy groups. The grouping is not
+# visible to Chrome.
+#
+# This file contains a list of policy groups. Each group contains a list
+# of policies under the key 'policies'. If a policy does not belong to
+# any groups then it should be placed in its own separate group. All the
+# policies and all the groups must have unique names but it is not a problem
+# to have a group and policy with the same name. Group names are in fact
+# not exposed to Chrome at all.
+#
+# Each policy has a type. The currently implemented types:
+#   'string' - a string value
+#   'enum' - the user can select its value from a collection of items
+#   'main' - a boolean value with additional semantics:
+#     A group can have at most one main policy and it must have a value of true
+#     if the policy group is enabled, false if the group is disabled or no value
+#     if the policy is not specified. Chrome will see this policy no differently
+#     than other policies, but depending on the platform, the GUI of the
+#     templates might reflect the fact that these policies are 'main'. For
+#     example on Windows this policy will be assigned to the Enable/Disable
+#     buttons of the group, and if it is set to Disabled then other policies of
+#     the group will not be visible to Chrome.
+#
+# Policy group descriptions, policy captions and similar texts are localized
+# strings taken from the <message> nodes of the .grd file. Their name
+# attributes are generated from the JSON keys.
+# Possible locations of localized strings in the templates:
+#   Policy groups:
+#     They can have both captions and descriptions.
+#   Policies:
+#     Policies with type 'main':
+#       none (inherits them from the policy group)
+#     Policies of other types:
+#       Captions only.
+#   Selectable item in an 'enum'-typed policy:
+#     Captions only.
+# Generated grd names:
+#   Each name has two parts: the second part is either CAPTION or DESC,
+#   and the first part identifies the item the text applies to:
+#   -For policy groups:
+#     IDS_POLICY_GROUP_<NAME OF THE GROUP>
+#     e.g. the name of the description of group Homepage:
+#       IDS_POLICY_GROUP_HOMEPAGE_DESC
+#   -For policies:
+#     IDS_POLICY_<NAME OF THE POLICY>
+#     e.g. the name of the caption of policy HomepageLocation:
+#       IDS_POLICY_HOMEPAGELOCATION_CAPTION
+#   -For enum items:
+#     IDS_POLICY_ENUM_<NAME OF THE ITEM>
+#     e.g. the name of the caption of ProxyServerDisabled:
+#       IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION
+#
+# TODO(gfeher): ADMX, MCX, DOC, .h/.cc? files
+#
+  'Homepage': {
+    'policies': {
+      'HomepageLocation': {'type': 'string'},
+      'HomepageIsNewTabPage': {
+        'type': 'enum',
+        'items': {
+          'HomepageIsLocationURL': {'value': '0'},
+          'HomepageIsNewTabPage': {'value': '1'},
+        }
+       },
+     }
+  },
+  'ApplicationLocale': {
+    'policies': {
+      'ApplicationLocaleValue': {'type': 'string'},
+    }
+  },
+  'AlternateErrorPagesEnabled': {
+    'policies': {
+      'AlternateErrorPagesEnabled': {'type': 'main'},
+    }
+  },
+  'SearchSuggestEnabled': {
+    'policies': {
+      'SearchSuggestEnabled': {'type': 'main'},
+    }
+  },
+  'DnsPrefetchingEnabled': {
+    'policies': {
+      'DnsPrefetchingEnabled': {'type': 'main'},
+    }
+  },
+  'SafeBrowsingEnabled': {
+    'policies': {
+      'SafeBrowsingEnabled': {'type': 'main'},
+    }
+  },
+  'MetricsReportingEnabled': {
+    'policies': {
+      'MetricsReportingEnabled': {'type': 'main'},
+    }
+  },
+  'PasswordManagerEnabled': {
+    'policies': {
+      'PasswordManagerEnabled': {'type': 'main'},
+    }
+  },
+  'DisabledPlugins': {
+    'policies': {
+      'DisabledPluginsList': {'type': 'string'},
+    }
+  },
+  'SyncDisabled': {
+    'policies': {
+      'SyncDisabled': {'type': 'main'},
+    }
+  },
+  'Proxy': {
+    'policies': {
+      'ProxyServerMode': {
+        'type': 'enum',
+        'items': {
+          'ProxyServerDisabled': {'value': '0'},
+          'ProxyServerAutoDetect': {'value': '1'},
+          'ProxyServerManual': {'value': '2'},
+          'ProxyServerUseSystem': {'value': '3'},
+        }
+      },
+      'ProxyServer': {'type': 'string'},
+      'ProxyPacUrl': {'type': 'string'},
+      'ProxyBypassList': {'type': 'string'},
+    }
+  }
+}

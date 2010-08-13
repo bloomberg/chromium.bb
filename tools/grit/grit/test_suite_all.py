@@ -46,6 +46,7 @@ class TestSuiteAll(unittest.TestSuite):
     from grit.gather import muppet_strings_unittest
     from grit.node.custom import filename_unittest
     import grit.format.js_map_format_unittest
+    from grit.format.policy_templates import policy_template_generator_unittest
 
     test_classes = [
       base_unittest.NodeUnittest,
@@ -75,6 +76,7 @@ class TestSuiteAll(unittest.TestSuite):
       muppet_strings_unittest.MuppetStringsUnittest,
       filename_unittest.WindowsFilenameUnittest,
       grit.format.js_map_format_unittest.JsMapFormatUnittest,
+      policy_template_generator_unittest.PolicyTemplateGeneratorUnittest,
       # add test classes here...
     ]
 

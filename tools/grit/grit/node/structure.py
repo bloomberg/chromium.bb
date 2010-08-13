@@ -15,6 +15,7 @@ from grit import constants
 from grit import exception
 from grit import util
 
+import grit.gather.json_loader
 import grit.gather.rc
 import grit.gather.tr_html
 import grit.gather.admin_template
@@ -44,6 +45,7 @@ _GATHERERS = {
   'tr_html' : grit.gather.tr_html.TrHtml,
   'txt'     : grit.gather.txt.TxtFile,
   'version' : grit.gather.rc.Version,
+  'policy_template_metafile' : grit.gather.json_loader.JsonLoader,
 }
 
 
@@ -59,6 +61,7 @@ _RC_FORMATTERS = {
   'tr_html' : grit.format.rc.RcInclude('HTML'),
   'txt'     : grit.format.rc.RcInclude('TXT'),
   'version' : grit.format.rc.RcSection(),
+  'policy_template_metafile': None,
 }
 
 

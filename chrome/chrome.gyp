@@ -48,6 +48,7 @@
       'app/chromium_strings.grd',
       'app/generated_resources.grd',
       'app/google_chrome_strings.grd',
+      'app/policy/policy_templates.grd',
     ],
     'chrome_resources_grds': [
       # Data resources.

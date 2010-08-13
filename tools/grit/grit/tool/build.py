@@ -185,6 +185,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
       elif output.GetType() == 'js_map_format':
         encoding = 'utf_8'
       else:
+        # TODO(gfeher) modify here to set utf-8 encoding for admx/adml
         encoding = 'utf_16'
 
       # Make the output directory if it doesn't exist.
