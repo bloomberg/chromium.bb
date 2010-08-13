@@ -299,17 +299,8 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
       }
       break;
     case NACL_SRPC_ARG_TYPE_STRING:
-      /* SCOPE */ {
-        uint32_t len =
-          nacl::saturate_cast<uint32_t>(strlen(outs[i]->u.sval) + 1);
-        char* tmpstr = reinterpret_cast<char*>(NPN_MemAlloc(len));
-        if (NULL == tmpstr) {
-          return false;
-        }
-        strncpy(tmpstr, outs[i]->u.sval, len);
-        if (!plugin::ScalarToNPVariant(tmpstr, retvalue)) {
-          return false;
-        }
+      if (!plugin::ScalarToNPVariant(outs[i]->u.sval, retvalue)) {
+        return false;
       }
       break;
     case NACL_SRPC_ARG_TYPE_HANDLE:

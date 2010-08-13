@@ -99,6 +99,9 @@ public:
     ASSERT_EQ(requested_type, NP_ASFILEONLY);
     // NPP_StreamAsFile
     plugin_funcs.asfile(instance, &stream, filename.c_str());
+    // NPP_DestroyStream
+    NPError result = plugin_funcs.destroystream(instance, &stream, NPRES_DONE);
+    CHECK(result == NPERR_NO_ERROR);
   };
 };
 
@@ -425,7 +428,9 @@ bool LocationGetProperty(NPObject* npobj, NPIdentifier property_name,
                          NPVariant* result) {
   UNREFERENCED_PARAMETER(npobj);
   if (property_name == fb_NPN_GetStringIdentifier("href")) {
-    STRINGZ_TO_NPVARIANT(strdup("http://localhost/page.html"), *result);
+    char* copy = strdup("http://localhost/page.html");
+    CHECK(copy != NULL);
+    STRINGZ_TO_NPVARIANT(copy, *result);
     return true;
   } else {
     return false;
@@ -544,6 +549,7 @@ void DestroyPluginInstance(NPP plugin_instance, bool reverse_deallocate) {
     }
   }
   npn_calls_allowed = true;
+  delete plugin_instance;
 }
 
 // TODO(mseaborn): Reduce the amount of boilerplate code duplicated
@@ -575,6 +581,7 @@ void TestNewAndDestroy() {
   CheckRetval(plugin_funcs.destroy(plugin_instance, NULL));
 
   ASSERT_EQ(all_objects.size(), 0);
+  delete plugin_instance;
 }
 
 void TestHelloWorldMethod(const char* nexe_url, bool reverse_deallocate) {
@@ -910,6 +917,13 @@ int main(int argc, char** argv) {
 
   int rc = dlclose(dl_handle);
   CHECK(rc == 0);
+
+  for(std::map<std::string, char*>::iterator iter = interned_strings.begin();
+      iter != interned_strings.end();
+      ++iter) {
+    free(iter->second);
+  }
+  interned_strings.clear();
 
   NaClCondVarDtor(&callback_condvar);
   NaClMutexDtor(&callback_mutex);

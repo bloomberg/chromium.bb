@@ -233,9 +233,12 @@ bool Plugin::SendAsyncMessage0(void* obj, SrpcParams* params) {
 
 bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
   Plugin* plugin = reinterpret_cast<Plugin*>(obj);
+  NaClDescRef(params->ins()[1]->u.hval);
   nacl::DescWrapper* fd_to_send =
     plugin->wrapper_factory()->MakeGeneric(params->ins()[1]->u.hval);
-  return SendAsyncMessage(obj, params, &fd_to_send, 1);
+  bool result = SendAsyncMessage(obj, params, &fd_to_send, 1);
+  fd_to_send->Delete();
+  return result;
 }
 
 static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
@@ -452,6 +455,10 @@ Plugin::~Plugin() {
   PLUGIN_PRINTF(("Plugin::~Plugin (this=%p)\n", static_cast<void*>(this)));
   free(local_url_);
   free(logical_url_);
+  delete wrapper_factory_;
+  delete browser_interface_;
+  delete[] argv_;
+  delete[] argn_;
 }
 
 void Plugin::set_local_url(const char* url) {

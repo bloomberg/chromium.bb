@@ -91,17 +91,20 @@ bool SrpcParams::FillVec(NaClSrpcArg* vec[], const char* types) {
     return false;
   }
   // We use malloc/new here rather than new/delete, because the SRPC layer
-  // is written in C, and hence will use malloc/free.
-  NaClSrpcArg* args =
+  // is written in C and hence will use malloc/free.
+  // This array will get deallocated by FreeArguments().
+  if (kLength > 0) {
+    NaClSrpcArg* args =
       reinterpret_cast<NaClSrpcArg*>(malloc(kLength * sizeof(*args)));
-  if (NULL == args) {
-    return false;
-  }
+    if (NULL == args) {
+      return false;
+    }
 
-  memset(static_cast<void*>(args), 0, kLength * sizeof(*args));
-  for (size_t i = 0; i < kLength; ++i) {
-    vec[i] = &args[i];
-    args[i].tag = static_cast<NaClSrpcArgType>(types[i]);
+    memset(static_cast<void*>(args), 0, kLength * sizeof(*args));
+    for (size_t i = 0; i < kLength; ++i) {
+      vec[i] = &args[i];
+      args[i].tag = static_cast<NaClSrpcArgType>(types[i]);
+    }
   }
   vec[kLength] = NULL;
   return true;
@@ -114,7 +117,8 @@ void SrpcParams::FreeArguments(NaClSrpcArg* vec[]) {
   for (NaClSrpcArg** argp = vec; *argp; ++argp) {
     FreeSrpcArg(*argp);
   }
-  // Free the vector containing the arguments themselves.
+  // Free the vector containing the arguments themselves that was
+  // allocated with FillVec().
   free(vec[0]);
 }
 
