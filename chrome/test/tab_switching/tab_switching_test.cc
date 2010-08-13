@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/platform_thread.h"
+#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -44,12 +46,11 @@ class TabSwitchingUITest : public UITest {
     log_file_name_ = browser_directory_.AppendASCII("chrome_debug.log");
 
     // Set the log file path for the browser test.
+    scoped_ptr<base::Environment> env(base::Environment::Create());
 #if defined(OS_WIN)
-    SetEnvironmentVariable(UTF8ToWide(env_vars::kLogFileName).c_str(),
-                           log_file_name_.value().c_str());
+    env->SetVar(env_vars::kLogFileName, WideToUTF8(log_file_name_.value()));
 #else
-    setenv(env_vars::kLogFileName,
-           log_file_name_.value().c_str(), 1);
+    env->SetVar(env_vars::kLogFileName, log_file_name_.value());
 #endif
 
     // Add the necessary arguments to Chrome's launch command for these tests.

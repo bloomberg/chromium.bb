@@ -16,6 +16,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/object_watcher.h"
@@ -24,6 +25,7 @@
 #include "base/process_util.h"
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
+#include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -423,9 +425,9 @@ bool Upgrade::IsBrowserAlreadyRunning() {
 }
 
 bool Upgrade::RelaunchChromeBrowser(const CommandLine& command_line) {
-  ::SetEnvironmentVariable(
-    BrowserDistribution::GetDistribution()->GetEnvVersionKey().c_str(),
-    NULL);
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->UnSetVar(WideToUTF8(
+      BrowserDistribution::GetDistribution()->GetEnvVersionKey()).c_str());
   return base::LaunchApp(command_line.command_line_string(),
                          false, false, NULL);
 }

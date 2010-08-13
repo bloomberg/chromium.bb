@@ -1,10 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <atlbase.h>
 
+#include "base/environment.h"
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome_frame/crash_reporting/crash_dll.h"
 #include "chrome_frame/crash_reporting/nt_loader.h"
 #include "chrome_frame/crash_reporting/vectored_handler-impl.h"
@@ -138,18 +141,19 @@ TEST(ChromeFrame, ExceptionReport) {
   g_mock_veh = &veh;
   void* id = ::AddVectoredExceptionHandler(FALSE, VEH);
 
-  EXPECT_TRUE(::SetEnvironmentVariable(kCrashOnLoadMode, L"1"));
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  EXPECT_TRUE(env->SetVar(WideToUTF8(kCrashOnLoadMode).c_str(), "1"));
   long exceptions_seen = veh.get_exceptions_seen();
   HMODULE module = ::LoadLibrary(kCrashDllName);
   EXPECT_EQ(NULL, module);
 
   testing::Mock::VerifyAndClearExpectations(&api);
   EXPECT_EQ(exceptions_seen + 1, veh.get_exceptions_seen());
-  EXPECT_TRUE(::SetEnvironmentVariable(kCrashOnLoadMode, NULL));
+  EXPECT_TRUE(env->UnSetVar(WideToUTF8(kCrashOnLoadMode).c_str()));
 
   // Exception in an unloading module, we are on the stack/
   // Make sure we report it.
-  EXPECT_TRUE(::SetEnvironmentVariable(kCrashOnUnloadMode, L"1"));
+  EXPECT_TRUE(env->SetVar(WideToUTF8(kCrashOnUnloadMode).c_str(), "1"));
 
   module = ::LoadLibrary(kCrashDllName);
 

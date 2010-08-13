@@ -6,11 +6,14 @@
 #include <tlhelp32.h>
 #include <winnt.h>
 #include <base/at_exit.h>
+#include <base/environment.h>
 #include <base/message_loop.h>
 #include <base/scoped_handle.h>
+#include <base/scoped_ptr.h>
 #include <base/string_util.h>
 #include <base/sys_info.h>
 #include <base/thread.h>
+#include <base/utf_string_conversions.h>
 #include "chrome_frame/crash_reporting/crash_dll.h"
 #include "gtest/gtest.h"
 
@@ -191,8 +194,9 @@ class NtLoaderTest: public testing::Test {
     EXPECT_TRUE(veh_id_ != NULL);
 
     // Clear the crash DLL environment.
-    ::SetEnvironmentVariable(kCrashOnLoadMode, NULL);
-    ::SetEnvironmentVariable(kCrashOnUnloadMode, NULL);
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    env->UnSetVar(WideToASCII(kCrashOnLoadMode).c_str());
+    env->UnSetVar(WideToASCII(kCrashOnUnloadMode).c_str());
   }
 
   void TearDown() {
@@ -200,8 +204,9 @@ class NtLoaderTest: public testing::Test {
       EXPECT_NE(0, ::RemoveVectoredExceptionHandler(veh_id_));
 
     // Clear the crash DLL environment.
-    ::SetEnvironmentVariable(kCrashOnLoadMode, NULL);
-    ::SetEnvironmentVariable(kCrashOnUnloadMode, NULL);
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    env->UnSetVar(WideToASCII(kCrashOnLoadMode).c_str());
+    env->UnSetVar(WideToASCII(kCrashOnUnloadMode).c_str());
   }
 
   void set_exception_function(ExceptionFunction func) {
@@ -259,7 +264,8 @@ TEST_F(NtLoaderTest, CrashOnLoadLibrary) {
   set_exception_function(OnCrashDuringLoadLibrary);
 
   // Setup to crash on load.
-  ::SetEnvironmentVariable(kCrashOnLoadMode, L"1");
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar(WideToASCII(kCrashOnLoadMode).c_str(), "1");
 
   // And load it.
   HMODULE module = ::LoadLibrary(kCrashDllName);
@@ -294,7 +300,8 @@ static void OnCrashDuringUnloadLibrary(EXCEPTION_POINTERS* ex_ptrs) {
 
 TEST_F(NtLoaderTest, CrashOnUnloadLibrary) {
   // Setup to crash on unload.
-  ::SetEnvironmentVariable(kCrashOnUnloadMode, L"1");
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->SetVar(WideToASCII(kCrashOnUnloadMode).c_str(), "1");
 
   // And load it.
   HMODULE module = ::LoadLibrary(kCrashDllName);

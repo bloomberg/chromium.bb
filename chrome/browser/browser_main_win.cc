@@ -13,9 +13,11 @@
 #include "app/l10n_util.h"
 #include "app/win_util.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/i18n/rtl.h"
 #include "base/nss_util.h"
 #include "base/path_service.h"
+#include "base/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_list.h"
@@ -109,13 +111,12 @@ int DoUninstallTasks(bool chrome_still_running) {
 // chrome executable's lifetime.
 void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
   // Clear this var so child processes don't show the dialog by default.
-  ::SetEnvironmentVariableW(ASCIIToWide(env_vars::kShowRestart).c_str(), NULL);
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  env->UnSetVar(env_vars::kShowRestart);
 
   // For non-interactive tests we don't restart on crash.
-  if (::GetEnvironmentVariableW(ASCIIToWide(env_vars::kHeadless).c_str(),
-                                NULL, 0)) {
+  if (env->HasVar(env_vars::kHeadless))
     return;
-  }
 
   // If the known command-line test options are used we don't create the
   // environment block which means we don't get the restart dialog.
@@ -137,8 +138,7 @@ void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
   else
     dlg_strings.append(ASCIIToWide(env_vars::kLtrLocale));
 
-  ::SetEnvironmentVariableW(ASCIIToWide(env_vars::kRestartInfo).c_str(),
-                            dlg_strings.c_str());
+  env->SetVar(env_vars::kRestartInfo, WideToUTF8(dlg_strings));
 }
 
 // This method handles the --hide-icons and --show-icons command line options

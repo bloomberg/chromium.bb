@@ -1,7 +1,7 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
+
 // Main entry point for a DLL that can be instructed to crash on
 // load or unload by setting an environment variable appropriately.
 //
@@ -10,7 +10,9 @@
 //    during DLL_PROCESS_ATTACH. This in turn causes the loading process to
 //    crash on exit. To work around this, this DLL has its entrypoint set
 //    to the DllMain routine and does not link with the CRT.
+
 #include <windows.h>
+
 #include "crash_dll.h"
 
 void Crash() {
@@ -26,14 +28,12 @@ void CrashConditionally(const wchar_t* name) {
     Crash();
 }
 
-extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
-                               DWORD reason,
+extern "C" BOOL WINAPI DllMain(HINSTANCE instance, DWORD reason,
                                LPVOID reserved) {
-  if (reason == DLL_PROCESS_ATTACH) {
+  if (reason == DLL_PROCESS_ATTACH)
     CrashConditionally(kCrashOnLoadMode);
-  } else if (reason == DLL_PROCESS_DETACH) {
+  else if (reason == DLL_PROCESS_DETACH)
     CrashConditionally(kCrashOnUnloadMode);
-  }
 
   return 1;
 }

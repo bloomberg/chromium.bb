@@ -13,9 +13,11 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/registry.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
@@ -203,11 +205,11 @@ bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
 
   // We set CHROME_CRASHED env var. If the CHROME_RESTART is present.
   // This signals the child process to show the 'chrome has crashed' dialog.
-  if (!::GetEnvironmentVariableW(ASCIIToWide(env_vars::kRestartInfo).c_str(),
-                                 NULL, 0)) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (!env->HasVar(env_vars::kRestartInfo)) {
     return true;
   }
-  ::SetEnvironmentVariableW(ASCIIToWide(env_vars::kShowRestart).c_str(), L"1");
+  env->SetVar(env_vars::kShowRestart, "1");
   // Now we just start chrome browser with the same command line.
   STARTUPINFOW si = {sizeof(si)};
   PROCESS_INFORMATION pi;
@@ -501,8 +503,8 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
 
   if (!g_breakpad->IsOutOfProcess()) {
     // The out-of-process handler is unavailable.
-    ::SetEnvironmentVariable(ASCIIToWide(env_vars::kNoOOBreakpad).c_str(),
-                             info->process_type.c_str());
+    scoped_ptr<base::Environment> env(base::Environment::Create());
+    env->SetVar(env_vars::kNoOOBreakpad, WideToUTF8(info->process_type));
   } else {
     // Tells breakpad to handle breakpoint and single step exceptions.
     // This might break JIT debuggers, but at least it will always
