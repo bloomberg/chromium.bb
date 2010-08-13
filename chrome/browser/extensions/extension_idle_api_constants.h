@@ -9,16 +9,16 @@
 namespace extension_idle_api_constants {
 
 // Keys.
-extern const wchar_t kSecondsKey[];
-extern const wchar_t kStateKey[];
+extern const char kSecondsKey[];
+extern const char kStateKey[];
 
 // Events.
 extern const char kOnStateChanged[];
 
 // States
-extern const wchar_t kStateActive[];
-extern const wchar_t kStateIdle[];
-extern const wchar_t kStateLocked[];
+extern const char kStateActive[];
+extern const char kStateIdle[];
+extern const char kStateLocked[];
 
 };  // namespace extension_idle_api_constants
 

@@ -11,8 +11,8 @@
 namespace extension_infobar_module_constants {
 
 // Keys.
-extern const wchar_t kHtmlPath[];
-extern const wchar_t kTabId[];
+extern const char kHtmlPath[];
+extern const char kTabId[];
 
 // Errors.
 extern const char kNoCurrentWindowError[];

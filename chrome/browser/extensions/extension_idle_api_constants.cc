@@ -6,13 +6,13 @@
 
 namespace extension_idle_api_constants {
 
-const wchar_t kSecondsKey[] = L"seconds";
-const wchar_t kStateKey[] = L"state";
+const char kSecondsKey[] = "seconds";
+const char kStateKey[] = "state";
 
 const char kOnStateChanged[] = "idle.onStateChanged";
 
-const wchar_t kStateActive[] = L"active";
-const wchar_t kStateIdle[] = L"idle";
-const wchar_t kStateLocked[] = L"locked";
+const char kStateActive[] = "active";
+const char kStateIdle[] = "idle";
+const char kStateLocked[] = "locked";
 
 }  // namespace extension_idle_api_constants
