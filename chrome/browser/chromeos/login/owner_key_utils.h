@@ -6,18 +6,15 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_OWNER_KEY_UTILS_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
 
-// Forward declarations of NSS data structures.
-struct SECKEYPrivateKeyStr;
-struct SECKEYPublicKeyStr;
-struct SECItemStr;
-
-typedef struct SECKEYPrivateKeyStr SECKEYPrivateKey;
-typedef struct SECKEYPublicKeyStr SECKEYPublicKey;
-typedef struct SECItemStr SECItem;
-
 class FilePath;
+
+namespace base {
+class RSAPrivateKey;
+}
 
 namespace chromeos {
 
@@ -45,43 +42,32 @@ class OwnerKeyUtils {
 
   // Generate a public/private RSA keypair and store them in the NSS database.
   // The keys will be kKeySizeInBits in length (Recommend >= 2048 bits).
+  // The caller takes ownership.
   //
-  //  Returns false on error.
-  //
-  // The caller takes ownership of both objects, which are allocated by libnss.
-  // To free them, call
-  //    SECKEY_DestroyPrivateKey(*private_key_out);
-  //    SECKEY_DestroyPublicKey(*public_key_out);
-  virtual bool GenerateKeyPair(SECKEYPrivateKey** private_key_out,
-                               SECKEYPublicKey** public_key_out) = 0;
+  //  Returns NULL on error.
+  virtual base::RSAPrivateKey* GenerateKeyPair() = 0;
 
-  // DER encodes |key| and exports it via DBus.
+  // DER encodes public half of |pair| and exports it via DBus.
   // The data sent is a DER-encoded X509 SubjectPublicKeyInfo object.
   // Returns false on error.
-  virtual bool ExportPublicKeyViaDbus(SECKEYPublicKey* key) = 0;
+  virtual bool ExportPublicKeyViaDbus(base::RSAPrivateKey* pair) = 0;
 
-  // DER encodes |key| and writes it out to |key_file|.
+  // DER encodes public half of |pair| and writes it out to |key_file|.
   // The blob on disk is a DER-encoded X509 SubjectPublicKeyInfo object.
   // Returns false on error.
-  virtual bool ExportPublicKeyToFile(SECKEYPublicKey* key,
+  virtual bool ExportPublicKeyToFile(base::RSAPrivateKey* pair,
                                      const FilePath& key_file) = 0;
 
   // Assumes that the file at |key_file| exists.
-  // Caller takes ownership of returned object; returns NULL on error.
-  // To free, call SECKEY_DestroyPublicKey.
-  virtual SECKEYPublicKey* ImportPublicKey(const FilePath& key_file) = 0;
-
+  // Upon success, returns true and populates |output|.  False on failure.
+  virtual bool ImportPublicKey(const FilePath& key_file,
+                               std::vector<uint8>* output) = 0;
 
   // Looks for the private key associated with |key| in the default slot,
   // and returns it if it can be found.  Returns NULL otherwise.
-  // To free, call SECKEY_DestroyPrivateKey.
-  virtual SECKEYPrivateKey* FindPrivateKey(SECKEYPublicKey* key) = 0;
-
-  // If something's gone wrong with key generation or key exporting, the
-  // caller may wish to nuke some keys.  This will destroy key objects in
-  // memory and ALSO remove them from the NSS database.
-  virtual void DestroyKeys(SECKEYPrivateKey* private_key,
-                           SECKEYPublicKey* public_key) = 0;
+  // Caller takes ownership.
+  virtual base::RSAPrivateKey* FindPrivateKey(
+      const std::vector<uint8>& key) = 0;
 
   virtual FilePath GetOwnerKeyFilePath() = 0;
 

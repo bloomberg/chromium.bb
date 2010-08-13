@@ -83,74 +83,74 @@ bool OwnerManager::StartVerifyAttempt(const std::string& data,
 
 void OwnerManager::LoadOwnerKey() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  public_key_ = utils_->ImportPublicKey(utils_->GetOwnerKeyFilePath());
+  NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
+  if (utils_->ImportPublicKey(utils_->GetOwnerKeyFilePath(), &public_key_))
+    result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
 
   // Whether we loaded the public key or not, send a notification indicating
-  // that we're done with this attempt.  We send along the key if we
-  // got it, NULL if not.
+  // that we're done with this attempt.
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &OwnerManager::SendNotification,
-                        NotificationType::OWNER_KEY_FETCH_ATTEMPT_COMPLETE,
-                        Details<SECKEYPublicKey*>(&public_key_)));
+                        result,
+                        NotificationService::NoDetails()));
 }
 
 void OwnerManager::GenerateKeysAndExportPublic() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  public_key_ = NULL;
-  private_key_ = NULL;
+  NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
+  private_key_.reset(utils_->GenerateKeyPair());
 
-  if (utils_->GenerateKeyPair(&private_key_, &public_key_)) {
+  if (private_key_.get()) {
+    result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
     // If we generated the keys successfully, export them.
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this, &OwnerManager::ExportKey));
   } else {
-    // If we didn't generate the key, send along NULL with the notification
-    // that we're done with this attempt.
+    // If we didn't generate the key, send along a notification of failure.
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this,
                           &OwnerManager::SendNotification,
-                          NotificationType::OWNER_KEY_FETCH_ATTEMPT_COMPLETE,
-                          Details<SECKEYPublicKey*>(&public_key_)));
+                          result,
+                          NotificationService::NoDetails()));
   }
 }
 
 void OwnerManager::ExportKey() {
-  if (!utils_->ExportPublicKeyViaDbus(public_key_)) {
-    utils_->DestroyKeys(private_key_, public_key_);
-    private_key_ = NULL;
-    public_key_ = NULL;
+  NotificationType result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED;
+  if (!utils_->ExportPublicKeyViaDbus(private_key_.get())) {
+    private_key_.reset(NULL);
+    result = NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED;
   }
 
   // Whether we generated the keys or not, send a notification indicating
-  // that we're done with this attempt.  We send along the public key if we
-  // got it, NULL if not.
+  // that we're done with this attempt.
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this,
                         &OwnerManager::SendNotification,
-                        NotificationType::OWNER_KEY_FETCH_ATTEMPT_COMPLETE,
-                        Details<SECKEYPublicKey*>(&public_key_)));
+                        result,
+                        NotificationService::NoDetails()));
 }
 
 bool OwnerManager::EnsurePublicKey() {
-  if (!public_key_)
+  if (public_key_.empty())
     LoadOwnerKey();
 
-  return public_key_ != NULL;
+  return !public_key_.empty();
 }
 
 bool OwnerManager::EnsurePrivateKey() {
   if (!EnsurePublicKey())
     return false;
 
-  if (!private_key_)
-    private_key_ = utils_->FindPrivateKey(public_key_);
+  if (!private_key_.get())
+    private_key_.reset(utils_->FindPrivateKey(public_key_));
 
-  return private_key_ != NULL;
+  return private_key_.get() != NULL;
 }
 
 void OwnerManager::Sign(const ChromeThread::ID thread_id,

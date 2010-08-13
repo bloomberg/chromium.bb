@@ -12,6 +12,7 @@
 
 #include <string>
 
+#include "base/crypto/rsa_private_key.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -25,6 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::base::RSAPrivateKey;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -39,16 +41,16 @@ class MockKeyUtils : public OwnerKeyUtils {
  public:
   MockKeyUtils() {}
   ~MockKeyUtils() {}
-  MOCK_METHOD2(GenerateKeyPair, bool(SECKEYPrivateKey** private_key_out,
-                                     SECKEYPublicKey** public_key_out));
-  MOCK_METHOD1(ExportPublicKeyViaDbus, bool(SECKEYPublicKey* key));
-  MOCK_METHOD2(ExportPublicKeyToFile, bool(SECKEYPublicKey* key,
+  MOCK_METHOD0(GenerateKeyPair, RSAPrivateKey*());
+  MOCK_METHOD1(ExportPublicKeyViaDbus, bool(RSAPrivateKey* pair));
+  MOCK_METHOD2(ExportPublicKeyToFile, bool(RSAPrivateKey* pair,
                                            const FilePath& key_file));
-  MOCK_METHOD1(ImportPublicKey, SECKEYPublicKey*(const FilePath& key_file));
-  MOCK_METHOD1(FindPrivateKey, SECKEYPrivateKey*(SECKEYPublicKey* key));
-  MOCK_METHOD2(DestroyKeys, void(SECKEYPrivateKey* private_key,
-                                 SECKEYPublicKey* public_key));
+  MOCK_METHOD2(ImportPublicKey, bool(const FilePath& key_file,
+                                     std::vector<uint8>* output));
+  MOCK_METHOD1(FindPrivateKey, RSAPrivateKey*(const std::vector<uint8>& key));
   MOCK_METHOD0(GetOwnerKeyFilePath, FilePath());
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockKeyUtils);
 };
 
 class MockInjector : public OwnerKeyUtils::Factory {
@@ -74,6 +76,7 @@ class MockInjector : public OwnerKeyUtils::Factory {
  private:
   MockKeyUtils* transient_;
   bool delete_transient_;
+  DISALLOW_COPY_AND_ASSIGN(MockInjector);
 };
 
 class KeyUser : public OwnerManager::Delegate {
@@ -91,14 +94,16 @@ class KeyUser : public OwnerManager::Delegate {
   }
 
   const OwnerManager::KeyOpCode expected_;
+ private:
+  DISALLOW_COPY_AND_ASSIGN(KeyUser);
 };
 
-static bool Win(SECKEYPublicKey* key) {
+static bool Win(RSAPrivateKey* key) {
   MessageLoop::current()->Quit();
   return true;
 }
 
-static bool Fail(SECKEYPublicKey* key) {
+static bool Fail(RSAPrivateKey* key) {
   MessageLoop::current()->Quit();
   return false;
 }
@@ -112,20 +117,26 @@ class OwnerManagerTest : public ::testing::Test,
       : message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(ChromeThread::UI, &message_loop_),
         file_thread_(ChromeThread::FILE),
-        fake_public_key_(reinterpret_cast<SECKEYPublicKey*>(7)),
-        fake_private_key_(reinterpret_cast<SECKEYPrivateKey*>(7)),
         success_expected_(false),
         quit_on_observe_(true),
         mock_(new MockKeyUtils),
         injector_(mock_) /* injector_ takes ownership of mock_ */ {
     registrar_.Add(
         this,
-        NotificationType::OWNER_KEY_FETCH_ATTEMPT_COMPLETE,
+        NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED,
+        NotificationService::AllSources());
+    registrar_.Add(
+        this,
+        NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED,
         NotificationService::AllSources());
   }
   virtual ~OwnerManagerTest() {}
 
   virtual void SetUp() {
+    base::OpenPersistentNSSDB();  // TODO(cmasone): use test DB instead
+    fake_private_key_.reset(RSAPrivateKey::Create(256));
+    ASSERT_TRUE(fake_private_key_->ExportPublicKey(&fake_public_key_));
+
     // Mimic ownership.
     ASSERT_TRUE(tmpdir_.CreateUniqueTempDir());
     ASSERT_TRUE(file_util::CreateTemporaryFileInDir(tmpdir_.path(), &tmpfile_));
@@ -144,16 +155,19 @@ class OwnerManagerTest : public ::testing::Test,
 
   void InjectKeys(OwnerManager* manager) {
     manager->public_key_ = fake_public_key_;
-    manager->private_key_ = fake_private_key_;
+    manager->private_key_.reset(fake_private_key_.release());
   }
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_COMPLETE) {
-      EXPECT_EQ(success_expected_,
-                NULL != *Details<SECKEYPublicKey*>(details).ptr());
+    if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_SUCCEEDED) {
+      EXPECT_TRUE(success_expected_);
+      if (quit_on_observe_)
+        MessageLoop::current()->Quit();
+    } else if (type == NotificationType::OWNER_KEY_FETCH_ATTEMPT_FAILED) {
+      EXPECT_FALSE(success_expected_);
       if (quit_on_observe_)
         MessageLoop::current()->Quit();
     }
@@ -162,6 +176,7 @@ class OwnerManagerTest : public ::testing::Test,
   void ExpectKeyFetchSuccess(bool should_succeed) {
     success_expected_ = should_succeed;
   }
+
   void SetQuitOnKeyFetch(bool should_quit) { quit_on_observe_ = should_quit; }
 
   ScopedTempDir tmpdir_;
@@ -171,8 +186,8 @@ class OwnerManagerTest : public ::testing::Test,
   ChromeThread ui_thread_;
   ChromeThread file_thread_;
 
-  SECKEYPublicKey* fake_public_key_;
-  SECKEYPrivateKey* fake_private_key_;
+  std::vector<uint8> fake_public_key_;
+  scoped_ptr<RSAPrivateKey> fake_private_key_;
 
   NotificationRegistrar registrar_;
   bool success_expected_;
@@ -193,12 +208,10 @@ TEST_F(OwnerManagerTest, LoadKeyUnowned) {
 }
 
 TEST_F(OwnerManagerTest, LoadOwnerKeyFail) {
-  SECKEYPublicKey* to_return = NULL;
-
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
-  EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_))
-      .WillOnce(Return(to_return))
+  EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_, _))
+      .WillOnce(Return(false))
       .RetiresOnSaturation();
 
   scoped_refptr<OwnerManager> manager(new OwnerManager);
@@ -213,8 +226,9 @@ TEST_F(OwnerManagerTest, LoadOwnerKey) {
 
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
-  EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_))
-      .WillOnce(Return(fake_public_key_))
+  EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_, _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(fake_public_key_),
+                      Return(true)))
       .RetiresOnSaturation();
 
   scoped_refptr<OwnerManager> manager(new OwnerManager);
@@ -236,8 +250,8 @@ TEST_F(OwnerManagerTest, TakeOwnershipAlreadyOwned) {
 TEST_F(OwnerManagerTest, KeyGenerationFail) {
   StartUnowned();
 
-  EXPECT_CALL(*mock_, GenerateKeyPair(_, _))
-      .WillOnce(Return(false))
+  EXPECT_CALL(*mock_, GenerateKeyPair())
+      .WillOnce(Return(reinterpret_cast<RSAPrivateKey*>(NULL)))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
@@ -251,14 +265,11 @@ TEST_F(OwnerManagerTest, KeyGenerationFail) {
 TEST_F(OwnerManagerTest, KeyExportFail) {
   StartUnowned();
 
-  EXPECT_CALL(*mock_, GenerateKeyPair(_, _))
-      .WillOnce(Return(true))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_, ExportPublicKeyViaDbus(_))
+  EXPECT_CALL(*mock_, ExportPublicKeyViaDbus(fake_private_key_.get()))
       .WillOnce(Invoke(Fail))
       .RetiresOnSaturation();
-  EXPECT_CALL(*mock_, DestroyKeys(_, _))
-      .Times(1)
+  EXPECT_CALL(*mock_, GenerateKeyPair())
+      .WillOnce(Return(fake_private_key_.release()))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
@@ -273,12 +284,11 @@ TEST_F(OwnerManagerTest, TakeOwnership) {
   StartUnowned();
   ExpectKeyFetchSuccess(true);
 
-  EXPECT_CALL(*mock_, GenerateKeyPair(_, _))
-      .WillOnce(DoAll(SetArgumentPointee<1>(fake_public_key_),
-                      Return(true)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_, ExportPublicKeyViaDbus(_))
+  EXPECT_CALL(*mock_, ExportPublicKeyViaDbus(fake_private_key_.get()))
       .WillOnce(Invoke(Win))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*mock_, GenerateKeyPair())
+      .WillOnce(Return(fake_private_key_.release()))
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
@@ -317,12 +327,11 @@ TEST_F(OwnerManagerTest, AlreadyHaveKeysVerify) {
 
 TEST_F(OwnerManagerTest, GetKeyFailDuringVerify) {
   ExpectKeyFetchSuccess(false);
-  SECKEYPublicKey* to_return = NULL;
 
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
-  EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_))
-      .WillOnce(Return(to_return))
+  EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_, _))
+      .WillOnce(Return(false))
       .RetiresOnSaturation();
 
   scoped_refptr<OwnerManager> manager(new OwnerManager);
@@ -338,8 +347,9 @@ TEST_F(OwnerManagerTest, GetKeyAndVerify) {
 
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
-  EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_))
-      .WillOnce(Return(fake_public_key_))
+  EXPECT_CALL(*mock_, ImportPublicKey(tmpfile_, _))
+      .WillOnce(DoAll(SetArgumentPointee<1>(fake_public_key_),
+                      Return(true)))
       .RetiresOnSaturation();
 
   scoped_refptr<OwnerManager> manager(new OwnerManager);

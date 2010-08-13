@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_OWNER_MANAGER_H_
 #pragma once
 
+#include <vector>
+
 #include "base/basictypes.h"
+#include "base/crypto/rsa_private_key.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
@@ -140,8 +143,8 @@ class OwnerManager : public base::RefCountedThreadSafe<OwnerManager> {
     d->OnKeyOpComplete(return_code, payload);
   }
 
-  SECKEYPrivateKey* private_key_;
-  SECKEYPublicKey* public_key_;
+  scoped_ptr<base::RSAPrivateKey> private_key_;
+  std::vector<uint8> public_key_;
 
   scoped_ptr<OwnerKeyUtils> utils_;
 
