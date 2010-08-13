@@ -8,6 +8,7 @@
  * Check ABI compliance, this is especially important for PNaCl
  */
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -34,17 +35,22 @@ typedef struct {
 
 #define CHECK_SIZEOF(t, v) nerror += Assert(sizeof(t), v, "bad sizeof " #t)
 
+/* Helper Types so we can describe a type in one token */
+typedef void (*FunctionPointer)();
+typedef void *Pointer;
+typedef long long long_long;
 
-int main(int argc, char* argv[]) {
+int CheckSizes() {
   int nerror = 0;
 
   CHECK_SIZEOF(char, 1);
   CHECK_SIZEOF(short, 2);
   CHECK_SIZEOF(int, 4);
   CHECK_SIZEOF(long, 4);
+  CHECK_SIZEOF(long long, 8);
 
-  CHECK_SIZEOF(void*, 4);
-  CHECK_SIZEOF(&main, 4);
+  CHECK_SIZEOF(Pointer, 4);
+  CHECK_SIZEOF(FunctionPointer, 4);
 
   CHECK_SIZEOF(float, 4);
   CHECK_SIZEOF(double, 8);
@@ -77,6 +83,39 @@ int main(int argc, char* argv[]) {
   CHECK_SIZEOF(struct stat, 64);
 
   CHECK_SIZEOF(struct NaClImcMsgHdr, 20);
+#ifdef PNACL_ABI_TEST
+  CHECK_SIZEOF(va_list, 24);
+#endif
+  return nerror;
+}
 
+
+#define CHECK_ALIGNMENT(T, a) do { \
+  typedef struct { char c; T  x; } AlignStruct; \
+  nerror += Assert(offsetof(AlignStruct, x), a, "bad offsetof " #T); \
+  } while(0)
+
+int CheckAlignment() {
+  int nerror = 0;
+  CHECK_ALIGNMENT(char, 1);
+  CHECK_ALIGNMENT(short, 2);
+  CHECK_ALIGNMENT(int, 4);
+  CHECK_ALIGNMENT(long, 4);
+  CHECK_ALIGNMENT(float, 4);
+  CHECK_ALIGNMENT(double, 8);
+  CHECK_ALIGNMENT(Pointer, 4);
+  CHECK_ALIGNMENT(FunctionPointer, 4);
+  CHECK_ALIGNMENT(long_long, 8);
+#ifdef PNACL_ABI_TEST
+  /* NOTE: http://code.google.com/p/nativeclient/issues/detail?id=817 */
+  /* CHECK_ALIGNMENT(va_list, 8); */
+#endif
+  return nerror;
+}
+
+int main(int argc, char* argv[]) {
+  int nerror = 0;
+  nerror += CheckSizes();
+  nerror += CheckAlignment();
   return nerror;
 }

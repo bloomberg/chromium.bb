@@ -104,13 +104,13 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_misc_math_test')
 
 
-# NOTE: We will probably not fix this until pnacl
-TEST_SET = ['small_tests']
-if env['TARGET_ARCHITECTURE'] == 'x86' and  env['TARGET_SUBARCH'] == '32':
-  TEST_SET = []
+if ARGUMENTS.get('bitcode'):
+  env.Append(CPPDEFINES=['PNACL_ABI_TEST=1'])
+else:
+  env.Append(CCFLAGS=['-std=c99'])
 env.ComponentProgram('abi.nexe', 'abi.c')
 node = env.CommandSelLdrTestNacl(
     'abi_test.out',
     command=[env.File('abi.nexe')],
     )
-env.AddNodeToTestSuite(node, TEST_SET, 'run_abi_test')
+env.AddNodeToTestSuite(node,  ['small_tests'], 'run_abi_test')
