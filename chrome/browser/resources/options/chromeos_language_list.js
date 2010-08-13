@@ -38,6 +38,10 @@ cr.define('options.language', function() {
   LanguageList.prototype = {
     __proto__: List.prototype,
 
+    // The list item being dragged.
+    draggedItem: null,
+    // The drop position information: "below" or "above".
+    dropPos: null,
     pref: 'settings.language.preferred_languages',
 
     /** @inheritDoc */
@@ -51,12 +55,22 @@ cr.define('options.language', function() {
       // Listen to pref change.
       Preferences.getInstance().addEventListener(this.pref,
           cr.bind(this.handlePrefChange_, this));
+
+      // Listen to drag and drop events.
+      this.addEventListener('dragstart', cr.bind(this.handleDragStart_, this));
+      this.addEventListener('dragenter', cr.bind(this.handleDragEnter_, this));
+      this.addEventListener('dragover', cr.bind(this.handleDragOver_, this));
+      this.addEventListener('drop', cr.bind(this.handleDrop_, this));
     },
 
     createItem: function(languageCode) {
       var languageDisplayName =
           LanguageList.getDisplayNameFromLanguageCode(languageCode);
-      return new ListItem({label: languageDisplayName});
+      return new ListItem({
+        label: languageDisplayName,
+        draggable: true,
+        languageCode: languageCode
+      });
     },
 
     /*
@@ -68,7 +82,7 @@ cr.define('options.language', function() {
       // Select the last item, which is the language added.
       this.selectionModel.selectedIndex = this.dataModel.length - 1;
 
-      this.updateBackend_();
+      this.savePreference_();
     },
 
     /*
@@ -94,8 +108,79 @@ cr.define('options.language', function() {
         // Once the selected item is removed, there will be no selected item.
         // Select the item pointed by the lead index.
         this.selectionModel.selectedIndex = this.selectionModel.leadIndex;
-        this.updateBackend_();
+        this.savePreference_();
       }
+    },
+
+    /*
+     * Handles the dragstart event.
+     * @param {Event} e The dragstart event.
+     * @private
+     */
+    handleDragStart_: function(e) {
+      var target = e.target;
+      // ListItem should be the only draggable element type in the page,
+      // but just in case.
+      if (target instanceof ListItem) {
+        this.draggedItem = target;
+        e.dataTransfer.effectAllowed = 'move';
+      }
+    },
+
+    /*
+     * Handles the dragenter event.
+     * @param {Event} e The dragenter event.
+     * @private
+     */
+    handleDragEnter_: function(e) {
+      e.preventDefault();
+    },
+
+    /*
+     * Handles the dragover event.
+     * @param {Event} e The dragover event.
+     * @private
+     */
+    handleDragOver_: function(e) {
+      var dropTarget = e.target;
+      // Determins whether the drop target is to accept the drop.
+      // The drop is only successful on another ListItem.
+      if (!(dropTarget instanceof ListItem) ||
+          dropTarget == this.draggedItem) {
+        return;
+      }
+      // Compute the drop postion. Should we move the dragged item to
+      // below or above the drop target?
+      var rect = dropTarget.getBoundingClientRect();
+      var dy = e.clientY - rect.top;
+      var yRatio = dy / rect.height;
+      var dropPos = yRatio <= .5 ? 'above' : 'below';
+      this.dropPos = dropPos;
+      e.preventDefault();
+      // TODO(satorux): Show the drop marker just like the bookmark manager.
+    },
+
+    /*
+     * Handles the drop event.
+     * @param {Event} e The drop event.
+     * @private
+     */
+    handleDrop_: function(e) {
+      var dropTarget = e.target;
+
+      // Delete the language from the original position.
+      var languageCode = this.draggedItem.languageCode;
+      var originalIndex = this.dataModel.indexOf(languageCode);
+      this.dataModel.splice(originalIndex, 1);
+      // Insert the language to the new position.
+      var newIndex = this.dataModel.indexOf(dropTarget.languageCode);
+      if (this.dropPos == 'below')
+        newIndex += 1;
+      this.dataModel.splice(newIndex, 0, languageCode);
+      // The cursor should move to the moved item.
+      this.selectionModel.selectedIndex = newIndex;
+      // Save the preference.
+      this.savePreference_();
     },
 
     /**
@@ -137,11 +222,12 @@ cr.define('options.language', function() {
     },
 
     /**
-     * Updates backend.
+     * Saves the preference.
      */
-    updateBackend_: function() {
+    savePreference_: function() {
       // Encode the language codes into a CSV string.
       Preferences.setStringPref(this.pref, this.dataModel.slice().join(','));
+      cr.dispatchSimpleEvent(this, 'save');
     },
 
     /**

@@ -49,6 +49,8 @@ cr.define('options', function() {
 
       languageOptionsList.addEventListener('change',
           cr.bind(this.handleLanguageOptionsListChange_, this));
+      languageOptionsList.addEventListener('save',
+          cr.bind(this.handleLanguageOptionsListSave_, this));
 
       this.addEventListener('visibleChange',
                             cr.bind(this.handleVisibleChange_, this));
@@ -161,6 +163,24 @@ cr.define('options', function() {
       this.updateUiLanguageButton_(languageCode);
       this.updateInputMethodList_(languageCode);
       this.updateLanguageListInAddLanguageOverlay_();
+    },
+
+    /**
+     * Handles languageOptionsList's save event.
+     * @param {Event} e Save event.
+     * @private
+     */
+    handleLanguageOptionsListSave_: function(e) {
+      // TODO(satorux): Handle this event to sort the preload engines per
+      // the saved languages. For instance, suppose we have two languages
+      // and associated input methods:
+      //
+      // - Korean: hangul
+      // - Chinese: pinyin
+      //
+      // The preloadEngines preference should look like "hangul,pinyin".
+      // If the user reverse the order, the preference should be reorderd
+      // to "pinyin,hangul".
     },
 
     /**
