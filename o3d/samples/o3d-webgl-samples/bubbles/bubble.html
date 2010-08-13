@@ -61,6 +61,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 This demo is based off of the bubble demo created for o3d command buffers:
 http://code.google.com/p/o3d/source/browse/trunk/googleclient/o3d/?r=55#o3d/command_buffer/samples/bubble
 
+The wish list of things that could be added:
+
+* Ability to change environment maps.
+* Dynamic image backgrounds instead of solid colors.
+* Pop bubbles (picking), or bubbles become thinner over time and self pop.
+
  -->
 
 </head>
@@ -207,6 +213,7 @@ http://code.google.com/p/o3d/source/browse/trunk/googleclient/o3d/?r=55#o3d/comm
     uniform samplerCube env_sampler;
     uniform vec4 thickness_params;
     uniform bool useCubeMap;
+    uniform bool blendTwice;
 
     varying vec4 v_position;
     varying vec2 v_uv;
@@ -222,12 +229,20 @@ http://code.google.com/p/o3d/source/browse/trunk/googleclient/o3d/?r=55#o3d/comm
       // Modulate iridescence color by the environment looked up along the
       // reflected ray.
       vec4 color = texture2D(iridescence_sampler, vec2(cos_i, thickness));
+
       if (useCubeMap) {
         color.xyz *= textureCube(env_sampler, v_reflected).xyz;
       }
 
       // Modulate by per-face attenuation
       color.rgb *= thickness_params.w;
+
+      if (blendTwice) {
+        // Apply color effect a second time for more vibrant, visible bubbles.
+        color.rgb = color.rgb * (1.0 + color.a);
+        color.a *= color.a;
+      }
+
       gl_FragColor = color;
     }
   </textarea>

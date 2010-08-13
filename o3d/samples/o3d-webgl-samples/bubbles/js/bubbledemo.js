@@ -57,7 +57,7 @@ function randf(min, max) {
  */
 bsh.clamp = function(x) {
   x = Math.min(1.0, Math.max(0.0, x));
-  return Math.floor(x * 255.0);
+  return Math.floor(x == 1.0 ? 255 : x * 256.0);
 }
 
 /**
@@ -192,25 +192,52 @@ var BubbleDemo = function(shaderString) {
   bsh.MakeSphereCoordinates(g.kRows, g.kCols, this.mod_source.canvas,
       this.vertices_, this.indices_);
 
+  var noise_sampler = this.makeNoiseTexture_();
+  var iridescence_sampler = this.makeIridescenceTexture_();
+  var cubemap = this.makeCubeMap_();
+
+  var frontMaterial = this.createMaterial_(shaderString, noise_sampler,
+      iridescence_sampler, cubemap);
+
+  // This material will cull the front faces instead of the back.
+  var backMaterial = this.createMaterial_(shaderString, noise_sampler,
+      iridescence_sampler, cubemap);
+  backMaterial.state = g_pack.createObject('State');
+  backMaterial.state.getStateParam('CullMode').value = g_o3d.State.CULL_CCW;
+
+  this.frontShape = this.makeShape_(frontMaterial);
+  this.backShape = this.makeShape_(backMaterial);
+  this.bubbles_ = [];
+  this.regenerateBubbles();
+}
+
+/**
+ * Creates a material with the given effect and assigns its uniform parameters.
+ * @param {string} shaderString The shader source.
+ * @param {o3d.Sampler} noise_sampler
+ * @param {o3d.Sampler} iridescence_sampler
+ * @param {o3d.TextureCUBE} cubemap
+ * @return {o3d.Material}
+ * @private
+ */
+BubbleDemo.prototype.createMaterial_ = function(shaderString, noise_sampler,
+    iridescence_sampler, cubemap) {
   var effect = g_pack.createObject('Effect');
-  var material = g_pack.createObject('Material');
   effect.loadFromFXString(shaderString);
+  var material = g_pack.createObject('Material');
   material.drawList = g_viewInfo.performanceDrawList;
   material.effect = effect;
   effect.createUniformParameters(material);
 
-  material.getParam("noise_sampler").value = this.MakeNoiseTexture_();
-  material.getParam("iridescence_sampler").value =
-      this.MakeIridescenceTexture_();
-  material.getParam("env_sampler").value = this.MakeCubeMap_();
+  material.getParam("noise_sampler").value = noise_sampler;
+  material.getParam("iridescence_sampler").value = iridescence_sampler;
+  material.getParam("env_sampler").value = cubemap;
   material.getParam("eye").bind(g_eyeParam);
   material.getParam("timer").bind(g_clock);
   material.getParam("useCubeMap").bind(g_useCubeMap);
+  material.getParam("blendTwice").bind(g_blendTwice);
   material.getParam("distortion").bind(g_blipDistortion);
-
-  this.shape = this.makeShape_(material);
-  this.bubbles_ = [];
-  this.regenerateBubbles();
+  return material;
 }
 
 /**
@@ -218,7 +245,7 @@ var BubbleDemo = function(shaderString) {
  * @return {o3d.Sampler}
  * @private
  */
-BubbleDemo.prototype.MakeNoiseTexture_ = function() {
+BubbleDemo.prototype.makeNoiseTexture_ = function() {
   var g = bsh.Globals;
   this.noise_source = new bsh.Perlin(g.kFrequency,
       98576, // This is supposed to be a random \cough seed.
@@ -248,7 +275,7 @@ BubbleDemo.prototype.MakeNoiseTexture_ = function() {
  * @return {o3d.Sampler}
  * @private
  */
-BubbleDemo.prototype.MakeIridescenceTexture_ = function() {
+BubbleDemo.prototype.makeIridescenceTexture_ = function() {
   var g = bsh.Globals;
   this.iridescence_source = new bsh.Iridescence(g.kTexWidth,
       g.kTexHeight,
@@ -279,7 +306,7 @@ BubbleDemo.prototype.MakeIridescenceTexture_ = function() {
  * @return {o3d.TextureCUBE}
  * @private
  */
-BubbleDemo.prototype.MakeCubeMap_ = function() {
+BubbleDemo.prototype.makeCubeMap_ = function() {
   this.env_source = new bsh.Environment($("#tex-environment img"));
   return this.env_source.texture;
 }
@@ -348,10 +375,10 @@ BubbleDemo.prototype.bubbles_ = [];
 BubbleDemo.prototype.shape = null;
 
 /**
- * The streambank backing the shape primitive.
- * @type {o3d.StreamBank}
+ * An array of streambanks backing the shape primitives used.
+ * @type {!Array.<o3d.StreamBank>}
  */
-BubbleDemo.prototype.streamBank = null;
+BubbleDemo.prototype.streamBanks = [];
 
 
 /**
@@ -381,8 +408,6 @@ BubbleDemo.prototype.regenerateModulation = function() {
   this.mod_source.init(g.kBlipSize, g.kNumBlips);
 
   // Update the stream to sample from the new texture.
-  var modulationStream =
-      this.streamBank.getVertexStream(g_o3d.Stream.TEXCOORD, 1);
   var newModulationCoords = [];
   for (var i = 0; i < this.vertices_.length; ++i) {
     var vertex = this.vertices_[i];
@@ -390,7 +415,22 @@ BubbleDemo.prototype.regenerateModulation = function() {
     vertex.mod = value;
     newModulationCoords.push(value);
   }
-  modulationStream.field.setAt(0, newModulationCoords);
+
+  for (var i = 0; i < this.streamBanks.length; i++) {
+    var modulationStream =
+        this.streamBanks[i].getVertexStream(g_o3d.Stream.TEXCOORD, 1);
+    modulationStream.field.setAt(0, newModulationCoords);
+  }
+}
+
+/**
+* Toggles whether bubbles are rendered with a second thin-film layer, making
+* it easier to see their surface.
+* @param {boolean} doRender True if bubbles should be rendered with a duplicate
+*   blending effect.
+*/
+BubbleDemo.prototype.renderThickerBubbles = function(doRender) {
+  g_blendTwice.value = doRender;
 }
 
 /**
@@ -424,23 +464,16 @@ BubbleDemo.prototype.regenerateBubbles = function() {
       bubble.transform = g_pack.createObject("Transform");
       bubble.transform.name = "Bubble" + i;
 
-      // One child transform for the back faces.
+      // One draw for back face, another for front.
       bubble.back = g_pack.createObject("Transform");
       bubble.back.createParam('thickness_params', 'ParamFloat4');
       bubble.back.parent = bubble.transform;
-      bubble.back.addShape(this.shape);
-      bubble.back.state = g_pack.createObject('State');
-      bubble.back.state.getStateParam('FillMode').value = g_o3d.State.SOLID;
-      bubble.back.state.getStateParam('CullMode').value = g_o3d.State.CULL_CW;
+      bubble.back.addShape(this.backShape);
 
-      // And another child for the front faces.
       bubble.front = g_pack.createObject("Transform");
       bubble.front.createParam('thickness_params', 'ParamFloat4');
       bubble.front.parent = bubble.transform;
-      bubble.front.addShape(this.shape);
-      bubble.front.state = g_pack.createObject('State');
-      bubble.front.state.getStateParam('FillMode').value = g_o3d.State.SOLID;
-      bubble.front.state.getStateParam('CullMode').value = g_o3d.State.CULL_CCW;
+      bubble.front.addShape(this.frontShape);
 
       // This adds a little modulation so that the bubbles grow/shrink at
       // different rates and times.
@@ -473,9 +506,8 @@ BubbleDemo.prototype.updateParams_ = function(bubble) {
 }
 
 /**
- * Creates a bubble shape that uses the material. Also sets the streambank
- * variable to the bank that was used for the primitive that was created.
- *
+ * Creates a bubble shape that uses the material. Also adds to the streambank
+ * variable the bank that was used for the primitive that was created.
  * @param {o3d.Material} material
  * @return {o3d.Shape}
  * @private
@@ -485,9 +517,10 @@ BubbleDemo.prototype.makeShape_ = function(material) {
   var shapePrimitive = g_pack.createObject('Primitive');
   var streamBank = g_pack.createObject('StreamBank');
 
-  shapePrimitive.material = material;
   shapePrimitive.owner = shape;
-  shapePrimitive.streamBank = this.streamBank = streamBank;
+  shapePrimitive.material = material;
+  shapePrimitive.streamBank = streamBank;
+  this.streamBanks.push(streamBank);
 
   var g = bsh.Globals;
   shapePrimitive.primitiveType = g_o3d.Primitive.TRIANGLELIST;
@@ -559,9 +592,9 @@ BubbleDemo.prototype.makeShape_ = function(material) {
  * Updates all the bubbles managed by this demo object.
  */
 BubbleDemo.prototype.update = function() {
- for (var i = 0; i < this.bubbles_.length; ++i) {
-   this.updateBubble_(this.bubbles_[i]);
- }
+  for (var i = 0; i < this.bubbles_.length; ++i) {
+    this.updateBubble_(this.bubbles_[i]);
+  }
 }
 
 /**
@@ -573,6 +606,10 @@ BubbleDemo.prototype.updateBubble_ = function(bubble) {
   if (!bubble.transform.parent) {
     bubble.transform.parent = g_dataroot;
   }
+
+  // TODO: potentially do a priority-order pass and manually sort the bubbles
+  // to ensure back face is drawn prior to front?
+
   bubble.transform.identity();
   var rotation = bubble.rotation_speed;
   bubble.transform.rotateX(rotation[0] * 2 * kPi * g_clock.value);

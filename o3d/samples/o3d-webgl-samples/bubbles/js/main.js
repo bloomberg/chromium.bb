@@ -64,6 +64,7 @@ var g_controls;
 var g_done = false;
 var g_useCubeMap;
 var g_blipDistortion;
+var g_blendTwice;
 
 /**
  * Initializes the o3d clients.
@@ -99,7 +100,7 @@ function initStep2(clientElements) {
   // Set the clear color to the default set in the HTML input fields.
   updateClearColor();
 
-  // Use Z-Sorting to draw bubbles back-to-front.
+  // Sort method for the draw pass.
   g_viewInfo.performanceDrawPass.sortMethod = g_o3d.DrawList.BY_Z_ORDER;
 
   // Set some blending states.
@@ -110,6 +111,12 @@ function initStep2(clientElements) {
   state.getStateParam('BlendEquation').value = g_o3d.State.BLEND_ADD;
   state.getStateParam('SeparateAlphaBlendEnable').value = false;
   state.getStateParam('AlphaBlendEnable').value = true;
+
+  state.getStateParam('ZEnable').value = false;
+  state.getStateParam('ZWriteEnable').value = false;
+
+  // By default, cull all the back faces.
+  state.getStateParam('CullMode').value = g_o3d.State.CULL_CW;
 
   // Creates a transform to put our data in.
   g_dataroot = g_pack.createObject('Transform');
@@ -127,6 +134,9 @@ function initStep2(clientElements) {
   // Use the environment map?
   g_useCubeMap = paramObject.createParam('useCubeMap', 'ParamBoolean');
   g_useCubeMap.value = true;
+  // Should shader effect be amplified for more vibrant bubbles?
+  g_blendTwice = paramObject.createParam('blendTwice', 'ParamBoolean');
+  g_blendTwice.value = true;
   // Number, location and overall effect of the modulation map.
   g_blipDistortion = paramObject.createParam('distortion', 'ParamFloat');
   g_blipDistortion.value = bsh.Globals.kBlipDistortion;

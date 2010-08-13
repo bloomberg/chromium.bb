@@ -112,10 +112,10 @@ function buildControls() {
           g_demo.regenerateBubbles();
         }
       },
-      { name: 'Bubble Size',
-        min: 0.3,
+      { name: 'Bubble Size Range',
+        min: 0.1,
         max: 2.5,
-        step: 0.2,
+        step: 0.1,
         values: g.kBubbleScale,
         range: true,
         parent: bubblePanel,
@@ -124,7 +124,7 @@ function buildControls() {
           g_demo.regenerateBubbles();
         }
       },
-      { name: 'Bubble Thickness',
+      { name: 'Bubble Thickness Range',
         min: 0.1,
         max: 1.0,
         step: 0.1,
@@ -196,7 +196,7 @@ function buildControls() {
           g_demo.regenerateNoise();
         }
       },
-      { name: 'Blip Size',
+      { name: 'Blip Radius Range',
         min: 50,
         max: 400,
         step: 25,
@@ -268,14 +268,19 @@ function buildControls() {
   });
 
   // 'q' closes all the open panels.
+  // 1/2 toggle whether the color effect is doubled for more visible bubbles.
   window.document.onkeypress = function(e) {
-    event = event || window.event;
+    var event = e || window.event;
     if (event.metaKey)
       return;
     var keyChar = String.fromCharCode(o3djs.event.getEventKeyChar(event));
     keyChar = keyChar.toLowerCase();
     if (keyChar == 'q') {
       hideAll();
+    } else if (keyChar == '1') {
+      g_demo.renderThickerBubbles(false);
+    } else if (keyChar == '2'){
+      g_demo.renderThickerBubbles(true);
     }
   };
 }
