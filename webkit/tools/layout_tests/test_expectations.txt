@@ -4,3 +4,41 @@
 //
 // Only add expectations here to temporarily suppress messages on the bots
 // until the changes can be landed upstream.
+
+// Regressions of WebKit r65181, which was reverted at r65238.
+// We need to remove below when we pass r65238.
+BUGYUTAK WIN : fast/frames/sandboxed-iframe-storage.html = CRASH
+BUGYUTAK WIN : fast/js/exceptions-thrown-in-callbacks.html = CRASH
+BUGYUTAK WIN : http/tests/storage/callbacks-are-called-in-correct-context.html = CRASH
+BUGYUTAK WIN : storage/change-version-handle-reuse.html = CRASH
+BUGYUTAK WIN : storage/change-version.html = CRASH
+BUGYUTAK WIN : storage/close-during-stress-test.html = CRASH
+BUGYUTAK WIN : storage/database-lock-after-reload.html = CRASH
+BUGYUTAK WIN : storage/empty-statement.html = CRASH
+BUGYUTAK WIN : storage/execute-sql-args.html = CRASH
+BUGYUTAK WIN : storage/executesql-accepts-only-one-statement.html = CRASH
+BUGYUTAK WIN : storage/multiple-databases-garbage-collection.html = CRASH
+BUGYUTAK WIN : storage/multiple-transactions-on-different-handles.html = CRASH
+BUGYUTAK WIN : storage/multiple-transactions.html = CRASH
+BUGYUTAK WIN : storage/null-callbacks.html = CRASH
+BUGYUTAK WIN : storage/open-database-creation-callback-isolated-world.html = CRASH
+BUGYUTAK WIN : storage/open-database-creation-callback.html = CRASH
+BUGYUTAK WIN : storage/open-database-empty-version.html = CRASH
+BUGYUTAK WIN : storage/open-database-over-quota.html = CRASH
+BUGYUTAK WIN : storage/open-database-set-empty-version.html = CRASH
+BUGYUTAK WIN : storage/open-database-while-transaction-in-progress.html = CRASH
+BUGYUTAK WIN : storage/quota-tracking.html = CRASH
+BUGYUTAK WIN : storage/read-and-write-transactions-dont-run-together.html = CRASH
+BUGYUTAK WIN : storage/read-transactions-running-concurrently.html = CRASH
+BUGYUTAK WIN : storage/sql-data-types.html = CRASH
+BUGYUTAK WIN : storage/sql-error-codes.html = CRASH
+BUGYUTAK WIN : storage/statement-error-callback-isolated-world.html = CRASH
+BUGYUTAK WIN : storage/statement-error-callback.html = CRASH
+BUGYUTAK WIN : storage/statement-success-callback-isolated-world.html = CRASH
+BUGYUTAK WIN : storage/success-callback.html = CRASH
+BUGYUTAK WIN : storage/test-authorizer.html = CRASH
+BUGYUTAK WIN : storage/transaction-callback-exception-crash.html = CRASH
+BUGYUTAK WIN : storage/transaction-callback-isolated-world.html = CRASH
+BUGYUTAK WIN : storage/transaction-error-callback-isolated-world.html = CRASH
+BUGYUTAK WIN : storage/transaction-error-callback.html = CRASH
+BUGYUTAK WIN : storage/transaction-success-callback-isolated-world.html = CRASH
