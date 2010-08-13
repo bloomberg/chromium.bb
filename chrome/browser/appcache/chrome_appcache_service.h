@@ -38,7 +38,7 @@ class ChromeAppCacheService
       scoped_refptr<HostContentSettingsMap> content_settings_map);
 
   // Helpers used by the extension service to grant and revoke
-  // unlimited_storage to app extensions.
+  // unlimited storage to app extensions.
   void SetOriginQuotaInMemory(const GURL& origin, int64 quota);
   void ResetOriginQuotaInMemory(const GURL& origin);
 

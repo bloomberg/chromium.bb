@@ -112,6 +112,10 @@ class Extension {
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;
 
+  // The old name for the unlimited storage permission, which is deprecated but
+  // still accepted as meaning the same thing as kUnlimitedStoragePermission.
+  static const char* kOldUnlimitedStoragePermission;
+
   // A "simple permission" is one that has a one-to-one mapping with a message
   // that is displayed in the install UI. This is in contrast to more complex
   // permissions like http access, where the exact message displayed depends on

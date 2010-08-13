@@ -2,6 +2,6 @@
   "name": "allow silent update",
   "version": "1.0",
   "permissions": [
-    "unlimited_storage"
+    "unlimitedStorage"
   ]
 }

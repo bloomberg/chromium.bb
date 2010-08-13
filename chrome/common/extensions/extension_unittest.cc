@@ -935,3 +935,31 @@ TEST(ExtensionTest, ImageCaching) {
   EXPECT_EQ(extension->GetCachedImage(resource, original_size).getPixels(),
             extension->GetCachedImage(resource, size128).getPixels());
 }
+
+// Tests that the old permission name "unlimited_storage" still works for
+// backwards compatability (we renamed it to "unlimitedStorage").
+TEST(ExtensionTest, OldUnlimitedStoragePermission) {
+  ScopedTempDir directory;
+  ASSERT_TRUE(directory.CreateUniqueTempDir());
+  FilePath extension_path = directory.path();
+  DictionaryValue dictionary;
+
+  // The two required keys.
+  dictionary.SetString(extension_manifest_keys::kName, "test");
+  dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
+
+  // Create a permissions list containing "unlimited_storage" and add it.
+  ListValue* permissions = new ListValue();
+  const std::string old_unlimited = std::string("unlimited_storage");
+  EXPECT_EQ(old_unlimited, Extension::kOldUnlimitedStoragePermission);
+  permissions->Append(Value::CreateStringValue(old_unlimited));
+  dictionary.Set(extension_manifest_keys::kPermissions, permissions);
+
+  // Initialize the extension and make sure the permission for unlimited storage
+  // is present.
+  Extension extension(extension_path);
+  std::string errors;
+  EXPECT_TRUE(extension.InitFromValue(dictionary, false, &errors));
+  EXPECT_TRUE(extension.HasApiPermission(
+      Extension::kUnlimitedStoragePermission));
+}

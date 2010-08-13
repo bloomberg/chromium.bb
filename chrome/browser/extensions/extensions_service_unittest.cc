@@ -2215,17 +2215,23 @@ TEST_F(ExtensionsServiceTest, StorageQuota) {
 
   FilePath limited_quota_ext = extensions_path.AppendASCII("limited_quota")
       .AppendASCII("1.0");
+
+  // The old permission name for unlimited quota was "unlimited_storage", but
+  // we changed it to "unlimitedStorage". This tests both versions.
   FilePath unlimited_quota_ext = extensions_path.AppendASCII("unlimited_quota")
       .AppendASCII("1.0");
+  FilePath unlimited_quota_ext2 = extensions_path.AppendASCII("unlimited_quota")
+      .AppendASCII("2.0");
   service_->LoadExtension(limited_quota_ext);
   service_->LoadExtension(unlimited_quota_ext);
+  service_->LoadExtension(unlimited_quota_ext2);
   loop_.RunAllPending();
 
-  EXPECT_EQ(2u, loaded_.size());
+  ASSERT_EQ(3u, loaded_.size());
   EXPECT_TRUE(profile_.get());
   EXPECT_FALSE(profile_->IsOffTheRecord());
 
-  // Open a database in each origin to make the tracker aware
+  // Open the database from each origin to make the tracker aware
   // of the existance of these origins and to get their quotas.
   int64 limited_quota = -1;
   int64 unlimited_quota = -1;
@@ -2233,18 +2239,28 @@ TEST_F(ExtensionsServiceTest, StorageQuota) {
       webkit_database::DatabaseUtil::GetOriginIdentifier(loaded_[0]->url());
   string16 unlimited_quota_identifier =
       webkit_database::DatabaseUtil::GetOriginIdentifier(loaded_[1]->url());
+  string16 unlimited_quota_identifier2 =
+      webkit_database::DatabaseUtil::GetOriginIdentifier(loaded_[2]->url());
   string16 db_name = UTF8ToUTF16("db");
   string16 description = UTF8ToUTF16("db_description");
   int64 database_size;
   webkit_database::DatabaseTracker* db_tracker = profile_->GetDatabaseTracker();
+
+  // First check the normal limited quota extension.
   db_tracker->DatabaseOpened(limited_quota_identifier, db_name, description,
                              1, &database_size, &limited_quota);
   db_tracker->DatabaseClosed(limited_quota_identifier, db_name);
+  EXPECT_EQ(profile_->GetDatabaseTracker()->GetDefaultQuota(), limited_quota);
+
+  // Now check the two unlimited quota ones.
   db_tracker->DatabaseOpened(unlimited_quota_identifier, db_name, description,
                              1, &database_size, &unlimited_quota);
   db_tracker->DatabaseClosed(unlimited_quota_identifier, db_name);
+  EXPECT_EQ(kint64max, unlimited_quota);
+  db_tracker->DatabaseOpened(unlimited_quota_identifier2, db_name, description,
+                             1, &database_size, &unlimited_quota);
+  db_tracker->DatabaseClosed(unlimited_quota_identifier2, db_name);
 
-  EXPECT_EQ(profile_->GetDatabaseTracker()->GetDefaultQuota(), limited_quota);
   EXPECT_EQ(kint64max, unlimited_quota);
 }
 
