@@ -55,7 +55,10 @@ for basename in ['addr_modes',
                  'fib',
                  'hello_world',
                  'long_long',
-                 'regs',
+                 # TODO jasonwkim [2010/08/13 16:04:23 PDT (Friday)]
+                 # remove flaky test for now
+                 # http://code.google.com/p/nativeclient/issues/detail?id=822
+                 #'regs',
                  'switch',
                  'vtable',
                  'vaarg',
