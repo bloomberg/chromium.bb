@@ -125,7 +125,7 @@ if ! ${UTMAN_EXPERIMENTAL}; then
   readonly BINUTILS_REV=808542c052d8
 else
   # Experimental milestones
-  readonly LLVM_REV=9c091b447285
+  readonly LLVM_REV=6230486907a8
   readonly LLVM_GCC_REV=4e2927c6f57a
   readonly NEWLIB_REV=c74ed6d22b4f
   readonly BINUTILS_REV=79db169b3d17
