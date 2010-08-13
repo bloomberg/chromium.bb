@@ -240,8 +240,11 @@ kern_return_t ReceivePort::WaitForMessage(MachReceiveMessage *out_message,
   out_message->head.msgh_reserved = 0;
   out_message->head.msgh_id = 0;
 
+  mach_msg_option_t options = MACH_RCV_MSG;
+  if (timeout != MACH_MSG_TIMEOUT_NONE)
+    options |= MACH_RCV_TIMEOUT;
   kern_return_t result = mach_msg(&out_message->head,
-                                  MACH_RCV_MSG | MACH_RCV_TIMEOUT,
+                                  options,
                                   0,
                                   sizeof(MachMessage),
                                   port_,

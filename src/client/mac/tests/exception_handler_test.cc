@@ -36,6 +36,7 @@
 #include "client/mac/handler/exception_handler.h"
 #include "client/mac/tests/auto_tempdir.h"
 
+namespace {
 using std::string;
 using google_breakpad::AutoTempDir;
 using google_breakpad::ExceptionHandler;
@@ -76,7 +77,7 @@ TEST(ExceptionHandler, InProcess) {
   pid_t pid = fork();
   if (pid == 0) {
     close(fds[0]);
-    ExceptionHandler eh(tempDir.path, NULL, MDCallback, &fds[1], true);
+    ExceptionHandler eh(tempDir.path, NULL, MDCallback, &fds[1], true, NULL);
     // crash
     SoonToCrash();
     // not reached
@@ -98,4 +99,6 @@ TEST(ExceptionHandler, InProcess) {
   ASSERT_EQ(pid, waitpid(pid, &ret, 0));
   EXPECT_NE(0, WIFEXITED(ret));
   EXPECT_EQ(0, WEXITSTATUS(ret));
+}
+
 }

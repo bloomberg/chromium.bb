@@ -221,7 +221,8 @@ ExceptionHandler::ExceptionHandler(const string &dump_path,
                                    FilterCallback filter,
                                    MinidumpCallback callback,
                                    void *callback_context,
-                                   bool install_handler)
+                                   bool install_handler,
+				   const char *port_name)
     : dump_path_(),
       filter_(filter),
       callback_(callback),
@@ -237,6 +238,8 @@ ExceptionHandler::ExceptionHandler(const string &dump_path,
   // This will update to the ID and C-string pointers
   set_dump_path(dump_path);
   MinidumpGenerator::GatherSystemInformation();
+  if (port_name)
+    crash_generation_client_.reset(new CrashGenerationClient(port_name));
   Setup(install_handler);
 }
 
@@ -293,7 +296,8 @@ bool ExceptionHandler::WriteMinidump() {
 bool ExceptionHandler::WriteMinidump(const string &dump_path,
                                      MinidumpCallback callback,
                                      void *callback_context) {
-  ExceptionHandler handler(dump_path, NULL, callback, callback_context, false);
+  ExceptionHandler handler(dump_path, NULL, callback, callback_context, false,
+			   NULL);
   return handler.WriteMinidump();
 }
 
@@ -312,6 +316,18 @@ bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
       if (exception_type && exception_code)
         _exit(exception_type);
     }
+  } else if (IsOutOfProcess()) {
+    if (exception_type && exception_code) {
+      // If this is a real exception, give the filter (if any) a chance to
+      // decide if this should be sent.
+      if (filter_ && !filter_(callback_context_))
+	return false;
+      return crash_generation_client_->RequestDumpForException(
+	         exception_type,
+		 exception_code,
+		 exception_subcode,
+		 thread_name);
+    }
   } else {
     string minidump_id;
 
@@ -321,7 +337,7 @@ bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
       MinidumpGenerator md;
       if (exception_type && exception_code) {
         // If this is a real exception, give the filter (if any) a chance to
-        // decided if this should be sent
+        // decide if this should be sent.
         if (filter_ && !filter_(callback_context_))
           return false;
 
