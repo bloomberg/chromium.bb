@@ -174,7 +174,7 @@ void Preferences::Init(PrefService* prefs) {
     if (!input_method_ids.empty()) {
       if (!preload_engines.empty())
         preload_engines += ',';
-      preload_engines += JoinString(input_method_ids, ',');
+      preload_engines += input_method_ids[0];
     }
     language_preload_engines_.SetValue(preload_engines);
   }
