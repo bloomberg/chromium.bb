@@ -43,9 +43,9 @@ namespace {
 // given value (well, unless the font at size 1 is taller than the
 // given value).
 Font FindFontThisHigh(int pixels, Font base) {
-  Font font = Font::CreateFont(base.FontName(), 1);
+  Font font(base.GetFontName(), 1);
   Font last_font = font;
-  while (font.height() < pixels) {
+  while (font.GetHeight() < pixels) {
     last_font = font;
     font = font.DeriveFont(1, Font::BOLD);
   }

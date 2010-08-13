@@ -44,7 +44,7 @@ gfx::Size MenuItemView::GetPreferredSize() {
   // TODO(sky): this is a workaround until I figure out why font.height()
   // isn't returning the right thing. We really only want to include
   // kFavIconSize if we're showing icons.
-  int content_height = std::max(kFavIconSize, font.height());
+  int content_height = std::max(kFavIconSize, font.GetHeight());
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ + item_right_margin_ +
           GetChildPreferredWidth(),
@@ -155,8 +155,8 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
   gfx::Rect text_bounds(label_start_, top_margin +
-                        (available_height - font.height()) / 2, width,
-                        font.height());
+                        (available_height - font.GetHeight()) / 2, width,
+                        font.GetHeight());
   text_bounds.set_x(MirroredLeftPointForRect(text_bounds));
   canvas->DrawStringInt(GetTitle(), font, fg_color,
                         text_bounds.x(), text_bounds.y(), text_bounds.width(),

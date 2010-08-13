@@ -395,9 +395,8 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
 
 - (NSString*)elideTitle:(int)availableWidth {
   NSFont* font = [self font];
-  gfx::Font font_chr =
-      gfx::Font::CreateFont(base::SysNSStringToWide([font fontName]),
-                            [font pointSize]);
+  gfx::Font font_chr(base::SysNSStringToWide([font fontName]),
+                     [font pointSize]);
 
   return base::SysWideToNSString(
       ElideFilename(downloadPath_, font_chr, availableWidth));
@@ -405,9 +404,8 @@ NSGradient* BackgroundTheme::GetNSGradient(int id) const {
 
 - (NSString*)elideStatus:(int)availableWidth {
   NSFont* font = [self secondaryFont];
-  gfx::Font font_chr =
-      gfx::Font::CreateFont(base::SysNSStringToWide([font fontName]),
-                            [font pointSize]);
+  gfx::Font font_chr(base::SysNSStringToWide([font fontName]),
+                     [font pointSize]);
 
   return base::SysWideToNSString(ElideText(
       base::SysNSStringToWide([self secondaryTitle]),

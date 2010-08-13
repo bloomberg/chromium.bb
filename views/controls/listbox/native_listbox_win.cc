@@ -105,7 +105,7 @@ void NativeListboxWin::CreateNativeControl() {
                                listbox_->GetWidget()->GetNativeView(),
                                NULL, NULL, NULL);
   HFONT font = ResourceBundle::GetSharedInstance().
-      GetFont(ResourceBundle::BaseFont).hfont();
+      GetFont(ResourceBundle::BaseFont).GetNativeFont();
   SendMessage(hwnd, WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);
   l10n_util::AdjustUIFontForWindow(hwnd);
 

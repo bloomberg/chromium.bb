@@ -1383,7 +1383,7 @@ void AdvancedContentsView::InitClass() {
   static bool initialized = false;
   if (!initialized) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    line_height_ = rb.GetFont(ResourceBundle::BaseFont).height();
+    line_height_ = rb.GetFont(ResourceBundle::BaseFont).GetHeight();
     initialized = true;
   }
 }

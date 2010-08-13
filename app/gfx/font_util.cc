@@ -27,7 +27,7 @@ int GetLocalizedContentsHeightForFont(int row_resource_id,
   double lines = 0;
   base::StringToDouble(WideToUTF8(l10n_util::GetString(row_resource_id)),
                        &lines);
-  int height = static_cast<int>(font.height() * lines);
+  int height = static_cast<int>(font.GetHeight() * lines);
   DCHECK_GT(height, 0);
   return height;
 }

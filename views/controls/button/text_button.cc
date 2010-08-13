@@ -390,7 +390,7 @@ void TextButton::UpdateTextSize() {
   gfx::CanvasSkia::SizeStringInt(
       text_, font_, &width, &height,
       gfx::Canvas::NO_ELLIPSIS | PrefixTypeToCanvasType(prefix_type_));
-  text_size_.SetSize(width, font_.height());
+  text_size_.SetSize(width, font_.GetHeight());
   max_text_size_.SetSize(std::max(max_text_size_.width(), text_size_.width()),
                          std::max(max_text_size_.height(),
                                   text_size_.height()));

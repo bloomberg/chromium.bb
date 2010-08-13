@@ -30,7 +30,7 @@ MenuConfig* MenuConfig::Create() {
   l10n_util::AdjustUIFont(&(metrics.lfMenuFont));
   HFONT font = CreateFontIndirect(&metrics.lfMenuFont);
   DLOG_ASSERT(font);
-  config->font = gfx::Font::CreateFont(font);
+  config->font = gfx::Font(font);
 
   HDC dc = GetDC(NULL);
   RECT bounds = { 0, 0, 200, 200 };

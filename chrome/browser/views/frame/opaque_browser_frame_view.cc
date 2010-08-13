@@ -508,7 +508,7 @@ int OpaqueBrowserFrameView::IconSize() const {
   // size are increased.
   return GetSystemMetrics(SM_CYSMICON);
 #else
-  return std::max(BrowserFrame::GetTitleFont().height(), kIconMinimumSize);
+  return std::max(BrowserFrame::GetTitleFont().GetHeight(), kIconMinimumSize);
 #endif
 }
 
@@ -1017,7 +1017,7 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
   if (d->ShouldShowWindowTitle()) {
     int title_x = d->ShouldShowWindowIcon() ?
         icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
-    int title_height = BrowserFrame::GetTitleFont().height();
+    int title_height = BrowserFrame::GetTitleFont().GetHeight();
     // We bias the title position so that when the difference between the icon
     // and title heights is odd, the extra pixel of the title is above the
     // vertical midline rather than below.  This compensates for how the icon is

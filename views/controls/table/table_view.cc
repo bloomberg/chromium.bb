@@ -1544,7 +1544,7 @@ gfx::Rect TableView::GetAltTextBounds() {
   gfx::Font font = GetAltTextFont();
   // Pad height by 2 for halo.
   return gfx::Rect(kXOffset, content_offset(), client_rect.width() - kXOffset,
-                   std::max(kImageSize, font.height() + 2));
+                   std::max(kImageSize, font.GetHeight() + 2));
 }
 
 gfx::Font TableView::GetAltTextFont() {

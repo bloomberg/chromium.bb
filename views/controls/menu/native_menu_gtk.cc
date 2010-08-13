@@ -316,8 +316,9 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
     // The label item is the first child of the menu item.
     GtkWidget* label_widget = GTK_BIN(menu_item)->child;
     DCHECK(label_widget && GTK_IS_LABEL(label_widget));
-    gtk_widget_modify_font(label_widget,
-                           gfx::Font::PangoFontFromGfxFont(*font));
+    PangoFontDescription* pfd = font->GetNativeFont();
+    gtk_widget_modify_font(label_widget, pfd);
+    pango_font_description_free(pfd);
   }
 
   if (type == menus::MenuModel::TYPE_SUBMENU) {

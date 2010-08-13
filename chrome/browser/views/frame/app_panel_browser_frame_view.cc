@@ -477,7 +477,7 @@ void AppPanelBrowserFrameView::LayoutTitleBar() {
 
   // Size the title.
   int title_x = icon_bounds.right() + kIconTitleSpacing;
-  int title_height = BrowserFrame::GetTitleFont().height();
+  int title_height = BrowserFrame::GetTitleFont().GetHeight();
   // We bias the title position so that when the difference between the icon
   // and title heights is odd, the extra pixel of the title is above the
   // vertical midline rather than below.  This compensates for how the icon is

@@ -35,18 +35,22 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+typedef struct HFONT__* HFONT;
 #elif defined(OS_MACOSX)
 struct CGContext;
 #ifdef __OBJC__
+@class NSFont;
 @class NSView;
 @class NSWindow;
 @class NSTextField;
 #else
+class NSFont;
 class NSView;
 class NSWindow;
 class NSTextField;
 #endif  // __OBJC__
 #elif defined(TOOLKIT_USES_GTK)
+typedef struct _PangoFontDescription PangoFontDescription;
 typedef struct _GdkCursor GdkCursor;
 typedef struct _GdkRegion GdkRegion;
 typedef struct _GtkWidget GtkWidget;
@@ -57,6 +61,7 @@ typedef struct _cairo cairo_t;
 namespace gfx {
 
 #if defined(OS_WIN)
+typedef HFONT NativeFont;
 typedef HWND NativeView;
 typedef HWND NativeWindow;
 typedef HWND NativeEditView;
@@ -65,6 +70,7 @@ typedef HCURSOR NativeCursor;
 typedef HMENU NativeMenu;
 typedef HRGN NativeRegion;
 #elif defined(OS_MACOSX)
+typedef NSFont* NativeFont;
 typedef NSView* NativeView;
 typedef NSWindow* NativeWindow;
 typedef NSTextField* NativeEditView;
@@ -72,6 +78,7 @@ typedef CGContext* NativeDrawingContext;
 typedef void* NativeCursor;
 typedef void* NativeMenu;
 #elif defined(USE_X11)
+typedef PangoFontDescription* NativeFont;
 typedef GtkWidget* NativeView;
 typedef GtkWindow* NativeWindow;
 typedef GtkWidget* NativeEditView;

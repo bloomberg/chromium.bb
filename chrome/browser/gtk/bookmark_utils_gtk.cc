@@ -197,7 +197,7 @@ GtkWidget* GetDragRepresentation(GdkPixbuf* pixbuf,
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
     gtk_widget_set_size_request(window, kDragRepresentationWidth,
-                                base_font.height());
+                                base_font.GetHeight());
   } else {
     if (!provider->UseGtkTheme()) {
       // TODO(erg): Theme wise, which color should I be picking here?

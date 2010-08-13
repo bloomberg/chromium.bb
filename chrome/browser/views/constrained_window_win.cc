@@ -527,7 +527,7 @@ void ConstrainedWindowFrameView::LayoutTitleBar() {
   // there is no icon in constrained windows.
   gfx::Rect icon_bounds(IconBounds());
   int title_x = icon_bounds.x();
-  int title_height = title_font_->height();
+  int title_height = title_font_->GetHeight();
   // We bias the title position so that when the difference between the icon and
   // title heights is odd, the extra pixel of the title is above the vertical
   // midline rather than below.  This compensates for how the icon is already

@@ -41,7 +41,7 @@ SetupFlow::~SetupFlow() {
 
 void SetupFlow::GetDialogSize(gfx::Size* size) const {
   PrefService* prefs = profile_->GetPrefs();
-  gfx::Font approximate_web_font = gfx::Font::CreateFont(
+  gfx::Font approximate_web_font(
       UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 

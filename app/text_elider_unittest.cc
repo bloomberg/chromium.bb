@@ -5,6 +5,7 @@
 #include "app/text_elider.h"
 #include "base/file_path.h"
 #include "base/i18n/rtl.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "gfx/font.h"
 #include "googleurl/src/gurl.h"

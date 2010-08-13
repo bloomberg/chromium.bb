@@ -525,7 +525,7 @@ class InternetPageContentView : public SettingsPageView {
 InternetPageContentView::InternetPageContentView(Profile* profile)
     : SettingsPageView(profile) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  line_height_ = rb.GetFont(ResourceBundle::BaseFont).height();
+  line_height_ = rb.GetFont(ResourceBundle::BaseFont).GetHeight();
 }
 
 void InternetPageContentView::RefreshContents() {

@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/button/native_button_gtk.h"
 
@@ -42,8 +42,7 @@ void NativeButtonGtk::UpdateFont() {
   if (!native_view())
     return;
 
-  PangoFontDescription* pfd =
-      gfx::Font::PangoFontFromGfxFont(native_button_->font());
+  PangoFontDescription* pfd = native_button_->font().GetNativeFont();
   gtk_widget_modify_font(native_view(), pfd);
   pango_font_description_free(pfd);
   preferred_size_ = gfx::Size();

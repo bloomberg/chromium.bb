@@ -114,13 +114,13 @@ void PrintedDocument::RenderPrintedPage(
       -page_setup.printable_area().x(),
       -page_setup.printable_area().y(),
       1);
-  int base_font_size = gfx::Font().height();
+  int base_font_size = gfx::Font().GetHeight();
   int new_font_size = ConvertUnit(10,
                                   immutable_.settings_.desired_dpi,
                                   immutable_.settings_.device_units_per_inch());
   DCHECK_GT(new_font_size, base_font_size);
   gfx::Font font(gfx::Font().DeriveFont(new_font_size - base_font_size));
-  HGDIOBJ old_font = SelectObject(context, font.hfont());
+  HGDIOBJ old_font = SelectObject(context, font.GetNativeFont());
   DCHECK(old_font != NULL);
   // We don't want a white square around the text ever if overflowing.
   SetBkMode(context, TRANSPARENT);

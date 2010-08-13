@@ -49,7 +49,7 @@ void NativeButtonWin::UpdateLabel() {
 
 void NativeButtonWin::UpdateFont() {
   SendMessage(native_view(), WM_SETFONT,
-              reinterpret_cast<WPARAM>(native_button_->font().hfont()),
+              reinterpret_cast<WPARAM>(native_button_->font().GetNativeFont()),
               FALSE);
   button_size_valid_ = false;
 }

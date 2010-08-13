@@ -31,11 +31,11 @@ TEST(LabelTest, FontPropertyCourier) {
 TEST(LabelTest, FontPropertyArial) {
   Label label;
   std::wstring font_name(L"arial");
-  gfx::Font font = gfx::Font::CreateFont(font_name, 30);
+  gfx::Font font(font_name, 30);
   label.SetFont(font);
   gfx::Font font_used = label.font();
-  EXPECT_EQ(font_name, font_used.FontName());
-  EXPECT_EQ(30, font_used.FontSize());
+  EXPECT_EQ(font_name, font_used.GetFontName());
+  EXPECT_EQ(30, font_used.GetFontSize());
 }
 
 TEST(LabelTest, TextProperty) {

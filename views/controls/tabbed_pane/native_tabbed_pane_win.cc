@@ -284,7 +284,7 @@ void NativeTabbedPaneWin::CreateNativeControl() {
                                       NULL);
 
   HFONT font = ResourceBundle::GetSharedInstance().
-      GetFont(ResourceBundle::BaseFont).hfont();
+      GetFont(ResourceBundle::BaseFont).GetNativeFont();
   SendMessage(tab_control, WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);
 
   // Create the view container which is a child of the TabControl.

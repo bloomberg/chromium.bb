@@ -103,7 +103,7 @@ void Checkbox::Layout() {
         label_x, 0, std::max(0, width() - label_x -
             kLabelFocusPaddingHorizontal),
         height());
-    int first_line_height = label_->font().height();
+    int first_line_height = label_->font().GetHeight();
     native_wrapper_->GetView()->SetBounds(
         0, ((first_line_height - checkmark_prefsize.height()) / 2),
         checkmark_prefsize.width(), checkmark_prefsize.height());

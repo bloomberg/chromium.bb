@@ -123,6 +123,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/version.h"
+#include "gfx/platform_font_win.h"
 #include "net/base/net_util.h"
 #include "net/base/sdch_manager.h"
 #include "printing/printed_document.h"
@@ -706,8 +707,8 @@ void InitializeToolkit() {
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 
 #if defined(OS_WIN)
-  gfx::Font::adjust_font_callback = &AdjustUIFont;
-  gfx::Font::get_minimum_font_size_callback = &GetMinimumFontSize;
+  gfx::PlatformFontWin::adjust_font_callback = &AdjustUIFont;
+  gfx::PlatformFontWin::get_minimum_font_size_callback = &GetMinimumFontSize;
 
   // Init common control sex.
   INITCOMMONCONTROLSEX config;

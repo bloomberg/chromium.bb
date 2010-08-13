@@ -6,63 +6,50 @@
 #define GFX_FONT_H_
 #pragma once
 
-#include "build/build_config.h"
-
 #include <string>
 
-#if defined(OS_WIN)
-typedef struct HFONT__* HFONT;
-#elif !defined(OS_MACOSX)
-#include "third_party/skia/include/core/SkRefCnt.h"
-class SkPaint;
-class SkTypeface;
-#endif
-
-#if defined(OS_WIN)
-typedef struct HFONT__* NativeFont;
-#elif defined(OS_MACOSX)
-#ifdef __OBJC__
-@class NSFont;
-#else
-class NSFont;
-#endif
-typedef NSFont* NativeFont;
-#else
-typedef struct _PangoFontDescription PangoFontDescription;
-class SkTypeface;
-typedef SkTypeface* NativeFont;
-#endif
-
-#include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
+#include "gfx/native_widget_types.h"
 
 namespace gfx {
+
+class PlatformFont;
 
 // Font provides a wrapper around an underlying font. Copy and assignment
 // operators are explicitly allowed, and cheap.
 class Font {
  public:
   // The following constants indicate the font style.
-  enum {
+  enum FontStyle {
     NORMAL = 0,
     BOLD = 1,
     ITALIC = 2,
     UNDERLINED = 4,
   };
 
-  // Creates a Font given font name (e.g. arial), font size (e.g. 12).
-  // Skia actually expects a family name and not a font name.
-  static Font CreateFont(const std::wstring& font_name, int font_size);
+  // Creates a font with the default name and style.
+  Font();
 
-  ~Font() { }
+  // Creates a font that is a clone of another font object.
+  Font(const Font& other);
+  gfx::Font& operator=(const Font& other);
+
+  // Creates a font from the specified native font.
+  explicit Font(NativeFont native_font);
+
+  // Construct a Font object with the specified PlatformFont object. The Font
+  // object takes ownership of the PlatformFont object.
+  explicit Font(PlatformFont* platform_font);
+
+  // Creates a font with the specified name and size.
+  Font(const std::wstring& font_name, int font_size);
+
+  ~Font();
 
   // Returns a new Font derived from the existing font.
   // size_deta is the size to add to the current font. For example, a value
   // of 5 results in a font 5 units bigger than this font.
-  Font DeriveFont(int size_delta) const {
-    return DeriveFont(size_delta, style());
-  }
+  Font DeriveFont(int size_delta) const;
 
   // Returns a new Font derived from the existing font.
   // size_delta is the size to add to the current font. See the single
@@ -76,212 +63,51 @@ class Font {
   // greater than just ascent + descent.  Specifically, the Windows and Mac
   // implementations include leading and the Linux one does not.  This may
   // need to be revisited in the future.
-  int height() const;
+  int GetHeight() const;
 
   // Returns the baseline, or ascent, of the font.
-  int baseline() const;
+  int GetBaseline() const;
 
   // Returns the average character width for the font.
-  int ave_char_width() const;
+  int GetAverageCharacterWidth() const;
 
   // Returns the number of horizontal pixels needed to display the specified
   // string.
   int GetStringWidth(const std::wstring& text) const;
 
-  // Returns the expected number of horizontal pixels needed to display
-  // the specified length of characters.
-  // Call GetStringWidth() to retrieve the actual number.
+  // Returns the expected number of horizontal pixels needed to display the
+  // specified length of characters. Call GetStringWidth() to retrieve the
+  // actual number.
   int GetExpectedTextWidth(int length) const;
 
   // Returns the style of the font.
-  int style() const;
+  int GetStyle() const;
 
-  // Font Name.
-  // It is actually a font family name, because Skia expects a family name
-  // and not a font name.
-  const std::wstring& FontName() const;
+  // Returns the font name.
+  const std::wstring& GetFontName() const;
 
-  // Font Size.
-  int FontSize();
+  // Returns the font size in pixels.
+  int GetFontSize() const;
 
-  NativeFont nativeFont() const;
+  // Returns the native font handle.
+  // Lifetime lore:
+  // Windows: This handle is owned by the Font object, and should not be
+  //          destroyed by the caller.
+  // Mac:     Caller must release this object.
+  // Gtk:     This handle is created on demand, and must be freed by calling
+  //          pango_font_description_free() when the caller is done using it.
+  NativeFont GetNativeFont() const;
 
-  // Creates a font with the default name and style.
-  Font();
-
-#if defined(OS_WIN)
-  // Creates a Font from the specified HFONT. The supplied HFONT is effectively
-  // copied.
-  static Font CreateFont(HFONT hfont);
-
-  // Returns the handle to the underlying HFONT. This is used by gfx::Canvas to
-  // draw text.
-  HFONT hfont() const { return font_ref_->hfont(); }
-
-  // Dialog units to pixels conversion.
-  // See http://support.microsoft.com/kb/145994 for details.
-  int horizontal_dlus_to_pixels(int dlus) {
-    return dlus * font_ref_->dlu_base_x() / 4;
-  }
-  int vertical_dlus_to_pixels(int dlus) {
-    return dlus * font_ref_->height() / 8;
-  }
-
-  // Callback that returns the minimum height that should be used for
-  // gfx::Fonts. Optional. If not specified, the minimum font size is 0.
-  typedef int (*GetMinimumFontSizeCallback)();
-  static GetMinimumFontSizeCallback get_minimum_font_size_callback;
-
-  // Callback that adjusts a LOGFONT to meet suitability requirements of the
-  // embedding application. Optional. If not specified, no adjustments are
-  // performed other than clamping to a minimum font height if
-  // |get_minimum_font_size_callback| is specified.
-  typedef void (*AdjustFontCallback)(LOGFONT* lf);
-  static AdjustFontCallback adjust_font_callback;
-
-#elif !defined(OS_MACOSX)
-  static Font CreateFont(PangoFontDescription* desc);
-  // We need a copy constructor and assignment operator to deal with
-  // the Skia reference counting.
-  Font(const Font& other);
-  Font& operator=(const Font& other);
-  // Setup a Skia context to use the current typeface
-  void PaintSetup(SkPaint* paint) const;
-
-  // Converts |gfx_font| to a new pango font. Free the returned font with
-  // pango_font_description_free().
-  static PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& gfx_font);
-
-  // Position as an offset from the height of the drawn text, used to draw
-  // an underline. This is a negative number, so the underline would be
-  // drawn at y + height + underline_position;
-  double underline_position() const;
-  // The thickness to draw the underline.
-  double underline_thickness() const;
-#endif
+  // Raw access to the underlying platform font implementation. Can be
+  // static_cast to a known implementation type if needed.
+  PlatformFont* platform_font() const { return platform_font_.get(); }
 
  private:
-
-#if defined(OS_WIN)
-  // Chrome text drawing bottoms out in the Windows GDI functions that take an
-  // HFONT (an opaque handle into Windows). To avoid lots of GDI object
-  // allocation and destruction, Font indirectly refers to the HFONT by way of
-  // an HFontRef. That is, every Font has an HFontRef, which has an HFONT.
-  //
-  // HFontRef is reference counted. Upon deletion, it deletes the HFONT.
-  // By making HFontRef maintain the reference to the HFONT, multiple
-  // HFontRefs can share the same HFONT, and Font can provide value semantics.
-  class HFontRef : public base::RefCounted<HFontRef> {
-   public:
-    // This constructor takes control of the HFONT, and will delete it when
-    // the HFontRef is deleted.
-    HFontRef(HFONT hfont,
-             int height,
-             int baseline,
-             int ave_char_width,
-             int style,
-             int dlu_base_x);
-
-    // Accessors
-    HFONT hfont() const { return hfont_; }
-    int height() const { return height_; }
-    int baseline() const { return baseline_; }
-    int ave_char_width() const { return ave_char_width_; }
-    int style() const { return style_; }
-    int dlu_base_x() const { return dlu_base_x_; }
-    const std::wstring& font_name() const { return font_name_; }
-
-   private:
-    friend class  base::RefCounted<HFontRef>;
-
-    ~HFontRef();
-
-    const HFONT hfont_;
-    const int height_;
-    const int baseline_;
-    const int ave_char_width_;
-    const int style_;
-    // Constants used in converting dialog units to pixels.
-    const int dlu_base_x_;
-    std::wstring font_name_;
-
-    DISALLOW_COPY_AND_ASSIGN(HFontRef);
-  };
-
-  // Returns the base font ref. This should ONLY be invoked on the
-  // UI thread.
-  static HFontRef* GetBaseFontRef();
-
-  // Creates and returns a new HFONTRef from the specified HFONT.
-  static HFontRef* CreateHFontRef(HFONT font);
-
-  explicit Font(HFontRef* font_ref) : font_ref_(font_ref) { }
-
-  // Reference to the base font all fonts are derived from.
-  static HFontRef* base_font_ref_;
-
-  // Indirect reference to the HFontRef, which references the underlying HFONT.
-  scoped_refptr<HFontRef> font_ref_;
-#elif !defined(OS_MACOSX)
-  explicit Font(SkTypeface* typeface, const std::wstring& name,
-                int size, int style);
-  // Calculate and cache the font metrics.
-  void calculateMetrics();
-  // Make |this| a copy of |other|.
-  void CopyFont(const Font& other);
-
-  // The default font, used for the default constructor.
-  static Font* default_font_;
-
-  // Return the scale factor for fonts that account for DPI.
-  static float GetPangoScaleFactor();
-
-  // The average width of a character, initialized and cached if needed.
-  double avg_width() const;
-
-  // Potentially slow call to get pango metrics (avg width, underline info).
-  void InitPangoMetrics();
-
-  // These two both point to the same SkTypeface. We use the SkAutoUnref to
-  // handle the reference counting, but without @typeface_ we would have to
-  // cast the SkRefCnt from @typeface_helper_ every time.
-  scoped_ptr<SkAutoUnref> typeface_helper_;
-  SkTypeface *typeface_;
-
-  // Additional information about the face
-  // Skia actually expects a family name and not a font name.
-  std::wstring font_family_;
-  int font_size_;
-  int style_;
-
-  // Cached metrics, generated at construction
-  int height_;
-  int ascent_;
-
-  // The pango metrics are much more expensive so we wait until we need them
-  // to compute them.
-  bool pango_metrics_inited_;
-  double avg_width_;
-  double underline_position_;
-  double underline_thickness_;
-#else  // OS_MACOSX
-  explicit Font(const std::wstring& font_name, int font_size, int style);
-
-  // Calculate and cache the font metrics.
-  void calculateMetrics();
-
-  std::wstring font_name_;
-  int font_size_;
-  int style_;
-
-  // Cached metrics, generated at construction
-  int height_;
-  int ascent_;
-  int avg_width_;
-#endif
-
+  // Wrapped platform font implementation.
+  scoped_refptr<PlatformFont> platform_font_;
 };
 
 }  // namespace gfx
 
 #endif  // GFX_FONT_H_
+

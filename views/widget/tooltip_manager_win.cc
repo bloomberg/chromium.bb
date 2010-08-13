@@ -37,7 +37,7 @@ static gfx::Font DetermineDefaultFont() {
       WS_EX_TRANSPARENT | l10n_util::GetExtendedTooltipStyles(),
       TOOLTIPS_CLASS, NULL, 0 , 0, 0, 0, 0, NULL, NULL, NULL, NULL);
   HFONT hfont = reinterpret_cast<HFONT>(SendMessage(window, WM_GETFONT, 0, 0));
-  gfx::Font font = hfont ? gfx::Font::CreateFont(hfont) : gfx::Font();
+  gfx::Font font = hfont ? gfx::Font(hfont) : gfx::Font();
   DestroyWindow(window);
   return font;
 }
@@ -260,7 +260,7 @@ int TooltipManagerWin::CalcTooltipHeight() {
   } else {
     // Tooltip is using the system font. Use gfx::Font, which should pick
     // up the system font.
-    height = gfx::Font().height();
+    height = gfx::Font().GetHeight();
   }
   // Get the margins from the tooltip
   RECT tooltip_margin;

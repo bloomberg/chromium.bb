@@ -28,14 +28,14 @@ CanvasSkia::~CanvasSkia() {
 void CanvasSkia::SizeStringInt(const std::wstring& text,
                                const gfx::Font& font,
                                int *width, int *height, int flags) {
-  NSFont* native_font = font.nativeFont();
+  NSFont* native_font = font.GetNativeFont();
   NSString* ns_string = base::SysWideToNSString(text);
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObject:native_font
                                   forKey:NSFontAttributeName];
   NSSize string_size = [ns_string sizeWithAttributes:attributes];
   *width = string_size.width;
-  *height = font.height();
+  *height = font.GetHeight();
 }
 
 void CanvasSkia::DrawStringInt(const std::wstring& text, const gfx::Font& font,
@@ -59,7 +59,7 @@ void CanvasSkia::DrawStringInt(const std::wstring& text, const gfx::Font& font,
 
   NSDictionary* attributes =
       [NSDictionary dictionaryWithObjectsAndKeys:
-          font.nativeFont(), NSFontAttributeName,
+          font.GetNativeFont(), NSFontAttributeName,
           ns_color, NSForegroundColorAttributeName,
           ns_style, NSParagraphStyleAttributeName,
           nil];

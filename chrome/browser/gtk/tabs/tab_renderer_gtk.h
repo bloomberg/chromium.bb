@@ -13,6 +13,7 @@
 #include "app/gtk_signal.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/common/notification_observer.h"

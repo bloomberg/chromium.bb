@@ -118,7 +118,7 @@ void LocationBarView::Init() {
   // If this makes the font too big, try to make it smaller so it will fit.
   const int height =
       std::max(GetPreferredSize().height() - (kVerticalEdgeThickness * 2), 0);
-  while ((font_.height() > height) && (font_.FontSize() > 1))
+  while ((font_.GetHeight() > height) && (font_.GetFontSize() > 1))
     font_ = font_.DeriveFont(-1);
 
   location_icon_view_ = new LocationIconView(this);

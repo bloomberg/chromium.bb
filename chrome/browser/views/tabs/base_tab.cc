@@ -480,6 +480,6 @@ void BaseTab::InitResources() {
     initialized = true;
     font_ = new gfx::Font(
         ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont));
-    font_height_ = font_->height();
+    font_height_ = font_->GetHeight();
   }
 }

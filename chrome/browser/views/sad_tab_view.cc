@@ -86,7 +86,7 @@ void SadTabView::Layout() {
 
   int title_x = (width() - title_width_) / 2;
   int title_y = icon_bounds_.bottom() + kIconTitleSpacing;
-  int title_height = title_font_->height();
+  int title_height = title_font_->GetHeight();
   title_bounds_.SetRect(title_x, title_y, title_width_, title_height);
 
   gfx::CanvasSkia cc(0, 0, true);

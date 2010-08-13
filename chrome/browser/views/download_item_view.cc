@@ -211,8 +211,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   tooltip_text_ = download_->GetFileName().ToWStringHack();
 
   font_ = ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
-  box_height_ = std::max<int>(2 * kVerticalPadding + font_.height() +
-                                  kVerticalTextPadding + font_.height(),
+  box_height_ = std::max<int>(2 * kVerticalPadding + font_.GetHeight() +
+                                  kVerticalTextPadding + font_.GetHeight(),
                               2 * kVerticalPadding +
                                   normal_body_image_set_.top_left->height() +
                                   normal_body_image_set_.bottom_left->height());
@@ -486,7 +486,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
       int mirrored_x = MirroredXWithWidthInsideView(
           download_util::kSmallProgressIconSize, kTextWidth);
       // Add font_.height() to compensate for title, which is drawn later.
-      int y = box_y_ + kVerticalPadding + font_.height() +
+      int y = box_y_ + kVerticalPadding + font_.GetHeight() +
               kVerticalTextPadding;
       SkColor file_name_color = GetThemeProvider()->GetColor(
           BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
@@ -501,7 +501,7 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
               static_cast<int>(kDownloadItemLuminanceMod *
                                SkColorGetB(file_name_color)));
       canvas->DrawStringInt(status_text_, font_, file_name_color,
-                            mirrored_x, y, kTextWidth, font_.height());
+                            mirrored_x, y, kTextWidth, font_.GetHeight());
     }
   }
 
@@ -624,14 +624,15 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
         download_util::kSmallProgressIconSize, kTextWidth);
     SkColor file_name_color = GetThemeProvider()->GetColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    int y = box_y_ + (show_status_text_ ? kVerticalPadding :
-                                          (box_height_ - font_.height()) / 2);
+    int y =
+        box_y_ + (show_status_text_ ? kVerticalPadding :
+                                      (box_height_ - font_.GetHeight()) / 2);
 
     // Draw the file's name.
     canvas->DrawStringInt(filename, font_,
                           IsEnabled() ? file_name_color :
                                         kFileNameDisabledColor,
-                          mirrored_x, y, kTextWidth, font_.height());
+                          mirrored_x, y, kTextWidth, font_.GetHeight());
   }
 
   // Paint the icon.
@@ -738,7 +739,7 @@ gfx::Size DownloadItemView::GetPreferredSize() {
   int width, height;
 
   // First, we set the height to the height of two rows or text plus margins.
-  height = 2 * kVerticalPadding + 2 * font_.height() + kVerticalTextPadding;
+  height = 2 * kVerticalPadding + 2 * font_.GetHeight() + kVerticalTextPadding;
   // Then we increase the size if the progress icon doesn't fit.
   height = std::max<int>(height, download_util::kSmallProgressIconSize);
 

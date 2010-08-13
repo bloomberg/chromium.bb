@@ -313,7 +313,7 @@ void AutocompleteResultView::Layout() {
   icon_bounds_.SetRect(LocationBarView::kEdgeItemPadding,
                        (height() - icon_size_) / 2, icon_size_, icon_size_);
   int text_x = icon_bounds_.right() + LocationBarView::kItemPadding;
-  int font_height = std::max(normal_font_.height(), bold_font_.height());
+  int font_height = std::max(normal_font_.GetHeight(), bold_font_.GetHeight());
   text_bounds_.SetRect(text_x, std::max(0, (height() - font_height) / 2),
       std::max(bounds().width() - text_x - LocationBarView::kEdgeItemPadding,
       0), font_height);
@@ -327,7 +327,7 @@ gfx::Size AutocompleteResultView::GetPreferredSize() {
 int AutocompleteResultView::GetPreferredHeight(
     const gfx::Font& font,
     const gfx::Font& bold_font) {
-  int text_height = std::max(font.height(), bold_font.height()) +
+  int text_height = std::max(font.GetHeight(), bold_font.GetHeight()) +
       (kTextVerticalPadding * 2);
   int icon_height = icon_size_ + (kIconVerticalPadding * 2);
   return std::max(icon_height, text_height);
@@ -509,7 +509,7 @@ int AutocompleteResultView::DrawString(
          j != i->classifications.end(); ++j) {
       int left = mirroring_context_->mirrored_left_coord(x, x + j->pixel_width);
       canvas->DrawStringInt(j->text, *j->font, j->color, left, y,
-                            j->pixel_width, j->font->height(), flags);
+                            j->pixel_width, j->font->GetHeight(), flags);
       x += j->pixel_width;
     }
   }

@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "gfx/font.h"
 #include "gfx/gtk_util.h"
+#include "gfx/platform_font_gtk.h"
 #include "gfx/rect.h"
 
 namespace {
@@ -149,7 +150,7 @@ static void SetupPangoLayout(PangoLayout* layout,
                                        resolution);
   }
 
-  PangoFontDescription* desc = gfx::Font::PangoFontFromGfxFont(font);
+  PangoFontDescription* desc = font.GetNativeFont();
   pango_layout_set_font_description(layout, desc);
   pango_font_description_free(desc);
 
@@ -246,10 +247,12 @@ void CanvasSkia::DrawStringInt(const std::wstring& text,
 
   cairo_move_to(cr, x, y);
   pango_cairo_show_layout(cr, layout);
-  if (font.style() & gfx::Font::UNDERLINED) {
+  if (font.GetStyle() & gfx::Font::UNDERLINED) {
+    gfx::PlatformFontGtk* platform_font =
+        static_cast<gfx::PlatformFontGtk*>(font.platform_font());
     double underline_y =
-        static_cast<double>(y) + height + font.underline_position();
-    cairo_set_line_width(cr, font.underline_thickness());
+        static_cast<double>(y) + height + platform_font->underline_position();
+    cairo_set_line_width(cr, platform_font->underline_thickness());
     cairo_move_to(cr, x, underline_y);
     cairo_line_to(cr, x + width, underline_y);
     cairo_stroke(cr);

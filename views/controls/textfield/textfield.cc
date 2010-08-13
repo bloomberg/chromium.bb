@@ -225,7 +225,7 @@ gfx::Size Textfield::GetPreferredSize() {
     insets = native_wrapper_->CalculateInsets();
   return gfx::Size(font_.GetExpectedTextWidth(default_width_in_chars_) +
                        insets.width(),
-                   num_lines_ * font_.height() + insets.height());
+                   num_lines_ * font_.GetHeight() + insets.height());
 }
 
 bool Textfield::IsFocusable() const {

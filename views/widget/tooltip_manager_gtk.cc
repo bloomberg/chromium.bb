@@ -30,7 +30,7 @@ static gfx::Font* LoadDefaultFont() {
   gtk_widget_realize(window);
 
   GtkStyle* style = gtk_widget_get_style(label);
-  gfx::Font* font = new gfx::Font(gfx::Font::CreateFont(style->font_desc));
+  gfx::Font* font = new gfx::Font(style->font_desc);
 
   gtk_widget_destroy(window);
 

@@ -27,7 +27,7 @@ bool ContentExceptionsTableView::GetCellColors(int model_row,
 
   gfx::Font font;
   font = font.DeriveFont(0, gfx::Font::ITALIC);
-  HFONT hf = font.hfont();
+  HFONT hf = font.GetNativeFont();
   GetObject(hf, sizeof(LOGFONT), logfont);
   return true;
 }

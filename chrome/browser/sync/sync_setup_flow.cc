@@ -253,7 +253,7 @@ SyncSetupFlow::~SyncSetupFlow() {
 
 void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
   PrefService* prefs = service_->profile()->GetPrefs();
-  gfx::Font approximate_web_font = gfx::Font::CreateFont(
+  gfx::Font approximate_web_font = gfx::Font(
       UTF8ToWide(prefs->GetString(prefs::kWebKitSansSerifFontFamily)),
       prefs->GetInteger(prefs::kWebKitDefaultFontSize));
 

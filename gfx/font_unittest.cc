@@ -14,35 +14,35 @@ class FontTest : public testing::Test {
 };
 
 TEST_F(FontTest, LoadArial) {
-  Font cf(Font::CreateFont(L"Arial", 16));
-  ASSERT_TRUE(cf.nativeFont());
-  ASSERT_EQ(cf.style(), Font::NORMAL);
-  ASSERT_EQ(cf.FontSize(), 16);
-  ASSERT_EQ(cf.FontName(), L"Arial");
+  Font cf(L"Arial", 16);
+  ASSERT_TRUE(cf.GetNativeFont());
+  ASSERT_EQ(cf.GetStyle(), Font::NORMAL);
+  ASSERT_EQ(cf.GetFontSize(), 16);
+  ASSERT_EQ(cf.GetFontName(), L"Arial");
 }
 
 TEST_F(FontTest, LoadArialBold) {
-  Font cf(Font::CreateFont(L"Arial", 16));
+  Font cf(L"Arial", 16);
   Font bold(cf.DeriveFont(0, Font::BOLD));
-  ASSERT_TRUE(bold.nativeFont());
-  ASSERT_EQ(bold.style(), Font::BOLD);
+  ASSERT_TRUE(bold.GetNativeFont());
+  ASSERT_EQ(bold.GetStyle(), Font::BOLD);
 }
 
 TEST_F(FontTest, Ascent) {
-  Font cf(Font::CreateFont(L"Arial", 16));
-  ASSERT_GT(cf.baseline(), 2);
-  ASSERT_LE(cf.baseline(), 22);
+  Font cf(L"Arial", 16);
+  ASSERT_GT(cf.GetBaseline(), 2);
+  ASSERT_LE(cf.GetBaseline(), 22);
 }
 
 TEST_F(FontTest, Height) {
-  Font cf(Font::CreateFont(L"Arial", 16));
-  ASSERT_GE(cf.height(), 16);
+  Font cf(L"Arial", 16);
+  ASSERT_GE(cf.GetHeight(), 16);
   // TODO(akalin): Figure out why height is so large on Linux.
-  ASSERT_LE(cf.height(), 26);
+  ASSERT_LE(cf.GetHeight(), 26);
 }
 
 TEST_F(FontTest, AvgWidths) {
-  Font cf(Font::CreateFont(L"Arial", 16));
+  Font cf(L"Arial", 16);
   ASSERT_EQ(cf.GetExpectedTextWidth(0), 0);
   ASSERT_GT(cf.GetExpectedTextWidth(1), cf.GetExpectedTextWidth(0));
   ASSERT_GT(cf.GetExpectedTextWidth(2), cf.GetExpectedTextWidth(1));
@@ -50,7 +50,7 @@ TEST_F(FontTest, AvgWidths) {
 }
 
 TEST_F(FontTest, Widths) {
-  Font cf(Font::CreateFont(L"Arial", 16));
+  Font cf(L"Arial", 16);
   ASSERT_EQ(cf.GetStringWidth(L""), 0);
   ASSERT_GT(cf.GetStringWidth(L"a"), cf.GetStringWidth(L""));
   ASSERT_GT(cf.GetStringWidth(L"ab"), cf.GetStringWidth(L"a"));
@@ -61,20 +61,20 @@ TEST_F(FontTest, Widths) {
 // http://crbug.com/46733
 TEST_F(FontTest, FAILS_DeriveFontResizesIfSizeTooSmall) {
   // This creates font of height -8.
-  Font cf(Font::CreateFont(L"Arial", 6));
+  Font cf(L"Arial", 6);
   Font derived_font = cf.DeriveFont(-4);
   LOGFONT font_info;
-  GetObject(derived_font.hfont(), sizeof(LOGFONT), &font_info);
+  GetObject(derived_font.GetNativeFont(), sizeof(LOGFONT), &font_info);
   EXPECT_EQ(-5, font_info.lfHeight);
 }
 
 TEST_F(FontTest, DeriveFontKeepsOriginalSizeIfHeightOk) {
   // This creates font of height -8.
-  Font cf(Font::CreateFont(L"Arial", 6));
+  Font cf(L"Arial", 6);
   Font derived_font = cf.DeriveFont(-2);
   LOGFONT font_info;
-  GetObject(derived_font.hfont(), sizeof(LOGFONT), &font_info);
+  GetObject(derived_font.GetNativeFont(), sizeof(LOGFONT), &font_info);
   EXPECT_EQ(-6, font_info.lfHeight);
 }
 #endif
-}  // anonymous namespace
+}  // namespace

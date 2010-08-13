@@ -151,7 +151,7 @@ class NativeMenuWin::MenuHostWindow {
       if (data->label.find(L'\t') != std::wstring::npos)
         measure_item_struct->itemWidth += font.GetStringWidth(L" ");
       measure_item_struct->itemHeight =
-          font.height() + kItemBottomMargin + kItemTopMargin;
+          font.GetHeight() + kItemBottomMargin + kItemTopMargin;
     } else {
       // Measure separator size.
       measure_item_struct->itemHeight = GetSystemMetrics(SM_CYMENU) / 2;
@@ -196,8 +196,9 @@ class NativeMenuWin::MenuHostWindow {
       if (!underline_mnemonics)
         format |= DT_HIDEPREFIX;
       gfx::Font font;
-      HGDIOBJ old_font = static_cast<HFONT>(SelectObject(dc, font.hfont()));
-      int fontsize = font.FontSize();
+      HGDIOBJ old_font =
+          static_cast<HFONT>(SelectObject(dc, font.GetNativeFont()));
+      int fontsize = font.GetFontSize();
 
       // If an accelerator is specified (with a tab delimiting the rest of the
       // label from the accelerator), we have to justify the fist part on the

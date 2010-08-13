@@ -4,15 +4,18 @@
 
 #include "views/controls/button/native_button.h"
 
-#if defined(OS_LINUX)
-#include <gdk/gdkkeysyms.h>
-#include "views/screen.h"
-#endif
-
 #include "base/i18n/rtl.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
+
+#if defined(OS_WIN)
+#include "gfx/platform_font_win.h"
+#elif defined(OS_LINUX)
+#include <gdk/gdkkeysyms.h>
+#include "views/screen.h"
+#endif
+
 
 namespace views {
 
@@ -144,10 +147,14 @@ gfx::Size NativeButton::GetPreferredSize() {
 #if defined(OS_WIN)
   // Clamp the size returned to at least the minimum size.
   if (!ignore_minimum_size_) {
-    sz.set_width(std::max(sz.width(),
-                          font_.horizontal_dlus_to_pixels(kMinWidthDLUs)));
-    sz.set_height(std::max(sz.height(),
-                           font_.vertical_dlus_to_pixels(kMinHeightDLUs)));
+    gfx::PlatformFontWin* platform_font =
+        static_cast<gfx::PlatformFontWin*>(font_.platform_font());
+    sz.set_width(std::max(
+        sz.width(),
+        platform_font->horizontal_dlus_to_pixels(kMinWidthDLUs)));
+    sz.set_height(std::max(
+        sz.height(),
+        platform_font->vertical_dlus_to_pixels(kMinHeightDLUs)));
   }
   // GTK returns a meaningful preferred size so that we don't need to adjust
   // the preferred size as we do on windows.

@@ -103,7 +103,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
   // Start out with a string using the default style info.
   NSString* s = base::SysWideToNSString(matchString);
   NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:
-                                  font.nativeFont(), NSFontAttributeName,
+                                  font.GetNativeFont(), NSFontAttributeName,
                                   textColor, NSForegroundColorAttributeName,
                                   nil];
   NSMutableAttributedString* as =
@@ -128,7 +128,7 @@ NSMutableAttributedString* AutocompletePopupViewMac::DecorateMatchedString(
     if (0 != (i->style & ACMatchClassification::MATCH)) {
       if (!boldFont) {
         NSFontManager* fontManager = [NSFontManager sharedFontManager];
-        boldFont = [fontManager convertFont:font.nativeFont()
+        boldFont = [fontManager convertFont:font.GetNativeFont()
                                 toHaveTrait:NSBoldFontMask];
       }
       [as addAttribute:NSFontAttributeName value:boldFont range:range];
@@ -197,7 +197,7 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
 
     NSDictionary* attributes =
         [NSDictionary dictionaryWithObjectsAndKeys:
-             font.nativeFont(), NSFontAttributeName,
+             font.GetNativeFont(), NSFontAttributeName,
              ContentTextColor(), NSForegroundColorAttributeName,
              nil];
     NSString* rawEnDash = [NSString stringWithFormat:@" %C ", 0x2013];
@@ -405,8 +405,8 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
   // The popup's font is a slightly smaller version of the field's.
   NSFont* fieldFont = AutocompleteEditViewMac::GetFieldFont();
   const CGFloat resultFontSize = [fieldFont pointSize] + kEditFontAdjust;
-  gfx::Font resultFont = gfx::Font::CreateFont(
-      base::SysNSStringToWide([fieldFont fontName]), (int)resultFontSize);
+  gfx::Font resultFont(base::SysNSStringToWide([fieldFont fontName]),
+                       static_cast<int>(resultFontSize));
 
   AutocompleteMatrix* matrix = [popup_ contentView];
 

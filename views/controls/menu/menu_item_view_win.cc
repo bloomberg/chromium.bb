@@ -22,7 +22,7 @@ gfx::Size MenuItemView::GetPreferredSize() {
   return gfx::Size(
       font.GetStringWidth(title_) + label_start_ + item_right_margin_ +
           GetChildPreferredWidth(),
-      font.height() + GetBottomMargin() + GetTopMargin());
+      font.GetHeight() + GetBottomMargin() + GetTopMargin());
 }
 
 void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
@@ -87,7 +87,7 @@ void MenuItemView::Paint(gfx::Canvas* canvas, bool for_drag) {
   const gfx::Font& font = MenuConfig::instance().font;
   int accel_width = parent_menu_item_->GetSubmenu()->max_accelerator_width();
   int width = this->width() - item_right_margin_ - label_start_ - accel_width;
-  gfx::Rect text_bounds(label_start_, top_margin, width, font.height());
+  gfx::Rect text_bounds(label_start_, top_margin, width, font.GetHeight());
   text_bounds.set_x(MirroredLeftPointForRect(text_bounds));
   if (for_drag) {
     // With different themes, it's difficult to tell what the correct

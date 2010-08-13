@@ -163,7 +163,7 @@ void CanvasSkia::SizeStringInt(const std::wstring& text,
   RECT r = { 0, 0, *width, *height };
 
   HDC dc = GetDC(NULL);
-  HFONT old_font = static_cast<HFONT>(SelectObject(dc, font.hfont()));
+  HFONT old_font = static_cast<HFONT>(SelectObject(dc, font.GetNativeFont()));
   DoDrawText(dc, clamped_string, &r,
              ComputeFormatFlags(flags, clamped_string) | DT_CALCRECT);
   SelectObject(dc, old_font);
@@ -212,7 +212,7 @@ void CanvasSkia::DrawStringInt(const std::wstring& text,
                                const gfx::Font& font,
                                const SkColor& color,
                                int x, int y, int w, int h, int flags) {
-  DrawStringInt(text, font.hfont(), color, x, y, w, h, flags);
+  DrawStringInt(text, font.GetNativeFont(), color, x, y, w, h, flags);
 }
 
 // Checks each pixel immediately adjacent to the given pixel in the bitmap. If

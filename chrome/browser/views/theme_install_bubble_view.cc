@@ -90,7 +90,7 @@ gfx::Size ThemeInstallBubbleView::GetPreferredSize() {
   return gfx::Size(views::Label::font().GetStringWidth(text_) +
       kTextHorizPadding,
       ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::LargeFont).height() + kTextVertPadding);
+      ResourceBundle::LargeFont).GetHeight() + kTextVertPadding);
 }
 
 void ThemeInstallBubbleView::Reposition() {

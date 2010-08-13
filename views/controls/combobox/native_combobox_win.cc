@@ -182,7 +182,7 @@ void NativeComboboxWin::NativeControlCreated(HWND native_control) {
 
 void NativeComboboxWin::UpdateFont() {
   HFONT font = ResourceBundle::GetSharedInstance().
-      GetFont(ResourceBundle::BaseFont).hfont();
+      GetFont(ResourceBundle::BaseFont).GetNativeFont();
   SendMessage(native_view(), WM_SETFONT, reinterpret_cast<WPARAM>(font), FALSE);
 }
 

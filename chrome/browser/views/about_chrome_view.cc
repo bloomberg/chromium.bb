@@ -287,7 +287,7 @@ void AboutChromeView::Init() {
   int height = about_background_logo->height() +
                kRelatedControlVerticalSpacing +
                // Copyright line.
-               font.height() +
+               font.GetHeight() +
                // Main label.
                dummy_text.GetHeightForWidth(
                    dialog_dimensions_.width() - (2 * kPanelHorizMargin)) +
@@ -497,7 +497,7 @@ void AboutChromeView::Paint(gfx::Canvas* canvas) {
                               open_source_url_rect_.height());
 
   // Save the height so we can set the bounds correctly.
-  main_text_label_height_ = position.height() + font.height();
+  main_text_label_height_ = position.height() + font.GetHeight();
 }
 
 void AboutChromeView::ViewHierarchyChanged(bool is_add,

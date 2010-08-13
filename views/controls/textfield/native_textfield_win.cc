@@ -226,7 +226,8 @@ void NativeTextfieldWin::UpdateReadOnly() {
 
 void NativeTextfieldWin::UpdateFont() {
   SendMessage(m_hWnd, WM_SETFONT,
-              reinterpret_cast<WPARAM>(textfield_->font().hfont()), TRUE);
+              reinterpret_cast<WPARAM>(textfield_->font().GetNativeFont()),
+              TRUE);
   // Setting the font blows away any text color we've set, so reset it.
   UpdateTextColor();
 }

@@ -53,7 +53,7 @@ static gint gtk_views_textview_expose_event(GtkWidget *widget,
           UTF16ToWide(text), font,
           gfx::GdkColorToSkColor(widget->style->text[GTK_STATE_INSENSITIVE]),
           insets.left(), insets.top(),
-          widget->allocation.width - insets.width(), font.height());
+          widget->allocation.width - insets.width(), font.GetHeight());
     }
   }
 

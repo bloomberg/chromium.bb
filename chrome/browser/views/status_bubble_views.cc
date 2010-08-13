@@ -594,7 +594,7 @@ void StatusBubbleViews::Reposition() {
 
 gfx::Size StatusBubbleViews::GetPreferredSize() {
   return gfx::Size(0, ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::BaseFont).height() + kTotalVerticalPadding);
+      ResourceBundle::BaseFont).GetHeight() + kTotalVerticalPadding);
 }
 
 void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {

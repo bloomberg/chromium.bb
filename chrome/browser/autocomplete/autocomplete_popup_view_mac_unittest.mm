@@ -24,7 +24,7 @@ class AutocompletePopupViewMacTest : public PlatformTest {
     // These are here because there is no autorelease pool for the
     // constructor.
     color_ = [NSColor blackColor];
-    font_ = gfx::Font::CreateFont(
+    font_ = gfx::Font(
         base::SysNSStringToWide([[NSFont userFontOfSize:12] fontName]), 12);
   }
 
@@ -427,7 +427,7 @@ TEST_F(AutocompletePopupViewMacTest, ElideString) {
   const float kNarrow = 20.0;
 
   NSDictionary* attributes =
-      [NSDictionary dictionaryWithObject:font_.nativeFont()
+      [NSDictionary dictionaryWithObject:font_.GetNativeFont()
                                   forKey:NSFontAttributeName];
   scoped_nsobject<NSMutableAttributedString> as(
       [[NSMutableAttributedString alloc] initWithString:contents
@@ -476,7 +476,7 @@ TEST_F(AutocompletePopupViewMacTest, MatchTextElide) {
 
   // Figure out the width of the contents.
   NSDictionary* attributes =
-      [NSDictionary dictionaryWithObject:font_.nativeFont()
+      [NSDictionary dictionaryWithObject:font_.GetNativeFont()
                                   forKey:NSFontAttributeName];
   const float contentsWidth = [contents sizeWithAttributes:attributes].width;
 

@@ -58,7 +58,7 @@ gfx::Size Label::GetPreferredSize() {
 }
 
 int Label::GetBaseline() {
-  return GetInsets().top() + font_.baseline();
+  return GetInsets().top() + font_.GetBaseline();
 }
 
 int Label::GetHeightForWidth(int w) {
@@ -66,7 +66,7 @@ int Label::GetHeightForWidth(int w) {
     return View::GetHeightForWidth(w);
 
   w = std::max(0, w - GetInsets().width());
-  int h = font_.height();
+  int h = font_.GetHeight();
   gfx::CanvasSkia::SizeStringInt(text_, font_, &w, &h, ComputeMultiLineFlags());
   return h + GetInsets().height();
 }
@@ -292,7 +292,7 @@ gfx::Size Label::GetTextSize() const {
     // on Linux.
     int w = is_multi_line_ ?
         GetAvailableRect().width() : std::numeric_limits<int>::max();
-    int h = font_.height();
+    int h = font_.GetHeight();
     // For single-line strings, ignore the available width and calculate how
     // wide the text wants to be.
     int flags = ComputeMultiLineFlags();
