@@ -70,8 +70,8 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
     omnibox_hint_->DisableHint();
   }
 
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetString(IDS_OMNIBOX_SEARCH_HINT_INFOBAR_TEXT);
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringUTF16(IDS_OMNIBOX_SEARCH_HINT_INFOBAR_TEXT);
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -83,8 +83,9 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
     return BUTTON_OK;
   }
 
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
-    return l10n_util::GetString(IDS_OMNIBOX_SEARCH_HINT_INFOBAR_BUTTON_LABEL);
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
+    return l10n_util::GetStringUTF16(
+        IDS_OMNIBOX_SEARCH_HINT_INFOBAR_BUTTON_LABEL);
   }
 
   virtual Type GetInfoBarType() { return PAGE_ACTION_TYPE; }

@@ -134,8 +134,8 @@ TEST_F(AlertInfoBarControllerTest, ShowAndDismiss) {
   EXPECT_TRUE(delegate_.icon_accessed);
 
   // Check to make sure the infobar message was set properly.
-  EXPECT_EQ(std::wstring(kMockAlertInfoBarMessage),
-            base::SysNSStringToWide([controller_.get() labelString]));
+  EXPECT_EQ(kMockAlertInfoBarMessage,
+            base::SysNSStringToUTF8([controller_.get() labelString]));
 
   // Check that dismissing the infobar calls InfoBarClosed() on the delegate.
   [controller_ dismiss:nil];
@@ -204,8 +204,8 @@ TEST_F(ConfirmInfoBarControllerTest, ShowAndDismiss) {
   EXPECT_TRUE(delegate_.icon_accessed);
 
   // Check to make sure the infobar message was set properly.
-  EXPECT_EQ(std::wstring(kMockConfirmInfoBarMessage),
-            base::SysNSStringToWide([controller_.get() labelString]));
+  EXPECT_EQ(kMockConfirmInfoBarMessage,
+            base::SysNSStringToUTF8([controller_.get() labelString]));
 
   // Check that dismissing the infobar calls InfoBarClosed() on the delegate.
   [controller_ dismiss:nil];

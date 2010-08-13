@@ -23,11 +23,11 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate,
                                 const std::string& previous_theme_id);
   virtual ~ThemeInstalledInfoBarDelegate();
   virtual void InfoBarClosed();
-  virtual std::wstring GetMessageText() const;
+  virtual string16 GetMessageText() const;
   virtual SkBitmap* GetIcon() const;
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual int GetButtons() const;
-  virtual std::wstring GetButtonLabel(
+  virtual string16 GetButtonLabel(
       ConfirmInfoBarDelegate::InfoBarButton button) const;
   virtual bool Cancel();
 

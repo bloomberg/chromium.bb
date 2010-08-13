@@ -43,8 +43,8 @@ void PluginInstaller::OnMissingPluginStatus(int status) {
   }
 }
 
-std::wstring PluginInstaller::GetMessageText() const {
-  return l10n_util::GetString(IDS_PLUGININSTALLER_MISSINGPLUGIN_PROMPT);
+string16 PluginInstaller::GetMessageText() const {
+  return l10n_util::GetStringUTF16(IDS_PLUGININSTALLER_MISSINGPLUGIN_PROMPT);
 }
 
 SkBitmap* PluginInstaller::GetIcon() const {
@@ -56,9 +56,9 @@ int PluginInstaller::GetButtons() const {
   return BUTTON_OK;
 }
 
-std::wstring PluginInstaller::GetButtonLabel(InfoBarButton button) const {
+string16 PluginInstaller::GetButtonLabel(InfoBarButton button) const {
   if (button == BUTTON_OK)
-    return l10n_util::GetString(IDS_PLUGININSTALLER_INSTALLPLUGIN_BUTTON);
+    return l10n_util::GetStringUTF16(IDS_PLUGININSTALLER_INSTALLPLUGIN_BUTTON);
   return ConfirmInfoBarDelegate::GetButtonLabel(button);
 }
 
@@ -67,8 +67,8 @@ bool PluginInstaller::Accept() {
   return true;
 }
 
-std::wstring PluginInstaller::GetLinkText() {
-  return l10n_util::GetString(IDS_PLUGININSTALLER_PROBLEMSINSTALLING);
+string16 PluginInstaller::GetLinkText() {
+  return l10n_util::GetStringUTF16(IDS_PLUGININSTALLER_PROBLEMSINSTALLING);
 }
 
 bool PluginInstaller::LinkClicked(WindowOpenDisposition disposition) {

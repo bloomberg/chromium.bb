@@ -29,13 +29,13 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   virtual void InfoBarClosed();
 
-  virtual std::wstring GetMessageText() const;
+  virtual string16 GetMessageText() const;
 
   virtual SkBitmap* GetIcon() const;
 
   virtual int GetButtons() const;
 
-  virtual std::wstring GetButtonLabel(
+  virtual string16 GetButtonLabel(
       ConfirmInfoBarDelegate::InfoBarButton button) const;
 
   virtual bool Accept();

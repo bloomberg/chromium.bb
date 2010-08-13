@@ -352,9 +352,11 @@ void ExtensionInstallUI::ShowGenericExtensionInstalledInfoBar(
   if (!tab_contents)
     return;
 
-  std::wstring msg = l10n_util::GetStringF(IDS_EXTENSION_INSTALLED_HEADING,
-                                           UTF8ToWide(new_extension->name())) +
-         L" " + l10n_util::GetString(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
+  string16 msg =
+      l10n_util::GetStringFUTF16(IDS_EXTENSION_INSTALLED_HEADING,
+                                 UTF8ToUTF16(new_extension->name())) +
+      UTF8ToUTF16(" ") +
+      l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
   InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(
       tab_contents, msg, new SkBitmap(icon_), true);
   tab_contents->AddInfoBar(delegate);

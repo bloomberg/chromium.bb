@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/lock.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
@@ -39,15 +40,15 @@ class PdfUnsupportedInfoBarDelegate : public LinkInfoBarDelegate {
 
   virtual ~PdfUnsupportedInfoBarDelegate() {}
 
-  virtual std::wstring GetMessageTextWithOffset(size_t* link_offset) const {
-    std::wstring message(L"Oops! Your printer does not support PDF. Please "
-                         L"report this to us .");
+  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const {
+    string16 message = UTF8ToUTF16("Oops! Your printer does not support PDF. "
+                                   "Please report this to us.");
     *link_offset = message.length() - 1;
     return message;
   }
 
-  virtual std::wstring GetLinkText() const {
-    return std::wstring(L"here");
+  virtual string16 GetLinkText() const {
+    return UTF8ToUTF16("here");
   }
 
   virtual Type GetInfoBarType() {

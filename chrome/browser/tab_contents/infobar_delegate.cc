@@ -55,14 +55,14 @@ LinkInfoBarDelegate::LinkInfoBarDelegate(TabContents* contents)
 
 // ConfirmInfoBarDelegate: -----------------------------------------------------
 
-std::wstring ConfirmInfoBarDelegate::GetButtonLabel(
+string16 ConfirmInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   if (button == BUTTON_OK)
-    return l10n_util::GetString(IDS_OK);
+    return l10n_util::GetStringUTF16(IDS_OK);
   if (button == BUTTON_CANCEL)
-    return l10n_util::GetString(IDS_CANCEL);
+    return l10n_util::GetStringUTF16(IDS_CANCEL);
   NOTREACHED();
-  return std::wstring();
+  return string16();
 }
 
 ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(TabContents* contents)
@@ -73,7 +73,7 @@ ConfirmInfoBarDelegate::ConfirmInfoBarDelegate(TabContents* contents)
 
 SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
     TabContents* contents,
-    const std::wstring& message,
+    const string16& message,
     SkBitmap* icon,
     bool auto_expire)
     : AlertInfoBarDelegate(contents),
@@ -90,7 +90,7 @@ bool SimpleAlertInfoBarDelegate::ShouldExpire(
   return false;
 }
 
-std::wstring SimpleAlertInfoBarDelegate::GetMessageText() const {
+string16 SimpleAlertInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 

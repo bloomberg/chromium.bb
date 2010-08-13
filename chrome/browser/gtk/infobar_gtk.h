@@ -73,8 +73,8 @@ class InfoBar : public SlideAnimatorGtk::Delegate,
   // or right aligned in the infobar if |link_offset| is |npos|. |link_padding|
   // pixels are inserted around the link (pass 0 for not padding). If a link
   // is supplied, |link_callback| must not be null. It will be invoked on click.
-  void AddLabelAndLink(const std::wstring& display_text,
-                       const std::wstring& link,
+  void AddLabelAndLink(const string16& display_text,
+                       const string16& link,
                        size_t link_offset,
                        guint link_padding,
                        GCallback link_callback);

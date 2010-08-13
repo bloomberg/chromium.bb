@@ -34,11 +34,11 @@ class CrashedExtensionInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
   // ConfirmInfoBarDelegate
-  virtual std::wstring GetMessageText() const;
+  virtual string16 GetMessageText() const;
   virtual void InfoBarClosed();
   virtual SkBitmap* GetIcon() const;
   virtual int GetButtons() const;
-  virtual std::wstring GetButtonLabel(
+  virtual string16 GetButtonLabel(
       ConfirmInfoBarDelegate::InfoBarButton button) const;
   virtual bool Accept();
 

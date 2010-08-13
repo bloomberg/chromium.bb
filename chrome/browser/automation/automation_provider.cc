@@ -1752,10 +1752,8 @@ ListValue* AutomationProvider::GetInfobarsInfo(TabContents* tc) {
       infobar_item->SetString("type", "confirm_infobar");
       ConfirmInfoBarDelegate* confirm_infobar =
         infobar->AsConfirmInfoBarDelegate();
-      infobar_item->SetString("text",
-          WideToUTF16Hack(confirm_infobar->GetMessageText()));
-      infobar_item->SetString("link_text",
-                              WideToUTF16Hack(confirm_infobar->GetLinkText()));
+      infobar_item->SetString("text", confirm_infobar->GetMessageText());
+      infobar_item->SetString("link_text", confirm_infobar->GetLinkText());
       ListValue* buttons_list = new ListValue;
       int buttons = confirm_infobar->GetButtons();
       if (ConfirmInfoBarDelegate::BUTTON_OK & buttons) {
@@ -1775,13 +1773,11 @@ ListValue* AutomationProvider::GetInfobarsInfo(TabContents* tc) {
       infobar_item->SetString("type", "alert_infobar");
       AlertInfoBarDelegate* alert_infobar =
         infobar->AsAlertInfoBarDelegate();
-      infobar_item->SetString("text",
-                              WideToUTF16Hack(alert_infobar->GetMessageText()));
+      infobar_item->SetString("text", alert_infobar->GetMessageText());
     } else if (infobar->AsLinkInfoBarDelegate()) {
       infobar_item->SetString("type", "link_infobar");
       LinkInfoBarDelegate* link_infobar = infobar->AsLinkInfoBarDelegate();
-      infobar_item->SetString("link_text",
-                              WideToUTF16Hack(link_infobar->GetLinkText()));
+      infobar_item->SetString("link_text", link_infobar->GetLinkText());
     } else if (infobar->AsTranslateInfoBarDelegate()) {
       infobar_item->SetString("type", "translate_infobar");
       TranslateInfoBarDelegate* translate_infobar =

@@ -23,12 +23,12 @@ class PluginInstaller : public ConfirmInfoBarDelegate {
 
  private:
   // Overridden from ConfirmInfoBarDelegate:
-  virtual std::wstring GetMessageText() const;
+  virtual string16 GetMessageText() const;
   virtual SkBitmap* GetIcon() const;
   virtual int GetButtons() const;
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const;
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
   virtual bool Accept();
-  virtual std::wstring GetLinkText();
+  virtual string16 GetLinkText();
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
   // The containing TabContents

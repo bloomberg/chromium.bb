@@ -344,7 +344,7 @@ const float kAnimateCloseDuration = 0.12;
   // Insert the text.
   AlertInfoBarDelegate* delegate = delegate_->AsAlertInfoBarDelegate();
   DCHECK(delegate);
-  [self setLabelToMessage:base::SysWideToNSString(delegate->GetMessageText())];
+  [self setLabelToMessage:base::SysUTF16ToNSString(delegate->GetMessageText())];
 }
 
 @end
@@ -368,9 +368,9 @@ const float kAnimateCloseDuration = 0.12;
   LinkInfoBarDelegate* delegate = delegate_->AsLinkInfoBarDelegate();
   DCHECK(delegate);
   size_t offset = std::wstring::npos;
-  std::wstring message = delegate->GetMessageTextWithOffset(&offset);
-  [self setLabelToMessage:base::SysWideToNSString(message)
-                 withLink:base::SysWideToNSString(delegate->GetLinkText())
+  string16 message = delegate->GetMessageTextWithOffset(&offset);
+  [self setLabelToMessage:base::SysUTF16ToNSString(message)
+                 withLink:base::SysUTF16ToNSString(delegate->GetLinkText())
                  atOffset:offset];
 }
 
@@ -426,7 +426,7 @@ const float kAnimateCloseDuration = 0.12;
 
   // Update and position the Cancel button if needed.  Otherwise, hide it.
   if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-    [cancelButton_ setTitle:base::SysWideToNSString(
+    [cancelButton_ setTitle:base::SysUTF16ToNSString(
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL))];
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:cancelButton_];
     cancelButtonFrame = [cancelButton_ frame];
@@ -443,7 +443,7 @@ const float kAnimateCloseDuration = 0.12;
 
   // Update and position the OK button if needed.  Otherwise, hide it.
   if (visibleButtons & ConfirmInfoBarDelegate::BUTTON_OK) {
-    [okButton_ setTitle:base::SysWideToNSString(
+    [okButton_ setTitle:base::SysUTF16ToNSString(
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK))];
     [GTMUILocalizerAndLayoutTweaker sizeToFitView:okButton_];
     okButtonFrame = [okButton_ frame];
@@ -477,8 +477,8 @@ const float kAnimateCloseDuration = 0.12;
   [label_.get() setFrame:frame];
 
   // Set the text and link.
-  NSString* message = base::SysWideToNSString(delegate->GetMessageText());
-  std::wstring link = delegate->GetLinkText();
+  NSString* message = base::SysUTF16ToNSString(delegate->GetMessageText());
+  string16 link = delegate->GetLinkText();
   if (link.empty()) {
     // Simple case: no link, so just set the message directly.
     [self setLabelToMessage:message];
@@ -490,7 +490,7 @@ const float kAnimateCloseDuration = 0.12;
     // Add spacing between the label and the link.
     message = [message stringByAppendingString:@"   "];
     [self setLabelToMessage:message
-                   withLink:base::SysWideToNSString(link)
+                   withLink:base::SysUTF16ToNSString(link)
                    atOffset:[message length]];
   }
 }

@@ -187,7 +187,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   ConfirmInfoBarDelegate* infobar_0 =
       contents()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_0);
-  std::wstring text_0 = infobar_0->GetMessageText();
+  string16 text_0 = infobar_0->GetMessageText();
 
   // Accept the first frame.
   infobar_0->Accept();
@@ -204,7 +204,7 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   ConfirmInfoBarDelegate* infobar_1 =
       contents()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_1);
-  std::wstring text_1 = infobar_1->GetMessageText();
+  string16 text_1 = infobar_1->GetMessageText();
   EXPECT_NE(text_0, text_1);
 
   // Cancel (block) this frame.
@@ -251,7 +251,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   ConfirmInfoBarDelegate* infobar_0 =
       contents()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_0);
-  std::wstring text_0 = infobar_0->GetMessageText();
+  string16 text_0 = infobar_0->GetMessageText();
 
   // Simulate the frame going away, ensure the infobar for this frame
   // is removed and the next pending infobar is created.
@@ -265,7 +265,7 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   ConfirmInfoBarDelegate* infobar_1 =
       contents()->GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_1);
-  std::wstring text_1 = infobar_1->GetMessageText();
+  string16 text_1 = infobar_1->GetMessageText();
   EXPECT_NE(text_0, text_1);
 
   // Allow this frame.

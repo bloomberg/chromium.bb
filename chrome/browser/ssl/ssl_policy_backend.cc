@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/ssl_policy_backend.h"
 
 #include "app/resource_bundle.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
@@ -17,8 +18,8 @@
 class SSLInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   SSLInfoBarDelegate(TabContents* contents,
-                     const std::wstring message,
-                     const std::wstring& button_label,
+                     const string16& message,
+                     const string16& button_label,
                      Task* task)
     : ConfirmInfoBarDelegate(contents),
       message_(message),
@@ -31,7 +32,7 @@ class SSLInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual void InfoBarClosed() {
     delete this;
   }
-  virtual std::wstring GetMessageText() const {
+  virtual string16 GetMessageText() const {
     return message_;
   }
   virtual SkBitmap* GetIcon() const {
@@ -41,7 +42,7 @@ class SSLInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual int GetButtons() const {
     return !button_label_.empty() ? BUTTON_OK : BUTTON_NONE;
   }
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
     return button_label_;
   }
   virtual bool Accept() {
@@ -54,8 +55,8 @@ class SSLInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   // Labels for the InfoBar's message and button.
-  std::wstring message_;
-  std::wstring button_label_;
+  string16 message_;
+  string16 button_label_;
 
   // A task to run when the InfoBar is accepted.
   scoped_ptr<Task> task_;
@@ -96,8 +97,12 @@ void SSLPolicyBackend::ShowMessageWithLink(const std::wstring& msg,
     return;
 
   if (controller_->tab_contents()) {
+    // TODO(evanm): remove base/utf_string_conversions.h include after fixing
+    // below conversions.
     controller_->tab_contents()->AddInfoBar(
-        new SSLInfoBarDelegate(controller_->tab_contents(), msg, link_text,
+        new SSLInfoBarDelegate(controller_->tab_contents(),
+                               WideToUTF16Hack(msg),
+                               WideToUTF16Hack(link_text),
                                task));
   }
 }

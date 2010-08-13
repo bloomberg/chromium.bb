@@ -20,9 +20,9 @@ class BlockedPluginManager : public RenderViewHostDelegate::BlockedPlugin,
 
   // ConfirmInfoBarDelegate methods
   virtual int GetButtons() const;
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const;
-  virtual std::wstring GetMessageText() const;
-  virtual std::wstring GetLinkText();
+  virtual string16 GetButtonLabel(InfoBarButton button) const;
+  virtual string16 GetMessageText() const;
+  virtual string16 GetLinkText();
   virtual SkBitmap* GetIcon() const;
   virtual bool Accept();
   virtual bool LinkClicked(WindowOpenDisposition disposition);

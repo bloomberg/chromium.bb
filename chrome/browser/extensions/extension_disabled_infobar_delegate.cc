@@ -77,9 +77,9 @@ class ExtensionDisabledInfobarDelegate
   }
   virtual ~ExtensionDisabledInfobarDelegate() {
   }
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetStringF(IDS_EXTENSION_DISABLED_INFOBAR_LABEL,
-                                 UTF8ToWide(extension_->name()));
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_DISABLED_INFOBAR_LABEL,
+                                      UTF8ToUTF16(extension_->name()));
   }
   virtual SkBitmap* GetIcon() const {
     return NULL;
@@ -87,9 +87,10 @@ class ExtensionDisabledInfobarDelegate
   virtual int GetButtons() const {
     return BUTTON_OK;
   }
-  virtual std::wstring GetButtonLabel(
+  virtual string16 GetButtonLabel(
       ConfirmInfoBarDelegate::InfoBarButton button) const {
-    return l10n_util::GetString(IDS_EXTENSION_DISABLED_INFOBAR_ENABLE_BUTTON);
+    return l10n_util::GetStringUTF16(
+        IDS_EXTENSION_DISABLED_INFOBAR_ENABLE_BUTTON);
   }
   virtual bool Accept() {
     // This object manages its own lifetime.

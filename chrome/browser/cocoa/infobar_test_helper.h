@@ -5,10 +5,10 @@
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
 namespace {
-const wchar_t* kMockAlertInfoBarMessage = L"MockAlertInfoBarMessage";
-const wchar_t* kMockLinkInfoBarMessage = L"MockLinkInfoBarMessage";
-const wchar_t* kMockLinkInfoBarLink = L"http://dev.chromium.org";
-const wchar_t* kMockConfirmInfoBarMessage = L"MockConfirmInfoBarMessage";
+const char kMockAlertInfoBarMessage[] = "MockAlertInfoBarMessage";
+const char kMockLinkInfoBarMessage[] = "MockLinkInfoBarMessage";
+const char kMockLinkInfoBarLink[] = "http://dev.chromium.org";
+const char kMockConfirmInfoBarMessage[] = "MockConfirmInfoBarMessage";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -23,9 +23,9 @@ class MockAlertInfoBarDelegate : public AlertInfoBarDelegate {
         closed(false) {
   }
 
-  virtual std::wstring GetMessageText() const {
+  virtual string16 GetMessageText() const {
     message_text_accessed = true;
-    return kMockAlertInfoBarMessage;
+    return ASCIIToUTF16(kMockAlertInfoBarMessage);
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -55,14 +55,14 @@ class MockLinkInfoBarDelegate : public LinkInfoBarDelegate {
         closes_on_action(true) {
   }
 
-  virtual std::wstring GetMessageTextWithOffset(size_t* link_offset) const {
+  virtual string16 GetMessageTextWithOffset(size_t* link_offset) const {
     message_text_accessed = true;
-    return kMockLinkInfoBarMessage;
+    return ASCIIToUTF16(kMockLinkInfoBarMessage);
   }
 
-  virtual std::wstring GetLinkText() const {
+  virtual string16 GetLinkText() const {
     link_text_accessed = true;
-    return kMockLinkInfoBarLink;
+    return ASCIIToUTF16(kMockLinkInfoBarLink);
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -108,11 +108,11 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
     return (BUTTON_OK | BUTTON_CANCEL);
   }
 
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
     if (button == BUTTON_OK)
-      return L"OK";
+      return ASCIIToUTF16("OK");
     else
-      return L"Cancel";
+      return ASCIIToUTF16("Cancel");
   }
 
   virtual bool Accept() {
@@ -125,9 +125,9 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
     return closes_on_action;
   }
 
-  virtual std::wstring GetMessageText() const {
+  virtual string16 GetMessageText() const {
     message_text_accessed = true;
-    return kMockConfirmInfoBarMessage;
+    return ASCIIToUTF16(kMockConfirmInfoBarMessage);
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -139,9 +139,9 @@ class MockConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
     closed = true;
   }
 
-  virtual std::wstring GetLinkText() {
+  virtual string16 GetLinkText() {
     link_text_accessed = true;
-    return std::wstring();
+    return string16();
   }
 
   virtual bool LinkClicked(WindowOpenDisposition disposition) {

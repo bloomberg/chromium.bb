@@ -252,21 +252,20 @@ class DisabledPluginInfoBar : public ConfirmInfoBarDelegate {
     return BUTTON_OK | BUTTON_CANCEL | BUTTON_OK_DEFAULT;
   }
 
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
     if (button == BUTTON_CANCEL)
-      return l10n_util::GetString(IDS_PLUGIN_ENABLE_TEMPORARILY);
+      return l10n_util::GetStringUTF16(IDS_PLUGIN_ENABLE_TEMPORARILY);
     if (button == BUTTON_OK)
-      return l10n_util::GetString(IDS_PLUGIN_UPDATE);
+      return l10n_util::GetStringUTF16(IDS_PLUGIN_UPDATE);
     return ConfirmInfoBarDelegate::GetButtonLabel(button);
   }
 
-  virtual std::wstring GetMessageText() const {
-    return UTF16ToWide(l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT,
-                                                  name_));
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED_PROMPT, name_);
   }
 
-  virtual std::wstring GetLinkText() {
-    return l10n_util::GetString(IDS_LEARN_MORE);
+  virtual string16 GetLinkText() {
+    return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -1985,13 +1984,14 @@ void TabContents::OnCrashedPlugin(const FilePath& plugin_path) {
   SkBitmap* crash_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_INFOBAR_PLUGIN_CRASHED);
   AddInfoBar(new SimpleAlertInfoBarDelegate(
-      this, l10n_util::GetStringF(IDS_PLUGIN_CRASHED_PROMPT, plugin_name),
+      this, l10n_util::GetStringFUTF16(IDS_PLUGIN_CRASHED_PROMPT,
+                                       WideToUTF16Hack(plugin_name)),
       crash_icon, true));
 }
 
 void TabContents::OnCrashedWorker() {
   AddInfoBar(new SimpleAlertInfoBarDelegate(
-      this, l10n_util::GetString(IDS_WEBWORKER_CRASHED_PROMPT),
+      this, l10n_util::GetStringUTF16(IDS_WEBWORKER_CRASHED_PROMPT),
       NULL, true));
 }
 
@@ -2860,7 +2860,8 @@ void TabContents::OnIgnoredUIEvent() {
 
 void TabContents::OnJSOutOfMemory() {
   AddInfoBar(new SimpleAlertInfoBarDelegate(
-      this, l10n_util::GetString(IDS_JS_OUT_OF_MEMORY_PROMPT), NULL, true));
+                 this, l10n_util::GetStringUTF16(IDS_JS_OUT_OF_MEMORY_PROMPT),
+                 NULL, true));
 }
 
 void TabContents::OnCrossSiteResponse(int new_render_process_host_id,
@@ -3238,8 +3239,8 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   virtual Type GetInfoBarType() { return PAGE_ACTION_TYPE; }
 
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetString(IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -3251,13 +3252,13 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
     return BUTTON_OK | BUTTON_CANCEL;
   }
 
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
     if (button == BUTTON_OK)
-      return l10n_util::GetString(IDS_PASSWORD_MANAGER_SAVE_BUTTON);
+      return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON);
     if (button == BUTTON_CANCEL)
-      return l10n_util::GetString(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
+      return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
     NOTREACHED();
-    return std::wstring();
+    return string16();
   }
 
   virtual bool Accept() {

@@ -148,8 +148,8 @@ void InfoBar::Observe(NotificationType type,
 // TODO(joth): This method factors out some common functionality between the
 // various derived infobar classes, however the class hierarchy itself could
 // use refactoring to reduce this duplication. http://crbug.com/38924
-void InfoBar::AddLabelAndLink(const std::wstring& display_text,
-                              const std::wstring& link_text,
+void InfoBar::AddLabelAndLink(const string16& display_text,
+                              const string16& link_text,
                               size_t link_offset,
                               guint link_padding,
                               GCallback callback) {
@@ -159,7 +159,7 @@ void InfoBar::AddLabelAndLink(const std::wstring& display_text,
     link_offset = std::wstring::npos;
   } else {
     // If we have some link text, create the link button.
-    link_button = gtk_chrome_link_button_new(WideToUTF8(link_text).c_str());
+    link_button = gtk_chrome_link_button_new(UTF16ToUTF8(link_text).c_str());
     gtk_chrome_link_button_set_use_gtk_theme(
         GTK_CHROME_LINK_BUTTON(link_button), FALSE);
     DCHECK(callback);
@@ -178,7 +178,7 @@ void InfoBar::AddLabelAndLink(const std::wstring& display_text,
   if (link_offset == std::wstring::npos) {
     if (link_button)
       gtk_box_pack_end(GTK_BOX(hbox), link_button, FALSE, FALSE, 0);
-    GtkWidget* label = gtk_label_new(WideToUTF8(display_text).c_str());
+    GtkWidget* label = gtk_label_new(UTF16ToUTF8(display_text).c_str());
     // In order to avoid the link_button and the label overlapping with each
     // other, we make the label shrinkable.
     gtk_widget_set_size_request(label, 0, -1);
@@ -190,9 +190,9 @@ void InfoBar::AddLabelAndLink(const std::wstring& display_text,
     DCHECK(link_button);
     // Need to insert the link inside the display text.
     GtkWidget* initial_label = gtk_label_new(
-        WideToUTF8(display_text.substr(0, link_offset)).c_str());
+        UTF16ToUTF8(display_text.substr(0, link_offset)).c_str());
     GtkWidget* trailing_label = gtk_label_new(
-        WideToUTF8(display_text.substr(link_offset)).c_str());
+        UTF16ToUTF8(display_text.substr(link_offset)).c_str());
 
     // TODO(joth): Unlike the right-align case above, none of the label widgets
     // are set as shrinkable here, meaning the text will run under the close
@@ -289,7 +289,7 @@ class AlertInfoBar : public InfoBar {
  public:
   explicit AlertInfoBar(AlertInfoBarDelegate* delegate)
       : InfoBar(delegate) {
-    AddLabelAndLink(delegate->GetMessageText(), std::wstring(), 0, 0, NULL);
+    AddLabelAndLink(delegate->GetMessageText(), string16(), 0, 0, NULL);
     gtk_widget_show_all(border_bin_.get());
   }
 };
@@ -301,9 +301,9 @@ class LinkInfoBar : public InfoBar {
   explicit LinkInfoBar(LinkInfoBarDelegate* delegate)
       : InfoBar(delegate) {
     size_t link_offset;
-    std::wstring display_text =
+    string16 display_text =
         delegate->GetMessageTextWithOffset(&link_offset);
-    std::wstring link_text = delegate->GetLinkText();
+    string16 link_text = delegate->GetLinkText();
     AddLabelAndLink(display_text, link_text, link_offset, 0,
                     G_CALLBACK(OnLinkClick));
     gtk_widget_show_all(border_bin_.get());
@@ -326,8 +326,8 @@ class ConfirmInfoBar : public InfoBar {
       : InfoBar(delegate) {
     AddConfirmButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
     AddConfirmButton(ConfirmInfoBarDelegate::BUTTON_OK);
-    std::wstring display_text = delegate->GetMessageText();
-    std::wstring link_text = delegate->GetLinkText();
+    string16 display_text = delegate->GetMessageText();
+    string16 link_text = delegate->GetLinkText();
     AddLabelAndLink(display_text, link_text, display_text.size(),
                     kElementPadding, G_CALLBACK(OnLinkClick));
     gtk_widget_show_all(border_bin_.get());
@@ -338,7 +338,7 @@ class ConfirmInfoBar : public InfoBar {
   // doesn't specify a button of the given type.
   void AddConfirmButton(ConfirmInfoBarDelegate::InfoBarButton type) {
     if (delegate_->AsConfirmInfoBarDelegate()->GetButtons() & type) {
-      GtkWidget* button = gtk_button_new_with_label(WideToUTF8(
+      GtkWidget* button = gtk_button_new_with_label(UTF16ToUTF8(
           delegate_->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
       gtk_util::CenterWidgetInHBox(hbox_, button, true, 0);
       g_signal_connect(button, "clicked",

@@ -27,8 +27,8 @@ void DownloadRequestInfoBarDelegate::InfoBarClosed() {
   ConfirmInfoBarDelegate::InfoBarClosed();
 }
 
-std::wstring DownloadRequestInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetString(IDS_MULTI_DOWNLOAD_WARNING);
+string16 DownloadRequestInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING);
 }
 
 SkBitmap* DownloadRequestInfoBarDelegate::GetIcon() const {
@@ -40,12 +40,12 @@ int DownloadRequestInfoBarDelegate::GetButtons() const {
   return BUTTON_OK | BUTTON_CANCEL;
 }
 
-std::wstring DownloadRequestInfoBarDelegate::GetButtonLabel(
+string16 DownloadRequestInfoBarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
   if (button == BUTTON_OK)
-    return l10n_util::GetString(IDS_MULTI_DOWNLOAD_WARNING_ALLOW);
+    return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING_ALLOW);
   else
-    return l10n_util::GetString(IDS_MULTI_DOWNLOAD_WARNING_DENY);
+    return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING_DENY);
 }
 
 bool DownloadRequestInfoBarDelegate::Accept() {

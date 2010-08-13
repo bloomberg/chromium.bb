@@ -25,9 +25,9 @@ CrashedExtensionInfoBarDelegate::CrashedExtensionInfoBarDelegate(
   DCHECK(!extension_id_.empty());
 }
 
-std::wstring CrashedExtensionInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringF(IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE,
-      UTF8ToWide(extension_name_));
+string16 CrashedExtensionInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE,
+      UTF8ToUTF16(extension_name_));
 }
 
 void CrashedExtensionInfoBarDelegate::InfoBarClosed() {
@@ -44,10 +44,12 @@ int CrashedExtensionInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
-std::wstring CrashedExtensionInfoBarDelegate::GetButtonLabel(
+string16 CrashedExtensionInfoBarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
-  if (button == BUTTON_OK)
-    return l10n_util::GetString(IDS_EXTENSION_CRASHED_INFOBAR_RESTART_BUTTON);
+  if (button == BUTTON_OK) {
+    return l10n_util::GetStringUTF16(
+        IDS_EXTENSION_CRASHED_INFOBAR_RESTART_BUTTON);
+  }
   return ConfirmInfoBarDelegate::GetButtonLabel(button);
 }
 

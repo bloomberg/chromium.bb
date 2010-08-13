@@ -112,29 +112,30 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() { return OnPermissionSet(true); }
   virtual bool Cancel() { return OnPermissionSet(false); }
   virtual int GetButtons() const { return BUTTON_OK | BUTTON_CANCEL; }
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
     switch (button) {
       case BUTTON_OK:
-        return l10n_util::GetString(IDS_GEOLOCATION_ALLOW_BUTTON);
+        return l10n_util::GetStringUTF16(IDS_GEOLOCATION_ALLOW_BUTTON);
       case BUTTON_CANCEL:
-        return l10n_util::GetString(IDS_GEOLOCATION_DENY_BUTTON);
+        return l10n_util::GetStringUTF16(IDS_GEOLOCATION_DENY_BUTTON);
       default:
         // All buttons are labeled above.
         NOTREACHED() << "Bad button id " << button;
-        return L"";
+        return string16();
     }
   }
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetStringF(
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringFUTF16(
         IDS_GEOLOCATION_INFOBAR_QUESTION,
-        net::FormatUrl(requesting_frame_url_.GetOrigin(), display_languages_));
+        WideToUTF16Hack(net::FormatUrl(requesting_frame_url_.GetOrigin(),
+                                       display_languages_)));
   }
   virtual SkBitmap* GetIcon() const {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_GEOLOCATION_INFOBAR_ICON);
   }
-  virtual std::wstring GetLinkText() {
-    return l10n_util::GetString(IDS_LEARN_MORE);
+  virtual string16 GetLinkText() {
+    return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   }
   virtual bool LinkClicked(WindowOpenDisposition disposition) {
     // Ignore the click dispostion and always open in a new top level tab.

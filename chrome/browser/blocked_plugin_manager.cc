@@ -29,19 +29,18 @@ int BlockedPluginManager::GetButtons() const {
   return BUTTON_OK;
 }
 
-std::wstring BlockedPluginManager::GetButtonLabel(InfoBarButton button) const {
+string16 BlockedPluginManager::GetButtonLabel(InfoBarButton button) const {
   if (button == BUTTON_OK)
-    return l10n_util::GetString(IDS_PLUGIN_LOAD_SHORT);
+    return l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD_SHORT);
   return ConfirmInfoBarDelegate::GetButtonLabel(button);
 }
 
-std::wstring BlockedPluginManager::GetMessageText() const {
-  return UTF16ToWide(l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED_PROMPT,
-                                                name_));
+string16 BlockedPluginManager::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED_PROMPT, name_);
 }
 
-std::wstring BlockedPluginManager::GetLinkText() {
-  return l10n_util::GetString(IDS_LEARN_MORE);
+string16 BlockedPluginManager::GetLinkText() {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
 SkBitmap* BlockedPluginManager::GetIcon() const {

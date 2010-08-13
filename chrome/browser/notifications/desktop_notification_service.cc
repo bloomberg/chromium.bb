@@ -117,7 +117,7 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   NotificationPermissionInfoBarDelegate(TabContents* contents,
                                         const GURL& origin,
-                                        const std::wstring& display_name,
+                                        const string16& display_name,
                                         int process_id,
                                         int route_id,
                                         int callback_context)
@@ -144,8 +144,9 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
     delete this;
   }
 
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetStringF(IDS_NOTIFICATION_PERMISSIONS, display_name_);
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringFUTF16(IDS_NOTIFICATION_PERMISSIONS,
+                                      display_name_);
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -157,10 +158,10 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
     return BUTTON_OK | BUTTON_CANCEL | BUTTON_OK_DEFAULT;
   }
 
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
     return button == BUTTON_OK ?
-        l10n_util::GetString(IDS_NOTIFICATION_PERMISSION_YES) :
-        l10n_util::GetString(IDS_NOTIFICATION_PERMISSION_NO);
+        l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSION_YES) :
+        l10n_util::GetStringUTF16(IDS_NOTIFICATION_PERMISSION_NO);
   }
 
   virtual bool Accept() {
@@ -186,7 +187,7 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // The display name for the origin to be displayed.  Will be different from
   // origin_ for extensions.
-  std::wstring display_name_;
+  string16 display_name_;
 
   // The Profile that we restore sessions from.
   Profile* profile_;
@@ -517,10 +518,9 @@ void DesktopNotificationService::RequestPermission(
   ContentSetting setting = GetContentSetting(origin);
   if (setting == CONTENT_SETTING_ASK) {
     // Show an info bar requesting permission.
-    std::wstring display_name = UTF16ToWide(DisplayNameForOrigin(origin));
-
     tab->AddInfoBar(new NotificationPermissionInfoBarDelegate(
-        tab, origin, display_name, process_id, route_id, callback_context));
+                        tab, origin, DisplayNameForOrigin(origin), process_id,
+                        route_id, callback_context));
   } else {
     // Notify renderer immediately.
     ChromeThread::PostTask(

@@ -305,7 +305,7 @@ void OpenChromeExtension(Profile* profile,
     if (contents) {
       contents->AddInfoBar(
           new SimpleAlertInfoBarDelegate(contents,
-              l10n_util::GetString(
+              l10n_util::GetStringUTF16(
                   IDS_EXTENSION_INCOGNITO_INSTALL_INFOBAR_LABEL),
               ResourceBundle::GetSharedInstance().GetBitmapNamed(
                   IDR_INFOBAR_PLUGIN_INSTALL),

@@ -132,8 +132,8 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
     delete this;
   }
 
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetString(IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT);
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringUTF16(IDS_DEFAULT_BROWSER_INFOBAR_SHORT_TEXT);
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -145,10 +145,10 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
     return BUTTON_OK | BUTTON_CANCEL | BUTTON_OK_DEFAULT;
   }
 
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
     return button == BUTTON_OK ?
-        l10n_util::GetString(IDS_SET_AS_DEFAULT_INFOBAR_BUTTON_LABEL) :
-        l10n_util::GetString(IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
+        l10n_util::GetStringUTF16(IDS_SET_AS_DEFAULT_INFOBAR_BUTTON_LABEL) :
+        l10n_util::GetStringUTF16(IDS_DONT_ASK_AGAIN_INFOBAR_BUTTON_LABEL);
   }
 
   virtual bool NeedElevation(InfoBarButton button) const {
@@ -248,16 +248,16 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual void InfoBarClosed() {
     delete this;
   }
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetString(IDS_SESSION_CRASHED_VIEW_MESSAGE);
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_MESSAGE);
   }
   virtual SkBitmap* GetIcon() const {
     return ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_INFOBAR_RESTORE_SESSION);
   }
   virtual int GetButtons() const { return BUTTON_OK; }
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
-    return l10n_util::GetString(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
+    return l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON);
   }
   virtual bool Accept() {
     // Restore the session.
@@ -823,8 +823,8 @@ void BrowserInit::LaunchWithProfile::AddBadFlagsInfoBarIfNecessary(
 
   if (bad_flag) {
     tab->AddInfoBar(new SimpleAlertInfoBarDelegate(tab,
-        l10n_util::GetStringF(IDS_BAD_FLAGS_WARNING_MESSAGE,
-                              L"--" + ASCIIToWide(bad_flag)),
+        l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
+                                   UTF8ToUTF16(std::string("--") + bad_flag)),
         NULL, false));
   }
 }

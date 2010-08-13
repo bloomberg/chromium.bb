@@ -48,8 +48,8 @@ void AutoFillCCInfoBarDelegate::InfoBarClosed() {
   ConfirmInfoBarDelegate::InfoBarClosed();
 }
 
-std::wstring AutoFillCCInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetString(IDS_AUTOFILL_CC_INFOBAR_TEXT);
+string16 AutoFillCCInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_INFOBAR_TEXT);
 }
 
 SkBitmap* AutoFillCCInfoBarDelegate::GetIcon() const {
@@ -61,16 +61,16 @@ int AutoFillCCInfoBarDelegate::GetButtons() const {
   return BUTTON_OK | BUTTON_CANCEL;
 }
 
-std::wstring AutoFillCCInfoBarDelegate::GetButtonLabel(
+string16 AutoFillCCInfoBarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
   if (button == BUTTON_OK)
-    return l10n_util::GetString(IDS_AUTOFILL_CC_INFOBAR_ACCEPT);
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_INFOBAR_ACCEPT);
   else if (button == BUTTON_CANCEL)
-    return l10n_util::GetString(IDS_AUTOFILL_CC_INFOBAR_DENY);
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_INFOBAR_DENY);
   else
     NOTREACHED();
 
-  return std::wstring();
+  return string16();
 }
 
 bool AutoFillCCInfoBarDelegate::Accept() {
@@ -91,8 +91,8 @@ bool AutoFillCCInfoBarDelegate::Cancel() {
   return true;
 }
 
-std::wstring AutoFillCCInfoBarDelegate::GetLinkText() {
-  return l10n_util::GetString(IDS_AUTOFILL_CC_LEARN_MORE);
+string16 AutoFillCCInfoBarDelegate::GetLinkText() {
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_LEARN_MORE);
 }
 
 bool AutoFillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {

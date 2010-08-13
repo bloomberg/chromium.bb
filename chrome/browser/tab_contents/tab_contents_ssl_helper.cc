@@ -41,9 +41,11 @@ class SSLCertAddedInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
   // Overridden from ConfirmInfoBarDelegate:
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetStringF(IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL,
-                                 UTF8ToWide(cert_->issuer().GetDisplayName()));
+  virtual string16 GetMessageText() const {
+    // TODO(evanm): GetDisplayName should return UTF-16.
+    return l10n_util::GetStringFUTF16(
+        IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL,
+        UTF8ToUTF16(cert_->issuer().GetDisplayName()));
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -54,12 +56,12 @@ class SSLCertAddedInfoBarDelegate : public ConfirmInfoBarDelegate {
     return BUTTON_OK;
   }
 
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
     switch (button) {
       case BUTTON_OK:
-        return l10n_util::GetString(IDS_ADD_CERT_SUCCESS_INFOBAR_BUTTON);
+        return l10n_util::GetStringUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_BUTTON);
       default:
-        return std::wstring();
+        return string16();
     }
   }
 
@@ -114,7 +116,10 @@ class TabContentsSSLHelper::SSLAddCertData : public NotificationObserver {
 
   void ShowErrorInfoBar(const std::wstring& message) {
     ShowInfoBar(
-        new SimpleAlertInfoBarDelegate(tab_, message, GetCertIcon(), true));
+        new SimpleAlertInfoBarDelegate(tab_,
+                                       WideToUTF16(message),
+                                       GetCertIcon(),
+                                       true));
   }
 
   // NotificationObserver implementation.

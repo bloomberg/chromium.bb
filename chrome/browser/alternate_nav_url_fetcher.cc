@@ -95,16 +95,16 @@ void AlternateNavURLFetcher::OnURLFetchComplete(const URLFetcher* source,
   ShowInfobarIfPossible();
 }
 
-std::wstring AlternateNavURLFetcher::GetMessageTextWithOffset(
+string16 AlternateNavURLFetcher::GetMessageTextWithOffset(
     size_t* link_offset) const {
-  const std::wstring label = l10n_util::GetStringF(
-      IDS_ALTERNATE_NAV_URL_VIEW_LABEL, std::wstring(), link_offset);
-  DCHECK(*link_offset != std::wstring::npos);
+  const string16 label = l10n_util::GetStringFUTF16(
+      IDS_ALTERNATE_NAV_URL_VIEW_LABEL, string16(), link_offset);
+  DCHECK(*link_offset != string16::npos);
   return label;
 }
 
-std::wstring AlternateNavURLFetcher::GetLinkText() const {
-  return UTF8ToWide(alternate_nav_url_.spec());
+string16 AlternateNavURLFetcher::GetLinkText() const {
+  return UTF8ToUTF16(alternate_nav_url_.spec());
 }
 
 SkBitmap* AlternateNavURLFetcher::GetIcon() const {

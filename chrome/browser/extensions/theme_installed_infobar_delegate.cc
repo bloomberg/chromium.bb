@@ -43,9 +43,9 @@ void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
 
-std::wstring ThemeInstalledInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringF(IDS_THEME_INSTALL_INFOBAR_LABEL,
-                               UTF8ToWide(name_));
+string16 ThemeInstalledInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringFUTF16(IDS_THEME_INSTALL_INFOBAR_LABEL,
+                                    UTF8ToUTF16(name_));
 }
 
 SkBitmap* ThemeInstalledInfoBarDelegate::GetIcon() const {
@@ -64,16 +64,16 @@ int ThemeInstalledInfoBarDelegate::GetButtons() const {
   return BUTTON_CANCEL;
 }
 
-std::wstring ThemeInstalledInfoBarDelegate::GetButtonLabel(
+string16 ThemeInstalledInfoBarDelegate::GetButtonLabel(
     ConfirmInfoBarDelegate::InfoBarButton button) const {
   switch (button) {
     case BUTTON_CANCEL: {
-      return l10n_util::GetString(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);
+      return l10n_util::GetStringUTF16(IDS_THEME_INSTALL_INFOBAR_UNDO_BUTTON);
     }
     default:
       // The InfoBar will create a default OK button and make it invisible.
       // TODO(mirandac): remove the default OK button from ConfirmInfoBar.
-      return L"";
+      return string16();
   }
 }
 

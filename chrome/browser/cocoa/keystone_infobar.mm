@@ -62,9 +62,9 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Inherited from AlertInfoBarDelegate and overridden.
 
-  virtual std::wstring GetMessageText() const {
-    return l10n_util::GetStringF(IDS_PROMOTE_INFOBAR_TEXT,
-                                 l10n_util::GetString(IDS_PRODUCT_NAME));
+  virtual string16 GetMessageText() const {
+    return l10n_util::GetStringFUTF16(IDS_PROMOTE_INFOBAR_TEXT,
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -78,10 +78,10 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
     return BUTTON_OK | BUTTON_CANCEL | BUTTON_OK_DEFAULT;
   }
 
-  virtual std::wstring GetButtonLabel(InfoBarButton button) const {
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
     return button == BUTTON_OK ?
-        l10n_util::GetString(IDS_PROMOTE_INFOBAR_PROMOTE_BUTTON) :
-        l10n_util::GetString(IDS_PROMOTE_INFOBAR_DONT_ASK_BUTTON);
+        l10n_util::GetStringUTF16(IDS_PROMOTE_INFOBAR_PROMOTE_BUTTON) :
+        l10n_util::GetStringUTF16(IDS_PROMOTE_INFOBAR_DONT_ASK_BUTTON);
   }
 
   virtual bool Accept() {
