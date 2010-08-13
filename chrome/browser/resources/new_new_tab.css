@@ -263,6 +263,7 @@ html[dir=rtl] .item {
   height: 17px;
   position: absolute;
   right: 0;
+  left: auto;
   top: 20px;
   border: 0;
   padding: 0;
@@ -289,6 +290,7 @@ html[dir=rtl] .item {
   min-width: 175px;
 }
 
+html[dir=rtl] #option-button,
 html[dir=rtl] #option-menu {
   right: auto;
   left: 0;
