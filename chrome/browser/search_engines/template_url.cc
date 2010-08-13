@@ -339,7 +339,7 @@ std::string TemplateURLRef::ReplaceSearchTerms(
         // to happen so that we replace the RLZ template with the
         // empty string.  (If we don't handle this case, we hit a
         // NOTREACHED below.)
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
         std::wstring rlz_string;
         RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
         if (!rlz_string.empty()) {

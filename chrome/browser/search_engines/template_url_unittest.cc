@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -328,7 +328,9 @@ TEST_F(TemplateURLTest, Suggestions) {
 #if defined(OS_WIN)
 TEST_F(TemplateURLTest, RLZ) {
   std::wstring rlz_string;
+#if defined(GOOGLE_CHROME_BUILD)
   RLZTracker::GetAccessPointRlz(rlz_lib::CHROME_OMNIBOX, &rlz_string);
+#endif
 
   TemplateURL t_url;
   TemplateURLRef ref("http://bar/?{google:RLZ}{searchTerms}", 1, 2);

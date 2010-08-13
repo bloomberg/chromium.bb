@@ -1262,10 +1262,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
   win_util::ScopedCOMInitializer com_initializer;
 
+#if defined(GOOGLE_CHROME_BUILD)
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
   RLZTracker::InitRlzDelayed(is_first_run, master_prefs.ping_delay);
+#endif
 #endif
 
   // Configure the network module so it has access to resources.

@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_rlz_module.h"
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/rlz/rlz.h"
 #include "chrome/common/extensions/extension.h"
 #include "rlz/win/lib/lib_values.h"
 
@@ -86,7 +85,7 @@ bool RlzRecordProductEventFunction::RunImpl() {
   rlz_lib::Event event_id;
   EXTENSION_FUNCTION_VALIDATE(GetEventFromName(event_name, &event_id));
 
-  return RLZTracker::RecordProductEvent(product, access_point, event_id);
+  return rlz_lib::RecordProductEvent(product, access_point, event_id);
 }
 
 bool RlzGetAccessPointRlzFunction::RunImpl() {

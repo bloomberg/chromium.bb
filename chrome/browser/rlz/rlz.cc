@@ -165,8 +165,8 @@ class DelayedInitTask : public Task {
     // For organic brandcodes do not use rlz at all. Empty brandcode usually
     // means a chromium install. This is ok.
     std::wstring brand;
-    GoogleUpdateSettings::GetBrand(&brand);
-    if (GoogleUpdateSettings::IsOrganic(brand))
+    if (!GoogleUpdateSettings::GetBrand(&brand) || brand.empty() ||
+        GoogleUpdateSettings::IsOrganic(brand))
       return;
 
     // Do the initial event recording if is the first run or if we have an
