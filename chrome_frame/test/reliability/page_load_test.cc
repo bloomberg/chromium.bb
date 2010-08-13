@@ -384,12 +384,12 @@ class PageLoadTest : public testing::Test {
     }
 
     SetConfigBool(kChromeFrameHeadlessMode, true);
-    SetConfigBool(kEnableGCFProtocol, true);
+    SetConfigBool(kAllowUnsafeURLs, true);
   }
 
   virtual void TearDown() {
     DeleteConfigValue(kChromeFrameHeadlessMode);
-    DeleteConfigValue(kEnableGCFProtocol);
+    DeleteConfigValue(kAllowUnsafeURLs);
   }
 
   FilePath ConstructSavedDebugLogPath(const FilePath& debug_log_path,

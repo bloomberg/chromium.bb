@@ -583,7 +583,8 @@ bool HandleAttachToExistingExternalTab(LPCWSTR url,
                                        IInternetProtocol* protocol,
                                        IInternetProtocolSink* prot_sink,
                                        IBindCtx* bind_ctx) {
-  if (MatchPatternWide(url, kChromeFrameAttachTabPattern)) {
+  ChromeFrameUrl cf_url;
+  if (cf_url.Parse(url) && cf_url.attach_to_external_tab()) {
     scoped_refptr<ProtData> prot_data = ProtData::DataFromProtocol(protocol);
     if (!prot_data) {
       // Pass NULL as the read function which indicates that always return EOF

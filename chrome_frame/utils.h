@@ -24,10 +24,11 @@
 // utils.h : Various utility functions and classes
 
 extern const wchar_t kChromeContentPrefix[];
+extern const char kGCFProtocol[];
 extern const wchar_t kChromeProtocolPrefix[];
 extern const wchar_t kChromeFrameHeadlessMode[];
 extern const wchar_t kChromeFrameUnpinnedMode[];
-extern const wchar_t kEnableGCFProtocol[];
+extern const wchar_t kAllowUnsafeURLs[];
 extern const wchar_t kEnableBuggyBhoIntercept[];
 extern const wchar_t kChromeMimeType[];
 extern const wchar_t kChromeFrameAttachTabPattern[];
@@ -276,7 +277,7 @@ bool CheckForCFNavigation(IBrowserService* browser, bool clear_flag);
 // Returns true if the URL passed in is something which can be handled by
 // Chrome. If this function returns false then we should fail the navigation.
 // When is_privileged is true, chrome extension URLs will be considered valid.
-bool IsValidUrlScheme(const std::wstring& url, bool is_privileged);
+bool IsValidUrlScheme(const GURL& url, bool is_privileged);
 
 // Returns the raw http headers for the current request given an
 // IWinInetHttpInfo pointer.
@@ -503,8 +504,8 @@ class ChromeFrameUrl {
     return dimensions_;
   }
 
-  const std::wstring& url() const {
-    return url_;
+  const GURL& gurl() const {
+    return parsed_url_;
   }
 
  private:
@@ -512,19 +513,23 @@ class ChromeFrameUrl {
   // suffix portion of the URL which contains the attach_external_tab prefix.
   bool ParseAttachExternalTabUrl();
 
+  // Clear state.
+  void Reset();
+
   bool attach_to_external_tab_;
   bool is_chrome_protocol_;
-  std::wstring url_;
   uint64 cookie_;
   gfx::Rect dimensions_;
   int disposition_;
+
+  GURL parsed_url_;
 };
 
 // Returns true if we can navigate to this URL.
 // This function checks if the url scheme is valid for navigation within
 // chrome and whether it is a restricted URL as per IE settings. In either of
 // these cases it returns false.
-bool CanNavigateInFullTabMode(const ChromeFrameUrl& cf_url,
-                              IInternetSecurityManager* security_manager);
+bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,
+                 bool is_privileged);
 
 #endif  // CHROME_FRAME_UTILS_H_

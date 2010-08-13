@@ -93,7 +93,8 @@ TEST(UtilTests, IsValidUrlScheme) {
 
   for (int i = 0; i < arraysize(test_cases); ++i) {
     const Cases& test = test_cases[i];
-    EXPECT_EQ(test.expected, IsValidUrlScheme(test.url, test.is_privileged));
+    EXPECT_EQ(test.expected, IsValidUrlScheme(GURL(test.url),
+                                              test.is_privileged));
   }
 }
 
@@ -118,27 +119,42 @@ TEST(UtilTests, GetTempInternetFiles) {
 TEST(UtilTests, ParseAttachTabUrlTest) {
   ChromeFrameUrl cf_url;
 
-  EXPECT_TRUE(cf_url.Parse(L"http://f/?attach_external_tab&10&1&0&0&100&100"));
+  EXPECT_TRUE(cf_url.Parse(L"http://f/?attach_external_tab&10&1&2&3&123&321"));
 
   EXPECT_TRUE(cf_url.attach_to_external_tab());
   EXPECT_FALSE(cf_url.is_chrome_protocol());
-
   EXPECT_EQ(10, cf_url.cookie());
   EXPECT_EQ(1, cf_url.disposition());
-  EXPECT_EQ(0, cf_url.dimensions().x());
-  EXPECT_EQ(0, cf_url.dimensions().y());
-  EXPECT_EQ(100, cf_url.dimensions().width());
-  EXPECT_EQ(100, cf_url.dimensions().height());
+  EXPECT_EQ(gfx::Rect(2, 3, 123, 321), cf_url.dimensions());
 
-  EXPECT_TRUE(cf_url.Parse(L"http://www.foobar.com?&10&1&0&0&100&100"));
+  EXPECT_TRUE(cf_url.Parse(L"http://www.foobar.com?&10&1&2&3&123&321"));
   EXPECT_FALSE(cf_url.attach_to_external_tab());
+  EXPECT_FALSE(cf_url.is_chrome_protocol());
+  EXPECT_EQ(0, cf_url.cookie());
+  EXPECT_EQ(0, cf_url.disposition());
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), cf_url.dimensions());
 
   EXPECT_FALSE(cf_url.Parse(L"attach_external_tab&10&1"));
-  EXPECT_TRUE(cf_url.attach_to_external_tab());
+  EXPECT_FALSE(cf_url.attach_to_external_tab());
+  EXPECT_FALSE(cf_url.is_chrome_protocol());
+  EXPECT_EQ(0, cf_url.cookie());
+  EXPECT_EQ(0, cf_url.disposition());
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), cf_url.dimensions());
 
-  EXPECT_TRUE(cf_url.Parse(L"gcf:http://f/?attach_tab&10&1&0&0&100&100"));
+  EXPECT_TRUE(cf_url.Parse(L"gcf:http://f/?attach_tab&10&1&2&3&123&321"));
   EXPECT_FALSE(cf_url.attach_to_external_tab());
   EXPECT_TRUE(cf_url.is_chrome_protocol());
+  EXPECT_EQ(0, cf_url.cookie());
+  EXPECT_EQ(0, cf_url.disposition());
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), cf_url.dimensions());
+
+  EXPECT_TRUE(cf_url.Parse(L"gcf:http://google.com"));
+  EXPECT_FALSE(cf_url.attach_to_external_tab());
+  EXPECT_TRUE(cf_url.is_chrome_protocol());
+  EXPECT_EQ(0, cf_url.cookie());
+  EXPECT_EQ(0, cf_url.disposition());
+  EXPECT_EQ(gfx::Rect(0, 0, 0, 0), cf_url.dimensions());
+  EXPECT_EQ(cf_url.gurl(), GURL("http://google.com"));
 }
 
 // Mock for the IInternetSecurityManager interface
@@ -172,74 +188,91 @@ class MockIInternetSecurityManager : public IInternetSecurityManager {
       HRESULT(DWORD zone, IEnumString** enum_string, DWORD flags));
 };
 
-TEST(UtilTests, CanNavigateFullTabModeTest) {
-  ChromeFrameUrl cf_url;
-
+TEST(UtilTests, CanNavigateTest) {
   MockIInternetSecurityManager mock;
-  EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(L"http://blah"),
-                                                     testing::_, testing::_))
-    .WillRepeatedly(testing::DoAll(
-        testing::SetArgumentPointee<1>(URLZONE_INTERNET),
-        testing::Return(S_OK)));
 
-  EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(L"http://untrusted"),
-                                                     testing::_, testing::_))
-    .WillRepeatedly(testing::DoAll(
-        testing::SetArgumentPointee<1>(URLZONE_UNTRUSTED),
-        testing::Return(S_OK)));
+  struct Zones {
+    const wchar_t* url_prefix;
+    URLZONE zone;
+  } test_zones[] = {
+    { L"http://blah", URLZONE_INTERNET },
+    { L"http://untrusted", URLZONE_UNTRUSTED },
+    { L"about:", URLZONE_TRUSTED },
+    { L"view-source:", URLZONE_TRUSTED },
+    { L"chrome-extension:", URLZONE_TRUSTED },
+    { L"ftp:", URLZONE_UNTRUSTED },
+    { L"file:", URLZONE_LOCAL_MACHINE },
+    { L"sip:", URLZONE_UNTRUSTED },
+  };
 
-  EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(L"about:"),
-                                                     testing::_, testing::_))
-    .WillRepeatedly(testing::DoAll(
-        testing::SetArgumentPointee<1>(URLZONE_TRUSTED),
-        testing::Return(S_OK)));
+  for (int i = 0; i < arraysize(test_zones); ++i) {
+    const Zones& zone = test_zones[i];
+    EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(zone.url_prefix),
+                                                       testing::_, testing::_))
+      .WillRepeatedly(testing::DoAll(
+          testing::SetArgumentPointee<1>(zone.zone),
+          testing::Return(S_OK)));
+  }
 
-  EXPECT_CALL(mock, MapUrlToZone(testing::StartsWith(L"view-source:"),
-                                                     testing::_, testing::_))
-    .WillRepeatedly(testing::DoAll(
-        testing::SetArgumentPointee<1>(URLZONE_TRUSTED),
-        testing::Return(S_OK)));
+  struct Cases {
+    const char* url;
+    bool is_privileged;
+    bool default_expected;
+    bool unsafe_expected;
+  } test_cases[] = {
+    // Invalid URL
+    { "          ", false, false, false },
+    { "foo bar", true, false, false },
 
-  EXPECT_TRUE(cf_url.Parse(
-      L"http://blah/?attach_external_tab&10&1&0&0&100&100"));
-  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+    //non-privileged test cases
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100", false, true, true },
+    { "http://untrusted/bar.html", false, false, true },
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100", false, true, true },
+    { "view-source:http://www.google.ca", false, true, true },
+    { "view-source:javascript:alert('foo');", false, false, true },
+    { "about:blank", false, true, true },
+    { "About:Version", false, true, true },
+    { "about:config", false, false, true },
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", false, false,
+         true },
+    { "ftp://www.google.ca", false, false, true },
+    { "file://www.google.ca", false, false, true },
+    { "file://C:\boot.ini", false, false, true },
+    { "SIP:someone@10.1.2.3", false, false, true },
 
-  EXPECT_TRUE(cf_url.Parse(
-      L"http://untrusted/bar.html"));
-  EXPECT_FALSE(CanNavigateInFullTabMode(cf_url, &mock));
+    //privileged test cases
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100", true, true, true },
+    { "http://untrusted/bar.html", true, false, true },
+    { "http://blah/?attach_external_tab&10&1&0&0&100&100", true, true, true },
+    { "view-source:http://www.google.ca", true, true, true },
+    { "view-source:javascript:alert('foo');", true, false, true },
+    { "about:blank", true, true, true },
+    { "About:Version", true, true, true },
+    { "about:config", true, false, true },
+    { "chrome-extension://aaaaaaaaaaaaaaaaaaa/toolstrip.html", true, true,
+       true },
+    { "ftp://www.google.ca", true, false, true },
+    { "file://www.google.ca", true, false, true },
+    { "file://C:\boot.ini", true, false, true },
+    { "sip:someone@10.1.2.3", false, false, true },
+  };
 
-  EXPECT_TRUE(cf_url.Parse(
-      L"http://blah/?attach_external_tab&10&1&0&0&100&100"));
-  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+  for (int i = 0; i < arraysize(test_cases); ++i) {
+    const Cases& test = test_cases[i];
+    bool actual = CanNavigate(GURL(test.url), &mock, test.is_privileged);
+    EXPECT_EQ(test.default_expected, actual) << "Failure url: " << test.url;
+  }
 
-  EXPECT_TRUE(cf_url.Parse(L"gcf:about:blank"));
-  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+  bool enable_gcf = GetConfigBool(false, kAllowUnsafeURLs);
+  SetConfigBool(kAllowUnsafeURLs, true);
 
-  EXPECT_TRUE(cf_url.Parse(L"gcf:view-source:http://www.foo.com"));
-  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
+  for (int i = 0; i < arraysize(test_cases); ++i) {
+    const Cases& test = test_cases[i];
+    bool actual = CanNavigate(GURL(test.url), &mock, test.is_privileged);
+    EXPECT_EQ(test.unsafe_expected, actual) << "Failure url: " << test.url;
+  }
 
-  EXPECT_TRUE(cf_url.Parse(L"gcf:about:version"));
-  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
-
-  EXPECT_TRUE(cf_url.Parse(L"gcf:about:bar"));
-  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
-
-  bool enable_gcf = GetConfigBool(false, kEnableGCFProtocol);
-
-  SetConfigBool(kEnableGCFProtocol, false);
-
-  EXPECT_TRUE(cf_url.Parse(L"gcf:http://blah"));
-  EXPECT_FALSE(CanNavigateInFullTabMode(cf_url, &mock));
-
-  SetConfigBool(kEnableGCFProtocol, true);
-
-  EXPECT_TRUE(cf_url.Parse(L"gcf:http://blah"));
-  EXPECT_TRUE(CanNavigateInFullTabMode(cf_url, &mock));
-
-  EXPECT_TRUE(cf_url.Parse(L"gcf:http://untrusted/bar"));
-  EXPECT_FALSE(CanNavigateInFullTabMode(cf_url, &mock));
-
-  SetConfigBool(kEnableGCFProtocol, enable_gcf);
+  SetConfigBool(kAllowUnsafeURLs, enable_gcf);
 }
 
 TEST(UtilTests, ParseVersionTest) {

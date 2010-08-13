@@ -609,6 +609,13 @@ bool ChromeFrameAutomationClient::Initialize(
   // InitializeComplete is called successfully.
   init_state_ = INITIALIZING;
 
+  HRESULT hr = security_manager_.CreateInstance(CLSID_InternetSecurityManager);
+  if (FAILED(hr)) {
+    NOTREACHED() << __FUNCTION__
+                 << " Failed to create InternetSecurityManager. Error: 0x%x"
+                 << hr;
+  }
+
   if (chrome_launch_params_->url().is_valid())
     navigate_after_initialization_ = false;
 
@@ -657,7 +664,7 @@ void ChromeFrameAutomationClient::Uninitialize() {
   if (::IsWindow(m_hWnd))
     DestroyWindow();
 
-  DCHECK(navigate_after_initialization_ == false);
+  // DCHECK(navigate_after_initialization_ == false);
   handle_top_level_requests_ = false;
   ui_thread_id_ = 0;
   chrome_frame_delegate_ = NULL;
@@ -670,11 +677,11 @@ bool ChromeFrameAutomationClient::InitiateNavigation(const std::string& url,
     return false;
 
   GURL parsed_url(url);
+
   // Catch invalid URLs early.
-  if (!parsed_url.is_valid() ||
-      !IsValidUrlScheme(UTF8ToWide(url), is_privileged)) {
-    DLOG(ERROR) << "Invalid URL passed to InitiateNavigation: " << url
-                << " is_privileged=" << is_privileged;
+  // Can we allow this navigation to happen?
+  if (!CanNavigate(parsed_url, security_manager_, is_privileged)) {
+    DLOG(ERROR) << __FUNCTION__ << " Not allowing navigation to: " << url;
     return false;
   }
 
@@ -1355,6 +1362,14 @@ void ChromeFrameAutomationClient::RunUnloadHandlers(HWND notification_window,
     // Post this message to ensure that the caller exits his message loop.
     ::PostMessage(notification_window, notification_message, 0, 0);
   }
+}
+
+void ChromeFrameAutomationClient::SetUrlFetcher(
+    PluginUrlRequestManager* url_fetcher) {
+  DCHECK(url_fetcher != NULL);
+  url_fetcher_ = url_fetcher;
+  url_fetcher_flags_ = url_fetcher->GetThreadSafeFlags();
+  url_fetcher_->set_delegate(this);
 }
 
 void ChromeFrameAutomationClient::SetZoomLevel(PageZoom::Function zoom_level) {

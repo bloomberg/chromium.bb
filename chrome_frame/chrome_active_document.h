@@ -458,7 +458,6 @@ END_EXEC_COMMAND_MAP()
   // a new ChromeActiveDocument instance is taking its place.
   bool is_automation_client_reused_;
 
-  ScopedComPtr<IInternetSecurityManager> security_manager_;
   ScopedComPtr<INewWindowManager> popup_manager_;
   bool popup_allowed_;
   HACCEL accelerator_table_;

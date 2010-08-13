@@ -42,8 +42,6 @@
 #include "chrome_frame/crash_reporting/crash_metrics.h"
 #include "chrome_frame/utils.h"
 
-const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
-
 static const wchar_t kUseChromeNetworking[] = L"UseChromeNetworking";
 static const wchar_t kHandleTopLevelRequests[] = L"HandleTopLevelRequests";
 
@@ -124,14 +122,6 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
     LoadAccelerators(this_module,
                      MAKEINTRESOURCE(IDR_CHROME_FRAME_IE_FULL_TAB));
   DCHECK(accelerator_table_ != NULL);
-
-  HRESULT hr = security_manager_.CreateInstance(CLSID_InternetSecurityManager);
-  if (FAILED(hr)) {
-    NOTREACHED() << __FUNCTION__
-                 << " Failed to create InternetSecurityManager. Error: 0x%x"
-                 << hr;
-  }
-
   return S_OK;
 }
 
@@ -273,10 +263,6 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     return E_INVALIDARG;
   }
 
-  if (!CanNavigateInFullTabMode(cf_url, security_manager_)) {
-    return E_INVALIDARG;
-  }
-
   std::string referrer(mgr ? mgr->referrer() : EmptyString());
 
   // With CTransaction patch we have more robust way to grab the referrer for
@@ -289,12 +275,12 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   }
 
   if (!LaunchUrl(cf_url, referrer)) {
-    NOTREACHED() << __FUNCTION__ << " Failed to launch url:" << url;
+    DLOG(ERROR) << __FUNCTION__ << " Failed to launch url:" << url;
     return E_INVALIDARG;
   }
 
   if (!cf_url.is_chrome_protocol() && !cf_url.attach_to_external_tab())
-    url_fetcher_->SetInfoForUrl(cf_url.url(), moniker_name, bind_context);
+    url_fetcher_->SetInfoForUrl(url.c_str(), moniker_name, bind_context);
 
   THREAD_SAFE_UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",
                                           cf_url.is_chrome_protocol(),
@@ -402,10 +388,6 @@ STDMETHODIMP ChromeActiveDocument::LoadHistory(IStream* stream,
   ChromeFrameUrl cf_url;
   if (!cf_url.Parse(url)) {
     DLOG(WARNING) << __FUNCTION__ << " Failed to parse url:" << url;
-    return E_INVALIDARG;
-  }
-
-  if (!CanNavigateInFullTabMode(cf_url, security_manager_)) {
     return E_INVALIDARG;
   }
 
@@ -735,10 +717,12 @@ void ChromeActiveDocument::UpdateNavigationState(
   // an external tab container within chrome and then connecting to it from IE.
   // We still want to update the address bar/history, etc, to ensure that
   // the special URL used by Chrome to indicate this is updated correctly.
+  ChromeFrameUrl cf_url;
+  bool is_attach_external_tab_url = cf_url.Parse(std::wstring(url_)) &&
+      cf_url.attach_to_external_tab();
   bool is_internal_navigation = ((new_navigation_info.navigation_index > 0) &&
       (new_navigation_info.navigation_index !=
-       navigation_info_.navigation_index)) ||
-       MatchPatternWide(static_cast<BSTR>(url_), kChromeFrameAttachTabPattern);
+       navigation_info_.navigation_index)) || is_attach_external_tab_url;
 
   if (new_navigation_info.url.is_valid())
     url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
@@ -991,18 +975,14 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
 bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
                                      const std::string& referrer) {
   DCHECK(automation_client_.get() != NULL);
-  DCHECK(!cf_url.url().empty());
+  DCHECK(!cf_url.gurl().is_empty());
 
-  url_.Allocate(cf_url.url().c_str());
-
-  std::string utf8_url(WideToUTF8(cf_url.url()));
-  DLOG(INFO) << "this:" << this << " url is:" << utf8_url;
-
+  url_.Allocate(UTF8ToWide(cf_url.gurl().spec()).c_str());
   if (cf_url.attach_to_external_tab()) {
     dimensions_ = cf_url.dimensions();
     automation_client_->AttachExternalTab(cf_url.cookie());
     SetWindowDimensions();
-  } else if (!automation_client_->InitiateNavigation(utf8_url,
+  } else if (!automation_client_->InitiateNavigation(cf_url.gurl().spec(),
                                                      referrer,
                                                      is_privileged_)) {
     DLOG(ERROR) << "Invalid URL: " << url_;
@@ -1015,10 +995,8 @@ bool ChromeActiveDocument::LaunchUrl(const ChromeFrameUrl& cf_url,
     return true;
 
   automation_client_->SetUrlFetcher(url_fetcher_.get());
-
-  GURL url(utf8_url);
   return InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate(),
-                              false, url, GURL(referrer));
+                              false, cf_url.gurl(), GURL(referrer));
 }
 
 

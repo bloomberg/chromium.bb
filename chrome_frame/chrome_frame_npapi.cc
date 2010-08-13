@@ -1093,17 +1093,25 @@ bool ChromeFrameNPAPI::NavigateToURL(const NPVariant* args, uint32_t arg_count,
   }
 
   std::string url("about:blank");
-
   if (!NPVARIANT_IS_NULL(args[0])) {
     const NPString& str = args[0].value.stringValue;
     if (str.UTF8Length) {
       url.assign(std::string(str.UTF8Characters, str.UTF8Length));
     }
   }
-  DLOG(WARNING) << __FUNCTION__ << " " << url;
+
+  GURL document_url(GetDocumentUrl());
+  if (document_url.SchemeIsSecure()) {
+    GURL source_url(url);
+    if (!source_url.SchemeIsSecure()) {
+      DLOG(WARNING) << __FUNCTION__ << " Prevnting navigation to HTTP url"
+          " since the containing document is HTTPS. URL: " << source_url <<
+          " Document URL: " << document_url;
+      return false;
+    }
+  }
+
   std::string full_url = ResolveURL(GetDocumentUrl(), url);
-  if (full_url.empty())
-    return false;
 
   src_ = full_url;
   // Navigate only if we completed initialization i.e. proxy is set etc.

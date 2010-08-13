@@ -397,6 +397,9 @@ class ChromeFrameAutomationClient
     handle_top_level_requests_ = handle_top_level_requests;
   }
 
+  // Url request manager set up.
+  void SetUrlFetcher(PluginUrlRequestManager* url_fetcher);
+
   // Called if the same instance of the ChromeFrameAutomationClient object
   // is reused.
   bool Reinitialize(ChromeFrameDelegate* chrome_frame_delegate,
@@ -455,6 +458,20 @@ class ChromeFrameAutomationClient
   // Helpers
   void ReportNavigationError(AutomationMsg_NavigationResponseValues error_code,
                              const std::string& url);
+
+  bool ProcessUrlRequestMessage(TabProxy* tab, const IPC::Message& msg,
+                                bool ui_thread);
+
+  // PluginUrlRequestDelegate implementation. Simply adds tab's handle
+  // as parameter and forwards to Chrome via IPC.
+  virtual void OnResponseStarted(int request_id, const char* mime_type,
+      const char* headers, int size, base::Time last_modified,
+      const std::string& redirect_url, int redirect_status);
+  virtual void OnReadComplete(int request_id, const std::string& data);
+  virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
+  virtual void OnCookiesRetrieved(bool success, const GURL& url,
+      const std::string& cookie_string, int cookie_id);
+
   bool is_initialized() const {
     return init_state_ == INITIALIZED;
   }
@@ -497,34 +514,16 @@ class ChromeFrameAutomationClient
 
   scoped_refptr<ChromeFrameLaunchParams> chrome_launch_params_;
 
+  // Cache security manager for URL zone checking
+  ScopedComPtr<IInternetSecurityManager> security_manager_;
+
   // When host network stack is used, this object is in charge of
   // handling network requests.
   PluginUrlRequestManager* url_fetcher_;
   PluginUrlRequestManager::ThreadSafeFlags url_fetcher_flags_;
 
-  bool ProcessUrlRequestMessage(TabProxy* tab, const IPC::Message& msg,
-                                bool ui_thread);
-
-  // PluginUrlRequestDelegate implementation. Simply adds tab's handle
-  // as parameter and forwards to Chrome via IPC.
-  virtual void OnResponseStarted(int request_id, const char* mime_type,
-      const char* headers, int size, base::Time last_modified,
-      const std::string& redirect_url, int redirect_status);
-  virtual void OnReadComplete(int request_id, const std::string& data);
-  virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
-  virtual void OnCookiesRetrieved(bool success, const GURL& url,
-      const std::string& cookie_string, int cookie_id);
-
   friend class BeginNavigateContext;
   friend class CreateExternalTabContext;
-
- public:
-  void SetUrlFetcher(PluginUrlRequestManager* url_fetcher) {
-    DCHECK(url_fetcher != NULL);
-    url_fetcher_ = url_fetcher;
-    url_fetcher_flags_ = url_fetcher->GetThreadSafeFlags();
-    url_fetcher_->set_delegate(this);
-  }
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_AUTOMATION_H_

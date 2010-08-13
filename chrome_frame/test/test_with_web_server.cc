@@ -77,7 +77,7 @@ void ChromeFrameTestWithWebServer::SetUp() {
   CloseAllBrowsers();
 
   // Make sure that we are not accidently enabling gcf protocol.
-  SetConfigBool(kEnableGCFProtocol, false);
+  SetConfigBool(kAllowUnsafeURLs, false);
 
   PathService::Get(base::DIR_SOURCE_ROOT, &test_file_path_);
   test_file_path_ = test_file_path_.Append(FILE_PATH_LITERAL("chrome_frame"))
@@ -766,9 +766,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_MetaTag) {
 const wchar_t kCFProtocolPage[] = L"files/cf_protocol.html";
 TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFProtocol) {
   // Temporarily enable  gcf: protocol for this test.
-  SetConfigBool(kEnableGCFProtocol, true);
+  SetConfigBool(kAllowUnsafeURLs, true);
   SimpleBrowserTest(IE, kCFProtocolPage, L"chrome_frame_protocol");
-  SetConfigBool(kEnableGCFProtocol, false);
+  SetConfigBool(kAllowUnsafeURLs, false);
 }
 
 const wchar_t kPersistentCookieTest[] =

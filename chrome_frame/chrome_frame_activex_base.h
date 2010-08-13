@@ -606,9 +606,6 @@ END_MSG_MAP()
     std::string src_utf8;
     WideToUTF8(src, SysStringLen(src), &src_utf8);
     std::string full_url = ResolveURL(GetDocumentUrl(), src_utf8);
-    if (full_url.empty()) {
-      return E_INVALIDARG;
-    }
 
     // We can initiate navigation here even if ready_state is not complete.
     // We do not have to set proxy, and AutomationClient will take care

@@ -41,16 +41,16 @@ const wchar_t kContentAttribName[] = L"content";
 const wchar_t kXUACompatValue[] = L"x-ua-compatible";
 const wchar_t kBodyTag[] = L"body";
 const wchar_t kChromeContentPrefix[] = L"chrome=";
+const char kGCFProtocol[] = "gcf";
 const wchar_t kChromeProtocolPrefix[] = L"gcf:";
 const wchar_t kChromeMimeType[] = L"application/chromepage";
 const wchar_t kPatchProtocols[] = L"PatchProtocols";
-const wchar_t kChromeFrameAttachTabPattern[] = L"*?attach_external_tab&*";
 
 static const wchar_t kChromeFrameConfigKey[] =
     L"Software\\Google\\ChromeFrame";
 static const wchar_t kRenderInGCFUrlList[] = L"RenderInGcfUrls";
 static const wchar_t kRenderInHostUrlList[] = L"RenderInHostUrls";
-static const wchar_t kEnableGCFProtocol[] = L"EnableGCFProtocol";
+static const wchar_t kAllowUnsafeURLs[] = L"AllowUnsafeURLs";
 static const wchar_t kEnableGCFRendererByDefault[] = L"IsDefaultRenderer";
 static const wchar_t kEnableBuggyBhoIntercept[] = L"EnableBuggyBhoIntercept";
 
@@ -62,7 +62,7 @@ static const wchar_t kChromeFramePersistNPAPIReg[] = L"PersistNPAPIReg";
 const wchar_t kChromeFrameOmahaSuffix[] = L"-cf";
 const wchar_t kDevChannelName[] = L"-dev";
 
-const wchar_t kChromeAttachExternalTabPrefix[] = L"?attach_external_tab";
+const char kAttachExternalTabPrefix[] = "attach_external_tab";
 
 // Indicates that we are running in a test environment, where execptions, etc
 // are handled by the chrome test crash server.
@@ -856,21 +856,19 @@ bool CheckForCFNavigation(IBrowserService* browser, bool clear_flag) {
   return ret;
 }
 
-bool IsValidUrlScheme(const std::wstring& url, bool is_privileged) {
-  if (url.empty())
+bool IsValidUrlScheme(const GURL& url, bool is_privileged) {
+  if (url.is_empty())
     return false;
 
-  GURL crack_url(url);
-
-  if (crack_url.SchemeIs(chrome::kHttpScheme) ||
-      crack_url.SchemeIs(chrome::kHttpsScheme) ||
-      crack_url.SchemeIs(chrome::kAboutScheme))
+  if (url.SchemeIs(chrome::kHttpScheme) ||
+      url.SchemeIs(chrome::kHttpsScheme) ||
+      url.SchemeIs(chrome::kAboutScheme))
     return true;
 
   // Additional checking for view-source. Allow only http and https
   // URLs in view source.
-  if (crack_url.SchemeIs(chrome::kViewSourceScheme)) {
-    GURL sub_url(crack_url.path());
+  if (url.SchemeIs(chrome::kViewSourceScheme)) {
+    GURL sub_url(url.path());
     if (sub_url.SchemeIs(chrome::kHttpScheme) ||
         sub_url.SchemeIs(chrome::kHttpsScheme))
       return true;
@@ -879,8 +877,8 @@ bool IsValidUrlScheme(const std::wstring& url, bool is_privileged) {
   }
 
   if (is_privileged &&
-      (crack_url.SchemeIs(chrome::kDataScheme) ||
-       crack_url.SchemeIs(chrome::kExtensionScheme)))
+      (url.SchemeIs(chrome::kDataScheme) ||
+       url.SchemeIs(chrome::kExtensionScheme)))
     return true;
 
   return false;
@@ -1270,49 +1268,34 @@ HRESULT ReadStream(IStream* stream, size_t size, std::string* data) {
   return hr;
 }
 
-ChromeFrameUrl::ChromeFrameUrl()
-    : is_chrome_protocol_(false),
-      attach_to_external_tab_(false),
-      cookie_(0),
-      disposition_(0) {
+ChromeFrameUrl::ChromeFrameUrl() {
+  Reset();
 }
 
 bool ChromeFrameUrl::Parse(const std::wstring& url) {
-  bool ret = false;
-  if (url.empty())
-    return ret;
+  Reset();
+  parsed_url_ = GURL(url);
 
-  url_ = url;
+  if (parsed_url_.is_empty())
+    return false;
 
-  attach_to_external_tab_ = MatchPatternWide(url.c_str(),
-                                             kChromeFrameAttachTabPattern);
-  is_chrome_protocol_ = StartsWith(url, kChromeProtocolPrefix, false);
-  DCHECK(!(attach_to_external_tab_ && is_chrome_protocol_));
+  is_chrome_protocol_ = parsed_url_.SchemeIs(kGCFProtocol);
   if (is_chrome_protocol_) {
-    url_.erase(0, lstrlen(kChromeProtocolPrefix));
+    parsed_url_ = GURL(url.c_str() + lstrlen(kChromeProtocolPrefix));
+    return true;
   }
 
-  if (attach_to_external_tab_) {
-    ret = ParseAttachExternalTabUrl();
-  } else {
-    ret = true;
-  }
-  return ret;
+  return ParseAttachExternalTabUrl();
 }
 
 bool ChromeFrameUrl::ParseAttachExternalTabUrl() {
-  size_t attach_external_tab_start_pos =
-      url_.find(kChromeAttachExternalTabPrefix);
-  if (attach_external_tab_start_pos == std::wstring::npos) {
-    DLOG(ERROR) << "Invalid url:" << url_;
-    return false;
+  std::string query = parsed_url_.query();
+  if (!StartsWithASCII(query, kAttachExternalTabPrefix, false)) {
+    return parsed_url_.is_valid();
   }
 
-  std::wstring url =
-      url_.substr(attach_external_tab_start_pos,
-                  url_.length() - attach_external_tab_start_pos);
-
-  WStringTokenizer tokenizer(url, L"&");
+  attach_to_external_tab_ = true;
+  StringTokenizer tokenizer(query, "&");
   // Skip over kChromeAttachExternalTabPrefix
   tokenizer.GetNext();
   // Read the following items in order.
@@ -1323,79 +1306,86 @@ bool ChromeFrameUrl::ParseAttachExternalTabUrl() {
   // 5. dimension.width
   // 6. dimension.height.
   if (tokenizer.GetNext()) {
-    wchar_t* end_ptr = 0;
-    cookie_ = _wcstoui64(tokenizer.token().c_str(), &end_ptr, 10);
+    char* end_ptr = 0;
+    cookie_ = _strtoui64(tokenizer.token().c_str(), &end_ptr, 10);
   } else {
     return false;
   }
 
   if (tokenizer.GetNext()) {
-    disposition_ = _wtoi(tokenizer.token().c_str());
+    disposition_ = atoi(tokenizer.token().c_str());
   } else {
     return false;
   }
 
   if (tokenizer.GetNext()) {
-    dimensions_.set_x(_wtoi(tokenizer.token().c_str()));
+    dimensions_.set_x(atoi(tokenizer.token().c_str()));
   } else {
     return false;
   }
 
   if (tokenizer.GetNext()) {
-    dimensions_.set_y(_wtoi(tokenizer.token().c_str()));
+    dimensions_.set_y(atoi(tokenizer.token().c_str()));
   } else {
     return false;
   }
 
   if (tokenizer.GetNext()) {
-    dimensions_.set_width(_wtoi(tokenizer.token().c_str()));
+    dimensions_.set_width(atoi(tokenizer.token().c_str()));
   } else {
     return false;
   }
 
   if (tokenizer.GetNext()) {
-    dimensions_.set_height(_wtoi(tokenizer.token().c_str()));
+    dimensions_.set_height(atoi(tokenizer.token().c_str()));
   } else {
     return false;
   }
   return true;
 }
 
-bool CanNavigateInFullTabMode(const ChromeFrameUrl& cf_url,
-                              IInternetSecurityManager* security_manager) {
-  bool is_privileged = false;
+void ChromeFrameUrl::Reset() {
+  attach_to_external_tab_ = false;
+  is_chrome_protocol_ = false;
+  cookie_ = 0;
+  dimensions_.SetRect(0, 0, 0, 0);
+  disposition_ = 0;
+}
 
-  if (!IsValidUrlScheme(cf_url.url(), is_privileged)) {
-    DLOG(WARNING) << __FUNCTION__ << " Disallowing navigation to url: "
-                  << cf_url.url();
+bool CanNavigate(const GURL& url, IInternetSecurityManager* security_manager,
+                 bool is_privileged) {
+  if (!url.is_valid()) {
+    DLOG(ERROR) << "Invalid URL passed to InitiateNavigation: " << url;
     return false;
   }
 
-  if (security_manager) {
-    DWORD zone = URLZONE_INVALID;
-    security_manager->MapUrlToZone(cf_url.url().c_str(), &zone, 0);
-    if (zone == URLZONE_UNTRUSTED) {
+  // No sanity checks if unsafe URLs are allowed
+  if (GetConfigBool(false, kAllowUnsafeURLs))
+    return true;
+
+  if (!IsValidUrlScheme(url, is_privileged)) {
+    DLOG(WARNING) << __FUNCTION__ << " Disallowing navigation to url: " << url;
+    return false;
+  }
+
+  // Allow only about:blank or about:version
+  if (url.SchemeIs(chrome::kAboutScheme)) {
+    if (!LowerCaseEqualsASCII(url.spec(), chrome::kAboutBlankURL) &&
+        !LowerCaseEqualsASCII(url.spec(), chrome::kAboutVersionURL)) {
       DLOG(WARNING) << __FUNCTION__
-                    << " Disallowing navigation to restricted url: "
-                    << cf_url.url();
+                    << " Disallowing navigation to about url: " << url;
       return false;
     }
   }
 
-  if (cf_url.is_chrome_protocol()) {
-    // Allow chrome protocol (gcf:) if -
-    // - explicitly enabled using registry
-    // - for gcf:attach_external_tab
-    // - for gcf:about and gcf:view-source
-    GURL crack_url(cf_url.url());
-    bool allow_gcf_protocol =
-        GetConfigBool(false, kEnableGCFProtocol) ||
-        crack_url.SchemeIs(chrome::kAboutScheme) ||
-        crack_url.SchemeIs(chrome::kViewSourceScheme);
-    if (!allow_gcf_protocol) {
+  // Prevent navigations to URLs in untrusted zone, even in Firefox.
+  if (security_manager) {
+    DWORD zone = URLZONE_INVALID;
+    std::wstring unicode_url = UTF8ToWide(url.spec());
+    security_manager->MapUrlToZone(unicode_url.c_str(), &zone, 0);
+    if (zone == URLZONE_UNTRUSTED) {
       DLOG(WARNING) << __FUNCTION__
-                    << " Disallowing navigation to gcf url: "
-                    << cf_url.url();
+                    << " Disallowing navigation to restricted url: " << url;
       return false;
     }
   }

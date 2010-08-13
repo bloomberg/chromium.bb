@@ -300,7 +300,7 @@ void Bho::ProcessOptInUrls(IWebBrowser2* browser, BSTR url) {
 #endif
 
   std::wstring current_url(url, SysStringLen(url));
-  if (IsValidUrlScheme(current_url, false)) {
+  if (IsValidUrlScheme(GURL(current_url), false)) {
     bool cf_protocol = StartsWith(current_url, kChromeProtocolPrefix, false);
     if (!cf_protocol && IsOptInUrl(current_url.c_str())) {
       DLOG(INFO) << "Opt-in URL. Switching to cf.";
