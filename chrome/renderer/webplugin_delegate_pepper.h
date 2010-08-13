@@ -324,13 +324,13 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate,
 #if defined(ENABLE_GPU)
   // The command buffer used to issue commands to the nested GPU plugin.
   CommandBufferProxy* command_buffer_;
+
+  // Runnable methods that must be cancelled when the 3D context is destroyed.
+  ScopedRunnableMethodFactory<WebPluginDelegatePepper> method_factory3d_;
 #endif
 
   // The id of the current find operation, or -1 if none is in process.
   int find_identifier_;
-
-  // Runnable methods that must be cancelled when the 3D context is destroyed.
-  ScopedRunnableMethodFactory<WebPluginDelegatePepper> method_factory3d_;
 
   // When a choose file operation is outstanding, this will contain a
   // pointer to the callback specified by the plugin. Will be NULL otherwise.

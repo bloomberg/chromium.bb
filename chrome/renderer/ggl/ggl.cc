@@ -350,7 +350,9 @@ uint32 GetParentTextureId(Context* context) {
 
 void SetSwapBuffersCallback(Context* context,
                             Callback1<Context*>::Type* callback) {
+#if defined(ENABLE_GPU)
   context->SetSwapBuffersCallback(callback);
+#endif
 }
 
 bool MakeCurrent(Context* context) {

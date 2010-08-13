@@ -66,7 +66,10 @@
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #endif
 
+#if defined(ENABLE_GPU)
 using gpu::Buffer;
+#endif
+
 using webkit_glue::WebPlugin;
 using webkit_glue::WebPluginDelegate;
 using webkit_glue::WebPluginResourceClient;
@@ -84,7 +87,9 @@ struct Device2DImpl {
 };
 
 struct Device3DImpl {
+#if defined(ENABLE_GPU)
   gpu::CommandBuffer* command_buffer;
+#endif
   bool dynamically_created;
 };
 
@@ -1386,9 +1391,9 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
 #endif  // (OS_LINUX)
 #if defined(ENABLE_GPU)
       command_buffer_(NULL),
+      method_factory3d_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
 #endif
       find_identifier_(-1),
-      method_factory3d_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       current_choose_file_callback_(NULL),
       current_choose_file_user_data_(NULL) {
   // For now we keep a window struct, although it isn't used.
