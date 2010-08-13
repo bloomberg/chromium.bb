@@ -9,6 +9,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_folder_window.h"

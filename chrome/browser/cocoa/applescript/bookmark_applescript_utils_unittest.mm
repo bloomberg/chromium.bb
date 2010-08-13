@@ -4,6 +4,8 @@
 
 #import "chrome/browser/cocoa/applescript/bookmark_applescript_utils_unittest.h"
 
+#include "chrome/browser/bookmarks/bookmark_model.h"
+
 @implementation FakeAppDelegate
 
 @synthesize helper = helper_;
@@ -43,3 +45,18 @@ static FakeScriptCommand* kFakeCurrentCommand;
 }
 
 @end
+
+BookmarkAppleScriptTest::BookmarkAppleScriptTest() {
+  appDelegate_.reset([[FakeAppDelegate alloc] init]);
+  [appDelegate_.get() setHelper:&helper_];
+  [NSApp setDelegate:appDelegate_];
+  const BookmarkNode* root = model().GetBookmarkBarNode();
+  const std::wstring modelString(L"a f1:[ b d c ] d f2:[ e f g ] h ");
+  model_test_utils::AddNodesFromModelString(model(), root, modelString);
+  bookmarkBar_.reset([[BookmarkFolderAppleScript alloc]
+      initWithBookmarkNode:model().GetBookmarkBarNode()]);
+}
+
+BookmarkModel& BookmarkAppleScriptTest::model() {
+  return *helper_.profile()->GetBookmarkModel();
+}

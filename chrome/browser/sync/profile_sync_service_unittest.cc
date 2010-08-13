@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
@@ -14,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"

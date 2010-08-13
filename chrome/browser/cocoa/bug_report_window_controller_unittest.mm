@@ -6,6 +6,7 @@
 
 #include "base/ref_counted.h"
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"

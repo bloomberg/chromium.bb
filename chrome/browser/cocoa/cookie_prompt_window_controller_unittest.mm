@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/cookie_prompt_window_controller.h"
 #include "chrome/browser/cookie_modal_dialog.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/test/testing_profile.h"
 
 // A mock class which implements just enough functionality to

@@ -5,6 +5,7 @@
 #include "chrome/browser/notifications/notification_exceptions_table_model.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"

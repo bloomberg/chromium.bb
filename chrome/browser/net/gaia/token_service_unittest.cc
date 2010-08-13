@@ -14,6 +14,7 @@
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/test/signaling_task.h"
 #include "chrome/test/test_notification_tracker.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TestNotificationTracker doesn't do a deep copy on the notification details.

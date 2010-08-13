@@ -6,35 +6,34 @@
 #define CHROME_TEST_TESTING_PROFILE_H_
 #pragma once
 
-#include "base/base_paths.h"
-#include "base/file_util.h"
-#include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
-#include "chrome/browser/autocomplete/autocomplete_classifier.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/browser_prefs.h"
-#include "chrome/browser/browser_theme_provider.h"
-#include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/favicon_service.h"
-#include "chrome/browser/find_bar_state.h"
-#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
-#include "chrome/browser/geolocation/geolocation_permission_context.h"
-#include "chrome/browser/host_content_settings_map.h"
-#include "chrome/browser/history/history.h"
-#include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/browser/notifications/desktop_notification_service.h"
-#include "chrome/browser/pref_service.h"
-#include "chrome/browser/pref_value_store.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/common/json_pref_store.h"
-#include "chrome/common/net/url_request_context_getter.h"
-#include "chrome/test/testing_pref_service.h"
-#include "net/base/cookie_monster.h"
 
+namespace history {
+class TopSites;
+}
+
+namespace net {
+class CookieMonster;
+}
+
+class AutocompleteClassifier;
+class BookmarkModel;
+class BrowserThemeProvider;
+class DesktopNotificationService;
+class FaviconService;
+class FindBarState;
+class GeolocationContentSettingsMap;
+class GeolocationPermissionContext;
+class HistoryService;
+class HostContentSettingsMap;
+class PrefService;
 class ProfileSyncService;
 class SessionService;
+class TemplateURLModel;
+class TestingPrefService;
+class URLRequestContextGetter;
+class WebKitContext;
 
 class TestingProfile : public Profile {
  public:
@@ -95,6 +94,8 @@ class TestingProfile : public Profile {
   // ownership of |theme_provider|.
   void UseThemeProvider(BrowserThemeProvider* theme_provider);
 
+  TestingPrefService* GetTestingPrefService();
+
   virtual ProfileId GetRuntimeId() {
     return reinterpret_cast<ProfileId>(this);
   }
@@ -143,11 +144,7 @@ class TestingProfile : public Profile {
   // The CookieMonster will only be returned if a Context has been created. Do
   // this by calling CreateRequestContext(). See the note at GetRequestContext
   // for more information.
-  net::CookieMonster* GetCookieMonster() {
-    if (!GetRequestContext())
-      return NULL;
-    return GetRequestContext()->GetCookieStore()->GetCookieMonster();
-  }
+  net::CookieMonster* GetCookieMonster();
   virtual AutocompleteClassifier* GetAutocompleteClassifier() {
     return autocomplete_classifier_.get();
   }
@@ -160,28 +157,12 @@ class TestingProfile : public Profile {
   virtual PasswordStore* GetPasswordStore(ServiceAccessType access) {
     return NULL;
   }
-  virtual TestingPrefService* GetPrefs() {
-    if (!prefs_.get()) {
-      prefs_.reset(new TestingPrefService());
-      Profile::RegisterUserPrefs(prefs_.get());
-      browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
-    }
-    return prefs_.get();
-  }
+  virtual PrefService* GetPrefs();
   virtual TemplateURLModel* GetTemplateURLModel() {
     return template_url_model_.get();
   }
   virtual TemplateURLFetcher* GetTemplateURLFetcher() { return NULL; }
-  virtual history::TopSites* GetTopSites() {
-    if (!top_sites_.get()) {
-      top_sites_ = new history::TopSites(this);
-      if (!temp_dir_.CreateUniqueTempDir())
-        return NULL;
-      FilePath file_name = temp_dir_.path().AppendASCII("TopSites.db");
-      top_sites_->Init(file_name);
-    }
-    return top_sites_;
-  }
+  virtual history::TopSites* GetTopSites();
   virtual DownloadManager* GetDownloadManager() { return NULL; }
   virtual PersonalDataManager* GetPersonalDataManager() { return NULL; }
   virtual bool HasCreatedDownloadManager() const { return false; }
@@ -211,30 +192,10 @@ class TestingProfile : public Profile {
 
   virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
   virtual UserStyleSheetWatcher* GetUserStyleSheetWatcher() { return NULL; }
-  virtual FindBarState* GetFindBarState() {
-    if (!find_bar_state_.get())
-      find_bar_state_.reset(new FindBarState());
-    return find_bar_state_.get();
-  }
-  virtual HostContentSettingsMap* GetHostContentSettingsMap() {
-    if (!host_content_settings_map_.get())
-      host_content_settings_map_ = new HostContentSettingsMap(this);
-    return host_content_settings_map_.get();
-  }
-  virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap() {
-    if (!geolocation_content_settings_map_.get()) {
-      geolocation_content_settings_map_ =
-          new GeolocationContentSettingsMap(this);
-    }
-    return geolocation_content_settings_map_.get();
-  }
-  virtual GeolocationPermissionContext* GetGeolocationPermissionContext() {
-    if (!geolocation_permission_context_.get()) {
-      geolocation_permission_context_ =
-          new GeolocationPermissionContext(this);
-    }
-    return geolocation_permission_context_.get();
-  }
+  virtual FindBarState* GetFindBarState();
+  virtual HostContentSettingsMap* GetHostContentSettingsMap();
+  virtual GeolocationContentSettingsMap* GetGeolocationContentSettingsMap();
+  virtual GeolocationPermissionContext* GetGeolocationPermissionContext();
   virtual HostZoomMap* GetHostZoomMap() { return NULL; }
   void set_session_service(SessionService* session_service);
   virtual SessionService* GetSessionService() { return session_service_.get(); }
@@ -265,24 +226,13 @@ class TestingProfile : public Profile {
   virtual void ResetTabRestoreService() {}
   virtual SpellCheckHost* GetSpellCheckHost() { return NULL; }
   virtual void ReinitializeSpellCheckHost(bool force) { }
-  virtual WebKitContext* GetWebKitContext() {
-    if (webkit_context_ == NULL)
-      webkit_context_ = new WebKitContext(this);
-    return webkit_context_;
-  }
+  virtual WebKitContext* GetWebKitContext();
   virtual WebKitContext* GetOffTheRecordWebKitContext() { return NULL; }
   virtual void MarkAsCleanShutdown() {}
   virtual void InitExtensions() {}
   virtual void InitWebResources() {}
   virtual NTPResourceCache* GetNTPResourceCache();
-  virtual DesktopNotificationService* GetDesktopNotificationService() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-    if (!desktop_notification_service_.get()) {
-       desktop_notification_service_.reset(new DesktopNotificationService(
-           this, NULL));
-    }
-    return desktop_notification_service_.get();
-  }
+  virtual DesktopNotificationService* GetDesktopNotificationService();
   virtual BackgroundContentsService* GetBackgroundContentsService() {
     return NULL;
   }

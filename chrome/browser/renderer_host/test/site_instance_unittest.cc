@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/child_process_security_policy.h"

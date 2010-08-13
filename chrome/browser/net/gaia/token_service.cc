@@ -5,9 +5,11 @@
 #include "chrome/browser/net/gaia/token_service.h"
 
 #include "base/string_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
 
 // Unfortunately kNumServices must be defined in the .h.

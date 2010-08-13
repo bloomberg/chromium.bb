@@ -5,19 +5,39 @@
 #include "chrome/test/testing_profile.h"
 
 #include "build/build_config.h"
+
+#include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/message_loop_proxy.h"
+#include "base/path_service.h"
 #include "base/string_number_conversions.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/browser_prefs.h"
+#include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
+#include "chrome/browser/favicon_service.h"
+#include "chrome/browser/find_bar_state.h"
+#include "chrome/browser/geolocation/geolocation_content_settings_map.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
+#include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
+#include "chrome/test/testing_pref_service.h"
+#include "net/base/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "webkit/database/database_tracker.h"
@@ -300,10 +320,20 @@ void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
   theme_provider_.reset(theme_provider);
 }
 
+TestingPrefService* TestingProfile::GetTestingPrefService() {
+  return static_cast<TestingPrefService*>(GetPrefs());
+}
+
 webkit_database::DatabaseTracker* TestingProfile::GetDatabaseTracker() {
   if (!db_tracker_)
     db_tracker_ = new webkit_database::DatabaseTracker(GetPath(), false);
   return db_tracker_;
+}
+
+net::CookieMonster* TestingProfile::GetCookieMonster() {
+  if (!GetRequestContext())
+    return NULL;
+  return GetRequestContext()->GetCookieStore()->GetCookieMonster();
 }
 
 void TestingProfile::InitThemes() {
@@ -316,6 +346,26 @@ void TestingProfile::InitThemes() {
     theme_provider_->Init(this);
     created_theme_provider_ = true;
   }
+}
+
+PrefService* TestingProfile::GetPrefs() {
+  if (!prefs_.get()) {
+    prefs_.reset(new TestingPrefService());
+    Profile::RegisterUserPrefs(prefs_.get());
+    browser::RegisterAllPrefs(prefs_.get(), prefs_.get());
+  }
+  return prefs_.get();
+}
+
+history::TopSites* TestingProfile::GetTopSites() {
+  if (!top_sites_.get()) {
+    top_sites_ = new history::TopSites(this);
+    if (!temp_dir_.CreateUniqueTempDir())
+      return NULL;
+    FilePath file_name = temp_dir_.path().AppendASCII("TopSites.db");
+    top_sites_->Init(file_name);
+  }
+  return top_sites_;
 }
 
 URLRequestContextGetter* TestingProfile::GetRequestContext() {
@@ -333,14 +383,59 @@ URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
   return extensions_request_context_.get();
 }
 
+FindBarState* TestingProfile::GetFindBarState() {
+  if (!find_bar_state_.get())
+    find_bar_state_.reset(new FindBarState());
+  return find_bar_state_.get();
+}
+
+HostContentSettingsMap* TestingProfile::GetHostContentSettingsMap() {
+  if (!host_content_settings_map_.get())
+    host_content_settings_map_ = new HostContentSettingsMap(this);
+  return host_content_settings_map_.get();
+}
+
+GeolocationContentSettingsMap*
+TestingProfile::GetGeolocationContentSettingsMap() {
+  if (!geolocation_content_settings_map_.get()) {
+    geolocation_content_settings_map_ =
+        new GeolocationContentSettingsMap(this);
+  }
+  return geolocation_content_settings_map_.get();
+}
+
+GeolocationPermissionContext*
+TestingProfile::GetGeolocationPermissionContext() {
+  if (!geolocation_permission_context_.get()) {
+    geolocation_permission_context_ =
+        new GeolocationPermissionContext(this);
+  }
+  return geolocation_permission_context_.get();
+}
+
 void TestingProfile::set_session_service(SessionService* session_service) {
   session_service_ = session_service;
+}
+
+WebKitContext* TestingProfile::GetWebKitContext() {
+  if (webkit_context_ == NULL)
+    webkit_context_ = new WebKitContext(this);
+  return webkit_context_;
 }
 
 NTPResourceCache* TestingProfile::GetNTPResourceCache() {
   if (!ntp_resource_cache_.get())
     ntp_resource_cache_.reset(new NTPResourceCache(this));
   return ntp_resource_cache_.get();
+}
+
+DesktopNotificationService* TestingProfile::GetDesktopNotificationService() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (!desktop_notification_service_.get()) {
+    desktop_notification_service_.reset(new DesktopNotificationService(
+        this, NULL));
+  }
+  return desktop_notification_service_.get();
 }
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {

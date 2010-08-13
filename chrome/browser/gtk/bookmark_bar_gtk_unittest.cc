@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/bookmark_bar_gtk.h"
 
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/gtk/tabstrip_origin_provider.h"

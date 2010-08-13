@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"  // namespace bookmarks
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_folder_button_cell.h"

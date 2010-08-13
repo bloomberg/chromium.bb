@@ -39,12 +39,13 @@
 #include <string>
 #include <vector>
 #include "base/scoped_ptr.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
-#include "chrome/test/testing_profile.h"
 #include "base/gtest_prod_util.h"
 
 class URLRequestContextGetter;
+class Profile;
 
 // The TokenService is a Profile member, so all calls are expected
 // from the UI thread.

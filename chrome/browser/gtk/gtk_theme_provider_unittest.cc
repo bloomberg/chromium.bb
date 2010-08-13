@@ -5,6 +5,7 @@
 #include <gtk/gtk.h>
 
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"

@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -193,7 +194,7 @@ class TabContentsTest : public RenderViewHostTestHarness {
     profile_.reset(profile);
 
     // Set some (WebKit) user preferences.
-    TestingPrefService* pref_services = profile->GetPrefs();
+    TestingPrefService* pref_services = profile->GetTestingPrefService();
 #if defined(TOOLKIT_USES_GTK)
     pref_services->SetUserPref(prefs::kUsesSystemTheme,
                                Value::CreateBooleanValue(false));

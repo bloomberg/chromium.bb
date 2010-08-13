@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"

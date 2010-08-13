@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"

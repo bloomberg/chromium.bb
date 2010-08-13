@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"

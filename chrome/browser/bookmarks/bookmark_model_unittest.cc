@@ -6,7 +6,10 @@
 
 #include "app/tree_node_iterator.h"
 #include "app/tree_node_model.h"
+#include "base/base_paths.h"
+#include "base/file_util.h"
 #include "base/hash_tables.h"
+#include "base/path_service.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"

@@ -7,6 +7,7 @@
 #include "base/pickle.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
 #include "chrome/test/testing_profile.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

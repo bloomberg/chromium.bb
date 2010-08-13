@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/in_process_webkit/webkit_thread.h"

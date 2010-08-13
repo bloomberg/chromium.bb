@@ -1,8 +1,11 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
 #include "base/scoped_vector.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/common/pref_names.h"

@@ -21,6 +21,7 @@
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +51,7 @@ class ProfileSyncServicePreferenceTest
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
     profile_->set_has_history_service(true);
-    prefs_ = profile_->GetPrefs();
+    prefs_ = profile_->GetTestingPrefService();
 
     prefs_->RegisterStringPref(not_synced_preference_name_.c_str(),
                                not_synced_preference_default_value_);
@@ -456,8 +457,8 @@ TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedPreferences) {
   // Switch kHomePage to managed and set a different value.
   scoped_ptr<Value> managed_value(
       Value::CreateStringValue("http://example.com/managed"));
-  profile_->GetPrefs()->SetManagedPref(prefs::kHomePage,
-                                       managed_value->DeepCopy());
+  profile_->GetTestingPrefService()->SetManagedPref(
+      prefs::kHomePage, managed_value->DeepCopy());
 
   // Sync node should be gone.
   EXPECT_EQ(sync_api::kInvalidId,
@@ -480,7 +481,7 @@ TEST_F(ProfileSyncServicePreferenceTest, DynamicManagedPreferences) {
   EXPECT_TRUE(managed_value->Equals(&GetPreferenceValue(prefs::kHomePage)));
 
   // Switch kHomePage back to unmanaged.
-  profile_->GetPrefs()->RemoveManagedPref(prefs::kHomePage);
+  profile_->GetTestingPrefService()->RemoveManagedPref(prefs::kHomePage);
 
   // Sync value should be picked up.
   EXPECT_TRUE(sync_value->Equals(&GetPreferenceValue(prefs::kHomePage)));

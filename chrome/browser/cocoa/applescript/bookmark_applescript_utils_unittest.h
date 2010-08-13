@@ -17,6 +17,8 @@
 #include "chrome/test/model_test_utils.h"
 #include "testing/platform_test.h"
 
+class BookmarkModel;
+
 // The fake object that acts as our app's delegate, useful for testing purposes.
 @interface FakeAppDelegate : AppController {
  @public
@@ -39,24 +41,13 @@
 // The base class for all our bookmark releated unit tests.
 class BookmarkAppleScriptTest : public CocoaTest {
  public:
-  BookmarkAppleScriptTest() {
-    appDelegate_.reset([[FakeAppDelegate alloc] init]);
-    [appDelegate_.get() setHelper:&helper_];
-    [NSApp setDelegate:appDelegate_];
-    const BookmarkNode* root = model().GetBookmarkBarNode();
-    const std::wstring modelString(L"a f1:[ b d c ] d f2:[ e f g ] h ");
-    model_test_utils::AddNodesFromModelString(model(), root, modelString);
-    bookmarkBar_.reset([[BookmarkFolderAppleScript alloc]
-        initWithBookmarkNode:model().GetBookmarkBarNode()]);
-  }
+  BookmarkAppleScriptTest();
  private:
   BrowserTestHelper helper_;
   scoped_nsobject<FakeAppDelegate> appDelegate_;
  protected:
   scoped_nsobject<BookmarkFolderAppleScript> bookmarkBar_;
-  BookmarkModel& model() {
-    return *helper_.profile()->GetBookmarkModel();
-  }
+  BookmarkModel& model();
 };
 
 #endif
