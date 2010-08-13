@@ -89,11 +89,6 @@ bool AllowExtensionResourceLoad(URLRequest* request,
   if (origin_url.SchemeIs(chrome::kExtensionScheme))
     return true;
 
-  // Allow extenion's options pages to access resources media resources.
-  // This will have an origin of "null".
-  if (LowerCaseEqualsASCII(info->frame_origin(), "null"))
-    return true;
-
   // Extension resources should only be loadable from web pages which the
   // extension has host permissions to (and therefore could be running script
   // in, which might need access to the extension resources).
