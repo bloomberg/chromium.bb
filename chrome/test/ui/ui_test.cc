@@ -314,7 +314,7 @@ static CommandLine* CreateHttpServerCommandLine() {
   script_path = script_path.AppendASCII("new-run-webkit-httpd");
 
   CommandLine* cmd_line = CreatePythonCommandLine();
-  cmd_line->AppendLooseValue(script_path.ToWStringHack());
+  cmd_line->AppendArgPath(script_path);
   return cmd_line;
 }
 
@@ -1117,14 +1117,15 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
   CommandLine command_line(command);
 
   // Add any explicit command line flags passed to the process.
-  std::wstring extra_chrome_flags =
-      CommandLine::ForCurrentProcess()->GetSwitchValue(kExtraChromeFlagsSwitch);
+  CommandLine::StringType extra_chrome_flags =
+      CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+          kExtraChromeFlagsSwitch);
   if (!extra_chrome_flags.empty()) {
     // Split by spaces and append to command line
-    std::vector<std::wstring> flags;
+    std::vector<CommandLine::StringType> flags;
     SplitString(extra_chrome_flags, ' ', &flags);
     for (size_t i = 0; i < flags.size(); ++i)
-      command_line.AppendLooseValue(flags[i]);
+      command_line.AppendArgNative(flags[i]);
   }
 
   // No first-run dialogs, please.

@@ -64,7 +64,7 @@ TEST_F(ChromeMainTest, ReuseBrowserInstanceWhenOpeningFile) {
   FilePath test_file = test_data_directory_.AppendASCII("empty.html");
 
   CommandLine command_line(CommandLine::ARGUMENTS_ONLY);
-  command_line.AppendLooseValue(test_file.ToWStringHack());
+  command_line.AppendArgPath(test_file);
   ASSERT_TRUE(LaunchAnotherBrowserBlockUntilClosed(command_line));
 
   ASSERT_TRUE(automation()->IsURLDisplayed(net::FilePathToFileURL(test_file)));

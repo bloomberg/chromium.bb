@@ -104,10 +104,8 @@ void LoginScreen::OnOffTheRecordLoginSuccess() {
 }
 
 void LoginScreen::AppendStartUrlToCmdline() {
-  if (start_url_.is_valid()) {
-    CommandLine::ForCurrentProcess()->AppendLooseValue(
-        UTF8ToWide(start_url_.spec()));
-  }
+  if (start_url_.is_valid())
+    CommandLine::ForCurrentProcess()->AppendArg(start_url_.spec());
 }
 
 void LoginScreen::ShowError(int error_id, const std::string& details) {

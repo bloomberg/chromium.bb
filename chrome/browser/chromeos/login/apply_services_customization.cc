@@ -136,8 +136,8 @@ void ApplyServicesCustomization::Apply(const std::string& manifest) {
   if (!customization.initial_start_page_url().empty()) {
     // Append partner's start page url to command line so it gets opened
     // on browser startup.
-    CommandLine::ForCurrentProcess()->AppendLooseValue(
-        UTF8ToWide(customization.initial_start_page_url()));
+    CommandLine::ForCurrentProcess()->AppendArg(
+        customization.initial_start_page_url());
     LOG(INFO) << "initial_start_page_url: "
               << customization.initial_start_page_url();
   }

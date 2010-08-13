@@ -343,8 +343,8 @@ class AutomationProxyTest2 : public AutomationProxyVisibleTest {
 
     document2_ = test_data_directory_.AppendASCII("title2.html");
     launch_arguments_ = CommandLine(CommandLine::ARGUMENTS_ONLY);
-    launch_arguments_.AppendLooseValue(document1_.ToWStringHack());
-    launch_arguments_.AppendLooseValue(document2_.ToWStringHack());
+    launch_arguments_.AppendArgPath(document1_);
+    launch_arguments_.AppendArgPath(document2_);
   }
 
   FilePath document1_;
@@ -560,7 +560,7 @@ class AutomationProxyTest3 : public UITest {
 
     dom_automation_enabled_ = true;
     launch_arguments_ = CommandLine(CommandLine::ARGUMENTS_ONLY);
-    launch_arguments_.AppendLooseValue(document1_.ToWStringHack());
+    launch_arguments_.AppendArgPath(document1_);
   }
 
   FilePath document1_;

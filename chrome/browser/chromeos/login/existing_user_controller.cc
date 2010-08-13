@@ -333,10 +333,8 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
 }
 
 void ExistingUserController::AppendStartUrlToCmdline() {
-  if (start_url_.is_valid()) {
-    CommandLine::ForCurrentProcess()->AppendLooseValue(
-        UTF8ToWide(start_url_.spec()));
-  }
+  if (start_url_.is_valid())
+    CommandLine::ForCurrentProcess()->AppendArg(start_url_.spec());
 }
 
 void ExistingUserController::ClearCaptchaState() {

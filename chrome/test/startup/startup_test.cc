@@ -50,7 +50,7 @@ class StartupTest : public UITest {
         FilePath(FilePath::kCurrentDirectory),
         FilePath(FILE_PATH_LITERAL("simple.html")));
     ASSERT_TRUE(file_util::PathExists(file_url));
-    launch_arguments_.AppendLooseValue(file_url.ToWStringHack());
+    launch_arguments_.AppendArgPath(file_url);
   }
 
   // Load a complex html file on startup represented by |which_tab|.
@@ -68,7 +68,7 @@ class StartupTest : public UITest {
         .AppendASCII("page_cycler").AppendASCII("moz")
         .AppendASCII(this_domain).AppendASCII("index.html");
     GURL file_url = net::FilePathToFileURL(page_cycler_path).Resolve("?skip");
-    launch_arguments_.AppendLooseValue(ASCIIToWide(file_url.spec()));
+    launch_arguments_.AppendArg(file_url.spec());
   }
 
   // Use the given profile in the test data extensions/profiles dir.  This tests

@@ -72,7 +72,7 @@ CommandLine CommandLineForUrl(const std::string& url) {
     cmd_line->AppendSwitch(switches::kNoProcessSingletonDialog);
 
   CommandLine new_cmd_line(*cmd_line);
-  new_cmd_line.AppendLooseValue(ASCIIToWide(url));
+  new_cmd_line.AppendArg(url);
   return new_cmd_line;
 }
 

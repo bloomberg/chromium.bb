@@ -655,7 +655,7 @@ CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
   script_path = script_path.AppendASCII("new-run-webkit-websocketserver");
 
   CommandLine* cmd_line = CreatePythonCommandLine();
-  cmd_line->AppendLooseValue(script_path.ToWStringHack());
+  cmd_line->AppendArgPath(script_path);
   return cmd_line;
 }
 

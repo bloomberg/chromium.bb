@@ -205,7 +205,7 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
         switches::kLoginUser,
         UserManager::Get()->logged_in_user().email());
     if (start_url.is_valid())
-      command_line.AppendLooseValue(UTF8ToWide(start_url.spec()));
+      command_line.AppendArg(start_url.spec());
     CrosLibrary::Get()->GetLoginLibrary()->RestartJob(
         getpid(),
         command_line.command_line_string());

@@ -66,13 +66,13 @@ IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_OpenURLsPopup) {
 // to start on most BuildBot runs and I don't want to add longer delays to
 // the test. I'll circle back and make this work properly when i get a chance.
 IN_PROC_BROWSER_TEST_F(BrowserInitTest, FLAKY_BlockBadURLs) {
-  const std::wstring testurlstr(L"http://localhost/");
-  const GURL testurl(WideToUTF16Hack(testurlstr));
+  const char* testurlstr = "http://localhost/";
+  const GURL testurl(testurlstr);
   CommandLine cmdline(CommandLine::ARGUMENTS_ONLY);
-  cmdline.AppendLooseValue(testurlstr);
-  cmdline.AppendLooseValue(std::wstring(L"javascript:alert('boo')"));
-  cmdline.AppendLooseValue(testurlstr);
-  cmdline.AppendLooseValue(std::wstring(L"view-source:http://localhost/"));
+  cmdline.AppendArg(testurlstr);
+  cmdline.AppendArg("javascript:alert('boo')");
+  cmdline.AppendArg(testurlstr);
+  cmdline.AppendArg("view-source:http://localhost/");
 
   // This will pick up the current browser instance.
   BrowserInit::LaunchWithProfile launch(FilePath(), cmdline);

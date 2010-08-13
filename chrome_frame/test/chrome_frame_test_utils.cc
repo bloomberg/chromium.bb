@@ -159,7 +159,7 @@ base::ProcessHandle LaunchExecutable(const std::wstring& executable,
     }
   } else {
     CommandLine cmdline((FilePath(path)));
-    cmdline.AppendLooseValue(argument);
+    cmdline.AppendArgNative(argument);
     if (!base::LaunchApp(cmdline, false, false, &process)) {
       LOG(ERROR) << "LaunchApp failed: " << ::GetLastError();
     }
@@ -181,11 +181,8 @@ base::ProcessHandle LaunchChrome(const std::wstring& url) {
   path = path.AppendASCII(kChromeImageName);
 
   CommandLine cmd(path);
-  std::wstring args = L"--";
-  args += ASCIIToWide(switches::kNoFirstRun);
-  args += L" ";
-  args += url;
-  cmd.AppendLooseValue(args);
+  cmd.AppendSwitch(switches::kNoFirstRun);
+  cmd.AppendArgNative(url);
 
   base::ProcessHandle process = NULL;
   base::LaunchApp(cmd, false, false, &process);
