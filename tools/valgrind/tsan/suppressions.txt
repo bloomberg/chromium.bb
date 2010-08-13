@@ -32,6 +32,13 @@
   fun:*media*PipelineImpl*GetCurrentTime*
 }
 
+{
+  bug_51890
+  ThreadSanitizer:Race
+  ...
+  fun:history::TopSites::*
+}
+
 ############################
 # Real races in third_party
 {
