@@ -48,14 +48,13 @@ const char kPopupsDisallowed[] =
     "Popups are only supported from tab-contents views.";
 
 // Keys.
-const wchar_t kUrlKey[] = L"url";
-const wchar_t kWidthKey[] = L"width";
-const wchar_t kHeightKey[] = L"height";
-const wchar_t kTopKey[] = L"top";
-const wchar_t kLeftKey[] = L"left";
-const wchar_t kGiveFocusKey[] = L"giveFocus";
-const wchar_t kDomAnchorKey[] = L"domAnchor";
-const wchar_t kBorderStyleKey[] = L"borderStyle";
+const char kWidthKey[] = "width";
+const char kHeightKey[] = "height";
+const char kTopKey[] = "top";
+const char kLeftKey[] = "left";
+const char kGiveFocusKey[] = "giveFocus";
+const char kDomAnchorKey[] = "domAnchor";
+const char kBorderStyleKey[] = "borderStyle";
 
 // chrome enumeration values
 const char kRectangleChrome[] = "rectangle";

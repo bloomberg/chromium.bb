@@ -14,10 +14,8 @@
 #include "chrome/common/json_value_serializer.h"
 
 // Constants for keeping track of extension preferences.
-const wchar_t kLocation[] = L"location";
-const wchar_t kState[] = L"state";
-const wchar_t kExternalCrx[] = L"external_crx";
-const wchar_t kExternalVersion[] = L"external_version";
+const char kExternalCrx[] = "external_crx";
+const char kExternalVersion[] = "external_version";
 
 ExternalPrefExtensionProvider::ExternalPrefExtensionProvider() {
   FilePath json_file;
