@@ -3301,27 +3301,26 @@ void RenderView::didChangeScrollOffset(WebFrame* frame) {
 
 void RenderView::reportFindInPageMatchCount(int request_id, int count,
                                             bool final_update) {
+  int active_match_ordinal = -1;  // -1 = don't update active match ordinal
+  if (!count)
+    active_match_ordinal = 0;
+
+  IPC::Message* msg = new ViewHostMsg_Find_Reply(
+      routing_id_,
+      request_id,
+      count,
+      gfx::Rect(),
+      active_match_ordinal,
+      final_update);
+
   // If we have a message that has been queued up, then we should just replace
   // it. The ACK from the browser will make sure it gets sent when the browser
   // wants it.
   if (queued_find_reply_message_.get()) {
-    IPC::Message* msg = new ViewHostMsg_Find_Reply(
-        routing_id_,
-        request_id,
-        count,
-        gfx::Rect(),
-        -1,  // Don't update active match ordinal.
-        final_update);
     queued_find_reply_message_.reset(msg);
   } else {
     // Send the search result over to the browser process.
-    Send(new ViewHostMsg_Find_Reply(
-        routing_id_,
-        request_id,
-        count,
-        gfx::Rect(),
-        -1,  // Don't update active match ordinal.
-        final_update));
+    Send(msg);
   }
 }
 
@@ -3335,15 +3334,6 @@ void RenderView::reportFindInPageSelection(int request_id,
                                   selection_rect,
                                   active_match_ordinal,
                                   false));
-}
-
-void RenderView::ReportNoFindInPageResults(int request_id) {
-  Send(new ViewHostMsg_Find_Reply(routing_id_,
-                                  request_id,
-                                  0,
-                                  gfx::Rect(),
-                                  0,
-                                  true));
 }
 
 // webkit_glue::WebPluginPageDelegate -----------------------------------------
@@ -3634,7 +3624,13 @@ void RenderView::OnFind(int request_id, const string16& search_text,
       if (GetWebPluginFromPluginDocument()->startFind(
           search_text, options.matchCase, request_id)) {
       } else {
-        ReportNoFindInPageResults(request_id);
+        // Send "no results".
+        Send(new ViewHostMsg_Find_Reply(routing_id_,
+                                        request_id,
+                                        0,
+                                        gfx::Rect(),
+                                        0,
+                                        true));
       }
     }
     return;

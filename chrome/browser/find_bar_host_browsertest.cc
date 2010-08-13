@@ -429,11 +429,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnSelectableText) {
 
   int ordinal = 0;
   TabContents* tab = browser()->GetSelectedTabContents();
+  // The search string is present but doesn't qualify to be found
   EXPECT_EQ(0, FindInPageWchar(tab, L"text",
                                kFwd, kIgnoreCase, &ordinal));
-  EXPECT_EQ(-1, ordinal);  // Nothing is selected.
-  EXPECT_EQ(0, FindInPageWchar(tab, L"Non-existing string",
-                               kFwd, kIgnoreCase, &ordinal));
+  // With zero results there should be no current selection.
   EXPECT_EQ(0, ordinal);
 }
 

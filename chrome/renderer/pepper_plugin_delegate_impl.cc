@@ -348,11 +348,7 @@ PepperPluginDelegateImpl::CreateVideoDecoder(
 void PepperPluginDelegateImpl::DidChangeNumberOfFindResults(int identifier,
                                                            int total,
                                                            bool final_result) {
-  if (total == 0) {
-    render_view_->ReportNoFindInPageResults(identifier);
-  } else {
-    render_view_->reportFindInPageMatchCount(identifier, total, final_result);
-  }
+  render_view_->reportFindInPageMatchCount(identifier, total, final_result);
 }
 
 void PepperPluginDelegateImpl::DidChangeSelectedFindResult(int identifier,

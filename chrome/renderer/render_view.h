@@ -206,10 +206,6 @@ class RenderView : public RenderWidget,
     send_content_state_immediately_ = value;
   }
 
-  // Called to indicate that there are no matching search results. This is
-  // used internally and also called by plugins that support find in page.
-  void ReportNoFindInPageResults(int request_id);
-
   // Called from JavaScript window.external.AddSearchProvider() to add a
   // keyword for a provider described in the given OpenSearch document.
   void AddSearchProvider(const std::string& url);
