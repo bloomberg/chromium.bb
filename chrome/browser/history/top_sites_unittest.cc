@@ -82,7 +82,7 @@ class TopSitesTest : public testing::Test {
   }
 
   // Callback for TopSites::GetMostVisitedURLs.
-  void OnTopSitesAvailable(const history::MostVisitedURLList& data) {
+  void OnTopSitesAvailable(history::MostVisitedURLList data) {
     urls_ = data;
     number_of_callbacks_++;
   }
@@ -976,6 +976,7 @@ TEST_F(TopSitesTest, QueueingRequestsForTopSites) {
 }
 
 TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   CancelableRequestConsumer c1;
   CancelableRequestConsumer c2;
   top_sites().GetMostVisitedURLs(
@@ -1010,6 +1011,7 @@ TEST_F(TopSitesTest, CancelingRequestsForTopSites) {
   pages.push_back(url);
 
   top_sites().OnTopSitesAvailable(0, pages);
+  MessageLoop::current()->RunAllPending();
 
   // 1 request was canceled.
   EXPECT_EQ(2u, number_of_callbacks());

@@ -387,8 +387,8 @@ void TopSites::MigratePinnedURLs() {
 
 void TopSites::ApplyBlacklistAndPinnedURLs(const MostVisitedURLList& urls,
                                            MostVisitedURLList* out) {
-  MostVisitedURLList urls_copy;
   lock_.AssertAcquired();
+  MostVisitedURLList urls_copy;
   for (size_t i = 0; i < urls.size(); i++) {
     if (!IsBlacklisted(urls[i].url))
       urls_copy.push_back(urls[i]);
@@ -575,34 +575,47 @@ void TopSites::GenerateCanonicalURLs() {
 
 void TopSites::StoreMostVisited(MostVisitedURLList* most_visited) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
-  AutoLock lock(lock_);
-  top_sites_.clear();
-  // Take ownership of the most visited data.
-  top_sites_.swap(*most_visited);
-  waiting_for_results_ = false;
+  MostVisitedURLList filtered_urls;
+  PendingCallbackSet callbacks;
+  {
+    AutoLock lock(lock_);
+    top_sites_.clear();
+    // Take ownership of the most visited data.
+    top_sites_.swap(*most_visited);
+    waiting_for_results_ = false;
 
-  // Save the redirect information for quickly mapping to the canonical URLs.
-  GenerateCanonicalURLs();
+    // Save the redirect information for quickly mapping to the canonical URLs.
+    GenerateCanonicalURLs();
 
-  for (size_t i = 0; i < top_sites_.size(); i++) {
-    const MostVisitedURL& mv = top_sites_[i];
-    std::map<GURL, Images>::iterator it = temp_thumbnails_map_.begin();
-    GURL canonical_url = GetCanonicalURL(mv.url);
-    for (; it != temp_thumbnails_map_.end(); it++) {
-      // Must map all temp URLs to canonical ones.
-      // temp_thumbnails_map_ contains non-canonical URLs, because
-      // when we add a temp thumbnail, redirect chain is not known.
-      // This is slow, but temp_thumbnails_map_ should have very few URLs.
-      if (canonical_url == GetCanonicalURL(it->first)) {
-        SetPageThumbnailEncoded(mv.url, it->second.thumbnail,
-                                it->second.thumbnail_score);
-        temp_thumbnails_map_.erase(it);
-        break;
+    for (size_t i = 0; i < top_sites_.size(); i++) {
+      const MostVisitedURL& mv = top_sites_[i];
+      std::map<GURL, Images>::iterator it = temp_thumbnails_map_.begin();
+      GURL canonical_url = GetCanonicalURL(mv.url);
+      for (; it != temp_thumbnails_map_.end(); it++) {
+        // Must map all temp URLs to canonical ones.
+        // temp_thumbnails_map_ contains non-canonical URLs, because
+        // when we add a temp thumbnail, redirect chain is not known.
+        // This is slow, but temp_thumbnails_map_ should have very few URLs.
+        if (canonical_url == GetCanonicalURL(it->first)) {
+          SetPageThumbnailEncoded(mv.url, it->second.thumbnail,
+                                  it->second.thumbnail_score);
+          temp_thumbnails_map_.erase(it);
+          break;
+        }
       }
     }
-  }
-  if (top_sites_.size() >= kTopSitesNumber)
-    temp_thumbnails_map_.clear();
+    if (top_sites_.size() >= kTopSitesNumber)
+      temp_thumbnails_map_.clear();
+
+    if (pending_callbacks_.empty())
+      return;
+
+    ApplyBlacklistAndPinnedURLs(top_sites_, &filtered_urls);
+    callbacks.swap(pending_callbacks_);
+  }  // lock_ is released.
+  // Process callbacks outside the lock - ForwardResults may cause
+  // thread switches.
+  ProcessPendingCallbacks(callbacks, filtered_urls);
 }
 
 void TopSites::StoreRedirectChain(const RedirectList& redirects,
@@ -817,23 +830,19 @@ void TopSites::OnTopSitesAvailable(
   AddPrepopulatedPages(&pages);
   ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, NewRunnableMethod(
       this, &TopSites::UpdateMostVisited, pages));
+}
 
-  if (!pending_callbacks_.empty()) {
-    MostVisitedURLList filtered_urls;
-    {
-      AutoLock lock(lock_);
-      ApplyBlacklistAndPinnedURLs(pages, &filtered_urls);
-    }
-
-    PendingCallbackSet::iterator i;
-    for (i = pending_callbacks_.begin();
-         i != pending_callbacks_.end(); ++i) {
-      scoped_refptr<CancelableRequest<GetTopSitesCallback> > request = *i;
-      if (!request->canceled())
-        request->ForwardResult(GetTopSitesCallback::TupleType(filtered_urls));
-    }
-    pending_callbacks_.clear();
+// static
+void TopSites::ProcessPendingCallbacks(PendingCallbackSet pending_callbacks,
+                                       const MostVisitedURLList& urls) {
+  PendingCallbackSet::iterator i;
+  for (i = pending_callbacks.begin();
+       i != pending_callbacks.end(); ++i) {
+    scoped_refptr<CancelableRequest<GetTopSitesCallback> > request = *i;
+    if (!request->canceled())
+      request->ForwardResult(GetTopSitesCallback::TupleType(urls));
   }
+  pending_callbacks.clear();
 }
 
 void TopSites::OnThumbnailAvailable(CancelableRequestProvider::Handle handle,

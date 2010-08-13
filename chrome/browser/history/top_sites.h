@@ -82,7 +82,9 @@ class TopSites :
                         const ThumbnailScore& score);
 
   // Callback for GetMostVisitedURLs.
-  typedef Callback1<const MostVisitedURLList&>::Type GetTopSitesCallback;
+  typedef Callback1<MostVisitedURLList>::Type GetTopSitesCallback;
+  typedef std::set<scoped_refptr<CancelableRequest<GetTopSitesCallback> > >
+      PendingCallbackSet;
 
   // Returns a list of most visited URLs via a callback.
   // NOTE: the callback may be called immediately if we have the data cached.
@@ -178,6 +180,10 @@ class TopSites :
   // Called when history service returns a list of top URLs.
   void OnTopSitesAvailable(CancelableRequestProvider::Handle handle,
                            MostVisitedURLList data);
+
+  // Returns a list of urls to each pending callback.
+  static void ProcessPendingCallbacks(PendingCallbackSet pending_callbacks,
+                                      const MostVisitedURLList& urls);
 
   // Called when history service returns a thumbnail.
   void OnThumbnailAvailable(CancelableRequestProvider::Handle handle,
@@ -332,8 +338,6 @@ class TopSites :
   // The map of requests for the top sites list. Can only be
   // non-empty at startup. After we read the top sites from the DB, we'll
   // always have a cached list.
-  typedef std::set<scoped_refptr<CancelableRequest<GetTopSitesCallback> > >
-      PendingCallbackSet;
   PendingCallbackSet pending_callbacks_;
 
   // Are we waiting for the top sites from HistoryService?

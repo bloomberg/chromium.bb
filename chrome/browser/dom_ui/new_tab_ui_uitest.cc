@@ -30,8 +30,7 @@ class NewTabUITest : public UITest {
   }
 };
 
-// Fails on XP, Linux: http://crbug.com/51721
-TEST_F(NewTabUITest, FLAKY_NTPHasThumbnails) {
+TEST_F(NewTabUITest, NTPHasThumbnails) {
   // Switch to the "new tab" tab, which should be any new tab after the
   // first (the first is about:blank).
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
@@ -42,14 +41,14 @@ TEST_F(NewTabUITest, FLAKY_NTPHasThumbnails) {
   int load_time;
   ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
-  // Blank thumbnails on the NTP have the class 'filler' applied to the div.
-  // If all the thumbnails load, there should be no div's with 'filler'.
   scoped_refptr<TabProxy> tab = window->GetActiveTab();
   ASSERT_TRUE(tab.get());
 
+  // TopSites should return at least 3 non-filler pages.
+  // 8 - 3 = max 5 filler pages.
   ASSERT_TRUE(WaitUntilJavaScriptCondition(tab, L"",
       L"window.domAutomationController.send("
-      L"document.getElementsByClassName('filler').length == 0)",
+      L"document.getElementsByClassName('filler').length <= 5)",
       action_max_timeout_ms()));
 }
 

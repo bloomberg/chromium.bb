@@ -525,7 +525,7 @@ void MostVisitedHandler::SetPagesValueFromTopSites(
 }
 
 void MostVisitedHandler::OnMostVisitedURLsAvailable(
-    const history::MostVisitedURLList& data) {
+    history::MostVisitedURLList data) {
   SetPagesValueFromTopSites(data);
   if (got_first_most_visited_request_) {
     SendPagesValue();
