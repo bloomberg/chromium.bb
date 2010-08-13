@@ -24,9 +24,21 @@ import struct
 import subprocess
 import sys
 
+
+######################################################################
+# User-configurable Script Settings
+#
+
+LOG_FILE_ENABLE = 1
+LOG_FILE_NAME = 'toolchain/hg-log/llvm-fake.log'
+LOG_SIZE_LIMIT = 20*(2**20)     # 20 MB
+
+PRETTY_PRINT_COMMANDS = 1
+
+
+######################################################################
 # This script resides in directory:
 # native_client/toolchain/linux_arm-untrusted/arm-none-linux-gnueabi
-
 # BASE is "native_client/toolchain/linux_arm-untrusted"
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[0])))
 
@@ -36,12 +48,10 @@ BASE_NACL = os.path.dirname(os.path.dirname(BASE))
 assert os.path.basename(BASE) == "linux_arm-untrusted"
 assert os.path.basename(BASE_NACL) == "native_client"
 
-# Enable logging to llvm-fake.log
 # It's not safe to output debug information to stderr, because "configure"
 # runs this script and parses the output.
-# TODO(robertm): provide mechanims to write to other file
-VERBOSE = 0
-OUT=[sys.stderr]
+LOG_OUT = []
+ERROR_OUT = [sys.stderr]
 
 ######################################################################
 # Misc
@@ -55,10 +65,10 @@ GOLD_PLUGIN = BASE_ARM + '/lib/LLVMgold.so'
 
 # NOTE: derived from
 # toolchain/linux_x86/nacl64/lib/ldscripts/elf_nacl.x
-LD_SCRIPT_X8632 = BASE + '/../../tools/llvm/ld_script_x8632_untrusted'
+LD_SCRIPT_X8632 = BASE_NACL + '/tools/llvm/ld_script_x8632_untrusted'
 # NOTE: derived from
 # toolchain/linux_x86/nacl64/lib/ldscripts/elf64_nacl.x
-LD_SCRIPT_X8664 = BASE + '/../../tools/llvm/ld_script_x8664_untrusted'
+LD_SCRIPT_X8664 = BASE_NACL + '/tools/llvm/ld_script_x8664_untrusted'
 
 # arm libstdc++
 LIBDIR_ARM_3 = BASE_ARM + '/lib'
@@ -69,11 +79,11 @@ LIBDIR_ARM_2 = BASE + '/arm-newlib/arm-none-linux-gnueabi/lib'
 # arm libgcc
 LIBDIR_ARM_1 = BASE_ARM + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/'
 
-PNACL_ARM_ROOT =  BASE + '/../linux_arm-untrusted/libs-arm'
+PNACL_ARM_ROOT =  BASE + '/libs-arm'
 
-PNACL_X8632_ROOT = BASE + '/../linux_arm-untrusted/libs-x8632'
+PNACL_X8632_ROOT = BASE + '/libs-x8632'
 
-PNACL_X8664_ROOT = BASE + '/../linux_arm-untrusted/libs-x8664'
+PNACL_X8664_ROOT = BASE + '/libs-x8664'
 
 global_pnacl_roots = {
   'arm' : PNACL_ARM_ROOT,
@@ -87,7 +97,7 @@ global_pnacl_triples = {
   'x86-64' : 'x86_64-none-linux-gnu'
 }
 
-PNACL_BITCODE_ROOT = BASE + '/../linux_arm-untrusted/libs-bitcode'
+PNACL_BITCODE_ROOT = BASE + '/libs-bitcode'
 
 ######################################################################
 # FLAGS (can be overwritten by
@@ -219,7 +229,7 @@ OPT = BASE_ARM + '/bin/opt'
 AS_ARM = BASE_ARM + '/bin/arm-none-linux-gnueabi-as'
 
 # NOTE: hack, assuming presence of x86/32 toolchain (used for both 32/64)
-AS_X86 = BASE + '/../linux_x86/bin/nacl64-as'
+AS_X86 = BASE_NACL + '/toolchain/linux_x86/bin/nacl64-as'
 
 ELF_LD = BASE_ARM + '/bin/arm-none-linux-gnueabi-ld'
 
@@ -233,41 +243,77 @@ global_assemblers = {
 # Code
 ######################################################################
 
+def AddLogFile(filename):
+    global LOG_OUT
+    if os.path.isfile(filename) and os.path.getsize(filename) > LOG_SIZE_LIMIT:
+        mode = 'w'
+    else:
+        mode = 'a'
+    try:
+        fp = open(filename, mode)
+    except Exception:
+        return
+    LOG_OUT.append(fp)
+
 def LogStart():
-  if VERBOSE:
-    for o in OUT:
+    for o in LOG_OUT:
       print >> o, '-'*60
 
 def LogInfo(m):
-  if VERBOSE:
-    for o in OUT:
+    for o in LOG_OUT:
       print >> o, m
 
 def LogFatal(m, ret=-1):
-  for o in OUT:
+  for o in LOG_OUT + ERROR_OUT:
     print >> o, 'FATAL:', m
     print >> o, ''
   sys.exit(ret)
 
-def LogWarning(m):
-  for o in OUT:
-    print >> o, 'WARNING:', m
-    print >> o, ''
-
 def StringifyCommand(a):
-  return " ".join(a)
+  global PRETTY_PRINT_COMMANDS
+  if PRETTY_PRINT_COMMANDS:
+    return PrettyStringify(a)
+  else:
+    return SimpleStringify(a)
 
+def SimpleStringify(args):
+  return " ".join(args)
+
+def PrettyStringify(args):
+  ret = ''
+  grouping = 0
+  for a in args:
+    if grouping == 0 and len(ret) > 0:
+      ret += " \\\n    "
+    elif grouping > 0:
+      ret += " "
+    if grouping == 0:
+      grouping = 1
+      if a.startswith('-') and len(a) == 2:
+        grouping = 2
+    ret += a
+    grouping -= 1
+  return ret
 
 def Run(args):
   "Run the commandline give by the list args system()-style"
   LogInfo('\n' + StringifyCommand(args))
   try:
-    ret = subprocess.call(args)
+    p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+    buf_stdout, buf_stderr = p.communicate()
+    ret = p.returncode
   except Exception, e:
+    buf_stdout = ''
+    buf_stderr = ''
     LogFatal('failed (%s) to run: ' % str(e) + StringifyCommand(args))
 
+  sys.stdout.write(buf_stdout)
+  sys.stderr.write(buf_stderr)
+
   if ret:
-    LogFatal('failed command: ' + StringifyCommand(args), ret)
+    LogFatal('failed command: ' + StringifyCommand(args) + '\n' +
+             'stdout        :\n' + buf_stdout + '\n' +
+             'stderr        :\n' + buf_stderr + '\n', ret)
 
 
 def OutputName(argv):
@@ -661,20 +707,22 @@ INCARNATIONS = {
 
 
 def main(argv):
-  global VERBOSE
+  global LOG_OUT
   global LLVM_GCC
   # NOTE: we do not hook onto the "--v" flags since it may have other uses
   #       in connection with bootstrapping the gcc toolchain
   new_argv = []
   for arg in argv:
     if arg == '--pnacl-driver-verbose':
-      VERBOSE = 1
+      LOG_OUT.append(sys.stderr)
     elif arg.startswith('--driver='):
       LLVM_GCC = arg[len('--driver='):]
     else:
       new_argv.append(arg)
   argv = new_argv
 
+  if LOG_FILE_ENABLE:
+      AddLogFile(BASE_NACL + '/' + LOG_FILE_NAME)
   LogStart()
 
   # mechanism to overwrite some global settings, e.g.:
