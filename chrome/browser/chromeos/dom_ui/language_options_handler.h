@@ -57,6 +57,9 @@ class LanguageOptionsHandler : public OptionsPageUIHandler {
   // |value| will be the language code as string (ex. "fr").
   void UiLanguageChangeCallback(const Value* value);
 
+  // Called when the restart button is clicked.
+  void RestartCallback(const Value* value);
+
   DISALLOW_COPY_AND_ASSIGN(LanguageOptionsHandler);
 };
 

@@ -12,11 +12,14 @@
 #include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -50,6 +53,8 @@ void LanguageOptionsHandler::GetLocalizedValues(
           IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_LANGUAGE));
   localized_strings->SetString(L"remove_button",
       l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
+  localized_strings->SetString(L"restart_button",
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_RESTART_BUTTON));
   localized_strings->SetString(L"add_language_instructions",
       l10n_util::GetString(
           IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS));
@@ -94,8 +99,9 @@ void LanguageOptionsHandler::GetLocalizedValues(
 void LanguageOptionsHandler::RegisterMessages() {
   DCHECK(dom_ui_);
   dom_ui_->RegisterMessageCallback("uiLanguageChange",
-      NewCallback(this,
-                  &LanguageOptionsHandler::UiLanguageChangeCallback));
+      NewCallback(this, &LanguageOptionsHandler::UiLanguageChangeCallback));
+  dom_ui_->RegisterMessageCallback("uiLanguageRestart",
+      NewCallback(this, &LanguageOptionsHandler::RestartCallback));
 }
 
 ListValue* LanguageOptionsHandler::GetInputMethodList(
@@ -224,6 +230,15 @@ void LanguageOptionsHandler::UiLanguageChangeCallback(
   prefs->SavePersistentPrefs();
   dom_ui_->CallJavascriptFunction(
       L"options.LanguageOptions.uiLanguageSaved");
+}
+
+void LanguageOptionsHandler::RestartCallback(const Value* value) {
+  Browser* browser = Browser::GetBrowserForController(
+      &dom_ui_->tab_contents()->controller(), NULL);
+  // TODO(kochi): For ChromiumOS, just exiting means browser restart.
+  // Implement browser restart for Chromium Win/Linux/Mac.
+  if (browser)
+    browser->ExecuteCommand(IDC_EXIT);
 }
 
 }  // namespace chromeos

@@ -51,7 +51,15 @@
 .language-options-right {
   /* To share the center line with the left pane. */
   -webkit-margin-start: -1px;
-  min-width: 360px;
+  width: 360px;
+}
+
+.language-options-notification {
+  display: none;
+  background-color: #fff29e;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  padding: 12px 30px 12px 12px;
 }
 
 #language-options-input-method-list button {
@@ -73,6 +81,10 @@
   -webkit-padding-start: 12px;
   padding-top: 2px;
   padding-bottom: 2px;
+}
+
+#language-options-ui-restart-button {
+  margin-top: 12px;
 }
 
 #add-language-overlay-language-list {

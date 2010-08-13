@@ -222,6 +222,9 @@ cr.define('options', function() {
         uiLanguageButton.onclick = function(e) {
           chrome.send('uiLanguageChange', [languageCode]);
         }
+        $('language-options-ui-restart-button').onclick = function(e) {
+          chrome.send('uiLanguageRestart');
+        }
       } else {
         // If the language is not supported as UI language, the button
         // just says that Chromium OS cannot be displayed in this language.
@@ -230,6 +233,10 @@ cr.define('options', function() {
         uiLanguageButton.className = 'text-button';
         uiLanguageButton.onclick = undefined;
       }
+      // TODO(kochi): Generalize this notification as a component and put it
+      // in js/cr/ui/notification.js .
+      uiLanguageButton.style.display = 'block';
+      $('language-options-ui-notification-bar').style.display = 'none';
     },
 
     /**
@@ -441,9 +448,8 @@ cr.define('options', function() {
    * Chrome callback for when the UI language preference is saved.
    */
   LanguageOptions.uiLanguageSaved = function() {
-    // TODO(satorux): Show the message in a nicer way once we get a mock
-    // from UX. crosbug.com/5545.
-    alert(localStrings.getString('restart_required'));
+    $('language-options-ui-language-button').style.display = 'none';
+    $('language-options-ui-notification-bar').style.display = 'block';
   };
 
   // Export
