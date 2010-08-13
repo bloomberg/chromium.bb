@@ -38,8 +38,9 @@ nexe = env.ComponentProgram('voronoi.nexe',
                             EXTRA_LIBS=['av', 'srpc', 'm', 'pthread'])
 
 TESTS=['small_tests']
-# NOTE: this does not fail for all pnacl targets
-if ARGUMENTS.get('bitcode'):
+# NOTE: currently there is a validation error on ARM
+# BUG=http://code.google.com/p/nativeclient/issues/detail?id=770
+if env['TARGET_ARCHITECTURE'] == 'arm':
   TESTS=[]
 
 node = env.CommandSelLdrTestNacl(
