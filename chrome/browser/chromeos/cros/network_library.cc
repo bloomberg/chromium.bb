@@ -640,7 +640,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     DLOG(INFO) << "ParseSystem:";
     ethernet->Clear();
     for (int i = 0; i < system->service_size; i++) {
-      const ServiceInfo& service = system->services[i];
+      const ServiceInfo service = *system->GetServiceInfo(i);
       DLOG(INFO) << "  (" << service.type <<
                     ") " << service.name <<
                     " mode=" << service.mode <<
@@ -665,7 +665,7 @@ class NetworkLibraryImpl : public NetworkLibrary  {
     }
     DLOG(INFO) << "Remembered networks:";
     for (int i = 0; i < system->remembered_service_size; i++) {
-      const ServiceInfo& service = system->remembered_services[i];
+      const ServiceInfo& service = *system->GetRememberedServiceInfo(i);
       // Only serices marked as auto_connect are considered remembered networks.
       // TODO(chocobo): Don't add to remembered service if currently available.
       if (service.auto_connect) {
