@@ -87,9 +87,7 @@ void RegistrationScreen::OnPageLoaded() {
   if (g_browser_process) {
     const std::string locale = g_browser_process->GetApplicationLocale();
     input_method::EnableInputMethods(
-        locale, input_method::kKeyboardLayoutsOnly, "");
-    // TODO(yusukes,suzhe): Change the 2nd argument to kAllInputMethods when
-    // crosbug.com/2670 is fixed.
+        locale, input_method::kAllInputMethods, "");
   }
   view()->ShowPageContent();
 }
