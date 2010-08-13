@@ -19,15 +19,15 @@ UserCrosSettingsProvider::UserCrosSettingsProvider()
   ListValue* user_list = new ListValue;
 
   DictionaryValue* mock_user = new DictionaryValue;
-  mock_user->SetString(L"email", L"mock_user_1@gmail.com");
-  mock_user->SetString(L"name", L"Mock User One");
-  mock_user->SetBoolean(L"owner", true);
+  mock_user->SetString("email", "mock_user_1@gmail.com");
+  mock_user->SetString("name", "Mock User One");
+  mock_user->SetBoolean("owner", true);
   user_list->Append(mock_user);
 
   mock_user = new DictionaryValue;
-  mock_user->SetString(L"email", L"mock_user_2@gmail.com");
-  mock_user->SetString(L"name", L"Mock User Two");
-  mock_user->SetBoolean(L"owner", false);
+  mock_user->SetString("email", "mock_user_2@gmail.com");
+  mock_user->SetString("name", "Mock User Two");
+  mock_user->SetBoolean("owner", false);
   user_list->Append(mock_user);
 
   Set(kAccountsPrefUsers, user_list);
