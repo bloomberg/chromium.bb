@@ -16,6 +16,29 @@
 /* Defines the maximum number of validators that can be registered. */
 #define NACL_MAX_NCVALIDATORS 20
 
+/* Holds the registered definition for a validator. */
+typedef struct NaClValidatorDefinition {
+  /* The validator function to apply. */
+  NaClValidator validator;
+  /* The post iterator validator function to apply, after iterating
+   * through all instructions in a segment. If non-null, called to
+   * do corresponding post processing.
+   */
+  NaClValidatorPostValidate post_validate;
+  /* The corresponding statistic print function associated with the validator
+   * function (may be NULL).
+   */
+  NaClValidatorPrintStats print_stats;
+  /* The corresponding memory creation fuction associated with the validator
+   * function (may be NULL).
+   */
+  NaClValidatorMemoryCreate create_memory;
+  /* The corresponding memory clean up function associated with the validator
+   * function (may be NULL).
+   */
+  NaClValidatorMemoryDestroy destroy_memory;
+} NaClValidatorDefinition;
+
 struct NaClValidatorState {
   /* Holds the vbase value passed to NaClValidatorStateCreate. */
   NaClPcAddress vbase;
@@ -37,6 +60,8 @@ struct NaClValidatorState {
    * reports all errors.
    */
   int quit_after_error_count;
+  /* Holds the set of validators to apply. */
+  NaClValidatorDefinition validators[NACL_MAX_NCVALIDATORS];
   /* Holds the local memory associated with validators to be applied to this
    * state.
    */
@@ -45,6 +70,20 @@ struct NaClValidatorState {
   int number_validators;
   /* Holds the cpu features of the machine it is running on. */
   CPUFeatures cpu_features;
+  /* Flag controlling whether an opcode histogram is collected while
+   * validating.
+   */
+  Bool print_opcode_histogram;
+  /* Flag controling whether each in struciton is traced while validating
+   * instructions.
+   */
+  Bool trace_instructions;
+  /* Flag controlling whether the internals of each instruction is traced
+   * as they are visited by the validator.
+   */
+  Bool trace_inst_internals;
+  /* Defines the verbosity of messages to print. */
+  int log_verbosity;
 };
 
 #endif

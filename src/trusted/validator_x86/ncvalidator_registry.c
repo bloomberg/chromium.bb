@@ -17,24 +17,22 @@
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/ncval_driver.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter.h"
+#include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 
 Bool NACL_FLAGS_opcode_histogram = FALSE;
-
-Bool NACL_FLAGS_validator_trace = FALSE;
-
-Bool NACL_FLAGS_validator_trace_verbose = FALSE;
 
 static void NaClValidatorTrace(NaClValidatorState* state,
                                NaClInstIter* iter,
                                void* local_memory) {
   struct Gio* g = NaClLogGetGio();
   NaClInstState* inst_state = NaClInstIterGetState(iter);
-  if (NACL_FLAGS_validator_trace_verbose) {
-    gprintf(g, "-> ");
+  if (NaClValidatorStateTrace(state)) {
+    gprintf(g, "-> visit: ");
   }
-  gprintf(g, "visit: ");
-  NaClInstStateInstPrint(g, inst_state);
-  if (NACL_FLAGS_validator_trace_verbose) {
+  if (NaClValidatorStateGetTraceInstructions(state)) {
+    NaClInstStateInstPrint(g, inst_state);
+  }
+  if (NaClValidatorStateGetTraceInstInternals(state)) {
     NaClInstPrint(g, NaClInstStateInst(inst_state));
     NaClExpVectorPrint(g, NaClInstStateExpVector(inst_state));
   }
@@ -43,17 +41,16 @@ static void NaClValidatorTrace(NaClValidatorState* state,
 static void NaClValidatorPostTrace(NaClValidatorState* state,
                                    NaClInstIter* iter,
                                    void* local_memory) {
-  if (NACL_FLAGS_validator_trace_verbose) {
+  if (NaClValidatorStateTrace(state)) {
     gprintf(NaClLogGetGio(), "<- visit\n");
   }
 }
 
-void NaClValidatorInit() {
+void NaClValidatorRulesInit(NaClValidatorState* state) {
 
-  NaClRegisterValidatorClear();
-
-  if (NACL_FLAGS_validator_trace || NACL_FLAGS_validator_trace_verbose) {
+  if (NaClValidatorStateTrace(state)) {
     NaClRegisterValidator(
+        state,
         (NaClValidator) NaClValidatorTrace,
         (NaClValidatorPostValidate) NaClValidatorPostTrace,
         (NaClValidatorPrintStats) NULL,
@@ -62,6 +59,7 @@ void NaClValidatorInit() {
   }
 
   NaClRegisterValidator(
+      state,
       (NaClValidator) NaClCpuCheck,
       (NaClValidatorPostValidate) NaClCpuCheckSummary,
       (NaClValidatorPrintStats) NULL,
@@ -69,6 +67,7 @@ void NaClValidatorInit() {
       (NaClValidatorMemoryDestroy) NaClCpuCheckMemoryDestroy);
 
   NaClRegisterValidator(
+      state,
       (NaClValidator) NaClValidateInstructionLegal,
       (NaClValidatorPostValidate) NULL,
       (NaClValidatorPrintStats) NULL,
@@ -76,6 +75,7 @@ void NaClValidatorInit() {
       (NaClValidatorMemoryDestroy) NULL);
 
   NaClRegisterValidator(
+      state,
       (NaClValidator) NaClBaseRegisterValidator,
       (NaClValidatorPostValidate) NaClBaseRegisterSummarize,
       (NaClValidatorPrintStats) NULL,
@@ -83,6 +83,7 @@ void NaClValidatorInit() {
       (NaClValidatorMemoryDestroy) NaClBaseRegisterMemoryDestroy);
 
   NaClRegisterValidator(
+      state,
       (NaClValidator) NaClMemoryReferenceValidator,
       (NaClValidatorPostValidate) NULL,
       (NaClValidatorPrintStats) NULL,
@@ -95,14 +96,16 @@ void NaClValidatorInit() {
    * of NaClJumpValidatorSummarize.
    */
   NaClRegisterValidator(
+      state,
       (NaClValidator) NaClJumpValidator,
       (NaClValidatorPostValidate) NaClJumpValidatorSummarize,
       (NaClValidatorPrintStats) NULL,
       (NaClValidatorMemoryCreate) NaClJumpValidatorCreate,
       (NaClValidatorMemoryDestroy) NaClJumpValidatorDestroy);
 
-  if (NACL_FLAGS_opcode_histogram) {
+  if (state->print_opcode_histogram) {
     NaClRegisterValidator(
+        state,
         (NaClValidator) NaClOpcodeHistogramRecord,
         (NaClValidatorPostValidate) NULL,
         (NaClValidatorPrintStats) NaClOpcodeHistogramPrintStats,

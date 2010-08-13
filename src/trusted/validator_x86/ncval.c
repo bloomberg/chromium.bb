@@ -370,9 +370,9 @@ static void usage() {
       "\tAnalyze code in segments in elf file, instead of headers.\n"
       "--time\n"
       "\tTime the validator and print out results. Same as option -t.\n"
-      "--trace\n"
-      "\tTurn on trace validator messages.\n"
-      "--treace_verbose\n"
+      "--trace_insts\n"
+      "\tTurn on validator trace of instructions, as processed..\n"
+      "--trace_verbose\n"
       "\tTurn on all trace validator messages. Note: this\n"
       "\tflag also implies --trace.\n"
       "--warnings\n"
@@ -395,9 +395,8 @@ static int GrokFlags(int argc, const char* argv[]) {
     const char* arg = argv[i];
     if (GrokCstringFlag("--hex_text", arg, &FLAGS_hex_text) ||
         GrokBoolFlag("--segments", arg, &FLAGS_analyze_segments) ||
-        GrokBoolFlag("--trace", arg, &NACL_FLAGS_validator_trace) ||
-        GrokBoolFlag("--trace_verbose",
-                     arg, &NACL_FLAGS_validator_trace_verbose) ||
+        GrokBoolFlag("--trace_insts",
+                     arg, &NACL_FLAGS_validator_trace_instructions) ||
         GrokBoolFlag("--use_iter", arg, &FLAGS_use_iter) ||
         GrokBoolFlag("-t", arg, &FLAGS_print_timing) ||
         GrokBoolFlag("--use_iter", arg, &FLAGS_use_iter) ||
@@ -405,6 +404,8 @@ static int GrokFlags(int argc, const char* argv[]) {
       if (help) {
         usage();
       }
+    } else if (0 == strcmp("--trace_verbose", arg)) {
+      NaClValidatorFlagsSetTraceVerbose();
     } else if (GrokBoolFlag("--write_sfi", arg, &write_sandbox)) {
       NACL_FLAGS_read_sandbox = !write_sandbox;
       continue;

@@ -42,6 +42,22 @@ extern Bool NACL_FLAGS_print_validator_messages;
  */
 extern int NACL_FLAGS_max_reported_errors;
 
+/* Command line flag controlling whether each instruction is traced
+ * while validating instructions.
+ */
+extern Bool NACL_FLAGS_validator_trace_instructions;
+
+/* Command line flag controlling whether the internal representation
+ * of each instruction is trace while validating.
+ * Command line flag controlling whether each instruction, and its
+ * corresponding internal details, is traced while validating
+ * instructions.
+ */
+extern Bool NACL_FLAGS_validator_trace_inst_interals;
+
+/* Changes all validator trace flags to true. */
+void NaClValidatorFlagsSetTraceVerbose();
+
 /* The model of a validator state. */
 typedef struct NaClValidatorState NaClValidatorState;
 
@@ -67,15 +83,90 @@ NaClValidatorState* NaClValidatorStateCreate(const NaClPcAddress vbase,
  * Note: When > 0, the validator will only print that many errors before
  * quiting. When 0, the validator will not print any messages. When < 0,
  * the validator will print all found errors.
+ * Note: Defaults to NACL_FLAGS_max_reported_errors.
  */
 int NaClValidatorStateGetMaxReportedErrors(NaClValidatorState* state);
 
 /* Changes the current maximum number of errors that will be reported before
  * quiting. For legal parameter values, see
  * NaClValidatorStateGetMaxReportedErrors.
+ * Note: Should only be called between calls to NaClValidatorStateCreate
+ * and NaClValidateSegment.
  */
 void NaClValidatorStateSetMaxReportedErrors(NaClValidatorState* state,
                                             int max_reported_errors);
+
+/* Returns true if an opcode histogram should be printed by the validator.
+ * Note: Defaults to NACL_FLAGS_opcode_histogram.
+ */
+Bool NaClValidatorStateGetPrintOpcodeHistogram(NaClValidatorState* state);
+
+/* Changes the value on whether the opcode histogram should be printed by
+ * the validator.
+ * Note: Should only be called between calls to NaClValidatorStateCreate
+ * and NaClValidateSegment.
+ */
+void NaClValidatorStateSetPrintOpcodeHistogram(NaClValidatorState* state,
+                                               Bool new_value);
+
+/* Returns true if each instruction should be printed as the validator
+ * processes the instruction.
+ * Note: Defaults to NACL_FLAGS_validator_trace.
+ */
+Bool NaClValidatorStateGetTraceInstructions(NaClValidatorState* state);
+
+/* Changes the value on whether each instruction should be printed as
+ * the validator processes the instruction.
+ * Note: Should only be called between calls to NaClValidatorStateCreate
+ * and NaClValidateSegment.
+ */
+void NaClValidatorStateSetTraceInstructions(NaClValidatorState* state,
+                                            Bool new_value);
+
+/* Returns true if the internal representation of each instruction
+ * should be printed as the validator processes the instruction.
+ * Note: Should only be called between calls to NaClValidatorStateCreate
+ * and NaClValidateSegment.
+ */
+Bool NaClValidatorStateGetTraceInstInternals(NaClValidatorState* state);
+
+/* Changes the value on whether the internal details of each validated
+ * instruction should be printed, as the validator visits the instruction.
+ * Note: Should only be called between calls to NaClValidatorStateCreate
+ * and NaClValidateSegment.
+ */
+void NaClValidatorStateSetTraceInstInternals(NaClValidatorState* state,
+                                             Bool new_value);
+
+/* Returns true if any of thevalidator trace flags are set.
+ * Note: If this function returns true, so does
+ *    NaClValidatorStateGetTraceInstructions
+ *    NaClValidatorStateGetTraceInstInternals
+ */
+Bool NaClValidatorStateTrace(NaClValidatorState* state);
+
+/* Convenience function that changes all validator trace flags to true.
+ * Note: Should only be called between calls to NaClValidatorStateCreate
+ * and NaClValidateSegment.
+ */
+void NaClValidatorStateSetTraceVerbose(NaClValidatorState* state);
+
+/* Returns the log verbosity for printed validator messages. Legal
+ * values are defined by src/shared/platform/nacl_log.h.
+ * Note: Defaults to LOG_INFO.
+ */
+int NaClValidatorStateGetLogVerbosity(NaClValidatorState* state);
+
+/* Changes the4 log verbosity for printed validator messages to the
+ * new value. Legal values are defined by src/shared/platform/nacl_log.h.
+ * Note: Should only be called between calls to NaClValidatorStateCreate
+ * and NaClValidateSegment.
+ * Note: NaClLogGetVerbosity() can override this value if more severe
+ * than the value defined here. This allows a global limit (defined
+ * by nacl_log.h) as well as a validator specific limit.
+ */
+void NaClValidatorStateSetLogVerbosity(NaClValidatorState* state,
+                                       Bool new_value);
 
 /* Validate a code segment.
  * Parameters:
@@ -159,13 +250,9 @@ typedef void (*NaClValidatorPrintStats)(NaClValidatorState* state,
 typedef void (*NaClValidatorMemoryDestroy)(NaClValidatorState* state,
                                            void* local_memory);
 
-/* Clear the set of registered validator functions. Allows multiple runs
- * of the validator, with different validator functions for each run.
- */
-void NaClRegisterValidatorClear();
-
 /* Registers a validator function to be called during validation.
  * Parameters are:
+ *   state - The state to register the validator functions in.
  *   validator - The validator function to register.
  *   post_validate - Validate global context after iterator run.
  *   print_stats - The print function to print statistics about the applied
@@ -175,7 +262,8 @@ void NaClRegisterValidatorClear();
  *   memory_destroy - The function to call to reclaim local memory when
  *     the validator state is destroyed (or NULL if reclamation is not needed).
  */
-void NaClRegisterValidator(NaClValidator validator,
+void NaClRegisterValidator(NaClValidatorState* state,
+                           NaClValidator validator,
                            NaClValidatorPostValidate post_validate,
                            NaClValidatorPrintStats print_stats,
                            NaClValidatorMemoryCreate memory_create,
