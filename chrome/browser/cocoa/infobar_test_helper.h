@@ -4,6 +4,8 @@
 
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
+#include "base/utf_string_conversions.h"
+
 namespace {
 const char kMockAlertInfoBarMessage[] = "MockAlertInfoBarMessage";
 const char kMockLinkInfoBarMessage[] = "MockLinkInfoBarMessage";
