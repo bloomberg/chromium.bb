@@ -26,7 +26,7 @@ ListValue* CreateMultipleChoiceList(
     ListValue* option = new ListValue();
     option->Append(Value::CreateStringValue(
         preference.values_and_ids[i].ibus_config_value));
-    option->Append(Value::CreateStringValue(l10n_util::GetString(
+    option->Append(Value::CreateStringValue(l10n_util::GetStringUTF16(
         preference.values_and_ids[i].item_message_id)));
     list_value->Append(option);
   }

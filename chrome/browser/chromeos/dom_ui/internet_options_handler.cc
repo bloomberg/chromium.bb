@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/string16.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -44,34 +45,35 @@ void InternetOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Internet page - ChromeOS
-  localized_strings->SetString(L"internetPage",
-      l10n_util::GetString(IDS_OPTIONS_INTERNET_TAB_LABEL));
+  localized_strings->SetString("internetPage",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_INTERNET_TAB_LABEL));
 
-  localized_strings->SetString(L"wired_title",
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK));
-  localized_strings->SetString(L"wireless_title",
-      l10n_util::GetString(
+  localized_strings->SetString("wired_title",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK));
+  localized_strings->SetString("wireless_title",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK));
-  localized_strings->SetString(L"remembered_title",
-      l10n_util::GetString(
+  localized_strings->SetString("remembered_title",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK));
 
-  localized_strings->SetString(L"connect_button",
-      l10n_util::GetString(
+  localized_strings->SetString("connect_button",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_CONNECT));
-  localized_strings->SetString(L"disconnect_button",
-      l10n_util::GetString(
+  localized_strings->SetString("disconnect_button",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_DISCONNECT));
-  localized_strings->SetString(L"options_button",
-      l10n_util::GetString(
+  localized_strings->SetString("options_button",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_OPTIONS));
-  localized_strings->SetString(L"forget_button",
-      l10n_util::GetString(
+  localized_strings->SetString("forget_button",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_FORGET));
 
-  localized_strings->Set(L"wiredList", GetWiredList());
-  localized_strings->Set(L"wirelessList", GetWirelessList());
-  localized_strings->Set(L"rememberedList", GetRememberedList());
+  localized_strings->Set("wiredList", GetWiredList());
+  localized_strings->Set("wirelessList", GetWirelessList());
+  localized_strings->Set("rememberedList", GetRememberedList());
 }
 
 void InternetOptionsHandler::RegisterMessages() {
@@ -84,9 +86,9 @@ void InternetOptionsHandler::RegisterMessages() {
 void InternetOptionsHandler::NetworkChanged(chromeos::NetworkLibrary* cros) {
   if (dom_ui_) {
     DictionaryValue dictionary;
-    dictionary.Set(L"wiredList", GetWiredList());
-    dictionary.Set(L"wirelessList", GetWirelessList());
-    dictionary.Set(L"rememberedList", GetRememberedList());
+    dictionary.Set("wiredList", GetWiredList());
+    dictionary.Set("wirelessList", GetWirelessList());
+    dictionary.Set("rememberedList", GetRememberedList());
     dom_ui_->CallJavascriptFunction(
         L"options.InternetOptions.refreshNetworkData", dictionary);
   }
@@ -195,14 +197,14 @@ ListValue* InternetOptionsHandler::GetNetwork(const std::string& service_path,
     s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
   else if (connected)
     s = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-  std::wstring status = l10n_util::GetString(s);
+  string16 status = l10n_util::GetStringUTF16(s);
 
   // service path
   network->Append(Value::CreateStringValue(service_path));
   // name
   network->Append(Value::CreateStringValue(name));
   // status
-  network->Append(Value::CreateStringValue(l10n_util::GetString(s)));
+  network->Append(Value::CreateStringValue(status));
   // type
   network->Append(Value::CreateIntegerValue(connection_type));
   // connected

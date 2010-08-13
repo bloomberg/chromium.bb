@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_DOM_UI_LANGUAGE_OPTIONS_UTIL_H_
 #pragma once
 
+#include <string>
+
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 
@@ -15,28 +17,28 @@ namespace {
 
 // Returns an i18n-content value corresponding to |preference|.
 template <typename T>
-std::wstring GetI18nContentValue(const T& preference) {
-  return ASCIIToWide(preference.ibus_config_name) + L"Content";
+std::string GetI18nContentValue(const T& preference) {
+  return std::string(preference.ibus_config_name) + "Content";
 }
 
 // Returns a property name of templateData corresponding to |preference|.
 template <typename T>
-std::wstring GetTemplateDataPropertyName(const T& preference) {
-  return ASCIIToWide(preference.ibus_config_name) + L"Value";
+std::string GetTemplateDataPropertyName(const T& preference) {
+  return std::string(preference.ibus_config_name) + "Value";
 }
 
 // Returns an property name of templateData corresponding the value of the min
 // attribute.
 template <typename T>
-std::wstring GetTemplateDataMinName(const T& preference) {
-  return ASCIIToWide(preference.ibus_config_name) + L"Min";
+std::string GetTemplateDataMinName(const T& preference) {
+  return std::string(preference.ibus_config_name) + "Min";
 }
 
 // Returns an property name of templateData corresponding the value of the max
 // attribute.
 template <typename T>
-std::wstring GetTemplateDataMaxName(const T& preference) {
-  return ASCIIToWide(preference.ibus_config_name) + L"Max";
+std::string GetTemplateDataMaxName(const T& preference) {
+  return std::string(preference.ibus_config_name) + "Max";
 }
 
 }  // namespace

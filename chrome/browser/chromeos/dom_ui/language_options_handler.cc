@@ -35,65 +35,65 @@ LanguageOptionsHandler::~LanguageOptionsHandler() {
 void LanguageOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString(L"languagePage",
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE));
-  localized_strings->SetString(L"add_button",
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON));
-  localized_strings->SetString(L"configure",
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE));
-  localized_strings->SetString(L"input_method",
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD));
-  localized_strings->SetString(L"languages",
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES));
-  localized_strings->SetString(L"please_add_another_input_method",
-      l10n_util::GetString(
+  localized_strings->SetString("languagePage",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE));
+  localized_strings->SetString("add_button",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_BUTTON));
+  localized_strings->SetString("configure",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE));
+  localized_strings->SetString("input_method",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD));
+  localized_strings->SetString("languages",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES));
+  localized_strings->SetString("please_add_another_input_method",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_INPUT_METHOD));
-  localized_strings->SetString(L"please_add_another_language",
-      l10n_util::GetString(
+  localized_strings->SetString("please_add_another_language",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_LANGUAGE));
-  localized_strings->SetString(L"remove_button",
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
-  localized_strings->SetString(L"restart_button",
-      l10n_util::GetString(IDS_OPTIONS_SETTINGS_LANGUAGES_RESTART_BUTTON));
-  localized_strings->SetString(L"add_language_instructions",
-      l10n_util::GetString(
+  localized_strings->SetString("remove_button",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
+  localized_strings->SetString("restart_button",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_RESTART_BUTTON));
+  localized_strings->SetString("add_language_instructions",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS));
-  localized_strings->SetString(L"input_method_instructions",
-      l10n_util::GetString(
+  localized_strings->SetString("input_method_instructions",
+      l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_INSTRUCTIONS));
-  localized_strings->SetString(L"switch_input_methods_hint",
-      l10n_util::GetStringF(
+  localized_strings->SetString("switch_input_methods_hint",
+      l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT,
-          L"alt+shift"));
-  localized_strings->SetString(L"select_previous_input_method_hint",
-      l10n_util::GetStringF(
+          ASCIIToUTF16("alt+shift")));
+  localized_strings->SetString("select_previous_input_method_hint",
+      l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT,
-          L"ctrl+space"));
-  localized_strings->SetString(L"cannot_be_displayed_in_this_language",
-      l10n_util::GetStringF(
+          ASCIIToUTF16("ctrl+space")));
+  localized_strings->SetString("cannot_be_displayed_in_this_language",
+      l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE,
-          l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
-  localized_strings->SetString(L"is_displayed_in_this_language",
-      l10n_util::GetStringF(
+          l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME)));
+  localized_strings->SetString("is_displayed_in_this_language",
+      l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
-          l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
-  localized_strings->SetString(L"display_in_this_language",
-      l10n_util::GetStringF(
+          l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME)));
+  localized_strings->SetString("display_in_this_language",
+      l10n_util::GetStringFUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
-          l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
-  localized_strings->SetString(L"restart_required",
-      l10n_util::GetString(IDS_OPTIONS_RESTART_REQUIRED));
+          l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME)));
+  localized_strings->SetString("restart_required",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_RESTART_REQUIRED));
 
   // GetSupportedInputMethods() never return NULL.
   scoped_ptr<InputMethodDescriptors> descriptors(
       CrosLibrary::Get()->GetInputMethodLibrary()->GetSupportedInputMethods());
 
   // The followigns are resources, rather than local strings.
-  localized_strings->SetString(L"currentUiLanguageCode",
-      UTF8ToWide(g_browser_process->GetApplicationLocale()));
-  localized_strings->Set(L"inputMethodList", GetInputMethodList(*descriptors));
-  localized_strings->Set(L"languageList", GetLanguageList(*descriptors));
-  localized_strings->Set(L"uiLanguageCodeSet", GetUiLanguageCodeSet());
+  localized_strings->SetString("currentUiLanguageCode",
+      g_browser_process->GetApplicationLocale());
+  localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
+  localized_strings->Set("languageList", GetLanguageList(*descriptors));
+  localized_strings->Set("uiLanguageCodeSet", GetUiLanguageCodeSet());
 }
 
 void LanguageOptionsHandler::RegisterMessages() {
@@ -191,9 +191,9 @@ ListValue* LanguageOptionsHandler::GetLanguageList(
   for (size_t i = 0; i < display_names.size(); ++i) {
     const LanguagePair& pair = language_map[display_names[i]];
     DictionaryValue* dictionary = new DictionaryValue();
-    dictionary->SetString(L"code",  pair.first);
-    dictionary->SetString(L"displayName", display_names[i]);
-    dictionary->SetString(L"nativeDisplayName", pair.second);
+    dictionary->SetString("code",  pair.first);
+    dictionary->SetString("displayName", WideToUTF16Hack(display_names[i]));
+    dictionary->SetString("nativeDisplayName", WideToUTF16Hack(pair.second));
     language_list->Append(dictionary);
   }
 

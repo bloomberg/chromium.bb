@@ -27,7 +27,7 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
   for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
     localized_strings->SetString(
         GetI18nContentValue(kMozcBooleanPrefs[i]),
-        l10n_util::GetString(kMozcBooleanPrefs[i].message_id));
+        l10n_util::GetStringUTF16(kMozcBooleanPrefs[i].message_id));
   }
 
   for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
@@ -35,7 +35,7 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
         kMozcMultipleChoicePrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
-        l10n_util::GetString(preference.label_message_id));
+        l10n_util::GetStringUTF16(preference.label_message_id));
     localized_strings->Set(GetTemplateDataPropertyName(preference),
                            CreateMultipleChoiceList(preference));
   }
@@ -44,13 +44,13 @@ void LanguageMozcOptionsHandler::GetLocalizedValues(
     const LanguageIntegerRangePreference& preference = kMozcIntegerPrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
-        l10n_util::GetString(preference.message_id));
+        l10n_util::GetStringUTF16(preference.message_id));
     localized_strings->SetString(
         GetTemplateDataMinName(preference),
-        UTF8ToWide(base::IntToString(preference.min_pref_value)));
+        base::IntToString(preference.min_pref_value));
     localized_strings->SetString(
         GetTemplateDataMaxName(preference),
-        UTF8ToWide(base::IntToString(preference.max_pref_value)));
+        base::IntToString(preference.max_pref_value));
   }
 }
 

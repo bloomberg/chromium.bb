@@ -30,7 +30,7 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
   for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
     localized_strings->SetString(
         GetI18nContentValue(kChewingBooleanPrefs[i]),
-        l10n_util::GetString(kChewingBooleanPrefs[i].message_id));
+        l10n_util::GetStringUTF16(kChewingBooleanPrefs[i].message_id));
   }
 
   for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
@@ -38,13 +38,13 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
         kChewingIntegerPrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
-        l10n_util::GetString(preference.message_id));
+        l10n_util::GetStringUTF16(preference.message_id));
     localized_strings->SetString(
         GetTemplateDataMinName(preference),
-        UTF8ToWide(base::IntToString(preference.min_pref_value)));
+        base::IntToString(preference.min_pref_value));
     localized_strings->SetString(
         GetTemplateDataMaxName(preference),
-        UTF8ToWide(base::IntToString(preference.max_pref_value)));
+        base::IntToString(preference.max_pref_value));
   }
 
   for (size_t i = 0; i < kNumChewingMultipleChoicePrefs;
@@ -53,7 +53,7 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
         kChewingMultipleChoicePrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
-        l10n_util::GetString(preference.label_message_id));
+        l10n_util::GetStringUTF16(preference.label_message_id));
     localized_strings->Set(
         GetTemplateDataPropertyName(preference),
         CreateMultipleChoiceList(preference));
@@ -61,7 +61,7 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString(
       GetI18nContentValue(kChewingHsuSelKeyType),
-      l10n_util::GetString(kChewingHsuSelKeyType.label_message_id));
+      l10n_util::GetStringUTF16(kChewingHsuSelKeyType.label_message_id));
 
   int hsu_sel_key_type_min = std::numeric_limits<int>::max();
   int hsu_sel_key_type_max = std::numeric_limits<int>::min();
@@ -82,10 +82,10 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
 
   localized_strings->SetString(
       GetTemplateDataMinName(kChewingHsuSelKeyType),
-      UTF8ToWide(base::IntToString(hsu_sel_key_type_min)));
+      base::IntToString(hsu_sel_key_type_min));
   localized_strings->SetString(
       GetTemplateDataMaxName(kChewingHsuSelKeyType),
-      UTF8ToWide(base::IntToString(hsu_sel_key_type_max)));
+      base::IntToString(hsu_sel_key_type_max));
 }
 
 }  // namespace chromeos

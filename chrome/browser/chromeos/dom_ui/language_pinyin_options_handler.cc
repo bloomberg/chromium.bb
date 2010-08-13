@@ -28,12 +28,12 @@ void LanguagePinyinOptionsHandler::GetLocalizedValues(
   for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
     localized_strings->SetString(
         GetI18nContentValue(kPinyinBooleanPrefs[i]),
-        l10n_util::GetString(kPinyinBooleanPrefs[i].message_id));
+        l10n_util::GetStringUTF16(kPinyinBooleanPrefs[i].message_id));
   }
 
   localized_strings->SetString(
       GetI18nContentValue(kPinyinDoublePinyinSchema),
-      l10n_util::GetString(
+      l10n_util::GetStringUTF16(
           kPinyinDoublePinyinSchema.label_message_id));
   ListValue* list_value = new ListValue();
   for (size_t i = 0;
@@ -46,7 +46,7 @@ void LanguagePinyinOptionsHandler::GetLocalizedValues(
     option->Append(Value::CreateIntegerValue(
         kPinyinDoublePinyinSchema.values_and_ids[i].
         ibus_config_value));
-    option->Append(Value::CreateStringValue(l10n_util::GetString(
+    option->Append(Value::CreateStringValue(l10n_util::GetStringUTF16(
         kPinyinDoublePinyinSchema.values_and_ids[i].
         item_message_id)));
     list_value->Append(option);

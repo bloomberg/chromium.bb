@@ -29,36 +29,36 @@ void ProxyHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Proxy page - ChromeOS
-  localized_strings->SetString(L"proxyPage",
-      l10n_util::GetString(IDS_OPTIONS_PROXY_TAB_LABEL));
-  localized_strings->SetString(L"proxy_config_title",
-     l10n_util::GetString(IDS_PROXY_CONFIG_TITLE));
-  localized_strings->SetString(L"proxyDirectIternetConnection",
-     l10n_util::GetString(IDS_PROXY_DIRECT_CONNECTION));
+  localized_strings->SetString("proxyPage",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_PROXY_TAB_LABEL));
+  localized_strings->SetString("proxy_config_title",
+     l10n_util::GetStringUTF16(IDS_PROXY_CONFIG_TITLE));
+  localized_strings->SetString("proxyDirectIternetConnection",
+     l10n_util::GetStringUTF16(IDS_PROXY_DIRECT_CONNECTION));
 
-  localized_strings->SetString(L"proxyManual",
-     l10n_util::GetString(IDS_PROXY_MANUAL_CONFIG));
-  localized_strings->SetString(L"sameProxyProtocols",
-     l10n_util::GetString(IDS_PROXY_SAME_FORALL));
+  localized_strings->SetString("proxyManual",
+     l10n_util::GetStringUTF16(IDS_PROXY_MANUAL_CONFIG));
+  localized_strings->SetString("sameProxyProtocols",
+     l10n_util::GetStringUTF16(IDS_PROXY_SAME_FORALL));
 
-  localized_strings->SetString(L"httpProxy",
-     l10n_util::GetString(IDS_PROXY_HTTP_PROXY));
-  localized_strings->SetString(L"secureHttpProxy",
-     l10n_util::GetString(IDS_PROXY_HTTP_SECURE_HTTP_PROXY));
-  localized_strings->SetString(L"ftpProxy",
-     l10n_util::GetString(IDS_PROXY_FTP_PROXY));
-  localized_strings->SetString(L"socksHost",
-     l10n_util::GetString(IDS_PROXY_SOCKS_HOST));
-  localized_strings->SetString(L"proxyAutomatic",
-     l10n_util::GetString(IDS_PROXY_AUTOMATIC));
-  localized_strings->SetString(L"proxyConfigUrl",
-     l10n_util::GetString(IDS_PROXY_CONFIG_URL));
-  localized_strings->SetString(L"advanced_proxy_config",
-     l10n_util::GetString(IDS_PROXY_ADVANCED_CONFIG));
-  localized_strings->SetString(L"addHost",
-     l10n_util::GetString(IDS_PROXY_ADD_HOST));
-  localized_strings->SetString(L"removeHost",
-     l10n_util::GetString(IDS_PROXY_REMOVE_HOST));
-  localized_strings->SetString(L"proxyPort",
-     l10n_util::GetString(IDS_PROXY_PORT));
+  localized_strings->SetString("httpProxy",
+     l10n_util::GetStringUTF16(IDS_PROXY_HTTP_PROXY));
+  localized_strings->SetString("secureHttpProxy",
+     l10n_util::GetStringUTF16(IDS_PROXY_HTTP_SECURE_HTTP_PROXY));
+  localized_strings->SetString("ftpProxy",
+     l10n_util::GetStringUTF16(IDS_PROXY_FTP_PROXY));
+  localized_strings->SetString("socksHost",
+     l10n_util::GetStringUTF16(IDS_PROXY_SOCKS_HOST));
+  localized_strings->SetString("proxyAutomatic",
+     l10n_util::GetStringUTF16(IDS_PROXY_AUTOMATIC));
+  localized_strings->SetString("proxyConfigUrl",
+     l10n_util::GetStringUTF16(IDS_PROXY_CONFIG_URL));
+  localized_strings->SetString("advanced_proxy_config",
+     l10n_util::GetStringUTF16(IDS_PROXY_ADVANCED_CONFIG));
+  localized_strings->SetString("addHost",
+     l10n_util::GetStringUTF16(IDS_PROXY_ADD_HOST));
+  localized_strings->SetString("removeHost",
+     l10n_util::GetStringUTF16(IDS_PROXY_REMOVE_HOST));
+  localized_strings->SetString("proxyPort",
+     l10n_util::GetStringUTF16(IDS_PROXY_PORT));
 }

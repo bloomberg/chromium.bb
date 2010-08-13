@@ -21,20 +21,20 @@ AccountsOptionsHandler::~AccountsOptionsHandler() {
 void AccountsOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
-  localized_strings->SetString(L"accountsPage", l10n_util::GetString(
+  localized_strings->SetString("accountsPage", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_TAB_LABEL));
 
-  localized_strings->SetString(L"allow_BWSI", l10n_util::GetString(
+  localized_strings->SetString("allow_BWSI", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION));
-  localized_strings->SetString(L"allow_guest",l10n_util::GetString(
+  localized_strings->SetString("allow_guest",l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ALLOW_GUEST_DESCRIPTION));
-  localized_strings->SetString(L"show_user_on_signin",l10n_util::GetString(
+  localized_strings->SetString("show_user_on_signin",l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION));
-  localized_strings->SetString(L"username_edit_hint",l10n_util::GetString(
+  localized_strings->SetString("username_edit_hint",l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_USERNAME_EDIT_HINT));
-  localized_strings->SetString(L"username_format",l10n_util::GetString(
+  localized_strings->SetString("username_format",l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_USERNAME_FORMAT));
-  localized_strings->SetString(L"add_users",l10n_util::GetString(
+  localized_strings->SetString("add_users",l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_ADD_USERS));
 }
 
