@@ -129,8 +129,6 @@ void GeolocationContentSettingsMap::SetContentSetting(
   GURL embedding_origin(embedding_url.GetOrigin());
   DCHECK(requesting_origin.is_valid());
   DCHECK(embedding_origin.is_valid() || embedding_url.is_empty());
-  std::wstring wide_requesting_origin(UTF8ToWide(requesting_origin.spec()));
-  std::wstring wide_embedding_origin(UTF8ToWide(embedding_origin.spec()));
   PrefService* prefs = profile_->GetPrefs();
   DictionaryValue* all_settings_dictionary = prefs->GetMutableDictionary(
       prefs::kGeolocationContentSettings);
@@ -139,24 +137,24 @@ void GeolocationContentSettingsMap::SetContentSetting(
   ScopedPrefUpdate update(prefs, prefs::kGeolocationContentSettings);
   DictionaryValue* requesting_origin_settings_dictionary = NULL;
   all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-      wide_requesting_origin, &requesting_origin_settings_dictionary);
+      requesting_origin.spec(), &requesting_origin_settings_dictionary);
   if (setting == CONTENT_SETTING_DEFAULT) {
     if (requesting_origin_settings_dictionary) {
       requesting_origin_settings_dictionary->RemoveWithoutPathExpansion(
-          wide_embedding_origin, NULL);
+          embedding_origin.spec(), NULL);
       if (requesting_origin_settings_dictionary->empty())
         all_settings_dictionary->RemoveWithoutPathExpansion(
-            wide_requesting_origin, NULL);
+            requesting_origin.spec(), NULL);
     }
   } else {
     if (!requesting_origin_settings_dictionary) {
       requesting_origin_settings_dictionary = new DictionaryValue;
       all_settings_dictionary->SetWithoutPathExpansion(
-          wide_requesting_origin, requesting_origin_settings_dictionary);
+          requesting_origin.spec(), requesting_origin_settings_dictionary);
     }
     DCHECK(requesting_origin_settings_dictionary);
     requesting_origin_settings_dictionary->SetWithoutPathExpansion(
-        wide_embedding_origin, Value::CreateIntegerValue(setting));
+        embedding_origin.spec(), Value::CreateIntegerValue(setting));
   }
 }
 

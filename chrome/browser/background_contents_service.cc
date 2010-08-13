@@ -233,7 +233,7 @@ void BackgroundContentsService::UnregisterBackgroundContents(
   const string16 appid = GetParentApplicationId(background_contents);
   DictionaryValue* pref = prefs_->GetMutableDictionary(
       prefs::kRegisteredBackgroundContents);
-  pref->RemoveWithoutPathExpansion(UTF16ToWide(appid), NULL);
+  pref->RemoveWithoutPathExpansion(UTF16ToUTF8(appid), NULL);
   prefs_->ScheduleSavePersistentPrefs();
 }
 

@@ -286,10 +286,10 @@ class TopSites :
                                    MostVisitedURLList* out);
 
   // Converts a url into a canonical string representation.
-  std::wstring GetURLString(const GURL& url);
+  std::string GetURLString(const GURL& url);
 
   // Returns an MD5 hash of the URL. Hashing is required for blacklisted URLs.
-  std::wstring GetURLHash(const GURL& url);
+  std::string GetURLHash(const GURL& url);
 
   Profile* profile_;
   // A mockup to use for testing. If NULL, use the real HistoryService

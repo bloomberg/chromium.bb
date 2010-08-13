@@ -434,14 +434,14 @@ void TopSites::ApplyBlacklistAndPinnedURLs(const MostVisitedURLList& urls,
   }
 }
 
-std::wstring TopSites::GetURLString(const GURL& url) {
+std::string TopSites::GetURLString(const GURL& url) {
   lock_.AssertAcquired();
-  return ASCIIToWide(GetCanonicalURL(url).spec());
+  return GetCanonicalURL(url).spec();
 }
 
-std::wstring TopSites::GetURLHash(const GURL& url) {
+std::string TopSites::GetURLHash(const GURL& url) {
   lock_.AssertAcquired();
-  return ASCIIToWide(MD5String(GetCanonicalURL(url).spec()));
+  return MD5String(GetCanonicalURL(url).spec());
 }
 
 void TopSites::UpdateMostVisited(MostVisitedURLList most_visited) {
