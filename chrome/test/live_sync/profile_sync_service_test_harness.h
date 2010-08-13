@@ -31,6 +31,10 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // authenticated, and we are ready to process changes.
   bool SetupSync();
 
+  // Retries a sync setup when the previous attempt was aborted by an
+  // authentication failure.
+  bool RetryAuthentication();
+
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged();
 
@@ -87,7 +91,9 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
     WAITING_FOR_UPDATES,
     // The sync client is fully synced and there are no pending updates.
     FULLY_SYNCED,
-    NUMBER_OF_STATES
+    // An authentication error has occurred.
+    AUTH_ERROR,
+    NUMBER_OF_STATES,
   };
 
   // Called from the observer when the current wait state has been completed.
@@ -102,8 +108,10 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   virtual bool AwaitStatusChangeWithTimeout(int timeout_seconds,
                                             const std::string& reason);
 
-  // Returns true if the service initialized correctly.
-  bool WaitForServiceInit();
+  // Returns true if the service initialized correctly.  Set
+  // is_auth_retry to true when calling this method second time after
+  // an autentication failure.
+  bool WaitForServiceInit(bool is_auth_retry);
 
   WaitState wait_state_;
 

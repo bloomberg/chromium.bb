@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -96,7 +97,12 @@ bool ProfileSyncServiceTestHarness::SetupSync() {
   service_ = profile_->GetProfileSyncService();
   service_->StartUp();
   service_->AddObserver(this);
-  return WaitForServiceInit();
+  return WaitForServiceInit(false);
+}
+
+bool ProfileSyncServiceTestHarness::RetryAuthentication() {
+  wait_state_ = WAITING_FOR_ON_BACKEND_INITIALIZED;
+  return WaitForServiceInit(true);
 }
 
 void ProfileSyncServiceTestHarness::SignalStateCompleteWithNextState(
@@ -119,6 +125,9 @@ bool ProfileSyncServiceTestHarness::RunStateChangeMachine() {
       break;
     }
     case WAITING_FOR_ON_BACKEND_INITIALIZED: {
+      if (service_->GetAuthError().state() != GoogleServiceAuthError::NONE) {
+        SignalStateCompleteWithNextState(AUTH_ERROR);
+      }
       if (service_->sync_initialized()) {
         SignalStateCompleteWithNextState(WAITING_FOR_NOTIFICATIONS_ENABLED);
       }
@@ -256,12 +265,14 @@ bool ProfileSyncServiceTestHarness::AwaitStatusChangeWithTimeout(
   return timeout_signal->Abort();
 }
 
-bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
-  // Wait for the OnAuthError() callback.
-  EXPECT_EQ(wait_state_, WAITING_FOR_ON_AUTH_ERROR);
-  EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
-      "Waiting for the OnAuthError() callback.")) <<
-      "OnAuthError() not seen after 30 seconds.";
+bool ProfileSyncServiceTestHarness::WaitForServiceInit(bool is_auth_retry) {
+  if (!is_auth_retry) {
+    // Wait for the OnAuthError() callback.
+    EXPECT_EQ(wait_state_, WAITING_FOR_ON_AUTH_ERROR);
+    EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
+        "Waiting for the OnAuthError() callback.")) <<
+        "OnAuthError() not seen after 30 seconds.";
+  }
 
   // Enter GAIA credentials and wait for the OnBackendInitialized() callback.
   service_->backend()->Authenticate(username_, password_, std::string());
@@ -269,6 +280,10 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
   EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
       "Waiting for OnBackendInitialized().")) <<
       "OnBackendInitialized() not seen after 30 seconds.";
+
+  if (wait_state_ == AUTH_ERROR) {
+    return false;
+  }
 
   // Choose datatypes to be synced and wait for notifications_enabled to be set
   // to true.

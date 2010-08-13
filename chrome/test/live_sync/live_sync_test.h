@@ -21,8 +21,10 @@
 
 class CommandLine;
 class Profile;
+class URLRequestContextGetter;
 
 namespace net {
+class ProxyConfig;
 class ScopedDefaultHostResolverProc;
 }
 
@@ -120,6 +122,15 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Initializes sync clients and profiles if required and syncs each of them.
   virtual bool SetupSync();
 
+  // Disable outgoing network connections for the given profile.
+  virtual void DisableNetwork(Profile* profile);
+
+  // Enable outgoing network connections for the given profile.
+  virtual void EnableNetwork(Profile* profile);
+
+  // Configure mock server with test's options.
+  virtual bool EnsureSyncServerConfiguration();
+
  protected:
   // InProcessBrowserTest override. Destroys all the sync clients and sync
   // profiles created by a test.
@@ -152,6 +163,14 @@ class LiveSyncTest : public InProcessBrowserTest {
   // Helper method used to destroy the local python test server if one was
   // created.
   virtual void TearDownLocalTestServer();
+
+  // Used to disable and enable network connectivity by providing and
+  // clearing an invalid proxy configuration.
+  void SetProxyConfig(URLRequestContextGetter* context,
+                      const net::ProxyConfig& proxy_config);
+
+  // Sends configuration options to the mock sync server.
+  bool ConfigureSyncServer(const std::string& name, const std::string& value);
 
   // Used to differentiate between single-client, two-client, multi-client and
   // many-client tests.
