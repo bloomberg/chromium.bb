@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <sstream>
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/file_path.h"
@@ -56,11 +54,6 @@ TEST_F(FirefoxProxySettingsTest, TestParse) {
   net::ProxyConfig config;
   EXPECT_TRUE(settings.ToProxyConfig(&config));
 
-  // Pretty-print |config| to a string (easy way to define the expectations).
-  std::ostringstream stream;
-  stream << config;
-  std::string pretty_printed_config = stream.str();
-
   EXPECT_EQ(
       "Automatic settings:\n"
       "  Auto-detect: No\n"
@@ -75,7 +68,7 @@ TEST_F(FirefoxProxySettingsTest, TestParse) {
       "    *localhost\n"
       "    127.0.0.1\n"
       "    *noproxy.com",
-      pretty_printed_config);
+      config.ToString());
 }
 
 TEST_F(FirefoxProxySettingsTest, TestParseAutoConfigUrl) {
@@ -108,11 +101,6 @@ TEST_F(FirefoxProxySettingsTest, TestParseAutoConfigUrl) {
   net::ProxyConfig config;
   EXPECT_TRUE(settings.ToProxyConfig(&config));
 
-  // Pretty-print |config| to a string (easy way to define the expectations).
-  std::ostringstream stream;
-  stream << config;
-  std::string pretty_printed_config = stream.str();
-
   EXPECT_EQ(
       "Automatic settings:\n"
       "  Auto-detect: No\n"
@@ -120,5 +108,5 @@ TEST_F(FirefoxProxySettingsTest, TestParseAutoConfigUrl) {
       "Manual settings:\n"
       "  Proxy server: [None]\n"
       "  Bypass list: [None]",
-      pretty_printed_config);
+      config.ToString());
 }

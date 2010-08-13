@@ -5,7 +5,6 @@
 #include "chrome/browser/dom_ui/net_internals_ui.h"
 
 #include <algorithm>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -601,19 +600,15 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
   URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::ProxyService* proxy_service = context->proxy_service();
 
-  // TODO(eroman): send a dictionary rather than a flat string, so client can do
-  //               its own presentation.
-  std::string settings_string;
-
+  Value* settings_value = NULL;
   if (proxy_service->config_has_been_initialized()) {
-    // net::ProxyConfig defines an operator<<.
-    std::ostringstream stream;
-    stream << proxy_service->config();
-    settings_string = stream.str();
+    settings_value = proxy_service->config().ToValue();
+  } else {
+    settings_value = Value::CreateStringValue(std::string());
   }
 
   CallJavascriptFunction(L"g_browser.receivedProxySettings",
-                         Value::CreateStringValue(settings_string));
+                         settings_value);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(

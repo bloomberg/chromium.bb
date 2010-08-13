@@ -145,6 +145,9 @@ function getTextForExtraParams(entry, doStripCookies) {
     case LogEventType.HTTP_TRANSACTION_READ_TUNNEL_RESPONSE_HEADERS:
       return getTextForResponseHeadersExtraParam(entry, doStripCookies);
 
+    case LogEventType.PROXY_CONFIG_CHANGED:
+      return getTextForProxyConfigChangedExtraParam(entry);
+
     default:
       var out = [];
       for (var k in entry.params) {
@@ -247,6 +250,25 @@ function getTextForResponseHeadersExtraParam(entry, doStripCookies) {
   if (doStripCookies)
     headers = stripCookies(headers);
   return indentLines(' --> ', headers);
+}
+
+function getTextForProxyConfigChangedExtraParam(entry) {
+  var params = entry.params;
+  var out = '';
+  var indentation = '        ';
+
+  if (params.old_config) {
+    // The previous configuration may not be present in the case of
+    // the initial proxy settings fetch.
+    out += ' --> old_config =\n' +
+           indentLines(indentation, params.old_config.split('\n'));
+    out += '\n';
+  }
+
+  out += ' --> new_config =\n' +
+         indentLines(indentation, params.new_config.split('\n'));
+
+  return out;
 }
 
 function getTextForEvent(entry) {
