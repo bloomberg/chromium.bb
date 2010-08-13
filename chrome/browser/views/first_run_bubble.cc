@@ -509,7 +509,7 @@ void FirstRunBubble::EnableParent() {
 void FirstRunBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
   // Keep the bubble around for kLingerTime milliseconds, to prevent accidental
   // closure.
-  const int kLingerTime = 1000;
+  const int kLingerTime = 3000;
 
   // We might get re-enabled right before we are closed (sequence is: we get
   // deactivated, we call close, before we are actually closed we get
@@ -523,6 +523,7 @@ void FirstRunBubble::OnActivate(UINT action, BOOL minimized, HWND window) {
         enable_window_method_factory_.NewRunnableMethod(
             &FirstRunBubble::EnableParent),
         kLingerTime);
+    return;
   }
 
   // Keep window from automatically closing until kLingerTime has passed.
