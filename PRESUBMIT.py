@@ -34,7 +34,7 @@ TOP_DIR = 'native_client'
 
 def NaclTopDir():
   cwd = os.getcwd()
-  pos = cwd.find(TOP_DIR)
+  pos = cwd.rfind(TOP_DIR)
   if pos < 0:
     print 'ERROR: expected to be called from with %s' % TOP_DIR
   return cwd[:pos + len(TOP_DIR)]
