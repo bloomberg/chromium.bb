@@ -41,6 +41,67 @@
 #include <GL/glx.h>
 #endif
 
+// Use ARB_shader_object / ARB_vertex_shader functions to work when GL2 isn't
+// present but the extensions are.
+// Note that several GL2 functions are defined into the same ARB function (e.g.
+// glDeleteProgram and glDeleteShader into glDeleteObjectARB). That's expected.
+#undef glAttachShader
+#define glAttachShader glAttachObjectARB
+#undef glCompileShader
+#define glCompileShader glCompileShaderARB
+#undef glCreateProgram
+#define glCreateProgram glCreateProgramObjectARB
+#undef glCreateShader
+#define glCreateShader glCreateShaderObjectARB
+#undef glDeleteProgram
+#define glDeleteProgram glDeleteObjectARB
+#undef glDeleteShader
+#define glDeleteShader glDeleteObjectARB
+#undef glDisableVertexAttribArray
+#define glDisableVertexAttribArray glDisableVertexAttribArrayARB
+#undef glEnableVertexAttribArray
+#define glEnableVertexAttribArray glEnableVertexAttribArrayARB
+#undef glGetActiveAttrib
+#define glGetActiveAttrib glGetActiveAttribARB
+#undef glGetActiveUniform
+#define glGetActiveUniform glGetActiveUniformARB
+#undef glGetAttribLocation
+#define glGetAttribLocation glGetAttribLocationARB
+#undef glGetProgramInfoLog
+#define glGetProgramInfoLog glGetInfoLogARB
+#undef glGetProgramiv
+#define glGetProgramiv glGetObjectParameterivARB
+#undef glGetShaderInfoLog
+#define glGetShaderInfoLog glGetInfoLogARB
+#undef glGetShaderiv
+#define glGetShaderiv glGetObjectParameterivARB
+#undef glGetUniformLocation
+#define glGetUniformLocation glGetUniformLocationARB
+#undef glLinkProgram
+#define glLinkProgram glLinkProgramARB
+#undef glShaderSource
+#define glShaderSource glShaderSourceARB
+#undef glUniform1f
+#define glUniform1f glUniform1fARB
+#undef glUniform1fv
+#define glUniform1fv glUniform1fvARB
+#undef glUniform1i
+#define glUniform1i glUniform1iARB
+#undef glUniform1iv
+#define glUniform1iv glUniform1ivARB
+#undef glUniform2fv
+#define glUniform2fv glUniform2fvARB
+#undef glUniform3fv
+#define glUniform3fv glUniform3fvARB
+#undef glUniform4fv
+#define glUniform4fv glUniform4fvARB
+#undef glUniformMatrix4fv
+#define glUniformMatrix4fv glUniformMatrix4fvARB
+#undef glUseProgram
+#define glUseProgram glUseProgramObjectARB
+#undef glVertexAttribPointer
+#define glVertexAttribPointer glVertexAttribPointerARB
+
 #elif defined(GLES2_BACKEND_NATIVE_GLES2)
 
 #include <EGL/egl.h>
