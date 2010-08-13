@@ -20,7 +20,7 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
  protected:
   // Helper function to read and parse a list of menu item contexts.
   bool ParseContexts(const DictionaryValue& properties,
-                     const wchar_t* key,
+                     const char* key,
                      ExtensionMenuItem::ContextList* result);
 
   // Looks in properties for the "type" key, and reads the value in |result|. On
@@ -40,7 +40,7 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
   // Helper to read in a set of url patterns from a property with the given key
   // name.
   bool ParseURLPatterns(const DictionaryValue& properties,
-                        const wchar_t* key,
+                        const char* key,
                         ExtensionExtent* result);
 
   // Reads in any document and targetUrl patterns from |properties| and sets
