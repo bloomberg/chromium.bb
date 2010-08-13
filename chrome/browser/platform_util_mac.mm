@@ -5,12 +5,14 @@
 #include "chrome/browser/platform_util.h"
 
 #import <Cocoa/Cocoa.h>
+#import <CoreServices/CoreServices.h>
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
+#include "base/scoped_aedesc.h"
 #include "base/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
@@ -25,11 +27,97 @@ void ShowItemInFolder(const FilePath& full_path) {
     LOG(WARNING) << "NSWorkspace failed to select file " << full_path.value();
 }
 
+// This function opens a file.  This doesn't use LaunchServices or NSWorkspace
+// because of two bugs:
+//  1. Incorrect app activation with com.apple.quarantine:
+//     http://crbug.com/32921
+//  2. Silent no-op for unassociated file types: http://crbug.com/50263
+// Instead, an AppleEvent is constructed to tell the Finder to open the
+// document.
 void OpenItem(const FilePath& full_path) {
   DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
-  if (!path_string || ![[NSWorkspace sharedWorkspace] openFile:path_string])
-    LOG(WARNING) << "NSWorkspace failed to open file " << full_path.value();
+  if (!path_string)
+    return;
+
+  OSErr status;
+
+  // Create the target of this AppleEvent, the Finder.
+  scoped_aedesc<AEAddressDesc> address;
+  const OSType finderCreatorCode = 'MACS';
+  status = AECreateDesc(typeApplSignature,  // type
+                        &finderCreatorCode,  // data
+                        sizeof(finderCreatorCode),  // dataSize
+                        address.OutPointer());  // result
+  if (status != noErr) {
+    LOG(WARNING) << "Could not create OpenItem() AE target";
+    return;
+  }
+
+  // Build the AppleEvent data structure that instructs Finder to open files.
+  scoped_aedesc<AppleEvent> theEvent;
+  status = AECreateAppleEvent(kCoreEventClass,  // theAEEventClass
+                              kAEOpenDocuments,  // theAEEventID
+                              address,  // target
+                              kAutoGenerateReturnID,  // returnID
+                              kAnyTransactionID,  // transactionID
+                              theEvent.OutPointer());  // result
+  if (status != noErr) {
+    LOG(WARNING) << "Could not create OpenItem() AE event";
+    return;
+  }
+
+  // Create the list of files (only ever one) to open.
+  scoped_aedesc<AEDescList> fileList;
+  status = AECreateList(NULL,  // factoringPtr
+                        0,  // factoredSize
+                        false,  // isRecord
+                        fileList.OutPointer());  // resultList
+  if (status != noErr) {
+    LOG(WARNING) << "Could not create OpenItem() AE file list";
+    return;
+  }
+
+  // Add the single path to the file list.  C-style cast to avoid both a
+  // static_cast and a const_cast to get across the toll-free bridge.
+  CFURLRef pathURLRef = (CFURLRef)[NSURL fileURLWithPath:path_string];
+  FSRef pathRef;
+  if (CFURLGetFSRef(pathURLRef, &pathRef)) {
+    status = AEPutPtr(fileList.OutPointer(),  // theAEDescList
+                      0,  // index
+                      typeFSRef,  // typeCode
+                      &pathRef,  // dataPtr
+                      sizeof(pathRef));  // dataSize
+    if (status != noErr) {
+      LOG(WARNING) << "Could not add file path to AE list in OpenItem()";
+      return;
+    }
+  } else {
+    LOG(WARNING) << "Could not get FSRef for path URL in OpenItem()";
+    return;
+  }
+
+  // Attach the file list to the AppleEvent.
+  status = AEPutParamDesc(theEvent.OutPointer(),  // theAppleEvent
+                          keyDirectObject,  // theAEKeyword
+                          fileList);  // theAEDesc
+  if (status != noErr) {
+    LOG(WARNING) << "Could not put the AE file list the path in OpenItem()";
+    return;
+  }
+
+  // Send the actual event.  Do not care about the reply.
+  scoped_aedesc<AppleEvent> reply;
+  status = AESend(theEvent,  // theAppleEvent
+                  reply.OutPointer(),  // reply
+                  kAENoReply + kAEAlwaysInteract,  // sendMode
+                  kAENormalPriority,  // sendPriority
+                  kAEDefaultTimeout,  // timeOutInTicks
+                  NULL, // idleProc
+                  NULL);  // filterProc
+  if (status != noErr) {
+    LOG(WARNING) << "Could not send AE to Finder in OpenItem()";
+  }
 }
 
 void OpenExternal(const GURL& url) {
