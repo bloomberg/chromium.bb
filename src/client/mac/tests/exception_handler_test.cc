@@ -35,12 +35,19 @@
 #include "breakpad_googletest_includes.h"
 #include "client/mac/handler/exception_handler.h"
 #include "client/mac/tests/auto_tempdir.h"
+#include "common/mac/MachIPC.h"
 
 namespace {
 using std::string;
 using google_breakpad::AutoTempDir;
 using google_breakpad::ExceptionHandler;
 using testing::Test;
+
+class ExceptionHandlerTest : public Test {
+ public:
+  AutoTempDir tempDir;
+  string lastDumpName;
+};
 
 static void Crasher() {
   int *a = (int*)0x42;
@@ -68,7 +75,7 @@ static bool MDCallback(const char *dump_dir, const char *file_name,
   return true;
 }
 
-TEST(ExceptionHandler, InProcess) {
+TEST_F(ExceptionHandlerTest, InProcess) {
   AutoTempDir tempDir;
   // Give the child process a pipe to report back on.
   int fds[2];
@@ -76,6 +83,7 @@ TEST(ExceptionHandler, InProcess) {
   // Fork off a child process so it can crash.
   pid_t pid = fork();
   if (pid == 0) {
+    // In the child process.
     close(fds[0]);
     ExceptionHandler eh(tempDir.path, NULL, MDCallback, &fds[1], true, NULL);
     // crash
@@ -83,6 +91,7 @@ TEST(ExceptionHandler, InProcess) {
     // not reached
     exit(1);
   }
+  // In the parent process.
   ASSERT_NE(-1, pid);
   // Wait for the background process to return the minidump file.
   close(fds[1]);
@@ -93,6 +102,87 @@ TEST(ExceptionHandler, InProcess) {
   struct stat st;
   ASSERT_EQ(0, stat(minidump_file, &st));
   ASSERT_LT(0, st.st_size);
+
+  // Child process should have exited with a zero status.
+  int ret;
+  ASSERT_EQ(pid, waitpid(pid, &ret, 0));
+  EXPECT_NE(0, WIFEXITED(ret));
+  EXPECT_EQ(0, WEXITSTATUS(ret));
+}
+
+static bool ChildMDCallback(const char *dump_dir, const char *file_name,
+			    void *context, bool success) {
+  ExceptionHandlerTest *self = reinterpret_cast<ExceptionHandlerTest*>(context);
+  if (dump_dir && file_name) {
+    self->lastDumpName = dump_dir;
+    self->lastDumpName += "/";
+    self->lastDumpName += file_name;
+    self->lastDumpName += ".dmp";
+  }
+  return true;
+}
+
+TEST_F(ExceptionHandlerTest, DumpChildProcess) {
+  const int kTimeoutMs = 2000;
+  // Create a mach port to receive the child task on.
+  char machPortName[128];
+  sprintf(machPortName, "ExceptionHandlerTest.%d", getpid());
+  ReceivePort parent_recv_port(machPortName);
+
+  // Give the child process a pipe to block on.
+  int fds[2];
+  ASSERT_EQ(0, pipe(fds));
+
+  // Fork off a child process to dump.
+  pid_t pid = fork();
+  if (pid == 0) {
+    // In the child process
+    close(fds[0]);
+
+    // Send parent process the task and thread ports.
+    MachSendMessage child_message(0);
+    child_message.AddDescriptor(mach_task_self());
+    child_message.AddDescriptor(mach_thread_self());
+
+    MachPortSender child_sender(machPortName);
+    if (child_sender.SendMessage(child_message, kTimeoutMs) != KERN_SUCCESS)
+      exit(1);
+
+    // Wait for the parent process.
+    uint8_t data;
+    read(fds[1], &data, 1);
+    exit(0);
+  }
+  // In the parent process.
+  ASSERT_NE(-1, pid);
+  close(fds[1]);
+
+  // Read the child's task and thread ports.
+  MachReceiveMessage child_message;
+  ASSERT_EQ(KERN_SUCCESS,
+	    parent_recv_port.WaitForMessage(&child_message, kTimeoutMs));
+  mach_port_t child_task = child_message.GetTranslatedPort(0);
+  mach_port_t child_thread = child_message.GetTranslatedPort(1);
+  ASSERT_NE(MACH_PORT_NULL, child_task);
+  ASSERT_NE(MACH_PORT_NULL, child_thread);
+
+  // Write a minidump of the child process.
+  bool result = ExceptionHandler::WriteMinidumpForChild(child_task,
+							child_thread,
+							tempDir.path,
+							ChildMDCallback,
+							this);
+  ASSERT_EQ(true, result);
+
+  // Ensure that minidump file exists and is > 0 bytes.
+  ASSERT_FALSE(lastDumpName.empty());
+  struct stat st;
+  ASSERT_EQ(0, stat(lastDumpName.c_str(), &st));
+  ASSERT_LT(0, st.st_size);
+
+  // Unblock child process
+  uint8_t data = 1;
+  (void)write(fds[0], &data, 1);
 
   // Child process should have exited with a zero status.
   int ret;

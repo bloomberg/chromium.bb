@@ -33,6 +33,7 @@
 #include "client/mac/handler/exception_handler.h"
 #include "client/mac/handler/minidump_generator.h"
 #include "common/mac/macho_utilities.h"
+#include "common/mac/scoped_task_suspend-inl.h"
 
 #ifndef USE_PROTECTED_ALLOCATIONS
 #define USE_PROTECTED_ALLOCATIONS 0
@@ -299,6 +300,37 @@ bool ExceptionHandler::WriteMinidump(const string &dump_path,
   ExceptionHandler handler(dump_path, NULL, callback, callback_context, false,
 			   NULL);
   return handler.WriteMinidump();
+}
+
+// static
+bool ExceptionHandler::WriteMinidumpForChild(mach_port_t child,
+					     mach_port_t child_blamed_thread,
+					     const string &dump_path,
+					     MinidumpCallback callback,
+					     void *callback_context) {
+  ScopedTaskSuspend suspend(child);
+
+  MinidumpGenerator generator(child, MACH_PORT_NULL);
+  string dump_id;
+  string dump_filename = generator.UniqueNameInDirectory(dump_path, &dump_id);
+
+  generator.SetExceptionInformation(EXC_BREAKPOINT,
+#if defined (__i386__) || defined(__x86_64__)
+				    EXC_I386_BPT,
+#elif defined (__ppc__) || defined (__ppc64__)
+				    EXC_PPC_BREAKPOINT,
+#else
+  #error architecture not supported
+#endif
+				    0,
+				    child_blamed_thread);
+  bool result = generator.Write(dump_filename.c_str());
+
+  if (callback) {
+    return callback(dump_path.c_str(), dump_id.c_str(),
+		    callback_context, result);
+  }
+  return result;
 }
 
 bool ExceptionHandler::WriteMinidumpWithException(int exception_type,

@@ -121,6 +121,14 @@ class ExceptionHandler {
   static bool WriteMinidump(const string &dump_path, MinidumpCallback callback,
                             void *callback_context);
 
+  // Write a minidump of child immediately. This can be used to capture
+  // the execution state of a child process independently of a crash.
+  static bool WriteMinidumpForChild(mach_port_t child,
+				    mach_port_t child_blamed_thread,
+				    const std::string &dump_path,
+				    MinidumpCallback callback,
+				    void *callback_context);
+
   // Returns whether out-of-process dump generation is used or not.
   bool IsOutOfProcess() const {
     return crash_generation_client_.get() != NULL;

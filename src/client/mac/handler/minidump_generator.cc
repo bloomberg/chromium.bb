@@ -536,7 +536,10 @@ bool MinidumpGenerator::WriteThreadListStream(
     return false;
 
   // Don't include the generator thread
-  non_generator_thread_count = thread_count - 1;
+  if (handler_thread_ != MACH_PORT_NULL)
+    non_generator_thread_count = thread_count - 1;
+  else
+    non_generator_thread_count = thread_count;
   if (!list.AllocateObjectAndArray(non_generator_thread_count,
                                    sizeof(MDRawThread)))
     return false;
