@@ -59,6 +59,13 @@ def MungeMultilibDir(tree):
     tree["nacl64"]["lib32"] = lib32
 
 
+def LibraryPathVar():
+  if sys.platform == "darwin":
+    return "DYLD_LIBRARY_PATH"
+  else:
+    return "LD_LIBRARY_PATH"
+
+
 def AddEnvVarWrapperScripts(tree):
   # Move the real executables from "bin" to "original-bin" and create
   # wrapper scripts in "bin" that set LD_LIBRARY_PATH.
@@ -67,11 +74,14 @@ def AddEnvVarWrapperScripts(tree):
     tree["original-bin"] = tree["bin"]
     tree["bin"] = {}
     for script_name in tree["original-bin"].iterkeys():
-      tree["bin"][script_name] = FileSnapshotInMemory("""\
+      template = """\
 #!/bin/bash
-export LD_LIBRARY_PATH="${0%%/*}/../lib${LD_LIBRARY_PATH+:$LD_LIBRARY_PATH}"
-exec ${0%%/*}/../original-bin/%s "$@"
-""" % script_name, executable=True)
+export %(path_var)s="${0%%/*}/../lib${%(path_var)s+:$%(path_var)s}"
+exec ${0%%/*}/../original-bin/%(script_name)s "$@"
+"""
+      script = template % {"path_var": LibraryPathVar(),
+                           "script_name": script_name}
+      tree["bin"][script_name] = FileSnapshotInMemory(script, executable=True)
 
 
 def CombineInstallTrees(*trees):

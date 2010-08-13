@@ -31,9 +31,12 @@ def GetOne(lst):
 
 
 def CopyOnto(source_dir, dest_dir):
+  # This assertion is a replacment for the "-t" option, which is in
+  # the GNU tools but not in the BSD tools on Mac OS X.
+  assert os.path.isdir(dest_dir)
   for leafname in os.listdir(source_dir):
-    subprocess.check_call(["cp", "-a", os.path.join(source_dir, leafname),
-                           "-t", dest_dir])
+    subprocess.check_call(["cp", "-pR", os.path.join(source_dir, leafname),
+                           dest_dir])
 
 
 def RemoveTree(dir_path):

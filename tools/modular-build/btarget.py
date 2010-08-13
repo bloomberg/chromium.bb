@@ -219,7 +219,7 @@ def GetPrefixVars(prefix_dir):
 
   AddVar("PATH", os.path.join(prefix_dir, "bin"))
   AddVar("C_INCLUDE_PATH", os.path.join(prefix_dir, "include"))
-  AddVar("LD_LIBRARY_PATH", os.path.join(prefix_dir, "lib"))
+  AddVar(treemappers.LibraryPathVar(), os.path.join(prefix_dir, "lib"))
   AddVar("LDFLAGS", "-L%s" % os.path.join(prefix_dir, "lib"),
          separator=" ")
   return env_vars

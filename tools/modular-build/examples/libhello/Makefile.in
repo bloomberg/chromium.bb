@@ -5,10 +5,16 @@
 srcdir = @srcdir@
 prefix = @prefix@
 
+ifeq ($(shell uname),Darwin)
+  shared_flag = -dynamiclib
+else
+  shared_flag = -shared
+endif
+
 all:
 
 libhello.so: $(srcdir)/libhello.c
-	gcc -shared -fPIC $< -o $@
+	gcc $(shared_flag) -fPIC $< -o $@
 
 install: libhello.so
 	install -d $(DESTDIR)$(prefix)/lib
