@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import unittest
 
-from dirtree_test import TempDirTestCase
+from dirtree_test import Quieten, TempDirTestCase
 import dirtree
 import dirtree_test
 import btarget
@@ -40,6 +40,7 @@ class BuildTargetTests(TempDirTestCase):
     btarget.Rebuild([src], open(os.devnull, "w"))
     self.assertEquals(PlanToString([src]), "src: no\n")
 
+  @Quieten
   def test_build(self):
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
@@ -76,6 +77,7 @@ class BuildTargetTests(TempDirTestCase):
     # Try again to test idempotence of install step.
     install.DoBuild()
 
+  @Quieten
   def test_building_specific_targets(self):
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
@@ -111,6 +113,7 @@ class BuildTargetTests(TempDirTestCase):
                       "input: no\n"
                       "** skipping input\n")
 
+  @Quieten
   def test_install_root(self):
     # Test package that supports "make install install_root=DIR"
     # but not the usual "make install DESTDIR=DIR".
@@ -222,6 +225,7 @@ class BuildTargetTests(TempDirTestCase):
                                  MapperFunc2, [])
     self.assertEquals(target2.NeedsBuild(), True)
 
+  @Quieten
   def test_component_with_library(self):
     top_dir = self.MakeTempDir()
     src_dirs = {

@@ -7,7 +7,9 @@
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
+import traceback
 import unittest
 
 import dirtree
@@ -30,6 +32,36 @@ class TempDirTestCase(unittest.TestCase):
   def tearDown(self):
     for func in reversed(self._on_teardown):
       func()
+
+
+# This function is intended to be used as a decorator.  It is for
+# noisy tests.  This function wraps a test method to redirect
+# stdout/stderr to a temporary file, and reveals the output only if
+# the test fails.
+def Quieten(func):
+  def Wrapper(*args):
+    temp_fd, filename = tempfile.mkstemp()
+    os.unlink(filename)
+    temp_fh = os.fdopen(temp_fd, "w+")
+    saved_stdout = os.dup(1)
+    saved_stderr = os.dup(2)
+    os.dup2(temp_fh.fileno(), 1)
+    os.dup2(temp_fh.fileno(), 2)
+    try:
+      try:
+        func(*args)
+      finally:
+        os.dup2(saved_stdout, 1)
+        os.dup2(saved_stderr, 2)
+        os.close(saved_stdout)
+        os.close(saved_stderr)
+    except Exception:
+      temp_fh.seek(0)
+      output = temp_fh.read()
+      error = "".join(traceback.format_exception(*sys.exc_info())).rstrip("\n")
+      raise Exception("Test failed with the following output:\n\n%s\n%s" %
+                      (output, error))
+  return Wrapper
 
 
 class Dir(dirtree.DirTree):
@@ -83,6 +115,7 @@ class DirTreeTests(TempDirTestCase):
     dest_dir = self._RealizeTree(tree)
     self.assertEquals(os.listdir(dest_dir), ["README"])
 
+  @Quieten
   def test_patch_tree(self):
     temp_dir = self.MakeTempDir()
     os.mkdir(os.path.join(temp_dir, "a"))
@@ -111,6 +144,7 @@ class DirTreeTests(TempDirTestCase):
         lambda: self._RealizeTree(
             dirtree.PatchedTree(dirtree.EmptyTree(), [diff_file])))
 
+  @Quieten
   def test_git_tree(self):
     repo_dir = self._RealizeTree(Dir([("myfile", File("My file"))]))
     subprocess.check_call(["git", "init", "-q"], cwd=repo_dir)
