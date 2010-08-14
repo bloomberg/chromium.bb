@@ -38,9 +38,9 @@ class BackgroundContentsServiceTest : public testing::Test {
     DictionaryValue* pref = GetPrefs(profile);
     EXPECT_TRUE(pref->HasKey(UTF16ToWide(appid)));
     DictionaryValue* value;
-    pref->GetDictionaryWithoutPathExpansion(UTF16ToWide(appid), &value);
+    pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &value);
     std::string url;
-    value->GetString(L"url", &url);
+    value->GetString("url", &url);
     return url;
   }
 

@@ -214,7 +214,7 @@ void BackgroundContentsService::RegisterBackgroundContents(
       prefs::kRegisteredBackgroundContents);
   const string16& appid = GetParentApplicationId(background_contents);
   DictionaryValue* current;
-  if (pref->GetDictionaryWithoutPathExpansion(UTF16ToWide(appid), &current))
+  if (pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &current))
     return;
 
   // No entry for this application yet, so add one.

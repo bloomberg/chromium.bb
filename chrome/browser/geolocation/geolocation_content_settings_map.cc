@@ -67,7 +67,7 @@ ContentSetting GeolocationContentSettingsMap::GetContentSetting(
   if (all_settings_dictionary != NULL) {
     DictionaryValue* requesting_origin_settings;
     if (all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-        UTF8ToWide(requesting_origin.spec()), &requesting_origin_settings)) {
+        requesting_origin.spec(), &requesting_origin_settings)) {
       int setting;
       if (requesting_origin_settings->GetIntegerWithoutPathExpansion(
           UTF8ToWide(embedding_origin.spec()), &setting))
@@ -75,7 +75,7 @@ ContentSetting GeolocationContentSettingsMap::GetContentSetting(
       // Check for any-embedder setting
       if (requesting_origin != embedding_origin &&
           requesting_origin_settings->GetIntegerWithoutPathExpansion(
-          L"", &setting))
+          "", &setting))
         return IntToContentSetting(setting);
     }
   }
