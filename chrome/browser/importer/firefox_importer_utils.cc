@@ -52,7 +52,7 @@ FilePath GetFirefoxProfilePath() {
   FilePath source_path;
   for (int i = 0; ; ++i) {
     std::string current_profile = StringPrintf("Profile%d", i);
-    if (!root.HasKeyASCII(current_profile)) {
+    if (!root.HasKey(current_profile)) {
       // Profiles are continuously numbered. So we exit when we can't
       // find the i-th one.
       break;
