@@ -128,17 +128,17 @@ void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
   // The encoding we use for the info is "title|context|direction" where
   // direction is either env_vars::kRtlLocale or env_vars::kLtrLocale depending
   // on the current locale.
-  std::wstring dlg_strings;
-  dlg_strings.append(l10n_util::GetString(IDS_CRASH_RECOVERY_TITLE));
-  dlg_strings.append(L"|");
-  dlg_strings.append(l10n_util::GetString(IDS_CRASH_RECOVERY_CONTENT));
-  dlg_strings.append(L"|");
-  if (base::i18n::IsRTL())
-    dlg_strings.append(ASCIIToWide(env_vars::kRtlLocale));
-  else
-    dlg_strings.append(ASCIIToWide(env_vars::kLtrLocale));
+  string16 dlg_strings(l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_TITLE));
+  dlg_strings.push_back('|');
+  string16 adjusted_string;
+  base::i18n::AdjustStringForLocaleDirection(
+      l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_CONTENT), &adjusted_string);
+  dlg_strings.append(adjusted_string);
+  dlg_strings.push_back('|');
+  dlg_strings.append(ASCIIToUTF16(
+      base::i18n::IsRTL() ? env_vars::kRtlLocale : env_vars::kLtrLocale));
 
-  env->SetVar(env_vars::kRestartInfo, WideToUTF8(dlg_strings));
+  env->SetVar(env_vars::kRestartInfo, UTF16ToUTF8(dlg_strings));
 }
 
 // This method handles the --hide-icons and --show-icons command line options
