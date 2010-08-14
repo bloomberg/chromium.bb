@@ -296,7 +296,6 @@ void ExtensionsService::UpdateExtension(const std::string& id,
                        client));
   installer->set_expected_id(id);
   installer->set_delete_source(true);
-  installer->set_limit_web_extent_to_download_host(true);
   installer->set_original_url(download_url);
   installer->InstallCrx(extension_path);
 }
