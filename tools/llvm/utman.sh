@@ -972,6 +972,9 @@ gcc-stage1-clean() {
 
 gcc-stage1-needs-configure() {
   local target=$1
+  speculative-check "llvm" && return 0
+  ts-newer-than "${TC_BUILD_LLVM}" \
+                "${TC_BUILD_LLVM_GCC1}-${target}" && return 0
   [ ! -f "${TC_BUILD_LLVM_GCC1}-${target}/config.status" ]
   return $?
 }
