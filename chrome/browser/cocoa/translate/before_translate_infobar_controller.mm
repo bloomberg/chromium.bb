@@ -36,7 +36,7 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
 - (void)initializeExtraControls {
   TranslateInfoBarDelegate* delegate = [self delegate];
   const string16& language = delegate->GetLanguageDisplayableNameAt(
-      delegate->original_language_index()); 
+      delegate->original_language_index());
   neverTranslateButton_.reset(
       CreateNSButtonWithResourceIDAndParameter(
           IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE, language));
