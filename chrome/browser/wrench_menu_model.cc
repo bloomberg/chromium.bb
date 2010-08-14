@@ -12,6 +12,7 @@
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
+#include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
@@ -30,6 +31,10 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+
+#if defined(OS_LINUX)
+#include <gtk/gtk.h>
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // EncodingMenuModel
@@ -313,6 +318,14 @@ void WrenchMenuModel::Build() {
 
 #if defined(OS_MACOSX)
   AddItemWithStringId(IDC_OPTIONS, IDS_PREFERENCES_MAC);
+#elif defined(OS_LINUX)
+  GtkStockItem stock_item;
+  if (gtk_stock_lookup(GTK_STOCK_PREFERENCES, &stock_item)) {
+    const char16 kUnderscore[] = { '_', 0 };
+    string16 preferences;
+    RemoveChars(ASCIIToUTF16(stock_item.label), kUnderscore, &preferences);
+    AddItem(IDC_OPTIONS, preferences);
+  }
 #else
   AddItemWithStringId(IDC_OPTIONS, IDS_OPTIONS);
 #endif
