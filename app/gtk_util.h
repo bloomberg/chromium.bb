@@ -7,7 +7,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <string>
 
 typedef struct _GtkWidget GtkWidget;
 

@@ -13,7 +13,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "app/clipboard/clipboard.h"
 #include "base/file_path.h"
