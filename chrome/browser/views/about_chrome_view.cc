@@ -310,7 +310,7 @@ void AboutChromeView::Init() {
   terms_of_service_url_->SetController(this);
 
   // Add the Terms of Service line and some whitespace.
-  height += font.height() + kRelatedControlVerticalSpacing;
+  height += font.GetHeight() + kRelatedControlVerticalSpacing;
 #endif
 
   // Use whichever is greater (the calculated height or the specified minimum
@@ -466,7 +466,7 @@ void AboutChromeView::Paint(gfx::Canvas* canvas) {
 #if defined(GOOGLE_CHROME_BUILD)
   // Insert a line break and some whitespace.
   position.set_width(0);
-  position.Enlarge(0, font.height() + kRelatedControlVerticalSpacing);
+  position.Enlarge(0, font.GetHeight() + kRelatedControlVerticalSpacing);
 
   // And now the Terms of Service and position the TOS url.
   view_text_utils::DrawTextAndPositionUrl(canvas, main_text_label_,
