@@ -70,7 +70,7 @@ ContentSetting GeolocationContentSettingsMap::GetContentSetting(
         requesting_origin.spec(), &requesting_origin_settings)) {
       int setting;
       if (requesting_origin_settings->GetIntegerWithoutPathExpansion(
-          UTF8ToWide(embedding_origin.spec()), &setting))
+          embedding_origin.spec(), &setting))
         return IntToContentSetting(setting);
       // Check for any-embedder setting
       if (requesting_origin != embedding_origin &&

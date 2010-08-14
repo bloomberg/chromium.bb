@@ -63,8 +63,7 @@ TEST_F(HostZoomMapTest, LoadNoPrefs) {
 TEST_F(HostZoomMapTest, Load) {
   DictionaryValue* dict =
       prefs_->GetMutableDictionary(prefs::kPerHostZoomLevels);
-  dict->SetWithoutPathExpansion(UTF8ToWide(host_),
-                                Value::CreateIntegerValue(kZoomLevel));
+  dict->SetWithoutPathExpansion(host_, Value::CreateIntegerValue(kZoomLevel));
   scoped_refptr<HostZoomMap> map(new HostZoomMap(&profile_));
   EXPECT_EQ(kZoomLevel, map->GetZoomLevel(url_));
 }
@@ -78,14 +77,13 @@ TEST_F(HostZoomMapTest, SetZoomLevel) {
   const DictionaryValue* dict =
       prefs_->GetDictionary(prefs::kPerHostZoomLevels);
   int zoom_level = 0;
-  EXPECT_TRUE(dict->GetIntegerWithoutPathExpansion(UTF8ToWide(host_),
-                                                   &zoom_level));
+  EXPECT_TRUE(dict->GetIntegerWithoutPathExpansion(host_, &zoom_level));
   EXPECT_EQ(kZoomLevel, zoom_level);
 
   SetPrefObserverExpectation();
   map->SetZoomLevel(url_, 0);
   EXPECT_EQ(0, map->GetZoomLevel(url_));
-  EXPECT_FALSE(dict->HasKey(UTF8ToWide(host_)));
+  EXPECT_FALSE(dict->HasKey(host_));
   prefs_->RemovePrefObserver(prefs::kPerHostZoomLevels, &pref_observer_);
 }
 
@@ -106,8 +104,7 @@ TEST_F(HostZoomMapTest, ReloadOnPrefChange) {
   map->SetZoomLevel(url_, kZoomLevel);
 
   DictionaryValue dict;
-  dict.SetWithoutPathExpansion(UTF8ToWide(host_),
-                               Value::CreateIntegerValue(0));
+  dict.SetWithoutPathExpansion(host_, Value::CreateIntegerValue(0));
   prefs_->Set(prefs::kPerHostZoomLevels, dict);
   EXPECT_EQ(0, map->GetZoomLevel(url_));
 }

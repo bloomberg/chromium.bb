@@ -130,8 +130,7 @@ std::vector<UserManager::User> UserManager::GetUsers() const {
         std::string image_path;
         if (image_it == user_images_.end()) {
           if (prefs_images &&
-              prefs_images->GetStringWithoutPathExpansion(
-                  ASCIIToWide(email), &image_path)) {
+              prefs_images->GetStringWithoutPathExpansion(email, &image_path)) {
             // Insert the default image so we don't send another request if
             // GetUsers is called twice.
             user_images_[email] = user.image();
