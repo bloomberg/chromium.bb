@@ -120,16 +120,16 @@ PendingExtensionInfo::PendingExtensionInfo()
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
 const char* ExtensionsService::kCurrentVersionFileName = "Current Version";
 
-bool ExtensionsService::IsGalleryDownloadURL(const GURL& download_url) {
+namespace {
+
+bool IsGalleryDownloadURL(const GURL& download_url) {
   if (StartsWithASCII(download_url.spec(),
                       extension_urls::kMiniGalleryDownloadPrefix, false))
      return true;
 
-  GURL gallery_download_prefix(extension_urls::kGalleryDownloadPrefix);
-  if (download_url.host() == gallery_download_prefix.host() &&
-      StartsWithASCII(download_url.path(),
-                      gallery_download_prefix.path(), false))
-    return true;
+  if (StartsWithASCII(download_url.spec(),
+                      extension_urls::kGalleryDownloadPrefix, false))
+     return true;
 
   // Allow command line gallery url to be referrer for the gallery downloads.
   std::string command_line_gallery_url =
@@ -142,6 +142,8 @@ bool ExtensionsService::IsGalleryDownloadURL(const GURL& download_url) {
 
   return false;
 }
+
+}  // namespace
 
 // static
 bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,

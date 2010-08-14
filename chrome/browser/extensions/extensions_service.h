@@ -115,9 +115,6 @@ class ExtensionsService
   // The name of the file that the current active version number is stored in.
   static const char* kCurrentVersionFileName;
 
-  // Determine if the given url is an instance of a gallery download url.
-  static bool IsGalleryDownloadURL(const GURL& download_url);
-
   // Determine if a given extension download should be treated as if it came
   // from the gallery. Note that this is different from IsGalleryDownloadURL
   // (above) in that in requires *both* that the download_url match and
