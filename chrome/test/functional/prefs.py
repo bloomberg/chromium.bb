@@ -104,7 +104,7 @@ class PrefsTest(pyauto.PyUITest):
     self.DownloadAndWaitForStart(file_url)
     self.WaitForAllDownloadsToComplete()
     self.assertTrue(os.path.exists(downloaded_pkg))
-    shutil.rmtree(new_dl_dir)  # cleanup
+    shutil.rmtree(new_dl_dir, ignore_errors=True)  # cleanup
 
   def testToolbarButtonsPref(self):
     """Verify toolbar buttons prefs.."""
