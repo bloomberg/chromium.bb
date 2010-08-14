@@ -1184,9 +1184,10 @@ enum { kHomepageNewTabPage, kHomepageURL };
     stringId = IDS_OPTIONS_DEFAULTBROWSER_NOTDEFAULT;
   else
     stringId = IDS_OPTIONS_DEFAULTBROWSER_UNKNOWN;
-  std::wstring text =
-      l10n_util::GetStringF(stringId, l10n_util::GetString(IDS_PRODUCT_NAME));
-  return base::SysWideToNSString(text);
+  string16 text =
+      l10n_util::GetStringFUTF16(stringId,
+                                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  return base::SysUTF16ToNSString(text);
 }
 
 //-------------------------------------------------------------------------

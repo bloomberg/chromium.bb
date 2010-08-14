@@ -99,16 +99,16 @@ const CGFloat kLocBarBottomInset = 1;
 
   DictionaryValue* windowPreferences = prefs->GetMutableDictionary(
       browser_->GetWindowPlacementKey().c_str());
-  windowPreferences->SetInteger(L"left", bounds.x());
-  windowPreferences->SetInteger(L"top", bounds.y());
-  windowPreferences->SetInteger(L"right", bounds.right());
-  windowPreferences->SetInteger(L"bottom", bounds.bottom());
-  windowPreferences->SetBoolean(L"maximized", false);
-  windowPreferences->SetBoolean(L"always_on_top", false);
-  windowPreferences->SetInteger(L"work_area_left", workArea.x());
-  windowPreferences->SetInteger(L"work_area_top", workArea.y());
-  windowPreferences->SetInteger(L"work_area_right", workArea.right());
-  windowPreferences->SetInteger(L"work_area_bottom", workArea.bottom());
+  windowPreferences->SetInteger("left", bounds.x());
+  windowPreferences->SetInteger("top", bounds.y());
+  windowPreferences->SetInteger("right", bounds.right());
+  windowPreferences->SetInteger("bottom", bounds.bottom());
+  windowPreferences->SetBoolean("maximized", false);
+  windowPreferences->SetBoolean("always_on_top", false);
+  windowPreferences->SetInteger("work_area_left", workArea.x());
+  windowPreferences->SetInteger("work_area_top", workArea.y());
+  windowPreferences->SetInteger("work_area_right", workArea.right());
+  windowPreferences->SetInteger("work_area_bottom", workArea.bottom());
 }
 
 - (NSRect)window:(NSWindow*)window
