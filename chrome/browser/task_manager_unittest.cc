@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,9 @@ namespace {
 // From task_manager.cc:
 // Activity Monitor shows %cpu with one decimal digit -- be
 // consistent with that.
-const wchar_t *kZeroCPUUsage = L"0.0";
+const char* kZeroCPUUsage = "0.0";
 #else
-const wchar_t *kZeroCPUUsage = L"0";
+const char* kZeroCPUUsage = "0";
 #endif
 
 class TestResource : public TaskManager::Resource {
@@ -66,28 +66,28 @@ TEST_F(TaskManagerTest, Resources) {
   task_manager.AddResource(&resource1);
   ASSERT_EQ(1, model->ResourceCount());
   EXPECT_TRUE(model->IsResourceFirstInGroup(0));
-  EXPECT_STREQ(L"test title", model->GetResourceTitle(0).c_str());
-  EXPECT_STREQ(l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT).c_str(),
-               model->GetResourceNetworkUsage(0).c_str());
-  EXPECT_STREQ(kZeroCPUUsage, model->GetResourceCPUUsage(0).c_str());
+  EXPECT_EQ(ASCIIToUTF16("test title"), model->GetResourceTitle(0));
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT),
+            model->GetResourceNetworkUsage(0));
+  EXPECT_EQ(ASCIIToUTF16(kZeroCPUUsage), model->GetResourceCPUUsage(0));
 
   task_manager.AddResource(&resource2);  // Will be in the same group.
   ASSERT_EQ(2, model->ResourceCount());
   EXPECT_TRUE(model->IsResourceFirstInGroup(0));
   EXPECT_FALSE(model->IsResourceFirstInGroup(1));
-  EXPECT_STREQ(L"test title", model->GetResourceTitle(1).c_str());
-  EXPECT_STREQ(l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT).c_str(),
-               model->GetResourceNetworkUsage(1).c_str());
-  EXPECT_STREQ(kZeroCPUUsage, model->GetResourceCPUUsage(1).c_str());
+  EXPECT_EQ(ASCIIToUTF16("test title"), model->GetResourceTitle(1));
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT).c_str(),
+            model->GetResourceNetworkUsage(1));
+  EXPECT_EQ(ASCIIToUTF16(kZeroCPUUsage), model->GetResourceCPUUsage(1));
 
   task_manager.RemoveResource(&resource1);
   // Now resource2 will be first in group.
   ASSERT_EQ(1, model->ResourceCount());
   EXPECT_TRUE(model->IsResourceFirstInGroup(0));
-  EXPECT_STREQ(L"test title", model->GetResourceTitle(0).c_str());
-  EXPECT_STREQ(l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT).c_str(),
-               model->GetResourceNetworkUsage(0).c_str());
-  EXPECT_STREQ(kZeroCPUUsage, model->GetResourceCPUUsage(0).c_str());
+  EXPECT_EQ(ASCIIToUTF16("test title"), model->GetResourceTitle(0));
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT),
+            model->GetResourceNetworkUsage(0));
+  EXPECT_EQ(ASCIIToUTF16(kZeroCPUUsage), model->GetResourceCPUUsage(0));
 
   task_manager.RemoveResource(&resource2);
   EXPECT_EQ(0, model->ResourceCount());

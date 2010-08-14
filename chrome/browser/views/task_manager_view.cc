@@ -82,63 +82,63 @@ int TaskManagerTableModel::RowCount() {
 std::wstring TaskManagerTableModel::GetText(int row, int col_id) {
   switch (col_id) {
     case IDS_TASK_MANAGER_PAGE_COLUMN:  // Process
-      return model_->GetResourceTitle(row);
+      return UTF16ToWide(model_->GetResourceTitle(row));
 
     case IDS_TASK_MANAGER_NET_COLUMN:  // Net
-      return model_->GetResourceNetworkUsage(row);
+      return UTF16ToWide(model_->GetResourceNetworkUsage(row));
 
     case IDS_TASK_MANAGER_CPU_COLUMN:  // CPU
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourceCPUUsage(row);
+      return UTF16ToWide(model_->GetResourceCPUUsage(row));
 
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:  // Memory
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourcePrivateMemory(row);
+      return UTF16ToWide(model_->GetResourcePrivateMemory(row));
 
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:  // Memory
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourceSharedMemory(row);
+      return UTF16ToWide(model_->GetResourceSharedMemory(row));
 
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:  // Memory
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourcePhysicalMemory(row);
+      return UTF16ToWide(model_->GetResourcePhysicalMemory(row));
 
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourceProcessId(row);
+      return UTF16ToWide(model_->GetResourceProcessId(row));
 
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
-      return model_->GetResourceGoatsTeleported(row);
+      return UTF16ToWide(model_->GetResourceGoatsTeleported(row));
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourceWebCoreImageCacheSize(row);
+      return UTF16ToWide(model_->GetResourceWebCoreImageCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourceWebCoreScriptsCacheSize(row);
+      return UTF16ToWide(model_->GetResourceWebCoreScriptsCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourceWebCoreCSSCacheSize(row);
+      return UTF16ToWide(model_->GetResourceWebCoreCSSCacheSize(row));
 
     case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourceSqliteMemoryUsed(row);
+      return UTF16ToWide(model_->GetResourceSqliteMemoryUsed(row));
 
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
       if (!model_->IsResourceFirstInGroup(row))
         return std::wstring();
-      return model_->GetResourceV8MemoryAllocatedSize(row);
+      return UTF16ToWide(model_->GetResourceV8MemoryAllocatedSize(row));
 
     default:
       NOTREACHED();

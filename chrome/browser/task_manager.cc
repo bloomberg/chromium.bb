@@ -57,10 +57,10 @@ int ValueCompare(T value1, T value2) {
   return 1;
 }
 
-std::wstring FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
-  return l10n_util::GetStringF(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
-      FormatBytes(stat.size, DATA_UNITS_KIBIBYTE, false),
-      FormatBytes(stat.liveSize, DATA_UNITS_KIBIBYTE, false));
+string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
+      WideToUTF16Hack(FormatBytes(stat.size, DATA_UNITS_KIBIBYTE, false)),
+      WideToUTF16Hack(FormatBytes(stat.liveSize, DATA_UNITS_KIBIBYTE, false)));
 }
 
 }  // namespace
@@ -114,28 +114,28 @@ void TaskManagerModel::RemoveObserver(TaskManagerModelObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-std::wstring TaskManagerModel::GetResourceTitle(int index) const {
+string16 TaskManagerModel::GetResourceTitle(int index) const {
   DCHECK(index < ResourceCount());
-  return resources_[index]->GetTitle();
+  return WideToUTF16Hack(resources_[index]->GetTitle());
 }
 
-std::wstring TaskManagerModel::GetResourceNetworkUsage(int index) const {
+string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
   DCHECK(index < ResourceCount());
   int64 net_usage = GetNetworkUsage(resources_[index]);
   if (net_usage == -1)
-    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+    return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   if (net_usage == 0)
-    return std::wstring(L"0");
+    return ASCIIToUTF16("0");
   std::wstring net_byte =
       FormatSpeed(net_usage, GetByteDisplayUnits(net_usage), true);
   // Force number string to have LTR directionality.
   base::i18n::GetDisplayStringInLTRDirectionality(&net_byte);
-  return net_byte;
+  return WideToUTF16Hack(net_byte);
 }
 
-std::wstring TaskManagerModel::GetResourceCPUUsage(int index) const {
+string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
   DCHECK(index < ResourceCount());
-  return StringPrintf(
+  return WideToUTF16Hack(StringPrintf(
 #if defined(OS_MACOSX)
       // Activity Monitor shows %cpu with one decimal digit -- be
       // consistent with that.
@@ -143,88 +143,87 @@ std::wstring TaskManagerModel::GetResourceCPUUsage(int index) const {
 #else
       L"%.0f",
 #endif
-      GetCPUUsage(resources_[index]));
+      GetCPUUsage(resources_[index])));
 }
 
-std::wstring TaskManagerModel::GetResourcePrivateMemory(int index) const {
+string16 TaskManagerModel::GetResourcePrivateMemory(int index) const {
   size_t private_mem;
   if (!GetPrivateMemory(index, &private_mem))
-    return L"N/A";
+    return ASCIIToUTF16("N/A");
   return GetMemCellText(private_mem);
 }
 
-std::wstring TaskManagerModel::GetResourceSharedMemory(int index) const {
+string16 TaskManagerModel::GetResourceSharedMemory(int index) const {
   size_t shared_mem;
   if (!GetSharedMemory(index, &shared_mem))
-    return L"N/A";
+    return ASCIIToUTF16("N/A");
   return GetMemCellText(shared_mem);
 }
 
-std::wstring TaskManagerModel::GetResourcePhysicalMemory(int index) const {
+string16 TaskManagerModel::GetResourcePhysicalMemory(int index) const {
   size_t phys_mem;
   GetPhysicalMemory(index, &phys_mem);
   return GetMemCellText(phys_mem);
 }
 
-std::wstring TaskManagerModel::GetResourceProcessId(int index) const {
+string16 TaskManagerModel::GetResourceProcessId(int index) const {
   DCHECK(index < ResourceCount());
-  return UTF8ToWide(base::IntToString(base::GetProcId(
-      resources_[index]->GetProcess())));
+  return base::IntToString16(base::GetProcId(resources_[index]->GetProcess()));
 }
 
-std::wstring TaskManagerModel::GetResourceGoatsTeleported(int index) const {
+string16 TaskManagerModel::GetResourceGoatsTeleported(int index) const {
   DCHECK(index < ResourceCount());
-  return UTF16ToWide(base::FormatNumber(GetGoatsTeleported(index)));
+  return base::FormatNumber(GetGoatsTeleported(index));
 }
 
-std::wstring TaskManagerModel::GetResourceWebCoreImageCacheSize(
+string16 TaskManagerModel::GetResourceWebCoreImageCacheSize(
     int index) const {
   DCHECK(index < ResourceCount());
   if (!resources_[index]->ReportsCacheStats())
-    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+    return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   const WebKit::WebCache::ResourceTypeStats stats(
       resources_[index]->GetWebCoreCacheStats());
   return FormatStatsSize(stats.images);
 }
 
-std::wstring TaskManagerModel::GetResourceWebCoreScriptsCacheSize(
+string16 TaskManagerModel::GetResourceWebCoreScriptsCacheSize(
     int index) const {
   DCHECK(index < ResourceCount());
   if (!resources_[index]->ReportsCacheStats())
-    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+    return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   const WebKit::WebCache::ResourceTypeStats stats(
       resources_[index]->GetWebCoreCacheStats());
   return FormatStatsSize(stats.scripts);
 }
 
-std::wstring TaskManagerModel::GetResourceWebCoreCSSCacheSize(
+string16 TaskManagerModel::GetResourceWebCoreCSSCacheSize(
     int index) const {
   DCHECK(index < ResourceCount());
   if (!resources_[index]->ReportsCacheStats())
-    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+    return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   const WebKit::WebCache::ResourceTypeStats stats(
       resources_[index]->GetWebCoreCacheStats());
   return FormatStatsSize(stats.cssStyleSheets);
 }
 
-std::wstring TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
+string16 TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
   DCHECK(index < ResourceCount());
   if (!resources_[index]->ReportsSqliteMemoryUsed())
-    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+    return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   return GetMemCellText(resources_[index]->SqliteMemoryUsedBytes());
 }
 
-std::wstring TaskManagerModel::GetResourceV8MemoryAllocatedSize(
+string16 TaskManagerModel::GetResourceV8MemoryAllocatedSize(
     int index) const {
   if (!resources_[index]->ReportsV8MemoryStats())
-    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
-  return l10n_util::GetStringF(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
-      FormatBytes(resources_[index]->GetV8MemoryAllocated(),
-                  DATA_UNITS_KIBIBYTE,
-                  false),
-      FormatBytes(resources_[index]->GetV8MemoryUsed(),
-                  DATA_UNITS_KIBIBYTE,
-                  false));
+    return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
+      WideToUTF16Hack(FormatBytes(resources_[index]->GetV8MemoryAllocated(),
+                                  DATA_UNITS_KIBIBYTE,
+                                  false)),
+      WideToUTF16Hack(FormatBytes(resources_[index]->GetV8MemoryUsed(),
+                                  DATA_UNITS_KIBIBYTE,
+                                  false)));
 }
 
 bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
@@ -282,8 +281,8 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
           NOTREACHED();
         }
       }
-      string16 title1 = WideToUTF16(GetResourceTitle(row1));
-      string16 title2 = WideToUTF16(GetResourceTitle(row2));
+      string16 title1 = GetResourceTitle(row1);
+      string16 title2 = GetResourceTitle(row2);
       UErrorCode compare_status = U_ZERO_ERROR;
       UCollationResult compare_result = collator->compare(
           static_cast<const UChar*>(title1.c_str()),
@@ -469,18 +468,18 @@ int TaskManagerModel::GetGoatsTeleported(int index) const {
   return (seed >> 16) & 255;
 }
 
-std::wstring TaskManagerModel::GetMemCellText(int64 number) const {
+string16 TaskManagerModel::GetMemCellText(int64 number) const {
 #if !defined(OS_MACOSX)
-  std::wstring str = UTF16ToWide(base::FormatNumber(number / 1024));
+  string16 str = base::FormatNumber(number / 1024);
 
   // Adjust number string if necessary.
   base::i18n::AdjustStringForLocaleDirection(str, &str);
-  return l10n_util::GetStringF(IDS_TASK_MANAGER_MEM_CELL_TEXT, str);
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_MEM_CELL_TEXT, str);
 #else
   // System expectation is to show "100 KB", "200 MB", etc.
   // TODO(thakis): Switch to metric units (as opposed to powers of two).
-  return FormatBytes(
-      number, GetByteDisplayUnits(number), /* show_units=*/true);
+  return WideToUTF16Hack(
+      FormatBytes(number, GetByteDisplayUnits(number), /*show_units=*/true));
 #endif
 }
 

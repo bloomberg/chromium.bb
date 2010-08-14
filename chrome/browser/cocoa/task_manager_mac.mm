@@ -371,56 +371,56 @@ class SortHelper {
   row = viewToModelMap_[row];
   switch (columnId) {
     case IDS_TASK_MANAGER_PAGE_COLUMN:  // Process
-      return base::SysWideToNSString(model_->GetResourceTitle(row));
+      return base::SysUTF16ToNSString(model_->GetResourceTitle(row));
 
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:  // Memory
       if (!model_->IsResourceFirstInGroup(row))
         return @"";
-      return base::SysWideToNSString(model_->GetResourcePrivateMemory(row));
+      return base::SysUTF16ToNSString(model_->GetResourcePrivateMemory(row));
 
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:  // Memory
       if (!model_->IsResourceFirstInGroup(row))
         return @"";
-      return base::SysWideToNSString(model_->GetResourceSharedMemory(row));
+      return base::SysUTF16ToNSString(model_->GetResourceSharedMemory(row));
 
     case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:  // Memory
       if (!model_->IsResourceFirstInGroup(row))
         return @"";
-      return base::SysWideToNSString(model_->GetResourcePhysicalMemory(row));
+      return base::SysUTF16ToNSString(model_->GetResourcePhysicalMemory(row));
 
     case IDS_TASK_MANAGER_CPU_COLUMN:  // CPU
       if (!model_->IsResourceFirstInGroup(row))
         return @"";
-      return base::SysWideToNSString(model_->GetResourceCPUUsage(row));
+      return base::SysUTF16ToNSString(model_->GetResourceCPUUsage(row));
 
     case IDS_TASK_MANAGER_NET_COLUMN:  // Net
-      return base::SysWideToNSString(model_->GetResourceNetworkUsage(row));
+      return base::SysUTF16ToNSString(model_->GetResourceNetworkUsage(row));
 
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:  // Process ID
       if (!model_->IsResourceFirstInGroup(row))
         return @"";
-      return base::SysWideToNSString(model_->GetResourceProcessId(row));
+      return base::SysUTF16ToNSString(model_->GetResourceProcessId(row));
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:  // WebCore image cache
       if (!model_->IsResourceFirstInGroup(row))
         return @"";
-      return base::SysWideToNSString(
+      return base::SysUTF16ToNSString(
           model_->GetResourceWebCoreImageCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:  // WebCore script cache
       if (!model_->IsResourceFirstInGroup(row))
         return @"";
-      return base::SysWideToNSString(
+      return base::SysUTF16ToNSString(
           model_->GetResourceWebCoreScriptsCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:  // WebCore CSS cache
       if (!model_->IsResourceFirstInGroup(row))
         return @"";
-      return base::SysWideToNSString(
+      return base::SysUTF16ToNSString(
           model_->GetResourceWebCoreCSSCacheSize(row));
 
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
-      return base::SysWideToNSString(model_->GetResourceGoatsTeleported(row));
+      return base::SysUTF16ToNSString(model_->GetResourceGoatsTeleported(row));
 
     default:
       NOTREACHED();

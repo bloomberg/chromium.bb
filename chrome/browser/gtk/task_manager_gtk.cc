@@ -617,37 +617,37 @@ std::string TaskManagerGtk::GetModelText(int row, int col_id) {
 
   switch (col_id) {
     case IDS_TASK_MANAGER_PAGE_COLUMN:  // Process
-      return WideToUTF8(model_->GetResourceTitle(row));
+      return UTF16ToUTF8(model_->GetResourceTitle(row));
 
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:  // Memory
-      return WideToUTF8(model_->GetResourcePrivateMemory(row));
+      return UTF16ToUTF8(model_->GetResourcePrivateMemory(row));
 
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:  // Memory
-      return WideToUTF8(model_->GetResourceSharedMemory(row));
+      return UTF16ToUTF8(model_->GetResourceSharedMemory(row));
 
     case IDS_TASK_MANAGER_CPU_COLUMN:  // CPU
-      return WideToUTF8(model_->GetResourceCPUUsage(row));
+      return UTF16ToUTF8(model_->GetResourceCPUUsage(row));
 
     case IDS_TASK_MANAGER_NET_COLUMN:  // Net
-      return WideToUTF8(model_->GetResourceNetworkUsage(row));
+      return UTF16ToUTF8(model_->GetResourceNetworkUsage(row));
 
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:  // Process ID
-      return WideToUTF8(model_->GetResourceProcessId(row));
+      return UTF16ToUTF8(model_->GetResourceProcessId(row));
 
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
-      return WideToUTF8(model_->GetResourceV8MemoryAllocatedSize(row));
+      return UTF16ToUTF8(model_->GetResourceV8MemoryAllocatedSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
-      return WideToUTF8(model_->GetResourceWebCoreImageCacheSize(row));
+      return UTF16ToUTF8(model_->GetResourceWebCoreImageCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
-      return WideToUTF8(model_->GetResourceWebCoreScriptsCacheSize(row));
+      return UTF16ToUTF8(model_->GetResourceWebCoreScriptsCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
-      return WideToUTF8(model_->GetResourceWebCoreCSSCacheSize(row));
+      return UTF16ToUTF8(model_->GetResourceWebCoreCSSCacheSize(row));
 
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
-      return WideToUTF8(model_->GetResourceGoatsTeleported(row));
+      return UTF16ToUTF8(model_->GetResourceGoatsTeleported(row));
 
     default:
       NOTREACHED();

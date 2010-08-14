@@ -18,6 +18,7 @@
 #include "base/process_util.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
+#include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "net/url_request/url_request_job_tracker.h"
@@ -197,19 +198,19 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   int ResourceCount() const;
 
   // Methods to return formatted resource information.
-  std::wstring GetResourceTitle(int index) const;
-  std::wstring GetResourceNetworkUsage(int index) const;
-  std::wstring GetResourceCPUUsage(int index) const;
-  std::wstring GetResourcePrivateMemory(int index) const;
-  std::wstring GetResourceSharedMemory(int index) const;
-  std::wstring GetResourcePhysicalMemory(int index) const;
-  std::wstring GetResourceProcessId(int index) const;
-  std::wstring GetResourceWebCoreImageCacheSize(int index) const;
-  std::wstring GetResourceWebCoreScriptsCacheSize(int index) const;
-  std::wstring GetResourceWebCoreCSSCacheSize(int index) const;
-  std::wstring GetResourceSqliteMemoryUsed(int index) const;
-  std::wstring GetResourceGoatsTeleported(int index) const;
-  std::wstring GetResourceV8MemoryAllocatedSize(int index) const;
+  string16 GetResourceTitle(int index) const;
+  string16 GetResourceNetworkUsage(int index) const;
+  string16 GetResourceCPUUsage(int index) const;
+  string16 GetResourcePrivateMemory(int index) const;
+  string16 GetResourceSharedMemory(int index) const;
+  string16 GetResourcePhysicalMemory(int index) const;
+  string16 GetResourceProcessId(int index) const;
+  string16 GetResourceWebCoreImageCacheSize(int index) const;
+  string16 GetResourceWebCoreScriptsCacheSize(int index) const;
+  string16 GetResourceWebCoreCSSCacheSize(int index) const;
+  string16 GetResourceSqliteMemoryUsed(int index) const;
+  string16 GetResourceGoatsTeleported(int index) const;
+  string16 GetResourceV8MemoryAllocatedSize(int index) const;
 
   // Returns true if the resource is first in its group (resources
   // rendered by the same process are groupped together).
@@ -359,7 +360,7 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
 
   // Given a number, this function returns the formatted string that should be
   // displayed in the task manager's memory cell.
-  std::wstring GetMemCellText(int64 number) const;
+  string16 GetMemCellText(int64 number) const;
 
   // Looks up the data for |handle| and puts it in the mutable cache
   // |memory_usage_map_|.

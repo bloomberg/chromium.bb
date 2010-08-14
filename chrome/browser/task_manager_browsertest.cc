@@ -256,9 +256,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
 
   // Check that we get some value for the cache columns.
   DCHECK_NE(model()->GetResourceWebCoreImageCacheSize(2),
-            l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT));
+            l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT));
   DCHECK_NE(model()->GetResourceWebCoreScriptsCacheSize(2),
-            l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT));
+            l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT));
   DCHECK_NE(model()->GetResourceWebCoreCSSCacheSize(2),
-            l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT));
+            l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT));
 }
