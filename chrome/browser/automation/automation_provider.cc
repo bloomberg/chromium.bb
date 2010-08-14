@@ -2272,9 +2272,9 @@ void AutomationProvider::GetOmniboxInfo(Browser* browser,
 void AutomationProvider::SetOmniboxText(Browser* browser,
                                         DictionaryValue* args,
                                         IPC::Message* reply_message) {
-  std::wstring text;
+  string16 text;
   AutomationJSONReply reply(this, reply_message);
-  if (!args->GetString(L"text", &text)) {
+  if (!args->GetString("text", &text)) {
     reply.SendError("text missing");
     return;
   }
@@ -2282,7 +2282,7 @@ void AutomationProvider::SetOmniboxText(Browser* browser,
   LocationBar* loc_bar = browser->window()->GetLocationBar();
   AutocompleteEditView* edit_view = loc_bar->location_entry();
   edit_view->model()->OnSetFocus(false);
-  edit_view->SetUserText(text);
+  edit_view->SetUserText(UTF16ToWideHack(text));
   reply.SendSuccess(NULL);
 }
 
@@ -2478,12 +2478,12 @@ void AutomationProvider::ImportSettings(Browser* browser,
   string_to_import_item["HOME_PAGE"] = importer::HOME_PAGE;
   string_to_import_item["ALL"] = importer::ALL;
 
-  std::wstring browser_name;
+  string16 browser_name;
   int import_items = 0;
   ListValue* import_items_list = NULL;
   bool first_run;
 
-  if (!args->GetString(L"import_from", &browser_name) ||
+  if (!args->GetString("import_from", &browser_name) ||
       !args->GetBoolean("first_run", &first_run) ||
       !args->GetList("import_items", &import_items_list)) {
     AutomationJSONReply(this, reply_message).SendError(
@@ -2510,7 +2510,7 @@ void AutomationProvider::ImportSettings(Browser* browser,
   int num_browsers = importer_host->GetAvailableProfileCount();
   int i = 0;
   for ( ; i < num_browsers; i++) {
-    std::wstring name = importer_host->GetSourceProfileNameAt(i);
+    string16 name = WideToUTF16Hack(importer_host->GetSourceProfileNameAt(i));
     if (name == browser_name) {
       profile_info = importer_host->GetSourceProfileInfoAt(i);
       break;

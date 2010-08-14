@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,26 +13,26 @@ namespace extension_automation_constants {
 // All extension automation related messages will have this origin.
 extern const char kAutomationOrigin[];
 // Key used for all extension automation request types.
-extern const wchar_t kAutomationRequestIdKey[];
+extern const char kAutomationRequestIdKey[];
 
 // Keys used for API communications
-extern const wchar_t kAutomationHasCallbackKey[];
-extern const wchar_t kAutomationErrorKey[];  // not present implies success
-extern const wchar_t kAutomationNameKey[];
-extern const wchar_t kAutomationArgsKey[];
-extern const wchar_t kAutomationResponseKey[];
+extern const char kAutomationHasCallbackKey[];
+extern const char kAutomationErrorKey[];  // not present implies success
+extern const char kAutomationNameKey[];
+extern const char kAutomationArgsKey[];
+extern const char kAutomationResponseKey[];
 // All external API requests have this target.
 extern const char kAutomationRequestTarget[];
 // All API responses should have this target.
 extern const char kAutomationResponseTarget[];
 
 // Keys used for port communications
-extern const wchar_t kAutomationConnectionIdKey[];
-extern const wchar_t kAutomationMessageDataKey[];
-extern const wchar_t kAutomationExtensionIdKey[];
-extern const wchar_t kAutomationPortIdKey[];
-extern const wchar_t kAutomationChannelNameKey[];
-extern const wchar_t kAutomationTabJsonKey[];
+extern const char kAutomationConnectionIdKey[];
+extern const char kAutomationMessageDataKey[];
+extern const char kAutomationExtensionIdKey[];
+extern const char kAutomationPortIdKey[];
+extern const char kAutomationChannelNameKey[];
+extern const char kAutomationTabJsonKey[];
 
 // All external port message requests should have this target.
 extern const char kAutomationPortRequestTarget[];
