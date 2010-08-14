@@ -221,7 +221,7 @@ void BackgroundContentsService::RegisterBackgroundContents(
   DictionaryValue* dict = new DictionaryValue();
   dict->SetString(kUrlKey, background_contents->GetURL().spec());
   dict->SetString(kFrameNameKey, contents_map_[appid].frame_name);
-  pref->SetWithoutPathExpansion(UTF16ToWide(appid), dict);
+  pref->SetWithoutPathExpansion(UTF16ToUTF8(appid), dict);
   prefs_->ScheduleSavePersistentPrefs();
 }
 

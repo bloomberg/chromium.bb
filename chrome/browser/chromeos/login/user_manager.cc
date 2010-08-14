@@ -48,8 +48,7 @@ void save_path_to_local_state(const std::string& username,
   PrefService* local_state = g_browser_process->local_state();
   DictionaryValue* images =
       local_state->GetMutableDictionary(kUserImages);
-  images->SetWithoutPathExpansion(UTF8ToWide(username),
-                                  new StringValue(image_path));
+  images->SetWithoutPathExpansion(username, new StringValue(image_path));
   LOG(INFO) << "Saving path to user image in Local State.";
   local_state->SavePersistentPrefs();
 }

@@ -70,8 +70,7 @@ void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
       g_browser_process->local_state()->GetMutableDictionary(
           prefs::kGeolocationAccessToken);
   access_token_dictionary->SetWithoutPathExpansion(
-      UTF8ToWide(server_url.spec()),
-      Value::CreateStringValue(token));
+      server_url.spec(), Value::CreateStringValue(token));
 }
 
 void ChromePrefsAccessTokenStore::SaveAccessToken(

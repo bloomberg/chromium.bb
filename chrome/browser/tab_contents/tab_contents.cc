@@ -2472,7 +2472,7 @@ void TabContents::UpdateInspectorSetting(const std::string& key,
   DictionaryValue* inspector_settings =
       profile()->GetPrefs()->GetMutableDictionary(
           prefs::kWebKitInspectorSettings);
-  inspector_settings->SetWithoutPathExpansion(UTF8ToWide(key),
+  inspector_settings->SetWithoutPathExpansion(key,
                                               Value::CreateStringValue(value));
 }
 
