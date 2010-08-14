@@ -50,8 +50,7 @@ class InfoBarDelegate {
   // color.
   enum Type {
     WARNING_TYPE,
-    ERROR_TYPE,
-    PAGE_ACTION_TYPE
+    PAGE_ACTION_TYPE,
   };
 
   // Returns true if the supplied |delegate| is equal to this one. Equality is

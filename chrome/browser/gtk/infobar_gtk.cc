@@ -17,11 +17,6 @@
 
 namespace {
 
-const double kBackgroundColorTop[3] =
-    {255.0 / 255.0, 242.0 / 255.0, 183.0 / 255.0};
-const double kBackgroundColorBottom[3] =
-    {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
-
 // The total height of the info bar.
 const int kInfoBarHeight = 37;
 
@@ -215,7 +210,6 @@ void InfoBar::GetTopColor(InfoBarDelegate::Type type,
   // values for cairo.
   switch (type) {
     case InfoBarDelegate::WARNING_TYPE:
-    case InfoBarDelegate::ERROR_TYPE:
       *r = 255.0 / 255.0;
       *g = 242.0 / 255.0;
       *b = 183.0 / 255.0;
@@ -232,7 +226,6 @@ void InfoBar::GetBottomColor(InfoBarDelegate::Type type,
                              double* r, double* g, double *b) {
   switch (type) {
     case InfoBarDelegate::WARNING_TYPE:
-    case InfoBarDelegate::ERROR_TYPE:
       *r = 250.0 / 255.0;
       *g = 230.0 / 255.0;
       *b = 145.0 / 255.0;

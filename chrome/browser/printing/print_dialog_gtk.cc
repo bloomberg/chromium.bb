@@ -51,9 +51,7 @@ class PdfUnsupportedInfoBarDelegate : public LinkInfoBarDelegate {
     return UTF8ToUTF16("here");
   }
 
-  virtual Type GetInfoBarType() {
-    return ERROR_TYPE;
-  }
+  virtual Type GetInfoBarType() { return WARNING_TYPE; }
 
   virtual bool LinkClicked(WindowOpenDisposition disposition) {
     browser_->OpenURL(

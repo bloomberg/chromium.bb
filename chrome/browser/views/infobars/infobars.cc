@@ -38,10 +38,6 @@ static const SkColor kWarningBackgroundColorTop = SkColorSetRGB(255, 242, 183);
 static const SkColor kWarningBackgroundColorBottom =
     SkColorSetRGB(250, 230, 145);
 
-static const SkColor kErrorBackgroundColorTop = kWarningBackgroundColorTop;
-static const SkColor kErrorBackgroundColorBottom =
-    kWarningBackgroundColorBottom;
-
 static const SkColor kPageActionBackgroundColorTop =
     SkColorSetRGB(218, 231, 249);
 static const SkColor kPageActionBackgroundColorBottom =
@@ -56,9 +52,8 @@ InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type) {
   SkColor bottom_color;
   switch (infobar_type) {
     case InfoBarDelegate::WARNING_TYPE:
-    case InfoBarDelegate::ERROR_TYPE:
-      top_color = kErrorBackgroundColorTop;
-      bottom_color = kErrorBackgroundColorBottom;
+      top_color = kWarningBackgroundColorTop;
+      bottom_color = kWarningBackgroundColorBottom;
       break;
     case InfoBarDelegate::PAGE_ACTION_TYPE:
       top_color = kPageActionBackgroundColorTop;
@@ -101,9 +96,6 @@ InfoBar::InfoBar(InfoBarDelegate* delegate)
   switch (delegate->GetInfoBarType()) {
     case InfoBarDelegate::WARNING_TYPE:
       SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_WARNING));
-      break;
-    case InfoBarDelegate::ERROR_TYPE:
-      SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_ERROR));
       break;
     case InfoBarDelegate::PAGE_ACTION_TYPE:
       SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_INFOBAR_PAGE_ACTION));

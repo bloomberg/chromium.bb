@@ -73,14 +73,14 @@ void TranslateInfoBarBase::GetTopColor(InfoBarDelegate::Type type,
   if (background_error_percent_ <= 0) {
     InfoBar::GetTopColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
   } else if (background_error_percent_ >= 1) {
-    InfoBar::GetTopColor(InfoBarDelegate::ERROR_TYPE, r, g, b);
+    InfoBar::GetTopColor(InfoBarDelegate::WARNING_TYPE, r, g, b);
   } else {
     double normal_r, normal_g, normal_b;
     InfoBar::GetTopColor(InfoBarDelegate::PAGE_ACTION_TYPE,
                          &normal_r, &normal_g, &normal_b);
 
     double error_r, error_g, error_b;
-    InfoBar::GetTopColor(InfoBarDelegate::ERROR_TYPE,
+    InfoBar::GetTopColor(InfoBarDelegate::WARNING_TYPE,
                          &error_r, &error_g, &error_b);
 
     double offset_r = error_r - normal_r;
@@ -98,14 +98,14 @@ void TranslateInfoBarBase::GetBottomColor(InfoBarDelegate::Type type,
   if (background_error_percent_ <= 0) {
     InfoBar::GetBottomColor(InfoBarDelegate::PAGE_ACTION_TYPE, r, g, b);
   } else if (background_error_percent_ >= 1) {
-    InfoBar::GetBottomColor(InfoBarDelegate::ERROR_TYPE, r, g, b);
+    InfoBar::GetBottomColor(InfoBarDelegate::WARNING_TYPE, r, g, b);
   } else {
     double normal_r, normal_g, normal_b;
     InfoBar::GetBottomColor(InfoBarDelegate::PAGE_ACTION_TYPE,
                             &normal_r, &normal_g, &normal_b);
 
     double error_r, error_g, error_b;
-    InfoBar::GetBottomColor(InfoBarDelegate::ERROR_TYPE,
+    InfoBar::GetBottomColor(InfoBarDelegate::WARNING_TYPE,
                             &error_r, &error_g, &error_b);
 
     double offset_r = error_r - normal_r;

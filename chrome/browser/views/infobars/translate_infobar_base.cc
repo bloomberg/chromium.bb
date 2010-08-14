@@ -21,7 +21,7 @@ TranslateInfoBarBase::TranslateInfoBarBase(
     TranslateInfoBarDelegate* delegate)
     : InfoBar(delegate),
       normal_background_(InfoBarDelegate::PAGE_ACTION_TYPE),
-      error_background_(InfoBarDelegate::ERROR_TYPE) {
+      error_background_(InfoBarDelegate::WARNING_TYPE) {
   icon_ = new views::ImageView;
   SkBitmap* image = delegate->GetIcon();
   if (image)

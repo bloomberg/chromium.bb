@@ -76,7 +76,7 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
 
   // A percentage to average the normal page action background with the error
   // background. When 0, the infobar background should be pure PAGE_ACTION_TYPE.
-  // When 1, the infobar background should be pure ERROR_TYPE.
+  // When 1, the infobar background should be pure WARNING_TYPE.
   double background_error_percent_;
 
   // Changes the color of the background from normal to error color and back.
