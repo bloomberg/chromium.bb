@@ -363,7 +363,7 @@ void ExtensionMenuManager::RadioItemSelected(ExtensionMenuItem* item) {
 }
 
 static void AddURLProperty(DictionaryValue* dictionary,
-                           const std::wstring& key, const GURL& url) {
+                           const std::string& key, const GURL& url) {
   if (!url.is_empty())
     dictionary->SetString(key, url.possibly_invalid_spec());
 }
@@ -387,32 +387,33 @@ void ExtensionMenuManager::ExecuteCommand(
   ListValue args;
 
   DictionaryValue* properties = new DictionaryValue();
-  properties->SetInteger(L"menuItemId", item->id().second);
+  properties->SetInteger("menuItemId", item->id().second);
   if (item->parent_id())
-    properties->SetInteger(L"parentMenuItemId", item->parent_id()->second);
+    properties->SetInteger("parentMenuItemId", item->parent_id()->second);
 
   switch (params.media_type) {
     case WebKit::WebContextMenuData::MediaTypeImage:
-      properties->SetString(L"mediaType", "image");
+      properties->SetString("mediaType", "image");
       break;
     case WebKit::WebContextMenuData::MediaTypeVideo:
-      properties->SetString(L"mediaType", "video");
+      properties->SetString("mediaType", "video");
       break;
     case WebKit::WebContextMenuData::MediaTypeAudio:
-      properties->SetString(L"mediaType", "audio");
+      properties->SetString("mediaType", "audio");
       break;
     default:  {}  // Do nothing.
   }
 
-  AddURLProperty(properties, L"linkUrl", params.unfiltered_link_url);
-  AddURLProperty(properties, L"srcUrl", params.src_url);
-  AddURLProperty(properties, L"pageUrl", params.page_url);
-  AddURLProperty(properties, L"frameUrl", params.frame_url);
+  AddURLProperty(properties, "linkUrl", params.unfiltered_link_url);
+  AddURLProperty(properties, "srcUrl", params.src_url);
+  AddURLProperty(properties, "pageUrl", params.page_url);
+  AddURLProperty(properties, "frameUrl", params.frame_url);
 
   if (params.selection_text.length() > 0)
-    properties->SetString(L"selectionText", params.selection_text);
+    properties->SetString("selectionText",
+                          WideToUTF16Hack(params.selection_text));
 
-  properties->SetBoolean(L"editable", params.is_editable);
+  properties->SetBoolean("editable", params.is_editable);
 
   args.Append(properties);
 
@@ -426,7 +427,7 @@ void ExtensionMenuManager::ExecuteCommand(
   if (item->type() == ExtensionMenuItem::CHECKBOX ||
       item->type() == ExtensionMenuItem::RADIO) {
     bool was_checked = item->checked();
-    properties->SetBoolean(L"wasChecked", was_checked);
+    properties->SetBoolean("wasChecked", was_checked);
 
     // RADIO items always get set to true when you click on them, but CHECKBOX
     // items get their state toggled.
@@ -434,7 +435,7 @@ void ExtensionMenuManager::ExecuteCommand(
         (item->type() == ExtensionMenuItem::RADIO) ? true : !was_checked;
 
     item->SetChecked(checked);
-    properties->SetBoolean(L"checked", item->checked());
+    properties->SetBoolean("checked", item->checked());
   }
 
   std::string json_args;

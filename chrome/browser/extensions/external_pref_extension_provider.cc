@@ -104,11 +104,10 @@ void ExternalPrefExtensionProvider::SetPreferences(
   Value* extensions = serializer->Deserialize(NULL, &error_msg);
   scoped_ptr<DictionaryValue> dictionary(new DictionaryValue());
   if (!extensions) {
-    LOG(WARNING) << L"Unable to deserialize json data: "
-                 << error_msg;
+    LOG(WARNING) << "Unable to deserialize json data: " << error_msg;
   } else {
     if (!extensions->IsType(Value::TYPE_DICTIONARY)) {
-      NOTREACHED() << L"Invalid json data";
+      NOTREACHED() << "Invalid json data";
     } else {
       dictionary.reset(static_cast<DictionaryValue*>(extensions));
     }

@@ -144,7 +144,7 @@ bool PageActionSetIconFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger("tabId", &tab_id));
   if (!InitCommon(tab_id))
     return false;
 
@@ -152,14 +152,14 @@ bool PageActionSetIconFunction::RunImpl() {
   // icon index.
   BinaryValue* binary;
   int icon_index;
-  if (args->GetBinary(L"imageData", &binary)) {
+  if (args->GetBinary("imageData", &binary)) {
     IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
     void* iter = NULL;
     scoped_ptr<SkBitmap> bitmap(new SkBitmap);
     EXTENSION_FUNCTION_VALIDATE(
         IPC::ReadParam(&bitmap_pickle, &iter, bitmap.get()));
     page_action_->SetIcon(tab_id, *bitmap);
-  } else if (args->GetInteger(L"iconIndex", &icon_index)) {
+  } else if (args->GetInteger("iconIndex", &icon_index)) {
     if (icon_index < 0 || static_cast<size_t>(icon_index) >=
                               page_action_->icon_paths()->size()) {
       error_ = kIconIndexOutOfBounds;
@@ -180,12 +180,12 @@ bool PageActionSetTitleFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger("tabId", &tab_id));
   if (!InitCommon(tab_id))
     return false;
 
   std::string title;
-  EXTENSION_FUNCTION_VALIDATE(args->GetString(L"title", &title));
+  EXTENSION_FUNCTION_VALIDATE(args->GetString("title", &title));
 
   page_action_->SetTitle(tab_id, title);
   contents_->PageActionStateChanged();
@@ -197,14 +197,14 @@ bool PageActionSetPopupFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger("tabId", &tab_id));
   if (!InitCommon(tab_id))
     return false;
 
   // TODO(skerner): Consider allowing null and undefined to mean the popup
   // should be removed.
   std::string popup_string;
-  EXTENSION_FUNCTION_VALIDATE(args->GetString(L"popup", &popup_string));
+  EXTENSION_FUNCTION_VALIDATE(args->GetString("popup", &popup_string));
 
   GURL popup_url;
   if (!popup_string.empty())
@@ -222,12 +222,12 @@ bool PageActionSetBadgeBackgroundColorFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger("tabId", &tab_id));
   if (!InitCommon(tab_id))
     return false;
 
   ListValue* color_value;
-  EXTENSION_FUNCTION_VALIDATE(args->GetList(L"color", &color_value));
+  EXTENSION_FUNCTION_VALIDATE(args->GetList("color", &color_value));
   EXTENSION_FUNCTION_VALIDATE(color_value->GetSize() == 4);
 
   int color_array[4] = {0};
@@ -248,12 +248,12 @@ bool PageActionSetBadgeTextColorFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger("tabId", &tab_id));
   if (!InitCommon(tab_id))
     return false;
 
   ListValue* color_value;
-  EXTENSION_FUNCTION_VALIDATE(args->GetList(L"color", &color_value));
+  EXTENSION_FUNCTION_VALIDATE(args->GetList("color", &color_value));
   EXTENSION_FUNCTION_VALIDATE(color_value->GetSize() == 4);
 
   int color_array[4] = {0};
@@ -274,12 +274,12 @@ bool PageActionSetBadgeTextFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   int tab_id;
-  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger("tabId", &tab_id));
   if (!InitCommon(tab_id))
     return false;
 
   std::string text;
-  EXTENSION_FUNCTION_VALIDATE(args->GetString(L"text", &text));
+  EXTENSION_FUNCTION_VALIDATE(args->GetString("text", &text));
 
   page_action_->SetBadgeText(tab_id, text);
   contents_->PageActionStateChanged();

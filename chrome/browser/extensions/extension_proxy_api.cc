@@ -25,19 +25,20 @@ enum {
 
 // The names of the JavaScript properties to extract from the args_.
 // These must be kept in sync with the SCHEME_* constants.
-static const std::wstring field_name[] = {L"singleProxy",
-                                          L"proxyForHttp",
-                                          L"proxyForHttps",
-                                          L"proxyForFtp",
-                                          L"socksProxy"};
+const char* field_name[] = { "singleProxy",
+                             "proxyForHttp",
+                             "proxyForHttps",
+                             "proxyForFtp",
+                             "socksProxy" };
 
 // The names of the schemes to be used to build the preference value string.
 // These must be kept in sync with the SCHEME_* constants.
-static const std::string scheme_name[] = {"*error*",
-                                          "http",
-                                          "https",
-                                          "ftp",
-                                          "socks"};
+const char* scheme_name[] = { "*error*",
+                              "http",
+                              "https",
+                              "ftp",
+                              "socks" };
+
 }  // namespace
 
 COMPILE_ASSERT(SCHEME_MAX == SCHEME_SOCKS, SCHEME_MAX_must_equal_SCHEME_SOCKS);
@@ -51,7 +52,7 @@ bool UseCustomProxySettingsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &proxy_config));
 
   DictionaryValue* proxy_rules;
-  EXTENSION_FUNCTION_VALIDATE(proxy_config->GetDictionary(L"rules",
+  EXTENSION_FUNCTION_VALIDATE(proxy_config->GetDictionary("rules",
       &proxy_rules));
 
   // Local data into which the parameters will be parsed. has_proxy describes
@@ -121,8 +122,8 @@ bool UseCustomProxySettingsFunction::RunImpl() {
 
 bool UseCustomProxySettingsFunction::GetProxyServer(
     const DictionaryValue* dict, ProxyServer* proxy_server) {
-  dict->GetString(L"scheme", &proxy_server->scheme);
-  EXTENSION_FUNCTION_VALIDATE(dict->GetString(L"host", &proxy_server->host));
-  dict->GetInteger(L"port", &proxy_server->port);
+  dict->GetString("scheme", &proxy_server->scheme);
+  EXTENSION_FUNCTION_VALIDATE(dict->GetString("host", &proxy_server->host));
+  dict->GetInteger("port", &proxy_server->port);
   return true;
 }

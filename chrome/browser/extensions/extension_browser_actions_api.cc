@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,8 @@ bool BrowserActionFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details_));
   EXTENSION_FUNCTION_VALIDATE(details_ != NULL);
 
-  if (details_->HasKey(L"tabId"))
-    EXTENSION_FUNCTION_VALIDATE(details_->GetInteger(L"tabId", &tab_id_));
+  if (details_->HasKey("tabId"))
+    EXTENSION_FUNCTION_VALIDATE(details_->GetInteger("tabId", &tab_id_));
 
   Extension* extension = GetExtension();
   browser_action_ = extension->browser_action();
@@ -44,7 +44,7 @@ bool BrowserActionFunction::RunImpl() {
 
 bool BrowserActionSetIconFunction::RunBrowserAction() {
   BinaryValue* binary = NULL;
-  EXTENSION_FUNCTION_VALIDATE(details_->GetBinary(L"imageData", &binary));
+  EXTENSION_FUNCTION_VALIDATE(details_->GetBinary("imageData", &binary));
   IPC::Message bitmap_pickle(binary->GetBuffer(), binary->GetSize());
   void* iter = NULL;
   SkBitmap bitmap;
@@ -56,14 +56,14 @@ bool BrowserActionSetIconFunction::RunBrowserAction() {
 
 bool BrowserActionSetTitleFunction::RunBrowserAction() {
   std::string title;
-  EXTENSION_FUNCTION_VALIDATE(details_->GetString(L"title", &title));
+  EXTENSION_FUNCTION_VALIDATE(details_->GetString("title", &title));
   browser_action_->SetTitle(tab_id_, title);
   return true;
 }
 
 bool BrowserActionSetPopupFunction::RunBrowserAction() {
   std::string popup_string;
-  EXTENSION_FUNCTION_VALIDATE(details_->GetString(L"popup", &popup_string));
+  EXTENSION_FUNCTION_VALIDATE(details_->GetString("popup", &popup_string));
 
   GURL popup_url;
   if (!popup_string.empty())
@@ -75,14 +75,14 @@ bool BrowserActionSetPopupFunction::RunBrowserAction() {
 
 bool BrowserActionSetBadgeTextFunction::RunBrowserAction() {
   std::string badge_text;
-  EXTENSION_FUNCTION_VALIDATE(details_->GetString(L"text", &badge_text));
+  EXTENSION_FUNCTION_VALIDATE(details_->GetString("text", &badge_text));
   browser_action_->SetBadgeText(tab_id_, badge_text);
   return true;
 }
 
 bool BrowserActionSetBadgeBackgroundColorFunction::RunBrowserAction() {
   ListValue* list = NULL;
-  EXTENSION_FUNCTION_VALIDATE(details_->GetList(L"color", &list));
+  EXTENSION_FUNCTION_VALIDATE(details_->GetList("color", &list));
   EXTENSION_FUNCTION_VALIDATE(list->GetSize() == 4);
 
   int color_array[4] = {0};

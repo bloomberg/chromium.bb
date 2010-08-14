@@ -443,22 +443,21 @@ TEST_F(ExtensionMenuManagerTest, ExecuteCommand) {
   ASSERT_TRUE(list->GetDictionary(0, &info));
 
   int tmp_id = 0;
-  ASSERT_TRUE(info->GetInteger(L"menuItemId", &tmp_id));
+  ASSERT_TRUE(info->GetInteger("menuItemId", &tmp_id));
   ASSERT_EQ(id.second, tmp_id);
 
   std::string tmp;
-  ASSERT_TRUE(info->GetString(L"mediaType", &tmp));
+  ASSERT_TRUE(info->GetString("mediaType", &tmp));
   ASSERT_EQ("image", tmp);
-  ASSERT_TRUE(info->GetString(L"srcUrl", &tmp));
+  ASSERT_TRUE(info->GetString("srcUrl", &tmp));
   ASSERT_EQ(params.src_url.spec(), tmp);
-  ASSERT_TRUE(info->GetString(L"pageUrl", &tmp));
+  ASSERT_TRUE(info->GetString("pageUrl", &tmp));
   ASSERT_EQ(params.page_url.spec(), tmp);
 
-  std::wstring wide_tmp;
-  ASSERT_TRUE(info->GetString(L"selectionText", &wide_tmp));
-  ASSERT_EQ(params.selection_text, wide_tmp);
+  ASSERT_TRUE(info->GetString("selectionText", &tmp));
+  ASSERT_EQ(WideToUTF8(params.selection_text), tmp);
 
   bool bool_tmp = true;
-  ASSERT_TRUE(info->GetBoolean(L"editable", &bool_tmp));
+  ASSERT_TRUE(info->GetBoolean("editable", &bool_tmp));
   ASSERT_EQ(params.is_editable, bool_tmp);
 }
