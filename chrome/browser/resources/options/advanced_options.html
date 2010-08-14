@@ -51,6 +51,7 @@
   <section>
     <h3 i18n-content="downloadLocationGroupName"></h3>
     <div>
+<if expr="not pp_ifdef('chromeos')">
       <div i18n-content="downloadLocationBrowseTitle"></div>
       <div>
         <input id="downloadLocationPath" type="text" size="60" disabled>
@@ -60,6 +61,7 @@
       <label><input id="promptForDownload"
           pref="download.prompt_for_download" type="checkbox"><span
           i18n-content="downloadLocationAskForSaveLocation"></span></label>
+</if>
       <div i18n-content="autoOpenFileTypesInfo"></div>
       <div><button id="autoOpenFileTypesResetToDefault"
           i18n-content="autoOpenFileTypesResetToDefault"></button></div>

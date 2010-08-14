@@ -34,9 +34,6 @@ var OptionsPage = options.OptionsPage;
       $('privacyClearDataButton').onclick = function(event) {
         OptionsPage.showOverlay('clearBrowserDataOverlay');
       };
-      $('downloadLocationBrowseButton').onclick = function(event) {
-        chrome.send('selectDownloadLocation');
-      };
       $('autoOpenFileTypesResetToDefault').onclick = function(event) {
         chrome.send('autoOpenFileTypesAction');
       };
@@ -51,6 +48,16 @@ var OptionsPage = options.OptionsPage;
         $('certificatesManageButton').onclick = function(event) {
           chrome.send('showManageSSLCertificates');
         };
+        $('downloadLocationBrowseButton').onclick = function(event) {
+          chrome.send('selectDownloadLocation');
+        };
+
+        // Remove Windows-style accelerators from the Browse button label.
+        // TODO(csilv): Remove this after the accelerator has been removed from
+        // the localized strings file, pending removal of old options window.
+        $('downloadLocationBrowseButton').textContent =
+            localStrings.getStringWithoutAccelerator(
+                'downloadLocationBrowseButton');
       } else {
         $('proxiesConfigureButton').onclick = function(event) {
           OptionsPage.showPageByName('proxy');
@@ -67,13 +74,6 @@ var OptionsPage = options.OptionsPage;
               [String($('sslUseSSL2').checked)]);
         };
       }
-
-      // Remove Windows-style accelerators from the Browse button label.
-      // TODO(csilv): Remove this after the accelerator has been removed from
-      // the localized strings file, pending removal of old options window.
-      $('downloadLocationBrowseButton').textContent =
-          localStrings.getStringWithoutAccelerator(
-              'downloadLocationBrowseButton');
     }
   };
 
@@ -83,7 +83,8 @@ var OptionsPage = options.OptionsPage;
 
   // Set the download path.
   AdvancedOptions.SetDownloadLocationPath = function (path) {
-    $('downloadLocationPath').value = path;
+    if (!cr.isChromeOS)
+      $('downloadLocationPath').value = path;
   };
 
   // Set the enabled state for the autoOpenFileTypesResetToDefault button.

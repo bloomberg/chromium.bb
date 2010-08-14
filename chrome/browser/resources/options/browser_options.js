@@ -224,8 +224,10 @@ cr.define('options', function() {
   };
 
   BrowserOptions.updateDefaultBrowserState = function(statusString, isDefault) {
-    BrowserOptions.getInstance().updateDefaultBrowserState_(statusString,
-                                                            isDefault);
+    if (!cr.isChromeOS) {
+      BrowserOptions.getInstance().updateDefaultBrowserState_(statusString,
+                                                              isDefault);
+    }
   };
 
   BrowserOptions.updateSearchEngines = function(engines, defaultValue) {
