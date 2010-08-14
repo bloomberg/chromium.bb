@@ -149,8 +149,10 @@ class ConfigurationPolicyProviderWinTest : public testing::Test {
 };
 
 ConfigurationPolicyProviderWinTest::ConfigurationPolicyProviderWinTest()
-    : temp_hklm_hive_key_(HKEY_CURRENT_USER, kUnitTestMachineOverrideSubKey),
-      temp_hkcu_hive_key_(HKEY_CURRENT_USER, kUnitTestUserOverrideSubKey) {
+    : temp_hklm_hive_key_(HKEY_CURRENT_USER, kUnitTestMachineOverrideSubKey,
+                          KEY_READ),
+      temp_hkcu_hive_key_(HKEY_CURRENT_USER, kUnitTestUserOverrideSubKey,
+                          KEY_READ) {
 }
 
 void ConfigurationPolicyProviderWinTest::SetUp() {

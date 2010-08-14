@@ -412,7 +412,7 @@ std::wstring GoogleChromeDistribution::GetDistributionData(RegKey* key) {
   sub_key.append(L"\\");
   sub_key.append(product_guid());
 
-  RegKey client_state_key(key->Handle(), sub_key.c_str());
+  RegKey client_state_key(key->Handle(), sub_key.c_str(), KEY_READ);
   std::wstring result;
   std::wstring brand_value;
   if (client_state_key.ReadValue(google_update::kRegRLZBrandField,

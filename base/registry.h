@@ -20,8 +20,8 @@
 // are "values", which are <name, data> pairs, with an associated data type.
 class RegKey {
  public:
-  RegKey(HKEY rootkey = NULL, const wchar_t* subkey = NULL,
-         REGSAM access = KEY_READ);
+  RegKey();
+  RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access);
   ~RegKey();
 
   bool Create(HKEY rootkey, const wchar_t* subkey, REGSAM access = KEY_READ);

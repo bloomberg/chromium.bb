@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -55,7 +55,7 @@ bool InstallUtil::ExecuteExeAsAdmin(const std::wstring& exe,
 std::wstring InstallUtil::GetChromeUninstallCmd(bool system_install) {
   HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  RegKey key(root, dist->GetUninstallRegPath().c_str());
+  RegKey key(root, dist->GetUninstallRegPath().c_str(), KEY_READ);
   std::wstring uninstall_cmd;
   key.ReadValue(installer_util::kUninstallStringField, &uninstall_cmd);
   return uninstall_cmd;

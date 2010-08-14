@@ -118,7 +118,7 @@ std::wstring GetExecutableAppPath(const std::wstring& file) {
       L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\";
 
   std::wstring app_path;
-  RegKey key(HKEY_LOCAL_MACHINE, (kAppPathsKey + file).c_str());
+  RegKey key(HKEY_LOCAL_MACHINE, (kAppPathsKey + file).c_str(), KEY_READ);
   if (key.Handle()) {
     key.ReadValue(NULL, &app_path);
   }
@@ -130,7 +130,7 @@ std::wstring FormatCommandForApp(const std::wstring& exe_name,
                                  const std::wstring& argument) {
   std::wstring reg_path(StringPrintf(L"Applications\\%ls\\shell\\open\\command",
                                      exe_name.c_str()));
-  RegKey key(HKEY_CLASSES_ROOT, reg_path.c_str());
+  RegKey key(HKEY_CLASSES_ROOT, reg_path.c_str(), KEY_READ);
 
   std::wstring command;
   if (key.Handle()) {

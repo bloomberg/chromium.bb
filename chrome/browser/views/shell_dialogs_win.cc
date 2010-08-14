@@ -48,7 +48,7 @@ std::wstring AppendExtensionIfNeeded(const std::wstring& filename,
   std::wstring file_extension(file_util::GetFileExtensionFromPath(filename));
   std::wstring key(L"." + file_extension);
   if (!(filter_selected.empty() || filter_selected == L"*.*") &&
-      !RegKey(HKEY_CLASSES_ROOT, key.c_str()).Valid() &&
+      !RegKey(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ).Valid() &&
       file_extension != suggested_ext) {
     if (return_value[return_value.length() - 1] != L'.')
       return_value.append(L".");

@@ -132,6 +132,11 @@ DWORD RegistryKeyIterator::SubkeyCount() const {
   return count;
 }
 
+RegKey::RegKey()
+    : key_(NULL),
+      watch_event_(0) {
+}
+
 RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
     : key_(NULL),
       watch_event_(0) {

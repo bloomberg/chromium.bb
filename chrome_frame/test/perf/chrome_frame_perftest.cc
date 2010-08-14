@@ -1091,7 +1091,7 @@ TEST_F(ChromeFrameCreationTest, PerfCold) {
 // from the cache. This could also fail if the Flash control is in use.
 // On Vista this could fail because of UAC
 TEST_F(FlashCreationTest, PerfCold) {
-  RegKey flash_key(HKEY_CLASSES_ROOT, kFlashControlKey);
+  RegKey flash_key(HKEY_CLASSES_ROOT, kFlashControlKey, KEY_READ);
 
   std::wstring plugin_path;
   ASSERT_TRUE(flash_key.ReadValue(L"", &plugin_path));
@@ -1111,7 +1111,7 @@ TEST_F(FlashCreationTest, PerfCold) {
 // correctly causing the attempt to evict the dll from the system cache to
 // fail.
 TEST_F(SilverlightCreationTest, DISABLED_PerfCold) {
-  RegKey silverlight_key(HKEY_CLASSES_ROOT, kSilverlightControlKey);
+  RegKey silverlight_key(HKEY_CLASSES_ROOT, kSilverlightControlKey, KEY_READ);
 
   std::wstring plugin_path;
   ASSERT_TRUE(silverlight_key.ReadValue(L"", &plugin_path));

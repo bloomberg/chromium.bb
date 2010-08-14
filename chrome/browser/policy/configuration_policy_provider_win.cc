@@ -110,13 +110,13 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyStringList(
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyBoolean(
     const string16& value_name, bool* result) {
   DWORD value;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
+  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey, KEY_READ);
   if (hkcu_policy_key.ReadValueDW(value_name.c_str(), &value)) {
     *result = value != 0;
     return true;
   }
 
-  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
+  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey, KEY_READ);
   if (hklm_policy_key.ReadValueDW(value_name.c_str(), &value)) {
     *result = value != 0;
     return true;
@@ -127,13 +127,13 @@ bool ConfigurationPolicyProviderWin::GetRegistryPolicyBoolean(
 bool ConfigurationPolicyProviderWin::GetRegistryPolicyInteger(
     const string16& value_name, uint32* result) {
   DWORD value;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
+  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey, KEY_READ);
   if (hkcu_policy_key.ReadValueDW(value_name.c_str(), &value)) {
     *result = value;
     return true;
   }
 
-  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
+  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey, KEY_READ);
   if (hklm_policy_key.ReadValueDW(value_name.c_str(), &value)) {
     *result = value;
     return true;

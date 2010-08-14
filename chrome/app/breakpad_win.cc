@@ -397,13 +397,13 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
 static bool MetricsReportingControlledByPolicy(bool* result) {
   std::wstring key_name = UTF8ToWide(policy::key::kMetricsReportingEnabled);
   DWORD value;
-  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey);
+  RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey, KEY_READ);
   if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value)) {
     *result = value != 0;
     return true;
   }
 
-  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey);
+  RegKey hklm_policy_key(HKEY_CURRENT_USER, policy::kRegistrySubKey, KEY_READ);
   if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value)) {
     *result = value != 0;
     return true;

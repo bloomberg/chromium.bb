@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -66,7 +66,7 @@ bool GetInstalledPath(const TCHAR* app, FilePath* out) {
   reg_path.append(L"\\");
   reg_path.append(app);
 
-  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str());
+  RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ);
   std::wstring path;
   if (key.ReadValue(kRegistryPath, &path)) {
     *out = FilePath(path);
@@ -87,7 +87,7 @@ void GetPluginsInRegistryDirectory(
     std::wstring reg_path = registry_folder;
     reg_path.append(L"\\");
     reg_path.append(iter.Name());
-    RegKey key(root_key, reg_path.c_str());
+    RegKey key(root_key, reg_path.c_str(), KEY_READ);
 
     std::wstring path;
     if (key.ReadValue(kRegistryPath, &path))

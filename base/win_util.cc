@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -350,7 +350,8 @@ std::wstring GetClassName(HWND window) {
 
 bool UserAccountControlIsEnabled() {
   RegKey key(HKEY_LOCAL_MACHINE,
-      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System");
+      L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+      KEY_READ);
   DWORD uac_enabled;
   if (!key.ReadValueDW(L"EnableLUA", &uac_enabled))
     return true;

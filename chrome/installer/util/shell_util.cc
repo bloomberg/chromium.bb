@@ -191,7 +191,7 @@ class RegistryEntry {
   // Checks if the current registry entry exists in HKLM registry and the value
   // is same.
   bool ExistsInHKLM() const {
-    RegKey key(HKEY_LOCAL_MACHINE, _key_path.c_str());
+    RegKey key(HKEY_LOCAL_MACHINE, _key_path.c_str(), KEY_READ);
     bool found = false;
     if (_is_string) {
       std::wstring read_value;
@@ -211,7 +211,7 @@ class RegistryEntry {
   // Checks if the current registry entry exists in HKLM registry
   // (only the name).
   bool NameExistsInHKLM() const {
-    RegKey key(HKEY_LOCAL_MACHINE, _key_path.c_str());
+    RegKey key(HKEY_LOCAL_MACHINE, _key_path.c_str(), KEY_READ);
     bool found = false;
     if (_is_string) {
       std::wstring read_value;
@@ -303,7 +303,7 @@ bool ElevateAndRegisterChrome(const std::wstring& chrome_exe,
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     HKEY reg_root = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
         HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-    RegKey key(reg_root, dist->GetUninstallRegPath().c_str());
+    RegKey key(reg_root, dist->GetUninstallRegPath().c_str(), KEY_READ);
     key.ReadValue(installer_util::kUninstallStringField, &exe_path);
     CommandLine command_line = CommandLine::FromString(exe_path);
     exe_path = command_line.program();
@@ -349,7 +349,7 @@ bool AnotherUserHasDefaultBrowser(const std::wstring& chrome_exe) {
   std::wstring reg_key(ShellUtil::kRegStartMenuInternet);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   reg_key.append(L"\\" + dist->GetApplicationName() + ShellUtil::kRegShellOpen);
-  RegKey key(HKEY_LOCAL_MACHINE, reg_key.c_str());
+  RegKey key(HKEY_LOCAL_MACHINE, reg_key.c_str(), KEY_READ);
   std::wstring registry_chrome_exe;
   if (!key.ReadValue(L"", &registry_chrome_exe) ||
       registry_chrome_exe.length() < 2)
@@ -569,15 +569,15 @@ void ShellUtil::GetRegisteredBrowsers(std::map<std::wstring,
   HKEY root = HKEY_LOCAL_MACHINE;
   for (RegistryKeyIterator iter(root, base_key.c_str()); iter.Valid(); ++iter) {
     std::wstring key = base_key + L"\\" + iter.Name();
-    RegKey capabilities(root, (key + L"\\Capabilities").c_str());
+    RegKey capabilities(root, (key + L"\\Capabilities").c_str(), KEY_READ);
     std::wstring name;
     if (!capabilities.Valid() ||
         !capabilities.ReadValue(L"ApplicationName", &name)) {
-      RegKey base_key(root, key.c_str());
+      RegKey base_key(root, key.c_str(), KEY_READ);
       if (!base_key.ReadValue(L"", &name))
         continue;
     }
-    RegKey install_info(root, (key + L"\\InstallInfo").c_str());
+    RegKey install_info(root, (key + L"\\InstallInfo").c_str(), KEY_READ);
     std::wstring command;
     if (!install_info.Valid() ||
         !install_info.ReadValue(L"ReinstallCommand", &command))
@@ -600,7 +600,7 @@ bool ShellUtil::GetUserSpecificDefaultBrowserSuffix(std::wstring* entry) {
   std::wstring start_menu_entry(ShellUtil::kRegStartMenuInternet);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   start_menu_entry.append(L"\\" + dist->GetApplicationName() + *entry);
-  RegKey key(HKEY_LOCAL_MACHINE, start_menu_entry.c_str());
+  RegKey key(HKEY_LOCAL_MACHINE, start_menu_entry.c_str(), KEY_READ);
   return key.Valid();
 }
 

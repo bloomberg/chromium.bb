@@ -72,7 +72,7 @@ bool CurrentUserHasDefaultBrowser(bool system_uninstall) {
   std::wstring reg_key(ShellUtil::kRegStartMenuInternet);
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   reg_key.append(L"\\" + dist->GetApplicationName() + ShellUtil::kRegShellOpen);
-  RegKey key(HKEY_LOCAL_MACHINE, reg_key.c_str());
+  RegKey key(HKEY_LOCAL_MACHINE, reg_key.c_str(), KEY_READ);
   std::wstring reg_exe;
   if (key.ReadValue(L"", &reg_exe) && reg_exe.length() > 2) {
     std::wstring chrome_exe = installer::GetChromeInstallPath(system_uninstall);

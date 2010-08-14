@@ -51,7 +51,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Rlz) {
   rlz_lib::ClearProductState(rlz_lib::DESKTOP, access_points);
 
   // Check that the state has really been cleared.
-  RegKey key(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\N");
+  RegKey key(HKEY_CURRENT_USER, L"Software\\Google\\Common\\Rlz\\Events\\N",
+             KEY_READ);
   ASSERT_FALSE(key.Valid());
 
   // Mock out experimental.rlz.sendFinancialPing().

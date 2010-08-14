@@ -462,7 +462,8 @@ bool IEImporter::GetFavoritesInfo(IEImporter::FavoritesInfo *info) {
     // The Link folder name is stored in the registry.
     DWORD buffer_length = sizeof(buffer);
     RegKey reg_key(HKEY_CURRENT_USER,
-                   L"Software\\Microsoft\\Internet Explorer\\Toolbar");
+                   L"Software\\Microsoft\\Internet Explorer\\Toolbar",
+                   KEY_READ);
     if (!reg_key.ReadValue(L"LinksFolderName", buffer, &buffer_length, NULL))
       return false;
     info->links_folder = buffer;
@@ -571,7 +572,7 @@ int IEImporter::CurrentIEVersion() const {
     wchar_t buffer[128];
     DWORD buffer_length = sizeof(buffer);
     RegKey reg_key(HKEY_LOCAL_MACHINE,
-                   L"Software\\Microsoft\\Internet Explorer");
+                   L"Software\\Microsoft\\Internet Explorer", KEY_READ);
     bool result = reg_key.ReadValue(L"Version", buffer, &buffer_length, NULL);
     version = (result ? _wtoi(buffer) : 0);
   }

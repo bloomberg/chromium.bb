@@ -506,7 +506,7 @@ std::wstring ChromeMiniInstaller::GetUninstallPath() {
 bool ChromeMiniInstaller::GetChromeVersionFromRegistry(
     std::wstring* build_key_value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  RegKey key(GetRootRegistryKey(), dist->GetVersionKey().c_str());
+  RegKey key(GetRootRegistryKey(), dist->GetVersionKey().c_str(), KEY_READ);
   if (!key.ReadValue(L"pv", build_key_value)) {
     printf("registry key not found\n");
     return false;
