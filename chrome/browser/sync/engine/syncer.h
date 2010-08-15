@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_H_
 #pragma once
 
-#include <string>
 #include <utility>
 #include <vector>
 

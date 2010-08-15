@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_COCOA_EXTENSION_INSTALL_PROMPT_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
+#include "base/string16.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

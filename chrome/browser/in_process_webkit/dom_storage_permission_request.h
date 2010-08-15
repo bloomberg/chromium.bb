@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_PERMISSION_REQUEST_H_
 #pragma once
 
-#include <string>
-
 #include "base/ref_counted.h"
+#include "base/string16.h"
 #include "base/time.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/host_content_settings_map.h"

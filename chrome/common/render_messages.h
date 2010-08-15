@@ -6,7 +6,6 @@
 #define CHROME_COMMON_RENDER_MESSAGES_H_
 #pragma once
 
-#include <map>
 #include <string>
 #include <vector>
 

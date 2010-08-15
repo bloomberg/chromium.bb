@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_LANGUAGE_CONFIG_MODEL_H_
 #pragma once
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>

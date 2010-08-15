@@ -6,8 +6,6 @@
 #define CHROME_COMMON_CHROME_PLUGIN_LIB_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"

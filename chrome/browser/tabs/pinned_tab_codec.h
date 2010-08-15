@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_TABS_PINNED_TAB_CODEC_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "chrome/browser/browser_init.h"

@@ -10,7 +10,6 @@
 #include <bitset>
 #include <iosfwd>
 #include <limits>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>

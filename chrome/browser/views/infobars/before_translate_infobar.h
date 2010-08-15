@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_VIEWS_INFOBARS_BEFORE_TRANSLATE_INFOBAR_H_
 #pragma once
 
-#include <string>
-
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_view.h"

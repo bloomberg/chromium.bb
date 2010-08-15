@@ -10,8 +10,6 @@
 
 #if defined(OS_WIN)
 
-#include <string>
-
 #include "chrome/browser/extensions/extension_function.h"
 
 class RlzRecordProductEventFunction : public SyncExtensionFunction {

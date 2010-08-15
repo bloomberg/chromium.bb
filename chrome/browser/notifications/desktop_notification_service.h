@@ -6,9 +6,10 @@
 #define CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATION_SERVICE_H_
 #pragma once
 
-#include <set>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/notification_observer.h"

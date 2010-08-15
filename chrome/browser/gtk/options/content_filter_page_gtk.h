@@ -8,8 +8,6 @@
 
 #include <gtk/gtk.h>
 
-#include <string>
-
 #include "app/gtk_signal.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/common/content_settings_types.h"

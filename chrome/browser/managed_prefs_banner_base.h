@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_MANAGED_PREFS_BANNER_BASE_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/options_window.h"

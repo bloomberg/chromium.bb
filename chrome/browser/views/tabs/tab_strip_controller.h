@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_
 #pragma once
 
-#include <vector>
-
 class BaseTab;
 class BaseTabStrip;
 class GURL;

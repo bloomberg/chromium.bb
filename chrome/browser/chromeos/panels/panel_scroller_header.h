@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_PANELS_PANEL_SCROLLER_HEADER_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "views/view.h"

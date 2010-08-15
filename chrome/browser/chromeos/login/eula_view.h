@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_EULA_VIEW_H_
 #pragma once
 
-#include <string>
-
 #include "chrome/browser/chromeos/login/view_screen.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"

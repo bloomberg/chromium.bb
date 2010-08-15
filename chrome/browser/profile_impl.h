@@ -8,8 +8,6 @@
 #define CHROME_BROWSER_PROFILE_IMPL_H_
 #pragma once
 
-#include <string>
-
 #include "chrome/browser/profile.h"
 #include "chrome/browser/spellcheck_host_observer.h"
 #include "chrome/common/notification_registrar.h"

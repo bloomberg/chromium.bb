@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"

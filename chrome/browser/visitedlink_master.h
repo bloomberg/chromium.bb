@@ -10,7 +10,6 @@
 #include <windows.h>
 #endif
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/file_path.h"

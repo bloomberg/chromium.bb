@@ -10,7 +10,6 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include <vector>
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"

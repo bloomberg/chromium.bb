@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_CC_INFOBAR_DELEGATE_H_
 #pragma once
 
-#include <string>
-
+#include "base/string16.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
 class AutoFillManager;

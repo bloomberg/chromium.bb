@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_NATIVE_BACKEND_GNOME_X_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/time.h"
 #include "chrome/browser/password_manager/password_store_x.h"

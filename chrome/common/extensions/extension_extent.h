@@ -6,7 +6,6 @@
 #define CHROME_COMMON_EXTENSIONS_EXTENSION_EXTENT_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "chrome/common/extensions/url_pattern.h"

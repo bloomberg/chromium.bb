@@ -7,7 +7,6 @@
 #pragma once
 
 #include <Windows.h>
-#include <map>
 
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"

@@ -9,7 +9,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "app/table_model.h"
 #include "chrome/browser/chromeos/options/language_config_model.h"

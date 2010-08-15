@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_VIEWS_BOOKMARK_BUBBLE_VIEW_H_
 #pragma once
 
-#include <vector>
-
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "gfx/rect.h"

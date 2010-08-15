@@ -8,8 +8,6 @@
 
 #include "build/build_config.h"
 
-#include <string>
-
 #if defined(OS_WIN)
 #include <wtypes.h>
 #endif

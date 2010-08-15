@@ -8,7 +8,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "app/sql/connection.h"
 #include "base/ref_counted.h"

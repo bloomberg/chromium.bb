@@ -6,10 +6,6 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_
 #pragma once
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/hash_tables.h"

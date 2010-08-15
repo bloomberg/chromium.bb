@@ -4,8 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include <string>
-
 #include "base/cocoa_protocols_mac.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/host_content_settings_map.h"

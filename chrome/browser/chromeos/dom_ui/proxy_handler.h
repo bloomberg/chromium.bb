@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DOM_UI_PROXY_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_DOM_UI_PROXY_HANDLER_H_
 
-#include <string>
-
 #include "chrome/browser/dom_ui/options_ui.h"
 
 // ChromeOS proxy options page UI handler.

@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_VIEWS_BOOKMARK_EDITOR_VIEW_H_
 #pragma once
 
-#include <set>
-
 #include "app/menus/simple_menu_model.h"
 #include "app/tree_node_model.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"

@@ -41,7 +41,6 @@
 #pragma once
 
 #include <map>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/hash_tables.h"

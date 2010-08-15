@@ -24,7 +24,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/task.h"

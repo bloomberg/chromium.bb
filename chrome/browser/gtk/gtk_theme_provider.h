@@ -7,7 +7,6 @@
 #pragma once
 
 #include <map>
-#include <string>
 #include <vector>
 
 #include "app/gtk_integers.h"

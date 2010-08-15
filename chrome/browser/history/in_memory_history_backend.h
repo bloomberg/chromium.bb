@@ -14,8 +14,6 @@
 #define CHROME_BROWSER_HISTORY_IN_MEMORY_HISTORY_BACKEND_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"

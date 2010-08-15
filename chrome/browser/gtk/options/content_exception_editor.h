@@ -8,8 +8,6 @@
 
 #include <gtk/gtk.h>
 
-#include <string>
-
 #include "app/gtk_signal.h"
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/content_setting_combo_model.h"

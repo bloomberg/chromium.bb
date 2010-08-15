@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_FIRST_RUN_FIRST_RUN_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"

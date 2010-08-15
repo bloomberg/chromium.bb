@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"

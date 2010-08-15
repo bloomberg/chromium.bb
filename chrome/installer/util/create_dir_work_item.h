@@ -6,7 +6,6 @@
 #define CHROME_INSTALLER_UTIL_CREATE_DIR_WORK_ITEM_H_
 #pragma once
 
-#include <string>
 #include <windows.h>
 
 #include "base/file_path.h"

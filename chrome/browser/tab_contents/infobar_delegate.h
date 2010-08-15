@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_TAB_CONTENTS_INFOBAR_DELEGATE_H_
 #pragma once
 
-#include <string>
-
 #include "base/basictypes.h"
+#include "base/string16.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "webkit/glue/window_open_disposition.h"
 

@@ -8,8 +8,6 @@
 
 #include "chrome/browser/sync/glue/change_processor.h"
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"

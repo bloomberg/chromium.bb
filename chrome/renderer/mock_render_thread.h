@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "chrome/common/ipc_test_sink.h"
 #include "chrome/renderer/mock_printer.h"

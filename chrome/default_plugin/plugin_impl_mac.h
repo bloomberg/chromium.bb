@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "gfx/native_widget_types.h"
 #include "third_party/npapi/bindings/npapi.h"

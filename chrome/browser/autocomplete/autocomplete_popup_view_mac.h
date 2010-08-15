@@ -9,7 +9,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include <string>
-#include <map>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"

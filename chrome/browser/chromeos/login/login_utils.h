@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 

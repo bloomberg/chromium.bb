@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_AUTHENTICATOR_H_
 #pragma once
 
-#include <vector>
-
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"

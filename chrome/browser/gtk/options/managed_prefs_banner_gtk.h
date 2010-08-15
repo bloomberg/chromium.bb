@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_GTK_OPTIONS_MANAGED_PREFS_BANNER_GTK_H_
 #pragma once
 
-#include <set>
-
 #include <gtk/gtk.h>
 
 #include "chrome/browser/managed_prefs_banner_base.h"

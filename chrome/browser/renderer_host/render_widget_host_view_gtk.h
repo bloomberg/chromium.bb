@@ -8,7 +8,6 @@
 
 #include <gdk/gdk.h>
 
-#include <map>
 #include <vector>
 #include <string>
 

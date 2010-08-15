@@ -20,8 +20,6 @@
 #define CHROME_TEST_SYNC_ENGINE_PROTO_EXTENSION_VALIDATOR_H_
 #pragma once
 
-#include <vector>
-
 #include "base/string_util.h"
 #include "chrome/test/sync/engine/syncer_command_test.h"
 #include "testing/gtest/include/gtest/gtest.h"

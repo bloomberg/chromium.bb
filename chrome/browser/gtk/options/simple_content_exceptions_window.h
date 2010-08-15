@@ -8,8 +8,6 @@
 
 #include <gtk/gtk.h>
 
-#include <set>
-
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/gtk_tree.h"

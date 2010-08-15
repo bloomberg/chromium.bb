@@ -7,7 +7,6 @@
 #pragma once
 
 #include <map>
-#include <string>
 
 #include "app/gtk_signal.h"
 #include "base/scoped_ptr.h"

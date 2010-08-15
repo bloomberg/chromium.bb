@@ -6,9 +6,6 @@
 #define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include "base/scoped_ptr.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"

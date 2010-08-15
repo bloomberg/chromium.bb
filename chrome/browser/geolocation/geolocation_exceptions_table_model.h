@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_EXCEPTIONS_TABLE_MODEL_H_
 #pragma once
 
-#include <set>
 #include <vector>
 
 #include "chrome/browser/geolocation/geolocation_content_settings_map.h"

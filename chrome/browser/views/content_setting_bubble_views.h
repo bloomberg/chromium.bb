@@ -7,7 +7,6 @@
 #pragma once
 
 #include <map>
-#include <string>
 
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_registrar.h"

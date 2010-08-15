@@ -8,7 +8,7 @@
 
 #include <windows.h>
 #include <ntddndis.h>
-#include <vector>
+
 #include "chrome/browser/geolocation/device_data_provider.h"
 
 // Extracts access point data from the NDIS_802_11_BSSID_LIST structure and

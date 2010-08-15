@@ -10,7 +10,6 @@
 #define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_WORDITERATOR_H_
 #pragma once
 
-#include <map>
 #include <string>
 
 #include "base/basictypes.h"

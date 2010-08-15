@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_BROWSING_DATA_APPCACHE_HELPER_H_
 #pragma once
 
-#include <string>
-
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"

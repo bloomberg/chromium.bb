@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_DOM_UI_SLIDESHOW_UI_H_
 #pragma once
 
-#include <vector>
-
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 

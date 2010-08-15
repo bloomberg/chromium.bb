@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_VIEWS_TABS_TAB_RENDERER_DATA_H_
 #pragma once
 
-#include <string>
-
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

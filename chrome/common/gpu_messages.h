@@ -6,8 +6,6 @@
 #define CHROME_COMMON_GPU_MESSAGES_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "base/process.h"
 #include "chrome/common/common_param_traits.h"

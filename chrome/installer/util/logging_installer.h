@@ -6,8 +6,6 @@
 #define CHROME_INSTALLER_UTIL_LOGGING_INSTALLER_H_
 #pragma once
 
-#include <string>
-
 #include "base/logging.h"
 
 class CommandLine;

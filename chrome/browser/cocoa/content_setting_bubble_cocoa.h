@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <map>
-#include <string>
 
 #import <Cocoa/Cocoa.h>
 

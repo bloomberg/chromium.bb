@@ -6,9 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_DATA_DELETER_H_
 #pragma once
 
-#include <string>
-
 #include "base/ref_counted.h"
+#include "base/string16.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/common/net/url_request_context_getter.h"

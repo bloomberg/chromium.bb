@@ -37,7 +37,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 #include "base/scoped_ptr.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"

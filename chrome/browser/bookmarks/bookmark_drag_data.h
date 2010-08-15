@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_DRAG_DATA_H_
 #pragma once
 
-#include <string>
 #include <vector>
 
 #include "base/file_path.h"

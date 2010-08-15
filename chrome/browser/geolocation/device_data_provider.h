@@ -26,7 +26,6 @@
 #include <algorithm>
 #include <functional>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"

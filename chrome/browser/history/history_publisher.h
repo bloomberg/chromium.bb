@@ -7,7 +7,6 @@
 #pragma once
 
 #include <vector>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/string16.h"

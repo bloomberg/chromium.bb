@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_GEOLOCATION_GEOLOCATION_PERMISSION_CONTEXT_H_
 #pragma once
 
-#include <map>
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
