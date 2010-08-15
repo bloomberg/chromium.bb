@@ -166,11 +166,6 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
   DCHECK(extension);
 
   Profile* profile = extensions_service_->profile();
-  if (launch_container.empty()) {
-    AnimateAppIcon(extension, rect);
-    Browser::OpenApplication(profile, extension_id);
-    return;
-  }
 
   Extension::LaunchContainer container = extension->launch_container();
   if (launch_container == "tab")
@@ -179,7 +174,7 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
     container = Extension::LAUNCH_PANEL;
   else if (launch_container == "window")
     container = Extension::LAUNCH_WINDOW;
-  else
+  else if (!launch_container.empty())
     NOTREACHED() << "Unexpected launch container: " << launch_container << ".";
 
   // To give a more "launchy" experience when using the NTP launcher, we close
