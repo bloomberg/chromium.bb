@@ -2418,14 +2418,21 @@ void RenderView::frameDetached(WebFrame* frame) {
 }
 
 void RenderView::willClose(WebFrame* frame) {
-  if (!frame->parent()) {
-    const GURL& url = frame->url();
-    if (url.SchemeIs("http") || url.SchemeIs("https"))
-      DumpLoadHistograms();
-  }
-
   WebDataSource* ds = frame->dataSource();
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+
+  if (!frame->parent()) {
+    const GURL& url = frame->url();
+    // Ensure state contains scheme.
+    if (url.SchemeIs("http"))
+      navigation_state->set_scheme_type(URLPattern::SCHEME_HTTP);
+    else if (url.SchemeIs("https"))
+      navigation_state->set_scheme_type(URLPattern::SCHEME_HTTPS);
+
+    // Dump will only be provided when scheme is http or https.
+    DumpLoadHistograms();
+  }
+
   navigation_state->user_script_idle_scheduler()->Cancel();
 
   // TODO(jhawkins): Remove once frameDetached is called by WebKit.
@@ -2685,9 +2692,6 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
       NavigationState::CreateContentInitiated() :
       pending_navigation_state_.release();
 
-  const WebURLRequest& original_request = ds->originalRequest();
-  const WebURLRequest& request = ds->request();
-
   // NavigationState::referred_by_prefetcher_ is true if we are
   // navigating from a page that used prefetching using a link on that
   // page.  We are early enough in the request process here that we
@@ -2697,6 +2701,7 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   // renderer process.
   if (webview()) {
     if (WebFrame* old_frame = webview()->mainFrame()) {
+      const WebURLRequest& original_request = ds->originalRequest();
       const GURL referrer(
           original_request.httpHeaderField(WebString::fromUTF8("Referer")));
       if (!referrer.is_empty() &&
@@ -2714,6 +2719,7 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   }
 
   if (content_initiated) {
+    const WebURLRequest& request = ds->request();
     switch (request.cachePolicy()) {
       case WebURLRequest::UseProtocolCachePolicy:  // normal load.
         state->set_load_type(NavigationState::LINK_LOAD_NORMAL);
@@ -2739,14 +2745,15 @@ void RenderView::didStartProvisionalLoad(WebFrame* frame) {
   WebDataSource* ds = frame->provisionalDataSource();
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
 
-  navigation_state->set_start_load_time(Time::Now());
-
   // Update the request time if WebKit has better knowledge of it.
   if (navigation_state->request_time().is_null()) {
     double event_time = ds->triggeringEventTime();
     if (event_time != 0.0)
       navigation_state->set_request_time(Time::FromDoubleT(event_time));
   }
+
+  // Start time is only set after request time.
+  navigation_state->set_start_load_time(Time::Now());
 
   bool is_top_most = !frame->parent();
   if (is_top_most) {
@@ -4300,9 +4307,17 @@ void RenderView::OnClosePage(const ViewMsg_ClosePage_Params& params) {
     // TODO(davemoore) this code should be removed once willClose() gets
     // called when a page is destroyed. DumpLoadHistograms() is safe to call
     // multiple times for the same frame, but it will simplify things.
-    if (url.SchemeIs(chrome::kHttpScheme) ||
-        url.SchemeIs(chrome::kHttpsScheme))
-      DumpLoadHistograms();
+
+    // Ensure state contains scheme.
+    NavigationState* navigation_state =
+        NavigationState::FromDataSource(main_frame->dataSource());
+    if (url.SchemeIs("http"))
+      navigation_state->set_scheme_type(URLPattern::SCHEME_HTTP);
+    else if (url.SchemeIs("https"))
+      navigation_state->set_scheme_type(URLPattern::SCHEME_HTTPS);
+
+    // Dump will only be provided when scheme is http or https.
+    DumpLoadHistograms();
   }
   webview()->dispatchUnloadEvent();
 
@@ -4488,6 +4503,8 @@ void RenderView::DidFlushPaint() {
     NavigationState* navigation_state = NavigationState::FromDataSource(ds);
     DCHECK(navigation_state);
 
+    // TODO(jar): The following code should all be inside a method, probably in
+    // NavigatorState.
     Time now = Time::Now();
     if (navigation_state->first_paint_time().is_null()) {
       navigation_state->set_first_paint_time(now);
@@ -4581,7 +4598,7 @@ void RenderView::OnExtensionMessageInvoke(const std::string& function_name,
 //    start: time load of document started
 //    commit: time load of document started
 //    finish_document: main document loaded, before onload()
-//    finish: after onload() and all resources are loaded
+//    finish_all_loads: after onload() and all resources are loaded
 //    first_paint: first paint performed
 //    first_paint_after_load: first paint performed after load is finished
 //    begin: request if it was user requested, start otherwise
@@ -4602,6 +4619,12 @@ void RenderView::DumpLoadHistograms() const {
   NavigationState* navigation_state =
       NavigationState::FromDataSource(main_frame->dataSource());
 
+  URLPattern::SchemeMasks scheme_type = navigation_state->scheme_type();
+  if (scheme_type == 0)
+     return;
+  DCHECK(scheme_type == URLPattern::SCHEME_HTTP ||
+         scheme_type == URLPattern::SCHEME_HTTPS);
+
   // If we've already dumped, do nothing.
   if (navigation_state->load_histograms_recorded())
     return;
@@ -4618,32 +4641,42 @@ void RenderView::DumpLoadHistograms() const {
   Time request = navigation_state->request_time();
   Time first_paint = navigation_state->first_paint_time();
   Time first_paint_after_load = navigation_state->first_paint_after_load_time();
-  Time finish = navigation_state->finish_load_time();
   Time finish_doc = navigation_state->finish_document_load_time();
+  Time finish_all_loads = navigation_state->finish_load_time();
 
   // Handle case where user hits "stop" or "back" before loading completely.
-  bool abandoned_page = finish.is_null();
+  bool abandoned_page = finish_doc.is_null();
   if (abandoned_page) {
-    finish = Time::Now();
-    navigation_state->set_finish_load_time(finish);
+    finish_doc = Time::Now();
+    navigation_state->set_finish_document_load_time(finish_doc);
   }
 
-  if (finish_doc.is_null()) {
-    DCHECK(abandoned_page);  // how can the doc have finished but not the page?
+  // TODO(jar): We should really discriminate the definition of "abandon" more
+  // finely.  We should have:
+  // abandon_before_document_loaded
+  // abandon_before_onload_fired
+
+  if (finish_all_loads.is_null()) {
+    finish_all_loads = Time::Now();
+    navigation_state->set_finish_load_time(finish_all_loads);
+  } else {
+    DCHECK(!abandoned_page);  // How can the doc have finished but not the page?
     if (!abandoned_page)
       return;  // Don't try to record a stat which is broken.
-    finish_doc = finish;
-    navigation_state->set_finish_document_load_time(finish_doc);
   }
 
   // Note: Client side redirects will have no request time.
   Time begin = request.is_null() ? start : request;
   TimeDelta begin_to_finish_doc = finish_doc - begin;
-  TimeDelta begin_to_finish = finish - begin;
-  TimeDelta start_to_finish = finish - start;
+  TimeDelta begin_to_finish_all_loads = finish_all_loads - begin;
+  TimeDelta start_to_finish_all_loads = finish_all_loads - start;
   TimeDelta start_to_commit = commit - start;
 
   NavigationState::LoadType load_type = navigation_state->load_type();
+
+  // The above code sanitized all values of times, in preparation for creating
+  // actual histograms.  The remainder of this code could be run at destructor
+  // time for the navigation_state, since all data is intact.
 
   // Aggregate PLT data across all link types.
   UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned", abandoned_page ? 1 : 0, 2);
@@ -4651,14 +4684,14 @@ void RenderView::DumpLoadHistograms() const {
       NavigationState::kLoadTypeMax);
   PLT_HISTOGRAM("PLT.StartToCommit", start_to_commit);
   PLT_HISTOGRAM("PLT.CommitToFinishDoc", finish_doc - commit);
-  PLT_HISTOGRAM("PLT.FinishDocToFinish", finish - finish_doc);
+  PLT_HISTOGRAM("PLT.FinishDocToFinish", finish_all_loads - finish_doc);
   PLT_HISTOGRAM("PLT.BeginToCommit", commit - begin);
-  PLT_HISTOGRAM("PLT.StartToFinish", start_to_finish);
+  PLT_HISTOGRAM("PLT.StartToFinish", start_to_finish_all_loads);
   if (!request.is_null()) {
     PLT_HISTOGRAM("PLT.RequestToStart", start - request);
-    PLT_HISTOGRAM("PLT.RequestToFinish", finish - request);
+    PLT_HISTOGRAM("PLT.RequestToFinish", finish_all_loads - request);
   }
-  PLT_HISTOGRAM("PLT.CommitToFinish", finish - commit);
+  PLT_HISTOGRAM("PLT.CommitToFinish", finish_all_loads - commit);
   if (!first_paint.is_null()) {
     DCHECK(begin <= first_paint);
     PLT_HISTOGRAM("PLT.BeginToFirstPaint", first_paint - begin);
@@ -4672,50 +4705,54 @@ void RenderView::DumpLoadHistograms() const {
     DCHECK(commit <= first_paint_after_load);
     PLT_HISTOGRAM("PLT.CommitToFirstPaintAfterLoad",
         first_paint_after_load - commit);
-    DCHECK(finish <= first_paint_after_load);
+    DCHECK(finish_all_loads <= first_paint_after_load);
     PLT_HISTOGRAM("PLT.FinishToFirstPaintAfterLoad",
-        first_paint_after_load - finish);
+        first_paint_after_load - finish_all_loads);
   }
   PLT_HISTOGRAM("PLT.BeginToFinishDoc", begin_to_finish_doc);
-  PLT_HISTOGRAM("PLT.BeginToFinish", begin_to_finish);
+  PLT_HISTOGRAM("PLT.BeginToFinish", begin_to_finish_all_loads);
 
   // Load type related histograms.
   switch (load_type) {
     case NavigationState::UNDEFINED_LOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_UndefLoad", begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_UndefLoad", begin_to_finish);
+      PLT_HISTOGRAM("PLT.BeginToFinish_UndefLoad", begin_to_finish_all_loads);
       break;
     case NavigationState::RELOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_Reload", begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_Reload", begin_to_finish);
+      PLT_HISTOGRAM("PLT.BeginToFinish_Reload", begin_to_finish_all_loads);
       break;
     case NavigationState::HISTORY_LOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_HistoryLoad", begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_HistoryLoad", begin_to_finish);
+      PLT_HISTOGRAM("PLT.BeginToFinish_HistoryLoad", begin_to_finish_all_loads);
       break;
     case NavigationState::NORMAL_LOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_NormalLoad", begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_NormalLoad", begin_to_finish);
+      PLT_HISTOGRAM("PLT.BeginToFinish_NormalLoad", begin_to_finish_all_loads);
       break;
     case NavigationState::LINK_LOAD_NORMAL:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadNormal",
           begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadNormal", begin_to_finish);
+      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadNormal",
+                    begin_to_finish_all_loads);
       break;
     case NavigationState::LINK_LOAD_RELOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadReload",
            begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadReload", begin_to_finish);
+      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadReload",
+                    begin_to_finish_all_loads);
       break;
     case NavigationState::LINK_LOAD_CACHE_STALE_OK:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadStaleOk",
            begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadStaleOk", begin_to_finish);
+      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadStaleOk",
+                    begin_to_finish_all_loads);
       break;
     case NavigationState::LINK_LOAD_CACHE_ONLY:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadCacheOnly",
            begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadCacheOnly", begin_to_finish);
+      PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadCacheOnly",
+                    begin_to_finish_all_loads);
       break;
     default:
       break;
@@ -4734,22 +4771,23 @@ void RenderView::DumpLoadHistograms() const {
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad", "DnsImpact"), begin_to_finish);
+            "PLT.BeginToFinish_NormalLoad", "DnsImpact"),
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "DnsImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "DnsImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "DnsImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       default:
         break;
@@ -4768,7 +4806,7 @@ void RenderView::DumpLoadHistograms() const {
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcher",
                     begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcher",
-                    begin_to_finish);
+                    begin_to_finish_all_loads);
     }
     if (prefetching_fieldtrial) {
       PLT_HISTOGRAM(
@@ -4778,7 +4816,7 @@ void RenderView::DumpLoadHistograms() const {
       PLT_HISTOGRAM(
           FieldTrial::MakeName("PLT.BeginToFinish_ContentPrefetcher",
                                "Prefetch"),
-          begin_to_finish);
+          begin_to_finish_all_loads);
     }
   }
   if (navigation_state->was_referred_by_prefetcher()) {
@@ -4786,7 +4824,7 @@ void RenderView::DumpLoadHistograms() const {
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcherReferrer",
                     begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcherReferrer",
-                    begin_to_finish);
+                    begin_to_finish_all_loads);
     }
     if (prefetching_fieldtrial) {
       PLT_HISTOGRAM(
@@ -4796,7 +4834,7 @@ void RenderView::DumpLoadHistograms() const {
       PLT_HISTOGRAM(
           FieldTrial::MakeName("PLT.BeginToFinish_ContentPrefetcherReferrer",
                                "Prefetch"),
-          begin_to_finish);
+          begin_to_finish_all_loads);
     }
   }
   if (prefetching_fieldtrial) {
@@ -4805,7 +4843,7 @@ void RenderView::DumpLoadHistograms() const {
     PLT_HISTOGRAM(FieldTrial::MakeName("PLT.BeginToFinishDoc", "Prefetch"),
                   begin_to_finish_doc);
     PLT_HISTOGRAM(FieldTrial::MakeName("PLT.BeginToFinish", "Prefetch"),
-                  begin_to_finish);
+                  begin_to_finish_all_loads);
   }
 
   // Histograms to determine if the number of connections has an
@@ -4823,22 +4861,22 @@ void RenderView::DumpLoadHistograms() const {
       case NavigationState::NORMAL_LOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "ConnCountImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "ConnCountImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "ConnCountImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "ConnCountImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       default:
         break;
@@ -4857,22 +4895,22 @@ void RenderView::DumpLoadHistograms() const {
       case NavigationState::NORMAL_LOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "IdleSktToImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "IdleSktToImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "IdleSktToImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "IdleSktToImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       default:
         break;
@@ -4891,22 +4929,22 @@ void RenderView::DumpLoadHistograms() const {
       case NavigationState::NORMAL_LOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "ProxyConnectionImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "ProxyConnectionImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "ProxyConnectionImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "ProxyConnectionImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       default:
         break;
@@ -4925,27 +4963,27 @@ void RenderView::DumpLoadHistograms() const {
       case NavigationState::NORMAL_LOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "GlobalSdch"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "GlobalSdch"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "GlobalSdch"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "GlobalSdch"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       case NavigationState::LINK_LOAD_CACHE_ONLY:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadCacheOnly", "GlobalSdch"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         break;
       default:
         break;
@@ -4964,14 +5002,13 @@ void RenderView::DumpLoadHistograms() const {
   }
 
 
-  GURL url = GURL(main_frame->url());
-
   // Histograms to determine if SPDY has an impact for https traffic.
   // TODO(mbelshe): After we've seen the difference between BeginToFinish
   //                and StartToFinish, consider removing one or the other.
   static bool use_spdy_histogram(FieldTrialList::Find("SpdyImpact") &&
       !FieldTrialList::Find("SpdyImpact")->group_name().empty());
-  if (use_spdy_histogram && url.SchemeIs("https") &&
+  if (use_spdy_histogram &&
+      scheme_type == URLPattern::SCHEME_HTTPS &&
       navigation_state->was_npn_negotiated()) {
     UMA_HISTOGRAM_ENUMERATION(
         FieldTrial::MakeName("PLT.Abandoned", "SpdyImpact"),
@@ -4980,10 +5017,10 @@ void RenderView::DumpLoadHistograms() const {
       case NavigationState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.StartToFinish_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
-            start_to_finish);
+            start_to_finish_all_loads);
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.StartToCommit_LinkLoadNormal_SpdyTrial", "SpdyImpact"),
             start_to_commit);
@@ -4991,10 +5028,10 @@ void RenderView::DumpLoadHistograms() const {
       case NavigationState::NORMAL_LOAD:
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
-            begin_to_finish);
+            begin_to_finish_all_loads);
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.StartToFinish_NormalLoad_SpdyTrial", "SpdyImpact"),
-            start_to_finish);
+            start_to_finish_all_loads);
         PLT_HISTOGRAM(FieldTrial::MakeName(
             "PLT.StartToCommit_NormalLoad_SpdyTrial", "SpdyImpact"),
             start_to_commit);
@@ -5006,7 +5043,7 @@ void RenderView::DumpLoadHistograms() const {
 
   // Histograms to compare the impact of alternate protocol over http traffic:
   // when spdy is used vs. when http is used.
-  if (url.SchemeIs("http") &&
+  if (scheme_type == URLPattern::SCHEME_HTTP &&
       navigation_state->was_alternate_protocol_available()) {
     if (!navigation_state->was_npn_negotiated()) {
       // This means that even there is alternate protocols for npn_http or
@@ -5015,7 +5052,7 @@ void RenderView::DumpLoadHistograms() const {
         case NavigationState::LINK_LOAD_NORMAL:
           PLT_HISTOGRAM(
               "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_http",
-              start_to_finish);
+              start_to_finish_all_loads);
           PLT_HISTOGRAM(
               "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_http",
               start_to_commit);
@@ -5023,7 +5060,7 @@ void RenderView::DumpLoadHistograms() const {
         case NavigationState::NORMAL_LOAD:
           PLT_HISTOGRAM(
               "PLT.StartToFinish_NormalLoad_AlternateProtocol_http",
-              start_to_finish);
+              start_to_finish_all_loads);
           PLT_HISTOGRAM(
               "PLT.StartToCommit_NormalLoad_AlternateProtocol_http",
               start_to_commit);
@@ -5036,7 +5073,7 @@ void RenderView::DumpLoadHistograms() const {
         case NavigationState::LINK_LOAD_NORMAL:
           PLT_HISTOGRAM(
               "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_spdy",
-              start_to_finish);
+              start_to_finish_all_loads);
           PLT_HISTOGRAM(
               "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_spdy",
               start_to_commit);
@@ -5044,7 +5081,7 @@ void RenderView::DumpLoadHistograms() const {
         case NavigationState::NORMAL_LOAD:
           PLT_HISTOGRAM(
               "PLT.StartToFinish_NormalLoad_AlternateProtocol_spdy",
-              start_to_finish);
+              start_to_finish_all_loads);
           PLT_HISTOGRAM(
               "PLT.StartToCommit_NormalLoad_AlternateProtocol_spdy",
               start_to_commit);
@@ -5057,24 +5094,28 @@ void RenderView::DumpLoadHistograms() const {
 
   // Record page load time and abandonment rates for proxy cases.
   if (navigation_state->was_fetched_via_proxy()) {
-    if (url.SchemeIs("https")) {
-      PLT_HISTOGRAM("PLT.StartToFinish.Proxy.https", start_to_finish);
+    if (scheme_type == URLPattern::SCHEME_HTTPS) {
+      PLT_HISTOGRAM("PLT.StartToFinish.Proxy.https", start_to_finish_all_loads);
       UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned.Proxy.https",
-          abandoned_page ? 1 : 0, 2);
+                                abandoned_page ? 1 : 0, 2);
     } else {
-      PLT_HISTOGRAM("PLT.StartToFinish.Proxy.http", start_to_finish);
+      DCHECK(scheme_type == URLPattern::SCHEME_HTTP);
+      PLT_HISTOGRAM("PLT.StartToFinish.Proxy.http", start_to_finish_all_loads);
       UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned.Proxy.http",
-          abandoned_page ? 1 : 0, 2);
+                                abandoned_page ? 1 : 0, 2);
     }
   } else {
-    if (url.SchemeIs("https")) {
-      PLT_HISTOGRAM("PLT.StartToFinish.NoProxy.https", start_to_finish);
+    if (scheme_type == URLPattern::SCHEME_HTTPS) {
+      PLT_HISTOGRAM("PLT.StartToFinish.NoProxy.https",
+                    start_to_finish_all_loads);
       UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned.NoProxy.https",
-          abandoned_page ? 1 : 0, 2);
+                                abandoned_page ? 1 : 0, 2);
     } else {
-      PLT_HISTOGRAM("PLT.StartToFinish.NoProxy.http", start_to_finish);
+      DCHECK(scheme_type == URLPattern::SCHEME_HTTP);
+      PLT_HISTOGRAM("PLT.StartToFinish.NoProxy.http",
+                    start_to_finish_all_loads);
       UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned.NoProxy.http",
-          abandoned_page ? 1 : 0, 2);
+                                abandoned_page ? 1 : 0, 2);
     }
   }
 
@@ -5084,6 +5125,9 @@ void RenderView::DumpLoadHistograms() const {
   UMA_HISTOGRAM_COUNTS("SiteIsolation.PageLoadsWithSameSiteFrameAccess",
                        same_origin_access_count_);
 
+  // TODO(jar): This is the ONLY call in this method that needed more than
+  // navigation_state.  This should be relocated, or changed, so that this
+  // body can be made a method on NavigationStates, and run via its destructor.
   // Log some PLT data to the error log.
   LogNavigationState(navigation_state, main_frame->dataSource());
 
