@@ -342,6 +342,7 @@
         'chromoting_jingle_glue',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
+        '../base/base.gyp:test_support_base',
         '../gfx/gfx.gyp:gfx',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
