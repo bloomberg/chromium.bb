@@ -15,20 +15,21 @@
 namespace plugin {
 
 PortableHandle::PortableHandle() {
-  PLUGIN_PRINTF(("PortableHandle::PortableHandle(%p)\n",
+  PLUGIN_PRINTF(("PortableHandle::PortableHandle (this=%p)\n",
                  static_cast<void*>(this)));
 }
 
 PortableHandle::~PortableHandle() {
-  PLUGIN_PRINTF(("PortableHandle::~PortableHandle(%p)\n",
+  PLUGIN_PRINTF(("PortableHandle::~PortableHandle (this=%p)\n",
                  static_cast<void*>(this)));
 }
 
 void PortableHandle::AddPropertyGet(RpcFunction function_ptr,
                                     const char* name,
                                     const char* outs) {
-  PLUGIN_PRINTF(("PortableHandle::AddPropertyGet\n"));
   uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  PLUGIN_PRINTF(("PortableHandle::AddPropertyGet (name='%s', id=%"
+                 NACL_PRIxPTR")\n", name, method_id));
   MethodInfo* new_method =
       new(std::nothrow) MethodInfo(function_ptr, name, "", outs);
   if (NULL == new_method) {
@@ -40,8 +41,9 @@ void PortableHandle::AddPropertyGet(RpcFunction function_ptr,
 void PortableHandle::AddPropertySet(RpcFunction function_ptr,
                                     const char* name,
                                     const char* ins) {
-  PLUGIN_PRINTF(("PortableHandle::AddPropertySet\n"));
   uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  PLUGIN_PRINTF(("PortableHandle::AddPropertySet (name='%s', id=%"
+                 NACL_PRIxPTR")\n", name, method_id));
   MethodInfo* new_method =
       new(std::nothrow) MethodInfo(function_ptr, name, ins, "");
   if (NULL == new_method) {
@@ -54,8 +56,9 @@ void PortableHandle::AddMethodCall(RpcFunction function_ptr,
                                    const char* name,
                                    const char* ins,
                                    const char* outs) {
-  PLUGIN_PRINTF(("PortableHandle::AddMethodCall\n"));
   uintptr_t method_id = browser_interface()->StringToIdentifier(name);
+  PLUGIN_PRINTF(("PortableHandle::AddMethodCall (name='%s', id=%"
+                 NACL_PRIxPTR")\n", name, method_id));
   MethodInfo* new_method =
       new(std::nothrow) MethodInfo(function_ptr, name, ins, outs);
   if (NULL == new_method) {
@@ -89,7 +92,8 @@ MethodInfo* PortableHandle::GetMethodInfo(uintptr_t method_id,
       method_info = property_set_methods_.GetMethod(method_id);
       break;
   }
-
+  PLUGIN_PRINTF(("PortableHandle::GetMethodInfo (id=%"NACL_PRIxPTR", "
+                 "return %p)\n", method_id, static_cast<void*>(method_info)));
   return method_info;
 }
 

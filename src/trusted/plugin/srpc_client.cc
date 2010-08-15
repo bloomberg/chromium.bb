@@ -126,10 +126,10 @@ void SrpcClient::GetMethods() {
 }
 
 bool SrpcClient::HasMethod(uintptr_t method_id) {
-  PLUGIN_PRINTF(("SrpcClient:: HasMethod(this=%p, method_name='%s')\n",
-                 static_cast<void*>(this),
-                 browser_interface_->IdentifierToString(method_id).c_str()));
-  return NULL != methods_[method_id];
+  MethodInfo* method_info = methods_[method_id];
+  PLUGIN_PRINTF(("SrpcClient::HasMethod (this=%p, return %p)\n",
+                 static_cast<void*>(this), static_cast<void*>(method_info)));
+  return NULL != method_info;
 }
 
 bool SrpcClient::InitParams(uintptr_t method_id, SrpcParams* params) {
@@ -169,7 +169,7 @@ bool SrpcClient::Invoke(uintptr_t method_id,
                                       params->outs());
   PLUGIN_PRINTF(("SrpcClient::Invoke (response=%d)\n", err));
   if (NACL_SRPC_RESULT_OK != err) {
-    PLUGIN_PRINTF(("SrpcClient::Invoke (err=%s)\n",
+    PLUGIN_PRINTF(("SrpcClient::Invoke (err='%s', return 0)\n",
                    NaClSrpcErrorString(err)));
     return false;
   }
