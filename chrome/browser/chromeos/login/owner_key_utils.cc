@@ -57,20 +57,6 @@ class OwnerKeyUtilsImpl : public OwnerKeyUtils {
   FilePath GetOwnerKeyFilePath();
 
  private:
-  // Fills in fields of |key_der| with DER encoded data from a file at
-  // |key_file|.  The caller must pass in a pointer to an actual SECItem
-  // struct for |key_der|.  |key_der->data| should be initialized to NULL
-  // and |key_der->len| should be set to 0.
-  //
-  // Upon success, data is stored in key_der->data, and the caller takes
-  // ownership.  Returns false on error.
-  //
-  // To free the data, call
-  //    SECITEM_FreeItem(key_der, PR_FALSE);
-  static bool ReadDERFromFile(const FilePath& key_file, SECItem* key_der);
-
-  static bool EncodePublicKey(SECKEYPublicKey* key, std::string* out);
-
   // The file outside the owner's encrypted home directory where her
   // key will live.
   static const char kOwnerKeyFile[];
@@ -148,40 +134,6 @@ bool OwnerKeyUtilsImpl::ExportPublicKeyToFile(RSAPrivateKey* pair,
 
 bool OwnerKeyUtilsImpl::ImportPublicKey(const FilePath& key_file,
                                         std::vector<uint8>* output) {
-  SECItem key_der;
-  key_der.data = NULL;
-  key_der.len = 0;
-
-  if (!ReadDERFromFile(key_file, &key_der)) {
-    PLOG(ERROR) << "Could not read in key from " << key_file.value() << ":";
-    return false;
-  }
-
-  // See the comment in ExportPublicKey() for why I wrote a
-  // SubjectPublicKeyInfo to disk instead of a key.
-  CERTSubjectPublicKeyInfo* spki =
-     SECKEY_DecodeDERSubjectPublicKeyInfo(&key_der);
-  if (!spki) {
-    LOG(ERROR) << "Could not decode key info: " << PR_GetError();
-    SECITEM_FreeItem(&key_der, PR_FALSE);
-    return false;
-  }
-
-  output->assign(reinterpret_cast<uint8*>(key_der.data),
-                 reinterpret_cast<uint8*>(key_der.data + key_der.len));
-  return key_der.len == output->size();
-}
-
-// static
-bool OwnerKeyUtilsImpl::ReadDERFromFile(const FilePath& key_file,
-                                        SECItem* key_der) {
-  // I'd use NSS' SECU_ReadDERFromFile() here, but the SECU_* functions are
-  // considered internal to the NSS command line utils.
-  // This code is lifted, in spirit, from the implementation of that function.
-  DCHECK(key_der) << "Don't pass NULL for |key_der|";
-  DCHECK(key_der->data == NULL);
-  DCHECK(key_der->len == 0);
-
   // Get the file size (must fit in a 32 bit int for NSS).
   int64 file_size;
   if (!file_util::GetFileSize(key_file, &file_size)) {
@@ -195,25 +147,12 @@ bool OwnerKeyUtilsImpl::ReadDERFromFile(const FilePath& key_file,
   }
   int32 safe_file_size = static_cast<int32>(file_size);
 
-  // Allocate space for the DER encoded data.
-  key_der->data = NULL;
-  if (!SECITEM_AllocItem(NULL, key_der, safe_file_size)) {
-    LOG(ERROR) << "Could not create space for DER encoded key";
-    return false;
-  }
-
+  output->resize(safe_file_size);
   // Get the key data off of disk
   int data_read = file_util::ReadFile(key_file,
-                                      reinterpret_cast<char*>(key_der->data),
+                                      reinterpret_cast<char*>(&(output->at(0))),
                                       safe_file_size);
-
-  if (data_read != safe_file_size) {
-    LOG(ERROR) << "Read the wrong amount of data from the DER encoded key! "
-               << data_read;
-    SECITEM_FreeItem(key_der, PR_FALSE);
-    return false;
-  }
-  return true;
+  return data_read == safe_file_size;
 }
 
 RSAPrivateKey* OwnerKeyUtilsImpl::FindPrivateKey(
