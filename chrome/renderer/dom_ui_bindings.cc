@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/stl_util-inl.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -40,7 +41,8 @@ void DOMUIBindings::send(const CppArgumentList& args, CppVariant* result) {
     std::vector<std::wstring> strings = args[1].ToStringVector();
     ListValue value;
     for (size_t i = 0; i < strings.size(); ++i) {
-      value.Append(Value::CreateStringValue(strings[i]));
+      // TODO(viettrungluu): remove conversion and utf_string_conversions.h
+      value.Append(Value::CreateStringValue(WideToUTF16Hack(strings[i])));
     }
     base::JSONWriter::Write(&value, /* pretty_print= */ false, &content);
   }

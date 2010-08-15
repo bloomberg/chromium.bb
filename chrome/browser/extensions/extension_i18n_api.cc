@@ -13,8 +13,8 @@
 static const char kEmptyAcceptLanguagesError[] = "accept-languages is empty.";
 
 bool GetAcceptLanguagesFunction::RunImpl() {
-  std::wstring acceptLanguages =
-      UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  string16 acceptLanguages =
+      UTF8ToUTF16(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   // Currently, there are 2 ways to set browser's accept-languages: through UI
   // or directly modify the preference file. The accept-languages set through
   // UI is guranteed to be valid, and the accept-languages string returned from
@@ -32,19 +32,18 @@ bool GetAcceptLanguagesFunction::RunImpl() {
   }
   size_t begin = 0;
   size_t end;
-  std::wstring acceptLang;
   while (1) {
     end = acceptLanguages.find(',', begin);
     if (end > begin) {
       // Guard against a malformed value with multiple "," in a row.
-      acceptLang = acceptLanguages.substr(begin, end - begin);
+      string16 acceptLang = acceptLanguages.substr(begin, end - begin);
       static_cast<ListValue*>(result_.get())->
           Append(Value::CreateStringValue(acceptLang));
     }
     begin = end + 1;
     // 'begin >= acceptLanguages.length()' to guard against a value
     // ending with ','.
-    if (end == std::wstring::npos || begin >= acceptLanguages.length())
+    if (end == string16::npos || begin >= acceptLanguages.length())
       break;
   }
   if (static_cast<ListValue*>(result_.get())->GetSize() == 0) {

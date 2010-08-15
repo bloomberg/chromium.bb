@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/file_version_info.h"
 #include "base/i18n/time_formatting.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -138,21 +139,21 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   scoped_ptr<FileVersionInfo> version_info(chrome::GetChromeVersionInfo());
   DCHECK(version_info.get() != NULL);
 
-  std::wstring browser_version = version_info->file_version();
+  string16 browser_version = WideToUTF16Hack(version_info->file_version());
 
   string16 version_modifier = platform_util::GetVersionStringModifier();
   if (version_modifier.length()) {
-    browser_version += L" ";
-    browser_version += UTF16ToWide(version_modifier);
+    browser_version += ASCIIToUTF16(" ");
+    browser_version += version_modifier;
   }
 
 #if !defined(GOOGLE_CHROME_BUILD)
-  browser_version += L" (";
-  browser_version += version_info->last_change();
-  browser_version += L")";
+  browser_version += ASCIIToUTF16(" (");
+  browser_version += WideToUTF16Hack(version_info->last_change());
+  browser_version += ASCIIToUTF16(")");
 #endif
 
-  localized_strings->SetString(L"browser_version", browser_version);
+  localized_strings->SetString("browser_version", browser_version);
 
   // license
 
@@ -170,62 +171,68 @@ void AboutPageHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
   size_t link2_end = text.find(kEndLink, link2);
   DCHECK(link1_end != std::wstring::npos);
 
-  localized_strings->SetString(L"license_content_0", text.substr(0, link1));
-  localized_strings->SetString(L"license_content_1", StringSubRange(text,
-      link1_end + wcslen(kEndLinkOss), link2));
-  localized_strings->SetString(L"license_content_2",
-                              text.substr(link2_end + wcslen(kEndLinkOss)));
+  localized_strings->SetString("license_content_0",
+      WideToUTF16Hack(text.substr(0, link1)));
+  localized_strings->SetString("license_content_1",
+      WideToUTF16Hack(StringSubRange(text, link1_end + wcslen(kEndLinkOss),
+                                     link2)));
+  localized_strings->SetString("license_content_2",
+      WideToUTF16Hack(text.substr(link2_end + wcslen(kEndLinkOss))));
 
   // The Chromium link within the main text of the dialog.
   localized_strings->SetString(chromium_url_appears_first ?
-      L"license_link_content_0" : L"license_link_content_1",
-      StringSubRange(text, text.find(kBeginLinkChr) + wcslen(kBeginLinkChr),
-                     text.find(kEndLinkChr)));
+      "license_link_content_0" : "license_link_content_1",
+      WideToUTF16Hack(StringSubRange(text,
+                      text.find(kBeginLinkChr) + wcslen(kBeginLinkChr),
+                      text.find(kEndLinkChr))));
   localized_strings->SetString(chromium_url_appears_first ?
-      L"license_link_0" : L"license_link_1",
-      l10n_util::GetString(IDS_CHROMIUM_PROJECT_URL));
+      "license_link_0" : "license_link_1",
+      l10n_util::GetStringUTF16(IDS_CHROMIUM_PROJECT_URL));
 
   // The Open Source link within the main text of the dialog.
   localized_strings->SetString(chromium_url_appears_first ?
-      L"license_link_content_1" : L"license_link_content_0",
-      StringSubRange(text, text.find(kBeginLinkOss) + wcslen(kBeginLinkOss),
-                     text.find(kEndLinkOss)));
+      "license_link_content_1" : "license_link_content_0",
+      WideToUTF16Hack(StringSubRange(text,
+          text.find(kBeginLinkOss) + wcslen(kBeginLinkOss),
+          text.find(kEndLinkOss))));
   localized_strings->SetString(chromium_url_appears_first ?
-      L"license_link_1" : L"license_link_0", chrome::kAboutCreditsURL);
+      "license_link_1" : "license_link_0", chrome::kAboutCreditsURL);
 
   // webkit
 
-  localized_strings->SetString(L"webkit_version",
+  localized_strings->SetString("webkit_version",
                                webkit_glue::GetWebKitVersion());
 
   // javascript
 
 #if defined(CHROME_V8)
-  localized_strings->SetString(L"js_engine", "V8");
-  localized_strings->SetString(L"js_engine_version", v8::V8::GetVersion());
+  localized_strings->SetString("js_engine", "V8");
+  localized_strings->SetString("js_engine_version", v8::V8::GetVersion());
 #else
-  localized_strings->SetString(L"js_engine", "JavaScriptCore");
-  localized_strings->SetString(L"js_engine_version",
+  localized_strings->SetString("js_engine", "JavaScriptCore");
+  localized_strings->SetString("js_engine_version",
                                webkit_glue::GetWebKitVersion());
 #endif
 
   // user agent
 
-  localized_strings->SetString(L"user_agent_info",
+  localized_strings->SetString("user_agent_info",
                                webkit_glue::GetUserAgent(GURL()));
 
   // command line
 
 #if defined(OS_WIN)
-  localized_strings->SetString(L"command_line_info",
-      CommandLine::ForCurrentProcess()->command_line_string());
+  localized_strings->SetString("command_line_info",
+      WideToUTF16(CommandLine::ForCurrentProcess()->command_line_string()));
 #elif defined(OS_POSIX)
+  // TODO(viettrungluu): something horrible might happen if there are non-UTF-8
+  // arguments (since |SetString()| requires Unicode).
   std::string command_line = "";
   typedef std::vector<std::string> ArgvList;
   const ArgvList& argv = CommandLine::ForCurrentProcess()->argv();
   for (ArgvList::const_iterator iter = argv.begin(); iter != argv.end(); iter++)
     command_line += " " + *iter;
-  localized_strings->SetString(L"command_line_info", command_line);
+  localized_strings->SetString("command_line_info", command_line);
 #endif
 }
 
@@ -262,24 +269,24 @@ void AboutPageHandler::CheckNow(const Value* value) {
 
 void AboutPageHandler::UpdateStatus(
     const chromeos::UpdateLibrary::Status& status) {
-  std::wstring message;
+  string16 message;
   std::string image = "up-to-date";
   bool enabled = false;
 
   switch (status.status) {
     case chromeos::UPDATE_STATUS_IDLE:
       if (!sticky_) {
-        message = l10n_util::GetStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
-            l10n_util::GetString(IDS_PRODUCT_OS_NAME));
+        message = l10n_util::GetStringFUTF16(IDS_UPGRADE_ALREADY_UP_TO_DATE,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
         enabled = true;
       }
       break;
     case chromeos::UPDATE_STATUS_CHECKING_FOR_UPDATE:
-      message = l10n_util::GetString(IDS_UPGRADE_CHECK_STARTED);
+      message = l10n_util::GetStringUTF16(IDS_UPGRADE_CHECK_STARTED);
       sticky_ = false;
       break;
     case chromeos::UPDATE_STATUS_UPDATE_AVAILABLE:
-      message = l10n_util::GetString(IDS_UPDATE_AVAILABLE);
+      message = l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE);
       started_ = true;
       break;
     case chromeos::UPDATE_STATUS_DOWNLOADING:
@@ -287,21 +294,23 @@ void AboutPageHandler::UpdateStatus(
       int progress = static_cast<int>(status.download_progress * 100.0);
       if (progress != progress_) {
         progress_ = progress;
-        message = l10n_util::GetStringF(IDS_UPDATE_DOWNLOADING, progress_);
+        // TODO(viettrungluu): need UTF-16 convenience form to eliminate hack.
+        message = WideToUTF16Hack(
+            l10n_util::GetStringF(IDS_UPDATE_DOWNLOADING, progress_));
       }
       started_ = true;
     }
       break;
     case chromeos::UPDATE_STATUS_VERIFYING:
-      message = l10n_util::GetString(IDS_UPDATE_VERIFYING);
+      message = l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING);
       started_ = true;
       break;
     case chromeos::UPDATE_STATUS_FINALIZING:
-      message = l10n_util::GetString(IDS_UPDATE_FINALIZING);
+      message = l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING);
       started_ = true;
       break;
     case chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT:
-      message = l10n_util::GetString(IDS_UPDATE_COMPLETED);
+      message = l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED);
       image = "available";
       sticky_ = true;
       break;
@@ -312,7 +321,7 @@ void AboutPageHandler::UpdateStatus(
     // The error is only displayed if we were able to determine an
     // update was available.
       if (started_) {
-        message = l10n_util::GetString(IDS_UPDATE_ERROR);
+        message = l10n_util::GetStringUTF16(IDS_UPDATE_ERROR);
         image = "fail";
         enabled = true;
         sticky_ = true;

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/chrome_thread.h"
@@ -158,9 +157,9 @@ class PrefValueStoreTest : public testing::Test {
 
   DictionaryValue* CreateSampleDictValue() {
     DictionaryValue* sample_dict = new DictionaryValue();
-    sample_dict->SetBoolean(L"issample", true);
-    sample_dict->SetInteger(L"value", 4);
-    sample_dict->SetString(L"descr", L"Sample Test Dictionary");
+    sample_dict->SetBoolean("issample", true);
+    sample_dict->SetInteger("value", 4);
+    sample_dict->SetString("descr", "Sample Test Dictionary");
     return sample_dict;
   }
 
@@ -304,7 +303,7 @@ TEST_F(PrefValueStoreTest, SetUserPrefValue) {
   // Test that enforced values can not be set.
   ASSERT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomepage));
   // The Ownership is tranfered to |PrefValueStore|.
-  new_value = Value::CreateStringValue(L"http://www.youtube.com");
+  new_value = Value::CreateStringValue("http://www.youtube.com");
   pref_value_store_->SetUserPrefValue(prefs::kHomepage, new_value);
 
   ASSERT_TRUE(pref_value_store_->GetValue(prefs::kHomepage, &actual_value));
@@ -491,7 +490,7 @@ TEST_F(PrefValueStoreTest, TestRefreshPolicyPrefsCompletion) {
   // the test class are removed by the DummyStore
   scoped_ptr<DummyPrefStore> new_managed_store(new DummyPrefStore());
   DictionaryValue* dict = new DictionaryValue();
-  dict->SetString(L"homepage", L"some other changed homepage");
+  dict->SetString("homepage", "some other changed homepage");
   new_managed_store->set_prefs(dict);
   MockPolicyRefreshCallback callback;
   EXPECT_CALL(callback, DoCallback(expected_differing_paths_)).Times(1);
@@ -516,7 +515,7 @@ TEST_F(PrefValueStoreTest, TestRefreshPolicyPrefsCompletion) {
   // Test properties that are added to the recommended store.
   scoped_ptr<DummyPrefStore>  new_recommended_store(new DummyPrefStore());
   dict = new DictionaryValue();
-  dict->SetString(L"homepage", L"some other changed homepage 2");
+  dict->SetString("homepage", "some other changed homepage 2");
   new_recommended_store->set_prefs(dict);
   expected_differing_paths_.clear();
   expected_differing_paths_.push_back(std::string("homepage"));

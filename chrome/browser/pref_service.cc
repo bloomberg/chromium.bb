@@ -32,26 +32,26 @@ namespace {
 // the string value in the locale dll.  Because we control the values in a
 // locale dll, this should always return a Value of the appropriate type.
 Value* CreateLocaleDefaultValue(Value::ValueType type, int message_id) {
-  std::wstring resource_string = l10n_util::GetString(message_id);
+  std::string resource_string = l10n_util::GetStringUTF8(message_id);
   DCHECK(!resource_string.empty());
   switch (type) {
     case Value::TYPE_BOOLEAN: {
-      if (L"true" == resource_string)
+      if ("true" == resource_string)
         return Value::CreateBooleanValue(true);
-      if (L"false" == resource_string)
+      if ("false" == resource_string)
         return Value::CreateBooleanValue(false);
       break;
     }
 
     case Value::TYPE_INTEGER: {
       int val;
-      base::StringToInt(WideToUTF8(resource_string), &val);
+      base::StringToInt(resource_string, &val);
       return Value::CreateIntegerValue(val);
     }
 
     case Value::TYPE_REAL: {
       double val;
-      base::StringToDouble(WideToUTF8(resource_string), &val);
+      base::StringToDouble(resource_string, &val);
       return Value::CreateRealValue(val);
     }
 
