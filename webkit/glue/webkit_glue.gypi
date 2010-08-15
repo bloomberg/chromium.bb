@@ -379,7 +379,7 @@
           'sources/': [['exclude', 'plugin_(lib|list)_posix\\.cc$']],
           'link_settings': {
             'libraries': [
-              '$(SDKROOT)/QuartzCore.framework',
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
             ],
           },
         }],
