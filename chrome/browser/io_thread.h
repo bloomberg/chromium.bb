@@ -110,7 +110,6 @@ class IOThread : public BrowserProcessSubThread {
   // these observers would be used accidentally after we have begun to tear
   // down.
   chrome_browser_net::ConnectInterceptor* speculative_interceptor_;
-  net::HostResolver::Observer* prefetch_observer_;
   chrome_browser_net::Predictor* predictor_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThread);

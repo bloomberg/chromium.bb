@@ -131,6 +131,11 @@ class UrlInfo {
                            const bool brief,
                            std::string* output);
 
+  // For testing, and use in printing tables of info, we sometimes need to
+  // adjust the time manually.  Usually, this value is maintained by state
+  // transition, and this call is not made.
+  void set_time(const base::TimeTicks& time) { time_ = time; }
+
  private:
   base::TimeDelta GetDuration() {
     base::TimeTicks old_time = time_;

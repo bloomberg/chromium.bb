@@ -293,7 +293,7 @@ void UrlInfo::GetHtmlTable(const UrlInfoTable host_infos,
   }
   output->append("</table>");
 
-#ifdef DEBUG
+#ifndef NDEBUG
   StringAppendF(output,
                 "Prefetch Queue Durations: min=%d, avg=%d, max=%d<br><br>",
                 queue.minimum(), queue.average(), queue.maximum());

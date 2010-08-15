@@ -18,6 +18,11 @@ ConnectInterceptor::~ConnectInterceptor() {
 }
 
 URLRequestJob* ConnectInterceptor::MaybeIntercept(URLRequest* request) {
+  // Learn what URLs are likely to be needed during next startup.
+  // Pass actual URL, rather than WithEmptyPath, as we often won't need to do
+  // the canonicalization.
+  LearnAboutInitialNavigation(request->url());
+
   bool is_subresource = !(request->load_flags() & net::LOAD_MAIN_FRAME);
   if (is_subresource && !request->referrer().empty()) {
     // Learn about our referring URL, for use in the future.

@@ -20,7 +20,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/net/predictor.h"
-#include "net/base/host_resolver.h"
 
 class PrefService;
 
@@ -29,16 +28,12 @@ namespace chrome_browser_net {
 // Deletes |referral_list| when done.
 void FinalizePredictorInitialization(
     Predictor* global_predictor,
-    net::HostResolver::Observer* global_prefetch_observer,
     const std::vector<GURL>& urls_to_prefetch,
     ListValue* referral_list);
 
 // Free all resources allocated by FinalizePredictorInitialization. After that
 // you must not call any function from this file.
 void FreePredictorResources();
-
-// Creates the HostResolver observer for the prefetching system.
-net::HostResolver::Observer* CreateResolverObserver();
 
 //------------------------------------------------------------------------------
 // Global APIs relating to predictions in browser.
@@ -63,6 +58,10 @@ void PredictorGetHtmlInfo(std::string* output);
 // in advance some other URLs that will need to be connected to (via TCP and
 // sometimes SSL).  This function initiates those connections
 void PredictFrameSubresources(const GURL& url);
+
+// During startup, we learn what the first N urls visited are, and then resolve
+// the associated hosts ASAP during our next startup.
+void LearnAboutInitialNavigation(const GURL& url);
 
 // Call when we should learn from a navigation about a relationship to a
 // subresource target, and its containing frame, which was loaded as a referring

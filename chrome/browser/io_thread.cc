@@ -133,7 +133,6 @@ IOThread::IOThread()
     : BrowserProcessSubThread(ChromeThread::IO),
       globals_(NULL),
       speculative_interceptor_(NULL),
-      prefetch_observer_(NULL),
       predictor_(NULL) {}
 
 IOThread::~IOThread() {
@@ -216,13 +215,6 @@ void IOThread::CleanUp() {
   // Deletion will unregister this interceptor.
   delete speculative_interceptor_;
   speculative_interceptor_ = NULL;
-
-  // Not initialized in Init().  May not be initialized.
-  if (prefetch_observer_) {
-    globals_->host_resolver->RemoveObserver(prefetch_observer_);
-    delete prefetch_observer_;
-    prefetch_observer_ = NULL;
-  }
 
   // TODO(eroman): hack for http://crbug.com/15513
   if (globals_->host_resolver->GetAsHostResolverImpl()) {
@@ -335,15 +327,7 @@ void IOThread::InitNetworkPredictorOnIOThread(
   DCHECK(!speculative_interceptor_);
   speculative_interceptor_ = new chrome_browser_net::ConnectInterceptor;
 
-  // TODO(jar): We can completely replace prefetch_observer with
-  // speculative_interceptor.
-  // Prefetch_observer is used to monitor initial resolutions.
-  DCHECK(!prefetch_observer_);
-  prefetch_observer_ = chrome_browser_net::CreateResolverObserver();
-  globals_->host_resolver->AddObserver(prefetch_observer_);
-
-  FinalizePredictorInitialization(
-      predictor_, prefetch_observer_, startup_urls, referral_list);
+  FinalizePredictorInitialization(predictor_, startup_urls, referral_list);
 }
 
 void IOThread::ChangedToOnTheRecordOnIOThread() {

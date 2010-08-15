@@ -130,9 +130,10 @@ void Predictor::Resolve(const GURL& url,
 void Predictor::LearnFromNavigation(const GURL& referring_url,
                                     const GURL& target_url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(referring_url == referring_url.GetWithEmptyPath());
+  DCHECK(target_url == target_url.GetWithEmptyPath());
   if (referring_url.has_host() &&
       referring_url != target_url) {
-    DCHECK(referring_url == referring_url.GetWithEmptyPath());
     referrers_[referring_url].SuggestHost(target_url);
   }
 }
@@ -150,11 +151,12 @@ void Predictor::PredictFrameSubresources(const GURL& url) {
   Referrers::iterator it = referrers_.find(url);
   if (referrers_.end() == it)
     return;
+  // Add one pass through the message loop to allow current navigation to
+  // proceed.
   ChromeThread::PostTask(
       ChromeThread::IO,
       FROM_HERE,
-      NewRunnableMethod(this,
-                        &Predictor::PrepareFrameSubresources, url));
+      NewRunnableMethod(this, &Predictor::PrepareFrameSubresources, url));
 }
 
 void Predictor::PrepareFrameSubresources(const GURL& url) {
