@@ -21,3 +21,5 @@ view : view.o window.o wayland-glib.o cairo-util.o
 terminal : LDLIBS += -lutil
 view : CFLAGS += $(POPPLER_CFLAGS)
 view : LDLIBS += $(POPPLER_LIBS)
+
+install :

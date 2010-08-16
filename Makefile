@@ -1,6 +1,6 @@
 include config.mk
 
-subdirs = clients spec
+subdirs = clients spec data
 libs = libwayland-server.so libwayland-client.so
 
 all : $(libs) compositor subdirs-all scanner
@@ -60,10 +60,10 @@ scanner :					\
 
 scanner : LDLIBS += $(EXPAT_LIBS)
 
-subdirs-all subdirs-clean :
+subdirs-all subdirs-clean subdirs-install:
 	for f in $(subdirs); do $(MAKE) -C $$f $(@:subdirs-%=%); done
 
-install : $(libs) compositor
+install : $(libs) compositor subdirs-install
 	install -d $(libdir) $(libdir)/pkgconfig ${udev_rules_dir}
 	install $(libs) $(libdir)
 	install wayland-server.pc wayland-client.pc $(libdir)/pkgconfig

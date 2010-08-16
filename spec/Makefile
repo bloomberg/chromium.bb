@@ -7,3 +7,5 @@ main.pdf : main.tex
 
 clean :
 	rm -f main.pdf main.aux main.log
+
+install :

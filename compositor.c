@@ -24,7 +24,6 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <math.h>
 #include <time.h>
@@ -202,17 +201,17 @@ static const struct {
 	const char *filename;
 	int hotspot_x, hotspot_y;
 } pointer_images[] = {
-	{ "resources/bottom_left_corner.png",	 6, 30 },
-	{ "resources/bottom_right_corner.png",	28, 28 },
-	{ "resources/bottom_side.png",		16, 20 },
-	{ "resources/grabbing.png",		20, 17 },
-	{ "resources/left_ptr.png",		10,  5 },
-	{ "resources/left_side.png",		10, 20 },
-	{ "resources/right_side.png",		30, 19 },
-	{ "resources/top_left_corner.png",	 8,  8 },
-	{ "resources/top_right_corner.png",	26,  8 },
-	{ "resources/top_side.png",		18,  8 },
-	{ "resources/xterm.png",		15, 15 }
+	{ DATADIR "/wayland/bottom_left_corner.png",	 6, 30 },
+	{ DATADIR "/wayland/bottom_right_corner.png",	28, 28 },
+	{ DATADIR "/wayland/bottom_side.png",		16, 20 },
+	{ DATADIR "/wayland/grabbing.png",		20, 17 },
+	{ DATADIR "/wayland/left_ptr.png",		10,  5 },
+	{ DATADIR "/wayland/left_side.png",		10, 20 },
+	{ DATADIR "/wayland/right_side.png",		30, 19 },
+	{ DATADIR "/wayland/top_left_corner.png",	 8,  8 },
+	{ DATADIR "/wayland/top_right_corner.png",	26,  8 },
+	{ DATADIR "/wayland/top_side.png",		18,  8 },
+	{ DATADIR "/wayland/xterm.png",			15, 15 }
 };
 
 static void

@@ -4,7 +4,6 @@
 *.pc
 compositor
 *.jpg
-*.png
 *~
 aclocal.m4
 autom4te.cache/
