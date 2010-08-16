@@ -6,10 +6,12 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
@@ -117,6 +119,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_BLOCK_BUTTON));
   localized_strings->SetString("sessionException",
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON));
+  localized_strings->SetString("askException",
+      l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ASK_BUTTON));
   localized_strings->SetString("addExceptionRow",
       l10n_util::GetStringUTF16(IDS_EXCEPTIONS_ADD_BUTTON));
   localized_strings->SetString("removeExceptionRow",
@@ -131,6 +135,8 @@ void ContentSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_MODIFY_COOKIE_STORING_LABEL));
   localized_strings->SetString("cookies_allow",
       l10n_util::GetStringUTF16(IDS_COOKIES_ALLOW_RADIO));
+  localized_strings->SetString("cookies_ask",
+      l10n_util::GetStringUTF16(IDS_COOKIES_ASK_EVERY_TIME_RADIO));
   localized_strings->SetString("cookies_block",
       l10n_util::GetStringUTF16(IDS_COOKIES_BLOCK_RADIO));
   localized_strings->SetString("cookies_block_3rd_party",
@@ -232,10 +238,16 @@ void ContentSettingsHandler::Initialize() {
   dom_ui_->CallJavascriptFunction(
       L"ContentSettings.setInitialContentFilterSettingsValue", filter_settings);
 
-  scoped_ptr<Value> bool_value(Value::CreateBooleanValue(
+  scoped_ptr<Value> block_3rd_party(Value::CreateBooleanValue(
       settings_map->BlockThirdPartyCookies()));
   dom_ui_->CallJavascriptFunction(
-      L"ContentSettings.setBlockThirdPartyCookies", *bool_value.get());
+      L"ContentSettings.setBlockThirdPartyCookies", *block_3rd_party.get());
+
+  scoped_ptr<Value> show_cookies_prompt(Value::CreateBooleanValue(
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCookiePrompt)));
+  dom_ui_->CallJavascriptFunction(
+      L"ContentSettings.setCookiesPromptEnabled", *show_cookies_prompt.get());
 
   UpdateAllExceptionsViewsFromModel();
   notification_registrar_.Add(

@@ -10,13 +10,16 @@ cr.define('options.contentSettings', function() {
   /**
    * Creates a new exceptions list item.
    * @param {string} contentType The type of the list.
+   * @param {boolean} enableAskOption Whether to show an 'ask every time'
+   *     option in the select.
    * @param {Array} exception A pair of the form [filter, setting].
    * @constructor
    * @extends {cr.ui.ListItem}
    */
-  function ExceptionsListItem(contentType, exception) {
+  function ExceptionsListItem(contentType, enableAskOption, exception) {
     var el = cr.doc.createElement('li');
     el.contentType = contentType;
+    el.enableAskOption = enableAskOption;
     el.dataItem = exception;
     el.__proto__ = ExceptionsListItem.prototype;
     el.decorate();
@@ -53,9 +56,13 @@ cr.define('options.contentSettings', function() {
       var optionAllow = cr.doc.createElement('option');
       optionAllow.textContent = templateData.allowException;
       select.appendChild(optionAllow);
-      var optionBlock = cr.doc.createElement('option');
-      optionBlock.textContent = templateData.blockException;
-      select.appendChild(optionBlock);
+
+      if (this.enableAskOption) {
+        var optionAsk = cr.doc.createElement('option');
+        optionAsk.textContent = templateData.askException;
+        select.appendChild(optionAsk);
+        this.optionAsk = optionAsk;
+      }
 
       if (this.contentType == 'cookies') {
         var optionSession = cr.doc.createElement('option');
@@ -63,6 +70,10 @@ cr.define('options.contentSettings', function() {
         select.appendChild(optionSession);
         this.optionSession = optionSession;
       }
+
+      var optionBlock = cr.doc.createElement('option');
+      optionBlock.textContent = templateData.blockException;
+      select.appendChild(optionBlock);
 
       this.appendChild(select);
       select.className = 'exceptionSetting hidden';
@@ -171,6 +182,10 @@ cr.define('options.contentSettings', function() {
         return templateData.allowException;
       else if (setting == 'block')
         return templateData.blockException;
+      else if (setting == 'ask')
+        return templateData.askException;
+      else if (setting == 'session')
+        return templateData.sessionException;
     },
 
     /**
@@ -208,8 +223,10 @@ cr.define('options.contentSettings', function() {
         this.optionAllow.selected = true;
       else if (this.setting == 'block')
         this.optionBlock.selected = true;
-      else if (this.setting == 'session')
+      else if (this.setting == 'session' && this.optionSession)
         this.optionSession.selected = true;
+      else if (this.setting == 'ask' && this.optionAsk)
+        this.optionAsk.selected = true;
     },
 
     /**
@@ -234,6 +251,7 @@ cr.define('options.contentSettings', function() {
       var optionAllow = this.optionAllow;
       var optionBlock = this.optionBlock;
       var optionSession = this.optionSession;
+      var optionAsk = this.optionAsk;
 
       // Check that we have a valid pattern and if not we do not change the
       // editing mode.
@@ -271,8 +289,10 @@ cr.define('options.contentSettings', function() {
           newSetting = 'allow';
         else if (optionBlock.selected)
           newSetting = 'block';
-        else if (optionSession.selected)
+        else if (optionSession && optionSession.selected)
           newSetting = 'session';
+        else if (optionAsk && optionAsk.selected)
+          newSetting = 'ask';
 
         // Empty edit - do nothing.
         if (pattern == newPattern && newSetting == this.setting)
@@ -282,7 +302,7 @@ cr.define('options.contentSettings', function() {
         this.setting = newSetting;
         settingLabel.textContent = this.settingForDisplay();
 
-        var contentType = this.parentNode.contentType;
+        var contentType = this.contentType;
 
         if (pattern != this.pattern)
           chrome.send('removeExceptions', [contentType, pattern]);
@@ -309,6 +329,9 @@ cr.define('options.contentSettings', function() {
       List.prototype.decorate.call(this);
 
       this.dataModel = new ArrayDataModel([]);
+
+      // Whether the exceptions in this list allow an 'Ask every time' option.
+      this.enableAskOption = false;
     },
 
     /**
@@ -316,7 +339,9 @@ cr.define('options.contentSettings', function() {
      * @param {Object} entry The element from the data model for this row.
      */
     createItem: function(entry) {
-      return new ExceptionsListItem(this.contentType, entry);
+      return new ExceptionsListItem(this.contentType,
+                                    this.enableAskOption,
+                                    entry);
     },
 
     /**
