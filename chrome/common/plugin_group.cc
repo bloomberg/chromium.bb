@@ -69,6 +69,9 @@ static const PluginGroupDefinition kGroupDefinitions[] = {};
 #endif
 
 /*static*/
+std::set<string16>* PluginGroup::policy_disabled_plugins_;
+
+/*static*/
 const PluginGroupDefinition* PluginGroup::GetPluginGroupDefinitions() {
   return kGroupDefinitions;
 }
