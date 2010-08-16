@@ -914,11 +914,23 @@ input_device_attach(struct wl_client *client,
 	    device->pointer_focus->base.client != client)
 		return;
 
+	if (buffer == NULL) {
+		wlsc_input_device_set_pointer_image(device,
+						    WLSC_POINTER_LEFT_PTR);
+		return;
+	}
+
 	glBindTexture(GL_TEXTURE_2D, device->sprite->texture);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
 	device->sprite->visual = buffer->visual;
 	device->hotspot_x = x;
 	device->hotspot_y = y;
+
+	device->sprite->x = device->x - device->hotspot_x;
+	device->sprite->y = device->y - device->hotspot_y;
+	wlsc_surface_update_matrix(device->sprite);
+
+	wlsc_compositor_schedule_repaint(device->ec);
 }
 
 const static struct wl_input_device_interface input_device_interface = {
