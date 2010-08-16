@@ -154,9 +154,8 @@ pp::Var ScriptableHandlePpapi::Invoke(CallType call_type,
   pp::Var retvar;
   if (output_length > 0) {
     assert(call_type != PROPERTY_SET);  // expect no outputs for "set"
-    // TODO(polina): Is it safe to assume that handle() here is always a plugin?
     retvar = NaClSrpcArgToPPVar(
-        outputs[0], static_cast<PluginPpapi*>(handle()), exception);
+        outputs[0], static_cast<PluginPpapi*>(handle()->plugin()), exception);
     if (output_length > 1) {  // TODO(polina): use an array for multiple outputs
       NACL_UNIMPLEMENTED();
     }
