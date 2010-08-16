@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveViewSourceHTMLOnly) {
       full_file_name));
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FLAKY_SaveCompleteHTML) {
   FilePath file_name(FILE_PATH_LITERAL("b.htm"));
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
       FilePath(kTestDir).Append(file_name));
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, NoSave) {
   EXPECT_FALSE(browser()->command_updater()->IsCommandEnabled(IDC_SAVE_PAGE));
 }
 
-IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
+IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FLAKY_FileNameFromPageTitle) {
   FilePath file_name(FILE_PATH_LITERAL("b.htm"));
 
   GURL url = URLRequestMockHTTPJob::GetMockUrl(
