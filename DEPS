@@ -55,7 +55,7 @@ deps = {
     "http://v8.googlecode.com/svn/trunk@5242",
 
   "src/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" +
+    "svn://svn.chromium.org/native_client/trunk/src/native_client@" +
     Var("nacl_revision"),
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client/tests/prebuilt@" +
@@ -204,7 +204,7 @@ deps_os = {
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
 
     "src/third_party/mingw-w64/mingw/bin":
-      ("http://nativeclient.googlecode.com/svn/trunk/src/third_party/mingw-w64/mingw/bin@" +
+      ("svn://svn.chromium.org/native_client/trunk/src/third_party/mingw-w64/mingw/bin@" +
        Var("nacl_revision")),
 
     "src/rlz":
