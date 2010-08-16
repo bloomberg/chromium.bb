@@ -31,7 +31,6 @@
 #include <linux/input.h>
 
 #include "wayland-server-protocol.h"
-#include "cairo-util.h"
 #include "compositor.h"
 
 const char *option_background = "background.jpg";

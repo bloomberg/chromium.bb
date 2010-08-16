@@ -46,7 +46,7 @@
 #include "wayland-util.h"
 #include "wayland-client.h"
 #include "wayland-glib.h"
-#include "../cairo-util.h"
+#include "cairo-util.h"
 
 #include "window.h"
 
