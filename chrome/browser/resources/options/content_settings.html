@@ -26,7 +26,7 @@
 
   <!-- Cookie filter tab contents -->
   <div id="cookiesFilterTab" class="subpages-tab-contents">
-    <span i18n-content="cookies_modify"></span>
+    <h4 i18n-content="cookies_modify" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
       <td class="option-name"><label>
@@ -40,13 +40,9 @@
          <span i18n-content="cookies_block"></span>
       </label></td>
     </tr>
-    <tr>
-      <td class="option-name"><button id="cookies-exceptions-button"
-          i18n-content="content_exceptions"></button>
-      </td>
-    </tr>
     </table>
 
+    <div class="exceptionsLink" i18n-content="content_exceptions"></div>
     <div id="cookiesExceptionsArea" contentType="cookies">
       <list id="cookiesExceptionsList"></list>
     </div>
@@ -71,8 +67,8 @@
       </td>
     </tr>
     <tr>
-      <td><a i18n-values="href:flash_storage_url">
-        <span i18n-content="flash_storage_settings"></span></a>
+      <td><a i18n-values="href:flash_storage_url"
+             i18n-content="flash_storage_settings"></a>
       </td>
     </tr>
     </table>
@@ -80,7 +76,7 @@
 
   <!-- Image filter tab contents -->
   <div id="imagesFilterTab" class="subpages-tab-contents">
-    <span i18n-content="images_setting"></span>
+    <h4 i18n-content="images_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
       <td class="option-name"><label>
@@ -88,19 +84,9 @@
           <span i18n-content="images_allow"></span>
       </label></td>
     </tr>
-    <tr>
-      <td class="option-name"><label>
-        <input type="radio" name="images" value="block">
-          <span i18n-content="images_block"></span>
-      </label></td>
-    </tr>
-    <tr>
-      <td class="option-name"><button id="images-exceptions-button"
-          i18n-content="content_exceptions"></button>
-      </td>
-    </tr>
     </table>
 
+    <div class="exceptionsLink" i18n-content="content_exceptions"></div>
     <div id="imagesExceptionsArea" contentType="images">
       <list id="imagesExceptionsList"></list>
     </div>
@@ -116,19 +102,9 @@
            <span i18n-content="javascript_allow"></span>
        </label></td>
     </tr>
-    <tr>
-       <td class="option-name"><label>
-         <input type="radio" name="javascript" value="block">
-           <span i18n-content="javascript_block"></span>
-       </label></td>
-    </tr>
-    <tr>
-       <td class="option-name"><button id="javascript-exceptions-button"
-           i18n-content="content_exceptions"></button>
-       </td>
-    </tr>
     </table>
 
+    <div class="exceptionsLink" i18n-content="content_exceptions"></div>
     <div id="javascriptExceptionsArea" contentType="javascript">
       <list id="javascriptExceptionsList"></list>
     </div>
@@ -136,7 +112,7 @@
 
   <!-- Plug-ins filter tab contents -->
   <div id="pluginsFilterTab" class="subpages-tab-contents">
-    <span i18n-content="plugins_setting"></span>
+    <h4 i18n-content="plugins_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
        <td class="option-name"><label>
@@ -150,26 +126,19 @@
            <span i18n-content="plugins_block"></span>
        </label></td>
     </tr>
-    <tr>
-       <td class="option-name"><button id="plugins-exceptions-button"
-           i18n-content="content_exceptions"></button>
-       </td>
-    </tr>
-    <tr>
-       <td><a i18n-values="href:chrome_plugin_url">
-         <span i18n-content="disable_individual_plugins"></span></a>
-       </td>
-    </tr>
     </table>
 
+    <div class="exceptionsLink" i18n-content="content_exceptions"></div>
     <div id="pluginsExceptionsArea" contentType="plugins">
       <list id="pluginsExceptionsList"></list>
     </div>
+    <a i18n-values="href:chrome_plugin_url"
+       i18n-content="disable_individual_plugins"></a>
   </div>
 
   <!-- Pop-ups filter tab contents -->
   <div id="popupsFilterTab" class="subpages-tab-contents">
-    <span i18n-content="popups_setting"></span>
+    <h4 i18n-content="popups_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
        <td class="option-name"><label>
@@ -190,6 +159,7 @@
     </tr>
     </table>
 
+    <div class="exceptionsLink" i18n-content="content_exceptions"></div>
     <div id="popupsExceptionsArea" contentType="popups">
       <list id="popupsExceptionsList"></list>
     </div>
@@ -197,7 +167,7 @@
 
   <!-- Location filter tab contents -->
   <div id="locationFilterTab" class="subpages-tab-contents">
-    <span i18n-content="location_setting"></span>
+    <h4 i18n-content="location_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
        <td class="option-name"><label>
@@ -224,6 +194,7 @@
     </tr>
     </table>
 
+    <div class="exceptionsLink" i18n-content="content_exceptions"></div>
     <div id="locationExceptionsArea" contentType="location">
       <list id="locationExceptionsList"></list>
     </div>
@@ -231,7 +202,7 @@
 
   <!-- Notifications filter tab contents -->
   <div id="notificationsFilterTab" class="subpages-tab-contents">
-    <span i18n-content="notifications_setting"></span>
+    <h4 i18n-content="notifications_setting" class="contentSettingsHeader"></h4>
     <table class="option-control-table">
     <tr>
        <td class="option-name"><label>
@@ -258,6 +229,7 @@
     </tr>
     </table>
 
+    <div class="exceptionsLink" i18n-content="content_exceptions"></div>
     <div id="notificationsExceptionsArea" contentType="notifications">
       <list id="notificationsExceptionsList"></list>
     </div>

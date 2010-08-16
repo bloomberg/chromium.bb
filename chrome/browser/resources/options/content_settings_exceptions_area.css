@@ -11,7 +11,3 @@ found in the LICENSE file.
 .exceptionSetting {
   float: right;
 }
-
-#imagesExceptionsArea :invalid {
-  background-color: pink;
-}

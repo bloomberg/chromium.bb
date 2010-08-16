@@ -427,6 +427,8 @@ cr.define('options.contentSettings', function() {
       };
 
       this.updateButtonSensitivity();
+
+      this.classList.add('hidden');
     },
 
     /**

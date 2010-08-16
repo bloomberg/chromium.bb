@@ -29,11 +29,26 @@ cr.define('options', function() {
 
       chrome.send('getContentFilterSettings');
 
-      // Cookies filter page ---------------------------------------------------
-      $('cookies-exceptions-button').onclick = function(event) {
-        // TODO(estade): show exceptions page.
-      };
+      // Exceptions lists. -----------------------------------------------------
+      function handleExceptionsLinkClickEvent(event) {
+        var exceptionsArea = event.target.parentNode.
+            querySelector('div[contentType]');
+        exceptionsArea.classList.toggle('hidden');
+        exceptionsArea.querySelector('list').redraw();
+        return false;
+      }
+      var exceptionsLinks =
+          this.pageDiv.querySelectorAll('.exceptionsLink');
+      for (var i = 0; i < exceptionsLinks.length; i++) {
+        exceptionsLinks[i].onclick = handleExceptionsLinkClickEvent;
+      }
 
+      var exceptionsAreas = this.pageDiv.querySelectorAll('div[contentType]');
+      for (var i = 0; i < exceptionsAreas.length; i++) {
+        options.contentSettings.ExceptionsArea.decorate(exceptionsAreas[i]);
+      }
+
+      // Cookies filter page ---------------------------------------------------
       $('block-third-party-cookies').onclick = function(event) {
         chrome.send('setAllowThirdPartyCookies',
                     [String($('block-third-party-cookies').checked)]);
@@ -42,19 +57,6 @@ cr.define('options', function() {
       $('show-cookies-button').onclick = function(event) {
         // TODO(estade): show cookies and other site data page.
       };
-
-      // Images filter page ----------------------------------------------------
-      $('images-exceptions-button').onclick = function(event) {
-        // TODO(estade): show a dialog.
-        // TODO(estade): remove this hack.
-        imagesExceptionsList.redraw();
-      };
-
-      var exceptionsAreas =
-          document.querySelectorAll('#contentSettingsPage div[contentType]');
-      for (var i = 0; i < exceptionsAreas.length; i++) {
-        options.contentSettings.ExceptionsArea.decorate(exceptionsAreas[i]);
-      }
     },
   };
 
