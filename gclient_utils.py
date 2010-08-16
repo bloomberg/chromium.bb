@@ -280,6 +280,11 @@ def SubprocessCallAndFilter(command,
       shell=(sys.platform == 'win32'), stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT)
 
+  # Do a flush of sys.stdout before we begin reading from the subprocess's
+  # stdout.
+  last_flushed_at = time.time()
+  sys.stdout.flush()
+
   # Also, we need to forward stdout to prevent weird re-ordering of output.
   # This has to be done on a per byte basis to make sure it is not buffered:
   # normally buffering is done for each line, but if svn requests input, no
@@ -296,9 +301,16 @@ def SubprocessCallAndFilter(command,
         sys.stdout.write(in_byte)
       if in_byte != '\n':
         in_line += in_byte
-    if in_byte == '\n' and filter_fn:
-      filter_fn(in_line)
+    if in_byte == '\n':
+      if filter_fn:
+        filter_fn(in_line)
       in_line = ''
+      # Flush at least 10 seconds between line writes.  We wait at least 10
+      # seconds to avoid overloading the reader that called us with output,
+      # which can slow busy readers down.
+      if (time.time() - last_flushed_at) > 10:
+        last_flushed_at = time.time()
+        sys.stdout.flush()
     in_byte = kid.stdout.read(1)
   rv = kid.wait()
 
