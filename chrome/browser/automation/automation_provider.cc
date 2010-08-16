@@ -2915,6 +2915,7 @@ void AutomationProvider::SelectTranslateOption(Browser* browser,
     // This is the function called when an infobar is dismissed or when the
     // user clicks the 'Nope' translate button.
     translate_bar->TranslationDeclined();
+    tab_contents->RemoveInfoBar(translate_bar);
     reply.SendSuccess(NULL);
   } else {
     reply.SendError("Invalid string found for option.");

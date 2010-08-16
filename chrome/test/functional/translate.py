@@ -83,6 +83,7 @@ class TranslateTest(pyauto.PyUITest):
     """Tests that a page isn't translated if the user declines translate."""
     self._NavigateAndWaitForBar(self._GetDefaultSpanishURL())
     self.SelectTranslateOption('decline_translation')
+    self.WaitForInfobarCount(0)
     translate_info = self.GetTranslateInfo()
     self.assertEqual(self.spanish, translate_info['original_language'])
     self.assertFalse(translate_info['page_translated'])
