@@ -250,6 +250,12 @@ cr.define('options', function() {
     updateSelectedLanguageName_: function(languageCode) {
       var languageDisplayName = LanguageList.getDisplayNameFromLanguageCode(
           languageCode);
+      var languageNativeDisplayName =
+          LanguageList.getNativeDisplayNameFromLanguageCode(languageCode);
+      // If the native name is different, add it.
+      if (languageDisplayName != languageNativeDisplayName) {
+        languageDisplayName += ' - ' + languageNativeDisplayName;
+      }
       // Update the currently selected language name.
       $('language-options-language-name').textContent = languageDisplayName;
     },

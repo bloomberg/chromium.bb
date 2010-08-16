@@ -35,6 +35,25 @@ cr.define('options.language', function() {
     return this.languageCodeToDisplayName_[languageCode];
   }
 
+  /**
+   * Gets native display name from the given language code.
+   * @param {string} languageCode Language code (ex. "fr").
+   */
+  LanguageList.getNativeDisplayNameFromLanguageCode = function(languageCode) {
+    // Build the language code to display name dictionary at first time.
+    if (!this.languageCodeToNativeDisplayName_) {
+      this.languageCodeToNativeDisplayName_ = {};
+      var languageList = templateData.languageList;
+      for (var i = 0; i < languageList.length; i++) {
+        var language = languageList[i];
+        this.languageCodeToNativeDisplayName_[language.code] =
+            language.nativeDisplayName;
+      }
+    }
+
+    return this.languageCodeToNativeDisplayName_[languageCode];
+  }
+
   LanguageList.prototype = {
     __proto__: List.prototype,
 
@@ -66,10 +85,13 @@ cr.define('options.language', function() {
     createItem: function(languageCode) {
       var languageDisplayName =
           LanguageList.getDisplayNameFromLanguageCode(languageCode);
+      var languageNativeDisplayName =
+          LanguageList.getNativeDisplayNameFromLanguageCode(languageCode);
       return new ListItem({
         label: languageDisplayName,
         draggable: true,
-        languageCode: languageCode
+        languageCode: languageCode,
+        title: languageNativeDisplayName  // Show native name as tooltip.
       });
     },
 
