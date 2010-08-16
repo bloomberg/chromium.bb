@@ -4,7 +4,7 @@
 
 // This is the browser side of the resource dispatcher, it receives requests
 // from the child process (i.e. [Renderer, Plugin, Worker]ProcessHost), and
-// dispatches them to URLRequests. It then fowards the messages from the
+// dispatches them to URLRequests. It then forwards the messages from the
 // URLRequests back to the correct process for handling.
 //
 // See http://dev.chromium.org/developers/design-documents/multi-process-resource-loading

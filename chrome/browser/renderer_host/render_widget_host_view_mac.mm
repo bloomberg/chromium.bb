@@ -33,6 +33,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webmenurunner_mac.h"
 
 using WebKit::WebInputEvent;

@@ -7,7 +7,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/download/download_file.h"
+#include "chrome/browser/download/download_types.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/ssl/ssl_add_cert_handler.h"
@@ -17,6 +17,8 @@
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_request.h"
+#include "net/url_request/url_request_status.h"
 
 X509UserCertResourceHandler::X509UserCertResourceHandler(
     ResourceDispatcherHost* host, URLRequest* request,
@@ -110,6 +112,9 @@ bool X509UserCertResourceHandler::OnResponseCompleted(
 }
 
 void X509UserCertResourceHandler::OnRequestClosed() {
+}
+
+X509UserCertResourceHandler::~X509UserCertResourceHandler() {
 }
 
 void X509UserCertResourceHandler::AssembleResource() {

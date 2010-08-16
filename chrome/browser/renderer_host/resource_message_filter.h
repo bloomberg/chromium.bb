@@ -24,10 +24,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/common/window_container_type.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "net/base/cookie_store.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
@@ -59,6 +57,10 @@ class DispatcherHost;
 
 namespace file_util {
 struct FileInfo;
+}
+
+namespace net {
+class CookieStore;
 }
 
 namespace printing {
@@ -510,9 +512,7 @@ class GetCookiesCompletion : public net::CompletionCallback {
     return render_view_id_;
   }
 
-  void set_cookie_store(net::CookieStore* cookie_store) {
-    cookie_store_ = cookie_store;
-  }
+  void set_cookie_store(net::CookieStore* cookie_store);
 
   net::CookieStore* cookie_store() {
     return cookie_store_.get();

@@ -16,6 +16,7 @@
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "gfx/native_widget_types.h"
+#include "gfx/rect.h"
 #include "webkit/glue/plugins/gtk_plugin_container_manager.h"
 #include "webkit/glue/webcursor.h"
 

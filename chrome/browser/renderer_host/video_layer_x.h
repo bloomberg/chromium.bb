@@ -7,6 +7,7 @@
 #pragma once
 
 #include "app/x11_util.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/video_layer.h"
 #include "gfx/rect.h"
 

@@ -22,7 +22,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
-#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class FilePath;
@@ -53,6 +52,7 @@ struct FormData;
 class FormField;
 struct PasswordForm;
 struct PasswordFormFillData;
+struct WebAccessibility;
 struct WebApplicationInfo;
 }  // namespace webkit_glue
 

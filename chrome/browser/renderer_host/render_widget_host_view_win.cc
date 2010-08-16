@@ -45,6 +45,8 @@
 #include "views/widget/widget_win.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
+#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor.h"
 
 using base::TimeDelta;

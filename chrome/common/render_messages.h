@@ -43,6 +43,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/appcache/appcache_interfaces.h"  // enum appcache::Status
 #include "webkit/glue/password_form.h"            // used in struct
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webpreferences.h"           // used in struct
@@ -66,7 +67,6 @@ class FormField;
 struct PasswordFormFillData;
 struct WebAccessibility;
 struct WebCookie;
-struct WebPluginGeometry;
 }
 
 namespace webkit_glue {

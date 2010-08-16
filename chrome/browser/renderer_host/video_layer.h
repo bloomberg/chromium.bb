@@ -7,7 +7,6 @@
 #pragma once
 
 #include "app/surface/transport_dib.h"
-#include "base/scoped_ptr.h"
 #include "gfx/size.h"
 
 class RenderProcessHost;

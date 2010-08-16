@@ -296,7 +296,7 @@ struct RunnableMethodTraits {
 //                    want to call
 // Param            - the parameter(s) to the method, possibly packed as a Tuple
 // A                - the first parameter (if any) to the method
-// B                - the second parameter (if any) to the mathod
+// B                - the second parameter (if any) to the method
 //
 // Put these all together and you get an object that can call a method whose
 // signature is:

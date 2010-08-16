@@ -91,6 +91,7 @@
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webkit_glue.h"
 
+using net::CookieStore;
 using WebKit::WebCache;
 
 namespace {
@@ -1679,4 +1680,8 @@ void GetCookiesCompletion::RunWithParams(const Tuple1<int>& params) {
     filter_->Send(reply_msg_);
     delete this;
   }
+}
+
+void GetCookiesCompletion::set_cookie_store(CookieStore* cookie_store) {
+  cookie_store_ = cookie_store;
 }

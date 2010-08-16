@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
+#include "net/base/io_buffer.h"
 #include "net/http/http_response_headers.h"
 
 SyncResourceHandler::SyncResourceHandler(

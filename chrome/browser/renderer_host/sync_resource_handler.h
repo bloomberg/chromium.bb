@@ -11,7 +11,10 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/resource_response.h"
-#include "net/base/io_buffer.h"
+
+namespace net {
+class IOBuffer;
+}
 
 // Used to complete a synchronous resource request in response to resource load
 // events from the resource dispatcher host.

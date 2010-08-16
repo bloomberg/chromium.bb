@@ -38,6 +38,8 @@
 #include "chrome/common/native_web_keyboard_event.h"
 #include "gfx/gtk_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
+#include "webkit/glue/plugins/webplugin.h"
+#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webcursor_gtk_data.h"
 
 #if defined(OS_CHROMEOS)

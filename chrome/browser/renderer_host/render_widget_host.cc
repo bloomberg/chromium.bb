@@ -18,8 +18,11 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/video_layer.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
+#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webcursor.h"
 
 #if defined(TOOLKIT_VIEWS)

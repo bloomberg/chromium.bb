@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 

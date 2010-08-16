@@ -29,6 +29,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/bindings_policy.h"
+#include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -48,6 +49,7 @@
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form_dom_manager.h"
+#include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
 
 #if defined(OS_WIN)

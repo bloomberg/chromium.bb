@@ -11,13 +11,10 @@
 #endif
 
 #include "app/surface/transport_dib.h"
-#include "base/shared_memory.h"
 #include "gfx/native_widget_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextInputType.h"
-#include "webkit/glue/plugins/webplugin.h"
-#include "webkit/glue/webaccessibility.h"
 
 namespace gfx {
 class Rect;
@@ -33,6 +30,11 @@ class RenderWidgetHost;
 class VideoLayer;
 class WebCursor;
 struct WebMenuItem;
+
+namespace webkit_glue {
+struct WebAccessibility;
+struct WebPluginGeometry;
+}
 
 // RenderWidgetHostView is an interface implemented by an object that acts as
 // the "View" portion of a RenderWidgetHost. The RenderWidgetHost and its
