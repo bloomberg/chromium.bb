@@ -399,6 +399,10 @@ bool Plugin::Init(BrowserInterface* browser_interface,
   // Set up the scriptable methods for the plugin.
   LoadMethods();
 
+// Firefox allows us to call NPN_GetUrlNotify during initialization, so if the
+// "src" property has not been specified, we choose a path from the "nexes"
+// list here and start downloading the right nexe immediately.
+#if defined(NACL_STANDALONE)
   // If the <embed src='...'> attr was defined, the browser would have
   // implicitly called GET on it, which calls Load() and set_logical_url().
   // In the absence of this attr, we use the "nexes" attribute if present.
@@ -408,6 +412,7 @@ bool Plugin::Init(BrowserInterface* browser_interface,
       SetNexesPropertyImpl(nexes_attr);
     }
   }
+#endif
 
   PLUGIN_PRINTF(("Plugin::Init (return 1)\n"));
   // Return success.

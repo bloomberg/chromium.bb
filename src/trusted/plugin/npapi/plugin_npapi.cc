@@ -170,6 +170,21 @@ NPError PluginNpapi::SetWindow(NPWindow* window) {
   NPError ret = NPERR_GENERIC_ERROR;
   PLUGIN_PRINTF(("PluginNpapi::SetWindow(%p, %p)\n", static_cast<void* >(this),
                  static_cast<void*>(window)));
+
+// NOTE(gregoryd): Chrome does not allow us to call NPN_GetUrlNotify during
+// initialization, but does call SetWindows afterwards, so we use this call
+// to trigger the download if the src property hasn't been specified.
+#if !defined(NACL_STANDALONE)
+  // If the <embed src='...'> attr was defined, the browser would have
+  // implicitly called GET on it, which calls Load() and set_logical_url().
+  // In the absence of this attr, we use the "nexes" attribute if present.
+  if (logical_url() == NULL) {
+    const char* nexes_attr = LookupArgument("nexes");
+    if (nexes_attr != NULL) {
+      SetNexesPropertyImpl(nexes_attr);
+    }
+  }
+#endif
   if (NULL == module_) {
     if (video() && video()->SetWindow(window)) {
         ret = NPERR_NO_ERROR;
