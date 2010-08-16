@@ -6,7 +6,7 @@
 # Config file for various nacl compilation scenarios
 #
 import os
-
+import sys
 
 TOOLCHAIN_CONFIGS = {}
 
@@ -19,9 +19,15 @@ class ToolchainConfig(object):
     self._tools_needed = tools_needed
     self._extra = extra
 
+  def Append(self, tag, value):
+    assert tag in self._extra
+    self._extra[tag] = self._extra[tag] + ' ' + value + ' '
+
   def SanityCheck(self):
     for t in self._tools_needed:
-      assert os.access(t, os.R_OK | os.X_OK)
+      if not os.access(t, os.R_OK | os.X_OK):
+        print "ERROR: missing tool ", t
+        sys.exit(-1)
 
   def GetDescription(self):
     return self._desc
@@ -52,34 +58,43 @@ SEL_LDR_X32 = 'scons-out/opt-linux-x86-32/staging/sel_ldr'
 
 SEL_LDR_X64 = 'scons-out/opt-linux-x86-64/staging/sel_ldr'
 
-NACL_GCC_X32 = 'toolchain/linux_x86/sdk/nacl-sdk/bin/nacl-gcc'
+NACL_GCC_X32 = 'toolchain/linux_x86/bin/nacl-gcc'
 
-NACL_GCC_X64 = 'toolchain/linux_x86/sdk/nacl-sdk/bin/nacl64-gcc'
+NACL_GCC_X64 = 'toolchain/linux_x86/bin/nacl64-gcc'
 
 GLOBAL_CFLAGS = '-DSTACK_SIZE=0x40000 -DNO_TRAMPOLINES -DNO_LABEL_VALUES'
 ######################################################################
 # LOCAL GCC
 ######################################################################
-COMMANDS_local_gcc_x32_O0 = [
+COMMANDS_local_gcc = [
     ('compile',
      '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe',
      ),
     ]
 
-TOOLCHAIN_CONFIGS['local_gcc_x32_O0'] = ToolchainConfig(
-    'local gcc [x86-32]',
-    commands=COMMANDS_local_gcc_x32_O0,
+TOOLCHAIN_CONFIGS['local_gcc_x8632_O0'] = ToolchainConfig(
+    desc='local gcc [x86-32]',
+    commands=COMMANDS_local_gcc,
     tools_needed=[LOCAL_GCC],
     CC = LOCAL_GCC,
     CFLAGS = '-O0 -m32 -static ' + GLOBAL_CFLAGS)
 
+TOOLCHAIN_CONFIGS['local_gcc_x8664_O0'] = ToolchainConfig(
+    desc='local gcc [x86-64]',
+    commands=COMMANDS_local_gcc,
+    tools_needed=[LOCAL_GCC],
+    CC = LOCAL_GCC,
+    CFLAGS = '-O0 -m64 -static ' + GLOBAL_CFLAGS)
+
 ######################################################################
 # CS ARM
 ######################################################################
+# NOTE: you may need this if you see mmap: Permission denied
+# "echo 0 > /proc/sys/vm/mmap_min_addr"
+GCC_CS_ARM = ('toolchain/linux_arm-trusted/arm-2009q3/' +
+              'bin/arm-none-linux-gnueabi-gcc')
 
-GCC_CS_ARM = 'toolchain/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc'
-
-COMMANDS_gcc_cs_arm_O0 = [
+COMMANDS_gcc_cs_arm = [
     ('compile',
      '%(CC)s %(src)s %(CFLAGS)s -o %(tmp)s.exe',
      ),
@@ -89,13 +104,20 @@ COMMANDS_gcc_cs_arm_O0 = [
     ]
 
 TOOLCHAIN_CONFIGS['gcc_cs_arm_O0'] = ToolchainConfig(
-    'codesourcery cross gcc [arm]',
-    commands=COMMANDS_gcc_cs_arm_O0,
+    desc='codesourcery cross gcc [arm]',
+    commands=COMMANDS_gcc_cs_arm,
     tools_needed=[GCC_CS_ARM, EMU_SCRIPT ],
     CC = GCC_CS_ARM,
     EMU_SCRIPT = EMU_SCRIPT,
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
 
+TOOLCHAIN_CONFIGS['gcc_cs_arm_O9'] = ToolchainConfig(
+    desc='codesourcery cross gcc [arm]',
+    commands=COMMANDS_gcc_cs_arm,
+    tools_needed=[GCC_CS_ARM, EMU_SCRIPT ],
+    CC = GCC_CS_ARM,
+    EMU_SCRIPT = EMU_SCRIPT,
+    CFLAGS = '-O9 -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # # NACL + SEL_LDR [X86]
@@ -110,32 +132,32 @@ COMMANDS_nacl_gcc = [
   ]
 
 
-TOOLCHAIN_CONFIGS['nacl_gcc32_O0'] = ToolchainConfig(
-    'nacl gcc [x86-32]',
+TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O0'] = ToolchainConfig(
+    desc='nacl gcc [x86-32]',
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X32, SEL_LDR_X32],
     CC = NACL_GCC_X32,
     SEL_LDR = SEL_LDR_X32,
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
 
-TOOLCHAIN_CONFIGS['nacl_gcc32_O9'] = ToolchainConfig(
-    'nacl gcc with optimizations [x86-32]',
+TOOLCHAIN_CONFIGS['nacl_gcc_x8632_O9'] = ToolchainConfig(
+    desc='nacl gcc with optimizations [x86-32]',
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X32, SEL_LDR_X32],
     CC = NACL_GCC_X32,
     SEL_LDR = SEL_LDR_X32,
     CFLAGS = '-O9 -static')
 
-TOOLCHAIN_CONFIGS['nacl_gcc64_O0'] = ToolchainConfig(
-    'nacl gcc [x86-64]',
+TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O0'] = ToolchainConfig(
+    desc='nacl gcc [x86-64]',
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X64, SEL_LDR_X64],
     CC = NACL_GCC_X64,
     SEL_LDR = SEL_LDR_X64,
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
 
-TOOLCHAIN_CONFIGS['nacl_gcc64_O9'] = ToolchainConfig(
-    'nacl gcc with optimizations [x86-64]',
+TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O9'] = ToolchainConfig(
+    desc='nacl gcc with optimizations [x86-64]',
     commands=COMMANDS_nacl_gcc,
     tools_needed=[NACL_GCC_X64, SEL_LDR_X64],
     CC = NACL_GCC_X64,
@@ -144,45 +166,10 @@ TOOLCHAIN_CONFIGS['nacl_gcc64_O9'] = ToolchainConfig(
 
 
 ######################################################################
-# NACL + SEL_LDR [ARM]
-######################################################################
-
-DRIVER_PATH = 'toolchain/linux_arm-untrusted/arm-none-linux-gnueabi'
-
-NACL_LLVM_GCC_ARM = DRIVER_PATH + '/llvm-fake-sfigcc'
-
-NACL_LD_ARM = DRIVER_PATH + '/llvm-fake-sfild'
-
-
-LIB_DIR = 'toolchain/linux_arm-untrusted/arm-newlib/arm-none-linux-gnueabi/lib'
-
-COMMANDS_llvm_nacl_sfi_arm_O0 = [
-    ('compile-o',
-     '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.o',
-     ),
-    ('ld-arm',
-     '%(LD)s %(tmp)s.o -L%(LIB_DIR)s -lc -lnacl -o %(tmp)s.nexe',
-     ),
-    ('qemu-sel_ldr',
-     '%(EMU)s run %(SEL_LDR)s -Q -f %(tmp)s.nexe',
-     )
-  ]
-
-
-TOOLCHAIN_CONFIGS['llvm_nacl_sfi_arm_O0'] = ToolchainConfig(
-    'nacl llvm [arm]',
-    commands=COMMANDS_llvm_nacl_sfi_arm_O0,
-    tools_needed=[NACL_LLVM_GCC_ARM, NACL_LD_ARM, SEL_LDR_ARM, EMU_SCRIPT],
-    CC = NACL_LLVM_GCC_ARM,
-    LD = NACL_LD_ARM,
-    EMU = EMU_SCRIPT,
-    LIB_DIR = LIB_DIR,
-    SEL_LDR = SEL_LDR_ARM,
-    CFLAGS = '-arch arm -O0  -fnested-functions ' + GLOBAL_CFLAGS)
-
-######################################################################
 # PNACL + SEL_LDR [ARM]
 ######################################################################
+DRIVER_PATH = 'toolchain/linux_arm-untrusted/arm-none-linux-gnueabi'
+
 PNACL_LLVM_GCC = DRIVER_PATH + '/llvm-fake-sfigcc'
 
 PNACL_BCLD = DRIVER_PATH + '/llvm-fake-bcld'
@@ -203,7 +190,7 @@ COMMANDS_llvm_pnacl_arm = [
 
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
-    'pnacl llvm [arm]',
+    desc='pnacl llvm [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_LLVM_GCC, PNACL_BCLD, EMU_SCRIPT, SEL_LDR_ARM],
     CC = PNACL_LLVM_GCC + ' -emit-llvm',
@@ -215,7 +202,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
 
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_arm_opt'] = ToolchainConfig(
-    'pnacl llvm with optimizations [arm]',
+    desc='pnacl llvm with optimizations [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_LLVM_GCC, PNACL_BCLD, EMU_SCRIPT, SEL_LDR_ARM],
     CC = PNACL_LLVM_GCC + ' -emit-llvm',
@@ -244,7 +231,7 @@ COMMANDS_llvm_pnacl_x86_O0 = [
 
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
-    'pnacl llvm [x8632]',
+    desc='pnacl llvm [x8632]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_LLVM_GCC, PNACL_BCLD, SEL_LDR_X32],
     CC = PNACL_LLVM_GCC + ' -emit-llvm',
@@ -259,7 +246,7 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
 
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
-    'pnacl llvm [x8664]',
+    desc='pnacl llvm [x8664]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
     tools_needed=[PNACL_LLVM_GCC, PNACL_BCLD, SEL_LDR_X64],
     CC = PNACL_LLVM_GCC + ' -emit-llvm',

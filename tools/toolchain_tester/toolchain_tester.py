@@ -7,8 +7,15 @@
 
 Sample invocations
 
-tools/toolchain_tester/toolchain_tester.py --config=<config>
-tools/toolchain_tester/toolchain_tester.py --config=<config> test1.c test2.c ...
+tools/toolchain_tester/toolchain_tester.py  [options]+ test1.c test2.c ...
+
+where options are
+
+--config <config>
+--append <tag>=<value>
+--verbose
+
+e.g. --append "CFLAGS:-lsupc++" will enable C++ eh support
 
 NOTE: the location of tmp files is intentionally hardcoded, so you
 can only run one instance of this at a time.
@@ -31,6 +38,7 @@ TIMEOUT = 120
 VERBOSE = 0
 TMP_PREFIX = '/tmp/tc_test_'
 SHOW_CONSOLE = 1
+APPEND = []
 
 # module with settings for compiler, etc.
 CFG = None
@@ -82,11 +90,14 @@ def RunCommand(cmd, always_dump_stdout_stderr):
 
 
 def RemoveTempFiles():
+  global TMP_PREFIX
   for f in glob.glob(TMP_PREFIX + '.*'):
     os.remove(f)
 
 
 def MakeExecutableCustom(config, test, extra):
+  global TMP_PREFIX
+  global SHOW_CONSOLE
   RemoveTempFiles()
   d = extra.copy()
   d['tmp'] = TMP_PREFIX
@@ -106,11 +117,12 @@ def MakeExecutableCustom(config, test, extra):
 
 def ParseCommandLineArgs(argv):
   """Process command line options and return the unprocessed left overs."""
-  global VERBOSE, COMPILE_MODE, RUN_MODE, TMP_PREFIX, CFG
+  global VERBOSE, COMPILE_MODE, RUN_MODE, TMP_PREFIX, CFG, APPEND, SHOW_CONSOLE
   try:
     opts, args = getopt.getopt(argv[1:], '',
                                ['verbose',
                                 'show_console',
+                                'append=',
                                 'config=',
                                 'tmp='])
   except getopt.GetoptError, err:
@@ -126,6 +138,9 @@ def ParseCommandLineArgs(argv):
       SHOW_CONSOLE = 1
     elif o == 'tmp':
       TMP_PREFIX = a
+    elif o == 'append':
+      tag, value = a.split(":", 1)
+      APPEND.append((tag, value))
     elif o == 'config':
       CFG = a
     else:
@@ -160,10 +175,13 @@ def main(argv):
     return -1
 
   global TMP_PREFIX
+  global APPEND
   TMP_PREFIX = TMP_PREFIX + CFG
 
   Banner('Config: %s' % CFG)
   config = toolchain_config.TOOLCHAIN_CONFIGS[CFG]
+  for tag, value in APPEND:
+    config.Append(tag, value)
   config.SanityCheck()
   Print('TMP_PREFIX: %s' % TMP_PREFIX)
 
