@@ -11,7 +11,7 @@ if ARGUMENTS.get('bitcode'):
 
 # NOTE:  because we want to compile everything to bitcode before linking
 # NOTE:  assembler source files requires special trickery, for now we
-# NOTE:  have hacked tools/llvm/llvm-fake.py
+# NOTE:  have hacked tools/llvm/llvm-wrapper.py
 # NOTE:  to recognize sandboxed_*.S as special
 
 # env's BUILD_ARCH, BUILD_SUBARCH controls what assembly files to use.

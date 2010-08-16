@@ -30,7 +30,7 @@ import sys
 #
 
 LOG_FILE_ENABLE = 1
-LOG_FILE_NAME = 'toolchain/hg-log/llvm-fake.log'
+LOG_FILE_NAME = 'toolchain/hg-log/llvm-wrapper.log'
 LOG_SIZE_LIMIT = 20*(2**20)     # 20 MB
 
 PRETTY_PRINT_COMMANDS = 1
@@ -693,16 +693,16 @@ def Incarnation_bc_final(argv):
 INCARNATIONS = {
    # sfigcc and sfig++ are only used for compiling and assembling, so the gcc
    # behavior is the same as the g++ behavior.
-   'llvm-fake-sfigcc': Incarnation_gcclike,
-   'llvm-fake-sfig++': Incarnation_gcclike,
+   'llvm-wrapper-sfigcc': Incarnation_gcclike,
+   'llvm-wrapper-sfig++': Incarnation_gcclike,
 
-   'llvm-fake-bcld' : Incarnation_bcld_generic,
+   'llvm-wrapper-bcld' : Incarnation_bcld_generic,
 
    # final bc i.e. translator ready
-   'llvm-fake-bcfinal' : Incarnation_bc_final,
+   'llvm-wrapper-bcfinal' : Incarnation_bc_final,
 
-   'llvm-fake-illegal': Incarnation_illegal,
-   'llvm-fake-nop': Incarnation_nop,
+   'llvm-wrapper-illegal': Incarnation_illegal,
+   'llvm-wrapper-nop': Incarnation_nop,
    }
 
 

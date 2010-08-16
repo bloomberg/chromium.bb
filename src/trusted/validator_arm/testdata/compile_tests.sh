@@ -7,7 +7,7 @@
 set -eu
 
 # Get the path to the ARM cross-compiler.
-# We use the trusted compiler because llvm-fake.py (used in the
+# We use the trusted compiler because llvm-wrapper.py (used in the
 # untrusted compiler) doesn't support -nodefaultlibs.
 dir=$(pwd)
 cd ../../../..

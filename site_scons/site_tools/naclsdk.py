@@ -199,11 +199,11 @@ def _SetEnvForPnacl(env, arch):
                       '/bin/arm-none-linux-gnueabi-ranlib')
 
   pnacl_sdk_cc = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
-                  '/llvm-fake-sfigcc')
+                  '/llvm-wrapper-sfigcc')
   pnacl_sdk_cxx = (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
-                  '/llvm-fake-sfig++')
+                  '/llvm-wrapper-sfig++')
   pnacl_sdk_ld =  (pnacl_sdk_root + '/arm-none-linux-gnueabi' +
-                  '/llvm-fake-bcld')
+                  '/llvm-wrapper-bcld')
   # NOTE: XXX_flags start with space for easy concatenation
   pnacl_sdk_cxx_flags = ' -emit-llvm'
   pnacl_sdk_cc_flags = ' -emit-llvm  -std=gnu99'
