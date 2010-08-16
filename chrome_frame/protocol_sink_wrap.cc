@@ -175,7 +175,6 @@ STDMETHODIMP ProtocolSinkWrap::ReportResult(HRESULT result, DWORD error,
     LPCWSTR result_text) {
   DLOG(INFO) << "ProtocolSinkWrap::ReportResult: result: " << result <<
       " error: " << error << " Text: " << (result_text ? result_text : L"");
-  ExceptionBarrier barrier;
   HRESULT hr = prot_data_->ReportResult(delegate_, result, error, result_text);
   return hr;
 }
@@ -614,7 +613,6 @@ STDMETHODIMP Hook_Start(InternetProtocol_Start_Fn orig_start,
     return E_INVALIDARG;
   DLOG_IF(INFO, url != NULL) << "OnStart: " << url << PiFlags2Str(flags);
 
-  ExceptionBarrier barrier;
   ScopedComPtr<IBindCtx> bind_ctx = BindCtxFromIBindInfo(bind_info);
   if (!bind_ctx) {
     // MSHTML sometimes takes a short path, skips the creation of
@@ -667,7 +665,6 @@ STDMETHODIMP Hook_StartEx(InternetProtocol_StartEx_Fn orig_start_ex,
   if (!uri || !prot_sink || !bind_info)
     return E_INVALIDARG;
 
-  ExceptionBarrier barrier;
   ScopedBstr url;
   uri->GetPropertyBSTR(Uri_PROPERTY_ABSOLUTE_URI, url.Receive(), 0);
   DLOG_IF(INFO, url != NULL) << "OnStartEx: " << url << PiFlags2Str(flags);
