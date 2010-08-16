@@ -369,8 +369,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
 // is already running.
 // The test fails on linux and should be related to Webkit patch
 // http://trac.webkit.org/changeset/64124/trunk.
-// Should be reenabled once WebKit r65304 is rolled.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, FAILS_TestPauseWhenScriptIsRunning) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 

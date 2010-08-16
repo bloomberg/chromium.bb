@@ -16,6 +16,28 @@
 using WebKit::WebDevToolsAgent;
 using WebKit::WebString;
 
+namespace {
+
+class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
+ public:
+  MessageImpl(const std::string& message, int host_id)
+      : msg(message),
+        host_id(host_id) {}
+  virtual ~MessageImpl() {}
+  virtual WebDevToolsAgent* agent() {
+    DevToolsAgent* agent = DevToolsAgent::FromHostId(host_id);
+    if (!agent)
+      return 0;
+    return agent->GetWebAgent();
+  }
+  virtual WebString message() { return WebString::fromUTF8(msg); }
+ private:
+  int host_id;
+  std::string msg;
+};
+
+}
+
 // static
 void DevToolsAgentFilter::DispatchMessageLoop() {
   MessageLoop* current = MessageLoop::current();
@@ -31,7 +53,8 @@ IPC::Channel* DevToolsAgentFilter::channel_ = NULL;
 int DevToolsAgentFilter::current_routing_id_ = 0;
 
 DevToolsAgentFilter::DevToolsAgentFilter()
-    : message_handled_(false) {
+    : message_handled_(false),
+      render_thread_loop_(MessageLoop::current()) {
   WebDevToolsAgent::setMessageLoopDispatchHandler(
       &DevToolsAgentFilter::DispatchMessageLoop);
 }
@@ -45,8 +68,8 @@ bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
   current_routing_id_ = message.routing_id();
   IPC_BEGIN_MESSAGE_MAP(DevToolsAgentFilter, message)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DebuggerCommand, OnDebuggerCommand)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DebuggerPauseScript,
-                        OnDebuggerPauseScript)
+    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
+                        OnDispatchOnInspectorBackend)
     IPC_MESSAGE_UNHANDLED(message_handled_ = false)
   IPC_END_MESSAGE_MAP()
   return message_handled_;
@@ -57,6 +80,17 @@ void DevToolsAgentFilter::OnDebuggerCommand(const std::string& command) {
       WebString::fromUTF8(command), current_routing_id_);
 }
 
-void DevToolsAgentFilter::OnDebuggerPauseScript() {
-  WebDevToolsAgent::debuggerPauseScript();
+void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
+    const std::string& message) {
+  if (!WebDevToolsAgent::shouldInterruptForMessage(
+          WebString::fromUTF8(message))) {
+      message_handled_ = false;
+      return;
+  }
+  WebDevToolsAgent::interruptAndDispatch(
+      new MessageImpl(message, current_routing_id_));
+
+  render_thread_loop_->PostTask(
+      FROM_HERE,
+      NewRunnableFunction(&WebDevToolsAgent::processPendingMessages));
 }

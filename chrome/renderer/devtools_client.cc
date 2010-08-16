@@ -61,10 +61,6 @@ void DevToolsClient::sendDebuggerCommandToAgent(const WebString& command) {
   Send(DevToolsAgentMsg_DebuggerCommand(command.utf8()));
 }
 
-void DevToolsClient::sendDebuggerPauseScript() {
-  Send(DevToolsAgentMsg_DebuggerPauseScript());
-}
-
 void DevToolsClient::activateWindow() {
   render_view_->Send(new ViewHostMsg_ActivateDevToolsWindow(
       render_view_->routing_id()));
