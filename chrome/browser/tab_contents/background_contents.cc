@@ -5,8 +5,6 @@
 #include "chrome/browser/tab_contents/background_contents.h"
 
 #include "chrome/browser/background_contents_service.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
@@ -18,13 +16,15 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/render_messages.h"
-
+#include "gfx/rect.h"
 
 ////////////////
 // BackgroundContents
 
 BackgroundContents::BackgroundContents(SiteInstance* site_instance,
-                                       int routing_id) {
+                                       int routing_id,
+                                       Delegate* delegate)
+    : delegate_(delegate) {
   Profile* profile = site_instance->browsing_instance()->profile();
 
   // TODO(rafaelw): Implement correct session storage.
@@ -187,14 +187,8 @@ void BackgroundContents::ShowCreatedWindow(int route_id,
                                            const gfx::Rect& initial_pos,
                                            bool user_gesture) {
   TabContents* contents = delegate_view_helper_.GetCreatedWindow(route_id);
-  if (!contents)
-    return;
-  Browser* browser = BrowserList::GetLastActiveWithProfile(
-      render_view_host_->process()->profile());
-  if (!browser)
-    return;
-
-  browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
+  if (contents)
+    delegate_->AddTabContents(contents, disposition, initial_pos, user_gesture);
 }
 
 void BackgroundContents::ShowCreatedWidget(int route_id,

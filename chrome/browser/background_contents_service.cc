@@ -9,13 +9,14 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/tab_contents/background_contents.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
@@ -184,7 +185,9 @@ void BackgroundContentsService::CreateBackgroundContents(
   }
 
   BackgroundContents* contents = new BackgroundContents(
-      SiteInstance::CreateSiteInstanceForURL(profile, url), MSG_ROUTING_NONE);
+      SiteInstance::CreateSiteInstanceForURL(profile, url),
+      MSG_ROUTING_NONE,
+      this);
 
   // TODO(atwilson): Change this to send a BACKGROUND_CONTENTS_CREATED
   // notification when we have a listener outside of BackgroundContentsService.
@@ -299,4 +302,16 @@ const string16& BackgroundContentsService::GetParentApplicationId(
 // static
 void BackgroundContentsService::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kRegisteredBackgroundContents);
+}
+
+void BackgroundContentsService::AddTabContents(
+    TabContents* new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_pos,
+    bool user_gesture) {
+  Browser* browser = BrowserList::GetLastActiveWithProfile(
+      new_contents->profile());
+  if (!browser)
+    return;
+  browser->AddTabContents(new_contents, disposition, initial_pos, user_gesture);
 }

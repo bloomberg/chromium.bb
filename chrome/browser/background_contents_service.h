@@ -9,14 +9,23 @@
 #include <map>
 
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/tab_contents/background_contents.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/window_container_type.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/glue/window_open_disposition.h"
 
 class BackgroundContents;
 class CommandLine;
 class PrefService;
 class Profile;
+class TabContents;
+
+namespace gfx {
+class Rect;
+}
+
 struct BackgroundContentsOpenedDetails;
 
 // BackgroundContentsService is owned by the profile, and is responsible for
@@ -27,7 +36,8 @@ struct BackgroundContentsOpenedDetails;
 // It is also responsible for tracking the association between
 // BackgroundContents and their parent app, and shutting them down when the
 // parent app is unloaded.
-class BackgroundContentsService : private NotificationObserver {
+class BackgroundContentsService : private NotificationObserver,
+                                  public BackgroundContents::Delegate {
  public:
   BackgroundContentsService(Profile* profile, const CommandLine* command_line);
   virtual ~BackgroundContentsService();
@@ -37,6 +47,12 @@ class BackgroundContentsService : private NotificationObserver {
   BackgroundContents* GetAppBackgroundContents(const string16& appid);
 
   static void RegisterUserPrefs(PrefService* prefs);
+
+  // BackgroundContents::Delegate implementation.
+  virtual void AddTabContents(TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture);
 
  private:
   friend class BackgroundContentsServiceTest;

@@ -61,7 +61,10 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
     return NULL;
 
   // Passed all the checks, so this should be created as a BackgroundContents.
-  BackgroundContents* contents = new BackgroundContents(site, route_id);
+  BackgroundContents* contents = new BackgroundContents(
+      site,
+      route_id,
+      profile->GetBackgroundContentsService());
   string16 appid = ASCIIToUTF16(extension->id());
   BackgroundContentsOpenedDetails details = { contents, frame_name, appid };
   NotificationService::current()->Notify(

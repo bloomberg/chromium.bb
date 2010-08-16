@@ -15,9 +15,14 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/view_types.h"
 #include "chrome/common/window_container_type.h"
+#include "webkit/glue/window_open_disposition.h"
 
 class TabContents;
 struct WebPreferences;
+
+namespace gfx {
+class Rect;
+}
 
 // This class is a peer of TabContents. It can host a renderer, but does not
 // have any visible display. Its navigation is not managed by a
@@ -29,8 +34,23 @@ class BackgroundContents : public RenderViewHostDelegate,
                            public NotificationObserver,
                            public JavaScriptMessageBoxClient {
  public:
+  class Delegate {
+   public:
+    // Called by ShowCreatedWindow. Asks the delegate to attach the opened
+    // TabContents to a suitable container (e.g. browser) or to show it if it's
+    // a popup window.
+    virtual void AddTabContents(TabContents* new_contents,
+                                WindowOpenDisposition disposition,
+                                const gfx::Rect& initial_pos,
+                                bool user_gesture) = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
   BackgroundContents(SiteInstance* site_instance,
-                     int routing_id);
+                     int routing_id,
+                     Delegate* delegate);
   virtual ~BackgroundContents();
 
   // Provide access to the RenderViewHost for the
@@ -116,6 +136,9 @@ class BackgroundContents : public RenderViewHostDelegate,
   BackgroundContents();
 
  private:
+  // The delegate for this BackgroundContents.
+  Delegate* delegate_;
+
   // The host for our HTML content.
   RenderViewHost* render_view_host_;
 
