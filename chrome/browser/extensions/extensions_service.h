@@ -379,7 +379,7 @@ class ExtensionsService
   void UpdateActiveExtensionsInCrashReporter();
 
   // Helper method. Loads extension from prefs.
-  void LoadInstalledExtension(const ExtensionInfo& info, bool relocalize);
+  void LoadInstalledExtension(const ExtensionInfo& info, bool write_to_prefs);
 
   // Helper methods to configure the storage services accordingly.
   void GrantUnlimitedStorage(Extension* extension);
@@ -429,6 +429,12 @@ class ExtensionsService
   // any in the extension preferences file.
   typedef std::map<std::string, FilePath> UnloadedExtensionPathMap;
   UnloadedExtensionPathMap unloaded_extension_paths_;
+
+  // Map disabled extensions' ids to their paths. When a temporarily loaded
+  // extension is disabled before it is reloaded, keep track of the path so that
+  // it can be re-enabled upon a successful load.
+  typedef std::map<std::string, FilePath> DisabledExtensionPathMap;
+  DisabledExtensionPathMap disabled_extension_paths_;
 
   // Map of inspector cookies that are detached, waiting for an extension to be
   // reloaded.

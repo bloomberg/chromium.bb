@@ -329,7 +329,7 @@ void ExtensionsService::ReloadExtension(const std::string& extension_id) {
   FilePath path;
   Extension* current_extension = GetExtensionById(extension_id, false);
 
-  // Unload the extension if it's loaded. It might not be loaded if it crashed.
+  // Disable the extension if it's loaded. It might not be loaded if it crashed.
   if (current_extension) {
     // If the extension has an inspector open for its background page, detach
     // the inspector and hang onto a cookie for it, so that we can reattach
@@ -346,7 +346,8 @@ void ExtensionsService::ReloadExtension(const std::string& extension_id) {
     }
 
     path = current_extension->path();
-    UnloadExtension(extension_id);
+    DisableExtension(extension_id);
+    disabled_extension_paths_[extension_id] = path;
   } else {
     path = unloaded_extension_paths_[extension_id];
   }
@@ -620,11 +621,11 @@ void ExtensionsService::LoadInstalledExtension(const ExtensionInfo& info,
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(
-        backend_.get(),
-        &ExtensionsServiceBackend::CheckExternalUninstall,
-        scoped_refptr<ExtensionsService>(this),
-        info.extension_id,
-        info.extension_location));
+            backend_.get(),
+            &ExtensionsServiceBackend::CheckExternalUninstall,
+            scoped_refptr<ExtensionsService>(this),
+            info.extension_id,
+            info.extension_location));
   }
 }
 
@@ -841,6 +842,9 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
   // even if it's not permanently installed.
   unloaded_extension_paths_[extension->id()] = extension->path();
 
+  // Clean up if the extension is meant to be enabled after a reload.
+  disabled_extension_paths_.erase(extension->id());
+
   ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
@@ -919,6 +923,10 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
 
   // The extension is now loaded, remove its data from unloaded extension map.
   unloaded_extension_paths_.erase(extension->id());
+
+  // If the extension was disabled for a reload, then enable it.
+  if (disabled_extension_paths_.erase(extension->id()) > 0)
+    EnableExtension(extension->id());
 
   // TODO(aa): Need to re-evaluate this branch. Does this still make sense now
   // that extensions are enabled by default?
