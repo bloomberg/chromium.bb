@@ -409,8 +409,6 @@ wl_event_loop_destroy(struct wl_event_loop *loop)
 	free(loop);
 }
 
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
 static void
 dispatch_idles(struct wl_event_loop *loop)
 {
