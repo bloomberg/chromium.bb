@@ -81,6 +81,7 @@ struct wlsc_input_device {
 	int32_t x, y;
 	struct wlsc_compositor *ec;
 	struct wlsc_surface *sprite;
+	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
 
 	struct wlsc_surface *pointer_focus;
@@ -118,6 +119,7 @@ struct wlsc_compositor {
 	EGLContext context;
 	GLuint fbo, vbo;
 	GLuint proj_uniform, tex_uniform;
+	EGLImageKHR default_pointer_image;
 	struct wl_display *wl_display;
 
 	/* We implement the shell interface. */

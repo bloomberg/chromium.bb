@@ -13,17 +13,6 @@ Core wayland protocol
    or do X style (content mime-type negotiation, but data goes away
    when client quits).
 
- - protocol for setting the cursor image
-
-    - should we have a mechanism to attach surface to cursor for
-      guaranteed non-laggy drag?
-
-    - drawing cursors, moving them, cursor themes, attaching surfaces
-      to cursors.  How do you change cursors when you mouse over a
-      text field if you don't have subwindows?  This is what we do: a
-      client can set a cursor for a surface and wayland will set that
-      on enter and revert to default on leave
-
  - Discard buffer, as in "wayland discarded your buffer, it's no
    longer visible, you can stop updating it now.", reattach, as in "oh
    hey, I'm about to show your buffer that I threw away, what was it

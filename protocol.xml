@@ -119,6 +119,12 @@
   </interface>
 
   <interface name="input_device" version="1">
+    <request name="attach">
+      <arg name="buffer" type="object" interface="buffer"/>
+      <arg name="hotspot_x" type="int"/>
+      <arg name="hotspot_y" type="int"/>
+    </request>
+
     <event name="motion">
       <arg name="time" type="uint"/>
       <arg name="x" type="int"/>

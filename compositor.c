@@ -125,12 +125,24 @@ wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
 	*v = t;
 }
 
-static void
-wlsc_surface_init(struct wlsc_surface *surface,
-		  struct wlsc_compositor *compositor, struct wl_visual *visual,
-		  int32_t x, int32_t y, int32_t width, int32_t height)
+static struct wlsc_surface *
+wlsc_surface_create(struct wlsc_compositor *compositor,
+		    struct wl_visual *visual,
+		    int32_t x, int32_t y, int32_t width, int32_t height)
 {
+	struct wlsc_surface *surface;
+
+	surface = malloc(sizeof *surface);
+	if (surface == NULL)
+		return NULL;
+
 	glGenTextures(1, &surface->texture);
+	glBindTexture(GL_TEXTURE_2D, surface->texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 	surface->compositor = compositor;
 	surface->visual = visual;
 	wlsc_matrix_init(&surface->matrix);
@@ -140,35 +152,8 @@ wlsc_surface_init(struct wlsc_surface *surface,
 	wlsc_matrix_init(&surface->matrix_inv);
 	wlsc_matrix_translate(&surface->matrix_inv, -x, -y, 0);
 	wlsc_matrix_scale(&surface->matrix_inv, 1.0 / width, 1.0 / height, 1);
-}
 
-static struct wlsc_surface *
-wlsc_surface_create_from_cairo_surface(struct wlsc_compositor *ec,
-				      cairo_surface_t *surface,
-				      int x, int y, int width, int height)
-{
-	struct wlsc_surface *es;
-	int stride;
-	void *data;
-
-	stride = cairo_image_surface_get_stride(surface);
-	data = cairo_image_surface_get_data(surface);
-
-	es = malloc(sizeof *es);
-	if (es == NULL)
-		return NULL;
-
-	wlsc_surface_init(es, ec, &ec->premultiplied_argb_visual,
-			  x, y, width, height);
-	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-		     GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	return es;
+	return surface;
 }
 
 static void
@@ -213,6 +198,16 @@ pointer_create(struct wlsc_compositor *ec, int x, int y, int width, int height)
 	const int hotspot_x = 16, hotspot_y = 16;
 	cairo_surface_t *surface;
 	cairo_t *cr;
+	int stride;
+	void *data;
+
+	EGLint image_attribs[] = {
+		EGL_WIDTH,		0,
+		EGL_HEIGHT,		0,
+		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
+		EGL_IMAGE_USE_MESA,	EGL_IMAGE_USE_SCANOUT_MESA,
+		EGL_NONE
+	};
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
 					     width, height);
@@ -231,15 +226,35 @@ pointer_create(struct wlsc_compositor *ec, int x, int y, int width, int height)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	es = wlsc_surface_create_from_cairo_surface(ec,
-						   surface,
-						   x - hotspot_x,
-						   y - hotspot_y,
-						   width, height);
-	
+	es = wlsc_surface_create(ec, &ec->premultiplied_argb_visual,
+				 x, y, width, height);
+
+	stride = cairo_image_surface_get_stride(surface);
+	data = cairo_image_surface_get_data(surface);
+
+	image_attribs[1] = width;
+	image_attribs[3] = height;
+	ec->default_pointer_image =
+		eglCreateDRMImageMESA(ec->display, image_attribs);
+	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, ec->default_pointer_image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+		     GL_RGBA, GL_UNSIGNED_BYTE, data);
+
 	cairo_surface_destroy(surface);
 
 	return es;
+}
+
+static void
+wlsc_input_device_set_default_pointer_image(struct wlsc_input_device *device)
+{
+	struct wlsc_compositor *ec = device->ec;
+
+	glBindTexture(GL_TEXTURE_2D, device->sprite->texture);
+	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, ec->default_pointer_image);
+	device->sprite->visual = &ec->premultiplied_argb_visual;
+	device->hotspot_x = 16;
+	device->hotspot_y = 16;
 }
 
 static struct wlsc_surface *
@@ -251,11 +266,12 @@ background_create(struct wlsc_output *output, const char *filename)
 	void *data;
 	GLenum format;
 
-	background = malloc(sizeof *background);
+	background = wlsc_surface_create(output->compositor,
+					 &output->compositor->rgb_visual,
+					 output->x, output->y,
+					 output->width, output->height);
 	if (background == NULL)
 		return NULL;
-	
-	g_type_init();
 
 	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
 						   output->width,
@@ -268,17 +284,7 @@ background_create(struct wlsc_output *output, const char *filename)
 
 	data = gdk_pixbuf_get_pixels(pixbuf);
 
-	wlsc_surface_init(background, output->compositor,
-			  &output->compositor->rgb_visual,
-			  output->x, output->y, output->width, output->height);
-
-	glBindTexture(GL_TEXTURE_2D, background->texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        if (gdk_pixbuf_get_has_alpha(pixbuf))
+	if (gdk_pixbuf_get_has_alpha(pixbuf))
 		format = GL_RGBA;
 	else
 		format = GL_RGB;
@@ -432,10 +438,6 @@ surface_attach(struct wl_client *client,
 	struct wlsc_buffer *buffer = (struct wlsc_buffer *) buffer_base;
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
 	es->visual = buffer->visual;
 }
@@ -520,15 +522,13 @@ compositor_create_surface(struct wl_client *client,
 	struct wlsc_compositor *ec = (struct wlsc_compositor *) compositor;
 	struct wlsc_surface *surface;
 
-	surface = malloc(sizeof *surface);
+	surface = wlsc_surface_create(ec, NULL, 0, 0, 0, 0);
 	if (surface == NULL) {
 		wl_client_post_event(client,
 				     (struct wl_object *) ec->wl_display,
 				     WL_DISPLAY_NO_MEMORY, 0);
 		return;
 	}
-
-	wlsc_surface_init(surface, ec, NULL, 0, 0, 0, 0);
 
 	wl_list_insert(ec->surface_list.prev, &surface->link);
 	surface->base.base.destroy = destroy_surface;
@@ -609,6 +609,9 @@ wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
 				      time, &surface->base,
 				      x, y, sx, sy);
 
+	if (!surface)
+		wlsc_input_device_set_default_pointer_image(device);
+
 	device->pointer_focus = surface;
 }
 
@@ -640,7 +643,6 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	struct wlsc_surface *es;
 	struct wlsc_compositor *ec = device->ec;
 	struct wlsc_output *output;
-	const int hotspot_x = 16, hotspot_y = 16;
 	int32_t sx, sy, width, height;
 
 	/* FIXME: We need some multi head love here. */
@@ -727,7 +729,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 	wlsc_matrix_init(&device->sprite->matrix);
 	wlsc_matrix_scale(&device->sprite->matrix, 64, 64, 1);
 	wlsc_matrix_translate(&device->sprite->matrix,
-			      x - hotspot_x, y - hotspot_y, 0);
+			      x - device->hotspot_x, y - device->hotspot_y, 0);
 
 	wlsc_compositor_schedule_repaint(device->ec);
 }
@@ -829,6 +831,30 @@ notify_key(struct wlsc_input_device *device,
 				      WL_INPUT_DEVICE_KEY, time, key, state);
 }
 
+static void
+input_device_attach(struct wl_client *client,
+		    struct wl_input_device *device_base,
+		    struct wl_buffer *buffer_base, int32_t x, int32_t y)
+{
+	struct wlsc_input_device *device =
+		(struct wlsc_input_device *) device_base;
+	struct wlsc_buffer *buffer = (struct wlsc_buffer *) buffer_base;
+
+	if (device->pointer_focus == NULL ||
+	    device->pointer_focus->base.client != client)
+		return;
+
+	glBindTexture(GL_TEXTURE_2D, device->sprite->texture);
+	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, buffer->image);
+	device->sprite->visual = buffer->visual;
+	device->hotspot_x = x;
+	device->hotspot_y = y;
+}
+
+const static struct wl_input_device_interface input_device_interface = {
+	input_device_attach,
+};
+
 static uint32_t
 get_time(void)
 {
@@ -866,7 +892,8 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec)
 {
 	device->base.interface = &wl_input_device_interface;
-	device->base.implementation = NULL;
+	device->base.implementation =
+		(void (**)(void)) &input_device_interface;
 	wl_display_add_object(ec->wl_display, &device->base);
 	wl_display_add_global(ec->wl_display, &device->base, NULL);
 
@@ -874,6 +901,8 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 	device->y = 100;
 	device->ec = ec;
 	device->sprite = pointer_create(ec, device->x, device->y, 64, 64);
+	device->hotspot_x = 16;
+	device->hotspot_y = 16;
 
 	device->listener.func = handle_surface_destroy;
 	wl_list_insert(ec->surface_destroy_listener_list.prev,
@@ -1091,6 +1120,8 @@ int main(int argc, char *argv[])
 	struct wlsc_compositor *ec;
 	GError *error = NULL;
 	GOptionContext *context;
+
+	g_type_init(); /* GdkPixbuf needs this, it seems. */
 
 	context = g_option_context_new(NULL);
 	g_option_context_add_main_entries(context, option_entries, "Wayland");

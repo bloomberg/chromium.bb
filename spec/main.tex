@@ -159,7 +159,7 @@ delivered in both screen coordinates and surface local coordinates.
   \hline 
   Interface \texttt{cache} \\ \hline 
   Requests \\ \hline 
-  no requests \\ \hline
+  \texttt{attach(buffer, x, y)} \\
   Events \\ \hline
   \texttt{motion(x, y, sx, sy)} \\
   \texttt{button(button, state, x, y, sx, sy)} \\
@@ -179,14 +179,14 @@ Talk about:
 A surface can change the pointer image when the surface is the pointer
 focus of the input device.  Wayland doesn't automatically change the
 pointer image when a pointer enters a surface, but expects the
-application to set the cursor it wants in response the the motion
-event.  The rationale is that a client has to manage changing pointer
-images for UI elements within the surface in response to motion events
-anyway, so we'll make that the only mechanism for setting changing the
-pointer image.  If the server receives a request to set the pointer
-image after the surface loses pointer focus, the request is ignored.
-To the client this will look like it successfully set the pointer
-image.
+application to set the cursor it wants in response the the pointer
+focus and motion events.  The rationale is that a client has to manage
+changing pointer images for UI elements within the surface in response
+to motion events anyway, so we'll make that the only mechanism for
+setting changing the pointer image.  If the server receives a request
+to set the pointer image after the surface loses pointer focus, the
+request is ignored.  To the client this will look like it successfully
+set the pointer image.
 
 The compositor will revert the pointer image back to a default image
 when no surface has the pointer focus for that device.  Clients can
