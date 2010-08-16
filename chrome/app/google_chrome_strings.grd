@@ -337,10 +337,16 @@ Chrome supports. -->
         <message name="IDS_OPTIONS_RESTART_REQUIRED" desc="The message displayed for an option that requires a restart to take effect. This appears in a message box if an option is changed that requires a restart.">
           Please close all Google Chrome windows and restart it for this change to take effect.
         </message>
+        <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
+          Help make Google Chrome better by automatically sending usage statistics and crash reports to Google
+        </message>
       </if>
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_RESTART_REQUIRED" desc="The message displayed for an option that requires a restart to take effect. This appears in a message box if an option is changed that requires a restart.">
           Please sign out of Google Chrome OS and sign in again for this change to take effect.
+        </message>
+        <message name="IDS_CROS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
+          Help make Google Chrome OS better by automatically sending usage statistics and crash reports to Google
         </message>
       </if>
       <message name="IDS_OPTIONS_RESET_MESSAGE" desc="The message shown when the user presses the 'Reset Chrome options' button">
@@ -348,9 +354,6 @@ Chrome supports. -->
       </message>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY" desc="Summary of problem displayed in dialog when we can't create a directory for this user.">
         Google Chrome cannot read and write to its data directory:\n\n<ph name="USER_DATA_DIRECTORY">$1<ex>C:\Documents and Settings\devint\Local Settings\Application Data\Google\Chrome</ex></ph>
-      </message>
-      <message name="IDS_OPTIONS_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
-        Help make Google Chrome better by automatically sending usage statistics and crash reports to Google
       </message>
       <message name="IDS_EULA_CHECKBOX_ENABLE_LOGGING" desc="The label of the checkbox to enable/disable crash and user metrics logging">
 	<!--We use /n here to separate lines manually because NativeCheckboxGtk currently does not support multi-line. -->
