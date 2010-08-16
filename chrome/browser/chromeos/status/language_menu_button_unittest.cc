@@ -30,7 +30,7 @@ TEST(LanguageMenuButtonTest, GetTextForIndicatorTest) {
 
   // Test special cases.
   {
-    InputMethodDescriptor desc("xkb:us:dvorak:eng", "Dvorak", "us", "us");
+    InputMethodDescriptor desc("xkb:us:dvorak:eng", "Dvorak", "us", "eng");
     EXPECT_EQ(L"DV", LanguageMenuButton::GetTextForIndicator(desc));
   }
   {
@@ -83,6 +83,45 @@ TEST(LanguageMenuButtonTest, GetTextForTooltipTest) {
     // string" error.
     EXPECT_EQ(L"xx - unregistered string",
               LanguageMenuButton::GetTextForMenu(desc, kAddMethodName));
+  }
+}
+
+TEST(LanguageMenuButtonTest, GetAmbiguousLanguageCodeSet) {
+  {
+    std::set<std::string> ambiguous_language_code_set;
+    InputMethodDescriptors descriptors;
+    descriptors.push_back(InputMethodDescriptor(
+        "xkb:us::eng", "USA", "us", "eng"));
+    LanguageMenuButton::GetAmbiguousLanguageCodeSet(
+        descriptors, &ambiguous_language_code_set);
+    // There is no ambituity.
+    EXPECT_TRUE(ambiguous_language_code_set.empty());
+  }
+  {
+    std::set<std::string> ambiguous_language_code_set;
+    InputMethodDescriptors descriptors;
+    descriptors.push_back(InputMethodDescriptor(
+        "xkb:us::eng", "USA", "us", "eng"));
+    descriptors.push_back(InputMethodDescriptor(
+        "xkb:us:dvorak:eng", "Dvorak", "us", "eng"));
+    LanguageMenuButton::GetAmbiguousLanguageCodeSet(
+        descriptors, &ambiguous_language_code_set);
+    // This is ambiguous, as two input methods are present for "en-US".
+    EXPECT_EQ(1U, ambiguous_language_code_set.size());
+    EXPECT_EQ(1U, ambiguous_language_code_set.count("en-US"));
+  }
+  {
+    std::set<std::string> ambiguous_language_code_set;
+    InputMethodDescriptors descriptors;
+    descriptors.push_back(InputMethodDescriptor(
+        "xkb:jp::jpn", "Japan", "jp", "jpn"));
+    LanguageMenuButton::GetAmbiguousLanguageCodeSet(
+        descriptors, &ambiguous_language_code_set);
+    // Japanese is special. Showing the language name alone for the
+    // Japanese keyboard layout is confusing, hence we consider it
+    // ambiguous.
+    EXPECT_EQ(1U, ambiguous_language_code_set.size());
+    EXPECT_EQ(1U, ambiguous_language_code_set.count("ja"));
   }
 }
 

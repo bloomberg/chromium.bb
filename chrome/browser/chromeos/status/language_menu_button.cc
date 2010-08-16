@@ -322,7 +322,8 @@ string16 LanguageMenuButton::GetLabelAt(int index) const {
     const std::string language_code =
         input_method::GetLanguageCodeFromDescriptor(
             input_method_descriptors_->at(index));
-    bool need_method_name = (need_method_name_.count(language_code) > 0);
+    const bool need_method_name =
+        (ambiguous_language_code_set_.count(language_code) > 0);
     name = GetTextForMenu(input_method_descriptors_->at(index),
                           need_method_name);
   } else if (GetPropertyIndex(index, &index)) {
@@ -486,26 +487,17 @@ void LanguageMenuButton::RebuildModel() {
   // Indicates if separator's needed before each section.
   bool need_separator = false;
 
-  need_method_name_.clear();
-  std::set<std::string> languages_seen;
+  ambiguous_language_code_set_.clear();
   if (!input_method_descriptors_->empty()) {
     // We "abuse" the command_id and group_id arguments of AddRadioItem method.
     // A COMMAND_ID_XXX enum value is passed as command_id, and array index of
     // |input_method_descriptors_| or |property_list| is passed as group_id.
     for (size_t i = 0; i < input_method_descriptors_->size(); ++i) {
       model_->AddRadioItem(COMMAND_ID_INPUT_METHODS, dummy_label, i);
-
-      const std::string language_code
-          = input_method::GetLanguageCodeFromDescriptor(
-              input_method_descriptors_->at(i));
-      // If there is more than one input method for this language, then we need
-      // to display the method name.
-      if (languages_seen.find(language_code) == languages_seen.end()) {
-        languages_seen.insert(language_code);
-      } else {
-        need_method_name_.insert(language_code);
-      }
     }
+
+    GetAmbiguousLanguageCodeSet(*input_method_descriptors_,
+                                &ambiguous_language_code_set_);
     need_separator = true;
   }
 
@@ -646,6 +638,31 @@ std::wstring LanguageMenuButton::GetTextForMenu(
 
 void LanguageMenuButton::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterStringPref(kPreferredKeyboardLayout, "");
+}
+
+void LanguageMenuButton::GetAmbiguousLanguageCodeSet(
+    const InputMethodDescriptors& input_method_descriptors,
+    std::set<std::string>* ambiguous_language_code_set) {
+  DCHECK(ambiguous_language_code_set);
+  ambiguous_language_code_set->clear();
+
+  std::set<std::string> languages_seen;
+  for (size_t i = 0; i < input_method_descriptors.size(); ++i) {
+    const std::string language_code
+        = input_method::GetLanguageCodeFromDescriptor(
+            input_method_descriptors.at(i));
+    // If there is more than one input method for this language, then we need
+    // to display the method name.
+    if (languages_seen.count(language_code) > 0 ||
+        // Special-case Japanese as showing the language name alone is
+        // confusing when Japanese keyboard is enabled but Japanese
+        // input methods are not.
+        language_code == "ja") {
+      ambiguous_language_code_set->insert(language_code);
+    } else {
+      languages_seen.insert(language_code);
+    }
+  }
 }
 
 void LanguageMenuButton::Observe(NotificationType type,

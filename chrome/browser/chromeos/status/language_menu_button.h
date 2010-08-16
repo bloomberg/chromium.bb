@@ -76,6 +76,14 @@ class LanguageMenuButton : public views::MenuButton,
   // Registers input method preferences for the login screen.
   static void RegisterPrefs(PrefService* local_state);
 
+  // Gets the language codes that are ambiguous if we only show the
+  // language names in the menu. For these languages, we'll show the input
+  // method names in addition to the language names. The original contents
+  // of |ambiguous_language_code_set| are lost.
+  static void GetAmbiguousLanguageCodeSet(
+      const InputMethodDescriptors& input_method_descriptors,
+      std::set<std::string>* ambiguous_language_code_set);
+
  protected:
   // views::View implementation.
   virtual void OnLocaleChanged();
@@ -115,8 +123,9 @@ class LanguageMenuButton : public views::MenuButton,
   StringPrefMember previous_input_method_pref_;
   StringPrefMember current_input_method_pref_;
 
-  // Languages that need the input method name displayed.
-  std::set<std::string> need_method_name_;
+  // Language codes that can be ambiguous. See comments at
+  // GetAmbiguousLanguageCodeSet() for details.
+  std::set<std::string> ambiguous_language_code_set_;
 
   // We borrow menus::SimpleMenuModel implementation to maintain the current
   // content of the pop-up menu. The menus::MenuModel is implemented using this
