@@ -53,7 +53,7 @@ enum {
   MD_LINUX_ENVIRON               = 0x47670007,    /* /proc/$x/environ */
   MD_LINUX_AUXV                  = 0x47670008,    /* /proc/$x/auxv    */
   MD_LINUX_MAPS                  = 0x47670009,    /* /proc/$x/maps    */
-  MD_LINUX_DSO_DEBUG             = 0x4767000A,    /* DSO data         */
+  MD_LINUX_DSO_DEBUG             = 0x4767000A     /* DSO data         */
 };
 
 typedef struct {
