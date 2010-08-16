@@ -39,10 +39,6 @@ struct wlsc_matrix {
 	GLfloat d[16];
 };
 
-struct wl_visual {
-	struct wl_object base;
-};
-
 struct wlsc_surface;
 
 struct wlsc_listener {
@@ -91,7 +87,7 @@ enum wlsc_pointer_type {
 };
 
 struct wlsc_input_device {
-	struct wl_object base;
+	struct wl_input_device base;
 	int32_t x, y;
 	struct wlsc_compositor *ec;
 	struct wlsc_surface *sprite;
@@ -139,7 +135,7 @@ struct wlsc_compositor {
 	struct wl_display *wl_display;
 
 	/* We implement the shell interface. */
-	struct wl_object shell;
+	struct wl_shell shell;
 
 	/* There can be more than one, but not right now... */
 	struct wlsc_input_device *input_device;

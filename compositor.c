@@ -101,22 +101,6 @@ wlsc_matrix_scale(struct wlsc_matrix *matrix, GLfloat x, GLfloat y, GLfloat z)
 }
 
 static void
-wlsc_matrix_rotate(struct wlsc_matrix *matrix,
-		   GLfloat angle, GLfloat x, GLfloat y, GLfloat z)
-{
-	GLfloat c = cos(angle);
-	GLfloat s = sin(angle);
-	struct wlsc_matrix rotate = {
-		{ x * x * (1 - c) + c,     y * x * (1 - c) + z * s, x * z * (1 - c) - y * s, 0,
-		  x * y * (1 - c) - z * s, y * y * (1 - c) + c,     y * z * (1 - c) + x * s, 0, 
-		  x * z * (1 - c) + y * s, y * z * (1 - c) - x * s, z * z * (1 - c) + c,     0,
-		  0, 0, 0, 1 }
-	};
-
-	wlsc_matrix_multiply(matrix, &rotate);
-}
-
-static void
 wlsc_matrix_transform(struct wlsc_matrix *matrix, struct wlsc_vector *v)
 {
 	int i, j;
@@ -349,15 +333,6 @@ wlsc_surface_raise(struct wlsc_surface *surface)
 }
 
 static void
-wlsc_surface_lower(struct wlsc_surface *surface)
-{
-	struct wlsc_compositor *compositor = surface->compositor;
-
-	wl_list_remove(&surface->link);
-	wl_list_insert(compositor->surface_list.prev, &surface->link);
-}
-
-static void
 wlsc_surface_update_matrix(struct wlsc_surface *es)
 {
 	wlsc_matrix_init(&es->matrix);
@@ -514,7 +489,8 @@ wlsc_input_device_start_grab(struct wlsc_input_device *device,
 	device->grab_width = device->pointer_focus->width;
 	device->grab_height = device->pointer_focus->height;
 
-	wlsc_input_device_set_pointer_focus(device, &wl_grab_surface,
+	wlsc_input_device_set_pointer_focus(device,
+					    (struct wlsc_surface *) &wl_grab_surface,
 					    time, 0, 0, 0, 0);
 
 	wlsc_input_device_set_pointer_image(device, pointer);
@@ -647,13 +623,13 @@ wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
 	if (device->keyboard_focus &&
 	    (!surface || device->keyboard_focus->base.client != surface->base.client))
 		wl_surface_post_event(&device->keyboard_focus->base,
-				      &device->base,
+				      &device->base.base,
 				      WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				      time, NULL, &device->keys);
 
 	if (surface)
 		wl_surface_post_event(&surface->base,
-				      &device->base,
+				      &device->base.base,
 				      WL_INPUT_DEVICE_KEYBOARD_FOCUS,
 				      time, &surface->base, &device->keys);
 
@@ -673,12 +649,12 @@ wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
 	if (device->pointer_focus &&
 	    (!surface || device->pointer_focus->base.client != surface->base.client))
 		wl_surface_post_event(&device->pointer_focus->base,
-				      &device->base,
+				      &device->base.base,
 				      WL_INPUT_DEVICE_POINTER_FOCUS,
 				      time, NULL, 0, 0, 0, 0);
 	if (surface)
 		wl_surface_post_event(&surface->base,
-				      &device->base,
+				      &device->base.base,
 				      WL_INPUT_DEVICE_POINTER_FOCUS,
 				      time, &surface->base,
 				      x, y, sx, sy);
@@ -743,7 +719,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 						    time, x, y, sx, sy);
 
 		if (es)
-			wl_surface_post_event(&es->base, &device->base,
+			wl_surface_post_event(&es->base, &device->base.base,
 					      WL_INPUT_DEVICE_MOTION,
 					      time, x, y, sx, sy);
 		break;
@@ -752,7 +728,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 		es = device->grab_surface;
 		es->x = x + device->grab_dx;
 		es->y = y + device->grab_dy;;
-		wl_surface_post_event(&es->base, &ec->shell,
+		wl_surface_post_event(&es->base, &ec->shell.base,
 				      WL_SHELL_CONFIGURE,
 				      time, device->grab,
 				      &es->base, es->x, es->y,
@@ -795,7 +771,7 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 			height = device->grab_height;
 		}
 
-		wl_surface_post_event(&es->base, &ec->shell,
+		wl_surface_post_event(&es->base, &ec->shell.base,
 				      WL_SHELL_CONFIGURE, time, device->grab,
 				      &es->base, sx, sy, width, height);
 		break;
@@ -843,17 +819,19 @@ notify_button(struct wlsc_input_device *device,
 		if (state && button == BTN_LEFT &&
 		    device->grab == WLSC_DEVICE_GRAB_MOTION &&
 		    (device->modifier_state & MODIFIER_SUPER))
-			shell_move(NULL, &compositor->shell,
-				   &surface->base, device, time);
+			shell_move(NULL, (struct wl_shell *) &compositor->shell,
+				   &surface->base, &device->base, time);
 		else if (state && button == BTN_MIDDLE &&
 			   device->grab == WLSC_DEVICE_GRAB_MOTION &&
 			   (device->modifier_state & MODIFIER_SUPER))
-			shell_resize(NULL, &compositor->shell,
-				     &surface->base, device, time,
+			shell_resize(NULL, (struct wl_shell *) &compositor->shell,
+
+				     &surface->base, &device->base, time,
 				     WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT);
 		else if (device->grab == WLSC_DEVICE_GRAB_NONE ||
 			 device->grab == WLSC_DEVICE_GRAB_MOTION)
-			wl_surface_post_event(&surface->base, &device->base,
+			wl_surface_post_event(&surface->base,
+					      &device->base.base,
 					      WL_INPUT_DEVICE_BUTTON,
 					      time, button, state);
 
@@ -920,7 +898,7 @@ notify_key(struct wlsc_input_device *device,
 
 	if (device->keyboard_focus != NULL)
 		wl_surface_post_event(&device->keyboard_focus->base,
-				      &device->base,
+				      &device->base.base,
 				      WL_INPUT_DEVICE_KEY, time, key, state);
 }
 
@@ -969,7 +947,7 @@ handle_surface_destroy(struct wlsc_listener *listener,
 	if (device->keyboard_focus == surface)
 		wlsc_input_device_set_keyboard_focus(device, NULL, time);
 	if (device->pointer_focus == surface ||
-	    (device->pointer_focus == &wl_grab_surface &&
+	    (&device->pointer_focus->base == &wl_grab_surface &&
 	     device->grab_surface == surface))
 		wlsc_input_device_end_grab(device, time);
 }
@@ -978,11 +956,11 @@ void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec)
 {
-	device->base.interface = &wl_input_device_interface;
-	device->base.implementation =
+	device->base.base.interface = &wl_input_device_interface;
+	device->base.base.implementation =
 		(void (**)(void)) &input_device_interface;
-	wl_display_add_object(ec->wl_display, &device->base);
-	wl_display_add_global(ec->wl_display, &device->base, NULL);
+	wl_display_add_object(ec->wl_display, &device->base.base);
+	wl_display_add_global(ec->wl_display, &device->base.base, NULL);
 
 	device->x = 100;
 	device->y = 100;
@@ -1171,10 +1149,10 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 
 	wl_display_set_compositor(display, &ec->base, &compositor_interface); 
 
-	ec->shell.interface = &wl_shell_interface;
-	ec->shell.implementation = (void (**)(void)) &shell_interface;
-	wl_display_add_object(display, &ec->shell);
-	if (wl_display_add_global(display, &ec->shell, NULL))
+	ec->shell.base.interface = &wl_shell_interface;
+	ec->shell.base.implementation = (void (**)(void)) &shell_interface;
+	wl_display_add_object(display, &ec->shell.base);
+	if (wl_display_add_global(display, &ec->shell.base, NULL))
 		return -1;
 
 	add_visuals(ec);

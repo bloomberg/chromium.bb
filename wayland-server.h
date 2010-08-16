@@ -112,6 +112,18 @@ struct wl_surface {
 	struct wl_client *client;
 };
 
+struct wl_shell {
+	struct wl_object base;
+};
+
+struct wl_input_device {
+	struct wl_object base;
+};
+
+struct wl_visual {
+	struct wl_object base;
+};
+
 void
 wl_client_post_event(struct wl_client *client,
 		      struct wl_object *sender,
