@@ -784,25 +784,20 @@ bool BrowserActionsContainer::CanStartDrag(View* sender,
 }
 
 void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
-  if (done_resizing) {
-    // Up until now we've only been modifying the resize_amount, but now it is
-    // time to set the container size to the size we have resized to, and then
-    // animate to the nearest icon count size if necessary (which may be 0).
-    int max_width = IconCountToWidth(-1, false);
-    container_width_ =
-        std::min(std::max(0, container_width_ - resize_amount), max_width);
-    if (container_width_ < max_width) {
-      animation_target_size_ =
-          IconCountToWidth(WidthToIconCount(container_width_), true);
-      resize_animation_->Reset();
-      resize_animation_->SetTweenType(Tween::EASE_OUT);
-      resize_animation_->Show();
-      return;
-    }
-  } else {
+  if (!done_resizing) {
     resize_amount_ = resize_amount;
+    OnBrowserActionVisibilityChanged();
+    return;
   }
-  OnBrowserActionVisibilityChanged();
+
+  // Up until now we've only been modifying the resize_amount, but now it is
+  // time to set the container size to the size we have resized to, and then
+  // animate to the nearest icon count size if necessary (which may be 0).
+  int max_width = IconCountToWidth(-1, false);
+  container_width_ =
+      std::min(std::max(0, container_width_ - resize_amount), max_width);
+  SaveDesiredSizeAndAnimate(Tween::EASE_OUT,
+                            WidthToIconCount(container_width_));
 }
 
 void BrowserActionsContainer::AnimationProgressed(const Animation* animation) {
@@ -818,12 +813,6 @@ void BrowserActionsContainer::AnimationEnded(const Animation* animation) {
   resize_amount_ = 0;
   OnBrowserActionVisibilityChanged();
   suppress_chevron_ = false;
-
-  // Don't save the icon count in incognito because there may be fewer icons
-  // in that mode. The result is that the container in a normal window is always
-  // at least as wide as in an incognito window.
-  if (!profile_->IsOffTheRecord())
-    model_->SetVisibleIconCount(VisibleBrowserActions());
 }
 
 void BrowserActionsContainer::NotifyMenuDeleted(
@@ -926,9 +915,8 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
   // Enlarge the container if it was already at maximum size and we're not in
   // the middle of upgrading.
   if ((model_->GetVisibleIconCount() < 0) && !extension->being_upgraded()) {
-    int target_size = IconCountToWidth(visible_actions + 1, false);
     suppress_chevron_ = true;
-    Animate(Tween::LINEAR, target_size);
+    SaveDesiredSizeAndAnimate(Tween::LINEAR, visible_actions + 1);
   } else {
     // Just redraw the (possibly modified) visible icon set.
     OnBrowserActionVisibilityChanged();
@@ -964,7 +952,8 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
         // Either we went from overflow to no-overflow, or we shrunk the no-
         // overflow container by 1.  Either way the size changed, so animate.
         chevron_->SetVisible(false);
-        Animate(Tween::EASE_OUT, IconCountToWidth(-1, false));
+        SaveDesiredSizeAndAnimate(Tween::EASE_OUT,
+                                  browser_action_views_.size());
       }
       return;
     }
@@ -1053,7 +1042,11 @@ int BrowserActionsContainer::IconCountToWidth(int icons,
       ToolbarView::kStandardSpacing;
 }
 
-int BrowserActionsContainer::WidthToIconCount(int pixels) const {
+size_t BrowserActionsContainer::WidthToIconCount(int pixels) const {
+  // Check for widths large enough to show the entire icon set.
+  if (pixels >= IconCountToWidth(-1, false))
+    return browser_action_views_.size();
+
   // We need to reserve space for the resize area, chevron, and the spacing on
   // either side of the chevron.
   int available_space = pixels - ToolbarView::kStandardSpacing -
@@ -1061,7 +1054,8 @@ int BrowserActionsContainer::WidthToIconCount(int pixels) const {
       ToolbarView::kStandardSpacing;
   // Now we add an extra between-item padding value so the space can be divided
   // evenly by (size of icon with padding).
-  return std::max(0, available_space + kItemSpacing) / IconWidth(true);
+  return static_cast<size_t>(
+      std::max(0, available_space + kItemSpacing) / IconWidth(true));
 }
 
 int BrowserActionsContainer::ContainerMinSize() const {
@@ -1069,7 +1063,20 @@ int BrowserActionsContainer::ContainerMinSize() const {
       chevron_->GetPreferredSize().width() + ToolbarView::kStandardSpacing;
 }
 
-void BrowserActionsContainer::Animate(Tween::Type tween_type, int target_size) {
+void BrowserActionsContainer::SaveDesiredSizeAndAnimate(
+    Tween::Type tween_type,
+    size_t num_visible_icons) {
+  // Save off the desired number of visible icons.  We do this now instead of at
+  // the end of the animation so that even if the browser is shut down while
+  // animating, the right value will be restored on next run.
+  // NOTE: Don't save the icon count in incognito because there may be fewer
+  // icons in that mode. The result is that the container in a normal window is
+  // always at least as wide as in an incognito window.
+  if (!profile_->IsOffTheRecord())
+    model_->SetVisibleIconCount(num_visible_icons);
+
+  int target_size = IconCountToWidth(num_visible_icons,
+      num_visible_icons < browser_action_views_.size());
   if (!disable_animations_during_testing_) {
     // Animate! We have to set the animation_target_size_ after calling Reset(),
     // because that could end up calling AnimationEnded which clears the value.

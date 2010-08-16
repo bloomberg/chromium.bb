@@ -419,9 +419,10 @@ class BrowserActionsContainer
   // callers can set |icons| to -1 to mean "all icons".
   int IconCountToWidth(int icons, bool display_chevron) const;
 
-  // Given a pixel width, returns the number of icons that fit, assuming we need
-  // to show a chevron.
-  int WidthToIconCount(int pixels) const;
+  // Given a pixel width, returns the number of icons that fit.  (This
+  // automatically determines whether a chevron will be needed and includes it
+  // in the calculation.)
+  size_t WidthToIconCount(int pixels) const;
 
   // Returns the absolute minimum size you can shrink the container down to and
   // still show it.  This assumes a visible chevron because the only way we
@@ -429,9 +430,10 @@ class BrowserActionsContainer
   // icons, in which case the container wouldn't be shown at all.
   int ContainerMinSize() const;
 
-  // Animate to the target value (unless testing, in which case we go straight
-  // to the target size).
-  void Animate(Tween::Type type, int target_size);
+  // Animate to the target size (unless testing, in which case we go straight to
+  // the target size).  This also saves the target number of visible icons in
+  // the pref if we're not off the record.
+  void SaveDesiredSizeAndAnimate(Tween::Type type, size_t num_visible_icons);
 
   // Returns true if this extension should be shown in this toolbar. This can
   // return false if we are in an incognito window and the extension is disabled
