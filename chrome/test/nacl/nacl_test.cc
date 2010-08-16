@@ -24,7 +24,7 @@ const FilePath::CharType kBaseUrl[] =
 }  // anonymous namespace
 
 NaClTest::NaClTest()
-    : UITest(), use_x64_nexes_(false) {
+    : UITest(), use_x64_nexes_(false), multiarch_test_(false) {
   launch_arguments_.AppendSwitch(switches::kEnableNaCl);
 
   // Currently we disable some of the sandboxes.  See:
@@ -47,10 +47,13 @@ FilePath NaClTest::GetTestRootDir() {
 
 GURL NaClTest::GetTestUrl(const FilePath& filename) {
   FilePath path(kBaseUrl);
-  if (use_x64_nexes_)
-    path = path.AppendASCII("x64");
-  else
-    path = path.AppendASCII("x86");
+  // Multiarch tests are in the directory defined by kBaseUrl.
+  if (!multiarch_test_) {
+    if (use_x64_nexes_)
+      path = path.AppendASCII("x64");
+    else
+      path = path.AppendASCII("x86");
+  }
   path = path.Append(filename);
   return GURL(path.value());
 }
@@ -73,6 +76,11 @@ void NaClTest::RunTest(const FilePath& filename, int timeout) {
   GURL url = GetTestUrl(filename);
   NavigateToURL(url);
   WaitForFinish(filename, timeout);
+}
+
+void NaClTest::RunMultiarchTest(const FilePath& filename, int timeout) {
+  multiarch_test_ = true;
+  RunTest(filename, timeout);
 }
 
 

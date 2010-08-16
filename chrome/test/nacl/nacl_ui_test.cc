@@ -83,3 +83,9 @@ TEST_F(NaClUITest, NpapiHwTest) {
   FilePath test_file(kNpapiHwHtmlFileName);
   RunTest(test_file, action_max_timeout_ms());
 }
+
+TEST_F(NaClUITest, MultiarchTest) {
+  FilePath test_file(kSrpcHwHtmlFileName);
+  RunMultiarchTest(test_file, action_max_timeout_ms());
+}
+
