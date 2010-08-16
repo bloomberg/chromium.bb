@@ -94,6 +94,7 @@
 //    kern_return_t result = sender.SendMessage(message, 1000); // timeout 1000ms
 //
 
+namespace google_breakpad {
 #define PRINT_MACH_RESULT(result_, message_) \
   printf(message_" %s (%d)\n", mach_error_string(result_), result_ );
 
@@ -300,5 +301,7 @@ class MachPortSender {
   mach_port_t   send_port_;
   kern_return_t init_result_;
 };
+
+}  // namespace google_breakpad
 
 #endif // MACH_IPC_H__

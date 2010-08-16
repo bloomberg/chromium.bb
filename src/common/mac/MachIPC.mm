@@ -33,6 +33,7 @@
 #import <stdio.h>
 #import "MachIPC.h"
 
+namespace google_breakpad {
 //==============================================================================
 MachSendMessage::MachSendMessage(int32_t message_id) : MachMessage() {
   head.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, 0);
@@ -299,3 +300,5 @@ kern_return_t MachPortSender::SendMessage(MachSendMessage &message,
 
   return result;
 }
+
+}  // namespace google_breakpad

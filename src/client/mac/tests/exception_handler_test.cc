@@ -41,6 +41,10 @@ namespace {
 using std::string;
 using google_breakpad::AutoTempDir;
 using google_breakpad::ExceptionHandler;
+using google_breakpad::MachPortSender;
+using google_breakpad::MachReceiveMessage;
+using google_breakpad::MachSendMessage;
+using google_breakpad::ReceivePort;
 using testing::Test;
 
 class ExceptionHandlerTest : public Test {

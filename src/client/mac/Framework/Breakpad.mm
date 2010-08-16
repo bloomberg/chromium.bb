@@ -55,6 +55,10 @@
 
 
 using google_breakpad::KeyValueEntry;
+using google_breakpad::MachPortSender;
+using google_breakpad::MachReceiveMessage;
+using google_breakpad::MachSendMessage;
+using google_breakpad::ReceivePort;
 using google_breakpad::SimpleStringDictionary;
 using google_breakpad::SimpleStringDictionaryIterator;
 
