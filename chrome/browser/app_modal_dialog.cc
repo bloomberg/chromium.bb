@@ -43,4 +43,3 @@ void AppModalDialog::Cleanup() {
 void AppModalDialog::CompleteDialog() {
   Singleton<AppModalDialogQueue>()->ShowNextDialog();
 }
-

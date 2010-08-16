@@ -42,4 +42,3 @@ void MockPreferences::AddTestItem(CFStringRef key,
   if (is_forced)
     CFSetAddValue(forced_, key);
 }
-

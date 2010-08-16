@@ -191,4 +191,3 @@ NativeDialog JavaScriptAppModalDialog::CreateNativeDialog() {
                    reinterpret_cast<AppModalDialog*>(this));
   return dialog;
 }
-

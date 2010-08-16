@@ -66,4 +66,3 @@ void GpuProcessHostUIShim::RemoveRoute(int32 routing_id) {
 void GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   router_.RouteMessage(message);
 }
-

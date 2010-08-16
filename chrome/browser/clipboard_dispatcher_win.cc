@@ -30,4 +30,3 @@ bool ClipboardDispatcher::ReadFilenames(Clipboard::Buffer buffer,
   filenames->clear();
   return false;
 }
-

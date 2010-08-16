@@ -27,4 +27,3 @@ void MockBrowsingDataAppCacheHelper::CancelNotification() {
 void MockBrowsingDataAppCacheHelper::DeleteAppCacheGroup(
     const GURL& manifest_url) {
 }
-

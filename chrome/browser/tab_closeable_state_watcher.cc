@@ -27,4 +27,3 @@
     watcher = new ::TabCloseableStateWatcher();
   return watcher;
 }
-
