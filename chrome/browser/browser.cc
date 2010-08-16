@@ -3990,8 +3990,14 @@ void Browser::OpenURLAtIndex(TabContents* source,
 void Browser::BuildPopupWindow(TabContents* source,
                                TabContents* new_contents,
                                const gfx::Rect& initial_pos) {
+  Browser::Type browser_type;
+  if ((type_ & TYPE_APP) ||          // New app popup
+      (source && source->is_app()))  // App is creating a popup
+    browser_type = TYPE_APP_POPUP;
+  else
+    browser_type = TYPE_POPUP;
   BuildPopupWindowHelper(source, new_contents, initial_pos,
-                         (type_ & TYPE_APP) ? TYPE_APP_POPUP : TYPE_POPUP,
+                         browser_type,
                          profile_, false);
 }
 
