@@ -134,6 +134,10 @@ cr.define('options', function() {
       var button = document.createElement('button');
       button.textContent = localStrings.getString('configure');
       button.onclick = function(e) {
+        // Cancel the event so that the click event is not propagated to
+        // handleCheckboxClick_(). The button click should not be handled
+        // as checkbox click.
+        e.preventDefault();
         OptionsPage.showPageByName(pageName);
       }
       return button;
