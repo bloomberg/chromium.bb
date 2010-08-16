@@ -163,8 +163,7 @@ FindBarView::FindBarView(FindBarHost* host)
 
     // Background images for the Find edit box.
     kBackground = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND);
-    kBackground_left = rb.GetBitmapNamed(base::i18n::IsRTL() ?
-        IDR_FIND_BOX_BACKGROUND_LEFT_RTL : IDR_FIND_BOX_BACKGROUND_LEFT);
+    kBackground_left = rb.GetBitmapNamed(IDR_FIND_BOX_BACKGROUND_LEFT);
   }
 }
 
@@ -233,9 +232,6 @@ void FindBarView::SetFocusAndSelection(bool select_all) {
 void FindBarView::Paint(gfx::Canvas* canvas) {
   SkPaint paint;
 
-  // Get the local bounds so that we now how much to stretch the background.
-  gfx::Rect lb = GetLocalBounds(true);
-
   // First, we draw the background image for the whole dialog (3 images: left,
   // middle and right). Note, that the window region has been set by the
   // controller, so the whitespace in the left and right background images is
@@ -244,74 +240,54 @@ void FindBarView::Paint(gfx::Canvas* canvas) {
   ThemeProvider* tp = GetThemeProvider();
   gfx::Rect bounds;
   host()->GetThemePosition(&bounds);
-  canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR),
-                       bounds.x(), bounds.y(), 0, 0, lb.width(), lb.height());
+  canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR), bounds.x(),
+                       bounds.y(), 0, 0, bounds.width(), bounds.height());
+
+  // Now flip the canvas for the rest of the graphics if in RTL mode.
+  canvas->Save();
+  if (base::i18n::IsRTL()) {
+    canvas->TranslateInt(width(), 0);
+    canvas->ScaleInt(-1, 1);
+  }
 
   canvas->DrawBitmapInt(*kDialog_left, 0, 0);
 
   // Stretch the middle background to cover all of the area between the two
   // other images.
-  canvas->TileImageInt(*kDialog_middle,
-                        kDialog_left->width(),
-                        0,
-                        lb.width() -
-                            kDialog_left->width() -
-                            kDialog_right->width(),
-                        kDialog_middle->height());
+  canvas->TileImageInt(*kDialog_middle, kDialog_left->width(), 0,
+      bounds.width() - kDialog_left->width() - kDialog_right->width(),
+      kDialog_middle->height());
 
-  canvas->DrawBitmapInt(*kDialog_right, lb.right() - kDialog_right->width(), 0);
+  canvas->DrawBitmapInt(*kDialog_right, bounds.width() - kDialog_right->width(),
+                        0);
 
   // Then we draw the background image for the Find Textfield. We start by
   // calculating the position of background images for the Find text box.
-  gfx::Rect find_text_rect;
-  gfx::Rect back_button_rect;
-  int x = 0;   // x coordinate of the curved edge background image.
-  int w = 0;   // width of the background image for the text field.
-  if (base::i18n::IsRTL()) {
-    find_text_rect = find_text_->GetBounds(APPLY_MIRRORING_TRANSFORMATION);
-    back_button_rect =
-        find_previous_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION);
-    x = find_text_rect.right();
-    w = find_text_rect.right() - back_button_rect.right();
-  } else {
-    find_text_rect = find_text_->bounds();
-    back_button_rect = find_previous_button_->bounds();
-    x = find_text_rect.x() - kBackground_left->width();
-    w = back_button_rect.x() - find_text_rect.x();
-  }
+  int find_text_x = find_text_->x();
+  gfx::Point back_button_origin = find_previous_button_->bounds().origin();
 
-  // Draw the image to the left that creates a curved left edge for the box
-  // (drawn on the right for RTL languages).
+  // Draw the image to the left that creates a curved left edge for the box.
   canvas->TileImageInt(*kBackground_left,
-                       x,
-                       back_button_rect.y(),
-                       kBackground_left->width(),
-                       kBackground_left->height());
+      find_text_x - kBackground_left->width(), back_button_origin.y(),
+      kBackground_left->width(), kBackground_left->height());
 
   // Draw the top and bottom border for whole text box (encompasses both the
   // find_text_ edit box and the match_count_text_ label).
-  int background_height = kBackground->height();
-  canvas->TileImageInt(*kBackground,
-                       base::i18n::IsRTL() ?
-                           back_button_rect.right() : find_text_rect.x(),
-                       back_button_rect.y(),
-                       w,
-                       background_height);
+  canvas->TileImageInt(*kBackground, find_text_x, back_button_origin.y(),
+                       back_button_origin.x() - find_text_x,
+                       kBackground->height());
 
   if (animation_offset() > 0) {
     // While animating we draw the curved edges at the point where the
     // controller told us the top of the window is: |animation_offset()|.
-    canvas->TileImageInt(*kDialog_left,
-                         lb.x(),
-                         animation_offset(),
-                         kDialog_left->width(),
-                         kAnimatingEdgeHeight);
+    canvas->TileImageInt(*kDialog_left, bounds.x(), animation_offset(),
+                         kDialog_left->width(), kAnimatingEdgeHeight);
     canvas->TileImageInt(*kDialog_right,
-                         lb.right() - kDialog_right->width(),
-                         animation_offset(),
-                         kDialog_right->width(),
-                         kAnimatingEdgeHeight);
+        bounds.width() - kDialog_right->width(), animation_offset(),
+        kDialog_right->width(), kAnimatingEdgeHeight);
   }
+
+  canvas->Restore();
 }
 
 void FindBarView::Layout() {
