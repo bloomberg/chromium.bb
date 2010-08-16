@@ -18,6 +18,7 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/chrome_process_util.h"
+#include "chrome/test/test_switches.h"
 #include "chrome/test/ui/ui_test.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -153,6 +154,7 @@ void PopulateBufferCache(const FilePath& test_dir) {
 class PageCyclerTest : public UITest {
  protected:
   bool print_times_only_;
+  int num_test_iterations_;
 #if defined(OS_MACOSX)
   rlim_t fd_limit_;
 #endif
@@ -161,6 +163,14 @@ class PageCyclerTest : public UITest {
       : print_times_only_(false) {
     show_window_ = true;
 
+    const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+    num_test_iterations_ = TEST_ITERATIONS;
+
+    if (parsed_command_line.HasSwitch(switches::kPageCyclerIterations)) {
+      std::string str = parsed_command_line.GetSwitchValueASCII(
+          switches::kPageCyclerIterations);
+      base::StringToInt(str, &num_test_iterations_);
+    }
 
     // Expose garbage collection for the page cycler tests.
     launch_arguments_.AppendSwitchASCII(switches::kJavaScriptFlags,
@@ -193,7 +203,7 @@ class PageCyclerTest : public UITest {
   }
 
   virtual int GetTestIterations() {
-    return TEST_ITERATIONS;
+    return num_test_iterations_;
   }
 
   // For HTTP tests, the name must be safe for use in a URL without escaping.
