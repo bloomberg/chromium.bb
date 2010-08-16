@@ -31,6 +31,7 @@
 #include <cairo.h>
 #include <glib.h>
 #include <glib-object.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <xf86drm.h>
 
 #define EGL_EGLEXT_PROTOTYPES 1
@@ -69,6 +70,8 @@ struct display {
 	char *device_name;
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
 	struct xkb_desc *xkb;
+	EGLImageKHR *pointer_images;
+	struct wl_buffer **pointer_buffers;
 };
 
 struct window {
@@ -122,6 +125,100 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 	cairo_line_to(cr, x0 + radius, y1);
 	cairo_arc(cr, x0 + radius, y1 - radius, radius, M_PI / 2, M_PI);
 	cairo_close_path(cr);
+}
+
+static int
+texture_from_png(const char *filename, int width, int height)
+{
+	GdkPixbuf *pixbuf;
+	GError *error = NULL;
+	void *data;
+	GLenum format;
+
+	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
+						   width, height,
+						   FALSE, &error);
+	if (error != NULL)
+		return -1;
+
+	data = gdk_pixbuf_get_pixels(pixbuf);
+
+	if (gdk_pixbuf_get_has_alpha(pixbuf))
+		format = GL_RGBA;
+	else
+		format = GL_RGB;
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+		     width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+	gdk_pixbuf_unref(pixbuf);
+
+	return 0;
+}
+
+static const struct {
+	const char *filename;
+	int hotspot_x, hotspot_y;
+} pointer_images[] = {
+	{ DATADIR "/wayland/bottom_left_corner.png",	 6, 30 },
+	{ DATADIR "/wayland/bottom_right_corner.png",	28, 28 },
+	{ DATADIR "/wayland/bottom_side.png",		16, 20 },
+	{ DATADIR "/wayland/grabbing.png",		20, 17 },
+	{ DATADIR "/wayland/left_ptr.png",		10,  5 },
+	{ DATADIR "/wayland/left_side.png",		10, 20 },
+	{ DATADIR "/wayland/right_side.png",		30, 19 },
+	{ DATADIR "/wayland/top_left_corner.png",	 8,  8 },
+	{ DATADIR "/wayland/top_right_corner.png",	26,  8 },
+	{ DATADIR "/wayland/top_side.png",		18,  8 },
+	{ DATADIR "/wayland/xterm.png",			15, 15 }
+};
+
+static void
+create_pointer_images(struct display *d)
+{
+	int i, count;
+	GLuint texture;
+	const int width = 32, height = 32;
+	EGLint name, stride;
+	struct wl_visual *visual;
+
+	EGLint image_attribs[] = {
+		EGL_WIDTH,		0,
+		EGL_HEIGHT,		0,
+		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
+		EGL_IMAGE_USE_MESA,	EGL_IMAGE_USE_SCANOUT_MESA,
+		EGL_NONE
+	};
+
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	visual = wl_display_get_argb_visual(d->display);
+
+	image_attribs[1] = width;
+	image_attribs[3] = height;
+	count = ARRAY_LENGTH(pointer_images);
+	d->pointer_images = malloc(count * sizeof *d->pointer_images);
+	d->pointer_buffers = malloc(count * sizeof *d->pointer_buffers);
+	for (i = 0; i < count; i++) {
+		d->pointer_images[i] =
+			eglCreateDRMImageMESA(d->dpy, image_attribs);
+		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D,
+					     d->pointer_images[i]);
+		eglExportDRMImageMESA(d->dpy,
+				      d->pointer_images[i],
+				      &name, NULL, &stride);
+		texture_from_png(pointer_images[i].filename, width, height);
+
+		d->pointer_buffers[i] =
+			wl_drm_create_buffer(d->drm, name,
+					     width, height, stride, visual);
+	}
+
 }
 
 static const cairo_user_data_key_t surface_data_key;
@@ -315,6 +412,100 @@ enum window_state {
 	WINDOW_STABLE = 16,
 };
 
+enum pointer_type {
+	POINTER_BOTTOM_LEFT,
+	POINTER_BOTTOM_RIGHT,
+	POINTER_BOTTOM,
+	POINTER_DRAGGING,
+	POINTER_LEFT_PTR,
+	POINTER_LEFT,
+	POINTER_RIGHT,
+	POINTER_TOP_LEFT,
+	POINTER_TOP_RIGHT,
+	POINTER_TOP,
+	POINTER_IBEAM,
+};
+
+static int
+get_pointer_location(struct window *window, int32_t x, int32_t y)
+{
+	int vlocation, hlocation;
+	const int grip_size = 8;
+
+	if (x < window->margin)
+		hlocation = WINDOW_STABLE;
+	else if (window->margin <= x && x < window->margin + grip_size)
+		hlocation = WINDOW_RESIZING_LEFT;
+	else if (x < window->allocation.width - window->margin - grip_size)
+		hlocation = WINDOW_MOVING;
+	else if (x < window->allocation.width - window->margin)
+		hlocation = WINDOW_RESIZING_RIGHT;
+	else
+		hlocation = WINDOW_STABLE;
+
+	if (y < window->margin)
+		vlocation = WINDOW_STABLE;
+	else if (window->margin <= y && y < window->margin + grip_size)
+		vlocation = WINDOW_RESIZING_TOP;
+	else if (y < window->allocation.height - window->margin - grip_size)
+		vlocation = WINDOW_MOVING;
+	else if (y < window->allocation.height - window->margin)
+		vlocation = WINDOW_RESIZING_BOTTOM;
+	else
+		vlocation = WINDOW_STABLE;
+
+	return vlocation | hlocation;
+}
+
+static void
+set_pointer_image(struct input *input)
+{
+	struct display *display = input->display;
+	int pointer, location;
+
+	location = get_pointer_location(input->pointer_focus,
+					input->sx, input->sy);
+	switch (location) {
+	case WINDOW_RESIZING_TOP:
+		pointer = POINTER_TOP;
+		break;
+	case WINDOW_RESIZING_BOTTOM:
+		pointer = POINTER_BOTTOM;
+		break;
+	case WINDOW_RESIZING_LEFT:
+		pointer = POINTER_LEFT;
+		break;
+	case WINDOW_RESIZING_RIGHT:
+		pointer = POINTER_RIGHT;
+		break;
+	case WINDOW_RESIZING_TOP_LEFT:
+		pointer = POINTER_TOP_LEFT;
+		break;
+	case WINDOW_RESIZING_TOP_RIGHT:
+		pointer = POINTER_TOP_RIGHT;
+		break;
+	case WINDOW_RESIZING_BOTTOM_LEFT:
+		pointer = POINTER_BOTTOM_LEFT;
+		break;
+	case WINDOW_RESIZING_BOTTOM_RIGHT:
+		pointer = POINTER_BOTTOM_RIGHT;
+		break;
+	case WINDOW_STABLE:
+		wl_input_device_attach(input->input_device,
+				       NULL, 0, 0);
+		return;
+	default:
+		/* FIXME: We should ask the application here. */
+		pointer = POINTER_IBEAM;
+		break;
+	}
+
+	wl_input_device_attach(input->input_device,
+			       display->pointer_buffers[pointer],
+			       pointer_images[pointer].hotspot_x,
+			       pointer_images[pointer].hotspot_y);
+}
+
 static void
 window_handle_motion(void *data, struct wl_input_device *input_device,
 		     uint32_t time,
@@ -326,6 +517,8 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 	input->y = y;
 	input->sx = sx;
 	input->sy = sy;
+
+	set_pointer_image(input);
 }
 
 static void window_handle_button(void *data, struct wl_input_device *input_device,
@@ -333,28 +526,12 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 {
 	struct input *input = data;
 	struct window *window = input->pointer_focus;
-	int grip_size = 8, vlocation, hlocation;
+	int location;
 
-	if (window->margin <= input->sx && input->sx < window->margin + grip_size)
-		hlocation = WINDOW_RESIZING_LEFT;
-	else if (input->sx < window->allocation.width - window->margin - grip_size)
-		hlocation = WINDOW_MOVING;
-	else if (input->sx < window->allocation.width - window->margin)
-		hlocation = WINDOW_RESIZING_RIGHT;
-	else
-		hlocation = WINDOW_STABLE;
-
-	if (window->margin <= input->sy && input->sy < window->margin + grip_size)
-		vlocation = WINDOW_RESIZING_TOP;
-	else if (input->sy < window->allocation.height - window->margin - grip_size)
-		vlocation = WINDOW_MOVING;
-	else if (input->sy < window->allocation.height - window->margin)
-		vlocation = WINDOW_RESIZING_BOTTOM;
-	else
-		vlocation = WINDOW_STABLE;
+	location = get_pointer_location(window, input->sx, input->sy);
 
 	if (button == BTN_LEFT && state == 1) {
-		switch (hlocation | vlocation) {
+		switch (location) {
 		case WINDOW_MOVING:
 			wl_shell_move(window->display->shell,
 				      window->surface, input_device, time);
@@ -369,7 +546,7 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 		case WINDOW_RESIZING_BOTTOM_RIGHT:
 			wl_shell_resize(window->display->shell,
 					window->surface, input_device, time,
-					hlocation | vlocation);
+					location);
 			break;
 		}
 	}
@@ -413,10 +590,12 @@ window_handle_pointer_focus(void *data,
 {
 	struct input *input = data;
 
-	if (surface)
+	if (surface) {
 		input->pointer_focus = wl_surface_get_user_data(surface);
-	else
+		set_pointer_image(input);
+	} else {
 		input->pointer_focus = NULL;
+	}
 }
 
 static void
@@ -944,6 +1123,8 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		fprintf(stderr, "failed to get cairo drm device\n");
 		return NULL;
 	}
+
+	create_pointer_images(d);
 
 	display_render_frame(d);
 
