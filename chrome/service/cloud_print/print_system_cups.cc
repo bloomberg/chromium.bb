@@ -83,7 +83,7 @@ namespace cloud_print {
 
 static const char kCUPSPrinterInfoOpt[] = "printer-info";
 static const char kCUPSPrinterStateOpt[] = "printer-state";
-static const wchar_t kCUPSPrintServerURL[] = L"print_server_url";
+static const char kCUPSPrintServerURL[] = "print_server_url";
 
 // Default port for IPP print servers.
 static const int kDefaultIPPServerPort = 631;

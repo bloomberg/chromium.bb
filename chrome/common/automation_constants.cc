@@ -7,9 +7,9 @@
 namespace automation {
 // JSON value labels for proxy settings that are passed in via
 // AutomationMsg_SetProxyConfig.
-const wchar_t kJSONProxyAutoconfig[] = L"proxy.autoconfig";
-const wchar_t kJSONProxyNoProxy[] = L"proxy.no_proxy";
-const wchar_t kJSONProxyPacUrl[] = L"proxy.pac_url";
-const wchar_t kJSONProxyBypassList[] = L"proxy.bypass_list";
-const wchar_t kJSONProxyServer[] = L"proxy.server";
+const char kJSONProxyAutoconfig[] = "proxy.autoconfig";
+const char kJSONProxyNoProxy[] = "proxy.no_proxy";
+const char kJSONProxyPacUrl[] = "proxy.pac_url";
+const char kJSONProxyBypassList[] = "proxy.bypass_list";
+const char kJSONProxyServer[] = "proxy.server";
 }

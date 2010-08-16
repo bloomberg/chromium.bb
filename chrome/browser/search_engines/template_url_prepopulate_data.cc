@@ -9,6 +9,7 @@
 #endif
 
 #include "base/command_line.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/pref_service.h"
@@ -3189,10 +3190,10 @@ void GetPrepopulatedTemplatefromPrefs(PrefService* prefs,
   if (!list)
     return;
 
-  std::wstring name;
-  std::wstring keyword;
-  std::wstring search_url;
-  std::wstring suggest_url;
+  string16 name;
+  string16 keyword;
+  std::string search_url;
+  std::string suggest_url;
   std::string favicon_url;
   std::string encoding;
   int search_engine_type;
@@ -3204,16 +3205,16 @@ void GetPrepopulatedTemplatefromPrefs(PrefService* prefs,
     Value* val;
     DictionaryValue* engine;
     list->GetDictionary(i, &engine);
-    if (engine->Get(L"name", &val) && val->GetAsString(&name) &&
-        engine->Get(L"keyword", &val) && val->GetAsString(&keyword) &&
-        engine->Get(L"search_url", &val) && val->GetAsString(&search_url) &&
-        engine->Get(L"suggest_url", &val) && val->GetAsString(&suggest_url) &&
-        engine->Get(L"favicon_url", &val) && val->GetAsString(&favicon_url) &&
-        engine->Get(L"encoding", &val) && val->GetAsString(&encoding) &&
-        engine->Get(L"search_engine_type", &val) && val->GetAsInteger(
+    if (engine->Get("name", &val) && val->GetAsString(&name) &&
+        engine->Get("keyword", &val) && val->GetAsString(&keyword) &&
+        engine->Get("search_url", &val) && val->GetAsString(&search_url) &&
+        engine->Get("suggest_url", &val) && val->GetAsString(&suggest_url) &&
+        engine->Get("favicon_url", &val) && val->GetAsString(&favicon_url) &&
+        engine->Get("encoding", &val) && val->GetAsString(&encoding) &&
+        engine->Get("search_engine_type", &val) && val->GetAsInteger(
             &search_engine_type) &&
-        engine->Get(L"logo_id", &val) && val->GetAsInteger(&logo_id) &&
-        engine->Get(L"id", &val) && val->GetAsInteger(&id)) {
+        engine->Get("logo_id", &val) && val->GetAsInteger(&logo_id) &&
+        engine->Get("id", &val) && val->GetAsInteger(&id)) {
       // These next fields are not allowed to be empty.
       if (search_url.empty() || favicon_url.empty() || encoding.empty())
         return;
@@ -3221,11 +3222,14 @@ void GetPrepopulatedTemplatefromPrefs(PrefService* prefs,
       // Got a parsing error. No big deal.
       continue;
     }
-    t_urls->push_back(MakePrepopulatedTemplateURL(name.c_str(),
-        keyword.c_str(),
-        search_url.c_str(),
+    // TODO(viettrungluu): convert |MakePrepopulatedTemplateURL()| and get rid
+    // of conversions.
+    t_urls->push_back(MakePrepopulatedTemplateURL(
+        UTF16ToWideHack(name).c_str(),
+        UTF16ToWideHack(keyword).c_str(),
+        UTF8ToWide(search_url).c_str(),
         favicon_url.c_str(),
-        suggest_url.c_str(),
+        UTF8ToWide(suggest_url).c_str(),
         encoding.c_str(),
         static_cast<SearchEngineType>(search_engine_type),
         logo_id,

@@ -67,7 +67,7 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsNonExistentDirectory) {
 // Test reading back a single preference value.
 TEST_F(ConfigDirPolicyProviderTest, ReadPrefsSinglePref) {
   DictionaryValue test_dict;
-  test_dict.SetString(L"HomepageLocation", L"http://www.google.com");
+  test_dict.SetString("HomepageLocation", "http://www.google.com");
   WriteConfigFile(test_dict, "config_file");
   ConfigDirPolicyProvider provider(test_dir_);
 
@@ -79,9 +79,9 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsSinglePref) {
       policy_map.find(ConfigurationPolicyStore::kPolicyHomePage);
   ASSERT_TRUE(entry != policy_map.end());
 
-  std::wstring str_value;
+  std::string str_value;
   EXPECT_TRUE(entry->second->GetAsString(&str_value));
-  EXPECT_EQ(L"http://www.google.com", str_value);
+  EXPECT_EQ("http://www.google.com", str_value);
 }
 
 // Test merging values from different files.
@@ -91,11 +91,11 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsMergePrefs) {
   // filesystem may return files in arbitrary order, there is no way to be sure,
   // but this is better than nothing.
   DictionaryValue test_dict_bar;
-  test_dict_bar.SetString(L"HomepageLocation", L"http://bar.com");
+  test_dict_bar.SetString("HomepageLocation", "http://bar.com");
   for (unsigned int i = 1; i <= 4; ++i)
     WriteConfigFile(test_dict_bar, base::IntToString(i));
   DictionaryValue test_dict_foo;
-  test_dict_foo.SetString(L"HomepageLocation", L"http://foo.com");
+  test_dict_foo.SetString("HomepageLocation", "http://foo.com");
   WriteConfigFile(test_dict_foo, "9");
   for (unsigned int i = 5; i <= 8; ++i)
     WriteConfigFile(test_dict_bar, base::IntToString(i));
@@ -109,7 +109,7 @@ TEST_F(ConfigDirPolicyProviderTest, ReadPrefsMergePrefs) {
       policy_map.find(ConfigurationPolicyStore::kPolicyHomePage);
   ASSERT_TRUE(entry != policy_map.end());
 
-  std::wstring str_value;
+  std::string str_value;
   EXPECT_TRUE(entry->second->GetAsString(&str_value));
-  EXPECT_EQ(L"http://foo.com", str_value);
+  EXPECT_EQ("http://foo.com", str_value);
 }

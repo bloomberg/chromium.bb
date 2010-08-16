@@ -441,7 +441,7 @@ void CloudPrintProxyBackend::Core::RegisterNextPrinter() {
       // Send a hash of the printer capabilities to the server. We will use this
       // later to check if the capabilities have changed
       CloudPrintHelpers::AddMultipartValueForUpload(
-          WideToUTF8(kPrinterCapsHashValue).c_str(),
+          kPrinterCapsHashValue,
           MD5String(last_uploaded_printer_info_.printer_capabilities),
           mime_boundary, std::string(), &post_data);
       // Terminate the request body
@@ -557,9 +557,9 @@ void CloudPrintProxyBackend::Core::InitJobHandlerForPrinter(
     cloud_print::PrinterBasicInfo printer_info;
     printer_data->GetString(kNameValue, &printer_info.printer_name);
     DCHECK(!printer_info.printer_name.empty());
-    printer_data->GetString(UTF8ToWide(kPrinterDescValue),
+    printer_data->GetString(kPrinterDescValue,
                             &printer_info.printer_description);
-    printer_data->GetInteger(UTF8ToWide(kPrinterStatusValue),
+    printer_data->GetInteger(kPrinterStatusValue,
                              &printer_info.printer_status);
     std::string caps_hash;
     printer_data->GetString(kPrinterCapsHashValue, &caps_hash);

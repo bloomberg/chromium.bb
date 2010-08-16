@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -321,7 +322,7 @@ bool GetBookmarkTreeFunction::RunImpl() {
 }
 
 bool SearchBookmarksFunction::RunImpl() {
-  std::wstring query;
+  string16 query;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &query));
 
   BookmarkModel* model = profile()->GetBookmarkModel();
@@ -329,7 +330,7 @@ bool SearchBookmarksFunction::RunImpl() {
   std::wstring lang =
       UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   std::vector<const BookmarkNode*> nodes;
-  bookmark_utils::GetBookmarksContainingText(model, query,
+  bookmark_utils::GetBookmarksContainingText(model, UTF16ToWideHack(query),
                                              std::numeric_limits<int>::max(),
                                              lang, &nodes);
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();

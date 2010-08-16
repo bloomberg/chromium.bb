@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/browser_process.h"
@@ -396,10 +397,11 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
   ListValue* root_list = static_cast<ListValue*>(root_val);
 
   Value* query_val;
-  std::wstring query_str;
+  string16 query_str;
   Value* result_val;
   if ((root_list->GetSize() < 2) || !root_list->Get(0, &query_val) ||
-      !query_val->GetAsString(&query_str) || (query_str != input_text) ||
+      !query_val->GetAsString(&query_str) ||
+      (query_str != WideToUTF16Hack(input_text)) ||
       !root_list->Get(1, &result_val) || !result_val->IsType(Value::TYPE_LIST))
     return false;
 
@@ -436,17 +438,17 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
   ListValue* result_list = static_cast<ListValue*>(result_val);
   for (size_t i = 0; i < result_list->GetSize(); ++i) {
     Value* suggestion_val;
-    std::wstring suggestion_str;
+    string16 suggestion_str;
     if (!result_list->Get(i, &suggestion_val) ||
         !suggestion_val->GetAsString(&suggestion_str))
       return false;
 
     Value* type_val;
-    std::wstring type_str;
+    std::string type_str;
     if (type_list && type_list->Get(i, &type_val) &&
-        type_val->GetAsString(&type_str) && (type_str == L"NAVIGATION")) {
+        type_val->GetAsString(&type_str) && (type_str == "NAVIGATION")) {
       Value* site_val;
-      std::wstring site_name;
+      string16 site_name;
       NavigationResults& navigation_results =
           is_keyword ? keyword_navigation_results_ :
                        default_navigation_results_;
@@ -455,16 +457,18 @@ bool SearchProvider::ParseSuggestResults(Value* root_val,
           site_val->IsType(Value::TYPE_STRING) &&
           site_val->GetAsString(&site_name)) {
         // We can't blindly trust the URL coming from the server to be valid.
-        GURL result_url(URLFixerUpper::FixupURL(WideToUTF8(suggestion_str),
+        GURL result_url(URLFixerUpper::FixupURL(UTF16ToUTF8(suggestion_str),
                                                 std::string()));
-        if (result_url.is_valid())
-          navigation_results.push_back(NavigationResult(result_url, site_name));
+        if (result_url.is_valid()) {
+          navigation_results.push_back(NavigationResult(result_url,
+              UTF16ToWideHack(site_name)));
+        }
       }
     } else {
       // TODO(kochi): Currently we treat a calculator result as a query, but it
       // is better to have better presentation for caluculator results.
       if (suggest_results->size() < kMaxMatches)
-        suggest_results->push_back(suggestion_str);
+        suggest_results->push_back(UTF16ToWideHack(suggestion_str));
     }
   }
 

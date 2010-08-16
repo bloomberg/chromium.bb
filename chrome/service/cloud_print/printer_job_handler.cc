@@ -154,8 +154,8 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
           mime_boundary, printer_caps.defaults_mime_type,
           &post_data);
       CloudPrintHelpers::AddMultipartValueForUpload(
-          WideToUTF8(kPrinterCapsHashValue).c_str(), caps_hash, mime_boundary,
-          std::string(), &post_data);
+          kPrinterCapsHashValue, caps_hash, mime_boundary, std::string(),
+          &post_data);
     }
   }
   if (printer_info.printer_name != printer_info_.printer_name) {

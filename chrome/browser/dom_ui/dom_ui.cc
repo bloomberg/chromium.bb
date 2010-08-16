@@ -176,12 +176,13 @@ bool DOMMessageHandler::ExtractIntegerValue(const Value* value, int* out_int) {
   return false;
 }
 
+// TODO(viettrungluu): convert to string16 (or UTF-8 std::string?).
 std::wstring DOMMessageHandler::ExtractStringValue(const Value* value) {
   if (value && value->GetType() == Value::TYPE_LIST) {
     const ListValue* list_value = static_cast<const ListValue*>(value);
-    std::wstring wstring_value;
-    if (list_value->GetString(0, &wstring_value))
-      return wstring_value;
+    string16 string16_value;
+    if (list_value->GetString(0, &string16_value))
+      return UTF16ToWideHack(string16_value);
   }
   return std::wstring();
 }

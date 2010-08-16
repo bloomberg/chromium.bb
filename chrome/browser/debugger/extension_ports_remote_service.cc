@@ -74,38 +74,38 @@ namespace {
 // "data" field in this case.
 
 // Commands:
-static const std::string kConnect = "connect";
-static const std::string kDisconnect = "disconnect";
-static const std::string kPostMessage = "postMessage";
+const char kConnect[] = "connect";
+const char kDisconnect[] = "disconnect";
+const char kPostMessage[] = "postMessage";
 // Events:
-static const std::string kOnMessage = "onMessage";
-static const std::string kOnDisconnect = "onDisconnect";
+const char kOnMessage[] = "onMessage";
+const char kOnDisconnect[] = "onDisconnect";
 
 // Constants for the JSON message fields.
 // The type is wstring because the constant is used to get a
 // DictionaryValue field (which requires a wide string).
 
 // Mandatory.
-static const std::wstring kCommandWide = L"command";
+const char kCommandKey[] = "command";
 
 // Always present in messages sent to the external client.
-static const std::wstring kResultWide = L"result";
+const char kResultKey[] = "result";
 
 // Field for command-specific parameters. Not strictly necessary, but
 // makes it more similar to the remote debugger protocol, which should
 // allow easier reuse of client code.
-static const std::wstring kDataWide = L"data";
+const char kDataKey[] = "data";
 
 // Fields within the "data" dictionary:
 
 // Required for "connect":
-static const std::wstring kExtensionIdWide = L"extensionId";
+const char kExtensionIdKey[] = "extensionId";
 // Optional in "connect":
-static const std::wstring kChannelNameWide = L"channelName";
-static const std::wstring kTabIdWide = L"tabId";
+const char kChannelNameKey[] = "channelName";
+const char kTabIdKey[] = "tabId";
 
 // Present under "data" in replies to a successful "connect" .
-static const std::wstring kPortIdWide = L"portId";
+const char kPortIdKey[] = "portId";
 
 }  // namespace
 
@@ -159,21 +159,21 @@ void ExtensionPortsRemoteService::HandleMessage(
     return;
   }
   content = static_cast<DictionaryValue*>(request.get());
-  if (!content->HasKey(kCommandWide)) {
+  if (!content->HasKey(kCommandKey)) {
     NOTREACHED();  // Broken protocol :(
     return;
   }
   std::string command;
   DictionaryValue response;
 
-  content->GetString(kCommandWide, &command);
-  response.SetString(kCommandWide, command);
+  content->GetString(kCommandKey, &command);
+  response.SetString(kCommandKey, command);
 
   if (!service_) {
     // This happens if we failed to obtain an ExtensionMessageService
     // during initialization.
     NOTREACHED();
-    response.SetInteger(kResultWide, RESULT_NO_SERVICE);
+    response.SetInteger(kResultKey, RESULT_NO_SERVICE);
     SendResponse(response, message.tool(), message.destination());
     return;
   }
@@ -184,23 +184,23 @@ void ExtensionPortsRemoteService::HandleMessage(
 
   if (command == kConnect) {
     if (destination != -1)  // destination should be empty for this command.
-      response.SetInteger(kResultWide, RESULT_UNKNOWN_COMMAND);
+      response.SetInteger(kResultKey, RESULT_UNKNOWN_COMMAND);
     else
       ConnectCommand(content, &response);
   } else if (command == kDisconnect) {
     if (destination == -1)  // Destination required for this command.
-      response.SetInteger(kResultWide, RESULT_UNKNOWN_COMMAND);
+      response.SetInteger(kResultKey, RESULT_UNKNOWN_COMMAND);
     else
       DisconnectCommand(destination, &response);
   } else if (command == kPostMessage) {
     if (destination == -1)  // Destination required for this command.
-      response.SetInteger(kResultWide, RESULT_UNKNOWN_COMMAND);
+      response.SetInteger(kResultKey, RESULT_UNKNOWN_COMMAND);
     else
       PostMessageCommand(destination, content, &response);
   } else {
     // Unknown command
     NOTREACHED();
-    response.SetInteger(kResultWide, RESULT_UNKNOWN_COMMAND);
+    response.SetInteger(kResultKey, RESULT_UNKNOWN_COMMAND);
   }
   SendResponse(response, message.tool(), message.destination());
 }
@@ -271,15 +271,15 @@ void ExtensionPortsRemoteService::OnExtensionMessage(
             << ", < " << message << ">";
   // Transpose the information into a JSON message for the external client.
   DictionaryValue content;
-  content.SetString(kCommandWide, kOnMessage);
-  content.SetInteger(kResultWide, RESULT_OK);
+  content.SetString(kCommandKey, kOnMessage);
+  content.SetInteger(kResultKey, RESULT_OK);
   // Turn the stringified message body back into JSON.
   Value* data = base::JSONReader::Read(message, false);
   if (!data) {
     NOTREACHED();
     return;
   }
-  content.Set(kDataWide, data);
+  content.Set(kDataKey, data);
   SendResponse(content, kToolName, base::IntToString(port_id));
 }
 
@@ -287,8 +287,8 @@ void ExtensionPortsRemoteService::OnExtensionPortDisconnected(int port_id) {
   LOG(INFO) << "Disconnect event for port " << port_id;
   openPortIds_.erase(port_id);
   DictionaryValue content;
-  content.SetString(kCommandWide, kOnDisconnect);
-  content.SetInteger(kResultWide, RESULT_OK);
+  content.SetString(kCommandKey, kOnDisconnect);
+  content.SetInteger(kResultKey, RESULT_OK);
   SendResponse(content, kToolName, base::IntToString(port_id));
 }
 
@@ -296,19 +296,19 @@ void ExtensionPortsRemoteService::ConnectCommand(
     DictionaryValue* content, DictionaryValue* response) {
   // Parse out the parameters.
   DictionaryValue* data;
-  if (!content->GetDictionary(kDataWide, &data)) {
-    response->SetInteger(kResultWide, RESULT_PARAMETER_ERROR);
+  if (!content->GetDictionary(kDataKey, &data)) {
+    response->SetInteger(kResultKey, RESULT_PARAMETER_ERROR);
     return;
   }
   std::string extension_id;
-  if (!data->GetString(kExtensionIdWide, &extension_id)) {
-    response->SetInteger(kResultWide, RESULT_PARAMETER_ERROR);
+  if (!data->GetString(kExtensionIdKey, &extension_id)) {
+    response->SetInteger(kResultKey, RESULT_PARAMETER_ERROR);
     return;
   }
   std::string channel_name = "";
-  data->GetString(kChannelNameWide, &channel_name);  // optional.
+  data->GetString(kChannelNameKey, &channel_name);  // optional.
   int tab_id = -1;
-  data->GetInteger(kTabIdWide, &tab_id);  // optional.
+  data->GetInteger(kTabIdKey, &tab_id);  // optional.
   int port_id;
   if (tab_id != -1) {  // Resolve the tab ID.
     const InspectableTabProxy::ControllersMap& navcon_map =
@@ -320,7 +320,7 @@ void ExtensionPortsRemoteService::ConnectCommand(
       tab_contents = it->second->tab_contents();
     if (!tab_contents) {
       LOG(INFO) << "tab not found: " << tab_id;
-      response->SetInteger(kResultWide, RESULT_TAB_NOT_FOUND);
+      response->SetInteger(kResultKey, RESULT_TAB_NOT_FOUND);
       return;
     }
     // Ask the ExtensionMessageService to open the channel.
@@ -341,16 +341,16 @@ void ExtensionPortsRemoteService::ConnectCommand(
   if (port_id == -1) {
     // Failure: probably the extension ID doesn't exist.
     LOG(INFO) << "Connect failed";
-    response->SetInteger(kResultWide, RESULT_CONNECT_FAILED);
+    response->SetInteger(kResultKey, RESULT_CONNECT_FAILED);
     return;
   }
   LOG(INFO) << "Connected: port " << port_id;
   openPortIds_.insert(port_id);
   // Reply to external client with the port ID assigned to the new channel.
   DictionaryValue* reply_data = new DictionaryValue();
-  reply_data->SetInteger(kPortIdWide, port_id);
-  response->Set(kDataWide, reply_data);
-  response->SetInteger(kResultWide, RESULT_OK);
+  reply_data->SetInteger(kPortIdKey, port_id);
+  response->Set(kDataKey, reply_data);
+  response->SetInteger(kResultKey, RESULT_OK);
 }
 
 void ExtensionPortsRemoteService::DisconnectCommand(
@@ -359,20 +359,20 @@ void ExtensionPortsRemoteService::DisconnectCommand(
   PortIdSet::iterator portEntry = openPortIds_.find(port_id);
   if (portEntry == openPortIds_.end()) {  // unknown port ID.
     LOG(INFO) << "unknown port: " << port_id;
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_PORT);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_PORT);
     return;
   }
   DCHECK(service_);
   service_->CloseChannel(port_id);
   openPortIds_.erase(portEntry);
-  response->SetInteger(kResultWide, RESULT_OK);
+  response->SetInteger(kResultKey, RESULT_OK);
 }
 
 void ExtensionPortsRemoteService::PostMessageCommand(
     int port_id, DictionaryValue* content, DictionaryValue* response) {
   Value* data;
-  if (!content->Get(kDataWide, &data)) {
-    response->SetInteger(kResultWide, RESULT_PARAMETER_ERROR);
+  if (!content->Get(kDataKey, &data)) {
+    response->SetInteger(kResultKey, RESULT_PARAMETER_ERROR);
     return;
   }
   std::string message;
@@ -383,12 +383,12 @@ void ExtensionPortsRemoteService::PostMessageCommand(
   PortIdSet::iterator portEntry = openPortIds_.find(port_id);
   if (portEntry == openPortIds_.end()) {  // Unknown port ID.
     LOG(INFO) << "unknown port: " << port_id;
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_PORT);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_PORT);
     return;
   }
   // Post the message through the ExtensionMessageService.
   DCHECK(service_);
   service_->PostMessageFromRenderer(port_id, message);
   // Confirm to the external client that we sent its message.
-  response->SetInteger(kResultWide, RESULT_OK);
+  response->SetInteger(kResultKey, RESULT_OK);
 }

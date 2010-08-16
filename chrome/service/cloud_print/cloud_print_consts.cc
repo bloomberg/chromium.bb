@@ -15,15 +15,15 @@ const char kPrinterStatusValue[] = "status";
 const char kPrinterTagValue[] = "tag";
 
 // Values in the respone JSON from the cloud print server
-const wchar_t kPrinterListValue[] = L"printers";
-const wchar_t kSuccessValue[] = L"success";
-const wchar_t kNameValue[] = L"name";
-const wchar_t kIdValue[] = L"id";
-const wchar_t kTicketUrlValue[] = L"ticketUrl";
-const wchar_t kFileUrlValue[] = L"fileUrl";
-const wchar_t kJobListValue[] = L"jobs";
-const wchar_t kTitleValue[] = L"title";
-const wchar_t kPrinterCapsHashValue[] = L"capsHash";
+const char kPrinterListValue[] = "printers";
+const char kSuccessValue[] = "success";
+const char kNameValue[] = "name";
+const char kIdValue[] = "id";
+const char kTicketUrlValue[] = "ticketUrl";
+const char kFileUrlValue[] = "fileUrl";
+const char kJobListValue[] = "jobs";
+const char kTitleValue[] = "title";
+const char kPrinterCapsHashValue[] = "capsHash";
 
 const char kDefaultCloudPrintServerUrl[] = "https://www.google.com/cloudprint";
 const char kCloudPrintTalkServiceUrl[] = "http://www.google.com/cloudprint";

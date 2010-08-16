@@ -22,9 +22,9 @@
 
 namespace errors = extension_manifest_errors;
 
-const wchar_t* ExtensionMessageBundle::kContentKey = L"content";
-const wchar_t* ExtensionMessageBundle::kMessageKey = L"message";
-const wchar_t* ExtensionMessageBundle::kPlaceholdersKey = L"placeholders";
+const char* ExtensionMessageBundle::kContentKey = "content";
+const char* ExtensionMessageBundle::kMessageKey = "message";
+const char* ExtensionMessageBundle::kPlaceholdersKey = "placeholders";
 
 const char* ExtensionMessageBundle::kPlaceholderBegin = "$";
 const char* ExtensionMessageBundle::kPlaceholderEnd = "$";
@@ -138,8 +138,7 @@ bool ExtensionMessageBundle::GetMessageValue(const std::string& key,
   }
   // Extract message from it.
   if (!name_tree->GetString(kMessageKey, value)) {
-    *error = StringPrintf("There is no \"%s\" element for key %s.",
-                          WideToUTF8(kMessageKey).c_str(),
+    *error = StringPrintf("There is no \"%s\" element for key %s.", kMessageKey,
                           key.c_str());
     return false;
   }
@@ -167,8 +166,7 @@ bool ExtensionMessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
   DictionaryValue* placeholders_tree;
   if (!name_tree.GetDictionary(kPlaceholdersKey, &placeholders_tree)) {
     *error = StringPrintf("Not a valid \"%s\" element for key %s.",
-                          WideToUTF8(kPlaceholdersKey).c_str(),
-                          name_key.c_str());
+                          kPlaceholdersKey, name_key.c_str());
     return false;
   }
 
@@ -188,8 +186,7 @@ bool ExtensionMessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
     std::string content;
     if (!placeholder->GetString(kContentKey, &content)) {
       *error = StringPrintf("Invalid \"%s\" element for key %s.",
-                            WideToUTF8(kContentKey).c_str(),
-                            name_key.c_str());
+                            kContentKey, name_key.c_str());
       return false;
     }
     (*placeholders)[StringToLowerASCII(content_key)] = content;

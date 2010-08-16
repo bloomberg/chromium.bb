@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/test/automation/automation_constants.h"
@@ -256,14 +257,15 @@ bool TabProxy::ExecuteAndExtractString(const std::wstring& frame_xpath,
   if (!succeeded)
     return false;
 
-  std::wstring read_value;
   DCHECK(root->IsType(Value::TYPE_LIST));
   Value* value = NULL;
   succeeded = static_cast<ListValue*>(root)->Get(0, &value);
   if (succeeded) {
+    string16 read_value;
     succeeded = value->GetAsString(&read_value);
     if (succeeded) {
-      string_value->swap(read_value);
+      // TODO(viettrungluu): remove conversion. (But should |jscript| be UTF-8?)
+      *string_value = UTF16ToWideHack(read_value);
     }
   }
 

@@ -16,14 +16,17 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/devtools_messages.h"
 
-const std::string DevToolsRemoteServiceCommand::kPing = "ping";
-const std::string DevToolsRemoteServiceCommand::kVersion = "version";
-const std::string DevToolsRemoteServiceCommand::kListTabs = "list_tabs";
+const char DevToolsRemoteServiceCommand::kPing[] = "ping";
+const char DevToolsRemoteServiceCommand::kVersion[] = "version";
+const char DevToolsRemoteServiceCommand::kListTabs[] = "list_tabs";
 
-const std::wstring DevToolsRemoteService::kCommandWide = L"command";
-const std::wstring DevToolsRemoteService::kDataWide = L"data";
-const std::wstring DevToolsRemoteService::kResultWide = L"result";
-const std::string DevToolsRemoteService::kToolName = "DevToolsService";
+const char DevToolsRemoteService::kToolName[] = "DevToolsService";
+
+namespace {
+const char kCommandKey[] = "command";
+const char kDataKey[] = "data";
+const char kResultKey[] = "result";
+}  // namespace
 
 DevToolsRemoteService::DevToolsRemoteService(DevToolsProtocolHandler* delegate)
     : delegate_(delegate) {}
@@ -41,7 +44,7 @@ void DevToolsRemoteService::HandleMessage(
   DictionaryValue* json;
   if (request->IsType(Value::TYPE_DICTIONARY)) {
     json = static_cast<DictionaryValue*>(request.get());
-    if (!json->HasKey(kCommandWide)) {
+    if (!json->HasKey(kCommandKey)) {
       NOTREACHED();  // Broken protocol - no "command" specified
       return;
     }
@@ -59,15 +62,15 @@ void DevToolsRemoteService::ProcessJson(DictionaryValue* json,
   std::string command;
   DictionaryValue response;
 
-  json->GetString(kCommandWide, &command);
-  response.SetString(kCommandWide, command);
+  json->GetString(kCommandKey, &command);
+  response.SetString(kCommandKey, command);
 
   if (command == DevToolsRemoteServiceCommand::kPing) {
-    response.SetInteger(kResultWide, Result::kOk);
-    response.SetString(kDataWide, kOkResponse);
+    response.SetInteger(kResultKey, Result::kOk);
+    response.SetString(kDataKey, kOkResponse);
   } else if (command == DevToolsRemoteServiceCommand::kVersion) {
-    response.SetInteger(kResultWide, Result::kOk);
-    response.SetString(kDataWide, kVersion);
+    response.SetInteger(kResultKey, Result::kOk);
+    response.SetString(kDataKey, kVersion);
   } else if (command == DevToolsRemoteServiceCommand::kListTabs) {
     ListValue* data = new ListValue();
     const InspectableTabProxy::ControllersMap& navcon_map =
@@ -86,12 +89,12 @@ void DevToolsRemoteService::ProcessJson(DictionaryValue* json,
         data->Append(tab);
       }
     }
-    response.SetInteger(kResultWide, Result::kOk);
-    response.Set(kDataWide, data);
+    response.SetInteger(kResultKey, Result::kOk);
+    response.Set(kDataKey, data);
   } else {
     // Unknown protocol command.
     NOTREACHED();
-    response.SetInteger(kResultWide, Result::kUnknownCommand);
+    response.SetInteger(kResultKey, Result::kUnknownCommand);
   }
   std::string response_json;
   base::JSONWriter::Write(&response, false, &response_json);

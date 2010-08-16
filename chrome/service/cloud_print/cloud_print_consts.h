@@ -17,15 +17,15 @@ extern const char kPrinterDefaultsValue[];
 extern const char kPrinterStatusValue[];
 extern const char kPrinterTagValue[];
 // Values in the respone JSON from the cloud print server
-extern const wchar_t kPrinterListValue[];
-extern const wchar_t kSuccessValue[];
-extern const wchar_t kNameValue[];
-extern const wchar_t kIdValue[];
-extern const wchar_t kTicketUrlValue[];
-extern const wchar_t kFileUrlValue[];
-extern const wchar_t kJobListValue[];
-extern const wchar_t kTitleValue[];
-extern const wchar_t kPrinterCapsHashValue[];
+extern const char kPrinterListValue[];
+extern const char kSuccessValue[];
+extern const char kNameValue[];
+extern const char kIdValue[];
+extern const char kTicketUrlValue[];
+extern const char kFileUrlValue[];
+extern const char kJobListValue[];
+extern const char kTitleValue[];
+extern const char kPrinterCapsHashValue[];
 
 extern const char kDefaultCloudPrintServerUrl[];
 extern const char kCloudPrintTalkServiceUrl[];

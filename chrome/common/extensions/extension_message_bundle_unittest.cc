@@ -34,14 +34,14 @@ class ExtensionMessageBundleTest : public testing::Test {
   };
 
   // Helper method for dictionary building.
-  void SetDictionary(const std::wstring name,
+  void SetDictionary(const std::string& name,
                      DictionaryValue* subtree,
                      DictionaryValue* target) {
     target->Set(name, static_cast<Value*>(subtree));
   }
 
-  void CreateContentTree(const std::wstring& name,
-                         const std::string content,
+  void CreateContentTree(const std::string& name,
+                         const std::string& content,
                          DictionaryValue* dict) {
     DictionaryValue* content_tree = new DictionaryValue;
     content_tree->SetString(ExtensionMessageBundle::kContentKey, content);
@@ -50,15 +50,15 @@ class ExtensionMessageBundleTest : public testing::Test {
 
   void CreatePlaceholdersTree(DictionaryValue* dict) {
     DictionaryValue* placeholders_tree = new DictionaryValue;
-    CreateContentTree(L"a", "A", placeholders_tree);
-    CreateContentTree(L"b", "B", placeholders_tree);
-    CreateContentTree(L"c", "C", placeholders_tree);
+    CreateContentTree("a", "A", placeholders_tree);
+    CreateContentTree("b", "B", placeholders_tree);
+    CreateContentTree("c", "C", placeholders_tree);
     SetDictionary(ExtensionMessageBundle::kPlaceholdersKey,
                   placeholders_tree,
                   dict);
   }
 
-  void CreateMessageTree(const std::wstring& name,
+  void CreateMessageTree(const std::string& name,
                          const std::string& message,
                          bool create_placeholder_subtree,
                          DictionaryValue* dict) {
@@ -72,9 +72,9 @@ class ExtensionMessageBundleTest : public testing::Test {
   // Caller owns the memory.
   DictionaryValue* CreateGoodDictionary() {
     DictionaryValue* dict = new DictionaryValue;
-    CreateMessageTree(L"n1", "message1 $a$ $b$", true, dict);
-    CreateMessageTree(L"n2", "message2 $c$", true, dict);
-    CreateMessageTree(L"n3", "message3", false, dict);
+    CreateMessageTree("n1", "message1 $a$ $b$", true, dict);
+    CreateMessageTree("n2", "message2 $c$", true, dict);
+    CreateMessageTree("n3", "message3", false, dict);
     return dict;
   }
 
@@ -84,35 +84,35 @@ class ExtensionMessageBundleTest : public testing::Test {
     // Now remove/break things.
     switch (what_is_bad) {
       case INVALID_NAME:
-        CreateMessageTree(L"n 5", "nevermind", false, dict);
+        CreateMessageTree("n 5", "nevermind", false, dict);
         break;
       case NAME_NOT_A_TREE:
-        dict->SetString(L"n4", "whatever");
+        dict->SetString("n4", "whatever");
         break;
       case EMPTY_NAME_TREE: {
           DictionaryValue* empty_tree = new DictionaryValue;
-          SetDictionary(L"n4", empty_tree, dict);
+          SetDictionary("n4", empty_tree, dict);
         }
         break;
       case MISSING_MESSAGE:
-        dict->Remove(L"n1.message", NULL);
+        dict->Remove("n1.message", NULL);
         break;
       case PLACEHOLDER_NOT_A_TREE:
-        dict->SetString(L"n1.placeholders", "whatever");
+        dict->SetString("n1.placeholders", "whatever");
         break;
       case EMPTY_PLACEHOLDER_TREE: {
           DictionaryValue* empty_tree = new DictionaryValue;
-          SetDictionary(L"n1.placeholders", empty_tree, dict);
+          SetDictionary("n1.placeholders", empty_tree, dict);
         }
         break;
       case CONTENT_MISSING:
-         dict->Remove(L"n1.placeholders.a.content", NULL);
+         dict->Remove("n1.placeholders.a.content", NULL);
         break;
       case MESSAGE_PLACEHOLDER_DOESNT_MATCH:
         DictionaryValue* value;
-        dict->Remove(L"n1.placeholders.a", NULL);
-        dict->GetDictionary(L"n1.placeholders", &value);
-        CreateContentTree(L"x", "X", value);
+        dict->Remove("n1.placeholders.a", NULL);
+        dict->GetDictionary("n1.placeholders", &value);
+        CreateContentTree("x", "X", value);
         break;
     }
 
@@ -189,12 +189,12 @@ TEST_F(ExtensionMessageBundleTest, InitAppDictConsultedFirst) {
 
   DictionaryValue* app_dict = catalogs_[0].get();
   // Flip placeholders in message of n1 tree.
-  app_dict->SetString(L"n1.message", "message1 $b$ $a$");
+  app_dict->SetString("n1.message", "message1 $b$ $a$");
   // Remove one message from app dict.
-  app_dict->Remove(L"n2", NULL);
+  app_dict->Remove("n2", NULL);
   // Replace n3 with N3.
-  app_dict->Remove(L"n3", NULL);
-  CreateMessageTree(L"N3", "message3_app_dict", false, app_dict);
+  app_dict->Remove("n3", NULL);
+  CreateMessageTree("N3", "message3_app_dict", false, app_dict);
 
   CreateMessageBundle();
 
@@ -258,8 +258,7 @@ TEST_F(ExtensionMessageBundleTest, ReservedMessagesOverrideDeveloperMessages) {
   catalogs_.push_back(linked_ptr<DictionaryValue>(CreateGoodDictionary()));
 
   DictionaryValue* dict = catalogs_[0].get();
-  CreateMessageTree(
-      ASCIIToWide(ExtensionMessageBundle::kUILocaleKey), "x", false, dict);
+  CreateMessageTree(ExtensionMessageBundle::kUILocaleKey, "x", false, dict);
 
   std::string error = CreateMessageBundle();
 

@@ -23,20 +23,10 @@
 
 namespace {
 
-// A constant for the "data" JSON message field.
-// The type is wstring because the constant is used to get a
-// DictionaryValue field (which requires a wide string).
-static const std::wstring kDataWide = L"data";
-
-// A constant for the "result" JSON message field.
-// The type is wstring because the constant is used to get a
-// DictionaryValue field (which requires a wide string).
-static const std::wstring kResultWide = L"result";
-
-// A constant for the "command" JSON message field.
-// The type is wstring because the constant is used to get a
-// DictionaryValue field (which requires a wide string).
-static const std::wstring kCommandWide = L"command";
+// Constants for the "data", "result", and "command" JSON message fields.
+const char kDataKey[] = "data";
+const char kResultKey[] = "result";
+const char kCommandKey[] = "command";
 
 }  // namespace
 
@@ -78,20 +68,20 @@ void DebuggerRemoteService::HandleMessage(
     return;
   }
   content = static_cast<DictionaryValue*>(request.get());
-  if (!content->HasKey(kCommandWide)) {
+  if (!content->HasKey(kCommandKey)) {
     NOTREACHED();  // Broken protocol :(
     return;
   }
   std::string command;
   DictionaryValue response;
 
-  content->GetString(kCommandWide, &command);
-  response.SetString(kCommandWide, command);
+  content->GetString(kCommandKey, &command);
+  response.SetString(kCommandKey, command);
   bool send_response = true;
   if (destination.size() == 0) {
     // Unknown command (bad format?)
     NOTREACHED();
-    response.SetInteger(kResultWide, RESULT_UNKNOWN_COMMAND);
+    response.SetInteger(kResultKey, RESULT_UNKNOWN_COMMAND);
     SendResponse(response, message.tool(), message.destination());
     return;
   }
@@ -100,10 +90,10 @@ void DebuggerRemoteService::HandleMessage(
 
   if (command == DebuggerRemoteServiceCommand::kAttach) {
     // TODO(apavlov): handle 0 for a new tab
-    response.SetString(kCommandWide, DebuggerRemoteServiceCommand::kAttach);
+    response.SetString(kCommandKey, DebuggerRemoteServiceCommand::kAttach);
     AttachToTab(destination, &response);
   } else if (command == DebuggerRemoteServiceCommand::kDetach) {
-    response.SetString(kCommandWide, DebuggerRemoteServiceCommand::kDetach);
+    response.SetString(kCommandKey, DebuggerRemoteServiceCommand::kDetach);
     DetachFromTab(destination, &response);
   } else if (command == DebuggerRemoteServiceCommand::kDebuggerCommand) {
     send_response = DispatchDebuggerCommand(tab_uid, content, &response);
@@ -112,7 +102,7 @@ void DebuggerRemoteService::HandleMessage(
   } else {
     // Unknown command
     NOTREACHED();
-    response.SetInteger(kResultWide, RESULT_UNKNOWN_COMMAND);
+    response.SetInteger(kResultKey, RESULT_UNKNOWN_COMMAND);
   }
 
   if (send_response) {
@@ -183,9 +173,9 @@ void DebuggerRemoteService::DebuggerOutput(int32 tab_uid,
 void DebuggerRemoteService::FrameNavigate(int32 tab_uid,
                                           const std::string& url) {
   DictionaryValue value;
-  value.SetString(kCommandWide, DebuggerRemoteServiceCommand::kFrameNavigate);
-  value.SetInteger(kResultWide, RESULT_OK);
-  value.SetString(kDataWide, url);
+  value.SetString(kCommandKey, DebuggerRemoteServiceCommand::kFrameNavigate);
+  value.SetInteger(kResultKey, RESULT_OK);
+  value.SetString(kDataKey, url);
   SendResponse(value, kToolName, base::IntToString(tab_uid));
 }
 
@@ -194,8 +184,8 @@ void DebuggerRemoteService::FrameNavigate(int32 tab_uid,
 // Sends the corresponding message to the remote debugger.
 void DebuggerRemoteService::TabClosed(int32 tab_id) {
   DictionaryValue value;
-  value.SetString(kCommandWide, DebuggerRemoteServiceCommand::kTabClosed);
-  value.SetInteger(kResultWide, RESULT_OK);
+  value.SetString(kCommandKey, DebuggerRemoteServiceCommand::kTabClosed);
+  value.SetInteger(kResultKey, RESULT_OK);
   SendResponse(value, kToolName, base::IntToString(tab_id));
 }
 
@@ -208,20 +198,20 @@ void DebuggerRemoteService::AttachToTab(const std::string& destination,
   base::StringToInt(destination, &tab_uid);
   if (tab_uid < 0) {
     // Bad tab_uid received from remote debugger (perhaps NaN)
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_TAB);
     return;
   }
   if (tab_uid == 0) {  // single tab_uid
     // We've been asked to open a new tab with URL
     // TODO(apavlov): implement
     NOTIMPLEMENTED();
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_TAB);
     return;
   }
   TabContents* tab_contents = ToTabContents(tab_uid);
   if (tab_contents == NULL) {
     // No active tab contents with tab_uid
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_TAB);
     return;
   }
   RenderViewHost* target_host = tab_contents->render_view_host();
@@ -233,13 +223,13 @@ void DebuggerRemoteService::AttachToTab(const std::string& destination,
     DevToolsManager* manager = DevToolsManager::GetInstance();
     if (manager != NULL) {
       manager->RegisterDevToolsClientHostFor(target_host, client_host);
-      response->SetInteger(kResultWide, RESULT_OK);
+      response->SetInteger(kResultKey, RESULT_OK);
     } else {
-      response->SetInteger(kResultWide, RESULT_DEBUGGER_ERROR);
+      response->SetInteger(kResultKey, RESULT_DEBUGGER_ERROR);
     }
   } else {
     // DevToolsClientHost for this tab is already registered
-    response->SetInteger(kResultWide, RESULT_ILLEGAL_TAB_STATE);
+    response->SetInteger(kResultKey, RESULT_ILLEGAL_TAB_STATE);
   }
 }
 
@@ -253,7 +243,7 @@ void DebuggerRemoteService::DetachFromTab(const std::string& destination,
   if (tab_uid == -1) {
     // Bad tab_uid received from remote debugger (NaN)
     if (response != NULL) {
-      response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
+      response->SetInteger(kResultKey, RESULT_UNKNOWN_TAB);
     }
     return;
   }
@@ -268,7 +258,7 @@ void DebuggerRemoteService::DetachFromTab(const std::string& destination,
     result_code = RESULT_UNKNOWN_TAB;
   }
   if (response != NULL) {
-    response->SetInteger(kResultWide, result_code);
+    response->SetInteger(kResultKey, result_code);
   }
 }
 
@@ -281,30 +271,30 @@ bool DebuggerRemoteService::DispatchDebuggerCommand(int tab_uid,
                                                     DictionaryValue* response) {
   if (tab_uid == -1) {
     // Invalid tab_uid from remote debugger (perhaps NaN)
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_TAB);
     return true;
   }
   DevToolsManager* manager = DevToolsManager::GetInstance();
   if (manager == NULL) {
-    response->SetInteger(kResultWide, RESULT_DEBUGGER_ERROR);
+    response->SetInteger(kResultKey, RESULT_DEBUGGER_ERROR);
     return true;
   }
   TabContents* tab_contents = ToTabContents(tab_uid);
   if (tab_contents == NULL) {
     // Unknown tab_uid from remote debugger
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_TAB);
     return true;
   }
   DevToolsClientHost* client_host =
       manager->GetDevToolsClientHostFor(tab_contents->render_view_host());
   if (client_host == NULL) {
     // tab_uid is not being debugged (Attach has not been invoked)
-    response->SetInteger(kResultWide, RESULT_ILLEGAL_TAB_STATE);
+    response->SetInteger(kResultKey, RESULT_ILLEGAL_TAB_STATE);
     return true;
   }
   std::string v8_command;
   DictionaryValue* v8_command_value;
-  content->GetDictionary(kDataWide, &v8_command_value);
+  content->GetDictionary(kDataKey, &v8_command_value);
   base::JSONWriter::Write(v8_command_value, false, &v8_command);
   manager->ForwardToDevToolsAgent(
       client_host, DevToolsAgentMsg_DebuggerCommand(v8_command));
@@ -322,26 +312,26 @@ bool DebuggerRemoteService::DispatchEvaluateJavascript(
     DictionaryValue* response) {
   if (tab_uid == -1) {
     // Invalid tab_uid from remote debugger (perhaps NaN)
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_TAB);
     return true;
   }
   TabContents* tab_contents = ToTabContents(tab_uid);
   if (tab_contents == NULL) {
     // Unknown tab_uid from remote debugger
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_TAB);
     return true;
   }
   RenderViewHost* render_view_host = tab_contents->render_view_host();
   if (render_view_host == NULL) {
     // No RenderViewHost
-    response->SetInteger(kResultWide, RESULT_UNKNOWN_TAB);
+    response->SetInteger(kResultKey, RESULT_UNKNOWN_TAB);
     return true;
   }
-  std::wstring javascript;
-  content->GetString(kDataWide, &javascript);
+  std::string javascript;
+  content->GetString(kDataKey, &javascript);
   render_view_host->Send(
       new ViewMsg_ScriptEvalRequest(render_view_host->routing_id(),
                                     L"",
-                                    javascript));
+                                    UTF8ToWide(javascript)));
   return false;
 }

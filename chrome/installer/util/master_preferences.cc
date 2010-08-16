@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,8 @@
 
 
 namespace {
-const wchar_t* kDistroDict = L"distribution";
+
+const char kDistroDict[] = "distribution";
 
 bool GetGURLFromValue(const Value* in_value, GURL* out_value) {
   if (!in_value || !out_value)
@@ -26,7 +27,7 @@ bool GetGURLFromValue(const Value* in_value, GURL* out_value) {
   return true;
 }
 
-std::vector<GURL> GetNamedList(const wchar_t* name,
+std::vector<GURL> GetNamedList(const char* name,
                                const DictionaryValue* prefs) {
   std::vector<GURL> list;
   if (!prefs)
@@ -46,12 +47,12 @@ std::vector<GURL> GetNamedList(const wchar_t* name,
   return list;
 }
 
-}
+}  // namespace
 
 namespace installer_util {
 
 bool GetDistroBooleanPreference(const DictionaryValue* prefs,
-                                const std::wstring& name,
+                                const std::string& name,
                                 bool* value) {
   if (!prefs || !value)
     return false;
@@ -67,8 +68,8 @@ bool GetDistroBooleanPreference(const DictionaryValue* prefs,
 }
 
 bool GetDistroStringPreference(const DictionaryValue* prefs,
-                               const std::wstring& name,
-                               std::wstring* value) {
+                               const std::string& name,
+                               std::string* value) {
   if (!prefs || !value)
     return false;
 
@@ -76,7 +77,7 @@ bool GetDistroStringPreference(const DictionaryValue* prefs,
   if (!prefs->GetDictionary(kDistroDict, &distro) || !distro)
     return false;
 
-  std::wstring str_value;
+  std::string str_value;
   if (!distro->GetString(name, &str_value))
     return false;
 
@@ -88,7 +89,7 @@ bool GetDistroStringPreference(const DictionaryValue* prefs,
 }
 
 bool GetDistroIntegerPreference(const DictionaryValue* prefs,
-                                const std::wstring& name,
+                                const std::string& name,
                                 int* value) {
   if (!prefs || !value)
     return false;
@@ -186,15 +187,15 @@ DictionaryValue* ParseDistributionPreferences(
 }
 
 std::vector<GURL> GetFirstRunTabs(const DictionaryValue* prefs) {
-  return GetNamedList(L"first_run_tabs", prefs);
+  return GetNamedList("first_run_tabs", prefs);
 }
 
 bool SetDistroBooleanPreference(DictionaryValue* prefs,
-                                const std::wstring& name,
+                                const std::string& name,
                                 bool value) {
   if (!prefs || name.empty())
     return false;
-  prefs->SetBoolean(std::wstring(kDistroDict) + L"." + name, value);
+  prefs->SetBoolean(std::string(kDistroDict) + "." + name, value);
   return true;
 }
 

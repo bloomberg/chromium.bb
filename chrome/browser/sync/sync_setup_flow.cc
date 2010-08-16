@@ -50,9 +50,9 @@ static bool GetAuthData(const std::string& json,
     return false;
 
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-  if (!result->GetString(L"user", username) ||
-      !result->GetString(L"pass", password) ||
-      !result->GetString(L"captcha", captcha)) {
+  if (!result->GetString("user", username) ||
+      !result->GetString("pass", password) ||
+      !result->GetString("captcha", captcha)) {
       return false;
   }
   return true;
@@ -65,49 +65,49 @@ static bool GetDataTypeChoiceData(const std::string& json,
     return false;
 
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
-  if (!result->GetBoolean(L"keepEverythingSynced", sync_everything))
+  if (!result->GetBoolean("keepEverythingSynced", sync_everything))
     return false;
 
   // These values need to be kept in sync with where they are written in
   // choose_datatypes.html.
   bool sync_bookmarks;
-  if (!result->GetBoolean(L"syncBookmarks", &sync_bookmarks))
+  if (!result->GetBoolean("syncBookmarks", &sync_bookmarks))
     return false;
   if (sync_bookmarks)
     data_types->insert(syncable::BOOKMARKS);
 
   bool sync_preferences;
-  if (!result->GetBoolean(L"syncPreferences", &sync_preferences))
+  if (!result->GetBoolean("syncPreferences", &sync_preferences))
     return false;
   if (sync_preferences)
     data_types->insert(syncable::PREFERENCES);
 
   bool sync_themes;
-  if (!result->GetBoolean(L"syncThemes", &sync_themes))
+  if (!result->GetBoolean("syncThemes", &sync_themes))
     return false;
   if (sync_themes)
     data_types->insert(syncable::THEMES);
 
   bool sync_passwords;
-  if (!result->GetBoolean(L"syncPasswords", &sync_passwords))
+  if (!result->GetBoolean("syncPasswords", &sync_passwords))
     return false;
   if (sync_passwords)
     data_types->insert(syncable::PASSWORDS);
 
   bool sync_autofill;
-  if (!result->GetBoolean(L"syncAutofill", &sync_autofill))
+  if (!result->GetBoolean("syncAutofill", &sync_autofill))
     return false;
   if (sync_autofill)
     data_types->insert(syncable::AUTOFILL);
 
   bool sync_extensions;
-  if (!result->GetBoolean(L"syncExtensions", &sync_extensions))
+  if (!result->GetBoolean("syncExtensions", &sync_extensions))
     return false;
   if (sync_extensions)
     data_types->insert(syncable::EXTENSIONS);
 
   bool sync_typed_urls;
-  if (!result->GetBoolean(L"syncTypedUrls", &sync_typed_urls))
+  if (!result->GetBoolean("syncTypedUrls", &sync_typed_urls))
     return false;
   if (sync_typed_urls)
     data_types->insert(syncable::TYPED_URLS);
@@ -318,55 +318,55 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
 // static
 void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
                                         DictionaryValue* args) {
-  args->SetString(L"iframeToShow", "login");
+  args->SetString("iframeToShow", "login");
   const GoogleServiceAuthError& error = service->GetAuthError();
   if (!service->last_attempted_user_email().empty()) {
-    args->SetString(L"user", service->last_attempted_user_email());
-    args->SetInteger(L"error", error.state());
-    args->SetBoolean(L"editable_user", true);
+    args->SetString("user", service->last_attempted_user_email());
+    args->SetInteger("error", error.state());
+    args->SetBoolean("editable_user", true);
   } else {
-    std::wstring user(UTF16ToWide(service->GetAuthenticatedUsername()));
-    args->SetString(L"user", user);
-    args->SetInteger(L"error", 0);
-    args->SetBoolean(L"editable_user", user.empty());
+    string16 user(service->GetAuthenticatedUsername());
+    args->SetString("user", user);
+    args->SetInteger("error", 0);
+    args->SetBoolean("editable_user", user.empty());
   }
 
-  args->SetString(L"captchaUrl", error.captcha().image_url.spec());
+  args->SetString("captchaUrl", error.captcha().image_url.spec());
 }
 
 // static
 void SyncSetupFlow::GetArgsForChooseDataTypes(ProfileSyncService* service,
                                               DictionaryValue* args) {
-  args->SetString(L"iframeToShow", "choose_data_types");
-  args->SetBoolean(L"keepEverythingSynced",
+  args->SetString("iframeToShow", "choose_data_types");
+  args->SetBoolean("keepEverythingSynced",
       service->profile()->GetPrefs()->GetBoolean(prefs::kKeepEverythingSynced));
 
   // Bookmarks, Preferences, and Themes are launched for good, there's no
   // going back now.  Check if the other data types are registered though.
   syncable::ModelTypeSet registered_types;
   service->GetRegisteredDataTypes(&registered_types);
-  args->SetBoolean(L"passwordsRegistered",
+  args->SetBoolean("passwordsRegistered",
       registered_types.count(syncable::PASSWORDS) > 0);
-  args->SetBoolean(L"autofillRegistered",
+  args->SetBoolean("autofillRegistered",
       registered_types.count(syncable::AUTOFILL) > 0);
-  args->SetBoolean(L"extensionsRegistered",
+  args->SetBoolean("extensionsRegistered",
       registered_types.count(syncable::EXTENSIONS) > 0);
-  args->SetBoolean(L"typedUrlsRegistered",
+  args->SetBoolean("typedUrlsRegistered",
       registered_types.count(syncable::TYPED_URLS) > 0);
 
-  args->SetBoolean(L"syncBookmarks",
+  args->SetBoolean("syncBookmarks",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncBookmarks));
-  args->SetBoolean(L"syncPreferences",
+  args->SetBoolean("syncPreferences",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncPreferences));
-  args->SetBoolean(L"syncThemes",
+  args->SetBoolean("syncThemes",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncThemes));
-  args->SetBoolean(L"syncPasswords",
+  args->SetBoolean("syncPasswords",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncPasswords));
-  args->SetBoolean(L"syncAutofill",
+  args->SetBoolean("syncAutofill",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncAutofill));
-  args->SetBoolean(L"syncExtensions",
+  args->SetBoolean("syncExtensions",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncExtensions));
-  args->SetBoolean(L"syncTypedUrls",
+  args->SetBoolean("syncTypedUrls",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncTypedUrls));
 }
 
@@ -427,7 +427,7 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
     case SyncSetupWizard::SETUP_ABORTED_BY_PENDING_CLEAR: {
       DictionaryValue args;
       SyncSetupFlow::GetArgsForChooseDataTypes(service_, &args);
-      args.SetBoolean(L"was_aborted", true);
+      args.SetBoolean("was_aborted", true);
       flow_handler_->ShowChooseDataTypes(args);
       break;
     }
@@ -436,7 +436,7 @@ void SyncSetupFlow::Advance(SyncSetupWizard::State advance_state) {
       // TODO(sync): Update this error messaging.
       DictionaryValue args;
       SyncSetupFlow::GetArgsForGaiaLogin(service_, &args);
-      args.SetInteger(L"error", GoogleServiceAuthError::CONNECTION_FAILED);
+      args.SetInteger("error", GoogleServiceAuthError::CONNECTION_FAILED);
       flow_handler_->ShowGaiaLogin(args);
       break;
     }

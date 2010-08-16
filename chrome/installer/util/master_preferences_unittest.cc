@@ -81,11 +81,11 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksPref, &value) &&
       value);
-  std::wstring str_value;
+  std::string str_value;
   EXPECT_TRUE(installer_util::GetDistroStringPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
       &str_value));
-  EXPECT_STREQ(L"c:\\foo", str_value.c_str());
+  EXPECT_STREQ("c:\\foo", str_value.c_str());
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportHomePagePref, &value) &&
       value);
@@ -166,7 +166,7 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksPref, &value));
   EXPECT_FALSE(value);
-  std::wstring str_value;
+  std::string str_value;
   EXPECT_FALSE(installer_util::GetDistroStringPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
       &str_value));
@@ -241,22 +241,22 @@ TEST(MasterPrefsExtension, ValidateExtensionJSON) {
   EXPECT_TRUE(installer_util::HasExtensionsBlock(prefs.get(), &extensions));
   int location = 0;
   EXPECT_TRUE(extensions->GetInteger(
-      L"behllobkkfkfnphdnhnkndlbkcpglgmj.location", &location));
+      "behllobkkfkfnphdnhnkndlbkcpglgmj.location", &location));
   int state = 0;
   EXPECT_TRUE(extensions->GetInteger(
-      L"behllobkkfkfnphdnhnkndlbkcpglgmj.state", &state));
-  std::wstring path;
+      "behllobkkfkfnphdnhnkndlbkcpglgmj.state", &state));
+  std::string path;
   EXPECT_TRUE(extensions->GetString(
-      L"behllobkkfkfnphdnhnkndlbkcpglgmj.path", &path));
-  std::wstring key;
+      "behllobkkfkfnphdnhnkndlbkcpglgmj.path", &path));
+  std::string key;
   EXPECT_TRUE(extensions->GetString(
-      L"behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.key", &key));
-  std::wstring name;
+      "behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.key", &key));
+  std::string name;
   EXPECT_TRUE(extensions->GetString(
-      L"behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.name", &name));
-  std::wstring version;
+      "behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.name", &name));
+  std::string version;
   EXPECT_TRUE(extensions->GetString(
-      L"behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.version", &version));
+      "behllobkkfkfnphdnhnkndlbkcpglgmj.manifest.version", &version));
 }
 
 // Test that we are parsing master preferences correctly.

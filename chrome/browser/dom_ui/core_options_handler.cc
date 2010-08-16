@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/core_options_handler.h"
 
 #include "app/l10n_util.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -170,7 +171,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
   if (!param_values->Get(0, &callback) || !callback->IsType(Value::TYPE_STRING))
     return;
 
-  std::wstring callback_function;
+  string16 callback_function;
   if (!callback->GetAsString(&callback_function))
     return;
 
@@ -191,7 +192,8 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
 
     result_value.Set(pref_name.c_str(), FetchPref(pref_name));
   }
-  dom_ui_->CallJavascriptFunction(callback_function.c_str(), result_value);
+  dom_ui_->CallJavascriptFunction(UTF16ToWideHack(callback_function).c_str(),
+                                  result_value);
 }
 
 void CoreOptionsHandler::HandleObservePrefs(const Value* value) {
@@ -208,7 +210,7 @@ void CoreOptionsHandler::HandleObservePrefs(const Value* value) {
     return;
 
   // Get preference change callback function name.
-  std::wstring callback_func_name;
+  string16 callback_func_name;
   if (!list_value->GetString(0, &callback_func_name))
     return;
 
@@ -228,7 +230,8 @@ void CoreOptionsHandler::HandleObservePrefs(const Value* value) {
       ObservePref(pref_name);
 
     pref_callback_map_.insert(
-        PreferenceCallbackMap::value_type(pref_name, callback_func_name));
+        PreferenceCallbackMap::value_type(pref_name,
+                                          UTF16ToWideHack(callback_func_name)));
   }
 }
 

@@ -151,7 +151,7 @@ TEST(PluginGroupTest, VersionExtraction) {
     group->AddPlugin(plugin, 0);
     scoped_ptr<DictionaryValue> data(group->GetDataForUI());
     std::string version;
-    data->GetString(L"version", &version);
+    data->GetString("version", &version);
     EXPECT_EQ(versions[i][1], version);
   }
 }

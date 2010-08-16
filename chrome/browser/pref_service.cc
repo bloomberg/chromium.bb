@@ -667,12 +667,12 @@ int64 PrefService::GetInt64(const char* path) const {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
     return 0;
   }
-  std::wstring result(L"0");
+  std::string result("0");
   bool rv = pref->GetValue()->GetAsString(&result);
   DCHECK(rv);
 
   int64 val;
-  base::StringToInt64(WideToUTF8(result), &val);
+  base::StringToInt64(result, &val);
   return val;
 }
 

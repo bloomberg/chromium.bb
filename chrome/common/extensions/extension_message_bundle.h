@@ -22,9 +22,9 @@ class ExtensionMessageBundle {
   typedef std::vector<linked_ptr<DictionaryValue> > CatalogVector;
 
   // JSON keys of interest for messages file.
-  static const wchar_t* kContentKey;
-  static const wchar_t* kMessageKey;
-  static const wchar_t* kPlaceholdersKey;
+  static const char* kContentKey;
+  static const char* kMessageKey;
+  static const char* kPlaceholdersKey;
 
   // Begin/end markers for placeholders and messages
   static const char* kPlaceholderBegin;

@@ -62,7 +62,7 @@ bool TranslatePrefs::IsLanguagePairWhitelisted(
   const DictionaryValue* dict = prefs_->GetDictionary(kPrefTranslateWhitelists);
   if (dict && !dict->empty()) {
     std::string auto_target_lang;
-    if (dict->GetString(ASCIIToWide(original_language), &auto_target_lang) &&
+    if (dict->GetString(original_language, &auto_target_lang) &&
         auto_target_lang == target_language)
       return true;
   }
@@ -258,8 +258,7 @@ void TranslatePrefs::RemoveValueFromBlacklist(const char* pref_id,
 bool TranslatePrefs::IsLanguageWhitelisted(
     const std::string& original_language, std::string* target_language) {
   const DictionaryValue* dict = prefs_->GetDictionary(kPrefTranslateWhitelists);
-  if (dict &&
-      dict->GetString(ASCIIToWide(original_language), target_language)) {
+  if (dict && dict->GetString(original_language, target_language)) {
     DCHECK(!target_language->empty());
     return !target_language->empty();
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,9 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_value_serializer.h"
@@ -24,20 +26,20 @@ TEST(JSONValueSerializerTest, Roundtrip) {
   DictionaryValue* root_dict = static_cast<DictionaryValue*>(root.get());
 
   Value* null_value = NULL;
-  ASSERT_TRUE(root_dict->Get(L"null", &null_value));
+  ASSERT_TRUE(root_dict->Get("null", &null_value));
   ASSERT_TRUE(null_value);
   ASSERT_TRUE(null_value->IsType(Value::TYPE_NULL));
 
   bool bool_value = false;
-  ASSERT_TRUE(root_dict->GetBoolean(L"bool", &bool_value));
+  ASSERT_TRUE(root_dict->GetBoolean("bool", &bool_value));
   ASSERT_TRUE(bool_value);
 
   int int_value = 0;
-  ASSERT_TRUE(root_dict->GetInteger(L"int", &int_value));
+  ASSERT_TRUE(root_dict->GetInteger("int", &int_value));
   ASSERT_EQ(42, int_value);
 
   double real_value = 0.0;
-  ASSERT_TRUE(root_dict->GetReal(L"real", &real_value));
+  ASSERT_TRUE(root_dict->GetReal("real", &real_value));
   ASSERT_DOUBLE_EQ(3.14, real_value);
 
   // We shouldn't be able to write using this serializer, since it was
@@ -71,9 +73,9 @@ TEST(JSONValueSerializerTest, Roundtrip) {
 }
 
 TEST(JSONValueSerializerTest, StringEscape) {
-  std::wstring all_chars;
+  string16 all_chars;
   for (int i = 1; i < 256; ++i) {
-    all_chars += static_cast<wchar_t>(i);
+    all_chars += static_cast<char16>(i);
   }
   // Generated in in Firefox using the following js (with an extra backslash for
   // double quote):
@@ -105,7 +107,7 @@ TEST(JSONValueSerializerTest, StringEscape) {
   // Test JSONWriter interface
   std::string output_js;
   DictionaryValue valueRoot;
-  valueRoot.SetString(L"all_chars", all_chars);
+  valueRoot.SetString("all_chars", all_chars);
   base::JSONWriter::Write(&valueRoot, false, &output_js);
   ASSERT_EQ(expected_output, output_js);
 
@@ -118,8 +120,8 @@ TEST(JSONValueSerializerTest, StringEscape) {
 TEST(JSONValueSerializerTest, UnicodeStrings) {
   // unicode string json -> escaped ascii text
   DictionaryValue root;
-  std::wstring test(L"\x7F51\x9875");
-  root.SetString(L"web", test);
+  string16 test(WideToUTF16(L"\x7F51\x9875"));
+  root.SetString("web", test);
 
   std::string expected = "{\"web\":\"\\u7F51\\u9875\"}";
 
@@ -134,16 +136,16 @@ TEST(JSONValueSerializerTest, UnicodeStrings) {
   ASSERT_TRUE(deserial_root.get());
   DictionaryValue* dict_root =
       static_cast<DictionaryValue*>(deserial_root.get());
-  std::wstring web_value;
-  ASSERT_TRUE(dict_root->GetString(L"web", &web_value));
+  string16 web_value;
+  ASSERT_TRUE(dict_root->GetString("web", &web_value));
   ASSERT_EQ(test, web_value);
 }
 
 TEST(JSONValueSerializerTest, HexStrings) {
   // hex string json -> escaped ascii text
   DictionaryValue root;
-  std::wstring test(L"\x01\x02");
-  root.SetString(L"test", test);
+  string16 test(WideToUTF16(L"\x01\x02"));
+  root.SetString("test", test);
 
   std::string expected = "{\"test\":\"\\u0001\\u0002\"}";
 
@@ -158,8 +160,8 @@ TEST(JSONValueSerializerTest, HexStrings) {
   ASSERT_TRUE(deserial_root.get());
   DictionaryValue* dict_root =
       static_cast<DictionaryValue*>(deserial_root.get());
-  std::wstring test_value;
-  ASSERT_TRUE(dict_root->GetString(L"test", &test_value));
+  string16 test_value;
+  ASSERT_TRUE(dict_root->GetString("test", &test_value));
   ASSERT_EQ(test, test_value);
 
   // Test converting escaped regular chars
@@ -168,8 +170,8 @@ TEST(JSONValueSerializerTest, HexStrings) {
   deserial_root.reset(deserializer2.Deserialize(NULL, NULL));
   ASSERT_TRUE(deserial_root.get());
   dict_root = static_cast<DictionaryValue*>(deserial_root.get());
-  ASSERT_TRUE(dict_root->GetString(L"test", &test_value));
-  ASSERT_EQ(std::wstring(L"go"), test_value);
+  ASSERT_TRUE(dict_root->GetString("test", &test_value));
+  ASSERT_EQ(ASCIIToUTF16("go"), test_value);
 }
 
 TEST(JSONValueSerializerTest, AllowTrailingComma) {
@@ -221,9 +223,9 @@ TEST(JSONValueSerializerTest, JSONReaderComments) {
   ASSERT_EQ(1U, list->GetSize());
   Value* elt = NULL;
   ASSERT_TRUE(list->Get(0, &elt));
-  std::wstring value;
+  std::string value;
   ASSERT_TRUE(elt && elt->GetAsString(&value));
-  ASSERT_EQ(L"// ok\n /* foo */ ", value);
+  ASSERT_EQ("// ok\n /* foo */ ", value);
 
   // You can't nest comments.
   root.reset(base::JSONReader::Read("/* /* inner */ outer */ [ 1 ]", false));
@@ -275,21 +277,21 @@ TEST_F(JSONFileValueSerializerTest, Roundtrip) {
   DictionaryValue* root_dict = static_cast<DictionaryValue*>(root.get());
 
   Value* null_value = NULL;
-  ASSERT_TRUE(root_dict->Get(L"null", &null_value));
+  ASSERT_TRUE(root_dict->Get("null", &null_value));
   ASSERT_TRUE(null_value);
   ASSERT_TRUE(null_value->IsType(Value::TYPE_NULL));
 
   bool bool_value = false;
-  ASSERT_TRUE(root_dict->GetBoolean(L"bool", &bool_value));
+  ASSERT_TRUE(root_dict->GetBoolean("bool", &bool_value));
   ASSERT_TRUE(bool_value);
 
   int int_value = 0;
-  ASSERT_TRUE(root_dict->GetInteger(L"int", &int_value));
+  ASSERT_TRUE(root_dict->GetInteger("int", &int_value));
   ASSERT_EQ(42, int_value);
 
-  std::wstring string_value;
-  ASSERT_TRUE(root_dict->GetString(L"string", &string_value));
-  ASSERT_EQ(L"hello", string_value);
+  std::string string_value;
+  ASSERT_TRUE(root_dict->GetString("string", &string_value));
+  ASSERT_EQ("hello", string_value);
 
   // Now try writing.
   const FilePath written_file_path =

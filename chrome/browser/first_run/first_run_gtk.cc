@@ -9,7 +9,9 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/gtk/first_run_dialog.h"
 #include "chrome/browser/profile_manager.h"
@@ -103,14 +105,15 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (!FirstRun::CreateSentinel())
     return false;
 
-  std::wstring import_bookmarks_path;
+  std::string import_bookmarks_path;
   installer_util::GetDistroStringPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
       &import_bookmarks_path);
 
   if (!import_bookmarks_path.empty()) {
     // There are bookmarks to import from a file.
-    FilePath path = FilePath::FromWStringHack(import_bookmarks_path);
+    FilePath path = FilePath::FromWStringHack(
+        UTF8ToWide(import_bookmarks_path));
     if (!FirstRun::ImportBookmarks(path)) {
       LOG(WARNING) << "silent bookmark import failed";
     }

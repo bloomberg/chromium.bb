@@ -24,8 +24,8 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
   }
 };
 
-static const wchar_t* unknown_bool = L"unknown_switch";
-static const wchar_t* unknown_string = L"unknown_other_switch";
+const char unknown_bool[] = "unknown_switch";
+const char unknown_string[] = "unknown_other_switch";
 
 }  // namespace
 
@@ -56,8 +56,8 @@ TEST(CommandLinePrefStoreTest, SimpleBooleanPref) {
 // Tests a command line with no recognized prefs.
 TEST(CommandLinePrefStoreTest, NoPrefs) {
   CommandLine cl(CommandLine::ARGUMENTS_ONLY);
-  cl.AppendSwitch(WideToASCII(unknown_string));
-  cl.AppendSwitchASCII(WideToASCII(unknown_bool), "a value");
+  cl.AppendSwitch(unknown_string);
+  cl.AppendSwitchASCII(unknown_bool, "a value");
   CommandLinePrefStore store(&cl);
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 
@@ -73,11 +73,11 @@ TEST(CommandLinePrefStoreTest, NoPrefs) {
 // Tests a complex command line with multiple known and unknown switches.
 TEST(CommandLinePrefStoreTest, MultipleSwitches) {
   CommandLine cl(CommandLine::ARGUMENTS_ONLY);
-  cl.AppendSwitch(WideToASCII(unknown_string));
+  cl.AppendSwitch(unknown_string);
   cl.AppendSwitch(switches::kProxyAutoDetect);
   cl.AppendSwitchASCII(switches::kProxyServer, "proxy");
   cl.AppendSwitchASCII(switches::kProxyBypassList, "list");
-  cl.AppendSwitchASCII(WideToASCII(unknown_bool), "a value");
+  cl.AppendSwitchASCII(unknown_bool, "a value");
   CommandLinePrefStore store(&cl);
   EXPECT_EQ(store.ReadPrefs(), PrefStore::PREF_READ_ERROR_NONE);
 

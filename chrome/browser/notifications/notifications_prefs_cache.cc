@@ -55,10 +55,10 @@ void NotificationsPrefsCache::ListValueToGurlVector(
     const ListValue& origin_list,
     std::vector<GURL>* origin_vector) {
   ListValue::const_iterator i;
-  std::wstring origin;
+  std::string origin;
   for (i = origin_list.begin(); i != origin_list.end(); ++i) {
     (*i)->GetAsString(&origin);
-    origin_vector->push_back(GURL(WideToUTF8(origin)));
+    origin_vector->push_back(GURL(origin));
   }
 }
 

@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/profile_manager.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_dialogs.h"
@@ -25,14 +26,12 @@
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 
-#include "chrome/browser/profile_manager.h"
-
 namespace {
 
-static const wchar_t* kKeyNamePath = L"path";
-static const int kSaveCompletePageIndex = 2;
+const char kKeyNamePath[] = "path";
+const int kSaveCompletePageIndex = 2;
 
-};  // namespace
+}  // namespace
 
 // Implementation of SelectFileDialog that shows an UI for choosing a file
 // or folder using FileBrowseUI.
@@ -257,10 +256,10 @@ void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
       if (delegate->type_ == SELECT_OPEN_FILE ||
           delegate->type_ == SELECT_SAVEAS_FILE ||
           delegate->type_ == SELECT_FOLDER) {
-        std::wstring path_string;
+        std::string path_string;
         if (dict->HasKey(kKeyNamePath) &&
             dict->GetString(kKeyNamePath, &path_string)) {
-          FilePath path = FilePath::FromWStringHack(path_string);
+          FilePath path = FilePath::FromWStringHack(UTF8ToWide(path_string));
 
           listener_->FileSelected(path, kSaveCompletePageIndex,
                                   delegate->params_);
@@ -274,10 +273,11 @@ void SelectFileDialogImpl::OnDialogClosed(FileBrowseDelegate* delegate,
           std::vector<FilePath> paths;
           paths.reserve(paths_value->GetSize());
           for (size_t i = 0; i < paths_value->GetSize(); ++i) {
-            std::wstring path_string;
+            std::string path_string;
             if (paths_value->GetString(i, &path_string) &&
                 !path_string.empty()) {
-              paths.push_back(FilePath::FromWStringHack(path_string));
+              paths.push_back(FilePath::FromWStringHack(
+                  UTF8ToWide(path_string)));
             }
           }
 

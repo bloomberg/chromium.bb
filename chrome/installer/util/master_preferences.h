@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -32,19 +32,19 @@ DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line);
 // which is assumed to contain a dictionary named "distribution". Returns
 // true if the value is read successfully, otherwise false.
 bool GetDistroBooleanPreference(const DictionaryValue* prefs,
-                                const std::wstring& name,
+                                const std::string& name,
                                 bool* value);
 
 // This function gets value of a string preference from master
 // preferences. Returns true if the value is read successfully, otherwise false.
 bool GetDistroStringPreference(const DictionaryValue* prefs,
-                               const std::wstring& name,
-                               std::wstring* value);
+                               const std::string& name,
+                               std::string* value);
 
 // This function gets value of an integer preference from master
 // preferences. Returns true if the value is read successfully, otherwise false.
 bool GetDistroIntegerPreference(const DictionaryValue* prefs,
-                                const std::wstring& name,
+                                const std::string& name,
                                 int* value);
 
 // The master preferences is a JSON file with the same entries as the
@@ -114,7 +114,7 @@ std::vector<GURL> GetFirstRunTabs(const DictionaryValue* prefs);
 // Sets the value of given boolean preference |name| in "distribution"
 // dictionary inside |prefs| dictionary.
 bool SetDistroBooleanPreference(DictionaryValue* prefs,
-                                const std::wstring& name,
+                                const std::string& name,
                                 bool value);
 
 // The master preferences can also contain a regular extensions

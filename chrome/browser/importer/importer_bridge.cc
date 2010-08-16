@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
@@ -182,11 +183,10 @@ void ExternalProcessImporterBridge::NotifyEnded() {
   // The internal process detects import end when all items have been received.
 }
 
+// TODO(viettrungluu): convert to string16.
 std::wstring ExternalProcessImporterBridge::GetLocalizedString(
     int message_id) {
-  std::wstring message;
-  localized_strings_->GetString(ASCIIToWide(base::IntToString(message_id)),
-                                &message);
-  return message;
+  string16 message;
+  localized_strings_->GetString(base::IntToString(message_id), &message);
+  return UTF16ToWideHack(message);
 }
-

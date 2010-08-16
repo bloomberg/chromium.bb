@@ -391,7 +391,7 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       value)
     FirstRun::SetShowWelcomePagePref();
 
-  std::wstring import_bookmarks_path;
+  std::string import_bookmarks_path;
   installer_util::GetDistroStringPreference(prefs.get(),
       installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
       &import_bookmarks_path);
@@ -401,8 +401,9 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
     // the importer process and blocks until done or until it fails.
     scoped_refptr<ImporterHost> importer_host = new ImporterHost();
     if (!FirstRun::ImportSettings(NULL,
-          importer_host->GetSourceProfileInfoAt(0).browser_type,
-              import_items, FilePath(import_bookmarks_path), true, NULL)) {
+          importer_host->GetSourceProfileInfoAt(0).browser_type, import_items,
+              FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)),
+              true, NULL)) {
       LOG(WARNING) << "silent import failed";
     }
   }

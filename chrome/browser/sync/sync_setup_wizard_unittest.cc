@@ -252,13 +252,13 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
   EXPECT_EQ(5U, dialog_args.size());
   std::string iframe_to_show;
-  dialog_args.GetString(L"iframeToShow", &iframe_to_show);
+  dialog_args.GetString("iframeToShow", &iframe_to_show);
   EXPECT_EQ("login", iframe_to_show);
   std::string actual_user;
-  dialog_args.GetString(L"user", &actual_user);
+  dialog_args.GetString("user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
   int error = -1;
-  dialog_args.GetInteger(L"error", &error);
+  dialog_args.GetInteger("error", &error);
   EXPECT_EQ(static_cast<int>(AuthError::INVALID_GAIA_CREDENTIALS), error);
   service_->set_auth_state(kTestUser, AuthError::None());
 
@@ -269,13 +269,13 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
   EXPECT_EQ(5U, dialog_args.size());
-  dialog_args.GetString(L"iframeToShow", &iframe_to_show);
+  dialog_args.GetString("iframeToShow", &iframe_to_show);
   EXPECT_EQ("login", iframe_to_show);
   std::string captcha_url;
-  dialog_args.GetString(L"captchaUrl", &captcha_url);
+  dialog_args.GetString("captchaUrl", &captcha_url);
   EXPECT_EQ(kTestCaptchaUrl, GURL(captcha_url).spec());
   error = -1;
-  dialog_args.GetInteger(L"error", &error);
+  dialog_args.GetInteger("error", &error);
   EXPECT_EQ(static_cast<int>(AuthError::CAPTCHA_REQUIRED), error);
   service_->set_auth_state(kTestUser, AuthError::None());
 
@@ -474,13 +474,13 @@ TEST_F(SyncSetupWizardTest, DiscreteRunGaiaLogin) {
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
   EXPECT_EQ(5U, dialog_args.size());
   std::string iframe_to_show;
-  dialog_args.GetString(L"iframeToShow", &iframe_to_show);
+  dialog_args.GetString("iframeToShow", &iframe_to_show);
   EXPECT_EQ("login", iframe_to_show);
   std::string actual_user;
-  dialog_args.GetString(L"user", &actual_user);
+  dialog_args.GetString("user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
   int error = -1;
-  dialog_args.GetInteger(L"error", &error);
+  dialog_args.GetInteger("error", &error);
   EXPECT_EQ(static_cast<int>(AuthError::INVALID_GAIA_CREDENTIALS), error);
   service_->set_auth_state(kTestUser, AuthError::None());
 

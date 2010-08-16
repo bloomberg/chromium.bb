@@ -10,11 +10,11 @@ namespace automation {
 // JSON value labels for proxy settings that are passed in via
 // AutomationMsg_SetProxyConfig. These are here since they are used by both
 // AutomationProvider and AutomationProxy.
-extern const wchar_t kJSONProxyAutoconfig[];
-extern const wchar_t kJSONProxyNoProxy[];
-extern const wchar_t kJSONProxyPacUrl[];
-extern const wchar_t kJSONProxyBypassList[];
-extern const wchar_t kJSONProxyServer[];
+extern const char kJSONProxyAutoconfig[];
+extern const char kJSONProxyNoProxy[];
+extern const char kJSONProxyPacUrl[];
+extern const char kJSONProxyBypassList[];
+extern const char kJSONProxyServer[];
 }
 
 #endif  // CHROME_COMMON_AUTOMATION_CONSTANTS_H__

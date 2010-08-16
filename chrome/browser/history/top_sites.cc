@@ -374,8 +374,8 @@ void TopSites::MigratePinnedURLs() {
       DictionaryValue* dict = static_cast<DictionaryValue*>(value);
       std::string url_string;
       int index;
-      if (dict->GetString(L"url", &url_string) &&
-          dict->GetInteger(L"index", &index))
+      if (dict->GetString("url", &url_string) &&
+          dict->GetInteger("index", &index))
         tmp_map[GURL(url_string)] = index;
     }
   }
