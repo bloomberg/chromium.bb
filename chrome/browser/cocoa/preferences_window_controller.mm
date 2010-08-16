@@ -1378,6 +1378,11 @@ const int kDisabledIndex = 1;
   else if (*prefName == prefs::kMetricsReportingEnabled) {
     [self setMetricsRecording:metricsRecording_.GetValue() ? YES : NO];
   }
+  else if (*prefName == prefs::kDownloadDefaultDirectory) {
+    // Poke KVO.
+    [self willChangeValueForKey:@"defaultDownloadLocation"];
+    [self didChangeValueForKey:@"defaultDownloadLocation"];
+  }
   else if (*prefName == prefs::kPromptForDownload) {
     [self setAskForSaveLocation:askForSaveLocation_.GetValue() ? YES : NO];
   }
