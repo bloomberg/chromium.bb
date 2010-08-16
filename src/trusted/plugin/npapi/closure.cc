@@ -69,9 +69,8 @@ void LoadNaClAppNotify::RunFromBuffer(const nacl::string& url,
 
 UrlAsNaClDescNotify::UrlAsNaClDescNotify(Plugin* plugin,
                                          nacl::string url,
-                                         void* callback_obj) :
-    Closure(plugin, url),
-    np_callback_(reinterpret_cast<NPObject*>(callback_obj)) {
+                                         NPObject* callback_obj)
+    : Closure(plugin, url), np_callback_(callback_obj) {
   PLUGIN_PRINTF(("UrlAsNaClDescNotify ctor\n"));
   NPN_RetainObject(np_callback_);
 }

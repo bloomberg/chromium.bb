@@ -41,6 +41,10 @@ bool ScalarToNPVariant(char* value, NPVariant* var);
 bool ScalarToNPVariant(const char* value, NPVariant* var);
 bool ScalarToNPVariant(NPObject* value, NPVariant* var);
 
+bool NaClDescToNPVariant(plugin::PluginNpapi* plugin,
+                         NaClDesc* desc,
+                         NPVariant* retvalue);
+
 template<typename T> bool ArrayToNPVariant(T* array,
                                            uint32_t length,
                                            NPP npp,
@@ -87,6 +91,8 @@ bool NPVariantToScalar(const NPVariant* var, NaClDesc** value);
 bool NPVariantToScalar(const NPVariant* var, bool* b);
 bool NPVariantToScalar(const NPVariant* var, char** s);
 bool NPVariantToScalar(const NPVariant* var, NPObject** obj);
+
+bool NPVariantToObject(const NPVariant* var, void** obj);
 
 // NPVariantToArray extracts an array value of the template type from
 // an NPVariant value.  If the type of the NPVariant is compatible, it

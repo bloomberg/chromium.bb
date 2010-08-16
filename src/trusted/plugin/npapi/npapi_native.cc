@@ -12,6 +12,7 @@
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/npapi_native.h"
 #include "native_client/src/trusted/plugin/npapi/scriptable_impl_npapi.h"
+#include "native_client/src/trusted/plugin/socket_address.h"
 #include "native_client/src/trusted/plugin/utility.h"
 
 using nacl::assert_cast;
@@ -63,6 +64,35 @@ bool ScalarToNPVariant(const char* value, NPVariant* var) {
 bool ScalarToNPVariant(NPObject* value, NPVariant* var) {
   // NPObject specialization always succeeds.
   OBJECT_TO_NPVARIANT(value, *var);
+  return true;
+}
+
+bool NaClDescToNPVariant(plugin::PluginNpapi* plugin,
+                         NaClDesc* desc,
+                         NPVariant* retvalue) {
+  nacl::DescWrapper* wrapper = plugin->wrapper_factory()->MakeGeneric(desc);
+
+  plugin::DescBasedHandle* desc_handle = NULL;
+  if (NACL_DESC_CONN_CAP == wrapper->type_tag() ||
+      NACL_DESC_CONN_CAP_FD == wrapper->type_tag()) {
+    desc_handle = plugin::SocketAddress::New(plugin, wrapper);
+    PLUGIN_PRINTF(("NaClDescToNPVariant (socket_address=%p)\n",
+                   static_cast<void*>(desc_handle)));
+  } else {
+    desc_handle = plugin::DescBasedHandle::New(plugin, wrapper);
+    PLUGIN_PRINTF(("NaClDescToNPVariant (desc_based_handle_=%p)\n",
+                   static_cast<void*>(desc_handle)));
+  }
+
+  NPObject* scriptable_handle = plugin::ScriptableImplNpapi::New(desc_handle);
+  PLUGIN_PRINTF(("NaClDescToNPVariant (scriptable_handle=%p)\n",
+                 static_cast<void*>(scriptable_handle)));
+  if (NULL == scriptable_handle ||
+      !plugin::ScalarToNPVariant(scriptable_handle, retvalue)) {
+    PLUGIN_PRINTF(("NaClDescToNPVariant (return 0)\n"));
+    return false;
+  }
+  PLUGIN_PRINTF(("NaClDescToNPVariant (return 1)\n"));
   return true;
 }
 
@@ -124,6 +154,13 @@ bool NPVariantToScalar(const NPVariant* var, NPObject** obj) {
   // Make result available to the caller.
   *obj = NPVARIANT_TO_OBJECT(*var);
   return true;
+}
+
+bool NPVariantToObject(const NPVariant* var, void** obj) {
+  NPObject* npobj = NULL;
+  bool result = NPVariantToScalar(var, &npobj);
+  *obj = reinterpret_cast<void*>(npobj);
+  return result;
 }
 
 // Utility function to get the property of an object.

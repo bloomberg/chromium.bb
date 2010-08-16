@@ -74,7 +74,7 @@ class LoadNaClAppNotify : public Closure {
 
 class UrlAsNaClDescNotify : public Closure {
  public:
-  UrlAsNaClDescNotify(Plugin* plugin, nacl::string url, void* callback_obj);
+  UrlAsNaClDescNotify(Plugin* plugin, nacl::string url, NPObject* callback_obj);
   virtual ~UrlAsNaClDescNotify();
   virtual void RunFromFile(NPStream* stream, const nacl::string& fname);
   virtual void RunFromBuffer(const nacl::string& url, StreamShmBuffer* shmbufp);

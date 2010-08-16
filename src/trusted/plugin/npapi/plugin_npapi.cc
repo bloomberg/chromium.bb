@@ -50,22 +50,24 @@ void InitializeIdentifiers() {
   identifiers_initialized = true;
 }
 
+// TODO(polina): is there a way to share this with PluginPPAPI?
 bool UrlAsNaClDesc(void* obj, plugin::SrpcParams* params) {
-  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+  NaClSrpcArg** ins = params->ins();
+  PLUGIN_PRINTF(("UrlAsNaClDesc (obj=%p, url=%s, callback=%p)\n",
+                 obj, ins[0]->u.sval, ins[1]->u.oval));
 
-  const char* url = params->ins()[0]->u.sval;
-  plugin::ScriptableHandle* callback_obj =
-      reinterpret_cast<plugin::ScriptableHandle*>(params->ins()[1]->u.oval);
-  PLUGIN_PRINTF(("loading %s as file\n", url));
+  plugin::Plugin* plugin = reinterpret_cast<plugin::Plugin*>(obj);
+  const char* url = ins[0]->u.sval;
+  NPObject* callback_obj = reinterpret_cast<NPObject*>(ins[1]->u.oval);
+
   plugin::UrlAsNaClDescNotify* callback =
       new(std::nothrow) plugin::UrlAsNaClDescNotify(plugin, url, callback_obj);
   if (NULL == callback) {
-    params->set_exception_string("Out of memory in __urlAsNaClDesc");
+    params->set_exception_string("out of memory in __urlAsNaClDesc");
     return false;
   }
-
   if (!callback->StartDownload()) {
-    PLUGIN_PRINTF(("failed to load URL %s to local file.\n", url));
+    PLUGIN_PRINTF(("UrlAsNaClDesc (failed to load url to local file)\n"));
     params->set_exception_string("specified url could not be loaded");
     // callback is always deleted in URLNotify
     return false;

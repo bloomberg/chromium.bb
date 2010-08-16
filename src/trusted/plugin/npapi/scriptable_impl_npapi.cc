@@ -17,6 +17,7 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include  "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/plugin/npapi/browser_impl_npapi.h"
 #include "native_client/src/trusted/plugin/npapi/npapi_native.h"
@@ -39,14 +40,6 @@ uint32_t ArgsLength(const NaClSrpcArg* index[]) {
   return i;
 }
 
-bool GetObject(void** obj, NPVariant var) {
-  *obj = NULL;
-  if (NPVARIANT_IS_OBJECT(var)) {
-    *obj = reinterpret_cast<void*>(NPVARIANT_TO_OBJECT(var));
-    return true;
-  }
-  return false;
-}
 
 // Utilities to support marshalling to/from NPAPI.
 
@@ -100,7 +93,7 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
         }
         break;
       case NACL_SRPC_ARG_TYPE_OBJECT:
-        if (!GetObject(&inputs[i]->u.oval, args[i])) {
+        if (!plugin::NPVariantToObject(&args[i], &inputs[i]->u.oval)) {
           return false;
         }
         break;
@@ -186,48 +179,13 @@ bool MarshallInputs(plugin::ScriptableImplNpapi* scriptable_handle,
       case NACL_SRPC_ARG_TYPE_HANDLE:
       case NACL_SRPC_ARG_TYPE_INT:
       case NACL_SRPC_ARG_TYPE_STRING:
-        break;
       case NACL_SRPC_ARG_TYPE_OBJECT:
+        break;
       case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
       case NACL_SRPC_ARG_TYPE_INVALID:
       default:
         return false;
     }
-  }
-  return true;
-}
-
-bool OutputOneDescriptor(plugin::PluginNpapi* plugin,
-                         NaClDesc* desc,
-                         NPVariant* retvalue) {
-  nacl::DescWrapper* wrapper = plugin->wrapper_factory()->MakeGeneric(desc);
-
-  if (NACL_DESC_CONN_CAP == wrapper->type_tag() ||
-      NACL_DESC_CONN_CAP_FD == wrapper->type_tag()) {
-    plugin::SocketAddress* socket_address =
-        plugin::SocketAddress::New(plugin, wrapper);
-    NPObject* sock_addr =
-        plugin::ScriptableImplNpapi::New(socket_address);
-    if (NULL == sock_addr) {
-      PLUGIN_PRINTF(("sock_addr was NULL\n"));
-      return false;
-    }
-    if (!plugin::ScalarToNPVariant(sock_addr, retvalue)) {
-      return false;
-    }
-    PLUGIN_PRINTF(("sock_addr result\n"));
-  } else {
-    plugin::DescBasedHandle* desc_handle =
-        plugin::DescBasedHandle::New(plugin, wrapper);
-    NPObject* handle = plugin::ScriptableImplNpapi::New(desc_handle);
-    if (NULL == handle) {
-      PLUGIN_PRINTF(("handle was NULL\n"));
-      return false;
-    }
-    if (!plugin::ScalarToNPVariant(handle, retvalue)) {
-      return false;
-    }
-    PLUGIN_PRINTF(("desc_handle result\n"));
   }
   return true;
 }
@@ -304,7 +262,8 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
       }
       break;
     case NACL_SRPC_ARG_TYPE_HANDLE:
-      if (!OutputOneDescriptor(portable_plugin, outs[i]->u.hval, retvalue)) {
+      if (!plugin::NaClDescToNPVariant(portable_plugin,
+                                       outs[i]->u.hval, retvalue)) {
         return false;
       }
       break;
@@ -334,11 +293,21 @@ bool MarshallOutputs(plugin::ScriptableImplNpapi* scriptable_handle,
       break;
     case NACL_SRPC_ARG_TYPE_OBJECT:
       /* SCOPE */ {
+        // Only predeclared plugin methods can return objects and they only
+        // return a ScriptableHandle that is actually a ScriptableImplNpapi.
         // This is really ugly due to the multiple inheritance involved.
         // oval contains a ScriptableHandle.  And we need an NPObject.
         // So we have to cast down to ScriptableImplNpapi then back up.
         plugin::ScriptableHandle* handle =
             reinterpret_cast<plugin::ScriptableHandle*>(outs[i]->u.oval);
+        // This confirms that this this is indeed a valid ScriptableHandle
+        // that was created by us. In theory, a predeclared method could
+        // receive and return an opaque JavaScript object that is not
+        // a ScriptableHandle. But we don't have methods like this at the
+        // time. If one every creates such a method, this CHECK will fail
+        // and remind the author to update this code to handle arbitrary
+        // objects.
+        CHECK(plugin::ScriptableHandle::is_valid(handle));
         plugin::ScriptableImplNpapi* handle_npapi =
             static_cast<plugin::ScriptableImplNpapi*>(handle);
         if (!plugin::ScalarToNPVariant(static_cast<NPObject*>(handle_npapi),
