@@ -69,9 +69,6 @@ static const PluginGroupDefinition kGroupDefinitions[] = {};
 #endif
 
 /*static*/
-std::set<string16>* PluginGroup::policy_disabled_puglins_;
-
-/*static*/
 const PluginGroupDefinition* PluginGroup::GetPluginGroupDefinitions() {
   return kGroupDefinitions;
 }
@@ -84,17 +81,15 @@ size_t PluginGroup::GetPluginGroupDefinitionsSize() {
 
 /*static*/
 void PluginGroup::SetPolicyDisabledPluginSet(const std::set<string16>& set) {
-  if (!policy_disabled_puglins_) {
-    policy_disabled_puglins_ = new std::set<string16>();
-    *policy_disabled_puglins_ = set;
-  }
+  if (!policy_disabled_plugins_)
+    policy_disabled_plugins_ = new std::set<string16>(set);
 }
 
 /*static*/
 bool PluginGroup::IsPluginNameDisabledByPolicy(const string16& plugin_name) {
-  return policy_disabled_puglins_ &&
-      policy_disabled_puglins_->find(plugin_name) !=
-          policy_disabled_puglins_->end();
+  return policy_disabled_plugins_ &&
+      policy_disabled_plugins_->find(plugin_name) !=
+          policy_disabled_plugins_->end();
 }
 
 /*static*/

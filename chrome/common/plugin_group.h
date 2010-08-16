@@ -123,7 +123,11 @@ class PluginGroup {
   // given plug-in.
   void UpdateDescriptionAndVersion(const WebPluginInfo& plugin);
 
-  static std::set<string16>* policy_disabled_puglins_;
+  // Updates the active plugin in the group. The active plugin is the first
+  // enabled one, or if all plugins are disabled, simply the first one.
+  void UpdateActivePlugin(const WebPluginInfo& plugin);
+
+  static std::set<string16>* policy_disabled_plugins_;
 
   string16 group_name_;
   string16 name_matcher_;
