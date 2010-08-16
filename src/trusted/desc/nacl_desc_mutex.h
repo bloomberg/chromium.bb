@@ -13,34 +13,26 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
+#include "native_client/src/shared/platform/nacl_interruptible_mutex.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
 struct NaClDescEffector;
-struct NaClDescMutex;
 struct NaClDescXferState;
-struct NaClHostDesc;
-struct NaClMessageHeader;
-struct nacl_abi_stat;
-struct nacl_abi_timespec;
 
-int NaClDescMutexCtor(struct NaClDescMutex  *self);
+struct NaClDescMutex {
+  struct NaClDesc      base;
+  struct NaClIntrMutex mu;
+};
 
-void NaClDescMutexDtor(struct NaClDesc *vself);
+extern int NaClDescMutexInternalize(struct NaClDesc          **baseptr,
+                                    struct NaClDescXferState *xfer) NACL_WUR;
+
+int NaClDescMutexCtor(struct NaClDescMutex  *self) NACL_WUR;
 
 struct NaClDescMutex *NaClDescMutexMake(struct NaClIntrMutex *mu);
-
-int NaClDescMutexClose(struct NaClDesc          *vself,
-                       struct NaClDescEffector  *effp);
-
-int NaClDescMutexLock(struct NaClDesc         *vself,
-                      struct NaClDescEffector *effp);
-
-int NaClDescMutexTryLock(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp);
-
-int NaClDescMutexUnlock(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp);
 
 EXTERN_C_END
 

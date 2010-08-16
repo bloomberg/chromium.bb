@@ -14,43 +14,36 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
 struct NaClDescEffector;
-struct NaClDescDirDesc;
 struct NaClDescXferState;
-struct NaClHostDesc;
-struct NaClMessageHeader;
-struct nacl_abi_stat;
-struct nacl_abi_timespec;
+
+/*
+ * Directory descriptors
+ */
+
+struct NaClDescDirDesc {
+  struct NaClDesc           base;
+  struct NaClHostDir        *hd;
+};
+
+extern int NaClDescDirInternalize(struct NaClDesc          **baseptr,
+                                  struct NaClDescXferState *xfer)
+    NACL_WUR;
 
 int NaClDescDirDescCtor(struct NaClDescDirDesc  *self,
-                        struct NaClHostDir      *hd);
+                        struct NaClHostDir      *hd)
+    NACL_WUR;
 
-void NaClDescDirDescDtor(struct NaClDesc *vself);
-
-struct NaClDescDirDesc *NaClDescDirDescMake(struct NaClHostDir *nhdp);
+struct NaClDescDirDesc *NaClDescDirDescMake(struct NaClHostDir *nhdp)
+    NACL_WUR;
 
 /* simple factory */
-struct NaClDescDirDesc *NaClDescDirDescOpen(char  *path);
-
-ssize_t NaClDescDirDescRead(struct NaClDesc         *vself,
-                            struct NaClDescEffector *effp,
-                            void                    *buf,
-                            size_t                  len);
-
-int NaClDescDirDescClose(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp);
-
-ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp,
-                                void                    *dirp,
-                                size_t                  count);
-
-int NaClDescDirDescExternalizeSize(struct NaClDesc *vself,
-                                   size_t          *nbytes,
-                                   size_t          *nhandles);
+struct NaClDescDirDesc *NaClDescDirDescOpen(char  *path)
+    NACL_WUR;
 
 EXTERN_C_END
 

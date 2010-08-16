@@ -16,8 +16,8 @@
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
-#include "native_client/src/trusted/desc/nacl_desc_effector_cleanup.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 
@@ -740,8 +740,6 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   struct NaClImcTypedMsgHdr   hdr;
   ssize_t                     rv;
 
-  struct NaClNrdXferEffector  nnxep;
-
   NaClLog(4,
           "NaClSendServiceAddressTo(0x%08"NACL_PRIxPTR", %d)\n",
           (uintptr_t) nap,
@@ -762,21 +760,16 @@ void NaClSendServiceAddressTo(struct NaClApp  *nap,
   /*
    * service_address and service_port are set together.
    */
-  (void) NaClNrdXferEffectorCtor(&nnxep);
 
   hdr.iov = (struct NaClImcMsgIoVec *) NULL;
   hdr.iov_length = 0;
   hdr.ndescv = &nap->service_address;
   hdr.ndesc_length = 1;
 
-  rv = NaClImcSendTypedMessage(channel,
-                               &nnxep.base,
-                               &hdr, 0);
+  rv = NaClImcSendTypedMessage(channel, &hdr, 0);
 
   NaClDescUnref(channel);
   channel = NULL;
-
-  (*nnxep.base.vtbl->Dtor)(&nnxep.base);
 
   NaClLog(1,
           "NaClSendServiceAddressTo: descriptor %d, error %"NACL_PRIdS"\n",
@@ -825,9 +818,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
    * least 4K, and we can map it in with uninitialized data (should be
    * zero filled) at the end.
    */
-  rval = (*nexe_binary->vtbl->Fstat)(nexe_binary,
-                                     &chan->eff.base,
-                                     &stbuf);
+  rval = (*nexe_binary->vtbl->Fstat)(nexe_binary, &stbuf);
   if (0 != rval) {
     goto cleanup;
   }
@@ -871,7 +862,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
 
  cleanup:
 
-  rval = (*nexe_binary->vtbl->Close)(nexe_binary, &chan->eff.base);
+  rval = (*nexe_binary->vtbl->Close)(nexe_binary);
   if (0 != rval) {
     /* Fail the request even though we could go on. */
     errcode = NACL_SRPC_RESULT_NO_MEMORY;
@@ -993,11 +984,9 @@ void WINAPI NaClSecureChannelThread(void *state) {
 }
 
 void NaClSecureCommandChannel(struct NaClApp  *nap) {
-  struct NaClNrdXferEffector  nnxep;
   int                         status;
 
   NaClLog(4, "Waiting for secure command channel connect\n");
-  (void) NaClNrdXferEffectorCtor(&nnxep);
   /*
    * this block until the plugin connects
    */
@@ -1008,7 +997,6 @@ void NaClSecureCommandChannel(struct NaClApp  *nap) {
             "NaClSecureCommandChannel: unable to establish channel\n");
   }
 
-  (*nnxep.base.vtbl->Dtor)((struct NaClDescEffector *) &nnxep);
   /*
    * Spawn secure channel thread.
    */

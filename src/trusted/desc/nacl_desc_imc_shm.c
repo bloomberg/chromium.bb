@@ -42,6 +42,8 @@
  * NaClDescImcShm is the subclass that wraps IMC shm descriptors.
  */
 
+static struct NaClDescVtbl const kNaClDescImcShmVtbl;  /* fwd */
+
 int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
                        NaClHandle             h,
                        nacl_off64_t           size) {
@@ -89,22 +91,22 @@ int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
   return rv;
 }
 
-void NaClDescImcShmDtor(struct NaClDesc *vself) {
+static void NaClDescImcShmDtor(struct NaClDesc *vself) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
-  NaClClose(self->h);
+  (void) NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
   vself->vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(vself);
 }
 
-uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
-                            struct NaClDescEffector *effp,
-                            void                    *start_addr,
-                            size_t                  len,
-                            int                     prot,
-                            int                     flags,
-                            nacl_off64_t            offset) {
+static uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
+                                   struct NaClDescEffector *effp,
+                                   void                    *start_addr,
+                                   size_t                  len,
+                                   int                     prot,
+                                   int                     flags,
+                                   nacl_off64_t            offset) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
   int           rv;
@@ -254,11 +256,11 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   return (uintptr_t) start_addr;
 }
 
-int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp,
-                              void                    *start_addr,
-                              size_t                  len,
-                              int                     safe_mode) {
+static int NaClDescImcShmUnmapCommon(struct NaClDesc         *vself,
+                                     struct NaClDescEffector *effp,
+                                     void                    *start_addr,
+                                     size_t                  len,
+                                     int                     safe_mode) {
   int       retval;
   uintptr_t addr;
   uintptr_t end_addr;
@@ -318,26 +320,23 @@ done:
   return retval;
 }
 
-int NaClDescImcShmUnmapUnsafe(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp,
-                              void                    *start_addr,
-                              size_t                  len) {
+static int NaClDescImcShmUnmapUnsafe(struct NaClDesc         *vself,
+                                     struct NaClDescEffector *effp,
+                                     void                    *start_addr,
+                                     size_t                  len) {
   return NaClDescImcShmUnmapCommon(vself, effp, start_addr, len, 0);
 }
 
-int NaClDescImcShmUnmap(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        void                    *start_addr,
-                        size_t                  len) {
+static int NaClDescImcShmUnmap(struct NaClDesc         *vself,
+                               struct NaClDescEffector *effp,
+                               void                    *start_addr,
+                               size_t                  len) {
   return NaClDescImcShmUnmapCommon(vself, effp, start_addr, len, 1);
 }
 
-int NaClDescImcShmFstat(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        struct nacl_abi_stat    *stbp) {
+static int NaClDescImcShmFstat(struct NaClDesc         *vself,
+                               struct nacl_abi_stat    *stbp) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
-
-  UNREFERENCED_PARAMETER(effp);
 
   if (self->size > INT32_MAX) {
     return -NACL_ABI_EOVERFLOW;
@@ -362,17 +361,14 @@ int NaClDescImcShmFstat(struct NaClDesc         *vself,
   return 0;
 }
 
-int NaClDescImcShmClose(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+static int NaClDescImcShmClose(struct NaClDesc         *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-int NaClDescImcShmExternalizeSize(struct NaClDesc *vself,
-                                  size_t          *nbytes,
-                                  size_t          *nhandles) {
+static int NaClDescImcShmExternalizeSize(struct NaClDesc *vself,
+                                         size_t          *nbytes,
+                                         size_t          *nhandles) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
   *nbytes = sizeof self->size;
@@ -381,8 +377,8 @@ int NaClDescImcShmExternalizeSize(struct NaClDesc *vself,
   return 0;
 }
 
-int NaClDescImcShmExternalize(struct NaClDesc           *vself,
-                              struct NaClDescXferState  *xfer) {
+static int NaClDescImcShmExternalize(struct NaClDesc           *vself,
+                                     struct NaClDescXferState  *xfer) {
   struct NaClDescImcShm  *self = (struct NaClDescImcShm *) vself;
 
   *xfer->next_handle++ = self->h;
@@ -391,7 +387,7 @@ int NaClDescImcShmExternalize(struct NaClDesc           *vself,
   return 0;
 }
 
-struct NaClDescVtbl const kNaClDescImcShmVtbl = {
+static struct NaClDescVtbl const kNaClDescImcShmVtbl = {
   NaClDescImcShmDtor,
   NaClDescImcShmMap,
   NaClDescImcShmUnmapUnsafe,
@@ -422,7 +418,7 @@ struct NaClDescVtbl const kNaClDescImcShmVtbl = {
   NaClDescGetValueNotImplemented,
 };
 
-int NaClDescImcShmInternalize(struct NaClDesc           **baseptr,
+int NaClDescImcShmInternalize(struct NaClDesc           **out_desc,
                               struct NaClDescXferState  *xfer) {
   int                   rv;
   struct NaClDescImcShm *ndisp;
@@ -457,7 +453,7 @@ int NaClDescImcShmInternalize(struct NaClDesc           **baseptr,
     goto cleanup;
   }
 
-  *baseptr = (struct NaClDesc *) ndisp;
+  *out_desc = (struct NaClDesc *) ndisp;
   rv = 0;
 
 cleanup:

@@ -42,6 +42,11 @@
  * NaClDescImcDesc is the subclass that wraps IMC socket descriptors.
  */
 
+/* fwd */
+static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl;
+static struct NaClDescVtbl const kNaClDescImcDescVtbl;
+static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl;
+
 int NaClDescImcConnectedDescCtor(struct NaClDescImcConnectedDesc  *self,
                                  NaClHandle                       h) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
@@ -57,10 +62,10 @@ int NaClDescImcConnectedDescCtor(struct NaClDescImcConnectedDesc  *self,
   return 1;
 }
 
-void NaClDescImcConnectedDescDtor(struct NaClDesc *vself) {
+static void NaClDescImcConnectedDescDtor(struct NaClDesc *vself) {
   struct NaClDescImcConnectedDesc *self = ((struct NaClDescImcConnectedDesc *)
                                            vself);
-  NaClClose(self->h);
+  (void) NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
   self->base.vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(vself);
@@ -88,7 +93,7 @@ int NaClDescImcDescCtor(struct NaClDescImcDesc  *self,
   return retval;
 }
 
-void NaClDescImcDescDtor(struct NaClDesc *vself) {
+static void NaClDescImcDescDtor(struct NaClDesc *vself) {
   struct NaClDescImcDesc *self = ((struct NaClDescImcDesc *)
                                   vself);
   NaClMutexDtor(&self->sendmsg_mu);
@@ -110,7 +115,7 @@ int NaClDescXferableDataDescCtor(struct NaClDescXferableDataDesc  *self,
   return retval;
 }
 
-void NaClDescXferableDataDescDtor(struct NaClDesc *vself) {
+static void NaClDescXferableDataDescDtor(struct NaClDesc *vself) {
   struct NaClDescXferableDataDesc  *self = ((struct NaClDescXferableDataDesc *)
                                             vself);
 
@@ -119,10 +124,8 @@ void NaClDescXferableDataDescDtor(struct NaClDesc *vself) {
 }
 
 int NaClDescImcDescFstat(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp,
                          struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = (NACL_ABI_S_IFSOCK |
@@ -131,28 +134,23 @@ int NaClDescImcDescFstat(struct NaClDesc          *vself,
   return 0;
 }
 
-int NaClDescXferableDataDescFstat(struct NaClDesc          *vself,
-                                  struct NaClDescEffector  *effp,
-                                  struct nacl_abi_stat     *statbuf) {
+static int NaClDescXferableDataDescFstat(struct NaClDesc          *vself,
+                                         struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFDSOCK;
   return 0;
 }
 
-int NaClDescImcConnectedDescClose(struct NaClDesc          *vself,
-                                  struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+static int NaClDescImcConnectedDescClose(struct NaClDesc          *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-int NaClDescXferableDataDescExternalizeSize(struct NaClDesc  *vself,
-                                            size_t           *nbytes,
-                                            size_t           *nhandles) {
+static int NaClDescXferableDataDescExternalizeSize(struct NaClDesc  *vself,
+                                                   size_t           *nbytes,
+                                                   size_t           *nhandles) {
   UNREFERENCED_PARAMETER(vself);
   NaClLog(4, "Entered NaClDescXferableDataDescExternalizeSize\n");
   *nbytes = 0;
@@ -161,8 +159,8 @@ int NaClDescXferableDataDescExternalizeSize(struct NaClDesc  *vself,
   return 0;
 }
 
-int NaClDescXferableDataDescExternalize(struct NaClDesc          *vself,
-                                        struct NaClDescXferState *xfer) {
+static int NaClDescXferableDataDescExternalize(struct NaClDesc          *vself,
+                                               struct NaClDescXferState *xfer) {
   struct NaClDescXferableDataDesc *self = ((struct NaClDescXferableDataDesc *)
                                            vself);
 
@@ -192,15 +190,12 @@ int NaClDescXferableDataDescExternalize(struct NaClDesc          *vself,
  * multi-threaded scenario, where a sender race cause receiver
  * confusion.
  */
-ssize_t NaClDescImcDescSendMsg(struct NaClDesc                *vself,
-                               struct NaClDescEffector        *effp,
-                               struct NaClMessageHeader const *dgram,
+static ssize_t NaClDescImcDescSendMsg(struct NaClDesc                *vself,
+                                      struct NaClMessageHeader const *dgram,
                                int                            flags) {
   struct NaClDescImcDesc *self = ((struct NaClDescImcDesc *)
                                   vself);
   int result;
-
-  UNREFERENCED_PARAMETER(effp);
 
   NaClXMutexLock(&self->sendmsg_mu);
   result = NaClSendDatagram(self->base.h, dgram, flags);
@@ -238,15 +233,13 @@ ssize_t NaClDescImcDescSendMsg(struct NaClDesc                *vself,
  * with a transferable data-only descriptor from two threads (or two
  * modules) simultaneously.
  */
-ssize_t NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
-                                        struct NaClDescEffector        *effp,
-                                        struct NaClMessageHeader const *dgram,
-                                        int                            flags) {
+static ssize_t
+NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
+                                struct NaClMessageHeader const *dgram,
+                                int                            flags) {
   struct NaClDescXferableDataDesc *self = ((struct NaClDescXferableDataDesc *)
                                            vself);
   int result;
-
-  UNREFERENCED_PARAMETER(effp);
 
   if (0 != dgram->handle_count) {
     /*
@@ -279,15 +272,12 @@ ssize_t NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
  * imc_recvmsg race is not substantively different from an imc_sendmsg
  * race.
  */
-ssize_t NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
-                               struct NaClDescEffector  *effp,
-                               struct NaClMessageHeader *dgram,
-                               int                      flags) {
+static ssize_t NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
+                                      struct NaClMessageHeader *dgram,
+                                      int                      flags) {
   struct NaClDescImcDesc *self = ((struct NaClDescImcDesc *)
                                   vself);
   int result;
-
-  UNREFERENCED_PARAMETER(effp);
 
   NaClLog(4, "Entered NaClDescImcDescRecvMsg, h=%d\n", self->base.h);
   NaClXMutexLock(&self->recvmsg_mu);
@@ -312,15 +302,12 @@ ssize_t NaClDescImcDescRecvMsg(struct NaClDesc          *vself,
  * imc_recvmsg race is not substantively different from an imc_sendmsg
  * race.
  */
-ssize_t NaClDescXferableDataDescRecvMsg(struct NaClDesc          *vself,
-                                        struct NaClDescEffector  *effp,
-                                        struct NaClMessageHeader *dgram,
-                                        int                      flags) {
+static ssize_t NaClDescXferableDataDescRecvMsg(struct NaClDesc          *vself,
+                                               struct NaClMessageHeader *dgram,
+                                               int                      flags) {
   struct NaClDescXferableDataDesc *self = ((struct NaClDescXferableDataDesc *)
                                            vself);
   int                             result;
-
-  UNREFERENCED_PARAMETER(effp);
 
   NaClLog(4, "Entered NaClDescXferableDataDescRecvMsg, h = %d\n", self->base.h);
   if (0 != dgram->handle_count) {
@@ -349,7 +336,7 @@ ssize_t NaClDescXferableDataDescRecvMsg(struct NaClDesc          *vself,
 }
 
 
-struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
+static struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
   NaClDescImcConnectedDescDtor,
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -381,7 +368,7 @@ struct NaClDescVtbl const kNaClDescImcConnectedDescVtbl = {
 };
 
 
-struct NaClDescVtbl const kNaClDescImcDescVtbl = {
+static struct NaClDescVtbl const kNaClDescImcDescVtbl = {
   NaClDescImcDescDtor,  /* diff */
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -413,7 +400,7 @@ struct NaClDescVtbl const kNaClDescImcDescVtbl = {
 };
 
 
-struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
+static struct NaClDescVtbl const kNaClDescXferableDataDescVtbl = {
   NaClDescXferableDataDescDtor,  /* diff */
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,

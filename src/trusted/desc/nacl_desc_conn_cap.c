@@ -18,14 +18,15 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nacl_desc_effector.h"
+#include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
-
+#include "native_client/src/trusted/desc/nacl_desc_imc_bound_desc.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+static struct NaClDescVtbl const kNaClDescConnCapVtbl;  /* fwd */
 
 int NaClDescConnCapCtor(struct NaClDescConnCap          *self,
                         struct NaClSocketAddress const  *nsap) {
@@ -40,34 +41,29 @@ int NaClDescConnCapCtor(struct NaClDescConnCap          *self,
   return 1;
 }
 
-void NaClDescConnCapDtor(struct NaClDesc *vself) {
+static void NaClDescConnCapDtor(struct NaClDesc *vself) {
   vself->vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(vself);
   return;
 }
 
-int NaClDescConnCapFstat(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp,
-                         struct nacl_abi_stat     *statbuf) {
+static int NaClDescConnCapFstat(struct NaClDesc          *vself,
+                                struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSOCKADDR | NACL_ABI_S_IRWXU;
   return 0;
 }
 
-int NaClDescConnCapClose(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+static int NaClDescConnCapClose(struct NaClDesc          *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-int NaClDescConnCapExternalizeSize(struct NaClDesc  *vself,
-                                   size_t           *nbytes,
-                                   size_t           *nhandles) {
+static int NaClDescConnCapExternalizeSize(struct NaClDesc  *vself,
+                                          size_t           *nbytes,
+                                          size_t           *nhandles) {
   UNREFERENCED_PARAMETER(vself);
 
   *nbytes = NACL_PATH_MAX;
@@ -76,8 +72,8 @@ int NaClDescConnCapExternalizeSize(struct NaClDesc  *vself,
   return 0;
 }
 
-int NaClDescConnCapExternalize(struct NaClDesc          *vself,
-                               struct NaClDescXferState *xfer) {
+static int NaClDescConnCapExternalize(struct NaClDesc          *vself,
+                                      struct NaClDescXferState *xfer) {
   struct NaClDescConnCap    *self;
 
   self = (struct NaClDescConnCap *) vself;
@@ -88,7 +84,7 @@ int NaClDescConnCapExternalize(struct NaClDesc          *vself,
 }
 
 int NaClDescConnCapConnectAddr(struct NaClDesc *vself,
-                               struct NaClDesc **result) {
+                               struct NaClDesc **out_desc) {
   /*
    * See NaClDescImcBoundDescAcceptConn code in
    * nacl_desc_imc_bound_desc.c
@@ -143,7 +139,7 @@ int NaClDescConnCapConnectAddr(struct NaClDesc *vself,
   }
   nh[1] = NACL_INVALID_HANDLE;
 
-  *result = (struct NaClDesc *) peer;
+  *out_desc = (struct NaClDesc *) peer;
   retval = 0;
 
 cleanup:
@@ -159,16 +155,16 @@ cleanup:
   return retval;
 }
 
-int NaClDescConnCapAcceptConn(struct NaClDesc *vself,
-                              struct NaClDesc **result) {
+static int NaClDescConnCapAcceptConn(struct NaClDesc *vself,
+                                     struct NaClDesc **out_desc) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(result);
+  UNREFERENCED_PARAMETER(out_desc);
 
   NaClLog(LOG_ERROR, "NaClDescConnCapAcceptConn: not IMC\n");
   return -NACL_ABI_EINVAL;
 }
 
-struct NaClDescVtbl const kNaClDescConnCapVtbl = {
+static struct NaClDescVtbl const kNaClDescConnCapVtbl = {
   NaClDescConnCapDtor,
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -199,7 +195,7 @@ struct NaClDescVtbl const kNaClDescConnCapVtbl = {
   NaClDescGetValueNotImplemented,
 };
 
-int NaClDescConnCapInternalize(struct NaClDesc          **baseptr,
+int NaClDescConnCapInternalize(struct NaClDesc          **out_desc,
                                struct NaClDescXferState *xfer) {
   int                       rv;
   struct NaClSocketAddress  nsa;
@@ -222,7 +218,7 @@ int NaClDescConnCapInternalize(struct NaClDesc          **baseptr,
     rv = -NACL_ABI_ENOMEM;
     goto cleanup;
   }
-  *baseptr = (struct NaClDesc *) ndccp;
+  *out_desc = (struct NaClDesc *) ndccp;
   rv = 0;
   xfer->next_byte += NACL_PATH_MAX;
 cleanup:

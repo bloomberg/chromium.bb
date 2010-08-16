@@ -31,6 +31,7 @@
 # include "native_client/src/shared/platform/nacl_host_desc.h"
 # include "native_client/src/trusted/desc/nacl_desc_base.h"
 # include "native_client/src/trusted/desc/nacl_desc_invalid.h"
+# include "native_client/src/trusted/desc/nacl_desc_io.h"
 # include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #endif  /* __native_client__ */
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -45,6 +46,7 @@
 # include <sys/shm.h>
 # include <sys/stat.h>
 # include "native_client/src/trusted/desc/nacl_desc_base.h"
+# include "native_client/src/trusted/desc/nacl_desc_io.h"
 # include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
 # include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #endif  /* NACL_LINUX */
@@ -167,14 +169,14 @@ static NaClSrpcImcDescType SysvShmDesc() {
    * Attach to the region.  There is no explicit detach, because the Linux
    * man page says one will be done at process exit.
    */
-  kSysvShmAddr =
-      (void*) NaClDescSysvShmMap((struct NaClDesc*) shm_desc,
-                                 (struct NaClDescEffector*) NULL,
-                                 aligned_mapaddr,
-                                 kShmSize,
-                                 NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                                 NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
-                                 0);
+  kSysvShmAddr = (void *) (*((struct NaClDesc*) shm_desc)->vtbl->Map)(
+      (struct NaClDesc *) shm_desc,
+      (struct NaClDescEffector*) NULL,
+      aligned_mapaddr,
+      kShmSize,
+      NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
+      NACL_ABI_MAP_SHARED | NACL_ABI_MAP_FIXED,
+      0);
   if (aligned_mapaddr != kSysvShmAddr) {
     goto cleanup;
   }

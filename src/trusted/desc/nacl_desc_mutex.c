@@ -19,6 +19,7 @@
 
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_interruptible_mutex.h"
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
@@ -34,6 +35,8 @@
  *
  * NaClDescMutex is the subclass that wraps host-OS mutex abstractions
  */
+
+static struct NaClDescVtbl const kNaClDescMutexVtbl;  /* fwd */
 
 /*
  * Takes ownership of hd, will close in Dtor.
@@ -54,7 +57,7 @@ int NaClDescMutexCtor(struct NaClDescMutex  *self) {
   return 1;
 }
 
-void NaClDescMutexDtor(struct NaClDesc *vself) {
+static void NaClDescMutexDtor(struct NaClDesc *vself) {
   struct NaClDescMutex *self = (struct NaClDescMutex *) vself;
 
   NaClLog(4, "NaClDescMutexDtor(0x%08"NACL_PRIxPTR").\n",
@@ -64,58 +67,45 @@ void NaClDescMutexDtor(struct NaClDesc *vself) {
   NaClDescDtor(&self->base);
 }
 
-int NaClDescMutexFstat(struct NaClDesc          *vself,
-                       struct NaClDescEffector  *effp,
-                       struct nacl_abi_stat     *statbuf) {
+static int NaClDescMutexFstat(struct NaClDesc          *vself,
+                              struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFMUTEX;
   return 0;
 }
 
-int NaClDescMutexClose(struct NaClDesc          *vself,
-                       struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+static int NaClDescMutexClose(struct NaClDesc          *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-int NaClDescMutexLock(struct NaClDesc         *vself,
-                      struct NaClDescEffector *effp) {
+static int NaClDescMutexLock(struct NaClDesc         *vself) {
   struct NaClDescMutex *self = (struct NaClDescMutex *) vself;
 
   NaClSyncStatus status = NaClIntrMutexLock(&self->mu);
 
-  UNREFERENCED_PARAMETER(effp);
   return -NaClXlateNaClSyncStatus(status);
 }
 
-int NaClDescMutexTryLock(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp) {
+static int NaClDescMutexTryLock(struct NaClDesc          *vself) {
   struct NaClDescMutex *self = (struct NaClDescMutex *) vself;
 
   NaClSyncStatus status = NaClIntrMutexTryLock(&self->mu);
 
-  UNREFERENCED_PARAMETER(effp);
-
   return -NaClXlateNaClSyncStatus(status);
 }
 
-int NaClDescMutexUnlock(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp) {
+static int NaClDescMutexUnlock(struct NaClDesc         *vself) {
   struct NaClDescMutex *self = (struct NaClDescMutex *) vself;
 
   NaClSyncStatus status = NaClIntrMutexUnlock(&self->mu);
 
-  UNREFERENCED_PARAMETER(effp);
-
   return -NaClXlateNaClSyncStatus(status);
 }
 
-struct NaClDescVtbl const kNaClDescMutexVtbl = {
+static struct NaClDescVtbl const kNaClDescMutexVtbl = {
   NaClDescMutexDtor,
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -145,12 +135,3 @@ struct NaClDescVtbl const kNaClDescMutexVtbl = {
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
 };
-
-int NaClDescMutexInternalize(struct NaClDesc           **baseptr,
-                             struct NaClDescXferState  *xfer) {
-  UNREFERENCED_PARAMETER(baseptr);
-  UNREFERENCED_PARAMETER(xfer);
-
-  NaClLog(LOG_ERROR, "NaClDescMutexInternalize: not shared yet\n");
-  return -NACL_ABI_EINVAL;
-}

@@ -13,32 +13,26 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
+#include "native_client/src/shared/platform/nacl_semaphore.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
 struct NaClDescEffector;
-struct NaClHostDesc;
 struct NaClDescXferState;
-struct NaClDescSemaphore;
-struct NaClMessageHeader;
-struct nacl_abi_stat;
-struct nacl_abi_timespec;
 
-int NaClDescSemaphoreCtor(struct NaClDescSemaphore  *self, int value);
+struct NaClDescSemaphore {
+  struct NaClDesc      base;
+  struct NaClSemaphore sem;
+};
 
-void NaClDescSemaphoreDtor(struct NaClDesc *vself);
+extern int NaClDescSemaphoreInternalize(struct NaClDesc          **baseptr,
+                                        struct NaClDescXferState *xfer)
+    NACL_WUR;
 
-int NaClDescSemaphoreClose(struct NaClDesc          *vself,
-                           struct NaClDescEffector  *effp);
-
-int NaClDescSemaphorePost(struct NaClDesc         *vself,
-                          struct NaClDescEffector *effp);
-
-int NaClDescSemaphoreSemWait(struct NaClDesc          *vself,
-                             struct NaClDescEffector  *effp);
-
-int NaClDescSemaphoreGetValue(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp);
+int NaClDescSemaphoreCtor(struct NaClDescSemaphore  *self, int value)
+    NACL_WUR;
 
 EXTERN_C_END
 

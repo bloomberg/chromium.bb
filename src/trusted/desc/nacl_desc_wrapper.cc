@@ -9,15 +9,16 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
+#if defined(NACL_LINUX)
+#include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
+#endif  // defined(NACL_LINUX)
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
-#if defined(NACL_LINUX)
-#include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
-#endif  // defined(NACL_LINUX)
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
@@ -421,63 +422,62 @@ int DescWrapper::Unmap(void* start_addr, size_t len) {
 }
 
 ssize_t DescWrapper::Read(void* buf, size_t len) {
-  return desc_->vtbl->Read(desc_, common_data_->effp(), buf, len);
+  return desc_->vtbl->Read(desc_, buf, len);
 }
 
 ssize_t DescWrapper::Write(const void* buf, size_t len) {
-  return desc_->vtbl->Write(desc_, common_data_->effp(), buf, len);
+  return desc_->vtbl->Write(desc_, buf, len);
 }
 
 nacl_off64_t DescWrapper::Seek(nacl_off64_t offset, int whence) {
-  return desc_->vtbl->Seek(desc_, common_data_->effp(), offset, whence);
+  return desc_->vtbl->Seek(desc_, offset, whence);
 }
 
 int DescWrapper::Ioctl(int request, void* arg) {
-  return desc_->vtbl->Ioctl(desc_, common_data_->effp(), request, arg);
+  return desc_->vtbl->Ioctl(desc_, request, arg);
 }
 
 int DescWrapper::Fstat(struct nacl_abi_stat* statbuf) {
-  return desc_->vtbl->Fstat(desc_, common_data_->effp(), statbuf);
+  return desc_->vtbl->Fstat(desc_, statbuf);
 }
 
 int DescWrapper::Close() {
-  return desc_->vtbl->Close(desc_, common_data_->effp());
+  return desc_->vtbl->Close(desc_);
 }
 
 ssize_t DescWrapper::Getdents(void* dirp, size_t count) {
-  return desc_->vtbl->Getdents(desc_, common_data_->effp(), dirp, count);
+  return desc_->vtbl->Getdents(desc_, dirp, count);
 }
 
 int DescWrapper::Lock() {
-  return desc_->vtbl->Lock(desc_, common_data_->effp());
+  return desc_->vtbl->Lock(desc_);
 }
 
 int DescWrapper::TryLock() {
-  return desc_->vtbl->TryLock(desc_, common_data_->effp());
+  return desc_->vtbl->TryLock(desc_);
 }
 
 int DescWrapper::Unlock() {
-  return desc_->vtbl->Unlock(desc_, common_data_->effp());
+  return desc_->vtbl->Unlock(desc_);
 }
 
 int DescWrapper::Wait(DescWrapper* mutex) {
-  return desc_->vtbl->Wait(desc_, common_data_->effp(), mutex->desc_);
+  return desc_->vtbl->Wait(desc_, mutex->desc_);
 }
 
 int DescWrapper::TimedWaitAbs(DescWrapper* mutex,
                               struct nacl_abi_timespec* ts) {
   return desc_->vtbl->TimedWaitAbs(desc_,
-                                   common_data_->effp(),
                                    mutex->desc_,
                                    ts);
 }
 
 int DescWrapper::Signal() {
-  return desc_->vtbl->Signal(desc_, common_data_->effp());
+  return desc_->vtbl->Signal(desc_);
 }
 
 int DescWrapper::Broadcast() {
-  return desc_->vtbl->Broadcast(desc_, common_data_->effp());
+  return desc_->vtbl->Broadcast(desc_);
 }
 
 ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
@@ -520,7 +520,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
     header.ndescv[i] = dgram->ndescv[i]->desc_;
   }
   // Send the message.
-  ret = NaClImcSendTypedMessage(desc_, common_data_->effp(), &header, flags);
+  ret = NaClImcSendTypedMessage(desc_, &header, flags);
 
  cleanup:
   free(header.ndescv);
@@ -569,7 +569,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   }
   header.ndesc_length = ddescv_length;
   // Receive the message.
-  ret = NaClImcRecvTypedMessage(desc_, common_data_->effp(), &header, flags);
+  ret = NaClImcRecvTypedMessage(desc_, &header, flags);
   if (ret < 0) {
     goto cleanup;
   }
@@ -627,15 +627,15 @@ DescWrapper* DescWrapper::Accept() {
 }
 
 int DescWrapper::Post() {
-  return desc_->vtbl->Post(desc_, common_data_->effp());
+  return desc_->vtbl->Post(desc_);
 }
 
 int DescWrapper::SemWait() {
-  return desc_->vtbl->SemWait(desc_, common_data_->effp());
+  return desc_->vtbl->SemWait(desc_);
 }
 
 int DescWrapper::GetValue() {
-  return desc_->vtbl->GetValue(desc_, common_data_->effp());
+  return desc_->vtbl->GetValue(desc_);
 }
 
 }  // namespace nacl

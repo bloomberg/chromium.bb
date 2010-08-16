@@ -14,6 +14,8 @@
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"

@@ -15,11 +15,19 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
-struct NaClDescXferState;
-struct NaClMessageHeader;
+/*
+ * Invalid descriptor
+ * This class is a singleton used to enable passing a designated "invalid"
+ * descriptor via RPCs for error conditions.
+ */
+struct NaClDescInvalid;
+
+extern int NaClDescInvalidInternalize(struct NaClDesc          **baseptr,
+                                      struct NaClDescXferState *xfer) NACL_WUR;
 
 /* Initialize and tear down the state for maintaining the singleton. */
 extern void NaClDescInvalidInit();

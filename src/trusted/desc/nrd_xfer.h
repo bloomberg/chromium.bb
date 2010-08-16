@@ -61,7 +61,6 @@ struct NaClImcTypedMsgHdr {
  * a negated errno value (essentially the kernel return ABI) on error.
  */
 ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
-                                struct NaClDescEffector         *effp,
                                 const struct NaClImcTypedMsgHdr *nitmhp,
                                 int32_t                         flags);
 
@@ -72,7 +71,6 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
  * (the kernel return ABI).
  */
 ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
-                                struct NaClDescEffector   *effp,
                                 struct NaClImcTypedMsgHdr *nitmhp,
                                 int32_t                   flags);
 

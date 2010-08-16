@@ -5,7 +5,7 @@
  */
 
 
-// NaCl inter-module communication primitives.
+/* NaCl inter-module communication primitives. */
 
 #include <assert.h>
 #include <stdio.h>
@@ -20,10 +20,10 @@ static const NaClSocketAddress test_address = {
 static NaClHandle g_front;
 
 static void CleanUp(void) {
-  NaClClose(g_front);
+  (void) NaClClose(g_front);
 }
 
-// Writes the last error message to the standard error.
+/* Writes the last error message to the standard error. */
 void PrintError(const char* message) {
   char buffer[256];
 
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
   vec.base = buffer;
   vec.length = sizeof buffer;
 
-  // Test SendDatagram
+  /* Test SendDatagram */
   header.iov = &vec;
   header.iov_length = 1;
   header.handles = NULL;
@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
   result = NaClSendDatagram(pair[0], &header, 0);
   assert(result == sizeof buffer);
 
-  // Test ReceiveDatagram
+  /* Test ReceiveDatagram */
   memset(buffer, 0, sizeof buffer);
   header.iov = &vec;
   header.iov_length = 1;
@@ -74,8 +74,8 @@ int main(int argc, char* argv[]) {
   assert(strcmp(buffer, "Hello!") == 0);
   printf("%s\n", buffer);
 
-  NaClClose(pair[0]);
-  NaClClose(pair[1]);
+  (void) NaClClose(pair[0]);
+  (void) NaClClose(pair[1]);
 
   return 0;
 }

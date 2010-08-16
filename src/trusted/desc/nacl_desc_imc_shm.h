@@ -13,6 +13,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_base.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
 /*
  * get NaClHandle, which is a typedef and not a struct pointer, so
  * impossible to just forward declare.
@@ -30,8 +32,18 @@ struct NaClDescImcShm;
 struct NaClDescXferState;
 struct NaClHostDesc;
 struct NaClMessageHeader;
-struct nacl_abi_timespec;
 struct nacl_abi_stat;
+
+struct NaClDescImcShm {
+  struct NaClDesc           base;
+  NaClHandle                h;
+  nacl_off64_t              size;
+  /* note nacl_off64_t so struct stat incompatible */
+};
+
+extern int NaClDescImcShmInternalize(struct NaClDesc          **baseptr,
+                                     struct NaClDescXferState *xfer)
+    NACL_WUR;
 
 /*
  * Constructor: initialize the NaClDescImcShm object based on the
@@ -39,50 +51,19 @@ struct nacl_abi_stat;
  */
 int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
                        NaClHandle             h,
-                       nacl_off64_t           size);
+                       nacl_off64_t           size)
+    NACL_WUR;
 
 /*
  * A convenience wrapper for above, where the shm object of a given
  * size is allocated first.
  */
 int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
-                            nacl_off64_t           size);
+                            nacl_off64_t           size)
+    NACL_WUR;
 
-void NaClDescImcShmDtor(struct NaClDesc *vself);
-
-struct NaClDescImcShm *NaClDescImcShmMake(struct NaClHostDesc *nhdp);
-
-uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
-                            struct NaClDescEffector *effp,
-                            void                    *start_addr,
-                            size_t                  len,
-                            int                     prot,
-                            int                     flags,
-                            nacl_off64_t            offset);
-
-int NaClDescImcShmUnmapUnsafe(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp,
-                              void                    *start_addr,
-                              size_t                  len);
-
-int NaClDescImcShmUnmap(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        void                    *start_addr,
-                        size_t                  len);
-
-int NaClDescImcShmFstat(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        struct nacl_abi_stat    *stbp);
-
-int NaClDescImcShmClose(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp);
-
-int NaClDescImcShmExternalizeSize(struct NaClDesc *vself,
-                                  size_t          *nbytes,
-                                  size_t          *nhandles);
-
-int NaClDescImcShmExternalize(struct NaClDesc           *vself,
-                              struct NaClDescXferState  *xfer);
+struct NaClDescImcShm *NaClDescImcShmMake(struct NaClHostDesc *nhdp)
+    NACL_WUR;
 
 EXTERN_C_END
 

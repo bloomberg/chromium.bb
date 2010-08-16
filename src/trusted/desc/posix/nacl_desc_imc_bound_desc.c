@@ -20,7 +20,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nacl_desc_effector.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_bound_desc.h"
 
@@ -28,6 +27,21 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+
+static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl;  /* fwd */
+
+int NaClDescImcBoundDescCtor(struct NaClDescImcBoundDesc  *self,
+                             NaClHandle                   h) {
+  struct NaClDesc *basep = (struct NaClDesc *) self;
+
+  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  if (!NaClDescCtor(basep)) {
+    return 0;
+  }
+  self->h = h;
+  basep->vtbl = &kNaClDescImcBoundDescVtbl;
+  return 1;
+}
 
 void NaClDescImcBoundDescDtor(struct NaClDesc *vself) {
   struct NaClDescImcBoundDesc *self = (struct NaClDescImcBoundDesc *) vself;
@@ -39,20 +53,15 @@ void NaClDescImcBoundDescDtor(struct NaClDesc *vself) {
 }
 
 int NaClDescImcBoundDescFstat(struct NaClDesc          *vself,
-                              struct NaClDescEffector  *effp,
                               struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFBOUNDSOCK;
   return 0;
 }
 
-int NaClDescImcBoundDescClose(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescImcBoundDescClose(struct NaClDesc         *vself) {
   NaClDescUnref(vself);
   return 0;
 }
@@ -63,15 +72,15 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
    * See NaClDescConnCapConnectAddr code in nacl_desc_conn_cap.c
    */
   struct NaClDescImcBoundDesc *self = (struct NaClDescImcBoundDesc *) vself;
-  int retval;
-  NaClHandle received_fd;
-  struct NaClDescImcDesc *peer;
-  struct iovec iovec;
-  struct msghdr accept_msg;
-  struct cmsghdr *cmsg;
-  char data_buf[1];
-  char control_buf[CMSG_SPACE(sizeof(int))];
-  int received;
+  int                         retval;
+  NaClHandle                  received_fd;
+  struct NaClDescImcDesc      *peer;
+  struct iovec                iovec;
+  struct msghdr               accept_msg;
+  struct cmsghdr              *cmsg;
+  char                        data_buf[1];
+  char                        control_buf[CMSG_SPACE(sizeof(int))];
+  int                         received;
 
   peer = malloc(sizeof(*peer));
   if (peer == NULL) {
@@ -87,8 +96,18 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
   accept_msg.msg_control = control_buf;
   accept_msg.msg_controllen = sizeof(control_buf);
 
+  NaClLog(3,
+          ("NaClDescImcBoundDescAcceptConn(0x%08"NACL_PRIxPTR", "
+           " h = %d\n"),
+          (uintptr_t) vself,
+          self->h);
+
   received = recvmsg(self->h, &accept_msg, 0);
   if (received != 1 || data_buf[0] != 'c') {
+    NaClLog(LOG_ERROR,
+            ("NaClDescImcBoundDescAcceptConn:"
+             " could not receive connection message, errno %d\n"),
+            errno);
     return -NACL_ABI_EIO;
   }
 
@@ -99,13 +118,19 @@ int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
     if (cmsg->cmsg_level == SOL_SOCKET &&
         cmsg->cmsg_type == SCM_RIGHTS &&
         cmsg->cmsg_len == CMSG_LEN(sizeof(int))) {
-      CHECK(received_fd == -1);
+      if (-1 != received_fd) {
+        NaClLog(LOG_ERROR, ("NaClDescImcBoundDescAcceptConn: connection"
+                            " message contains more than 1 descriptors?!?\n"));
+        return -NACL_ABI_EIO;
+      }
       /* We use memcpy() rather than assignment through a cast to avoid
          strict-aliasing warnings */
       memcpy(&received_fd, CMSG_DATA(cmsg), sizeof(int));
     }
   }
   if (received_fd == -1) {
+    NaClLog(LOG_ERROR, ("NaClDescImcBoundDescAcceptConn: connection"
+                        " message contains NO descriptors?!?\n"));
     return -NACL_ABI_EIO;
   }
 
@@ -128,7 +153,7 @@ cleanup:
   return retval;
 }
 
-struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
+static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescImcBoundDescDtor,
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,

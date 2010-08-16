@@ -20,45 +20,55 @@
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nacl_desc_effector.h"
+#include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
+static struct NaClDescVtbl const kNaClDescConnCapFdVtbl;  /* fwd */
 
-void NaClDescConnCapFdDtor(struct NaClDesc *vself) {
+int NaClDescConnCapFdCtor(struct NaClDescConnCapFd  *self,
+                          NaClHandle                endpt) {
+  struct NaClDesc *basep = (struct NaClDesc *) self;
+
+  basep->vtbl = (struct NaClDescVtbl *) NULL;
+  if (!NaClDescCtor(basep)) {
+    return 0;
+  }
+  self->connect_fd = endpt;
+  basep->vtbl = &kNaClDescConnCapFdVtbl;
+  return 1;
+}
+
+
+static void NaClDescConnCapFdDtor(struct NaClDesc *vself) {
   struct NaClDescConnCapFd *self = (struct NaClDescConnCapFd *) vself;
 
-  NaClClose(self->connect_fd);
+  (void) NaClClose(self->connect_fd);
   self->connect_fd = NACL_INVALID_HANDLE;
   vself->vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(vself);
   return;
 }
 
-int NaClDescConnCapFdFstat(struct NaClDesc          *vself,
-                           struct NaClDescEffector  *effp,
-                           struct nacl_abi_stat     *statbuf) {
+static int NaClDescConnCapFdFstat(struct NaClDesc       *vself,
+                                  struct nacl_abi_stat  *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSOCKADDR | NACL_ABI_S_IRWXU;
   return 0;
 }
 
-int NaClDescConnCapFdClose(struct NaClDesc          *vself,
-                           struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+static int NaClDescConnCapFdClose(struct NaClDesc *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-int NaClDescConnCapFdExternalizeSize(struct NaClDesc  *vself,
-                                     size_t           *nbytes,
-                                     size_t           *nhandles) {
+static int NaClDescConnCapFdExternalizeSize(struct NaClDesc *vself,
+                                            size_t          *nbytes,
+                                            size_t          *nhandles) {
   UNREFERENCED_PARAMETER(vself);
 
   *nbytes = 0;
@@ -67,8 +77,8 @@ int NaClDescConnCapFdExternalizeSize(struct NaClDesc  *vself,
   return 0;
 }
 
-int NaClDescConnCapFdExternalize(struct NaClDesc          *vself,
-                                 struct NaClDescXferState *xfer) {
+static int NaClDescConnCapFdExternalize(struct NaClDesc          *vself,
+                                        struct NaClDescXferState *xfer) {
   struct NaClDescConnCapFd    *self;
 
   self = (struct NaClDescConnCapFd *) vself;
@@ -77,19 +87,27 @@ int NaClDescConnCapFdExternalize(struct NaClDesc          *vself,
   return 0;
 }
 
-int NaClDescConnCapFdConnectAddr(struct NaClDesc *vself,
-                                 struct NaClDesc **result) {
-  struct NaClDescConnCapFd *self = (struct NaClDescConnCapFd *) vself;
-  NaClHandle sock_pair[2];
-  struct NaClDescImcDesc *connected_socket;
-  char control_buf[CMSG_SPACE(sizeof(int))];
-  struct iovec iovec;
-  struct msghdr connect_msg;
-  struct cmsghdr *cmsg;
-  int sent;
+static int NaClDescConnCapFdConnectAddr(struct NaClDesc *vself,
+                                        struct NaClDesc **out_desc) {
+  struct NaClDescConnCapFd  *self = (struct NaClDescConnCapFd *) vself;
+  NaClHandle                sock_pair[2];
+  struct NaClDescImcDesc    *connected_socket;
+  char                      control_buf[CMSG_SPACE(sizeof(int))];
+  struct iovec              iovec;
+  struct msghdr             connect_msg;
+  struct cmsghdr            *cmsg;
+  int                       sent;
+  int                       retval;
 
-  if (NaClSocketPair(sock_pair) != 0) {
-    return -NACL_ABI_EMFILE;
+  sock_pair[0] = NACL_INVALID_HANDLE;
+  sock_pair[1] = NACL_INVALID_HANDLE;
+  connected_socket = (struct NaClDescImcDesc *) NULL;
+
+  retval = -NACL_ABI_EINVAL;
+
+  if (0 != NaClSocketPair(sock_pair)) {
+    retval = -NACL_ABI_EMFILE;
+    goto cleanup;
   }
 
   iovec.iov_base = "c";
@@ -106,41 +124,52 @@ int NaClDescConnCapFdConnectAddr(struct NaClDesc *vself,
   cmsg->cmsg_len = CMSG_LEN(sizeof(int));
   cmsg->cmsg_level = SOL_SOCKET;
   cmsg->cmsg_type = SCM_RIGHTS;
-  /* We use memcpy() rather than assignment through a cast to avoid
-     strict-aliasing warnings */
+  /*
+   * We use memcpy() rather than assignment through a cast to avoid
+   * strict-aliasing warnings
+   */
   memcpy(CMSG_DATA(cmsg), &sock_pair[0], sizeof(int));
   /* Set msg_controllen to the actual size of the cmsg. */
   connect_msg.msg_controllen = cmsg->cmsg_len;
 
   sent = sendmsg(self->connect_fd, &connect_msg, 0);
-  NaClClose(sock_pair[0]);
-  if (sent != 1) {
-    NaClClose(sock_pair[1]);
-    return -NACL_ABI_EIO;
+  (void) NaClClose(sock_pair[0]);
+  sock_pair[0] = NACL_INVALID_HANDLE;
+  if (1 != sent) {
+    retval = -NACL_ABI_EIO;
+    goto cleanup;
   }
 
   connected_socket = malloc(sizeof(*connected_socket));
-  if (connected_socket == NULL ||
+  if (NULL == connected_socket ||
       !NaClDescImcDescCtor(connected_socket, sock_pair[1])) {
-    NaClClose(sock_pair[1]);
-    free(connected_socket);
-    return -NACL_ABI_ENOMEM;
+    retval = -NACL_ABI_ENOMEM;
+    goto cleanup;
   }
+  sock_pair[1] = NACL_INVALID_HANDLE;
 
-  *result = (struct NaClDesc *) connected_socket;
-  return 0;
+  *out_desc = (struct NaClDesc *) connected_socket;
+  connected_socket = NULL;
+  retval = 0;
+
+cleanup:
+  NaClSafeCloseNaClHandle(sock_pair[0]);
+  NaClSafeCloseNaClHandle(sock_pair[1]);
+  free(connected_socket);
+
+  return retval;
 }
 
-int NaClDescConnCapFdAcceptConn(struct NaClDesc *vself,
-                                struct NaClDesc **result) {
+static int NaClDescConnCapFdAcceptConn(struct NaClDesc  *vself,
+                                       struct NaClDesc  **out_desc) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(result);
+  UNREFERENCED_PARAMETER(out_desc);
 
   NaClLog(LOG_ERROR, "NaClDescConnCapFdAcceptConn: not IMC\n");
   return -NACL_ABI_EINVAL;
 }
 
-struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
+static struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
   NaClDescConnCapFdDtor,
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -171,7 +200,7 @@ struct NaClDescVtbl const kNaClDescConnCapFdVtbl = {
   NaClDescGetValueNotImplemented,
 };
 
-int NaClDescConnCapFdInternalize(struct NaClDesc          **result,
+int NaClDescConnCapFdInternalize(struct NaClDesc          **out_desc,
                                  struct NaClDescXferState *xfer) {
   struct NaClDescConnCapFd *conn_cap;
 
@@ -179,7 +208,7 @@ int NaClDescConnCapFdInternalize(struct NaClDesc          **result,
     return -NACL_ABI_EIO;
   }
   conn_cap = malloc(sizeof(*conn_cap));
-  if (conn_cap == NULL) {
+  if (NULL == conn_cap) {
     return -NACL_ABI_ENOMEM;
   }
   if (!NaClDescCtor(&conn_cap->base)) {
@@ -189,6 +218,6 @@ int NaClDescConnCapFdInternalize(struct NaClDesc          **result,
   conn_cap->base.vtbl = &kNaClDescConnCapFdVtbl;
   conn_cap->connect_fd = *xfer->next_handle;
   *xfer->next_handle++ = NACL_INVALID_HANDLE;
-  *result = &conn_cap->base;
+  *out_desc = &conn_cap->base;
   return 0;
 }

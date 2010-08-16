@@ -13,57 +13,42 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_base.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
 struct NaClDescEffector;
-struct NaClDescImcShm;
 struct NaClDescXferState;
-struct NaClHostDesc;
 struct NaClMessageHeader;
-struct nacl_abi_timespec;
 struct nacl_abi_stat;
+
+/*
+ * Since the SysV shared memory abstraction does not permit mapping in
+ * only a portion of the shared memory object (offset==0), the SysV
+ * shm objects have their own fstat object type.  The user code should
+ * not encounter SysV shm objects normally and is unable to create any
+ * SysV shm objects; the only source of SysV shm objects is in the
+ * context of Pepper2d, and the Pepper2d library code should hide
+ * this implementation detail.
+ */
+extern struct NaClDescVtbl const kNaClDescSysvShmVtbl;
+
+struct NaClDescSysvShm {
+  struct NaClDesc           base;
+  int                       id;
+  size_t                    size;
+};
+
+extern int NaClDescSysvShmInternalize(struct NaClDesc          **baseptr,
+                                      struct NaClDescXferState *xfer) NACL_WUR;
+
 
 int NaClDescSysvShmImportCtor(struct NaClDescSysvShm  *self,
                               int                     id,
-                              nacl_off64_t            size);
+                              nacl_off64_t            size) NACL_WUR;
 
 int NaClDescSysvShmCtor(struct NaClDescSysvShm  *self,
-                        nacl_off64_t            size);
-
-void NaClDescSysvShmDtor(struct NaClDesc *vself);
-
-uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
-                             struct NaClDescEffector *effp,
-                             void                    *start_addr,
-                             size_t                  len,
-                             int                     prot,
-                             int                     flags,
-                             nacl_off64_t            offset);
-
-int NaClDescSysvShmUnmapUnsafe(struct NaClDesc         *vself,
-                               struct NaClDescEffector *effp,
-                               void                    *start_addr,
-                               size_t                  len);
-
-int NaClDescSysvShmUnmap(struct NaClDesc         *vself,
-                         struct NaClDescEffector *effp,
-                         void                    *start_addr,
-                         size_t                  len);
-
-int NaClDescSysvShmFstat(struct NaClDesc         *vself,
-                         struct NaClDescEffector *effp,
-                         struct nacl_abi_stat    *stbp);
-
-int NaClDescSysvShmClose(struct NaClDesc         *vself,
-                         struct NaClDescEffector *effp);
-
-int NaClDescSysvShmExternalizeSize(struct NaClDesc *vself,
-                                   size_t          *nbytes,
-                                   size_t          *nhandles);
-
-int NaClDescSysvShmExternalize(struct NaClDesc           *vself,
-                               struct NaClDescXferState  *xfer);
+                        nacl_off64_t            size) NACL_WUR;
 
 EXTERN_C_END
 

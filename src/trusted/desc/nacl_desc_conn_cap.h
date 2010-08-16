@@ -12,38 +12,46 @@
 
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
+#include "native_client/src/shared/imc/nacl_imc_c.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
-struct NaClDescConnCap;
 struct NaClDescEffector;
 struct NaClDescXferState;
-struct NaClHostDesc;
-struct NaClMessageHeader;
-struct NaClSocketAddress;
-struct nacl_abi_stat;
-struct nacl_abi_timespec;
+
+/*
+ * IMC socket addresses.  There are two variants:
+ *  1) Those based on address strings.
+ *  2) Those based on socket file descriptors.
+ */
+
+struct NaClDescConnCap {
+  struct NaClDesc           base;
+  struct NaClSocketAddress  cap;
+};
+
+struct NaClDescConnCapFd {
+  struct NaClDesc base;
+  NaClHandle connect_fd;
+};
+
+extern int NaClDescConnCapInternalize(struct NaClDesc          **baseptr,
+                                      struct NaClDescXferState *xfer)
+    NACL_WUR;
+
+extern int NaClDescConnCapFdInternalize(struct NaClDesc          **baseptr,
+                                        struct NaClDescXferState *xfer)
+    NACL_WUR;
 
 int NaClDescConnCapCtor(struct NaClDescConnCap          *self,
-                        struct NaClSocketAddress const  *nsap);
+                        struct NaClSocketAddress const  *nsap)
+    NACL_WUR;
 
-void NaClDescConnCapDtor(struct NaClDesc *vself);
-
-int NaClDescConnCapClose(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp);
-
-int NaClDescConnCapExternalizeSize(struct NaClDesc  *vself,
-                                   size_t           *nbytes,
-                                   size_t           *nhandles);
-
-int NaClDescConnCapExternalize(struct NaClDesc          *vself,
-                               struct NaClDescXferState *xfer);
-
-int NaClDescConnCapConnectAddr(struct NaClDesc          *vself,
-                               struct NaClDescEffector  *effp);
-
-int NaClDescConnCapAcceptConn(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp);
+int NaClDescConnCapFdCtor(struct NaClDescConnCapFd  *self,
+                          NaClHandle                endpt)
+    NACL_WUR;
 
 EXTERN_C_END
 

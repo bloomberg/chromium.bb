@@ -13,21 +13,35 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
 struct NaClDescEffector;
-struct NaClDescIoDesc;
 struct NaClDescXferState;
 struct NaClHostDesc;
 struct NaClMessageHeader;
-struct nacl_abi_stat;
-struct nacl_abi_timespec;
+
+/*
+ * I/O descriptors
+ */
+
+struct NaClDescIoDesc {
+  struct NaClDesc           base;
+  /*
+   * No locks are needed for accessing class members; NaClHostDesc
+   * should ensure thread safety, and uses are read-only.
+   *
+   * If we later added state that needs locking, beware lock order.
+   */
+  struct NaClHostDesc       *hd;
+};
+
+extern int NaClDescIoInternalize(struct NaClDesc          **baseptr,
+                                 struct NaClDescXferState *xfer) NACL_WUR;
 
 int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
                        struct NaClHostDesc    *hd);
-
-void NaClDescIoDescDtor(struct NaClDesc *vself);
 
 struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp);
 
@@ -36,57 +50,12 @@ struct NaClDescIoDesc *NaClDescIoDescOpen(char  *path,
                                           int   mode,
                                           int   perms);
 
-uintptr_t NaClDescIoDescMap(struct NaClDesc         *vself,
-                            struct NaClDescEffector *effp,
-                            void                    *start_addr,
-                            size_t                  len,
-                            int                     prot,
-                            int                     flags,
-                            nacl_off64_t            offset);
-
-int NaClDescIoDescUnmapUnsafe(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp,
-                              void                    *start_addr,
-                              size_t                  len);
-
-int NaClDescIoDescUnmap(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        void                    *start_addr,
-                        size_t                  len);
-
-ssize_t NaClDescIoDescRead(struct NaClDesc          *vself,
-                           struct NaClDescEffector  *effp,
-                           void                     *buf,
-                           size_t                   len);
-
-ssize_t NaClDescIoDescWrite(struct NaClDesc         *vself,
-                            struct NaClDescEffector *effp,
-                            void const              *buf,
-                            size_t                  len);
-
-nacl_off64_t NaClDescIoDescSeek(struct NaClDesc          *vself,
-                                struct NaClDescEffector  *effp,
-                                nacl_off64_t             offset,
-                                int                      whence);
-
-int NaClDescIoDescIoctl(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        int                     request,
-                        void                    *arg);
-
-int NaClDescIoDescFstat(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        struct nacl_abi_stat    *statbuf);
-
-int NaClDescIoDescClose(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp);
-
-int NaClDescIoDescExternalizeSize(struct NaClDesc *vself,
-                                  size_t          *nbytes,
-                                  size_t          *nhandles);
-
-int NaClDescIoDescExternalize(struct NaClDesc           *vself,
-                              struct NaClDescXferState  *xfer);
+uintptr_t NaClDescIoDescMapAnon(struct NaClDescEffector *effp,
+                                void                    *start_addr,
+                                size_t                  len,
+                                int                     prot,
+                                int                     flags,
+                                nacl_off64_t            offset);
 
 EXTERN_C_END
 

@@ -19,27 +19,29 @@
  */
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
 struct NaClDescEffector;
-struct NaClDescImcBoundDesc;
 struct NaClDescXferState;
-struct NaClHostDesc;
-struct NaClMessageHeader;
-struct nacl_abi_stat;
-struct nacl_abi_timespec;
+
+/*
+ * IMC bound sockets.
+ */
+
+struct NaClDescImcBoundDesc {
+  struct NaClDesc           base;
+  NaClHandle                h;
+};
+
+extern int NaClDescImcBoundDescInternalize(struct NaClDesc          **baseptr,
+                                           struct NaClDescXferState *xfer)
+    NACL_WUR;
 
 int NaClDescImcBoundDescCtor(struct NaClDescImcBoundDesc  *self,
-                             NaClHandle                   d);
-
-void NaClDescImcBoundDescDtor(struct NaClDesc *vself);
-
-int NaClDescImcBoundDescClose(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp);
-
-int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
-                                   struct NaClDesc **result);
+                             NaClHandle                   d)
+    NACL_WUR;
 
 EXTERN_C_END
 

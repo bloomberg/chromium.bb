@@ -115,7 +115,7 @@ int NaClDescSysvShmCtor(struct NaClDescSysvShm  *self,
   return 1;
 }
 
-void NaClDescSysvShmDtor(struct NaClDesc *vself) {
+static void NaClDescSysvShmDtor(struct NaClDesc *vself) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
 
   /*
@@ -139,13 +139,13 @@ void NaClDescSysvShmDtor(struct NaClDesc *vself) {
  * have to have enough trusted address space free to temporarily hold
  * the maximum sized sysv shm object.
  */
-uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
-                             struct NaClDescEffector *effp,
-                             void                    *start_addr,
-                             size_t                  len,
-                             int                     prot,
-                             int                     flags,
-                             nacl_off64_t            offset) {
+static uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
+                                    struct NaClDescEffector *effp,
+                                    void                    *start_addr,
+                                    size_t                  len,
+                                    int                     prot,
+                                    int                     flags,
+                                    nacl_off64_t            offset) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
 
   int           host_flags;
@@ -275,11 +275,11 @@ uintptr_t NaClDescSysvShmMap(struct NaClDesc         *vself,
   return (uintptr_t) start_addr;
 }
 
-int NaClDescSysvShmUnmapCommon(struct NaClDesc         *vself,
-                              struct NaClDescEffector  *effp,
-                              void                     *start_addr,
-                              size_t                   len,
-                              int                      safe_mode) {
+static int NaClDescSysvShmUnmapCommon(struct NaClDesc         *vself,
+                                      struct NaClDescEffector  *effp,
+                                      void                     *start_addr,
+                                      size_t                   len,
+                                      int                      safe_mode) {
   uintptr_t addr;
   uintptr_t end_addr;
 
@@ -327,26 +327,23 @@ int NaClDescSysvShmUnmapCommon(struct NaClDesc         *vself,
   return 0;
 }
 
-int NaClDescSysvShmUnmapUnsafe(struct NaClDesc         *vself,
-                               struct NaClDescEffector *effp,
-                               void                    *start_addr,
-                               size_t                  len) {
+static int NaClDescSysvShmUnmapUnsafe(struct NaClDesc         *vself,
+                                      struct NaClDescEffector *effp,
+                                      void                    *start_addr,
+                                      size_t                  len) {
   return NaClDescSysvShmUnmapCommon(vself, effp, start_addr, len, 0);
 }
 
-int NaClDescSysvShmUnmap(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        void                    *start_addr,
-                        size_t                  len) {
+static int NaClDescSysvShmUnmap(struct NaClDesc         *vself,
+                                struct NaClDescEffector *effp,
+                                void                    *start_addr,
+                                size_t                  len) {
   return NaClDescSysvShmUnmapCommon(vself, effp, start_addr, len, 1);
 }
 
-int NaClDescSysvShmFstat(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        struct nacl_abi_stat    *stbp) {
+static int NaClDescSysvShmFstat(struct NaClDesc         *vself,
+                                struct nacl_abi_stat    *stbp) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
-
-  UNREFERENCED_PARAMETER(effp);
 
   if (self->size > INT32_MAX) {
     return -NACL_ABI_EOVERFLOW;
@@ -372,17 +369,14 @@ int NaClDescSysvShmFstat(struct NaClDesc         *vself,
   return 0;
 }
 
-int NaClDescSysvShmClose(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+static int NaClDescSysvShmClose(struct NaClDesc         *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-int NaClDescSysvShmExternalizeSize(struct NaClDesc *vself,
-                                   size_t          *nbytes,
-                                   size_t          *nhandles) {
+static int NaClDescSysvShmExternalizeSize(struct NaClDesc *vself,
+                                          size_t          *nbytes,
+                                          size_t          *nhandles) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
 
   *nbytes = sizeof self->id + sizeof(nacl_off64_t);
@@ -391,8 +385,8 @@ int NaClDescSysvShmExternalizeSize(struct NaClDesc *vself,
   return 0;
 }
 
-int NaClDescSysvShmExternalize(struct NaClDesc           *vself,
-                               struct NaClDescXferState  *xfer) {
+static int NaClDescSysvShmExternalize(struct NaClDesc           *vself,
+                                      struct NaClDescXferState  *xfer) {
   struct NaClDescSysvShm  *self = (struct NaClDescSysvShm *) vself;
   nacl_off64_t size64 = self->size;
 
@@ -434,7 +428,7 @@ struct NaClDescVtbl const kNaClDescSysvShmVtbl = {
   NaClDescGetValueNotImplemented,
 };
 
-int NaClDescSysvShmInternalize(struct NaClDesc           **baseptr,
+int NaClDescSysvShmInternalize(struct NaClDesc           **out_desc,
                                struct NaClDescXferState  *xfer) {
   int                   rv;
   struct NaClDescSysvShm *ndisp;
@@ -466,7 +460,7 @@ int NaClDescSysvShmInternalize(struct NaClDesc           **baseptr,
     goto cleanup;
   }
 
-  *baseptr = (struct NaClDesc *) ndisp;
+  *out_desc = (struct NaClDesc *) ndisp;
   rv = 0;
 
 cleanup:

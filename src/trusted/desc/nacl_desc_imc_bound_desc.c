@@ -18,7 +18,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nacl_desc_effector.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_bound_desc.h"
 
@@ -26,6 +25,8 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+
+static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl;  /* fwd */
 
 int NaClDescImcBoundDescCtor(struct NaClDescImcBoundDesc  *self,
                              NaClHandle                   h) {
@@ -40,37 +41,32 @@ int NaClDescImcBoundDescCtor(struct NaClDescImcBoundDesc  *self,
   return 1;
 }
 
-void NaClDescImcBoundDescDtor(struct NaClDesc *vself) {
+static void NaClDescImcBoundDescDtor(struct NaClDesc *vself) {
   struct NaClDescImcBoundDesc *self = (struct NaClDescImcBoundDesc *) vself;
 
-  NaClClose(self->h);
+  (void) NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
   vself->vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(vself);
   return;
 }
 
-int NaClDescImcBoundDescFstat(struct NaClDesc          *vself,
-                              struct NaClDescEffector  *effp,
-                              struct nacl_abi_stat     *statbuf) {
+static int NaClDescImcBoundDescFstat(struct NaClDesc          *vself,
+                                     struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFBOUNDSOCK;
   return 0;
 }
 
-int NaClDescImcBoundDescClose(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+static int NaClDescImcBoundDescClose(struct NaClDesc         *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
-                                   struct NaClDesc **result) {
+static int NaClDescImcBoundDescAcceptConn(struct NaClDesc *vself,
+                                          struct NaClDesc **result) {
   /*
    * See NaClDescConnCapConnectAddr code in nacl_desc_conn_cap.c
    */
@@ -141,7 +137,7 @@ cleanup:
   return retval;
 }
 
-struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
+static struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescImcBoundDescDtor,
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -171,31 +167,3 @@ struct NaClDescVtbl const kNaClDescImcBoundDescVtbl = {
   NaClDescSemWaitNotImplemented,
   NaClDescGetValueNotImplemented,
 };
-
-int NaClDescImcBoundDescInternalize(struct NaClDesc           **baseptr,
-                                    struct NaClDescXferState  *xfer) {
-  int                         rv;
-  struct NaClDescImcBoundDesc *ndibdp;
-
-  rv = -NACL_ABI_EIO;
-  ndibdp = NULL;
-
-  if (xfer->next_handle == xfer->handle_buffer_end) {
-    rv = -NACL_ABI_EIO;
-    goto cleanup;
-  }
-  ndibdp = malloc(sizeof *ndibdp);
-  if (NULL == ndibdp) {
-    goto cleanup;
-  }
-  NaClDescImcBoundDescCtor(ndibdp, *xfer->next_handle);
-  *xfer->next_handle++ = NACL_INVALID_HANDLE;
-  *baseptr = (struct NaClDesc *) ndibdp;
-  rv = 0;
-
-cleanup:
-  if (rv < 0) {
-    free(ndibdp);
-  }
-  return rv;
-}

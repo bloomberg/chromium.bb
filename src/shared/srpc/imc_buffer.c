@@ -217,7 +217,6 @@ NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel) {
   retval = imc_recvmsg(channel->imc_handle, &buffer->header, 0);
 #else
   retval = NaClImcRecvTypedMessage(channel->imc_handle,
-                                   (struct NaClDescEffector*) &channel->eff,
                                    &buffer->header,
                                    0);
 #endif
@@ -252,7 +251,6 @@ int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer, NaClSrpcChannel* channel) {
   retval = imc_sendmsg(channel->imc_handle, &buffer->header, 0);
 #else
   retval = NaClImcSendTypedMessage(channel->imc_handle,
-                                   (struct NaClDescEffector*) &channel->eff,
                                    &buffer->header,
                                    0);
 #endif

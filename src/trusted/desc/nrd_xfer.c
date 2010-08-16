@@ -57,7 +57,6 @@ static INLINE size_t min_size(size_t  a,
 }
 
 ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
-                                struct NaClDescEffector         *effp,
                                 const struct NaClImcTypedMsgHdr *nitmhp,
                                 int                              flags) {
   int                       supported_flags;
@@ -283,8 +282,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
 
   NaClLog(4, "Invoking SendMsg, flags 0x%x\n", flags);
 
-  retval = (*channel->vtbl->SendMsg)(channel, effp,
-                                     &kern_msg_hdr, flags);
+  retval = (*channel->vtbl->SendMsg)(channel, &kern_msg_hdr, flags);
   NaClLog(4, "SendMsg returned %"NACL_PRIdS"\n", retval);
   if (NaClIsNegErrno(retval)) {
     /*
@@ -327,7 +325,6 @@ cleanup:
 }
 
 ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
-                                struct NaClDescEffector   *effp,
                                 struct NaClImcTypedMsgHdr *nitmhp,
                                 int                       flags) {
   int                       supported_flags;
@@ -438,7 +435,6 @@ ssize_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
   recv_hdr.flags = 0;  /* just to make it obvious; IMC will clear it for us */
 
   total_recv_bytes = (*channel->vtbl->RecvMsg)(channel,
-                                               effp,
                                                &recv_hdr,
                                                flags);
   if (NaClIsNegErrno(total_recv_bytes)) {
@@ -639,7 +635,7 @@ cleanup:
   }
   for (i = 0; i < NACL_ARRAY_SIZE(kern_handle); ++i) {
     if (NACL_INVALID_HANDLE != kern_handle[i]) {
-      NaClClose(kern_handle[i]);
+      (void) NaClClose(kern_handle[i]);
     }
   }
 
@@ -714,10 +710,10 @@ int32_t NaClCommonDescSocketPair(struct NaClDesc *pair[2]) {
     NaClDescUnref((struct NaClDesc *) d1);
   }
   if (NACL_INVALID_HANDLE != sock_pair[0]) {
-    NaClClose(sock_pair[0]);
+    (void) NaClClose(sock_pair[0]);
   }
   if (NACL_INVALID_HANDLE != sock_pair[1]) {
-    NaClClose(sock_pair[1]);
+    (void) NaClClose(sock_pair[1]);
   }
 
   free(d0);

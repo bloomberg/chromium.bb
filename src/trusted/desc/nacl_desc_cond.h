@@ -13,43 +13,30 @@
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_mutex.h"
+#include "native_client/src/trusted/desc/nacl_desc_cond.h"
+
+#include "native_client/src/shared/platform/nacl_interruptible_condvar.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
-struct NaClDescCondVar;
 struct NaClDescEffector;
 struct NaClDescXferState;
-struct NaClHostDesc;
 struct NaClMessageHeader;
-struct nacl_abi_stat;
 struct nacl_abi_timespec;
 
-int NaClDescCondVarCtor(struct NaClDescCondVar  *self);
+struct NaClDescCondVar {
+  struct NaClDesc        base;
+  struct NaClIntrCondVar cv;
+};
 
-void NaClDescCondVarDtor(struct NaClDesc *vself);
+extern int NaClDescCondVarInternalize(struct NaClDesc          **baseptr,
+                                      struct NaClDescXferState *xfer)
+    NACL_WUR;
 
-int NaClDescCondVarClose(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp);
-
-int NaClDescCondVarWait(struct NaClDesc         *vself,
-                        struct NaClDescEffector *effp,
-                        struct NaClDesc         *mutex);
-
-int NaClDescCondVarTimedWaitRel(struct NaClDesc           *vself,
-                                struct NaClDescEffector   *effp,
-                                struct NaClDesc           *mutex,
-                                struct nacl_abi_timespec  *ts);
-
-int NaClDescCondVarTimedWaitAbs(struct NaClDesc           *vself,
-                                struct NaClDescEffector   *effp,
-                                struct NaClDesc           *mutex,
-                                struct nacl_abi_timespec  *ts);
-
-int NaClDescCondVarSignal(struct NaClDesc         *vself,
-                          struct NaClDescEffector *effp);
-
-int NaClDescCondVarBroadcast(struct NaClDesc          *vself,
-                             struct NaClDescEffector  *effp);
+int NaClDescCondVarCtor(struct NaClDescCondVar  *self)
+    NACL_WUR;
 
 EXTERN_C_END
 

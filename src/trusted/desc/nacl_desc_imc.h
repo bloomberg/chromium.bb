@@ -20,49 +20,56 @@
  */
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 
+#include "native_client/src/shared/platform/nacl_sync.h"
+
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
 EXTERN_C_BEGIN
 
-struct NaClDesc;
 struct NaClDescEffector;
-struct NaClDescImcConnectedDesc;
-struct NaClDescImcDesc;
-struct NaClDescXferableDataDesc;
 struct NaClDescXferState;
-struct NaClHostDesc;
 struct NaClMessageHeader;
-struct nacl_abi_timespec;
-struct nacl_abi_stat;
+
+/*
+ * IMC connected sockets.  Abstractly, the base class for
+ * NaClDescImcDesc and NaClDescXferableDataDesc are identical, with a
+ * protected ctor that permits NaClDescImcDescCtor and
+ * NaClDescXferableDataDescCtor to set the xferable flag which sets
+ * the base class to the appropriate subclass behavior.
+ */
+struct NaClDescImcConnectedDesc {
+  struct NaClDesc           base;
+  NaClHandle                h;
+};
+
+struct NaClDescImcDesc {
+  struct NaClDescImcConnectedDesc base;
+  /*
+   * race prevention.
+   */
+  struct NaClMutex          sendmsg_mu;
+  struct NaClMutex          recvmsg_mu;
+};
+
+struct NaClDescXferableDataDesc {
+  struct NaClDescImcConnectedDesc base;
+};
+
+extern int NaClDescXferableDataDescInternalize(struct NaClDesc **baseptr,
+                                               struct NaClDescXferState *xfer)
+    NACL_WUR;
 
 int NaClDescImcConnectedDescCtor(struct NaClDescImcConnectedDesc  *self,
-                                 NaClHandle                       h);
+                                 NaClHandle                       h)
+    NACL_WUR;
 
 int NaClDescImcDescCtor(struct NaClDescImcDesc  *self,
-                        NaClHandle              d);
+                        NaClHandle              d)
+    NACL_WUR;
 
 int NaClDescXferableDataDescCtor(struct NaClDescXferableDataDesc  *self,
-                                 NaClHandle                       h);
-
-void NaClDescImcConnectedDescDtor(struct NaClDesc *vself);
-
-int NaClDescImcConnectedDescClose(struct NaClDesc          *vself,
-                                  struct NaClDescEffector  *effp);
-
-int NaClDescImcConnectedDescExternalizeSize(struct NaClDesc  *vself,
-                                            size_t           *nbytes,
-                                            size_t           *nhandles);
-
-int NaClDescImcConnectedDescExternalize(struct NaClDesc          *vself,
-                                        struct NaClDescXferState *xfer);
-
-int NaClDescImcConnectedDescSendMsg(struct NaClDesc          *vself,
-                                    struct NaClDescEffector  *effp,
-                                    struct NaClMessageHeader *dgram,
-                                    int                      flags);
-
-int NaClDescImcConnectedDescRecvMsg(struct NaClDesc          *vself,
-                                    struct NaClDescEffector  *effp,
-                                    struct NaClMessageHeader *dgram,
-                                    int                      flags);
+                                 NaClHandle                       h)
+    NACL_WUR;
 
 EXTERN_C_END
 

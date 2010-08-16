@@ -20,7 +20,7 @@
 #include "native_client/src/shared/platform/nacl_semaphore.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nacl_desc_mutex.h"
+#include "native_client/src/trusted/desc/nacl_desc_semaphore.h"
 
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -36,6 +36,8 @@
  *
  * NaClDescSemaphore is the subclass that wraps host-OS semaphore abstractions
  */
+
+static struct NaClDescVtbl const kNaClDescSemaphoreVtbl;  /* fwd */
 
 int NaClDescSemaphoreCtor(struct NaClDescSemaphore  *self, int value) {
   struct NaClDesc *basep = (struct NaClDesc *) self;
@@ -64,46 +66,36 @@ void NaClDescSemaphoreDtor(struct NaClDesc *vself) {
 }
 
 int NaClDescSemaphoreFstat(struct NaClDesc          *vself,
-                           struct NaClDescEffector  *effp,
                            struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFSEMA;
   return 0;
 }
 
-int NaClDescSemaphoreClose(struct NaClDesc          *vself,
-                           struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescSemaphoreClose(struct NaClDesc          *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-int NaClDescSemaphorePost(struct NaClDesc         *vself,
-                          struct NaClDescEffector *effp) {
+int NaClDescSemaphorePost(struct NaClDesc         *vself) {
   struct NaClDescSemaphore *self = (struct NaClDescSemaphore *)vself;
   NaClSyncStatus status = NaClSemPost(&self->sem);
 
-  UNREFERENCED_PARAMETER(effp);
   return -NaClXlateNaClSyncStatus(status);
 }
 
-int NaClDescSemaphoreSemWait(struct NaClDesc          *vself,
-                             struct NaClDescEffector  *effp) {
+int NaClDescSemaphoreSemWait(struct NaClDesc          *vself) {
   struct NaClDescSemaphore *self = (struct NaClDescSemaphore *)vself;
   NaClSyncStatus status = NaClSemWait(&self->sem);
 
-  UNREFERENCED_PARAMETER(effp);
   return -NaClXlateNaClSyncStatus(status);
 }
 
-int NaClDescSemaphoreGetValue(struct NaClDesc         *vself,
-                              struct NaClDescEffector *effp) {
+int NaClDescSemaphoreGetValue(struct NaClDesc         *vself) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
+
   NaClLog(LOG_ERROR, "SemGetValue is not implemented yet\n");
   return -NACL_ABI_EINVAL;
   /*
@@ -118,7 +110,7 @@ int NaClDescSemaphoreGetValue(struct NaClDesc         *vself,
 }
 
 
-struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
+static struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
   NaClDescSemaphoreDtor,
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -148,11 +140,3 @@ struct NaClDescVtbl const kNaClDescSemaphoreVtbl = {
   NaClDescSemaphoreSemWait,
   NaClDescSemaphoreGetValue,
 };
-
-int NaClDescSemaphoreInternalize(struct NaClDesc           **baseptr,
-                                 struct NaClDescXferState  *xfer) {
-  UNREFERENCED_PARAMETER(baseptr);
-  UNREFERENCED_PARAMETER(xfer);
-  NaClLog(LOG_ERROR, "NaClDescSemaphoreInternalize: not shared yet\n");
-  return -NACL_ABI_EINVAL;
-}

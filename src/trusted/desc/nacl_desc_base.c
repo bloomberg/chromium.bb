@@ -17,7 +17,21 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_platform.h"
 
+#if NACL_LINUX
+#include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
+#endif  /* NACL_LINUX */
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_cond.h"
+#include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
+#include "native_client/src/trusted/desc/nacl_desc_dir.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc_bound_desc.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
+#include "native_client/src/trusted/desc/nacl_desc_invalid.h"
+#include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/desc/nacl_desc_mutex.h"
+#include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
+
 
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -140,8 +154,8 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
 #else
   NULL,
 #endif  /* NACL_LINUX */
-  NaClDescMutexInternalize,
-  NaClDescCondVarInternalize,
+  NaClDescInternalizeNotImplemented,  /* mutex */
+  NaClDescInternalizeNotImplemented,  /* condvar */
   NaClDescInternalizeNotImplemented,  /* semaphore */
   NaClDescSyncSocketInternalize,
   NaClDescXferableDataDescInternalize,
@@ -227,10 +241,8 @@ int NaClDescUnmapNotImplemented(struct NaClDesc         *vself,
 }
 
 ssize_t NaClDescReadNotImplemented(struct NaClDesc          *vself,
-                                   struct NaClDescEffector  *effp,
                                    void                     *buf,
                                    size_t                   len) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(buf);
   UNREFERENCED_PARAMETER(len);
 
@@ -241,10 +253,8 @@ ssize_t NaClDescReadNotImplemented(struct NaClDesc          *vself,
 }
 
 ssize_t NaClDescWriteNotImplemented(struct NaClDesc         *vself,
-                                    struct NaClDescEffector *effp,
                                     void const              *buf,
                                     size_t                  len) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(buf);
   UNREFERENCED_PARAMETER(len);
 
@@ -255,10 +265,8 @@ ssize_t NaClDescWriteNotImplemented(struct NaClDesc         *vself,
 }
 
 nacl_off64_t NaClDescSeekNotImplemented(struct NaClDesc          *vself,
-                                        struct NaClDescEffector  *effp,
                                         nacl_off64_t             offset,
                                         int                      whence) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(offset);
   UNREFERENCED_PARAMETER(whence);
 
@@ -269,10 +277,8 @@ nacl_off64_t NaClDescSeekNotImplemented(struct NaClDesc          *vself,
 }
 
 int NaClDescIoctlNotImplemented(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp,
                                 int                     request,
                                 void                    *arg) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(request);
   UNREFERENCED_PARAMETER(arg);
 
@@ -283,9 +289,7 @@ int NaClDescIoctlNotImplemented(struct NaClDesc         *vself,
 }
 
 int NaClDescFstatNotImplemented(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp,
                                 struct nacl_abi_stat    *statbuf) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(statbuf);
 
   NaClLog(LOG_ERROR,
@@ -294,10 +298,7 @@ int NaClDescFstatNotImplemented(struct NaClDesc         *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescCloseNotImplemented(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescCloseNotImplemented(struct NaClDesc         *vself) {
   NaClLog(LOG_ERROR,
           "Close method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -305,10 +306,8 @@ int NaClDescCloseNotImplemented(struct NaClDesc         *vself,
 }
 
 ssize_t NaClDescGetdentsNotImplemented(struct NaClDesc          *vself,
-                                       struct NaClDescEffector  *effp,
                                        void                     *dirp,
                                        size_t                   count) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(dirp);
   UNREFERENCED_PARAMETER(count);
 
@@ -318,9 +317,9 @@ ssize_t NaClDescGetdentsNotImplemented(struct NaClDesc          *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescExternalizeSizeNotImplemented(struct NaClDesc      *vself,
-                                          size_t               *nbytes,
-                                          size_t               *nhandles) {
+int NaClDescExternalizeSizeNotImplemented(struct NaClDesc *vself,
+                                          size_t          *nbytes,
+                                          size_t          *nhandles) {
   UNREFERENCED_PARAMETER(nbytes);
   UNREFERENCED_PARAMETER(nhandles);
 
@@ -340,40 +339,29 @@ int NaClDescExternalizeNotImplemented(struct NaClDesc          *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescLockNotImplemented(struct NaClDesc          *vself,
-                               struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescLockNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "Lock method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescTryLockNotImplemented(struct NaClDesc         *vself,
-                                  struct NaClDescEffector *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescTryLockNotImplemented(struct NaClDesc *vself) {
   NaClLog(LOG_ERROR,
           "TryLock method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescUnlockNotImplemented(struct NaClDesc          *vself,
-                                 struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescUnlockNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "Unlock method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescWaitNotImplemented(struct NaClDesc          *vself,
-                               struct NaClDescEffector  *effp,
-                               struct NaClDesc          *mutex) {
-  UNREFERENCED_PARAMETER(effp);
+int NaClDescWaitNotImplemented(struct NaClDesc  *vself,
+                               struct NaClDesc  *mutex) {
   UNREFERENCED_PARAMETER(mutex);
 
   NaClLog(LOG_ERROR,
@@ -383,10 +371,8 @@ int NaClDescWaitNotImplemented(struct NaClDesc          *vself,
 }
 
 int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc                *vself,
-                                       struct NaClDescEffector        *effp,
                                        struct NaClDesc                *mutex,
                                        struct nacl_abi_timespec const *ts) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(mutex);
   UNREFERENCED_PARAMETER(ts);
 
@@ -396,20 +382,14 @@ int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc                *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescSignalNotImplemented(struct NaClDesc          *vself,
-                                 struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescSignalNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "Signal method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescBroadcastNotImplemented(struct NaClDesc         *vself,
-                                    struct NaClDescEffector *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescBroadcastNotImplemented(struct NaClDesc *vself) {
   NaClLog(LOG_ERROR,
           "Broadcast method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
@@ -417,10 +397,8 @@ int NaClDescBroadcastNotImplemented(struct NaClDesc         *vself,
 }
 
 ssize_t NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
-                                      struct NaClDescEffector        *effp,
                                       struct NaClMessageHeader const *dgram,
                                       int                            flags) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(dgram);
   UNREFERENCED_PARAMETER(flags);
 
@@ -431,10 +409,8 @@ ssize_t NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
 }
 
 ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
-                                      struct NaClDescEffector   *effp,
                                       struct NaClMessageHeader  *dgram,
                                       int                       flags) {
-  UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(dgram);
   UNREFERENCED_PARAMETER(flags);
 
@@ -464,39 +440,30 @@ int NaClDescAcceptConnNotImplemented(struct NaClDesc *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescPostNotImplemented(struct NaClDesc          *vself,
-                               struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescPostNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "Post method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescSemWaitNotImplemented(struct NaClDesc         *vself,
-                                  struct NaClDescEffector *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescSemWaitNotImplemented(struct NaClDesc *vself) {
   NaClLog(LOG_ERROR,
           "SemWait method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescGetValueNotImplemented(struct NaClDesc          *vself,
-                                   struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+int NaClDescGetValueNotImplemented(struct NaClDesc  *vself) {
   NaClLog(LOG_ERROR,
           "GetValue method is not implemented for object of type %s\n",
           NaClDescTypeString(vself->vtbl->typeTag));
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescInternalizeNotImplemented(struct NaClDesc           **baseptr,
+int NaClDescInternalizeNotImplemented(struct NaClDesc           **out_desc,
                                       struct NaClDescXferState  *xfer) {
-  UNREFERENCED_PARAMETER(baseptr);
+  UNREFERENCED_PARAMETER(out_desc);
   UNREFERENCED_PARAMETER(xfer);
 
   NaClLog(LOG_ERROR,
@@ -519,9 +486,7 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
   *addr = NULL;
   *size = 0;
 
-  rval = (*desc->vtbl->Fstat)(desc,
-                              effector,
-                              &st);
+  rval = (*desc->vtbl->Fstat)(desc, &st);
   if (0 != rval) {
     /* Failed to get the size - return failure. */
     return rval;
@@ -610,5 +575,12 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
 
   *addr = map_addr;
   *size = rounded_size;
+  return 0;
+}
+
+int NaClSafeCloseNaClHandle(NaClHandle h) {
+  if (NACL_INVALID_HANDLE != h) {
+    return NaClClose(h);
+  }
   return 0;
 }

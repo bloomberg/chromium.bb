@@ -14,6 +14,8 @@
 
 #include "native_client/src/include/nacl_base.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+
 /*
  * get NaClHandle, which is a typedef and not a struct pointer, so
  * impossible to just forward declare.
@@ -22,38 +24,24 @@
 
 EXTERN_C_BEGIN
 
-struct NaClDesc;
 struct NaClDescEffector;
-struct NaClDescSyncSocket;
 struct NaClDescXferState;
-struct NaClHostDesc;
 struct NaClMessageHeader;
-struct nacl_abi_timespec;
-struct nacl_abi_stat;
+
+struct NaClDescSyncSocket {
+  struct NaClDesc           base;
+  NaClHandle                h;
+};
+
+extern int NaClDescSyncSocketInternalize(struct NaClDesc          **baseptr,
+                                         struct NaClDescXferState *xfer)
+NACL_WUR;
+
+static const size_t kMaxSyncSocketMessageLength = (size_t) INT_MAX;
 
 /* On success, NaClDescSyncSocket has ownership of h. */
 int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
-                           NaClHandle                 h);
-
-int NaClDescSyncSocketClose(struct NaClDesc          *vself,
-                            struct NaClDescEffector  *effp);
-
-int NaClDescSyncSocketExternalizeSize(struct NaClDesc  *vself,
-                                      size_t           *nbytes,
-                                      size_t           *nhandles);
-
-int NaClDescSyncSocketExternalize(struct NaClDesc          *vself,
-                                  struct NaClDescXferState *xfer);
-
-int NaClDescSyncSocketSendMsg(struct NaClDesc          *vself,
-                              struct NaClDescEffector  *effp,
-                              struct NaClMessageHeader *dgram,
-                              int                      flags);
-
-int NaClDescSyncSocketRecvMsg(struct NaClDesc          *vself,
-                              struct NaClDescEffector  *effp,
-                              struct NaClMessageHeader *dgram,
-                              int                      flags);
+                           NaClHandle                 h) NACL_WUR;
 
 EXTERN_C_END
 

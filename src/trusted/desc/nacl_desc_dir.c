@@ -38,6 +38,8 @@
  * NaClDescDirDesc is the subclass that wraps host-OS directory information.
  */
 
+static struct NaClDescVtbl const kNaClDescDirDescVtbl;  /* fwd */
+
 /*
  * Takes ownership of hd, will close in Dtor.
  */
@@ -54,7 +56,7 @@ int NaClDescDirDescCtor(struct NaClDescDirDesc  *self,
   return 1;
 }
 
-void NaClDescDirDescDtor(struct NaClDesc *vself) {
+static void NaClDescDirDescDtor(struct NaClDesc *vself) {
   struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
 
   NaClLog(4, "NaClDescDirDescDtor(0x%08"NACL_PRIxPTR").\n",
@@ -100,24 +102,12 @@ struct NaClDescDirDesc *NaClDescDirDescOpen(char  *path) {
   return NaClDescDirDescMake(nhdp);
 }
 
-ssize_t NaClDescDirDescRead(struct NaClDesc         *vself,
-                            struct NaClDescEffector *effp,
-                            void                    *buf,
-                            size_t                  len) {
-  /* NaClLog(LOG_ERROR, "NaClDescDirDescRead: Read not allowed on dir\n"); */
-  return NaClDescDirDescGetdents(vself, effp, buf, len);
-  /* return -NACL_ABI_EINVAL; */
-}
-
-ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp,
-                                void                    *dirp,
-                                size_t                  count) {
+static ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
+                                       void                    *dirp,
+                                       size_t                  count) {
   struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
   struct nacl_abi_dirent *direntp = (struct nacl_abi_dirent *) dirp;
   ssize_t retval;
-
-  UNREFERENCED_PARAMETER(effp);
 
   NaClLog(3, "NaClDescDirDescGetdents(0x%08"NACL_PRIxPTR", %"NACL_PRIuS"):\n",
           (uintptr_t) dirp, count);
@@ -133,11 +123,17 @@ ssize_t NaClDescDirDescGetdents(struct NaClDesc         *vself,
   return retval;
 }
 
-int NaClDescDirDescFstat(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp,
-                         struct nacl_abi_stat     *statbuf) {
+static ssize_t NaClDescDirDescRead(struct NaClDesc         *vself,
+                                   void                    *buf,
+                                   size_t                  len) {
+  /* NaClLog(LOG_ERROR, "NaClDescDirDescRead: Read not allowed on dir\n"); */
+  return NaClDescDirDescGetdents(vself, buf, len);
+  /* return -NACL_ABI_EINVAL; */
+}
+
+static int NaClDescDirDescFstat(struct NaClDesc          *vself,
+                                struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   /*
@@ -149,24 +145,21 @@ int NaClDescDirDescFstat(struct NaClDesc          *vself,
   return 0;
 }
 
-int NaClDescDirDescClose(struct NaClDesc          *vself,
-                         struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+static int NaClDescDirDescClose(struct NaClDesc          *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-int NaClDescDirDescExternalizeSize(struct NaClDesc *vself,
-                                   size_t          *nbytes,
-                                   size_t          *nhandles) {
+static int NaClDescDirDescExternalizeSize(struct NaClDesc *vself,
+                                          size_t          *nbytes,
+                                          size_t          *nhandles) {
   UNREFERENCED_PARAMETER(vself);
   *nbytes = 0;
   *nhandles = 1;
   return 0;
 }
 
-struct NaClDescVtbl const kNaClDescDirDescVtbl = {
+static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NaClDescDirDescDtor,
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -197,9 +190,9 @@ struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NaClDescGetValueNotImplemented,
 };
 
-int NaClDescDirInternalize(struct NaClDesc           **baseptr,
+int NaClDescDirInternalize(struct NaClDesc           **out_desc,
                            struct NaClDescXferState  *xfer) {
-  UNREFERENCED_PARAMETER(baseptr);
+  UNREFERENCED_PARAMETER(out_desc);
   UNREFERENCED_PARAMETER(xfer);
 
   NaClLog(LOG_ERROR, "NaClDescDirDescInternalize: not implemented for dir\n");

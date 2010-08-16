@@ -49,7 +49,7 @@ int32_t NaClCommonDescMakeBoundSock(struct NaClDesc *pair[2]) {
   }
 
   if (!NaClDescImcBoundDescCtor(idp, h)) {
-    NaClDescConnCapDtor((struct NaClDesc *) ccp);
+    NaClDescUnref((struct NaClDesc *) ccp);
     goto cleanup;
   }
   h = NACL_INVALID_HANDLE;  /* idp took ownership */
@@ -66,7 +66,7 @@ int32_t NaClCommonDescMakeBoundSock(struct NaClDesc *pair[2]) {
   free(idp);
   free(ccp);
   if (NACL_INVALID_HANDLE != h) {
-    NaClClose(h);
+    (void) NaClClose(h);
   }
   return retval;
 }

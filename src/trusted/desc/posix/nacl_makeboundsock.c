@@ -6,6 +6,8 @@
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc_bound_desc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
 
@@ -19,24 +21,21 @@ int32_t NaClCommonDescMakeBoundSock(struct NaClDesc *pair[2]) {
   }
 
   conn_cap = malloc(sizeof(*conn_cap));
-  if (conn_cap == NULL) {
+  if (NULL == conn_cap) {
     NaClLog(LOG_FATAL, "NaClCommonDescMakeBoundSock: allocation failed");
   }
-  if (!NaClDescCtor(&conn_cap->base)) {
-    NaClLog(LOG_FATAL, "NaClCommonDescMakeBoundSock: NaClDescCtor failed");
+  if (!NaClDescConnCapFdCtor(conn_cap, fd_pair[0])) {
+    NaClLog(LOG_FATAL,
+            "NaClCommonDescMakeBoundSock: NaClDescConnCapFdCtor failed");
   }
-  conn_cap->base.vtbl = &kNaClDescConnCapFdVtbl;
-  conn_cap->connect_fd = fd_pair[0];
 
   bound_sock = malloc(sizeof(*bound_sock));
-  if (bound_sock == NULL) {
+  if (NULL == bound_sock) {
     NaClLog(LOG_FATAL, "NaClCommonDescMakeBoundSock: allocation failed");
   }
-  if (!NaClDescCtor(&bound_sock->base)) {
+  if (!NaClDescImcBoundDescCtor(bound_sock, fd_pair[1])) {
     NaClLog(LOG_FATAL, "NaClCommonDescMakeBoundSock: NaClDescCtor failed");
   }
-  bound_sock->base.vtbl = &kNaClDescImcBoundDescVtbl;
-  bound_sock->h = fd_pair[1];
 
   pair[0] = &bound_sock->base;
   pair[1] = &conn_cap->base;

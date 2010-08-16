@@ -15,6 +15,7 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -42,6 +43,8 @@
  * NaClDescSyncSocket is the subclass that wraps base::SyncSocket descriptors.
  */
 
+static struct NaClDescVtbl const kNaClDescSyncSocketVtbl;  /* fwd */
+
 int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
                            NaClHandle                 h) {
   int retval;
@@ -56,60 +59,49 @@ int NaClDescSyncSocketCtor(struct NaClDescSyncSocket  *self,
   return retval;
 }
 
-void NaClDescSyncSocketDtor(struct NaClDesc *vself) {
+static void NaClDescSyncSocketDtor(struct NaClDesc *vself) {
   struct NaClDescSyncSocket  *self = ((struct NaClDescSyncSocket *) vself);
 
-  NaClClose(self->h);
+  (void) NaClClose(self->h);
   self->h = NACL_INVALID_HANDLE;
   self->base.vtbl = (struct NaClDescVtbl *) NULL;
   NaClDescDtor(vself);
 }
 
-int NaClDescSyncSocketFstat(struct NaClDesc          *vself,
-                            struct NaClDescEffector  *effp,
-                            struct nacl_abi_stat     *statbuf) {
+static int NaClDescSyncSocketFstat(struct NaClDesc          *vself,
+                                   struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
-  UNREFERENCED_PARAMETER(effp);
 
   memset(statbuf, 0, sizeof *statbuf);
   statbuf->nacl_abi_st_mode = NACL_ABI_S_IFDSOCK;
   return 0;
 }
 
-int NaClDescSyncSocketClose(struct NaClDesc          *vself,
-                            struct NaClDescEffector  *effp) {
-  UNREFERENCED_PARAMETER(effp);
-
+static int NaClDescSyncSocketClose(struct NaClDesc          *vself) {
   NaClDescUnref(vself);
   return 0;
 }
 
-ssize_t NaClDescSyncSocketRead(struct NaClDesc          *vself,
-                               struct NaClDescEffector  *effp,
-                               void                     *buf,
-                               size_t                   len) {
+static ssize_t NaClDescSyncSocketRead(struct NaClDesc          *vself,
+                                      void                     *buf,
+                                      size_t                   len) {
   struct NaClDescSyncSocket *self = (struct NaClDescSyncSocket *) vself;
-
-  UNREFERENCED_PARAMETER(effp);
 
   return NaClDescReadFromHandle(self->h, buf, len);
 }
 
-ssize_t NaClDescSyncSocketWrite(struct NaClDesc         *vself,
-                                struct NaClDescEffector *effp,
-                                void const              *buf,
-                                size_t                  len) {
+static ssize_t NaClDescSyncSocketWrite(struct NaClDesc         *vself,
+                                       void const              *buf,
+                                       size_t                  len) {
   struct NaClDescSyncSocket *self = (struct NaClDescSyncSocket *) vself;
-
-  UNREFERENCED_PARAMETER(effp);
 
   return NaClDescWriteToHandle(self->h, buf, len);
 }
 
 
-int NaClDescSyncSocketExternalizeSize(struct NaClDesc  *vself,
-                                      size_t           *nbytes,
-                                      size_t           *nhandles) {
+static int NaClDescSyncSocketExternalizeSize(struct NaClDesc  *vself,
+                                             size_t           *nbytes,
+                                             size_t           *nhandles) {
   UNREFERENCED_PARAMETER(vself);
   NaClLog(4, "Entered NaClDescSyncSocketExternalizeSize\n");
   *nbytes = 0;
@@ -118,8 +110,8 @@ int NaClDescSyncSocketExternalizeSize(struct NaClDesc  *vself,
   return 0;
 }
 
-int NaClDescSyncSocketExternalize(struct NaClDesc          *vself,
-                                  struct NaClDescXferState *xfer) {
+static int NaClDescSyncSocketExternalize(struct NaClDesc          *vself,
+                                         struct NaClDescXferState *xfer) {
   struct NaClDescSyncSocket *self = ((struct NaClDescSyncSocket *) vself);
 
   NaClLog(4, "Entered NaClDescSyncSocketExternalize\n");
@@ -128,7 +120,7 @@ int NaClDescSyncSocketExternalize(struct NaClDesc          *vself,
 }
 
 
-struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
+static struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
   NaClDescSyncSocketDtor,
   NaClDescMapNotImplemented,
   NaClDescUnmapUnsafeNotImplemented,
@@ -160,7 +152,7 @@ struct NaClDescVtbl const kNaClDescSyncSocketVtbl = {
 };
 
 
-int NaClDescSyncSocketInternalize(struct NaClDesc          **baseptr,
+int NaClDescSyncSocketInternalize(struct NaClDesc          **out_desc,
                                   struct NaClDescXferState *xfer) {
   int                       rv;
   NaClHandle                h;
@@ -192,7 +184,7 @@ int NaClDescSyncSocketInternalize(struct NaClDesc          **baseptr,
     goto cleanup;
   }
   *xfer->next_handle++ = NACL_INVALID_HANDLE;
-  *baseptr = (struct NaClDesc *) ndssp;
+  *out_desc = (struct NaClDesc *) ndssp;
   rv = 0;
 
 cleanup:

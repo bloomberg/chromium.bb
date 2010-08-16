@@ -305,8 +305,7 @@ static int NaClGioShmClose(struct Gio *vself) {
    * explicit Dtor or NaClDescUnref is needed.  (Last Close actually
    * Dtors.)
    */
-  ret = (*self->shmp->vtbl->Close)(self->shmp,
-                                   (struct NaClDescEffector *) &self->eff);
+  ret = (*self->shmp->vtbl->Close)(self->shmp);
   if (ret < 0) {
     errno = EIO;
     return -1;
@@ -356,9 +355,7 @@ static int NaClGioShmCtorIntern(struct NaClGioShm  *self,
   self->shmp = NULL;
   self->cur_window = NULL;
 
-  if (0 != (vfret = (*shmp->vtbl->Fstat)(shmp,
-                                         &self->eff.base,
-                                         &stbuf))) {
+  if (0 != (vfret = (*shmp->vtbl->Fstat)(shmp, &stbuf))) {
     NaClLog(1, "NaClGioShmCtorIntern: Fstat virtual function returned %d\n",
             vfret);
     goto cleanup;
@@ -489,8 +486,7 @@ int NaClGioShmAllocCtor(struct NaClGioShm *self,
 
   if (!rv) {
     int close_result;
-    if (0 != (close_result = (*shmp->base.vtbl->Close)(&shmp->base,
-                                                       &self->eff.base))) {
+    if (0 != (close_result = (*shmp->base.vtbl->Close)(&shmp->base))) {
       NaClLog(LOG_ERROR,
               ("NaClGioShmAllocCtor: failure cleanup close of shm failed,"
                " returned %d\n"),

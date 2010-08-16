@@ -47,8 +47,6 @@
           'nacl_desc_dir.c',
           'nacl_desc_dir.h',
           'nacl_desc_effector.h',
-          'nacl_desc_effector_cleanup.c',
-          'nacl_desc_effector_cleanup.h',
           'nacl_desc_effector_trusted_mem.c',
           'nacl_desc_effector_trusted_mem.h',
           'nacl_desc_imc.c',
