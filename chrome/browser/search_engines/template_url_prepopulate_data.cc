@@ -1990,8 +1990,8 @@ const PrepopulatedEngine yahoo_qc = {
       L"p={searchTerms}",
   "UTF-8",
   NULL,
-  TemplateURLPrepopulateData::SEARCH_ENGINE_YAHOO,
-  IDR_SEARCH_ENGINE_LOGO_YAHOO,
+  TemplateURLPrepopulateData::SEARCH_ENGINE_YAHOOQC,
+  IDR_SEARCH_ENGINE_LOGO_YAHOOQC,
   5,  // Can't be 2 as this has to appear in the Canada list alongside yahoo_ca.
 };
 
@@ -2189,7 +2189,7 @@ const PrepopulatedEngine* engines_BA[] =
 
 // Belgium
 const PrepopulatedEngine* engines_BE[] =
-    { &google, &bing_nl_BE, &bing_fr_BE, &yahoo, };
+    { &google, &bing_nl_BE, &yahoo, &bing_fr_BE, };
 
 // Bulgaria
 const PrepopulatedEngine* engines_BG[] =
@@ -2266,7 +2266,7 @@ const PrepopulatedEngine* engines_DO[] =
 
 // Algeria
 const PrepopulatedEngine* engines_DZ[] =
-    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, &maktoob, };
+    { &google, &bing_en_XA, &yahoo, &bing_ar_XA, &maktoob, };
 
 // Ecuador
 const PrepopulatedEngine* engines_EC[] =
@@ -2374,7 +2374,7 @@ const PrepopulatedEngine* engines_KE[] =
 
 // Kuwait
 const PrepopulatedEngine* engines_KW[] =
-    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, &maktoob, &araby, };
+    { &google, &bing_en_XA, &yahoo, &bing_ar_XA, &maktoob, &araby, };
 
 // South Korea
 const PrepopulatedEngine* engines_KR[] =
@@ -2410,7 +2410,7 @@ const PrepopulatedEngine* engines_LY[] =
 
 // Morocco
 const PrepopulatedEngine* engines_MA[] =
-    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, };
+    { &google, &bing_en_XA, &yahoo, &bing_ar_XA, };
 
 // Monaco
 const PrepopulatedEngine* engines_MC[] =
@@ -2534,7 +2534,7 @@ const PrepopulatedEngine* engines_SV[] =
 
 // Syria
 const PrepopulatedEngine* engines_SY[] =
-    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, &maktoob, &yamli, };
+    { &google, &bing_en_XA, &yahoo, &bing_ar_XA, &maktoob, &yamli, };
 
 // Thailand
 const PrepopulatedEngine* engines_TH[] =
@@ -2542,7 +2542,7 @@ const PrepopulatedEngine* engines_TH[] =
 
 // Tunisia
 const PrepopulatedEngine* engines_TN[] =
-    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, &maktoob, &yamli };
+    { &google, &bing_en_XA, &yahoo, &bing_ar_XA, &maktoob, &yamli };
 
 // Turkey
 const PrepopulatedEngine* engines_TR[] =

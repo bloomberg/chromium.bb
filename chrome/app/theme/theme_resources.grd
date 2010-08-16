@@ -295,6 +295,7 @@
         <include name="IDR_SEARCH_ENGINE_LOGO_WALLA" file="google_chrome/search_walla.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YAHOO" file="google_chrome/search_yahoo.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YAHOOJP" file="google_chrome/search_yahoojp.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_YAHOOQC" file="google_chrome/search_yahooqc.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YANDEX" file="google_chrome/search_yandex.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_ZOZNAM" file="google_chrome/search_zoznam.png" type="BINDATA" />
       </if>
@@ -327,6 +328,7 @@
         <include name="IDR_SEARCH_ENGINE_LOGO_WALLA" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YAHOO" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YAHOOJP" file="notused.png" type="BINDATA" />
+        <include name="IDR_SEARCH_ENGINE_LOGO_YAHOOQC" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_YANDEX" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_ZOZNAM" file="notused.png" type="BINDATA" />
       </if>

@@ -13,7 +13,9 @@ class TemplateURL;
 
 namespace TemplateURLPrepopulateData {
 
-// Enum to record the user's default search engine choice in UMA:
+// Enum to record the user's default search engine choice in UMA.  Add new
+// search engines at the bottom and do not delete from this list, so as not
+// to disrupt UMA data already recorded.
 enum SearchEngineType {
     SEARCH_ENGINE_OTHER = 0,  // At the top in case of future list changes.
     SEARCH_ENGINE_GOOGLE,
@@ -47,6 +49,7 @@ enum SearchEngineType {
     SEARCH_ENGINE_TUT,
     SEARCH_ENGINE_WALLA,
     SEARCH_ENGINE_ZOZNAM,
+    SEARCH_ENGINE_YAHOOQC,
     SEARCH_ENGINE_MAX  // Bounding max value needed for UMA histogram macro.
 };
 
