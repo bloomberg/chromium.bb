@@ -5,7 +5,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "chrome/browser/dom_ui/advanced_options_utils.h"
+
 #include "base/logging.h"
+#include "base/scoped_aedesc.h"
 
 void AdvancedOptionsUtilities::ShowNetworkProxySettings(
       TabContents* tab_contents) {
@@ -13,21 +15,18 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
       @"/System/Library/PreferencePanes/Network.prefPane"]];
 
   const char* proxyPrefCommand = "Proxies";
-  AEDesc openParams = { typeNull, NULL };
+  scoped_aedesc<> openParams;
   OSStatus status = AECreateDesc('ptru',
                                  proxyPrefCommand,
                                  strlen(proxyPrefCommand),
-                                 &openParams);
+                                 openParams.OutPointer());
   LOG_IF(ERROR, status != noErr) << "Failed to create open params: " << status;
 
   LSLaunchURLSpec launchSpec = { 0 };
   launchSpec.itemURLs = (CFArrayRef)itemsToOpen;
-  launchSpec.passThruParams = &openParams;
+  launchSpec.passThruParams = openParams;
   launchSpec.launchFlags = kLSLaunchAsync | kLSLaunchDontAddToRecents;
   LSOpenFromURLSpec(&launchSpec, NULL);
-
-  if (openParams.descriptorType != typeNull)
-    AEDisposeDesc(&openParams);
 }
 
 void AdvancedOptionsUtilities::ShowManageSSLCertificates(
