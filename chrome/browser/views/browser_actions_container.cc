@@ -179,14 +179,12 @@ void BrowserActionButton::Observe(NotificationType type,
 
 bool BrowserActionButton::IsPopup() {
   int tab_id = panel_->GetCurrentTabId();
-  DCHECK_GE(tab_id, 0);
-  return browser_action_->HasPopup(tab_id);
+  return (tab_id < 0) ? false : browser_action_->HasPopup(tab_id);
 }
 
 GURL BrowserActionButton::GetPopupUrl() {
   int tab_id = panel_->GetCurrentTabId();
-  DCHECK_GE(tab_id, 0);
-  return browser_action_->GetPopupUrl(tab_id);
+  return (tab_id < 0) ? GURL() : browser_action_->GetPopupUrl(tab_id);
 }
 
 bool BrowserActionButton::Activate() {
