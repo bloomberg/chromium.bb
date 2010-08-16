@@ -5,6 +5,14 @@
 
 Import('env')
 
+# In Chrome, we can share the nexe between the NPAPI (built-in) and
+# PPAPI (loaded with --register-pepper-plugins) versions of NaCl, but the html
+# needs to be different to specify different plugin content types:
+# "application/x-nacl-srpc" for srpc nexes with NPAPI plugin and
+# "application/x-ppapi-nacl-srpc" for for srpc nexes with PPAPI plugin.
+# TODO(polina): at some point there should only be "application/x-nacl".
+
+
 ######################################################################
 # Simple RPC basic methods tests
 ######################################################################
@@ -13,6 +21,10 @@ srpc_test_nexe = env.ComponentProgram('srpc_test.nexe', 'srpc_test.c',
 env.Publish('srpc_test.nexe', 'run',
             ['srpc_basic.html', 'srpc_perf.html', 'srpc_shm.html',
              'srpc_plugin.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+env.Publish('srpc_test.nexe', 'run',
+            ['srpc_basic_ppapi.html', 'srpc_perf_ppapi.html',
+             'srpc_shm_ppapi.html', 'srpc_plugin_ppapi.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
@@ -23,6 +35,9 @@ srpc_shm_nexe = env.ComponentProgram('srpc_shm.nexe', 'srpc_shm.c',
                                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Publish('srpc_shm.nexe', 'run',
             [ 'srpc_shm.html',
+              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+env.Publish('srpc_shm.nexe', 'run',
+            [ 'srpc_shm_ppapi.html',
               env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 env.AddPrebuiltBinaryToRepository(srpc_shm_nexe)
@@ -36,6 +51,9 @@ srpc_nrd_server_nexe = env.ComponentProgram('srpc_nrd_server.nexe',
 env.Publish('srpc_nrd_server.nexe', 'run',
             ['examples.html', '_README.txt', 'srpc_sockaddr.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+env.Publish('srpc_nrd_server.nexe', 'run',
+            ['examples_ppapi.html', '_README.txt', 'srpc_sockaddr_ppapi.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 env.AddPrebuiltBinaryToRepository(srpc_nrd_server_nexe)
 
@@ -47,6 +65,9 @@ srpc_nrd_client_nexe = env.ComponentProgram('srpc_nrd_client.nexe',
 env.Publish('srpc_nrd_client.nexe', 'run',
             ['srpc_nrd_xfer.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+env.Publish('srpc_nrd_client.nexe', 'run',
+            ['srpc_nrd_xfer_ppapi.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 env.AddPrebuiltBinaryToRepository(srpc_nrd_client_nexe)
 
@@ -55,6 +76,10 @@ cat_nexe = env.ComponentProgram('cat.nexe', 'cat.c',
                                 EXTRA_LIBS=['srpc', 'm', 'pthread'])
 env.Publish('cat.nexe', 'run',
             ['srpc_url_as_nacl_desc.html',
+             'srpc_url_as_nacl_desc_success.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+env.Publish('cat.nexe', 'run',
+            ['srpc_url_as_nacl_desc_ppapi.html',
              'srpc_url_as_nacl_desc_success.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 

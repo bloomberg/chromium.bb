@@ -16,6 +16,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <string>
+
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/include/portability_string.h"
@@ -108,9 +110,7 @@ bool SetModuleReadyProperty(void* obj, plugin::SrpcParams* params) {
 bool GetNexesProperty(void* obj, plugin::SrpcParams* params) {
   UNREFERENCED_PARAMETER(obj);
   UNREFERENCED_PARAMETER(params);
-  // Note, "get" must be present in the method map for "set" to work.
-  PLUGIN_PRINTF(("GetNexesProperty not yet implemented.\n"));
-  NACL_UNIMPLEMENTED();
+  params->set_exception_string("__nexes is a write-only property");
   return false;
 }
 
@@ -252,10 +252,29 @@ void Plugin::LoadMethods() {
   AddMethodCall(SendAsyncMessage0, "__sendAsyncMessage0", "s", "");
   AddMethodCall(SendAsyncMessage1, "__sendAsyncMessage1", "sh", "");
   // Properties implemented by Plugin.
-  AddPropertyGet(GetHeightProperty, "height", "i");
-  AddPropertySet(SetHeightProperty, "height", "i");
   AddPropertyGet(GetModuleReadyProperty, "__moduleReady", "i");
   AddPropertySet(SetModuleReadyProperty, "__moduleReady", "i");
+  // With PPAPI plugin, we make sure all predeclared plugin properties start
+  // with __ to avoid conflicts with the properties of the underlying object
+  // (e.g. height).
+  // TODO(polina): Make the PPAPI nexe inherit from the plugin to provide
+  // access to these properties.
+#if defined(NACL_PPAPI)  // TODO(polina): do this for NPAPI as well.
+  AddPropertyGet(GetHeightProperty, "__height", "i");
+  AddPropertySet(SetHeightProperty, "__height", "i");
+  AddPropertyGet(GetNexesProperty, "__nexes", "s");
+  AddPropertySet(SetNexesProperty, "__nexes", "s");
+  AddPropertyGet(GetSrcProperty, "__src", "s");
+  AddPropertySet(SetSrcProperty, "__src", "s");
+  // TODO(polina): confirm that videoUpdateMode is irrelevant for PPAPI and
+  // move the property registration and handling functions to PluginNPAPI.
+  AddPropertyGet(GetVideoUpdateModeProperty, "__videoUpdateMode", "i");
+  AddPropertySet(SetVideoUpdateModeProperty, "__videoUpdateMode", "i");
+  AddPropertyGet(GetWidthProperty, "__width", "i");
+  AddPropertySet(SetWidthProperty, "__width", "i");
+#else
+  AddPropertyGet(GetHeightProperty, "height", "i");
+  AddPropertySet(SetHeightProperty, "height", "i");
   AddPropertyGet(GetNexesProperty, "nexes", "s");
   AddPropertySet(SetNexesProperty, "nexes", "s");
   AddPropertyGet(GetSrcProperty, "src", "s");
@@ -264,6 +283,7 @@ void Plugin::LoadMethods() {
   AddPropertySet(SetVideoUpdateModeProperty, "videoUpdateMode", "i");
   AddPropertyGet(GetWidthProperty, "width", "i");
   AddPropertySet(SetWidthProperty, "width", "i");
+#endif
 }
 
 bool Plugin::HasMethodEx(uintptr_t method_id, CallType call_type) {
@@ -310,7 +330,7 @@ bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
 }
 
 bool Plugin::SetSrcPropertyImpl(const nacl::string& url) {
-  PLUGIN_PRINTF(("Plugin::SetProperty (unloading previous)\n"));
+  PLUGIN_PRINTF(("Plugin::SetSrcPropertyImpl (unloading previous)\n"));
   // We do not actually need to shut down the process here when
   // initiating the (asynchronous) download.  It is more important to
   // shut down the old process when the download completes and a new

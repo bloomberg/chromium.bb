@@ -262,6 +262,7 @@ if env['TARGET_ARCHITECTURE'] != 'arm':
 # The PPAPI plugin uses specific code from the ppapi subdirectory and will
 # soon require a library for proxying PPAPI to NaCl modules.
 ppapi_inputs = [
+    'ppapi/array_ppapi.cc',
     'ppapi/browser_interface_ppapi.cc',
     'ppapi/module_ppapi.cc',
     'ppapi/plugin_ppapi.cc',
@@ -272,6 +273,7 @@ ppapi_inputs = [
 ppNaClPlugin = 'ppNaClPlugin'
 
 ppapi_env = plugin_env.Clone()
+ppapi_env.Append(CPPDEFINES = ['NACL_PPAPI'])
 # TODO(sehr,polina): when there is a google_nacl_ppruntime, it goes here.
 ppapi_libs = common_libs + [ 'ppapi_cpp' ]
 if ppapi_env['SHARED_LIBS_SPECIAL']:
@@ -280,9 +282,11 @@ else:
   ppapi_env.Append(LIBS=ppapi_libs + os_libs)
 
 if ppapi_env.Bit('linux') and not ppapi_env.Bit('chrome'):
-  ppapi_plugin = ppapi_env.ComponentLibrary(ppNaClPlugin,
-                                            common_objs + ppapi_inputs,
-                                            no_import_lib=True)
+  ppapi_plugin = ppapi_env.ComponentLibrary(
+      ppNaClPlugin,
+      common_inputs + ppapi_inputs,
+      OBJPREFIX='ppapi_', SHOBJPREFIX='ppapi_',
+      no_import_lib=True)
 
   # we need this to build the plugin, so register it here
   ppapi_env.AddPluginPrerequisite([ppapi_plugin[0]])

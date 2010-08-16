@@ -70,9 +70,10 @@
     ],
     'ppapi_sources': [
       # PPAPI specific code
-      'ppapi/browser_impl_ppapi.cc',
+      'ppapi/array_ppapi.cc',
+      'ppapi/browser_interface_ppapi.cc',
       'ppapi/plugin_ppapi.cc',
-      'ppapi/scriptable_impl_ppapi.cc',
+      'ppapi/scriptable_handle_ppapi.cc',
       'ppapi/var_utils.cc',
     ],
   },

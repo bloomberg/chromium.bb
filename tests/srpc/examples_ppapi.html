@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2010 Google Inc.  All rights reserved. -->
+  <head>
+    <title> Browser Test Page </title>
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <script type="text/javascript">
+      //<![CDATA[
+// test_table descriptor consists of a number of rows.
+// Each row contains a two element array.
+// The first element is a "class" of test, which becomes a column heading.
+// The second element is a list of test descriptors.
+// Each test descriptor is a two element array containing a description and a
+// link.
+var test_table_descriptor = [
+  [ 'SRPC Tests',
+    [ [ 'SRPC hello world [should pass]',
+        'srpc_hw_ppapi.html' ],
+      [ 'SRPC parameter passing ' +
+            '[should pass except for "send to NaCl", "send invalid to NaCl"]',
+        'srpc_basic_ppapi.html' ],
+      [ 'SRPC plugin properties [should pass]',
+        'srpc_plugin_ppapi.html' ],
+      [ 'SRPC socket address API ' +
+            '[should pass except for "to default", "to address returned from NaCl"]',
+        'srpc_sockaddr_ppapi.html' ],
+      [ 'SRPC shared memory API ' +
+            '[should pass except for "Conforming write to shared memory", ' +
+            'write & read "Conforming usage"]',
+        'srpc_shm_ppapi.html' ],
+      [ 'SRPC resource descriptor transfer [origin/load failure]',
+        'srpc_nrd_xfer_ppapi.html' ],
+      [ 'SRPC performance [should pass]',
+        'srpc_perf.html' ],
+      [ 'SRPC URL content as NaCl resource descriptor ' +
+            '[timeout due to missing url loading support]',
+        'srpc_url_as_nacl_desc_ppapi.html' ],
+    ]
+  ]
+];
+
+var buildTable = function() {
+  var num_test_classes = test_table_descriptor.length;
+  var i;
+  var table = '<table border="10" cellpadding="5%" summary="Tests"><tr>';
+  // Build the table heading row.
+  for (i = 0; i < num_test_classes; ++i) {
+    var test_class_descriptor = test_table_descriptor[i];
+    var heading = test_class_descriptor[0];
+    table += '<th>' + heading + '</th>';
+  }
+  table += '</tr><tr>';
+  // Build the tests row as a set of nested tables.
+  for (i = 0; i < num_test_classes; ++i) {
+    var test_class_descriptor = test_table_descriptor[i];
+    var test_list = test_class_descriptor[1];
+    var num_tests = test_list.length;
+    var j;
+    table += '<td valign="top"><table summary="Individual tests">';
+    for (j = 0; j < num_tests; ++j) {
+      var test_descriptor = test_list[j];
+      var test_name = test_descriptor[0];
+      var test_link = test_descriptor[1];
+      table +=
+        '<tr><td>' +
+          '<button type="button" onclick="self.location=\'' + test_link +
+          '\'"> Go </button>&nbsp;' +
+          test_name +
+        '</td></tr>';
+    }
+    table += '</table></td>';
+  }
+  table += '</tr></table>';
+  // Install the table in the div element.
+  var table_div_element = document.getElementById('table_div');
+  table_div_element.innerHTML = table;
+}
+      //]]>
+    </script>
+  </head>
+  <body onload="buildTable()">
+    <h1> PPAPI Native Client Chrome Browser Tests</h1>
+    <div id="table_div"> </div>
+  </body>
+</html>
