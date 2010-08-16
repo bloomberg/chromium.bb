@@ -5,14 +5,13 @@ vars = {
   # revs to match the version pulled-in by Chromium's own DEPS in the new rev.
   "chromium_rev": "51794",
   "chromium_breakpad_rev": "47985",
-  "o3d_code_rev": "207",
+  "o3d_code_rev": "212",
   "skia_rev": "586",
   "gyp_rev": "820",
   "gtest_rev": "408",
   "gflags_rev": "30",
   "breakpad_rev": "604",
   "v8_rev": "5017",
-  "nacl_rev": "2500",
 }
 
 deps = {
@@ -123,7 +122,7 @@ deps = {
     Var("chromium_trunk") + "/src/ipc@" + Var("chromium_rev"),
 
   "native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" + Var("nacl_rev"),
+    "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/native_client@" + Var("o3d_code_rev"),
 
   "net":
     Var("chromium_trunk") + "/src/net@" + Var("chromium_rev"),
