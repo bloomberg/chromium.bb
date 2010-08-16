@@ -15,7 +15,7 @@ vars = {
   "tools_rev": "2864",
   "python_rev": "22967",
   "wix_rev": "153",
-  "ppapi_rev": "126",
+  "ppapi_rev": "195",
   "lcov_rev": "54822",
 }
 
