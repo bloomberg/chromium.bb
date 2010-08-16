@@ -583,7 +583,8 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInText) {
 
 // Test situation of html entities in attribute value when serializing
 // HTML DOM.
-TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInAttributeValue) {
+// This test started to fail at WebKit r65388. See http://crbug.com/52279.
+TEST_F(DomSerializerTests, FAILS_SerializeHTMLDOMWithEntitiesInAttributeValue) {
   FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII(
       "dom_serializer/htmlentities_in_attribute_value.htm");
@@ -632,7 +633,8 @@ TEST_F(DomSerializerTests, SerializeHTMLDOMWithEntitiesInAttributeValue) {
 }
 
 // Test situation of non-standard HTML entities when serializing HTML DOM.
-TEST_F(DomSerializerTests, SerializeHTMLDOMWithNonStandardEntities) {
+// This test started to fail at WebKit r65351. See http://crbug.com/52279.
+TEST_F(DomSerializerTests, FAILS_SerializeHTMLDOMWithNonStandardEntities) {
   // Make a test file URL and load it.
   FilePath page_file_path = data_dir_;
   page_file_path = page_file_path.AppendASCII("dom_serializer");
