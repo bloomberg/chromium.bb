@@ -1126,17 +1126,6 @@ void HistoryBackend::RemoveDownloadsBetween(const Time remove_begin,
     db_->RemoveDownloadsBetween(remove_begin, remove_end);
 }
 
-void HistoryBackend::SearchDownloads(
-    scoped_refptr<DownloadSearchRequest> request,
-    const string16& search_text) {
-  if (request->canceled())
-    return;
-  if (db_.get())
-    db_->SearchDownloads(&request->value, search_text);
-  request->ForwardResult(DownloadSearchRequest::TupleType(request->handle(),
-                                                          &request->value));
-}
-
 void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
                                   const string16& text_query,
                                   const QueryOptions& options) {

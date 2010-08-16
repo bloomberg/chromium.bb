@@ -51,10 +51,6 @@ class DownloadDatabase {
   // all downloads that are in progress or are waiting to be cancelled.
   void RemoveDownloadsBetween(base::Time remove_begin, base::Time remove_end);
 
-  // Search for downloads matching the search text.
-  void SearchDownloads(std::vector<int64>* results,
-                       const string16& search_text);
-
  protected:
   // Returns the database for the functions in this interface.
   virtual sql::Connection& GetDB() = 0;

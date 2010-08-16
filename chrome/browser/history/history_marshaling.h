@@ -105,10 +105,6 @@ typedef CancelableRequest1<HistoryService::DownloadQueryCallback,
 typedef CancelableRequest<HistoryService::DownloadCreateCallback>
     DownloadCreateRequest;
 
-typedef CancelableRequest1<HistoryService::DownloadSearchCallback,
-                          std::vector<int64> >
-    DownloadSearchRequest;
-
 // Deletion --------------------------------------------------------------------
 
 typedef CancelableRequest<HistoryService::ExpireHistoryCallback>

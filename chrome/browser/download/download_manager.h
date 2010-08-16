@@ -39,11 +39,11 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/shell_dialogs.h"
 
 class DownloadFileManager;
+class DownloadHistory;
 class DownloadItem;
 class GURL;
 class PrefService;
@@ -56,7 +56,6 @@ struct DownloadSaveInfo;
 
 // Browser's download manager: manages all downloads and destination view.
 class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
-                        public DownloadHistory::DownloadItemMapper,
                         public SelectFileDialog::Listener {
   // For testing.
   friend class DownloadManagerTest;
@@ -96,6 +95,11 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // either in-progress or finished but still waiting for user confirmation.
   void GetCurrentDownloads(const FilePath& dir_path,
                            std::vector<DownloadItem*>* result);
+
+  // Returns all non-temporary downloads matching |query|. Empty query matches
+  // everything.
+  void SearchDownloads(const string16& query,
+                       std::vector<DownloadItem*>* result);
 
   // Returns true if initialized properly.
   bool Init(Profile* profile);
@@ -174,6 +178,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
 
   FilePath download_path() { return *download_path_; }
 
+  Profile* profile() { return profile_; }
+
   DownloadHistory* download_history() { return download_history_.get(); }
 
   // Clears the last download path, used to initialize "save as" dialogs.
@@ -196,9 +202,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Returns true if there are automatic handlers registered for any file
   // types.
   bool HasAutoOpenFileTypesRegistered() const;
-
-  // Overridden from DownloadHistory::DownloadItemMapper:
-  virtual DownloadItem* GetDownloadItemFromDbHandle(int64 db_handle);
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);

@@ -445,15 +445,6 @@ class HistoryService : public CancelableRequestProvider,
   // both directions.
   void RemoveDownloadsBetween(base::Time remove_begin, base::Time remove_end);
 
-  // Implemented by the caller of 'SearchDownloads' below, and is called when
-  // the history system has retrieved the search results.
-  typedef Callback2<Handle, std::vector<int64>*>::Type DownloadSearchCallback;
-
-  // Search for downloads that match the search text.
-  Handle SearchDownloads(const string16& search_text,
-                         CancelableRequestConsumerBase* consumer,
-                         DownloadSearchCallback* callback);
-
   // Visit Segments ------------------------------------------------------------
 
   typedef Callback2<Handle, std::vector<PageUsageData*>*>::Type

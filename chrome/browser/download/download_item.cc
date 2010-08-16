@@ -4,15 +4,21 @@
 
 #include "chrome/browser/download/download_item.h"
 
+#include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/timer.h"
+#include "base/utf_string_conversions.h"
+#include "net/base/net_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/history/download_types.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
 
 namespace {
 
@@ -296,6 +302,35 @@ void DownloadItem::OnNameFinalized() {
   // file, delay the notification.
   if (state() == DownloadItem::COMPLETE)
     NotifyObserversDownloadFileCompleted();
+}
+
+bool DownloadItem::MatchesQuery(const string16& query) const {
+  if (query.empty())
+    return true;
+
+  DCHECK_EQ(query, l10n_util::ToLower(query));
+
+  string16 url_raw(l10n_util::ToLower(UTF8ToUTF16(url_.spec())));
+  if (url_raw.find(query) != string16::npos)
+    return true;
+
+  // TODO(phajdan.jr): write a test case for the following code.
+  // A good test case would be:
+  //   "/\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd",
+  //   L"/\x4f60\x597d\x4f60\x597d",
+  //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
+  PrefService* prefs = download_manager_->profile()->GetPrefs();
+  std::wstring languages(UTF8ToWide(prefs->GetString(prefs::kAcceptLanguages)));
+  string16 url_formatted(
+      l10n_util::ToLower(WideToUTF16(net::FormatUrl(url_, languages))));
+  if (url_formatted.find(query) != string16::npos)
+    return true;
+
+  string16 path(l10n_util::ToLower(WideToUTF16(full_path_.ToWStringHack())));
+  if (path.find(query) != std::wstring::npos)
+    return true;
+
+  return false;
 }
 
 FilePath DownloadItem::GetFileName() const {

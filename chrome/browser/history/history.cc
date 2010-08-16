@@ -539,14 +539,6 @@ void HistoryService::RemoveDownloadsBetween(Time remove_begin,
                     remove_end);
 }
 
-HistoryService::Handle HistoryService::SearchDownloads(
-    const string16& search_text,
-    CancelableRequestConsumerBase* consumer,
-    DownloadSearchCallback* callback) {
-  return Schedule(PRIORITY_NORMAL, &HistoryBackend::SearchDownloads, consumer,
-                  new history::DownloadSearchRequest(callback), search_text);
-}
-
 HistoryService::Handle HistoryService::QueryHistory(
     const string16& text_query,
     const history::QueryOptions& options,

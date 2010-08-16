@@ -17,12 +17,10 @@
 // static
 const int DownloadHistory::kUninitializedHandle = 0;
 
-DownloadHistory::DownloadHistory(Profile* profile, DownloadItemMapper* mapper)
+DownloadHistory::DownloadHistory(Profile* profile)
     : profile_(profile),
-      next_fake_db_handle_(kUninitializedHandle - 1),
-      download_item_mapper_(mapper) {
+      next_fake_db_handle_(kUninitializedHandle - 1) {
   DCHECK(profile);
-  DCHECK(mapper);
 }
 
 void DownloadHistory::Load(HistoryService::DownloadQueryCallback* callback) {
@@ -36,21 +34,6 @@ void DownloadHistory::Load(HistoryService::DownloadQueryCallback* callback) {
 
   // This is the initial load, so do a cleanup of corrupt in-progress entries.
   hs->CleanUpInProgressEntries();
-}
-
-void DownloadHistory::Search(const string16& query,
-                             DownloadSearchCallback* callback) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (!hs) {
-    delete callback;
-    return;
-  }
-
-  HistoryService::Handle handle = hs->SearchDownloads(
-      query,
-      &history_consumer_,
-      NewCallback(this, &DownloadHistory::OnSearchDownloadsComplete));
-  history_consumer_.SetClientData(hs, handle, callback);
 }
 
 void DownloadHistory::AddEntry(
@@ -124,27 +107,6 @@ void DownloadHistory::RemoveEntriesBetween(const base::Time remove_begin,
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
     hs->RemoveDownloadsBetween(remove_begin, remove_end);
-}
-
-void DownloadHistory::OnSearchDownloadsComplete(HistoryService::Handle handle,
-                                                std::vector<int64>* results) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  DownloadSearchCallback* callback =
-      history_consumer_.GetClientData(hs, handle);
-  if (!callback)
-    return;
-
-  std::vector<DownloadItem*> download_items;
-  for (std::vector<int64>::iterator i = results->begin();
-       i != results->end(); ++i) {
-    DownloadItem* download_item =
-        download_item_mapper_->GetDownloadItemFromDbHandle(*i);
-    if (download_item)
-      download_items.push_back(download_item);
-  }
-
-  callback->RunWithParams(MakeTuple(download_items));
-  delete callback;
 }
 
 int64 DownloadHistory::GetNextFakeDbHandle() {

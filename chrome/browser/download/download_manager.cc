@@ -208,6 +208,35 @@ void DownloadManager::GetCurrentDownloads(
   }
 }
 
+void DownloadManager::SearchDownloads(const string16& query,
+                                      std::vector<DownloadItem*>* result) {
+  DCHECK(result);
+
+  string16 query_lower(l10n_util::ToLower(query));
+
+  for (DownloadMap::iterator it = downloads_.begin();
+       it != downloads_.end(); ++it) {
+    DownloadItem* download_item = it->second;
+
+    if (download_item->is_temporary() || download_item->is_extension_install())
+      continue;
+
+    // Display Incognito downloads only in Incognito window, and vice versa.
+    // The Incognito Downloads page will get the list of non-Incognito downloads
+    // from its parent profile.
+    if (profile_->IsOffTheRecord() != download_item->is_otr())
+      continue;
+
+    if (download_item->MatchesQuery(query_lower))
+      result->push_back(download_item);
+  }
+
+  // If we have a parent profile, let it add its downloads to the results.
+  Profile* original_profile = profile_->GetOriginalProfile();
+  if (original_profile != profile_)
+    original_profile->GetDownloadManager()->SearchDownloads(query, result);
+}
+
 // Query the history service for information about all persisted downloads.
 bool DownloadManager::Init(Profile* profile) {
   DCHECK(profile);
@@ -216,7 +245,7 @@ bool DownloadManager::Init(Profile* profile) {
 
   profile_ = profile;
   request_context_getter_ = profile_->GetRequestContext();
-  download_history_.reset(new DownloadHistory(profile, this));
+  download_history_.reset(new DownloadHistory(profile));
   download_history_->Load(
       NewCallback(this, &DownloadManager::OnQueryDownloadEntriesComplete));
 
@@ -979,16 +1008,6 @@ void DownloadManager::SaveAutoOpens() {
 
     prefs->SetString(prefs::kDownloadExtensionsToOpen, extensions);
   }
-}
-
-DownloadItem* DownloadManager::GetDownloadItemFromDbHandle(int64 db_handle) {
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    DownloadItem* item = it->second;
-    if (item->db_handle() == db_handle)
-      return item;
-  }
-  return NULL;
 }
 
 void DownloadManager::FileSelected(const FilePath& path,

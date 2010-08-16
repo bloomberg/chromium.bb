@@ -116,18 +116,8 @@ void DownloadsDOMHandler::OnDownloadUpdated(DownloadItem* download) {
 // current set of downloads.
 void DownloadsDOMHandler::ModelChanged() {
   ClearDownloadItems();
-  download_manager_->download_history()->Search(
-      WideToUTF16(search_text_),
-      callback_factory_.NewCallback(
-          &DownloadsDOMHandler::OnSearchDownloadsComplete));
-}
-
-void DownloadsDOMHandler::OnSearchDownloadsComplete(
-    std::vector<DownloadItem*> downloads) {
-  ClearDownloadItems();
-
-  // Swap new downloads in.
-  download_items_.swap(downloads);
+  download_manager_->SearchDownloads(WideToUTF16(search_text_),
+                                     &download_items_);
   sort(download_items_.begin(), download_items_.end(), DownloadItemSorter());
 
   // Scan for any in progress downloads and add ourself to them as an observer.
@@ -153,10 +143,7 @@ void DownloadsDOMHandler::HandleGetDownloads(const Value* value) {
   std::wstring new_search = ExtractStringValue(value);
   if (search_text_.compare(new_search) != 0) {
     search_text_ = new_search;
-    ClearDownloadItems();
-    download_manager_->download_history()->Search(
-        WideToUTF16(search_text_),
-        NewCallback(this, &DownloadsDOMHandler::OnSearchDownloadsComplete));
+    ModelChanged();
   } else {
     SendCurrentDownloads();
   }

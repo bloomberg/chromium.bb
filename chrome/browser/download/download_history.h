@@ -22,30 +22,14 @@ class Time;
 // Interacts with the HistoryService on behalf of the download subsystem.
 class DownloadHistory {
  public:
-  // Converts history database handles to download items.
-  class DownloadItemMapper {
-   public:
-    virtual ~DownloadItemMapper() {}
-
-    // Returns a DownloadItem* corresponding to |db_handle|, or NULL if no such
-    // DownloadItem exists.
-    virtual DownloadItem* GetDownloadItemFromDbHandle(int64 db_handle) = 0;
-  };
-
   // A fake download table ID which represents a download that has started,
   // but is not yet in the table.
   static const int kUninitializedHandle;
 
-  typedef Callback1<std::vector<DownloadItem*> >::Type DownloadSearchCallback;
-
-  DownloadHistory(Profile* profile, DownloadItemMapper* mapper);
+  explicit DownloadHistory(Profile* profile);
 
   // Retrieves DownloadCreateInfos saved in the history.
   void Load(HistoryService::DownloadQueryCallback* callback);
-
-  // Starts a history search for downloads and invokes |callback| when done.
-  void Search(const string16& query,
-              DownloadSearchCallback* callback);
 
   // Adds a new entry for a download to the history database.
   void AddEntry(const DownloadCreateInfo& info,
@@ -70,9 +54,6 @@ class DownloadHistory {
   int64 GetNextFakeDbHandle();
 
  private:
-  void OnSearchDownloadsComplete(HistoryService::Handle handle,
-                                 std::vector<int64>* results);
-
   Profile* profile_;
 
   // In case we don't have a valid db_handle, we use |fake_db_handle_| instead.
@@ -81,9 +62,7 @@ class DownloadHistory {
   // fake handle value on every use.
   int64 next_fake_db_handle_;
 
-  DownloadItemMapper* download_item_mapper_;
-
-  CancelableRequestConsumerTSimple<DownloadSearchCallback*> history_consumer_;
+  CancelableRequestConsumer history_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistory);
 };

@@ -225,8 +225,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void RemoveDownloadsBetween(const base::Time remove_begin,
                               const base::Time remove_end);
   void RemoveDownloads(const base::Time remove_end);
-  void SearchDownloads(scoped_refptr<DownloadSearchRequest>,
-                       const string16& search_text);
 
   // Segment usage -------------------------------------------------------------
 

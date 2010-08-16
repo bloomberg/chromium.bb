@@ -155,6 +155,9 @@ class DownloadItem {
   // Called when the name of the download is finalized.
   void OnNameFinalized();
 
+  // Returns true if this item matches |query|. |query| must be lower-cased.
+  bool MatchesQuery(const string16& query) const;
+
   // Accessors
   DownloadState state() const { return state_; }
   FilePath full_path() const { return full_path_; }
