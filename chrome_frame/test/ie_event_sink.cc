@@ -175,21 +175,16 @@ void IEEventSink::Uninitialize() {
 bool IEEventSink::IsCFRendering() {
   DCHECK(web_browser2_);
 
-  HWND renderer_window;
   if (web_browser2_) {
     ScopedComPtr<IDispatch> doc;
     web_browser2_->get_Document(doc.Receive());
     if (doc) {
-      ScopedComPtr<IOleWindow> ole_window;
-      ole_window.QueryFrom(doc);
-      if (ole_window) {
-        ole_window->GetWindow(&renderer_window);
-        if (IsWindow(renderer_window)) {
-          wchar_t class_name[MAX_PATH] = {0};
-          GetClassName(renderer_window, class_name, arraysize(class_name));
-          return _wcsicmp(class_name, L"Internet Explorer_Server") != 0;
-        }
-      }
+      // Detect if CF is rendering based on whether the document is a
+      // ChromeActiveDocument. Detecting based on hwnd is problematic as
+      // the CF Active Document window may not have been created yet.
+      ScopedComPtr<IChromeFrame> chrome_frame;
+      chrome_frame.QueryFrom(doc);
+      return chrome_frame.get();
     }
   }
   return false;
