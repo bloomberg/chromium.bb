@@ -8,6 +8,7 @@
 
 #include "chrome/browser/dom_ui/options_ui.h"
 #include "chrome/browser/pref_member.h"
+#include "chrome/browser/pref_set_observer.h"
 #include "chrome/browser/shell_dialogs.h"
 
 // Chrome advanced options page UI handler.
@@ -69,6 +70,9 @@ class AdvancedOptionsHandler
   // Setup the enabled state of the reset button.
   void SetupAutoOpenFileTypesDisabledAttribute();
 
+  // Setup the enabled state of the proxy settings button.
+  void SetupProxySettingsDisabledAttribute();
+
 #if defined(OS_WIN)
   // Setup the checked state SSL related checkboxes.
   void SetupSSLConfigSettings();
@@ -77,6 +81,7 @@ class AdvancedOptionsHandler
   scoped_refptr<SelectFileDialog> select_folder_dialog_;
   FilePathPrefMember default_download_location_;
   StringPrefMember auto_open_files_;
+  scoped_ptr<PrefSetObserver> proxy_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(AdvancedOptionsHandler);
 };

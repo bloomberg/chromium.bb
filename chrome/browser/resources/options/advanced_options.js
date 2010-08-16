@@ -92,6 +92,11 @@ var OptionsPage = options.OptionsPage;
     $('autoOpenFileTypesResetToDefault').disabled = disabled;
   };
 
+  // Set the enabled state for the proxy settings button.
+  AdvancedOptions.SetProxySettingsDisabledAttribute = function (disabled) {
+    $('proxiesConfigureButton').disabled = disabled;
+  };
+
   // Set the checked state for the sslCheckRevocation checkbox.
   AdvancedOptions.SetCheckRevocationCheckboxState = function(checked) {
     $('sslCheckRevocation').checked = checked;

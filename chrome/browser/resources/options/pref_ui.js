@@ -25,7 +25,9 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.checked = event.value;
+            self.managed = event.value['managed']
+            self.disabled = self.managed;
+            self.checked = event.value['value'];
           });
 
       // Listen to user events.
@@ -62,7 +64,9 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.checked = String(event.value) == self.value;
+            self.managed = event.value['managed']
+            self.disabled = self.managed;
+            self.checked = String(event.value['value']) == self.value;
           });
 
       // Listen to user events.
@@ -112,7 +116,9 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.value = event.value;
+            self.managed = event.value['managed']
+            self.disabled = self.managed;
+            self.value = event.value['value'];
           });
 
       // Listen to user events.
@@ -185,8 +191,10 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
+            self.managed = event.value['managed']
+            self.disabled = self.managed;
             for (var i = 0; i < self.options.length; i++) {
-              if (self.options[i].value == event.value) {
+              if (self.options[i].value == event.value['value']) {
                 self.selectedIndex = i;
                 return;
               }
@@ -266,7 +274,9 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.value = event.value;
+            self.managed = event.value['managed']
+            self.disabled = self.managed;
+            self.value = event.value['value'];
           });
 
       // Listen to user events.

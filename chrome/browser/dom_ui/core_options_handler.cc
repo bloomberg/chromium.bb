@@ -121,7 +121,16 @@ Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
   const PrefService::Preference* pref =
       pref_service->FindPreference(pref_name.c_str());
 
-  return pref ? pref->GetValue()->DeepCopy() : Value::CreateNullValue();
+  Value* return_value;
+  if (pref) {
+    DictionaryValue* dict = new DictionaryValue;
+    dict->Set(L"value", pref->GetValue()->DeepCopy());
+    dict->SetBoolean(L"managed", pref->IsManaged());
+    return_value = dict;
+  } else {
+    return_value = Value::CreateNullValue();
+  }
+  return return_value;
 }
 
 void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
@@ -199,7 +208,6 @@ void CoreOptionsHandler::HandleObservePrefs(const Value* value) {
   if (!value || !value->IsType(Value::TYPE_LIST))
     return;
 
-  DictionaryValue result_value;
   const ListValue* list_value = static_cast<const ListValue*>(value);
 
   // First param is name is JS callback function name, the rest are pref
@@ -282,7 +290,12 @@ void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
       const std::wstring& callback_function = iter->second;
       ListValue result_value;
       result_value.Append(Value::CreateStringValue(pref_name->c_str()));
-      result_value.Append(pref->GetValue()->DeepCopy());
+
+      DictionaryValue* dict = new DictionaryValue;
+      dict->Set(L"value", pref->GetValue()->DeepCopy());
+      dict->SetBoolean(L"managed", pref->IsManaged());
+      result_value.Append(dict);
+
       dom_ui_->CallJavascriptFunction(callback_function, result_value);
     }
   }

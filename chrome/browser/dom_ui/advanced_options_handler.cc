@@ -124,6 +124,7 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 void AdvancedOptionsHandler::Initialize() {
   SetupDownloadLocationPath();
   SetupAutoOpenFileTypesDisabledAttribute();
+  SetupProxySettingsDisabledAttribute();
 #if defined(OS_WIN)
   SetupSSLConfigSettings();
 #endif
@@ -136,11 +137,12 @@ DOMMessageHandler* AdvancedOptionsHandler::Attach(DOMUI* dom_ui) {
   // Register for preferences that we need to observe manually.  These have
   // special behaviors that aren't handled by the standard prefs UI.
   DCHECK(dom_ui_);
-  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+  PrefService* prefs = dom_ui_->GetProfile()->GetPrefs();
   default_download_location_.Init(prefs::kDownloadDefaultDirectory,
-                                  pref_service, this);
-  auto_open_files_.Init(prefs::kDownloadExtensionsToOpen,
-                        pref_service, this);
+                                  prefs, this);
+  auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
+  proxy_prefs_.reset(
+      PrefSetObserver::CreateProxyPrefSetObserver(prefs, this));
 
   // Return result from the superclass.
   return handler;
@@ -280,6 +282,14 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
   FundamentalValue value(disabled);
   dom_ui_->CallJavascriptFunction(
       L"options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);
+}
+
+void AdvancedOptionsHandler::SetupProxySettingsDisabledAttribute() {
+  // Set the enabled state for the proxy settings button.
+  // We enable the button if proxy settings are not managed by a sysadmin.
+  FundamentalValue value(proxy_prefs_->IsManaged());
+  dom_ui_->CallJavascriptFunction(
+      L"options.AdvancedOptions.SetProxySettingsDisabledAttribute", value);
 }
 
 #if defined(OS_WIN)
