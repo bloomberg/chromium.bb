@@ -54,6 +54,19 @@ cr.define('options.language', function() {
     return this.languageCodeToNativeDisplayName_[languageCode];
   }
 
+  /**
+   * Returns true if the given language code is valid.
+   * @param {string} languageCode Language code (ex. "fr").
+   */
+  LanguageList.isValidLanguageCode = function(languageCode) {
+    // Having the display name for the language code means that the
+    // language code is valid.
+    if (LanguageList.getDisplayNameFromLanguageCode(languageCode)) {
+      return true;
+    }
+    return false;
+  }
+
   LanguageList.prototype = {
     __proto__: List.prototype,
 
@@ -100,6 +113,10 @@ cr.define('options.language', function() {
      * @param {string} languageCode language code (ex. "fr").
      */
     addLanguage: function(languageCode) {
+      // It shouldn't happen but ignore the language code if it's present.
+      if (this.dataModel.indexOf(languageCode) >= 0) {
+        return;
+      }
       this.dataModel.push(languageCode);
       // Select the last item, which is the language added.
       this.selectionModel.selectedIndex = this.dataModel.length - 1;
@@ -254,17 +271,20 @@ cr.define('options.language', function() {
 
     /**
      * Filters bad language codes in case bad language codes are
-     * stored in the preference.
+     * stored in the preference. Removes duplicates as well.
      * @param {Array} languageCodes List of language codes.
      * @private
      */
     filterBadLanguageCodes_: function(languageCodes) {
       var filteredLanguageCodes = [];
+      var seen = {};
       for (var i = 0; i < languageCodes.length; i++) {
-        // Check if the translation for the language code is
-        // present. Otherwise, skip it.
-        if (LanguageList.getDisplayNameFromLanguageCode(languageCodes[i])) {
+        // Check if the the language code is valid, and not
+        // duplicate. Otherwise, skip it.
+        if (LanguageList.isValidLanguageCode(languageCodes[i]) &&
+            !(languageCodes[i] in seen)) {
           filteredLanguageCodes.push(languageCodes[i]);
+          seen[languageCodes[i]] = true;
         }
       }
       return filteredLanguageCodes;

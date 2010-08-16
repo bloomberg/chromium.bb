@@ -506,7 +506,7 @@ cr.define('options', function() {
 
     /**
      * Filters bad preload engines in case bad preload engines are
-     * stored in the preference.
+     * stored in the preference. Removes duplicates as well.
      * @param {Array} preloadEngines List of preload engines.
      * @private
      */
@@ -518,11 +518,13 @@ cr.define('options', function() {
       }
 
       var filteredPreloadEngines = [];
+      var seen = {};
       for (var i = 0; i < preloadEngines.length; i++) {
         // Check if the preload engine is present in the
-        // dictionary. Otherwise, skip it.
-        if (preloadEngines[i] in dictionary) {
-            filteredPreloadEngines.push(preloadEngines[i]);
+        // dictionary, and not duplicate. Otherwise, skip it.
+        if (preloadEngines[i] in dictionary && !(preloadEngines[i] in seen)) {
+          filteredPreloadEngines.push(preloadEngines[i]);
+          seen[preloadEngines[i]] = true;
         }
       }
       return filteredPreloadEngines;
