@@ -32,8 +32,8 @@ class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
   }
   virtual WebString message() { return WebString::fromUTF8(msg); }
  private:
-  int host_id;
   std::string msg;
+  int host_id;
 };
 
 }
