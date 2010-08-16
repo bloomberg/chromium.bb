@@ -379,7 +379,19 @@ cr.define('options', function() {
      */
     handleAddLanguageListClick_ : function(e) {
       var languageOptionsList = $('language-options-list');
-      languageOptionsList.addLanguage(e.target.languageCode);
+      var languageCode = e.target.languageCode;
+      languageOptionsList.addLanguage(languageCode);
+      var inputMethodIds = this.languageCodeToInputMethodIdsMap_[languageCode];
+      // Enable the first input method for the language added.
+      if (inputMethodIds && inputMethodIds[0] &&
+          // Don't add the input method it's already present. This can
+          // happen if the same input method is shared among multiple
+          // languages (ex. English US keyboard is used for English US and
+          // Filipino).
+          this.preloadEngines_.indexOf(inputMethodIds[0]) == -1) {
+        this.preloadEngines_.push(inputMethodIds[0]);
+        this.savePreloadEnginesPref_();
+      }
       OptionsPage.clearOverlays();
     },
 
