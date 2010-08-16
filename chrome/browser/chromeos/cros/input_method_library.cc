@@ -36,9 +36,6 @@ bool FindAndUpdateProperty(const chromeos::ImeProperty& new_prop,
   return false;
 }
 
-// The default keyboard layout.
-const char kDefaultKeyboardLayout[] = "us";
-
 }  // namespace
 
 namespace chromeos {
@@ -684,8 +681,8 @@ class InputMethodLibraryStubImpl : public InputMethodLibrary {
     descriptions->push_back(InputMethodDescriptor(
         "xkb:gb:extd:eng", "United Kingdom - Extended - Winkeys", "gb(extd)",
         "eng"));
-  return descriptions;
-}
+    return descriptions;
+  }
 
   InputMethodDescriptor previous_input_method_;
   InputMethodDescriptor current_input_method_;

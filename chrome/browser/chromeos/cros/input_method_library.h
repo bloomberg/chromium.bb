@@ -77,6 +77,9 @@ class InputMethodLibrary {
   // the request and returns false.
   // You can specify |section| and |config_name| arguments in the same way
   // as GetImeConfig() above.
+  // Notice: This function might call the Observer::ActiveInputMethodsChanged()
+  // callback function immediately, before returning from the SetImeConfig
+  // function. See also http://crosbug.com/5217.
   virtual bool SetImeConfig(const char* section,
                             const char* config_name,
                             const ImeConfigValue& value) = 0;
