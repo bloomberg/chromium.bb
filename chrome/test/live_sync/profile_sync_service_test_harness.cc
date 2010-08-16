@@ -4,6 +4,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -285,14 +286,17 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit(bool is_auth_retry) {
     return false;
   }
 
-  // Choose datatypes to be synced and wait for notifications_enabled to be set
-  // to true.
-  syncable::ModelTypeSet set;
-  for (int i = syncable::FIRST_REAL_MODEL_TYPE;
-      i < syncable::MODEL_TYPE_COUNT; ++i) {
-    set.insert(syncable::ModelTypeFromInt(i));
+  // Choose datatypes to be synced. Note: This is unnecessary on Chrome OS.
+  if (!browser_defaults::kBootstrapSyncAuthentication) {
+    syncable::ModelTypeSet set;
+    for (int i = syncable::FIRST_REAL_MODEL_TYPE;
+        i < syncable::MODEL_TYPE_COUNT; ++i) {
+      set.insert(syncable::ModelTypeFromInt(i));
+    }
+    service_->OnUserChoseDatatypes(true, set);
   }
-  service_->OnUserChoseDatatypes(true, set);
+
+  // Wait for notifications_enabled to be set to true.
   EXPECT_EQ(wait_state_, WAITING_FOR_NOTIFICATIONS_ENABLED);
   EXPECT_TRUE(AwaitStatusChangeWithTimeout(30,
       "Waiting for notifications_enabled to be set to true.")) <<
