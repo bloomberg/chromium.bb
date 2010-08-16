@@ -8657,6 +8657,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="Warning invoked when the user tries to remove the last language">
         Please add another language before removing this one.
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_THIS_LANGUAGE_IS_CURRENTLY_IN_USE"
+               desc="Warning invoked when the user tries to remove the language used for displaying Chrome OS">
+        This language is currently in use for displaying <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_INSTRUCTIONS"
                desc="Explanatory message about how to add and order languages">
         Add languages and drag to order them based on your preference.

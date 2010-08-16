@@ -83,6 +83,10 @@ void LanguageOptionsHandler::GetLocalizedValues(
           l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME)));
   localized_strings->SetString("restart_required",
       l10n_util::GetStringUTF16(IDS_OPTIONS_RESTART_REQUIRED));
+  localized_strings->SetString("this_language_is_currently_in_use",
+      l10n_util::GetStringFUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_THIS_LANGUAGE_IS_CURRENTLY_IN_USE,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME)));
 
   // GetSupportedInputMethods() never return NULL.
   scoped_ptr<InputMethodDescriptors> descriptors(

@@ -390,13 +390,21 @@ cr.define('options', function() {
     handleRemoveButtonClick_: function(e) {
       var languageOptionsList = $('language-options-list');
       var languageCode = languageOptionsList.getSelectedLanguageCode();
-      // Disable input methods associated with |languageCode|.
+      // Don't allow removing the language if it's as UI language.
+      if (languageCode == templateData.currentUiLanguageCode) {
+        // TODO(satorux): Show the message in a nicer way. See above.
+        alert(localStrings.getString('this_language_is_currently_in_use'));
+        return;
+      }
+      // Don't allow removing the language if cerntain conditions are met.
+      // See removePreloadEnginesByLanguageCode_() for details.
       if (!this.removePreloadEnginesByLanguageCode_(languageCode)) {
         // TODO(satorux): Show the message in a nicer way once we get a mock
         // from UX. crosbug.com/5546.
         alert(localStrings.getString('please_add_another_language'));
         return;
       }
+      // Disable input methods associated with |languageCode|.
       languageOptionsList.removeSelectedLanguage();
     },
 
