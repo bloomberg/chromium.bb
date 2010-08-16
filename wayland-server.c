@@ -61,9 +61,11 @@ struct wl_display {
 
 struct wl_global {
 	struct wl_object *object;
-	wl_client_connect_func_t func;	
+	wl_client_connect_func_t func;
 	struct wl_list link;
 };
+
+WL_EXPORT struct wl_surface wl_grab_surface;
 
 WL_EXPORT void
 wl_client_post_event(struct wl_client *client, struct wl_object *sender,
@@ -360,6 +362,9 @@ wl_surface_post_event(struct wl_surface *surface,
 		      uint32_t event, ...)
 {
 	va_list ap;
+
+	if (surface == &wl_grab_surface)
+		return;
 
 	va_start(ap, event);
 	wl_connection_vmarshal(surface->client->connection,

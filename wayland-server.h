@@ -36,6 +36,12 @@ enum {
 	WL_EVENT_WRITEABLE = 0x02
 };
 
+/* FIXME: We really want in-process objects here, so that the
+ * compositor grabs can be implemented as passive grabs and the events
+ * be delivered to an in-process listener.  For now, we use this
+ * special case as the grabbing surface. */
+extern struct wl_surface wl_grab_surface;
+
 struct wl_event_loop;
 struct wl_event_source;
 typedef void (*wl_event_loop_fd_func_t)(int fd, uint32_t mask, void *data);
