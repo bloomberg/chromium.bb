@@ -239,6 +239,7 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kSyncThemes, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncTypedUrls, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncExtensions, enable_by_default);
+  pref_service->RegisterBooleanPref(prefs::kSyncApps, enable_by_default);
 
   pref_service->RegisterBooleanPref(prefs::kKeepEverythingSynced,
       enable_by_default);
@@ -406,6 +407,8 @@ const char* ProfileSyncService::GetPrefNameForDataType(
       return prefs::kSyncTypedUrls;
     case syncable::EXTENSIONS:
       return prefs::kSyncExtensions;
+    case syncable::APPS:
+      return prefs::kSyncApps;
     default:
       NOTREACHED();
       return NULL;

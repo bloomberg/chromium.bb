@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/extension_data_type_controller.h"
+#include "chrome/browser/sync/glue/app_data_type_controller.h"
 
 #include "base/histogram.h"
 #include "base/logging.h"
@@ -15,7 +15,7 @@
 
 namespace browser_sync {
 
-ExtensionDataTypeController::ExtensionDataTypeController(
+AppDataTypeController::AppDataTypeController(
     ProfileSyncFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
@@ -27,10 +27,10 @@ ExtensionDataTypeController::ExtensionDataTypeController(
   DCHECK(sync_service);
 }
 
-ExtensionDataTypeController::~ExtensionDataTypeController() {
+AppDataTypeController::~AppDataTypeController() {
 }
 
-void ExtensionDataTypeController::Start(StartCallback* start_callback) {
+void AppDataTypeController::Start(StartCallback* start_callback) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(start_callback);
   if (state_ != NOT_RUNNING) {
@@ -43,8 +43,8 @@ void ExtensionDataTypeController::Start(StartCallback* start_callback) {
 
   profile_->InitExtensions();
   ProfileSyncFactory::SyncComponents sync_components =
-      profile_sync_factory_->CreateExtensionSyncComponents(sync_service_,
-                                                           this);
+      profile_sync_factory_->CreateAppSyncComponents(sync_service_,
+                                                     this);
   model_associator_.reset(sync_components.model_associator);
   change_processor_.reset(sync_components.change_processor);
 
@@ -56,7 +56,7 @@ void ExtensionDataTypeController::Start(StartCallback* start_callback) {
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   bool merge_success = model_associator_->AssociateModels();
-  UMA_HISTOGRAM_TIMES("Sync.ExtensionAssociationTime",
+  UMA_HISTOGRAM_TIMES("Sync.AppAssociationTime",
                       base::TimeTicks::Now() - start_time);
   if (!merge_success) {
     StartFailed(ASSOCIATION_FAILED);
@@ -68,7 +68,7 @@ void ExtensionDataTypeController::Start(StartCallback* start_callback) {
   FinishStart(!sync_has_nodes ? OK_FIRST_RUN : OK);
 }
 
-void ExtensionDataTypeController::Stop() {
+void AppDataTypeController::Stop() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   if (change_processor_ != NULL)
@@ -84,25 +84,25 @@ void ExtensionDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-void ExtensionDataTypeController::OnUnrecoverableError(
+void AppDataTypeController::OnUnrecoverableError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  UMA_HISTOGRAM_COUNTS("Sync.ExtensionRunFailures", 1);
+  UMA_HISTOGRAM_COUNTS("Sync.AppRunFailures", 1);
   sync_service_->OnUnrecoverableError(from_here, message);
 }
 
-void ExtensionDataTypeController::FinishStart(StartResult result) {
+void AppDataTypeController::FinishStart(StartResult result) {
   start_callback_->Run(result);
   start_callback_.reset();
 }
 
-void ExtensionDataTypeController::StartFailed(StartResult result) {
+void AppDataTypeController::StartFailed(StartResult result) {
   model_associator_.reset();
   change_processor_.reset();
   start_callback_->Run(result);
   start_callback_.reset();
-  UMA_HISTOGRAM_ENUMERATION("Sync.ExtensionStartFailures",
+  UMA_HISTOGRAM_ENUMERATION("Sync.AppStartFailures",
                             result,
                             MAX_START_RESULT);
 }

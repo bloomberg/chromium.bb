@@ -6,6 +6,7 @@
 #include "base/logging.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/glue/app_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_change_processor.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/autofill_model_associator.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/sync/glue/extension_change_processor.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_model_associator.h"
+#include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/password_change_processor.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
 #include "chrome/browser/sync/glue/password_model_associator.h"
@@ -34,6 +36,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
 
+using browser_sync::AppDataTypeController;
 using browser_sync::AutofillChangeProcessor;
 using browser_sync::AutofillDataTypeController;
 using browser_sync::AutofillModelAssociator;
@@ -70,6 +73,13 @@ ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(Profile* profile,
 ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   ProfileSyncService* pss = new ProfileSyncService(
       this, profile_, browser_defaults::kBootstrapSyncAuthentication);
+
+  // App sync is disabled by default.  Register only if
+  // explicitly enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncApps)) {
+    pss->RegisterDataTypeController(
+        new AppDataTypeController(this, profile_, pss));
+  }
 
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
@@ -129,6 +139,21 @@ DataTypeManager* ProfileSyncFactoryImpl::CreateDataTypeManager(
 }
 
 ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryImpl::CreateAppSyncComponents(
+    ProfileSyncService* profile_sync_service,
+    UnrecoverableErrorHandler* error_handler) {
+  browser_sync::ExtensionSyncTraits traits = browser_sync::GetAppSyncTraits();
+  // For now we simply use extensions sync objects with the app sync
+  // traits.  If apps become more than simply extensions, we may have
+  // to write our own apps model associator and/or change processor.
+  ExtensionModelAssociator* model_associator =
+      new ExtensionModelAssociator(traits, profile_sync_service);
+  ExtensionChangeProcessor* change_processor =
+      new ExtensionChangeProcessor(traits, error_handler);
+  return SyncComponents(model_associator, change_processor);
+}
+
+ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
     ProfileSyncService* profile_sync_service,
     WebDatabase* web_database,
@@ -163,10 +188,12 @@ ProfileSyncFactory::SyncComponents
 ProfileSyncFactoryImpl::CreateExtensionSyncComponents(
     ProfileSyncService* profile_sync_service,
     UnrecoverableErrorHandler* error_handler) {
+  browser_sync::ExtensionSyncTraits traits =
+      browser_sync::GetExtensionSyncTraits();
   ExtensionModelAssociator* model_associator =
-      new ExtensionModelAssociator(profile_sync_service);
+      new ExtensionModelAssociator(traits, profile_sync_service);
   ExtensionChangeProcessor* change_processor =
-      new ExtensionChangeProcessor(error_handler);
+      new ExtensionChangeProcessor(traits, error_handler);
   return SyncComponents(model_associator, change_processor);
 }
 

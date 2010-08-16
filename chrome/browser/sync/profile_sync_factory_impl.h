@@ -24,6 +24,10 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
       browser_sync::SyncBackendHost* backend,
       const browser_sync::DataTypeController::TypeMap& controllers);
 
+  virtual SyncComponents CreateAppSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
+
   virtual SyncComponents CreateAutofillSyncComponents(
       ProfileSyncService* profile_sync_service,
       WebDatabase* web_database,

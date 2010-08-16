@@ -1033,15 +1033,17 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
           NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
       return;
     }
-    // TODO(akalin): When we do apps sync, we have to work with its
-    // traits, too.
     const browser_sync::ExtensionSyncTraits extension_sync_traits =
         browser_sync::GetExtensionSyncTraits();
+    const browser_sync::ExtensionSyncTraits app_sync_traits =
+        browser_sync::GetAppSyncTraits();
     // If an extension is a theme, we bypass the valid/syncable check
     // as themes are harmless.
     if (!extension->is_theme() &&
         !browser_sync::IsExtensionValidAndSyncable(
-            *extension, extension_sync_traits.allowed_extension_types)) {
+            *extension, extension_sync_traits.allowed_extension_types) &&
+        !browser_sync::IsExtensionValidAndSyncable(
+            *extension, app_sync_traits.allowed_extension_types)) {
       // We're an extension installed via sync that is unsyncable,
       // i.e. we may have been syncable previously.  We block these
       // installs.  We'll have to update the clause above if we decide

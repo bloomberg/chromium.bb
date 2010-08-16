@@ -58,6 +58,13 @@ class ProfileSyncFactory {
       const browser_sync::DataTypeController::TypeMap& controllers) = 0;
 
   // Instantiates both a model associator and change processor for the
+  // app data type.  The pointers in the return struct are
+  // owned by the caller.
+  virtual SyncComponents CreateAppSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
+
+  // Instantiates both a model associator and change processor for the
   // autofill data type.  The pointers in the return struct are owned
   // by the caller.
   virtual SyncComponents CreateAutofillSyncComponents(

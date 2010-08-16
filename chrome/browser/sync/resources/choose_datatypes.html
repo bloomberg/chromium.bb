@@ -173,6 +173,13 @@ html[os='mac'] input[type='submit'] {
     } else {
       document.getElementById("omniboxItem").className = "sync-item-hide";
     }
+    if (args.appsRegistered) {
+      document.getElementById("appsCheckbox").checked =
+          args.syncApps;
+      document.getElementById("appsItem").className = "sync-item-show";
+    } else {
+      document.getElementById("appsItem").className = "sync-item-hide";
+    }
   }
 
   function setErrorState(args) {
@@ -256,7 +263,8 @@ html[os='mac'] input[type='submit'] {
         "syncPasswords": syncAll || f.passwordsCheckbox.checked,
         "syncAutofill": syncAll || f.autofillCheckbox.checked,
         "syncExtensions": syncAll || f.extensionsCheckbox.checked,
-        "syncTypedUrls": syncAll || f.typedUrlsCheckbox.checked
+        "syncTypedUrls": syncAll || f.typedUrlsCheckbox.checked,
+        "syncApps": syncAll || f.appsCheckbox.checked
     });
     chrome.send("ChooseDataTypes", [result]);
   }
@@ -285,6 +293,12 @@ html[os='mac'] input[type='submit'] {
    <div id="chooseDataTypesBody">
    <label for="chooseDataTypesRadio" i18n-content="choosedatatypes" ></label>
    <div>
+     <!-- Apps -->
+     <div class="sync-item-show" id="appsItem">
+       <input id="appsCheckbox" name="dataTypeCheckbox" type="checkbox">
+       <label id="appsCheckboxLabel" name="dataTypeLabel" 
+              for="appsCheckbox" i18n-content="apps"></label>
+     </div>
      <!-- Autofill -->
      <div class="sync-item-show" id="autofillItem">
        <input id="autofillCheckbox" name="dataTypeCheckbox" type="checkbox">

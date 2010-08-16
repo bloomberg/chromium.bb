@@ -31,7 +31,8 @@ class ExtensionChangeProcessor : public ChangeProcessor,
                                  public NotificationObserver {
  public:
   // Does not take ownership of |error_handler|.
-  explicit ExtensionChangeProcessor(
+  ExtensionChangeProcessor(
+      const ExtensionSyncTraits& traits,
       UnrecoverableErrorHandler* error_handler);
   virtual ~ExtensionChangeProcessor();
 

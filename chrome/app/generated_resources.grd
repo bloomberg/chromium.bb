@@ -7135,8 +7135,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_DATATYPE_TYPED_URLS" desc="Typed URLs, one of the data types that we allow syncing.">
         Typed URLs
       </message>
-      <message name="IDS_SYNC_DATATYPE_APPLICATIONS" desc="Applications, one of the data types that we allow syncing.">
-        Applications
+      <message name="IDS_SYNC_DATATYPE_APPS" desc="Apps, one of the data types that we allow syncing.">
+        Apps
       </message>
 
 

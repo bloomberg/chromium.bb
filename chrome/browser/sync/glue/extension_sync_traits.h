@@ -66,7 +66,8 @@ struct ExtensionSyncTraits {
 // Gets traits for extensions sync.
 ExtensionSyncTraits GetExtensionSyncTraits();
 
-// TODO(akalin): Write GetAppSyncTraits(), too.
+// Gets traits for apps sync.
+ExtensionSyncTraits GetAppSyncTraits();
 
 }  // namespace browser_sync
 

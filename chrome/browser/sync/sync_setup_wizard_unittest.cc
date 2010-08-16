@@ -306,11 +306,11 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   data_type_choices += "\"syncBookmarks\":true,\"syncPreferences\":true,";
   data_type_choices += "\"syncThemes\":false,\"syncPasswords\":false,";
   data_type_choices += "\"syncAutofill\":false,\"syncExtensions\":false,";
-  data_type_choices += "\"syncTypedUrls\":true}";
+  data_type_choices += "\"syncTypedUrls\":true,\"syncApps\":true}";
   data_type_choices_value.Append(new StringValue(data_type_choices));
 
-  // Simulate the user choosing data types; bookmarks and prefs are on, the rest
-  // are off.
+  // Simulate the user choosing data types; bookmarks, prefs, typed
+  // URLS, and apps are on, the rest are off.
   test_window_->flow()->flow_handler_->HandleChooseDataTypes(
       &data_type_choices_value);
   EXPECT_TRUE(wizard_->IsVisible());
@@ -323,6 +323,7 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   EXPECT_EQ(service_->chosen_data_types_.count(syncable::AUTOFILL), 0U);
   EXPECT_EQ(service_->chosen_data_types_.count(syncable::EXTENSIONS), 0U);
   EXPECT_EQ(service_->chosen_data_types_.count(syncable::TYPED_URLS), 1U);
+  EXPECT_EQ(service_->chosen_data_types_.count(syncable::APPS), 1U);
 
   test_window_->CloseDialog();
 }

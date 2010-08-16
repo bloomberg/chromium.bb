@@ -2411,6 +2411,8 @@
         'browser/transport_security_persister.cc',
         'browser/transport_security_persister.h',
         'browser/sync/engine/syncapi.h',
+        'browser/sync/glue/app_data_type_controller.cc',
+        'browser/sync/glue/app_data_type_controller.h',
         'browser/sync/glue/autofill_change_processor.h',
         'browser/sync/glue/autofill_change_processor.cc',
         'browser/sync/glue/autofill_data_type_controller.cc',

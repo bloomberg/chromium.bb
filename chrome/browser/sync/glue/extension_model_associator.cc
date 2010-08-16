@@ -14,7 +14,8 @@
 namespace browser_sync {
 
 ExtensionModelAssociator::ExtensionModelAssociator(
-    ProfileSyncService* sync_service) : sync_service_(sync_service) {
+    const ExtensionSyncTraits& traits, ProfileSyncService* sync_service)
+    : traits_(traits), sync_service_(sync_service) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DCHECK(sync_service_);
 }
@@ -25,13 +26,11 @@ ExtensionModelAssociator::~ExtensionModelAssociator() {
 
 bool ExtensionModelAssociator::AssociateModels() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  const ExtensionSyncTraits traits = GetExtensionSyncTraits();
-
   ExtensionDataMap extension_data_map;
-  if (!SlurpExtensionData(traits, sync_service_, &extension_data_map)) {
+  if (!SlurpExtensionData(traits_, sync_service_, &extension_data_map)) {
     return false;
   }
-  if (!FlushExtensionData(traits, extension_data_map, sync_service_)) {
+  if (!FlushExtensionData(traits_, extension_data_map, sync_service_)) {
     return false;
   }
 
@@ -46,8 +45,7 @@ bool ExtensionModelAssociator::DisassociateModels() {
 
 bool ExtensionModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  const ExtensionSyncTraits traits = GetExtensionSyncTraits();
-  return RootNodeHasChildren(traits.root_node_tag, sync_service_, has_nodes);
+  return RootNodeHasChildren(traits_.root_node_tag, sync_service_, has_nodes);
 }
 
 }  // namespace browser_sync

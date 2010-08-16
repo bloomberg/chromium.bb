@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "chrome/browser/sync/glue/extension_sync_traits.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
@@ -19,7 +20,8 @@ namespace browser_sync {
 class ExtensionModelAssociator : public AssociatorInterface {
  public:
   // Does not take ownership of sync_service.
-  explicit ExtensionModelAssociator(ProfileSyncService* sync_service);
+  ExtensionModelAssociator(const ExtensionSyncTraits& traits,
+                           ProfileSyncService* sync_service);
   virtual ~ExtensionModelAssociator();
 
   // Used by profile_sync_test_util.h.
@@ -35,6 +37,7 @@ class ExtensionModelAssociator : public AssociatorInterface {
   }
 
  private:
+  const ExtensionSyncTraits traits_;
   // Weak pointer.  Always non-NULL.
   ProfileSyncService* sync_service_;
 
