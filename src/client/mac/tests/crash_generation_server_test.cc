@@ -60,6 +60,8 @@ public:
   char mach_port_name[128];
   // Filename of the last dump that was generated
   string last_dump_name;
+  // PID of the child process
+  pid_t child_pid;
   // A temp dir
   AutoTempDir temp_dir;
   // Counter just to ensure that we don't hit the same port again
@@ -69,6 +71,7 @@ public:
     sprintf(mach_port_name,
 	    "com.google.breakpad.ServerTest.%d.%d", getpid(),
 	    CrashGenerationServerTest::i++);
+    child_pid = (pid_t)-1;
   }
 };
 int CrashGenerationServerTest::i = 0;
@@ -127,6 +130,7 @@ void dumpCallback(void *context, const ClientInfo &client_info,
         reinterpret_cast<CrashGenerationServerTest*>(context);
     if (!file_path.empty())
       self->last_dump_name = file_path;
+    self->child_pid = client_info.pid();
   }
 }
 
@@ -170,7 +174,9 @@ TEST_F(CrashGenerationServerTest, testRequestDump) {
   ASSERT_FALSE(last_dump_name.empty());
   struct stat st;
   EXPECT_EQ(0, stat(last_dump_name.c_str(), &st));
-  EXPECT_LT(0, st.st_size);  
+  EXPECT_LT(0, st.st_size);
+  // check client's PID
+  ASSERT_EQ(pid, child_pid);
 }
 
 static void Crasher() {

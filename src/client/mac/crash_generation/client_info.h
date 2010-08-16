@@ -32,10 +32,14 @@
 
 namespace google_breakpad {
 
-struct ClientInfo {
-  int exception_type;
-  int exception_code;
-  int exception_subcode;
+class ClientInfo {
+ public:
+  explicit ClientInfo(pid_t pid) : pid_(pid) {}
+
+  pid_t pid() const { return pid_; }
+
+ private:
+  pid_t pid_;
 };
 
 }  // namespace google_breakpad

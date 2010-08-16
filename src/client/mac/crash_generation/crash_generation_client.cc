@@ -29,7 +29,6 @@
 
 #include "client/mac/crash_generation/crash_generation_client.h"
 
-#include "client/mac/crash_generation/client_info.h"
 #include "client/mac/crash_generation/crash_generation_server.h"
 #include "common/mac/MachIPC.h"
 
@@ -50,7 +49,7 @@ bool CrashGenerationClient::RequestDumpForException(
   message.AddDescriptor(mach_thread_self());          // handler thread
   message.AddDescriptor(acknowledge_port.GetPort());  // message receive port
 
-  ClientInfo info;
+  ExceptionInfo info;
   info.exception_type = exception_type;
   info.exception_code = exception_code;
   info.exception_subcode = exception_subcode;

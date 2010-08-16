@@ -45,6 +45,13 @@ enum {
   kQuitMessage            = 3
 };
 
+// Exception details sent by the client when requesting a dump.
+struct ExceptionInfo {
+  int exception_type;
+  int exception_code;
+  int exception_subcode;
+};
+
 class CrashGenerationServer {
  public:
   // WARNING: callbacks may be invoked on a different thread

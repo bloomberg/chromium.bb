@@ -98,12 +98,15 @@ bool CrashGenerationServer::WaitForOneMessage() {
   if (result == KERN_SUCCESS) {
     switch (message.GetMessageID()) {
       case kDumpRequestMessage: {
-        ClientInfo &info = (ClientInfo &)*message.GetData();
+        ExceptionInfo &info = (ExceptionInfo &)*message.GetData();
       
         mach_port_t remote_task = message.GetTranslatedPort(0);
         mach_port_t crashing_thread = message.GetTranslatedPort(1);
         mach_port_t handler_thread = message.GetTranslatedPort(2);
         mach_port_t ack_port = message.GetTranslatedPort(3);
+        pid_t remote_pid = -1;
+        pid_for_task(remote_task, &remote_pid);
+        ClientInfo client(remote_pid);
 
         bool result;
         std::string dump_path;
@@ -125,12 +128,12 @@ bool CrashGenerationServer::WaitForOneMessage() {
         }
 
         if (result && dump_callback_) {
-          dump_callback_(dump_context_, info, dump_path);
+          dump_callback_(dump_context_, client, dump_path);
         }
 
         // TODO(ted): support a way for the client to send additional data,
-	// perhaps with a callback so users of the server can read the data
-	// themselves?
+        // perhaps with a callback so users of the server can read the data
+        // themselves?
       
         if (ack_port != MACH_PORT_DEAD && ack_port != MACH_PORT_NULL) {
           MachPortSender sender(ack_port);
@@ -141,7 +144,7 @@ bool CrashGenerationServer::WaitForOneMessage() {
         }
 
         if (exit_callback_) {
-          exit_callback_(exit_context_, info);
+          exit_callback_(exit_context_, client);
         }
         break;
       }
@@ -149,7 +152,6 @@ bool CrashGenerationServer::WaitForOneMessage() {
         return false;
     }
   } else {  // result != KERN_SUCCESS
-    mach_error("WaitForMessage", result);
     return false;
   }
   return true;
