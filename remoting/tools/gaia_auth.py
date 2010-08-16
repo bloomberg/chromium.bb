@@ -6,10 +6,10 @@ import getpass
 import os
 import urllib
 
-default_gaia_url = "https://www.google.com:443/accounts/ClientLogin"
+DEFAULT_GAIA_URL = "https://www.google.com:443/accounts/ClientLogin"
 
 class GaiaAuthenticator:
-  def __init__(self, service, url = default_gaia_url):
+  def __init__(self, service, url = DEFAULT_GAIA_URL):
     self._service = service
     self._url = url
 

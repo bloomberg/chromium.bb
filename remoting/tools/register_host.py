@@ -32,8 +32,8 @@ print "Email:",
 email = raw_input()
 password = getpass.getpass("Password: ")
 
-xapi_auth = gaia_auth.GaiaAuthenticator('chromoting')
-xapi_token = xapi_auth.authenticate(email, password)
+chromoting_auth = gaia_auth.GaiaAuthenticator('chromoting')
+auth_token = chromoting_auth.authenticate(email, password)
 
 host_id = random_uuid()
 print "HostId:", host_id
@@ -50,7 +50,7 @@ params = ('{"data":{' + \
           '"publicKey": "%(publicKey)s"}}') % \
           {'hostId': host_id, 'hostName': host_name,
            'publicKey': public_key}
-headers = {"Authorization": "GoogleLogin auth=" + xapi_token,
+headers = {"Authorization": "GoogleLogin auth=" + auth_token,
            "Content-Type": "application/json" }
 request = urllib2.Request(url, params, headers)
 
