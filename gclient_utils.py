@@ -471,8 +471,10 @@ class ExecutionQueue(object):
       self.ready_cond.release()
     assert not self.running, 'Now guaranteed to be single-threaded'
     if self.exceptions:
-      # TODO(maruel): Get back the original stack location.
-      raise self.exceptions.pop(0)
+      # To get back the stack location correctly, the raise a, b, c form must be
+      # used, passing a tuple as the first argument doesn't work.
+      e = self.exceptions.pop(0)
+      raise e[0], e[1], e[2]
     if self.progress:
       self.progress.end()
 
@@ -491,9 +493,9 @@ class ExecutionQueue(object):
       exception = None
       try:
         self.item.run(*self.args, **self.kwargs)
-      except Exception, e:
-        # TODO(maruel): Catch exception location.
-        exception = e
+      except Exception:
+        # Catch exception location.
+        exception = sys.exc_info()
 
       # This assumes the following code won't throw an exception. Bad.
       self.parent.ready_cond.acquire()
