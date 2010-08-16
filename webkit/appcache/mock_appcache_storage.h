@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
@@ -159,17 +160,21 @@ class MockAppCacheStorage : public AppCacheStorage {
   GURL simulated_found_manifest_url_;
   bool simulated_found_network_namespace_;
 
-  FRIEND_TEST(MockAppCacheStorageTest, BasicFindMainResponse);
-  FRIEND_TEST(MockAppCacheStorageTest, BasicFindMainFallbackResponse);
-  FRIEND_TEST(MockAppCacheStorageTest, CreateGroup);
-  FRIEND_TEST(MockAppCacheStorageTest, FindMainResponseExclusions);
-  FRIEND_TEST(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates);
-  FRIEND_TEST(MockAppCacheStorageTest, LoadCache_FarHit);
-  FRIEND_TEST(MockAppCacheStorageTest, LoadGroupAndCache_FarHit);
-  FRIEND_TEST(MockAppCacheStorageTest, MakeGroupObsolete);
-  FRIEND_TEST(MockAppCacheStorageTest, StoreNewGroup);
-  FRIEND_TEST(MockAppCacheStorageTest, StoreExistingGroup);
-  FRIEND_TEST(MockAppCacheStorageTest, StoreExistingGroupExistingCache);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, BasicFindMainResponse);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
+                           BasicFindMainFallbackResponse);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, CreateGroup);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, FindMainResponseExclusions);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
+                           FindMainResponseWithMultipleCandidates);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, LoadCache_FarHit);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, LoadGroupAndCache_FarHit);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, MakeGroupObsolete);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, StoreNewGroup);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest, StoreExistingGroup);
+  FRIEND_TEST_ALL_PREFIXES(MockAppCacheStorageTest,
+                           StoreExistingGroupExistingCache);
+
   DISALLOW_COPY_AND_ASSIGN(MockAppCacheStorage);
 };
 

@@ -17,8 +17,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 struct IDirect3DDeviceManager9;
 struct IMFTransform;
@@ -80,10 +80,11 @@ class MftH264Decoder : public base::RefCountedThreadSafe<MftH264Decoder> {
 
  private:
   friend class MftH264DecoderTest;
-  FRIEND_TEST(MftH264DecoderTest, SendDrainMessageBeforeInitDeathTest);
-  FRIEND_TEST(MftH264DecoderTest, SendDrainMessageAtInit);
-  FRIEND_TEST(MftH264DecoderTest, DrainOnEndOfInputStream);
-  FRIEND_TEST(MftH264DecoderTest, NoOutputOnGarbageInput);
+  FRIEND_TEST_ALL_PREFIXES(MftH264DecoderTest,
+                           SendDrainMessageBeforeInitDeathTest);
+  FRIEND_TEST_ALL_PREFIXES(MftH264DecoderTest, SendDrainMessageAtInit);
+  FRIEND_TEST_ALL_PREFIXES(MftH264DecoderTest, DrainOnEndOfInputStream);
+  FRIEND_TEST_ALL_PREFIXES(MftH264DecoderTest, NoOutputOnGarbageInput);
 
   bool InitComMfLibraries();
   bool InitDecoder(IDirect3DDeviceManager9* dev_manager,

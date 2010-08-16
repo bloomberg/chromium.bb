@@ -12,9 +12,9 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/xmpptask.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace notifier {
 // TODO(akalin): Remove NOTIFICATION_LEGACY and remove/refactor relevant code
@@ -41,7 +41,7 @@ class SubscribeTask : public buzz::XmppTask {
 
   std::vector<std::string> subscribed_services_list_;
 
-  FRIEND_TEST(SubscribeTaskTest, MakeSubscriptionMessage);
+  FRIEND_TEST_ALL_PREFIXES(SubscribeTaskTest, MakeSubscriptionMessage);
 
   DISALLOW_COPY_AND_ASSIGN(SubscribeTask);
 };

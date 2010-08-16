@@ -9,10 +9,10 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "jingle/notifier/listener/notification_defines.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/xmpptask.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace notifier {
 
@@ -37,7 +37,7 @@ class SendUpdateTask : public buzz::XmppTask {
 
   OutgoingNotificationData notification_data_;
 
-  FRIEND_TEST(SendUpdateTaskTest, MakeUpdateMessage);
+  FRIEND_TEST_ALL_PREFIXES(SendUpdateTaskTest, MakeUpdateMessage);
 
   DISALLOW_COPY_AND_ASSIGN(SendUpdateTask);
 };

@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
@@ -17,7 +18,6 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "net/base/completion_callback.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/database/database_connections.h"
 
 namespace sql {
@@ -272,7 +272,7 @@ class DatabaseTracker
   OriginDirectoriesMap incognito_origin_directories_;
   int incognito_origin_directories_generator_;
 
-  FRIEND_TEST(DatabaseTracker, TestHelper);
+  FRIEND_TEST_ALL_PREFIXES(DatabaseTracker, TestHelper);
 };
 
 }  // namespace webkit_database

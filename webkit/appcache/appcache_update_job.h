@@ -11,12 +11,12 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/url_request/url_request.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -288,7 +288,8 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   scoped_refptr<net::CancelableCompletionCallback<AppCacheUpdateJob> >
       policy_callback_;
 
-  FRIEND_TEST(AppCacheGroupTest, QueueUpdate);
+  FRIEND_TEST_ALL_PREFIXES(AppCacheGroupTest, QueueUpdate);
+
   DISALLOW_COPY_AND_ASSIGN(AppCacheUpdateJob);
 };
 

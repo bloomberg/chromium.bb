@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_MEDIA_MEDIA_RESOURCE_LOADER_BRIDGE_FACTORY_H_
 #define WEBKIT_GLUE_MEDIA_MEDIA_RESOURCE_LOADER_BRIDGE_FACTORY_H_
 
-#include "testing/gtest/include/gtest/gtest_prod.h"
+#include "base/gtest_prod_util.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
 namespace webkit_glue {
@@ -44,7 +44,8 @@ class MediaResourceLoaderBridgeFactory {
   }
 
  private:
-  FRIEND_TEST(MediaResourceLoaderBridgeFactoryTest, GenerateHeaders);
+  FRIEND_TEST_ALL_PREFIXES(MediaResourceLoaderBridgeFactoryTest,
+                           GenerateHeaders);
 
   // Returns a range request header using parameters |first_byte_position| and
   // |last_byte_position|.
