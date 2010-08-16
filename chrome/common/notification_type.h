@@ -1087,6 +1087,11 @@ class NotificationType {
     // Sent when an attempt to acquire the public key of the owner of a chromium
     // os device has failed.
     OWNER_KEY_FETCH_ATTEMPT_FAILED,
+
+    // This is sent to a ChromeOS settings observer when a system setting is
+    // changed. The source is the CrosSettings and the details a std::string of
+    // the changed setting.
+    SYSTEM_SETTING_CHANGED,
 #endif
 
     // Sent before the repost form warning is brought up.

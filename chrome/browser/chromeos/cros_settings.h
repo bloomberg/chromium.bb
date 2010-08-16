@@ -8,9 +8,13 @@
 
 #include <string>
 #include <vector>
-#include "base/singleton.h"
 
+#include "base/hash_tables.h"
+#include "base/non_thread_safe.h"
+#include "base/observer_list.h"
+#include "base/singleton.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/common/notification_observer.h"
 
 class Value;
 
@@ -19,7 +23,7 @@ namespace chromeos {
 class CrosSettingsProvider;
 
 // A class manages per-device/global settings.
-class CrosSettings {
+class CrosSettings : public NonThreadSafe {
  public:
   // Class factory.
   static CrosSettings* Get();
@@ -30,6 +34,9 @@ class CrosSettings {
   // Sets |in_value| to given |path| in cros settings.
   // Note that this takes ownership of |in_value|.
   void Set(const std::string& path, Value* in_value);
+
+  // Fires system setting change notification.
+  void FireObservers(const char* path);
 
   // Gets settings value of given |path| to |out_value|.
   // Note that |out_value| is still owned by this class.
@@ -50,17 +57,31 @@ class CrosSettings {
   bool GetReal(const std::string& path, double* out_value) const;
   bool GetString(const std::string& path, std::string* out_value) const;
 
- private:
   // adding/removing of providers
-  bool AddProvider(CrosSettingsProvider* provider);
-  bool RemoveProvider(CrosSettingsProvider* provider);
+  bool AddSettingsProvider(CrosSettingsProvider* provider);
+  bool RemoveSettingsProvider(CrosSettingsProvider* provider);
 
+  // If the pref at the given path changes, we call the observer's Observe
+  // method with NOTIFY_PREF_CHANGED.
+  void AddSettingsObserver(const char* path, NotificationObserver* obs);
+  void RemoveSettingsObserver(const char* path, NotificationObserver* obs);
+
+ private:
+  // List of ChromeOS system settings providers.
   std::vector<CrosSettingsProvider*> providers_;
+
+  // A map from settings names to a list of observers. Observers get fired in
+  // the order they are added.
+  typedef ObserverList<NotificationObserver> NotificationObserverList;
+  typedef base::hash_map<std::string, NotificationObserverList*>
+      SettingsObserverMap;
+  SettingsObserverMap settings_observers_;
 
   CrosSettings();
   ~CrosSettings();
   CrosSettingsProvider* GetProvider(const std::string& path) const;
   friend struct DefaultSingletonTraits<CrosSettings>;
+
   DISALLOW_COPY_AND_ASSIGN(CrosSettings);
 };
 

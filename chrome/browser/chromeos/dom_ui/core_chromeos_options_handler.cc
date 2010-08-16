@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/common/notification_service.h"
 
 namespace chromeos {
 
@@ -24,6 +25,7 @@ void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
     return ::CoreOptionsHandler::ObservePref(pref_name);
 
   // TODO(xiyuan): Change this when CrosSettings supports observers.
+  CrosSettings::Get()->AddSettingsObserver(pref_name.c_str(), this);
 }
 
 void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
@@ -55,6 +57,40 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
       break;
     }
   }
+}
+
+void CoreChromeOSOptionsHandler::Observe(NotificationType type,
+                                         const NotificationSource& source,
+                                         const NotificationDetails& details) {
+  if (type == NotificationType::SYSTEM_SETTING_CHANGED) {
+    NotifySettingsChanged(Details<std::string>(details).ptr());
+    return;
+  }
+  ::CoreOptionsHandler::Observe(type, source, details);
+}
+
+void CoreChromeOSOptionsHandler::NotifySettingsChanged(
+    const std::string* setting_name) {
+  DCHECK(dom_ui_);
+  DCHECK(CrosSettings::Get()->IsCrosSettings(*setting_name));
+  Value* value = NULL;
+  if (!CrosSettings::Get()->Get(*setting_name, &value)) {
+    NOTREACHED();
+    if (value)
+      delete value;
+    return;
+  }
+  for (PreferenceCallbackMap::const_iterator iter =
+      pref_callback_map_.find(*setting_name);
+      iter != pref_callback_map_.end(); ++iter) {
+    const std::wstring& callback_function = iter->second;
+    ListValue result_value;
+    result_value.Append(Value::CreateStringValue(setting_name->c_str()));
+    result_value.Append(value->DeepCopy());
+    dom_ui_->CallJavascriptFunction(callback_function, result_value);
+  }
+  if (value)
+    delete value;
 }
 
 }  // namespace chromeos

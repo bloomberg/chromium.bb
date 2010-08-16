@@ -43,8 +43,9 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
                        Value::ValueType pref_type,
                        const std::string& value_string);
 
- private:
   typedef std::multimap<std::string, std::wstring> PreferenceCallbackMap;
+  PreferenceCallbackMap pref_callback_map_;
+ private:
   // Callback for the "coreOptionsInitialize" message.  This message will
   // trigger the Initialize() method of all other handlers so that final
   // setup can be performed before the page is shown.
@@ -72,7 +73,6 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
 
   void NotifyPrefChanged(const std::string* pref_name);
 
-  PreferenceCallbackMap pref_callback_map_;
   DISALLOW_COPY_AND_ASSIGN(CoreOptionsHandler);
 };
 

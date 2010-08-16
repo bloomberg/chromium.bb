@@ -43,7 +43,7 @@ bool UserCrosSettingsProvider::Get(const std::string& path,
 }
 
 bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) {
-  return ::StartsWithASCII(path, "cros.accounts", true);
+  return ::StartsWithASCII(path, "cros.accounts.", true);
 }
 
 }  // namespace chromeos

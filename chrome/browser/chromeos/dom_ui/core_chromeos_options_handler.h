@@ -15,13 +15,21 @@ class CoreChromeOSOptionsHandler : public ::CoreOptionsHandler {
  public:
 
  protected:
-  // ::CoreOptionsHandler Implementation
+  // ::CoreOptionsHandler overrides
   virtual Value* FetchPref(const std::string& pref_name);
   virtual void ObservePref(const std::string& pref_name);
   virtual void SetPref(const std::string& pref_name,
                        Value::ValueType pref_type,
                        const std::string& value_string);
 
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  // Notifies registered JS callbacks on ChromeOS setting change.
+  void NotifySettingsChanged(const std::string* setting_name);
 };
 
 }  // namespace chromeos

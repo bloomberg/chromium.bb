@@ -14,4 +14,5 @@ const char kAccountsPrefShowUserNamesOnSignIn[]
     = "cros.accounts.showUserNamesOnSignIn";
 const char kAccountsPrefUsers[]      = "cros.accounts.users";
 
+const char kSystemTimezone[]         = "cros.system.timezone";
 }  // namespace chromeos

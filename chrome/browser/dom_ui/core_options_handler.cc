@@ -127,7 +127,6 @@ Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
 void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
   DCHECK(dom_ui_);
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
-
   pref_service->AddPrefObserver(pref_name.c_str(), this);
 }
 
@@ -288,3 +287,4 @@ void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
     }
   }
 }
+

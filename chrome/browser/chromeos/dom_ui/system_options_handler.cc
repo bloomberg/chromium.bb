@@ -9,11 +9,10 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
-#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/dom_ui/system_settings_provider.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/common/notification_service.h"
 #include "grit/browser_resources.h"
@@ -22,49 +21,12 @@
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 
-static const char* kTimeZonesUtf8[] = {
-    "Pacific/Samoa",
-    "US/Hawaii",
-    "US/Alaska",
-    "US/Pacific",
-    "US/Mountain",
-    "US/Central",
-    "US/Eastern",
-    "America/Santiago",
-    "America/Sao_Paulo",
-    "Atlantic/South_Georgia",
-    "Atlantic/Cape_Verde",
-    "Europe/London",
-    "Europe/Rome",
-    "Europe/Helsinki",
-    "Europe/Moscow",
-    "Asia/Dubai",
-    "Asia/Karachi",
-    "Asia/Dhaka",
-    "Asia/Bangkok",
-    "Asia/Hong_Kong",
-    "Asia/Tokyo",
-    "Australia/Sydney",
-    "Asia/Magadan",
-    "Pacific/Auckland" };
-
-SystemOptionsHandler::SystemOptionsHandler() {
-  // TODO(chocobo): For now, add all the GMT timezones.
-  // We may eventually want to use icu::TimeZone::createEnumeration()
-  // to list all the timezones and pick the ones we want to show.
-  // NOTE: This currently does not handle daylight savings properly
-  // b/c this is just a manually selected list of timezones that
-  // happen to span the GMT-11 to GMT+12 Today. When daylight savings
-  // kick in, this list might have more than one timezone in the same
-  // GMT bucket.
-  for (size_t i = 0; i < arraysize(kTimeZonesUtf8); i++) {
-    timezones_.push_back(icu::TimeZone::createTimeZone(
-        icu::UnicodeString::fromUTF8(kTimeZonesUtf8[i])));
-  }
+SystemOptionsHandler::SystemOptionsHandler()
+    : chromeos::CrosOptionsPageUIHandler(
+        new chromeos::SystemSettingsProvider()) {
 }
 
 SystemOptionsHandler::~SystemOptionsHandler() {
-  STLDeleteElements(&timezones_);
 }
 
 void SystemOptionsHandler::GetLocalizedValues(
@@ -135,43 +97,8 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION));
 
-  localized_strings->Set("timezoneList", GetTimezoneList());
+  localized_strings->Set(L"timezoneList",
+      reinterpret_cast<chromeos::SystemSettingsProvider*>(
+          settings_provider_.get())->GetTimezoneList());
 }
 
-ListValue* SystemOptionsHandler::GetTimezoneList() {
-  ListValue* timezoneList = new ListValue();
-  for (std::vector<icu::TimeZone*>::iterator iter = timezones_.begin();
-       iter != timezones_.end(); ++iter) {
-    const icu::TimeZone* timezone = *iter;
-    ListValue* option = new ListValue();
-    option->Append(Value::CreateStringValue(GetTimezoneID(timezone)));
-    option->Append(Value::CreateStringValue(GetTimezoneName(timezone)));
-    timezoneList->Append(option);
-  }
-  return timezoneList;
-}
-
-string16 SystemOptionsHandler::GetTimezoneName(const icu::TimeZone* timezone) {
-  DCHECK(timezone);
-  icu::UnicodeString name;
-  timezone->getDisplayName(name);
-  string16 output(name.getBuffer(), name.length());
-  int hour_offset = timezone->getRawOffset() / 3600000;
-  // TODO(viettrungluu): Avoid wide string (need string16 StringPrintf()). Also,
-  // this formatting doesn't look properly internationalized (e.g., for RTL).
-  const wchar_t* format;
-  if (hour_offset == 0)
-    format = L"(GMT) ";
-  else
-    format = L"(GMT%+d) ";
-
-  return WideToUTF16Hack(StringPrintf(format, hour_offset)) + output;
-}
-
-string16 SystemOptionsHandler::GetTimezoneID(const icu::TimeZone* timezone) {
-  DCHECK(timezone);
-  icu::UnicodeString id;
-  timezone->getID(id);
-  string16 output(id.getBuffer(), id.length());
-  return output;
-}

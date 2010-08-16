@@ -8,11 +8,13 @@
 #include "base/json/json_reader.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros_settings_provider_user.h"
 #include "grit/generated_resources.h"
 
 namespace chromeos {
 
-AccountsOptionsHandler::AccountsOptionsHandler() {
+AccountsOptionsHandler::AccountsOptionsHandler()
+    : CrosOptionsPageUIHandler(new UserCrosSettingsProvider()) {
 }
 
 AccountsOptionsHandler::~AccountsOptionsHandler() {
