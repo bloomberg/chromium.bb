@@ -48,12 +48,8 @@ class FindBarHost : public DropdownBarHost,
       const views::Textfield::Keystroke& key_stroke);
 
   // FindBar implementation:
-  virtual FindBarController* GetFindBarController() const {
-    return find_bar_controller_;
-  }
-  virtual void SetFindBarController(FindBarController* find_bar_controller) {
-    find_bar_controller_ = find_bar_controller;
-  }
+  virtual FindBarController* GetFindBarController() const;
+  virtual void SetFindBarController(FindBarController* find_bar_controller);
   virtual void Show(bool animate);
   virtual void Hide(bool animate);
   virtual void SetFocusAndSelection();
