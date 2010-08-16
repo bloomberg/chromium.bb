@@ -135,6 +135,9 @@
 #undef PLAT_ppc32_linux
 #undef PLAT_ppc64_linux
 #undef PLAT_arm_linux
+#undef PLAT_x86_native_client
+#undef PLAT_amd64_native_client
+#undef PLAT_arm_native_client
 
 #if defined(_AIX) && defined(__64BIT__)
 #  define PLAT_ppc64_aix5 1
@@ -154,6 +157,12 @@
 #  define PLAT_ppc64_linux 1
 #elif defined(__linux__) && defined(__arm__)
 #  define PLAT_arm_linux 1
+#elif defined(__native_client__) && defined(__i386__)
+#  define PLAT_x86_native_client 1
+#elif defined(__native_client__) && defined(__x86_64__)
+#  define PLAT_amd64_native_client 1
+#elif defined(__native_client__) && defined(__arm__)
+#  define PLAT_arm_native_client 1
 #else
 /* If we're not compiling for our target platform, don't generate
    any inline asms.  */
@@ -221,7 +230,8 @@
 
 /* ------------------------- x86-{linux,darwin} ---------------- */
 
-#if defined(PLAT_x86_linux)  ||  defined(PLAT_x86_darwin)
+#if defined(PLAT_x86_linux)  ||  defined(PLAT_x86_darwin)  || \
+  defined(PLAT_x86_native_client)
 
 typedef
    struct { 
@@ -271,11 +281,15 @@ typedef
                      __SPECIAL_INSTRUCTION_PREAMBLE               \
                      /* call-noredir *%EAX */                     \
                      "xchgl %%edx,%%edx\n\t"
-#endif /* PLAT_x86_linux || PLAT_x86_darwin */
+#endif /* PLAT_x86_linux || PLAT_x86_darwin || PLAT_x86_native_client */
 
 /* ------------------------ amd64-{linux,darwin} --------------- */
 
-#if defined(PLAT_amd64_linux)  ||  defined(PLAT_amd64_darwin)
+/* TODO(eugenis): Split this into separate code paths for linux/darwin and
+   native client when native client stops being linux. Then merge
+   nacl_valgrind.h and valgrind.h.*/
+#if defined(PLAT_amd64_linux)  ||  defined(PLAT_amd64_darwin)  || \
+  defined(PLAT_amd64_native_client)
 
 #undef VALGRIND_SANDBOX_PTR
 /* return r15+lower_32_bits(arg) */
@@ -351,7 +365,7 @@ typedef
                      __SPECIAL_INSTRUCTION_PREAMBLE    /* 16 + 5 */    \
                      /* call-noredir *%RAX */                     \
                      "xchgq %%rdx,%%rdx\n\t"           /* 3 */
-#endif /* PLAT_amd64_linux || PLAT_amd64_darwin */
+#endif /* PLAT_amd64_linux || PLAT_amd64_darwin || PLAT_amd64_native_client */
 
 /* ------------------------ ppc32-linux ------------------------ */
 
@@ -481,7 +495,7 @@ typedef
 
 /* ------------------------- arm-linux ------------------------- */
 
-#if defined(PLAT_arm_linux)
+#if defined(PLAT_arm_linux) || defined(PLAT_arm_native_client)
 
 typedef
    struct { 
@@ -536,7 +550,7 @@ typedef
                      /* branch-and-link-to-noredir *%R4 */        \
                      "orr r12, r12, r12\n\t"
 
-#endif /* PLAT_arm_linux */
+#endif /* PLAT_arm_linux || PLAT_arm_native_client */
 
 /* ------------------------ ppc32-aix5 ------------------------- */
 
@@ -766,7 +780,8 @@ typedef
 
 /* ------------------------- x86-{linux,darwin} ---------------- */
 
-#if defined(PLAT_x86_linux)  ||  defined(PLAT_x86_darwin)
+#if defined(PLAT_x86_linux)  ||  defined(PLAT_x86_darwin)  || \
+  defined(PLAT_x86_native_client)
 
 /* These regs are trashed by the hidden call.  No need to mention eax
    as gcc can already see that, plus causes gcc to bomb. */
@@ -1159,11 +1174,12 @@ typedef
       lval = (__typeof__(lval)) _res;                             \
    } while (0)
 
-#endif /* PLAT_x86_linux || PLAT_x86_darwin */
+#endif /* PLAT_x86_linux || PLAT_x86_darwin || PLAT_x86_native_client */
 
 /* ------------------------ amd64-{linux,darwin} --------------- */
 
-#if defined(PLAT_amd64_linux)  ||  defined(PLAT_amd64_darwin)
+#if defined(PLAT_amd64_linux)  ||  defined(PLAT_amd64_darwin)  || \
+  defined(PLAT_amd64_native_client)
 
 /* ARGREGS: rdi rsi rdx rcx r8 r9 (the rest on stack in R-to-L order) */
 
@@ -1617,7 +1633,7 @@ typedef
       lval = (__typeof__(lval)) _res;                             \
    } while (0)
 
-#endif /* PLAT_amd64_linux || PLAT_amd64_darwin */
+#endif /* PLAT_amd64_linux || PLAT_amd64_darwin || PLAT_amd64_native_client */
 
 /* ------------------------ ppc32-linux ------------------------ */
 
@@ -2612,7 +2628,7 @@ typedef
 
 /* ------------------------- arm-linux ------------------------- */
 
-#if defined(PLAT_arm_linux)
+#if defined(PLAT_arm_linux) || defined(PLAT_arm_native_client)
 
 /* These regs are trashed by the hidden call. */
 #define __CALLER_SAVED_REGS "r0", "r1", "r2", "r3","r4","r14"
@@ -3024,7 +3040,7 @@ typedef
       lval = (__typeof__(lval)) _res;                             \
    } while (0)
 
-#endif /* PLAT_arm_linux */
+#endif /* PLAT_arm_linux || PLAT_arm_native_client */
 
 /* ------------------------ ppc32-aix5 ------------------------- */
 
@@ -4598,5 +4614,8 @@ VALGRIND_PRINTF_BACKTRACE(const char *format, ...)
 #undef PLAT_arm_linux
 #undef PLAT_ppc32_aix5
 #undef PLAT_ppc64_aix5
+#undef PLAT_x86_native_client
+#undef PLAT_amd64_native_client
+#undef PLAT_arm_native_client
 
 #endif   /* __VALGRIND_H */
