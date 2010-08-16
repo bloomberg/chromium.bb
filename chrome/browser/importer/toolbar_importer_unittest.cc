@@ -320,7 +320,7 @@ static const char* kBadBookmarkNoLabels =
 
   // Test doesn't work if the importer thinks this is the first run of Chromium.
   // Mark this as a subsequent run of the browser.
-  FirstRun::CreateSentinel();
+  FirstRun::first_run_ = FirstRun::FIRST_RUN_FALSE;
 
   // Test case 1 is parsing a basic bookmark with a single label.
   bookmark_xml = kGoodBookmark;

@@ -128,6 +128,7 @@ class FirstRun {
 
  private:
   friend class FirstRunTest;
+  FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);
 
 #if defined(OS_WIN)
   // Imports settings in a separate process. It is the implementation of the
@@ -151,6 +152,14 @@ class FirstRun {
 
   // Gives the full path to the sentinel file. The file might not exist.
   static bool GetFirstRunSentinelFilePath(FilePath* path);
+
+  enum FirstRunState {
+    FIRST_RUN_UNKNOWN,  // The state is not tested or set yet.
+    FIRST_RUN_TRUE,
+    FIRST_RUN_FALSE
+  };
+  // This variable should only be accessed through IsChromeFirstRun().
+  static FirstRunState first_run_;
 
   // This class is for scoping purposes.
   DISALLOW_IMPLICIT_CONSTRUCTORS(FirstRun);

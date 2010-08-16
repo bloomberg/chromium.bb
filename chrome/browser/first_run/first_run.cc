@@ -28,6 +28,8 @@ const char kSentinelFile[] = "First Run";
 
 }  // namespace
 
+FirstRun::FirstRunState FirstRun::first_run_ = FIRST_RUN_UNKNOWN;
+
 // TODO(port): Import switches need to be ported to both Mac and Linux. Not all
 // import switches here are implemented for Linux. None are implemented for Mac
 // (as this function will not be called on Mac).
@@ -50,18 +52,16 @@ int FirstRun::ImportNow(Profile* profile, const CommandLine& cmdline) {
 
 // static
 bool FirstRun::IsChromeFirstRun() {
-  // A troolean, 0 means not yet set, 1 means set to true, 2 set to false.
-  static int first_run = 0;
-  if (first_run != 0)
-    return first_run == 1;
+  if (first_run_ != FIRST_RUN_UNKNOWN)
+    return first_run_ == FIRST_RUN_TRUE;
 
   FilePath first_run_sentinel;
   if (!GetFirstRunSentinelFilePath(&first_run_sentinel) ||
       file_util::PathExists(first_run_sentinel)) {
-    first_run = 2;
+    first_run_ = FIRST_RUN_FALSE;
     return false;
   }
-  first_run = 1;
+  first_run_ = FIRST_RUN_TRUE;
   return true;
 }
 
