@@ -54,9 +54,9 @@ cr.define('options', function() {
         $('showpasswords').onclick = function(event) {
           //TODO(sargrass): Add the Mac implementation
         }
-      }
-      else {
+      } else {
         $('showpasswords').onclick = function(event) {
+          PasswordsExceptions.load();
           OptionsPage.showPageByName('passwordsExceptions');
           OptionsPage.showTab($('passwords-nav-tab'));
         };

@@ -25,9 +25,20 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
   // The password store associated with the currently active profile.
   PasswordStore* GetPasswordStore();
 
+  // Fired when user clicks 'show saved passwords' button in personal page.
+  void LoadSavedPasswords(const Value* value);
+
+  // Remove an entry.
+  // @param value the entry index to be removed.
+  void RemoveEntry(const Value* value);
+
+  // Get password value for the selected entry.
+  // @param value the selected entry index.
+  void ShowSelectedPassword(const Value* value);
+
   // Sets the password list contents to the given data. We take ownership of
   // the PasswordForms in the vector.
-  void SetPasswordList(const std::vector<webkit_glue::PasswordForm*>& result);
+  void SetPasswordList();
 
   // A short class to mediate requests to the password store.
   class PasswordListPopulater : public PasswordStoreConsumer {
@@ -52,6 +63,7 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
   // Password store consumer for populating the password list.
   PasswordListPopulater populater_;
 
+  // A weak reference to profile.
   Profile* profile_;
   std::vector<webkit_glue::PasswordForm*> password_list_;
 

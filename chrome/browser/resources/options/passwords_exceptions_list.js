@@ -114,9 +114,15 @@ cr.define('options.passwordsExceptions', function() {
      * Remove selected row from browser's model.
      */
     removeSelectedRow: function() {
-      var selectedItem = this.selectedItem;
-      chrome.send('removeAutofillable', selectedItem[0]);
+      var selectedIndex = this.selectionModel.selectedIndex;
+      PasswordsExceptions.removeAutofillable(selectedIndex);
     },
+
+    showSelectedPassword: function() {
+      var selectedIndex = this.selectionModel.selectedIndex;
+      PasswordsExceptions.showSelectedPassword(selectedIndex);
+    },
+
   };
 
   var ListArea = cr.ui.define('div');
@@ -137,9 +143,30 @@ cr.define('options.passwordsExceptions', function() {
       this.appendChild(removeRow);
       this.removeRow = removeRow;
 
+      var showHidePassword = cr.doc.createElement('button');
+      showHidePassword.textContent = templateData.passwordsShowButton;
+      this.appendChild(showHidePassword);
+      this.showHidePassword = showHidePassword;
+      this.showingPassword = false
+
+      var passwordLabel = cr.doc.createElement('span');
+      this.appendChild(passwordLabel);
+      this.passwordLabel = passwordLabel;
+
       var self = this;
       removeRow.onclick = function(event) {
         self.passwordsList.removeSelectedRow();
+      };
+
+      showHidePassword.onclick = function(event) {
+        if(self.showingPassword) {
+          self.passwordLabel.textContent = "";
+          this.textContent = templateData.passwordsShowButton;
+        } else {
+          self.passwordsList.showSelectedPassword();
+          this.textContent = templateData.passwordsHideButton;
+        }
+        self.showingPassword = !self.showingPassword;
       };
 
       this.updateButtonSensitivity();
@@ -156,12 +183,17 @@ cr.define('options.passwordsExceptions', function() {
       return this.getAttribute('contentType', type);
     },
 
+    displayReturnedPassword: function(password) {
+      this.passwordLabel.textContent = password;
+    },
+
     /**
      * Update the button's states
      */
     updateButtonSensitivity: function() {
       var selectionSize = autofillableLoginsList.selectedItems.length;
       this.removeRow.disabled = selectionSize == 0;
+      this.showHidePassword.disabled = selectionSize == 0;
     },
 
     /**
@@ -170,6 +202,9 @@ cr.define('options.passwordsExceptions', function() {
      * @private
      */
     handleOnSelectionChange_: function(ce) {
+      this.passwordLabel.textContent = "";
+      this.showHidePassword.textContent = templateData.passwordsShowButton;
+      this.showingPassword = false;
       this.updateButtonSensitivity();
     },
   };

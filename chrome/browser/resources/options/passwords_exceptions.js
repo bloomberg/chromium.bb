@@ -31,10 +31,6 @@ cr.define('options', function() {
       options.passwordsExceptions.ListArea.decorate($('passwordsArea'));
 
       // TODO(sargrass): Passwords filter page --------------------------
-      $('trigger').onclick = function(event) {
-        autofillableLoginsList.redraw();
-        // TODO(sargrass): Remove this element.
-      };
 
       // TODO(sargrass): Exceptions filter page -------------------------
 
@@ -48,8 +44,24 @@ cr.define('options', function() {
     },
   };
 
+  PasswordsExceptions.load = function() {
+    chrome.send('loadSavedPasswords');
+  };
+
+  PasswordsExceptions.removeAutofillable = function(index) {
+    chrome.send('removeAutofillable', [String(index)]);
+  };
+
+  PasswordsExceptions.showSelectedPassword = function(index) {
+    chrome.send('showSelectedPassword', [String(index)]);
+  };
+
   PasswordsExceptions.setAutofillableLogins = function(entries) {
     PasswordsExceptions.getInstance().setAutofillableLogins_(entries);
+  };
+
+  PasswordsExceptions.selectedPasswordCallback = function(password) {
+    passwordsArea.displayReturnedPassword(password);
   };
 
   // Export

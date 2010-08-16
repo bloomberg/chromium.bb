@@ -111,7 +111,7 @@ cr.define('options', function() {
 
   ImportDataOverlay.updateSupportedBrowsers = function(browsers) {
     ImportDataOverlay.getInstance().updateSupportedBrowsers_(browsers);
-  }
+  };
 
   ImportDataOverlay.setDisable = function(state) {
     $('supported-browsers').disabled = state;
@@ -120,7 +120,7 @@ cr.define('options', function() {
     $('import-passwords').disabled = state;
     $('import-history').disabled = state;
     $('import-data-commit').disabled = state;
-  }
+  };
 
   ImportDataOverlay.setImportingState = function(state) {
     ImportDataOverlay.setDisable(state);
@@ -138,7 +138,7 @@ cr.define('options', function() {
     } else {
       clearInterval(ImportDataOverlay.throbIntervalId);
     }
-  }
+  };
 
   ImportDataOverlay.dismiss = function() {
     OptionsPage.clearOverlays();
