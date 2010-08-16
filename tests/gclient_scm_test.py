@@ -125,7 +125,7 @@ class SVNWrapperTestCase(BaseTestCase):
     # Checkout.
     gclient_scm.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
+    gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['checkout', self.url, base_path],
                                           self.root_dir, files_list)
 
@@ -139,7 +139,7 @@ class SVNWrapperTestCase(BaseTestCase):
     base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
     gclient_scm.os.path.isdir(base_path).AndReturn(True)
     gclient_scm.scm.SVN.CaptureStatus(base_path).AndReturn([])
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
+    gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['update', '--revision', 'BASE'],
                                           base_path, mox.IgnoreArg())
 
@@ -166,7 +166,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.exists(file_path2).AndReturn(True)
     gclient_scm.os.path.isfile(file_path2).AndReturn(True)
     gclient_scm.os.remove(file_path2)
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
+    gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['update', '--revision', 'BASE'],
                                           base_path, mox.IgnoreArg())
     print(gclient_scm.os.path.join(base_path, 'a'))
@@ -194,7 +194,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
     gclient_scm.gclient_utils.RemoveDirectory(file_path)
     file_list1 = []
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
+    gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['update', '--revision', 'BASE'],
                                           base_path, mox.IgnoreArg())
 
@@ -208,7 +208,7 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
     gclient_scm.os.path.isdir(base_path).AndReturn(True)
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
+    gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['status'] + self.args,
                                           base_path, []).AndReturn(None)
 
@@ -234,7 +234,7 @@ class SVNWrapperTestCase(BaseTestCase):
     # Checkout.
     gclient_scm.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
+    gclient_scm.scm.SVN.RunAndGetFileList(options.verbose,
                                           ['checkout', self.url, base_path],
                                           self.root_dir, files_list)
     self.mox.ReplayAll()
@@ -274,7 +274,7 @@ class SVNWrapperTestCase(BaseTestCase):
       additional_args.append('--force')
     files_list = []
     gclient_scm.scm.SVN.RunAndGetFileList(
-        options,
+        options.verbose,
         ['update', base_path] + additional_args,
         self.root_dir, files_list)
 
@@ -308,7 +308,7 @@ class SVNWrapperTestCase(BaseTestCase):
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Run(
         ['checkout', '--depth', 'empty', self.url, base_path], self.root_dir)
-    gclient_scm.scm.SVN.RunAndGetFileList(options, ['update', 'DEPS'],
+    gclient_scm.scm.SVN.RunAndGetFileList(options.verbose, ['update', 'DEPS'],
         gclient_scm.os.path.join(self.root_dir, self.relpath), files_list)
 
     # Now we fall back on scm.update().
@@ -380,7 +380,7 @@ class SVNWrapperTestCase(BaseTestCase):
     files_list = self.mox.CreateMockAnything()
     gclient_scm.scm.SVN.Run(
         ['checkout', '--depth', 'empty', self.url, base_path], self.root_dir)
-    gclient_scm.scm.SVN.RunAndGetFileList(options, ['update', 'DEPS'],
+    gclient_scm.scm.SVN.RunAndGetFileList(options.verbose, ['update', 'DEPS'],
         gclient_scm.os.path.join(self.root_dir, self.relpath), files_list)
 
     # Now we fall back on scm.update().

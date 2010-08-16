@@ -741,7 +741,8 @@ class SVNWrapper(SCMWrapper):
       # We need to checkout.
       command = ['checkout', url, checkout_path]
       command = self.AddAdditionalFlags(command, options, revision)
-      scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
+      scm.SVN.RunAndGetFileList(options.verbose, command, self._root_dir,
+          file_list)
       return
 
     # Get the existing scm url and the revision number of the current checkout.
@@ -807,7 +808,8 @@ class SVNWrapper(SCMWrapper):
         # We need to checkout.
         command = ['checkout', url, checkout_path]
         command = self.AddAdditionalFlags(command, options, revision)
-        scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
+        scm.SVN.RunAndGetFileList(options.verbose, command, self._root_dir,
+            file_list)
         return
 
 
@@ -820,7 +822,8 @@ class SVNWrapper(SCMWrapper):
 
     command = ["update", checkout_path]
     command = self.AddAdditionalFlags(command, options, revision)
-    scm.SVN.RunAndGetFileList(options, command, self._root_dir, file_list)
+    scm.SVN.RunAndGetFileList(options.verbose, command, self._root_dir,
+        file_list)
 
   def updatesingle(self, options, args, file_list):
     checkout_path = os.path.join(self._root_dir, self.relpath)
@@ -834,7 +837,8 @@ class SVNWrapper(SCMWrapper):
         if os.path.exists(os.path.join(checkout_path, filename)):
           os.remove(os.path.join(checkout_path, filename))
         command = ["update", filename]
-        scm.SVN.RunAndGetFileList(options, command, checkout_path, file_list)
+        scm.SVN.RunAndGetFileList(options.verbose, command, checkout_path,
+            file_list)
       # After the initial checkout, we can use update as if it were any other
       # dep.
       self.update(options, args, file_list)
@@ -899,7 +903,8 @@ class SVNWrapper(SCMWrapper):
     try:
       # svn revert is so broken we don't even use it. Using
       # "svn up --revision BASE" achieve the same effect.
-      scm.SVN.RunAndGetFileList(options, ['update', '--revision', 'BASE'], path,
+      scm.SVN.RunAndGetFileList(options.verbose,
+                                ['update', '--revision', 'BASE'], path,
                                 file_list)
     except OSError, e:
       # Maybe the directory disapeared meanwhile. We don't want it to throw an
@@ -925,7 +930,7 @@ class SVNWrapper(SCMWrapper):
             % (' '.join(command), path))
       # There's no file list to retrieve.
     else:
-      scm.SVN.RunAndGetFileList(options, command, path, file_list)
+      scm.SVN.RunAndGetFileList(options.verbose, command, path, file_list)
 
   def FullUrlForRelativeUrl(self, url):
     # Find the forth '/' and strip from there. A bit hackish.

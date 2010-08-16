@@ -386,7 +386,7 @@ class SVN(object):
                             stderr=stderr).communicate()[0]
 
   @staticmethod
-  def RunAndGetFileList(options, args, in_directory, file_list):
+  def RunAndGetFileList(verbose, args, in_directory, file_list):
     """Runs svn checkout, update, or status, output to stdout.
 
     The first item in args must be either "checkout", "update", or "status".
@@ -396,7 +396,7 @@ class SVN(object):
     sys.stdout as in Run.
 
     Args:
-      options: command line options to gclient
+      verbose: If True, uses verbose output
       args: A sequence of command line parameters to be passed to svn.
       in_directory: The directory where svn is to be run.
 
@@ -442,7 +442,7 @@ class SVN(object):
       try:
         SVN.RunAndFilterOutput(args,
                                in_directory,
-                               options.verbose,
+                               verbose,
                                True,
                                CaptureMatchingLines)
       except gclient_utils.Error:
