@@ -71,8 +71,8 @@ void BuildMouseEvent(const WebInputEvent* event, PP_Event* pp_event) {
       reinterpret_cast<const WebMouseEvent*>(event);
   pp_event->u.mouse.modifier = mouse_event->modifiers;
   pp_event->u.mouse.button = mouse_event->button;
-  pp_event->u.mouse.x = mouse_event->x;
-  pp_event->u.mouse.y = mouse_event->y;
+  pp_event->u.mouse.x = static_cast<float>(mouse_event->x);
+  pp_event->u.mouse.y = static_cast<float>(mouse_event->y);
   pp_event->u.mouse.clickCount = mouse_event->clickCount;
 }
 
@@ -146,8 +146,8 @@ WebMouseEvent* BuildMouseEvent(const PP_Event& event) {
   mouse_event->modifiers = event.u.mouse.modifier;
   mouse_event->button =
       static_cast<WebMouseEvent::Button>(event.u.mouse.button);
-  mouse_event->x = event.u.mouse.x;
-  mouse_event->y = event.u.mouse.y;
+  mouse_event->x = static_cast<int>(event.u.mouse.x);
+  mouse_event->y = static_cast<int>(event.u.mouse.y);
   mouse_event->clickCount = event.u.mouse.clickCount;
   return mouse_event;
 }
