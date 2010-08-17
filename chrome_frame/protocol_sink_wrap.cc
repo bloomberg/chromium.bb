@@ -248,18 +248,31 @@ void PutProtData(IBindCtx* pbc, ProtData* data) {
 }
 
 bool IsTextHtml(const wchar_t* status_text) {
-  if (!status_text)
-    return false;
-  size_t status_text_length = lstrlenW(status_text);
-  const wchar_t* status_text_end = status_text +
-      std::min(status_text_length, arraysize(kTextHtmlMimeType) - 1);
-  bool is_text_html = LowerCaseEqualsASCII(status_text, status_text_end,
-                                           kTextHtmlMimeType);
+  const std::wstring str = status_text;
+  bool is_text_html = LowerCaseEqualsASCII(str, kTextHtmlMimeType);
   return is_text_html;
 }
 
+bool IsAdditionallySupportedContentType(const wchar_t* status_text) {
+  const std::wstring str = status_text;
+  if (LowerCaseEqualsASCII(str, "application/xhtml+xml"))
+    return true;
+  if (LowerCaseEqualsASCII(str, "image/svg"))
+    return true;
+  if (LowerCaseEqualsASCII(str, "image/svg+xml"))
+    return true;
+  if (LowerCaseEqualsASCII(str, "video/ogg"))
+    return true;
+  if (LowerCaseEqualsASCII(str, "video/webm"))
+    return true;
+  if (LowerCaseEqualsASCII(str, "video/mp4"))
+    return true;
+
+  return false;
+}
+
 // Returns:
-// CHROME: if suggested mime type is "text/html" and at least one of the
+// CHROME: if suggested mime type is a supported one and at least one of the
 //         following is true: 1) X-UA-Compatible tag is in HTTP headers.
 //                            2) Url is listed in OptInURLs registry key.
 // OTHER: if suggested mime type is not text/html.
@@ -268,9 +281,13 @@ RendererType DetermineRendererTypeFromMetaData(
     const wchar_t* suggested_mime_type,
     const std::wstring& url,
     IWinInetHttpInfo* info) {
-  if (!IsTextHtml(suggested_mime_type)) {
+
+  bool is_text_html = IsTextHtml(suggested_mime_type);
+  bool is_supported_content_type = is_text_html ||
+      IsAdditionallySupportedContentType(suggested_mime_type);
+
+  if (!is_supported_content_type)
     return OTHER;
-  }
 
   if (!url.empty() && IsOptInUrl(url.c_str())) {
     return CHROME;
@@ -287,7 +304,14 @@ RendererType DetermineRendererTypeFromMetaData(
       }
     }
   }
-  return UNDETERMINED;
+
+  // We can (and want) to sniff the content.
+  if (is_text_html) {
+    return UNDETERMINED;
+  }
+
+  // We cannot sniff the content.
+  return OTHER;
 }
 
 RendererType DetermineRendererType(void* buffer, DWORD size, bool last_chance) {
