@@ -21,7 +21,7 @@ class WebNotificationPermissionCallback;
 class NotificationProvider : public WebKit::WebNotificationPresenter {
  public:
   explicit NotificationProvider(RenderView* view);
-  virtual ~NotificationProvider() {}
+  virtual ~NotificationProvider();
 
   // WebKit::WebNotificationPresenter interface.
   virtual bool show(const WebKit::WebNotification& proxy);

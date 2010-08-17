@@ -55,6 +55,16 @@ void ActiveNotificationTracker::Clear() {
   }
 }
 
+void ActiveNotificationTracker::DetachAll() {
+  ReverseTable::iterator iter;
+  for (iter = reverse_notification_table_.begin();
+       iter != reverse_notification_table_.end();
+       ++iter) {
+    WebNotification notification(iter->first);
+    notification.detachPresenter();
+  }
+}
+
 WebNotificationPermissionCallback* ActiveNotificationTracker::GetCallback(
     int id) {
   return callback_table_.Lookup(id);

@@ -39,6 +39,10 @@ class ActiveNotificationTracker {
   // Clears out all active notifications.  Useful on page navigation.
   void Clear();
 
+  // Detaches all active notifications from their presenter.  Necessary
+  // when the Presenter is destroyed.
+  void DetachAll();
+
  private:
   typedef std::map<WebKit::WebNotification, int> ReverseTable;
 
