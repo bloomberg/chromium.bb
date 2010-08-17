@@ -130,9 +130,9 @@ void PrepareRestartOnCrashEnviroment(const CommandLine &parsed_command_line) {
   // on the current locale.
   string16 dlg_strings(l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_TITLE));
   dlg_strings.push_back('|');
-  string16 adjusted_string;
-  base::i18n::AdjustStringForLocaleDirection(
-      l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_CONTENT), &adjusted_string);
+  string16 adjusted_string(
+      l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_CONTENT));
+  base::i18n::AdjustStringForLocaleDirection(adjusted_string, &adjusted_string);
   dlg_strings.append(adjusted_string);
   dlg_strings.push_back('|');
   dlg_strings.append(ASCIIToUTF16(
