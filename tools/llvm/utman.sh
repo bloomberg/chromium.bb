@@ -159,7 +159,7 @@ readonly CROSS_TARGET_AS=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-as
 readonly CROSS_TARGET_LD=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ld
 readonly CROSS_TARGET_NM=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-nm
 readonly CROSS_TARGET_RANLIB=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ranlib
-readonly ILLEGAL_TOOL=${INSTALL_DIR}/llvm-wrapper-illegal
+readonly ILLEGAL_TOOL=${INSTALL_DIR}/llvm-fake-illegal
 
 setup-tools-common() {
   AR_FOR_SFI_TARGET="${CROSS_TARGET_AR}"
@@ -236,16 +236,16 @@ setup-tools-common() {
 # NOTE: we need to rethink the setup mechanism when we want to
 #       produce libgcc for other archs
 setup-tools-arm() {
-  CC_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-wrapper-sfigcc -arch arm"
-  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-wrapper-sfig++ -arch arm"
+  CC_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-fake-sfigcc -arch arm"
+  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-fake-sfig++ -arch arm"
   # NOTE: this should not be needed, since we do not really fully link anything
   LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
 }
 
 setup-tools-bitcode() {
-  CC_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-wrapper-sfigcc -emit-llvm"
-  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-wrapper-sfig++ -emit-llvm"
+  CC_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-fake-sfigcc -emit-llvm"
+  CXX_FOR_SFI_TARGET="${INSTALL_DIR}/llvm-fake-sfig++ -emit-llvm"
   # NOTE: this should not be needed, since we do not really fully link anything
   LD_FOR_SFI_TARGET="${ILLEGAL_TOOL}"
   setup-tools-common
@@ -1162,7 +1162,7 @@ xgcc-patch() {
   cat > "${XGCC}" <<EOF
 #!/bin/sh
 XGCC="\$(readlink -m \${0})"
-${INSTALL_DIR}/llvm-wrapper-sfigcc \\
+${INSTALL_DIR}/llvm-fake-sfigcc \\
 --driver="\${XGCC}-real" -arch ${arch} ${CPPFLAGS_FOR_SFI_TARGET} "\$@"
 EOF
 
@@ -2238,7 +2238,7 @@ newlib-nacl-headers() {
 driver() {
   StepBanner "DRIVER"
   linker-install
-  llvm-wrapper-install
+  llvm-fake-install
 }
 
 # We need to adjust the start address and aligment of nacl arm modules
@@ -2249,15 +2249,15 @@ linker-install() {
 
 # the driver is a simple python script which changes its behavior
 # depending under the name it is invoked as
-llvm-wrapper-install() {
+llvm-fake-install() {
   StepBanner "DRIVER" "Installing driver adaptors to ${INSTALL_DIR}"
   # TODO(robertm): move the driver to their own dir
   #rm -rf  ${INSTALL_DIR}
   #mkdir -p ${INSTALL_DIR}
-  cp tools/llvm/llvm-wrapper.py ${INSTALL_DIR}
+  cp tools/llvm/llvm-fake.py ${INSTALL_DIR}
   for s in sfigcc sfig++ bcld bcfinal illegal nop ; do
-    local t="llvm-wrapper-$s"
-    ln -fs llvm-wrapper.py ${INSTALL_DIR}/$t
+    local t="llvm-fake-$s"
+    ln -fs llvm-fake.py ${INSTALL_DIR}/$t
   done
 }
 
