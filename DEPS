@@ -166,6 +166,9 @@ deps = {
   "src/third_party/libjingle/source":
     "http://libjingle.googlecode.com/svn/branches/nextsnap@" +
     Var("libjingle_revision"),
+
+  "src/third_party/speex":
+    "/trunk/deps/third_party/speex@56359",
 }
 
 
