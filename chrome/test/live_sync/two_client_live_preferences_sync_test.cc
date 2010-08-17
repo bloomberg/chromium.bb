@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/scoped_pref_update.h"
 #include "chrome/test/live_sync/live_preferences_sync_test.h"
 
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
@@ -231,15 +232,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kAutoFillEnabled) {
             GetPrefs(1)->GetBoolean(prefs::kAutoFillEnabled));
 }
 
-// TODO(annapop): Remove FAILS_ prefix after crbug.com/51334 is fixed.
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
-                       FAILS_kURLsToRestoreOnStartup) {
+                       kURLsToRestoreOnStartup) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   EXPECT_EQ(GetPrefs(0)->GetInteger(prefs::kRestoreOnStartup),
-            GetPrefs(1)->GetInteger(prefs::kRestoreOnStartup));
+      GetPrefs(1)->GetInteger(prefs::kRestoreOnStartup));
   EXPECT_TRUE(GetPrefs(0)->GetMutableList(prefs::kURLsToRestoreOnStartup)->
-            Equals(GetPrefs(1)->
-            GetMutableList(prefs::kURLsToRestoreOnStartup)));
+      Equals(GetPrefs(1)->GetMutableList(prefs::kURLsToRestoreOnStartup)));
 
   GetVerifierPrefs()->SetInteger(prefs::kRestoreOnStartup, 0);
   GetPrefs(0)->SetInteger(prefs::kRestoreOnStartup, 0);
@@ -257,10 +256,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
       GetMutableList(prefs::kURLsToRestoreOnStartup);
   ListValue* url_list_client = GetPrefs(0)->
       GetMutableList(prefs::kURLsToRestoreOnStartup);
-  url_list_verifier->Append(Value::CreateStringValue("http://www.google.com/"));
-  url_list_verifier->Append(Value::CreateStringValue("http://www.flickr.com/"));
-  url_list_client->Append(Value::CreateStringValue("http://www.google.com/"));
-  url_list_client->Append(Value::CreateStringValue("http://www.flickr.com/"));
+  {
+    url_list_verifier->
+        Append(Value::CreateStringValue("http://www.google.com/"));
+    url_list_verifier->
+        Append(Value::CreateStringValue("http://www.flickr.com/"));
+    url_list_client->
+        Append(Value::CreateStringValue("http://www.google.com/"));
+    url_list_client->
+        Append(Value::CreateStringValue("http://www.flickr.com/"));
+    ScopedPrefUpdate update(GetPrefs(0), prefs::kURLsToRestoreOnStartup);
+  }
 
   EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
@@ -271,10 +277,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
 
   EXPECT_TRUE(GetVerifierPrefs()->
       GetMutableList(prefs::kURLsToRestoreOnStartup)->
-        Equals(GetPrefs(0)->GetMutableList(prefs::kURLsToRestoreOnStartup)));
+      Equals(GetPrefs(0)->GetMutableList(prefs::kURLsToRestoreOnStartup)));
   EXPECT_TRUE(GetVerifierPrefs()->
       GetMutableList(prefs::kURLsToRestoreOnStartup)->
-        Equals(GetPrefs(1)->GetMutableList(prefs::kURLsToRestoreOnStartup)));
+      Equals(GetPrefs(1)->GetMutableList(prefs::kURLsToRestoreOnStartup)));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kRestoreOnStartup) {
@@ -493,4 +499,79 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
             GetPrefs(0)->GetBoolean(prefs::kWebKitUsesUniversalDetector));
   EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kWebKitUsesUniversalDetector),
             GetPrefs(1)->GetBoolean(prefs::kWebKitUsesUniversalDetector));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, kDefaultCharset) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  EXPECT_EQ(GetPrefs(0)->GetString(prefs::kDefaultCharset),
+            GetPrefs(1)->GetString(prefs::kDefaultCharset));
+
+  GetVerifierPrefs()->SetString(prefs::kDefaultCharset, "Thai");
+  GetPrefs(0)->SetString(prefs::kDefaultCharset, "Thai");
+  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  EXPECT_EQ(GetVerifierPrefs()->GetString(prefs::kDefaultCharset),
+            GetPrefs(0)->GetString(prefs::kDefaultCharset));
+  EXPECT_EQ(GetVerifierPrefs()->GetString(prefs::kDefaultCharset),
+            GetPrefs(1)->GetString(prefs::kDefaultCharset));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       kBlockThirdPartyCookies) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  EXPECT_EQ(GetPrefs(0)->GetBoolean(prefs::kBlockThirdPartyCookies),
+            GetPrefs(1)->GetBoolean(prefs::kBlockThirdPartyCookies));
+
+  bool new_kBlockThirdPartyCookies = !GetVerifierPrefs()->GetBoolean(
+      prefs::kBlockThirdPartyCookies);
+  GetVerifierPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
+      new_kBlockThirdPartyCookies);
+  GetPrefs(0)->SetBoolean(prefs::kBlockThirdPartyCookies,
+      new_kBlockThirdPartyCookies);
+  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies),
+            GetPrefs(0)->GetBoolean(prefs::kBlockThirdPartyCookies));
+  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies),
+            GetPrefs(1)->GetBoolean(prefs::kBlockThirdPartyCookies));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       kClearSiteDataOnExit) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  EXPECT_EQ(GetPrefs(0)->GetBoolean(prefs::kClearSiteDataOnExit),
+            GetPrefs(1)->GetBoolean(prefs::kClearSiteDataOnExit));
+
+  bool new_kClearSiteDataOnExit = !GetVerifierPrefs()->GetBoolean(
+      prefs::kClearSiteDataOnExit);
+  GetVerifierPrefs()->SetBoolean(prefs::kClearSiteDataOnExit,
+      new_kClearSiteDataOnExit);
+  GetPrefs(0)->SetBoolean(prefs::kClearSiteDataOnExit,
+      new_kClearSiteDataOnExit);
+  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kClearSiteDataOnExit),
+            GetPrefs(0)->GetBoolean(prefs::kClearSiteDataOnExit));
+  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kClearSiteDataOnExit),
+            GetPrefs(1)->GetBoolean(prefs::kClearSiteDataOnExit));
+}
+
+IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest,
+                       kSafeBrowsingEnabled) {
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  EXPECT_EQ(GetPrefs(0)->GetBoolean(prefs::kSafeBrowsingEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kSafeBrowsingEnabled));
+
+  bool new_kSafeBrowsingEnabled = !GetVerifierPrefs()->GetBoolean(
+      prefs::kSafeBrowsingEnabled);
+  GetVerifierPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
+      new_kSafeBrowsingEnabled);
+  GetPrefs(0)->SetBoolean(prefs::kSafeBrowsingEnabled,
+      new_kSafeBrowsingEnabled);
+  EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled),
+            GetPrefs(0)->GetBoolean(prefs::kSafeBrowsingEnabled));
+  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled),
+            GetPrefs(1)->GetBoolean(prefs::kSafeBrowsingEnabled));
 }
