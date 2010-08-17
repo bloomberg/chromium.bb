@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <libxml/parser.h>
-
 #include "chrome/browser/metrics/metrics_response.h"
+
+#include "libxml/parser.h"
 
 // State to pass around during SAX parsing.
 struct SAXState {
