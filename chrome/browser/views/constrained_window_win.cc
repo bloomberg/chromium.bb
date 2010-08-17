@@ -44,11 +44,6 @@ class ClientView;
 enum {
   FRAME_PART_BITMAP_FIRST = 0,  // Must be first.
 
-  // Window Controls.
-  FRAME_CLOSE_BUTTON_ICON,
-  FRAME_CLOSE_BUTTON_ICON_H,
-  FRAME_CLOSE_BUTTON_ICON_P,
-
   // Window Frame Border.
   FRAME_BOTTOM_EDGE,
   FRAME_BOTTOM_LEFT_CORNER,
@@ -59,33 +54,22 @@ enum {
   FRAME_TOP_LEFT_CORNER,
   FRAME_TOP_RIGHT_CORNER,
 
-  FRAME_WINDOW,
-  FRAME_WINDOW_INACTIVE,
-  FRAME_WINDOW_INCOGNITO,
-  FRAME_WINDOW_INCOGNITO_INACTIVE,
-
   FRAME_PART_BITMAP_COUNT  // Must be last.
 };
 
 static const int kXPFramePartIDs[] = {
     0,
-    IDR_CLOSE_SA, IDR_CLOSE_SA_H, IDR_CLOSE_SA_P,
     IDR_WINDOW_BOTTOM_CENTER, IDR_WINDOW_BOTTOM_LEFT_CORNER,
     IDR_WINDOW_BOTTOM_RIGHT_CORNER, IDR_WINDOW_LEFT_SIDE,
     IDR_WINDOW_RIGHT_SIDE, IDR_WINDOW_TOP_CENTER,
     IDR_WINDOW_TOP_LEFT_CORNER, IDR_WINDOW_TOP_RIGHT_CORNER,
-    IDR_THEME_FRAME, IDR_THEME_FRAME_INACTIVE, IDR_THEME_FRAME_INCOGNITO,
-    IDR_THEME_FRAME_INCOGNITO_INACTIVE,
     0 };
 static const int kVistaFramePartIDs[] = {
     0,
-    IDR_CLOSE_SA, IDR_CLOSE_SA_H, IDR_CLOSE_SA_P,
     IDR_CONSTRAINED_BOTTOM_CENTER_V, IDR_CONSTRAINED_BOTTOM_LEFT_CORNER_V,
     IDR_CONSTRAINED_BOTTOM_RIGHT_CORNER_V, IDR_CONSTRAINED_LEFT_SIDE_V,
     IDR_CONSTRAINED_RIGHT_SIDE_V, IDR_CONSTRAINED_TOP_CENTER_V,
     IDR_CONSTRAINED_TOP_LEFT_CORNER_V, IDR_CONSTRAINED_TOP_RIGHT_CORNER_V,
-    IDR_THEME_FRAME, IDR_THEME_FRAME_INACTIVE, IDR_THEME_FRAME_INCOGNITO,
-    IDR_THEME_FRAME_INCOGNITO_INACTIVE,
     0 };
 
 class XPWindowResources : public views::WindowResources {
@@ -277,12 +261,13 @@ ConstrainedWindowFrameView::ConstrainedWindowFrameView(
   InitClass();
   InitWindowResources();
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
-                          resources_->GetPartBitmap(FRAME_CLOSE_BUTTON_ICON));
+                          rb.GetBitmapNamed(IDR_CLOSE_SA));
   close_button_->SetImage(views::CustomButton::BS_HOT,
-                          resources_->GetPartBitmap(FRAME_CLOSE_BUTTON_ICON_H));
+                          rb.GetBitmapNamed(IDR_CLOSE_SA_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
-                          resources_->GetPartBitmap(FRAME_CLOSE_BUTTON_ICON_P));
+                          rb.GetBitmapNamed(IDR_CLOSE_SA_P));
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                    views::ImageButton::ALIGN_MIDDLE);
   AddChildView(close_button_);
