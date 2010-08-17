@@ -240,22 +240,19 @@ void LiveSyncTest::TearDownInProcessBrowserTestFixture() {
 }
 
 void LiveSyncTest::SetUpLocalTestServer() {
-  bool success = server_.Start(net::TestServerLauncher::ProtoHTTP,
-      server_.kHostName, server_.kOKHTTPSPort,
-      FilePath(), FilePath(), std::wstring());
-  ASSERT_TRUE(success);
+  ASSERT_TRUE(test_server_.Start());
 
   started_local_test_server_ = true;
 
   CommandLine* cl = CommandLine::ForCurrentProcess();
   cl->AppendSwitchASCII(switches::kSyncServiceURL,
-      StringPrintf("http://%s:%d/chromiumsync", server_.kHostName,
-                   server_.kOKHTTPSPort));
+      StringPrintf("http://%s:%d/chromiumsync",
+                   test_server_.host_port_pair().host().c_str(),
+                   test_server_.host_port_pair().port()));
 }
 
 void LiveSyncTest::TearDownLocalTestServer() {
-  bool success = server_.Stop();
-  ASSERT_TRUE(success);
+  ASSERT_TRUE(test_server_.Stop());
 }
 
 
@@ -295,8 +292,8 @@ void LiveSyncTest::SetProxyConfig(URLRequestContextGetter* context_getter,
 bool LiveSyncTest::ConfigureSyncServer(const std::string& name,
                                        const std::string& value) {
   std::string url = StringPrintf("http://%s:%d/chromiumsync/configure",
-                                 server_.kHostName,
-                                 server_.kOKHTTPSPort);
+                                 test_server_.host_port_pair().host().c_str(),
+                                 test_server_.host_port_pair().port());
   std::string data = EscapePath(name) + "=" + EscapePath(value);
   ConfigureURLFectcherDelegate delegate;
   scoped_ptr<URLFetcher> fetcher(

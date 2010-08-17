@@ -14,49 +14,32 @@
 class SearchProviderTest : public UITest {
  protected:
   SearchProviderTest();
-  virtual ~SearchProviderTest();
 
   void TestIsSearchProviderInstalledForHost(
       TabProxy* tab,
       const char* host,
       const char* expected_result);
 
-  scoped_refptr<net::HTTPTestServer> server_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SearchProviderTest);
+  net::TestServer test_server_;
 };
 
 SearchProviderTest::SearchProviderTest()
-    : server_(net::HTTPTestServer::CreateServer(L"chrome/test/data")) {
-  if (!server_)
-    return;
-
+    : test_server_(net::TestServer::TYPE_HTTP,
+                   FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   // Enable the search provider additions.
   launch_arguments_.AppendSwitch(switches::kEnableSearchProviderApiV2);
 
   // Map all hosts to our local server.
-  GURL server_url = server_->TestServerPage("");
-  std::string host_rule = "MAP * ";
-  host_rule.append(server_url.host());
-  if (server_url.has_port()) {
-    host_rule.append(":");
-    host_rule.append(server_url.port());
-  }
+  std::string host_rule("MAP * " + test_server_.host_port_pair().ToString());
   launch_arguments_.AppendSwitchASCII(switches::kHostRules, host_rule);
-}
-
-SearchProviderTest::~SearchProviderTest() {
-  server_->Stop();
 }
 
 void SearchProviderTest::TestIsSearchProviderInstalledForHost(
     TabProxy* tab,
     const char* host,
     const char* expected_result) {
-  ASSERT_TRUE(server_);
   GURL local_url =
-      server_->TestServerPage("files/is_search_provider_installed.html");
+      test_server_.GetURL("files/is_search_provider_installed.html");
   GURL test_url(std::string("http://") + host + local_url.path() +
                 "#" + expected_result);
   EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(test_url));
@@ -74,9 +57,11 @@ void SearchProviderTest::TestIsSearchProviderInstalledForHost(
   EXPECT_STREQ("1\n", value.c_str());
 }
 
+// Verify the default search provider, other installed search provider, and
+// one not installed as well.
 TEST_F(SearchProviderTest, DISABLED_TestIsSearchProviderInstalled) {
-  // Verify the default search provider, other installed search provider, and
-  // one not installed as well.
+  ASSERT_TRUE(test_server_.Start());
+
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   TestIsSearchProviderInstalledForHost(tab, "www.google.com", "2");

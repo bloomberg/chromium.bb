@@ -205,14 +205,12 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   bool Initialize(InitializationOptions options) WARN_UNUSED_RESULT {
     GeolocationArbitrator::SetProviderFactoryForTest(
         &NewAutoSuccessMockNetworkLocationProvider);
-    if (!server_.get()) {
-      server_ = StartHTTPServer();
-      EXPECT_TRUE(server_.get());
-      if (!server_.get())
-        return false;
-    }
+    bool started = test_server()->Start();
+    EXPECT_TRUE(started);
+    if (!started)
+      return false;
 
-    current_url_ = server_->TestServerPage(html_for_tests_);
+    current_url_ = test_server()->GetURL(html_for_tests_);
     LOG(WARNING) << "before navigate";
     if (options == INITIALIZATION_OFFTHERECORD) {
       ui_test_utils::OpenURLOffTheRecord(browser()->profile(), current_url_);
@@ -330,7 +328,6 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
         expected, function, current_browser_->GetSelectedTabContents());
   }
 
-  scoped_refptr<net::HTTPTestServer> server_;
   InfoBarDelegate* infobar_;
   Browser* current_browser_;
   // path element of a URL referencing the html content for this test.

@@ -25,11 +25,11 @@ const std::string kSimplePage = "404_is_enough_for_us.html";
 // The find window should not change its location just because we open and close
 // a new tab.
 TEST_F(FindInPageControllerTest, FindMovesOnTabClose_Issue1343052) {
-  scoped_refptr<net::HTTPTestServer> server =
-      net::HTTPTestServer::CreateServer(L"chrome/test/data");
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
 
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server.GetURL(kSimplePage);
   scoped_refptr<TabProxy> tabA(GetActiveTab());
   ASSERT_TRUE(tabA.get());
   ASSERT_TRUE(tabA->NavigateToURL(url));

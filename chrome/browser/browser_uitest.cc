@@ -87,9 +87,10 @@ TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   if (in_process_renderer())
     return;
 
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<HTTPTestServer> server(HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
   FilePath test_file(test_data_directory_);
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());
@@ -137,10 +138,10 @@ TEST_F(BrowserTest, MAYBE_OtherRedirectsDontForkProcess) {
   if (in_process_renderer())
     return;
 
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
   FilePath test_file(test_data_directory_);
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(window.get());

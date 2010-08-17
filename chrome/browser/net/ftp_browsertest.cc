@@ -4,20 +4,21 @@
 
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
+#include "googleurl/src/gurl.h"
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FtpBrowserTest : public InProcessBrowserTest {
  public:
-  FtpBrowserTest() : server_(net::FTPTestServer::CreateServer(L"")) {
+  FtpBrowserTest() : ftp_server_(net::TestServer::TYPE_FTP, FilePath()) {
   }
 
  protected:
-  scoped_refptr<net::FTPTestServer> server_;
+  net::TestServer ftp_server_;
 };
 
 IN_PROC_BROWSER_TEST_F(FtpBrowserTest, DirectoryListing) {
-  ASSERT_TRUE(NULL != server_.get());
-  ui_test_utils::NavigateToURL(browser(), server_->TestServerPage("/"));
+  ASSERT_TRUE(ftp_server_.Start());
+  ui_test_utils::NavigateToURL(browser(), ftp_server_.GetURL("/"));
   // TODO(phajdan.jr): test more things.
 }

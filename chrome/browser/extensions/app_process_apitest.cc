@@ -56,7 +56,7 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
 
 IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app_process")));
 

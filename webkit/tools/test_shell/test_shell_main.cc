@@ -177,12 +177,6 @@ int main(int argc, char* argv[]) {
   // Config the network module so it has access to a limited set of resources.
   net::NetModule::SetResourceProvider(TestShell::NetResourceProvider);
 
-  // On Linux and Mac, load the test root certificate.
-  net::TestServerLauncher ssl_util;
-  if (!ssl_util.LoadTestRootCert()) {
-    LOG(ERROR) << "Failed to load test root certificate.";
-  }
-
   platform.InitializeGUI();
 
   if (parsed_command_line.HasSwitch(test_shell::kEnableLegacyParser)) {

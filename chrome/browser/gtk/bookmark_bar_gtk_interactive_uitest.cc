@@ -13,7 +13,6 @@
 
 namespace {
 
-const wchar_t kDocRoot[] = L"chrome/test/data";
 const char kSimplePage[] = "404_is_enough_for_us.html";
 
 void OnClicked(GtkWidget* widget, bool* clicked_bit) {
@@ -28,9 +27,7 @@ class BookmarkBarGtkBrowserTest : public InProcessBrowserTest {
 // Makes sure that when you switch back to an NTP with an active findbar,
 // the findbar is above the floating bookmark bar.
 IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, FindBarTest) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server()->Start());
 
   // Create new tab; open findbar.
   browser()->NewTab();
@@ -38,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, FindBarTest) {
 
   // Create new tab with an arbitrary URL.
   Browser* browser_used = NULL;
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, -1,
                            TabStripModel::ADD_SELECTED, NULL, std::string(),
                            &browser_used);
@@ -59,9 +56,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, FindBarTest) {
 
 // Makes sure that you can click on the floating bookmark bar.
 IN_PROC_BROWSER_TEST_F(BookmarkBarGtkBrowserTest, ClickOnFloatingTest) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server()->Start());
 
   GtkWidget* other_bookmarks =
       ViewIDUtil::GetWidget(GTK_WIDGET(browser()->window()->GetNativeHandle()),

@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
   // The results depend on the TemplateURLModel being loaded. Make sure it is

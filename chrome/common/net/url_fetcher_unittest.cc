@@ -21,7 +21,7 @@ using base::TimeDelta;
 
 namespace {
 
-const wchar_t kDocRoot[] = L"chrome/test/data";
+const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 class TestURLRequestContextGetter : public URLRequestContextGetter {
  public:
@@ -431,22 +431,20 @@ void URLFetcherCancelTest::CancelRequest() {
 }
 
 TEST_F(URLFetcherTest, SameThreadsTest) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
 
   // Create the fetcher on the main thread.  Since IO will happen on the main
   // thread, this will test URLFetcher's ability to do everything on one
   // thread.
-  CreateFetcher(GURL(server->TestServerPage("defaultresponse")));
+  CreateFetcher(test_server.GetURL("defaultresponse"));
 
   MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherTest, DifferentThreadsTest) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
 
   // Create a separate thread that will create the URLFetcher.  The current
   // (main) thread will do the IO, and when the fetch is complete it will
@@ -456,33 +454,34 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
   base::Thread t("URLFetcher test thread");
   ASSERT_TRUE(t.Start());
   t.message_loop()->PostTask(FROM_HERE, new FetcherWrapperTask(this,
-      GURL(server->TestServerPage("defaultresponse"))));
+      test_server.GetURL("defaultresponse")));
 
   MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherPostTest, Basic) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  CreateFetcher(GURL(server->TestServerPage("echo")));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  CreateFetcher(test_server.GetURL("echo"));
   MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherHeadersTest, Headers) {
-  scoped_refptr<net::HTTPTestServer> server =
-      net::HTTPTestServer::CreateServer(L"net/data/url_request_unittest");
-  ASSERT_TRUE(NULL != server.get());
-  CreateFetcher(GURL(server->TestServerPage("files/with-headers.html")));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+      FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest")));
+  ASSERT_TRUE(test_server.Start());
+
+  CreateFetcher(test_server.GetURL("files/with-headers.html"));
   MessageLoop::current()->Run();
   // The actual tests are in the URLFetcherHeadersTest fixture.
 }
 
 TEST_F(URLFetcherProtectTest, Overload) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  GURL url = GURL(server->TestServerPage("defaultresponse"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL url(test_server.GetURL("defaultresponse"));
 
   // Registers an entry for test url. It only allows 3 requests to be sent
   // in 200 milliseconds.
@@ -497,10 +496,10 @@ TEST_F(URLFetcherProtectTest, Overload) {
 }
 
 TEST_F(URLFetcherProtectTest, ServerUnavailable) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL url(test_server.GetURL("files/server-unavailable.html"));
 
   // Registers an entry for test url. The backoff time is calculated by:
   //     new_backoff = 2.0 * old_backoff + 0
@@ -517,10 +516,10 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
 }
 
 TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL url(test_server.GetURL("files/server-unavailable.html"));
 
   // Registers an entry for test url. The backoff time is calculated by:
   //     new_backoff = 2.0 * old_backoff + 0
@@ -540,20 +539,19 @@ TEST_F(URLFetcherProtectTestPassedThrough, ServerUnavailablePropagateResponse) {
 
 
 TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
-  scoped_refptr<net::HTTPSTestServer> server =
-      net::HTTPSTestServer::CreateExpiredServer(kDocRoot);
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTPS_EXPIRED_CERTIFICATE,
+                              FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
 
-  CreateFetcher(GURL(server->TestServerPage("defaultresponse")));
-
+  CreateFetcher(test_server.GetURL("defaultresponse"));
   MessageLoop::current()->Run();
 }
 
 TEST_F(URLFetcherCancelTest, ReleasesContext) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL url(test_server.GetURL("files/server-unavailable.html"));
 
   // Registers an entry for test url. The backoff time is calculated by:
   //     new_backoff = 2.0 * old_backoff + 0
@@ -577,10 +575,10 @@ TEST_F(URLFetcherCancelTest, ReleasesContext) {
 }
 
 TEST_F(URLFetcherCancelTest, CancelWhileDelayedStartTaskPending) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  GURL url = GURL(server->TestServerPage("files/server-unavailable.html"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL url(test_server.GetURL("files/server-unavailable.html"));
 
   // Register an entry for test url.
   //

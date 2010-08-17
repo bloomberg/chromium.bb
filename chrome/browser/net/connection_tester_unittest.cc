@@ -71,7 +71,10 @@ class ConnectionTesterDelegate : public ConnectionTester::Delegate {
 //     (so the test doesn't use any external network dependencies).
 class ConnectionTesterTest : public PlatformTest {
  public:
-  ConnectionTesterTest() : message_loop_(MessageLoop::TYPE_IO) {
+  ConnectionTesterTest()
+      : test_server_(net::TestServer::TYPE_HTTP,
+            FilePath(FILE_PATH_LITERAL("net/data/url_request_unittest"))),
+        message_loop_(MessageLoop::TYPE_IO) {
     scoped_refptr<net::RuleBasedHostResolverProc> catchall_resolver =
         new net::RuleBasedHostResolverProc(NULL);
 
@@ -82,20 +85,19 @@ class ConnectionTesterTest : public PlatformTest {
 
  protected:
   net::ScopedDefaultHostResolverProc scoped_host_resolver_proc_;
+  net::TestServer test_server_;
   ConnectionTesterDelegate test_delegate_;
   MessageLoop message_loop_;
 };
 
 TEST_F(ConnectionTesterTest, RunAllTests) {
-  scoped_refptr<net::HTTPTestServer> server =
-      net::HTTPTestServer::CreateServer(L"net/data/url_request_unittest/");
+  ASSERT_TRUE(test_server_.Start());
 
   ConnectionTester tester(&test_delegate_);
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?
-  GURL url = server->TestServerPage("echoall");
-  tester.RunAllTests(url);
+  tester.RunAllTests(test_server_.GetURL("echoall"));
 
   // Wait for all the tests to complete.
   MessageLoop::current()->Run();
@@ -113,15 +115,13 @@ TEST_F(ConnectionTesterTest, RunAllTests) {
 }
 
 TEST_F(ConnectionTesterTest, DeleteWhileInProgress) {
-  scoped_refptr<net::HTTPTestServer> server =
-      net::HTTPTestServer::CreateServer(L"net/data/url_request_unittest/");
+  ASSERT_TRUE(test_server_.Start());
 
   scoped_ptr<ConnectionTester> tester(new ConnectionTester(&test_delegate_));
 
   // Start the test suite on URL "echoall".
   // TODO(eroman): Is this URL right?
-  GURL url = server->TestServerPage("echoall");
-  tester->RunAllTests(url);
+  tester->RunAllTests(test_server_.GetURL("echoall"));
 
   MessageLoop::current()->RunAllPending();
 

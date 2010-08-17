@@ -15,7 +15,7 @@
 
 namespace {
 
-const wchar_t kDocRoot[] = L"chrome/test/data";
+const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 }  // namespace
 
@@ -23,9 +23,9 @@ typedef UITest CollectedCookiesTest;
 
 // Test is flaky. http://crbug.com/49539
 TEST_F(CollectedCookiesTest, FLAKY_DoubleDisplay) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -37,7 +37,7 @@ TEST_F(CollectedCookiesTest, FLAKY_DoubleDisplay) {
                                                 CONTENT_SETTING_BLOCK));
 
   // Load a page with cookies.
-  ASSERT_TRUE(tab->NavigateToURL(server->TestServerPage("files/cookie1.html")));
+  ASSERT_TRUE(tab->NavigateToURL(test_server.GetURL("files/cookie1.html")));
 
   // Click on the info link twice.
   ASSERT_TRUE(tab->ShowCollectedCookiesDialog());
@@ -46,9 +46,9 @@ TEST_F(CollectedCookiesTest, FLAKY_DoubleDisplay) {
 
 // Test is flaky. http://crbug.com/49539
 TEST_F(CollectedCookiesTest, FLAKY_NavigateAway) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
 
@@ -60,11 +60,11 @@ TEST_F(CollectedCookiesTest, FLAKY_NavigateAway) {
                                                 CONTENT_SETTING_BLOCK));
 
   // Load a page with cookies.
-  ASSERT_TRUE(tab->NavigateToURL(server->TestServerPage("files/cookie1.html")));
+  ASSERT_TRUE(tab->NavigateToURL(test_server.GetURL("files/cookie1.html")));
 
   // Click on the info link.
   ASSERT_TRUE(tab->ShowCollectedCookiesDialog());
 
   // Navigate to another page.
-  ASSERT_TRUE(tab->NavigateToURL(server->TestServerPage("files/cookie2.html")));
+  ASSERT_TRUE(tab->NavigateToURL(test_server.GetURL("files/cookie2.html")));
 }

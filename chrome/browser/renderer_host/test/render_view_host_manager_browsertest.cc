@@ -35,14 +35,14 @@ class RenderViewHostManagerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        SwapProcessWithRelNoreferrerAndTargetBlank) {
   // Start two servers with different sites.
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> http_server =
-      net::HTTPTestServer::CreateServer(kDocRoot);
-  scoped_refptr<net::HTTPSTestServer> https_server =
-      net::HTTPSTestServer::CreateGoodServer(kDocRoot);
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server_(
+      net::TestServer::TYPE_HTTPS,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server_.Start());
 
   // Load a page with links that open in a new window.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+  ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(
       "files/click-noreferrer-links.html"));
 
   // Get the original SiteInstance for later comparison.
@@ -78,14 +78,14 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        DontSwapProcessWithOnlyTargetBlank) {
   // Start two servers with different sites.
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> http_server =
-      net::HTTPTestServer::CreateServer(kDocRoot);
-  scoped_refptr<net::HTTPSTestServer> https_server =
-      net::HTTPSTestServer::CreateGoodServer(kDocRoot);
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server_(
+      net::TestServer::TYPE_HTTPS,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server_.Start());
 
   // Load a page with links that open in a new window.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+  ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(
       "files/click-noreferrer-links.html"));
 
   // Get the original SiteInstance for later comparison.
@@ -121,14 +121,14 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
                        DontSwapProcessWithOnlyRelNoreferrer) {
   // Start two servers with different sites.
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> http_server =
-      net::HTTPTestServer::CreateServer(kDocRoot);
-  scoped_refptr<net::HTTPSTestServer> https_server =
-      net::HTTPSTestServer::CreateGoodServer(kDocRoot);
+  ASSERT_TRUE(test_server()->Start());
+  net::TestServer https_server_(
+      net::TestServer::TYPE_HTTPS,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server_.Start());
 
   // Load a page with links that open in a new window.
-  ui_test_utils::NavigateToURL(browser(), http_server->TestServerPage(
+  ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(
       "files/click-noreferrer-links.html"));
 
   // Get the original SiteInstance for later comparison.

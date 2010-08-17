@@ -24,7 +24,6 @@ namespace {
 
 // The delay waited after sending an OS simulated event.
 static const int kActionDelayMs = 500;
-static const wchar_t kDocRoot[] = L"chrome/test/data";
 static const char kSimplePage[] = "files/find_in_page/simple.html";
 
 class FindInPageTest : public InProcessBrowserTest {
@@ -89,12 +88,10 @@ class FindInPageTest : public InProcessBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page (tab A).
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->Find();
@@ -130,11 +127,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
 }
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server()->Start());
 
-  GURL url = server->TestServerPage("title1.html");
+  GURL url = test_server()->GetURL("title1.html");
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Focus the location bar, open and close the find-in-page, focus should
@@ -180,11 +175,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
   return;
 #endif
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   gfx::NativeWindow window = browser()->window()->GetNativeHandle();

@@ -111,8 +111,8 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   }
 
   void OpenDevToolsWindow(const std::string& test_page) {
-    net::HTTPTestServer* server = StartHTTPServer();
-    GURL url = server->TestServerPage(test_page);
+    ASSERT_TRUE(test_server()->Start());
+    GURL url = test_server()->GetURL(test_page);
     ui_test_utils::NavigateToURL(browser(), url);
 
     inspected_rvh_ = GetInspectedTab()->render_view_host();

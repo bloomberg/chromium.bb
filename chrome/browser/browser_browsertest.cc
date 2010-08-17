@@ -52,7 +52,7 @@ const std::wstring OPEN_NEW_BEFOREUNLOAD_PAGE =
 const FilePath::CharType* kTitle1File = FILE_PATH_LITERAL("title1.html");
 const FilePath::CharType* kTitle2File = FILE_PATH_LITERAL("title2.html");
 
-const wchar_t kDocRoot[] = L"chrome/test/data";
+const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 // Given a page title, returns the expected window caption string.
 std::wstring WindowCaptionFromPageTitle(std::wstring page_title) {
@@ -102,10 +102,9 @@ class BrowserTest : public ExtensionBrowserTest {
   // Used by phantom tab tests. Creates two tabs, pins the first and makes it
   // a phantom tab (by closing it).
   void PhantomTabTest() {
-    net::HTTPTestServer* server = StartHTTPServer();
-    ASSERT_TRUE(server);
+    ASSERT_TRUE(test_server()->Start());
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
-    GURL url(server->TestServerPage("empty.html"));
+    GURL url(test_server()->GetURL("empty.html"));
     TabStripModel* model = browser()->tabstrip_model();
 
     ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
@@ -332,10 +331,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFile) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
   CommandUpdater* command_updater = browser()->command_updater();
 
-  scoped_refptr<net::HTTPTestServer> http_server(
-        net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != http_server.get());
-  GURL http_url(http_server->TestServerPage(""));
+  ASSERT_TRUE(test_server()->Start());
+  GURL http_url(test_server()->GetURL(""));
   ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
   ui_test_utils::NavigateToURL(browser(), http_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
@@ -344,10 +341,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttp) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
   CommandUpdater* command_updater = browser()->command_updater();
 
-  scoped_refptr<net::HTTPSTestServer> https_server(
-      net::HTTPSTestServer::CreateGoodServer(kDocRoot));
-  ASSERT_TRUE(NULL != https_server.get());
-  GURL https_url(https_server->TestServerPage("/"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTPS, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+  GURL https_url(test_server.GetURL("/"));
   ASSERT_TRUE(https_url.SchemeIs(chrome::kHttpsScheme));
   ui_test_utils::NavigateToURL(browser(), https_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
@@ -356,10 +352,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutHttps) {
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFtp) {
   CommandUpdater* command_updater = browser()->command_updater();
 
-  scoped_refptr<net::FTPTestServer> ftp_server(
-      net::FTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != ftp_server.get());
-  GURL ftp_url(ftp_server->TestServerPage(""));
+  net::TestServer test_server(net::TestServer::TYPE_FTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+  GURL ftp_url(test_server.GetURL(""));
   ASSERT_TRUE(ftp_url.SchemeIs(chrome::kFtpScheme));
   ui_test_utils::NavigateToURL(browser(), ftp_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
@@ -390,12 +385,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutInvalid) {
 // Test RenderView correctly send back favicon url for web page that redirects
 // to an anchor in javascript body.onload handler.
 IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
-  static const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> server(
-        net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  GURL url(server->TestServerPage("files/onload_redirect_to_anchor.html"));
-  GURL expected_favicon_url(server->TestServerPage("files/test.png"));
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL("files/onload_redirect_to_anchor.html"));
+  GURL expected_favicon_url(test_server()->GetURL("files/test.png"));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -455,10 +447,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
 // Makes sure TabClosing is sent when uninstalling an extension that is an app
 // tab.
 IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  GURL url(server->TestServerPage("empty.html"));
+  GURL url(test_server()->GetURL("empty.html"));
   TabStripModel* model = browser()->tabstrip_model();
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
@@ -511,10 +502,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
 #endif
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
-  static const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> server(
-        net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server()->Start());
 
   TabContents* current_tab = browser()->GetSelectedTabContents();
 
@@ -524,7 +512,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
       en_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
                                   current_tab);
   ui_test_utils::NavigateToURL(
-      browser(), GURL(server->TestServerPage("files/english_page.html")));
+      browser(), GURL(test_server()->GetURL("files/english_page.html")));
   EXPECT_TRUE(current_tab->language_state().original_language().empty());
   en_language_detected_signal.Wait();
   std::string lang;
@@ -538,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
       fr_language_detected_signal(NotificationType::TAB_LANGUAGE_DETERMINED,
                                   current_tab);
   ui_test_utils::NavigateToURL(
-      browser(), GURL(server->TestServerPage("files/french_page.html")));
+      browser(), GURL(test_server()->GetURL("files/french_page.html")));
   EXPECT_TRUE(current_tab->language_state().original_language().empty());
   fr_language_detected_signal.Wait();
   lang.clear();
@@ -556,12 +544,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_PageLanguageDetection) {
 #endif
 // Makes sure pinned tabs are restored correctly on start.
 IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // Add an pinned app tab.
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
-  GURL url(server->TestServerPage("empty.html"));
+  GURL url(test_server()->GetURL("empty.html"));
   TabStripModel* model = browser()->tabstrip_model();
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
   Extension* extension_app = GetExtension();
@@ -621,9 +608,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
 
 class BrowserAppRefocusTest : public ExtensionBrowserTest {
  public:
-  BrowserAppRefocusTest(): server_(NULL),
-                           extension_app_(NULL),
-                           profile_(NULL) {}
+  BrowserAppRefocusTest()
+      : extension_app_(NULL),
+        profile_(NULL) {}
 
  protected:
   // Common setup for all tests.  Can't use SetUpInProcessBrowserTestFixture
@@ -632,8 +619,7 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
   virtual void SetUpExtensionApp() {
     // The web URL of the example app we load has a host of
     // www.example.com .
-    server_ = StartHTTPServer();
-    ASSERT_TRUE(server_);
+    ASSERT_TRUE(test_server()->Start());
     host_resolver()->AddRule("www.example.com", "127.0.0.1");
 
     profile_ = browser()->profile();
@@ -667,7 +653,6 @@ class BrowserAppRefocusTest : public ExtensionBrowserTest {
     return true;
   }
 
-  net::HTTPTestServer* server_;
   Extension* extension_app_;
   Profile* profile_;
 };

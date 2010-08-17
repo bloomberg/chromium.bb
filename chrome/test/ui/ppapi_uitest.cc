@@ -68,11 +68,11 @@ class PPAPITest : public UITest {
   }
 
   void RunTestViaHTTP(const std::string& test_case) {
-    const wchar_t kDocRoot[] = L"third_party/ppapi/tests";
-    scoped_refptr<net::HTTPTestServer> server(
-        net::HTTPTestServer::CreateServer(kDocRoot));
-    ASSERT_TRUE(server);
-    RunTestURL(server->TestServerPage("files/test_case.html?" + test_case));
+    net::TestServer test_server(
+        net::TestServer::TYPE_HTTP,
+        FilePath(FILE_PATH_LITERAL("third_party/ppapi/tests")));
+    ASSERT_TRUE(test_server.Start());
+    RunTestURL(test_server.GetURL("files/test_case.html?" + test_case));
   }
 
  private:

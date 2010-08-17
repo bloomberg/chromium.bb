@@ -78,6 +78,8 @@ const int kSubsequentTimeoutInMS = 5000;
 
 InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
+      test_server_(net::TestServer::TYPE_HTTP,
+                   FilePath(FILE_PATH_LITERAL("chrome/test/data"))),
       show_window_(false),
       dom_automation_enabled_(false),
       tab_closeable_state_watcher_enabled_(false),
@@ -237,13 +239,6 @@ void InProcessBrowserTest::TearDown() {
   RenderProcessHost::set_run_renderer_in_process(original_single_process_);
 }
 
-net::HTTPTestServer* InProcessBrowserTest::StartHTTPServer() {
-  DCHECK(!http_server_.get());
-  http_server_ = net::HTTPTestServer::CreateServer(
-      L"chrome/test/data");
-  return http_server_.get();
-}
-
 // Creates a browser with a single tab (about:blank), waits for the tab to
 // finish loading and shows the browser.
 Browser* InProcessBrowserTest::CreateBrowser(Profile* profile) {
@@ -312,9 +307,6 @@ void InProcessBrowserTest::RunTestOnMainThreadLoop() {
 
   QuitBrowsers();
   pool.Recycle();
-
-  // Stop the HTTP server.
-  http_server_ = NULL;
 }
 
 void InProcessBrowserTest::QuitBrowsers() {

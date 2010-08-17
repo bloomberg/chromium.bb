@@ -65,13 +65,12 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
 
 // Visits a page that sets a first-party cookie.
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server != NULL);
+  ASSERT_TRUE(test_server()->Start());
 
   browser()->profile()->GetHostContentSettingsMap()->
       SetBlockThirdPartyCookies(true);
 
-  GURL url = server->TestServerPage("set-cookie?cookie1");
+  GURL url(test_server()->GetURL("set-cookie?cookie1"));
 
   std::string cookie = GetCookies(url);
   ASSERT_EQ("", cookie);
@@ -86,19 +85,18 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
 // a first-party cookie.
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
                        AllowFirstPartyCookiesRedirect) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server != NULL);
+  ASSERT_TRUE(test_server()->Start());
 
   browser()->profile()->GetHostContentSettingsMap()->
       SetBlockThirdPartyCookies(true);
 
-  GURL url = server->TestServerPage("server-redirect?");
+  GURL url(test_server()->GetURL("server-redirect?"));
+  GURL redirected_url(test_server()->GetURL("set-cookie?cookie2"));
 
-  GURL redirected_url = server->TestServerPage("set-cookie?cookie2");
-  // Change the host name from localhost to www.example.com so it triggers
+  // Change the host name from 127.0.0.1 to www.example.com so it triggers
   // third-party cookie blocking if the first party for cookies URL is not
   // changed when we follow a redirect.
-  ASSERT_EQ("localhost", redirected_url.host());
+  ASSERT_EQ("127.0.0.1", redirected_url.host());
   GURL::Replacements replacements;
   std::string new_host("www.example.com");
   replacements.SetHostStr(new_host);

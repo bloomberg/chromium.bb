@@ -30,16 +30,15 @@ class MultipartResponseUITest : public UITest {
 TEST_F(MultipartResponseUITest, MAYBE_SingleVisit) {
   // Make sure that visiting a multipart/x-mixed-replace site only
   // creates one entry in the visits table.
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> server =
-      net::HTTPTestServer::CreateServer(kDocRoot);
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
   scoped_refptr<TabProxy> tab_proxy(browser_proxy->GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
-  NavigateToURL(server->TestServerPage("multipart"));
+  NavigateToURL(test_server.GetURL("multipart"));
   std::wstring title;
   EXPECT_TRUE(tab_proxy->GetTabTitle(&title));
   EXPECT_EQ(L"page 9", title);

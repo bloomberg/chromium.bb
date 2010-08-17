@@ -374,11 +374,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, NormalKeyEvents) {
         "U 65 0 false false false false" } },
   };
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   BringBrowserWindowToFront();
-  GURL url = server->TestServerPage(kTestingPage);
+  GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
@@ -460,11 +459,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CtrlKeyEvents) {
       "U 17 0 true false false false" }
   };
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   BringBrowserWindowToFront();
-  GURL url = server->TestServerPage(kTestingPage);
+  GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
@@ -506,11 +504,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, CommandKeyEvents) {
       "U 91 0 false false false true" }
   };
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   BringBrowserWindowToFront();
-  GURL url = server->TestServerPage(kTestingPage);
+  GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
@@ -603,11 +600,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
   };
 #endif
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   BringBrowserWindowToFront();
-  GURL url = server->TestServerPage(kTestingPage);
+  GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ui_test_utils::RunAllPendingInMessageLoop();
@@ -671,11 +667,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, AccessKeys) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   BringBrowserWindowToFront();
-  GURL url = server->TestServerPage(kTestingPage);
+  GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
@@ -829,11 +824,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, EditorKeyBindings) {
       "U 17 0 true false false false" }
   };
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   BringBrowserWindowToFront();
-  GURL url = server->TestServerPage(kTestingPage);
+  GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
@@ -867,11 +861,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, PageUpDownKeys) {
       "U 34 0 false false false false" }
   };
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   BringBrowserWindowToFront();
-  GURL url = server->TestServerPage(kTestingPage);
+  GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));
@@ -909,11 +902,10 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, FocusMenuBarByAltKey) {
       "U 17 0 true false false false" }
   };
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   BringBrowserWindowToFront();
-  GURL url = server->TestServerPage(kTestingPage);
+  GURL url = test_server()->GetURL(kTestingPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_TAB_CONTAINER));

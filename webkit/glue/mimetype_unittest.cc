@@ -25,18 +25,17 @@ class MimeTypeTests : public TestShellTest {
 
   void CheckMimeType(const char* mimetype, const std::wstring& expected) {
     std::string path("contenttype?");
-    GURL url = server_->TestServerPage(path + mimetype);
+    GURL url(test_server_.GetURL(path + mimetype));
     LoadURL(url);
     WebFrame* frame = test_shell_->webView()->mainFrame();
     EXPECT_EQ(expected, webkit_glue::DumpDocumentText(frame));
   }
 
-  scoped_refptr<UnittestTestServer> server_;
+  UnittestTestServer test_server_;
 };
 
 TEST_F(MimeTypeTests, MimeTypeTests) {
-  server_ = UnittestTestServer::CreateServer();
-  ASSERT_TRUE(NULL != server_.get());
+  ASSERT_TRUE(test_server_.Start());
 
   std::wstring expected_src(L"<html>\n<body>\n"
       L"<p>HTML text</p>\n</body>\n</html>\n");

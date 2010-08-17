@@ -17,16 +17,18 @@ class FilePath;
 // Chrome Frame specilization of http server from net.
 class ChromeFrameHTTPServer {
  public:
+  ChromeFrameHTTPServer();
+
   void SetUp();
   void TearDown();
   bool WaitToFinish(int milliseconds);
   GURL Resolve(const wchar_t* relative_url);
   FilePath GetDataDir();
 
-  net::HTTPTestServer* server() { return server_; }
+  net::TestServer* test_server() { return &test_server_; }
 
  protected:
-  scoped_refptr<net::HTTPTestServer> server_;
+  net::TestServer test_server_;
 };
 
 #endif  // CHROME_FRAME_TEST_HTTP_SERVER_H_

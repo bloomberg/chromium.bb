@@ -25,13 +25,8 @@ using webkit_glue::ResourceFetcherWithTimeout;
 namespace {
 
 class ResourceFetcherTests : public TestShellTest {
- public:
-  void SetUp() {
-    TestShellTest::SetUp();
-  }
-  void TearDown() {
-    TestShellTest::TearDown();
-  }
+ protected:
+  UnittestTestServer test_server_;
 };
 
 static const int kMaxWaitTimeMs = 5000;
@@ -155,13 +150,11 @@ FetcherDelegate* FetcherDelegate::instance_ = NULL;
 
 // Test a fetch from the test server.
 TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
-  scoped_refptr<UnittestTestServer> server =
-      UnittestTestServer::CreateServer();
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server_.Start());
 
   WebFrame* frame = test_shell_->webView()->mainFrame();
 
-  GURL url = server->TestServerPage("files/test_shell/index.html");
+  GURL url(test_server_.GetURL("files/test_shell/index.html"));
   scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
   scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
       url, frame, delegate->NewCallback()));
@@ -174,7 +167,7 @@ TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
   EXPECT_TRUE(text.find("What is this page?") != std::string::npos);
 
   // Test 404 response.
-  url = server->TestServerPage("files/thisfiledoesntexist.html");
+  url = test_server_.GetURL("files/thisfiledoesntexist.html");
   delegate.reset(new FetcherDelegate);
   fetcher.reset(new ResourceFetcher(url, frame, delegate->NewCallback()));
 
@@ -186,9 +179,7 @@ TEST_F(ResourceFetcherTests, ResourceFetcherDownload) {
 }
 
 TEST_F(ResourceFetcherTests, ResourceFetcherDidFail) {
-  scoped_refptr<UnittestTestServer> server =
-      UnittestTestServer::CreateServer();
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server_.Start());
 
   WebFrame* frame = test_shell_->webView()->mainFrame();
 
@@ -209,15 +200,13 @@ TEST_F(ResourceFetcherTests, ResourceFetcherDidFail) {
 }
 
 TEST_F(ResourceFetcherTests, ResourceFetcherTimeout) {
-  scoped_refptr<UnittestTestServer> server =
-      UnittestTestServer::CreateServer();
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server_.Start());
 
   WebFrame* frame = test_shell_->webView()->mainFrame();
 
   // Grab a page that takes at least 1 sec to respond, but set the fetcher to
   // timeout in 0 sec.
-  GURL url = server->TestServerPage("slow?1");
+  GURL url(test_server_.GetURL("slow?1"));
   scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
   scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcherWithTimeout(
       url, frame, 0, delegate->NewCallback()));

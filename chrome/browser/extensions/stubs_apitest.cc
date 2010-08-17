@@ -16,14 +16,13 @@
 // should be available in content scripts) or update the list of privileged APIs
 // in renderer_extension_bindings.js.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Stubs) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("stubs")) << message_;
 
   // Navigate to a simple http:// page, which should get the content script
   // injected and run the rest of the test.
-  GURL url = server->TestServerPage("file/extensions/test_file.html");
+  GURL url(test_server()->GetURL("file/extensions/test_file.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   ResultCatcher catcher;

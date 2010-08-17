@@ -189,7 +189,8 @@ TEST_F(WorkerTest, IncognitoSharedWorkers) {
   RunIncognitoTest(FilePath(FILE_PATH_LITERAL("incognito_worker.html")));
 }
 
-const wchar_t kDocRoot[] = L"chrome/test/data/workers";
+const FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("chrome/test/data/workers");
 
 #if defined(OS_WIN)
 // http://crbug.com/33344 - NavigateAndWaitForAuth times out on the Windows
@@ -198,14 +199,13 @@ const wchar_t kDocRoot[] = L"chrome/test/data/workers";
 #endif
 // Make sure that auth dialog is displayed from worker context.
 TEST_F(WorkerTest, WorkerHttpAuth) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
 
-  GURL url = server->TestServerPage("files/worker_auth.html");
+  GURL url = test_server.GetURL("files/worker_auth.html");
   EXPECT_TRUE(NavigateAndWaitForAuth(tab, url));
 }
 
@@ -216,14 +216,13 @@ TEST_F(WorkerTest, WorkerHttpAuth) {
 #endif
 // Make sure that auth dialog is displayed from shared worker context.
 TEST_F(WorkerTest, SharedWorkerHttpAuth) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
 
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
 
-  GURL url = server->TestServerPage("files/shared_worker_auth.html");
+  GURL url = test_server.GetURL("files/shared_worker_auth.html");
   EXPECT_TRUE(NavigateAndWaitForAuth(tab, url));
   // TODO(atwilson): Add support to automation framework to test for auth
   // dialogs displayed by non-navigating tabs.

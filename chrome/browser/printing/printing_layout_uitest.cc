@@ -22,7 +22,7 @@ namespace {
 using printing::Image;
 
 const char kGenerateSwitch[] = "print-layout-generate";
-const wchar_t kDocRoot[] = L"chrome/test/data";
+const FilePath::CharType kDocRoot[] = FILE_PATH_LITERAL("chrome/test/data");
 
 class PrintingLayoutTest : public PrintingTest<UITest> {
  public:
@@ -289,11 +289,10 @@ TEST_F(PrintingLayoutTextTest, FAILS_Complex) {
                                                    "close_printdlg_thread");
 
   // Print a document, check its output.
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
 
-  NavigateToURL(server->TestServerPage("files/printing/test1.html"));
+  NavigateToURL(test_server.GetURL("files/printing/test1.html"));
   close_printdlg_thread.Start();
   PrintNowTab();
   close_printdlg_thread.Join();
@@ -321,9 +320,9 @@ TEST_F(PrintingLayoutTestHidden, DISABLED_ManyTimes) {
   if (IsTestCaseDisabled())
     return;
 
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
+
   DismissTheWindow dismisser(base::GetProcId(process()));
 
   ASSERT_GT(arraysize(kTestPool), 0u);
@@ -331,7 +330,7 @@ TEST_F(PrintingLayoutTestHidden, DISABLED_ManyTimes) {
     if (i)
       CleanupDumpDirectory();
     const TestPool& test = kTestPool[i % arraysize(kTestPool)];
-    NavigateToURL(server->TestServerPage(test.source));
+    NavigateToURL(test_server.GetURL(test.source));
     base::DelegateSimpleThread close_printdlg_thread1(&dismisser,
                                                       "close_printdlg_thread");
     EXPECT_EQ(NULL, FindDialogWindow(dismisser.owner_process()));
@@ -372,15 +371,14 @@ TEST_F(PrintingLayoutTest, DISABLED_Delayed) {
   if (IsTestCaseDisabled())
     return;
 
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
 
   {
     scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
     ASSERT_TRUE(tab_proxy.get());
     bool is_timeout = true;
-    GURL url = server->TestServerPage("files/printing/popup_delayed_print.htm");
+    GURL url = test_server.GetURL("files/printing/popup_delayed_print.htm");
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
               tab_proxy->NavigateToURL(url));
 
@@ -391,7 +389,7 @@ TEST_F(PrintingLayoutTest, DISABLED_Delayed) {
     close_printdlg_thread.Join();
 
     // Force a navigation elsewhere to verify that it's fine with it.
-    url = server->TestServerPage("files/printing/test1.html");
+    url = test_server.GetURL("files/printing/test1.html");
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
               tab_proxy->NavigateToURL(url));
   }
@@ -407,14 +405,13 @@ TEST_F(PrintingLayoutTest, DISABLED_IFrame) {
   if (IsTestCaseDisabled())
     return;
 
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  net::TestServer test_server(net::TestServer::TYPE_HTTP, FilePath(kDocRoot));
+  ASSERT_TRUE(test_server.Start());
 
   {
     scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
     ASSERT_TRUE(tab_proxy.get());
-    GURL url = server->TestServerPage("files/printing/iframe.htm");
+    GURL url = test_server.GetURL("files/printing/iframe.htm");
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
               tab_proxy->NavigateToURL(url));
 
@@ -425,7 +422,7 @@ TEST_F(PrintingLayoutTest, DISABLED_IFrame) {
     close_printdlg_thread.Join();
 
     // Force a navigation elsewhere to verify that it's fine with it.
-    url = server->TestServerPage("files/printing/test1.html");
+    url = test_server.GetURL("files/printing/test1.html");
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS,
               tab_proxy->NavigateToURL(url));
   }

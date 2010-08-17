@@ -9,58 +9,13 @@
 #include "net/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
-#include "webkit/glue/resource_loader_bridge.h"
 
-using webkit_glue::ResourceLoaderBridge;
-
-// We need to use ResourceLoaderBridge to communicate with the testserver
-// instead of using URLRequest directly because URLRequests need to be run on
-// the test_shell's IO thread.
-class UnittestTestServer : public net::HTTPTestServer {
- protected:
-  UnittestTestServer() {
-  }
-
+class UnittestTestServer : public net::TestServer {
  public:
-  static UnittestTestServer* CreateServer() {
-    UnittestTestServer* test_server = new UnittestTestServer();
-    FilePath no_cert;
-    FilePath docroot(FILE_PATH_LITERAL("webkit/data"));
-    if (!test_server->Start(net::TestServerLauncher::ProtoHTTP,
-        "localhost", 1337, docroot, no_cert, std::wstring())) {
-      delete test_server;
-      return NULL;
-    }
-    return test_server;
+  UnittestTestServer()
+      : net::TestServer(net::TestServer::TYPE_HTTP,
+                        FilePath(FILE_PATH_LITERAL("webkit/data"))) {
   }
-
-  virtual bool MakeGETRequest(const std::string& page_name) {
-    GURL url(TestServerPage(page_name));
-    webkit_glue::ResourceLoaderBridge::RequestInfo request_info;
-    request_info.method = "GET";
-    request_info.url = url;
-    request_info.first_party_for_cookies = url;
-    request_info.referrer = GURL();  // No referrer.
-    request_info.frame_origin = "null";
-    request_info.main_frame_origin = "null";
-    request_info.headers = std::string();  // No extra headers.
-    request_info.load_flags = net::LOAD_NORMAL;
-    request_info.requestor_pid = 0;
-    request_info.request_type = ResourceType::SUB_RESOURCE;
-    request_info.request_context = 0;
-    request_info.appcache_host_id = appcache::kNoHostId;
-    request_info.routing_id = 0;
-    scoped_ptr<ResourceLoaderBridge> loader(
-        ResourceLoaderBridge::Create(request_info));
-    EXPECT_TRUE(loader.get());
-
-    ResourceLoaderBridge::SyncLoadResponse resp;
-    loader->SyncLoad(&resp);
-    return resp.status.is_success();
-  }
-
- private:
-  virtual ~UnittestTestServer() {}
 };
 
 #endif  // WEBKIT_GLUE_UNITTEST_TEST_SERVER_H__

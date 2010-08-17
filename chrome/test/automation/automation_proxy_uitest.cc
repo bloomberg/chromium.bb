@@ -968,10 +968,10 @@ TEST_F(ExternalTabUITest, FLAKY_TabPostMessage) {
 }
 
 TEST_F(ExternalTabUITest, FLAKY_PostMessageTarget)  {
-  const wchar_t kDocRoot[] = L"chrome/test/data/external_tab";
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_THAT(server.get(), testing::NotNull());
+  net::TestServer test_server(
+      net::TestServer::TYPE_HTTP,
+      FilePath(FILE_PATH_LITERAL("chrome/test/data/external_tab")));
+  ASSERT_TRUE(test_server.Start());
 
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());

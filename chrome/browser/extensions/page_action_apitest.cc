@@ -15,7 +15,7 @@
 #include "chrome/test/ui_test_utils.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, PageAction) {
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("page_action/basics")) << message_;
   Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;

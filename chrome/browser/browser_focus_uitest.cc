@@ -187,11 +187,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, ClickingMovesFocus) {
 
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   gfx::NativeWindow window = browser()->window()->GetNativeHandle();
@@ -252,11 +251,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
 // Tabs remember focus.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Create several tabs.
@@ -331,11 +329,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
 // Tabs remember focus with find-in-page box.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->Find();
@@ -374,11 +371,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
 // Background window does not steal focus.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Open a new browser window.
@@ -410,7 +406,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
   unfocused_browser = browser();
 #endif
 
-  GURL steal_focus_url = server->TestServerPage(kStealFocusPage);
+  GURL steal_focus_url = test_server()->GetURL(kStealFocusPage);
   ui_test_utils::NavigateToURL(unfocused_browser, steal_focus_url);
 
   // Activate the first browser.
@@ -431,11 +427,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BackgroundBrowserDontStealFocus) {
 // Page cannot steal focus when focus is on location bar.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // Open the page that steals focus.
-  GURL url = server->TestServerPage(kStealFocusPage);
+  GURL url = test_server()->GetURL(kStealFocusPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->FocusLocationBar();
@@ -454,11 +449,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, LocationBarLockFocus) {
 // RenderWidget::didFocus()).
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page.
-  GURL url = server->TestServerPage(kTypicalPage);
+  GURL url = test_server()->GetURL(kTypicalPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->FocusLocationBar();
@@ -548,11 +542,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
 // Focus traversal while an interstitial is showing.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Focus should be on the page.
@@ -640,11 +633,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
 // Focus stays on page with interstitials.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Page should have focus.
@@ -677,11 +669,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, InterstitialFocus) {
 // Make sure Find box can request focus, even when it is already open.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // Open some page (any page that doesn't steal focus).
-  GURL url = server->TestServerPage(kTypicalPage);
+  GURL url = test_server()->GetURL(kTypicalPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   gfx::NativeWindow window = browser()->window()->GetNativeHandle();
@@ -779,8 +770,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FLAKY_TabInitialFocus) {
 // Tests that focus goes where expected when using reload.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // Open the new tab, reload.
   browser()->NewTab();
@@ -792,7 +782,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
 
   // Open a regular page, focus the location bar, reload.
-  ui_test_utils::NavigateToURL(browser(), server->TestServerPage(kSimplePage));
+  ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(kSimplePage));
   browser()->FocusLocationBar();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_LOCATION_BAR));
   browser()->Reload(CURRENT_TAB);
@@ -814,11 +804,10 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 // Tests that focus goes where expected when using reload on a crashed tab.
 IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusOnReloadCrashedTab) {
   BringBrowserWindowToFront();
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // Open a regular page, crash, reload.
-  ui_test_utils::NavigateToURL(browser(), server->TestServerPage(kSimplePage));
+  ui_test_utils::NavigateToURL(browser(), test_server()->GetURL(kSimplePage));
   ui_test_utils::CrashTab(browser()->GetSelectedTabContents());
   browser()->Reload(CURRENT_TAB);
   ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));

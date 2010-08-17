@@ -455,12 +455,12 @@ TEST_F(TabRestoreUITest, FLAKY_RestoreIntoSameWindow) {
 // Tests that a duplicate history entry is not created when we restore a page
 // to an existing SiteInstance.  (Bug 1230446)
 TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  GURL http_url1(server->TestServerPage("files/title1.html"));
-  GURL http_url2(server->TestServerPage("files/title2.html"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL http_url1(test_server.GetURL("files/title1.html"));
+  GURL http_url2(test_server.GetURL("files/title2.html"));
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
@@ -502,12 +502,12 @@ TEST_F(TabRestoreUITest, RestoreWithExistingSiteInstance) {
 // are given appropriate max page IDs, even if the renderer for the entry
 // already exists.  (Bug 1204135)
 TEST_F(TabRestoreUITest, RestoreCrossSiteWithExistingSiteInstance) {
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  GURL http_url1(server->TestServerPage("files/title1.html"));
-  GURL http_url2(server->TestServerPage("files/title2.html"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL http_url1(test_server.GetURL("files/title1.html"));
+  GURL http_url2(test_server.GetURL("files/title2.html"));
 
   scoped_refptr<BrowserProxy> browser_proxy(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser_proxy.get());
@@ -644,11 +644,11 @@ TEST_F(TabRestoreUITest, RestoreTabWithSpecialURL) {
 // Restore tab with special URL in its navigation history, go back to that
 // entry and see that it loads properly. See http://crbug.com/31905
 TEST_F(TabRestoreUITest, RestoreTabWithSpecialURLOnBack) {
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(server.get());
-  const GURL http_url(server->TestServerPage("files/title1.html"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  const GURL http_url(test_server.GetURL("files/title1.html"));
 
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());

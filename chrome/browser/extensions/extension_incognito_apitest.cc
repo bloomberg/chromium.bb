@@ -18,7 +18,7 @@
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   // Loads a simple extension which attempts to change the title of every page
   // that loads to "modified".
@@ -44,7 +44,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   // Load a dummy extension. This just tests that we don't regress a
   // crash fix when multiple incognito- and non-incognito-enabled extensions
@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
 // Tests that the APIs in an incognito-enabled extension work properly.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   ResultCatcher catcher;
 
@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
 // events or callbacks.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   ResultCatcher catcher;
 
@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
 // Test that opening a popup from an incognito browser window works properly.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoPopup) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   ResultCatcher catcher;
 

@@ -60,6 +60,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   explicit LiveSyncTest(TestType test_type)
       : test_type_(test_type),
         num_clients_(-1),
+        test_server_(net::TestServer::TYPE_HTTP, FilePath()),
         started_local_test_server_(false) {
     InProcessBrowserTest::set_show_window(true);
     InProcessBrowserTest::SetInitialTimeoutInMS(kTestTimeoutInMS);
@@ -195,7 +196,7 @@ class LiveSyncTest : public InProcessBrowserTest {
   scoped_ptr<Profile> verifier_;
 
   // Local instance of python sync server.
-  net::TestServerLauncher server_;
+  net::TestServer test_server_;
 
   // Keeps track of whether a local python sync server was used for a test.
   bool started_local_test_server_;

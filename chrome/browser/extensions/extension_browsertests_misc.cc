@@ -76,7 +76,7 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
 // extension specifies in permissions but not from others.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
   host_resolver()->AddRule("*", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(LoadExtension(test_data_dir_
     .AppendASCII("origin_privileges").AppendASCII("extension")));
 
@@ -146,8 +146,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
 
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // This page action will not show an icon, since it doesn't specify one but
   // is included here to test for a crash (http://crbug.com/25562).
@@ -161,13 +160,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 
   // Navigate to the feed page.
-  GURL feed_url = server->TestServerPage(kFeedPage);
+  GURL feed_url = test_server()->GetURL(kFeedPage);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   // We should now have one page action ready to go in the LocationBar.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   // Navigate to a page with no feed.
-  GURL no_feed = server->TestServerPage(kNoFeedPage);
+  GURL no_feed = test_server()->GetURL(kNoFeedPage);
   ui_test_utils::NavigateToURL(browser(), no_feed);
   // Make sure the page action goes away.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
@@ -175,8 +174,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
 
 // Tests that we don't lose the page action icon on in-page navigations.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   FilePath extension_path(test_data_dir_.AppendASCII("api_test")
                                         .AppendASCII("page_action")
@@ -184,31 +182,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Page action should become visible when we navigate here.
-  GURL feed_url = server->TestServerPage(kHashPageA);
+  GURL feed_url = test_server()->GetURL(kHashPageA);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   // In-page navigation, page action should remain.
-  feed_url = server->TestServerPage(kHashPageAHash);
+  feed_url = test_server()->GetURL(kHashPageAHash);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   // Not an in-page navigation, page action should go away.
-  feed_url = server->TestServerPage(kHashPageB);
+  feed_url = test_server()->GetURL(kHashPageB);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 }
 
 // Tests that the location bar forgets about unloaded page actions.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Navigation prompts the location bar to load page actions.
-  GURL feed_url = server->TestServerPage(kFeedPage);
+  GURL feed_url = test_server()->GetURL(kFeedPage);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionCountChangeTo(1));
 
@@ -257,8 +254,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
 // Makes sure that the RSS detects RSS feed links, even when rel tag contains
 // more than just "alternate".
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
     test_data_dir_.AppendASCII("subscribe_page_action")));
@@ -266,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 
   // Navigate to the feed page.
-  GURL feed_url = server->TestServerPage(kFeedPageMultiRel);
+  GURL feed_url = test_server()->GetURL(kFeedPageMultiRel);
   ui_test_utils::NavigateToURL(browser(), feed_url);
   // We should now have one page action ready to go in the LocationBar.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
@@ -296,8 +292,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
 // Tests that tooltips of a page action icon can be specified using UTF8.
 // See http://crbug.com/25349.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   const size_t size_before = service->extensions()->size();
@@ -307,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Any navigation prompts the location bar to load the page action.
-  GURL url = server->TestServerPage(kLocalization);
+  GURL url = test_server()->GetURL(kLocalization);
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
@@ -323,9 +318,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
                extension->page_action()->GetTitle(tab_id).c_str());
 }
 
-GURL GetFeedUrl(net::HTTPTestServer* server, const std::string& feed_page,
+GURL GetFeedUrl(net::TestServer* server, const std::string& feed_page,
                 bool direct_url, std::string extension_id) {
-  GURL feed_url = server->TestServerPage(feed_page);
+  GURL feed_url = server->GetURL(feed_page);
   if (direct_url) {
     // We navigate directly to the subscribe page for feeds where the feed
     // sniffing won't work, in other words, as is the case for malformed feeds.
@@ -386,7 +381,7 @@ bool ValidatePageElement(TabContents* tab,
 // extension to kick in, detect the feed and redirect to a feed preview page.
 // |sniff_xml_type| is generally set to true if the feed is sniffable and false
 // for invalid feeds.
-void NavigateToFeedAndValidate(net::HTTPTestServer* server,
+void NavigateToFeedAndValidate(net::TestServer* server,
                                const std::string& url,
                                Browser* browser,
                                bool sniff_xml_type,
@@ -425,13 +420,12 @@ void NavigateToFeedAndValidate(net::HTTPTestServer* server,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
-  NavigateToFeedAndValidate(server, kValidFeed1, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed1, browser(), true,
                             "Feed for MyFeedTitle",
                             "Title 1",
                             "Desc",
@@ -439,13 +433,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
-  NavigateToFeedAndValidate(server, kValidFeed2, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed2, browser(), true,
                             "Feed for MyFeed2",
                             "My item title1",
                             "This is a summary.",
@@ -453,13 +446,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
-  NavigateToFeedAndValidate(server, kValidFeed3, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed3, browser(), true,
                             "Feed for Google Code buglist rss feed",
                             "My dear title",
                             "My dear content",
@@ -467,13 +459,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
-  NavigateToFeedAndValidate(server, kValidFeed4, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed4, browser(), true,
                             "Feed for Title chars <script> %23 stop",
                             "Title chars  %23 stop",
                             "My dear content %23 stop",
@@ -481,15 +472,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
   // Try a feed with a link with an onclick handler (before r27440 this would
   // trigger a NOTREACHED).
-  NavigateToFeedAndValidate(server, kValidFeed0, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed0, browser(), true,
                             "Feed for MyFeedTitle",
                             "Title 1",
                             "Desc VIDEO",
@@ -497,14 +487,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
   // Feed with valid but mostly empty xml.
-  NavigateToFeedAndValidate(server, kValidFeed5, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed5, browser(), true,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
@@ -512,14 +501,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed6) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
   // Feed that is technically invalid but still parseable.
-  NavigateToFeedAndValidate(server, kValidFeed6, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeed6, browser(), true,
                             "Feed for MyFeedTitle",
                             "Title 1",
                             "Desc",
@@ -527,14 +515,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed6) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
   // Try an empty feed.
-  NavigateToFeedAndValidate(server, kInvalidFeed1, browser(), false,
+  NavigateToFeedAndValidate(test_server(), kInvalidFeed1, browser(), false,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
@@ -542,14 +529,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
   // Try a garbage feed.
-  NavigateToFeedAndValidate(server, kInvalidFeed2, browser(), false,
+  NavigateToFeedAndValidate(test_server(), kInvalidFeed2, browser(), false,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
@@ -557,14 +543,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
   // Try a feed that doesn't exist.
-  NavigateToFeedAndValidate(server, "foo.xml", browser(), false,
+  NavigateToFeedAndValidate(test_server(), "foo.xml", browser(), false,
                             "Feed for Unknown feed name",
                             "element 'anchor_0' not found",
                             "element 'desc_0' not found",
@@ -572,14 +557,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("subscribe_page_action")));
 
   // Valid feed but containing no links.
-  NavigateToFeedAndValidate(server, kValidFeedNoLinks, browser(), true,
+  NavigateToFeedAndValidate(test_server(), kValidFeedNoLinks, browser(), true,
                             "Feed for MyFeedTitle",
                             "Title with no link",
                             "Desc",

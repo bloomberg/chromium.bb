@@ -12,7 +12,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ExecuteScript) {
   host_resolver()->AddRuleWithLatency("a.com", "127.0.0.1", 500);
   host_resolver()->AddRule("b.com", "127.0.0.1");
   host_resolver()->AddRule("c.com", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("executescript/basic")) << message_;
   ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;
@@ -23,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ExecuteScript) {
 // (ExecuteScript) tests are de-flakified, reunite this case with it's brethern.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExecuteScriptFileAfterClose) {
   host_resolver()->AddRule("b.com", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("executescript/file_after_close")) << message_;
 }

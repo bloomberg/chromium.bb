@@ -144,11 +144,11 @@ TEST_F(SessionRestoreUITest, RestoresForwardAndBackwardNavs) {
 // are given appropriate max page IDs, so that going back to a restored
 // cross-site page and then forward again works.  (Bug 1204135)
 TEST_F(SessionRestoreUITest, RestoresCrossSiteForwardAndBackwardNavs) {
-  const wchar_t kDocRoot[] = L"chrome/test/data";
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
-  GURL cross_site_url(server->TestServerPage("files/title2.html"));
+  net::TestServer test_server(net::TestServer::TYPE_HTTP,
+                              FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(test_server.Start());
+
+  GURL cross_site_url(test_server.GetURL("files/title2.html"));
 
   // Visit URLs on different sites.
   NavigateToURL(url1_);

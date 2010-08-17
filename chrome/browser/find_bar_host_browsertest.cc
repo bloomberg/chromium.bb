@@ -116,11 +116,10 @@ int FindInPageWchar(TabContents* tab,
 
 // This test loads a page with frames and starts FindInPage requests.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFrames) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our frames page.
-  GURL url = server->TestServerPage(kFramePage);
+  GURL url = test_server()->GetURL(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Try incremental search (mimicking user typing in).
@@ -209,11 +208,10 @@ std::string FocusedOnPage(TabContents* tab_contents) {
 // close the Find box (ie. if you find within a link the link should be
 // focused).
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our special focus tracking page.
-  GURL url = server->TestServerPage(kEndState);
+  GURL url = test_server()->GetURL(kEndState);
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab_contents = browser()->GetSelectedTabContents();
@@ -257,11 +255,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageEndState) {
 // This test loads a single-frame page and makes sure the ordinal returned makes
 // sense as we FindNext over all the items.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageOrdinal) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our page.
-  GURL url = server->TestServerPage(kFrameData);
+  GURL url = test_server()->GetURL(kFrameData);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'o', which should make the first item active and return
@@ -297,11 +294,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageOrdinal) {
 // This tests that the ordinal is correctly adjusted after a selection
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                        SelectChangesOrdinal_Issue20883) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test content.
-  GURL url = server->TestServerPage(kSelectChangesOrdinal);
+  GURL url = test_server()->GetURL(kSelectChangesOrdinal);
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab_contents = browser()->GetSelectedTabContents();
@@ -337,11 +333,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 // This test loads a page with frames and makes sure the ordinal returned makes
 // sense.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageMultiFramesOrdinal) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our page.
-  GURL url = server->TestServerPage(kFramePage);
+  GURL url = test_server()->GetURL(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'a', which should make the first item active and return
@@ -389,11 +384,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageMultiFramesOrdinal) {
 // We could get ordinals out of whack when restarting search in subframes.
 // See http://crbug.com/5132.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPage_Issue5132) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our page.
-  GURL url = server->TestServerPage(kFramePage);
+  GURL url = test_server()->GetURL(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'goa' three times (6 matches on page).
@@ -420,11 +414,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPage_Issue5132) {
 
 // Load a page with no selectable text and make sure we don't crash.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnSelectableText) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our page.
-  GURL url = server->TestServerPage(kUserSelectPage);
+  GURL url = test_server()->GetURL(kUserSelectPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   int ordinal = 0;
@@ -438,11 +431,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindUnSelectableText) {
 
 // Try to reproduce the crash seen in issue 1341577.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue1341577) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our page.
-  GURL url = server->TestServerPage(kCrashPage);
+  GURL url = test_server()->GetURL(kCrashPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // This would crash the tab. These must be the first two find requests issued
@@ -471,11 +463,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue1341577) {
 // Try to reproduce the crash seen in http://crbug.com/14491, where an assert
 // hits in the BitStack size comparison in WebKit.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue14491) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our page.
-  GURL url = server->TestServerPage(kBitstackCrash);
+  GURL url = test_server()->GetURL(kBitstackCrash);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // This used to crash the tab.
@@ -494,11 +485,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindCrash_Issue14491) {
 //    ms) to find one or more of those matches (so Find times out and has to try
 //    again from where it left off).
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our page.
-  GURL url = server->TestServerPage(kTooFewMatchesPage);
+  GURL url = test_server()->GetURL(kTooFewMatchesPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // This string appears 5 times at the bottom of a long page. If Find restarts
@@ -512,11 +502,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindRestarts_Issue1155639) {
 
 // This tests bug 11761: FindInPage terminates search prematurely.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FAILS_FindInPagePrematureEnd) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our special focus tracking page.
-  GURL url = server->TestServerPage(kPrematureEnd);
+  GURL url = test_server()->GetURL(kPrematureEnd);
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab_contents = browser()->GetSelectedTabContents();
@@ -530,12 +519,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FAILS_FindInPagePrematureEnd) {
 }
 
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our special focus tracking page.
-  GURL url = server->TestServerPage(kSimplePage);
-  GURL url2 = server->TestServerPage(kFramePage);
+  GURL url = test_server()->GetURL(kSimplePage);
+  GURL url2 = test_server()->GetURL(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->ShowFindBar();
@@ -571,11 +559,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
 // when a New Tab is opened.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                        FindDisappearOnNewTabAndHistory) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our special focus tracking page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->ShowFindBar();
@@ -619,10 +606,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
 // Make sure Find box moves out of the way if it is obscuring the active match.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindMovesWhenObscuring) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
-  GURL url = server->TestServerPage(kMoveIfOver);
+  GURL url = test_server()->GetURL(kMoveIfOver);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->ShowFindBar();
@@ -678,11 +664,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindMovesWhenObscuring) {
 // Make sure F3 in a new tab works if Find has previous string to search for.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                        FindNextInNewTabUsesPrepopulate) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'no_match'. No matches should be found.
@@ -725,11 +710,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 #else
   IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, AcceleratorRestoring) {
 #endif
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   views::FocusManager* focus_manager =
@@ -764,11 +748,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 // Make sure Find box does not become UI-inactive when no text is in the box as
 // we switch to a tab contents with an empty find string. See issue 13570.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   browser()->ShowFindBar();
@@ -789,11 +772,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
 // Make sure F3 works after you FindNext a couple of times and end the Find
 // session. See issue http://crbug.com/28306.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to a simple page.
-  GURL url = server->TestServerPage(kSimple);
+  GURL url = test_server()->GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for 'page'. Should have 1 match.
@@ -821,11 +803,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 // with the last search from the same tab rather than the last overall search.
 // http://crbug.com/30006
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
-  GURL url = server->TestServerPage(kSimplePage);
+  GURL url = test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Find "Default".
@@ -863,11 +844,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
   return;
 #endif
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
-  GURL url = server->TestServerPage(kSimple);
+  GURL url = test_server()->GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for the word "page".
@@ -901,11 +881,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateInNewTab) {
   return;
 #endif
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
-  GURL url = server->TestServerPage(kSimple);
+  GURL url = test_server()->GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for the word "page".
@@ -940,11 +919,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
   return;
 #endif
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to any page.
-  GURL url = server->TestServerPage(kSimple);
+  GURL url = test_server()->GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for the word "page".
@@ -1019,11 +997,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
   return;
 #endif
 
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to the "simple" test page.
-  GURL url = server->TestServerPage(kSimple);
+  GURL url = test_server()->GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
   // Search for the word "page" in the normal browser tab.
@@ -1089,11 +1066,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_NoIncognitoPrepopulate) {
 // This makes sure that dismissing the find bar with kActivateSelection works.
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
                        MAYBE_ActivateLinkNavigatesPage) {
-  net::HTTPTestServer* server = StartHTTPServer();
-  ASSERT_TRUE(server);
+  ASSERT_TRUE(test_server()->Start());
 
   // First we navigate to our test content.
-  GURL url = server->TestServerPage(kLinkPage);
+  GURL url = test_server()->GetURL(kLinkPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
   TabContents* tab = browser()->GetSelectedTabContents();

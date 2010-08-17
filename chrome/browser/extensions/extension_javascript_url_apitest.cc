@@ -8,7 +8,7 @@
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, JavaScriptURLPermissions) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("tabs/javascript_url_permissions")) << message_;
 }

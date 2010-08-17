@@ -11,11 +11,13 @@
 
 namespace {
 
-const wchar_t kDocRoot[] = L"chrome/test/data";
+const char kTestHtml[] = "files/viewsource/test.html";
 
 class ViewSourceTest : public UITest {
  protected:
-  ViewSourceTest() : test_html_("files/viewsource/test.html") {
+  ViewSourceTest()
+      : test_server_(net::TestServer::TYPE_HTTP,
+                     FilePath(FILE_PATH_LITERAL("chrome/test/data"))) {
   }
 
   bool IsMenuCommandEnabled(int command) {
@@ -30,22 +32,21 @@ class ViewSourceTest : public UITest {
   }
 
  protected:
-  std::string test_html_;
+  net::TestServer test_server_;
 };
 
 // This test renders a page in view-source and then checks to see if a cookie
 // set in the html was set successfully (it shouldn't because we rendered the
 // page in view source)
 TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server_.Start());
+
   std::string cookie = "viewsource_cookie";
   std::string cookie_data = "foo";
 
   // First we navigate to our view-source test page.
   GURL url(chrome::kViewSourceScheme + std::string(":") +
-      server->TestServerPage(test_html_).spec());
+      test_server_.GetURL(kTestHtml).spec());
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(url));
@@ -62,12 +63,10 @@ TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
 // implementation of the view-source: prefix being consumed (removed from the
 // URL) if the URL was not changed (apart from adding the view-source prefix)
 TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server_.Start());
 
   // First we navigate to google.html.
-  GURL url(server->TestServerPage(test_html_));
+  GURL url(test_server_.GetURL(kTestHtml));
   NavigateToURL(url);
 
   // Then we navigate to the same url but with the "view-source:" prefix.
@@ -82,11 +81,9 @@ TEST_F(ViewSourceTest, DoesBrowserConsumeViewSourcePrefix) {
 // Make sure that when looking at the actual page, we can select "View Source"
 // from the menu.
 TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server_.Start());
 
-  GURL url(server->TestServerPage(test_html_));
+  GURL url(test_server_.GetURL(kTestHtml));
   NavigateToURL(url);
 
   EXPECT_TRUE(IsMenuCommandEnabled(IDC_VIEW_SOURCE));
@@ -95,12 +92,10 @@ TEST_F(ViewSourceTest, ViewSourceInMenuEnabledOnANormalPage) {
 // Make sure that when looking at the page source, we can't select "View Source"
 // from the menu.
 TEST_F(ViewSourceTest, ViewSourceInMenuDisabledWhileViewingSource) {
-  scoped_refptr<net::HTTPTestServer> server(
-      net::HTTPTestServer::CreateServer(kDocRoot));
-  ASSERT_TRUE(NULL != server.get());
+  ASSERT_TRUE(test_server_.Start());
 
   GURL url_viewsource(chrome::kViewSourceScheme + std::string(":") +
-      server->TestServerPage(test_html_).spec());
+      test_server_.GetURL(kTestHtml).spec());
   NavigateToURL(url_viewsource);
 
   EXPECT_FALSE(IsMenuCommandEnabled(IDC_VIEW_SOURCE));

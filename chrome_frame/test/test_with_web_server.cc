@@ -85,11 +85,7 @@ void ChromeFrameTestWithWebServer::SetUp() {
       .Append(FILE_PATH_LITERAL("data"));
 
   server_.SetUp();
-  EXPECT_TRUE(server_.server() != NULL);
-  if (server_.server()) {
-    results_dir_ = server_.GetDataDir();
-    results_dir_ = results_dir_.AppendASCII("dump");
-  }
+  results_dir_ = server_.test_server()->document_root().AppendASCII("dump");
 }
 
 void ChromeFrameTestWithWebServer::TearDown() {
@@ -100,7 +96,6 @@ void ChromeFrameTestWithWebServer::TearDown() {
 
 bool ChromeFrameTestWithWebServer::LaunchBrowser(BrowserKind browser,
                                                  const wchar_t* page) {
-  EXPECT_TRUE(server_.server() != NULL);
   std::wstring url = page;
   if (url.find(L"files/") != std::wstring::npos)
     url = UTF8ToWide(server_.Resolve(page).spec());
@@ -163,7 +158,6 @@ bool ChromeFrameTestWithWebServer::BringBrowserToTop() {
 }
 
 bool ChromeFrameTestWithWebServer::WaitForTestToComplete(int milliseconds) {
-  EXPECT_TRUE(server_.server() != NULL);
   return server_.WaitToFinish(milliseconds);
 }
 

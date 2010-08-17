@@ -45,7 +45,7 @@ class BrowserActionApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
   Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
@@ -266,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
-  ASSERT_TRUE(StartHTTPServer());
+  ASSERT_TRUE(test_server()->Start());
 
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
   Extension* extension = GetSingleLoadedExtension();

@@ -13,10 +13,12 @@
 
 const wchar_t kDocRoot[] = L"chrome_frame\\test\\data";
 
+ChromeFrameHTTPServer::ChromeFrameHTTPServer()
+  : test_server_(net::TestServer::TYPE_HTTP, FilePath(kDocRoot)) {
+}
+
 void ChromeFrameHTTPServer::SetUp() {
-  std::wstring document_root(kDocRoot);
-  server_ = net::HTTPTestServer::CreateServer(document_root);
-  ASSERT_TRUE(server_ != NULL);
+  ASSERT_TRUE(test_server_.Start());
 
   // copy CFInstance.js into the test directory
   FilePath cf_source_path;
@@ -37,9 +39,7 @@ void ChromeFrameHTTPServer::SetUp() {
 }
 
 void ChromeFrameHTTPServer::TearDown() {
-  if (server_) {
-    server_ = NULL;
-  }
+  test_server_.Stop();
 
   // clobber CFInstance.js
   FilePath cfi_path;
@@ -64,17 +64,14 @@ void ChromeFrameHTTPServer::TearDown() {
 }
 
 bool ChromeFrameHTTPServer::WaitToFinish(int milliseconds) {
-  if (!server_)
-    return true;
-
-  return server_->WaitToFinish(milliseconds);
+  return test_server_.WaitToFinish(milliseconds);
 }
 
 // TODO(phajdan.jr): Change wchar_t* to std::string& and fix callers.
 GURL ChromeFrameHTTPServer::Resolve(const wchar_t* relative_url) {
-  return server_->TestServerPage(WideToUTF8(relative_url));
+  return test_server_.GetURL(WideToUTF8(relative_url));
 }
 
 FilePath ChromeFrameHTTPServer::GetDataDir() {
-  return server_->GetDataDirectory();
+  return test_server_.document_root();
 }
