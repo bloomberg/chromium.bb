@@ -24,6 +24,20 @@ using testing::StrCaseEq;
 namespace chrome_frame_test {
 
 // MockIEEventSink methods
+void MockIEEventSink::OnDocumentComplete(IDispatch* dispatch, VARIANT* url) {
+  if (!event_sink_->IsCFRendering()) {
+    HWND renderer_window = event_sink_->GetRendererWindowSafe();
+    if (renderer_window) {
+      ::NotifyWinEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE,
+                       renderer_window,
+                       OBJID_CLIENT, 0L);
+    } else {
+      DLOG(INFO) << "Browser does not have renderer window";
+    }
+    OnLoad(IN_IE, V_BSTR(url));
+  }
+}
+
 ExpectationSet MockIEEventSink::ExpectNavigationCardinality(
     const std::wstring& url, Cardinality before_cardinality,
     Cardinality complete_cardinality) {

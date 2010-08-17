@@ -122,14 +122,7 @@ class MockIEEventSink : public IEEventListener {
  private:
   // Override IE's OnDocumentComplete to call our OnLoad, iff it is IE actually
   // rendering the page.
-  virtual void OnDocumentComplete(IDispatch* dispatch, VARIANT* url) {
-    if (!event_sink_->IsCFRendering()) {
-      ::NotifyWinEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE,
-                       event_sink_->GetRendererWindow(),
-                       OBJID_CLIENT, 0L);
-      OnLoad(IN_IE, V_BSTR(url));
-    }
-  }
+  virtual void OnDocumentComplete(IDispatch* dispatch, VARIANT* url);
 
   // Override CF's OnLoad to call our OnLoad.
   virtual void OnLoad(const wchar_t* url) {

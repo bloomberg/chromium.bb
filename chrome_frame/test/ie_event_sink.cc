@@ -254,8 +254,8 @@ HWND IEEventSink::GetRendererWindow() {
       EXPECT_TRUE(IsWindow(activex_window));
 
       // chrome tab window is the first (and the only) child of activex
-      for (HWND first_child = activex_window;
-        IsWindow(first_child); first_child = GetWindow(first_child, GW_CHILD)) {
+      for (HWND first_child = activex_window; ::IsWindow(first_child);
+           first_child = ::GetWindow(first_child, GW_CHILD)) {
         renderer_window = first_child;
       }
       wchar_t class_name[MAX_PATH] = {0};
@@ -278,7 +278,45 @@ HWND IEEventSink::GetRendererWindow() {
     }
   }
 
-  EXPECT_TRUE(IsWindow(renderer_window));
+  EXPECT_TRUE(::IsWindow(renderer_window));
+  return renderer_window;
+}
+
+HWND IEEventSink::GetRendererWindowSafe() {
+  HWND renderer_window = NULL;
+  if (IsCFRendering()) {
+    DCHECK(chrome_frame_);
+    ScopedComPtr<IOleWindow> ole_window;
+    ole_window.QueryFrom(chrome_frame_);
+
+    if (ole_window) {
+      HWND activex_window = NULL;
+      ole_window->GetWindow(&activex_window);
+
+      // chrome tab window is the first (and the only) child of activex
+      for (HWND first_child = activex_window; ::IsWindow(first_child);
+           first_child = ::GetWindow(first_child, GW_CHILD)) {
+        renderer_window = first_child;
+      }
+      wchar_t class_name[MAX_PATH] = {0};
+      GetClassName(renderer_window, class_name, arraysize(class_name));
+      if (_wcsicmp(class_name, L"Chrome_RenderWidgetHostHWND") != 0)
+        renderer_window = NULL;
+    }
+  } else {
+    DCHECK(web_browser2_);
+    ScopedComPtr<IDispatch> doc;
+    web_browser2_->get_Document(doc.Receive());
+    if (doc) {
+      ScopedComPtr<IOleWindow> ole_window;
+      ole_window.QueryFrom(doc);
+      if (ole_window) {
+        ole_window->GetWindow(&renderer_window);
+      }
+    }
+  }
+  if (!::IsWindow(renderer_window))
+    renderer_window = NULL;
   return renderer_window;
 }
 

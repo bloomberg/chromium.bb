@@ -108,11 +108,13 @@ class IEEventSink
   // SendInput API.
   void SendMouseClick(int x, int y, simulate_input::MouseButton button);
 
-  // Get the HWND for the browser's renderer window.
+  // Get the HWND for the browser's renderer window. Will fail test if
+  // renderer window not found.
   HWND GetRendererWindow();
 
-  // Returns whether the browser has a renderer window.
-  bool HasRendererWindow();
+  // Same as above, but does not fail the test if the window cannot be found.
+  // In that case, the returned handle will be NULL.
+  HWND GetRendererWindowSafe();
 
   // Launch IE, use the given listener, and navigate to the given url.
   HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url,
