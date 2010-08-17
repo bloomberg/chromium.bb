@@ -647,6 +647,14 @@ void RenderWidgetHostViewMac::SetTooltipText(const std::wstring& tooltip_text) {
   }
 }
 
+//
+// RenderWidgetHostViewCocoa uses the stored selection text,
+// which implements NSServicesRequests protocol.
+//
+void RenderWidgetHostViewMac::SelectionChanged(const std::string& text) {
+  selected_text_ = text;
+}
+
 BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
     const gfx::Size& size) {
   return new BackingStoreMac(render_widget_host_, size);
@@ -2240,6 +2248,43 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (ViewID)viewID {
   return VIEW_ID_TAB_CONTAINER_FOCUS_VIEW;
+}
+
+// Overriding a NSResponder method to support application services.
+
+- (id)validRequestorForSendType:(NSString*)sendType
+                     returnType:(NSString*)returnType {
+  if ([sendType isEqual:NSStringPboardType] && !returnType &&
+      !renderWidgetHostView_->selected_text().empty()) {
+    return self;
+  }
+
+  return [super validRequestorForSendType:sendType returnType:returnType];
+}
+
+@end
+
+//
+// Supporting application services
+//
+@implementation RenderWidgetHostViewCocoa(NSServicesRequests)
+
+- (BOOL)writeSelectionToPasteboard:(NSPasteboard*)pboard
+                             types:(NSArray*)types {
+  if (![types containsObject:NSStringPboardType] ||
+      renderWidgetHostView_->selected_text().empty())
+    return NO;
+
+  const std::string& str = renderWidgetHostView_->selected_text();
+  scoped_nsobject<NSString> text([[NSString alloc]
+                                   initWithUTF8String:str.c_str()]);
+  NSArray* toDeclare = [NSArray arrayWithObject:NSStringPboardType];
+  [pboard declareTypes:toDeclare owner:nil];
+  return [pboard setString:text forType:NSStringPboardType];
+}
+
+- (BOOL)readSelectionFromPasteboard:(NSPasteboard*)pboard {
+  return NO;
 }
 
 @end

@@ -140,6 +140,7 @@ void RecordLastRunAppBundlePath() {
 
 @interface AppController(Private)
 - (void)initMenuState;
+- (void)registerServicesMenuTypesTo:(NSApplication*)app;
 - (void)openUrls:(const std::vector<GURL>&)urls;
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
@@ -486,6 +487,9 @@ void RecordLastRunAppBundlePath() {
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.
   RecordLastRunAppBundlePath();
+
+  // Makes "Services" menu items available.
+  [self registerServicesMenuTypesTo:[notify object]];
 
   startupComplete_ = YES;
 
@@ -874,6 +878,17 @@ void RecordLastRunAppBundlePath() {
   menuState_->UpdateCommandEnabled(IDC_REPORT_BUG, true);
   menuState_->UpdateCommandEnabled(IDC_SYNC_BOOKMARKS, true);
   menuState_->UpdateCommandEnabled(IDC_TASK_MANAGER, true);
+}
+
+- (void)registerServicesMenuTypesTo:(NSApplication*)app {
+  // Currently we only support one-way service requests and don't
+  // support services that have return values such as the PGP
+  // encryption service.
+  // Also note that RenderWidgetHostViewCocoa implements
+  // NSServicesRequests which handles requests from services.
+  NSArray* sendTypes = [NSArray arrayWithObjects:NSStringPboardType, nil];
+  NSArray* returnTypes = [NSArray array];
+  [app registerServicesMenuSendTypes:sendTypes returnTypes:returnTypes];
 }
 
 - (Profile*)defaultProfile {

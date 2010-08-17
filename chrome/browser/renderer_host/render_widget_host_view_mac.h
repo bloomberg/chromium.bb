@@ -199,6 +199,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {};
   virtual void Destroy();
   virtual void SetTooltipText(const std::wstring& tooltip_text);
+  virtual void SelectionChanged(const std::string& text);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
   virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
   virtual void ShowPopupWithItems(gfx::Rect bounds,
@@ -246,6 +247,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   void set_parent_view(NSView* parent_view) { parent_view_ = parent_view; }
 
   void SetTextInputActive(bool active);
+
+  const std::string& selected_text() const { return selected_text_; }
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.
@@ -326,6 +329,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // Whether or not web accessibility is enabled.
   bool renderer_accessible_;
+
+  // selected text on the renderer.
+  std::string selected_text_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };
