@@ -278,24 +278,28 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
 
 void GeolocationInfoBarQueueController::ShowQueuedInfoBar(
     int render_process_id, int render_view_id) {
+  TabContents* tab_contents =
+      tab_util::GetTabContentsByID(render_process_id, render_view_id);
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
-       i != pending_infobar_requests_.end(); ++i) {
-    if (i->IsForTab(render_process_id, render_view_id)) {
-      // Check if already displayed.
-      if (i->infobar_delegate)
-        break;
-      TabContents* tab_contents =
-          tab_util::GetTabContentsByID(render_process_id, render_view_id);
-      i->infobar_delegate =
-          new GeolocationConfirmInfoBarDelegate(
-              tab_contents, this,
-              render_process_id, render_view_id,
-              i->bridge_id, i->requesting_frame,
-              UTF8ToWide(profile_->GetPrefs()->GetString(
-                  prefs::kAcceptLanguages)));
-      tab_contents->AddInfoBar(i->infobar_delegate);
-      break;
+       i != pending_infobar_requests_.end();) {
+    if (!i->IsForTab(render_process_id, render_view_id)) {
+      ++i;
+      continue;
     }
+    if (!tab_contents) {
+      i = pending_infobar_requests_.erase(i);
+      continue;
+    }
+    // Check if already displayed.
+    if (i->infobar_delegate)
+      break;
+    i->infobar_delegate = new GeolocationConfirmInfoBarDelegate(
+        tab_contents, this,
+        render_process_id, render_view_id,
+        i->bridge_id, i->requesting_frame,
+        UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+    tab_contents->AddInfoBar(i->infobar_delegate);
+    break;
   }
 }
 
