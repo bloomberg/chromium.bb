@@ -27,9 +27,11 @@ def GetTemplate(env):
   else:
     return 'templates_x86.S'
 
+template_obj = env.ComponentObject(GetTemplate(env))
+
 env.ComponentProgram('dynamic_load_test.nexe',
                      ['dynamic_load_test.c',
-                      GetTemplate(env)])
+                      template_obj])
 
 env.ComponentProgram('write_to_dyncode.nexe',
                      ['write_to_dyncode.c'])
@@ -39,7 +41,7 @@ env.ComponentProgram('dyncode_disabled_test.nexe',
 
 env.ComponentProgram('debug_mode_test.nexe',
                      ['debug_mode_test.c',
-                      GetTemplate(env)])
+                      template_obj])
 
 tests = [
     env.CommandSelLdrTestNacl(

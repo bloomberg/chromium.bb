@@ -107,6 +107,8 @@ ncdecode_table = env_decode_table.ComponentProgram('ncdecode_table',
                                                    ['ncdecode_table.c'],)
 env.Requires(ncdecode_table, crt)
 
+force_cpp = env.ComponentObject('force_cpp.cc')
+
 # Add new x86 table generator.
 ncdecode_tablegen = env_decode_table.ComponentProgram(
     'ncdecode_tablegen',
@@ -116,7 +118,7 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
      'ncdecode_OF.c',
      'ncdecode_sse.c',
      'ncdecodeX87.c',
-     'force_cpp.cc'
+     force_cpp,
     ],
     EXTRA_LIBS=['utils',
                 'gio',
@@ -198,18 +200,21 @@ if env['TARGET_SUBARCH'] == '32':
     env.AddNodeToTestSuite(node, ['small_tests'])
 
 # ======================================================================
-ncdis = env.ComponentProgram('ncdis',
-                             ['ncdis.c',
-                              'force_cpp.cc'
-                              ],
-                             EXTRA_LIBS=['ncdis_util',
-                                         'utils',
-                                         'ncvalidate',
-                                         'ncopcode_utils',
-                                         'nchelper',
-                                         'ncdis_util',
-                                         'platform',
-                                         'gio'])
+ncdis = env.ComponentProgram(
+  'ncdis', [
+    'ncdis.c',
+    force_cpp,
+  ],
+  EXTRA_LIBS=[
+    'ncdis_util',
+    'utils',
+    'ncvalidate',
+    'ncopcode_utils',
+    'nchelper',
+    'ncdis_util',
+    'platform',
+    'gio'
+  ])
 
 env.Requires(ncdis, crt)
 
@@ -339,18 +344,21 @@ env.AddNodeToTestSuite(ncdis_internal_test,
 
 # ======================================================================
 # Segment register validator.
-ncval = env.ComponentProgram('ncval',
-                             ['ncval.c',
-                              'force_cpp.cc'
-                              ],
-                             EXTRA_LIBS=['ncdis_util',
-                                         'ncvalidate_sfi',
-                                         'ncvalidate',
-                                         'ncopcode_utils',
-                                         'nchelper',
-                                         'platform',
-                                         'gio',
-                                         'utils'])
+ncval = env.ComponentProgram(
+  'ncval', [
+    'ncval.c',
+    force_cpp,
+  ],
+  EXTRA_LIBS=[
+    'ncdis_util',
+    'ncvalidate_sfi',
+    'ncvalidate',
+    'ncopcode_utils',
+    'nchelper',
+    'platform',
+    'gio',
+    'utils'
+  ])
 
 env.Requires(ncval, crt)
 

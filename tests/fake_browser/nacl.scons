@@ -28,7 +28,7 @@ if env['TARGET_ARCHITECTURE'] == 'arm':
   # to fail.
   Return()
 
-trusted_env = env['TRUSTED_ENV']
+trusted_env = env['TRUSTED_ENV'].Clone()
 
 if trusted_env.Bit('windows'):
   # This is necessary to get npupp.h to correctly define OSCALL to be
@@ -39,7 +39,7 @@ if trusted_env.Bit('windows'):
 if trusted_env.Bit('linux'):
   # We do not depend on libpthread ourselves, but poor old gdb has
   # some trouble coping with loading libpthread after startup.
-  trusted_env.Replace(LIBS=['dl', 'pthread'])
+  trusted_env.Replace(LIBS=['dl', 'pthread', '$OPTIONAL_COVERAGE_LIBS'])
 
 trusted_env.Append(LIBS=['platform', 'gio'])
 
