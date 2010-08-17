@@ -1,6 +1,11 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Note that although this is not a "browser" test, it runs as part of
+// browser_tests.  This is because WebKit does not work properly if it is
+// shutdown and re-initialized.  Since browser_tests runs each test in a
+// new process, this avoids the problem.
 
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 
