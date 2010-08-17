@@ -28,9 +28,8 @@ class AccountScreenTest : public WizardInProcessBrowserTest {
  protected:
   // Overridden from WizardInProcessBrowserTest:
   virtual void SetUpWizard() {
-    net::HTTPTestServer* server = StartHTTPServer();
-    ASSERT_TRUE(server != NULL);
-    GURL new_account_page_url(server->TestServerPage("files/new_account.html"));
+    ASSERT_TRUE(test_server()->Start());
+    GURL new_account_page_url(test_server()->GetURL("files/new_account.html"));
     AccountScreen::set_new_account_page_url(new_account_page_url);
     AccountScreen::set_check_for_https(false);
   }

@@ -103,9 +103,9 @@ class FileBrowseUiObserver : public NotificationObserver {
 };
 
 IN_PROC_BROWSER_TEST_F(FileBrowseBrowserTest, InputFileTriggerFileBrowse) {
-  net::HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(test_server()->Start());
   ui_test_utils::NavigateToURL(browser(),
-                               server->TestServerPage("files/input_file.html"));
+                               test_server()->GetURL("files/input_file.html"));
 
   DOMElementProxyRef doc = ui_test_utils::GetActiveDOMDocument(browser());
 
