@@ -99,11 +99,20 @@ class BookmarkBarView : public DetachableToolbarView,
   // the bookmark bar.
   void SetPageNavigator(PageNavigator* navigator);
 
+  // Sets whether the containing browser is showing an infobar.  This affects
+  // layout during animation.
+  void set_infobar_visible(bool infobar_visible) {
+    infobar_visible_ = infobar_visible;
+  }
+
   // DetachableToolbarView methods:
   virtual bool IsDetached() const;
   virtual bool IsOnTop() const;
   virtual double GetAnimationValue() const {
     return size_animation_->GetCurrentValue();
+  }
+  virtual int GetToolbarOverlap() const {
+    return GetToolbarOverlap(false);
   }
 
   // View methods:
@@ -165,7 +174,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // How much we want the bookmark bar to overlap the toolbar.  If |return_max|
   // is true, we return the maximum overlap rather than the current overlap.
-  int GetToolbarOverlap(bool return_max);
+  int GetToolbarOverlap(bool return_max) const;
 
   // Whether or not we are animating.
   bool is_animating() { return size_animation_->is_animating(); }
@@ -477,6 +486,9 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Owning browser. This is NULL during testing.
   Browser* browser_;
+
+  // True if the owning browser is showing an infobar.
+  bool infobar_visible_;
 
   // Animation controlling showing and hiding of the bar.
   scoped_ptr<SlideAnimation> size_animation_;

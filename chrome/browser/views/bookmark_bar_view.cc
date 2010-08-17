@@ -62,16 +62,17 @@ using views::View;
 
 // How much we want the bookmark bar to overlap the toolbar when in its
 // 'always shown' mode.
-static const int kToolbarOverlap = 4;
+static const int kToolbarOverlap = 3;
 
 // Margins around the content.
-static const int kTopMargin = 1;
+static const int kDetachedTopMargin = 1;  // When attached, we use 0 and let the
+                                          // toolbar above serve as the margin.
 static const int kBottomMargin = 2;
 static const int kLeftMargin = 1;
 static const int kRightMargin = 1;
 
 // Preferred height of the bookmarks bar.
-static const int kBarHeight = 29;
+static const int kBarHeight = 28;
 
 // Preferred height of the bookmarks bar when only shown on the new tab page.
 const int BookmarkBarView::kNewtabBarHeight = 57;
@@ -383,6 +384,7 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
       instructions_(NULL),
       bookmarks_separator_view_(NULL),
       browser_(browser),
+      infobar_visible_(false),
       throbbing_view_(NULL) {
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
@@ -749,9 +751,17 @@ bool BookmarkBarView::OnNewTabPage() const {
           browser_->GetSelectedTabContents()->ShouldShowBookmarkBar());
 }
 
-int BookmarkBarView::GetToolbarOverlap(bool return_max) {
-  if (return_max)
+int BookmarkBarView::GetToolbarOverlap(bool return_max) const {
+  // When not on the New Tab Page, always overlap by the full amount.
+  if (return_max || !OnNewTabPage())
     return kToolbarOverlap;
+  // When on the New Tab Page with an infobar, overlap by 0 whenever the infobar
+  // is above us (i.e. when we're detached), since drawing over the infobar
+  // looks weird.
+  if (IsDetached() && infobar_visible_)
+    return 0;
+  // When on the New Tab Page with no infobar, animate the overlap between the
+  // attached and detached states.
   return static_cast<int>(static_cast<double>(kToolbarOverlap) *
       size_animation_->GetCurrentValue());
 }
@@ -1568,9 +1578,10 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
     return prefsize;
 
   int x = kLeftMargin;
-  int y = kTopMargin;
+  int top_margin = IsDetached() ? kDetachedTopMargin : 0;
+  int y = top_margin;
   int width = View::width() - kRightMargin - kLeftMargin;
-  int height = View::height() - kTopMargin - kBottomMargin;
+  int height = View::height() - top_margin - kBottomMargin;
   int separator_margin = kSeparatorMargin;
 
   if (OnNewTabPage()) {
@@ -1651,9 +1662,9 @@ gfx::Size BookmarkBarView::LayoutItems(bool compute_bounds_only) {
   // Separator.
   if (!compute_bounds_only) {
     bookmarks_separator_view_->SetBounds(x,
-                                         y - kTopMargin,
+                                         y - top_margin,
                                          bookmarks_separator_pref.width(),
-                                         height + kTopMargin + kBottomMargin -
+                                         height + top_margin + kBottomMargin -
                                          separator_margin);
   }
 

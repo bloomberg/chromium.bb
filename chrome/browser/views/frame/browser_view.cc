@@ -231,6 +231,10 @@ BookmarkExtensionBackground::BookmarkExtensionBackground(
 void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
                                         views::View* view) const {
   ThemeProvider* tp = host_view_->GetThemeProvider();
+  int toolbar_overlap = host_view_->GetToolbarOverlap();
+  // The client edge is drawn below the toolbar bounds.
+  if (toolbar_overlap)
+    toolbar_overlap += views::NonClientFrameView::kClientEdgeThickness;
   if (host_view_->IsDetached()) {
     // Draw the background to match the new tab page.
     int height = 0;
@@ -239,7 +243,8 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
       height = contents->view()->GetContainerSize().height();
     NtpBackgroundUtil::PaintBackgroundDetachedMode(
         host_view_->GetThemeProvider(), canvas,
-        gfx::Rect(0, 0, host_view_->width(), host_view_->height()), height);
+        gfx::Rect(0, toolbar_overlap, host_view_->width(),
+                  host_view_->height() - toolbar_overlap), height);
 
     // As 'hidden' according to the animation is the full in-tab state,
     // we invert the value - when current_state is at '0', we expect the
@@ -259,10 +264,12 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     DetachableToolbarView::PaintContentAreaBackground(canvas, tp, rect,
                                                       roundness);
     DetachableToolbarView::PaintContentAreaBorder(canvas, tp, rect, roundness);
-    DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
+    if (!toolbar_overlap)
+      DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   } else {
     DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_);
-    DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
+    if (host_view_->height() >= toolbar_overlap)
+      DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   }
 }
 

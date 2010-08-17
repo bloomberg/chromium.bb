@@ -29,6 +29,9 @@ class DetachableToolbarView : public AccessibleToolbarView {
   // Gets the current state of the resize animation (show/hide).
   virtual double GetAnimationValue() const = 0;
 
+  // Gets the current amount of overlap atop the browser toolbar.
+  virtual int GetToolbarOverlap() const = 0;
+
   // Paint the background (including the theme image behind content area) when
   // in bar/shelf is attached to the Chrome frame.
   static void PaintBackgroundAttachedMode(gfx::Canvas* canvas,

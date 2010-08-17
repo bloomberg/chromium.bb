@@ -43,6 +43,9 @@ class BrowserViewLayout : public views::LayoutManager {
   Browser* browser() {
     return browser_view_->browser();
   }
+  const Browser* browser() const {
+    return browser_view_->browser();
+  }
 
   // Layout the TabStrip, returns the coordinate of the bottom of the TabStrip,
   // for laying out subsequent controls.
@@ -62,6 +65,9 @@ class BrowserViewLayout : public views::LayoutManager {
   // Layout the Download Shelf, returns the coordinate of the top of the
   // control, for laying out the previous control.
   int LayoutDownloadShelf(int bottom);
+
+  // Returns true if an infobar is showing.
+  bool InfobarVisible() const;
 
   // See description above vertical_layout_rect_ for details.
   void set_vertical_layout_rect(const gfx::Rect& bounds) {

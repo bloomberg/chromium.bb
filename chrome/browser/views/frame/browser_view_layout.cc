@@ -316,7 +316,7 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
     if (active_bookmark_bar_->IsDetached())
       return LayoutBookmarkBar(LayoutInfoBar(top));
     // Otherwise, Bookmark bar first, Info bar second.
-    top = LayoutBookmarkBar(top);
+    top = std::max(toolbar_->bounds().bottom(), LayoutBookmarkBar(top));
   }
   find_bar_y_ = top + browser_view_->y() - 1;
   return LayoutInfoBar(top);
@@ -331,9 +331,9 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
     return y;
   }
 
+  active_bookmark_bar_->set_infobar_visible(InfobarVisible());
   int bookmark_bar_height = active_bookmark_bar_->GetPreferredSize().height();
-  y -= kSeparationLineHeight + (active_bookmark_bar_->IsDetached() ?
-      0 : active_bookmark_bar_->GetToolbarOverlap(false));
+  y -= kSeparationLineHeight + active_bookmark_bar_->GetToolbarOverlap(false);
   active_bookmark_bar_->SetVisible(true);
   active_bookmark_bar_->SetBounds(vertical_layout_rect_.x(), y,
                                   vertical_layout_rect_.width(),
@@ -342,7 +342,7 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
 }
 
 int BrowserViewLayout::LayoutInfoBar(int top) {
-  bool visible = browser()->SupportsWindowFeature(Browser::FEATURE_INFOBAR);
+  bool visible = InfobarVisible();
   int height = visible ? infobar_container_->GetPreferredSize().height() : 0;
   infobar_container_->SetVisible(visible);
   infobar_container_->SetBounds(vertical_layout_rect_.x(), top,
@@ -373,4 +373,10 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
     bottom -= height;
   }
   return bottom;
+}
+
+bool BrowserViewLayout::InfobarVisible() const {
+  // NOTE: Can't check if the size IsEmpty() since it's always 0-width.
+  return browser()->SupportsWindowFeature(Browser::FEATURE_INFOBAR) &&
+      (infobar_container_->GetPreferredSize().height() != 0);
 }
