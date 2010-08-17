@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/scoped_temp_dir.h"
 #include "base/sha2.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
@@ -16,16 +17,11 @@
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
-#include "chrome/test/file_test_utils.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 using base::Time;
-
-static const FilePath::CharType kBloomSuffix[] =  FILE_PATH_LITERAL(" Bloom");
-static const FilePath::CharType kFolderPrefix[] =
-    FILE_PATH_LITERAL("SafeBrowsingTestDatabase");
 
 namespace {
 
@@ -48,25 +44,15 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
   virtual void SetUp() {
     PlatformTest::SetUp();
 
-    // Temporary directory for the database files.
-    FilePath temp_dir;
-    ASSERT_TRUE(file_util::CreateNewTempDirectory(kFolderPrefix, &temp_dir));
-    file_deleter_.reset(new FileAutoDeleter(temp_dir));
-
-    FilePath filename(temp_dir);
-    filename = filename.AppendASCII("SafeBrowsingTestDatabase");
-
-    // In case it existed from a previous run.
-    file_util::Delete(FilePath(filename.value() + kBloomSuffix), false);
-    file_util::Delete(filename, false);
-
+    // Setup a database in a temporary directory.
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     database_.reset(SafeBrowsingDatabase::Create());
-    database_->Init(filename);
+    database_->Init(
+        temp_dir_.path().AppendASCII("SafeBrowsingTestDatabase"));
   }
 
   virtual void TearDown() {
     database_.reset();
-    file_deleter_.reset();
 
     PlatformTest::TearDown();
   }
@@ -101,8 +87,8 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
   // Utility function for setting up the database for the caching test.
   void PopulateDatabaseForCacheTest();
 
-  scoped_ptr<FileAutoDeleter> file_deleter_;
   scoped_ptr<SafeBrowsingDatabase> database_;
+  ScopedTempDir temp_dir_;
 };
 
 // Tests retrieving list name information.
@@ -1003,13 +989,15 @@ void PrintStat(const char* name) {
 
 FilePath GetFullSBDataPath(const FilePath& path) {
   FilePath full_path;
-  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &full_path));
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &full_path)) {
+    ADD_FAILURE() << "Unable to find test DIR_SOURCE_ROOT for test data.";
+    return FilePath();
+  }
   full_path = full_path.AppendASCII("chrome");
   full_path = full_path.AppendASCII("test");
   full_path = full_path.AppendASCII("data");
   full_path = full_path.AppendASCII("safe_browsing");
   full_path = full_path.Append(path);
-  CHECK(file_util::PathExists(full_path));
   return full_path;
 }
 
@@ -1021,25 +1009,19 @@ struct ChunksInfo {
   std::string listname;
 };
 
-void PerformUpdate(const FilePath& initial_db,
+// TODO(shess): Move this into SafeBrowsingDatabaseTest.
+void PerformUpdate(SafeBrowsingDatabase* database,
+                   const FilePath& initial_db,
                    const std::vector<ChunksInfo>& chunks,
                    const std::vector<SBChunkDelete>& deletes) {
   base::IoCounters before, after;
 
-  FilePath path;
-  PathService::Get(base::DIR_TEMP, &path);
-  path = path.AppendASCII("SafeBrowsingTestDatabase");
-
-  // In case it existed from a previous run.
-  file_util::Delete(path, false);
-
   if (!initial_db.empty()) {
     FilePath full_initial_db = GetFullSBDataPath(initial_db);
-    ASSERT_TRUE(file_util::CopyFile(full_initial_db, path));
+    ASSERT_FALSE(full_initial_db.empty());
+    ASSERT_TRUE(file_util::PathExists(full_initial_db));
+    ASSERT_TRUE(file_util::CopyFile(full_initial_db, database->filename()));
   }
-
-  SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
-  database->Init(path);
 
   Time before_time = Time::Now();
   base::ProcessHandle handle = base::Process::Current().handle();
@@ -1089,11 +1071,10 @@ void PerformUpdate(const FilePath& initial_db,
   PrintStat("c:SB.ChunkInsert");
   PrintStat("c:SB.ChunkDelete");
   PrintStat("c:SB.TransactionCommit");
-
-  delete database;
 }
 
-void UpdateDatabase(const FilePath& initial_db,
+void UpdateDatabase(SafeBrowsingDatabase* database,
+                    const FilePath& initial_db,
                     const FilePath& response_path,
                     const FilePath& updates_path) {
   // First we read the chunks from disk, so that this isn't counted in IO bytes.
@@ -1102,6 +1083,8 @@ void UpdateDatabase(const FilePath& initial_db,
   SafeBrowsingProtocolParser parser;
   if (!updates_path.empty()) {
     FilePath data_dir = GetFullSBDataPath(updates_path);
+    ASSERT_FALSE(data_dir.empty());
+    ASSERT_TRUE(file_util::PathExists(data_dir));
     file_util::FileEnumerator file_enum(data_dir, false,
         file_util::FileEnumerator::FILES);
     while (true) {
@@ -1111,7 +1094,7 @@ void UpdateDatabase(const FilePath& initial_db,
 
       int64 size64;
       bool result = file_util::GetFileSize(file, &size64);
-      CHECK(result);
+      ASSERT_TRUE(result);
 
       int size = static_cast<int>(size64);
       scoped_array<char> data(new char[size]);
@@ -1123,7 +1106,7 @@ void UpdateDatabase(const FilePath& initial_db,
       bool re_key;
       result = parser.ParseChunk(data.get(), size, "", "",
                                  &re_key, info.chunks);
-      CHECK(result);
+      ASSERT_TRUE(result);
 
       info.listname = WideToASCII(file.BaseName().ToWStringHack());
       size_t index = info.listname.find('_');  // Get rid fo the _s or _a.
@@ -1138,6 +1121,8 @@ void UpdateDatabase(const FilePath& initial_db,
   if (!response_path.empty()) {
     std::string update;
     FilePath full_response_path = GetFullSBDataPath(response_path);
+    ASSERT_FALSE(full_response_path.empty());
+    ASSERT_TRUE(file_util::PathExists(full_response_path));
     if (file_util::ReadFileToString(full_response_path, &update)) {
       int next_update;
       bool result, rekey, reset;
@@ -1150,13 +1135,13 @@ void UpdateDatabase(const FilePath& initial_db,
                                   &reset,
                                   &deletes,
                                   &urls);
-      DCHECK(result);
+      ASSERT_TRUE(result);
       if (!updates_path.empty())
-        DCHECK(urls.size() == chunks.size());
+        ASSERT_EQ(urls.size(), chunks.size());
     }
   }
 
-  PerformUpdate(initial_db, chunks, deletes);
+  PerformUpdate(database, initial_db, chunks, deletes);
 
   // TODO(shess): Make ChunksInfo handle this via scoping.
   for (std::vector<ChunksInfo>::iterator iter = chunks.begin();
@@ -1188,30 +1173,33 @@ FilePath GetOldUpdatesPath() {
 // Counts the IO needed for the initial update of a database.
 // test\data\safe_browsing\download_update.py was used to fetch the add/sub
 // chunks that are read, in order to get repeatable runs.
-TEST(SafeBrowsingDatabase, DatabaseInitialIO) {
-  UpdateDatabase(FilePath(), FilePath(), FilePath().AppendASCII("initial"));
+TEST_F(SafeBrowsingDatabaseTest, DatabaseInitialIO) {
+  UpdateDatabase(database_.get(),
+                 FilePath(), FilePath(), FilePath().AppendASCII("initial"));
 }
 
 // Counts the IO needed to update a month old database.
 // The data files were generated by running "..\download_update.py postdata"
 // in the "safe_browsing\old" directory.
-TEST(SafeBrowsingDatabase, DatabaseOldIO) {
-  UpdateDatabase(GetOldSafeBrowsingPath(), GetOldResponsePath(),
-                 GetOldUpdatesPath());
+TEST_F(SafeBrowsingDatabaseTest, DatabaseOldIO) {
+  UpdateDatabase(database_.get(), GetOldSafeBrowsingPath(),
+                 GetOldResponsePath(), GetOldUpdatesPath());
 }
 
 // Like DatabaseOldIO but only the deletes.
-TEST(SafeBrowsingDatabase, DatabaseOldDeletesIO) {
-  UpdateDatabase(GetOldSafeBrowsingPath(), GetOldResponsePath(), FilePath());
+TEST_F(SafeBrowsingDatabaseTest, DatabaseOldDeletesIO) {
+  UpdateDatabase(database_.get(),
+                 GetOldSafeBrowsingPath(), GetOldResponsePath(), FilePath());
 }
 
 // Like DatabaseOldIO but only the updates.
-TEST(SafeBrowsingDatabase, DatabaseOldUpdatesIO) {
-  UpdateDatabase(GetOldSafeBrowsingPath(), FilePath(), GetOldUpdatesPath());
+TEST_F(SafeBrowsingDatabaseTest, DatabaseOldUpdatesIO) {
+  UpdateDatabase(database_.get(),
+                 GetOldSafeBrowsingPath(), FilePath(), GetOldUpdatesPath());
 }
 
 // Does a a lot of addel's on very large chunks.
-TEST(SafeBrowsingDatabase, DatabaseOldLotsofDeletesIO) {
+TEST_F(SafeBrowsingDatabaseTest, DatabaseOldLotsofDeletesIO) {
   std::vector<ChunksInfo> chunks;
   std::vector<SBChunkDelete> deletes;
   SBChunkDelete del;
@@ -1219,5 +1207,5 @@ TEST(SafeBrowsingDatabase, DatabaseOldLotsofDeletesIO) {
   del.list_name = safe_browsing_util::kMalwareList;
   del.chunk_del.push_back(ChunkRange(3539, 3579));
   deletes.push_back(del);
-  PerformUpdate(GetOldSafeBrowsingPath(), chunks, deletes);
+  PerformUpdate(database_.get(), GetOldSafeBrowsingPath(), chunks, deletes);
 }
