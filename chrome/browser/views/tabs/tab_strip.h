@@ -7,13 +7,13 @@
 #pragma once
 
 #include "app/animation_container.h"
-#include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"
 #include "views/controls/button/image_button.h"
+#include "views/mouse_watcher.h"
 
 class Tab;
 
@@ -41,7 +41,7 @@ class WidgetWin;
 ///////////////////////////////////////////////////////////////////////////////
 class TabStrip : public BaseTabStrip,
                  public views::ButtonListener,
-                 public MessageLoopForUI::Observer {
+                 public views::MouseWatcherListener {
  public:
   explicit TabStrip(TabStripController* controller);
   virtual ~TabStrip();
@@ -51,6 +51,9 @@ class TabStrip : public BaseTabStrip,
 
   // Returns the bounds of the new tab button.
   gfx::Rect GetNewTabButtonBounds();
+
+  // MouseWatcherListener overrides:
+  virtual void MouseMovedOutOfView();
 
   // BaseTabStrip implementation:
   virtual int GetPreferredHeight();
@@ -100,15 +103,6 @@ class TabStrip : public BaseTabStrip,
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
-  // MessageLoop::Observer implementation:
-#if defined(OS_WIN)
-  virtual void WillProcessMessage(const MSG& msg);
-  virtual void DidProcessMessage(const MSG& msg);
-#else
-  virtual void WillProcessEvent(GdkEvent* event);
-  virtual void DidProcessEvent(GdkEvent* event);
-#endif
 
   // Horizontal gap between mini and non-mini-tabs.
   static const int mini_to_non_mini_gap_;
@@ -188,10 +182,6 @@ class TabStrip : public BaseTabStrip,
   // Perform an animated resize-relayout of the TabStrip immediately.
   void ResizeLayoutTabs();
 
-  // Returns whether or not the cursor is currently in the "tab strip zone"
-  // which is defined as the region above the TabStrip and a bit below it.
-  bool IsCursorInTabStripZone() const;
-
   // Ensure that the message loop observer used for event spying is added and
   // removed appropriately so we can tell when to resize layout the tab strip.
   void AddMessageLoopObserver();
@@ -244,21 +234,10 @@ class TabStrip : public BaseTabStrip,
   // hit-test region of the specified Tab.
   bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
 
-  // Called from the message loop observer when a mouse movement has occurred
-  // anywhere over our containing window.
-  void HandleGlobalMouseMoveEvent();
-
   // Returns true if any of the tabs are phantom.
   bool HasPhantomTabs() const;
 
   // -- Member Variables ------------------------------------------------------
-
-  // A factory that is used to construct a delayed callback to the
-  // ResizeLayoutTabsNow method.
-  ScopedRunnableMethodFactory<TabStrip> resize_layout_factory_;
-
-  // True if the TabStrip has already been added as a MessageLoop observer.
-  bool added_as_message_loop_observer_;
 
   // The "New Tab" button.
   views::ImageButton* newtab_button_;
@@ -302,6 +281,8 @@ class TabStrip : public BaseTabStrip,
 
   // Used for stage 1 of new tab animation.
   base::OneShotTimer<TabStrip> new_tab_timer_;
+
+  scoped_ptr<views::MouseWatcher> mouse_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

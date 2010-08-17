@@ -34,7 +34,7 @@ class DownloadShelfView : public DownloadShelf,
                           public views::LinkController,
                           public AnimationDelegate {
  public:
-  explicit DownloadShelfView(Browser* browser, BrowserView* parent);
+  DownloadShelfView(Browser* browser, BrowserView* parent);
   virtual ~DownloadShelfView();
 
   // Implementation of View.

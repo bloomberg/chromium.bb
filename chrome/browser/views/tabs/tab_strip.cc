@@ -47,7 +47,6 @@ using views::DropTargetEvent;
 
 static const int kNewTabButtonHOffset = -5;
 static const int kNewTabButtonVOffset = 5;
-static const int kResizeTabsTimeMs = 300;
 static const int kSuspendAnimationsTimeMs = 200;
 static const int kTabHOffset = -16;
 static const int kTabStripAnimationVSlop = 40;
@@ -122,8 +121,6 @@ const int TabStrip::mini_to_non_mini_gap_ = 3;
 
 TabStrip::TabStrip(TabStripController* controller)
     : BaseTabStrip(controller, BaseTabStrip::HORIZONTAL_TAB_STRIP),
-      resize_layout_factory_(this),
-      added_as_message_loop_observer_(false),
       current_unselected_width_(Tab::GetStandardSize().width()),
       current_selected_width_(Tab::GetStandardSize().width()),
       available_width_for_tabs_(-1),
@@ -162,6 +159,10 @@ void TabStrip::InitTabStripButtons() {
 
 gfx::Rect TabStrip::GetNewTabButtonBounds() {
   return newtab_button_->bounds();
+}
+
+void TabStrip::MouseMovedOutOfView() {
+  ResizeLayoutTabs();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -528,62 +529,6 @@ void TabStrip::ButtonPressed(views::Button* sender, const views::Event& event) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// TabStrip, MessageLoop::Observer implementation:
-
-#if defined(OS_WIN)
-void TabStrip::WillProcessMessage(const MSG& msg) {
-}
-
-void TabStrip::DidProcessMessage(const MSG& msg) {
-  // We spy on three different Windows messages here to see if the mouse has
-  // moved out of the bounds of the tabstrip, which we use as our cue to kick
-  // of the resize animation. The messages are:
-  //
-  // WM_MOUSEMOVE:
-  //   For when the mouse moves from the tabstrip over into the rest of the
-  //   browser UI, i.e. within the bounds of the same windows HWND.
-  // WM_MOUSELEAVE:
-  //   For when the mouse moves very rapidly from a tab closed in the middle of
-  //   the tabstrip (_not_ the end) out of the bounds of the browser's HWND and
-  //   over some other HWND.
-  // WM_NCMOUSELEAVE:
-  //   For when the mouse moves very rapidly from the end of the tabstrip (when
-  //   the last tab is closed and the mouse is left floating over the title
-  //   bar). Because the empty area of the tabstrip at the end of the title bar
-  //   is registered by the ChromeFrame as part of the "caption" area of the
-  //   window (the frame's OnNCHitTest method returns HTCAPTION for this
-  //   region), the frame's HWND receives a WM_MOUSEMOVE message immediately,
-  //   because as far as it is concerned the mouse has _left_ the client area
-  //   of the window (and is now over the non-client area). To be notified
-  //   again when the mouse leaves the _non-client_ area, we use the
-  //   WM_NCMOUSELEAVE message, which causes us to re-evaluate the cursor
-  //   position and correctly resize the tabstrip.
-  //
-  switch (msg.message) {
-    case WM_MOUSEMOVE:
-    case WM_MOUSELEAVE:
-    case WM_NCMOUSELEAVE:
-      HandleGlobalMouseMoveEvent();
-      break;
-  }
-}
-#else
-void TabStrip::WillProcessEvent(GdkEvent* event) {
-}
-
-void TabStrip::DidProcessEvent(GdkEvent* event) {
-  switch (event->type) {
-    case GDK_MOTION_NOTIFY:
-    case GDK_LEAVE_NOTIFY:
-      HandleGlobalMouseMoveEvent();
-      break;
-    default:
-      break;
-  }
-}
-#endif
-
-///////////////////////////////////////////////////////////////////////////////
 // TabStrip, private:
 
 void TabStrip::Init() {
@@ -729,8 +674,6 @@ void TabStrip::ResizeLayoutTabs() {
   if (tab_count() == 0)
     return;
 
-  resize_layout_factory_.RevokeAll();
-
   // It is critically important that this is unhooked here, otherwise we will
   // keep spying on messages forever.
   RemoveMessageLoopObserver();
@@ -754,40 +697,17 @@ void TabStrip::ResizeLayoutTabs() {
     StartResizeLayoutAnimation();
 }
 
-bool TabStrip::IsCursorInTabStripZone() const {
-  gfx::Rect bounds = GetLocalBounds(true);
-  gfx::Point tabstrip_topleft(bounds.origin());
-  View::ConvertPointToScreen(this, &tabstrip_topleft);
-  bounds.set_origin(tabstrip_topleft);
-  bounds.set_height(bounds.height() + kTabStripAnimationVSlop);
-
-#if defined(OS_WIN)
-  DWORD pos = GetMessagePos();
-  gfx::Point cursor_point(pos);
-#elif defined(OS_LINUX)
-  // TODO(sky): make sure this is right with multiple monitors.
-  GdkScreen* screen = gdk_screen_get_default();
-  GdkDisplay* display = gdk_screen_get_display(screen);
-  gint x, y;
-  gdk_display_get_pointer(display, NULL, &x, &y, NULL);
-  gfx::Point cursor_point(x, y);
-#endif
-
-  return bounds.Contains(cursor_point.x(), cursor_point.y());
-}
-
 void TabStrip::AddMessageLoopObserver() {
-  if (!added_as_message_loop_observer_) {
-    MessageLoopForUI::current()->AddObserver(this);
-    added_as_message_loop_observer_ = true;
+  if (!mouse_watcher_.get()) {
+    mouse_watcher_.reset(
+        new views::MouseWatcher(this, this,
+                                gfx::Insets(0, 0, kTabStripAnimationVSlop, 0)));
   }
+  mouse_watcher_->Start();
 }
 
 void TabStrip::RemoveMessageLoopObserver() {
-  if (added_as_message_loop_observer_) {
-    MessageLoopForUI::current()->RemoveObserver(this);
-    added_as_message_loop_observer_ = false;
-  }
+  mouse_watcher_.reset(NULL);
 }
 
 gfx::Rect TabStrip::GetDropBounds(int drop_index,
@@ -1103,24 +1023,6 @@ bool TabStrip::IsPointInTab(Tab* tab,
   gfx::Point point_in_tab_coords(point_in_tabstrip_coords);
   View::ConvertPointToView(this, tab, &point_in_tab_coords);
   return tab->HitTest(point_in_tab_coords);
-}
-
-void TabStrip::HandleGlobalMouseMoveEvent() {
-  if (!IsCursorInTabStripZone()) {
-    // Mouse moved outside the tab slop zone, start a timer to do a resize
-    // layout after a short while...
-    if (resize_layout_factory_.empty()) {
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          resize_layout_factory_.NewRunnableMethod(
-              &TabStrip::ResizeLayoutTabs),
-          kResizeTabsTimeMs);
-    }
-  } else {
-    // Mouse moved quickly out of the tab strip and then into it again, so
-    // cancel the timer so that the strip doesn't move when the mouse moves
-    // back over it.
-    resize_layout_factory_.RevokeAll();
-  }
 }
 
 bool TabStrip::HasPhantomTabs() const {

@@ -250,6 +250,8 @@
         'grid_layout.h',
         'layout_manager.cc',
         'layout_manager.h',
+        'mouse_watcher.cc',
+        'mouse_watcher.h',
         'painter.cc',
         'painter.h',
         'repeat_controller.cc',
