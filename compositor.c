@@ -671,12 +671,6 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 	struct wlsc_compositor *ec = device->ec;
 	struct wlsc_surface *es;
 
-	if (device->grab != WLSC_DEVICE_GRAB_NONE) {
-		wlsc_surface_transform(device->pointer_focus,
-				       device->x, device->y, sx, sy);
-		return device->pointer_focus;
-	}
-
 	wl_list_for_each(es, &ec->surface_list, link) {
 		wlsc_surface_transform(es, device->x, device->y, sx, sy);
 		if (0 <= *sx && *sx < es->width &&
@@ -711,16 +705,21 @@ notify_motion(struct wlsc_input_device *device, uint32_t time, int x, int y)
 
 	switch (device->grab) {
 	case WLSC_DEVICE_GRAB_NONE:
-	case WLSC_DEVICE_GRAB_MOTION:
 		es = pick_surface(device, &sx, &sy);
-
 		wlsc_input_device_set_pointer_focus(device, es,
 						    time, x, y, sx, sy);
-
 		if (es)
 			wl_surface_post_event(&es->base, &device->base.base,
 					      WL_INPUT_DEVICE_MOTION,
 					      time, x, y, sx, sy);
+		break;
+
+	case WLSC_DEVICE_GRAB_MOTION:
+		es = device->pointer_focus;
+		wlsc_surface_transform(es, x, y, &sx, &sy);
+		wl_surface_post_event(&es->base, &device->base.base,
+				      WL_INPUT_DEVICE_MOTION,
+				      time, x, y, sx, sy);
 		break;
 
 	case WLSC_DEVICE_GRAB_MOVE:
