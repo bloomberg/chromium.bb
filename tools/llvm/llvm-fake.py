@@ -58,6 +58,7 @@ ERROR_OUT = [sys.stderr]
 ######################################################################
 
 BASE_ARM = BASE + '/arm-none-linux-gnueabi'
+BASE_ARM_INCLUDE = BASE_ARM + '/arm-none-linux-gnueabi/include'
 
 LD_SCRIPT_ARM = BASE_ARM + '/ld_script_arm_untrusted'
 
@@ -125,9 +126,9 @@ global_config_flags = {
     BASE_ARM + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/include',
     '-isystem',
     BASE_ARM + '/lib/gcc/arm-none-linux-gnueabi/4.2.1/install-tools/include',
-    '-isystem', BASE_ARM + '/arm-none-linux-gnueabi/include/c++/4.2.1',
-    '-isystem', BASE_ARM + '/arm-none-linux-gnueabi/include/c++/4.2.1/arm-none-linux-gnueabi',
-    '-isystem', BASE_ARM + '/arm-none-linux-gnueabi/include',
+    '-isystem', BASE_ARM_INCLUDE + '/c++/4.2.1',
+    '-isystem', BASE_ARM_INCLUDE + '/c++/4.2.1/arm-none-linux-gnueabi',
+    '-isystem', BASE_ARM_INCLUDE,
     # NOTE: order important
     # '-isystem',
     # BASE + '/arm-newlib/arm-none-linux-gnueabi/usr/include/nacl/abi',
@@ -529,8 +530,9 @@ def Incarnation_illegal(argv):
   LogFatal('illegal command ' + StringifyCommand(argv))
 
 
-def MassageFinalLinkCommandPnacl(args, native_dir, flags):
+def MassageFinalLinkCommandPnacl(args, arch, flags):
   out = flags[:]
+  native_dir = global_pnacl_roots[arch]
 
   # add init code
   if '-nostdlib' not in args:
@@ -561,10 +563,6 @@ MAGIC_OBJS = set([
     ])
 
 def GoldBCArgv(argv):
-  # remove the script
-  T_index = argv.index('-T')
-  argv = argv[:T_index] + argv[T_index + 2:]
-
   # TODO(espindola): We should use also-emit-llvm for sanity checking that
   # we have included all that we need in the link.
   # add the -plugin and -plugin-opt options
@@ -583,8 +581,6 @@ def GenerateCombinedBitcodeFile(argv, arch):
   last_bitcode_pos = None
   output = None
   last = None
-  ld_flags = global_config_flags['LD'][arch]
-  root = global_pnacl_roots[arch]
 
   for a in argv[1:]:
     if last:
@@ -635,45 +631,51 @@ def GenerateCombinedBitcodeFile(argv, arch):
   args_bit_ld += ['-o', output + '.bc']
 
   # add init and fini
-  args_bit_ld = MassageFinalLinkCommandPnacl(args_bit_ld, root, ld_flags)
+  # we add some native libraries which are only inspected for
+  # undefined symbols. Those symbols will be kept alive in the combined
+  # bitcode file
+  args_bit_ld = MassageFinalLinkCommandPnacl(args_bit_ld, arch, [])
 
-  # add the plugin arguments
+  # add the plugin arguments - this converts gold into a bitcode linker.
   args_bit_ld = GoldBCArgv(args_bit_ld)
 
   Run([ELF_LD] +  args_bit_ld)
   return output, args_native_ld
 
 
-def BitcodeToNative(argv, arch):
+def Translate(combined_bitcode_file, argv, arch):
   """The ld step for bitcode is quite elaborate:
      1) Run llc to convert to .s
      2) Run as to convert to .o
      3) Run ld
   """
-
-  llc_flags = global_config_flags['LLC'][arch]
-  ascom = global_assemblers[arch]
-  as_flags = global_config_flags['AS'][arch]
-  root = global_pnacl_roots[arch]
-  ld_flags = global_config_flags['LD'][arch]
-
-  output, args_native_ld = GenerateCombinedBitcodeFile(argv, arch)
-
-  bitcode_combined = output + ".bc"
+  assert combined_bitcode_file.endswith(".bc")
+  output = combined_bitcode_file[:-3]
   asm_combined = output + ".bc.s"
   obj_combined = output + ".bc.o"
 
-  if not os.path.isfile(LLC):
-    LogFatal('You must create a symlink "%s" to your llc executable' % LLC)
+  llc_flags = global_config_flags['LLC'][arch]
+  Run([LLC] + llc_flags + [combined_bitcode_file, '-o', asm_combined])
 
-  Run([LLC] + llc_flags + [bitcode_combined, '-o', asm_combined])
-
+  ascom = global_assemblers[arch]
+  as_flags = global_config_flags['AS'][arch]
   Run([ascom] + as_flags + [asm_combined, '-o', obj_combined])
 
-  args_native_ld = MassageFinalLinkCommandPnacl([obj_combined] + args_native_ld,
-                                                root,
+  ld_flags = global_config_flags['LD'][arch]
+  args_native_ld = MassageFinalLinkCommandPnacl([obj_combined] + argv,
+                                                arch,
                                                 ld_flags)
   Run([ELF_LD] +  args_native_ld)
+
+
+def BitcodeToNative(argv, arch):
+  """Combine bitcode files then translate.
+     Some complications arise from linker options that have to be
+     passed through.
+  """
+  output, args_native_ld = GenerateCombinedBitcodeFile(argv, arch)
+  Translate(output + ".bc", args_native_ld, arch)
+
   return output
 
 
@@ -681,10 +683,18 @@ def Incarnation_bcld_generic(argv):
   arch, argv = ExtractArch(argv)
   output = BitcodeToNative(argv, arch)
 
+
 def Incarnation_bc_final(argv):
   arch, argv = ExtractArch(argv)
   # second return value is ignored
   output, args_native_ld = GenerateCombinedBitcodeFile(argv, arch)
+
+
+def Incarnation_translate(argv):
+  argv.pop(0) # drop porgram name
+  arch, argv = ExtractArch(argv)
+  combined_bitcode_file = argv.pop(0)
+  Translate(combined_bitcode_file, argv, arch)
 
 ######################################################################
 # Dispatch based on name the scripts is invoked with
@@ -700,6 +710,8 @@ INCARNATIONS = {
 
    # final bc i.e. translator ready
    'llvm-fake-bcfinal' : Incarnation_bc_final,
+
+   'llvm-fake-translate' : Incarnation_translate,
 
    'llvm-fake-illegal': Incarnation_illegal,
    'llvm-fake-nop': Incarnation_nop,
