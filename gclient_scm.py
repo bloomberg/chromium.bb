@@ -725,22 +725,27 @@ class SVNWrapper(SCMWrapper):
     if args:
       raise gclient_utils.Error("Unsupported argument(s): %s" % ",".join(args))
 
+    # revision is the revision to match. It is None if no revision is specified,
+    # i.e. the 'deps ain't pinned'.
     url, revision = gclient_utils.SplitUrlRevision(self.url)
+    # Keep the original unpinned url for reference in case the repo is switched.
     base_url = url
-    forced_revision = False
-    rev_str = ""
     if options.revision:
       # Override the revision number.
       revision = str(options.revision)
     if revision:
       forced_revision = True
+      # Reconstruct the url.
       url = '%s@%s' % (url, revision)
       rev_str = ' at %s' % revision
+    else:
+      forced_revision = False
+      rev_str = ''
 
     if not os.path.exists(checkout_path):
       # We need to checkout.
       command = ['checkout', url, checkout_path]
-      command = self.AddAdditionalFlags(command, options, revision)
+      command = self._AddAdditionalUpdateFlags(command, options, revision)
       scm.SVN.RunAndGetFileList(options.verbose, command, self._root_dir,
           file_list)
       return
@@ -748,9 +753,9 @@ class SVNWrapper(SCMWrapper):
     # Get the existing scm url and the revision number of the current checkout.
     from_info = scm.SVN.CaptureInfo(os.path.join(checkout_path, '.'), '.')
     if not from_info:
-      raise gclient_utils.Error("Can't update/checkout %r if an unversioned "
-                                "directory is present. Delete the directory "
-                                "and try again." %
+      raise gclient_utils.Error(('Can\'t update/checkout %r if an unversioned '
+                                 'directory is present. Delete the directory '
+                                 'and try again.') %
                                 checkout_path)
 
     # Look for locked directories.
@@ -759,14 +764,14 @@ class SVNWrapper(SCMWrapper):
       # The current directory is locked, clean it up.
       scm.SVN.Run(['cleanup'], checkout_path)
 
-    if options.manually_grab_svn_rev:
-      # Retrieve the current HEAD version because svn is slow at null updates.
-      if not revision:
-        from_info_live = scm.SVN.CaptureInfo(from_info['URL'], '.')
-        revision = str(from_info_live['Revision'])
-        rev_str = ' at %s' % revision
+    # Retrieve the current HEAD version because svn is slow at null updates.
+    if options.manually_grab_svn_rev and not revision:
+      from_info_live = scm.SVN.CaptureInfo(from_info['URL'], '.')
+      revision = str(from_info_live['Revision'])
+      rev_str = ' at %s' % revision
 
     if from_info['URL'] != base_url:
+      # The repository url changed, need to switch.
       to_info = scm.SVN.CaptureInfo(url, '.')
       if not to_info.get('Repository Root') or not to_info.get('UUID'):
         # The url is invalid or the server is not accessible, it's safer to bail
@@ -775,7 +780,7 @@ class SVNWrapper(SCMWrapper):
       can_switch = ((from_info['Repository Root'] != to_info['Repository Root'])
                     and (from_info['UUID'] == to_info['UUID']))
       if can_switch:
-        print("\n_____ relocating %s to a new checkout" % self.relpath)
+        print('\n_____ relocating %s to a new checkout' % self.relpath)
         # We have different roots, so check if we can switch --relocate.
         # Subversion only permits this if the repository UUIDs match.
         # Perform the switch --relocate, then rewrite the from_url
@@ -785,7 +790,7 @@ class SVNWrapper(SCMWrapper):
         # can update to a revision or have to switch to a different
         # branch work as expected.
         # TODO(maruel):  TEST ME !
-        command = ["switch", "--relocate",
+        command = ['switch', '--relocate',
                    from_info['Repository Root'],
                    to_info['Repository Root'],
                    self.relpath]
@@ -803,25 +808,24 @@ class SVNWrapper(SCMWrapper):
                    'there is local changes in %s. Delete the directory and '
                    'try again.') % (url, checkout_path))
         # Ok delete it.
-        print("\n_____ switching %s to a new checkout" % self.relpath)
+        print('\n_____ switching %s to a new checkout' % self.relpath)
         gclient_utils.RemoveDirectory(checkout_path)
         # We need to checkout.
         command = ['checkout', url, checkout_path]
-        command = self.AddAdditionalFlags(command, options, revision)
+        command = self._AddAdditionalUpdateFlags(command, options, revision)
         scm.SVN.RunAndGetFileList(options.verbose, command, self._root_dir,
             file_list)
         return
-
 
     # If the provided url has a revision number that matches the revision
     # number of the existing directory, then we don't need to bother updating.
     if not options.force and str(from_info['Revision']) == revision:
       if options.verbose or not forced_revision:
-        print("\n_____ %s%s" % (self.relpath, rev_str))
+        print('\n_____ %s%s' % (self.relpath, rev_str))
       return
 
-    command = ["update", checkout_path]
-    command = self.AddAdditionalFlags(command, options, revision)
+    command = ['update', checkout_path]
+    command = self._AddAdditionalUpdateFlags(command, options, revision)
     scm.SVN.RunAndGetFileList(options.verbose, command, self._root_dir,
         file_list)
 
@@ -851,7 +855,8 @@ class SVNWrapper(SCMWrapper):
         os.makedirs(checkout_path)
       command = ["export", os.path.join(self.url, filename),
                  os.path.join(checkout_path, filename)]
-      command = self.AddAdditionalFlags(command, options, options.revision)
+      command = self._AddAdditionalUpdateFlags(command, options,
+          options.revision)
       scm.SVN.Run(command, self._root_dir)
 
   def revert(self, options, args, file_list):
@@ -937,7 +942,7 @@ class SVNWrapper(SCMWrapper):
     return '/'.join(self.url.split('/')[:4]) + url
 
   @staticmethod
-  def AddAdditionalFlags(command, options, revision):
+  def _AddAdditionalUpdateFlags(command, options, revision):
     """Add additional flags to command depending on what options are set.
     command should be a list of strings that represents an svn command.
 
@@ -946,6 +951,7 @@ class SVNWrapper(SCMWrapper):
     if revision:
       new_command.extend(['--revision', str(revision).strip()])
     # --force was added to 'svn update' in svn 1.5.
-    if options.force and scm.SVN.AssertVersion("1.5")[0]:
+    if ((options.force or options.manually_grab_svn_rev) and
+        scm.SVN.AssertVersion("1.5")[0]):
       new_command.append('--force')
     return new_command
