@@ -6,6 +6,8 @@
 
 #include "chrome/browser/chromeos/frame/normal_browser_frame_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/frame/opaque_browser_frame_view.h"
+#include "chrome/browser/views/frame/popup_non_client_frame_view.h"
 
 // static (Factory method.)
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
@@ -27,15 +29,19 @@ BrowserFrameChromeos::~BrowserFrameChromeos() {
 }
 
 void BrowserFrameChromeos::Init() {
-  // Excludes a browser intance that requires icon/title. This is typically true
-  // for dev tools and javascript console.
-  // TODO(oshima): handle app panels. This currently uses the default
-  // implementation, which opens Chrome's app panel instead of
-  // ChromeOS's panel.
-  if (!IsPanel() &&
-      !browser_view()->ShouldShowWindowIcon() &&
-      !browser_view()->ShouldShowWindowTitle()) {
+  // NOTE: This logic supersedes the logic in BrowserFrameGtk::Init()
+  // by always setting browser_frame_view_.
+  if (IsPanel()) {
+    // ChromeOS Panels should always use PopupNonClientFrameView.
+    set_browser_frame_view(new PopupNonClientFrameView());
+  } else if (!browser_view()->ShouldShowWindowIcon() &&
+             !browser_view()->ShouldShowWindowTitle()) {
+    // Excludes a browser intance that requires icon/title.
+    // This is typically true for dev tools and javascript console.
     set_browser_frame_view(new NormalBrowserFrameView(this, browser_view()));
+  } else {
+    // Default FrameView.
+    set_browser_frame_view(new OpaqueBrowserFrameView(this, browser_view()));
   }
 
   BrowserFrameGtk::Init();
