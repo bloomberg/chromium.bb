@@ -113,6 +113,38 @@ class BuildTargetTests(TempDirTestCase):
                       "input: no\n"
                       "** skipping input\n")
 
+  def test_building_single_targets(self):
+    def DummyTarget(name, deps):
+      dest_dir = self.MakeTempDir()
+      def DoBuild():
+        pass
+      return btarget.BuildTarget(name, dest_dir, DoBuild, args=[], deps=deps)
+
+    target1 = DummyTarget("target1", deps=[])
+    target2 = DummyTarget("target2", deps=[target1])
+    roots = [target1, target2]
+    stream = StringIO.StringIO()
+
+    def PopOutput():
+      output = stream.getvalue()
+      stream.truncate(0)
+      return output
+
+    btarget.BuildMain(roots, ["-sb", "target1", "target2"], stream)
+    self.assertEquals(PopOutput(),
+                      "target1: will force build\n"
+                      "target2: will force build\n"
+                      "** building target1\n"
+                      "** building target2\n")
+    btarget.BuildMain(roots, ["-sb", "target2"], stream)
+    self.assertEquals(PopOutput(),
+                      "target2: will force build\n"
+                      "** building target2\n")
+    # Test printing build plan only.
+    btarget.BuildMain(roots, ["--single", "target1"], stream)
+    self.assertEquals(PopOutput(),
+                      "target1: will force build\n")
+
   @Quieten
   def test_install_root(self):
     # Test package that supports "make install install_root=DIR"

@@ -90,7 +90,8 @@ class TargetBase(object):
   def GetOutput(self):
     cached = self._state.GetState()
     if cached is None:
-      raise TargetNotBuiltException()
+      raise TargetNotBuiltException("Target %r has not been built yet" %
+                                    self.GetName())
     return cached["output"]
 
 
@@ -400,9 +401,23 @@ def BuildMain(root_targets, args, stream):
   parser = optparse.OptionParser()
   parser.add_option("-b", "--build", dest="do_build", action="store_true",
                     help="Do the build")
+  parser.add_option("-s", "--single", dest="single", action="store_true",
+                    help="Build single targets without following "
+                    "dependencies.  This will rebuild targets even if they "
+                    "are considered up-to-date.")
   options, args = parser.parse_args(args)
   if len(args) > 0:
     root_targets = SubsetTargets(root_targets, args)
-  PrintPlan(root_targets, stream)
-  if options.do_build:
-    Rebuild(root_targets, stream)
+  if options.single:
+    if len(args) == 0:
+      parser.error("No targets specified with --single")
+    for target in root_targets:
+      stream.write("%s: will force build\n" % target.GetName())
+    if options.do_build:
+      for target in root_targets:
+        stream.write("** building %s\n" % target.GetName())
+        target.DoBuild()
+  else:
+    PrintPlan(root_targets, stream)
+    if options.do_build:
+      Rebuild(root_targets, stream)
