@@ -113,7 +113,7 @@ static bool GetDataTypeChoiceData(const std::string& json,
     data_types->insert(syncable::TYPED_URLS);
 
   bool sync_apps;
-  if (!result->GetBoolean(L"syncApps", &sync_apps))
+  if (!result->GetBoolean("syncApps", &sync_apps))
     return false;
   if (sync_apps)
     data_types->insert(syncable::APPS);
@@ -359,7 +359,7 @@ void SyncSetupFlow::GetArgsForChooseDataTypes(ProfileSyncService* service,
       registered_types.count(syncable::EXTENSIONS) > 0);
   args->SetBoolean("typedUrlsRegistered",
       registered_types.count(syncable::TYPED_URLS) > 0);
-  args->SetBoolean(L"appsRegistered",
+  args->SetBoolean("appsRegistered",
       registered_types.count(syncable::APPS) > 0);
 
   args->SetBoolean("syncBookmarks",
@@ -376,7 +376,7 @@ void SyncSetupFlow::GetArgsForChooseDataTypes(ProfileSyncService* service,
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncExtensions));
   args->SetBoolean("syncTypedUrls",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncTypedUrls));
-  args->SetBoolean(L"syncApps",
+  args->SetBoolean("syncApps",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncApps));
 }
 
