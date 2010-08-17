@@ -497,6 +497,7 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
     cache->set_enable_range_support(false);
 
   context->set_http_transaction_factory(cache);
+  context->set_net_log(io_thread_globals->net_log.get());
 
   return context;
 }
