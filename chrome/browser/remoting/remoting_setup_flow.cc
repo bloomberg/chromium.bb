@@ -20,7 +20,12 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/remoting/remoting_resources_source.h"
 #include "chrome/browser/remoting/remoting_setup_message_handler.h"
+#include "chrome/browser/service/service_process_control.h"
+#include "chrome/browser/service/service_process_control_manager.h"
+#include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/service_process_type.h"
 #include "gfx/font.h"
 #include "grit/locale_settings.h"
 
@@ -28,7 +33,8 @@
 RemotingSetupFlow::RemotingSetupFlow(const std::string& args, Profile* profile)
     : message_handler_(NULL),
       dialog_start_args_(args),
-      profile_(profile) {
+      profile_(profile),
+      process_control_(NULL) {
   // TODO(hclam): We are currently leaking this objcet. Need to fix this!
   message_handler_ = new RemotingSetupMessageHandler(this);
   ChromeThread::PostTask(
@@ -56,6 +62,9 @@ void RemotingSetupFlow::GetDialogSize(gfx::Size* size) const {
 
 // A callback to notify the delegate that the dialog closed.
 void RemotingSetupFlow::OnDialogClosed(const std::string& json_retval) {
+  // If we are fetching the token then cancel the request.
+  if (authenticator_.get())
+    authenticator_->CancelRequest();
   delete this;
 }
 
@@ -81,21 +90,84 @@ void RemotingSetupFlow::Focus() {
 void RemotingSetupFlow::OnUserSubmittedAuth(const std::string& user,
                                             const std::string& password,
                                             const std::string& captcha) {
-  // TODO(hclam): Should do the following two things.
-  // 1. Authenicate using the info.
-  // 2. Register the host service.
+  // Save the login name only.
+  login_ = user;
+
+  // Start the authenticator.
+  authenticator_.reset(
+      new GaiaAuthenticator2(this, GaiaConstants::kChromeSource,
+                             profile_->GetRequestContext()));
+  authenticator_->StartClientLogin(user, password,
+                                   GaiaConstants::kRemotingService,
+                                   "", captcha);
+}
+
+void RemotingSetupFlow::OnClientLoginFailure(
+    const GaiaAuthConsumer::GaiaAuthError& error) {
+  message_handler_->ShowGaiaFailed();
+  authenticator_.reset();
+}
+
+void RemotingSetupFlow::OnClientLoginSuccess(
+    const GaiaAuthConsumer::ClientLoginResult& credentials) {
+  // Save the token for remoting.
+  remoting_token_ = credentials.token;
+
+  // After login has succeeded try to fetch the token for sync.
+  // We need the token for sync to connect to the talk network.
+  authenticator_->StartIssueAuthToken(credentials.sid, credentials.lsid,
+                                      GaiaConstants::kSyncService);
+}
+
+void RemotingSetupFlow::OnIssueAuthTokenSuccess(const std::string& service,
+                                                const std::string& auth_token) {
+  // Show that Gaia login has succeeded.
   message_handler_->ShowGaiaSuccessAndSettingUp();
 
-  // TODO(hclam): This is very unsafe because |message_handler_| is not
-  // refcounted. Destruction of the handler before the timeout will cause
-  // memory error.
-  // This services as a demo to show that we can do authenication asynchronously
-  // and setting up stuff and then present the done page later.
-  ChromeThread::PostDelayedTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(message_handler_,
-                        &RemotingSetupMessageHandler::ShowSetupDone),
-      2000);
+  // Save the sync token.
+  sync_token_ = auth_token;
+  authenticator_.reset();
+
+  // And then launch the service process if it has not started yet.
+  // If we have already connected to the service process then submit the tokens
+  // to it to register the host.
+  process_control_ =
+      ServiceProcessControlManager::instance()->GetProcessControl(
+          profile_,
+          kServiceProcessRemoting);
+
+  if (process_control_->is_connected()) {
+    OnProcessLaunched();
+  } else {
+    // TODO(hclam): This is really messed up because I totally ignore the
+    // lifetime of this object. I need a master cleanup on the lifetime of
+    // objects.
+    // TODO(hclam): This call only works on Windows. I need to make it work
+    // on other platforms.
+    process_control_->Launch(
+        NewRunnableMethod(this, &RemotingSetupFlow::OnProcessLaunched));
+  }
+}
+
+void RemotingSetupFlow::OnIssueAuthTokenFailure(const std::string& service,
+                                                const GaiaAuthError& error) {
+  // TODO(hclam): Do something to show the error.
+  authenticator_.reset();
+}
+
+void RemotingSetupFlow::OnProcessLaunched() {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    ChromeThread::PostTask(
+        ChromeThread::UI,
+        FROM_HERE,
+        NewRunnableMethod(this, &RemotingSetupFlow::OnProcessLaunched));
+    return;
+  }
+
+  DCHECK(process_control_->is_connected());
+  process_control_->EnableRemotingWithTokens(login_, remoting_token_,
+                                             sync_token_);
+  message_handler_->ShowSetupDone();
 }
 
 // static
@@ -122,4 +194,7 @@ void OpenRemotingSetupDialog(Profile* profile) {
   RemotingSetupFlow::Run(profile->GetOriginalProfile());
 }
 
+// TODO(hclam): Need to refcount RemotingSetupFlow. I need to lifetime of
+// objects are all correct.
+DISABLE_RUNNABLE_METHOD_REFCOUNT(RemotingSetupFlow);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(RemotingSetupMessageHandler);

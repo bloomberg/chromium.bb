@@ -11,10 +11,12 @@
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "chrome/service/remoting/remoting_directory_service.h"
 
 class CloudPrintProxy;
 class JsonPrefStore;
 class ServiceIPCServer;
+
 namespace net {
 class NetworkChangeNotifier;
 }
@@ -27,7 +29,7 @@ class JsonHostConfig;
 
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
-class ServiceProcess {
+class ServiceProcess : public RemotingDirectoryService::Client {
  public:
   ServiceProcess();
   ~ServiceProcess();
@@ -74,6 +76,12 @@ class ServiceProcess {
   // Return the reference to the chromoting host only if it has started.
   remoting::ChromotingHost* GetChromotingHost() { return chromoting_host_; }
 
+  // Enable chromoting host with the tokens.
+  // Return true if successful.
+  bool EnableChromotingHostWithTokens(const std::string& login,
+                                      const std::string& remoting_token,
+                                      const std::string& talk_token);
+
   // Start running the chromoting host asynchronously.
   // Return true if chromoting host has started.
   bool StartChromotingHost();
@@ -81,6 +89,10 @@ class ServiceProcess {
   // Shutdown chromoting host. Return true if chromoting host was shutdown.
   // The shutdown process will happen asynchronously.
   bool ShutdownChromotingHost();
+
+  // RemotingDirectoryService::Client implementation.
+  virtual void OnRemotingHostAdded();
+  virtual void OnRemotingDirectoryError();
 #endif
 
  private:
@@ -115,7 +127,9 @@ class ServiceProcess {
   scoped_refptr<remoting::JsonHostConfig> chromoting_config_;
   scoped_ptr<remoting::ChromotingHostContext> chromoting_context_;
   scoped_refptr<remoting::ChromotingHost> chromoting_host_;
+  scoped_ptr<RemotingDirectoryService> remoting_directory_;
 #endif
+
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;
 

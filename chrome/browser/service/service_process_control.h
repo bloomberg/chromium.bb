@@ -81,6 +81,12 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   // Return true if the message was sent.
   bool Shutdown();
 
+  // Send a message to enable the remoting service in the service process.
+  // Return true if the message was sent.
+  bool EnableRemotingWithTokens(const std::string& user,
+                                const std::string& remoting_token,
+                                const std::string& talk_token);
+
   // Set the message handler for receiving messages from the service process.
   // TODO(hclam): Allow more than 1 handler.
   void SetMessageHandler(MessageHandler* message_handler) {

@@ -32,6 +32,12 @@ IPC_BEGIN_MESSAGES(Service)
   // This message is for testing purpose.
   IPC_MESSAGE_CONTROL0(ServiceMsg_Hello)
 
+  // This message is for enabling the remoting process.
+  IPC_MESSAGE_CONTROL3(ServiceMsg_EnableRemotingWithTokens,
+                       std::string, /* username */
+                       std::string, /* Token for remoting */
+                       std::string  /* Token for Google Talk */)
+
   // Tell the service process to shutdown.
   IPC_MESSAGE_CONTROL0(ServiceMsg_Shutdown)
 
@@ -49,4 +55,3 @@ IPC_BEGIN_MESSAGES(ServiceHost)
   IPC_MESSAGE_CONTROL0(ServiceHostMsg_GoodDay)
 
 IPC_END_MESSAGES(ServiceHost)
-

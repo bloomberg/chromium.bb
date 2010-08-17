@@ -209,4 +209,13 @@ bool ServiceProcessControl::Shutdown() {
   return ret;
 }
 
+bool ServiceProcessControl::EnableRemotingWithTokens(
+    const std::string& user,
+    const std::string& remoting_token,
+    const std::string& talk_token) {
+  return Send(
+      new ServiceMsg_EnableRemotingWithTokens(user, remoting_token,
+                                              talk_token));
+}
+
 DISABLE_RUNNABLE_METHOD_REFCOUNT(ServiceProcessControl);

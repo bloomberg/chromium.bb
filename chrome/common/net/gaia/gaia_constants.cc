@@ -18,5 +18,7 @@ const char kContactsService[] = "cp";
 const char kSyncService[] = "chromiumsync";
 // Service name for XMPP Google Talk.
 const char kTalkService[] = "talk";
+// Service name for remoting.
+const char kRemotingService[] = "chromoting";
 
 }  // namespace GaiaConstants

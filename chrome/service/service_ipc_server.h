@@ -40,6 +40,9 @@ class ServiceIPCServer : public IPC::Channel::Listener,
   void OnEnableCloudPrintProxy(const std::string& lsid);
   void OnEnableCloudPrintProxyWithTokens(const std::string& cloud_print_token,
                                          const std::string& talk_token);
+  void OnEnableRemotingWithTokens(const std::string& login,
+                                  const std::string& remoting_token,
+                                  const std::string& talk_token);
   void OnDisableCloudPrintProxy();
   void OnHello();
   void OnShutdown();
@@ -55,4 +58,3 @@ class ServiceIPCServer : public IPC::Channel::Listener,
 };
 
 #endif  // CHROME_SERVICE_SERVICE_IPC_SERVER_H_
-

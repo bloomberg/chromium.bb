@@ -122,6 +122,17 @@ CloudPrintProxy* ServiceProcess::GetCloudPrintProxy() {
 }
 
 #if defined(ENABLE_REMOTING)
+bool ServiceProcess::EnableChromotingHostWithTokens(
+    const std::string& login,
+    const std::string& remoting_token,
+    const std::string& talk_token) {
+  remoting_directory_.reset(new RemotingDirectoryService(this));
+
+  // TODO(hclam): Complete the API calling to the remoting directory.
+  remoting_directory_->AddHost(remoting_token);
+  return true;
+}
+
 bool ServiceProcess::StartChromotingHost() {
   // We have already started.
   if (chromoting_context_.get())
@@ -178,6 +189,19 @@ bool ServiceProcess::ShutdownChromotingHost() {
   chromoting_host_->Shutdown();
   chromoting_host_ = NULL;
   return true;
+}
+
+void ServiceProcess::OnRemotingHostAdded() {
+  // TODO(hclam): Need to save the keys and configuration here.
+  // TODO(hclam): If we have a problem we need to send an IPC message back
+  // to the client that started this.
+  bool ret = StartChromotingHost();
+  DCHECK(ret);
+}
+
+void ServiceProcess::OnRemotingDirectoryError() {
+  // TODO(hclam): Implement.
+  NOTIMPLEMENTED() << "Remoting directory error";
 }
 
 // A util function to update the login information to host config.

@@ -11,13 +11,18 @@
 #include "app/l10n_util.h"
 #include "base/time.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 
+class GaiaAuthenticator2;
 class RemotingSetupMessageHandler;
+class ServiceProcessControl;
 
 // The state machine used by Remoting for setup wizard.
-class RemotingSetupFlow : public HtmlDialogUIDelegate {
+class RemotingSetupFlow : public HtmlDialogUIDelegate,
+                          public GaiaAuthConsumer {
  public:
   virtual ~RemotingSetupFlow();
 
@@ -63,16 +68,42 @@ class RemotingSetupFlow : public HtmlDialogUIDelegate {
     return true;
   }
 
-  void OnUserSubmittedAuth(const std::string& user, const std::string& password,
+  // GaiaAuthConsumer implementation.
+  virtual void OnClientLoginFailure(
+      const GaiaAuthConsumer::GaiaAuthError& error);
+  virtual void OnClientLoginSuccess(
+      const GaiaAuthConsumer::ClientLoginResult& credentials);
+  virtual void OnIssueAuthTokenSuccess(const std::string& service,
+                                       const std::string& auth_token);
+  virtual void OnIssueAuthTokenFailure(const std::string& service,
+                                       const GaiaAuthError& error);
+
+  // Called by RemotingSetupMessageHandler.
+  void OnUserSubmittedAuth(const std::string& user,
+                           const std::string& password,
                            const std::string& captcha);
 
  private:
   // Use static Run method to get an instance.
   RemotingSetupFlow(const std::string& args, Profile* profile);
 
+  // Event triggered when the service process was launched.
+  void OnProcessLaunched();
+
   RemotingSetupMessageHandler* message_handler_;
-  std::string dialog_start_args_;  // The args to pass to the initial page.
+
+  // The args to pass to the initial page.
+  std::string dialog_start_args_;
   Profile* profile_;
+
+  // Fetcher to obtain the Chromoting Directory token.
+  scoped_ptr<GaiaAuthenticator2> authenticator_;
+  std::string login_;
+  std::string remoting_token_;
+  std::string sync_token_;
+
+  // Handle to the ServiceProcessControl which talks to the service process.
+  ServiceProcessControl* process_control_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingSetupFlow);
 };
