@@ -339,7 +339,7 @@ int KeywordProvider::CalculateRelevance(AutocompleteInput::Type type,
 
 AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
     TemplateURLModel* model,
-    const std::wstring keyword,
+    const std::wstring& keyword,
     const AutocompleteInput& input,
     size_t prefix_length,
     const std::wstring& remaining_input,
@@ -369,9 +369,12 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   if (!remaining_input.empty() || !keyword_complete || supports_replacement)
     result.fill_into_edit.push_back(L' ');
   result.fill_into_edit.append(remaining_input);
-  if (!input.prevent_inline_autocomplete() &&
-      (keyword_complete || remaining_input.empty()))
-    result.inline_autocomplete_offset = input.text().length();
+  // If we wanted to set |result.inline_autocomplete_offset| correctly, we'd
+  // need CleanUserInputKeyword() to return the amount of adjustment it's made
+  // to the user's input.  Because right now inexact keyword matches can't score
+  // more highly than a "what you typed" match from one of the other providers,
+  // we just don't bother to do this, and leave inline autocompletion off.
+  result.inline_autocomplete_offset = std::wstring::npos;
 
   // Create destination URL and popup entry content by substituting user input
   // into keyword templates.

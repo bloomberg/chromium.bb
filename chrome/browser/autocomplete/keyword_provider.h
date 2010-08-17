@@ -112,7 +112,7 @@ class KeywordProvider : public AutocompleteProvider,
   // If |relevance| is negative, calculate a relevance based on heuristics.
   AutocompleteMatch CreateAutocompleteMatch(
       TemplateURLModel* model,
-      const std::wstring keyword,
+      const std::wstring& keyword,
       const AutocompleteInput& input,
       size_t prefix_length,
       const std::wstring& remaining_input,
