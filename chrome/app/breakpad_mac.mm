@@ -14,11 +14,13 @@
 #include "base/file_util.h"
 #import "base/logging.h"
 #include "base/mac_util.h"
+#include "base/path_service.h"
 #include "base/scoped_cftyperef.h"
 #import "base/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #import "breakpad/src/client/mac/Framework/Breakpad.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/policy_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -117,15 +119,9 @@ void InitCrashReporter() {
       LOG(ERROR) << "Directory " << alternate_minidump_location <<
           " doesn't exist";
     } else {
-      NSFileManager* file_manager = [NSFileManager defaultManager];
-      size_t minidump_location_len = strlen(alternate_minidump_location);
-      DCHECK(minidump_location_len > 0);
-      NSString* minidump_location = [file_manager
-          stringWithFileSystemRepresentation:alternate_minidump_location
-                                      length:minidump_location_len];
-      [breakpad_config
-          setObject:minidump_location
-             forKey:@BREAKPAD_DUMP_DIRECTORY];
+      PathService::Override(
+          chrome::DIR_CRASH_DUMPS,
+          FilePath(alternate_minidump_location));
       if (is_browser) {
         // Print out confirmation message to the stdout, but only print
         // from browser process so we don't flood the terminal.
@@ -134,6 +130,11 @@ void InitCrashReporter() {
       }
     }
   }
+
+  FilePath dir_crash_dumps;
+  PathService::Get(chrome::DIR_CRASH_DUMPS, &dir_crash_dumps);
+  [breakpad_config setObject:base::SysUTF8ToNSString(dir_crash_dumps.value())
+                      forKey:@BREAKPAD_DUMP_DIRECTORY];
 
   // Initialize Breakpad.
   gBreakpadRef = BreakpadCreate(breakpad_config);
