@@ -21,6 +21,13 @@
 }
 
 {
+  bug_41314
+  ThreadSanitizer:Race
+  fun:base::LaunchApp*
+  fun:ChildProcessLauncher::Context::LaunchInternal*
+}
+
+{
   bug_46642a
   ThreadSanitizer:Race
   fun:*media*PipelineImpl*InitializeTask*
