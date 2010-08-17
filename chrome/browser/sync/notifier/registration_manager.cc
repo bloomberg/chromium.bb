@@ -60,8 +60,7 @@ void RegistrationManager::MarkRegistrationLost(
   RegistrationStatusMap::iterator it =
       registration_status_.find(model_type);
   if (it == registration_status_.end()) {
-    LOG(ERROR) << "Unknown model type: "
-               << syncable::ModelTypeToString(model_type);
+    LOG(ERROR) << "Unknown model type: " << model_type;
     return;
   }
   it->second = UNREGISTERED;

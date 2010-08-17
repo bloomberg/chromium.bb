@@ -76,6 +76,10 @@ void ChromeInvalidationClient::RegisterTypes() {
        i < syncable::MODEL_TYPE_COUNT; ++i) {
     registration_manager_->RegisterType(syncable::ModelTypeFromInt(i));
   }
+  // TODO(akalin): This is a hack to make new sync data types work
+  // with server-issued notifications.  Remove this when it's not
+  // needed anymore.
+  registration_manager_->RegisterType(syncable::UNSPECIFIED);
 }
 
 void ChromeInvalidationClient::Invalidate(

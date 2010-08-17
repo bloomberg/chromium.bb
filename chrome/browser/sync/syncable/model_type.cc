@@ -153,6 +153,10 @@ const char kTypedUrlNotificationType[] = "TYPED_URL";
 const char kExtensionNotificationType[] = "EXTENSION";
 const char kNigoriNotificationType[] = "NIGORI";
 const char kAppNotificationType[] = "APP";
+// TODO(akalin): This is a hack to make new sync data types work with
+// server-issued notifications.  Remove this when it's not needed
+// anymore.
+const char kUnknownNotificationType[] = "UNKNOWN";
 }  // namespace
 
 bool RealModelTypeToNotificationType(ModelType model_type,
@@ -184,6 +188,12 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case APPS:
       *notification_type = kAppNotificationType;
+      return true;
+    // TODO(akalin): This is a hack to make new sync data types work with
+    // server-issued notifications.  Remove this when it's not needed
+    // anymore.
+    case UNSPECIFIED:
+      *notification_type = kUnknownNotificationType;
       return true;
     default:
       break;
@@ -220,6 +230,12 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kAppNotificationType) {
     *model_type = APPS;
+    return true;
+  } else if (notification_type == kUnknownNotificationType) {
+    // TODO(akalin): This is a hack to make new sync data types work with
+    // server-issued notifications.  Remove this when it's not needed
+    // anymore.
+    *model_type = UNSPECIFIED;
     return true;
   }
   *model_type = UNSPECIFIED;
