@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_CONTENT_SETTING_BUBBLE_VIEWS_H_
-#define CHROME_BROWSER_VIEWS_CONTENT_SETTING_BUBBLE_VIEWS_H_
+#ifndef CHROME_BROWSER_VIEWS_CONTENT_SETTING_BUBBLE_CONTENTS_H_
+#define CHROME_BROWSER_VIEWS_CONTENT_SETTING_BUBBLE_CONTENTS_H_
 #pragma once
 
 #include <map>
@@ -33,7 +33,6 @@ class NativeButton;
 class RadioButton;
 }
 
-// TODO(bulach): rename this file.
 class ContentSettingBubbleContents : public views::View,
                                      public views::ButtonListener,
                                      public views::LinkController,
@@ -99,4 +98,4 @@ class ContentSettingBubbleContents : public views::View,
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleContents);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_CONTENT_SETTING_BUBBLE_VIEWS_H_
+#endif  // CHROME_BROWSER_VIEWS_CONTENT_SETTING_BUBBLE_CONTENTS_H_
