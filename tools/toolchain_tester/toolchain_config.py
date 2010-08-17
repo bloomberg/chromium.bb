@@ -170,6 +170,40 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O9'] = ToolchainConfig(
 ######################################################################
 DRIVER_PATH = 'toolchain/linux_arm-untrusted/arm-none-linux-gnueabi'
 
+NACL_LLVM_GCC_ARM = DRIVER_PATH + '/llvm-fake-sfigcc'
+
+NACL_LD_ARM = DRIVER_PATH + '/llvm-fake-sfild'
+
+
+LIB_DIR = 'toolchain/linux_arm-untrusted/arm-newlib/arm-none-linux-gnueabi/lib'
+
+COMMANDS_llvm_nacl_sfi_arm_O0 = [
+    ('compile-o',
+     '%(CC)s %(src)s %(CFLAGS)s -c -o %(tmp)s.o',
+     ),
+    ('ld-arm',
+     '%(LD)s %(tmp)s.o -L%(LIB_DIR)s -lc -lnacl -o %(tmp)s.nexe',
+     ),
+    ('qemu-sel_ldr',
+     '%(EMU)s run %(SEL_LDR)s -Q -f %(tmp)s.nexe',
+     )
+  ]
+
+
+TOOLCHAIN_CONFIGS['llvm_nacl_sfi_arm_O0'] = ToolchainConfig(
+    'nacl llvm [arm]',
+    commands=COMMANDS_llvm_nacl_sfi_arm_O0,
+    tools_needed=[NACL_LLVM_GCC_ARM, NACL_LD_ARM, SEL_LDR_ARM, EMU_SCRIPT],
+    CC = NACL_LLVM_GCC_ARM,
+    LD = NACL_LD_ARM,
+    EMU = EMU_SCRIPT,
+    LIB_DIR = LIB_DIR,
+    SEL_LDR = SEL_LDR_ARM,
+    CFLAGS = '-arch arm -O0  -fnested-functions ' + GLOBAL_CFLAGS)
+
+######################################################################
+# PNACL + SEL_LDR [ARM]
+######################################################################
 PNACL_LLVM_GCC = DRIVER_PATH + '/llvm-fake-sfigcc'
 
 PNACL_BCLD = DRIVER_PATH + '/llvm-fake-bcld'

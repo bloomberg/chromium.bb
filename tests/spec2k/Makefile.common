@@ -115,15 +115,12 @@ $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
 ######################################################################
 # BITCODE - FRONTEND
 
-LLVM_WRAPPER_ROOT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi
+LLVM_FAKE_ROOT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi
 TRANSLATOR_ROOT=$(TC_ROOT)/sandboxed_translators
-BC_GCC=$(LLVM_WRAPPER_ROOT)/llvm-wrapper-sfigcc -emit-llvm
-BC_GPP=$(LLVM_WRAPPER_ROOT)/llvm-wrapper-sfig++ -emit-llvm
+BC_GCC=$(LLVM_FAKE_ROOT)/llvm-fake-sfigcc -emit-llvm
+BC_GPP=$(LLVM_FAKE_ROOT)/llvm-fake-sfig++ -emit-llvm
 BC_LD=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/bin/llvm-ld
 BC_OPT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/bin/opt
-
-LLVM_WRAPPER_BCLD=$(LLVM_WRAPPER_ROOT)/llvm-wrapper-bcld
-LLVM_WRAPPER_BCFINAL=$(LLVM_WRAPPER_ROOT)/llvm-wrapper-bcfinal
 
 PNACL=--pnacl-driver-verbose
 
@@ -147,7 +144,7 @@ $(IT).opt.bc: $(IT).bc
 LIB_BC_PATH=$(TC_ROOT)/linux_arm-untrusted/libs-bitcode
 LIBS_BC = -lc -lm -lnacl -lpthread -lnosys
 
-BC_ARM=$(TIME_CMD) $(LLVM_WRAPPER_BCLD) -arch arm
+BC_ARM=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch arm
 BC_ARM_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/arm/translator
 
 $(IT).pnacl.arm: $(IT).bc
@@ -166,8 +163,8 @@ $(IT).pnacl_translator.opt.arm: $(IT).opt.bc
 
 ######################################################################
 # BITCODE - BACKEND - X8632
-BC_X8632=$(TIME_CMD) $(LLVM_WRAPPER_BCLD) -arch x86-32
-BC_X8632_FINAL=$(TIME_CMD) $(LLVM_WRAPPER_BCFINAL) -arch x86-32
+BC_X8632=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-32
+BC_X8632_FINAL=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcfinal -arch x86-32
 BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8632/translator
 
 $(IT).pnacl.x8632: $(IT).bc
@@ -186,8 +183,8 @@ $(IT).pnacl_translator.opt.x8632: $(IT).opt.bc
 
 ######################################################################
 # BITCODE - BACKEND - X8664
-BC_X8664=$(TIME_CMD) $(LLVM_WRAPPER_BCLD) -arch x86-64
-BC_X8664_FINAL=$(TIME_CMD) $(LLVM_WRAPPER_BCFINAL) -arch x86-64
+BC_X8664=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -arch x86-64
+BC_X8664_FINAL=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcfinal -arch x86-64
 BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8664/translator
 
 $(IT).pnacl.x8664: $(IT).bc
