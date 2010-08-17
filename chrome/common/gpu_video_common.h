@@ -46,7 +46,7 @@ class GpuVideoDecoderInitDoneParam {
  public:
   enum SurfaceType {
     SurfaceTypeSystemMemory,
-    SurfaceTypeD3D,
+    SurfaceTypeD3DSurface,
     SurfaceTypeEGLImage,
   };
   enum SurfaceFormat {

@@ -10,13 +10,21 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/gpu_video_common.h"
+#include "media/filters/video_decode_engine.h"
 #include "ipc/ipc_channel.h"
 
 class GpuChannel;
 
+using media::VideoCodecConfig;
+using media::VideoCodecInfo;
+using media::VideoStreamInfo;
+using media::VideoFrame;
+using media::Buffer;
+
 class GpuVideoDecoder
     : public IPC::Channel::Listener,
-      public base::RefCountedThreadSafe<GpuVideoDecoder> {
+      public base::RefCountedThreadSafe<GpuVideoDecoder>,
+      public media::VideoDecodeEngine::EventHandler {
 
  public:
   // IPC::Channel::Listener.
@@ -24,43 +32,47 @@ class GpuVideoDecoder
   virtual void OnChannelError();
   virtual void OnMessageReceived(const IPC::Message& message);
 
-  virtual bool DoInitialize(const GpuVideoDecoderInitParam& init_param,
-                            GpuVideoDecoderInitDoneParam* done_param) = 0;
-  virtual bool DoUninitialize() = 0;
-  virtual void DoFlush() = 0;
-  virtual void DoEmptyThisBuffer(
-      const GpuVideoDecoderInputBufferParam& buffer) = 0;
-  virtual void DoFillThisBuffer(
-      const GpuVideoDecoderOutputBufferParam& frame) = 0;
-  virtual void DoFillThisBufferDoneACK() = 0;
+  // VideoDecodeEngine::EventHandler.
+  virtual void OnInitializeComplete(const VideoCodecInfo& info);
+  virtual void OnUninitializeComplete();
+  virtual void OnFlushComplete();
+  virtual void OnSeekComplete();
+  virtual void OnError();
+  virtual void OnFormatChange(VideoStreamInfo stream_info);
+  virtual void OnEmptyBufferCallback(scoped_refptr<Buffer> buffer);
+  virtual void OnFillBufferCallback(scoped_refptr<VideoFrame> frame);
 
   GpuVideoDecoder(const GpuVideoDecoderInfoParam* param,
                   GpuChannel* channel_,
                   base::ProcessHandle handle);
   virtual ~GpuVideoDecoder() {}
 
- protected:
-  // Output message helper.
-  void SendInitializeDone(const GpuVideoDecoderInitDoneParam& param);
-  void SendUninitializeDone();
-  void SendFlushDone();
-  void SendEmptyBufferDone();
-  void SendEmptyBufferACK();
-  void SendFillBufferDone(const GpuVideoDecoderOutputBufferParam& frame);
-
+ private:
   int32 route_id() { return decoder_host_route_id_; }
 
+  bool CreateInputTransferBuffer(uint32 size,
+                                 base::SharedMemoryHandle* handle);
+  bool CreateOutputTransferBuffer(uint32 size,
+                                  base::SharedMemoryHandle* handle);
+  void CreateVideoFrameOnTransferBuffer();
+
   int32 decoder_host_route_id_;
+
+  // Used only in system memory path. i.e. Remove this later.
+  scoped_refptr<VideoFrame> frame_;
+  bool output_transfer_buffer_busy_;
+  int32 pending_output_requests_;
+
   GpuChannel* channel_;
   base::ProcessHandle renderer_handle_;
-
-  GpuVideoDecoderInitParam init_param_;
-  GpuVideoDecoderInitDoneParam done_param_;
 
   scoped_ptr<base::SharedMemory> input_transfer_buffer_;
   scoped_ptr<base::SharedMemory> output_transfer_buffer_;
 
- private:
+  scoped_ptr<media::VideoDecodeEngine> decode_engine_;
+  media::VideoCodecConfig config_;
+  media::VideoCodecInfo info_;
+
   // Input message handler.
   void OnInitialize(const GpuVideoDecoderInitParam& param);
   void OnUninitialize();
@@ -68,6 +80,14 @@ class GpuVideoDecoder
   void OnEmptyThisBuffer(const GpuVideoDecoderInputBufferParam& buffer);
   void OnFillThisBuffer(const GpuVideoDecoderOutputBufferParam& frame);
   void OnFillThisBufferDoneACK();
+
+  // Output message helper.
+  void SendInitializeDone(const GpuVideoDecoderInitDoneParam& param);
+  void SendUninitializeDone();
+  void SendFlushDone();
+  void SendEmptyBufferDone();
+  void SendEmptyBufferACK();
+  void SendFillBufferDone(const GpuVideoDecoderOutputBufferParam& frame);
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoder);
 };

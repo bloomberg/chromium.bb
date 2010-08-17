@@ -4,6 +4,7 @@
 
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
+#include "chrome/gpu/gpu_video_decoder.h"
 #include "chrome/gpu/gpu_video_service.h"
 
 GpuVideoService::GpuVideoService() : next_available_decoder_id_(0) {
@@ -43,22 +44,16 @@ bool GpuVideoService::CreateVideoDecoder(
     GpuChannel* channel,
     MessageRouter* router,
     GpuVideoDecoderInfoParam* param) {
-  // TODO(jiesun): find a better way to determine which GpuVideoDecoder
-  // to return on current platform.
-#if defined(ENABLE_MFT_DECODER)
   GpuVideoDecoderInfo decoder_info;
   int32 decoder_id = GetNextAvailableDecoderID();
   param->decoder_id_ = decoder_id;
   base::ProcessHandle handle = channel->renderer_handle();
-  decoder_info.decoder_ = new GpuVideoDecoderMFT(param, channel, handle);
+  decoder_info.decoder_ = new GpuVideoDecoder(param, channel, handle);
   decoder_info.channel_ = channel;
   decoder_info.param = *param;
   decoder_map_[decoder_id] = decoder_info;
   router->AddRoute(param->decoder_route_id_, decoder_info.decoder_);
   return true;
-#else
-  return false;
-#endif
 }
 
 void GpuVideoService::DestroyVideoDecoder(
