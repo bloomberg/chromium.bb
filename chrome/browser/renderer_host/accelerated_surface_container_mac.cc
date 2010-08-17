@@ -18,11 +18,11 @@ AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
       width_(0),
       height_(0),
       texture_(0),
-      texture_needs_upload_(true) {
+      texture_needs_upload_(true),
+      texture_pending_deletion_(0) {
 }
 
 AcceleratedSurfaceContainerMac::~AcceleratedSurfaceContainerMac() {
-  EnqueueTextureForDeletion();
   ReleaseIOSurface();
 }
 
@@ -60,7 +60,7 @@ void AcceleratedSurfaceContainerMac::SetSizeAndTransportDIB(
   }
 }
 
-void AcceleratedSurfaceContainerMac::MoveTo(
+void AcceleratedSurfaceContainerMac::SetGeometry(
     const webkit_glue::WebPluginGeometry& geom) {
   // TODO(kbr): may need to pay attention to cutout rects.
   if (geom.visible)
@@ -72,6 +72,19 @@ void AcceleratedSurfaceContainerMac::MoveTo(
 void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
+  if (texture_pending_deletion_) {
+    // Clean up an old texture object. This is essentially a pre-emptive
+    // cleanup, as the resources will be released when the OpenGL context
+    // associated with our containing NSView is destroyed. However, if we
+    // resize a plugin often, we might generate a lot of textures, so we
+    // should try to eagerly reclaim their resources. Note also that the
+    // OpenGL context must be current when performing the deletion, and it
+    // seems risky to make the OpenGL context current at an arbitrary point
+    // in time, which is why the deletion does not occur in the container's
+    // destructor.
+    glDeleteTextures(1, &texture_pending_deletion_);
+    texture_pending_deletion_ = 0;
+  }
   if (!texture_) {
     if ((io_surface_support && !surface_) ||
         (!io_surface_support && !transport_dib_.get()))
@@ -191,7 +204,8 @@ void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
 
 void AcceleratedSurfaceContainerMac::EnqueueTextureForDeletion() {
   if (texture_) {
-    manager_->EnqueueTextureForDeletion(texture_);
+    DCHECK(texture_pending_deletion_ == 0);
+    texture_pending_deletion_ = texture_;
     texture_ = 0;
   }
 }

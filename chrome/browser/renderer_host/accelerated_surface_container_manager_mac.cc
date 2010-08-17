@@ -65,34 +65,16 @@ void AcceleratedSurfaceContainerManagerMac::SetSizeAndTransportDIB(
     container->SetSizeAndTransportDIB(width, height, transport_dib);
 }
 
-void AcceleratedSurfaceContainerManagerMac::MovePluginContainer(
+void AcceleratedSurfaceContainerManagerMac::SetPluginContainerGeometry(
     const webkit_glue::WebPluginGeometry& move) {
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(move.window);
   if (container)
-    container->MoveTo(move);
+    container->SetGeometry(move);
 }
 
 void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context,
                                                  gfx::PluginWindowHandle id,
                                                  bool draw_root_container) {
-  // Clean up old texture objects. This is essentially a pre-emptive
-  // cleanup, as the resources will be released when the OpenGL
-  // context associated with the CAOpenGLLayer is destroyed. However,
-  // if we render many plugins in the same layer, we should try to
-  // eagerly reclaim their resources. Note also that the OpenGL
-  // context must be current when performing the deletion, and it
-  // seems risky to make the OpenGL context current at an arbitrary
-  // point in time, which is why the deletion does not occur in the
-  // container's destructor.
-  for (std::vector<GLuint>::iterator iter =
-           textures_pending_deletion_.begin();
-       iter != textures_pending_deletion_.end();
-       ++iter) {
-    GLuint texture = *iter;
-    glDeleteTextures(1, &texture);
-  }
-  textures_pending_deletion_.clear();
-
   glColorMask(true, true, true, true);
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -120,13 +102,6 @@ void AcceleratedSurfaceContainerManagerMac::ForceTextureReload() {
        i != plugin_window_to_container_map_.end(); ++i) {
     AcceleratedSurfaceContainerMac* container = i->second;
     container->ForceTextureReload();
-  }
-}
-
-void AcceleratedSurfaceContainerManagerMac::EnqueueTextureForDeletion(
-    GLuint texture) {
-  if (texture) {
-    textures_pending_deletion_.push_back(texture);
   }
 }
 

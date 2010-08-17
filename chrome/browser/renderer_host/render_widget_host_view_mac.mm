@@ -175,7 +175,7 @@ void DisablePasswordInput() {
 }
 
 // This is the renderer output callback function
-static CVReturn MyDisplayLinkCallback(
+static CVReturn DrawOneAcceleratedPluginCallback(
     CVDisplayLinkRef displayLink,
     const CVTimeStamp* now,
     const CVTimeStamp* outputTime,
@@ -213,7 +213,8 @@ static CVReturn MyDisplayLinkCallback(
 
     // Set up a display link to do OpenGL rendering on a background thread.
     CVDisplayLinkCreateWithActiveCGDisplays(&displayLink_);
-    CVDisplayLinkSetOutputCallback(displayLink_, &MyDisplayLinkCallback, self);
+    CVDisplayLinkSetOutputCallback(displayLink_,
+        &DrawOneAcceleratedPluginCallback, self);
     CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(
         displayLink_, cglContext_, cglPixelFormat_);
     CVDisplayLinkStart(displayLink_);
@@ -435,12 +436,15 @@ void RenderWidgetHostViewMac::MovePluginWindows(
       }
 
       PluginViewMap::iterator it = plugin_views_.find(geom.window);
-      CHECK(plugin_views_.end() != it);
+      DCHECK(plugin_views_.end() != it);
+      if (plugin_views_.end() == it) {
+        continue;
+      }
       NSRect new_rect([cocoa_view_ RectToNSRect:rect]);
       [it->second setFrame:new_rect];
       [it->second setNeedsDisplay:YES];
 
-      plugin_container_manager_.MovePluginContainer(geom);
+      plugin_container_manager_.SetPluginContainerGeometry(geom);
     }
   }
 }
@@ -591,7 +595,7 @@ void RenderWidgetHostViewMac::Destroy() {
     // deepest-first ordering.
     for (NSView* subview in [cocoa_view_ subviews]) {
       if (![subview isKindOfClass:[RenderWidgetHostViewCocoa class]])
-        continue;  // Skip plugin views.
+        continue;  // Skip accelerated views.
 
       [static_cast<RenderWidgetHostViewCocoa*>(subview)
           renderWidgetHostViewMac]->ShutdownHost();
@@ -756,10 +760,12 @@ RenderWidgetHostViewMac::AllocateFakePluginWindowHandle(bool opaque,
 void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
     gfx::PluginWindowHandle window) {
   PluginViewMap::iterator it = plugin_views_.find(window);
-  CHECK(plugin_views_.end() != it);
+  DCHECK(plugin_views_.end() != it);
+  if (plugin_views_.end() == it) {
+    return;
+  }
   [it->second removeFromSuperview];
   plugin_views_.erase(it);
-
   plugin_container_manager_.DestroyFakePluginWindowHandle(window);
 }
 
@@ -768,9 +774,6 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetIOSurface(
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
-  PluginViewMap::iterator it = plugin_views_.find(window);
-  CHECK(plugin_views_.end() != it);
-
   plugin_container_manager_.SetSizeAndIOSurface(window,
                                                 width,
                                                 height,
@@ -795,9 +798,6 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
-  PluginViewMap::iterator it = plugin_views_.find(window);
-  CHECK(plugin_views_.end() != it);
-
   plugin_container_manager_.SetSizeAndTransportDIB(window,
                                                    width,
                                                    height,
@@ -807,10 +807,14 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
   PluginViewMap::iterator it = plugin_views_.find(window);
-  CHECK(plugin_views_.end() != it);
-  CHECK([it->second isKindOfClass:[AcceleratedPluginView class]]);
+  DCHECK(plugin_views_.end() != it);
+  if (plugin_views_.end() == it) {
+    return;
+  }
+  DCHECK([it->second isKindOfClass:[AcceleratedPluginView class]]);
 
-  AcceleratedPluginView* view = static_cast<AcceleratedPluginView*>(it->second);
+  AcceleratedPluginView* view =
+      static_cast<AcceleratedPluginView*>(it->second);
   [view setHidden:NO];
   [view setSurfaceWasSwapped:YES];
 }
@@ -819,8 +823,10 @@ void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
       CGLContextObj context, gfx::PluginWindowHandle plugin_handle) {
   // Called on the display link thread.
   PluginViewMap::iterator it = plugin_views_.find(plugin_handle);
-  CHECK(plugin_views_.end() != it);
-
+  DCHECK(plugin_views_.end() != it);
+  if (plugin_views_.end() == it) {
+    return;
+  }
   CGLSetCurrentContext(context);
   // TODO(thakis): Pixel or view coordinates?
   NSSize size = [it->second frame].size;
@@ -834,7 +840,9 @@ void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
   glLoadIdentity();
 
   plugin_container_manager_.Draw(
-      context, plugin_handle, GetRenderWidgetHost()->is_gpu_rendering_active());
+      context,
+      plugin_handle,
+      GetRenderWidgetHost()->is_gpu_rendering_active());
 }
 
 void RenderWidgetHostViewMac::ForceTextureReload() {
@@ -1340,11 +1348,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
   }
 
   if (renderWidgetHostView_->render_widget_host_->is_gpu_rendering_active()) {
-    // In this mode the accelerated plugin layer is considered to be
-    // opaque. We do not want its contents to be blended with anything
-    // underneath it.
-    acceleratedPluginLayer_.get().opaque = YES;
-    [acceleratedPluginLayer_.get() setNeedsDisplay];
     return;
   }
 
@@ -1461,15 +1464,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     if (renderWidgetHostView_->whiteout_start_time_.is_null())
       renderWidgetHostView_->whiteout_start_time_ = base::TimeTicks::Now();
   }
-
-  // If we get here then the accelerated plugin layer is not supposed
-  // to be considered opaque -- plugins overlay the browser's normal
-  // painting.
-  acceleratedPluginLayer_.get().opaque = NO;
-
-  // This helps keep accelerated plugins' output in better sync with the
-  // window as it resizes.
-  [acceleratedPluginLayer_.get() setNeedsDisplay];
 }
 
 - (BOOL)canBecomeKeyView {
@@ -2139,15 +2133,15 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)viewDidMoveToWindow {
-  // If we move into a new window, refresh the frame information. We don't need
-  // to do it if it was the same window as it used to be in, since that case
-  // is covered by DidBecomeSelected.
-  // We only want to do this for real browser views, not popups.
   if (canBeKeyView_) {
     NSWindow* newWindow = [self window];
     // Pointer comparison only, since we don't know if lastWindow_ is still
     // valid.
     if (newWindow) {
+      // If we move into a new window, refresh the frame information. We
+      // don't need to do it if it was the same window as it used to be in,
+      // since that case is covered by DidBecomeSelected. We only want to
+      // do this for real browser views, not popups.
       if (newWindow != lastWindow_) {
         lastWindow_ = newWindow;
         renderWidgetHostView_->WindowFrameChanged();
@@ -2216,10 +2210,6 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
     static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
       ForwardEditCommand("PasteAndMatchStyle", "");
   }
-}
-
-- (void)drawAcceleratedPluginLayer {
-  [acceleratedPluginLayer_.get() setNeedsDisplay];
 }
 
 - (void)cancelComposition {

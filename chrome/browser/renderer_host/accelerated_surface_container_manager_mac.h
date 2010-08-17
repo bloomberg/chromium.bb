@@ -34,9 +34,9 @@ class AcceleratedSurfaceContainerManagerMac {
   // Destroys a fake PluginWindowHandle and associated storage.
   void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle id);
 
-  // Indicates whether a "root" PluginWindowHandle has been allocated,
-  // which means that we are using accelerated compositing and should
-  // short-circuit the normal drawing process.
+  // Indicates whether the given PluginWindowHandle is "root", which
+  // means that we are using accelerated compositing and that this one
+  // contains the compositor's output.
   bool IsRootContainer(gfx::PluginWindowHandle id);
 
   // Sets the size and backing store of the plugin instance.  There are two
@@ -54,10 +54,10 @@ class AcceleratedSurfaceContainerManagerMac {
 
   // Takes an update from WebKit about a plugin's position and size and moves
   // the plugin accordingly.
-  void MovePluginContainer(const webkit_glue::WebPluginGeometry& move);
+  void SetPluginContainerGeometry(const webkit_glue::WebPluginGeometry& move);
 
-  // Draws all of the managed plugin containers into the given OpenGL
-  // context, which must already be current.
+  // Draws the plugin container associated with the given id into the given
+  // OpenGL context, which must already be current.
   void Draw(CGLContextObj context,
             gfx::PluginWindowHandle id,
             bool draw_root_container);
@@ -65,10 +65,6 @@ class AcceleratedSurfaceContainerManagerMac {
   // Causes the next Draw call on each container to trigger a texture upload.
   // Should be called any time the drawing context has changed.
   void ForceTextureReload();
-
-  // Called by the container to enqueue its OpenGL texture objects for
-  // deletion.
-  void EnqueueTextureForDeletion(GLuint texture);
 
  private:
   uint32 current_id_;
@@ -91,9 +87,6 @@ class AcceleratedSurfaceContainerManagerMac {
   // there will only be one container active when the accelerated
   // compositor is active.
   AcceleratedSurfaceContainerMac* root_container_;
-
-  // A list of OpenGL textures waiting to be deleted
-  std::vector<GLuint> textures_pending_deletion_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerManagerMac);
 };

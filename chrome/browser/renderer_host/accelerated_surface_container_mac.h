@@ -59,9 +59,12 @@ class AcceleratedSurfaceContainerMac {
                               int32 height,
                               TransportDIB::Handle transport_dib);
 
-  // Tells the accelerated surface container that it has moved relative to the
-  // origin of the window, for example because of a scroll event.
-  void MoveTo(const webkit_glue::WebPluginGeometry& geom);
+  // Tells the accelerated surface container that its geometry has changed,
+  // for example because of a scroll event. (Note that the container
+  // currently only pays attention to the clip width and height, since the
+  // view in which it is hosted is responsible for positioning it on the
+  // page.)
+  void SetGeometry(const webkit_glue::WebPluginGeometry& geom);
 
   // Draws this accelerated surface's contents, texture mapped onto a quad in
   // the given OpenGL context. TODO(kbr): figure out and define exactly how the
@@ -106,6 +109,10 @@ class AcceleratedSurfaceContainerMac {
 
   // True if we need to upload the texture again during the next draw.
   bool texture_needs_upload_;
+
+  // This may refer to an old version of the texture if the container is
+  // resized, for example.
+  GLuint texture_pending_deletion_;
 
   // Releases the IOSurface reference, if any, retained by this object.
   void ReleaseIOSurface();

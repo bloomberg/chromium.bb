@@ -62,10 +62,6 @@ class RWHVMEditCommandHelper;
 
   NSWindow* lastWindow_;  // weak
 
-  // The Core Animation layer, if any, hosting the accelerated
-  // plugins' and accelerated compositor's output.
-  scoped_nsobject<CALayer> acceleratedPluginLayer_;
-
   // Variables used by our implementaion of the NSTextInput protocol.
   // An input method of Mac calls the methods of this protocol not only to
   // notify an application of its status, but also to retrieve the status of
@@ -133,9 +129,6 @@ class RWHVMEditCommandHelper;
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
 - (void)setToolTipAtMousePoint:(NSString *)string;
-// Triggers a refresh of the accelerated plugin layer; should be called whenever
-// the shared surface for one of the plugins is updated.
-- (void)drawAcceleratedPluginLayer;
 // Set frame, then notify the RenderWidgetHost that the frame has been changed,
 // but do it in a separate task, using |performSelector:withObject:afterDelay:|.
 // This stops the flickering issue in http://crbug.com/31970
@@ -242,7 +235,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
   void DrawAcceleratedSurfaceInstance(
       CGLContextObj context, gfx::PluginWindowHandle plugin_handle);
-  // Informs the plug-in instances that their drawing context has changed.
+  // Forces the textures associated with any accelerated plugin instances
+  // to be reloaded.
   void ForceTextureReload();
 
   virtual void SetVisuallyDeemphasized(bool deemphasized);
