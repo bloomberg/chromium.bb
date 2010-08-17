@@ -188,7 +188,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     PasswordStore* password_store =
         profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 
-    password_store->RemoveLoginsCreatedBetween(delete_begin_, delete_end_);
+    if (password_store)
+      password_store->RemoveLoginsCreatedBetween(delete_begin_, delete_end_);
   }
 
   if (remove_mask & REMOVE_FORM_DATA) {
@@ -197,8 +198,10 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     WebDataService* web_data_service =
         profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
 
-    web_data_service->RemoveFormElementsAddedBetween(delete_begin_,
-        delete_end_);
+    if (web_data_service) {
+      web_data_service->RemoveFormElementsAddedBetween(delete_begin_,
+          delete_end_);
+    }
   }
 
   if (remove_mask & REMOVE_CACHE) {
