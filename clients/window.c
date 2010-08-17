@@ -371,6 +371,8 @@ window_draw_decorations(struct window *window)
 	cairo_show_text(cr, window->title);
 
 	cairo_destroy(cr);
+
+	cairo_device_flush (window->display->device);
 }
 
 static void
