@@ -488,8 +488,7 @@ void WizardController::OnLoginCreateAccount() {
 
 void WizardController::OnNetworkConnected() {
   if (is_official_build_) {
-    ShowUpdateScreen();
-    GetUpdateScreen()->StartUpdate();
+    ShowEulaScreen();
   } else {
     OnOOBECompleted();
   }
@@ -537,11 +536,12 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
-  ShowEulaScreen();
+  OnOOBECompleted();
 }
 
 void WizardController::OnEulaAccepted() {
-  OnOOBECompleted();
+  ShowUpdateScreen();
+  GetUpdateScreen()->StartUpdate();
 }
 
 void WizardController::OnUpdateErrorCheckingForUpdate() {
@@ -550,7 +550,7 @@ void WizardController::OnUpdateErrorCheckingForUpdate() {
   // screen if there is any error checking for an update.
   // They could use "browse without sign-in" feature to set up the network to be
   // able to perform the update later.
-  ShowEulaScreen();
+  OnOOBECompleted();
 }
 
 void WizardController::OnUpdateErrorUpdating() {
@@ -559,7 +559,7 @@ void WizardController::OnUpdateErrorUpdating() {
   // TODO(nkostylev): Show message to the user explaining update error.
   // TODO(nkostylev): Update should be required during OOBE.
   // Temporary fix, need to migrate to new API. http://crosbug.com/4321
-  ShowEulaScreen();
+  OnOOBECompleted();
 }
 
 void WizardController::OnUserImageSelected() {
