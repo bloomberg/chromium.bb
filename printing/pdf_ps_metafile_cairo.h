@@ -29,8 +29,6 @@ class PdfPsMetafile {
     PS,
   };
 
-  PdfPsMetafile();
-
   // In the renderer process, callers should also call Init(void) to see if the
   // metafile can obtain all necessary rendering resources.
   // In the browser process, callers should also call Init(const void*, uint32)

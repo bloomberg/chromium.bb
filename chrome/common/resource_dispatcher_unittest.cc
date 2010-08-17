@@ -11,7 +11,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/resource_dispatcher.h"
-#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
 

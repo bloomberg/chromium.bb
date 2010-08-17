@@ -20,7 +20,6 @@ extern "C" {
 #include "ipc/ipc_message_utils.h"
 
 #if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
 
 namespace {
 

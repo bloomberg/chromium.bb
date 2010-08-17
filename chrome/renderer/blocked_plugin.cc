@@ -8,7 +8,6 @@
 #include "app/resource_bundle.h"
 #include "base/file_path.h"
 #include "base/string_piece.h"
-#include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_group.h"

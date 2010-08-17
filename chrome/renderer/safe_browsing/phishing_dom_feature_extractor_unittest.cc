@@ -24,7 +24,6 @@
 #include "chrome/renderer/safe_browsing/features.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
-#include "net/http/http_response_headers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"

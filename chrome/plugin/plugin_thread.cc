@@ -27,7 +27,6 @@
 #include "chrome/plugin/chrome_plugin_host.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/render_thread.h"
-#include "ipc/ipc_channel_handle.h"
 #include "net/base/net_errors.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/webkit_glue.h"

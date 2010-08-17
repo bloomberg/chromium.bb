@@ -23,6 +23,7 @@
 #include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
 #include "printing/native_metafile.h"
+#include "webkit/glue/password_form.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -33,7 +34,6 @@ class DictionaryValue;
 class ListValue;
 struct ThumbnailScore;
 class URLRequestStatus;
-class WebCursor;
 
 namespace gfx {
 class Point;
@@ -210,7 +210,7 @@ struct ParamTraits<WebCursor> {
   static void Write(Message* m, const param_type& p) {
     p.Serialize(m);
   }
-  static bool Read(const Message* m, void** iter, param_type* r)  {
+  static bool Read(const Message* m, void** iter, param_type* r) {
     return r->Deserialize(m, iter);
   }
   static void Log(const param_type& p, std::wstring* l) {
@@ -368,16 +368,49 @@ struct ParamTraits<Geoposition::ErrorCode> {
 template <>
 struct ParamTraits<webkit_glue::PasswordForm> {
   typedef webkit_glue::PasswordForm param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.signon_realm);
+    WriteParam(m, p.origin);
+    WriteParam(m, p.action);
+    WriteParam(m, p.submit_element);
+    WriteParam(m, p.username_element);
+    WriteParam(m, p.username_value);
+    WriteParam(m, p.password_element);
+    WriteParam(m, p.password_value);
+    WriteParam(m, p.old_password_element);
+    WriteParam(m, p.old_password_value);
+    WriteParam(m, p.ssl_valid);
+    WriteParam(m, p.preferred);
+    WriteParam(m, p.blacklisted_by_user);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->signon_realm) &&
+        ReadParam(m, iter, &p->origin) &&
+        ReadParam(m, iter, &p->action) &&
+        ReadParam(m, iter, &p->submit_element) &&
+        ReadParam(m, iter, &p->username_element) &&
+        ReadParam(m, iter, &p->username_value) &&
+        ReadParam(m, iter, &p->password_element) &&
+        ReadParam(m, iter, &p->password_value) &&
+        ReadParam(m, iter, &p->old_password_element) &&
+        ReadParam(m, iter, &p->old_password_value) &&
+        ReadParam(m, iter, &p->ssl_valid) &&
+        ReadParam(m, iter, &p->preferred) &&
+        ReadParam(m, iter, &p->blacklisted_by_user);
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"<PasswordForm>");
+  }
 };
 
 template <>
 struct ParamTraits<printing::PageRange> {
   typedef printing::PageRange param_type;
   static void Write(Message* m, const param_type& p);
+
   static bool Read(const Message* m, void** iter, param_type* r);
+
   static void Log(const param_type& p, std::wstring* l);
 };
 
@@ -385,7 +418,9 @@ template <>
 struct ParamTraits<printing::NativeMetafile> {
   typedef printing::NativeMetafile param_type;
   static void Write(Message* m, const param_type& p);
+
   static bool Read(const Message* m, void** iter, param_type* r);
+
   static void Log(const param_type& p, std::wstring* l);
 };
 

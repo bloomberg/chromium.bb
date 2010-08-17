@@ -19,7 +19,6 @@
 #include "gfx/native_widget_types.h"
 #include "gfx/rect.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserCompletion.h"
 #include "webkit/glue/plugins/webplugin_delegate.h"
 

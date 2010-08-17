@@ -6,6 +6,7 @@
 
 #include "base/shared_memory.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/common/render_messages.h"
 
 using base::Time;
 using base::TimeDelta;

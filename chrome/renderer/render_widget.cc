@@ -7,7 +7,6 @@
 #include "app/surface/transport_dib.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
@@ -25,7 +24,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
-#include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_POSIX)
