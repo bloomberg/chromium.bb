@@ -23,6 +23,8 @@
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
+#include "net/tools/dump_cache/url_to_filename_encoder.h"
+#include "net/tools/dump_cache/url_utilities.h"
 #include "net/tools/flip_server/balsa_enums.h"
 #include "net/tools/flip_server/balsa_frame.h"
 #include "net/tools/flip_server/balsa_headers.h"
@@ -34,8 +36,6 @@
 #include "net/tools/flip_server/ring_buffer.h"
 #include "net/tools/flip_server/simple_buffer.h"
 #include "net/tools/flip_server/split.h"
-#include "net/tools/flip_server/url_to_filename_encoder.h"
-#include "net/tools/flip_server/url_utilities.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2290,4 +2290,3 @@ int main(int argc, char**argv) {
   }
   return 0;
 }
-
