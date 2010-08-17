@@ -4121,3 +4121,14 @@
    fun:_ZN8chromeos26CoreChromeOSOptionsHandler11ObservePrefERKSs
    fun:_ZN18CoreOptionsHandler18HandleObservePrefsEPK5Value
 }
+{
+   bug_52387
+   Memcheck:Addr4
+   fun:_ZN12_GLOBAL__N_112CacheCreator10DoCallbackEi
+   fun:_ZN12_GLOBAL__N_112CacheCreator12OnIOCompleteEi
+   fun:_Z16DispatchToMethodIN12_GLOBAL__N_112CacheCreatorEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN10disk_cache17InFlightBackendIO19OnOperationCompleteEPNS_12BackgroundIOEb
+   fun:_ZN10disk_cache10InFlightIO14InvokeCallbackEPNS_12BackgroundIOEb
+   fun:_ZN10disk_cache12BackgroundIO13OnIOSignalledEv
+}
