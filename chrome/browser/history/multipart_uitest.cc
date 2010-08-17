@@ -54,7 +54,8 @@ TEST_F(MultipartResponseUITest, MAYBE_SingleVisit) {
   ASSERT_TRUE(db.Open(history));
   std::string query(
       "SELECT COUNT(1) FROM visits, urls WHERE visits.url = urls.id"
-      " AND urls.url LIKE 'http://localhost:%/multipart'");
+      " AND urls.url LIKE 'http://" + test_server.host_port_pair().host() +
+      ":%/multipart'");
   {
     sql::Statement statement(db.GetUniqueStatement(query.c_str()));
     EXPECT_TRUE(statement);
