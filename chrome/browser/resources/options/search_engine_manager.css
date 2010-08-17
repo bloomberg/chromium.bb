@@ -1,0 +1,37 @@
+#searchEngineList > div, #searchEngineHeading {
+  display: -webkit-box;
+}
+
+#searchEngineManagerPage .name {
+  -webkit-box-sizing: border-box;
+  width: 50%;
+}
+
+#searchEngineManagerPage .keyword {
+  -webkit-box-flex: 1;
+}
+
+#searchEngineList .name {
+  background-position: left;
+  background-repeat: no-repeat;
+  padding-left: 18px;
+}
+
+#searchEngineList .keyword {
+  color: #666666;
+}
+
+#searchEngineList .default {
+  font-weight: bold;
+}
+
+#searchEngineHeading {
+  font-weight: bold;
+  padding: 4px;
+  border-bottom: solid 1px black;
+  border-top: 1px solid black;
+}
+
+.left-side-table :last-child button {
+  width: 100%;
+}

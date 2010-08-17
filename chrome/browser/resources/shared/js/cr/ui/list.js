@@ -150,7 +150,7 @@ cr.define('cr.ui', function() {
       }
 
       this.selectionModel_ = sm;
-      this.selectionController_ = new ListSelectionController(sm);
+      this.selectionController_ = this.createSelectionController(sm);
 
       if (sm) {
         sm.addEventListener('change', this.boundHandleOnChange_);
@@ -417,6 +417,16 @@ cr.define('cr.ui', function() {
      */
     createItem: function(value) {
       return new cr.ui.ListItem({label: value});
+    },
+
+    /**
+     * Creates the selection controller to use internally.
+     * @param {cr.ui.ListSelectionModel} sm The underlying selection model.
+     * @return {!cr.ui.ListSelectionModel} The newly created selection
+     *     controller.
+     */
+    createSelectionController: function(sm) {
+      return new ListSelectionController(sm);
     },
 
     /**

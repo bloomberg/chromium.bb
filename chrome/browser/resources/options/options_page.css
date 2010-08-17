@@ -224,3 +224,11 @@ input[type="checkbox"] {
 #contentSettingsPage :invalid {
   background-color: pink;
 }
+
+.left-side-table {
+  display: -webkit-box;
+}
+
+.left-side-table > div:first-child {
+  -webkit-box-flex: 1;
+}
