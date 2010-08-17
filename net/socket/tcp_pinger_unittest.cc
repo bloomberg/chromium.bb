@@ -17,7 +17,7 @@
 class TCPPingerTest
     : public PlatformTest, public ListenSocket::ListenSocketDelegate {
  public:
-  TCPPingerTest() {
+  TCPPingerTest() : listen_port_(0) {
   }
 
   // Implement ListenSocketDelegate methods
