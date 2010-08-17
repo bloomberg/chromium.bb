@@ -415,6 +415,7 @@ cr.define('options', function() {
         alert(localStrings.getString('this_language_is_currently_in_use'));
         return;
       }
+      // Disable input methods associated with |languageCode|.
       // Don't allow removing the language if cerntain conditions are met.
       // See removePreloadEnginesByLanguageCode_() for details.
       if (!this.removePreloadEnginesByLanguageCode_(languageCode)) {
@@ -423,31 +424,55 @@ cr.define('options', function() {
         alert(localStrings.getString('please_add_another_language'));
         return;
       }
-      // Disable input methods associated with |languageCode|.
       languageOptionsList.removeSelectedLanguage();
     },
 
     /**
      * Removes preload engines associated with the given language code.
+     * However, this function does not remove engines (input methods) that
+     * are used for other active languages. For instance, if "xkb:us::eng"
+     * is used for English and Filipino, and the two languages are active,
+     * this function does not remove "xkb:us::eng" when either of these
+     * languages is removed. Instead, it'll remove "xkb:us::eng" when the
+     * both languages are gone.
+     *
      * @param {string} languageCode Language code (ex. "fr").
      * @return {boolean} Returns true on success.
      * @private
      */
     removePreloadEnginesByLanguageCode_: function(languageCode) {
-      // First create the set of engines to be removed.
-      var enginesToBeRemoved = {};
-      var inputMethodList = templateData.inputMethodList;
-      for (var i = 0; i < inputMethodList.length; i++) {
-        var inputMethod = inputMethodList[i];
-        if (languageCode in inputMethod.languageCodeSet) {
-          enginesToBeRemoved[inputMethod.id] = true;
+      // First create the set of engines to be removed from input methods
+      // associated with the language code.
+      var enginesToBeRemovedSet = {};
+      var inputMethodIds = this.languageCodeToInputMethodIdsMap_[languageCode];
+      for (var i = 0; i < inputMethodIds.length; i++) {
+        enginesToBeRemovedSet[inputMethodIds[i]] = true;
+      }
+
+      // Then eliminate engines that are also used for other active languages.
+      var languageCodes = $('language-options-list').getLanguageCodes();
+      for (var i = 0; i < languageCodes.length; i++) {
+        // Skip the target language code.
+        if (languageCodes[i] == languageCode) {
+          continue;
+        }
+        // Check if input methods used in this language are included in
+        // enginesToBeRemovedSet. If so, eliminate these from the set, so
+        // we don't remove this time.
+        var inputMethodIdsForAnotherLanguage =
+            this.languageCodeToInputMethodIdsMap_[languageCodes[i]];
+        for (var j = 0; j < inputMethodIdsForAnotherLanguage.length; j++) {
+          var inputMethodId = inputMethodIdsForAnotherLanguage[j];
+          if (inputMethodId in enginesToBeRemovedSet) {
+            delete enginesToBeRemovedSet[inputMethodId];
+          }
         }
       }
 
       // Update the preload engine list with the to-be-removed set.
       var newPreloadEngines = [];
       for (var i = 0; i < this.preloadEngines_.length; i++) {
-        if (!(this.preloadEngines_[i] in enginesToBeRemoved)) {
+        if (!(this.preloadEngines_[i] in enginesToBeRemovedSet)) {
           newPreloadEngines.push(this.preloadEngines_[i]);
         }
       }
