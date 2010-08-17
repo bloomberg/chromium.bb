@@ -18,7 +18,6 @@
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
@@ -127,11 +126,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // ActivateDataType).  Takes ownership of the pointer.
   void RegisterDataTypeController(
       browser_sync::DataTypeController* data_type_controller);
-
-  // Returns the session model associator associated with this type, but only if
-  // the associator is running.  If it is doing anything else, it will return
-  // null.
-  browser_sync::SessionModelAssociator* GetSessionModelAssociator();
 
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.
@@ -301,10 +295,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // NotificationService when the outcome is known.
   virtual void SetPassphrase(const std::string& passphrase);
 
-  // Returns whether processing changes is allowed.  Check this before doing
-  // any model-modifying operations.
-  bool ShouldPushChanges();
-
  protected:
   // Used by ProfileSyncServiceMock only.
   //
@@ -315,6 +305,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager();
+
+  // Returns whether processing changes is allowed.  Check this before doing
+  // any model-modifying operations.
+  bool ShouldPushChanges();
 
   // Starts up the backend sync components.
   void StartUp();
@@ -350,7 +344,6 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
  private:
   friend class ProfileSyncServiceTest;
   friend class ProfileSyncServicePreferenceTest;
-  friend class ProfileSyncServiceSessionTest;
   friend class ProfileSyncServiceTestHarness;
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
   FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest,

@@ -867,8 +867,6 @@
         '<(protoc_out_dir)/chrome/browser/sync/protocol/password_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/preference_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/preference_specifics.pb.h',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/session_specifics.pb.cc',
-        '<(protoc_out_dir)/chrome/browser/sync/protocol/session_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/theme_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/theme_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/typed_url_specifics.pb.cc',

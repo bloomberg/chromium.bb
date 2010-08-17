@@ -883,7 +883,6 @@ const char kSyncAutofill[] = "sync.autofill";
 const char kSyncThemes[] = "sync.themes";
 const char kSyncTypedUrls[] = "sync.typed_urls";
 const char kSyncExtensions[] = "sync.extensions";
-const char kSyncSessions[] = "sync.sessions";
 
 // Boolean used by enterprise configuration management in order to lock down
 // sync.

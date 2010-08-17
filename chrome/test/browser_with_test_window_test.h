@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/message_loop.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/test/test_browser_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,10 +86,8 @@ class BrowserWithTestWindowTest : public testing::Test {
   void NavigateAndCommitActiveTab(const GURL& url);
 
  private:
-
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   MessageLoopForUI ui_loop_;
-  ChromeThread ui_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<TestBrowserWindow> window_;

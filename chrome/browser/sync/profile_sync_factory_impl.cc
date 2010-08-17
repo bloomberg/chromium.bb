@@ -24,9 +24,6 @@
 #include "chrome/browser/sync/glue/preference_change_processor.h"
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
-#include "chrome/browser/sync/glue/session_change_processor.h"
-#include "chrome/browser/sync/glue/session_data_type_controller.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/theme_change_processor.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
@@ -58,9 +55,6 @@ using browser_sync::PasswordModelAssociator;
 using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceModelAssociator;
-using browser_sync::SessionChangeProcessor;
-using browser_sync::SessionDataTypeController;
-using browser_sync::SessionModelAssociator;
 using browser_sync::SyncBackendHost;
 using browser_sync::ThemeChangeProcessor;
 using browser_sync::ThemeDataTypeController;
@@ -135,12 +129,6 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
         new TypedUrlDataTypeController(this, profile_, pss));
   }
 
-  // Session sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncSessions)) {
-    pss->RegisterDataTypeController(
-        new SessionDataTypeController(this, pss));
-  }
   return pss;
 }
 
@@ -261,15 +249,3 @@ ProfileSyncFactoryImpl::CreateTypedUrlSyncComponents(
                                   error_handler);
   return SyncComponents(model_associator, change_processor);
 }
-
-ProfileSyncFactory::SyncComponents
-ProfileSyncFactoryImpl::CreateSessionSyncComponents(
-    ProfileSyncService* profile_sync_service,
-    UnrecoverableErrorHandler* error_handler) {
-  SessionModelAssociator* model_associator =
-      new SessionModelAssociator(profile_sync_service);
-  SessionChangeProcessor* change_processor =
-      new SessionChangeProcessor(error_handler, model_associator);
-  return SyncComponents(model_associator, change_processor);
-}
-

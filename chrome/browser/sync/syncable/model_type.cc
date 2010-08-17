@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
-#include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
@@ -45,9 +44,6 @@ void AddDefaultExtensionValue(syncable::ModelType datatype,
       break;
     case NIGORI:
       specifics->MutableExtension(sync_pb::nigori);
-      break;
-    case SESSIONS:
-      specifics->MutableExtension(sync_pb::session);
       break;
     case APPS:
       specifics->MutableExtension(sync_pb::app);
@@ -116,9 +112,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   if (specifics.HasExtension(sync_pb::app))
     return APPS;
 
-  if (specifics.HasExtension(sync_pb::session))
-    return SESSIONS;
-
   return UNSPECIFIED;
 }
 
@@ -140,8 +133,6 @@ std::string ModelTypeToString(ModelType model_type) {
       return "Extensions";
     case NIGORI:
       return "Encryption keys";
-    case SESSIONS:
-      return "Sessions";
     case APPS:
       return "Apps";
     default:
@@ -162,7 +153,6 @@ const char kTypedUrlNotificationType[] = "TYPED_URL";
 const char kExtensionNotificationType[] = "EXTENSION";
 const char kNigoriNotificationType[] = "NIGORI";
 const char kAppNotificationType[] = "APP";
-const char kSessionNotificationType[] = "SESSION";
 // TODO(akalin): This is a hack to make new sync data types work with
 // server-issued notifications.  Remove this when it's not needed
 // anymore.
@@ -198,9 +188,6 @@ bool RealModelTypeToNotificationType(ModelType model_type,
       return true;
     case APPS:
       *notification_type = kAppNotificationType;
-      return true;
-    case SESSIONS:
-      *notification_type = kSessionNotificationType;
       return true;
     // TODO(akalin): This is a hack to make new sync data types work with
     // server-issued notifications.  Remove this when it's not needed
@@ -244,11 +231,7 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
   } else if (notification_type == kAppNotificationType) {
     *model_type = APPS;
     return true;
-  } else if (notification_type == kSessionNotificationType) {
-    *model_type = SESSIONS;
-    return true;
-  }
-  else if (notification_type == kUnknownNotificationType) {
+  } else if (notification_type == kUnknownNotificationType) {
     // TODO(akalin): This is a hack to make new sync data types work with
     // server-issued notifications.  Remove this when it's not needed
     // anymore.

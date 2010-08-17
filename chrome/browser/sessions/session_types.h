@@ -88,7 +88,7 @@ class TabNavigation {
   // This is used when determining the selected TabNavigation and only useful
   // by BaseSessionService and SessionService.
   void set_index(int index) { index_ = index; }
-  int index() const { return index_; }
+  int index() { return index_; }
 
  private:
   friend class BaseSessionService;
@@ -189,16 +189,4 @@ struct SessionWindow {
   DISALLOW_COPY_AND_ASSIGN(SessionWindow);
 };
 
-// Defines a foreign session for session sync.  A foreign session is a session
-// on a remote chrome instance.
-struct ForeignSession {
-  ForeignSession();
-  ~ForeignSession();
-
-  // Unique tag for each session.
-  std::string foreign_tession_tag;
-  std::vector<SessionWindow*> windows;
-};
-
 #endif  // CHROME_BROWSER_SESSIONS_SESSION_TYPES_H_
-

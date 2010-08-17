@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "chrome/browser/history/history.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "base/basictypes.h"
 
 class Browser;
@@ -35,11 +34,6 @@ class SessionRestore {
                              bool clobber_existing_window,
                              bool always_create_tabbed_browser,
                              const std::vector<GURL>& urls_to_open);
-
-  // Specifically used in the restoration of a foreign session.  This method
-  // restores the given session windows to a browser.
-  static void RestoreForeignSessionWindows(Profile* profile,
-      std::vector<SessionWindow*>* windows);
 
   // Synchronously restores the last session. At least one tabbed browser is
   // created, even if there is an error in restoring.

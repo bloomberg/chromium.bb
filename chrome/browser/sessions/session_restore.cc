@@ -298,33 +298,6 @@ class SessionRestoreImpl : public NotificationObserver {
     }
   }
 
-  void RestoreForeignSession(std::vector<SessionWindow*>* windows) {
-    tab_loader_.reset(new TabLoader());
-    // Create a browser instance to put the restored tabs in.
-    bool has_tabbed_browser = false;
-    for (std::vector<SessionWindow*>::iterator i = (*windows).begin();
-        i != (*windows).end(); ++i) {
-      Browser* browser = NULL;
-      if (!has_tabbed_browser && (*i)->type == Browser::TYPE_NORMAL)
-        has_tabbed_browser = true;
-      browser = new Browser(static_cast<Browser::Type>((*i)->type),
-          profile_);
-      browser->set_override_bounds((*i)->bounds);
-      browser->set_maximized_state((*i)->is_maximized ?
-          Browser::MAXIMIZED_STATE_MAXIMIZED :
-          Browser::MAXIMIZED_STATE_UNMAXIMIZED);
-      browser->CreateBrowserWindow();
-
-      // Restore and show the browser.
-      const int initial_tab_count = browser->tab_count();
-      RestoreTabsToBrowser(*(*i), browser);
-      ShowBrowser(browser, initial_tab_count,
-          (*i)->selected_tab_index);
-      NotifySessionServiceOfRestoredTabs(browser, initial_tab_count);
-      FinishedTabCreation(true, has_tabbed_browser);
-    }
-  }
-
   ~SessionRestoreImpl() {
     STLDeleteElements(&windows_);
     restoring = false;
@@ -638,16 +611,6 @@ void SessionRestore::RestoreSession(Profile* profile,
                                     const std::vector<GURL>& urls_to_open) {
   Restore(profile, browser, false, clobber_existing_window,
           always_create_tabbed_browser, urls_to_open);
-}
-
-// static
-void SessionRestore::RestoreForeignSessionWindows(Profile* profile,
-    std::vector<SessionWindow*>* windows) {
-  // Create a SessionRestore object to eventually restore the tabs.
-  std::vector<GURL> gurls;
-  SessionRestoreImpl restorer(profile,
-      static_cast<Browser*>(NULL), true, false, true, gurls);
-  restorer.RestoreForeignSession(windows);
 }
 
 // static

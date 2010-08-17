@@ -51,13 +51,3 @@ SessionWindow::SessionWindow()
 SessionWindow::~SessionWindow() {
   STLDeleteElements(&tabs);
 }
-
-// ForeignSession --------------------------------------------------------------
-
-ForeignSession::ForeignSession() : foreign_tession_tag("invalid") {
-}
-
-ForeignSession::~ForeignSession() {
-  STLDeleteElements(&windows);
-}
-

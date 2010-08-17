@@ -11,9 +11,11 @@
 class BookmarkBarViewTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBarViewTest()
-      : file_thread_(ChromeThread::FILE, message_loop()) {}
+      : ui_thread_(ChromeThread::UI, message_loop()),
+        file_thread_(ChromeThread::FILE, message_loop()) {}
 
  private:
+  ChromeThread ui_thread_;
   ChromeThread file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewTest);

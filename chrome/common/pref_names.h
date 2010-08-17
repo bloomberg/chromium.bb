@@ -318,7 +318,6 @@ extern const char kNTPPrefVersion[];
 
 extern const char kDevToolsOpenDocked[];
 extern const char kDevToolsSplitLocation[];
-extern const char kSyncSessions[];
 
 extern const char kSyncLastSyncedTime[];
 extern const char kSyncHasSetupCompleted[];

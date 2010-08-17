@@ -40,7 +40,6 @@
 #include "chrome/browser/sync/protocol/nigori_specifics.pb.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
-#include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/protocol/theme_specifics.pb.h"
@@ -300,11 +299,6 @@ const sync_pb::ExtensionSpecifics& BaseNode::GetExtensionSpecifics() const {
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::extension);
 }
 
-const sync_pb::SessionSpecifics& BaseNode::GetSessionSpecifics() const {
-  DCHECK(GetModelType() == syncable::SESSIONS);
-  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::session);
-}
-
 syncable::ModelType BaseNode::GetModelType() const {
   return GetEntry()->GetModelType();
 }
@@ -409,14 +403,6 @@ void WriteNode::SetThemeSpecifics(
   PutThemeSpecificsAndMarkForSyncing(new_value);
 }
 
-
-void WriteNode::SetSessionSpecifics(
-    const sync_pb::SessionSpecifics& new_value) {
-  DCHECK(GetModelType() == syncable::SESSIONS);
-  PutSessionSpecificsAndMarkForSyncing(new_value);
-}
-
-
 void WriteNode::PutPasswordSpecificsAndMarkForSyncing(
     const sync_pb::PasswordSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
@@ -470,15 +456,6 @@ void WriteNode::PutExtensionSpecificsAndMarkForSyncing(
   entity_specifics.MutableExtension(sync_pb::extension)->CopyFrom(new_value);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
-
-
-void WriteNode::PutSessionSpecificsAndMarkForSyncing(
-    const sync_pb::SessionSpecifics& new_value) {
-  sync_pb::EntitySpecifics entity_specifics;
-  entity_specifics.MutableExtension(sync_pb::session)->CopyFrom(new_value);
-  PutSpecificsAndMarkForSyncing(entity_specifics);
-}
-
 
 void WriteNode::PutSpecificsAndMarkForSyncing(
     const sync_pb::EntitySpecifics& specifics) {
@@ -1911,6 +1888,7 @@ void SyncManager::SyncInternal::HandleChannelEvent(const SyncerEvent& event) {
   // Notifications are sent at the end of every sync cycle, regardless of
   // whether we should sync again.
   if (event.what_happened == SyncerEvent::SYNC_CYCLE_ENDED) {
+
     ModelSafeRoutingInfo enabled_types;
     registrar_->GetModelSafeRoutingInfo(&enabled_types);
     if (enabled_types.count(syncable::PASSWORDS) > 0) {
