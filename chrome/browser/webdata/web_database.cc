@@ -56,8 +56,9 @@ using webkit_glue::PasswordForm;
 //   input_encodings        Semicolon separated list of supported input
 //                          encodings, may be empty.
 //   suggest_url
-//   prepopulate_id         See TemplateURL::prepoulate_id.
+//   prepopulate_id         See TemplateURL::prepopulate_id.
 //   autogenerate_keyword
+//   logo_id                See TemplateURL::logo_id
 //
 // logins
 //   origin_url
@@ -157,8 +158,9 @@ namespace {
 typedef std::vector<Tuple3<int64, string16, string16> > AutofillElementList;
 
 // Current version number.
-const int kCurrentVersionNumber = 24;
-const int kCompatibleVersionNumber = 21;
+const int kCurrentVersionNumber = 25;
+const int kCompatibleVersionNumber = 25;
+const int kUrlIdPosition = 14;
 
 // Keys used in the meta table.
 const char* kDefaultSearchProviderKey = "Default Search Provider ID";
@@ -209,6 +211,7 @@ void BindURLToStatement(const TemplateURL& url, sql::Statement* s) {
     s->BindString(10, std::string());
   s->BindInt(11, url.prepopulate_id());
   s->BindInt(12, url.autogenerate_keyword() ? 1 : 0);
+  s->BindInt(13, url.logo_id());
 }
 
 void InitPasswordFormFromStatement(PasswordForm* form, sql::Statement* s) {
@@ -623,7 +626,8 @@ bool WebDatabase::InitKeywordsTable() {
                      "input_encodings VARCHAR,"
                      "suggest_url VARCHAR,"
                      "prepopulate_id INTEGER DEFAULT 0,"
-                     "autogenerate_keyword INTEGER DEFAULT 0)")) {
+                     "autogenerate_keyword INTEGER DEFAULT 0,"
+                     "logo_id INTEGER DEFAULT 0)")) {
       NOTREACHED();
       return false;
     }
@@ -829,14 +833,14 @@ bool WebDatabase::AddKeyword(const TemplateURL& url) {
       "(short_name, keyword, favicon_url, url, safe_for_autoreplace, "
       "originating_url, date_created, usage_count, input_encodings, "
       "show_in_default_list, suggest_url, prepopulate_id, "
-      "autogenerate_keyword, id) VALUES "
-      "(?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
+      "autogenerate_keyword, logo_id, id) VALUES "
+      "(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
   BindURLToStatement(url, &s);
-  s.BindInt64(13, url.id());
+  s.BindInt64(kUrlIdPosition, url.id());
   if (!s.Run()) {
     NOTREACHED();
     return false;
@@ -860,7 +864,7 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
       "SELECT id, short_name, keyword, favicon_url, url, "
       "safe_for_autoreplace, originating_url, date_created, "
       "usage_count, input_encodings, show_in_default_list, "
-      "suggest_url, prepopulate_id, autogenerate_keyword "
+      "suggest_url, prepopulate_id, autogenerate_keyword, logo_id "
       "FROM keywords ORDER BY id ASC"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
@@ -908,6 +912,8 @@ bool WebDatabase::GetKeywords(std::vector<TemplateURL*>* urls) {
 
     template_url->set_autogenerate_keyword(s.ColumnInt(13) == 1);
 
+    template_url->set_logo_id(s.ColumnInt(14));
+
     urls->push_back(template_url);
   }
   return s.Succeeded();
@@ -920,14 +926,14 @@ bool WebDatabase::UpdateKeyword(const TemplateURL& url) {
       "SET short_name=?, keyword=?, favicon_url=?, url=?, "
       "safe_for_autoreplace=?, originating_url=?, date_created=?, "
       "usage_count=?, input_encodings=?, show_in_default_list=?, "
-      "suggest_url=?, prepopulate_id=?, autogenerate_keyword=? "
-      "WHERE id=?"));
+      "suggest_url=?, prepopulate_id=?, autogenerate_keyword=?, "
+      "logo_id=? WHERE id=?"));
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
   BindURLToStatement(url, &s);
-  s.BindInt64(13, url.id());
+  s.BindInt64(kUrlIdPosition, url.id());
   return s.Run();
 }
 
@@ -1973,6 +1979,19 @@ void WebDatabase::MigrateOldVersionsAsNeeded() {
 
       // FALL THROUGH
     }
+
+    case 24:
+      // Add the logo_id column.
+      if (!db_.Execute("ALTER TABLE keywords ADD COLUMN logo_id "
+                       "INTEGER DEFAULT 0")) {
+        NOTREACHED();
+        LOG(WARNING) << "Unable to update web database to version 25.";
+        return;
+      }
+      meta_table_.SetVersionNumber(25);
+      meta_table_.SetCompatibleVersionNumber(
+          std::min(25, kCompatibleVersionNumber));
+      // FALL THROUGH
 
     // Add successive versions here.  Each should set the version number and
     // compatible version number as appropriate, then fall through to the next

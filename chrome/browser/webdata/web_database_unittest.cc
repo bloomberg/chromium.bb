@@ -155,6 +155,10 @@ class WebDatabaseTest : public testing::Test {
     url->set_prepopulate_id(id);
   }
 
+  static void set_logo_id(TemplateURL* url, int id) {
+    url->set_logo_id(id);
+  }
+
   static AutofillEntry MakeAutofillEntry(const char* name,
                                          const char* value,
                                          time_t timestamp0,
@@ -189,6 +193,7 @@ TEST_F(WebDatabaseTest, Keywords) {
   template_url.set_usage_count(32);
   template_url.add_input_encoding("UTF-8");
   set_prepopulate_id(&template_url, 10);
+  set_logo_id(&template_url, 1000);
   SetID(1, &template_url);
 
   EXPECT_TRUE(db.AddKeyword(template_url));
@@ -221,6 +226,8 @@ TEST_F(WebDatabaseTest, Keywords) {
   EXPECT_EQ("UTF-8", restored_url->input_encodings()[0]);
 
   EXPECT_EQ(10, restored_url->prepopulate_id());
+
+  EXPECT_EQ(1000, restored_url->logo_id());
 
   EXPECT_TRUE(db.RemoveKeyword(restored_url->id()));
 
@@ -272,6 +279,7 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
   EXPECT_EQ(L"url", template_url.keyword());
   template_url.add_input_encoding("Shift_JIS");
   set_prepopulate_id(&template_url, 5);
+  set_logo_id(&template_url, 2000);
   EXPECT_TRUE(db.UpdateKeyword(template_url));
 
   std::vector<TemplateURL*> template_urls;
@@ -305,6 +313,8 @@ TEST_F(WebDatabaseTest, UpdateKeyword) {
   EXPECT_EQ(template_url.id(), restored_url->id());
 
   EXPECT_EQ(template_url.prepopulate_id(), restored_url->prepopulate_id());
+
+  EXPECT_EQ(template_url.logo_id(), restored_url->logo_id());
 
   delete restored_url;
 }

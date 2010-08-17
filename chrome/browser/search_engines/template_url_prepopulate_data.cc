@@ -3141,7 +3141,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 int GetDataVersion(PrefService* prefs) {
   // Increment this if you change the above data in ways that mean users with
   // existing data should get a new version.
-  const int kCurrentDataVersion = 28;
+  const int kCurrentDataVersion = 29;
   if (!prefs)
     return kCurrentDataVersion;
   // If a version number exist in the preferences file, it overrides the
