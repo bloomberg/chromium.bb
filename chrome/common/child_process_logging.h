@@ -10,8 +10,9 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/common/gpu_info.h"
 #include "googleurl/src/gurl.h"
+
+class GPUInfo;
 
 #if defined(OS_WIN)
 // The maximum number of active extensions we will report.

@@ -5,6 +5,7 @@
 #include "chrome/renderer/audio_message_filter.h"
 
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_logging.h"
 

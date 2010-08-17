@@ -6,6 +6,7 @@
 
 #include "base/platform_thread.h"
 #include "chrome/common/about_handler.h"
+#include "googleurl/src/gurl.h"
 
 typedef void (*AboutHandlerFuncPtr)();
 

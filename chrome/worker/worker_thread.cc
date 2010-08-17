@@ -15,6 +15,7 @@
 #include "chrome/worker/webworker_stub.h"
 #include "chrome/worker/websharedworker_stub.h"
 #include "chrome/worker/worker_webkitclient_impl.h"
+#include "ipc/ipc_sync_channel.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"

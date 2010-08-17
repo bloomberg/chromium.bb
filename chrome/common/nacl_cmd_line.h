@@ -6,7 +6,7 @@
 #define CHROME_COMMON_NACL_CMD_LINE_H_
 #pragma once
 
-#include "base/command_line.h"
+class CommandLine;
 
 namespace nacl {
   // Copy all the relevant arguments from the command line of the current

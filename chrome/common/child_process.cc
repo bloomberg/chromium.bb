@@ -48,6 +48,14 @@ ChildProcess::~ChildProcess() {
   child_process_ = NULL;
 }
 
+ChildThread* ChildProcess::main_thread() {
+  return main_thread_.get();
+}
+
+void ChildProcess::set_main_thread(ChildThread* thread) {
+  main_thread_.reset(thread);
+}
+
 void ChildProcess::AddRefProcess() {
   DCHECK(!main_thread_.get() ||  // null in unittests.
          MessageLoop::current() == main_thread_->message_loop());

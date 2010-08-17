@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/common/ipc_test_sink.h"
+#include "ipc/ipc_message.h"
 
 namespace IPC {
 

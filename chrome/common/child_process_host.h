@@ -6,13 +6,10 @@
 #define CHROME_COMMON_CHILD_PROCESS_HOST_H_
 #pragma once
 
-#include <list>
 #include <string>
 
-// Must be included early (e.g. before chrome/common/plugin_messages.h)
-#include "ipc/ipc_logging.h"
+#include "build/build_config.h"
 
-// Putting this before ipc_logging.h does not work (OS_WIN isn't defined)
 #if defined(OS_WIN)
 #include <windows.h>
 #endif  // defined(OS_WIN)
@@ -23,8 +20,11 @@
 #include "chrome/common/notification_type.h"
 #include "ipc/ipc_channel.h"
 
-
 class CommandLine;
+
+namespace IPC {
+class Message;
+}
 
 // Provides common functionality for hosting a child process and processing IPC
 // messages between the host and the child process. Subclasses are responsible
@@ -118,6 +118,8 @@ class ChildProcessHost : public IPC::Channel::Listener {
   bool opening_channel_;  // True while we're waiting the channel to be opened.
   scoped_ptr<IPC::Channel> channel_;
   std::string channel_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildProcessHost);
 };
 
 #endif  // CHROME_COMMON_CHILD_PROCESS_HOST_H_

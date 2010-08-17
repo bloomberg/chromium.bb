@@ -4,19 +4,21 @@
 
 #include "chrome/common/child_thread.h"
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/command_line.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
+#include "chrome/common/resource_dispatcher.h"
 #include "chrome/common/socket_stream_dispatcher.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "ipc/ipc_switches.h"
 #include "webkit/glue/webkit_glue.h"
-
 
 ChildThread::ChildThread() {
   channel_name_ = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -118,6 +120,17 @@ webkit_glue::ResourceLoaderBridge* ChildThread::CreateBridge(
       CreateBridge(request_info, host_renderer_id, host_render_view_id);
 }
 
+ResourceDispatcher* ChildThread::resource_dispatcher() {
+  return resource_dispatcher_.get();
+}
+
+IPC::SyncMessageFilter* ChildThread::sync_message_filter() {
+  return sync_message_filter_;
+}
+
+MessageLoop* ChildThread::message_loop() {
+  return message_loop_;
+}
 
 void ChildThread::OnMessageReceived(const IPC::Message& msg) {
   // Resource responses are sent to the resource dispatcher.

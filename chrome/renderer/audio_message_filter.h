@@ -15,10 +15,13 @@
 #include "base/id_map.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
-#include "base/time.h"
 #include "ipc/ipc_channel_proxy.h"
 
 struct ViewMsg_AudioStreamState_Params;
+
+namespace base {
+class Time;
+}
 
 class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:

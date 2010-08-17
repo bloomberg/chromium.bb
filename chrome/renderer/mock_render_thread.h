@@ -13,6 +13,10 @@
 #include "chrome/renderer/render_thread.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 
+namespace IPC {
+class MessageReplyDeserializer;
+}
+
 struct ViewMsg_Print_Params;
 struct ViewMsg_PrintPages_Params;
 struct ViewHostMsg_ScriptedPrint_Params;

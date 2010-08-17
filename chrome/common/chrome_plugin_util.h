@@ -39,7 +39,8 @@ struct ScopableCPRequest : public CPRequest {
 // This is a base class for plugin-related objects that need to go away when
 // the plugin unloads.  This object also verifies that it is created and
 // destroyed on the same thread.
-class PluginHelper : public NotificationObserver, public NonThreadSafe {
+class PluginHelper : public NotificationObserver,
+                     public NonThreadSafe {
  public:
   static void DestroyAllHelpersForPlugin(ChromePluginLib* plugin);
 

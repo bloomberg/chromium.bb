@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "base/id_map.h"
+#include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "base/task.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/net/socket_stream.h"

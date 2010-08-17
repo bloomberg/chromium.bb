@@ -13,16 +13,21 @@
 
 #include "base/callback.h"
 #include "base/linked_ptr.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/shared_memory.h"
-#include "base/task.h"
-#include "gfx/size.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
 
+namespace base {
+class SharedMemory;
+}
+
+namespace gfx {
+class Size;
+}
+
 class PluginChannelHost;
+class Task;
 
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
@@ -64,9 +69,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
 
   // Set a task that will be invoked the next time the window becomes invalid
   // and needs to be repainted. Takes ownership of task.
-  void SetNotifyRepaintTask(Task* task) {
-    notify_repaint_task_.reset(task);
-  }
+  void SetNotifyRepaintTask(Task* task);
 
 #if defined(OS_MACOSX)
   virtual void SetWindowSize(const gfx::Size& size);

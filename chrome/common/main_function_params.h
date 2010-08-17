@@ -16,6 +16,7 @@
 namespace base {
 class ScopedNSAutoreleasePool;
 };
+
 class Task;
 
 struct MainFunctionParams {

@@ -5,6 +5,7 @@
 #include "chrome/worker/webworkerclient_proxy.h"
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"

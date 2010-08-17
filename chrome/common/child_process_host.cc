@@ -12,6 +12,8 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/plugin_messages.h"
+#include "ipc/ipc_logging.h"
+#include "ipc/ipc_message.h"
 
 #if defined(OS_LINUX)
 #include "base/linux_util.h"

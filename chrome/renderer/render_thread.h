@@ -18,6 +18,7 @@
 #include "chrome/common/css_colors.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "gfx/native_widget_types.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
 
 class AppCacheDispatcher;

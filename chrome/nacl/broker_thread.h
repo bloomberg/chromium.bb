@@ -6,6 +6,7 @@
 #define CHROME_NACL_BROKER_THREAD_H_
 #pragma once
 
+#include "base/process.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/nacl_types.h"
 

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/common/about_handler.h"
+#include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 
 namespace chrome_about_handler {
 

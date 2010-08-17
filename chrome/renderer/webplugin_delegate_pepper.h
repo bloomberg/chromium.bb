@@ -14,6 +14,7 @@
 #include "base/id_map.h"
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
+#include "base/task.h"
 #include "chrome/renderer/pepper_devices.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "gfx/native_widget_types.h"

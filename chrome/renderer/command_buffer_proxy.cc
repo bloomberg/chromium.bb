@@ -4,10 +4,13 @@
 
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "base/shared_memory.h"
+#include "base/task.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/renderer/command_buffer_proxy.h"
 #include "chrome/renderer/plugin_channel_host.h"
+#include "gfx/size.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
 using gpu::Buffer;
@@ -209,6 +212,10 @@ void CommandBufferProxy::ResizeOffscreenFrameBuffer(const gfx::Size& size) {
   // not correctly resized.
   message->set_unblock(true);
   Send(message);
+}
+
+void CommandBufferProxy::SetNotifyRepaintTask(Task* task) {
+  notify_repaint_task_.reset(task);
 }
 
 #if defined(OS_MACOSX)
