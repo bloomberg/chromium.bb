@@ -22,21 +22,21 @@ const char kUserStyleSheetFile[] = "Custom.css";
 // file thread and sends a notification when the style sheet is loaded. It is
 // a helper to UserStyleSheetWatcher. The reference graph is as follows:
 //
-// .-----------------------.    owns    .-------------.
-// | UserStyleSheetWatcher |----------->| FileWatcher |
-// '-----------------------'            '-------------'
-//             |                               |
-//             V                               |
-//  .----------------------.                   |
-//  | UserStyleSheetLoader |<------------------'
+// .-----------------------.    owns    .-----------------.
+// | UserStyleSheetWatcher |----------->| FilePathWatcher |
+// '-----------------------'            '-----------------'
+//             |                                 |
+//             V                                 |
+//  .----------------------.                     |
+//  | UserStyleSheetLoader |<--------------------'
 //  '----------------------'
 //
-// FileWatcher's reference to UserStyleSheetLoader is used for delivering the
-// change notifications. Since they happen asynchronously, UserStyleSheetWatcher
-// and its FileWatcher may be destroyed while a callback to UserStyleSheetLoader
-// is in progress, in which case the UserStyleSheetLoader object outlives the
-// watchers.
-class UserStyleSheetLoader : public FileWatcher::Delegate {
+// FilePathWatcher's reference to UserStyleSheetLoader is used for delivering
+// the change notifications. Since they happen asynchronously,
+// UserStyleSheetWatcher and its FilePathWatcher may be destroyed while a
+// callback to UserStyleSheetLoader is in progress, in which case the
+// UserStyleSheetLoader object outlives the watchers.
+class UserStyleSheetLoader : public FilePathWatcher::Delegate {
  public:
   UserStyleSheetLoader();
   virtual ~UserStyleSheetLoader() {}
@@ -52,8 +52,8 @@ class UserStyleSheetLoader : public FileWatcher::Delegate {
   // Send out a notification if the stylesheet has already been loaded.
   void NotifyLoaded();
 
-  // FileWatcher::Delegate interface
-  virtual void OnFileChanged(const FilePath& path);
+  // FilePathWatcher::Delegate interface
+  virtual void OnFilePathChanged(const FilePath& path);
 
  private:
   // Called on the UI thread after the stylesheet has loaded.
@@ -81,7 +81,7 @@ void UserStyleSheetLoader::NotifyLoaded() {
   }
 }
 
-void UserStyleSheetLoader::OnFileChanged(const FilePath& path) {
+void UserStyleSheetLoader::OnFilePathChanged(const FilePath& path) {
   LoadStyleSheet(path);
 }
 
@@ -145,11 +145,11 @@ void UserStyleSheetWatcher::Init() {
   }
 
   if (!file_watcher_.get()) {
-    file_watcher_.reset(new FileWatcher);
-    file_watcher_->Watch(profile_path_.AppendASCII(kStyleSheetDir)
-                         .AppendASCII(kUserStyleSheetFile), loader_.get());
+    file_watcher_.reset(new FilePathWatcher);
     FilePath style_sheet_file = profile_path_.AppendASCII(kStyleSheetDir)
                                              .AppendASCII(kUserStyleSheetFile);
+    if (!file_watcher_->Watch(style_sheet_file, loader_.get()))
+      LOG(ERROR) << "Failed to setup watch for " << style_sheet_file.value();
     loader_->LoadStyleSheet(style_sheet_file);
   }
 }

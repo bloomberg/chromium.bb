@@ -10,7 +10,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/file_watcher.h"
+#include "chrome/browser/file_path_watcher.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -44,7 +44,7 @@ class UserStyleSheetWatcher
   scoped_refptr<UserStyleSheetLoader> loader_;
 
   // Watches for changes to the css file so we can reload the style sheet.
-  scoped_ptr<FileWatcher> file_watcher_;
+  scoped_ptr<FilePathWatcher> file_watcher_;
 
   NotificationRegistrar registrar_;
 
