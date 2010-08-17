@@ -272,7 +272,7 @@ o3d.Texture.prototype.setFromCanvas_ =
  * @private
  */
 o3d.Texture.prototype.setValues_ = function(target, level, values) {
-  var pixels = new WebGLUnsignedByteArray(values.length);
+  var pixels = new Uint8Array(values.length);
   for (var i = 0; i < values.length; ++i) {
     pixels[i] = Math.min(255, Math.max(0, values[i] * 256.0));
   }
@@ -351,7 +351,7 @@ o3d.Texture2D.prototype.init_ =
 
     // TODO(petersont): remove this allocation once Firefox supports
     // passing null as argument to this form of ... some function.
-    var pixels = new WebGLUnsignedByteArray(width * height * 4);
+    var pixels = new Uint8Array(width * height * 4);
     this.gl.texImage2D(this.gl.TEXTURE_2D, 0, format, width, height,
         0, format, this.gl.UNSIGNED_BYTE, pixels);
     this.texture_width_ = width;
@@ -467,7 +467,7 @@ o3d.Texture2D.prototype.setRect =
   var start_x = (destination_x < 0) ? Math.abs(destination_x) : 0;
   var start_y = (destination_y < 0) ? Math.abs(destination_y) : 0;
 
-  var keptPixels = new WebGLUnsignedByteArray(size_x * size_y * numChannels);
+  var keptPixels = new Uint8Array(size_x * size_y * numChannels);
   var count = 0;
   for (var y = 0; y < size_y; ++y) {
     for (var x = 0; x < size_x; ++x) {
@@ -660,7 +660,7 @@ o3d.TextureCUBE.prototype.init_ =
   this.gl.bindTexture(this.gl.TEXTURE_CUBE_MAP, this.texture_);
   // TODO(petersont): remove this allocation once Firefox supports
   // passing null as argument to this form of texImage2D.
-  var t = new WebGLUnsignedByteArray(edgeLength * edgeLength * 4);
+  var t = new Uint8Array(edgeLength * edgeLength * 4);
   for (var ii = 0; ii < 6; ++ii) {
     this.gl.texImage2D(this.gl.TEXTURE_CUBE_MAP_POSITIVE_X + ii,
                        0, this.gl.RGBA, edgeLength, edgeLength, 0,

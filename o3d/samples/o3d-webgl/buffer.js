@@ -64,9 +64,9 @@ o3d.Buffer.prototype.gl_buffer_ = 0;
 
 /**
  * Type of the array element.
- * @type {!WebGLFloatArray}
+ * @type {!Float32Array}
  */
-o3d.Buffer.prototype.ArrayType = WebGLFloatArray;
+o3d.Buffer.prototype.ArrayType = Float32Array;
 
 o3d.Buffer.prototype.__defineGetter__('numElements',
     function() {
@@ -318,9 +318,9 @@ o3d.inherit('IndexBuffer', 'Buffer');
 
 /**
  * Type of the array element.
- * @type {!WebGLUnsignedShortArray}
+ * @type {!Uint16Array}
  */
-o3d.IndexBuffer.prototype.ArrayType = WebGLUnsignedShortArray;
+o3d.IndexBuffer.prototype.ArrayType = Uint16Array;
 
 
 /**
