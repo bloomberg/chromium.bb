@@ -72,6 +72,7 @@ chromeHidden.JSONSchemaValidator.messages = {
   stringMinLength: "String must be at least * characters long.",
   stringMaxLength: "String must not be more than * characters long.",
   stringPattern: "String must match the pattern: *.",
+  numberFiniteNotNan: "Value must not be *.",
   numberMinValue: "Value must not be less than *.",
   numberMaxValue: "Value must not be greater than *.",
   numberMaxDecimal: "Value must not have more than * decimal places.",
@@ -395,6 +396,15 @@ chromeHidden.JSONSchemaValidator.prototype.validateString = function(
  */
 chromeHidden.JSONSchemaValidator.prototype.validateNumber = function(
     instance, schema, path) {
+
+  // Forbid NaN, +Infinity, and -Infinity.  Our APIs don't use them, and
+  // JSON serialization encodes them as 'null'.  Re-evaluate supporting
+  // them if we add an API that could reasonably take them as a parameter.
+  if (isNaN(instance) ||
+      instance == Number.POSITIVE_INFINITY ||
+      instance == Number.NEGATIVE_INFINITY )
+    this.addError(path, "numberFiniteNotNan", [instance]);
+
   if (schema.minimum && instance < schema.minimum)
     this.addError(path, "numberMinValue", [schema.minimum]);
 

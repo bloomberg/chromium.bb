@@ -235,7 +235,7 @@ function testObject() {
   assertValid("Object", b, classBSchema);
   assertValid("Object", b, classASchema);
   assertNotValid("Object", c, classASchema,
-                 [formatError("notInstance", [classASchema.isInstanceOf])]);           
+                 [formatError("notInstance", [classASchema.isInstanceOf])]);
 }
 
 function testTypeReference() {
@@ -293,8 +293,8 @@ function testTypeReference() {
   // Failures in validation, but succesful schema reference.
   assertNotValid("", {foo:"foo",bar:4,baz:"a"}, schema,
                 [formatError("stringMinLength", [2])], referencedTypes);
-   assertNotValid("", {foo:"foo",bar:20,baz:"abc"}, schema,
-                 [formatError("numberMaxValue", [10])], referencedTypes);
+  assertNotValid("", {foo:"foo",bar:20,baz:"abc"}, schema,
+                [formatError("numberMaxValue", [10])], referencedTypes);
 
   // Remove MinLengthString type.
   referencedTypes.shift();
@@ -404,6 +404,21 @@ function testNumber() {
   assertNotValid("Number", 100.111, schema,
                  [formatError("numberMaxValue", [schema.maximum]),
                   formatError("numberMaxDecimal", [schema.maxDecimal])]);
+
+  var nan = 0/0;
+  assert(isNaN(nan));
+  assertNotValid("Number", nan, schema,
+                 [formatError("numberFiniteNotNan", ["NaN"])]);
+
+  assertNotValid("Number", Number.POSITIVE_INFINITY, schema,
+                 [formatError("numberFiniteNotNan", ["Infinity"]),
+                  formatError("numberMaxValue", [schema.maximum])
+                 ]);
+
+  assertNotValid("Number", Number.NEGATIVE_INFINITY, schema,
+                 [formatError("numberFiniteNotNan", ["-Infinity"]),
+                  formatError("numberMinValue", [schema.minimum])
+                 ]);
 }
 
 function testType() {
