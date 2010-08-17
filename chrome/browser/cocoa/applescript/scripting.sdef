@@ -233,6 +233,9 @@
 			<responds-to command="save">
 				<cocoa method="handlesSaveScriptCommand:"/>
 			</responds-to>
+			<responds-to command="execute">
+				<cocoa method="handlesExecuteJavascriptScriptCommand:"/>
+			</responds-to>
 		</class>
 		<class name="bookmark folder" code="CrBF" description="A bookmarks folder that contains other bookmarks folder and bookmark items.">
 			<cocoa class="BookmarkFolderAppleScript"/>
@@ -256,37 +259,44 @@
 			<property name="URL" code="URL " description="The URL of the bookmark." type="text"/>
 		</class>
 		<command name="reload" code="CrSuRlod" description="Reload a tab.">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="go back" code="CrSuBack" description="Go Back (If Possible).">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="go forward" code="CrSuFwd " description="Go Forward (If Possible).">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="select all" code="CrSuSlAl" description="Select all.">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="cut selection" code="CrSuCut " description="Cut selected text (If Possible).">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="copy selection" code="CrSuCop " description="Copy text.">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="paste selection" code="CrSuPast" description="Paste text (If Possible).">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="undo" code="CrSuUndo" description="Undo the last change.">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="redo" code="CrSuRedo" description="Redo the last change.">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="stop" code="CrSustop" description="Stop the current tab from loading.">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
 		</command>
 		<command name="view source" code="CrSuVSrc" description="View the HTML source of the tab.">
-			<direct-parameter type="specifier"/>
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
+		</command>
+		<command name="execute" code="CrSuExJa" description="Execute a piece of javascript.">
+			<direct-parameter description="The tab to execute the command in." type="specifier"/>
+			<parameter name="javascript" code="JvSc" description="The javascript code to execute." type="text">
+				<cocoa key="javascript"/>
+			</parameter>
+			<result type="any"/>
 		</command>
 	</suite>
 </dictionary>

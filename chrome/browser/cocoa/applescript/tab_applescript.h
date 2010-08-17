@@ -71,6 +71,9 @@ class TabContents;
 // Displays the HTML of the tab in a new tab.
 - (void)handlesViewSourceScriptCommand:(NSScriptCommand*)command;
 
+// Executes a piece of javascript in the tab.
+- (id)handlesExecuteJavascriptScriptCommand:(NSScriptCommand*)command;
+
 @end
 
 #endif// CHROME_BROWSER_COCOA_APPLESCRIPT_TAB_APPLESCRIPT_H_

@@ -76,33 +76,44 @@ IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, Tabs) {
 // Insert a new tab.
 IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, InsertTab) {
   // Emulate what applescript would do when creating a new tab.
+  // Emulates a script like |set var to make new tab with
+  // properties URL:"http://google.com"}|.
   scoped_nsobject<TabAppleScript> aTab([[TabAppleScript alloc] init]);
+  scoped_nsobject<NSNumber> var([[aTab.get() uniqueID] copy]);
   [aTab.get() setURL:@"http://google.com"];
   scoped_nsobject<WindowAppleScript> aWindow(
       [[WindowAppleScript alloc] initWithBrowser:browser()]);
   [aWindow.get() insertInTabs:aTab.get()];
-  EXPECT_EQ([aTab.get() container], aWindow.get());
-  EXPECT_NSEQ(AppleScript::kTabsProperty,
-              [aTab.get() containerProperty]);
-  TabAppleScript* tab2 = [[aWindow.get() tabs] objectAtIndex:1];
+
+  // Represents the tab after it is inserted.
+  TabAppleScript* tab = [[aWindow.get() tabs] objectAtIndex:1];
   EXPECT_EQ(GURL("http://google.com"),
-            GURL(base::SysNSStringToUTF8([tab2 URL])));
+            GURL(base::SysNSStringToUTF8([tab URL])));
+  EXPECT_EQ([tab container], aWindow.get());
+  EXPECT_NSEQ(AppleScript::kTabsProperty,
+              [tab containerProperty]);
+  EXPECT_NSEQ(var.get(), [tab uniqueID]);
 }
 
 // Insert a new tab at a particular position
 IN_PROC_BROWSER_TEST_F(WindowAppleScriptTest, InsertTabAtPosition) {
-  scoped_nsobject<TabAppleScript> tab1([[TabAppleScript alloc] init]);
-  scoped_nsobject<TabAppleScript> tab2([[TabAppleScript alloc] init]);
+  // Emulate what applescript would do when creating a new tab.
+  // Emulates a script like |set var to make new tab with
+  // properties URL:"http://google.com"} at before tab 1|.
+  scoped_nsobject<TabAppleScript> aTab([[TabAppleScript alloc] init]);
+  scoped_nsobject<NSNumber> var([[aTab.get() uniqueID] copy]);
+  [aTab.get() setURL:@"http://google.com"];
   scoped_nsobject<WindowAppleScript> aWindow(
       [[WindowAppleScript alloc] initWithBrowser:browser()]);
-  [aWindow.get() insertInTabs:tab1.get()];
-  [aWindow.get() insertInTabs:tab2.get()];
+  [aWindow.get() insertInTabs:aTab.get() atIndex:0];
 
-  scoped_nsobject<TabAppleScript> aTab([[TabAppleScript alloc] init]);
-  [aWindow.get() insertInTabs:aTab.get() atIndex:1];
-  TabAppleScript* tab = [[aWindow.get() tabs] objectAtIndex:1];
-  EXPECT_NSEQ([aTab.get() uniqueID],
-              [tab uniqueID]);
+  // Represents the tab after it is inserted.
+  TabAppleScript* tab = [[aWindow.get() tabs] objectAtIndex:0];
+  EXPECT_EQ(GURL("http://google.com"),
+            GURL(base::SysNSStringToUTF8([tab URL])));
+  EXPECT_EQ([tab container], aWindow.get());
+  EXPECT_NSEQ(AppleScript::kTabsProperty, [tab containerProperty]);
+  EXPECT_NSEQ(var.get(), [tab uniqueID]);
 }
 
 // Inserting and deleting tabs.

@@ -29,6 +29,13 @@
 
 - (id)init {
   if ((self = [super init])) {
+    SessionID session;
+    SessionID::id_type futureSessionIDOfTab = session.id() + 1;
+    // Holds the SessionID that the new tab is going to get.
+    scoped_nsobject<NSNumber> numID(
+        [[NSNumber alloc]
+            initWithInt:futureSessionIDOfTab]);
+    [self setUniqueID:numID];
     [self setTempURL:@""];
   }
   return self;
@@ -269,6 +276,21 @@
     tabContents_->OpenURL(GURL(chrome::kViewSourceScheme + std::string(":") +
         entry->url().spec()), GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   }
+}
+
+- (id)handlesExecuteJavascriptScriptCommand:(NSScriptCommand*)command {
+  RenderViewHost* view = tabContents_->render_view_host();
+  if (!view) {
+    NOTREACHED();
+    return nil;
+  }
+
+  std::wstring script = base::SysNSStringToWide(
+      [[command evaluatedArguments] objectForKey:@"javascript"]);
+  view->ExecuteJavascriptInWebFrame(L"", script);
+
+  // TODO(Shreyas): Figure out a way to get the response back.
+  return nil;
 }
 
 @end
