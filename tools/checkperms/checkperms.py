@@ -65,7 +65,6 @@ WHITELIST_FILES = [
     '/third_party/lcov/bin/genpng',
     '/third_party/lcov/bin/lcov',
     '/third_party/lcov/bin/mcov',
-    '/third_party/libxml/chvalid.c',  # It's +x upstream, who knows why.
     '/third_party/libxml/linux/xml2-config',
     '/third_party/lzma_sdk/executable/7za.exe',
     '/third_party/swig/linux/swig',
