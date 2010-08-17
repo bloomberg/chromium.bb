@@ -251,7 +251,7 @@ TEST_F(TraceEventTest, TraceLog) {
   PlayLog();
 }
 
-TEST_F(TraceEventTest, Macros) {
+TEST_F(TraceEventTest, Macros_FLAKY) {
   ExpectPlayLog();
 
   // The events should arrive in the same sequence as the expects.
