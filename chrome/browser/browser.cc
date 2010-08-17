@@ -62,7 +62,7 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #if defined(ENABLE_REMOTING)
-#include "chrome/browser/remoting/setup.h"
+#include "chrome/browser/remoting/remoting_setup_flow.h"
 #endif
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
@@ -1846,7 +1846,7 @@ void Browser::OpenSyncMyBookmarksDialog() {
 
 #if defined(ENABLE_REMOTING)
 void Browser::OpenRemotingSetupDialog() {
-  remoting_setup::OpenRemotingSetupDialog(profile_);
+  ::OpenRemotingSetupDialog(profile_);
 }
 #endif
 

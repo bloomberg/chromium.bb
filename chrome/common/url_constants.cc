@@ -102,6 +102,7 @@ const char kChromeUIRemotingHost[] = "remoting";
 const char kChromeUIResourcesHost[] = "resources";
 const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISyncResourcesHost[] = "syncresources";
+const char kChromeUIRemotingResourcesHost[] = "remotingresources";
 const char kChromeUIThemePath[] = "theme";
 const char kChromeUIThumbnailPath[] = "thumb";
 

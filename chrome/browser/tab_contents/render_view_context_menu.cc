@@ -65,9 +65,11 @@ bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
 }
 
 // static
-bool RenderViewContextMenu::IsSyncResourcesURL(const GURL& url) {
-  return url.SchemeIs(chrome::kChromeUIScheme) &&
-      url.host() == chrome::kChromeUISyncResourcesHost;
+bool RenderViewContextMenu::IsInternalResourcesURL(const GURL& url) {
+  if (!url.SchemeIs(chrome::kChromeUIScheme))
+    return false;
+  return url.host() == chrome::kChromeUISyncResourcesHost ||
+      url.host() == chrome::kChromeUIRemotingResourcesHost;
 }
 
 static const int kSpellcheckRadioGroup = 1;
@@ -354,11 +356,11 @@ void RenderViewContextMenu::InitMenu() {
     // If context is in subframe, show subframe options instead.
     if (!params_.frame_url.is_empty()) {
       is_devtools = IsDevToolsURL(params_.frame_url);
-      if (!is_devtools && !IsSyncResourcesURL(params_.frame_url))
+      if (!is_devtools && !IsInternalResourcesURL(params_.frame_url))
         AppendFrameItems();
     } else if (!params_.page_url.is_empty()) {
       is_devtools = IsDevToolsURL(params_.page_url);
-      if (!is_devtools && !IsSyncResourcesURL(params_.page_url))
+      if (!is_devtools && !IsInternalResourcesURL(params_.page_url))
         AppendPageItems();
     }
   }

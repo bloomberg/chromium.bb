@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_REMOTING_SETUP_FLOW_H_
-#define CHROME_BROWSER_REMOTING_SETUP_FLOW_H_
+#ifndef CHROME_BROWSER_REMOTING_REMOTING_SETUP_FLOW_H_
+#define CHROME_BROWSER_REMOTING_REMOTING_SETUP_FLOW_H_
 
 #include <string>
 #include <vector>
@@ -14,23 +14,20 @@
 #include "gfx/native_widget_types.h"
 #include "grit/generated_resources.h"
 
-namespace remoting_setup {
+class RemotingSetupMessageHandler;
 
 // The state machine used by Remoting for setup wizard.
-class SetupFlow : public HtmlDialogUIDelegate {
+class RemotingSetupFlow : public HtmlDialogUIDelegate {
  public:
-  virtual ~SetupFlow();
+  virtual ~RemotingSetupFlow();
 
   // Runs a flow from |start| to |end|, and does the work of actually showing
   // the HTML dialog.  |container| is kept up-to-date with the lifetime of the
   // flow (e.g it is emptied on dialog close).
-  static SetupFlow* Run(Profile* service);
+  static RemotingSetupFlow* Run(Profile* service);
 
   // Fills |args| with "user" and "error" arguments by querying |service|.
   static void GetArgsForGaiaLogin(DictionaryValue* args);
-
-  // Triggers a state machine transition to advance_state.
-  void Advance();
 
   // Focuses the dialog.  This is useful in cases where the dialog has been
   // obscured by a browser window.
@@ -57,47 +54,31 @@ class SetupFlow : public HtmlDialogUIDelegate {
   }
 
   // HtmlDialogUIDelegate implementation.
-  // A callback to notify the delegate that the dialog closed.
   virtual void OnDialogClosed(const std::string& json_retval);
-
-  // HtmlDialogUIDelegate implementation.
   virtual void OnCloseContents(TabContents* source, bool* out_close_dialog) { }
-
-  // HtmlDialogUIDelegate implementation.
   virtual std::wstring GetDialogTitle() const {
     return l10n_util::GetString(IDS_REMOTING_SETUP_DIALOG_TITLE);
   }
-
-  // HtmlDialogUIDelegate implementation.
   virtual bool IsDialogModal() const {
-    return false;
-  }
-
-  void OnUserClickedCustomize() {
-    // TODO(pranavk): Implement this method.
-  }
-
-  bool ClickCustomizeOk() {
-    // TODO(pranavk): Implement this method.
     return true;
   }
 
-  void ClickCustomizeCancel() {
-    // TODO(pranavk): Implement this method.
-  }
+  void OnUserSubmittedAuth(const std::string& user, const std::string& password,
+                           const std::string& captcha);
 
  private:
-
   // Use static Run method to get an instance.
-  SetupFlow(const std::string& args, Profile* profile);
+  RemotingSetupFlow(const std::string& args, Profile* profile);
 
-  DISALLOW_COPY_AND_ASSIGN(SetupFlow);
-
+  RemotingSetupMessageHandler* message_handler_;
   std::string dialog_start_args_;  // The args to pass to the initial page.
-
   Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemotingSetupFlow);
 };
 
-}  // namespace remoting_setup
+// Open the appropriate setup dialog for the given profile (which can be
+// incognito).
+void OpenRemotingSetupDialog(Profile* profile);
 
-#endif  // CHROME_BROWSER_REMOTING_SETUP_FLOW_H_
+#endif  // CHROME_BROWSER_REMOTING_REMOTING_SETUP_FLOW_H_

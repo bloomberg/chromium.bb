@@ -86,7 +86,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
       !url.SchemeIs(chrome::kChromeUIScheme))
     return NULL;
 
-  if (url.host() == chrome::kChromeUISyncResourcesHost)
+  if (url.host() == chrome::kChromeUISyncResourcesHost ||
+      url.host() == chrome::kChromeUIRemotingResourcesHost)
     return &NewDOMUI<HtmlDialogUI>;
 
   // Special case the new tab page. In older versions of Chrome, the new tab

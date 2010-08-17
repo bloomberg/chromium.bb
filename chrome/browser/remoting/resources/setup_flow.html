@@ -1,0 +1,35 @@
+<html id='t'>
+<head>
+<title></title>
+<script type="text/javascript">
+  // Called once, when this html/js is loaded.
+  function showTheRightIframe() {
+    hideAllPages();
+    var args = JSON.parse(chrome.dialogArguments);
+    document.getElementById(args.iframeToShow).style.display = 'block';
+    document.getElementById(args.iframeToShow).tabIndex = 0;
+  }
+
+  function hideAllPages() {
+    document.getElementById('login').style.display = 'none';
+    document.getElementById('login').tabIndex = -1;
+    document.getElementById('done').style.display = 'none'; 
+    document.getElementById('done').tabIndex = -1;
+ }
+
+  function showSetupDone() {
+    hideAllPages();
+    document.getElementById('done').style.display = 'block';
+    document.getElementById('done').tabIndex = 0;
+  }
+</script>
+</head>
+<body style="margin:0; border:0;" onload="showTheRightIframe();">
+  <iframe id="login" frameborder="0" width="100%" scrolling="no" height="100%"
+          src="chrome://remotingresources/gaialogin" style="display:none"
+          tabindex="-1"></iframe>
+  <iframe id="done" frameborder="0" width="100%" scrolling="no" height="100%"
+          src="chrome://remotingresources/setupdone" style="display:none"
+          tabindex="-1"></iframe>
+</body>
+</html>

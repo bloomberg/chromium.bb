@@ -97,6 +97,7 @@ extern const char kChromeUIRemotingHost[];
 extern const char kChromeUIResourcesHost[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISyncResourcesHost[];
+extern const char kChromeUIRemotingResourcesHost[];
 extern const char kChromeUIThumbnailPath[];
 extern const char kChromeUIThemePath[];
 
