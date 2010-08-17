@@ -2582,19 +2582,21 @@ test-all() {
 }
 
 
-#@ test-spec <official-spec-dir> <setup> -  run spec tests
+#@ test-spec <official-spec-dir> <setup> [ref|train] [<benchmarks>]*
+#@                       - run spec tests
+#@
 test-spec() {
-  if [ $# < 2 ]; then
-    echo "test-spec {spec2krefdir} {setupfunc} " \
-         "[ref|train] [*optional_list_of_benchmarks]"
+  if [[ $# < 2 ]]; then
+    echo "not enough arguments for test-spec"
     exit 1
   fi;
   official=$(readlink -f $1)
-  shift
+  setup=$2
+  shift 2
   spushd tests/spec2k
-  ./run_all.sh CleanBenchmarks
-  ./run_all.sh PopulateFromSpecHarness ${official}
-  ./run_all.sh BuildAndRunBenchmarks "$@"
+  ./run_all.sh CleanBenchmarks "$@"
+  ./run_all.sh PopulateFromSpecHarness ${official} "$@"
+  ./run_all.sh BuildAndRunBenchmarks ${setup} "$@"
   spopd
 }
 
@@ -2635,17 +2637,17 @@ CollectTimingInfo() {
 timed-test-spec() {
   if [ "$#" -lt "3" ]; then
     echo "timed-test-spec {result-file} {spec2krefdir} {setupfunc}" \
-         "[ref|train] [*optional_list_of_benchmarks]"
+         "[ref|train] [benchmark]*"
     exit 1
   fi;
   result_file=$1
-  shift
-  official=$(readlink -f $1)
-  shift
+  official=$(readlink -f $2)
+  setup=$3
+  shift 3
   spushd tests/spec2k
-  ./run_all.sh CleanBenchmarks
-  ./run_all.sh PopulateFromSpecHarness ${official}
-  ./run_all.sh TimedBuildAndRunBenchmarks "$@"
+  ./run_all.sh CleanBenchmarks "$@"
+  ./run_all.sh PopulateFromSpecHarness ${official} "$@"
+  ./run_all.sh TimedBuildAndRunBenchmarks ${setup} "$@"
   CollectTimingInfo $(pwd) ${result_file} $1
   spopd
 }

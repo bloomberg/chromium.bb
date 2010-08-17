@@ -19,15 +19,15 @@ readonly LIST_FP_C="177.mesa 179.art 183.equake 188.ammp"
 
 readonly LIST_INT_CPP="252.eon"
 
-# TODO(robertm): make "252.eon" work
-LIST="${LIST_FP_C} ${LIST_INT_C}"
+SPEC2K_BENCHMARKS="${LIST_FP_C} ${LIST_INT_C}"
+
 # One of {./run.train.sh, ./run.ref.sh}
-SCRIPT=./run.train.sh
+SPEC2K_SCRIPT="./run.train.sh"
 
 # uncomment this to disable verification
 # verification time will be part of  overall benchmarking time
 # export VERIFY=no
-export VERIFY=yes
+export VERIFY=${VERIFY:-yes}
 
 # Pick a setup
 
@@ -271,10 +271,11 @@ SetupPnaclArm() {
 
 ConfigInfo() {
   Banner "Config Info"
-  echo "script ${SCRIPT} "
-  echo "suffix ${SUFFIX}"
-  echo "verify ${VERIFY}"
-  echo "prefix ${PREFIX}"
+  echo "benchmarks: $(GetBenchmarkList "$@")"
+  echo "script:     $(GetInputSize "$@")"
+  echo "suffix      ${SUFFIX}"
+  echo "verify      ${VERIFY}"
+  echo "prefix     ${PREFIX}"
 
 }
 
@@ -291,15 +292,42 @@ ConfigInfo() {
 #@
 #@   Show avilable benchmarks
 GetBenchmarkList() {
+  if [[ $# -ge 1 ]]; then
+      if [[ ($1 == "ref") || ($1 == "train") ]]; then
+          shift
+      fi
+  fi
+
   if [[ $# = 0 ]] ; then
-      echo "${LIST[@]}"
+      echo "${SPEC2K_BENCHMARKS[@]}"
   else
       echo "$@"
   fi
 }
 
+#+
+#+ GetInputSize [train|ref]
+#+
+#+  Picks input size for spec runs (train or ref)
+GetInputSize() {
+  if [[ $# -ge 1 ]]; then
+    case $1 in
+      train)
+        echo "./run.train.sh"
+        return
+        ;;
+      ref)
+        echo "./run.ref.sh"
+        return
+        ;;
+    esac
+  fi
+  echo ${SPEC2K_SCRIPT}
+}
+
+
 #@
-#@ CleanBenchmarks
+#@ CleanBenchmarks <benchmark>*
 #@
 #@   this is a deep clean and you have to rerun PoplateFromSpecHarness
 CleanBenchmarks() {
@@ -323,12 +351,11 @@ CleanBenchmarks() {
 BuildBenchmarks() {
   export PREFIX=
   timeit=$1
-  shift
-  "$1"
-  shift
+  "$2"
+  shift 2
 
   local list=$(GetBenchmarkList "$@")
-  ConfigInfo
+  ConfigInfo "$@"
   for i in ${list} ; do
     Banner "Building: $i"
     cd $i
@@ -336,28 +363,6 @@ BuildBenchmarks() {
     make timeit=${timeit} ${i#*.}.${SUFFIX}
     cd ..
   done
-}
-
-#+
-#+ PickInputSize [train|ref]
-#+
-#+  Picks input size for spec runs (train or ref)
-PickInputSize() {
-  if [ $# -ge 1 ]; then
-    case $1 in
-      train)
-        SCRIPT="./run.train.sh"
-        ;;
-      ref)
-        SCRIPT="./run.ref.sh"
-        ;;
-      *)
-        echo "Unknown spec input size $1, using ${SCRIPT}"
-        ;;
-    esac
-    return 0
-  fi
-  return 1
 }
 
 #@
@@ -372,7 +377,7 @@ TimedRunCmd() {
 }
 
 #@
-#@ RunBenchmarks <setup> <benchmark>*
+#@ RunBenchmarks <setup> [ref|train] <benchmark>*
 #@
 #@  Run all benchmarks according to the setup.
 RunBenchmarks() {
@@ -380,21 +385,21 @@ RunBenchmarks() {
   "$1"
   shift
   local list=$(GetBenchmarkList "$@")
-
-  ConfigInfo
+  local script=$(GetInputSize "$@")
+  ConfigInfo "$@"
   for i in ${list} ; do
     Banner "Benchmarking: $i"
     cd $i
     target_file=./${i#*.}.${SUFFIX}
     size  ${target_file}
-    ${SCRIPT} ${target_file}
+    ${script} ${target_file}
     cd ..
   done
 }
 
 
 #@
-#@ RunTimedBenchmarks <setup> <benchmark>*
+#@ RunTimedBenchmarks <setup> [ref|train] <benchmark>*
 #@
 #@  Run all benchmarks according to the setup.
 #@  All timing related files are stored in {execname}.run_time
@@ -404,14 +409,15 @@ RunTimedBenchmarks() {
   "$1"
   shift
   local list=$(GetBenchmarkList "$@")
+  local script=$(GetInputSize "$@")
 
-  ConfigInfo
+  ConfigInfo "$@"
   for i in ${list} ; do
     Banner "Benchmarking: $i"
     cd $i
     target_file=./${i#*.}.${SUFFIX}
     size  ${target_file}
-    TimedRunCmd ${target_file}.run_time ${SCRIPT} ${target_file}
+    TimedRunCmd ${target_file}.run_time ${script} ${target_file}
     cd ..
   done
 }
@@ -424,9 +430,6 @@ RunTimedBenchmarks() {
 BuildAndRunBenchmarks() {
   setup=$1
   shift
-  if PickInputSize "$@"; then
-    shift
-  fi
   BuildBenchmarks 0 ${setup} "$@"
   RunBenchmarks ${setup} "$@"
 }
@@ -443,27 +446,26 @@ BuildAndRunBenchmarks() {
 TimedBuildAndRunBenchmarks() {
   setup=$1
   shift
-  if PickInputSize "$@"; then
-    shift
-  fi
   BuildBenchmarks 1 ${setup} "$@"
   RunTimedBenchmarks ${setup} "$@"
 }
 
 
 #@
-#@ PopulateFromSpecHarness <path>
+#@ PopulateFromSpecHarness <path> <benchmark>*
 #@
 #@   populate a few essential directories (src, date) from
 #@   the given spec2k harness
 PopulateFromSpecHarness() {
   harness=$1
+  shift
   cp -r ${harness}/bin .
-  echo ${LIST}
-  for i in ${LIST} ; do
+  local list=$(GetBenchmarkList "$@")
+  echo ${list}
+  for i in ${list} ; do
     Banner "Populating: $i"
     # fix the dir with the same name inside spec harness
-    src=$(find $1 -name $i)
+    src=$(find ${harness} -name $i)
     # copy relevant dirs over
     echo "COPY"
     rm -rf src/ data/

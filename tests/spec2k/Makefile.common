@@ -33,7 +33,7 @@ endif
 
 
 clean:
-	rm -f *.bc *.o *.s *.x86 *.arm  *.c~ .h~ \
+	rm -f -- *.bc *.o *.s *.x86 *.arm  *.c~ .h~ \
               $(IT) $(IT).* *.out src/*bc $(EXTRA_CLEAN)
 
 
