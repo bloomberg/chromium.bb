@@ -50,22 +50,25 @@ bool SpeechInputDispatcherHost::OnMessageReceived(
   return handled;
 }
 
-void SpeechInputDispatcherHost::OnStartRecognition(int render_view_id) {
+void SpeechInputDispatcherHost::OnStartRecognition(int render_view_id,
+                                                   int request_id) {
   LOG(INFO) << "SpeechInputDispatcherHost: start recognition"
             << render_view_id;
-  manager()->StartRecognition(render_view_id);
+  manager()->StartRecognition(SpeechInputCallerId(render_view_id, request_id));
 }
 
-void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id) {
+void SpeechInputDispatcherHost::OnCancelRecognition(int render_view_id,
+                                                    int request_id) {
   LOG(INFO) << "SpeechInputDispatcherHost: cancel recognition"
             << render_view_id;
-  manager()->CancelRecognition(render_view_id);
+  manager()->CancelRecognition(SpeechInputCallerId(render_view_id, request_id));
 }
 
-void SpeechInputDispatcherHost::OnStopRecording(int render_view_id) {
+void SpeechInputDispatcherHost::OnStopRecording(int render_view_id,
+                                                int request_id) {
   LOG(INFO) << "SpeechInputDispatcherHost: stop recording"
             << render_view_id;
-  manager()->StopRecording(render_view_id);
+  manager()->StopRecording(SpeechInputCallerId(render_view_id, request_id));
 }
 
 void SpeechInputDispatcherHost::SendMessageToRenderView(IPC::Message* message,
@@ -76,26 +79,38 @@ void SpeechInputDispatcherHost::SendMessageToRenderView(IPC::Message* message,
 }
 
 
-void SpeechInputDispatcherHost::SetRecognitionResult(int render_view_id,
-                                                     const string16& result) {
+void SpeechInputDispatcherHost::SetRecognitionResult(
+    const SpeechInputCallerId& caller_id, const string16& result) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  int caller_render_view_id = caller_id.first;
+  int caller_request_id = caller_id.second;
   SendMessageToRenderView(
-      new ViewMsg_SpeechInput_SetRecognitionResult(render_view_id, result),
-      render_view_id);
+      new ViewMsg_SpeechInput_SetRecognitionResult(caller_render_view_id,
+                                                   caller_request_id,
+                                                   result),
+      caller_render_view_id);
 }
 
-void SpeechInputDispatcherHost::DidCompleteRecording(int render_view_id) {
+void SpeechInputDispatcherHost::DidCompleteRecording(
+    const SpeechInputCallerId& caller_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  int caller_render_view_id = caller_id.first;
+  int caller_request_id = caller_id.second;
   SendMessageToRenderView(
-      new ViewMsg_SpeechInput_RecordingComplete(render_view_id),
-      render_view_id);
+      new ViewMsg_SpeechInput_RecordingComplete(caller_render_view_id,
+                                                caller_request_id),
+      caller_render_view_id);
 }
 
-void SpeechInputDispatcherHost::DidCompleteRecognition(int render_view_id) {
+void SpeechInputDispatcherHost::DidCompleteRecognition(
+    const SpeechInputCallerId& caller_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  int caller_render_view_id = caller_id.first;
+  int caller_request_id = caller_id.second;
   SendMessageToRenderView(
-      new ViewMsg_SpeechInput_RecognitionComplete(render_view_id),
-      render_view_id);
+      new ViewMsg_SpeechInput_RecognitionComplete(caller_render_view_id,
+                                                  caller_request_id),
+      caller_render_view_id);
 }
 
 }  // namespace speech_input

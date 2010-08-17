@@ -980,17 +980,20 @@ IPC_BEGIN_MESSAGES(View)
                       int /* object id */)
 
   // Relay a speech recognition result, either partial or final.
-  IPC_MESSAGE_ROUTED1(ViewMsg_SpeechInput_SetRecognitionResult,
+  IPC_MESSAGE_ROUTED2(ViewMsg_SpeechInput_SetRecognitionResult,
+                      int /* request id */,
                       string16 /* result */)
 
   // Indicate that speech recognizer has stopped recording and started
   // recognition.
-  IPC_MESSAGE_ROUTED0(ViewMsg_SpeechInput_RecordingComplete)
+  IPC_MESSAGE_ROUTED1(ViewMsg_SpeechInput_RecordingComplete,
+                      int /* request id */)
 
   // Indicate that speech recognizer has completed recognition. This will be
   // the last message sent in response to a
   // ViewHostMsg_SpeechInput_StartRecognition.
-  IPC_MESSAGE_ROUTED0(ViewMsg_SpeechInput_RecognitionComplete)
+  IPC_MESSAGE_ROUTED1(ViewMsg_SpeechInput_RecognitionComplete,
+                      int /* request id */)
 
   // Notification that the device's orientation has changed.
   IPC_MESSAGE_ROUTED1(ViewMsg_DeviceOrientationUpdated,
@@ -2596,21 +2599,24 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Requests the speech input service to start speech recognition on behalf of
   // the given |render_view_id|.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_SpeechInput_StartRecognition,
-                       int /* render_view_id */)
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_SpeechInput_StartRecognition,
+                       int /* render_view_id */,
+                       int /* request id */)
 
   // Requests the speech input service to cancel speech recognition on behalf of
   // the given |render_view_id|. If speech recognition is not happening nor or
   // is happening on behalf of some other render view, this call does nothing.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_SpeechInput_CancelRecognition,
-                       int /* render_view_id */)
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_SpeechInput_CancelRecognition,
+                       int /* render_view_id */,
+                       int /* request id */)
 
   // Requests the speech input service to stop audio recording on behalf of
   // the given |render_view_id|. Any audio recorded so far will be fed to the
   // speech recognizer. If speech recognition is not happening nor or is
   // happening on behalf of some other render view, this call does nothing.
-  IPC_MESSAGE_CONTROL1(ViewHostMsg_SpeechInput_StopRecording,
-                       int /* render_view_id */)
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_SpeechInput_StopRecording,
+                       int /* render_view_id */,
+                       int /* request id */)
 
   //---------------------------------------------------------------------------
   // Device orientation services messages:

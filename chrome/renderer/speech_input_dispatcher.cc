@@ -31,31 +31,31 @@ bool SpeechInputDispatcher::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-bool SpeechInputDispatcher::startRecognition() {
+bool SpeechInputDispatcher::startRecognition(int request_id) {
   render_view_->Send(new ViewHostMsg_SpeechInput_StartRecognition(
-      render_view_->routing_id()));
+      render_view_->routing_id(), request_id));
   return true;
 }
 
-void SpeechInputDispatcher::cancelRecognition() {
+void SpeechInputDispatcher::cancelRecognition(int request_id) {
   render_view_->Send(new ViewHostMsg_SpeechInput_CancelRecognition(
-      render_view_->routing_id()));
+      render_view_->routing_id(), request_id));
 }
 
-void SpeechInputDispatcher::stopRecording() {
+void SpeechInputDispatcher::stopRecording(int request_id) {
   render_view_->Send(new ViewHostMsg_SpeechInput_StopRecording(
-      render_view_->routing_id()));
+      render_view_->routing_id(), request_id));
 }
 
 void SpeechInputDispatcher::OnSpeechRecognitionResult(
-    const string16& result) {
-  listener_->setRecognitionResult(result);
+    int request_id, const string16& result) {
+  listener_->setRecognitionResult(request_id, result);
 }
 
-void SpeechInputDispatcher::OnSpeechRecordingComplete() {
-  listener_->didCompleteRecording();
+void SpeechInputDispatcher::OnSpeechRecordingComplete(int request_id) {
+  listener_->didCompleteRecording(request_id);
 }
 
-void SpeechInputDispatcher::OnSpeechRecognitionComplete() {
-  listener_->didCompleteRecognition();
+void SpeechInputDispatcher::OnSpeechRecognitionComplete(int request_id) {
+  listener_->didCompleteRecognition(request_id);
 }

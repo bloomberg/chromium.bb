@@ -11,8 +11,14 @@
 #include "chrome/browser/speech/speech_recognition_request.h"
 #include <list>
 #include <string>
+#include <utility>
 
 namespace speech_input {
+
+// Holds the details of a particular webkit element making a speech request.
+// SpeechInputCallerId::first holds the ID of the render view and
+// SpeechInputCallerId::second holds the request ID given by the element.
+typedef std::pair<int, int> SpeechInputCallerId;
 
 // Records audio, sends recorded audio to server and translates server response
 // to recognition result.
@@ -24,24 +30,26 @@ class SpeechRecognizer
   // Implemented by the caller to receive recognition events.
   class Delegate {
    public:
-    virtual void SetRecognitionResult(int render_view_id, bool error,
+    virtual void SetRecognitionResult(const SpeechInputCallerId& caller_id,
+                                      bool error,
                                       const string16& value) = 0;
 
     // Invoked when audio recording stops, either due to the end pointer
     // detecting silence in user input or if |StopRecording| was called. The
     // delegate has to wait until |DidCompleteRecognition| is invoked before
     // destroying the |SpeechRecognizer| object.
-    virtual void DidCompleteRecording(int render_view_id) = 0;
+    virtual void DidCompleteRecording(const SpeechInputCallerId& caller_id) = 0;
 
     // This is guaranteed to be the last method invoked in the recognition
     // sequence and the |SpeechRecognizer| object can be freed up if necessary.
-    virtual void DidCompleteRecognition(int render_view_id) = 0;
+    virtual void DidCompleteRecognition(
+        const SpeechInputCallerId& caller_id) = 0;
 
    protected:
     virtual ~Delegate() {}
   };
 
-  SpeechRecognizer(Delegate* delegate, int render_view_id);
+  SpeechRecognizer(Delegate* delegate, const SpeechInputCallerId& caller_id);
   ~SpeechRecognizer();
 
   // Starts audio recording and does recognition after recording ends. The same
@@ -76,7 +84,7 @@ class SpeechRecognizer
   void HandleOnData(std::string* data);
 
   Delegate* delegate_;
-  int render_view_id_;
+  SpeechInputCallerId caller_id_;
 
   // Buffer holding the recorded audio. Owns the strings inside the list.
   typedef std::list<std::string*> AudioBufferQueue;

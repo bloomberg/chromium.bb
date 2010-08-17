@@ -28,14 +28,14 @@ class SpeechInputDispatcher : public WebKit::WebSpeechInputController {
   bool OnMessageReceived(const IPC::Message& msg);
 
   // WebKit::WebSpeechInputController.
-  bool startRecognition();
-  void cancelRecognition();
-  void stopRecording();
+  bool startRecognition(int request_id);
+  void cancelRecognition(int request_id);
+  void stopRecording(int request_id);
 
  private:
-  void OnSpeechRecognitionResult(const string16& result);
-  void OnSpeechRecordingComplete();
-  void OnSpeechRecognitionComplete();
+  void OnSpeechRecognitionResult(int request_id, const string16& result);
+  void OnSpeechRecordingComplete(int request_id);
+  void OnSpeechRecognitionComplete(int request_id);
 
   RenderView* render_view_;
   WebKit::WebSpeechInputListener* listener_;

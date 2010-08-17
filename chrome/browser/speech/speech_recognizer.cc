@@ -24,9 +24,10 @@ const int kNumBitsPerAudioSample = 16;
 
 namespace speech_input {
 
-SpeechRecognizer::SpeechRecognizer(Delegate* delegate, int render_view_id)
+SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
+                                   const SpeechInputCallerId& caller_id)
     : delegate_(delegate),
-      render_view_id_(render_view_id) {
+      caller_id_(caller_id) {
 }
 
 SpeechRecognizer::~SpeechRecognizer() {
@@ -80,13 +81,13 @@ void SpeechRecognizer::StopRecording() {
   LOG(INFO) << "SpeechRecognizer stopping record.";
   audio_controller_->Close();
   audio_controller_ = NULL;  // Releases the ref ptr.
-  delegate_->DidCompleteRecording(render_view_id_);
+  delegate_->DidCompleteRecording(caller_id_);
 
   // If we haven't got any audio yet end the recognition sequence here.
   if (audio_buffers_.empty()) {
     // Guard against the delegate freeing us until we finish our job.
     scoped_refptr<SpeechRecognizer> me(this);
-    delegate_->DidCompleteRecognition(render_view_id_);
+    delegate_->DidCompleteRecognition(caller_id_);
     return;
   }
 
@@ -139,8 +140,8 @@ void SpeechRecognizer::HandleOnError(int error_code) {
     return;
 
   CancelRecognition();
-  delegate_->DidCompleteRecording(render_view_id_);
-  delegate_->DidCompleteRecognition(render_view_id_);
+  delegate_->DidCompleteRecording(caller_id_);
+  delegate_->DidCompleteRecognition(caller_id_);
 }
 
 void SpeechRecognizer::OnData(AudioInputController* controller,
@@ -170,11 +171,11 @@ void SpeechRecognizer::HandleOnData(string* data) {
 }
 
 void SpeechRecognizer::SetRecognitionResult(bool error, const string16& value) {
-  delegate_->SetRecognitionResult(render_view_id_, error, value);
+  delegate_->SetRecognitionResult(caller_id_, error, value);
 
   // Guard against the delegate freeing us until we finish our job.
   scoped_refptr<SpeechRecognizer> me(this);
-  delegate_->DidCompleteRecognition(render_view_id_);
+  delegate_->DidCompleteRecognition(caller_id_);
 }
 
 }  // namespace speech_input

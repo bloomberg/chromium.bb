@@ -8,8 +8,8 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/speech/speech_input_manager.h"
 #include "ipc/ipc_message.h"
-#include "speech_input_manager.h"
 
 namespace speech_input {
 
@@ -23,9 +23,10 @@ class SpeechInputDispatcherHost
   explicit SpeechInputDispatcherHost(int resource_message_filter_process_id);
 
   // SpeechInputManager::Delegate methods.
-  void SetRecognitionResult(int render_view_id, const string16& result);
-  void DidCompleteRecording(int render_view_id);
-  void DidCompleteRecognition(int render_view_id);
+  void SetRecognitionResult(const SpeechInputCallerId& caller_id,
+                            const string16& result);
+  void DidCompleteRecording(const SpeechInputCallerId& caller_id);
+  void DidCompleteRecognition(const SpeechInputCallerId& caller_id);
 
   // Called to possibly handle the incoming IPC message. Returns true if
   // handled.
@@ -41,9 +42,9 @@ class SpeechInputDispatcherHost
   virtual ~SpeechInputDispatcherHost();
   void SendMessageToRenderView(IPC::Message* message, int render_view_id);
 
-  void OnStartRecognition(int render_view_id);
-  void OnCancelRecognition(int render_view_id);
-  void OnStopRecording(int render_view_id);
+  void OnStartRecognition(int render_view_id, int request_id);
+  void OnCancelRecognition(int render_view_id, int request_id);
+  void OnStopRecording(int render_view_id, int request_id);
 
   // Returns the speech input manager to forward events to, creating one if
   // needed.

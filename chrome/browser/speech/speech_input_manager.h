@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/speech/speech_recognizer.h"
 #include "ipc/ipc_message.h"
 
 namespace speech_input {
@@ -20,10 +21,11 @@ class SpeechInputManager {
   // Implemented by the dispatcher host to relay events to the render views.
   class Delegate {
   public:
-    virtual void SetRecognitionResult(int render_view_id,
+    virtual void SetRecognitionResult(const SpeechInputCallerId& caller_id,
                                       const string16& value) = 0;
-    virtual void DidCompleteRecording(int render_view_id) = 0;
-    virtual void DidCompleteRecognition(int render_view_id) = 0;
+    virtual void DidCompleteRecording(const SpeechInputCallerId& caller_id) = 0;
+    virtual void DidCompleteRecognition(
+        const SpeechInputCallerId& caller_id) = 0;
   };
 
   // Factory method to create new instances.
@@ -34,9 +36,9 @@ class SpeechInputManager {
   virtual ~SpeechInputManager() {}
 
   // Handlers for requests from render views.
-  virtual void StartRecognition(int render_view_id)  = 0;
-  virtual void CancelRecognition(int render_view_id) = 0;
-  virtual void StopRecording(int render_view_id) = 0;
+  virtual void StartRecognition(const SpeechInputCallerId& caller_id)  = 0;
+  virtual void CancelRecognition(const SpeechInputCallerId& caller_id) = 0;
+  virtual void StopRecording(const SpeechInputCallerId& caller_id) = 0;
 };
 
 // This typedef is to workaround the issue with certain versions of

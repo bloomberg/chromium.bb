@@ -5,7 +5,6 @@
 #include "chrome/browser/speech/speech_input_manager.h"
 
 #include "base/ref_counted.h"
-#include "chrome/browser/speech/speech_recognizer.h"
 #include <map>
 
 namespace speech_input {
@@ -17,21 +16,22 @@ public:
   virtual ~SpeechInputManagerImpl();
 
   // SpeechInputManager methods.
-  void StartRecognition(int render_view_id);
-  void CancelRecognition(int render_view_id);
-  void StopRecording(int render_view_id);
+  void StartRecognition(const SpeechInputCallerId& caller_id);
+  void CancelRecognition(const SpeechInputCallerId& caller_id);
+  void StopRecording(const SpeechInputCallerId& caller_id);
 
   // SpeechRecognizer::Delegate methods.
-  void SetRecognitionResult(int render_view_id, bool error,
+  void SetRecognitionResult(const SpeechInputCallerId& caller_id, bool error,
                             const string16& value);
-  void DidCompleteRecording(int render_view_id);
-  void DidCompleteRecognition(int render_view_id);
+  void DidCompleteRecording(const SpeechInputCallerId& caller_id);
+  void DidCompleteRecognition(const SpeechInputCallerId& caller_id);
 
 private:
   SpeechInputManagerDelegate* delegate_;
-  typedef std::map<int, scoped_refptr<SpeechRecognizer> > SpeechRecognizerMap;
+  typedef std::map<SpeechInputCallerId,
+                   scoped_refptr<SpeechRecognizer> > SpeechRecognizerMap;
   SpeechRecognizerMap recognizers_;
-  int recording_render_view_id_;
+  SpeechInputCallerId recording_caller_id_;
 };
 
 SpeechInputManager* SpeechInputManager::Create(
@@ -42,58 +42,67 @@ SpeechInputManager* SpeechInputManager::Create(
 SpeechInputManagerImpl::SpeechInputManagerImpl(
     SpeechInputManagerDelegate* delegate)
     : delegate_(delegate),
-      recording_render_view_id_(0) {
+      recording_caller_id_(0, 0) {
 }
 
 SpeechInputManagerImpl::~SpeechInputManagerImpl() {
   while (recognizers_.begin() != recognizers_.end())
-    recognizers_.begin()->second->CancelRecognition();
+    CancelRecognition(recognizers_.begin()->first);
 }
 
-void SpeechInputManagerImpl::StartRecognition(int render_view_id) {
+void SpeechInputManagerImpl::StartRecognition(
+    const SpeechInputCallerId& caller_id) {
   // Make sure we are not already doing recognition for this render view.
-  DCHECK(recognizers_.find(render_view_id) == recognizers_.end());
-  if (recognizers_.find(render_view_id) != recognizers_.end())
+  DCHECK(recognizers_.find(caller_id) == recognizers_.end());
+  if (recognizers_.find(caller_id) != recognizers_.end())
     return;
 
-  // If we are currently recording audio for another caller, abort that now.
-  if (recording_render_view_id_)
-    CancelRecognition(recording_render_view_id_);
+  // If we are currently recording audio for another caller, abort that cleanly.
+  if (recording_caller_id_.first != 0) {
+    SpeechInputCallerId active_caller = recording_caller_id_;
+    CancelRecognition(active_caller);
+    DidCompleteRecording(active_caller);
+    DidCompleteRecognition(active_caller);
+  }
 
-  recording_render_view_id_ = render_view_id;
-  recognizers_[render_view_id] = new SpeechRecognizer(this, render_view_id);
-  recognizers_[render_view_id]->StartRecording();
+  recording_caller_id_ = caller_id;
+  recognizers_[caller_id] = new SpeechRecognizer(this, caller_id);
+  recognizers_[caller_id]->StartRecording();
 }
 
-void SpeechInputManagerImpl::CancelRecognition(int render_view_id) {
-  DCHECK(recognizers_.find(render_view_id) != recognizers_.end());
-  if (recognizers_.find(render_view_id) != recognizers_.end()) {
-    recognizers_[render_view_id]->CancelRecognition();
+void SpeechInputManagerImpl::CancelRecognition(
+    const SpeechInputCallerId& caller_id) {
+  DCHECK(recognizers_.find(caller_id) != recognizers_.end());
+  if (recognizers_.find(caller_id) != recognizers_.end()) {
+    recognizers_[caller_id]->CancelRecognition();
+    recognizers_.erase(caller_id);
   }
 }
 
-void SpeechInputManagerImpl::StopRecording(int render_view_id) {
-  DCHECK(recognizers_.find(render_view_id) != recognizers_.end());
-  if (recognizers_.find(render_view_id) != recognizers_.end()) {
-    recognizers_[render_view_id]->StopRecording();
+void SpeechInputManagerImpl::StopRecording(
+    const SpeechInputCallerId& caller_id) {
+  DCHECK(recognizers_.find(caller_id) != recognizers_.end());
+  if (recognizers_.find(caller_id) != recognizers_.end()) {
+    recognizers_[caller_id]->StopRecording();
   }
 }
 
-void SpeechInputManagerImpl::SetRecognitionResult(int render_view_id,
-                                                  bool error,
-                                                  const string16& value) {
-  delegate_->SetRecognitionResult(render_view_id, (error ? string16() : value));
+void SpeechInputManagerImpl::SetRecognitionResult(
+    const SpeechInputCallerId& caller_id, bool error, const string16& value) {
+  delegate_->SetRecognitionResult(caller_id, (error ? string16() : value));
 }
 
-void SpeechInputManagerImpl::DidCompleteRecording(int render_view_id) {
-  DCHECK(recording_render_view_id_ == render_view_id);
-  recording_render_view_id_ = 0;
-  delegate_->DidCompleteRecording(render_view_id);
+void SpeechInputManagerImpl::DidCompleteRecording(
+    const SpeechInputCallerId& caller_id) {
+  DCHECK(recording_caller_id_ == caller_id);
+  recording_caller_id_.first = 0;
+  delegate_->DidCompleteRecording(caller_id);
 }
 
-void SpeechInputManagerImpl::DidCompleteRecognition(int render_view_id) {
-  recognizers_.erase(render_view_id);
-  delegate_->DidCompleteRecognition(render_view_id);
+void SpeechInputManagerImpl::DidCompleteRecognition(
+    const SpeechInputCallerId& caller_id) {
+  recognizers_.erase(caller_id);
+  delegate_->DidCompleteRecognition(caller_id);
 }
 
 }  // namespace speech_input

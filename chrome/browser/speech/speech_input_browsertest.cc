@@ -30,39 +30,41 @@ const char* kTestResult = "Pictures of the moon";
 class FakeSpeechInputManager : public SpeechInputManager {
  public:
   explicit FakeSpeechInputManager(Delegate* delegate)
-      : render_view_id_(0),
+      : caller_id_(0, 0),
         delegate_(delegate) {
   }
 
   // SpeechInputManager methods.
-  void StartRecognition(int render_view_id) {
-    EXPECT_EQ(0, render_view_id_);
-    render_view_id_ = render_view_id;
+  void StartRecognition(const SpeechInputCallerId& caller_id) {
+    EXPECT_EQ(0, caller_id_.first);
+    caller_id_ = caller_id;
     // Give the fake result in a short while.
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(this,
         &FakeSpeechInputManager::SetFakeRecognitionResult));
   }
-  void CancelRecognition(int render_view_id) {
-    EXPECT_EQ(render_view_id_, render_view_id);
-    render_view_id_ = 0;
+  void CancelRecognition(const SpeechInputCallerId& caller_id) {
+    EXPECT_EQ(caller_id_.first, caller_id.first);
+    EXPECT_EQ(caller_id_.second, caller_id.second);
+    caller_id_ = SpeechInputCallerId(0, 0);
   }
-  void StopRecording(int render_view_id) {
-    EXPECT_EQ(render_view_id_, render_view_id);
+  void StopRecording(const SpeechInputCallerId& caller_id) {
+    EXPECT_EQ(caller_id_.first, caller_id.first);
+    EXPECT_EQ(caller_id_.second, caller_id.second);
     // Nothing to do here since we aren't really recording.
   }
 
  private:
   void SetFakeRecognitionResult() {
-    if (render_view_id_) {  // Do a check in case we were cancelled..
-      delegate_->DidCompleteRecording(render_view_id_);
-      delegate_->SetRecognitionResult(render_view_id_,
+    if (caller_id_.first) {  // Do a check in case we were cancelled..
+      delegate_->DidCompleteRecording(caller_id_);
+      delegate_->SetRecognitionResult(caller_id_,
                                       ASCIIToUTF16(kTestResult));
-      delegate_->DidCompleteRecognition(render_view_id_);
-      render_view_id_ = 0;
+      delegate_->DidCompleteRecognition(caller_id_);
+      caller_id_ = SpeechInputCallerId(0, 0);
     }
   }
 
-  int render_view_id_;
+  SpeechInputCallerId caller_id_;
   Delegate* delegate_;
 };
 
