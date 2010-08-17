@@ -38,17 +38,24 @@ class IndexedDBBrowserTest : public InProcessBrowserTest {
         L"", UTF8ToWide(script), &js_result);
     return js_result;
   }
+
+  void SimpleTest(const GURL& test_url) {
+    // The test page will open a cursor on IndexedDB, then navigate to either a
+    // #pass or #fail ref.
+    ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+        browser(), test_url, 2);
+    std::string result = browser()->GetSelectedTabContents()->GetURL().ref();
+    if (result != "pass") {
+      std::string js_result = GetTestLog();
+      FAIL() << "Failed: " << js_result;
+    }
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTest) {
-  // The test page will open a cursor on IndexedDB, then navigate to either a
-  // #pass or #fail ref.
-  GURL test_url = testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html")));
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
-      browser(), test_url, 2);
-  std::string result = browser()->GetSelectedTabContents()->GetURL().ref();
-  if (result != "pass") {
-    std::string js_result = GetTestLog();
-    FAIL() << "Failed: " << js_result;
-  }
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("cursor_test.html"))));
+}
+
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, IndexTest) {
+  SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("index_test.html"))));
 }

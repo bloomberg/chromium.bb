@@ -2,7 +2,7 @@ function emptyCursorSuccess()
 {
   debug('Empty cursor opened successfully.')
   // TODO(bulach): check that we can iterate the cursor.
-  pass();
+  done();
 }
 
 function openEmptyCursor()
@@ -16,7 +16,10 @@ function openEmptyCursor()
 
 function cursorSuccess()
 {
-  debug('Cursor opened successfully.')
+  debug('Cursor opened successfully.');
+  shouldBe("event.result.direction", "0");
+  shouldBe("event.result.key", "'myKey'");
+  shouldBe("event.result.value", "'myValue'");
   openEmptyCursor();
 }
 
