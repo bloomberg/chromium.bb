@@ -101,6 +101,10 @@ def InstallLinkerScripts(glibc_tree):
   return {"nacl64": {"lib": glibc_tree["nacl"]["dyn-link"]}}
 
 
+def InstallKernelHeaders(include_dir_parent):
+  return {"nacl64": include_dir_parent}
+
+
 # The functions above are fairly cheap, so we could run them each
 # time, but they do require scanning their input directory trees, so
 # it would be better to avoid that if the function has not changed.

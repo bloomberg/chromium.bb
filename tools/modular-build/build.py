@@ -265,11 +265,19 @@ int main() {
       "linker_scripts",
       os.path.join(top_dir, "install", "linker_scripts"),
       treemappers.InstallLinkerScripts, [src["glibc"]])
+  # TODO(mseaborn): One day the NaCl headers should be substitutable
+  # for the Linux headers here, but I would expect them to be very
+  # similar.  i.e. Same filenames, same #defined numbers, but a subset
+  # of the Linux headers.
+  modules["installed_linux_headers"] = btarget.TreeMapper(
+      "installed_linux_headers",
+      os.path.join(top_dir, "install", "linux_headers"),
+      treemappers.InstallKernelHeaders, [src["linux_headers"]])
 
   glibc_toolchain = MakeInstallPrefix(
       "glibc_toolchain",
-      deps=["binutils", "full-gcc", "glibc", "wrappers", "linker_scripts"] +
-          gcc_libs)
+      deps=["binutils", "full-gcc", "glibc", "wrappers", "linker_scripts",
+            "installed_linux_headers"] + gcc_libs)
 
   modules["hello_glibc"] = btarget.TestModule(
       "hello_glibc",
