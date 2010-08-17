@@ -191,7 +191,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   GeolocationBrowserTest()
     : infobar_(NULL),
       current_browser_(NULL),
-      html_for_tests_("files/geolocation/simple.html") {
+      html_for_tests_("files/geolocation/simple.html"),
+      started_test_server_(false) {
     EnableDOMAutomation();
   }
 
@@ -205,9 +206,11 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   bool Initialize(InitializationOptions options) WARN_UNUSED_RESULT {
     GeolocationArbitrator::SetProviderFactoryForTest(
         &NewAutoSuccessMockNetworkLocationProvider);
-    bool started = test_server()->Start();
-    EXPECT_TRUE(started);
-    if (!started)
+
+    if (!started_test_server_)
+      started_test_server_ = test_server()->Start();
+    EXPECT_TRUE(started_test_server_);
+    if (!started_test_server_)
       return false;
 
     current_url_ = test_server()->GetURL(html_for_tests_);
@@ -341,6 +344,9 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   GURL iframe0_url_;
   // If not empty, the GURL for the second iframe.
   GURL iframe1_url_;
+
+  // TODO(phajdan.jr): Remove after we can ask TestServer whether it is started.
+  bool started_test_server_;
 };
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPermissionBar) {
