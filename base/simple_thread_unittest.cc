@@ -6,7 +6,6 @@
 #include "base/lock.h"
 #include "base/simple_thread.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/waitable_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

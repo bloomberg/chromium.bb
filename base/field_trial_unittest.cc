@@ -6,7 +6,7 @@
 
 #include "base/field_trial.h"
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class FieldTrialTest : public testing::Test {
@@ -76,7 +76,7 @@ TEST_F(FieldTrialTest, RemainingProbability) {
   scoped_refptr<FieldTrial> trial;
   int counter = 0;
   do {
-    std::string name = StringPrintf("trial%d", ++counter);
+    std::string name = base::StringPrintf("trial%d", ++counter);
     trial = new FieldTrial(name, 10);
     trial->AppendGroup(loser, 5);  // 50% chance of not being chosen.
   } while (trial->group() != FieldTrial::kNotParticipating);

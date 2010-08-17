@@ -4,7 +4,7 @@
 
 #include "base/tracked.h"
 
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/tracked_objects.h"
 
 using base::TimeTicks;
@@ -28,7 +28,7 @@ Location::Location()
 
 void Location::Write(bool display_filename, bool display_function_name,
                      std::string* output) const {
-  StringAppendF(output, "%s[%d] ",
+  base::StringAppendF(output, "%s[%d] ",
       display_filename ? file_name_ : "line",
       line_number_);
 

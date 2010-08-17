@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/ref_counted.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/task.h"
 
 namespace {
@@ -66,8 +66,8 @@ class WorkerThread : public PlatformThread::Delegate {
 };
 
 void WorkerThread::ThreadMain() {
-  const std::string name =
-      StringPrintf("%s/%d", name_prefix_.c_str(), PlatformThread::CurrentId());
+  const std::string name = base::StringPrintf(
+      "%s/%d", name_prefix_.c_str(), PlatformThread::CurrentId());
   PlatformThread::SetName(name.c_str());
 
   for (;;) {

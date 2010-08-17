@@ -12,6 +12,7 @@
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 
 namespace win_util {
 
@@ -373,7 +374,7 @@ std::wstring FormatMessage(unsigned messageid) {
     LocalFree(reinterpret_cast<HLOCAL>(string_buffer));
   } else {
     // The formating failed. simply convert the message value into a string.
-    SStringPrintf(&formatted_string, L"message number %d", messageid);
+    base::SStringPrintf(&formatted_string, L"message number %d", messageid);
   }
   return formatted_string;
 }

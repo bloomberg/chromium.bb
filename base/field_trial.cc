@@ -1,12 +1,12 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 #include "base/field_trial.h"
+
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 
 using base::TimeTicks;
 
@@ -49,7 +49,7 @@ int FieldTrial::AppendGroup(const std::string& name,
     // This is the group that crossed the random line, so we do the assignment.
     group_ = next_group_number_;
     if (name.empty())
-      StringAppendF(&group_name_, "%d", group_);
+      base::StringAppendF(&group_name_, "%d", group_);
     else
       group_name_ = name;
   }

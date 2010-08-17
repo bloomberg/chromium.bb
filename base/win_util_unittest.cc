@@ -4,9 +4,10 @@
 
 #include <windows.h>
 
-#include "testing/gtest/include/gtest/gtest.h"
+#include "base/basictypes.h"
 #include "base/string_util.h"
 #include "base/win_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 // The test is somewhat silly, because the Vista bots some have UAC enabled
 // and some have it disabled. At least we check that it does not crash.

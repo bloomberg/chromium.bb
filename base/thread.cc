@@ -5,7 +5,6 @@
 #include "base/thread.h"
 
 #include "base/lazy_instance.h"
-#include "base/string_util.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/thread_local.h"
 #include "base/waitable_event.h"

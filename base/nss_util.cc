@@ -21,7 +21,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/singleton.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 
 // USE_NSS means we use NSS for everything crypto-related.  If USE_NSS is not
 // defined, such as on Mac and Windows, we use NSS for SSL only -- we don't
@@ -32,6 +32,8 @@
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #endif  // defined(USE_NSS)
+
+namespace base {
 
 namespace {
 
@@ -300,8 +302,6 @@ class NSSInitSingleton {
 };
 
 }  // namespace
-
-namespace base {
 
 void EnsureNSPRInit() {
   Singleton<NSPRInitSingleton>::get();

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,12 +10,14 @@
 #include "base/histogram.h"
 
 #include <math.h>
+
+#include <algorithm>
 #include <string>
 
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 
 using base::TimeDelta;
 
@@ -340,10 +342,10 @@ double Histogram::GetPeakBucketSize(const SampleSet& snapshot) const {
 void Histogram::WriteAsciiHeader(const SampleSet& snapshot,
                                  Count sample_count,
                                  std::string* output) const {
-  StringAppendF(output,
-                "Histogram: %s recorded %d samples",
-                histogram_name().c_str(),
-                sample_count);
+  base::StringAppendF(output,
+                      "Histogram: %s recorded %d samples",
+                      histogram_name().c_str(),
+                      sample_count);
   if (0 == sample_count) {
     DCHECK_EQ(snapshot.sum(), 0);
   } else {
@@ -352,12 +354,13 @@ void Histogram::WriteAsciiHeader(const SampleSet& snapshot,
                       - average * average;
     double standard_deviation = sqrt(variance);
 
-    StringAppendF(output,
-                  ", average = %.1f, standard deviation = %.1f",
-                  average, standard_deviation);
+    base::StringAppendF(output,
+                        ", average = %.1f, standard deviation = %.1f",
+                        average, standard_deviation);
   }
   if (flags_ & ~kHexRangePrintingFlag )
-    StringAppendF(output, " (flags = 0x%x)", flags_ & ~kHexRangePrintingFlag);
+    base::StringAppendF(output, " (flags = 0x%x)",
+                        flags_ & ~kHexRangePrintingFlag);
 }
 
 void Histogram::WriteAsciiBucketContext(const int64 past,
@@ -369,22 +372,22 @@ void Histogram::WriteAsciiBucketContext(const int64 past,
   WriteAsciiBucketValue(current, scaled_sum, output);
   if (0 < i) {
     double percentage = past / scaled_sum;
-    StringAppendF(output, " {%3.1f%%}", percentage);
+    base::StringAppendF(output, " {%3.1f%%}", percentage);
   }
 }
 
 const std::string Histogram::GetAsciiBucketRange(size_t i) const {
   std::string result;
   if (kHexRangePrintingFlag & flags_)
-    StringAppendF(&result, "%#x", ranges(i));
+    base::StringAppendF(&result, "%#x", ranges(i));
   else
-    StringAppendF(&result, "%d", ranges(i));
+    base::StringAppendF(&result, "%d", ranges(i));
   return result;
 }
 
 void Histogram::WriteAsciiBucketValue(Count current, double scaled_sum,
                                       std::string* output) const {
-  StringAppendF(output, " (%d = %3.1f%%)", current, current/scaled_sum);
+  base::StringAppendF(output, " (%d = %3.1f%%)", current, current/scaled_sum);
 }
 
 void Histogram::WriteAsciiBucketGraph(double current_size, double max_size,
@@ -853,10 +856,12 @@ void StatisticsRecorder::WriteGraph(const std::string& query,
                                     std::string* output) {
   if (!histograms_)
     return;
-  if (query.length())
-    StringAppendF(output, "Collections of histograms for %s\n", query.c_str());
-  else
+  if (query.length()) {
+    base::StringAppendF(output, "Collections of histograms for %s\n",
+                        query.c_str());
+  } else {
     output->append("Collections of all histograms\n");
+  }
 
   Histograms snapshot;
   GetSnapshot(query, &snapshot);

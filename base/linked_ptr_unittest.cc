@@ -1,12 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <string>
 
 #include "base/linked_ptr.h"
-
-#include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -17,17 +16,17 @@ std::string history;
 
 // Class which tracks allocation/deallocation
 struct A {
-  A(): mynum(num++) { history += StringPrintf("A%d ctor\n", mynum); }
-  virtual ~A() { history += StringPrintf("A%d dtor\n", mynum); }
-  virtual void Use() { history += StringPrintf("A%d use\n", mynum); }
+  A(): mynum(num++) { history += base::StringPrintf("A%d ctor\n", mynum); }
+  virtual ~A() { history += base::StringPrintf("A%d dtor\n", mynum); }
+  virtual void Use() { history += base::StringPrintf("A%d use\n", mynum); }
   int mynum;
 };
 
 // Subclass
 struct B: public A {
-  B() { history += StringPrintf("B%d ctor\n", mynum); }
-  ~B() { history += StringPrintf("B%d dtor\n", mynum); }
-  virtual void Use() { history += StringPrintf("B%d use\n", mynum); }
+  B() { history += base::StringPrintf("B%d ctor\n", mynum); }
+  ~B() { history += base::StringPrintf("B%d dtor\n", mynum); }
+  virtual void Use() { history += base::StringPrintf("B%d use\n", mynum); }
 };
 
 }  // namespace
