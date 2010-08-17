@@ -70,7 +70,7 @@ IPC_BEGIN_MESSAGES(DevToolsAgent)
 
   // Tells agent that there is a client host connected to it.
   IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_Attach,
-                       std::vector<std::string> /* runtime_features */)
+                       DevToolsRuntimeProperties /* properties */)
 
   // Tells agent that there is no longer a client host connected to it.
   IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_Detach)

@@ -1660,9 +1660,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Updates runtime features store in devtools manager in order to support
   // cross-navigation instrumentation.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_DevToolsRuntimeFeatureStateChanged,
-                      std::string /* feature */,
-                      bool /* enabled */)
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_DevToolsRuntimePropertyChanged,
+                      std::string /* name */,
+                      std::string /* value */)
 
   // Send back a string to be recorded by UserMetrics.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UserMetricsRecordAction,

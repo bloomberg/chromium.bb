@@ -592,8 +592,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnCloseDevToolsWindow();
   void OnRequestDockDevToolsWindow();
   void OnRequestUndockDevToolsWindow();
-  void OnDevToolsRuntimeFeatureStateChanged(const std::string& feature,
-                                            bool enabled);
+  void OnDevToolsRuntimePropertyChanged(const std::string& name,
+                                        const std::string& value);
 
   void OnUserMetricsRecordAction(const std::string& action);
   void OnMissingPluginStatus(int status);

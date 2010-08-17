@@ -18,7 +18,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/devtools_messages.h"
 #include "chrome/common/pref_names.h"
 #include "googleurl/src/gurl.h"
 
@@ -64,8 +63,8 @@ void DevToolsManager::RegisterDevToolsClientHostFor(
     DevToolsClientHost* client_host) {
   DCHECK(!GetDevToolsClientHostFor(inspected_rvh));
 
-  RuntimeFeatures initial_features;
-  BindClientHost(inspected_rvh, client_host, initial_features);
+  DevToolsRuntimeProperties initial_properties;
+  BindClientHost(inspected_rvh, client_host, initial_properties);
   client_host->set_close_listener(this);
   SendAttachToAgent(inspected_rvh);
 }
@@ -143,20 +142,17 @@ void DevToolsManager::ToggleDevToolsWindow(
   ToggleDevToolsWindow(inspected_rvh, false, action);
 }
 
-void DevToolsManager::RuntimeFeatureStateChanged(RenderViewHost* inspected_rvh,
-                                                 const std::string& feature,
-                                                 bool enabled) {
-  RuntimeFeaturesMap::iterator it = runtime_features_map_.find(inspected_rvh);
-  if (it == runtime_features_map_.end()) {
-    std::pair<RenderViewHost*, std::set<std::string> > value(
+void DevToolsManager::RuntimePropertyChanged(RenderViewHost* inspected_rvh,
+                                             const std::string& name,
+                                             const std::string& value) {
+  RuntimePropertiesMap::iterator it = runtime_properties_map_.find(inspected_rvh);
+  if (it == runtime_properties_map_.end()) {
+    std::pair<RenderViewHost*, DevToolsRuntimeProperties> value(
         inspected_rvh,
-        std::set<std::string>());
-    it = runtime_features_map_.insert(value).first;
+        DevToolsRuntimeProperties());
+    it = runtime_properties_map_.insert(value).first;
   }
-  if (enabled)
-    it->second.insert(feature);
-  else
-    it->second.erase(feature);
+  it->second[name] = value;
 }
 
 void DevToolsManager::InspectElement(RenderViewHost* inspected_rvh,
@@ -267,8 +263,8 @@ int DevToolsManager::DetachClientHost(RenderViewHost* from_rvh) {
 
   int cookie = last_orphan_cookie_++;
   orphan_client_hosts_[cookie] =
-      std::pair<DevToolsClientHost*, RuntimeFeatures>(
-          client_host, runtime_features_map_[from_rvh]);
+      std::pair<DevToolsClientHost*, DevToolsRuntimeProperties>(
+          client_host, runtime_properties_map_[from_rvh]);
 
   UnbindClientHost(from_rvh, client_host);
   return cookie;
@@ -293,14 +289,14 @@ void DevToolsManager::SendAttachToAgent(RenderViewHost* inspected_rvh) {
     ChildProcessSecurityPolicy::GetInstance()->GrantReadRawCookies(
         inspected_rvh->process()->id());
 
-    std::vector<std::string> features;
-    RuntimeFeaturesMap::iterator it =
-        runtime_features_map_.find(inspected_rvh);
-    if (it != runtime_features_map_.end()) {
-      features = std::vector<std::string>(it->second.begin(),
-                                          it->second.end());
+    DevToolsRuntimeProperties properties;
+    RuntimePropertiesMap::iterator it =
+        runtime_properties_map_.find(inspected_rvh);
+    if (it != runtime_properties_map_.end()) {
+      properties = DevToolsRuntimeProperties(it->second.begin(),
+                                            it->second.end());
     }
-    IPC::Message* m = new DevToolsAgentMsg_Attach(features);
+    IPC::Message* m = new DevToolsAgentMsg_Attach(properties);
     m->set_routing_id(inspected_rvh->routing_id());
     inspected_rvh->Send(m);
   }
@@ -381,9 +377,10 @@ void DevToolsManager::ToggleDevToolsWindow(
   }
 }
 
-void DevToolsManager::BindClientHost(RenderViewHost* inspected_rvh,
-                                     DevToolsClientHost* client_host,
-                                     const RuntimeFeatures& runtime_features) {
+void DevToolsManager::BindClientHost(
+    RenderViewHost* inspected_rvh,
+    DevToolsClientHost* client_host,
+    const DevToolsRuntimeProperties& runtime_properties) {
   DCHECK(inspected_rvh_to_client_host_.find(inspected_rvh) ==
       inspected_rvh_to_client_host_.end());
   DCHECK(client_host_to_inspected_rvh_.find(client_host) ==
@@ -391,7 +388,7 @@ void DevToolsManager::BindClientHost(RenderViewHost* inspected_rvh,
 
   inspected_rvh_to_client_host_[inspected_rvh] = client_host;
   client_host_to_inspected_rvh_[client_host] = inspected_rvh;
-  runtime_features_map_[inspected_rvh] = runtime_features;
+  runtime_properties_map_[inspected_rvh] = runtime_properties;
 }
 
 void DevToolsManager::UnbindClientHost(RenderViewHost* inspected_rvh,
@@ -403,5 +400,5 @@ void DevToolsManager::UnbindClientHost(RenderViewHost* inspected_rvh,
 
   inspected_rvh_to_client_host_.erase(inspected_rvh);
   client_host_to_inspected_rvh_.erase(client_host);
-  runtime_features_map_.erase(inspected_rvh);
+  runtime_properties_map_.erase(inspected_rvh);
 }

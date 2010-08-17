@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/common/devtools_messages.h"
 
 namespace IPC {
 class Message;
@@ -58,9 +59,9 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void OpenDevToolsWindow(RenderViewHost* inspected_rvh);
   void ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
                             DevToolsToggleAction action);
-  void RuntimeFeatureStateChanged(RenderViewHost* inspected_rvh,
-                                  const std::string& feature,
-                                  bool enabled);
+  void RuntimePropertyChanged(RenderViewHost* inspected_rvh,
+                              const std::string& name,
+                              const std::string& value);
 
   // Starts element inspection in the devtools client.
   // Creates one by means of OpenDevToolsWindow if no client
@@ -83,7 +84,6 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
  private:
   friend class base::RefCounted<DevToolsManager>;
-  typedef std::set<std::string> RuntimeFeatures;
 
   virtual ~DevToolsManager();
 
@@ -112,7 +112,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
   void BindClientHost(RenderViewHost* inspected_rvh,
                       DevToolsClientHost* client_host,
-                      const RuntimeFeatures& runtime_features);
+                      const DevToolsRuntimeProperties& runtime_properties);
 
   void UnbindClientHost(RenderViewHost* inspected_rvh,
                         DevToolsClientHost* client_host);
@@ -133,14 +133,15 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
       ClientHostToInspectedRvhMap;
   ClientHostToInspectedRvhMap client_host_to_inspected_rvh_;
 
-  typedef std::map<RenderViewHost*, RuntimeFeatures>
-      RuntimeFeaturesMap;
-  RuntimeFeaturesMap runtime_features_map_;
+  typedef std::map<RenderViewHost*, DevToolsRuntimeProperties>
+      RuntimePropertiesMap;
+  RuntimePropertiesMap runtime_properties_map_;
 
   RenderViewHost* inspected_rvh_for_reopen_;
   bool in_initial_show_;
 
-  typedef std::map<int, std::pair<DevToolsClientHost*, RuntimeFeatures> >
+  typedef std::map<int,
+                   std::pair<DevToolsClientHost*, DevToolsRuntimeProperties> >
       OrphanClientHosts;
   OrphanClientHosts orphan_client_hosts_;
   int last_orphan_cookie_;

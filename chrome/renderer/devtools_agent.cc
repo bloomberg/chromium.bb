@@ -4,9 +4,10 @@
 
 #include "chrome/renderer/devtools_agent.h"
 
+#include <map>
+
 #include "base/command_line.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/render_view.h"
@@ -119,12 +120,22 @@ void DevToolsAgent::forceRepaint() {
   render_view_->GenerateFullRepaint();
 }
 
-void DevToolsAgent::runtimeFeatureStateChanged(const WebKit::WebString& feature,
-                                               bool enabled) {
-  render_view_->Send(new ViewHostMsg_DevToolsRuntimeFeatureStateChanged(
+void DevToolsAgent::runtimeFeatureStateChanged(
+    const WebKit::WebString& feature,
+    bool enabled) {
+  render_view_->Send(new ViewHostMsg_DevToolsRuntimePropertyChanged(
       routing_id_,
       feature.utf8(),
-      enabled));
+      enabled ? "true" : "false"));
+}
+
+void DevToolsAgent::runtimePropertyChanged(
+    const WebKit::WebString& name,
+    const WebKit::WebString& value) {
+  render_view_->Send(new ViewHostMsg_DevToolsRuntimePropertyChanged(
+      routing_id_,
+      name.utf8(),
+      value.utf8()));
 }
 
 WebCString DevToolsAgent::injectedScriptSource() {
@@ -159,13 +170,16 @@ DevToolsAgent* DevToolsAgent::FromHostId(int host_id) {
   return NULL;
 }
 
-void DevToolsAgent::OnAttach(const std::vector<std::string>& runtime_features) {
+void DevToolsAgent::OnAttach(
+    const DevToolsRuntimeProperties& runtime_properties) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
     web_agent->attach();
-    for (std::vector<std::string>::const_iterator it = runtime_features.begin();
-         it != runtime_features.end(); ++it) {
-      web_agent->setRuntimeFeatureEnabled(WebString::fromUTF8(*it), true);
+    for (DevToolsRuntimeProperties::const_iterator it =
+             runtime_properties.begin();
+         it != runtime_properties.end(); ++it) {
+      web_agent->setRuntimeFeatureEnabled(WebString::fromUTF8(it->first),
+                                          it->second == "true");
     }
   }
 }

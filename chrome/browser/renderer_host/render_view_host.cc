@@ -796,8 +796,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnRequestDockDevToolsWindow);
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestUndockDevToolsWindow,
                         OnRequestUndockDevToolsWindow);
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimeFeatureStateChanged,
-                        OnDevToolsRuntimeFeatureStateChanged);
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DevToolsRuntimePropertyChanged,
+                        OnDevToolsRuntimePropertyChanged);
     IPC_MESSAGE_HANDLER(ViewHostMsg_UserMetricsRecordAction,
                         OnUserMetricsRecordAction)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MissingPluginStatus, OnMissingPluginStatus);
@@ -1502,11 +1502,11 @@ void RenderViewHost::OnRequestUndockDevToolsWindow() {
   DevToolsManager::GetInstance()->RequestUndockWindow(this);
 }
 
-void RenderViewHost::OnDevToolsRuntimeFeatureStateChanged(
-    const std::string& feature,
-    bool enabled) {
+void RenderViewHost::OnDevToolsRuntimePropertyChanged(
+    const std::string& name,
+    const std::string& value) {
   DevToolsManager::GetInstance()->
-      RuntimeFeatureStateChanged(this, feature, enabled);
+      RuntimePropertyChanged(this, name, value);
 }
 
 void RenderViewHost::OnUserMetricsRecordAction(const std::string& action) {

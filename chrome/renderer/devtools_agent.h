@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chrome/common/devtools_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
 namespace IPC {
@@ -47,6 +48,8 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
   virtual void forceRepaint();
   virtual void runtimeFeatureStateChanged(const WebKit::WebString& feature,
                                           bool enabled);
+  virtual void runtimePropertyChanged(const WebKit::WebString& name,
+                                      const WebKit::WebString& value);
   virtual WebKit::WebCString injectedScriptSource();
   virtual WebKit::WebCString debuggerScriptSource();
   virtual WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
@@ -63,7 +66,7 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
  private:
   friend class DevToolsAgentFilter;
 
-  void OnAttach(const std::vector<std::string>& runtime_features);
+  void OnAttach(const DevToolsRuntimeProperties& runtime_properties);
   void OnDetach();
   void OnFrontendLoaded();
   void OnDispatchOnInspectorBackend(const std::string& message);
