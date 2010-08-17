@@ -11,6 +11,7 @@
 #include <string>
 
 #include "gfx/gfx_paths.h"
+#include "base/file_path.h"
 #include "base/path_service.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
@@ -18,7 +19,7 @@
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/test/test_suite.h"
 
-class GfxTestSuite : public TestSuite {
+class GfxTestSuite : public base::TestSuite {
  public:
   GfxTestSuite(int argc, char** argv) : TestSuite(argc, argv) {
   }

@@ -226,6 +226,7 @@ extern const char kPrelaunchGpuProcess[];
 extern const char kPrint[];
 extern const char kProcessPerSite[];
 extern const char kProcessPerTab[];
+extern const char kProcessType[];
 extern const char kProductVersion[];
 extern const char kProfileImportProcess[];
 extern const char kProxyAutoDetect[];

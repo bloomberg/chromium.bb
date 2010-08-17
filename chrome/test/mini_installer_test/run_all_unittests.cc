@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/process_util.h"
 #include "base/test/test_suite.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/util_constants.h"
@@ -44,7 +45,7 @@ int main(int argc, char** argv) {
   // with cleaning the system or make a backup before continuing.
   CommandLine::Init(argc, argv);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  TestSuite test_suite = TestSuite(argc, argv);
+  base::TestSuite test_suite(argc, argv);
   if (command_line.HasSwitch(switches::kInstallerTestClean)) {
     printf("Current version of Chrome will be uninstalled "
            "from all levels before proceeding with tests.\n");

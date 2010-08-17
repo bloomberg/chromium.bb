@@ -231,5 +231,5 @@ TEST_F(DecodeFuzzTest, All) {
 }
 
 int main(int argc, char** argv) {
-  return TestSuite(argc, argv).Run();
+  return base::TestSuite(argc, argv).Run();
 }

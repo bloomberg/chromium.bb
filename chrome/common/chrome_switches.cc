@@ -767,6 +767,10 @@ const char kProcessPerSite[]                = "process-per-site";
 // script connections to each other).
 const char kProcessPerTab[]                 = "process-per-tab";
 
+// The value of this switch determines whether the process is started as a
+// renderer or plugin host.  If it's empty, it's the browser.
+const char kProcessType[]                   = "type";
+
 // Output the product version information and quit. Used as an internal api to
 // detect the installed version of Chrome on Linux.
 const char kProductVersion[]                = "product-version";
@@ -850,8 +854,10 @@ const char kSafePlugins[]                   = "safe-plugins";
 // URL prefix used by safebrowsing to fetch hash, download data and
 // report malware.
 const char kSbInfoURLPrefix[] = "safebrowsing-info-url-prefix";
+
 // URL prefix used by safebrowsing to get MAC key.
 const char kSbMacKeyURLPrefix[] = "safebrowsing-mackey-url-prefix";
+
 // If present, safebrowsing only performs update when
 // SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
 // This is used for testing only.
@@ -1047,14 +1053,17 @@ const char kEnableLoginImages[]             = "enable-login-images";
 
 // Enable Chrome-as-a-login-manager behavior.
 const char kLoginManager[]                  = "login-manager";
+
 // Allows to override the first login screen. The value should be the name
 // of the first login screen to show (see
 // chrome/browser/chromeos/login/login_wizard_view.cc for actual names).
 // Ignored if kLoginManager is not specified.
 // TODO(avayvod): Remove when the switch is no longer needed for testing.
 const char kLoginScreen[]                   = "login-screen";
+
 // Allows control over the initial login screen size. Pass width,height.
 const char kLoginScreenSize[]               = "login-screen-size";
+
 // Attempts to load libcros and validate it, then exits. A nonzero return code
 // means the library could not be loaded correctly.
 const char kTestLoadLibcros[]               = "test-load-libcros";

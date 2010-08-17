@@ -4,6 +4,7 @@
 
 #include <cstdio>
 
+#include "base/file_path.h"
 #include "base/test/test_suite.h"
 #include "media/base/media.h"
 #include "media/ffmpeg/ffmpeg_common.h"
