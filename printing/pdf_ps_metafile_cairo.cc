@@ -70,6 +70,11 @@ void DestroyContextData(void* data) {
 
 namespace printing {
 
+PdfPsMetafile::PdfPsMetafile()
+    : format_(PDF),
+      surface_(NULL), context_(NULL) {
+}
+
 PdfPsMetafile::PdfPsMetafile(const FileFormat& format)
     : format_(format),
       surface_(NULL), context_(NULL) {

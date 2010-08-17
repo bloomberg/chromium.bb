@@ -15,6 +15,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/histogram.h"
 #if defined(OS_MACOSX)
 #include "base/mac_util.h"
 #endif

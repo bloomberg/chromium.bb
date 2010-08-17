@@ -4,10 +4,16 @@
 
 #include "ipc/ipc_message_utils.h"
 
+#include "base/file_path.h"
 #include "base/json/json_writer.h"
+#include "base/nullable_string16.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/values.h"
+#if defined(OS_POSIX)
+#include "ipc/file_descriptor_set_posix.h"
+#endif
+#include "ipc/ipc_channel_handle.h"
 
 namespace IPC {
 
@@ -201,6 +207,24 @@ static bool ReadValue(const Message* m, void** iter, Value** value,
   return true;
 }
 
+
+void ParamTraits<base::Time>::Write(Message* m, const param_type& p) {
+  ParamTraits<int64>::Write(m, p.ToInternalValue());
+}
+
+bool ParamTraits<base::Time>::Read(const Message* m, void** iter,
+                                   param_type* r) {
+  int64 value;
+  if (!ParamTraits<int64>::Read(m, iter, &value))
+    return false;
+  *r = base::Time::FromInternalValue(value);
+  return true;
+}
+
+void ParamTraits<base::Time>::Log(const param_type& p, std::wstring* l) {
+  ParamTraits<int64>::Log(p.ToInternalValue(), l);
+}
+
 void ParamTraits<DictionaryValue>::Write(Message* m, const param_type& p) {
   WriteValue(m, &p, 0);
 }
@@ -238,4 +262,107 @@ void ParamTraits<ListValue>::Log(const param_type& p, std::wstring* l) {
   base::JSONWriter::Write(&p, false, &json);
   l->append(UTF8ToWide(json));
 }
+
+void ParamTraits<NullableString16>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.string());
+  WriteParam(m, p.is_null());
+}
+
+bool ParamTraits<NullableString16>::Read(const Message* m, void** iter,
+                                         param_type* r) {
+  string16 string;
+  if (!ReadParam(m, iter, &string))
+    return false;
+  bool is_null;
+  if (!ReadParam(m, iter, &is_null))
+    return false;
+  *r = NullableString16(string, is_null);
+  return true;
+}
+
+void ParamTraits<NullableString16>::Log(const param_type& p, std::wstring* l) {
+  l->append(L"(");
+  LogParam(p.string(), l);
+  l->append(L", ");
+  LogParam(p.is_null(), l);
+  l->append(L")");
+}
+
+void ParamTraits<FilePath>::Write(Message* m, const param_type& p) {
+  ParamTraits<FilePath::StringType>::Write(m, p.value());
+}
+
+bool ParamTraits<FilePath>::Read(const Message* m, void** iter, param_type* r) {
+  FilePath::StringType value;
+  if (!ParamTraits<FilePath::StringType>::Read(m, iter, &value))
+    return false;
+  *r = FilePath(value);
+  return true;
+}
+
+void ParamTraits<FilePath>::Log(const param_type& p, std::wstring* l) {
+  ParamTraits<FilePath::StringType>::Log(p.value(), l);
+}
+
+#if defined(OS_POSIX)
+void ParamTraits<base::FileDescriptor>::Write(Message* m, const param_type& p) {
+  const bool valid = p.fd >= 0;
+  WriteParam(m, valid);
+
+  if (valid) {
+    if (!m->WriteFileDescriptor(p))
+      NOTREACHED();
+  }
+}
+
+bool ParamTraits<base::FileDescriptor>::Read(const Message* m, void** iter,
+                                             param_type* r) {
+  bool valid;
+  if (!ReadParam(m, iter, &valid))
+    return false;
+
+  if (!valid) {
+    r->fd = -1;
+    r->auto_close = false;
+    return true;
+  }
+
+  return m->ReadFileDescriptor(iter, r);
+}
+
+void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
+                                            std::wstring* l) {
+  if (p.auto_close) {
+    l->append(StringPrintf(L"FD(%d auto-close)", p.fd));
+  } else {
+    l->append(StringPrintf(L"FD(%d)", p.fd));
+  }
+}
+#endif  // defined(OS_POSIX)
+
+void ParamTraits<IPC::ChannelHandle>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.name);
+#if defined(OS_POSIX)
+  WriteParam(m, p.socket);
+#endif
+}
+
+bool ParamTraits<IPC::ChannelHandle>::Read(const Message* m, void** iter,
+                                           param_type* r) {
+  return ReadParam(m, iter, &r->name)
+#if defined(OS_POSIX)
+      && ReadParam(m, iter, &r->socket)
+#endif
+      ;
+}
+
+void ParamTraits<IPC::ChannelHandle>::Log(const param_type& p,
+                                          std::wstring* l) {
+  l->append(ASCIIToWide(StringPrintf("ChannelHandle(%s", p.name.c_str())));
+#if defined(OS_POSIX)
+  ParamTraits<base::FileDescriptor>::Log(p.socket, l);
+#endif
+  l->append(L")");
+}
+
 }  // namespace IPC

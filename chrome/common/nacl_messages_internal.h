@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/process.h"
 #include "chrome/common/nacl_types.h"
 #include "ipc/ipc_message_macros.h"
 

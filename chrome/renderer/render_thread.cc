@@ -22,6 +22,7 @@
 #include "base/thread_local.h"
 #include "base/trace_event.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"

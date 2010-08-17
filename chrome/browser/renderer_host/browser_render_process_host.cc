@@ -18,6 +18,7 @@
 #include "app/app_switches.h"
 #include "base/command_line.h"
 #include "base/field_trial.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
