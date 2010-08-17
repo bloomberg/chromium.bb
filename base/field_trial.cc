@@ -138,6 +138,7 @@ void FieldTrialList::StatesToString(std::string* output) {
   if (!global_)
     return;
   DCHECK(output->empty());
+  AutoLock auto_lock(global_->lock_);
   for (RegistrationList::iterator it = global_->registered_.begin();
        it != global_->registered_.end(); ++it) {
     const std::string name = it->first;
