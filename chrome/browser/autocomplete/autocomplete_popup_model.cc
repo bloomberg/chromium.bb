@@ -4,6 +4,8 @@
 
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 
+#include "unicode/ubidi.h"
+
 #include "base/string_util.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
@@ -12,7 +14,6 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/notification_service.h"
-#include "third_party/icu/public/common/unicode/ubidi.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupModel

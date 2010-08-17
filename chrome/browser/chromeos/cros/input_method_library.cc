@@ -4,6 +4,11 @@
 
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 
+#include <glib.h>
+#include <signal.h>
+
+#include "unicode/uloc.h"
+
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -11,10 +16,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
-#include "third_party/icu/public/common/unicode/uloc.h"
-
-#include <glib.h>
-#include <signal.h>
 
 namespace {
 

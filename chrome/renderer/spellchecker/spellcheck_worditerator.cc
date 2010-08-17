@@ -9,15 +9,16 @@
 #include <map>
 #include <string>
 
+#include "unicode/normlzr.h"
+#include "unicode/schriter.h"
+#include "unicode/uscript.h"
+#include "unicode/ulocdata.h"
+
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
-#include "third_party/icu/public/common/unicode/normlzr.h"
-#include "third_party/icu/public/common/unicode/schriter.h"
-#include "third_party/icu/public/common/unicode/uscript.h"
-#include "third_party/icu/public/i18n/unicode/ulocdata.h"
 
 // SpellcheckCharAttribute implementation:
 

@@ -8,6 +8,8 @@
 #include <map>
 #include <utility>
 
+#include "unicode/uloc.h"
+
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
 #include "base/basictypes.h"
@@ -22,7 +24,6 @@
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "grit/generated_resources.h"
-#include "third_party/icu/public/common/unicode/uloc.h"
 
 namespace {
 

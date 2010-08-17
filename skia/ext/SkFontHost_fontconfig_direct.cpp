@@ -22,7 +22,7 @@
 
 #include <fontconfig/fontconfig.h>
 
-#include "third_party/icu/public/common/unicode/utf16.h"
+#include "unicode/utf16.h"
 
 namespace {
 

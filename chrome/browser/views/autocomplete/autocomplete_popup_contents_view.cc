@@ -4,6 +4,8 @@
 
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 
+#include "unicode/ubidi.h"
+
 #include "app/bidi_line_iterator.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -22,7 +24,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "third_party/icu/public/common/unicode/ubidi.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)
