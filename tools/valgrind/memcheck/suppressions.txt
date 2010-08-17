@@ -765,9 +765,9 @@
    fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
    fun:_ZNSs7reserveEj
    fun:_ZNSs6appendEPKcj
-   fun:_Z14StringAppendVTISsEvPT_PKNS0_10value_typeEPc
-   fun:_Z13StringAppendVPSsPKcPc
-   fun:_Z12StringPrintfPKcz
+   fun:_ZN4base49_GLOBAL__N_base_stringprintf.cc_00000000_B2B9AA1B14StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
+   fun:_ZN4base13StringAppendVEPSsPKcPc
+   fun:_ZN4base12StringPrintfEPKcz
 }
 {
    # According to dglazkov, these are one-time leaks and intentional.
@@ -1542,6 +1542,8 @@
    fun:start_thread
 }
 {
+   # This appears to be the NDEBUG mode version of bug_16096 -- i.e. the
+   # intermediate call to StringAppendV() is optimized away
    bug_22109
    Memcheck:Leak
    fun:_Znw*
@@ -1549,8 +1551,8 @@
    fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
    fun:_ZNSs7reserveEj
    fun:_ZNSs6appendEPKcj
-   fun:_Z14StringAppendVTISsEvPT_PKNS0_10value_typeEPc
-   fun:_Z12StringPrintfPKcz
+   fun:_ZN4base49_GLOBAL__N_base_stringprintf.cc_00000000_B2B9AA1B14StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
+   fun:_ZN4base12StringPrintfEPKcz
 }
 {
    bug_22450
