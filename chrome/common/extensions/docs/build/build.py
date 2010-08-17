@@ -158,8 +158,8 @@ def GetStaticFileNames():
 def main():
   # Prevent windows from using cygwin python.
   if (sys.platform == "cygwin"):
-    raise Exception("Building docs not supported for cygwin python.\n"
-                    "Please run the build.bat script.")
+    sys.exit("Building docs not supported for cygwin python. Please run the "
+             "build.sh script instead, which uses depot_tools python.")
 
   parser = OptionParser()
   parser.add_option("--test-shell-path", dest="test_shell_path")
@@ -214,7 +214,10 @@ def main():
   if (os.path.isfile(debug_log)):
     os.remove(debug_log)
 
-  return os.EX_OK
+  if 'EX_OK' in dir(os):
+    return os.EX_OK
+  else:
+    return 0
 
 if __name__ == '__main__':
   sys.exit(main())
