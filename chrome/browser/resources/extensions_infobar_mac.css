@@ -6,8 +6,8 @@ body {
   background: -webkit-gradient(linear, left top, left bottom,
               from(#EBEBEB), to(#CFCFCF));
   font-family: 'Lucida Grande', Helvetica, sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   height: 36px; /* Infobars are limited to 36-72px */
-  margin: 0px;
+  margin: 0 38px;
   overflow: hidden;
 }
