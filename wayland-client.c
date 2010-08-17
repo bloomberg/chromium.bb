@@ -347,17 +347,15 @@ handle_event(struct wl_display *display,
 	else
 		proxy = wl_hash_table_lookup(display->objects, id);
 
-	if (proxy == NULL)
-		return;
-
-	wl_list_for_each(listener, &proxy->listener_list, link)
-		wl_connection_demarshal(display->connection,
-					size,
-					display->objects,
-					listener->implementation[opcode],
-					listener->data,
-					&proxy->base, 
-					&proxy->base.interface->events[opcode]);
+	if (proxy != NULL)
+		wl_list_for_each(listener, &proxy->listener_list, link)
+			wl_connection_demarshal(display->connection,
+						size,
+						display->objects,
+						listener->implementation[opcode],
+						listener->data,
+						&proxy->base, 
+						&proxy->base.interface->events[opcode]);
 
 	wl_connection_consume(display->connection, size);
 }
