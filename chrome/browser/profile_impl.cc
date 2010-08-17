@@ -223,9 +223,13 @@ void ProfileSizeTask::Run() {
   size_MB = static_cast<int>(size  / (1024 * 1024));
   UMA_HISTOGRAM_COUNTS_10000("Profile.BookmarksSize", size_MB);
 
-  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Thumbnails"));
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Favicons"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
-  UMA_HISTOGRAM_COUNTS_10000("Profile.ThumbnailsSize", size_MB);
+  UMA_HISTOGRAM_COUNTS_10000("Profile.FaviconsSize", size_MB);
+
+  size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Top Sites"));
+  size_MB = static_cast<int>(size  / (1024 * 1024));
+  UMA_HISTOGRAM_COUNTS_10000("Profile.TopSitesSize", size_MB);
 
   size = file_util::ComputeFilesSize(path_, FILE_PATH_LITERAL("Visited Links"));
   size_MB = static_cast<int>(size  / (1024 * 1024));
