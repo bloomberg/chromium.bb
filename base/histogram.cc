@@ -819,10 +819,9 @@ void StatisticsRecorder::Register(Histogram* histogram) {
     return;
   const std::string name = histogram->histogram_name();
   AutoLock auto_lock(*lock_);
-  DCHECK(histograms_->end() == histograms_->find(name));
-
-  (*histograms_)[name] = histogram;
-  return;
+  // Avoid overwriting a previous registration.
+  if (histograms_->end() == histograms_->find(name))
+    (*histograms_)[name] = histogram;
 }
 
 // static
