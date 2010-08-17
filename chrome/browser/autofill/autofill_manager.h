@@ -94,6 +94,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   AutoFillManager();
   AutoFillManager(TabContents* tab_contents,
                   PersonalDataManager* personal_data);
+
   void set_personal_data_manager(PersonalDataManager* personal_data) {
     personal_data_ = personal_data;
   }
@@ -174,6 +175,11 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   static int PackIDs(int cc_id, int profile_id);
   static void UnpackIDs(int id, int* cc_id, int* profile_id);
 
+  // The following function is meant to be called from unit-test only.
+  void set_disable_download_manager_requests(bool value) {
+    disable_download_manager_requests_ = value;
+  }
+
   // The TabContents hosting this AutoFillManager.
   // Weak reference.
   // May not be NULL.
@@ -188,6 +194,11 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Handles queries and uploads to AutoFill servers.
   AutoFillDownloadManager download_manager_;
 
+  // Should be set to true in AutoFillManagerTest and other tests, false in
+  // AutoFillDownloadManagerTest and in non-test environment. Is false by
+  // default.
+  bool disable_download_manager_requests_;
+
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
 
@@ -197,7 +208,7 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // The InfoBar that asks for permission to store credit card information.
   scoped_ptr<AutoFillCCInfoBarDelegate> cc_infobar_;
 
-  friend class AutoFillManagerTest;
+  friend class TestAutoFillManager;
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillCreditCardForm);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillNonBillingFormSemicolon);
   FRIEND_TEST_ALL_PREFIXES(AutoFillManagerTest, FillBillFormSemicolon);

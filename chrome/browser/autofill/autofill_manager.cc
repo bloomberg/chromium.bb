@@ -99,7 +99,8 @@ const char* kAutoFillLearnMoreUrl =
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
     : tab_contents_(tab_contents),
       personal_data_(NULL),
-      download_manager_(tab_contents_->profile()) {
+      download_manager_(tab_contents_->profile()),
+      disable_download_manager_requests_(false) {
   DCHECK(tab_contents);
 
   // |personal_data_| is NULL when using TestTabContents.
@@ -450,9 +451,10 @@ void AutoFillManager::HandleSubmit() {
 
 void AutoFillManager::UploadFormData() {
   // TODO(georgey): enable upload request when we make sure that our data is in
-  // line with toolbar data:
-  // download_manager_.StartUploadRequest(upload_form_structure_,
-  //                                      form_is_autofilled);
+  // line with toolbar data (bug #52501):
+  // if (!disable_download_manager_requests_)
+  //   download_manager_.StartUploadRequest(upload_form_structure_,
+  //                                        form_is_autofilled);
 }
 
 void AutoFillManager::OnInfoBarClosed(bool should_save) {
@@ -464,14 +466,16 @@ void AutoFillManager::OnInfoBarClosed(bool should_save) {
 AutoFillManager::AutoFillManager()
     : tab_contents_(NULL),
       personal_data_(NULL),
-      download_manager_(NULL) {
+      download_manager_(NULL),
+      disable_download_manager_requests_(false) {
 }
 
 AutoFillManager::AutoFillManager(TabContents* tab_contents,
                                  PersonalDataManager* personal_data)
     : tab_contents_(tab_contents),
       personal_data_(personal_data),
-      download_manager_(NULL) {
+      download_manager_(NULL),
+      disable_download_manager_requests_(false) {
   DCHECK(tab_contents);
 }
 
@@ -772,7 +776,7 @@ void AutoFillManager::ParseForms(
   }
 
   // If none of the forms were parsed, no use querying the server.
-  if (!form_structures_.empty())
+  if (!form_structures_.empty() && !disable_download_manager_requests_)
     download_manager_.StartQueryRequest(form_structures_);
 }
 
