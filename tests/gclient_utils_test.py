@@ -11,7 +11,13 @@ from super_mox import SuperMoxTestBase
 import gclient_utils
 
 
-class GclientUtilsUnittest(SuperMoxTestBase):
+class GclientUtilBase(SuperMoxTestBase):
+  def setUp(self):
+    super(GclientUtilBase, self).setUp()
+    gclient_utils.sys.stdout.flush = lambda: None
+
+
+class GclientUtilsUnittest(GclientUtilBase):
   """General gclient_utils.py tests."""
   def testMembersChanged(self):
     members = [
@@ -29,7 +35,7 @@ class GclientUtilsUnittest(SuperMoxTestBase):
     self.compareMembers(gclient_utils, members)
 
 
-class CheckCallTestCase(SuperMoxTestBase):
+class CheckCallTestCase(GclientUtilBase):
   def testCheckCallSuccess(self):
     command = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
@@ -65,7 +71,7 @@ class CheckCallTestCase(SuperMoxTestBase):
       self.assertEqual(e.stderr, 'foo')
 
 
-class SubprocessCallAndFilterTestCase(SuperMoxTestBase):
+class SubprocessCallAndFilterTestCase(GclientUtilBase):
   def testSubprocessCallAndFilter(self):
     command = ['boo', 'foo', 'bar']
     in_directory = 'bleh'
@@ -102,7 +108,7 @@ class SubprocessCallAndFilterTestCase(SuperMoxTestBase):
     self.assertEquals(capture_list, ['cc', 'dd'])
 
 
-class SplitUrlRevisionTestCase(SuperMoxTestBase):
+class SplitUrlRevisionTestCase(GclientUtilBase):
   def testSSHUrl(self):
     url = "ssh://test@example.com/test.git"
     rev = "ac345e52dc"
