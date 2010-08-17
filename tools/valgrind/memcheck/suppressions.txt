@@ -765,7 +765,7 @@
    fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
    fun:_ZNSs7reserveEj
    fun:_ZNSs6appendEPKcj
-   fun:_ZN4base49_GLOBAL__N_base_stringprintf.cc_00000000_B2B9AA1B14StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
+   fun:*StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
    fun:_ZN4base13StringAppendVEPSsPKcPc
    fun:_ZN4base12StringPrintfEPKcz
 }
@@ -1551,7 +1551,7 @@
    fun:_ZNSs4_Rep8_M_cloneERKSaIcEj
    fun:_ZNSs7reserveEj
    fun:_ZNSs6appendEPKcj
-   fun:_ZN4base49_GLOBAL__N_base_stringprintf.cc_00000000_B2B9AA1B14StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
+   fun:*StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
    fun:_ZN4base12StringPrintfEPKcz
 }
 {
