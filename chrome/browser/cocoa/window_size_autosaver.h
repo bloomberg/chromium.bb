@@ -9,15 +9,6 @@
 class PrefService;
 @class NSWindow;
 
-enum WindowSizeAutosaverState {
-
-  // Autosave only the window's bottom-right corner.
-  kSaveWindowPos,
-
-  // Autosave the whole window rect, i.e. both position and size.
-  kSaveWindowRect,
-};
-
 // WindowSizeAutosaver is a helper class that makes it easy to let windows
 // autoremember their position or position and size in a PrefService object.
 // To use this, add a |scoped_nsobject<WindowSizeAutosaver>| to your window
@@ -33,13 +24,11 @@ enum WindowSizeAutosaverState {
   NSWindow* window_;  // weak
   PrefService* prefService_;  // weak
   const char* path_;
-  WindowSizeAutosaverState state_;
 }
 
 - (id)initWithWindow:(NSWindow*)window
          prefService:(PrefService*)prefs
-                path:(const char*)path
-               state:(WindowSizeAutosaverState)state;
+                path:(const char*)path;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_WINDOW_SIZE_AUTOSAVER_H_

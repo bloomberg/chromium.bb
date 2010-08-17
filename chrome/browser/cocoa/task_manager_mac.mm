@@ -110,8 +110,7 @@ class SortHelper {
       size_saver_.reset([[WindowSizeAutosaver alloc]
           initWithWindow:[self window]
              prefService:g_browser_process->local_state()
-                    path:prefs::kTaskManagerWindowPlacement
-                   state:kSaveWindowRect]);
+                    path:prefs::kTaskManagerWindowPlacement]);
     }
     [self showWindow:self];
   }

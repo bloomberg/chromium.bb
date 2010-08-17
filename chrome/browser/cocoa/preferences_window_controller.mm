@@ -693,8 +693,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     sizeSaver_.reset([[WindowSizeAutosaver alloc]
        initWithWindow:[self window]
           prefService:g_browser_process->local_state()
-                 path:prefs::kPreferencesWindowPlacement
-                state:kSaveWindowRect]);
+                 path:prefs::kPreferencesWindowPlacement]);
   }
 
   // Initialize the banner gradient and stroke color.

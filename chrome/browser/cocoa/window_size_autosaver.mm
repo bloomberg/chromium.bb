@@ -25,13 +25,11 @@ const int kMinWindowHeight = 17;
 
 - (id)initWithWindow:(NSWindow*)window
          prefService:(PrefService*)prefs
-                path:(const char*)path
-               state:(WindowSizeAutosaverState)state {
+                path:(const char*)path {
   if ((self = [super init])) {
     window_ = window;
     prefService_ = prefs;
     path_ = path;
-    state_ = state;
 
     [self restore];
     [[NSNotificationCenter defaultCenter]
@@ -56,7 +54,7 @@ const int kMinWindowHeight = 17;
 - (void)save:(NSNotification*)notification {
   DictionaryValue* windowPrefs = prefService_->GetMutableDictionary(path_);
   NSRect frame = [window_ frame];
-  if (state_ == kSaveWindowRect) {
+  if ([window_ styleMask] & NSResizableWindowMask) {
     // Save the origin of the window.
     windowPrefs->SetInteger("left", NSMinX(frame));
     windowPrefs->SetInteger("right", NSMaxX(frame));
@@ -65,19 +63,17 @@ const int kMinWindowHeight = 17;
     // keep the top < bottom invariant, store top in bottom and vice versa.
     windowPrefs->SetInteger("top", NSMinY(frame));
     windowPrefs->SetInteger("bottom", NSMaxY(frame));
-  } else if (state_ == kSaveWindowPos) {
+  } else {
     // Save the origin of the window.
     windowPrefs->SetInteger("x", frame.origin.x);
     windowPrefs->SetInteger("y", frame.origin.y);
-  } else {
-    NOTREACHED();
   }
 }
 
 - (void)restore {
   // Get the positioning information.
   DictionaryValue* windowPrefs = prefService_->GetMutableDictionary(path_);
-  if (state_ == kSaveWindowRect) {
+  if ([window_ styleMask] & NSResizableWindowMask) {
     int x1, x2, y1, y2;
     if (!windowPrefs->GetInteger("left", &x1) ||
         !windowPrefs->GetInteger("right", &x2) ||
@@ -97,7 +93,7 @@ const int kMinWindowHeight = 17;
       // Make sure the window is on-screen.
       [window_ cascadeTopLeftFromPoint:NSZeroPoint];
     }
-  } else if (state_ == kSaveWindowPos) {
+  } else {
     int x, y;
     if (!windowPrefs->GetInteger("x", &x) ||
         !windowPrefs->GetInteger("y", &y))
@@ -105,8 +101,6 @@ const int kMinWindowHeight = 17;
     // Turn the origin (lower-left) into an upper-left window point.
     NSPoint upperLeft = NSMakePoint(x, y + NSHeight([window_ frame]));
     [window_ cascadeTopLeftFromPoint:upperLeft];
-  } else {
-    NOTREACHED();
   }
 }
 

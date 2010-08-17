@@ -156,8 +156,7 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
       sizeSaver_.reset([[WindowSizeAutosaver alloc]
           initWithWindow:[self window]
              prefService:g_browser_process->local_state()
-                    path:prefs::kKeywordEditorWindowPlacement
-                   state:kSaveWindowRect]);
+                    path:prefs::kKeywordEditorWindowPlacement]);
     }
   }
   return self;

@@ -21,7 +21,8 @@ class WindowSizeAutosaverTest : public CocoaTest {
     path_ = "WindowSizeAutosaverTest";
     window_ =
         [[NSWindow alloc] initWithContentRect:NSMakeRect(100, 101, 150, 151)
-                                    styleMask:NSTitledWindowMask
+                                    styleMask:NSTitledWindowMask|
+                                              NSResizableWindowMask
                                       backing:NSBackingStoreBuffered
                                         defer:NO];
     browser_helper_.profile()->GetPrefs()->RegisterDictionaryPref(path_);
@@ -45,6 +46,14 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
   // Check to make sure there is no existing pref for window placement.
   ASSERT_TRUE(pref->GetDictionary(path_) == NULL);
 
+  // Replace the window with one that doesn't have resize controls.
+  [window_ close];
+  window_ =
+      [[NSWindow alloc] initWithContentRect:NSMakeRect(100, 101, 150, 151)
+                                  styleMask:NSTitledWindowMask
+                                    backing:NSBackingStoreBuffered
+                                      defer:NO];
+
   // Ask the window to save its position, then check that a preference
   // exists.  We're technically passing in a pointer to the user prefs
   // and not the local state prefs, but a PrefService* is a
@@ -56,8 +65,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
     scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
         initWithWindow:window_
            prefService:pref
-                  path:path_
-                 state:kSaveWindowPos]);
+                  path:path_]);
     EXPECT_EQ(NSMinX(frame), NSMinX([window_ frame]));
     EXPECT_EQ(NSMinY(frame), NSMinY([window_ frame]));
     EXPECT_EQ(NSWidth(frame), NSWidth([window_ frame]));
@@ -75,8 +83,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
     scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
         initWithWindow:window_
            prefService:pref
-                  path:path_
-                 state:kSaveWindowPos]);
+                  path:path_]);
     EXPECT_EQ(300, NSMinX([window_ frame]));
     EXPECT_EQ(310, NSMinY([window_ frame]));
     EXPECT_EQ(160, NSWidth([window_ frame]));
@@ -115,8 +122,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
     scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
         initWithWindow:window_
            prefService:pref
-                  path:path_
-                 state:kSaveWindowRect]);
+                  path:path_]);
     EXPECT_EQ(NSMinX(frame), NSMinX([window_ frame]));
     EXPECT_EQ(NSMinY(frame), NSMinY([window_ frame]));
     EXPECT_EQ(NSWidth(frame), NSWidth([window_ frame]));
@@ -134,8 +140,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
     scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
         initWithWindow:window_
            prefService:pref
-                  path:path_
-                 state:kSaveWindowRect]);
+                  path:path_]);
     EXPECT_EQ(300, NSMinX([window_ frame]));
     EXPECT_EQ(310, NSMinY([window_ frame]));
     EXPECT_EQ(250, NSWidth([window_ frame]));
@@ -175,8 +180,7 @@ TEST_F(WindowSizeAutosaverTest, DoesNotRestoreButClearsEmptyRect) {
     scoped_nsobject<WindowSizeAutosaver> sizeSaver([[WindowSizeAutosaver alloc]
         initWithWindow:window_
            prefService:pref
-                  path:path_
-                 state:kSaveWindowRect]);
+                  path:path_]);
     EXPECT_EQ(NSMinX(frame), NSMinX([window_ frame]));
     EXPECT_EQ(NSMinY(frame), NSMinY([window_ frame]));
     EXPECT_EQ(NSWidth(frame), NSWidth([window_ frame]));

@@ -718,8 +718,7 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
     sizeSaver_.reset([[WindowSizeAutosaver alloc]
         initWithWindow:[self window]
            prefService:g_browser_process->local_state()
-                  path:prefs::kAutoFillDialogPlacement
-                 state:kSaveWindowPos]);
+                  path:prefs::kAutoFillDialogPlacement]);
   }
 
   [NSApp runModalForWindow:[self window]];

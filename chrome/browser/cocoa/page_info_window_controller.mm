@@ -40,8 +40,7 @@ const NSInteger kWindowWidth = 460;
       sizeSaver_.reset([[WindowSizeAutosaver alloc]
           initWithWindow:[self window]
              prefService:g_browser_process->local_state()
-                    path:prefs::kPageInfoWindowPlacement
-                   state:kSaveWindowPos]);
+                    path:prefs::kPageInfoWindowPlacement]);
     }
   }
   return self;
