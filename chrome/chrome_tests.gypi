@@ -962,6 +962,8 @@
         'browser/geolocation/wifi_data_provider_common_unittest.cc',
         'browser/geolocation/wifi_data_provider_unittest_chromeos.cc',
         'browser/geolocation/wifi_data_provider_unittest_win.cc',
+        'browser/geolocation/win7_location_api_unittest_win.cc',
+        'browser/geolocation/win7_location_provider_unittest_win.cc',
         'browser/global_keyboard_shortcuts_mac_unittest.mm',
         'browser/google_update_settings_unittest.cc',
         'browser/google_url_tracker_unittest.cc',

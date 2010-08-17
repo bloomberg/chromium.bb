@@ -121,6 +121,6 @@ void GpsLocationProviderLinux::ScheduleNextGpsPoll(int interval) {
       interval);
 }
 
-LocationProviderBase* NewGpsLocationProvider() {
+LocationProviderBase* NewSystemLocationProvider() {
   return new GpsLocationProviderLinux(LibGps::New);
 }

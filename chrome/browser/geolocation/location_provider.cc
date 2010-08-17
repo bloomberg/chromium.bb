@@ -56,9 +56,8 @@ void LocationProviderBase::UpdateListeners() {
   }
 }
 
-// Currently only Linux has a GPS provider.
-#if !defined(OS_LINUX)
-LocationProviderBase* NewGpsLocationProvider() {
+#if !defined(OS_LINUX) && !defined(OS_WIN)
+LocationProviderBase* NewSystemLocationProvider() {
   return NULL;
 }
 #endif

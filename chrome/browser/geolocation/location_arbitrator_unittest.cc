@@ -16,7 +16,7 @@ namespace {
 class MockLocationObserver : public GeolocationArbitrator::Delegate {
  public:
   void InvalidateLastPosition() {
-    last_position_.accuracy = -1;
+    last_position_.latitude = 100;
     last_position_.error_code = Geoposition::ERROR_CODE_NONE;
     ASSERT_FALSE(last_position_.IsInitialized());
   }
@@ -40,7 +40,7 @@ class MockProviderFactory : public GeolocationArbitrator::ProviderFactory {
       const string16& access_token) {
     return new MockLocationProvider(&cell_);
   }
-  virtual LocationProviderBase* NewGpsLocationProvider() {
+  virtual LocationProviderBase* NewSystemLocationProvider() {
     return new MockLocationProvider(&gps_);
   }
 

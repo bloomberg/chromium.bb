@@ -43,7 +43,7 @@ class GeolocationArbitrator : public base::RefCounted<GeolocationArbitrator> {
         URLRequestContextGetter* context,
         const GURL& url,
         const string16& access_token) = 0;
-    virtual LocationProviderBase* NewGpsLocationProvider() = 0;
+    virtual LocationProviderBase* NewSystemLocationProvider() = 0;
 
    protected:
     friend class base::RefCounted<ProviderFactory>;

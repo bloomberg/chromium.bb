@@ -105,10 +105,10 @@ class DefaultLocationProviderFactory
     return ::NewNetworkLocationProvider(access_token_store, context,
                                         url, access_token);
   }
-  virtual LocationProviderBase* NewGpsLocationProvider() {
+  virtual LocationProviderBase* NewSystemLocationProvider() {
     if (g_provider_factory_function_for_test)
       return NULL;
-    return ::NewGpsLocationProvider();
+    return ::NewSystemLocationProvider();
   }
 };
 
@@ -222,7 +222,7 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
             i->first, i->second),
         &providers_);
   }
-  RegisterProvider(provider_factory_->NewGpsLocationProvider(),
+  RegisterProvider(provider_factory_->NewSystemLocationProvider(),
                    &providers_);
   StartProviders();
 }
@@ -255,9 +255,9 @@ bool GeolocationArbitratorImpl::IsNewPositionBetter(
   // Updates location_info if it's better than what we currently have,
   // or if it's a newer update from the same provider.
   if (!old_position.IsValidFix()) {
-      // Older location wasn't locked.
-      return true;
-    }
+    // Older location wasn't locked.
+    return true;
+  }
   if (new_position.IsValidFix()) {
     // New location is locked, let's check if it's any better.
     if (old_position.accuracy >= new_position.accuracy) {

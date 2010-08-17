@@ -1496,6 +1496,10 @@
         'browser/geolocation/wifi_data_provider_mac.h',
         'browser/geolocation/wifi_data_provider_win.cc',
         'browser/geolocation/wifi_data_provider_win.h',
+        'browser/geolocation/win7_location_api_win.cc',
+        'browser/geolocation/win7_location_api_win.h',
+        'browser/geolocation/win7_location_provider_win.cc',
+        'browser/geolocation/win7_location_provider_win.h',
         'browser/google_service_auth_error.h',
         'browser/google_update.cc',
         'browser/google_update.h',
@@ -3252,6 +3256,14 @@
           'export_dependent_settings': [
             '../views/views.gyp:views',
           ],
+          'direct_dependent_settings': {
+            'link_settings': {
+              'libraries': [
+                '-llocationapi.lib',
+                '-lsensorsapi.lib',
+              ],
+            }
+          },
           'sources': [
             'browser/net/ssl_config_service_manager_system.cc',
             # Using built-in rule in vstudio for midl.

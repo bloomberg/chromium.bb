@@ -7,8 +7,8 @@
 // providers to obtain a position fix.
 //
 // This file declares a base class to be used by all location providers.
-// Primarily, this class declares interface methods to be implemented by derived
-// classes.
+// Primarily, this class declares interface methods to be implemented by
+// derived classes.
 
 #ifndef CHROME_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_
 #define CHROME_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_
@@ -85,13 +85,13 @@ class LocationProviderBase : public NonThreadSafe {
   ListenerMap listeners_;
 };
 
-// Factory functions for the various types of location provider to abstract over
-// the platform-dependent implementations.
-LocationProviderBase* NewGpsLocationProvider();
+// Factory functions for the various types of location provider to abstract
+// over the platform-dependent implementations.
 LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* context,
     const GURL& url,
     const string16& access_token);
+LocationProviderBase* NewSystemLocationProvider();
 
 #endif  // CHROME_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_

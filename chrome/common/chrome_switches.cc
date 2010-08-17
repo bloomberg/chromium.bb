@@ -470,6 +470,9 @@ const char kEnableVideoLogging[]            = "enable-video-logging";
 // Order of the listed sub-arguments does not matter.
 const char kEnableWatchdog[]                = "enable-watchdog";
 
+// Enables Windows 7 Location Platform provider for geolocation API.
+const char kEnableWin7Location[]            = "enable-win7-location";
+
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
 const char kEnableXSSAuditor[]              = "enable-xss-auditor";
 
