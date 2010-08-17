@@ -312,9 +312,7 @@ void URLFetcherProtectTest::OnURLFetchComplete(const URLFetcher* source,
     // Now running ServerUnavailable test.
     // It takes more than 1 second to finish all 11 requests.
     EXPECT_TRUE(Time::Now() - start_time_ >= one_second);
-    // We used to check this, but it gets confused because of the other
-    // implementation of request throttling (which we will be removing).
-    //EXPECT_EQ(status.os_error(), net::ERR_TEMPORARILY_THROTTLED_BY_DDOS);
+    EXPECT_TRUE(status.is_success());
     EXPECT_FALSE(data.empty());
     delete fetcher_;
     io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
