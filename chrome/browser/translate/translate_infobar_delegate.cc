@@ -150,8 +150,10 @@ bool TranslateInfoBarDelegate::IsError() {
 
 void TranslateInfoBarDelegate::Translate() {
   const std::string& original_language_code = GetOriginalLanguageCode();
-  prefs_.ResetTranslationDeniedCount(original_language_code);
-  prefs_.IncrementTranslationAcceptedCount(original_language_code);
+  if (!tab_contents()->profile()->IsOffTheRecord()) {
+    prefs_.ResetTranslationDeniedCount(original_language_code);
+    prefs_.IncrementTranslationAcceptedCount(original_language_code);
+  }
 
   Singleton<TranslateManager>::get()->TranslatePage(
       tab_contents_,
@@ -171,8 +173,10 @@ void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
   const std::string& original_language_code = GetOriginalLanguageCode();
-  prefs_.ResetTranslationAcceptedCount(original_language_code);
-  prefs_.IncrementTranslationDeniedCount(original_language_code);
+  if (!tab_contents()->profile()->IsOffTheRecord()) {
+    prefs_.ResetTranslationAcceptedCount(original_language_code);
+    prefs_.IncrementTranslationDeniedCount(original_language_code);
+  }
 
   // Remember that the user declined the translation so as to prevent showing a
   // translate infobar for that page again.  (TranslateManager initiates
@@ -337,11 +341,15 @@ bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
 
 bool TranslateInfoBarDelegate::ShouldShowNeverTranslateButton() {
   DCHECK(type_ == BEFORE_TRANSLATE);
+  if (tab_contents()->profile()->IsOffTheRecord())
+    return false;
   return prefs_.GetTranslationDeniedCount(GetOriginalLanguageCode()) >= 3;
 }
 
 bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateButton() {
   DCHECK(type_ == BEFORE_TRANSLATE);
+  if (tab_contents()->profile()->IsOffTheRecord())
+    return false;
   return prefs_.GetTranslationAcceptedCount(GetOriginalLanguageCode()) >= 3;
 }
 

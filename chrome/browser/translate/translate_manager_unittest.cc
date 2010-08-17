@@ -1104,7 +1104,8 @@ TEST_F(TranslateManagerTest, ContextMenu) {
 }
 
 // Tests that an extra always/never translate button is shown on the "before
-// translate" infobar when the translation is accepted/declined 3 times.
+// translate" infobar when the translation is accepted/declined 3 times,
+// only when not in incognito mode.
 TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
   TranslatePrefs translate_prefs(contents()->profile()->GetPrefs());
   translate_prefs.ResetTranslationAcceptedCount("fr");
@@ -1112,20 +1113,29 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
   translate_prefs.ResetTranslationAcceptedCount("de");
   translate_prefs.ResetTranslationDeniedCount("de");
 
+  // We'll do 4 times in incognito mode first to make sure the button is not
+  // shown in that case, then 4 times in normal mode.
   TranslateInfoBarDelegate* infobar;
-  for (int i = 0; i < 4; ++i) {
+  TestingProfile* test_profile =
+      static_cast<TestingProfile*>(contents()->profile());
+  test_profile->set_off_the_record(true);
+  for (int i = 0; i < 8; ++i) {
+    SCOPED_TRACE(::testing::Message::Message() << "Iteration " << i <<
+        " incognito mode=" << test_profile->IsOffTheRecord());
     SimulateNavigation(GURL("http://www.google.fr"), 1, "Le Google", "fr",
                        true);
     infobar = GetTranslateInfoBar();
     ASSERT_TRUE(infobar != NULL);
     EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
-    if (i < 3) {
+    if (i < 7) {
       EXPECT_FALSE(infobar->ShouldShowAlwaysTranslateButton());
       infobar->Translate();
       process()->sink().ClearMessages();
     } else {
       EXPECT_TRUE(infobar->ShouldShowAlwaysTranslateButton());
     }
+    if (i == 3)
+      test_profile->set_off_the_record(false);
   }
   // Simulate the user pressing "Always translate French".
   infobar->AlwaysTranslatePageLanguage();
@@ -1140,19 +1150,24 @@ TEST_F(TranslateManagerTest, BeforeTranslateExtraButtons) {
   process()->sink().ClearMessages();
 
   // Now test that declining the translation causes a "never translate" button
-  // to be shown.
-  for (int i = 0; i < 4; ++i) {
+  // to be shown (in non incognito mode only).
+  test_profile->set_off_the_record(true);
+  for (int i = 0; i < 8; ++i) {
+    SCOPED_TRACE(::testing::Message::Message() << "Iteration " << i <<
+        " incognito mode=" << test_profile->IsOffTheRecord());
     SimulateNavigation(GURL("http://www.google.de"), 1, "Das Google", "de",
                        true);
     infobar = GetTranslateInfoBar();
     ASSERT_TRUE(infobar != NULL);
     EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE, infobar->type());
-    if (i < 3) {
+    if (i < 7) {
       EXPECT_FALSE(infobar->ShouldShowNeverTranslateButton());
       infobar->TranslationDeclined();
     } else {
       EXPECT_TRUE(infobar->ShouldShowNeverTranslateButton());
     }
+    if (i == 3)
+      test_profile->set_off_the_record(false);
   }
   // Simulate the user pressing "Never translate French".
   infobar->NeverTranslatePageLanguage();
@@ -1219,4 +1234,3 @@ TEST_F(TranslateManagerTest, ScriptExpires) {
   EXPECT_EQ("es", original_lang);
   EXPECT_EQ("en", target_lang);
 }
-
