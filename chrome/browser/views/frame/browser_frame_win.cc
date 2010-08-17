@@ -224,6 +224,20 @@ LRESULT BrowserFrameWin::OnNCHitTest(const CPoint& pt) {
 void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
   WindowWin::OnWindowPosChanged(window_pos);
   UpdateDWMFrame();
+
+  // Windows lies to us about the position of the minimize button before a
+  // window is visible.  We use this position to place the OTR avatar in RTL
+  // mode, so when the window is shown, we need to re-layout and schedule a
+  // paint for the non-client frame view so that the icon top has the correct
+  // position when the window becomes visible.  This fixes bugs where the icon
+  // appears to overlay the minimize button.
+  // Note that we will call Layout every time SetWindowPos is called with
+  // SWP_SHOWWINDOW, however callers typically are careful about not specifying
+  // this flag unless necessary to avoid flicker.
+  if (window_pos->flags & SWP_SHOWWINDOW) {
+    GetNonClientView()->Layout();
+    GetNonClientView()->SchedulePaint();
+  }
 }
 
 ThemeProvider* BrowserFrameWin::GetThemeProvider() const {
