@@ -197,6 +197,10 @@ void InitChromeLogging(const CommandLine& command_line,
                        logging::LOCK_LOG_FILE,
                        delete_old_log_file);
 
+  // Default to showing error dialogs.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoErrorDialogs))
+    logging::SetShowErrorDialogs(true);
+
   // we want process and thread IDs because we have a lot of things running
   logging::SetLogItems(true, true, false, true);
 
