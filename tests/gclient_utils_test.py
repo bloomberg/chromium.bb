@@ -40,9 +40,12 @@ class CheckCallTestCase(GclientUtilBase):
     command = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
     process.returncode = 0
+    env = gclient_utils.os.environ.copy()
+    env['LANGUAGE'] = 'en'
     gclient_utils.subprocess.Popen(
         command, cwd=None,
         stderr=None,
+        env=env,
         stdout=gclient_utils.subprocess.PIPE,
         shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
     process.communicate().AndReturn(['bleh', 'foo'])
@@ -53,9 +56,12 @@ class CheckCallTestCase(GclientUtilBase):
     command = ['boo', 'foo', 'bar']
     process = self.mox.CreateMockAnything()
     process.returncode = 42
+    env = gclient_utils.os.environ.copy()
+    env['LANGUAGE'] = 'en'
     gclient_utils.subprocess.Popen(
         command, cwd=None,
         stderr=None,
+        env=env,
         stdout=gclient_utils.subprocess.PIPE,
         shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
     process.communicate().AndReturn(['bleh', 'foo'])
@@ -78,6 +84,8 @@ class SubprocessCallAndFilterTestCase(GclientUtilBase):
     fail_status = None
     pattern = 'a(.*)b'
     test_string = 'ahah\naccb\nallo\naddb\n'
+    env = gclient_utils.os.environ.copy()
+    env['LANGUAGE'] = 'en'
     class Mock(object):
       stdout = StringIO.StringIO(test_string)
       def wait(self):
@@ -89,6 +97,7 @@ class SubprocessCallAndFilterTestCase(GclientUtilBase):
     gclient_utils.subprocess.Popen(
         command, bufsize=0, cwd=in_directory,
         shell=(gclient_utils.sys.platform == 'win32'),
+        env=env,
         stdout=gclient_utils.subprocess.PIPE,
         stderr=gclient_utils.subprocess.STDOUT).AndReturn(kid)
     self.mox.ReplayAll()

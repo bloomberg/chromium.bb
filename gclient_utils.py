@@ -49,10 +49,13 @@ def CheckCall(command, cwd=None, print_error=True):
     stderr = None
     if not print_error:
       stderr = subprocess.PIPE
+    env = os.environ.copy()
+    env['LANGUAGE'] = 'en'
     process = subprocess.Popen(command, cwd=cwd,
                                shell=sys.platform.startswith('win'),
                                stdout=subprocess.PIPE,
-                               stderr=stderr)
+                               stderr=stderr,
+                               env=env)
     std_out, std_err = process.communicate()
   except OSError, e:
     raise CheckCallError(command, cwd, e.errno, None)
@@ -272,13 +275,15 @@ def SubprocessCallAndFilter(command,
   if print_messages:
     print('\n________ running \'%s\' in \'%s\''
           % (' '.join(command), in_directory))
+  env = os.environ.copy()
+  env['LANGUAGE'] = 'en'
 
   # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
   # executable, but shell=True makes subprocess on Linux fail when it's called
   # with a list because it only tries to execute the first item in the list.
   kid = subprocess.Popen(command, bufsize=0, cwd=in_directory,
       shell=(sys.platform == 'win32'), stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT)
+      stderr=subprocess.STDOUT, env=env)
 
   # Do a flush of sys.stdout before we begin reading from the subprocess's
   # stdout.
