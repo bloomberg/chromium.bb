@@ -250,7 +250,7 @@ class ValgrindError:
     assert self._suppression != None, "Your Valgrind doesn't generate " \
                                       "suppressions - is it too old?"
 
-    output += "Suppression (error hash=#%X#):" % \
+    output += "Suppression (error hash=#%016X#):" % \
         (self.__hash__() & 0xffffffffffffffff)
     # Widen suppression slightly to make portable between mac and linux
     supp = self._suppression;
@@ -493,8 +493,8 @@ class MemcheckAnalyzer:
               # We haven't seen such errors doing this report yet...
               if error in self._errors:
                 # ... but we saw it in earlier reports, e.g. previous UI test
-                cur_report_errors.add("This error was already printed "
-                                      "in some other test, see 'hash=#%X#'" % \
+                cur_report_errors.add("This error was already printed in "
+                                      "some other test, see 'hash=#%016X#'" % \
                                       (error.__hash__() & 0xffffffffffffffff))
               else:
                 # ... and we haven't seen it in other tests as well
