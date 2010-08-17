@@ -4,6 +4,8 @@
 
 #include "chrome_frame/test/net/fake_external_tab.h"
 
+#include <atlbase.h>
+#include <atlcom.h>
 #include <exdisp.h>
 
 #include "app/app_paths.h"
@@ -460,6 +462,13 @@ void FilterDisabledTests() {
 
   ::testing::FLAGS_gtest_filter = filter;
 }
+
+// We need a module since some of the accessibility code that gets pulled
+// in here uses ATL.
+class ObligatoryModule: public CAtlExeModuleT<ObligatoryModule> {
+};
+
+ObligatoryModule g_obligatory_atl_module;
 
 int main(int argc, char** argv) {
   WindowWatchdog watchdog;

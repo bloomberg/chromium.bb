@@ -42,7 +42,6 @@ class FakeExternalTab {
   scoped_ptr<BrowserProcess> browser_process_;
   FilePath overridden_user_dir_;
   FilePath user_data_dir_;
-  ScopedOleInitializer ole_initializer_;  // For RegisterDropTarget etc to work.
   scoped_ptr<ProcessSingleton> process_singleton_;
 };
 
