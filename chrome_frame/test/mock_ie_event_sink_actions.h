@@ -5,10 +5,16 @@
 #ifndef CHROME_FRAME_TEST_MOCK_IE_EVENT_SINK_ACTIONS_H_
 #define CHROME_FRAME_TEST_MOCK_IE_EVENT_SINK_ACTIONS_H_
 
+#include <windows.h>
+
 #include "base/scoped_bstr_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/chrome_frame_ui_test_utils.h"
+#include "chrome_frame/test/mock_ie_event_sink_test.h"
 #include "chrome_frame/test/simulate_input.h"
+#include "gfx/point.h"
+#include "gfx/rect.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chrome_frame_test {
@@ -103,8 +109,24 @@ ACTION_P5(SendExtendedKeysEnter, loop, delay, c, repeat, mod) {
   chrome_frame_test::DelaySendExtendedKeysEnter(loop, delay, c, repeat, mod);
 }
 
+namespace {
+
+void DoCloseWindowNow(HWND hwnd) {
+  ::PostMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0);
+}
+
+}  // namespace
+
 ACTION(DoCloseWindow) {
-  ::PostMessage(arg0, WM_SYSCOMMAND, SC_CLOSE, 0);
+  DoCloseWindowNow(arg0);
+}
+
+ACTION_P(DelayDoCloseWindow, delay) {
+  DCHECK(MessageLoop::current());
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableFunction(DoCloseWindowNow, arg0),
+      delay);
 }
 
 ACTION_P3(DelayGoBack, mock, loop, delay) {
@@ -123,6 +145,11 @@ ACTION_P(CloseBrowserMock, mock) {
 
 ACTION_P(VerifyAddressBarUrl, mock) {
   mock->event_sink()->ExpectAddressBarUrl(std::wstring(arg1));
+}
+
+ACTION_P3(VerifyPageLoad, mock, in_cf, url) {
+  EXPECT_TRUE(static_cast<bool>(in_cf) == mock->event_sink()->IsCFRendering());
+  mock->event_sink()->ExpectAddressBarUrl(url);
 }
 
 ACTION_P4(DelaySendScanCode, loop, delay, c, mod) {
@@ -199,9 +226,70 @@ ACTION_P3(SelectItem, loop, delay, index) {
       simulate_input::NONE);
 }
 
-ACTION_P2(DoDefaultUIActionInDocument, mock, matcher) {
-  mock->event_sink()->WaitForDOMAccessibilityTree();
-  DoDefaultUIAction(mock->event_sink()->GetRendererWindow(), matcher);
+ACTION(FocusAccObject) {
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(arg0, AccObjectMatcher(), &object))
+    object->Focus();
+}
+
+ACTION_P(DoDefaultAction, matcher) {
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(arg0, matcher, &object))
+    object->DoDefaultAction();
+}
+
+ACTION_P(FocusAccObject, matcher) {
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(arg0, matcher, &object))
+    object->Focus();
+}
+
+ACTION_P(SelectAccObject, matcher) {
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(arg0, matcher, &object))
+    object->Select();
+}
+
+ACTION(OpenContextMenuAsync) {
+  // Special case this implementation because the top-left of the window is
+  // much more likely to be empty than the center.
+  HWND hwnd = arg0;
+  scoped_refptr<AccObject> object;
+  // TODO(kkania): Switch to using WM_CONTEXTMENU with coordinates -1, -1
+  // when Chrome supports this. See render_widget_host_view_win.h.
+  LPARAM coordinates = (1 << 16) | 1;
+  // IE needs both messages in order to work.
+  ::PostMessage(hwnd, WM_RBUTTONDOWN, (WPARAM)0, coordinates);
+  ::PostMessage(hwnd, WM_RBUTTONUP, (WPARAM)0, coordinates);
+}
+
+ACTION_P(OpenContextMenuAsync, matcher) {
+  HWND hwnd = arg0;
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(hwnd, matcher, &object)) {
+    // TODO(kkania): Switch to using WM_CONTEXTMENU with coordinates -1, -1
+    // when Chrome supports this. See render_widget_host_view_win.h.
+    gfx::Rect object_rect;
+    bool got_location = object->GetLocation(&object_rect);
+    EXPECT_TRUE(got_location) << "Could not get bounding rect for object: "
+        << object->GetDescription();
+    if (got_location) {
+      // WM_RBUTTON* messages expect a relative coordinate, while GetLocation
+      // returned a screen coordinate. Adjust.
+      RECT rect;
+      BOOL got_window_rect = ::GetWindowRect(hwnd, &rect);
+      EXPECT_TRUE(got_window_rect) << "Could not get window bounds";
+      if (got_window_rect) {
+        gfx::Rect window_rect(rect);
+        gfx::Point relative_origin =
+            object_rect.CenterPoint().Subtract(window_rect.origin());
+        LPARAM coordinates = (relative_origin.y() << 16) | relative_origin.x();
+        // IE needs both messages in order to work.
+        ::PostMessage(hwnd, WM_RBUTTONDOWN, (WPARAM)0, coordinates);
+        ::PostMessage(hwnd, WM_RBUTTONUP, (WPARAM)0, coordinates);
+      }
+    }
+  }
 }
 
 }  // namespace chrome_frame_test

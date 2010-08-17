@@ -8,6 +8,7 @@
 #include "base/scoped_variant_win.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/chrome_frame_ui_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
 
@@ -223,7 +224,7 @@ TEST_P(FullTabUITest, FLAKY_ViewSource) {
 
   ie_mock_.ExpectNewWindow(&view_source_mock);
   // For some reason this happens occasionally at least on XP IE7.
-  EXPECT_CALL(view_source_mock, OnLoad(false, StrEq(url_in_new_window)))
+  EXPECT_CALL(view_source_mock, OnLoad(IN_IE, StrEq(url_in_new_window)))
       .Times(testing::AtMost(1));
   EXPECT_CALL(view_source_mock, OnLoad(in_cf, StrEq(view_source_url)))
       .WillOnce(testing::DoAll(
@@ -322,26 +323,31 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
   ContextMenuTest() {}
 
   virtual void SetUp() {
+    // These tests must run on an unlocked desktop in order to use MSAA to
+    // select menu items.
+    ASSERT_TRUE(IsDesktopUnlocked())
+        << "This test must run on an unlocked desktop";
+
     // These are UI-related tests, so we do not care about the exact
     // navigations that occur.
     ie_mock_.ExpectAnyNavigations();
+    EXPECT_CALL(ie_mock_, OnLoad(_, _)).Times(testing::AnyNumber());
+    EXPECT_CALL(acc_observer_, OnAccDocLoad(_)).Times(testing::AnyNumber());
   }
+
+ protected:
+  testing::NiceMock<MockAccessibilityEventObserver> acc_observer_;
 };
 
-// Test Reload from context menu.
-// Marking this test FLAKY as it fails at times on the buildbot.
-// http://code.google.com/p/chromium/issues/detail?id=26549
-TEST_F(ContextMenuTest, FLAKY_CFReload) {
+// Test reloading from the context menu.
+TEST_F(ContextMenuTest, CFReload) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   InSequence expect_in_sequence_for_scope;
 
-  // Reload using Rt-Click + DOWN + DOWN + DOWN + ENTER
-  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
-      .WillOnce(testing::DoAll(
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_DOWN, 3,
-                                simulate_input::NONE)));
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(OpenContextMenuAsync());
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"Reload")));
 
   EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
       .WillOnce(CloseBrowserMock(&ie_mock_));
@@ -349,21 +355,18 @@ TEST_F(ContextMenuTest, FLAKY_CFReload) {
   LaunchIEAndNavigate(GetSimplePageUrl());
 }
 
-// Test view source using context menu
-// Marking this test FLAKY as it fails at times on the buildbot.
-// http://code.google.com/p/chromium/issues/detail?id=26549
-TEST_F(ContextMenuTest, FLAKY_CFViewSource) {
+// Test view source from the context menu.
+TEST_F(ContextMenuTest, CFViewSource) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockIEEventSink view_source_mock;
   view_source_mock.ExpectAnyNavigations();
   InSequence expect_in_sequence_for_scope;
 
-  // View source using Rt-Click + UP + UP + UP + UP + ENTER
-  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
-      .WillOnce(testing::DoAll(
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_UP, 4, simulate_input::NONE)));
+  // View the page source.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(OpenContextMenuAsync());
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"View page source")));
 
   // Expect notification for view-source window, handle new window event
   // and attach a new ie_mock_ to the received web browser
@@ -375,6 +378,9 @@ TEST_F(ContextMenuTest, FLAKY_CFViewSource) {
   url_in_new_window += view_source_url;
 
   ie_mock_.ExpectNewWindow(&view_source_mock);
+  // For some reason this happens occasionally at least on XP IE7 and Win7 IE8.
+  EXPECT_CALL(view_source_mock, OnLoad(IN_IE, StrEq(url_in_new_window)))
+      .Times(testing::AtMost(1));
   EXPECT_CALL(view_source_mock, OnLoad(IN_CF, StrEq(view_source_url)))
       .WillOnce(testing::DoAll(
           VerifyAddressBarUrlWithGcf(&view_source_mock),
@@ -386,43 +392,43 @@ TEST_F(ContextMenuTest, FLAKY_CFViewSource) {
   LaunchIEAndNavigate(GetSimplePageUrl());
 }
 
-TEST_F(ContextMenuTest, FLAKY_CFPageInfo) {
+TEST_F(ContextMenuTest, CFPageInfo) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockWindowObserver win_observer_mock;
   InSequence expect_in_sequence_for_scope;
 
-  // View page information using Rt-Click + UP + UP + UP + ENTER
+  // View page information.
   const wchar_t* kPageInfoWindowClass = L"Chrome_WidgetWin_0";
-  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
           WatchWindow(&win_observer_mock, kPageInfoWindowClass),
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_UP, 3, simulate_input::NONE)));
+          OpenContextMenuAsync()));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"View page info")));
 
   // Expect page info dialog to pop up. Dismiss the dialog with 'Esc' key
   const char* kPageInfoCaption = "Security Information";
   EXPECT_CALL(win_observer_mock, OnWindowDetected(_, StrEq(kPageInfoCaption)))
       .WillOnce(testing::DoAll(
-          DelaySendChar(&loop_, 100, VK_ESCAPE, simulate_input::NONE),
-          DelayCloseBrowserMock(&loop_, 2000, &ie_mock_)));
+          DoCloseWindow(),
+          CloseBrowserMock(&ie_mock_)));
 
   LaunchIEAndNavigate(GetSimplePageUrl());
 }
 
-TEST_F(ContextMenuTest, FLAKY_CFInspector) {
+TEST_F(ContextMenuTest, CFInspector) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockWindowObserver win_observer_mock;
   InSequence expect_in_sequence_for_scope;
 
-  // Open developer tools using Rt-Click + UP + UP + ENTER
+  // Open developer tools.
   const wchar_t* kPageInfoWindowClass = L"Chrome_WidgetWin_0";
-  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
           WatchWindow(&win_observer_mock, kPageInfoWindowClass),
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_UP, 2, simulate_input::NONE)));
+          OpenContextMenuAsync()));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"Inspect element")));
 
   // Devtools begins life with "Untitled" caption and it changes
   // later to the 'Developer Tools - <url> form.
@@ -430,10 +436,11 @@ TEST_F(ContextMenuTest, FLAKY_CFInspector) {
   EXPECT_CALL(win_observer_mock,
               OnWindowDetected(_, testing::StartsWith(kPageInfoCaption)))
       .WillOnce(testing::DoAll(
-          SetFocusToRenderer(&ie_mock_),
-          DelayCloseBrowserMock(&loop_, 2000, &ie_mock_)));
+          DelayDoCloseWindow(5000),  // wait to catch possible crash
+          DelayCloseBrowserMock(&loop_, 5500, &ie_mock_)));
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIENavigateAndLoop(GetSimplePageUrl(),
+                          kChromeFrameLongNavigationTimeoutInSeconds * 2);
 }
 
 TEST_F(ContextMenuTest, FLAKY_CFSaveAs) {
@@ -441,15 +448,14 @@ TEST_F(ContextMenuTest, FLAKY_CFSaveAs) {
   MockWindowObserver win_observer_mock;
   InSequence expect_in_sequence_for_scope;
 
-  // Open'Save As' dialog using Rt-Click + DOWN + DOWN + DOWN + DOWN + ENTER
+  // Open 'Save As' dialog.
   const wchar_t* kSaveDlgClass = L"#32770";
-  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
           WatchWindow(&win_observer_mock, kSaveDlgClass),
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_DOWN, 4,
-                                simulate_input::NONE)));
+          OpenContextMenuAsync()));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"Save as...")));
 
   FilePath temp_file_path;
   EXPECT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
@@ -465,27 +471,30 @@ TEST_F(ContextMenuTest, FLAKY_CFSaveAs) {
           DelaySendChar(&loop_, 200, VK_RETURN, simulate_input::NONE),
           DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)));
 
-  LaunchIEAndNavigate(GetSimplePageUrl());
+  LaunchIENavigateAndLoop(GetSimplePageUrl(),
+                          kChromeFrameLongNavigationTimeoutInSeconds * 2);
   ASSERT_NE(INVALID_FILE_ATTRIBUTES, GetFileAttributes(kSaveFileName));
   ASSERT_TRUE(DeleteFile(kSaveFileName));
 }
 
 // This tests that the about:version page can be opened via the CF context menu.
-TEST_F(ContextMenuTest, FLAKY_CFAboutVersionLoads) {
+TEST_F(ContextMenuTest, CFAboutVersionLoads) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   const wchar_t* kAboutVersionUrl = L"gcf:about:version";
   const wchar_t* kAboutVersionWithoutProtoUrl = L"about:version";
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
+  InSequence expect_in_sequence_for_scope;
 
-  ie_mock_.ExpectNavigation(IN_CF, GetSimplePageUrl());
-  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(GetSimplePageUrl())))
-      .WillOnce(testing::DoAll(
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_UP, 1, simulate_input::NONE)));
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(OpenContextMenuAsync());
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"About*")));
 
   ie_mock_.ExpectNewWindow(&new_window_mock);
+  // For some reason this happens occasionally at least on Win7 IE8.
+  EXPECT_CALL(new_window_mock, OnLoad(IN_IE, StrEq(kAboutVersionUrl)))
+      .Times(testing::AtMost(1));
   EXPECT_CALL(new_window_mock,
               OnLoad(IN_CF, StrEq(kAboutVersionWithoutProtoUrl)))
       .WillOnce(testing::DoAll(
@@ -499,16 +508,15 @@ TEST_F(ContextMenuTest, FLAKY_CFAboutVersionLoads) {
   LaunchIEAndNavigate(GetSimplePageUrl());
 }
 
-TEST_F(ContextMenuTest, FLAKY_IEOpen) {
+TEST_F(ContextMenuTest, IEOpen) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::None());
-  // Focus the renderer window by clicking and then tab once to highlight the
-  // link.
-  EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(GetLinkPageUrl())))
-      .WillOnce(testing::DoAll(
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 1, 1, simulate_input::LEFT),
-          DelaySendScanCode(&loop_, 1000, VK_TAB, simulate_input::NONE),
-          OpenContextMenu(&loop_, 2000),
-          SelectItem(&loop_, 3000, 0)));
+  InSequence expect_in_sequence_for_scope;
+
+  // Open the link throught the context menu.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(OpenContextMenuAsync(AccObjectMatcher(L"", L"link")));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"Open")));
 
   EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(GetSimplePageUrl())))
       .WillOnce(testing::DoAll(
@@ -518,23 +526,17 @@ TEST_F(ContextMenuTest, FLAKY_IEOpen) {
   LaunchIEAndNavigate(GetLinkPageUrl());
 }
 
-TEST_F(ContextMenuTest, FLAKY_IEOpenInNewWindow) {
+TEST_F(ContextMenuTest, IEOpenInNewWindow) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::None());
   MockIEEventSink new_window_mock;
   new_window_mock.ExpectAnyNavigations();
+  InSequence expect_in_sequence_for_scope;
 
-  int open_new_window_index = 2;
-  if (chrome_frame_test::GetInstalledIEVersion() == IE_6)
-    open_new_window_index = 1;
-
-  // Focus the renderer window by clicking and then tab once to highlight the
-  // link.
-  EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(GetLinkPageUrl())))
-      .WillOnce(testing::DoAll(
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 1, 1, simulate_input::LEFT),
-          DelaySendScanCode(&loop_, 500, VK_TAB, simulate_input::NONE),
-          OpenContextMenu(&loop_, 1000),
-          SelectItem(&loop_, 1500, open_new_window_index)));
+  // Open the link in a new window.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
+      .WillOnce(OpenContextMenuAsync(AccObjectMatcher(L"", L"link")));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"Open in New Window")));
 
   ie_mock_.ExpectNewWindow(&new_window_mock);
   EXPECT_CALL(new_window_mock, OnLoad(IN_IE, StrEq(GetSimplePageUrl())))
@@ -552,66 +554,31 @@ TEST_F(ContextMenuTest, FLAKY_IEOpenInNewWindow) {
 // Test Back/Forward from context menu.
 // Marking this test FLAKY as it fails at times on the buildbot.
 // http://code.google.com/p/chromium/issues/detail?id=26549
-TEST_F(ContextMenuTest, FLAKY_IEBackForward) {
+TEST_F(ContextMenuTest, IEBackForward) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::None());
   std::wstring page1 = GetLinkPageUrl();
   std::wstring page2 = GetSimplePageUrl();
   InSequence expect_in_sequence_for_scope;
 
-  EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(page1)))
+  // Navigate to second page.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(Navigate(&ie_mock_, page2));
 
-  // Go back using Rt-Click + DOWN + ENTER
-  EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(page2)))
+  // Go back.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_DOWN, 1,
-                                simulate_input::NONE)));
+          VerifyPageLoad(&ie_mock_, IN_IE, page2),
+          OpenContextMenuAsync()));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"Back")));
 
-  // Go forward using Rt-Click + DOWN + DOWN + ENTER
-  EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(page1)))
+  // Go forward.
+  EXPECT_CALL(acc_observer_, OnAccDocLoad(_))
       .WillOnce(testing::DoAll(
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_DOWN, 2,
-                                simulate_input::NONE)));
-
-  EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(page2)))
-      .WillOnce(CloseBrowserMock(&ie_mock_));
-
-  LaunchIEAndNavigate(page1);
-}
-
-// Test Back/Forward from context menu. Loads page 1 in chrome and page 2
-// in IE. Then it tests back and forward using context menu
-// Disabling this test as it won't work as per the current chrome external tab
-// design.
-// http://code.google.com/p/chromium/issues/detail?id=46615
-TEST_F(ContextMenuTest, DISABLED_BackForwardWithSwitch) {
-  std::wstring page1 = GetLinkPageUrl();
-  std::wstring page2 = GetSimplePageUrl();
-  InSequence expect_in_sequence_for_scope;
-
-  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(page1)))
-      .WillOnce(Navigate(&ie_mock_, page2));
-
-  server_mock_.ExpectAndServeRequest(CFInvocation::None(), page2);
-  // Go back using Rt-Click + DOWN + ENTER
-  EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(page2)))
-      .WillOnce(testing::DoAll(
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_DOWN, 1,
-                                simulate_input::NONE)));
-
-  // Go forward using Rt-Click + DOWN + DOWN + ENTER
-  EXPECT_CALL(ie_mock_, OnLoad(IN_CF, StrEq(page1)))
-      .WillOnce(testing::DoAll(
-          DelaySendMouseClick(&ie_mock_, &loop_, 0, 10, 10,
-                              simulate_input::RIGHT),
-          SendExtendedKeysEnter(&loop_, 500, VK_DOWN, 2,
-                                simulate_input::NONE)));
+          VerifyPageLoad(&ie_mock_, IN_IE, page1),
+          OpenContextMenuAsync()));
+  EXPECT_CALL(acc_observer_, OnMenuPopup(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"Forward")));
 
   EXPECT_CALL(ie_mock_, OnLoad(IN_IE, StrEq(page2)))
       .WillOnce(CloseBrowserMock(&ie_mock_));

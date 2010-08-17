@@ -111,6 +111,9 @@ class IEEventSink
   // Get the HWND for the browser's renderer window.
   HWND GetRendererWindow();
 
+  // Returns whether the browser has a renderer window.
+  bool HasRendererWindow();
+
   // Launch IE, use the given listener, and navigate to the given url.
   HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url,
                               IEEventListener* listener);
@@ -126,10 +129,6 @@ class IEEventSink
 
   // Expect the address bar to have |url|.
   void ExpectAddressBarUrl(const std::wstring& url);
-
-  // Waits for the Accessibility tree for the DOM to be ready. This is only
-  // necessary for Chrome, so this method is a no-op for IE.
-  void WaitForDOMAccessibilityTree();
 
   // These methods are just simple wrappers of the IWebBrowser2 methods.
   // They are needed because you cannot post tasks to IWebBrowser2.

@@ -6,6 +6,7 @@
 
 #include "base/scoped_comptr_win.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/chrome_frame_ui_test_utils.h"
 #include "chrome_frame/test/mock_ie_event_sink_actions.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
 
@@ -537,21 +538,25 @@ TEST_P(NavigationTransitionTest, DISABLED_JavascriptRedirection) {
 
 // Test following a link.
 TEST_P(NavigationTransitionTest, FollowLink) {
-  if (page1_.invokes_cf() && page2_.invokes_cf() &&
-      GetInstalledIEVersion() > IE_6) {
+  if (page1_.invokes_cf() && page2_.invokes_cf()) {
     // For some reason IE 7 and 8 send two BeforeNavigate events for the second
-    // page for this case.
+    // page for this case. All versions do not send the OnLoad event for the
+    // second page if both pages are renderered in CF.
     LOG(ERROR) << "Test disabled for this configuration.";
     return;
   }
+  MockAccessibilityEventObserver acc_observer;
+  EXPECT_CALL(acc_observer, OnAccDocLoad(_)).Times(testing::AnyNumber());
+
   ie_mock_.ExpectNavigation(page1_.invokes_cf(), GetLinkPageUrl());
   // Two requests are made when going from CF to IE, at least on Win7 IE8.
   EXPECT_CALL(server_mock_, Get(_, UrlPathEq(GetLinkPageUrl()), _))
       .Times(testing::Between(1, 2))
       .WillRepeatedly(SendResponse(&server_mock_, page1_));
-  EXPECT_CALL(ie_mock_, OnLoad(page1_.invokes_cf(), StrEq(GetLinkPageUrl())))
-      .WillOnce(DoDefaultUIActionInDocument(&ie_mock_,
-          UIObjectMatcher(L"", L"link")));
+  EXPECT_CALL(ie_mock_, OnLoad(page1_.invokes_cf(), StrEq(GetLinkPageUrl())));
+  EXPECT_CALL(acc_observer, OnAccDocLoad(_))
+      .WillOnce(DoDefaultAction(AccObjectMatcher(L"", L"link")))
+      .RetiresOnSaturation();
 
   ie_mock_.ExpectNavigation(page2_.invokes_cf(), GetSimplePageUrl());
   server_mock_.ExpectAndServeRequest(page2_, GetSimplePageUrl());

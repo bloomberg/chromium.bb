@@ -324,11 +324,6 @@ void IEEventSink::Refresh() {
   web_browser2_->Refresh2(refresh_level.AsInput());
 }
 
-void IEEventSink::WaitForDOMAccessibilityTree() {
-  if (IsCFRendering())
-    WaitForChromeDOMAccessibilityTree(GetRendererWindow());
-}
-
 // private methods
 void IEEventSink::ConnectToChromeFrame() {
   DCHECK(web_browser2_);

@@ -240,6 +240,8 @@
         'test/automation_client_mock.h',
         'test/chrome_frame_test_utils.cc',
         'test/chrome_frame_test_utils.h',
+        'test/chrome_frame_ui_test_utils.cc',
+        'test/chrome_frame_ui_test_utils.h',
         'test/chrome_frame_automation_mock.cc',
         'test/chrome_frame_automation_mock.h',
         'test/http_server.cc',

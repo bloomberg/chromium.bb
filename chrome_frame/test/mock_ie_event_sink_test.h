@@ -18,6 +18,7 @@
 #include "chrome_frame/test/win_event_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/xulrunner-sdk/win/include/accessibility/AccessibleEventId.h"
 
 namespace chrome_frame_test {
 
@@ -122,8 +123,12 @@ class MockIEEventSink : public IEEventListener {
   // Override IE's OnDocumentComplete to call our OnLoad, iff it is IE actually
   // rendering the page.
   virtual void OnDocumentComplete(IDispatch* dispatch, VARIANT* url) {
-    if (!event_sink_->IsCFRendering())
+    if (!event_sink_->IsCFRendering()) {
+      ::NotifyWinEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE,
+                       event_sink_->GetRendererWindow(),
+                       OBJID_CLIENT, 0L);
       OnLoad(IN_IE, V_BSTR(url));
+    }
   }
 
   // Override CF's OnLoad to call our OnLoad.
@@ -217,6 +222,12 @@ class MockWindowObserver : public WindowObserver {
 
  private:
   WindowWatchdog window_watcher_;
+};
+
+class MockAccessibilityEventObserver : public AccessibilityEventObserver {
+ public:
+  MOCK_METHOD1(OnAccDocLoad, void (HWND));  // NOLINT
+  MOCK_METHOD1(OnMenuPopup, void (HWND));  // NOLINT
 };
 
 // This test fixture provides common methods needed for testing CF

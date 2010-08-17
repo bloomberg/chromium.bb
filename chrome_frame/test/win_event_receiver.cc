@@ -9,6 +9,8 @@
 
 #include "chrome_frame/function_stub.h"
 
+#include "third_party/xulrunner-sdk/win/include/accessibility/AccessibleEventId.h"
+
 // WinEventReceiver methods
 WinEventReceiver::WinEventReceiver()
     : listener_(NULL),
@@ -49,9 +51,12 @@ bool WinEventReceiver::InitializeHook(DWORD event_min, DWORD event_max) {
   DCHECK(hook_stub_ == NULL);
   hook_stub_ = FunctionStub::Create(reinterpret_cast<uintptr_t>(this),
                                     WinEventHook);
+  // Don't use WINEVENT_SKIPOWNPROCESS here because we fake generate an event
+  // in the mock IE event sink (IA2_EVENT_DOCUMENT_LOAD_COMPLETE) that we want
+  // to catch.
   hook_ = SetWinEventHook(event_min, event_max, NULL,
                           reinterpret_cast<WINEVENTPROC>(hook_stub_->code()), 0,
-                          0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+                          0, WINEVENT_OUTOFCONTEXT);
   DLOG_IF(ERROR, hook_ == NULL) << "Unable to SetWinEvent hook";
   return hook_ != NULL;
 }
@@ -62,7 +67,7 @@ void WinEventReceiver::WinEventHook(WinEventReceiver* me, HWINEVENTHOOK hook,
                                     LONG child_id, DWORD event_thread_id,
                                     DWORD event_time) {
   DCHECK(me->listener_ != NULL);
-  me->listener_->OnEventReceived(event, hwnd);
+  me->listener_->OnEventReceived(event, hwnd, object_id, child_id);
 }
 
 // WindowWatchdog methods
@@ -84,7 +89,8 @@ void WindowWatchdog::RemoveObserver(WindowObserver* observer) {
     win_event_receiver_.StopReceivingEvents();
 }
 
-void WindowWatchdog::OnEventReceived(DWORD event, HWND hwnd) {
+void WindowWatchdog::OnEventReceived(DWORD event, HWND hwnd, LONG object_id,
+                                     LONG child_id) {
   // We need to look for top level windows and a natural check is for
   // WS_CHILD. Instead, checking for WS_CAPTION allows us to filter
   // out other stray popups
@@ -109,5 +115,25 @@ void WindowWatchdog::OnEventReceived(DWORD event, HWND hwnd) {
   for (ObserverMap::iterator i = interested_observers.begin();
       i != interested_observers.end(); i++) {
     i->observer->OnWindowDetected(hwnd, caption);
+  }
+}
+
+// AccessibilityEventListener methods
+AccessibilityEventObserver::AccessibilityEventObserver() {
+  event_receiver_.SetListenerForEvents(this, EVENT_SYSTEM_MENUPOPUPSTART,
+                                       IA2_EVENT_DOCUMENT_LOAD_COMPLETE);
+}
+
+void AccessibilityEventObserver::OnEventReceived(DWORD event,
+                                                 HWND hwnd,
+                                                 LONG object_id,
+                                                 LONG child_id) {
+  switch (event) {
+    case EVENT_SYSTEM_MENUPOPUPSTART:
+      OnMenuPopup(hwnd);
+      break;
+    case IA2_EVENT_DOCUMENT_LOAD_COMPLETE:
+      OnAccDocLoad(hwnd);
+      break;
   }
 }

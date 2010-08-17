@@ -18,7 +18,8 @@ class WinEventListener {
   virtual ~WinEventListener() {}
   // Called when an event has been received. |hwnd| is the window that generated
   // the event, or null if no window is associated with the event.
-  virtual void OnEventReceived(DWORD event, HWND hwnd) = 0;
+  virtual void OnEventReceived(DWORD event, HWND hwnd, LONG object_id,
+                               LONG child_id) = 0;
 };
 
 // Receives WinEvents and forwards them to its listener. The event types the
@@ -81,10 +82,28 @@ class WindowWatchdog : public WinEventListener {
   typedef std::vector<WindowObserverEntry> ObserverMap;
 
   // Overriden from WinEventListener.
-  virtual void OnEventReceived(DWORD event, HWND hwnd);
+  virtual void OnEventReceived(DWORD event, HWND hwnd, LONG object_id,
+                               LONG child_id);
 
   ObserverMap observers_;
   WinEventReceiver win_event_receiver_;
+};
+
+class AccessibilityEventObserver : public WinEventListener {
+ public:
+  AccessibilityEventObserver();
+
+  // Called when the DOM accessibility tree for the page is ready.
+  virtual void OnAccDocLoad(HWND hwnd) = 0;
+
+  // Called when a new menu is shown.
+  virtual void OnMenuPopup(HWND hwnd) = 0;
+
+ private:
+  virtual void OnEventReceived(DWORD event, HWND hwnd, LONG object_id,
+                               LONG child_id);
+
+  WinEventReceiver event_receiver_;
 };
 
 #endif  // CHROME_FRAME_TEST_WIN_EVENT_RECEIVER_H_
