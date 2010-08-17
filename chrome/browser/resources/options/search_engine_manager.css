@@ -14,7 +14,10 @@
 #searchEngineList .name {
   background-position: left;
   background-repeat: no-repeat;
-  padding-left: 18px;
+  -webkit-padding-start: 18px;
+}
+html[dir=rtl] #searchEngineList .name {
+  background-position: right;
 }
 
 #searchEngineList .keyword {
