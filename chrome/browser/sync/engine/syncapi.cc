@@ -1687,6 +1687,13 @@ void SyncManager::SyncInternal::HandleDirectoryManagerEvent(
   LOG(INFO) << "Sync internal handling a directory manager event";
   if (syncable::DirectoryManagerEvent::OPENED == event.what_happened) {
      DCHECK(!initialized()) << "Should only happen once";
+     if (username_for_share().empty()) {
+       share_.authenticated_name = event.dirname;
+     }
+     DCHECK(LowerCaseEqualsASCII(username_for_share(),
+         StringToLowerASCII(event.dirname).c_str()))
+         << "username_for_share= " << username_for_share()
+         << ", event.dirname= " << event.dirname;
      MarkAndNotifyInitializationComplete();
   }
 }
