@@ -19,7 +19,8 @@ namespace media {
 
 FFmpegVideoDecodeEngine::FFmpegVideoDecodeEngine()
     : codec_context_(NULL),
-      av_stream_(NULL) {
+      av_stream_(NULL),
+      event_handler_(NULL) {
 }
 
 FFmpegVideoDecodeEngine::~FFmpegVideoDecodeEngine() {

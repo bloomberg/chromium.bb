@@ -25,8 +25,12 @@ static const uint32 kProfileDoNotCare = static_cast<uint32>(-1);
 static const uint32 kLevelDoNotCare = static_cast<uint32>(-1);
 
 struct VideoCodecConfig {
-  VideoCodecConfig() : profile_(kProfileDoNotCare),
-                       level_(kLevelDoNotCare) {}
+  VideoCodecConfig() : codec_(kCodecH264),
+                       profile_(kProfileDoNotCare),
+                       level_(kLevelDoNotCare),
+                       width_(0),
+                       height_(0),
+                       opaque_context_(NULL) {}
 
   VideoCodec codec_;
 
