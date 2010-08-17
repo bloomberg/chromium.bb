@@ -65,10 +65,8 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
   if (active_bookmark_bar_ &&
       browser()->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
     bookmark_bar_size = active_bookmark_bar_->GetMinimumSize();
-    bookmark_bar_size.Enlarge(
-        0,
-        -kSeparationLineHeight -
-        active_bookmark_bar_->GetToolbarOverlap(true));
+    bookmark_bar_size.Enlarge(0, -(kSeparationLineHeight +
+        active_bookmark_bar_->GetToolbarOverlap(true)));
   }
   gfx::Size contents_size(contents_split_->GetMinimumSize());
 
@@ -239,6 +237,11 @@ void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
 void BrowserViewLayout::Layout(views::View* host) {
   vertical_layout_rect_ = browser_view_->GetLocalBounds(true);
   int top = LayoutTabStrip();
+  if (browser_view_->IsTabStripVisible() && !browser_view_->UseVerticalTabs()) {
+    tabstrip_->SetBackgroundOffset(gfx::Point(
+        tabstrip_->x() - browser_view_->GetToolbarBounds().x(),
+        tabstrip_->y()));
+  }
   top = LayoutToolbar(top);
   top = LayoutBookmarkAndInfoBars(top);
   int bottom = LayoutDownloadShelf(browser_view_->height());
@@ -272,27 +275,21 @@ int BrowserViewLayout::LayoutTabStrip() {
     tabstrip_->SetBounds(0, 0, 0, 0);
     return 0;
   }
-  gfx::Rect layout_bounds =
-      browser_view_->frame()->GetBoundsForTabStrip(tabstrip_);
 
-  if (browser_view_->UseVerticalTabs()) {
-    vertical_layout_rect_.Inset(
-        layout_bounds.width(), 0, 0, 0);
-  } else {
-    gfx::Rect toolbar_bounds = browser_view_->GetToolbarBounds();
-    tabstrip_->SetBackgroundOffset(
-        gfx::Point(layout_bounds.x() - toolbar_bounds.x(),
-                   layout_bounds.y()));
-  }
-
-  gfx::Point tabstrip_origin = layout_bounds.origin();
+  gfx::Rect tabstrip_bounds(
+      browser_view_->frame()->GetBoundsForTabStrip(tabstrip_));
+  gfx::Point tabstrip_origin(tabstrip_bounds.origin());
   views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
                                   &tabstrip_origin);
-  layout_bounds.set_origin(tabstrip_origin);
+  tabstrip_bounds.set_origin(tabstrip_origin);
+
+  if (browser_view_->UseVerticalTabs())
+    vertical_layout_rect_.Inset(tabstrip_bounds.width(), 0, 0, 0);
+
   tabstrip_->SetVisible(true);
-  tabstrip_->SetBounds(layout_bounds);
+  tabstrip_->SetBounds(tabstrip_bounds);
   return browser_view_->UseVerticalTabs() ?
-      layout_bounds.y() : layout_bounds.bottom();
+      tabstrip_bounds.y() : tabstrip_bounds.bottom();
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {
@@ -335,10 +332,8 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
   }
 
   int bookmark_bar_height = active_bookmark_bar_->GetPreferredSize().height();
-  y -= kSeparationLineHeight + (
-      active_bookmark_bar_->IsDetached() ?
+  y -= kSeparationLineHeight + (active_bookmark_bar_->IsDetached() ?
       0 : active_bookmark_bar_->GetToolbarOverlap(false));
-
   active_bookmark_bar_->SetVisible(true);
   active_bookmark_bar_->SetBounds(vertical_layout_rect_.x(), y,
                                   vertical_layout_rect_.width(),
@@ -379,4 +374,3 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
   }
   return bottom;
 }
-

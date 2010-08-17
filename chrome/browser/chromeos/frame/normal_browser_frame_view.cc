@@ -328,16 +328,14 @@ void NormalBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
   canvas->FillRectInt(theme_toolbar_color, toolbar_bounds.x(), bottom_y,
                       toolbar_bounds.width(), bottom_edge_height);
+  toolbar_bounds.Inset(-kClientEdgeThickness, 0);
 
   int strip_height = browser_view_->GetTabStripHeight();
   SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
-  canvas->TileImageInt(*theme_toolbar,
-      toolbar_bounds.x() - kClientEdgeThickness,
-      strip_height - kFrameShadowThickness,
-      toolbar_bounds.x() - kClientEdgeThickness, bottom_y,
-      toolbar_bounds.width() + (2 * kClientEdgeThickness),
-      theme_toolbar->height());
+  canvas->TileImageInt(*theme_toolbar, toolbar_bounds.x(),
+      strip_height - kFrameShadowThickness, toolbar_bounds.x(),
+      bottom_y, toolbar_bounds.width(), theme_toolbar->height());
 
   canvas->DrawBitmapInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
       toolbar_bounds.x() - toolbar_left->width(), toolbar_bounds.y(),
@@ -362,9 +360,9 @@ void NormalBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       toolbar_right->width(), bottom_edge_height, false);
 
   // Draw the content/toolbar separator.
-  canvas->DrawLineInt(ResourceBundle::toolbar_separator_color,
-      toolbar_bounds.x(), toolbar_bounds.bottom() - 1,
-      toolbar_bounds.right() - 1, toolbar_bounds.bottom() - 1);
+  canvas->FillRectInt(ResourceBundle::toolbar_separator_color,
+      toolbar_bounds.x(), toolbar_bounds.bottom() - kClientEdgeThickness,
+      toolbar_bounds.width(), kClientEdgeThickness);
 }
 
 }  // namespace chromeos

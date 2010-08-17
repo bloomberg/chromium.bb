@@ -239,27 +239,25 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
       height = contents->view()->GetContainerSize().height();
     NtpBackgroundUtil::PaintBackgroundDetachedMode(
         host_view_->GetThemeProvider(), canvas,
-        gfx::Rect(0, 0, host_view_->width(), host_view_->height()),
-        height);
-
-    SkRect rect;
+        gfx::Rect(0, 0, host_view_->width(), host_view_->height()), height);
 
     // As 'hidden' according to the animation is the full in-tab state,
     // we invert the value - when current_state is at '0', we expect the
     // bar to be docked.
     double current_state = 1 - host_view_->GetAnimationValue();
+    double h_padding =
+        static_cast<double>(BookmarkBarView::kNewtabHorizontalPadding) *
+        current_state;
+    double v_padding =
+        static_cast<double>(BookmarkBarView::kNewtabVerticalPadding) *
+        current_state;
 
-    double h_padding = static_cast<double>
-        (BookmarkBarView::kNewtabHorizontalPadding) * current_state;
-    double v_padding = static_cast<double>
-        (BookmarkBarView::kNewtabVerticalPadding) * current_state;
+    SkRect rect;
     double roundness = 0;
-
-    DetachableToolbarView::CalculateContentArea(current_state,
-                                                h_padding, v_padding,
-                                                &rect, &roundness, host_view_);
-    DetachableToolbarView::PaintContentAreaBackground(
-        canvas, tp, rect, roundness);
+    DetachableToolbarView::CalculateContentArea(current_state, h_padding,
+        v_padding, &rect, &roundness, host_view_);
+    DetachableToolbarView::PaintContentAreaBackground(canvas, tp, rect,
+                                                      roundness);
     DetachableToolbarView::PaintContentAreaBorder(canvas, tp, rect, roundness);
     DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   } else {
@@ -273,7 +271,9 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
 
 class ResizeCorner : public views::View {
  public:
-  ResizeCorner() { }
+  ResizeCorner() {
+    EnableCanvasFlippingForRTLUI(true);
+  }
 
   virtual void Paint(gfx::Canvas* canvas) {
     views::Window* window = GetWindow();
@@ -283,16 +283,8 @@ class ResizeCorner : public views::View {
     SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
         IDR_TEXTAREA_RESIZER);
     bitmap->buildMipMap(false);
-    bool rtl_dir = base::i18n::IsRTL();
-    if (rtl_dir) {
-      canvas->TranslateInt(width(), 0);
-      canvas->ScaleInt(-1, 1);
-      canvas->Save();
-    }
     canvas->DrawBitmapInt(*bitmap, width() - bitmap->width(),
                           height() - bitmap->height());
-    if (rtl_dir)
-      canvas->Restore();
   }
 
   static gfx::Size GetSize() {
@@ -1875,7 +1867,6 @@ void BrowserView::Init() {
   }
 
   if (AeroPeekManager::Enabled()) {
-    gfx::Rect bounds(frame_->GetBoundsForTabStrip(tabstrip()));
     aeropeek_manager_.reset(new AeroPeekManager(
         frame_->GetWindow()->GetNativeWindow()));
     browser_->tabstrip_model()->AddObserver(aeropeek_manager_.get());

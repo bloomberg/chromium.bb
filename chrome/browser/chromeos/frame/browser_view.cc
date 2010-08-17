@@ -99,17 +99,17 @@ class BrowserViewLayout : public ::BrowserViewLayout {
       tabstrip_->SetVisible(false);
       tabstrip_->SetBounds(0, 0, 0, 0);
       return 0;
-    } else {
-      gfx::Rect layout_bounds =
-          browser_view_->frame()->GetBoundsForTabStrip(tabstrip_);
-      gfx::Point tabstrip_origin = layout_bounds.origin();
-      views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
-                                      &tabstrip_origin);
-      layout_bounds.set_origin(tabstrip_origin);
-      if (browser_view_->UseVerticalTabs())
-        return LayoutTitlebarComponentsWithVerticalTabs(layout_bounds);
-      return LayoutTitlebarComponents(layout_bounds);
     }
+
+    gfx::Rect tabstrip_bounds(
+        browser_view_->frame()->GetBoundsForTabStrip(tabstrip_));
+    gfx::Point tabstrip_origin = tabstrip_bounds.origin();
+    views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
+                                    &tabstrip_origin);
+    tabstrip_bounds.set_origin(tabstrip_origin);
+    return browser_view_->UseVerticalTabs() ?
+        LayoutTitlebarComponentsWithVerticalTabs(tabstrip_bounds) :
+        LayoutTitlebarComponents(tabstrip_bounds);
   }
 
   virtual int LayoutToolbar(int top) {
@@ -211,37 +211,27 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     return bounds.y() + toolbar_height;
   }
 
-  // Layouts components in the title bar area (given by
-  // |bounds|). These include the main menu, the otr avatar icon (in
-  // incognito window), the tabstrip and the the status area.
+  // Lays out components in the title bar area (given by |bounds|). These
+  // include the main menu, the otr avatar icon (in incognito windows), the
+  // tabstrip and the the status area.
   int LayoutTitlebarComponents(const gfx::Rect& bounds) {
-    if (bounds.IsEmpty()) {
+    if (bounds.IsEmpty())
       return 0;
-    }
+
     tabstrip_->SetVisible(true);
     otr_avatar_icon_->SetVisible(browser_view_->ShouldShowOffTheRecordAvatar());
     status_area_->SetVisible(true);
 
-    int bottom = bounds.bottom();
-
     // Layout status area after tab strip.
     gfx::Size status_size = status_area_->GetPreferredSize();
-    status_area_->SetBounds(bounds.x() + bounds.width() - status_size.width(),
-                            bounds.y(), status_size.width(),
-                            status_size.height());
+    status_area_->SetBounds(bounds.right() - status_size.width(), bounds.y(),
+                            status_size.width(), status_size.height());
     LayoutOTRAvatar(bounds);
 
-    int curx = bounds.x();
-    int remaining_width = std::max(
-        0,  // In case there is no space left.
-        otr_avatar_icon_->bounds().x() - curx);
-
-    tabstrip_->SetBounds(curx, bounds.y(), remaining_width, bounds.height());
-
-    gfx::Rect toolbar_bounds = browser_view_->GetToolbarBounds();
-    tabstrip_->SetBackgroundOffset(
-        gfx::Point(curx - toolbar_bounds.x(), bounds.y()));
-    return bottom;
+    tabstrip_->SetBounds(bounds.x(), bounds.y(),
+        std::max(0, otr_avatar_icon_->bounds().x() - bounds.x()),
+        bounds.height());
+    return bounds.bottom();
   }
 
   // Layouts OTR avatar within the given |bounds|.

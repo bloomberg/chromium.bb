@@ -62,7 +62,7 @@ using views::View;
 
 // How much we want the bookmark bar to overlap the toolbar when in its
 // 'always shown' mode.
-static const double kToolbarOverlap = 4.0;
+static const int kToolbarOverlap = 4;
 
 // Margins around the content.
 static const int kTopMargin = 1;
@@ -395,10 +395,7 @@ BookmarkBarView::BookmarkBarView(Profile* profile, Browser* browser)
   Init();
   SetProfile(profile);
 
-  if (IsAlwaysShown())
-    size_animation_->Reset(1);
-  else
-    size_animation_->Reset(0);
+  size_animation_->Reset(IsAlwaysShown() ? 1 : 0);
 }
 
 BookmarkBarView::~BookmarkBarView() {
@@ -753,8 +750,10 @@ bool BookmarkBarView::OnNewTabPage() const {
 }
 
 int BookmarkBarView::GetToolbarOverlap(bool return_max) {
-  return static_cast<int>(kToolbarOverlap *
-      (return_max ? 1.0 : size_animation_->GetCurrentValue()));
+  if (return_max)
+    return kToolbarOverlap;
+  return static_cast<int>(static_cast<double>(kToolbarOverlap) *
+      size_animation_->GetCurrentValue());
 }
 
 void BookmarkBarView::AnimationProgressed(const Animation* animation) {
