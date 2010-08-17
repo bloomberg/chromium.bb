@@ -479,14 +479,14 @@ int OpaqueBrowserFrameView::NonClientTopBorderHeight() const {
   }
 
   return FrameBorderThickness() -
-      (browser_view_->IsTabStripVisible() && window->IsMaximized()) ?
-      kTabstripTopShadowThickness : 0;
+      ((browser_view_->IsTabStripVisible() && window->IsMaximized()) ?
+      kTabstripTopShadowThickness : 0);
 }
 
 int OpaqueBrowserFrameView::CaptionButtonY() const {
   // Maximized buttons start at window top so that even if their images aren't
   // drawn flush with the screen edge, they still obey Fitts' Law.
-  return (frame_->GetWindow()->IsMaximized()) ?
+  return frame_->GetWindow()->IsMaximized() ?
       FrameBorderThickness() : kFrameShadowThickness;
 }
 
