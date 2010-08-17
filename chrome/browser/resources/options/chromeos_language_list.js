@@ -228,7 +228,7 @@ cr.define('options.language', function() {
      * @private
      */
     handlePrefChange_: function(e) {
-      var languageCodesInCsv = e.value;
+      var languageCodesInCsv = e.value.value;
       var languageCodes = this.filterBadLanguageCodes_(
           languageCodesInCsv.split(','));
       this.load_(languageCodes);

@@ -357,7 +357,8 @@ cr.define('options', function() {
      * @private
      */
     handlePreloadEnginesPrefChange_: function(e) {
-      this.preloadEngines_ = this.filterBadPreloadEngines_(e.value.split(','));
+      var value = e.value.value;
+      this.preloadEngines_ = this.filterBadPreloadEngines_(value.split(','));
       this.updateCheckboxesFromPreloadEngines_();
     },
 
