@@ -46,6 +46,7 @@ class PepperPluginDelegateImpl
       uint32_t sample_count,
       pepper::PluginDelegate::PlatformAudio::Client* client);
   virtual PlatformImage2D* CreateImage2D(int width, int height);
+  virtual PlatformContext3D* CreateContext3D();
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       const PP_VideoDecoderConfig& decoder_config);
   virtual void DidChangeNumberOfFindResults(int identifier,

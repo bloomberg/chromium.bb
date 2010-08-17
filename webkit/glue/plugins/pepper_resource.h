@@ -22,6 +22,7 @@ class FileChooser;
 class FileIO;
 class FileRef;
 class Font;
+class Graphics3D;
 class ImageData;
 class PluginModule;
 class PrivateFontFile;
@@ -85,6 +86,7 @@ class Resource : public base::RefCountedThreadSafe<Resource> {
   virtual FileIO* AsFileIO() { return NULL; }
   virtual FileRef* AsFileRef() { return NULL; }
   virtual Font* AsFont() { return NULL; }
+  virtual Graphics3D* AsGraphics3D() { return NULL; }
   virtual ImageData* AsImageData() { return NULL; }
   virtual PrivateFontFile* AsPrivateFontFile() { return NULL; }
   virtual Scrollbar* AsScrollbar() { return NULL; }
@@ -132,6 +134,7 @@ DEFINE_RESOURCE_CAST(FileChooser)
 DEFINE_RESOURCE_CAST(FileIO)
 DEFINE_RESOURCE_CAST(FileRef)
 DEFINE_RESOURCE_CAST(Font)
+DEFINE_RESOURCE_CAST(Graphics3D)
 DEFINE_RESOURCE_CAST(ImageData)
 DEFINE_RESOURCE_CAST(PrivateFontFile)
 DEFINE_RESOURCE_CAST(Scrollbar)

@@ -1,5 +1,6 @@
 include_rules = [
   "+app",
+  "+gpu",
   "+media",
   "+skia/ext",
   "+skia/include",

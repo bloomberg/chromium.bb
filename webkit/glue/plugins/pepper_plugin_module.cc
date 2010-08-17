@@ -18,10 +18,11 @@
 #include "third_party/ppapi/c/ppb_file_io.h"
 #include "third_party/ppapi/c/ppb_file_io_trusted.h"
 #include "third_party/ppapi/c/ppb_file_system.h"
-#include "third_party/ppapi/c/ppb_image_data.h"
-#include "third_party/ppapi/c/ppb_instance.h"
 #include "third_party/ppapi/c/ppb_find.h"
 #include "third_party/ppapi/c/ppb_font.h"
+#include "third_party/ppapi/c/ppb_image_data.h"
+#include "third_party/ppapi/c/ppb_instance.h"
+#include "third_party/ppapi/c/ppb_opengles.h"
 #include "third_party/ppapi/c/ppb_scrollbar.h"
 #include "third_party/ppapi/c/ppb_testing.h"
 #include "third_party/ppapi/c/ppb_url_loader.h"
@@ -58,6 +59,10 @@
 #include "webkit/glue/plugins/pepper_video_decoder.h"
 #include "webkit/glue/plugins/pepper_widget.h"
 #include "webkit/glue/plugins/ppb_private.h"
+
+#ifdef ENABLE_GPU
+#include "webkit/glue/plugins/pepper_graphics_3d.h"
+#endif  // ENABLE_GPU
 
 namespace pepper {
 
@@ -170,6 +175,12 @@ const void* GetInterface(const char* name) {
     return Audio::GetTrustedInterface();
   if (strcmp(name, PPB_DEVICECONTEXT2D_INTERFACE) == 0)
     return DeviceContext2D::GetInterface();
+#ifdef ENABLE_GPU
+  if (strcmp(name, PPB_GRAPHICS_3D_INTERFACE) == 0)
+    return Graphics3D::GetInterface();
+  if (strcmp(name, PPB_OPENGLES_INTERFACE) == 0)
+    return Graphics3D::GetOpenGLESInterface();
+#endif  // ENABLE_GPU
   if (strcmp(name, PPB_URLLOADER_INTERFACE) == 0)
     return URLLoader::GetInterface();
   if (strcmp(name, PPB_URLREQUESTINFO_INTERFACE) == 0)

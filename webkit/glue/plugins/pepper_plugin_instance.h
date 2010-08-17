@@ -17,6 +17,7 @@
 #include "third_party/ppapi/c/pp_instance.h"
 #include "third_party/ppapi/c/pp_resource.h"
 #include "third_party/ppapi/c/ppp_printing.h"
+#include "third_party/ppapi/c/ppp_graphics_3d.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 
@@ -124,6 +125,8 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
   bool PrintPage(int page_number, WebKit::WebCanvas* canvas);
   void PrintEnd();
 
+  void Graphics3DContextLost();
+
  private:
   bool LoadFindInterface();
   bool LoadZoomInterface();
@@ -199,6 +202,9 @@ class PluginInstance : public base::RefCounted<PluginInstance> {
 
   // The plugin print interface.
   const PPP_Printing* plugin_print_interface_;
+
+  // The plugin 3D interface.
+  const PPP_Graphics3D* plugin_graphics_3d_interface_;
 
   // Containes the cursor if it's set by the plugin.
   scoped_ptr<WebKit::WebCursorInfo> cursor_;

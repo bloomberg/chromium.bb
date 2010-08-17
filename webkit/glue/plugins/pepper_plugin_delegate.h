@@ -5,16 +5,23 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_PLUGIN_DELEGATE_H_
 
-#include <string>
-
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
+#include "base/task.h"
 #include "third_party/ppapi/c/pp_completion_callback.h"
 #include "third_party/ppapi/c/pp_errors.h"
 #include "third_party/ppapi/c/pp_stdint.h"
 #include "third_party/ppapi/c/pp_video.h"
 
 class AudioMessageFilter;
+
+namespace gfx {
+class Rect;
+}
+
+namespace gpu {
+class CommandBuffer;
+}
 
 namespace skia {
 class PlatformCanvas;
@@ -46,6 +53,21 @@ class PluginDelegate {
     // this image. This is used by NativeClient to send the image to the
     // out-of-process plugin. Returns 0 on failure.
     virtual intptr_t GetSharedMemoryHandle() const = 0;
+  };
+
+  class PlatformContext3D {
+   public:
+    virtual ~PlatformContext3D() {}
+
+    // Initialize the context.
+    virtual bool Init(const gfx::Rect& position, const gfx::Rect& clip) = 0;
+
+    // This call will return the address of the command buffer object that is
+    // constructed in Initialize() and is valid until this context is destroyed.
+    virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
+
+    // Sets the function to be called on repaint.
+    virtual void SetNotifyRepaintTask(Task* task) = 0;
   };
 
   class PlatformAudio {
@@ -98,8 +120,16 @@ class PluginDelegate {
   virtual PlatformImage2D* CreateImage2D(int width, int height) = 0;
 
   // The caller will own the pointer returned from this.
+  virtual PlatformContext3D* CreateContext3D() = 0;
+
+  // The caller will own the pointer returned from this.
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       const PP_VideoDecoderConfig& decoder_config) = 0;
+
+  // The caller will own the pointer returned from this.
+  virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
+                                     uint32_t sample_count,
+                                     PlatformAudio::Client* client) = 0;
 
   // Notifies that the number of find results has changed.
   virtual void DidChangeNumberOfFindResults(int identifier,
@@ -108,11 +138,6 @@ class PluginDelegate {
 
   // Notifies that the index of the currently selected item has been updated.
   virtual void DidChangeSelectedFindResult(int identifier, int index) = 0;
-
-  // The caller will own the pointer returned from this.
-  virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
-                                     uint32_t sample_count,
-                                     PlatformAudio::Client* client) = 0;
 
   // Runs a file chooser.
   virtual bool RunFileChooser(

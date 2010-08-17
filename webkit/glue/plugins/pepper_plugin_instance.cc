@@ -232,7 +232,8 @@ PluginInstance::PluginInstance(PluginDelegate* delegate,
       num_pages_(0),
       pdf_output_done_(false),
 #endif  // defined (OS_LINUX)
-      plugin_print_interface_(NULL) {
+      plugin_print_interface_(NULL),
+      plugin_graphics_3d_interface_(NULL) {
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
   DCHECK(delegate);
   module_->InstanceCreated(this);
@@ -597,6 +598,16 @@ void PluginInstance::PrintEnd() {
   num_pages_ = 0;
   pdf_output_done_ = false;
 #endif  // defined(OS_LINUX)
+}
+
+void PluginInstance::Graphics3DContextLost() {
+  if (!plugin_graphics_3d_interface_) {
+    plugin_graphics_3d_interface_ =
+        reinterpret_cast<const PPP_Graphics3D*>(module_->GetPluginInterface(
+            PPP_GRAPHICS_3D_INTERFACE));
+  }
+  if (plugin_graphics_3d_interface_)
+    plugin_graphics_3d_interface_->Graphics3DContextLost(GetPPInstance());
 }
 
 bool PluginInstance::PrintPDFOutput(PP_Resource print_output,

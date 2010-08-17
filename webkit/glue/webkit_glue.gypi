@@ -111,6 +111,7 @@
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_base',
         '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/printing/printing.gyp:printing',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -384,6 +385,11 @@
           },
         }],
         ['enable_gpu==1 and inside_chromium_build==1', {
+          'sources': [
+            'plugins/pepper_graphics_3d_gl.cc',
+            'plugins/pepper_graphics_3d.cc',
+            'plugins/pepper_graphics_3d.h',
+          ],
           'dependencies': [
             '<(DEPTH)/gpu/gpu.gyp:gpu_plugin',
           ],
