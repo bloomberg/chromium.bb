@@ -64,8 +64,6 @@ const char kResourceTestPage[] = "files/devtools/resource_test_page.html";
 const char kSimplePage[] = "files/devtools/simple_page.html";
 const char kSyntaxErrorTestPage[] =
     "files/devtools/script_syntax_error.html";
-const char kDebuggerStepTestPage[] =
-    "files/devtools/debugger_step.html";
 const char kDebuggerClosurePage[] =
     "files/devtools/debugger_closure.html";
 const char kCompletionOnPause[] =
@@ -373,56 +371,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
 // Tests eval on call frame.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
-}
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-// Sometimes it times out.
-// See http://crbug.com/45080
-// See http://crbug.com/46299
-#define MAYBE_TestStepOver FLAKY_TestStepOver
-#else
-#define MAYBE_TestStepOver TestStepOver
-#endif
-// Tests step over functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepOver) {
-  RunTest("testStepOver", kDebuggerStepTestPage);
-}
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-// Sometimes it times out.
-// See http://crbug.com/45080
-// See http://crbug.com/46299
-#define MAYBE_TestStepOut FLAKY_TestStepOut
-#elif defined(OS_CHROMEOS)
-// See http://crbug.com/43479
-#define MAYBE_TestStepOut FLAKY_TestStepOut
-#else
-#define MAYBE_TestStepOut TestStepOut
-#endif
-// Tests step out functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepOut) {
-  RunTest("testStepOut", kDebuggerStepTestPage);
-}
-
-#if defined(OS_WIN) || defined(OS_LINUX)
-// Sometimes it times out.
-// See http://crbug.com/45080
-// See http://crbug.com/46299
-#define MAYBE_TestStepIn FLAKY_TestStepIn
-#elif defined(OS_CHROMEOS)
-// See http://crbug.com/43479
-#define MAYBE_TestStepIn FLAKY_TestStepIn
-#else
-#define MAYBE_TestStepIn TestStepIn
-#endif
-// Disable TestStepIn completely while test expectations are not updated
-// in Webkit.  See http://crbug.com/46235
-#undef MAYBE_TestStepIn
-#define MAYBE_TestStepIn DISABLED_TestStepIn
-
-// Tests step in functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestStepIn) {
-  RunTest("testStepIn", kDebuggerStepTestPage);
 }
 
 // Tests that scope can be expanded and contains expected variables.
