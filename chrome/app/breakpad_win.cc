@@ -126,14 +126,16 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
   // Add empty values for the gpu_info. We'll put the actual values
   // when we collect them at this location.
   g_gpu_info_offset = g_custom_entries->size();
-  g_custom_entries->push_back(google_breakpad::CustomInfoEntry(L"venid", L""));
-  g_custom_entries->push_back(google_breakpad::CustomInfoEntry(L"devid", L""));
   g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"driver", L""));
+      google_breakpad::CustomInfoEntry(L"gpu-venid", L""));
   g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"psver", L""));
+      google_breakpad::CustomInfoEntry(L"gpu-devid", L""));
   g_custom_entries->push_back(
-      google_breakpad::CustomInfoEntry(L"vsver", L""));
+      google_breakpad::CustomInfoEntry(L"gpu-driver", L""));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"gpu-psver", L""));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"gpu-vsver", L""));
 
   // Read the id from registry. If reporting has never been enabled
   // the result will be empty string. Its OK since when user enables reporting
