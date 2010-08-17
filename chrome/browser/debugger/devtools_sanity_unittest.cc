@@ -51,7 +51,6 @@ const int kActionDelayMs = 500;
 
 const char kConsoleTestPage[] = "files/devtools/console_test_page.html";
 const char kDebuggerTestPage[] = "files/devtools/debugger_test_page.html";
-const char kEvalTestPage[] = "files/devtools/eval_test_page.html";
 const char kJsPage[] = "files/devtools/js_page.html";
 const char kHeapProfilerPage[] = "files/devtools/heap_profiler.html";
 const char kPauseOnExceptionTestPage[] =
@@ -69,8 +68,6 @@ const char kDebuggerStepTestPage[] =
     "files/devtools/debugger_step.html";
 const char kDebuggerClosurePage[] =
     "files/devtools/debugger_closure.html";
-const char kDebuggerIntrinsicPropertiesPage[] =
-    "files/devtools/debugger_intrinsic_properties.html";
 const char kCompletionOnPause[] =
     "files/devtools/completion_on_pause.html";
 const char kPageWithContentScript[] =
@@ -434,14 +431,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestExpandScope) {
   RunTest("testExpandScope", kDebuggerClosurePage);
 }
 
-// Tests that intrinsic properties(__proto__, prototype, constructor) are
-// present.
-// TODO(japhet): Disabled during webkit landing per bug http://crbug.com/52085
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       DISABLED_TestDebugIntrinsicProperties) {
-  RunTest("testDebugIntrinsicProperties", kDebuggerIntrinsicPropertiesPage);
-}
-
 // Tests that execution continues automatically when there is a syntax error in
 // script and DevTools are open.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAutoContinueOnSyntaxError) {
@@ -455,21 +444,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCompletionOnPause) {
 // Tests that 'Pause' button works for eval.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseInEval) {
   RunTest("testPauseInEval", kDebuggerTestPage);
-}
-
-// Tests console eval.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestConsoleEval) {
-  RunTest("testConsoleEval", kEvalTestPage);
-}
-
-// Tests console log.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestConsoleLog) {
-  RunTest("testConsoleLog", kConsoleTestPage);
-}
-
-// Tests eval global values.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
-  RunTest("testEvalGlobal", kEvalTestPage);
 }
 
 // Test that Storage panel can be shown.
