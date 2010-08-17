@@ -154,12 +154,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   friend class PopupMenuWaiter;
   virtual ~AutomationProvider();
 
+  scoped_ptr<AutomationBrowserTracker> browser_tracker_;
+
  private:
   // IPC Message callbacks.
-  void CloseBrowser(int handle, IPC::Message* reply_message);
-  void CloseBrowserAsync(int browser_handle);
-  void ActivateTab(int handle, int at_index, int* status);
-  void AppendTab(int handle, const GURL& url, IPC::Message* reply_message);
   void CloseTab(int tab_handle, bool wait_until_closed,
                 IPC::Message* reply_message);
 
@@ -931,7 +929,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   scoped_ptr<ExtensionTestResultNotificationObserver>
       extension_test_result_observer_;
   scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;
-  scoped_ptr<AutomationBrowserTracker> browser_tracker_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;
   scoped_ptr<AutomationTabTracker> tab_tracker_;
   scoped_ptr<AutomationWindowTracker> window_tracker_;
@@ -984,10 +981,17 @@ class TestingAutomationProvider : public AutomationProvider,
   virtual void OnBrowserRemoving(const Browser* browser);
 
   // IPC implementations
+  virtual void OnMessageReceived(const IPC::Message& msg);
   virtual void OnChannelError();
 
  private:
   virtual ~TestingAutomationProvider();
+
+  // IPC Message callbacks.
+  void CloseBrowser(int handle, IPC::Message* reply_message);
+  void CloseBrowserAsync(int browser_handle);
+  void ActivateTab(int handle, int at_index, int* status);
+  void AppendTab(int handle, const GURL& url, IPC::Message* reply_message);
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

@@ -335,12 +335,7 @@ Extension* AutomationProvider::GetDisabledExtension(int extension_handle) {
 
 void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutomationProvider, message)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseBrowser, CloseBrowser)
-    IPC_MESSAGE_HANDLER(AutomationMsg_CloseBrowserRequestAsync,
-                        CloseBrowserAsync)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ActivateTab, ActivateTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_ActiveTabIndex, GetActiveTabIndex)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_AppendTab, AppendTab)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseTab, CloseTab)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetCookies, GetCookies)
     IPC_MESSAGE_HANDLER(AutomationMsg_SetCookie, SetCookie)
@@ -587,47 +582,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     LoginWithUserAndPass)
 #endif  // defined(OS_CHROMEOS)
   IPC_END_MESSAGE_MAP()
-}
-
-void AutomationProvider::ActivateTab(int handle, int at_index, int* status) {
-  *status = -1;
-  if (browser_tracker_->ContainsHandle(handle) && at_index > -1) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (at_index >= 0 && at_index < browser->tab_count()) {
-      browser->SelectTabContentsAt(at_index, true);
-      *status = 0;
-    }
-  }
-}
-
-void AutomationProvider::AppendTab(int handle, const GURL& url,
-                                   IPC::Message* reply_message) {
-  int append_tab_response = -1;  // -1 is the error code
-  NotificationObserver* observer = NULL;
-
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    observer = AddTabStripObserver(browser, reply_message);
-    TabContents* tab_contents = browser->AddTabWithURL(
-        url, GURL(), PageTransition::TYPED, -1, TabStripModel::ADD_SELECTED,
-        NULL, std::string(), &browser);
-    if (tab_contents) {
-      append_tab_response =
-          GetIndexForNavigationController(&tab_contents->controller(), browser);
-    }
-  }
-
-  if (append_tab_response < 0) {
-    // The append tab failed. Remove the TabStripObserver
-    if (observer) {
-      RemoveTabStripObserver(observer);
-      delete observer;
-    }
-
-    AutomationMsg_AppendTab::WriteReplyParams(reply_message,
-                                              append_tab_response);
-    Send(reply_message);
-  }
 }
 
 void AutomationProvider::NavigateToURL(int handle, const GURL& url,
@@ -3599,27 +3553,6 @@ void AutomationProvider::CloseTab(int tab_handle,
   Send(reply_message);
 }
 
-void AutomationProvider::CloseBrowser(int browser_handle,
-                                      IPC::Message* reply_message) {
-  if (browser_tracker_->ContainsHandle(browser_handle)) {
-    Browser* browser = browser_tracker_->GetResource(browser_handle);
-    new BrowserClosedNotificationObserver(browser, this,
-                                          reply_message);
-    browser->window()->Close();
-  } else {
-    NOTREACHED();
-  }
-}
-
-void AutomationProvider::CloseBrowserAsync(int browser_handle) {
-  if (browser_tracker_->ContainsHandle(browser_handle)) {
-    Browser* browser = browser_tracker_->GetResource(browser_handle);
-    browser->window()->Close();
-  } else {
-    NOTREACHED();
-  }
-}
-
 void AutomationProvider::WaitForTabToBeRestored(int tab_handle,
                                                 IPC::Message* reply_message) {
   if (tab_tracker_->ContainsHandle(tab_handle)) {
@@ -3842,9 +3775,86 @@ TestingAutomationProvider::~TestingAutomationProvider() {
   BrowserList::RemoveObserver(this);
 }
 
+void TestingAutomationProvider::OnMessageReceived(
+    const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(TestingAutomationProvider, message)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseBrowser, CloseBrowser)
+    IPC_MESSAGE_HANDLER(AutomationMsg_CloseBrowserRequestAsync,
+                        CloseBrowserAsync)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ActivateTab, ActivateTab)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_AppendTab, AppendTab)
+
+    IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
+  IPC_END_MESSAGE_MAP()
+}
+
 void TestingAutomationProvider::OnChannelError() {
   BrowserList::CloseAllBrowsersAndExit();
   AutomationProvider::OnChannelError();
+}
+
+void TestingAutomationProvider::CloseBrowser(int browser_handle,
+                                             IPC::Message* reply_message) {
+  if (browser_tracker_->ContainsHandle(browser_handle)) {
+    Browser* browser = browser_tracker_->GetResource(browser_handle);
+    new BrowserClosedNotificationObserver(browser, this,
+                                          reply_message);
+    browser->window()->Close();
+  } else {
+    NOTREACHED();
+  }
+}
+
+void TestingAutomationProvider::CloseBrowserAsync(int browser_handle) {
+  if (browser_tracker_->ContainsHandle(browser_handle)) {
+    Browser* browser = browser_tracker_->GetResource(browser_handle);
+    browser->window()->Close();
+  } else {
+    NOTREACHED();
+  }
+}
+
+void TestingAutomationProvider::ActivateTab(int handle,
+                                            int at_index,
+                                            int* status) {
+  *status = -1;
+  if (browser_tracker_->ContainsHandle(handle) && at_index > -1) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (at_index >= 0 && at_index < browser->tab_count()) {
+      browser->SelectTabContentsAt(at_index, true);
+      *status = 0;
+    }
+  }
+}
+
+void TestingAutomationProvider::AppendTab(int handle, const GURL& url,
+                                          IPC::Message* reply_message) {
+  int append_tab_response = -1;  // -1 is the error code
+  NotificationObserver* observer = NULL;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    observer = AddTabStripObserver(browser, reply_message);
+    TabContents* tab_contents = browser->AddTabWithURL(
+        url, GURL(), PageTransition::TYPED, -1, TabStripModel::ADD_SELECTED,
+        NULL, std::string(), &browser);
+    if (tab_contents) {
+      append_tab_response =
+          GetIndexForNavigationController(&tab_contents->controller(), browser);
+    }
+  }
+
+  if (append_tab_response < 0) {
+    // The append tab failed. Remove the TabStripObserver
+    if (observer) {
+      RemoveTabStripObserver(observer);
+      delete observer;
+    }
+
+    AutomationMsg_AppendTab::WriteReplyParams(reply_message,
+                                              append_tab_response);
+    Send(reply_message);
+  }
 }
 
 void TestingAutomationProvider::OnBrowserAdded(const Browser* browser) {
