@@ -25,7 +25,7 @@ class StatusAreaHost;
 
 // The language menu button in the status area.
 // This class will handle getting the IME/XKB status and populating the menu.
-class LanguageMenuButton : public views::MenuButton,
+class LanguageMenuButton : public StatusAreaButton,
                            public views::ViewMenuDelegate,
                            public menus::MenuModel,
                            public InputMethodLibrary::Observer,

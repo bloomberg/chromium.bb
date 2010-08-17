@@ -71,7 +71,6 @@ enum {
 // input method list to avoid conflict.
 const int kRadioGroupLanguage = 1 << 16;
 const int kRadioGroupNone = -1;
-const wchar_t kSpacer[] = L"MMM";
 
 // A mapping from an input method id to a text for the language indicator. The
 // mapping is necessary since some input methods belong to the same language.
@@ -120,7 +119,7 @@ namespace chromeos {
 // LanguageMenuButton
 
 LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
-    : MenuButton(NULL, std::wstring(), this, false),
+    : StatusAreaButton(this),
       input_method_descriptors_(CrosLibrary::Get()->GetInputMethodLibrary()->
                                 GetActiveInputMethods()),
       model_(NULL),
@@ -133,15 +132,16 @@ LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
   DCHECK(input_method_descriptors_.get() &&
          !input_method_descriptors_->empty());
   set_border(NULL);
+  set_use_menu_button_paint(true);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
   SetEnabledColor(0xB3FFFFFF);  // White with 70% Alpha
   SetDisabledColor(0x00FFFFFF);  // White with 00% Alpha (invisible)
   SetShowMultipleIconStates(false);
+  set_alignment(TextButton::ALIGN_CENTER);
+
   // Update the model
   RebuildModel();
-  // Grab the real estate.
-  UpdateIndicator(kSpacer, L"" /* no tooltip */);
 
   // Draw the default indicator "US". The default indicator "US" is used when
   // |pref_service| is not available (for example, unit tests) or |pref_service|
@@ -469,7 +469,6 @@ void LanguageMenuButton::UpdateIndicator(
     SetTooltipText(tooltip);
   }
   SetText(name);
-  set_alignment(TextButton::ALIGN_RIGHT);
   SchedulePaint();
 }
 

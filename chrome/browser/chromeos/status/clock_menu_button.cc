@@ -26,17 +26,18 @@ namespace chromeos {
 const int kTimerSlopSeconds = 1;
 
 ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
-    : MenuButton(NULL, std::wstring(), this, false),
+    : StatusAreaButton(this),
       host_(host) {
   // Add as SystemLibrary observer. We update the clock if timezone changes.
   CrosLibrary::Get()->GetSystemLibrary()->AddObserver(this);
 
   set_border(NULL);
+  set_use_menu_button_paint(true);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(1, gfx::Font::BOLD));
   SetEnabledColor(0xB3FFFFFF); // White with 70% Alpha
   SetShowMultipleIconStates(false);
-  set_alignment(TextButton::ALIGN_RIGHT);
+  set_alignment(TextButton::ALIGN_CENTER);
   UpdateTextAndSetNextTimer();
 }
 
@@ -69,18 +70,7 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 }
 
 void ClockMenuButton::UpdateText() {
-  int cur_width = GetPreferredSize().width();
   SetText(base::TimeFormatTimeOfDay(base::Time::Now()));
-  // TextButtons normally remember the max text size, so the button's preferred
-  // size will always be as large as the largest text ever put in it.
-  // We clear that max text size, so we can adjust the size to fit the text.
-  ClearMaxTextSize();
-  int new_width = GetPreferredSize().width();
-
-  // If width has changed, we want to relayout the StatusAreaView.
-  if (new_width != cur_width)
-    PreferredSizeChanged();
-
   SchedulePaint();
 }
 

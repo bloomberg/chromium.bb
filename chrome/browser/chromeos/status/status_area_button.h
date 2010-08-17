@@ -19,6 +19,15 @@ class StatusAreaButton : public views::MenuButton {
   virtual ~StatusAreaButton() {}
   virtual void Paint(gfx::Canvas* canvas, bool for_drag);
   virtual gfx::Size GetPreferredSize();
+  virtual gfx::Insets GetInsets() const;
+
+  // Overrides TextButton's SetText to clear max text size before seting new
+  // text content so that the button size would fit the new text size.
+  virtual void SetText(const std::wstring& text);
+
+  void set_use_menu_button_paint(bool use_menu_button_paint) {
+    use_menu_button_paint_ = use_menu_button_paint;
+  }
 
  protected:
   // Draws the pressed icon. This is called before DrawIcon if the state is
@@ -30,6 +39,12 @@ class StatusAreaButton : public views::MenuButton {
   // Subclasses should override this method if they need to draw their own icon.
   // Otherwise, just call SetIcon() and the it will be handled for you.
   virtual void DrawIcon(gfx::Canvas* canvas);
+
+  // True if the button wants to use views::MenuButton drawings.
+  bool use_menu_button_paint_;
+
+  // Insets to use for this button.
+  gfx::Insets insets_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaButton);
 };

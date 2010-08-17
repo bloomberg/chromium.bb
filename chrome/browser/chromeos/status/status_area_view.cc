@@ -19,9 +19,6 @@ namespace chromeos {
 // Number of pixels to separate each icon.
 const int kSeparation = 6;
 
-// BrowserWindowGtk tiles its image with this offset
-const int kCustomFrameBackgroundVerticalOffset = 15;
-
 StatusAreaView::StatusAreaView(StatusAreaHost* host)
     : host_(host),
       clock_view_(NULL),
