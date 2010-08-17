@@ -81,12 +81,11 @@ void AutoFillHelper::SuggestionsReceived(int query_id,
   if (!web_view || query_id != autofill_query_id_)
     return;
 
-  // Any popup currently showing is now obsolete.
-  web_view->hidePopups();
-
-  // No suggestions: nothing to do.
-  if (values.empty())
+  if (values.empty()) {
+    // No suggestions, any popup currently showing is obsolete.
+    web_view->hidePopups();
     return;
+  }
 
   std::vector<string16> v(values);
   std::vector<string16> l(labels);
