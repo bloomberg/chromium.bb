@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,7 +44,7 @@ class ExternalProtocolDialog : public views::DialogDelegate {
   base::TimeTicks creation_time_;
 
   // The scheme of the url.
-  std::wstring scheme_;
+  std::string scheme_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolDialog);
 };

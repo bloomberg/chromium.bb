@@ -12,6 +12,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/history_quick_provider.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/history_contents_provider.h"
@@ -157,7 +158,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // a URL before.  We need to do this last because some schemes may be in
     // here as "blocked" (e.g. "javascript") because we don't want pages to open
     // them, but users still can.
-    switch (ExternalProtocolHandler::GetBlockState(parsed_scheme)) {
+    // TODO(viettrungluu): get rid of conversion.
+    switch (ExternalProtocolHandler::GetBlockState(WideToUTF8(parsed_scheme))) {
       case ExternalProtocolHandler::DONT_BLOCK:
         return URL;
 

@@ -496,10 +496,10 @@ void TaskManagerGtk::SetInitialDialogSize() {
             prefs::kTaskManagerWindowPlacement);
     int top = 0, left = 0, bottom = 1, right = 1;
     if (placement_pref &&
-        placement_pref->GetInteger(L"top", &top) &&
-        placement_pref->GetInteger(L"left", &left) &&
-        placement_pref->GetInteger(L"bottom", &bottom) &&
-        placement_pref->GetInteger(L"right", &right)) {
+        placement_pref->GetInteger("top", &top) &&
+        placement_pref->GetInteger("left", &left) &&
+        placement_pref->GetInteger("bottom", &bottom) &&
+        placement_pref->GetInteger("right", &right)) {
       gtk_window_resize(GTK_WINDOW(dialog_),
                         std::max(1, right - left),
                         std::max(1, bottom - top));
@@ -822,11 +822,11 @@ void TaskManagerGtk::OnResponse(GtkWidget* dialog, gint response_id) {
               prefs::kTaskManagerWindowPlacement);
       // Note that we store left/top for consistency with Windows, but that we
       // *don't* restore them.
-      placement_pref->SetInteger(L"left", dialog_bounds.x());
-      placement_pref->SetInteger(L"top", dialog_bounds.y());
-      placement_pref->SetInteger(L"right", dialog_bounds.right());
-      placement_pref->SetInteger(L"bottom", dialog_bounds.bottom());
-      placement_pref->SetBoolean(L"maximized", false);
+      placement_pref->SetInteger("left", dialog_bounds.x());
+      placement_pref->SetInteger("top", dialog_bounds.y());
+      placement_pref->SetInteger("right", dialog_bounds.right());
+      placement_pref->SetInteger("bottom", dialog_bounds.bottom());
+      placement_pref->SetBoolean("maximized", false);
     }
 
     instance_ = NULL;

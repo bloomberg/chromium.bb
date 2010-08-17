@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,7 @@ bool ExternalProtocolDialog::Cancel() {
   // button.
   if (message_box_view_->IsCheckBoxSelected()) {
     ExternalProtocolHandler::SetBlockState(
-        UTF8ToWide(url_.scheme()), ExternalProtocolHandler::BLOCK);
+        url_.scheme(), ExternalProtocolHandler::BLOCK);
   }
 
   // Returning true closes the dialog.
@@ -97,7 +97,7 @@ bool ExternalProtocolDialog::Accept() {
 
   if (message_box_view_->IsCheckBoxSelected()) {
     ExternalProtocolHandler::SetBlockState(
-        UTF8ToWide(url_.scheme()), ExternalProtocolHandler::DONT_BLOCK);
+        url_.scheme(), ExternalProtocolHandler::DONT_BLOCK);
   }
 
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_);

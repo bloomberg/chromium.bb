@@ -21,10 +21,10 @@ class ExternalProtocolHandler {
   };
 
   // Returns whether we should block a given scheme.
-  static BlockState GetBlockState(const std::wstring& scheme);
+  static BlockState GetBlockState(const std::string& scheme);
 
   // Sets whether we should block a given scheme.
-  static void SetBlockState(const std::wstring& scheme, BlockState state);
+  static void SetBlockState(const std::string& scheme, BlockState state);
 
   // Checks to see if the protocol is allowed, if it is whitelisted,
   // the application associated with the protocol is launched on the io thread,

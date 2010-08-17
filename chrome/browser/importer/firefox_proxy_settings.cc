@@ -12,18 +12,18 @@
 
 namespace {
 
-const wchar_t* const kNetworkProxyTypeKey = L"network.proxy.type";
+const char* const kNetworkProxyTypeKey = "network.proxy.type";
 const char* const kHTTPProxyKey = "network.proxy.http";
-const wchar_t* const kHTTPProxyPortKey = L"network.proxy.http_port";
+const char* const kHTTPProxyPortKey = "network.proxy.http_port";
 const char* const kSSLProxyKey = "network.proxy.ssl";
-const wchar_t* const kSSLProxyPortKey = L"network.proxy.ssl_port";
+const char* const kSSLProxyPortKey = "network.proxy.ssl_port";
 const char* const kFTPProxyKey = "network.proxy.ftp";
-const wchar_t* const kFTPProxyPortKey = L"network.proxy.ftp_port";
+const char* const kFTPProxyPortKey = "network.proxy.ftp_port";
 const char* const kGopherProxyKey = "network.proxy.gopher";
-const wchar_t* const kGopherProxyPortKey = L"network.proxy.gopher_port";
+const char* const kGopherProxyPortKey = "network.proxy.gopher_port";
 const char* const kSOCKSHostKey = "network.proxy.socks";
-const wchar_t* const kSOCKSHostPortKey = L"network.proxy.socks_port";
-const wchar_t* const kSOCKSVersionKey = L"network.proxy.socks_version";
+const char* const kSOCKSHostPortKey = "network.proxy.socks_port";
+const char* const kSOCKSVersionKey = "network.proxy.socks_version";
 const char* const kAutoconfigURL = "network.proxy.autoconfig_url";
 const char* const kNoProxyListKey = "network.proxy.no_proxies_on";
 const char* const kPrefFileName = "prefs.js";

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -116,10 +116,8 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
   }
 
   // Set the "don't warn me again" info.
-  if ([[alert_ suppressionButton] state] == NSOnState) {
-    ExternalProtocolHandler::SetBlockState(UTF8ToWide(url_.scheme()),
-                                           blockState);
-  }
+  if ([[alert_ suppressionButton] state] == NSOnState)
+    ExternalProtocolHandler::SetBlockState(url_.scheme(), blockState);
 
   if (blockState == ExternalProtocolHandler::DONT_BLOCK) {
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",

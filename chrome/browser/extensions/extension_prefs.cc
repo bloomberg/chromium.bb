@@ -222,7 +222,7 @@ bool ExtensionPrefs::ReadExtensionPrefBoolean(
     return false;
 
   DictionaryValue* ext = NULL;
-  if (!extensions->GetDictionary(ASCIIToWide(extension_id), &ext)) {
+  if (!extensions->GetDictionary(extension_id, &ext)) {
     // No such extension yet.
     return false;
   }

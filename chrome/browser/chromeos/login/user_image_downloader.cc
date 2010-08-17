@@ -109,11 +109,11 @@ bool UserImageDownloader::GetImageURL(const std::string& json_data,
   DictionaryValue* root_dictionary =
       static_cast<DictionaryValue*>(root.get());
   DictionaryValue* feed_dictionary = NULL;
-  if (!root_dictionary->GetDictionary(L"feed", &feed_dictionary))
+  if (!root_dictionary->GetDictionary("feed", &feed_dictionary))
     return false;
 
   ListValue* entry_list = NULL;
-  if (!feed_dictionary->GetList(L"entry", &entry_list))
+  if (!feed_dictionary->GetList("entry", &entry_list))
     return false;
 
   return GetImageURLFromEntries(entry_list, image_url);
@@ -129,7 +129,7 @@ bool UserImageDownloader::GetImageURLFromEntries(ListValue* entry_list,
       continue;
 
     ListValue* email_list = NULL;
-    if (!entry_dictionary->GetList(L"gd$email", &email_list))
+    if (!entry_dictionary->GetList("gd$email", &email_list))
       continue;
 
     // Match entry email address to understand that this is user's entry.
@@ -137,7 +137,7 @@ bool UserImageDownloader::GetImageURLFromEntries(ListValue* entry_list,
       continue;
 
     ListValue* link_list = NULL;
-    if (!entry_dictionary->GetList(L"link", &link_list))
+    if (!entry_dictionary->GetList("link", &link_list))
       continue;
 
     if (GetImageURLFromLinks(link_list, image_url))

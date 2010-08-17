@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -113,10 +113,10 @@ void ExternalProtocolDialogGtk::OnDialogResponse(GtkWidget* widget,
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkbox_))) {
     if (response == GTK_RESPONSE_ACCEPT) {
       ExternalProtocolHandler::SetBlockState(
-          UTF8ToWide(url_.scheme()), ExternalProtocolHandler::DONT_BLOCK);
+          url_.scheme(), ExternalProtocolHandler::DONT_BLOCK);
     } else if (response == GTK_RESPONSE_REJECT) {
       ExternalProtocolHandler::SetBlockState(
-          UTF8ToWide(url_.scheme()), ExternalProtocolHandler::BLOCK);
+          url_.scheme(), ExternalProtocolHandler::BLOCK);
     }
     // If the response is GTK_RESPONSE_DELETE, triggered by the user closing
     // the dialog, do nothing.

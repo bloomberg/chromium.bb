@@ -137,7 +137,7 @@ GURL CloudPrintService::GetCloudPrintServiceDialogURL() {
 }
 
 bool GetRealOrInt(const DictionaryValue& dictionary,
-                  const std::wstring& path,
+                  const std::string& path,
                   double* out_value) {
   if (!dictionary.GetReal(path, out_value)) {
     int int_value = 0;
@@ -161,10 +161,10 @@ bool GetPageSetupParameters(const std::string& json,
 
   bool result = true;
   DictionaryValue* params = static_cast<DictionaryValue*>(parsed_value.get());
-  result &= GetRealOrInt(*params, L"dpi", &parameters.dpi);
-  result &= GetRealOrInt(*params, L"min_shrink", &parameters.min_shrink);
-  result &= GetRealOrInt(*params, L"max_shrink", &parameters.max_shrink);
-  result &= params->GetBoolean(L"selection_only", &parameters.selection_only);
+  result &= GetRealOrInt(*params, "dpi", &parameters.dpi);
+  result &= GetRealOrInt(*params, "min_shrink", &parameters.min_shrink);
+  result &= GetRealOrInt(*params, "max_shrink", &parameters.max_shrink);
+  result &= params->GetBoolean("selection_only", &parameters.selection_only);
   return result;
 }
 

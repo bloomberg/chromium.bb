@@ -225,7 +225,7 @@ bool ExtensionDOMUI::HandleChromeURLOverride(GURL* url, Profile* profile) {
       profile->GetPrefs()->GetDictionary(kExtensionURLOverrides);
   std::string page = url->host();
   ListValue* url_list;
-  if (!overrides || !overrides->GetList(UTF8ToWide(page), &url_list))
+  if (!overrides || !overrides->GetList(page, &url_list))
     return false;
 
   ExtensionsService* service = profile->GetExtensionsService();
@@ -348,7 +348,7 @@ void ExtensionDOMUI::UnregisterChromeURLOverride(const std::string& page,
   DictionaryValue* all_overrides =
       prefs->GetMutableDictionary(kExtensionURLOverrides);
   ListValue* page_overrides;
-  if (!all_overrides->GetList(UTF8ToWide(page), &page_overrides)) {
+  if (!all_overrides->GetList(page, &page_overrides)) {
     // If it's being unregistered, it should already be in the list.
     NOTREACHED();
     return;

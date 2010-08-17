@@ -86,7 +86,7 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
 Version* ExternalPrefExtensionProvider::RegisteredVersion(
     const std::string& id, Extension::Location* location) const {
   DictionaryValue* extension = NULL;
-  if (!prefs_->GetDictionary(ASCIIToWide(id), &extension))
+  if (!prefs_->GetDictionary(id, &extension))
     return NULL;
 
   std::string external_version;
