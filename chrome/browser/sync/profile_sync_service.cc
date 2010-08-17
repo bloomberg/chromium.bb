@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
+#include "chrome/browser/sync/glue/session_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -169,6 +170,19 @@ void ProfileSyncService::RegisterDataTypeController(
       data_type_controller;
 }
 
+browser_sync::SessionModelAssociator*
+    ProfileSyncService::GetSessionModelAssociator() {
+  if (data_type_controllers_.find(syncable::SESSIONS) ==
+      data_type_controllers_.end() ||
+      data_type_controllers_.find(syncable::SESSIONS)->second->state() !=
+      DataTypeController::RUNNING) {
+    return NULL;
+  }
+  return static_cast<browser_sync::SessionDataTypeController*>(
+      data_type_controllers_.find(
+      syncable::SESSIONS)->second.get())->GetModelAssociator();
+}
+
 void ProfileSyncService::GetDataTypeControllerStates(
   browser_sync::DataTypeController::StateMap* state_map) const {
     browser_sync::DataTypeController::TypeMap::const_iterator iter
@@ -240,10 +254,9 @@ void ProfileSyncService::RegisterPreferences() {
   pref_service->RegisterBooleanPref(prefs::kSyncTypedUrls, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncExtensions, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kSyncApps, enable_by_default);
-
+  pref_service->RegisterBooleanPref(prefs::kSyncSessions, enable_by_default);
   pref_service->RegisterBooleanPref(prefs::kKeepEverythingSynced,
       enable_by_default);
-
   pref_service->RegisterBooleanPref(prefs::kSyncManaged, false);
 }
 
@@ -321,8 +334,7 @@ void ProfileSyncService::StartUp() {
 }
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {
-
- // Stop all data type controllers, if needed.
+  // Stop all data type controllers, if needed.
   if (data_type_manager_.get() &&
       data_type_manager_->state() != DataTypeManager::STOPPED) {
     data_type_manager_->Stop();
@@ -409,6 +421,8 @@ const char* ProfileSyncService::GetPrefNameForDataType(
       return prefs::kSyncExtensions;
     case syncable::APPS:
       return prefs::kSyncApps;
+    case syncable::SESSIONS:
+      return prefs::kSyncSessions;
     default:
       NOTREACHED();
       return NULL;

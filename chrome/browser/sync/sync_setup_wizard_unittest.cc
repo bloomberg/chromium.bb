@@ -164,8 +164,7 @@ class TestBrowserWindowForWizardTest : public TestBrowserWindow {
 class SyncSetupWizardTest : public BrowserWithTestWindowTest {
  public:
   SyncSetupWizardTest()
-      : ui_thread_(ChromeThread::UI, MessageLoop::current()),
-        file_thread_(ChromeThread::FILE, MessageLoop::current()),
+      : file_thread_(ChromeThread::FILE, MessageLoop::current()),
         test_window_(NULL),
         wizard_(NULL) { }
   virtual ~SyncSetupWizardTest() { }
@@ -190,7 +189,6 @@ class SyncSetupWizardTest : public BrowserWithTestWindowTest {
     wizard_.reset();
   }
 
-  ChromeThread ui_thread_;
   ChromeThread file_thread_;
   TestBrowserWindowForWizardTest* test_window_;
   scoped_ptr<SyncSetupWizard> wizard_;
@@ -306,7 +304,8 @@ TEST_F(SyncSetupWizardTest, ChooseDataTypesSetsPrefs) {
   data_type_choices += "\"syncBookmarks\":true,\"syncPreferences\":true,";
   data_type_choices += "\"syncThemes\":false,\"syncPasswords\":false,";
   data_type_choices += "\"syncAutofill\":false,\"syncExtensions\":false,";
-  data_type_choices += "\"syncTypedUrls\":true,\"syncApps\":true}";
+  data_type_choices += "\"syncTypedUrls\":true,\"syncApps\":true,";
+  data_type_choices += "\"syncSessions\":false}";
   data_type_choices_value.Append(new StringValue(data_type_choices));
 
   // Simulate the user choosing data types; bookmarks, prefs, typed

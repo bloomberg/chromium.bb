@@ -106,6 +106,12 @@ static bool GetDataTypeChoiceData(const std::string& json,
   if (sync_extensions)
     data_types->insert(syncable::EXTENSIONS);
 
+  bool sync_sessions;
+  if (!result->GetBoolean("syncSessions", &sync_sessions))
+    return false;
+  if (sync_sessions)
+    data_types->insert(syncable::SESSIONS);
+
   bool sync_typed_urls;
   if (!result->GetBoolean("syncTypedUrls", &sync_typed_urls))
     return false;
@@ -188,7 +194,6 @@ void FlowHandler::ShowGaiaSuccessAndSettingUp() {
 
 // Called by SyncSetupFlow::Advance.
 void FlowHandler::ShowChooseDataTypes(const DictionaryValue& args) {
-
   // If you're starting the wizard at the Choose Data Types screen (i.e. from
   // "Customize Sync"), this will be redundant.  However, if you're coming from
   // another wizard state, this will make sure Choose Data Types is on top.
@@ -361,7 +366,8 @@ void SyncSetupFlow::GetArgsForChooseDataTypes(ProfileSyncService* service,
       registered_types.count(syncable::TYPED_URLS) > 0);
   args->SetBoolean("appsRegistered",
       registered_types.count(syncable::APPS) > 0);
-
+  args->SetBoolean("sessionsRegistered",
+      registered_types.count(syncable::SESSIONS) > 0);
   args->SetBoolean("syncBookmarks",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncBookmarks));
   args->SetBoolean("syncPreferences",
@@ -374,6 +380,8 @@ void SyncSetupFlow::GetArgsForChooseDataTypes(ProfileSyncService* service,
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncAutofill));
   args->SetBoolean("syncExtensions",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncExtensions));
+  args->SetBoolean("syncSessions",
+      service->profile()->GetPrefs()->GetBoolean(prefs::kSyncSessions));
   args->SetBoolean("syncTypedUrls",
       service->profile()->GetPrefs()->GetBoolean(prefs::kSyncTypedUrls));
   args->SetBoolean("syncApps",

@@ -243,6 +243,9 @@ const char kDisableSyncPasswords[]          = "disable-sync-passwords";
 // Disable syncing of preferences.
 const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 
+// Disable syncing of sessions.
+const char kDisableSyncSessions[]        = "disable-sync-sessions";
+
 // Disable syncing of themes.
 const char kDisableSyncThemes[]             = "disable-sync-themes";
 
@@ -435,6 +438,9 @@ const char kEnableSyncPasswords[]           = "enable-sync-passwords";
 
 // Enable syncing browser preferences.
 const char kEnableSyncPreferences[]         = "enable-sync-preferences";
+
+// Enable syncing browser sessions.
+const char kEnableSyncSessions[]         = "enable-sync-sessions";
 
 // Enable syncing browser themes.
 const char kEnableSyncThemes[]              = "enable-sync-themes";
