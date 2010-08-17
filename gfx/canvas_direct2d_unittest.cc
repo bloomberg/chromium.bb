@@ -231,57 +231,6 @@ TEST(CanvasDirect2D, ClipRectWithScale) {
   canvas.Restore();
 }
 
-TEST(CanvasDirect2D, CreateLinearGradientBrush) {
-  TestWindow window;
-  gfx::CanvasDirect2D canvas(window.rt());
-
-  canvas.Save();
-  SkColor colors[] = { SK_ColorRED, SK_ColorWHITE };
-  float positions[] = { 0.0f, 1.0f };
-  scoped_ptr<gfx::Brush> brush(canvas.CreateLinearGradientBrush(
-      gfx::Point(0, 0),
-      gfx::Point(100, 0),
-      colors,
-      positions,
-      2,
-      gfx::Canvas::TileMode_Clamp));
-  canvas.FillRectInt(brush.get(), 0, 0, 500, 500);
-  canvas.Restore();
-}
-
-TEST(CanvasDirect2D, CreateRadialGradientBrush) {
-  TestWindow window;
-  gfx::CanvasDirect2D canvas(window.rt());
-
-  canvas.Save();
-  SkColor colors[] = { SK_ColorBLUE, SK_ColorGREEN };
-  float positions[] = { 0.0f, 1.0f };
-  scoped_ptr<gfx::Brush> brush(canvas.CreateRadialGradientBrush(
-      gfx::Point(200, 200),
-      100.0f,
-      colors,
-      positions,
-      2,
-      gfx::Canvas::TileMode_Clamp));
-  canvas.FillRectInt(brush.get(), 0, 0, 500, 500);
-  canvas.Restore();
-}
-
-TEST(CanvasDirect2D, CreateBitmapBrush) {
-  TestWindow window;
-  gfx::CanvasDirect2D canvas(window.rt());
-
-  SkBitmap bitmap = LoadBitmapFromResources(IDR_BITMAP_BRUSH_IMAGE);
-
-  canvas.Save();
-  scoped_ptr<gfx::Brush> brush(canvas.CreateBitmapBrush(
-      bitmap,
-      gfx::Canvas::TileMode_Mirror,
-      gfx::Canvas::TileMode_Mirror));
-  canvas.FillRectInt(brush.get(), 0, 0, 500, 500);
-  canvas.Restore();
-}
-
 TEST(CanvasDirect2D, DrawRectInt) {
   TestWindow window;
   gfx::CanvasDirect2D canvas(window.rt());

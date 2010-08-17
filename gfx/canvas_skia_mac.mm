@@ -27,7 +27,8 @@ CanvasSkia::~CanvasSkia() {
 // static
 void CanvasSkia::SizeStringInt(const std::wstring& text,
                                const gfx::Font& font,
-                               int *width, int *height, int flags) {
+                               int* width, int* height,
+                               int flags) {
   NSFont* native_font = font.GetNativeFont();
   NSString* ns_string = base::SysWideToNSString(text);
   NSDictionary* attributes =
@@ -38,8 +39,10 @@ void CanvasSkia::SizeStringInt(const std::wstring& text,
   *height = font.GetHeight();
 }
 
-void CanvasSkia::DrawStringInt(const std::wstring& text, const gfx::Font& font,
-                               const SkColor& color, int x, int y, int w, int h,
+void CanvasSkia::DrawStringInt(const std::wstring& text,
+                               const gfx::Font& font,
+                               const SkColor& color,
+                               int x, int y, int w, int h,
                                int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
@@ -68,7 +71,8 @@ void CanvasSkia::DrawStringInt(const std::wstring& text, const gfx::Font& font,
       [[[NSAttributedString alloc] initWithString:base::SysWideToNSString(text)
                                         attributes:attributes] autorelease];
   scoped_cftyperef<CTFramesetterRef> framesetter(
-      CTFramesetterCreateWithAttributedString(reinterpret_cast<CFAttributedStringRef>(ns_string)));
+      CTFramesetterCreateWithAttributedString(
+      reinterpret_cast<CFAttributedStringRef>(ns_string)));
 
   CGRect text_bounds = CGRectMake(x, y, w, h);
   CGMutablePathRef path = CGPathCreateMutable();

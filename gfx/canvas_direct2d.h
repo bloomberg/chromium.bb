@@ -32,60 +32,49 @@ class CanvasDirect2D : public Canvas {
   virtual bool ClipRectInt(int x, int y, int w, int h);
   virtual void TranslateInt(int x, int y);
   virtual void ScaleInt(int x, int y);
-  virtual void FillRectInt(int x, int y, int w, int h,
-                           const SkPaint& paint);
-  virtual void FillRectInt(const SkColor& color, int x, int y, int w,
-                           int h);
+  virtual void FillRectInt(int x, int y, int w, int h, const SkPaint& paint);
+  virtual void FillRectInt(const SkColor& color, int x, int y, int w, int h);
   virtual void FillRectInt(const gfx::Brush* brush, int x, int y, int w, int h);
-  virtual void DrawRectInt(const SkColor& color, int x, int y, int w,
-                           int h);
-  virtual void DrawRectInt(const SkColor& color, int x, int y, int w, int h,
+  virtual void DrawRectInt(const SkColor& color, int x, int y, int w, int h);
+  virtual void DrawRectInt(const SkColor& color,
+                           int x, int y, int w, int h,
                            SkXfermode::Mode mode);
-  virtual void DrawLineInt(const SkColor& color, int x1, int y1, int x2,
-                           int y2);
+  virtual void DrawLineInt(const SkColor& color,
+                           int x1, int y1,
+                           int x2, int y2);
   virtual void DrawBitmapInt(const SkBitmap& bitmap, int x, int y);
-  virtual void DrawBitmapInt(const SkBitmap& bitmap, int x, int y,
+  virtual void DrawBitmapInt(const SkBitmap& bitmap,
+                             int x, int y,
                              const SkPaint& paint);
-  virtual void DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
-                             int src_w, int src_h, int dest_x, int dest_y,
-                             int dest_w, int dest_h, bool filter);
-  virtual void DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
-                             int src_w, int src_h, int dest_x, int dest_y,
-                             int dest_w, int dest_h, bool filter,
+  virtual void DrawBitmapInt(const SkBitmap& bitmap,
+                             int src_x, int src_y, int src_w, int src_h,
+                             int dest_x, int dest_y, int dest_w, int dest_h,
+                             bool filter);
+  virtual void DrawBitmapInt(const SkBitmap& bitmap,
+                             int src_x, int src_y, int src_w, int src_h,
+                             int dest_x, int dest_y, int dest_w, int dest_h,
+                             bool filter,
                              const SkPaint& paint);
-  virtual void DrawStringInt(const std::wstring& text, const gfx::Font& font,
-                             const SkColor& color, int x, int y, int w,
-                             int h);
-  virtual void DrawStringInt(const std::wstring& text, const gfx::Font& font,
+  virtual void DrawStringInt(const std::wstring& text,
+                             const gfx::Font& font,
+                             const SkColor& color,
+                             int x, int y, int w, int h);
+  virtual void DrawStringInt(const std::wstring& text,
+                             const gfx::Font& font,
                              const SkColor& color,
                              const gfx::Rect& display_rect);
-  virtual void DrawStringInt(const std::wstring& text, const gfx::Font& font,
-                             const SkColor& color, int x, int y, int w, int h,
+  virtual void DrawStringInt(const std::wstring& text,
+                             const gfx::Font& font,
+                             const SkColor& color,
+                             int x, int y, int w, int h,
                              int flags);
   virtual void DrawFocusRect(int x, int y, int width, int height);
   virtual void TileImageInt(const SkBitmap& bitmap, int x, int y, int w, int h);
-  virtual void TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
+  virtual void TileImageInt(const SkBitmap& bitmap,
+                            int src_x, int src_y,
                             int dest_x, int dest_y, int w, int h);
   virtual gfx::NativeDrawingContext BeginPlatformPaint();
   virtual void EndPlatformPaint();
-  virtual Brush* CreateLinearGradientBrush(
-      const gfx::Point& start_point,
-      const gfx::Point& end_point,
-      const SkColor colors[],
-      const float positions[],
-      size_t position_count,
-      TileMode tile_mode);
-  virtual Brush* CreateRadialGradientBrush(
-      const gfx::Point& center_point,
-      float radius,
-      const SkColor colors[],
-      const float positions[],
-      size_t position_count,
-      TileMode tile_mode);
-  virtual Brush* CreateBitmapBrush(
-      const SkBitmap& bitmap,
-      TileMode tile_mode_x,
-      TileMode tile_mode_y);
   virtual CanvasSkia* AsCanvasSkia();
   virtual const CanvasSkia* AsCanvasSkia() const;
 

@@ -103,30 +103,32 @@ class Canvas {
 
   // Fills the specified region with the specified color using a transfer
   // mode of SkXfermode::kSrcOver_Mode.
-  virtual void FillRectInt(const SkColor& color, int x, int y, int w,
-                           int h) = 0;
+  virtual void FillRectInt(const SkColor& color,
+                           int x, int y, int w, int h) = 0;
 
   // Fills the specified region with the specified brush.
-  virtual void FillRectInt(const gfx::Brush* brush, int x, int y, int w,
-                           int h) = 0;
+  virtual void FillRectInt(const gfx::Brush* brush,
+                           int x, int y, int w, int h) = 0;
 
   // Draws a single pixel rect in the specified region with the specified
   // color, using a transfer mode of SkXfermode::kSrcOver_Mode.
   //
-  // NOTE: if you need a single pixel line, use DraLineInt.
-  virtual void DrawRectInt(const SkColor& color, int x, int y, int w,
-                           int h) = 0;
+  // NOTE: if you need a single pixel line, use DrawLineInt.
+  virtual void DrawRectInt(const SkColor& color,
+                           int x, int y, int w, int h) = 0;
 
   // Draws a single pixel rect in the specified region with the specified
   // color and transfer mode.
   //
-  // NOTE: if you need a single pixel line, use DraLineInt.
-  virtual void DrawRectInt(const SkColor& color, int x, int y, int w, int h,
+  // NOTE: if you need a single pixel line, use DrawLineInt.
+  virtual void DrawRectInt(const SkColor& color,
+                           int x, int y, int w, int h,
                            SkXfermode::Mode mode) = 0;
 
   // Draws a single pixel line with the specified color.
-  virtual void DrawLineInt(const SkColor& color, int x1, int y1, int x2,
-                           int y2) = 0;
+  virtual void DrawLineInt(const SkColor& color,
+                           int x1, int y1,
+                           int x2, int y2) = 0;
 
   // Draws a bitmap with the origin at the specified location. The upper left
   // corner of the bitmap is rendered at the specified location.
@@ -135,7 +137,8 @@ class Canvas {
   // Draws a bitmap with the origin at the specified location, using the
   // specified paint. The upper left corner of the bitmap is rendered at the
   // specified location.
-  virtual void DrawBitmapInt(const SkBitmap& bitmap, int x, int y,
+  virtual void DrawBitmapInt(const SkBitmap& bitmap,
+                             int x, int y,
                              const SkPaint& paint) = 0;
 
   // Draws a portion of a bitmap in the specified location. The src parameters
@@ -150,38 +153,45 @@ class Canvas {
   // is used for resampling.
   //
   // An optional custom SkPaint can be provided.
-  virtual void DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
-                             int src_w, int src_h, int dest_x, int dest_y,
-                             int dest_w, int dest_h, bool filter) = 0;
-  virtual void DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
-                             int src_w, int src_h, int dest_x, int dest_y,
-                             int dest_w, int dest_h, bool filter,
+  virtual void DrawBitmapInt(const SkBitmap& bitmap,
+                             int src_x, int src_y, int src_w, int src_h,
+                             int dest_x, int dest_y, int dest_w, int dest_h,
+                             bool filter) = 0;
+  virtual void DrawBitmapInt(const SkBitmap& bitmap,
+                             int src_x, int src_y, int src_w, int src_h,
+                             int dest_x, int dest_y, int dest_w, int dest_h,
+                             bool filter,
                              const SkPaint& paint) = 0;
 
   // Draws text with the specified color, font and location. The text is
   // aligned to the left, vertically centered, clipped to the region. If the
   // text is too big, it is truncated and '...' is added to the end.
-  virtual void DrawStringInt(const std::wstring& text, const gfx::Font& font,
-                             const SkColor& color, int x, int y, int w,
-                             int h) = 0;
-  virtual void DrawStringInt(const std::wstring& text, const gfx::Font& font,
+  virtual void DrawStringInt(const std::wstring& text, const
+                             gfx::Font& font,
+                             const SkColor& color,
+                             int x, int y, int w, int h) = 0;
+  virtual void DrawStringInt(const std::wstring& text,
+                             const gfx::Font& font,
                              const SkColor& color,
                              const gfx::Rect& display_rect) = 0;
 
   // Draws text with the specified color, font and location. The last argument
   // specifies flags for how the text should be rendered. It can be one of
   // TEXT_ALIGN_CENTER, TEXT_ALIGN_RIGHT or TEXT_ALIGN_LEFT.
-  virtual void DrawStringInt(const std::wstring& text, const gfx::Font& font,
-                             const SkColor& color, int x, int y, int w, int h,
+  virtual void DrawStringInt(const std::wstring& text,
+                             const gfx::Font& font,
+                             const SkColor& color,
+                             int x, int y, int w, int h,
                              int flags) = 0;
 
   // Draws a dotted gray rectangle used for focus purposes.
   virtual void DrawFocusRect(int x, int y, int width, int height) = 0;
 
   // Tiles the image in the specified region.
-  virtual void TileImageInt(const SkBitmap& bitmap, int x, int y, int w,
-                            int h) = 0;
-  virtual void TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
+  virtual void TileImageInt(const SkBitmap& bitmap,
+                            int x, int y, int w, int h) = 0;
+  virtual void TileImageInt(const SkBitmap& bitmap,
+                            int src_x, int src_y,
                             int dest_x, int dest_y, int w, int h) = 0;
 
   // Returns a native drawing context for platform specific drawing routines to
@@ -191,62 +201,6 @@ class Canvas {
   // Signifies the end of platform drawing using the native drawing context
   // returned by BeginPlatformPaint().
   virtual void EndPlatformPaint() = 0;
-
-  // Defines how a brush paints the area outside its normal content area.
-  enum TileMode {
-    TileMode_Clamp,
-    TileMode_Repeat,
-    TileMode_Mirror
-  };
-
-  // Creates a linear gradient brush.
-  // |start_point| and |end_point| are the pixel positions of the start and end
-  // points of the gradient.
-  // |colors| is a list of color stops.
-  // |positions| is a list of positions corresponding to the color stops, an
-  // array of floats of increasing value ranging from 0.0f to 1.0f.
-  // |position_count| is the size of the |colors| and |positions| arrays.
-  // |tile_mode| specifies how the gradient brush repeats outside its natural
-  // bounds.
-  // Returns an encapsulated platform brush object which the caller must delete.
-  // Returns NULL if the system is unable to create the brush for some reason.
-  virtual Brush* CreateLinearGradientBrush(
-      const gfx::Point& start_point,
-      const gfx::Point& end_point,
-      const SkColor colors[],
-      const float positions[],
-      size_t position_count,
-      TileMode tile_mode) = 0;
-
-  // Creates a radial gradient brush.
-  // |center_point| is the center of the circle in the brush's coordinate space.
-  // |radius| is the radius of the circle.
-  // |colors| is a list of color stops.
-  // |positions| is a list of positions corresponding to the color stops, an
-  // array of floats of increasing value ranging from 0.0f to 1.0f.
-  // |position_count| is the size of the |colors| and |positions| arrays.
-  // |tile_mode| specifies how the gradient brush repeats outside its natural
-  // bounds.
-  // Returns an encapsulated platform brush object which the caller must delete.
-  // Returns NULL if the system is unable to create the brush for some reason.
-  virtual Brush* CreateRadialGradientBrush(
-      const gfx::Point& center_point,
-      float radius,
-      const SkColor colors[],
-      const float positions[],
-      size_t position_count,
-      TileMode tile_mode) = 0;
-
-  // Creates a bitmap brush.
-  // |bitmap| is the bitmap to be used for the brush.
-  // |tile_mode_x,y| - specifies how the brush tiles the areas beyond those
-  // filled by its bitmap along each axis.
-  // Returns an encapsulated platform brush object which the caller must delete.
-  // Returns NULL if the system is unable to create the brush for some reason.
-  virtual Brush* CreateBitmapBrush(
-      const SkBitmap& bitmap,
-      TileMode tile_mode_x,
-      TileMode tile_mode_y) = 0;
 
   // TODO(beng): remove this once we don't need to use any skia-specific methods
   //             through this interface.

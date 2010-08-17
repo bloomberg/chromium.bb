@@ -15,8 +15,10 @@ namespace {
 
 // We make sure that LTR text we draw in an RTL context is modified
 // appropriately to make sure it maintains it LTR orientation.
-void DoDrawText(HDC hdc, const std::wstring& text,
-                RECT* text_bounds, int flags) {
+void DoDrawText(HDC hdc,
+                const std::wstring& text,
+                RECT* text_bounds,
+                int flags) {
   std::wstring localized_text;
   const wchar_t* string_ptr = text.c_str();
   int string_size = static_cast<int>(text.length());
@@ -138,7 +140,8 @@ CanvasSkia::~CanvasSkia() {
 // static
 void CanvasSkia::SizeStringInt(const std::wstring& text,
                                const gfx::Font& font,
-                               int* width, int* height, int flags) {
+                               int* width, int* height,
+                               int flags) {
   // Clamp the max amount of text we'll measure to 2K.  When the string is
   // actually drawn, it will be clipped to whatever size box is provided, and
   // the time to do that doesn't depend on the length being clipped off.
@@ -173,8 +176,10 @@ void CanvasSkia::SizeStringInt(const std::wstring& text,
   *height = r.bottom;
 }
 
-void CanvasSkia::DrawStringInt(const std::wstring& text, HFONT font,
-                               const SkColor& color, int x, int y, int w, int h,
+void CanvasSkia::DrawStringInt(const std::wstring& text,
+                               HFONT font,
+                               const SkColor& color,
+                               int x, int y, int w, int h,
                                int flags) {
   if (!IntersectsClipRectInt(x, y, w, h))
     return;
@@ -211,7 +216,8 @@ void CanvasSkia::DrawStringInt(const std::wstring& text, HFONT font,
 void CanvasSkia::DrawStringInt(const std::wstring& text,
                                const gfx::Font& font,
                                const SkColor& color,
-                               int x, int y, int w, int h, int flags) {
+                               int x, int y, int w, int h,
+                               int flags) {
   DrawStringInt(text, font.GetNativeFont(), color, x, y, w, h, flags);
 }
 
@@ -287,7 +293,7 @@ void CanvasSkia::DrawStringWithHalo(const std::wstring& text,
   }
 
   // Draw the halo bitmap with blur.
-  drawBitmap(text_bitmap, SkIntToScalar(x - 1), SkIntToScalar(y - 1));
+  DrawBitmapInt(text_bitmap, x - 1, y - 1);
 }
 
 }  // namespace gfx

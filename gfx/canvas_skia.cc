@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,26 +18,6 @@
 #endif
 
 namespace {
-
-SkPoint PointToSkPoint(const gfx::Point point) {
-  SkPoint sk_point;
-  sk_point.set(SkIntToScalar(point.x()), SkIntToScalar(point.y()));
-  return sk_point;
-}
-
-SkShader::TileMode TileModeToSkShaderTileMode(gfx::Canvas::TileMode tile_mode) {
-  switch (tile_mode) {
-    case gfx::Canvas::TileMode_Clamp:
-      return SkShader::kClamp_TileMode;
-    case gfx::Canvas::TileMode_Mirror:
-      return SkShader::kMirror_TileMode;
-    case gfx::Canvas::TileMode_Repeat:
-      return SkShader::kRepeat_TileMode;
-    default:
-      NOTREACHED() << "Invalid TileMode";
-  }
-  return SkShader::kClamp_TileMode;
-}
 
 // A platform wrapper for a Skia shader that makes sure the underlying
 // SkShader object is unref'ed when this object is destroyed.
@@ -132,8 +112,8 @@ void CanvasSkia::FillRectInt(const SkColor& color, int x, int y, int w, int h) {
   FillRectInt(x, y, w, h, paint);
 }
 
-void CanvasSkia::FillRectInt(const gfx::Brush* brush, int x, int y, int w,
-                             int h) {
+void CanvasSkia::FillRectInt(const gfx::Brush* brush,
+                             int x, int y, int w, int h) {
   const SkiaShader* shader = static_cast<const SkiaShader*>(brush);
   SkPaint paint;
   paint.setShader(shader->shader());
@@ -150,7 +130,8 @@ void CanvasSkia::DrawRectInt(const SkColor& color, int x, int y, int w, int h) {
   DrawRectInt(color, x, y, w, h, SkXfermode::kSrcOver_Mode);
 }
 
-void CanvasSkia::DrawRectInt(const SkColor& color, int x, int y, int w, int h,
+void CanvasSkia::DrawRectInt(const SkColor& color,
+                             int x, int y, int w, int h,
                              SkXfermode::Mode mode) {
   SkPaint paint;
   paint.setColor(color);
@@ -161,12 +142,12 @@ void CanvasSkia::DrawRectInt(const SkColor& color, int x, int y, int w, int h,
   paint.setStrokeWidth(SkIntToScalar(0));
   paint.setXfermodeMode(mode);
 
-  SkIRect rc = {x, y, x + w, y + h};
-  drawIRect(rc, paint);
+  FillRectInt(x, y, w, h, paint);
 }
 
-void CanvasSkia::DrawLineInt(const SkColor& color, int x1, int y1, int x2,
-                             int y2) {
+void CanvasSkia::DrawLineInt(const SkColor& color,
+                             int x1, int y1,
+                             int x2, int y2) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStrokeWidth(SkIntToScalar(1));
@@ -212,44 +193,36 @@ void CanvasSkia::DrawFocusRect(int x, int y, int width, int height) {
   paint.setShader(shader);
   shader->unref();
 
-  SkRect rect;
-  rect.set(SkIntToScalar(x), SkIntToScalar(y),
-           SkIntToScalar(x + width), SkIntToScalar(y + 1));
-  drawRect(rect, paint);
-  rect.set(SkIntToScalar(x), SkIntToScalar(y + height - 1),
-           SkIntToScalar(x + width), SkIntToScalar(y + height));
-  drawRect(rect, paint);
-
-  rect.set(SkIntToScalar(x), SkIntToScalar(y),
-           SkIntToScalar(x + 1), SkIntToScalar(y + height));
-  drawRect(rect, paint);
-  rect.set(SkIntToScalar(x + width - 1), SkIntToScalar(y),
-           SkIntToScalar(x + width), SkIntToScalar(y + height));
-  drawRect(rect, paint);
+  FillRectInt(x, y, width, 1, paint);
+  FillRectInt(x, y + height - 1, width, 1, paint);
+  FillRectInt(x, y, 1, height, paint);
+  FillRectInt(x + width - 1, y, 1, height, paint);
 }
 
 void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {
   drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y));
 }
 
-void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int x, int y,
+void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap,
+                               int x, int y,
                                const SkPaint& paint) {
   drawBitmap(bitmap, SkIntToScalar(x), SkIntToScalar(y), &paint);
 }
 
-void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
-                               int src_w, int src_h, int dest_x, int dest_y,
-                               int dest_w, int dest_h,
+void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap,
+                               int src_x, int src_y, int src_w, int src_h,
+                               int dest_x, int dest_y, int dest_w, int dest_h,
                                bool filter) {
   SkPaint p;
   DrawBitmapInt(bitmap, src_x, src_y, src_w, src_h, dest_x, dest_y,
                 dest_w, dest_h, filter, p);
 }
 
-void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int src_x, int src_y,
-                               int src_w, int src_h, int dest_x, int dest_y,
-                               int dest_w, int dest_h,
-                               bool filter, const SkPaint& paint) {
+void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap,
+                               int src_x, int src_y, int src_w, int src_h,
+                               int dest_x, int dest_y, int dest_w, int dest_h,
+                               bool filter,
+                               const SkPaint& paint) {
   DLOG_ASSERT(src_x + src_w < std::numeric_limits<int16_t>::max() &&
               src_y + src_h < std::numeric_limits<int16_t>::max());
   if (src_w <= 0 || src_h <= 0 || dest_w <= 0 || dest_h <= 0) {
@@ -314,12 +287,13 @@ void CanvasSkia::DrawStringInt(const std::wstring& text,
                 display_rect.width(), display_rect.height());
 }
 
-void CanvasSkia::TileImageInt(const SkBitmap& bitmap, int x, int y, int w,
-                              int h) {
+void CanvasSkia::TileImageInt(const SkBitmap& bitmap,
+                              int x, int y, int w, int h) {
   TileImageInt(bitmap, 0, 0, x, y, w, h);
 }
 
-void CanvasSkia::TileImageInt(const SkBitmap& bitmap, int src_x, int src_y,
+void CanvasSkia::TileImageInt(const SkBitmap& bitmap,
+                              int src_x, int src_y,
                               int dest_x, int dest_y, int w, int h) {
   if (!IntersectsClipRectInt(dest_x, dest_y, w, h))
     return;
@@ -348,55 +322,6 @@ gfx::NativeDrawingContext CanvasSkia::BeginPlatformPaint() {
 
 void CanvasSkia::EndPlatformPaint() {
   endPlatformPaint();
-}
-
-Brush* CanvasSkia::CreateLinearGradientBrush(
-    const gfx::Point& start_point,
-    const gfx::Point& end_point,
-    const SkColor colors[],
-    const float positions[],
-    size_t position_count,
-    TileMode tile_mode) {
-  SkPoint boundary_points[2];
-  boundary_points[0].set(SkIntToScalar(start_point.x()),
-                         SkIntToScalar(start_point.y()));
-  boundary_points[1].set(SkIntToScalar(start_point.y()),
-                         SkIntToScalar(start_point.y()));
-  SkShader* shader = SkGradientShader::CreateLinear(
-      boundary_points,
-      colors,
-      positions,
-      position_count,
-      TileModeToSkShaderTileMode(tile_mode));
-  return new SkiaShader(shader);
-}
-
-Brush* CanvasSkia::CreateRadialGradientBrush(
-    const gfx::Point& center_point,
-    float radius,
-    const SkColor colors[],
-    const float positions[],
-    size_t position_count,
-    TileMode tile_mode) {
-  SkShader* shader = SkGradientShader::CreateRadial(
-      PointToSkPoint(center_point),
-      radius,
-      colors,
-      positions,
-      position_count,
-      TileModeToSkShaderTileMode(tile_mode));
-  return new SkiaShader(shader);
-}
-
-Brush* CanvasSkia::CreateBitmapBrush(
-    const SkBitmap& bitmap,
-    TileMode tile_mode_x,
-    TileMode tile_mode_y) {
-  SkShader* shader = SkShader::CreateBitmapShader(
-      bitmap,
-      TileModeToSkShaderTileMode(tile_mode_x),
-      TileModeToSkShaderTileMode(tile_mode_y));
-  return new SkiaShader(shader);
 }
 
 CanvasSkia* CanvasSkia::AsCanvasSkia() {

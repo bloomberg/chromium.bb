@@ -176,7 +176,8 @@ static void SetupPangoLayout(PangoLayout* layout,
 // static
 void CanvasSkia::SizeStringInt(const std::wstring& text,
                                const gfx::Font& font,
-                               int* width, int* height, int flags) {
+                               int* width, int* height,
+                               int flags) {
   int org_width = *width;
   cairo_surface_t* surface =
       cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
