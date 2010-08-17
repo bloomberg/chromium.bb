@@ -719,7 +719,7 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input) {
                              &AutocompleteMatch::DestinationsEqual),
                  matches_.end());
 
-  // Find the top max_matches.
+  // Find the top |kMaxMatches| matches.
   if (matches_.size() > kMaxMatches) {
     std::partial_sort(matches_.begin(), matches_.begin() + kMaxMatches,
                       matches_.end(), &AutocompleteMatch::MoreRelevant);
@@ -746,6 +746,7 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input) {
        (input.type() == AutocompleteInput::REQUESTED_URL)) &&
       (default_match_ != end()) &&
       (default_match_->transition != PageTransition::TYPED) &&
+      (default_match_->transition != PageTransition::KEYWORD) &&
       (input.canonicalized_url() != default_match_->destination_url))
     alternate_nav_url_ = input.canonicalized_url();
 }
