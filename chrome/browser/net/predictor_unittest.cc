@@ -127,7 +127,7 @@ TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
       PredictorInit::kMaxPrefetchConcurrentLookups,
       false);
 
-  GURL localhost("http://localhost:80");
+  GURL localhost("http://127.0.0.1:80");
   UrlList names;
   names.push_back(localhost);
 
