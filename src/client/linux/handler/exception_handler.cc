@@ -265,16 +265,28 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
 
   pthread_mutex_unlock(&handler_stack_mutex_);
 
-  // Terminate ourselves with the same signal so that our parent knows that we
-  // crashed. The default action for all the signals which we catch is Core, so
+  if (info->si_pid) {
+    // This signal was triggered by somebody sending us the signal with kill().
+    // In order to retrigger it, we have to queue a new signal by calling
+    // kill() ourselves.
+    if (tgkill(getpid(), syscall(__NR_gettid), sig) < 0) {
+      // If we failed to kill ourselves (e.g. because a sandbox disallows us
+      // to do so), we instead resort to terminating our process. This will
+      // result in an incorrect exit code.
+      _exit(1);
+    }
+  } else {
+    // This was a synchronous signal triggered by a hard fault (e.g. SIGSEGV).
+    // No need to reissue the signal. It will automatically trigger again,
+    // when we return from the signal handler.
+  }
+
+  // As soon as we return from the signal handler, our signal will become
+  // unmasked. At that time, we will  get terminated with the same signal that
+  // was triggered originally. This allows our parent to know that we crashed.
+  // The default action for all the signals which we catch is Core, so
   // this is the end of us.
   signal(sig, SIG_DFL);
-
-  // TODO(markus): mask signal and return to caller
-  tgkill(getpid(), syscall(__NR_gettid), sig);
-  _exit(1);
-
-  // not reached.
 }
 
 struct ThreadArgument {
