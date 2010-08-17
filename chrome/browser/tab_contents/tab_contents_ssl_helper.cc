@@ -114,12 +114,9 @@ class TabContentsSSLHelper::SSLAddCertData : public NotificationObserver {
     infobar_delegate_ = delegate;
   }
 
-  void ShowErrorInfoBar(const std::wstring& message) {
+  void ShowErrorInfoBar(const string16& message) {
     ShowInfoBar(
-        new SimpleAlertInfoBarDelegate(tab_,
-                                       WideToUTF16(message),
-                                       GetCertIcon(),
-                                       true));
+        new SimpleAlertInfoBarDelegate(tab_, message, GetCertIcon(), true));
   }
 
   // NotificationObserver implementation.
@@ -178,9 +175,9 @@ void TabContentsSSLHelper::OnVerifyClientCertificateError(
   // Display an infobar with the error message.
   // TODO(davidben): Display a more user-friendly error string.
   add_cert_data->ShowErrorInfoBar(
-      l10n_util::GetStringF(IDS_ADD_CERT_ERR_INVALID_CERT,
-                            UTF8ToWide(base::IntToString(-error_code)),
-                            ASCIIToWide(net::ErrorToString(error_code))));
+      l10n_util::GetStringFUTF16(IDS_ADD_CERT_ERR_INVALID_CERT,
+                                 base::IntToString16(-error_code),
+                                 ASCIIToUTF16(net::ErrorToString(error_code))));
 }
 
 void TabContentsSSLHelper::AskToAddClientCertificate(
@@ -202,9 +199,9 @@ void TabContentsSSLHelper::OnAddClientCertificateError(
   // Display an infobar with the error message.
   // TODO(davidben): Display a more user-friendly error string.
   add_cert_data->ShowErrorInfoBar(
-      l10n_util::GetStringF(IDS_ADD_CERT_ERR_FAILED,
-                            UTF8ToWide(base::IntToString(-error_code)),
-                            ASCIIToWide(net::ErrorToString(error_code))));
+      l10n_util::GetStringFUTF16(IDS_ADD_CERT_ERR_FAILED,
+                                 base::IntToString16(-error_code),
+                                 ASCIIToUTF16(net::ErrorToString(error_code))));
 }
 
 void TabContentsSSLHelper::OnAddClientCertificateFinished(
