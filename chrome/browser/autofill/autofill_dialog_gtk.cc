@@ -376,7 +376,7 @@ void AutoFillDialog::LoadAutoFillData() {
     return;
   }
 
-  // Rebuild the underyling store.
+  // Rebuild the underlying store.
   gtk_list_store_clear(list_store_);
 
   GtkTreeIter iter;

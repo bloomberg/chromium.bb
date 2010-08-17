@@ -4,17 +4,27 @@
 
 #include "chrome/browser/dom_ui/autofill_options_handler.h"
 
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/autofill/autofill_profile.h"
+#include "chrome/browser/autofill/credit_card.h"
+#include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 
-AutoFillOptionsHandler::AutoFillOptionsHandler() {
+AutoFillOptionsHandler::AutoFillOptionsHandler()
+    : personal_data_(NULL) {
 }
 
 AutoFillOptionsHandler::~AutoFillOptionsHandler() {
+  if (personal_data_)
+    personal_data_->RemoveObserver(this);
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// OptionsUIHandler implementation:
 void AutoFillOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
@@ -39,5 +49,51 @@ void AutoFillOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_HELP_LABEL));
 }
 
+void AutoFillOptionsHandler::Initialize() {
+  personal_data_ = dom_ui_->GetProfile()->GetPersonalDataManager();
+  personal_data_->SetObserver(this);
+
+  LoadAutoFillData();
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// PersonalDataManager::Observer implementation:
+void  AutoFillOptionsHandler::OnPersonalDataLoaded() {
+  LoadAutoFillData();
+}
+
+void AutoFillOptionsHandler::OnPersonalDataChanged() {
+  LoadAutoFillData();
+}
+
 void AutoFillOptionsHandler::RegisterMessages() {
+}
+
+void AutoFillOptionsHandler::LoadAutoFillData() {
+  if (!personal_data_->IsDataLoaded())
+    return;
+
+  ListValue addresses;
+  for (std::vector<AutoFillProfile*>::const_iterator i =
+           personal_data_->profiles().begin();
+       i != personal_data_->profiles().end(); ++i) {
+    DictionaryValue* address = new DictionaryValue();
+    address->SetString("label", (*i)->PreviewSummary());
+    addresses.Append(address);
+  }
+
+  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.updateAddresses",
+                                  addresses);
+
+  ListValue credit_cards;
+  for (std::vector<CreditCard*>::const_iterator i =
+           personal_data_->credit_cards().begin();
+       i != personal_data_->credit_cards().end(); ++i) {
+    DictionaryValue* credit_card = new DictionaryValue();
+    credit_card->SetString("label", (*i)->PreviewSummary());
+    credit_cards.Append(credit_card);
+  }
+
+  dom_ui_->CallJavascriptFunction(L"AutoFillOptions.updateCreditCards",
+                                  credit_cards);
 }
