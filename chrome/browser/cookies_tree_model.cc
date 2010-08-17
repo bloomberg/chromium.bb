@@ -281,6 +281,31 @@ bool CookieTreeOriginNode::CanCreateContentException() const {
   return !url_.SchemeIsFile();
 }
 
+std::string CookieTreeOriginNode::GetCurrentContentSettingTitle(
+    HostContentSettingsMap* content_settings) const {
+  if (!CanCreateContentException())
+    return std::string();
+
+  ContentSettings settings =
+      content_settings->GetNonDefaultContentSettings(url_);
+  switch (settings.settings[CONTENT_SETTINGS_TYPE_COOKIES]) {
+    case CONTENT_SETTING_ALLOW:
+      return l10n_util::GetStringUTF8(IDS_EXCEPTIONS_ALLOW_BUTTON);
+    case CONTENT_SETTING_BLOCK:
+      return l10n_util::GetStringUTF8(IDS_EXCEPTIONS_BLOCK_BUTTON);
+    case CONTENT_SETTING_ASK:
+      return l10n_util::GetStringUTF8(IDS_EXCEPTIONS_ASK_BUTTON);
+    case CONTENT_SETTING_SESSION_ONLY:
+      return l10n_util::GetStringUTF8(IDS_EXCEPTIONS_SESSION_ONLY_BUTTON);
+    case CONTENT_SETTING_DEFAULT:
+      return std::string();
+    default:
+      NOTREACHED();
+  }
+
+  return std::string(); // not reached.
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeCookiesNode, public:
 

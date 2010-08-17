@@ -168,6 +168,11 @@ class CookieTreeOriginNode : public CookieTreeNode {
   // True if a content exception can be created for this origin.
   bool CanCreateContentException() const;
 
+  // Returns a textual representation of the current content exception
+  // applying to this domain.
+  std::string GetCurrentContentSettingTitle(
+      HostContentSettingsMap* content_settings) const;
+
  private:
   // Pointers to the cookies, databases, local and session storage and appcache
   // nodes.  When we build up the tree we need to quickly get a reference to
