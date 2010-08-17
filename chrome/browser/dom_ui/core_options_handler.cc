@@ -124,8 +124,8 @@ Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
   Value* return_value;
   if (pref) {
     DictionaryValue* dict = new DictionaryValue;
-    dict->Set(L"value", pref->GetValue()->DeepCopy());
-    dict->SetBoolean(L"managed", pref->IsManaged());
+    dict->Set("value", pref->GetValue()->DeepCopy());
+    dict->SetBoolean("managed", pref->IsManaged());
     return_value = dict;
   } else {
     return_value = Value::CreateNullValue();
@@ -292,8 +292,8 @@ void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {
       result_value.Append(Value::CreateStringValue(pref_name->c_str()));
 
       DictionaryValue* dict = new DictionaryValue;
-      dict->Set(L"value", pref->GetValue()->DeepCopy());
-      dict->SetBoolean(L"managed", pref->IsManaged());
+      dict->Set("value", pref->GetValue()->DeepCopy());
+      dict->SetBoolean("managed", pref->IsManaged());
       result_value.Append(dict);
 
       dom_ui_->CallJavascriptFunction(callback_function, result_value);

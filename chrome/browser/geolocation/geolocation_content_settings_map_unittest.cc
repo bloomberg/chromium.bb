@@ -213,11 +213,11 @@ TEST_F(GeolocationContentSettingsMapTests, IgnoreInvalidURLsInPrefs) {
           prefs::kGeolocationContentSettings);
   // For simplicity, use the overloads that do path expansion. As '.' is the
   // path separator, we can't have dotted hostnames (which is fine).
-  all_settings_dictionary->SetInteger(L"http://a/.http://b/",
+  all_settings_dictionary->SetInteger("http://a/.http://b/",
                                       CONTENT_SETTING_ALLOW);
-  all_settings_dictionary->SetInteger(L"bad_requester.http://b/",
+  all_settings_dictionary->SetInteger("bad_requester.http://b/",
                                       CONTENT_SETTING_ALLOW);
-  all_settings_dictionary->SetInteger(L"http://a/.bad-embedder",
+  all_settings_dictionary->SetInteger("http://a/.bad-embedder",
                                       CONTENT_SETTING_ALLOW);
 
   GeolocationContentSettingsMap* map =

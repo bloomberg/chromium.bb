@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,21 +34,21 @@ TEST(IPCMessageTest, ListValue) {
 
 TEST(IPCMessageTest, DictionaryValue) {
   DictionaryValue input;
-  input.Set(L"null", Value::CreateNullValue());
-  input.Set(L"bool", Value::CreateBooleanValue(true));
-  input.Set(L"int", Value::CreateIntegerValue(42));
+  input.Set("null", Value::CreateNullValue());
+  input.Set("bool", Value::CreateBooleanValue(true));
+  input.Set("int", Value::CreateIntegerValue(42));
 
   scoped_ptr<DictionaryValue> subdict(new DictionaryValue());
-  subdict->Set(L"str", Value::CreateStringValue("forty two"));
-  subdict->Set(L"bool", Value::CreateBooleanValue(false));
+  subdict->Set("str", Value::CreateStringValue("forty two"));
+  subdict->Set("bool", Value::CreateBooleanValue(false));
 
   scoped_ptr<ListValue> sublist(new ListValue());
   sublist->Set(0, Value::CreateRealValue(42.42));
   sublist->Set(1, Value::CreateStringValue("forty"));
   sublist->Set(2, Value::CreateStringValue("two"));
-  subdict->Set(L"list", sublist.release());
+  subdict->Set("list", sublist.release());
 
-  input.Set(L"dict", subdict.release());
+  input.Set("dict", subdict.release());
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::WriteParam(&msg, input);

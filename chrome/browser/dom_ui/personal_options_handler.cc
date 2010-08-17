@@ -68,18 +68,18 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_IMPORT_DATA_BUTTON));
 
 #if defined(TOOLKIT_GTK)
-  localized_strings->SetString(L"appearance",
-      l10n_util::GetString(IDS_APPEARANCE_GROUP_NAME));
-  localized_strings->SetString(L"themes_GTK_button",
-      l10n_util::GetString(IDS_THEMES_GTK_BUTTON));
-  localized_strings->SetString(L"themes_set_classic",
-      l10n_util::GetString(IDS_THEMES_SET_CLASSIC));
-  localized_strings->SetString(L"showWindow_decorations_radio",
-      l10n_util::GetString(IDS_SHOW_WINDOW_DECORATIONS_RADIO));
-  localized_strings->SetString(L"hideWindow_decorations_radio",
-      l10n_util::GetString(IDS_HIDE_WINDOW_DECORATIONS_RADIO));
-  localized_strings->SetString(L"themes_gallery",
-      l10n_util::GetString(IDS_THEMES_GALLERY_BUTTON));
+  localized_strings->SetString("appearance",
+      l10n_util::GetStringUTF16(IDS_APPEARANCE_GROUP_NAME));
+  localized_strings->SetString("themes_GTK_button",
+      l10n_util::GetStringUTF16(IDS_THEMES_GTK_BUTTON));
+  localized_strings->SetString("themes_set_classic",
+      l10n_util::GetStringUTF16(IDS_THEMES_SET_CLASSIC));
+  localized_strings->SetString("showWindow_decorations_radio",
+      l10n_util::GetStringUTF16(IDS_SHOW_WINDOW_DECORATIONS_RADIO));
+  localized_strings->SetString("hideWindow_decorations_radio",
+      l10n_util::GetStringUTF16(IDS_HIDE_WINDOW_DECORATIONS_RADIO));
+  localized_strings->SetString("themes_gallery",
+      l10n_util::GetStringUTF16(IDS_THEMES_GALLERY_BUTTON));
 #else
   localized_strings->SetString("themes",
       l10n_util::GetStringUTF16(IDS_THEMES_GROUP_NAME));

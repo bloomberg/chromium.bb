@@ -31,31 +31,31 @@ void FontSettingsHandler::GetLocalizedValues(
 
   localized_strings->SetString("fontSettingsTitle",
       l10n_util::GetStringUTF16(IDS_FONT_LANGUAGE_SETTING_FONT_TAB_TITLE));
-  localized_strings->SetString(L"fontSettingsFontTitle",
-      l10n_util::GetString(
+  localized_strings->SetString("fontSettingsFontTitle",
+      l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_FONT_TITLE));
-  localized_strings->SetString(L"fontSettingsSerifLabel",
-      l10n_util::GetString(
+  localized_strings->SetString("fontSettingsSerifLabel",
+      l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SERIF_LABEL));
-  localized_strings->SetString(L"fontSettingsSansSerifLabel",
-      l10n_util::GetString(
+  localized_strings->SetString("fontSettingsSansSerifLabel",
+      l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_SANS_SERIF_LABEL));
-  localized_strings->SetString(L"fontSettingsFixedWidthLabel",
-      l10n_util::GetString(
+  localized_strings->SetString("fontSettingsFixedWidthLabel",
+      l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SELECTOR_FIXED_WIDTH_LABEL));
-  localized_strings->SetString(L"fontSettingsSizeLabel",
-      l10n_util::GetString(
+  localized_strings->SetString("fontSettingsSizeLabel",
+      l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SIZE_SELECTOR_LABEL));
-  localized_strings->SetString(L"fontSettingsEncodingTitle",
-      l10n_util::GetString(
+  localized_strings->SetString("fontSettingsEncodingTitle",
+      l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_SUB_DIALOG_ENCODING_TITLE));
-  localized_strings->SetString(L"fontSettingsEncodingLabel",
-      l10n_util::GetString(
+  localized_strings->SetString("fontSettingsEncodingLabel",
+      l10n_util::GetStringUTF16(
           IDS_FONT_LANGUAGE_SETTING_FONT_DEFAULT_ENCODING_SELECTOR_LABEL));
 
   // Fonts
   ListValue* font_list = FontSettingsUtilities::GetFontsList();
-  if (font_list) localized_strings->Set(L"fontSettingsFontList", font_list);
+  if (font_list) localized_strings->Set("fontSettingsFontList", font_list);
 
   // Font sizes
   int font_sizes[] = { 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 26,
@@ -68,7 +68,7 @@ void FontSettingsHandler::GetLocalizedValues(
     option->Append(Value::CreateStringValue(base::IntToString(font_sizes[i])));
     font_size_list->Append(option);
   }
-  localized_strings->Set(L"fontSettingsFontSizeList", font_size_list);
+  localized_strings->Set("fontSettingsFontSizeList", font_size_list);
 
   // Encodings
   count = CharacterEncoding::GetSupportCanonicalEncodingCount();
@@ -85,7 +85,7 @@ void FontSettingsHandler::GetLocalizedValues(
     option->Append(Value::CreateStringValue(name));
     encoding_list->Append(option);
   }
-  localized_strings->Set(L"fontSettingsEncodingList", encoding_list);
+  localized_strings->Set("fontSettingsEncodingList", encoding_list);
 }
 
 void FontSettingsHandler::Initialize() {

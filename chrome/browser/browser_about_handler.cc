@@ -952,7 +952,7 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
   ListValue* titles = new ListValue();
   child->Set("titles", titles);
   for (size_t i = 0; i < info->titles.size(); ++i)
-    titles->Append(new StringValue(info->titles[i]));
+    titles->Append(new StringValue(WideToUTF16Hack(info->titles[i])));
 }
 
 

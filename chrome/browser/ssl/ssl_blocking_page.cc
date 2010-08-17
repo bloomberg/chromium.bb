@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/histogram.h"
 #include "base/i18n/rtl.h"
 #include "base/string_piece.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/cert_store.h"
@@ -67,30 +68,32 @@ std::string SSLBlockingPage::GetHTMLContents() {
   // Let's build the html error page.
   DictionaryValue strings;
   SSLErrorInfo error_info = delegate_->GetSSLErrorInfo(handler_);
-  strings.SetString(L"headLine", error_info.title());
-  strings.SetString(L"description", error_info.details());
+  strings.SetString("headLine", WideToUTF16Hack(error_info.title()));
+  strings.SetString("description", WideToUTF16Hack(error_info.details()));
 
-  strings.SetString(L"moreInfoTitle",
-                    l10n_util::GetString(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
+  strings.SetString("moreInfoTitle",
+                    l10n_util::GetStringUTF16(IDS_CERT_ERROR_EXTRA_INFO_TITLE));
   SetExtraInfo(&strings, error_info.extra_information());
 
   int resource_id;
   if (error_level_ == ERROR_OVERRIDABLE) {
     resource_id = IDR_SSL_ROAD_BLOCK_HTML;
-    strings.SetString(L"title",
-                      l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_TITLE));
-    strings.SetString(L"proceed",
-                      l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_PROCEED));
-    strings.SetString(L"exit",
-                      l10n_util::GetString(IDS_SSL_BLOCKING_PAGE_EXIT));
+    strings.SetString("title",
+                      l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_TITLE));
+    strings.SetString("proceed",
+                      l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_PROCEED));
+    strings.SetString("exit",
+                      l10n_util::GetStringUTF16(IDS_SSL_BLOCKING_PAGE_EXIT));
   } else {
     DCHECK_EQ(error_level_, ERROR_FATAL);
     resource_id = IDR_SSL_ERROR_HTML;
-    strings.SetString(L"title", l10n_util::GetString(IDS_SSL_ERROR_PAGE_TITLE));
-    strings.SetString(L"back", l10n_util::GetString(IDS_SSL_ERROR_PAGE_BACK));
+    strings.SetString("title",
+                      l10n_util::GetStringUTF16(IDS_SSL_ERROR_PAGE_TITLE));
+    strings.SetString("back",
+                      l10n_util::GetStringUTF16(IDS_SSL_ERROR_PAGE_BACK));
   }
 
-  strings.SetString(L"textdirection", base::i18n::IsRTL() ? L"rtl" : L"ltr");
+  strings.SetString("textdirection", base::i18n::IsRTL() ? "rtl" : "ltr");
 
   base::StringPiece html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id));
@@ -157,14 +160,14 @@ void SSLBlockingPage::SetExtraInfo(
     DictionaryValue* strings,
     const std::vector<std::wstring>& extra_info) {
   DCHECK(extra_info.size() < 5);  // We allow 5 paragraphs max.
-  const std::wstring keys[5] = {
-      L"moreInfo1", L"moreInfo2", L"moreInfo3", L"moreInfo4", L"moreInfo5"
+  const char* keys[5] = {
+      "moreInfo1", "moreInfo2", "moreInfo3", "moreInfo4", "moreInfo5"
   };
   int i;
   for (i = 0; i < static_cast<int>(extra_info.size()); i++) {
-    strings->SetString(keys[i], extra_info[i]);
+    strings->SetString(keys[i], WideToUTF16Hack(extra_info[i]));
   }
-  for (;i < 5; i++) {
-    strings->SetString(keys[i], L"");
+  for (; i < 5; i++) {
+    strings->SetString(keys[i], "");
   }
 }

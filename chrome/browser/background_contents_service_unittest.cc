@@ -36,7 +36,7 @@ class BackgroundContentsServiceTest : public testing::Test {
   // Returns the stored pref URL for the passed app id.
   std::string GetPrefURLForApp(Profile* profile, const string16& appid) {
     DictionaryValue* pref = GetPrefs(profile);
-    EXPECT_TRUE(pref->HasKey(UTF16ToWide(appid)));
+    EXPECT_TRUE(pref->HasKey(UTF16ToUTF8(appid)));
     DictionaryValue* value;
     pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &value);
     std::string url;

@@ -97,7 +97,7 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION));
 
-  localized_strings->Set(L"timezoneList",
+  localized_strings->Set("timezoneList",
       reinterpret_cast<chromeos::SystemSettingsProvider*>(
           settings_provider_.get())->GetTimezoneList());
 }

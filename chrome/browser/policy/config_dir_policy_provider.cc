@@ -64,8 +64,7 @@ void ConfigDirPolicyProvider::DecodePolicyValueTree(
        i != mapping->end(); ++i) {
     const PolicyValueMapEntry& entry(*i);
     Value* value;
-    if (policies->Get(UTF8ToWide(entry.name), &value) &&
-        value->IsType(entry.value_type))
+    if (policies->Get(entry.name, &value) && value->IsType(entry.value_type))
       store->Apply(entry.policy_type, value->DeepCopy());
   }
 

@@ -133,35 +133,35 @@ void ParseProfileINI(const FilePath& file, DictionaryValue* root) {
 
   // Parses the file.
   root->Clear();
-  std::wstring current_section;
+  std::string current_section;
   for (size_t i = 0; i < lines.size(); ++i) {
-    std::wstring line = UTF8ToWide(lines[i]);
+    std::string line = lines[i];
     if (line.empty()) {
       // Skips the empty line.
       continue;
     }
-    if (line[0] == L'#' || line[0] == L';') {
+    if (line[0] == '#' || line[0] == ';') {
       // This line is a comment.
       continue;
     }
-    if (line[0] == L'[') {
+    if (line[0] == '[') {
       // It is a section header.
       current_section = line.substr(1);
-      size_t end = current_section.rfind(L']');
-      if (end != std::wstring::npos)
+      size_t end = current_section.rfind(']');
+      if (end != std::string::npos)
         current_section.erase(end);
     } else {
-      std::wstring key, value;
-      size_t equal = line.find(L'=');
-      if (equal != std::wstring::npos) {
+      std::string key, value;
+      size_t equal = line.find('=');
+      if (equal != std::string::npos) {
         key = line.substr(0, equal);
         value = line.substr(equal + 1);
         // Checks whether the section and key contain a '.' character.
         // Those sections and keys break DictionaryValue's path format,
         // so we discard them.
-        if (current_section.find(L'.') == std::wstring::npos &&
-            key.find(L'.') == std::wstring::npos)
-          root->SetString(current_section + L"." + key, value);
+        if (current_section.find('.') == std::string::npos &&
+            key.find('.') == std::string::npos)
+          root->SetString(current_section + "." + key, value);
       }
     }
   }
@@ -420,7 +420,7 @@ bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs) {
     // Value could be a boolean.
     bool is_value_true = LowerCaseEqualsASCII(value, "true");
     if (is_value_true || LowerCaseEqualsASCII(value, "false")) {
-      prefs->SetBoolean(ASCIIToWide(key), is_value_true);
+      prefs->SetBoolean(key, is_value_true);
       continue;
     }
 
@@ -431,7 +431,7 @@ bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs) {
       // ValueString only accept valid UTF-8.  Simply ignore that entry if it is
       // not UTF-8.
       if (IsStringUTF8(value))
-        prefs->SetString(ASCIIToWide(key), value);
+        prefs->SetString(key, value);
       else
         LOG(INFO) << "Non UTF8 value for key " << key << ", ignored.";
       continue;
@@ -440,7 +440,7 @@ bool ParsePrefFile(const FilePath& pref_file, DictionaryValue* prefs) {
     // Or value could be an integer.
     int int_value = 0;
     if (base::StringToInt(value, &int_value)) {
-      prefs->SetInteger(ASCIIToWide(key), int_value);
+      prefs->SetInteger(key, int_value);
       continue;
     }
 

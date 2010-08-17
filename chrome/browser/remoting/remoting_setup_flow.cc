@@ -70,10 +70,10 @@ void RemotingSetupFlow::OnDialogClosed(const std::string& json_retval) {
 
 // static
 void RemotingSetupFlow::GetArgsForGaiaLogin(DictionaryValue* args) {
-  args->SetString(L"iframeToShow", "login");
-  args->SetString(L"user", std::wstring());
-  args->SetInteger(L"error", 0);
-  args->SetBoolean(L"editable_user", true);
+  args->SetString("iframeToShow", "login");
+  args->SetString("user", "");
+  args->SetInteger("error", 0);
+  args->SetBoolean("editable_user", true);
 }
 
 void RemotingSetupFlow::GetDOMMessageHandlers(

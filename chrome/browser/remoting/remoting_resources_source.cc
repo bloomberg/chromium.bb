@@ -42,48 +42,48 @@ void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
     DictionaryValue localized_strings;
 
     // Start by setting the per-locale URLs we show on the setup wizard.
-    localized_strings.SetString(L"invalidpasswordhelpurl",
+    localized_strings.SetString("invalidpasswordhelpurl",
         GetLocalizedUrl(kInvalidPasswordHelpUrl));
-    localized_strings.SetString(L"cannotaccessaccounturl",
+    localized_strings.SetString("cannotaccessaccounturl",
         GetLocalizedUrl(kCanNotAccessAccountUrl));
-    localized_strings.SetString(L"createnewaccounturl",
+    localized_strings.SetString("createnewaccounturl",
         GetLocalizedUrl(kCreateNewAccountUrl));
 
-    localized_strings.SetString(L"settingupsync",
-        l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP_SYNC));
-    localized_strings.SetString(L"introduction",
-                                std::wstring(L"Remoting ") +
-        l10n_util::GetString(IDS_PRODUCT_NAME));
-    localized_strings.SetString(L"signinprefix",
-        l10n_util::GetString(IDS_SYNC_LOGIN_SIGNIN_PREFIX));
-    localized_strings.SetString(L"signinsuffix",
-        l10n_util::GetString(IDS_SYNC_LOGIN_SIGNIN_SUFFIX));
-    localized_strings.SetString(L"cannotbeblank",
-        l10n_util::GetString(IDS_SYNC_CANNOT_BE_BLANK));
-    localized_strings.SetString(L"emaillabel",
-        l10n_util::GetString(IDS_SYNC_LOGIN_EMAIL));
-    localized_strings.SetString(L"passwordlabel",
-        l10n_util::GetString(IDS_SYNC_LOGIN_PASSWORD));
-    localized_strings.SetString(L"invalidcredentials",
-        l10n_util::GetString(IDS_SYNC_INVALID_USER_CREDENTIALS));
-    localized_strings.SetString(L"signin",
-        l10n_util::GetString(IDS_SYNC_SIGNIN));
-    localized_strings.SetString(L"couldnotconnect",
-        l10n_util::GetString(IDS_SYNC_LOGIN_COULD_NOT_CONNECT));
-    localized_strings.SetString(L"cannotaccessaccount",
-        l10n_util::GetString(IDS_SYNC_CANNOT_ACCESS_ACCOUNT));
-    localized_strings.SetString(L"createaccount",
-        l10n_util::GetString(IDS_SYNC_CREATE_ACCOUNT));
-    localized_strings.SetString(L"cancel",
-        l10n_util::GetString(IDS_CANCEL));
-    localized_strings.SetString(L"settingup",
-        l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP));
-    localized_strings.SetString(L"success",
-        l10n_util::GetString(IDS_SYNC_SUCCESS));
-    localized_strings.SetString(L"errorsigningin",
-        l10n_util::GetString(IDS_SYNC_ERROR_SIGNING_IN));
-    localized_strings.SetString(L"captchainstructions",
-        l10n_util::GetString(IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS));
+    localized_strings.SetString("settingupsync",
+        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SETTING_UP_SYNC));
+    localized_strings.SetString("introduction",
+                                ASCIIToUTF16("Remoting ") +
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+    localized_strings.SetString("signinprefix",
+        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SIGNIN_PREFIX));
+    localized_strings.SetString("signinsuffix",
+        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SIGNIN_SUFFIX));
+    localized_strings.SetString("cannotbeblank",
+        l10n_util::GetStringUTF16(IDS_SYNC_CANNOT_BE_BLANK));
+    localized_strings.SetString("emaillabel",
+        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_EMAIL));
+    localized_strings.SetString("passwordlabel",
+        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_PASSWORD));
+    localized_strings.SetString("invalidcredentials",
+        l10n_util::GetStringUTF16(IDS_SYNC_INVALID_USER_CREDENTIALS));
+    localized_strings.SetString("signin",
+        l10n_util::GetStringUTF16(IDS_SYNC_SIGNIN));
+    localized_strings.SetString("couldnotconnect",
+        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_COULD_NOT_CONNECT));
+    localized_strings.SetString("cannotaccessaccount",
+        l10n_util::GetStringUTF16(IDS_SYNC_CANNOT_ACCESS_ACCOUNT));
+    localized_strings.SetString("createaccount",
+        l10n_util::GetStringUTF16(IDS_SYNC_CREATE_ACCOUNT));
+    localized_strings.SetString("cancel",
+        l10n_util::GetStringUTF16(IDS_CANCEL));
+    localized_strings.SetString("settingup",
+        l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SETTING_UP));
+    localized_strings.SetString("success",
+        l10n_util::GetStringUTF16(IDS_SYNC_SUCCESS));
+    localized_strings.SetString("errorsigningin",
+        l10n_util::GetStringUTF16(IDS_SYNC_ERROR_SIGNING_IN));
+    localized_strings.SetString("captchainstructions",
+        l10n_util::GetStringUTF16(IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS));
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
     SetFontAndTextDirection(&localized_strings);
@@ -91,10 +91,10 @@ void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
         html, &localized_strings);
   } else if (path_raw == kRemotingSetupDonePath) {
     DictionaryValue localized_strings;
-    localized_strings.SetString(L"success",
-        l10n_util::GetString(IDS_SYNC_SUCCESS));
-    localized_strings.SetString(L"okay",
-        l10n_util::GetString(IDS_SYNC_SETUP_OK_BUTTON_LABEL));
+    localized_strings.SetString("success",
+        l10n_util::GetStringUTF16(IDS_SYNC_SUCCESS));
+    localized_strings.SetString("okay",
+        l10n_util::GetStringUTF16(IDS_SYNC_SETUP_OK_BUTTON_LABEL));
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_REMOTING_SETUP_DONE_HTML));
     SetFontAndTextDirection(&localized_strings);

@@ -56,37 +56,37 @@ std::wstring StringSubRange(const std::wstring& text, size_t start,
 }
 
 struct LocalizeEntry {
-  const wchar_t* identifier;
-  int            resource;
+  const char* identifier;
+  int resource;
 };
 
 const LocalizeEntry localize_table[] = {
 #if defined (OS_CHROMEOS)
-    { L"product", IDS_PRODUCT_OS_NAME },
-    { L"os", IDS_PRODUCT_OS_NAME },
-    { L"loading", IDS_ABOUT_PAGE_LOADING },
-    { L"check_now", IDS_ABOUT_PAGE_CHECK_NOW },
-    { L"update_status", IDS_UPGRADE_CHECK_STARTED },
+    { "product", IDS_PRODUCT_OS_NAME },
+    { "os", IDS_PRODUCT_OS_NAME },
+    { "loading", IDS_ABOUT_PAGE_LOADING },
+    { "check_now", IDS_ABOUT_PAGE_CHECK_NOW },
+    { "update_status", IDS_UPGRADE_CHECK_STARTED },
 #else
-    { L"product", IDS_PRODUCT_NAME },
-    { L"check_now", IDS_ABOUT_CHROME_UPDATE_CHECK },
+    { "product", IDS_PRODUCT_NAME },
+    { "check_now", IDS_ABOUT_CHROME_UPDATE_CHECK },
 #endif
-    { L"browser", IDS_PRODUCT_NAME },
-    { L"more_info", IDS_ABOUT_PAGE_MORE_INFO },
-    { L"copyright", IDS_ABOUT_VERSION_COPYRIGHT },
-    { L"channel", IDS_ABOUT_PAGE_CHANNEL },
-    { L"release", IDS_ABOUT_PAGE_CHANNEL_RELEASE },
-    { L"beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
-    { L"development", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
-    { L"user_agent", IDS_ABOUT_VERSION_USER_AGENT },
-    { L"command_line", IDS_ABOUT_VERSION_COMMAND_LINE },
-    { L"aboutPage", IDS_ABOUT_PAGE_TITLE }
+    { "browser", IDS_PRODUCT_NAME },
+    { "more_info", IDS_ABOUT_PAGE_MORE_INFO },
+    { "copyright", IDS_ABOUT_VERSION_COPYRIGHT },
+    { "channel", IDS_ABOUT_PAGE_CHANNEL },
+    { "release", IDS_ABOUT_PAGE_CHANNEL_RELEASE },
+    { "beta", IDS_ABOUT_PAGE_CHANNEL_BETA },
+    { "development", IDS_ABOUT_PAGE_CHANNEL_DEVELOPMENT },
+    { "user_agent", IDS_ABOUT_VERSION_USER_AGENT },
+    { "command_line", IDS_ABOUT_VERSION_COMMAND_LINE },
+    { "aboutPage", IDS_ABOUT_PAGE_TITLE }
 };
 
 void LocalizedStrings(DictionaryValue* localized_strings) {
   for (size_t n = 0; n != arraysize(localize_table); ++n) {
     localized_strings->SetString(localize_table[n].identifier,
-        l10n_util::GetString(localize_table[n].resource));
+        l10n_util::GetStringUTF16(localize_table[n].resource));
   }
 }
 

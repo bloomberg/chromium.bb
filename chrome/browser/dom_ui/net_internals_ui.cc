@@ -444,8 +444,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 
     for (size_t i = 0; i < event_types.size(); ++i) {
       const char* name = net::NetLog::EventTypeToString(event_types[i]);
-      dict->SetInteger(ASCIIToWide(name),
-                       static_cast<int>(event_types[i]));
+      dict->SetInteger(name, static_cast<int>(event_types[i]));
     }
 
     CallJavascriptFunction(L"g_browser.receivedLogEventTypeConstants", dict);
@@ -490,7 +489,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     DictionaryValue* dict = new DictionaryValue();
 
 #define LOAD_FLAG(label, value) \
-    dict->SetInteger(ASCIIToWide(# label), static_cast<int>(value));
+    dict->SetInteger(# label, static_cast<int>(value));
 #include "net/base/load_flags_list.h"
 #undef LOAD_FLAG
 
@@ -503,7 +502,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
     DictionaryValue* dict = new DictionaryValue();
 
 #define NET_ERROR(label, value) \
-    dict->SetInteger(ASCIIToWide(# label), static_cast<int>(value));
+    dict->SetInteger(# label, static_cast<int>(value));
 #include "net/base/net_error_list.h"
 #undef NET_ERROR
 
@@ -527,7 +526,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
   {
     DictionaryValue* dict = new DictionaryValue();
 
-#define SOURCE_TYPE(label, value) dict->SetInteger(ASCIIToWide(# label), value);
+#define SOURCE_TYPE(label, value) dict->SetInteger(# label, value);
 #include "net/base/net_log_source_type_list.h"
 #undef SOURCE_TYPE
 
@@ -746,7 +745,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
     std::vector<std::pair<std::string, std::string> > stats;
     disk_cache->GetStats(&stats);
     for (size_t i = 0; i < stats.size(); ++i) {
-      stats_dict->Set(ASCIIToWide(stats[i].first),
+      stats_dict->Set(stats[i].first,
                       Value::CreateStringValue(stats[i].second));
     }
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -212,12 +212,12 @@ void DevToolsWindow::CreateDevToolsBrowser() {
   const DictionaryValue* wp_pref = prefs->GetDictionary(wp_key.c_str());
   if (!wp_pref) {
     DictionaryValue* defaults = prefs->GetMutableDictionary(wp_key.c_str());
-    defaults->SetInteger(L"left", 100);
-    defaults->SetInteger(L"top", 100);
-    defaults->SetInteger(L"right", 740);
-    defaults->SetInteger(L"bottom", 740);
-    defaults->SetBoolean(L"maximized", false);
-    defaults->SetBoolean(L"always_on_top", false);
+    defaults->SetInteger("left", 100);
+    defaults->SetInteger("top", 100);
+    defaults->SetInteger("right", 740);
+    defaults->SetInteger("bottom", 740);
+    defaults->SetBoolean("maximized", false);
+    defaults->SetBoolean("always_on_top", false);
   }
 
   browser_ = Browser::CreateForDevTools(profile_);
@@ -259,7 +259,7 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
     if ((*extension)->devtools_url().is_empty())
       continue;
     DictionaryValue* extension_info = new DictionaryValue();
-    extension_info->Set(L"startPage",
+    extension_info->Set("startPage",
         new StringValue((*extension)->devtools_url().spec()));
     results.Append(extension_info);
   }

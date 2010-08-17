@@ -73,8 +73,8 @@ struct ValueConversionTraits<DOMElementProxy::By> {
         NOTREACHED();
         break;
     }
-    value->SetString(L"type", by_type);
-    value->SetString(L"queryString", t.query());
+    value->SetString("type", by_type);
+    value->SetString("queryString", t.query());
     return value;
   }
 };

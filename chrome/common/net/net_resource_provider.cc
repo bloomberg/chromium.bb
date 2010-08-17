@@ -25,19 +25,19 @@ namespace {
 struct LazyDirectoryListerCacher {
   LazyDirectoryListerCacher() {
     DictionaryValue value;
-    value.SetString(L"header",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_HEADER));
-    value.SetString(L"parentDirText",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_PARENT));
-    value.SetString(L"headerName",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_NAME));
-    value.SetString(L"headerSize",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_SIZE));
-    value.SetString(L"headerDateModified",
-                    l10n_util::GetString(IDS_DIRECTORY_LISTING_DATE_MODIFIED));
-    value.SetString(L"listingParsingErrorBoxText",
-        l10n_util::GetStringF(IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT,
-                              l10n_util::GetString(IDS_PRODUCT_NAME)));
+    value.SetString("header",
+                    l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_HEADER));
+    value.SetString("parentDirText",
+                    l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_PARENT));
+    value.SetString("headerName",
+                    l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_NAME));
+    value.SetString("headerSize",
+                    l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_SIZE));
+    value.SetString("headerDateModified",
+        l10n_util::GetStringUTF16(IDS_DIRECTORY_LISTING_DATE_MODIFIED));
+    value.SetString("listingParsingErrorBoxText",
+        l10n_util::GetStringFUTF16(IDS_DIRECTORY_LISTING_PARSING_ERROR_BOX_TEXT,
+            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
     html_data = jstemplate_builder::GetI18nTemplateHtml(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_DIR_HEADER_HTML),

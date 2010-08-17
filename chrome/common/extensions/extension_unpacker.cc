@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/file_stream.h"
 #include "chrome/common/chrome_switches.h"
@@ -313,7 +314,7 @@ bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
   if (!temp_install_dir_.AppendRelativePath(message_path, &relative_path))
     NOTREACHED();
 
-  parsed_catalogs_->Set(relative_path.DirName().ToWStringHack(),
+  parsed_catalogs_->Set(WideToUTF8(relative_path.DirName().ToWStringHack()),
                         root.release());
 
   return true;

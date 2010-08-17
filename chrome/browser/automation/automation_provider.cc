@@ -3137,7 +3137,7 @@ ListValue* AutomationProvider::GetListFromAutoFillProfiles(
          type_it != autofill_type_to_string.end(); ++type_it) {
       string16 value = profile->GetFieldText(AutoFillType(type_it->first));
       if (value.length()) {  // If there was something stored for that value.
-        profile_info->SetString(type_it->second, value);
+        profile_info->SetString(WideToUTF8(type_it->second), value);
       }
     }
     profiles->Append(profile_info);
@@ -3166,7 +3166,7 @@ ListValue* AutomationProvider::GetListFromCreditCards(
       string16 value = card->GetFieldText(AutoFillType(type_it->first));
       // If there was something stored for that value.
       if (value.length()) {
-        card_info->SetString(type_it->second, value);
+        card_info->SetString(WideToUTF8(type_it->second), value);
       }
     }
     cards->Append(card_info);
@@ -3195,7 +3195,7 @@ std::vector<AutoFillProfile> AutomationProvider::GetAutoFillProfilesFromList(
     for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
          autofill_type_to_string.begin();
          type_it != autofill_type_to_string.end(); ++type_it) {
-      if (profile_info->HasKey(type_it->second)) {
+      if (profile_info->HasKey(WideToUTF8(type_it->second))) {
         if (profile_info->GetString(WideToUTF8(type_it->second),
                                     &current_value)) {
           profile.SetInfo(AutoFillType(type_it->first), current_value);
@@ -3230,7 +3230,7 @@ std::vector<CreditCard> AutomationProvider::GetCreditCardsFromList(
     for (std::map<AutoFillFieldType, std::wstring>::iterator type_it =
         credit_card_type_to_string.begin();
         type_it != credit_card_type_to_string.end(); ++type_it) {
-      if (card_info->HasKey(type_it->second)) {
+      if (card_info->HasKey(WideToUTF8(type_it->second))) {
         if (card_info->GetString(WideToUTF8(type_it->second), &current_value)) {
           card.SetInfo(AutoFillType(type_it->first), current_value);
         } else {

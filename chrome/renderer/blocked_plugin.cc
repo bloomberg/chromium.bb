@@ -52,14 +52,14 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
                                  << resource_id;
 
   DictionaryValue values;
-  values.SetString(L"loadPlugin",
+  values.SetString("loadPlugin",
       l10n_util::GetStringUTF16(IDS_PLUGIN_LOAD));
-  values.SetString(L"updatePlugin",
+  values.SetString("updatePlugin",
       l10n_util::GetStringUTF16(IDS_PLUGIN_UPDATE));
-  values.SetString(L"message",
+  values.SetString("message",
       l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_TITLE));
   if (group)
-    values.Set(L"pluginGroup", group->GetDataForUI());
+    values.Set("pluginGroup", group->GetDataForUI());
 
   // "t" is the id of the templates root node.
   std::string htmlData = jstemplate_builder::GetTemplatesHtml(

@@ -126,7 +126,7 @@ TEST(ExtensionTest, InitFromValueInvalid) {
   DictionaryValue* icons = NULL;
   input_value->GetDictionary(keys::kIcons, &icons);
   ASSERT_FALSE(NULL == icons);
-  icons->SetInteger(ASCIIToWide(base::IntToString(128)), 42);
+  icons->SetInteger(base::IntToString(128), 42);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidIconPath));
 
