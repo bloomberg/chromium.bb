@@ -407,6 +407,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForAllowedOrigin) {
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
+// http://crbug.com/52518
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, FLAKY_NoInfobarForOffTheRecord) {
   // First, check infobar will be created for regular profile
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
@@ -422,7 +423,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, FLAKY_NoInfobarForOffTheRecord) {
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
+// http://crbug.com/52518
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, FLAKY_IFramesWithFreshPosition) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LOG(WARNING) << "frames loaded";
@@ -461,7 +463,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
 }
 
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
+// http://crbug.com/52518
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
+                       FLAKY_IFramesWithCachedPosition) {
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
 
@@ -520,7 +524,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
   EXPECT_EQ(num_infobars_before_cancel, num_infobars_after_cancel + 1);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, InvalidUrlRequest) {
+// http://crbug.com/52518
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, FLAKY_InvalidUrlRequest) {
   // Tests that an invalid URL (e.g. from a popup window) is rejected
   // correctly. Also acts as a regression test for http://crbug.com/40478
   html_for_tests_ = "files/geolocation/invalid_request_url.html";
@@ -530,7 +535,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, InvalidUrlRequest) {
   CheckStringValueFromJavascriptForTab("1", "isAlive()", original_tab);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
+// http://crbug.com/52518
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, FLAKY_NoInfoBarBeforeStart) {
   // See http://crbug.com/42789
   html_for_tests_ = "files/geolocation/iframes_different_origin.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
@@ -553,7 +559,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
   CheckGeoposition(MockLocationProvider::instance_->position_);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
+// http://crbug.com/52518
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, FLAKY_TwoWatchesInOneFrame) {
   html_for_tests_ = "files/geolocation/two_watches.html";
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   // First, set the JavaScript to popup an alert when it receives
