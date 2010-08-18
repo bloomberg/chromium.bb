@@ -351,8 +351,10 @@ void ExistingUserController::ShowError(int error_id,
                                        const std::string& details) {
   ClearErrors();
   std::wstring error_text = l10n_util::GetString(error_id);
-  if (!details.empty())
-    error_text += L"\n" + ASCIIToWide(details);
+  // TODO(dpolukhin): show detailed error info. |details| string contains
+  // low level error info that is not localized and even is not user friendly.
+  // For now just ignore it because error_text contains all required information
+  // for end users, developers can see details string in Chrome logs.
   bubble_ = MessageBubble::Show(
       controllers_[selected_view_index_]->controls_window(),
       controllers_[selected_view_index_]->GetScreenBounds(),
