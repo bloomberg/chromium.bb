@@ -22,6 +22,7 @@
 #include "chrome/browser/profile.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/constrained_window_mac.h"
+#import "chrome/browser/cocoa/new_tab_button.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/tab_contents_controller.h"
 #import "chrome/browser/cocoa/tab_controller.h"
@@ -133,6 +134,7 @@ private:
 - (void)droppingURLsAt:(NSPoint)point
             givesIndex:(NSInteger*)index
            disposition:(WindowOpenDisposition*)disposition;
+- (void)setNewTabButtonHoverState:(BOOL)showHover;
 @end
 
 // A simple view class that prevents the Window Server from dragging the area
@@ -308,6 +310,7 @@ private:
     [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabImage)];
     [newTabButton_
         setAlternateImage:nsimage_cache::ImageNamed(kNewTabPressedImage)];
+    newTabButtonShowingHoverImage_ = NO;
     newTabTrackingArea_.reset(
         [[NSTrackingArea alloc] initWithRect:[newTabButton_ bounds]
                                      options:(NSTrackingMouseEnteredAndExited |
@@ -882,13 +885,9 @@ private:
       NSWindow* window = [tabStripView_ window];
       NSPoint currentMouse = [window mouseLocationOutsideOfEventStream];
       currentMouse = [tabStripView_ convertPoint:currentMouse fromView:nil];
-      NSString* imageName = nil;
-      if (NSPointInRect(currentMouse, newTabNewFrame)) {
-        imageName = kNewTabHoverImage;
-      } else {
-        imageName = kNewTabImage;
-      }
-      [newTabButton_ setImage:nsimage_cache::ImageNamed(imageName)];
+
+      BOOL shouldShowHover = [newTabButton_ pointIsOverButton:currentMouse];
+      [self setNewTabButtonHoverState:shouldShowHover];
 
       // Move the new tab button into place. We want to animate the new tab
       // button if it's moving to the left (closing a tab), but not when it's
@@ -1457,20 +1456,25 @@ private:
 
 - (void)mouseMoved:(NSEvent*)event {
   // Use hit test to figure out what view we are hovering over.
-  TabView* targetView =
-      (TabView*)[tabStripView_ hitTest:[event locationInWindow]];
-  if (![targetView isKindOfClass:[TabView class]]) {
-    if ([[targetView superview] isKindOfClass:[TabView class]]) {
-      targetView = (TabView*)[targetView superview];
+  NSView* targetView = [tabStripView_ hitTest:[event locationInWindow]];
+
+  // Set the new tab button hover state iff the mouse is over the button.
+  BOOL shouldShowHoverImage = [targetView isKindOfClass:[NewTabButton class]];
+  [self setNewTabButtonHoverState:shouldShowHoverImage];
+
+  TabView* tabView = (TabView*)targetView;
+  if (![tabView isKindOfClass:[TabView class]]) {
+    if ([[tabView superview] isKindOfClass:[TabView class]]) {
+      tabView = (TabView*)[targetView superview];
     } else {
-      targetView = nil;
+      tabView = nil;
     }
   }
 
-  if (hoveredTab_ != targetView) {
+  if (hoveredTab_ != tabView) {
     [hoveredTab_ mouseExited:nil];  // We don't pass event because moved events
-    [targetView mouseEntered:nil];  // don't have valid tracking areas
-    hoveredTab_ = targetView;
+    [tabView mouseEntered:nil];  // don't have valid tracking areas
+    hoveredTab_ = tabView;
   } else {
     [hoveredTab_ mouseMoved:event];
   }
@@ -1482,8 +1486,6 @@ private:
     mouseInside_ = YES;
     [self setTabTrackingAreasEnabled:YES];
     [self mouseMoved:event];
-  } else if ([area isEqual:newTabTrackingArea_]) {
-    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabHoverImage)];
   }
 }
 
@@ -1500,7 +1502,11 @@ private:
     hoveredTab_ = nil;
     [self layoutTabs];
   } else if ([area isEqual:newTabTrackingArea_]) {
-    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabImage)];
+    // If the mouse is moved quickly enough, it is possible for the mouse to
+    // leave the tabstrip without sending any mouseMoved: messages at all.
+    // Since this would result in the new tab button incorrectly staying in the
+    // hover state, disable the hover image on every mouse exit.
+    [self setNewTabButtonHoverState:NO];
   }
 }
 
@@ -1522,6 +1528,18 @@ private:
                              object:tabView];
     }
     [tabView setTrackingEnabled:enabled];
+  }
+}
+
+// Sets the new tab button's image based on the current hover state.  Does
+// nothing if the hover state is already correct.
+- (void)setNewTabButtonHoverState:(BOOL)shouldShowHover {
+  if (shouldShowHover && !newTabButtonShowingHoverImage_) {
+    newTabButtonShowingHoverImage_ = YES;
+    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabHoverImage)];
+  } else if (!shouldShowHover && newTabButtonShowingHoverImage_) {
+    newTabButtonShowingHoverImage_ = NO;
+    [newTabButton_ setImage:nsimage_cache::ImageNamed(kNewTabImage)];
   }
 }
 

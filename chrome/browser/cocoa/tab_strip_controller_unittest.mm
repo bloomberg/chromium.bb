@@ -7,6 +7,7 @@
 #import "chrome/browser/browser_window.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/new_tab_button.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -96,8 +97,8 @@ class TabStripControllerTest : public CocoaTest {
         [[TabStripView alloc] initWithFrame:strip_frame]);
     [parent addSubview:tab_strip.get()];
     NSRect button_frame = NSMakeRect(0, 0, 15, 15);
-    scoped_nsobject<NSButton> new_tab_button(
-        [[NSButton alloc] initWithFrame:button_frame]);
+    scoped_nsobject<NewTabButton> new_tab_button(
+        [[NewTabButton alloc] initWithFrame:button_frame]);
     [tab_strip addSubview:new_tab_button.get()];
     [tab_strip setNewTabButton:new_tab_button.get()];
 

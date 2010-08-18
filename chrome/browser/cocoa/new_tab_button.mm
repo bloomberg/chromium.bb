@@ -25,12 +25,16 @@
   return imagePath_;
 }
 
+- (BOOL)pointIsOverButton:(NSPoint)point {
+  NSPoint localPoint = [self convertPoint:point fromView:[self superview]];
+  NSBezierPath* buttonPath = [self pathForButton];
+  return [buttonPath containsPoint:localPoint];
+}
+
 // Override to only accept clicks within the bounds of the defined path, not
 // the entire bounding box. |aPoint| is in the superview's coordinate system.
 - (NSView*)hitTest:(NSPoint)aPoint {
-  NSBezierPath* buttonPath = [self pathForButton];
-  NSPoint localPoint = [self convertPoint:aPoint fromView:[self superview]];
-  if ([buttonPath containsPoint:localPoint])
+  if ([self pointIsOverButton:aPoint])
     return [super hitTest:aPoint];
   return nil;
 }
