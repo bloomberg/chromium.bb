@@ -236,7 +236,8 @@ TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
 
   UrlList names;
   for (int i = 0; i < 100; i++)
-    names.push_back(GURL("http://host" + base::IntToString(i) + ".notfound:80"));
+    names.push_back(GURL(
+        "http://host" + base::IntToString(i) + ".notfound:80"));
 
   // Try to flood the predictor with many concurrent requests.
   for (int i = 0; i < 10; i++)
@@ -538,6 +539,44 @@ TEST_F(PredictorTest, PriorityQueueReorderTest) {
   EXPECT_EQ(queue.Pop(), low4);
 
   EXPECT_TRUE(queue.IsEmpty());
+}
+
+TEST_F(PredictorTest, CanonicalizeUrl) {
+  // Base case, only handles HTTP and HTTPS.
+  EXPECT_EQ(GURL(), Predictor::CanonicalizeUrl(GURL("ftp://anything")));
+
+  // Remove path testing.
+  GURL long_url("http://host:999/path?query=value");
+  EXPECT_EQ(Predictor::CanonicalizeUrl(long_url), long_url.GetWithEmptyPath());
+
+  // Default port cannoncalization.
+  GURL implied_port("http://test");
+  GURL explicit_port("http://test:80");
+  EXPECT_EQ(Predictor::CanonicalizeUrl(implied_port),
+            Predictor::CanonicalizeUrl(explicit_port));
+
+  // Port is still maintained.
+  GURL port_80("http://test:80");
+  GURL port_90("http://test:90");
+  EXPECT_NE(Predictor::CanonicalizeUrl(port_80),
+            Predictor::CanonicalizeUrl(port_90));
+
+  // Host is still maintained.
+  GURL host_1("http://test_1");
+  GURL host_2("http://test_2");
+  EXPECT_NE(Predictor::CanonicalizeUrl(host_1),
+            Predictor::CanonicalizeUrl(host_2));
+
+  // Scheme is maintained (mismatch identified).
+  GURL http("http://test");
+  GURL https("https://test");
+  EXPECT_NE(Predictor::CanonicalizeUrl(http),
+            Predictor::CanonicalizeUrl(https));
+
+  // Https works fine.
+  GURL long_https("https://host:999/path?query=value");
+  EXPECT_EQ(Predictor::CanonicalizeUrl(long_https),
+            long_https.GetWithEmptyPath());
 }
 
 }  // namespace chrome_browser_net

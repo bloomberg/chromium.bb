@@ -28,11 +28,11 @@ using base::TimeDelta;
 namespace chrome_browser_net {
 
 // static
-const double Predictor::kPreconnectWorthyExpectedValue = 0.7;
+const double Predictor::kPreconnectWorthyExpectedValue = 0.8;
 // static
-const double Predictor::kDNSPreresolutionWorthyExpectedValue = 0.2;
+const double Predictor::kDNSPreresolutionWorthyExpectedValue = 0.1;
 // static
-const double Predictor::kPersistWorthyExpectedValue = 0.1;
+const double Predictor::kPersistWorthyExpectedValue = 0.05;
 
 
 class Predictor::LookupRequest {
@@ -89,7 +89,8 @@ Predictor::Predictor(net::HostResolver* host_resolver,
       max_concurrent_dns_lookups_(max_concurrent),
       max_dns_queue_delay_(max_dns_queue_delay),
       host_resolver_(host_resolver),
-      preconnect_enabled_(preconnect_enabled) {
+      preconnect_enabled_(preconnect_enabled),
+      consecutive_omnibox_preconnect_count_(0) {
   Referrer::SetUsePreconnectValuations(preconnect_enabled);
 }
 
@@ -144,6 +145,72 @@ enum SubresourceValue {
   TOO_NEW,
   SUBRESOURCE_VALUE_MAX
 };
+
+void Predictor::AnticipateOmniboxUrl(const GURL& url, bool preconnectable) {
+  std::string host = url.HostNoBrackets();
+  bool is_new_host_request = (host != last_omnibox_host_);
+  last_omnibox_host_ = host;
+
+  UrlInfo::ResolutionMotivation motivation(UrlInfo::OMNIBOX_MOTIVATED);
+  base::TimeTicks now = base::TimeTicks::Now();
+
+  if (preconnect_enabled()) {
+    if (preconnectable && !is_new_host_request) {
+      ++consecutive_omnibox_preconnect_count_;
+      // The omnibox suggests a search URL (for which we can preconnect) after
+      // one or two characters are typed, even though such typing often (1 in
+      // 3?) becomes a real URL.  This code waits till is has more evidence of a
+      // preconnectable URL (search URL) before forming a preconnection, so as
+      // to reduce the useless preconnect rate.
+      // Perchance this logic should be pushed back into the omnibox, where the
+      // actual characters typed, such as a space, can better forcast whether
+      // we need to search/preconnect or not.  By waiting for at least 4
+      // characters in a row that have lead to a search proposal, we avoid
+      // preconnections for a prefix like "www." and we also wait until we have
+      // at least a 4 letter word to search for.
+      // Each character typed appears to induce 2 calls to
+      // AnticipateOmniboxUrl(), so we double 4 characters and limit at 8
+      // requests.
+      // TODO(jar): Use an A/B test to optimize this.
+      const int kMinConsecutiveRequests = 8;
+      if (consecutive_omnibox_preconnect_count_ >= kMinConsecutiveRequests) {
+        // TODO(jar): The wild guess of 30 seconds could be tuned/tested, but it
+        // currently is just a guess that most sockets will remain open for at
+        // least 30 seconds.  This avoids a lot of cross-thread posting, and
+        // exercise of the network stack in this common case.
+        const int kMaxSearchKeepaliveSeconds(30);
+        if ((now - last_omnibox_preconnect_).InSeconds() <
+             kMaxSearchKeepaliveSeconds)
+          return;  // We've done a preconnect recently.
+        last_omnibox_preconnect_ = now;
+
+        Preconnect::PreconnectOnUIThread(CanonicalizeUrl(url), motivation);
+        return;  // Skip pre-resolution, since we'll open a connection.
+      }
+    } else {
+      consecutive_omnibox_preconnect_count_ = 0;
+    }
+  }
+
+  // Fall through and consider pre-resolution.
+
+  // Omnibox tends to call in pairs (just a few milliseconds apart), and we
+  // really don't need to keep resolving a name that often.
+  // TODO(jar): A/B tests could check for perf impact of the early returns.
+  if (!is_new_host_request) {
+    const int kMinPreresolveSeconds(10);
+    if (kMinPreresolveSeconds > (now - last_omnibox_preresolve_).InSeconds())
+      return;
+  }
+  last_omnibox_preresolve_ = now;
+
+  // Perform at least DNS pre-resolution.
+  ChromeThread::PostTask(
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(this, &Predictor::Resolve, CanonicalizeUrl(url),
+                        motivation));
+}
 
 void Predictor::PredictFrameSubresources(const GURL& url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
@@ -587,5 +654,35 @@ void Predictor::DeserializeReferrersThenDelete(ListValue* referral_list) {
     DeserializeReferrers(*referral_list);
     delete referral_list;
 }
+
+
+//------------------------------------------------------------------------------
+// Helper functions
+//------------------------------------------------------------------------------
+
+// static
+GURL Predictor::CanonicalizeUrl(const GURL& url) {
+  if (!url.has_host())
+     return GURL::EmptyGURL();
+
+  std::string scheme;
+  if (url.has_scheme()) {
+    scheme = url.scheme();
+    if (scheme != "http" && scheme != "https")
+      return GURL::EmptyGURL();
+    if (url.has_port())
+      return url.GetWithEmptyPath();
+  } else {
+    scheme = "http";
+  }
+
+  // If we omit a port, it will default to 80 or 443 as appropriate.
+  std::string colon_plus_port;
+  if (url.has_port())
+    colon_plus_port = ":" + url.port();
+
+  return GURL(scheme + "://" + url.host() + colon_plus_port);
+}
+
 
 }  // namespace chrome_browser_net

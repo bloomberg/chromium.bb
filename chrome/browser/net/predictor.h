@@ -91,6 +91,11 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // instigated this activity.
   void PredictFrameSubresources(const GURL& url);
 
+  // The Omnibox has proposed a given url to the user, and if it is a search
+  // URL, then it also indicates that this is preconnectable (i.e., we could
+  // preconnect to the search server).
+  void AnticipateOmniboxUrl(const GURL& url, bool preconnectable);
+
   // Record details of a navigation so that we can preresolve the host name
   // ahead of time the next time the users navigates to the indicated host.
   void LearnFromNavigation(const GURL& referring_url, const GURL& target_url);
@@ -127,6 +132,11 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
 
   // Flag setting to use preconnection instead of just DNS pre-fetching.
   bool preconnect_enabled() const { return preconnect_enabled_; }
+
+  // Put URL in canonical form, including a scheme, host, and port.
+  // Returns GURL::EmptyGURL() if the scheme is not http/https or if the url
+  // cannot be otherwise canonicalized.
+  static GURL CanonicalizeUrl(const GURL& url);
 
  private:
   friend class base::RefCountedThreadSafe<Predictor>;
@@ -261,6 +271,19 @@ class Predictor : public base::RefCountedThreadSafe<Predictor> {
   // Are we currently using preconnection, rather than just DNS resolution, for
   // subresources and omni-box search URLs.
   bool preconnect_enabled_;
+
+  // Most recent suggestion from Omnibox provided via AnticipateOmniboxUrl().
+  std::string last_omnibox_host_;
+
+  // The time when the last preresolve was done for last_omnibox_host_.
+  base::TimeTicks last_omnibox_preresolve_;
+
+  // The number of consecutive requests to AnticipateOmniboxUrl() that suggested
+  // preconnecting (because it was to a search service).
+  int consecutive_omnibox_preconnect_count_;
+
+  // The time when the last preconnection was requested to a search service.
+  base::TimeTicks last_omnibox_preconnect_;
 
   DISALLOW_COPY_AND_ASSIGN(Predictor);
 };
