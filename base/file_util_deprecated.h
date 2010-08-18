@@ -51,9 +51,6 @@ std::wstring GetFileExtensionFromPath(const std::wstring& path);
 
 bool AbsolutePath(std::wstring* path);
 
-// Use FilePath::InsertBeforeExtension.
-void InsertBeforeExtension(FilePath* path, const FilePath::StringType& suffix);
-
 // Use version that takes a FilePath.
 bool Delete(const std::wstring& path, bool recursive);
 bool CopyDirectory(const std::wstring& from_path, const std::wstring& to_path,
