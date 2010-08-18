@@ -103,23 +103,26 @@ platform_inputs += [
 
 env.DualLibrary('platform', platform_inputs)
 
-if env.Bit('windows'):
-  PORT_WIN_TEST_SOURCES = ['platform_tests.cc',
-                           'win/port_win_test.c']
-  if env['BUILD_SUBARCH'] == '64':
-    PORT_WIN_TEST_SOURCES = [PORT_WIN_TEST_SOURCES,
-                             'win/test_tls.S']
-  port_win_test_exe = env.ComponentProgram('port_win_test',
-                                           PORT_WIN_TEST_SOURCES,
-                                           EXTRA_LIBS=['platform',
-                                                       'gio'])
 
-  node = env.CommandTest(
-      'port_win_test.out',
-      [port_win_test_exe],
-      size='huge')
-  env.AddNodeToTestSuite(node,
-                         ['large_tests'],
-                         'run_platform_tests')
+PORT_TEST_SOURCES = ['platform_tests.cc']
+
+if env.Bit('windows'):
+  PORT_TEST_SOURCES = [PORT_TEST_SOURCES,
+                       'win/port_win_test.c']
+  if env['BUILD_SUBARCH'] == '64':
+    PORT_TEST_SOURCES = [PORT_TEST_SOURCES,
+                         'win/test_tls.S']
+
+port_test_exe = env.ComponentProgram('port_test',
+                                     PORT_TEST_SOURCES,
+                                     EXTRA_LIBS=['platform','gio'])
+
+node = env.CommandTest('port_test.out',
+                       [port_test_exe],
+                       size='huge')
+
+env.AddNodeToTestSuite(node,
+                       ['large_tests'],
+                       'run_platform_tests')
 
 env.EnsureRequiredBuildWarnings()

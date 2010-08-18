@@ -111,8 +111,11 @@ namespace nacl {
       template<typename tlimits, typename slimits>
       struct TrivialityChecker<tlimits, slimits, true> {
         static bool IsRuntimeTrivial() {
-          return (tlimits::min() <= slimits::min())
-                  && (tlimits::max() >= slimits::max());
+          // Split into variables to bypass const value warning
+          bool tlimits_lequ_min_slimits = tlimits::min() <= slimits::min();
+          bool tlimits_gequ_max_slimits = tlimits::max() >= slimits::max();
+          bool trivial = tlimits_lequ_min_slimits && tlimits_gequ_max_slimits;
+          return trivial;
         }
       };
 
