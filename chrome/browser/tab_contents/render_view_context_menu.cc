@@ -38,6 +38,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_manager.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -780,6 +781,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              source_tab_contents_->language_state().page_translatable() &&
              !original_lang.empty() &&  // Did we receive the page language yet?
              original_lang != target_lang &&
+             // Only allow translating languages we explitly support and the
+             // unknown language (in which case the page language is detected on
+             // the server side).
+             (original_lang == chrome::kUnknownLanguageCode ||
+                 TranslateManager::IsSupportedLanguage(original_lang)) &&
              !source_tab_contents_->language_state().IsPageTranslated() &&
              !source_tab_contents_->interstitial_page() &&
              TranslateManager::IsTranslatableURL(params_.page_url);

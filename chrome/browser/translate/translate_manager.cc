@@ -413,6 +413,13 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
   TranslateInfoBarDelegate* infobar = TranslateInfoBarDelegate::CreateDelegate(
       TranslateInfoBarDelegate::TRANSLATING, tab_contents,
       source_lang, target_lang);
+  if (!infobar) {
+    // This means the source or target languages are not supported, which should
+    // not happen as we won't show a translate infobar or have the translate
+    // context menu activated in such cases.
+    NOTREACHED();
+    return;
+  }
   ShowInfoBar(tab_contents, infobar);
 
   if (!translate_script_.empty()) {
