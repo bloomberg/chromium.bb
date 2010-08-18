@@ -50,6 +50,15 @@ cairo_surface_t *
 display_create_surface(struct display *display,
 		       struct rectangle *rectangle);
 
+struct wl_buffer *
+display_get_buffer_for_surface(struct display *display,
+			       cairo_surface_t *surface);
+
+cairo_surface_t *
+display_get_pointer_surface(struct display *display, int pointer,
+			    int *width, int *height,
+			    int *hotspot_x, int *hotspot_y);
+
 void
 display_run(struct display *d);
 
@@ -61,6 +70,21 @@ enum {
 	WINDOW_MODIFIER_MOD2 = 0x10,
 };
 
+enum pointer_type {
+	POINTER_BOTTOM_LEFT,
+	POINTER_BOTTOM_RIGHT,
+	POINTER_BOTTOM,
+	POINTER_DRAGGING,
+	POINTER_LEFT_PTR,
+	POINTER_LEFT,
+	POINTER_RIGHT,
+	POINTER_TOP_LEFT,
+	POINTER_TOP_RIGHT,
+	POINTER_TOP,
+	POINTER_IBEAM,
+	POINTER_HAND1,
+};
+
 typedef void (*window_resize_handler_t)(struct window *window, void *data);
 typedef void (*window_redraw_handler_t)(struct window *window, void *data);
 typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
@@ -69,6 +93,15 @@ typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32
 				     uint32_t state, uint32_t modifiers, void *data);
 typedef void (*window_keyboard_focus_handler_t)(struct window *window,
 						struct input *device, void *data);
+
+typedef void (*window_button_handler_t)(struct window *window,
+					struct input *input, uint32_t time,
+					int button, int state, void *data);
+
+typedef int (*window_motion_handler_t)(struct window *window,
+				       struct input *input, uint32_t time,
+				       int32_t x, int32_t y,
+				       int32_t sx, int32_t sy, void *data);
 
 struct window *
 window_create(struct display *display, const char *title,
@@ -130,6 +163,14 @@ window_set_key_handler(struct window *window,
 		       window_key_handler_t handler);
 
 void
+window_set_button_handler(struct window *window,
+			  window_button_handler_t handler);
+
+void
+window_set_motion_handler(struct window *window,
+			  window_motion_handler_t handler);
+
+void
 window_set_keyboard_focus_handler(struct window *window,
 				  window_keyboard_focus_handler_t handler);
 
@@ -140,5 +181,12 @@ window_set_acknowledge_handler(struct window *window,
 void
 window_set_frame_handler(struct window *window,
 			 window_frame_handler_t handler);
+
+void
+window_start_drag(struct window *window, struct input *input, uint32_t time,
+		  struct wl_buffer *buffer, int32_t x, int32_t y);
+
+void
+input_get_position(struct input *input, int32_t *x, int32_t *y);
 
 #endif

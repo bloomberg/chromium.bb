@@ -57,6 +57,7 @@ struct display {
 	struct wl_shell *shell;
 	struct wl_drm *drm;
 	struct wl_output *output;
+	struct wl_drag *drag;
 	struct rectangle screen_allocation;
 	int authenticated;
 	EGLDisplay dpy;
@@ -70,8 +71,7 @@ struct display {
 	char *device_name;
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
 	struct xkb_desc *xkb;
-	EGLImageKHR *pointer_images;
-	struct wl_buffer **pointer_buffers;
+	cairo_surface_t **pointer_surfaces;
 };
 
 struct window {
@@ -95,9 +95,11 @@ struct window {
 	window_resize_handler_t resize_handler;
 	window_redraw_handler_t redraw_handler;
 	window_key_handler_t key_handler;
+	window_button_handler_t button_handler;
 	window_keyboard_focus_handler_t keyboard_focus_handler;
 	window_acknowledge_handler_t acknowledge_handler;
 	window_frame_handler_t frame_handler;
+	window_motion_handler_t motion_handler;
 
 	void *user_data;
 	struct wl_list link;
@@ -106,6 +108,7 @@ struct window {
 struct input {
 	struct display *display;
 	struct wl_input_device *input_device;
+	struct wl_drag *drag;
 	struct window *pointer_focus;
 	struct window *keyboard_focus;
 	uint32_t modifiers;
@@ -132,8 +135,8 @@ texture_from_png(const char *filename, int width, int height)
 {
 	GdkPixbuf *pixbuf;
 	GError *error = NULL;
-	void *data;
-	GLenum format;
+	int stride, i;
+	unsigned char *pixels, *p, *end;
 
 	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
 						   width, height,
@@ -141,15 +144,35 @@ texture_from_png(const char *filename, int width, int height)
 	if (error != NULL)
 		return -1;
 
-	data = gdk_pixbuf_get_pixels(pixbuf);
+	if (!gdk_pixbuf_get_has_alpha(pixbuf) ||
+	    gdk_pixbuf_get_n_channels(pixbuf) != 4) {
+		gdk_pixbuf_unref(pixbuf);
+		return -1;
+	}
 
-	if (gdk_pixbuf_get_has_alpha(pixbuf))
-		format = GL_RGBA;
-	else
-		format = GL_RGB;
+
+	stride = gdk_pixbuf_get_rowstride(pixbuf);
+	pixels = gdk_pixbuf_get_pixels(pixbuf);
+
+	for (i = 0; i < height; i++) {
+		p = pixels + i * stride;
+		end = p + width * 4;
+		while (p < end) {
+			unsigned int t;
+
+#define MULT(d,c,a,t) \
+	do { t = c * a + 0x7f; d = ((t >> 8) + t) >> 8; } while (0)
+
+			MULT(p[0], p[0], p[3], t);
+			MULT(p[1], p[1], p[3], t);
+			MULT(p[2], p[2], p[3], t);
+			p += 4;
+
+		}
+	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-		     width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		     width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	gdk_pixbuf_unref(pixbuf);
 
@@ -170,53 +193,26 @@ static const struct {
 	{ DATADIR "/wayland/top_left_corner.png",	 8,  8 },
 	{ DATADIR "/wayland/top_right_corner.png",	26,  8 },
 	{ DATADIR "/wayland/top_side.png",		18,  8 },
-	{ DATADIR "/wayland/xterm.png",			15, 15 }
+	{ DATADIR "/wayland/xterm.png",			15, 15 },
+	{ DATADIR "/wayland/hand1.png",			18, 11 }
 };
 
 static void
-create_pointer_images(struct display *d)
+create_pointer_surfaces(struct display *display)
 {
 	int i, count;
-	GLuint texture;
 	const int width = 32, height = 32;
-	EGLint name, stride;
-	struct wl_visual *visual;
+	struct rectangle rect;
 
-	EGLint image_attribs[] = {
-		EGL_WIDTH,		0,
-		EGL_HEIGHT,		0,
-		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
-		EGL_IMAGE_USE_MESA,	EGL_IMAGE_USE_SCANOUT_MESA,
-		EGL_NONE
-	};
-
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	visual = wl_display_get_argb_visual(d->display);
-
-	image_attribs[1] = width;
-	image_attribs[3] = height;
 	count = ARRAY_LENGTH(pointer_images);
-	d->pointer_images = malloc(count * sizeof *d->pointer_images);
-	d->pointer_buffers = malloc(count * sizeof *d->pointer_buffers);
+	display->pointer_surfaces =
+		malloc(count * sizeof *display->pointer_surfaces);
+	rect.width = width;
+	rect.height = height;
 	for (i = 0; i < count; i++) {
-		d->pointer_images[i] =
-			eglCreateDRMImageMESA(d->dpy, image_attribs);
-		glEGLImageTargetTexture2DOES(GL_TEXTURE_2D,
-					     d->pointer_images[i]);
-		eglExportDRMImageMESA(d->dpy,
-				      d->pointer_images[i],
-				      &name, NULL, &stride);
+		display->pointer_surfaces[i] =
+			display_create_surface(display, &rect);
 		texture_from_png(pointer_images[i].filename, width, height);
-
-		d->pointer_buffers[i] =
-			wl_drm_create_buffer(d->drm, name,
-					     width, height, stride, visual);
 	}
 
 }
@@ -226,6 +222,7 @@ struct surface_data {
 	EGLImageKHR image;
 	GLuint texture;
 	EGLDisplay dpy;
+	struct wl_buffer *buffer;
 };
 
 static void
@@ -235,6 +232,8 @@ surface_data_destroy(void *p)
 
 	glDeleteTextures(1, &data->texture);
 	eglDestroyImageKHR(data->dpy, data->image);
+	if (data->buffer)
+		wl_buffer_destroy(data->buffer);
 }
 
 cairo_surface_t *
@@ -261,27 +260,68 @@ display_create_surface(struct display *display,
 	data->dpy = dpy;
 	glBindTexture(GL_TEXTURE_2D, data->texture);
 	glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, data->image);
+	data->buffer = NULL;
 
 	surface = cairo_gl_surface_create_for_texture(display->device,
 						      CAIRO_CONTENT_COLOR_ALPHA,
 						      data->texture,
 						      rectangle->width,
 						      rectangle->height);
-	
+
 	cairo_surface_set_user_data (surface, &surface_data_key,
 				     data, surface_data_destroy);
-	
+
 	return surface;
+}
+
+struct wl_buffer *
+display_get_buffer_for_surface(struct display *display,
+			       cairo_surface_t *surface)
+{
+	struct surface_data *data;
+	struct wl_visual *visual;
+	struct wl_buffer *buffer;
+	EGLint name, stride;
+	int width, height;
+
+	data = cairo_surface_get_user_data (surface, &surface_data_key);
+	if (data->buffer)
+		return data->buffer;
+
+	width = cairo_gl_surface_get_width (surface);
+	height = cairo_gl_surface_get_height (surface);
+
+	eglExportDRMImageMESA(display->dpy, data->image, &name, NULL, &stride);
+
+	visual = wl_display_get_premultiplied_argb_visual(display->display);
+	buffer = wl_drm_create_buffer(display->drm,
+				      name, width, height, stride, visual);
+	data->buffer = buffer;
+
+	return buffer;
+}
+
+cairo_surface_t *
+display_get_pointer_surface(struct display *display, int pointer,
+			    int *width, int *height,
+			    int *hotspot_x, int *hotspot_y)
+{
+	cairo_surface_t *surface;
+
+	surface = display->pointer_surfaces[pointer];
+	*width = cairo_gl_surface_get_width(surface);
+	*height = cairo_gl_surface_get_height(surface);
+	*hotspot_x = pointer_images[pointer].hotspot_x;
+	*hotspot_y = pointer_images[pointer].hotspot_y;
+
+	return cairo_surface_reference(surface);
 }
 
 static void
 window_attach_surface(struct window *window)
 {
-	struct wl_visual *visual;
 	struct display *display = window->display;
 	struct wl_buffer *buffer;
-	struct surface_data *data;
-	EGLint name, stride;
 
 	if (window->pending_surface != NULL)
 		return;
@@ -289,21 +329,9 @@ window_attach_surface(struct window *window)
 	window->pending_surface = window->cairo_surface;
 	window->cairo_surface = NULL;
 
-	data = cairo_surface_get_user_data (window->pending_surface,
-					    &surface_data_key);
-	eglExportDRMImageMESA(window->display->dpy,
-			      data->image, &name, NULL, &stride);
-
-	visual = wl_display_get_premultiplied_argb_visual(display->display);
-	buffer = wl_drm_create_buffer(display->drm,
-				      name,
-				      window->allocation.width,
-				      window->allocation.height,
-				      stride,
-				      visual);
-
+	buffer = display_get_buffer_for_surface(display,
+						window->pending_surface);
 	wl_surface_attach(window->surface, buffer);
-	wl_buffer_destroy(buffer);
 
 	wl_surface_map(window->surface,
 		       window->allocation.x,
@@ -330,7 +358,8 @@ window_draw_decorations(struct window *window)
 	cairo_t *cr;
 	cairo_text_extents_t extents;
 	cairo_pattern_t *outline, *bright, *dim;
-	int width, height;
+	cairo_surface_t *frame;
+	int width, height, shadow_dx = 3, shadow_dy = 3;
 
 	window->cairo_surface =
 		display_create_surface(window->display, &window->allocation);
@@ -348,14 +377,18 @@ window_draw_decorations(struct window *window)
 	cairo_paint(cr);
 
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.6);
-	tile_mask(cr, window->display->shadow, 3, 3, width, height, 32);
+	tile_mask(cr, window->display->shadow,
+		  shadow_dx, shadow_dy, width, height,
+		  window->margin + 10 - shadow_dx,
+		  window->margin + 10 - shadow_dy);
 
 	if (window->keyboard_device)
-		tile_source(cr, window->display->active_frame,
-			    0, 0, width, height, 96);
+		frame = window->display->active_frame;
 	else
-		tile_source(cr, window->display->inactive_frame,
-			    0, 0, width, height, 96);
+		frame = window->display->inactive_frame;
+
+	tile_source(cr, frame, 0, 0, width, height,
+		    window->margin + 10, window->margin + 50);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_font_size(cr, 14);
@@ -400,8 +433,8 @@ window_get_surface(struct window *window)
 	return window->cairo_surface;
 }
 
-enum window_state {
-	WINDOW_MOVING = 0,
+enum window_location {
+	WINDOW_INTERIOR = 0,
 	WINDOW_RESIZING_TOP = 1,
 	WINDOW_RESIZING_BOTTOM = 2,
 	WINDOW_RESIZING_LEFT = 4,
@@ -411,59 +444,57 @@ enum window_state {
 	WINDOW_RESIZING_TOP_RIGHT = 9,
 	WINDOW_RESIZING_BOTTOM_RIGHT = 10,
 	WINDOW_RESIZING_MASK = 15,
-	WINDOW_STABLE = 16,
-};
-
-enum pointer_type {
-	POINTER_BOTTOM_LEFT,
-	POINTER_BOTTOM_RIGHT,
-	POINTER_BOTTOM,
-	POINTER_DRAGGING,
-	POINTER_LEFT_PTR,
-	POINTER_LEFT,
-	POINTER_RIGHT,
-	POINTER_TOP_LEFT,
-	POINTER_TOP_RIGHT,
-	POINTER_TOP,
-	POINTER_IBEAM,
+	WINDOW_EXTERIOR = 16,
+	WINDOW_TITLEBAR = 17,
+	WINDOW_CLIENT_AREA = 18,
 };
 
 static int
 get_pointer_location(struct window *window, int32_t x, int32_t y)
 {
-	int vlocation, hlocation;
+	int vlocation, hlocation, location;
 	const int grip_size = 8;
 
 	if (x < window->margin)
-		hlocation = WINDOW_STABLE;
+		hlocation = WINDOW_EXTERIOR;
 	else if (window->margin <= x && x < window->margin + grip_size)
 		hlocation = WINDOW_RESIZING_LEFT;
 	else if (x < window->allocation.width - window->margin - grip_size)
-		hlocation = WINDOW_MOVING;
+		hlocation = WINDOW_INTERIOR;
 	else if (x < window->allocation.width - window->margin)
 		hlocation = WINDOW_RESIZING_RIGHT;
 	else
-		hlocation = WINDOW_STABLE;
+		hlocation = WINDOW_EXTERIOR;
 
 	if (y < window->margin)
-		vlocation = WINDOW_STABLE;
+		vlocation = WINDOW_EXTERIOR;
 	else if (window->margin <= y && y < window->margin + grip_size)
 		vlocation = WINDOW_RESIZING_TOP;
 	else if (y < window->allocation.height - window->margin - grip_size)
-		vlocation = WINDOW_MOVING;
+		vlocation = WINDOW_INTERIOR;
 	else if (y < window->allocation.height - window->margin)
 		vlocation = WINDOW_RESIZING_BOTTOM;
 	else
-		vlocation = WINDOW_STABLE;
+		vlocation = WINDOW_EXTERIOR;
 
-	return vlocation | hlocation;
+	location = vlocation | hlocation;
+	if (location & WINDOW_EXTERIOR)
+		location = WINDOW_EXTERIOR;
+	if (location == WINDOW_INTERIOR && y < window->margin + 50)
+		location = WINDOW_TITLEBAR;
+	else if (location == WINDOW_INTERIOR)
+		location = WINDOW_CLIENT_AREA;
+
+	return location;
 }
 
 static void
-set_pointer_image(struct input *input)
+set_pointer_image(struct input *input, int pointer)
 {
 	struct display *display = input->display;
-	int pointer, location;
+	struct wl_buffer *buffer;
+	cairo_surface_t *surface;
+	int location;
 
 	location = get_pointer_location(input->pointer_focus,
 					input->sx, input->sy);
@@ -492,18 +523,17 @@ set_pointer_image(struct input *input)
 	case WINDOW_RESIZING_BOTTOM_RIGHT:
 		pointer = POINTER_BOTTOM_RIGHT;
 		break;
-	case WINDOW_STABLE:
-		wl_input_device_attach(input->input_device,
-				       NULL, 0, 0);
+	case WINDOW_EXTERIOR:
+	case WINDOW_TITLEBAR:
+		wl_input_device_attach(input->input_device, NULL, 0, 0);
 		return;
 	default:
-		/* FIXME: We should ask the application here. */
-		pointer = POINTER_IBEAM;
 		break;
 	}
 
-	wl_input_device_attach(input->input_device,
-			       display->pointer_buffers[pointer],
+	surface = display->pointer_surfaces[pointer];
+	buffer = display_get_buffer_for_surface(display, surface);
+	wl_input_device_attach(input->input_device, buffer,
 			       pointer_images[pointer].hotspot_x,
 			       pointer_images[pointer].hotspot_y);
 }
@@ -514,16 +544,26 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 		     int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct input *input = data;
+	struct window *window = input->pointer_focus;
+	int location, pointer = POINTER_LEFT_PTR;
 
 	input->x = x;
 	input->y = y;
 	input->sx = sx;
 	input->sy = sy;
 
-	set_pointer_image(input);
+	location = get_pointer_location(window, input->sx, input->sy);
+
+	if (window->motion_handler)
+		pointer = (*window->motion_handler)(window, input, time,
+						    x, y, sx, sy,
+						    window->user_data);
+
+	set_pointer_image(input, pointer);
 }
 
-static void window_handle_button(void *data, struct wl_input_device *input_device,
+static void window_handle_button(void *data,
+				 struct wl_input_device *input_device,
 				 uint32_t time, uint32_t button, uint32_t state)
 {
 	struct input *input = data;
@@ -534,7 +574,7 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 
 	if (button == BTN_LEFT && state == 1) {
 		switch (location) {
-		case WINDOW_MOVING:
+		case WINDOW_TITLEBAR:
 			wl_shell_move(window->display->shell,
 				      window->surface, input_device, time);
 			break;
@@ -550,7 +590,20 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 					window->surface, input_device, time,
 					location);
 			break;
+		case WINDOW_CLIENT_AREA:
+			if (window->button_handler)
+				(*window->button_handler)(window,
+							  input, time,
+							  button, state,
+							  window->user_data);
+			break;
 		}
+	} else {
+		if (window->button_handler)
+			(*window->button_handler)(window,
+						  input, time,
+						  button, state,
+						  window->user_data);
 	}
 }
 
@@ -591,10 +644,21 @@ window_handle_pointer_focus(void *data,
 			    int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct input *input = data;
+	struct window *window;
+	int pointer;
 
 	if (surface) {
 		input->pointer_focus = wl_surface_get_user_data(surface);
-		set_pointer_image(input);
+		window = input->pointer_focus;
+
+		pointer = POINTER_LEFT_PTR;
+		if (window->motion_handler)
+			pointer = (*window->motion_handler)(window,
+							    input, time,
+							    x, y, sx, sy,
+							    window->user_data);
+
+		set_pointer_image(input, pointer);
 	} else {
 		input->pointer_focus = NULL;
 	}
@@ -646,6 +710,24 @@ static const struct wl_input_device_listener input_device_listener = {
 	window_handle_pointer_focus,
 	window_handle_keyboard_focus,
 };
+
+void
+input_get_position(struct input *input, int32_t *x, int32_t *y)
+{
+	*x = input->sx;
+	*y = input->sy;
+}
+
+void
+window_start_drag(struct window *window, struct input *input, uint32_t time,
+		  struct wl_buffer *buffer, int32_t x, int32_t y)
+{
+	cairo_device_flush (window->display->device);
+
+	wl_drag_prepare(input->drag, window->surface, time, buffer, x, y);
+	wl_drag_offer(input->drag, "text/plain");
+	wl_drag_activate(input->drag);
+}
 
 static void
 handle_configure(void *data, struct wl_shell *shell,
@@ -806,6 +888,13 @@ window_set_key_handler(struct window *window,
 }
 
 void
+window_set_button_handler(struct window *window,
+			  window_button_handler_t handler)
+{
+	window->button_handler = handler;
+}
+
+void
 window_set_acknowledge_handler(struct window *window,
 			       window_acknowledge_handler_t handler)
 {
@@ -817,6 +906,13 @@ window_set_frame_handler(struct window *window,
 			 window_frame_handler_t handler)
 {
 	window->frame_handler = handler;
+}
+
+void
+window_set_motion_handler(struct window *window,
+			  window_motion_handler_t handler)
+{
+	window->motion_handler = handler;
 }
 
 void
@@ -964,7 +1060,73 @@ display_add_input(struct display *d, uint32_t id)
 
 	wl_input_device_add_listener(input->input_device,
 				     &input_device_listener, input);
+	wl_input_device_set_user_data(input->input_device, input);
 }
+
+static void
+drag_handle_device(void *data,
+		   struct wl_drag *drag, struct wl_input_device *device)
+{
+	struct input *input;
+	fprintf(stderr, "device for drag %p: %p\n", drag, device);
+
+	input = wl_input_device_get_user_data(device);
+	input->drag = drag;
+
+}
+
+static void
+drag_pointer_focus(void *data,
+		   struct wl_drag *drag,
+		   uint32_t time, struct wl_surface *surface,
+		   int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
+{
+	fprintf(stderr, "drag pointer focus %p\n", surface);
+}
+
+static void
+drag_offer(void *data,
+	   struct wl_drag *drag, const char *type)
+{
+	fprintf(stderr, "drag offer %s\n", type);
+}
+
+static void
+drag_motion(void *data,
+	    struct wl_drag *drag,
+	    uint32_t time,
+	    int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
+{
+	fprintf(stderr, "drag motion %d,%d\n", surface_x, surface_y);
+}
+
+static void
+drag_target(void *data,
+	    struct wl_drag *drag, const char *mime_type)
+{
+}
+
+static void
+drag_finish(void *data, struct wl_drag *drag)
+{
+	fprintf(stderr, "drag finish\n");
+}
+
+static void
+drag_data(void *data,
+	  struct wl_drag *drag, struct wl_array *contents)
+{
+}
+
+static const struct wl_drag_listener drag_listener = {
+	drag_handle_device,
+	drag_pointer_focus,
+	drag_offer,
+	drag_motion,
+	drag_target,
+	drag_finish,
+	drag_data
+};
 
 static void
 display_handle_global(struct wl_display *display, uint32_t id,
@@ -987,6 +1149,9 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "drm") == 0) {
 		d->drm = wl_drm_create(display, id);
 		wl_drm_add_listener(d->drm, &drm_listener, d);
+	} else if (strcmp(interface, "drag") == 0) {
+		d->drag = wl_drag_create(display, id);
+		wl_drag_add_listener(d->drag, &drag_listener, d);
 	}
 }
 
@@ -1126,7 +1291,7 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 		return NULL;
 	}
 
-	create_pointer_images(d);
+	create_pointer_surfaces(d);
 
 	display_render_frame(d);
 

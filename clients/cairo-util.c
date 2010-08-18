@@ -119,11 +119,11 @@ blur_surface(cairo_surface_t *surface, int margin)
 
 void
 tile_mask(cairo_t *cr, cairo_surface_t *surface,
-	  int x, int y, int width, int height, int margin)
+	  int x, int y, int width, int height, int margin, int top_margin)
 {
 	cairo_pattern_t *pattern;
 	cairo_matrix_t matrix;
-	int i, fx, fy;
+	int i, fx, fy, vmargin;
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	pattern = cairo_pattern_create_for_surface (surface);
@@ -137,11 +137,16 @@ tile_mask(cairo_t *cr, cairo_surface_t *surface,
 					    -y + fy * (128 - height));
 		cairo_pattern_set_matrix(pattern, &matrix);
 
+		if (fy)
+			vmargin = margin;
+		else
+			vmargin = top_margin;
+
 		cairo_reset_clip(cr);
 		cairo_rectangle(cr,
 				x + fx * (width - margin),
-				y + fy * (height - margin),
-				margin, margin);
+				y + fy * (height - vmargin),
+				margin, vmargin);
 		cairo_clip (cr);
 		cairo_mask(cr, pattern);
 	}
@@ -196,11 +201,11 @@ tile_mask(cairo_t *cr, cairo_surface_t *surface,
 
 void
 tile_source(cairo_t *cr, cairo_surface_t *surface,
-	    int x, int y, int width, int height, int margin)
+	    int x, int y, int width, int height, int margin, int top_margin)
 {
 	cairo_pattern_t *pattern;
 	cairo_matrix_t matrix;
-	int i, fx, fy;
+	int i, fx, fy, vmargin;
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	pattern = cairo_pattern_create_for_surface (surface);
@@ -216,10 +221,15 @@ tile_source(cairo_t *cr, cairo_surface_t *surface,
 					    -y + fy * (128 - height));
 		cairo_pattern_set_matrix(pattern, &matrix);
 
+		if (fy)
+			vmargin = margin;
+		else
+			vmargin = top_margin;
+
 		cairo_rectangle(cr,
 				x + fx * (width - margin),
-				y + fy * (height - margin),
-				margin, margin);
+				y + fy * (height - vmargin),
+				margin, vmargin);
 		cairo_fill(cr);
 	}
 
@@ -228,7 +238,7 @@ tile_source(cairo_t *cr, cairo_surface_t *surface,
 	cairo_matrix_scale(&matrix, 64.0 / (width - 2 * margin), 1);
 	cairo_matrix_translate(&matrix, -x - width / 2, -y);
 	cairo_pattern_set_matrix(pattern, &matrix);
-	cairo_rectangle(cr, x + margin, y, width - 2 * margin, margin);
+	cairo_rectangle(cr, x + margin, y, width - 2 * margin, top_margin);
 	cairo_fill(cr);
 
 	/* Bottom strecth */
@@ -240,16 +250,17 @@ tile_source(cairo_t *cr, cairo_surface_t *surface,
 
 	/* Left strecth */
 	cairo_matrix_init_translate(&matrix, 0, 64);
-	cairo_matrix_scale(&matrix, 1, 64.0 / (height - 2 * margin));
+	cairo_matrix_scale(&matrix, 1, 64.0 / (height - margin - top_margin));
 	cairo_matrix_translate(&matrix, -x, -y - height / 2);
 	cairo_pattern_set_matrix(pattern, &matrix);
-	cairo_rectangle(cr, x, y + margin, margin, height - 2 * margin);
+	cairo_rectangle(cr, x, y + top_margin,
+			margin, height - margin - top_margin);
 	cairo_fill(cr);
 
 	/* Right strecth */
 	cairo_matrix_translate(&matrix, -width + 128, 0);
 	cairo_pattern_set_matrix(pattern, &matrix);
-	cairo_rectangle(cr, x + width - margin, y + margin,
-			margin, height - 2 * margin);
+	cairo_rectangle(cr, x + width - margin, y + top_margin,
+			margin, height - margin - top_margin);
 	cairo_fill(cr);
 }
