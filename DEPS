@@ -1,6 +1,6 @@
 vars = {
-  "webkit_trunk":
-  "http://svn.webkit.org/repository/webkit/trunk",
+  "webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
+  "nacl_trunk": "http://nativeclient.googlecode.com/svn/trunk",
   "webkit_revision": "65604",
   "ffmpeg_revision": "56386",
   "skia_revision": "593",
@@ -55,8 +55,7 @@ deps = {
     "http://v8.googlecode.com/svn/trunk@5295",
 
   "src/native_client":
-    "svn://svn.chromium.org/native_client/trunk/src/native_client@" +
-    Var("nacl_revision"),
+    Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client/tests/prebuilt@" +
     Var("nacl_revision"),
@@ -207,7 +206,7 @@ deps_os = {
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
 
     "src/third_party/mingw-w64/mingw/bin":
-      ("svn://svn.chromium.org/native_client/trunk/src/third_party/mingw-w64/mingw/bin@" +
+      (Var("nacl_trunk") + "/src/third_party/mingw-w64/mingw/bin@" +
        Var("nacl_revision")),
 
     "src/rlz":
