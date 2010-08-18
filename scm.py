@@ -446,43 +446,39 @@ class SVN(object):
                                True,
                                CaptureMatchingLines)
       except gclient_utils.Error:
+        def IsKnownFailure():
+          for x in failure:
+            if (x.startswith('svn: OPTIONS of') or
+                x.startswith('svn: PROPFIND of') or
+                x.startswith('svn: REPORT of') or
+                x.startswith('svn: Unknown hostname')):
+              return True
+          return False
+
         # Subversion client is really misbehaving with Google Code.
         if args[0] == 'checkout':
           # Ensure at least one file was checked out, otherwise *delete* the
           # directory.
           if len(file_list) == previous_list_len:
-            for x in failure:
-              if ('502 Bad Gateway' in x or
-                  'svn: REPORT of \'/svn/!svn/vcc/default\': 200 OK' in x):
-                # No file were checked out, so make sure the directory is
-                # deleted in case it's messed up and try again.
-                # Warning: It's bad, it assumes args[2] is the directory
-                # argument.
-                if os.path.isdir(args[2]):
-                  gclient_utils.RemoveDirectory(args[2])
-                break
-            else:
+            if not IsKnownFailure():
               # No known svn error was found, bail out.
               raise
+            # No file were checked out, so make sure the directory is
+            # deleted in case it's messed up and try again.
+            # Warning: It's bad, it assumes args[2] is the directory
+            # argument.
+            if os.path.isdir(args[2]):
+              gclient_utils.RemoveDirectory(args[2])
           else:
             # Progress was made, convert to update since an aborted checkout
             # is now an update.
             args = ['update'] + args[1:]
         else:
           # It was an update or export.
-          # We enforce that some progress has been made or HTTP 502.
-          if len(file_list) == previous_list_len:
-            for x in failure:
-              if ('502 Bad Gateway' in x or
-                  'svn: REPORT of \'/svn/!svn/vcc/default\': 200 OK' in x):
-                # Ok, know failure code.
-                break
-            else:
-              # No known svn error was found, bail out.
-              raise
-          else:
-            # Progress was made, it's fine.
-            pass
+          # We enforce that some progress has been made or a known failure.
+          if len(file_list) == previous_list_len and not IsKnownFailure():
+            # No known svn error was found and no progress, bail out.
+            raise
         print "Sleeping 15 seconds and retrying...."
         time.sleep(15)
         continue
