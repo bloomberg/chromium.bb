@@ -90,7 +90,7 @@ class PluginGroup {
   // Returns this group's name
   const string16& GetGroupName() const { return group_name_; }
 
-  // Returns the description of highest-priority plug-in in the group.
+  // Returns the description of the highest-priority plug-in in the group.
   const string16& description() const { return description_; }
 
   // Returns a DictionaryValue with data to display in the UI.
@@ -102,9 +102,13 @@ class PluginGroup {
   // Returns the update URL.
   std::string GetUpdateURL() const { return update_url_; }
 
-  // Returns true if the latest plugin in this group has known
+  // Returns true if the highest-priority plugin in this group has known
   // security problems.
   bool IsVulnerable() const;
+
+  // Disables all plugins in this group that are older than the
+  // minimum version.
+  void DisableOutdatedPlugins();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PluginGroupTest, PluginGroupDefinition);
@@ -118,6 +122,8 @@ class PluginGroup {
               const std::string& version_range_high,
               const std::string& min_version,
               const std::string& update_url);
+
+  Version* CreateVersionFromString(const string16& version_string);
 
   // Set the description and version for this plugin group from the
   // given plug-in.

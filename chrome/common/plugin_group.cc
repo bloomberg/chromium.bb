@@ -223,28 +223,19 @@ bool PluginGroup::Match(const WebPluginInfo& plugin) const {
           version_range_high_->CompareTo(*plugin_version) > 0);
 }
 
-void PluginGroup::UpdateDescriptionAndVersion(const WebPluginInfo& plugin) {
-  description_ = plugin.desc;
-
-  // Update |version_|. Remove spaces and ')' from the version string,
+Version* PluginGroup::CreateVersionFromString(const string16& version_string) {
+  // Remove spaces and ')' from the version string,
   // Replace any instances of 'r', ',' or '(' with a dot.
-  std::wstring version = UTF16ToWide(plugin.version);
+  std::wstring version = UTF16ToWide(version_string);
   RemoveChars(version, L") ", &version);
   std::replace(version.begin(), version.end(), 'r', '.');
   std::replace(version.begin(), version.end(), ',', '.');
   std::replace(version.begin(), version.end(), '(', '.');
 
-  if (Version* new_version = Version::GetVersionFromString(version))
-    version_.reset(new_version);
-  else
-    version_.reset(Version::GetVersionFromString("0"));
+  return Version::GetVersionFromString(version);
 }
 
-void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
-  web_plugin_infos_.push_back(plugin);
-  // The position of this plugin relative to the global list of plugins.
-  web_plugin_positions_.push_back(position);
-
+void PluginGroup::UpdateActivePlugin(const WebPluginInfo& plugin) {
   // A group is enabled if any of the files are enabled.
   if (plugin.enabled) {
     if (!enabled_) {
@@ -258,6 +249,21 @@ void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
     if (description_.empty())
       UpdateDescriptionAndVersion(plugin);
   }
+}
+
+void PluginGroup::UpdateDescriptionAndVersion(const WebPluginInfo& plugin) {
+  description_ = plugin.desc;
+  if (Version* new_version = CreateVersionFromString(plugin.version))
+    version_.reset(new_version);
+  else
+    version_.reset(Version::GetVersionFromString("0"));
+}
+
+void PluginGroup::AddPlugin(const WebPluginInfo& plugin, int position) {
+  web_plugin_infos_.push_back(plugin);
+  // The position of this plugin relative to the global list of plugins.
+  web_plugin_positions_.push_back(position);
+  UpdateActivePlugin(plugin);
 }
 
 DictionaryValue* PluginGroup::GetSummary() const {
@@ -338,14 +344,33 @@ bool PluginGroup::IsVulnerable() const {
   return version_->CompareTo(*min_version_) < 0;
 }
 
+void PluginGroup::DisableOutdatedPlugins() {
+  if (!min_version_.get())
+    return;
+
+  description_ = string16();
+  enabled_ = false;
+
+  for (std::vector<WebPluginInfo>::iterator it =
+           web_plugin_infos_.begin();
+       it != web_plugin_infos_.end(); ++it) {
+    scoped_ptr<Version> version(CreateVersionFromString(it->version));
+    if (version.get() && version->CompareTo(*min_version_) < 0) {
+      it->enabled = false;
+      NPAPI::PluginList::Singleton()->DisablePlugin(it->path);
+    }
+    UpdateActivePlugin(*it);
+  }
+}
+
 void PluginGroup::Enable(bool enable) {
   for (std::vector<WebPluginInfo>::const_iterator it =
        web_plugin_infos_.begin();
        it != web_plugin_infos_.end(); ++it) {
     if (enable && !IsPluginNameDisabledByPolicy(it->name)) {
-      NPAPI::PluginList::Singleton()->EnablePlugin(FilePath(it->path));
+      NPAPI::PluginList::Singleton()->EnablePlugin(it->path);
     } else {
-      NPAPI::PluginList::Singleton()->DisablePlugin(FilePath(it->path));
+      NPAPI::PluginList::Singleton()->DisablePlugin(it->path);
     }
   }
 }

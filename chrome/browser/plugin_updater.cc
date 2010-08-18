@@ -216,9 +216,7 @@ void DisableOutdatedPluginGroups() {
        groups.begin();
        it != groups.end();
        ++it) {
-    if ((*it)->IsVulnerable()) {
-      (*it)->Enable(false);
-    }
+    (*it)->DisableOutdatedPlugins();
   }
 }
 
