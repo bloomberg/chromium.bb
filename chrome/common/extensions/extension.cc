@@ -1208,13 +1208,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_key,
       return false;
     }
 
-#if defined(OS_CHROMEOS)
-    if (list_value->GetSize() > 0) {
-      *error = errors::kIllegalPlugins;
-      return false;
-    }
-#endif
-
     for (size_t i = 0; i < list_value->GetSize(); ++i) {
       DictionaryValue* plugin_value;
       std::string path;

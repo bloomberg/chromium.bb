@@ -85,7 +85,6 @@ TEST(ExtensionUITest, GenerateExtensionsJSONData) {
   EXPECT_TRUE(CompareExpectedAndActualOutput(extension_path, pages,
       expected_output_path)) << extension_path.value();
 
-#if !defined(OS_CHROMEOS)
   // Test Extension2
   extension_path = data_test_dir_path.AppendASCII("extensions")
       .AppendASCII("good")
@@ -103,7 +102,6 @@ TEST(ExtensionUITest, GenerateExtensionsJSONData) {
 
   EXPECT_TRUE(CompareExpectedAndActualOutput(extension_path, pages,
       expected_output_path)) << extension_path.value();
-#endif
 
   // Test Extension3
   extension_path = data_test_dir_path.AppendASCII("extensions")

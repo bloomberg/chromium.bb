@@ -66,14 +66,7 @@ void MakeExtension(bool is_theme, const GURL& update_url,
     }
     source.Set(extension_manifest_keys::kPlugins, plugins);
   }
-
   std::string error;
-#if defined(OS_CHROMEOS)
-  if (num_plugins > 0) {  // plugins are illegal in extensions on chrome os.
-    EXPECT_FALSE(extension->InitFromValue(source, false, &error));
-    return;
-  }
-#endif
   EXPECT_TRUE(extension->InitFromValue(source, false, &error));
   EXPECT_EQ("", error);
   extension->set_location(location);
