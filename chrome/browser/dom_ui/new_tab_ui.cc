@@ -21,6 +21,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/app_launcher_handler.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
+#include "chrome/browser/dom_ui/foreign_session_handler.h"
 #include "chrome/browser/dom_ui/most_visited_handler.h"
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
@@ -465,6 +466,8 @@ NewTabUI::NewTabUI(TabContents* contents)
   if (!GetProfile()->IsOffTheRecord()) {
     PrefService* pref_service = GetProfile()->GetPrefs();
     AddMessageHandler((new ShownSectionsHandler(pref_service))->Attach(this));
+    AddMessageHandler((new browser_sync::ForeignSessionHandler())->
+      Attach(this));
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
     AddMessageHandler((new RecentlyClosedTabsHandler())->Attach(this));
     AddMessageHandler((new MetricsHandler())->Attach(this));

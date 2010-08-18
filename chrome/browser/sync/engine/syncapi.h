@@ -79,6 +79,7 @@ class AutofillSpecifics;
 class BookmarkSpecifics;
 class EntitySpecifics;
 class ExtensionSpecifics;
+class SessionSpecifics;
 class NigoriSpecifics;
 class PasswordSpecifics;
 class PreferenceSpecifics;
@@ -207,6 +208,10 @@ class BaseNode {
   // Getter specific to the EXTENSIONS datatype.  Returns protobuf
   // data.  Can only be called if GetModelType() == EXTENSIONS.
   const sync_pb::ExtensionSpecifics& GetExtensionSpecifics() const;
+
+  // Getter specific to the SESSIONS datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == SESSIONS.
+  const sync_pb::SessionSpecifics& GetSessionSpecifics() const;
 
   // Returns the local external ID associated with the node.
   int64 GetExternalId() const;
@@ -353,6 +358,10 @@ class WriteNode : public BaseNode {
   // Should only be called if GetModelType() == EXTENSIONS.
   void SetExtensionSpecifics(const sync_pb::ExtensionSpecifics& specifics);
 
+  // Set the session specifics (windows, tabs, navigations etc.).
+  // Should only be called if GetModelType() == SESSIONS.
+  void SetSessionSpecifics(const sync_pb::SessionSpecifics& specifics);
+
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const;
 
@@ -390,6 +399,8 @@ class WriteNode : public BaseNode {
       const sync_pb::TypedUrlSpecifics& new_value);
   void PutExtensionSpecificsAndMarkForSyncing(
       const sync_pb::ExtensionSpecifics& new_value);
+  void PutSessionSpecificsAndMarkForSyncing(
+      const sync_pb::SessionSpecifics& new_value);
   void PutSpecificsAndMarkForSyncing(
       const sync_pb::EntitySpecifics& specifics);
 

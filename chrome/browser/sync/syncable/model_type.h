@@ -58,6 +58,8 @@ enum ModelType {
   EXTENSIONS,
   // An object represeting a set of Nigori keys.
   NIGORI,
+  // An object representing a browser session.
+  SESSIONS,
   // An app folder or an app object.
   APPS,
 

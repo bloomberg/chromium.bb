@@ -51,7 +51,6 @@ using sync_api::UserShare;
 using syncable::BASE_VERSION;
 using syncable::CREATE;
 using syncable::DirectoryManager;
-using syncable::ID;
 using syncable::IS_DEL;
 using syncable::IS_DIR;
 using syncable::IS_UNAPPLIED_UPDATE;

@@ -175,6 +175,10 @@ class TabRestoreService : public BaseSessionService {
   // Max number of entries we'll keep around.
   static const size_t kMaxEntries;
 
+  // Creates and add entries to |entries| for each of the windows in |windows|.
+  void CreateEntriesFromWindows(std::vector<SessionWindow*>* windows,
+                                std::vector<Entry*>* entries);
+
  protected:
   virtual void Save();
 
@@ -290,11 +294,6 @@ class TabRestoreService : public BaseSessionService {
   // and invokes LoadStateChanged.
   void OnGotPreviousSession(Handle handle,
                             std::vector<SessionWindow*>* windows);
-
-  // Creates and add entries to |entries| for each of the windows in |windows|.
-  void CreateEntriesFromWindows(
-      std::vector<SessionWindow*>* windows,
-      std::vector<Entry*>* entries);
 
   // Converts a SessionWindow into a Window, returning true on success. We use 0
   // as the timestamp here since we do not know when the window/tab was closed.

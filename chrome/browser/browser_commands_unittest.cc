@@ -79,7 +79,6 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
 }
 
 TEST_F(BrowserCommandsTest, BookmarkCurrentPage) {
-  ChromeThread ui_loop(ChromeThread::UI, MessageLoop::current());
   ChromeThread file_loop(ChromeThread::FILE, MessageLoop::current());
   // We use profile() here, since it's a TestingProfile.
   profile()->CreateBookmarkModel(true);
