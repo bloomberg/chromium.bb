@@ -332,21 +332,21 @@ IN_PROC_BROWSER_TEST_F(TwoClientLivePreferencesSyncTest, Security) {
   GetPrefs(0)->SetBoolean(prefs::kTLS1Enabled, new_kTLS1Enabled);
   EXPECT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
+  EXPECT_EQ(GetVerifierPrefs()->
+      GetBoolean(prefs::kCertRevocationCheckingEnabled),
+      GetPrefs(0)->GetBoolean(prefs::kCertRevocationCheckingEnabled));
   EXPECT_NE(GetVerifierPrefs()->
       GetBoolean(prefs::kCertRevocationCheckingEnabled),
-            GetPrefs(0)->GetBoolean(prefs::kCertRevocationCheckingEnabled));
-  EXPECT_NE(GetVerifierPrefs()->
-      GetBoolean(prefs::kCertRevocationCheckingEnabled),
-            GetPrefs(1)->GetBoolean(prefs::kCertRevocationCheckingEnabled));
-  EXPECT_NE(GetVerifierPrefs()->GetBoolean(prefs::kSSL2Enabled),
+      GetPrefs(1)->GetBoolean(prefs::kCertRevocationCheckingEnabled));
+  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kSSL2Enabled),
             GetPrefs(0)->GetBoolean(prefs::kSSL2Enabled));
   EXPECT_NE(GetVerifierPrefs()->GetBoolean(prefs::kSSL2Enabled),
             GetPrefs(1)->GetBoolean(prefs::kSSL2Enabled));
-  EXPECT_NE(GetVerifierPrefs()->GetBoolean(prefs::kSSL3Enabled),
+  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kSSL3Enabled),
             GetPrefs(0)->GetBoolean(prefs::kSSL3Enabled));
   EXPECT_NE(GetVerifierPrefs()->GetBoolean(prefs::kSSL3Enabled),
             GetPrefs(1)->GetBoolean(prefs::kSSL3Enabled));
-  EXPECT_NE(GetVerifierPrefs()->GetBoolean(prefs::kTLS1Enabled),
+  EXPECT_EQ(GetVerifierPrefs()->GetBoolean(prefs::kTLS1Enabled),
             GetPrefs(0)->GetBoolean(prefs::kTLS1Enabled));
   EXPECT_NE(GetVerifierPrefs()->GetBoolean(prefs::kTLS1Enabled),
             GetPrefs(1)->GetBoolean(prefs::kTLS1Enabled));
