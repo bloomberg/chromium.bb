@@ -493,7 +493,8 @@ TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
 
 // Test that we can receive correct DOM events when we send input events
 // through the RenderWidget::OnHandleInputEvent() function.
-TEST_F(RenderViewTest, OnHandleKeyboardEvent) {
+// Crashy, http://crbug.com/52643.
+TEST_F(RenderViewTest, DISABLED_OnHandleKeyboardEvent) {
 #if defined(OS_WIN) || defined(OS_LINUX)
   // Load an HTML page consisting of one <input> element and three
   // contentediable <div> elements.
