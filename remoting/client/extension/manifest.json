@@ -6,6 +6,7 @@
     "default_icon": "icon.png",
     "popup": "popup.html"
   },
+  "background_page": "background.html",
   "permissions": [
     "tabs",
     "http://www-googleapis-test.sandbox.google.com/",

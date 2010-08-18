@@ -6,10 +6,11 @@ found in the LICENSE file.
 
 <html>
   <head>
+    <script type="text/javascript" src="base.js"></script>
     <script type="text/javascript" src="client.js"></script>
     <title>Get hosts</title>
   </head>
-  <body onload="init_params();" style="width:250;">
+  <body onload="initParams();" style="width:250;">
 
     <div style="border: blue 1px dotted;">
     <form name="hostqueryform" action="" method="GET">
@@ -25,7 +26,7 @@ found in the LICENSE file.
     <form name="connectparamsform" action="" method="GET">
     chromoting: <input type="text" name="chromoting_auth" id="chromoting_auth" value="" /> <br />
     xmpp: <input type="text" name="xmpp_auth" id="xmpp_auth" value="" />
-    <input type="button" name="set_cookie_button" value="Set Auth Cookies" onclick="set_auth_cookies(this.form)" />
+    <input type="button" name="set_cookie_button" value="Set Auth Cookies" onclick="setAuthCookies(this.form)" />
     </form>
     </div>
 
@@ -34,7 +35,7 @@ found in the LICENSE file.
     Conenct directly to host using auth cookies. Find Hosts doesn't require the host_jid to be filled out. <br />
     host_jid: <input type="text" name="host_jid" id="host_jid" value="" /> <br />
     <input type="button" name="connect_button" value="Connect" onclick="connect(this.form)" />
-    <input type="button" name="find_host_button" value="Find Hosts" onclick="find_hosts(this.form)" />
+    <input type="button" name="find_host_button" value="Find Hosts" onclick="findHosts(this.form)" />
     </form>
     </div>
 
