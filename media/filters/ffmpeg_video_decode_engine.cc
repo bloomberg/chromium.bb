@@ -81,11 +81,6 @@ void FFmpegVideoDecodeEngine::Initialize(
       av_frame_.get()) {
     info.success_ = true;
   }
-#if !defined(FF_THREAD_FRAME)
-#pragma message ("Warning: Not building with FFmpeg MT.")
-#else
-#pragma message ("Building with FFmpeg MT.")
-#endif
   event_handler_ = event_handler;
   event_handler_->OnInitializeComplete(info);
 }
