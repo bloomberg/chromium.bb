@@ -265,16 +265,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHostIsPresent) {
   RunTest("testHostIsPresent", kSimplePage);
 }
 
-// Tests elements panel basics.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestElementsTreeRoot) {
-  RunTest("testElementsTreeRoot", kSimplePage);
-}
-
-// Tests main resource load.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestMainResource) {
-  RunTest("testMainResource", kSimplePage);
-}
-
 // Tests resources panel enabling.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
   RunTest("testEnableResourcesTab", kSimplePage);
