@@ -701,8 +701,13 @@ MockWrite CreateMockWrite(const spdy::SpdyFrame& req) {
 
 // Create a MockWrite from the given SpdyFrame and sequence number.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq) {
+  return CreateMockWrite(req, seq, true);
+}
+
+// Create a MockWrite from the given SpdyFrame and sequence number.
+MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq, bool async) {
   return MockWrite(
-      true, req.data(), req.length() + spdy::SpdyFrame::size(), seq);
+      async, req.data(), req.length() + spdy::SpdyFrame::size(), seq);
 }
 
 // Create a MockRead from the given SpdyFrame.
@@ -713,8 +718,13 @@ MockRead CreateMockRead(const spdy::SpdyFrame& resp) {
 
 // Create a MockRead from the given SpdyFrame and sequence number.
 MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq) {
+  return CreateMockRead(resp, seq, true);
+}
+
+// Create a MockRead from the given SpdyFrame and sequence number.
+MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq, bool async) {
   return MockRead(
-      true, resp.data(), resp.length() + spdy::SpdyFrame::size(), seq);
+      async, resp.data(), resp.length() + spdy::SpdyFrame::size(), seq);
 }
 
 // Combines the given SpdyFrames into the given char array and returns

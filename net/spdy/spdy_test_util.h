@@ -266,11 +266,15 @@ MockWrite CreateMockWrite(const spdy::SpdyFrame& req);
 // Create an async MockWrite from the given SpdyFrame and sequence number.
 MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq);
 
+MockWrite CreateMockWrite(const spdy::SpdyFrame& req, int seq, bool async);
+
 // Create a MockRead from the given SpdyFrame.
 MockRead CreateMockRead(const spdy::SpdyFrame& resp);
 
 // Create a MockRead from the given SpdyFrame and sequence number.
 MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq);
+
+MockRead CreateMockRead(const spdy::SpdyFrame& resp, int seq, bool async);
 
 // Combines the given SpdyFrames into the given char array and returns
 // the total length.
@@ -286,6 +290,8 @@ class SpdySessionDependencies {
       : host_resolver(new MockHostResolver),
         proxy_service(ProxyService::CreateNull()),
         ssl_config_service(new SSLConfigServiceDefaults),
+        socket_factory(new MockClientSocketFactory),
+        deterministic_socket_factory(new DeterministicMockClientSocketFactory),
         http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
         spdy_session_pool(new SpdySessionPool()) {
           // Note: The CancelledTransaction test does cleanup by running all
@@ -302,13 +308,16 @@ class SpdySessionDependencies {
       : host_resolver(new MockHostResolver),
         proxy_service(proxy_service),
         ssl_config_service(new SSLConfigServiceDefaults),
+        socket_factory(new MockClientSocketFactory),
+        deterministic_socket_factory(new DeterministicMockClientSocketFactory),
         http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
         spdy_session_pool(new SpdySessionPool()) {}
 
   scoped_refptr<MockHostResolverBase> host_resolver;
   scoped_refptr<ProxyService> proxy_service;
   scoped_refptr<SSLConfigService> ssl_config_service;
-  MockClientSocketFactory socket_factory;
+  scoped_ptr<MockClientSocketFactory> socket_factory;
+  scoped_ptr<DeterministicMockClientSocketFactory> deterministic_socket_factory;
   scoped_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
   scoped_refptr<SpdySessionPool> spdy_session_pool;
 
@@ -316,13 +325,25 @@ class SpdySessionDependencies {
       SpdySessionDependencies* session_deps) {
     return new HttpNetworkSession(session_deps->host_resolver,
                                   session_deps->proxy_service,
-                                  &session_deps->socket_factory,
+                                  session_deps->socket_factory.get(),
                                   session_deps->ssl_config_service,
                                   session_deps->spdy_session_pool,
                                   session_deps->http_auth_handler_factory.get(),
                                   NULL,
                                   NULL);
-}
+  }
+  static HttpNetworkSession* SpdyCreateSessionDeterministic(
+      SpdySessionDependencies* session_deps) {
+    return new HttpNetworkSession(session_deps->host_resolver,
+                                  session_deps->proxy_service,
+                                  session_deps->
+                                      deterministic_socket_factory.get(),
+                                  session_deps->ssl_config_service,
+                                  session_deps->spdy_session_pool,
+                                  session_deps->http_auth_handler_factory.get(),
+                                  NULL,
+                                  NULL);
+  }
 };
 
 class SpdyURLRequestContext : public URLRequestContext {
