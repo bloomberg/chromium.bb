@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/archived_database.h"
@@ -517,7 +518,7 @@ TEST_F(ExpireHistoryTest, DontDeleteStarredURL) {
   ASSERT_TRUE(HasThumbnail(url_row.id()));
 
   // Unstar the URL and delete again.
-  bookmark_model_.SetURLStarred(url, std::wstring(), false);
+  bookmark_model_.SetURLStarred(url, string16(), false);
   expirer_.DeleteURL(url);
 
   // Now it should be completely deleted.

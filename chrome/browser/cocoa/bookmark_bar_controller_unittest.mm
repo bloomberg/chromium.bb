@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,10 @@
 #include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
@@ -543,7 +545,8 @@ TEST_F(BookmarkBarControllerTest, OffTheSideButtonHidden) {
   EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
 
   for (int i = 0; i < 2; i++) {
-    model->SetURLStarred(GURL("http://www.foo.com"), L"small", true);
+    model->SetURLStarred(GURL("http://www.foo.com"), ASCIIToUTF16("small"),
+                         true);
     EXPECT_TRUE([bar_ offTheSideButtonIsHidden]);
   }
 
@@ -594,8 +597,7 @@ TEST_F(BookmarkBarControllerTest, DeleteFromOffTheSideWhileItIsOpen) {
   for (int i = 0; i < 100; i++) {
     std::ostringstream title;
     title << "super duper wide title " << i;
-    model->AddURL(parent, parent->GetChildCount(),
-                  ASCIIToWide(title.str().c_str()),
+    model->AddURL(parent, parent->GetChildCount(), ASCIIToUTF16(title.str()),
                   GURL("http://superfriends.hall-of-justice.edu"));
   }
   EXPECT_FALSE([bar_ offTheSideButtonIsHidden]);
@@ -685,8 +687,9 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
 
   // Test two bookmarks.
   GURL gurl("http://www.foo.com");
-  model->SetURLStarred(gurl, L"small", true);
-  model->SetURLStarred(GURL("http://www.cnn.com"), L"bigger title", true);
+  model->SetURLStarred(gurl, ASCIIToUTF16("small"), true);
+  model->SetURLStarred(GURL("http://www.cnn.com"), ASCIIToUTF16("bigger title"),
+                       true);
   menu = [bar_ menuForFolderNode:model->GetBookmarkBarNode()];
   EXPECT_EQ([menu numberOfItems], 2);
   NSMenuItem *item = [menu itemWithTitle:@"bigger title"];
@@ -776,13 +779,13 @@ TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   // narrow.
   // TODO(viettrungluu): make the test independent of window/view size, font
   // metrics, button size and spacing, and everything else.
-  std::wstring title1(L"x");
+  string16 title1(ASCIIToUTF16("x"));
   model->SetURLStarred(gurl1, title1, true);
   EXPECT_EQ(1U, [[bar_ buttons] count]);
   EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl2("http://legion-of-doom.gov");
-  std::wstring title2(L"y");
+  string16 title2(ASCIIToUTF16("y"));
   model->SetURLStarred(gurl2, title2, true);
   EXPECT_EQ(2U, [[bar_ buttons] count]);
   EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);
@@ -873,11 +876,11 @@ TEST_F(BookmarkBarControllerTest, TestButtonMarch) {
 TEST_F(BookmarkBarControllerTest, CheckForGrowth) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   GURL gurl1("http://www.google.com");
-  std::wstring title1(L"x");
+  string16 title1(ASCIIToUTF16("x"));
   model->SetURLStarred(gurl1, title1, true);
 
   GURL gurl2("http://www.google.com/blah");
-  std::wstring title2(L"y");
+  string16 title2(ASCIIToUTF16("y"));
   model->SetURLStarred(gurl2, title2, true);
 
   EXPECT_EQ(2U, [[bar_ buttons] count]);
@@ -956,7 +959,7 @@ TEST_F(BookmarkBarControllerTest, Display) {
 TEST_F(BookmarkBarControllerTest, MiddleClick) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   GURL gurl1("http://www.google.com/");
-  std::wstring title1(L"x");
+  string16 title1(ASCIIToUTF16("x"));
   model->SetURLStarred(gurl1, title1, true);
 
   EXPECT_EQ(1U, [[bar_ buttons] count]);
@@ -1048,11 +1051,11 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
 TEST_F(BookmarkBarControllerTest, TestButtonOrBar) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   GURL gurl1("http://www.google.com");
-  std::wstring title1(L"x");
+  string16 title1(ASCIIToUTF16("x"));
   model->SetURLStarred(gurl1, title1, true);
 
   GURL gurl2("http://www.google.com/gurl_power");
-  std::wstring title2(L"gurl power");
+  string16 title2(ASCIIToUTF16("gurl power"));
   model->SetURLStarred(gurl2, title2, true);
 
   NSButton* first = [[bar_ buttons] objectAtIndex:0];
@@ -1108,7 +1111,9 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   GURL gurls[] = { GURL("http://www.google.com/a"),
                    GURL("http://www.google.com/b"),
                    GURL("http://www.google.com/c") };
-  std::wstring titles[] = { L"a", L"b", L"c" };
+  string16 titles[] = { ASCIIToUTF16("a"),
+                        ASCIIToUTF16("b"),
+                        ASCIIToUTF16("c") };
   for (unsigned i = 0; i < arraysize(titles); i++) {
     model->SetURLStarred(gurls[i], titles[i], true);
   }
@@ -1179,7 +1184,9 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
   GURL gurls[] = { GURL("http://www.google.com/a"),
                    GURL("http://www.google.com/b"),
                    GURL("http://www.google.com/c") };
-  std::wstring titles[] = { L"a", L"b", L"c" };
+  string16 titles[] = { ASCIIToUTF16("a"),
+                        ASCIIToUTF16("b"),
+                        ASCIIToUTF16("c") };
   for (unsigned i = 0; i < arraysize(titles); i++) {
     model->SetURLStarred(gurls[i], titles[i], true);
   }
@@ -1203,7 +1210,7 @@ TEST_F(BookmarkBarControllerTest, TestCopyButton) {
 // buttons have the same colored text.  Repeat more than once.
 TEST_F(BookmarkBarControllerTest, TestThemedButton) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
-  model->SetURLStarred(GURL("http://www.foo.com"), L"small", true);
+  model->SetURLStarred(GURL("http://www.foo.com"), ASCIIToUTF16("small"), true);
   BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];
   EXPECT_TRUE(button);
 
@@ -1231,7 +1238,9 @@ TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
   GURL gurls[] = { GURL("http://www.foo.com/"),
                    GURL("http://www.bar.com/"),
                    GURL("http://www.baz.com/") };
-  std::wstring titles[] = { L"foo", L"bar", L"baz" };
+  string16 titles[] = { ASCIIToUTF16("a"),
+                        ASCIIToUTF16("b"),
+                        ASCIIToUTF16("c") };
   for (size_t i = 0; i < arraysize(titles); i++)
     model->SetURLStarred(gurls[i], titles[i], true);
 

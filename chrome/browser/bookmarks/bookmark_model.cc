@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -398,17 +398,6 @@ const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
   return AddURLWithCreationTime(parent, index, title, url, Time::Now());
 }
 
-#if !defined(WCHAR_T_IS_UTF16)
-const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
-    const BookmarkNode* parent,
-    int index,
-    const std::wstring& title,
-    const GURL& url,
-    const Time& creation_time) {
-  return AddURLWithCreationTime(parent, index, WideToUTF16(title),
-                                url, creation_time);
-}
-#endif
 const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
     const BookmarkNode* parent,
     int index,
@@ -464,13 +453,6 @@ void BookmarkModel::SortChildren(const BookmarkNode* parent) {
                     BookmarkNodeChildrenReordered(this, parent));
 }
 
-#if !defined(WCHAR_T_IS_UTF16)
-void BookmarkModel::SetURLStarred(const GURL& url,
-                                  const std::wstring& title,
-                                  bool is_starred) {
-  SetURLStarred(url, WideToUTF16(title), is_starred);
-}
-#endif
 void BookmarkModel::SetURLStarred(const GURL& url,
                                   const string16& title,
                                   bool is_starred) {

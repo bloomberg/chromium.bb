@@ -20,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/point.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autofill/autofill_manager.h"
@@ -1494,7 +1495,7 @@ void Browser::BookmarkCurrentPage() {
   bookmark_utils::GetURLAndTitleToBookmark(GetSelectedTabContents(), &url,
                                            &title);
   bool was_bookmarked = model->IsBookmarked(url);
-  model->SetURLStarred(url, title, true);
+  model->SetURLStarred(url, WideToUTF16Hack(title), true);
   // Make sure the model actually added a bookmark before showing the star. A
   // bookmark isn't created if the url is invalid.
   if (window_->IsActive() && model->IsBookmarked(url)) {

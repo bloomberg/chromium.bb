@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -110,7 +111,7 @@ void ProfileWriter::AddBookmarkEntry(
     }
     groups_added_to.insert(parent);
     model->AddURLWithCreationTime(parent, parent->GetChildCount(),
-        it->title, it->url, it->creation_time);
+        WideToUTF16Hack(it->title), it->url, it->creation_time);
 
     // If some items are put into toolbar, it looks like the user was using
     // it in their last browser. We turn on the bookmarks toolbar.

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,8 @@ TEST_F(HistoryContentsProviderTest, Bookmarks) {
 
   // Add a bookmark.
   GURL bookmark_url("http://www.google.com/4");
-  profile()->GetBookmarkModel()->SetURLStarred(bookmark_url, L"bar", true);
+  profile()->GetBookmarkModel()->SetURLStarred(bookmark_url,
+                                               ASCIIToUTF16("bar"), true);
 
   // Ask for synchronous. This should only get the bookmark.
   AutocompleteInput sync_input(L"bar", std::wstring(), true, false, true);

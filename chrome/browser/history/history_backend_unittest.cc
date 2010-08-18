@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/history/history_backend.h"
@@ -350,8 +351,8 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   URLID row2_id = backend_->db_->GetRowForURL(row2.url(), NULL);
 
   // Star the two URLs.
-  bookmark_model_.SetURLStarred(row1.url(), std::wstring(), true);
-  bookmark_model_.SetURLStarred(row2.url(), std::wstring(), true);
+  bookmark_model_.SetURLStarred(row1.url(), string16(), true);
+  bookmark_model_.SetURLStarred(row2.url(), string16(), true);
 
   // Delete url 2. Because url 2 is starred this won't delete the URL, only
   // the visits.
@@ -368,7 +369,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
       backend_->thumbnail_db_->GetFavIconIDForFavIconURL(favicon_url2));
 
   // Unstar row2.
-  bookmark_model_.SetURLStarred(row2.url(), std::wstring(), false);
+  bookmark_model_.SetURLStarred(row2.url(), string16(), false);
   // Tell the backend it was unstarred. We have to explicitly do this as
   // BookmarkModel isn't wired up to the backend during testing.
   std::set<GURL> unstarred_urls;
@@ -382,7 +383,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
       backend_->thumbnail_db_->GetFavIconIDForFavIconURL(favicon_url2));
 
   // Unstar row 1.
-  bookmark_model_.SetURLStarred(row1.url(), std::wstring(), false);
+  bookmark_model_.SetURLStarred(row1.url(), string16(), false);
   // Tell the backend it was unstarred. We have to explicitly do this as
   // BookmarkModel isn't wired up to the backend during testing.
   unstarred_urls.clear();

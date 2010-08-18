@@ -289,15 +289,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
                              const string16& title,
                              const GURL& url);
 
-  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // Adds a url with a specific creation date.
-#if !defined(WCHAR_T_IS_UTF16)
-  const BookmarkNode* AddURLWithCreationTime(const BookmarkNode* parent,
-                                             int index,
-                                             const std::wstring& title,
-                                             const GURL& url,
-                                             const base::Time& creation_time);
-#endif
   const BookmarkNode* AddURLWithCreationTime(const BookmarkNode* parent,
                                              int index,
                                              const string16& title,
@@ -308,15 +300,9 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // BookmarkNodeChildrenReordered method.
   void SortChildren(const BookmarkNode* parent);
 
-  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // This is the convenience that makes sure the url is starred or not starred.
   // If is_starred is false, all bookmarks for URL are removed. If is_starred is
   // true and there are no bookmarks for url, a bookmark is created.
-#if !defined(WCHAR_T_IS_UTF16)
-  void SetURLStarred(const GURL& url,
-                     const std::wstring& title,
-                     bool is_starred);
-#endif
   void SetURLStarred(const GURL& url,
                      const string16& title,
                      bool is_starred);

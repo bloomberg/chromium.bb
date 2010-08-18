@@ -7,6 +7,7 @@
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"  // TODO(viettrungluu): remove
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
@@ -276,7 +277,9 @@ void BookmarkBubbleNotificationBridge::Observe(
 
 - (IBAction)remove:(id)sender {
   [self stopPulsingBookmarkButton];
-  model_->SetURLStarred(node_->GetURL(), node_->GetTitle(), false);
+  // TODO(viettrungluu): get rid of conversion and utf_string_conversions.h.
+  model_->SetURLStarred(node_->GetURL(), WideToUTF16Hack(node_->GetTitle()),
+                        false);
   UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"),
                             model_->profile());
   node_ = NULL;  // no longer valid

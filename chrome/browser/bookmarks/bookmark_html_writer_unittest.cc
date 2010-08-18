@@ -8,8 +8,10 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/i18n/time_formatting.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -80,7 +82,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
   // Creates a set of bookmark values to a string for assertion testing.
   std::wstring BookmarkValuesToString(bool on_toolbar,
                                       const GURL& url,
-                                      const std::wstring& title,
+                                      const string16& title,
                                       base::Time creation_time,
                                       const std::wstring& f1,
                                       const std::wstring& f2,
@@ -99,7 +101,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
           entry.path.push_back(f3);
       }
     }
-    entry.title = title;
+    entry.title = UTF16ToWideHack(title);
     entry.creation_time = creation_time;
     return BookmarkEntryToString(entry);
   }
@@ -107,7 +109,7 @@ class BookmarkHTMLWriterTest : public testing::Test {
   void AssertBookmarkEntryEquals(const ProfileWriter::BookmarkEntry& entry,
                                  bool on_toolbar,
                                  const GURL& url,
-                                 const std::wstring& title,
+                                 const string16& title,
                                  base::Time creation_time,
                                  const std::wstring& f1,
                                  const std::wstring& f2,
@@ -175,10 +177,10 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   std::wstring f2_title = L"F2";
   std::wstring f3_title = L"F 3";
   std::wstring f4_title = L"F4";
-  std::wstring url1_title = L"url 1";
-  std::wstring url2_title = L"url&2";
-  std::wstring url3_title = L"url\"3";
-  std::wstring url4_title = L"url\"&;";
+  string16 url1_title = ASCIIToUTF16("url 1");
+  string16 url2_title = ASCIIToUTF16("url&2");
+  string16 url3_title = ASCIIToUTF16("url\"3");
+  string16 url4_title = ASCIIToUTF16("url\"&;");
   GURL url1("http://url1");
   GURL url1_favicon("http://url1/icon.ico");
   GURL url2("http://url2");

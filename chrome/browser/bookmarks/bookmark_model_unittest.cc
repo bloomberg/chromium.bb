@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/hash_tables.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
@@ -941,7 +942,7 @@ TEST_F(BookmarkModelTestWithProfile2, RemoveNotification) {
 
   // Add a URL.
   GURL url("http://www.google.com");
-  bb_model_->SetURLStarred(url, std::wstring(), true);
+  bb_model_->SetURLStarred(url, string16(), true);
 
   profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(
       url, NULL, 1, GURL(), PageTransition::TYPED,

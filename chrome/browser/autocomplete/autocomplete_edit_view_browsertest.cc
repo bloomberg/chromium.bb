@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "base/ref_counted.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -236,7 +237,7 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
                                           cur.typed_count, t, false);
       history_service->SetPageContents(url, UTF8ToUTF16(cur.body));
       if (cur.starred) {
-        bookmark_model->SetURLStarred(url, std::wstring(), true);
+        bookmark_model->SetURLStarred(url, string16(), true);
       }
     }
   }
