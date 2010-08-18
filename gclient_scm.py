@@ -800,7 +800,7 @@ class SVNWrapper(SCMWrapper):
             from_info['Repository Root'],
             to_info['Repository Root'])
       else:
-        if not options.force:
+        if not options.force and not options.reset:
           # Look for local modifications but ignore unversioned files.
           for status in scm.SVN.CaptureStatus(checkout_path):
             if status[0] != '?':
