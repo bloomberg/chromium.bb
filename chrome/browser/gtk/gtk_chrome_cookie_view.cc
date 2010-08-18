@@ -512,7 +512,7 @@ void gtk_chrome_cookie_view_display_database(
   gtk_entry_set_text(GTK_ENTRY(self->database_description_entry_),
                      database_info.description.c_str());
   gtk_entry_set_text(GTK_ENTRY(self->database_size_entry_),
-                     UTF16ToUTF8(FormatBytes(
+                     WideToUTF8(FormatBytes(
                          database_info.size,
                          GetByteDisplayUnits(database_info.size),
                          true)).c_str());
@@ -532,7 +532,7 @@ void gtk_chrome_cookie_view_display_local_storage(
   gtk_entry_set_text(GTK_ENTRY(self->local_storage_origin_entry_),
                      local_storage_info.origin.c_str());
   gtk_entry_set_text(GTK_ENTRY(self->local_storage_size_entry_),
-                     UTF16ToUTF8(FormatBytes(
+                     WideToUTF8(FormatBytes(
                          local_storage_info.size,
                          GetByteDisplayUnits(local_storage_info.size),
                          true)).c_str());
@@ -551,7 +551,7 @@ void gtk_chrome_cookie_view_display_app_cache(
   gtk_entry_set_text(GTK_ENTRY(self->appcache_manifest_entry_),
                      info.manifest_url.spec().c_str());
   gtk_entry_set_text(GTK_ENTRY(self->appcache_size_entry_),
-                     UTF16ToUTF8(FormatBytes(
+                     WideToUTF8(FormatBytes(
                          info.size,
                          GetByteDisplayUnits(info.size),
                          true)).c_str());
@@ -595,7 +595,7 @@ void gtk_chrome_cookie_view_display_database_accessed(
   gtk_entry_set_text(GTK_ENTRY(self->database_accessed_description_entry_),
                      UTF16ToUTF8(display_name).c_str());
   gtk_entry_set_text(GTK_ENTRY(self->database_accessed_size_entry_),
-                     UTF16ToUTF8(FormatBytes(
+                     WideToUTF8(FormatBytes(
                          estimated_size,
                          GetByteDisplayUnits(estimated_size),
                          true)).c_str());

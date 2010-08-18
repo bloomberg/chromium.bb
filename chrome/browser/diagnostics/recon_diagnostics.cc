@@ -203,7 +203,8 @@ class PathTest : public DiagnosticTest {
       return true;
     }
     DataUnits units = GetByteDisplayUnits(dir_or_file_size);
-    string16 printable_size = FormatBytes(dir_or_file_size, units, true);
+    string16 printable_size =
+        WideToUTF16(FormatBytes(dir_or_file_size, units, true));
 
     if (path_info_.max_size > 0) {
       if (dir_or_file_size > path_info_.max_size) {
@@ -247,7 +248,8 @@ class DiskSpaceTest : public DiagnosticTest {
       return true;
     }
     DataUnits units = GetByteDisplayUnits(disk_space);
-    string16 printable_size = FormatBytes(disk_space, units, true);
+    string16 printable_size =
+        WideToUTF16(FormatBytes(disk_space, units, true));
     if (disk_space < 80 * kOneMeg) {
       RecordFailure(ASCIIToUTF16("Low disk space : ") + printable_size);
       return true;

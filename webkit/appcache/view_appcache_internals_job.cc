@@ -109,7 +109,7 @@ void AddHTMLFromAppCacheToOutput(
     out->append("<ul>");
 
     AddLiTag(kSize,
-             UTF16ToUTF8(FormatBytes(
+             WideToUTF8(FormatBytes(
                  info->size, GetByteDisplayUnits(info->size), true)),
              out);
     AddLiTag(kCreationTime,

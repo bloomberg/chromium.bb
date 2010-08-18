@@ -591,8 +591,7 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
   int64 total = download->total_bytes();
   int64 size = download->received_bytes();
   DataUnits amount_units = GetByteDisplayUnits(size);
-  std::wstring received_size = UTF16ToWideHack(FormatBytes(size, amount_units,
-                                                           true));
+  std::wstring received_size = FormatBytes(size, amount_units, true);
   std::wstring amount = received_size;
 
   // Adjust both strings for the locale direction since we don't yet know which
@@ -605,8 +604,7 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
 
   if (total) {
     amount_units = GetByteDisplayUnits(total);
-    std::wstring total_text =
-        UTF16ToWideHack(FormatBytes(total, amount_units, true));
+    std::wstring total_text = FormatBytes(total, amount_units, true);
     std::wstring total_text_localized;
     if (base::i18n::AdjustStringForLocaleDirection(total_text,
                                                    &total_text_localized))
@@ -619,9 +617,8 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
     amount.assign(received_size);
   }
   amount_units = GetByteDisplayUnits(download->CurrentSpeed());
-  std::wstring speed_text =
-      UTF16ToWideHack(FormatSpeed(download->CurrentSpeed(), amount_units,
-                                  true));
+  std::wstring speed_text = FormatSpeed(download->CurrentSpeed(),
+                                        amount_units, true);
   std::wstring speed_text_localized;
   if (base::i18n::AdjustStringForLocaleDirection(speed_text,
                                                  &speed_text_localized))
