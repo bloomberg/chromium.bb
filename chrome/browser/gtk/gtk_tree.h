@@ -66,8 +66,8 @@ class TableAdapter : public TableModelObserver {
   };
 
   // |table_model| may be NULL.
-  TableAdapter(Delegate* delegate, GtkListStore* list_store,
-               TableModel* table_model);
+  explicit TableAdapter(Delegate* delegate, GtkListStore* list_store,
+                        TableModel* table_model);
   virtual ~TableAdapter() {}
 
   // Replace the TableModel with a different one.  If the list store currenty
@@ -127,9 +127,6 @@ class TreeAdapter : public TreeModelObserver {
   // Return the tree store.
   GtkTreeStore* tree_store() { return tree_store_; }
 
-  // Return the tree model.
-  TreeModel* tree_model() { return tree_model_; }
-
   // Get the TreeModelNode corresponding to iter in the tree store.
   TreeModelNode* GetNode(GtkTreeIter* iter);
 
@@ -145,15 +142,10 @@ class TreeAdapter : public TreeModelObserver {
   virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node);
   // End TreeModelObserver implementation.
 
- protected:
-  // Fill the tree store values for a given node.
-  virtual void FillRow(GtkTreeIter* iter, TreeModelNode* node);
-
-  GtkTreeStore* tree_store_;
-  TreeModel* tree_model_;
-  std::vector<GdkPixbuf*> pixbufs_;
-
  private:
+  // Fill the tree store values for a given node.
+  void FillRow(GtkTreeIter* iter, TreeModelNode* node);
+
   // Fill the tree store for a row and all its descendants.
   void Fill(GtkTreeIter* parent_iter, TreeModelNode* parent_node);
 
@@ -165,8 +157,9 @@ class TreeAdapter : public TreeModelObserver {
   bool GetTreeIter(TreeModelNode* node, GtkTreeIter* iter);
 
   Delegate* delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(TreeAdapter);
+  GtkTreeStore* tree_store_;
+  TreeModel* tree_model_;
+  std::vector<GdkPixbuf*> pixbufs_;
 };
 
 }  // namespace gtk_tree

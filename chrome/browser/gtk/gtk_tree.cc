@@ -158,8 +158,8 @@ void TableAdapter::OnItemsRemoved(int start, int length) {
 //  TreeAdapter
 
 TreeAdapter::TreeAdapter(Delegate* delegate, TreeModel* tree_model)
-    : tree_model_(tree_model),
-      delegate_(delegate) {
+    : delegate_(delegate),
+      tree_model_(tree_model) {
   tree_store_ = gtk_tree_store_new(COL_COUNT,
                                    GDK_TYPE_PIXBUF,
                                    G_TYPE_STRING,

@@ -340,8 +340,6 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
     const GURL& url) const {
   ContentSettings output = GetNonDefaultContentSettings(url);
 
-  AutoLock auto_lock(lock_);
-
   // Make the remaining defaults explicit.
   for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j)
     if (output.settings[j] == CONTENT_SETTING_DEFAULT ||
