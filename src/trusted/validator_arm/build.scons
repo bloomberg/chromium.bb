@@ -104,3 +104,20 @@ if env.Bit('linux'):
 
     env.AddNodeToTestSuite(node, ['small_tests', 'validator_tests'],
                            "run_arm_" + test)
+
+  gtest_env = env.Clone()
+  # gtest does not compile with our stringent settings.
+  gtest_env.FilterOut(
+      CCFLAGS=['-pedantic'],
+      CXXFLAGS=['-fno-rtti', '-Weffc++'])
+  gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
+  validator_tests_exe = gtest_env.ComponentProgram('validator_tests',
+                                 ['validator_tests.cc'],
+                                 EXTRA_LIBS=['gtest', 'arm_validator_core'])
+
+  test_node = gtest_env.CommandTest(
+      'validator_tests.out',
+      command=[validator_tests_exe])
+  gtest_env.AddNodeToTestSuite(test_node, ['small_tests'],
+      'run_arm_validator_tests')
+
