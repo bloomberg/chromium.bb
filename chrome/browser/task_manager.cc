@@ -126,11 +126,10 @@ string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   if (net_usage == 0)
     return ASCIIToUTF16("0");
-  std::wstring net_byte =
-      FormatSpeed(net_usage, GetByteDisplayUnits(net_usage), true);
+  string16 net_byte = WideToUTF16(
+      FormatSpeed(net_usage, GetByteDisplayUnits(net_usage), true));
   // Force number string to have LTR directionality.
-  base::i18n::GetDisplayStringInLTRDirectionality(&net_byte);
-  return WideToUTF16Hack(net_byte);
+  return base::i18n::GetDisplayStringInLTRDirectionality(net_byte);
 }
 
 string16 TaskManagerModel::GetResourceCPUUsage(int index) const {

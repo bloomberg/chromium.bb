@@ -3162,14 +3162,14 @@ std::wstring TabContents::GetMessageBoxTitle(const GURL& frame_url,
 
   // TODO(brettw) it should be easier than this to do the correct language
   // handling without getting the accept language from the profile.
-  std::wstring base_address = gfx::ElideUrl(clean_url, gfx::Font(), 0,
-      UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+  string16 base_address = WideToUTF16(gfx::ElideUrl(clean_url, gfx::Font(), 0,
+      UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages))));
   // Force URL to have LTR directionality.
-  base::i18n::GetDisplayStringInLTRDirectionality(&base_address);
+  base_address = base::i18n::GetDisplayStringInLTRDirectionality(base_address);
 
-  return l10n_util::GetStringF(
+  return UTF16ToWide(l10n_util::GetStringFUTF16(
       is_alert ? IDS_JAVASCRIPT_ALERT_TITLE : IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
-      base_address);
+      base_address));
 }
 
 gfx::NativeWindow TabContents::GetMessageBoxRootWindow() {

@@ -191,9 +191,9 @@ std::wstring TemplateURLTableModel::GetText(int row, int col_id) {
 
     case IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN: {
       // Keyword should be domain name. Force it to have LTR directionality.
-      std::wstring keyword(url.keyword());
-      base::i18n::GetDisplayStringInLTRDirectionality(&keyword);
-      return keyword;
+      string16 keyword = WideToUTF16(url.keyword());
+      keyword = base::i18n::GetDisplayStringInLTRDirectionality(keyword);
+      return UTF16ToWide(keyword);
     }
 
     default:

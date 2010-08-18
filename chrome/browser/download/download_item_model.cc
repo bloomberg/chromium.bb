@@ -40,8 +40,9 @@ std::wstring DownloadItemModel::GetStatusText() {
   // as "MB 123/456" because it ends with an LTR run. In order to solve this,
   // we mark the total string as an LTR string if the UI layout is
   // right-to-left so that the string "456 MB" is treated as an LTR run.
-  std::wstring simple_total = FormatBytes(total, amount_units, true);
-  base::i18n::GetDisplayStringInLTRDirectionality(&simple_total);
+  string16 simple_total = WideToUTF16Hack(FormatBytes(total, amount_units,
+                                                      true));
+  simple_total = base::i18n::GetDisplayStringInLTRDirectionality(simple_total);
 
   TimeDelta remaining;
   string16 simple_time;
@@ -74,8 +75,8 @@ std::wstring DownloadItemModel::GetStatusText() {
                                           true));
         } else {
           status_text = l10n_util::GetStringFUTF16(
-              IDS_DOWNLOAD_STATUS_IN_PROGRESS, simple_size,
-              WideToUTF16Hack(simple_total), simple_time);
+              IDS_DOWNLOAD_STATUS_IN_PROGRESS, simple_size, simple_total,
+              simple_time);
         }
       }
       break;

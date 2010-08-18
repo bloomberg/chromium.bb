@@ -120,10 +120,8 @@ std::wstring PossibleURLModel::GetText(int row, int col_id) {
 
   // TODO(brettw): this should probably pass the GURL up so the URL elider
   // can be used at a higher level when we know the width.
-  // Force URL to be LTR.
-  std::wstring url(UTF16ToWideHack(results_[row].display_url.display_url()));
-  base::i18n::GetDisplayStringInLTRDirectionality(&url);
-  return url;
+  string16 url = results_[row].display_url.display_url();
+  return UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(url));
 }
 
 SkBitmap PossibleURLModel::GetIcon(int row) {

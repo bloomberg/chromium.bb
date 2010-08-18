@@ -15,6 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/download/download_item_model.h"
@@ -285,7 +286,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     } else {
       ElideString(rootname, kFileNameMaxLength - extension.length(), &rootname);
       std::wstring filename = rootname + L"." + extension;
-      base::i18n::GetDisplayStringInLTRDirectionality(&filename);
+      filename = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
+          WideToUTF16(filename)));
       dangerous_download_label_ = new views::Label(
           l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename));
     }

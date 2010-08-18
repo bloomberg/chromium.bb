@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h" 
 #include "chrome/browser/browser_theme_provider.h"
 #include "gfx/canvas_skia.h"
 #include "gfx/point.h"
@@ -661,7 +662,8 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::wstring& languages) {
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
   // correctly.
-  base::i18n::GetDisplayStringInLTRDirectionality(&url_text_);
+  url_text_ = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
+      WideToUTF16(url_text_)));
 
   if (IsFrameVisible()) {
     view_->SetText(url_text_, true);

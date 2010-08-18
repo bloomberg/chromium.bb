@@ -1334,7 +1334,9 @@ void RenderViewHost::OnMsgSetTooltipText(
   if (!tooltip_text.empty()) {
     if (text_direction_hint == WebKit::WebTextDirectionLeftToRight) {
       // Force the tooltip to have LTR directionality.
-      base::i18n::GetDisplayStringInLTRDirectionality(&wrapped_tooltip_text);
+      wrapped_tooltip_text = UTF16ToWide(
+          base::i18n::GetDisplayStringInLTRDirectionality(
+              WideToUTF16(wrapped_tooltip_text)));
     } else if (text_direction_hint == WebKit::WebTextDirectionRightToLeft &&
                !base::i18n::IsRTL()) {
       // Force the tooltip to have RTL directionality.

@@ -548,9 +548,10 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   file_value->SetString("file_path",
       WideToUTF16Hack(download->full_path().ToWStringHack()));
   // Keep file names as LTR.
-  std::wstring file_name = download->GetFileName().ToWStringHack();
-  base::i18n::GetDisplayStringInLTRDirectionality(&file_name);
-  file_value->SetString("file_name", WideToUTF16Hack(file_name));
+  string16 file_name = WideToUTF16Hack(
+      download->GetFileName().ToWStringHack());
+  file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
+  file_value->SetString("file_name", file_name);
   file_value->SetString("url", download->url().spec());
   file_value->SetBoolean("otr", download->is_otr());
 

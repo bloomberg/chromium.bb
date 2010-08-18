@@ -38,6 +38,12 @@ std::wstring CutString(const std::wstring& text,
       text.substr(text.length() - half_length, half_length);
 }
 
+// TODO(tony): Get rid of wstrings.
+std::wstring GetDisplayStringInLTRDirectionality(const std::wstring& text) {
+  return UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
+      WideToUTF16(text)));
+}
+
 }  // namespace
 
 namespace gfx {
@@ -285,7 +291,7 @@ std::wstring ElideFilename(const FilePath& filename,
   int full_width = font.GetStringWidth(filename.ToWStringHack());
   if (full_width <= available_pixel_width) {
     std::wstring elided_name = filename.ToWStringHack();
-    return base::i18n::GetDisplayStringInLTRDirectionality(&elided_name);
+    return GetDisplayStringInLTRDirectionality(elided_name);
   }
 
 #if defined(OS_WIN)
@@ -299,7 +305,7 @@ std::wstring ElideFilename(const FilePath& filename,
   if (rootname.empty() || extension.empty()) {
     std::wstring elided_name = ElideText(filename.ToWStringHack(), font,
                                          available_pixel_width, false);
-    return base::i18n::GetDisplayStringInLTRDirectionality(&elided_name);
+    return GetDisplayStringInLTRDirectionality(elided_name);
   }
 
   int ext_width = font.GetStringWidth(extension);
@@ -308,14 +314,14 @@ std::wstring ElideFilename(const FilePath& filename,
   // We may have trimmed the path.
   if (root_width + ext_width <= available_pixel_width) {
     std::wstring elided_name = rootname + extension;
-    return base::i18n::GetDisplayStringInLTRDirectionality(&elided_name);
+    return GetDisplayStringInLTRDirectionality(elided_name);
   }
 
   int available_root_width = available_pixel_width - ext_width;
   std::wstring elided_name =
       ElideText(rootname, font, available_root_width, false);
   elided_name += extension;
-  return base::i18n::GetDisplayStringInLTRDirectionality(&elided_name);
+  return GetDisplayStringInLTRDirectionality(elided_name);
 }
 
 // This function adds an ellipsis at the end of the text if the text

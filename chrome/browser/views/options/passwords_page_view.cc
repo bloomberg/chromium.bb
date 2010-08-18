@@ -73,7 +73,8 @@ std::wstring PasswordsTableModel::GetText(int row,
     case IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN: {  // Site.
       // Force URL to have LTR directionality.
       std::wstring url(saved_signons_[row]->display_url.display_url());
-      base::i18n::GetDisplayStringInLTRDirectionality(&url);
+      url = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
+          WideToUTF16(url)));
       return url;
     }
     case IDS_PASSWORDS_PAGE_VIEW_USERNAME_COLUMN: {  // Username.

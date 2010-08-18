@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/font.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -178,11 +179,11 @@ TEST(TextEliderTest, TestFilenameEliding) {
   static const gfx::Font font;
   for (size_t i = 0; i < arraysize(testcases); ++i) {
     FilePath filepath(testcases[i].input);
-    std::wstring expected = testcases[i].output;
-    base::i18n::GetDisplayStringInLTRDirectionality(&expected);
-    EXPECT_EQ(expected, ElideFilename(filepath,
+    string16 expected = WideToUTF16(testcases[i].output);
+    expected = base::i18n::GetDisplayStringInLTRDirectionality(expected);
+    EXPECT_EQ(expected, WideToUTF16(ElideFilename(filepath,
         font,
-        font.GetStringWidth(testcases[i].output)));
+        font.GetStringWidth(testcases[i].output))));
   }
 }
 

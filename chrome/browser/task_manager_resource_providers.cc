@@ -77,7 +77,8 @@ std::wstring TaskManagerTabContentsResource::GetTitle() const {
   if (tab_title.empty()) {
     tab_title = UTF8ToWide(tab_contents_->GetURL().spec());
     // Force URL to be LTR.
-    base::i18n::GetDisplayStringInLTRDirectionality(&tab_title);
+    tab_title = UTF16ToWide(base::i18n::GetDisplayStringInLTRDirectionality(
+        WideToUTF16(tab_title)));
   } else {
     // Since the tab_title will be concatenated with
     // IDS_TASK_MANAGER_TAB_PREFIX, we need to explicitly set the tab_title to
