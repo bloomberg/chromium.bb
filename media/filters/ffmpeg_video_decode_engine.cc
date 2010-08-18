@@ -54,8 +54,7 @@ void FFmpegVideoDecodeEngine::Initialize(
   AVCodec* codec = avcodec_find_decoder(codec_context_->codec_id);
 
   // TODO(fbarchard): Improve thread logic based on size / codec.
-  int decode_threads = (codec_context_->codec_id == CODEC_ID_THEORA)
-      ? 1 : kDecodeThreads;
+  int decode_threads = kDecodeThreads;
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   std::string threads(cmd_line->GetSwitchValueASCII(switches::kVideoThreads));
@@ -82,6 +81,11 @@ void FFmpegVideoDecodeEngine::Initialize(
       av_frame_.get()) {
     info.success_ = true;
   }
+#if !defined(FF_THREAD_FRAME)
+#pragma message ("Warning: Not building with FFmpeg MT.")
+#else
+#pragma message ("Building with FFmpeg MT.")
+#endif
   event_handler_ = event_handler;
   event_handler_->OnInitializeComplete(info);
 }
