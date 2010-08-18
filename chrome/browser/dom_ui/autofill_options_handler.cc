@@ -50,7 +50,8 @@ void AutoFillOptionsHandler::GetLocalizedValues(
 }
 
 void AutoFillOptionsHandler::Initialize() {
-  personal_data_ = dom_ui_->GetProfile()->GetPersonalDataManager();
+  personal_data_ =
+      dom_ui_->GetProfile()->GetOriginalProfile()->GetPersonalDataManager();
   personal_data_->SetObserver(this);
 
   LoadAutoFillData();
