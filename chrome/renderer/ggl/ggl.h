@@ -37,7 +37,10 @@ bool Initialize();
 // have completed.
 bool Terminate();
 
-// Create a GGL context that renders directly to a view.
+// Create a GGL context that renders directly to a view. The view and the
+// associated window must not be destroyed until the returned context has been
+// destroyed, otherwise the GPU process might attempt to render to an invalid
+// window handle.
 //
 // NOTE: on Mac OS X, this entry point is only used to set up the
 // accelerated compositor's output. On this platform, we actually pass

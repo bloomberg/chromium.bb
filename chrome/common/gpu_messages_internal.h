@@ -150,11 +150,11 @@ IPC_BEGIN_MESSAGES(GpuChannel)
                               int32 /* route_id */)
 
   // The CommandBufferProxy sends this to the GpuCommandBufferStub in its
-  // destructor, so that the stub deletes the actual WebPluginDelegateImpl
+  // destructor, so that the stub deletes the actual CommandBufferService
   // object that it's hosting.
   // TODO(apatrick): Implement this.
-  IPC_MESSAGE_CONTROL1(GpuChannelMsg_DestroyCommandBuffer,
-                       int32 /* instance_id */)
+  IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
+                              int32 /* instance_id */)
 
   // Get hardware video service routing id.
   IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_GetVideoService,
