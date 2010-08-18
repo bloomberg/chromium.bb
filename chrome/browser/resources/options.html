@@ -55,6 +55,7 @@
 <script src="options/import_data_overlay.js"></script>
 <script src="options/passwords_exceptions.js"></script>
 <script src="options/passwords_exceptions_list.js"></script>
+<script src="options/passwords_remove_all_overlay.js"></script>
 <script src="options/personal_options.js"></script>
 <script src="options/search_engine_manager.js"></script>
 <script src="options/search_engine_manager_engine_list.js"></script>
@@ -76,6 +77,7 @@ var PersonalOptions = options.PersonalOptions;
 var Preferences = options.Preferences;
 var SearchEngineManager = options.SearchEngineManager;
 var StopSyncingOverlay = options.StopSyncingOverlay;
+var PasswordsRemoveAllOverlay = options.PasswordsRemoveAllOverlay;
 
 /**
  * Window onload handler, sets up the page.
@@ -101,6 +103,7 @@ function load() {
   OptionsPage.registerOverlay(FontSettingsOverlay.getInstance());
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
   OptionsPage.registerOverlay(StopSyncingOverlay.getInstance());
+  OptionsPage.registerOverlay(PasswordsRemoveAllOverlay.getInstance());
 
   if (cr.isChromeOS) {
     OptionsPage.register(AccountsOptions.getInstance());
@@ -195,6 +198,7 @@ window.onpopstate = function(e) {
   <include src="options/font_settings_overlay.html">
   <include src="options/import_data_overlay.html">
   <include src="options/stop_syncing_overlay.html">
+  <include src="options/passwords_remove_all_overlay.html">
   <if expr="pp_ifdef('chromeos')">
      <include src="options/chromeos_language_add_language_overlay.html">
   </if>

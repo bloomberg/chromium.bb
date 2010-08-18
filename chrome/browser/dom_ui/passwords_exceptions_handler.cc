@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
+#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -64,8 +65,17 @@ void PasswordsExceptionsHandler::RegisterMessages() {
       "loadSavedPasswords",
       NewCallback(this, &PasswordsExceptionsHandler::LoadSavedPasswords));
   dom_ui_->RegisterMessageCallback(
-      "removeAutofillable",
-      NewCallback(this, &PasswordsExceptionsHandler::RemoveEntry));
+      "removeSavedPassword",
+      NewCallback(this, &PasswordsExceptionsHandler::RemoveSavedPassword));
+  dom_ui_->RegisterMessageCallback(
+      "removePasswordException",
+      NewCallback(this, &PasswordsExceptionsHandler::RemovePasswordsException));
+  dom_ui_->RegisterMessageCallback(
+      "removeAllSavedPasswords",
+      NewCallback(this, &PasswordsExceptionsHandler::RemoveAllSavedPasswords));
+  dom_ui_->RegisterMessageCallback(
+      "removeAllPasswordExceptions", NewCallback(
+      this, &PasswordsExceptionsHandler::RemoveAllPasswordsExceptions));
   dom_ui_->RegisterMessageCallback(
       "showSelectedPassword",
       NewCallback(this, &PasswordsExceptionsHandler::ShowSelectedPassword));
@@ -79,7 +89,7 @@ void PasswordsExceptionsHandler::LoadSavedPasswords(const Value* value) {
   populater_.Populate();
 }
 
-void PasswordsExceptionsHandler::RemoveEntry(const Value* value) {
+void PasswordsExceptionsHandler::RemoveSavedPassword(const Value* value) {
   if (!value || !value->IsType(Value::TYPE_LIST)) {
     NOTREACHED();
     return;
@@ -99,6 +109,38 @@ void PasswordsExceptionsHandler::RemoveEntry(const Value* value) {
   delete password_list_[selected_index];
   password_list_.erase(password_list_.begin() + selected_index);
   SetPasswordList();
+}
+
+void PasswordsExceptionsHandler::RemovePasswordsException(const Value* value) {
+  if (!value || !value->IsType(Value::TYPE_LIST)) {
+    NOTREACHED();
+    return;
+  }
+
+  const ListValue* param_values = static_cast<const ListValue*>(value);
+  std::string string_value;
+  if (param_values->GetSize() != 1 ||
+    !param_values->GetString(0, &string_value)) {
+    NOTREACHED();
+    return;
+  }
+  int selected_index;
+  base::StringToInt(string_value, &selected_index);
+
+  //TODO(sargrass): remove selected password exception
+}
+
+void PasswordsExceptionsHandler::RemoveAllSavedPasswords(const Value* value) {
+  PasswordStore* store = GetPasswordStore();
+  for (size_t i = 0; i < password_list_.size(); ++i)
+    store->RemoveLogin(*password_list_[i]);
+  STLDeleteElements(&password_list_);
+  SetPasswordList();
+}
+
+void PasswordsExceptionsHandler::RemoveAllPasswordsExceptions(
+    const Value* value) {
+  //TOD(sargrass): remove all password exception
 }
 
 void PasswordsExceptionsHandler::ShowSelectedPassword(const Value* value) {
