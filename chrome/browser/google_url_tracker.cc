@@ -6,30 +6,115 @@
 
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/navigation_controller.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/net/url_fetcher_protect.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "grit/generated_resources.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
 const char GoogleURLTracker::kDefaultGoogleHomepage[] =
     "http://www.google.com/";
+const char GoogleURLTracker::kSearchDomainCheckURL[] =
+    "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
+
+namespace {
+
+class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
+ public:
+  GoogleURLTrackerInfoBarDelegate(TabContents* tab_contents,
+                                  GoogleURLTracker* google_url_tracker,
+                                  const GURL& new_google_url)
+      : ConfirmInfoBarDelegate(tab_contents),
+        google_url_tracker_(google_url_tracker),
+        new_google_url_(new_google_url) {}
+
+  // ConfirmInfoBarDelegate
+  virtual string16 GetMessageText() const {
+    // TODO(ukai): change new_google_url to google_base_domain?
+    return l10n_util::GetStringFUTF16(IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE,
+                                      UTF8ToUTF16(new_google_url_.spec()));
+  }
+
+  virtual int GetButtons() const {
+    return BUTTON_OK | BUTTON_CANCEL;
+  }
+
+  virtual string16 GetButtonLabel(InfoBarButton button) const {
+    return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+                                     IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL :
+                                     IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+  }
+
+  virtual bool Accept() {
+    google_url_tracker_->AcceptGoogleURL(new_google_url_);
+    google_url_tracker_->RedoSearch();
+    return true;
+  }
+
+  virtual void InfoBarClosed() {
+    google_url_tracker_->InfoBarClosed();
+    delete this;
+  }
+
+ private:
+  virtual ~GoogleURLTrackerInfoBarDelegate() {}
+
+  GoogleURLTracker* google_url_tracker_;
+  const GURL new_google_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(GoogleURLTrackerInfoBarDelegate);
+};
+
+}  // anonymous namespace
+
+InfoBarDelegate* GoogleURLTracker::InfoBarDelegateFactory::CreateInfoBar(
+    TabContents* tab_contents,
+    GoogleURLTracker* google_url_tracker,
+    const GURL& new_google_url) {
+  InfoBarDelegate* infobar =
+      new GoogleURLTrackerInfoBarDelegate(tab_contents,
+                                          google_url_tracker,
+                                          new_google_url);
+  tab_contents->AddInfoBar(infobar);
+  return infobar;
+}
 
 GoogleURLTracker::GoogleURLTracker()
     : google_url_(g_browser_process->local_state()->GetString(
           prefs::kLastKnownGoogleURL)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(fetcher_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)),
+      fetcher_id_(0),
       in_startup_sleep_(true),
       already_fetched_(false),
       need_to_fetch_(false),
-      request_context_available_(!!Profile::GetDefaultRequestContext()) {
+      request_context_available_(!!Profile::GetDefaultRequestContext()),
+      need_to_prompt_(false),
+      controller_(NULL),
+      infobar_factory_(new InfoBarDelegateFactory),
+      infobar_(NULL) {
   registrar_.Add(this, NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE,
                  NotificationService::AllSources());
+
+  net::NetworkChangeNotifier::AddObserver(this);
+
+  // Configure to max_retries at most kMaxRetries times for 5xx errors.
+  URLFetcherProtectEntry* protect =
+      URLFetcherProtectManager::GetInstance()->Register(
+          GURL(kSearchDomainCheckURL).host());
+  static const int kMaxRetries = 5;
+  protect->SetMaxRetries(kMaxRetries);
 
   // Because this function can be called during startup, when kicking off a URL
   // fetch can eat up 20 ms of time, we delay five seconds, which is hopefully
@@ -39,11 +124,14 @@ GoogleURLTracker::GoogleURLTracker()
   // no function to do this.
   static const int kStartFetchDelayMS = 5000;
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      fetcher_factory_.NewRunnableMethod(&GoogleURLTracker::FinishSleep),
+      runnable_method_factory_.NewRunnableMethod(
+          &GoogleURLTracker::FinishSleep),
       kStartFetchDelayMS);
 }
 
 GoogleURLTracker::~GoogleURLTracker() {
+  runnable_method_factory_.RevokeAll();
+  net::NetworkChangeNotifier::RemoveObserver(this);
 }
 
 // static
@@ -64,42 +152,14 @@ void GoogleURLTracker::RequestServerCheck() {
 void GoogleURLTracker::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kLastKnownGoogleURL,
                             kDefaultGoogleHomepage);
+  prefs->RegisterStringPref(prefs::kLastPromptedGoogleURL, std::string());
 }
 
 // static
-bool GoogleURLTracker::CheckAndConvertToGoogleBaseURL(const GURL& url,
-                                                      GURL* base_url) {
-  // Only allow updates if the new URL appears to be on google.xx, google.co.xx,
-  // or google.com.xx.  Cases other than this are either malicious, or doorway
-  // pages for hotel WiFi connections and the like.
-  // NOTE: Obviously the above is not as secure as whitelisting all known Google
-  // frontpage domains, but for now we're trying to prevent login pages etc.
-  // from ruining the user experience, rather than preventing hijacking.
-  std::vector<std::string> host_components;
-  SplitStringDontTrim(url.host(), '.', &host_components);
-  if (host_components.size() < 2)
-    return false;
-  size_t google_component = host_components.size() - 2;
-  const std::string& component = host_components[google_component];
-  if (component != "google") {
-    if ((host_components.size() < 3) ||
-        ((component != "co") && (component != "com")))
-      return false;
-    google_component = host_components.size() - 3;
-    if (host_components[google_component] != "google")
-      return false;
-  }
-  // For Google employees only: If the URL appears to be on
-  // [*.]corp.google.com, it's likely a doorway (e.g.
-  // wifi.corp.google.com), so ignore it.
-  if ((google_component > 0) &&
-      (host_components[google_component - 1] == "corp"))
-    return false;
-
-  // If the url's path does not begin "/intl/", reset it to "/".  Other paths
-  // represent services such as iGoogle that are irrelevant to the baseURL.
-  *base_url = url.path().compare(0, 6, "/intl/") ? url.GetWithEmptyPath() : url;
-  return true;
+void GoogleURLTracker::GoogleURLSearchCommitted() {
+  GoogleURLTracker* tracker = g_browser_process->google_url_tracker();
+  if (tracker)
+    tracker->SearchCommitted();
 }
 
 void GoogleURLTracker::SetNeedToFetch() {
@@ -123,12 +183,10 @@ void GoogleURLTracker::StartFetchIfDesirable() {
       !request_context_available_)
     return;
 
-  need_to_fetch_ = false;
-  already_fetched_ = true;  // If fetching fails, we don't bother to reset this
-                            // flag; we just live with an outdated URL for this
-                            // run of the browser.
-  fetcher_.reset(new URLFetcher(GURL(kDefaultGoogleHomepage), URLFetcher::HEAD,
-                                this));
+  already_fetched_ = true;
+  fetcher_.reset(URLFetcher::Create(fetcher_id_, GURL(kSearchDomainCheckURL),
+                                    URLFetcher::GET, this));
+  ++fetcher_id_;
   // We don't want this fetch to affect existing state in the profile.  For
   // example, if a user has no Google cookies, this automatic check should not
   // cause one to be set, lest we alarm the user.
@@ -148,32 +206,153 @@ void GoogleURLTracker::OnURLFetchComplete(const URLFetcher* source,
   scoped_ptr<URLFetcher> clean_up_fetcher(fetcher_.release());
 
   // Don't update the URL if the request didn't succeed.
-  if (!status.is_success() || (response_code != 200))
-    return;
+  if (!status.is_success() || (response_code != 200)) {
+    already_fetched_ = false;
 
-  // See if the response URL was one we want to use, and if so, convert to the
-  // appropriate Google base URL.
-  GURL base_url;
-  if (!CheckAndConvertToGoogleBaseURL(url, &base_url))
     return;
-
-  // Update the saved base URL if it has changed.
-  const std::string base_url_str(base_url.spec());
-  if (g_browser_process->local_state()->GetString(prefs::kLastKnownGoogleURL) !=
-      base_url_str) {
-    g_browser_process->local_state()->SetString(prefs::kLastKnownGoogleURL,
-                                                base_url_str);
-    google_url_ = base_url;
-    NotificationService::current()->Notify(NotificationType::GOOGLE_URL_UPDATED,
-                                           NotificationService::AllSources(),
-                                           NotificationService::NoDetails());
   }
+
+  // See if the response data was one we want to use, and if so, convert to the
+  // appropriate Google base URL.
+  std::string url_str;
+  TrimWhitespace(data, TRIM_ALL, &url_str);
+
+  if (!StartsWithASCII(url_str, ".google.", false))
+    return;
+
+  fetched_google_url_ = GURL("http://www" + url_str);
+  GURL last_prompted_url(
+      g_browser_process->local_state()->GetString(
+          prefs::kLastPromptedGoogleURL));
+  need_to_prompt_ = false;
+  // On the very first run of Chrome, when we've never looked up the URL at all,
+  // we should just silently switch over to whatever we get immediately.
+  if (last_prompted_url.is_empty()) {
+    AcceptGoogleURL(fetched_google_url_);
+    // Set fetched_google_url_ as an initial value of last prompted URL.
+    g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
+                                                fetched_google_url_.spec());
+    return;
+  }
+
+  if (fetched_google_url_ == last_prompted_url)
+    return;
+  if (fetched_google_url_ == google_url_) {
+    // The user came back to their original location after having temporarily
+    // moved.  Reset the prompted URL so we'll prompt again if they move again.
+    g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
+                                                fetched_google_url_.spec());
+    return;
+  }
+
+  need_to_prompt_ = true;
+}
+
+void GoogleURLTracker::AcceptGoogleURL(const GURL& new_google_url) {
+  google_url_ = new_google_url;
+  g_browser_process->local_state()->SetString(prefs::kLastKnownGoogleURL,
+                                              google_url_.spec());
+  NotificationService::current()->Notify(NotificationType::GOOGLE_URL_UPDATED,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
+  need_to_prompt_ = false;
+}
+
+void GoogleURLTracker::InfoBarClosed() {
+  controller_ = NULL;
+  infobar_ = NULL;
+  search_url_ = GURL();
+}
+
+void GoogleURLTracker::RedoSearch() {
+  //  re-do the user's search on the new domain.
+  DCHECK(controller_);
+  url_canon::Replacements<char> replacements;
+  replacements.SetHost(google_url_.host().data(),
+                       url_parse::Component(0, google_url_.host().length()));
+  search_url_ = search_url_.ReplaceComponents(replacements);
+  if (search_url_.is_valid())
+    controller_->tab_contents()->OpenURL(search_url_, GURL(), CURRENT_TAB,
+                                         PageTransition::GENERATED);
 }
 
 void GoogleURLTracker::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE, type.value);
-  request_context_available_ = true;
+  switch (type.value) {
+    case NotificationType::DEFAULT_REQUEST_CONTEXT_AVAILABLE:
+      request_context_available_ = true;
+      StartFetchIfDesirable();
+      break;
+
+    case NotificationType::NAV_ENTRY_PENDING:
+      // If we've already received a notification for the same controller, we
+      // should reset infobar as that indicates that the page is being
+      // re-loaded
+      if (!infobar_ &&
+          controller_ == Source<NavigationController>(source).ptr()) {
+        infobar_ = NULL;
+      } else if (!controller_) {
+        controller_ = Source<NavigationController>(source).ptr();
+        NavigationEntry* entry = controller_->pending_entry();
+        DCHECK(entry);
+        search_url_ = entry->url();
+
+        // Start listening for the commit notification. We also need to listen
+        // for the tab close command since that means the load will never
+        // commit!
+        registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                       Source<NavigationController>(controller_));
+        registrar_.Add(this, NotificationType::TAB_CLOSED,
+                       Source<NavigationController>(controller_));
+      }
+      break;
+
+    case NotificationType::NAV_ENTRY_COMMITTED:
+      DCHECK(controller_);
+      registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
+                        Source<NavigationController>(controller_));
+      ShowGoogleURLInfoBarIfNecessary(controller_->tab_contents());
+      break;
+
+    case NotificationType::TAB_CLOSED:
+      registrar_.Remove(this, NotificationType::NAV_ENTRY_PENDING,
+                        Source<NavigationController>(controller_));
+      registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
+                        Source<NavigationController>(controller_));
+      registrar_.Remove(this, NotificationType::TAB_CLOSED,
+                          Source<NavigationController>(controller_));
+      controller_ = NULL;
+      infobar_ = NULL;
+      break;
+
+    default:
+      NOTREACHED() << "Unknown notification received:" << type.value;
+  }
+}
+
+void GoogleURLTracker::OnIPAddressChanged() {
+  already_fetched_ = false;
   StartFetchIfDesirable();
+}
+
+void GoogleURLTracker::SearchCommitted() {
+  registrar_.Add(this, NotificationType::NAV_ENTRY_PENDING,
+                 NotificationService::AllSources());
+}
+
+void GoogleURLTracker::ShowGoogleURLInfoBarIfNecessary(
+    TabContents* tab_contents) {
+  if (!need_to_prompt_)
+    return;
+  if (infobar_)
+    return;
+  DCHECK(!fetched_google_url_.is_empty());
+  DCHECK(infobar_factory_.get());
+
+  infobar_ = infobar_factory_->CreateInfoBar(tab_contents,
+                                             this,
+                                             fetched_google_url_);
+  g_browser_process->local_state()->SetString(prefs::kLastPromptedGoogleURL,
+                                              fetched_google_url_.spec());
 }

@@ -15,8 +15,10 @@
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
+#include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/predictor_api.h"
 #include "chrome/browser/net/url_fixer_upper.h"
@@ -320,6 +322,15 @@ void AutocompleteEditModel::AcceptInput(WindowOpenDisposition disposition,
     match.transition = PageTransition::LINK;
   }
 
+  if (match.type == AutocompleteMatch::SEARCH_WHAT_YOU_TYPED ||
+      match.type == AutocompleteMatch::SEARCH_HISTORY ||
+      match.type == AutocompleteMatch::SEARCH_SUGGEST) {
+    const TemplateURL* default_provider =
+        profile_->GetTemplateURLModel()->GetDefaultSearchProvider();
+    if (default_provider && default_provider->url() &&
+        default_provider->url()->HasGoogleBaseURLs())
+      GoogleURLTracker::GoogleURLSearchCommitted();
+  }
   view_->OpenURL(match.destination_url, disposition, match.transition,
                  alternate_nav_url, AutocompletePopupModel::kNoMatch,
                  is_keyword_hint_ ? std::wstring() : keyword_);
