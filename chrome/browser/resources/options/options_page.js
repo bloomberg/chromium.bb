@@ -21,6 +21,7 @@ cr.define('options', function() {
     this.pageDivName = pageDivName;
     this.pageDiv = $(this.pageDivName);
     this.tab = null;
+    this.managed = false;
   }
 
   OptionsPage.registeredPages_ = {};
@@ -167,6 +168,16 @@ cr.define('options', function() {
     initializePage: function() {},
 
     /**
+     * Sets managed banner visibility state.
+     */
+    setManagedBannerVisibility: function(visible) {
+      this.managed = visible;
+      if (this.visible) {
+        $('managed-prefs-banner').style.display = visible ? 'block' : 'none';
+      }
+    },
+
+    /**
      * Gets page visibility state.
      */
     get visible() {
@@ -188,6 +199,9 @@ cr.define('options', function() {
           var overlay = $('overlay');
           overlay.classList.remove('hidden');
         } else {
+          var banner = $('managed-prefs-banner');
+          banner.style.display = this.managed ? 'block' : 'none';
+
           // Recent webkit change no longer allows url change from "chrome://".
           window.history.pushState({pageName: this.name},
                                    this.title);
@@ -208,7 +222,7 @@ cr.define('options', function() {
           if (this.tab.parentNode && this.tab.parentNode.id == 'subpagesnav')
             this.tab.classList.add('hidden');
         }
-     }
+      }
 
       cr.dispatchPropertyChange(this, 'visible', visible, !visible);
     }
@@ -220,4 +234,3 @@ cr.define('options', function() {
   };
 
 });
-

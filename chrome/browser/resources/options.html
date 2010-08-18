@@ -90,10 +90,10 @@ function load() {
     OptionsPage.register(InternetOptions.getInstance());
   }
 
-  OptionsPage.registerSubPage(AboutPage.getInstance());
   OptionsPage.register(BrowserOptions.getInstance());
   OptionsPage.register(PersonalOptions.getInstance());
   OptionsPage.register(AdvancedOptions.getInstance());
+  OptionsPage.registerSubPage(AboutPage.getInstance());
   OptionsPage.registerSubPage(AutoFillOptions.getInstance());
   OptionsPage.registerSubPage(ContentSettings.getInstance());
   OptionsPage.registerSubPage(PasswordsExceptions.getInstance());
@@ -213,27 +213,33 @@ window.onpopstate = function(e) {
      </ul>
   </div>
   <div id="mainview">
-     <if expr="pp_ifdef('chromeos')">
-        <include src="options/chromeos_system_options.html">
-        <include src="options/chromeos_internet_options.html">
-        <include src="options/chromeos_language_options.html">
-        <include src="options/chromeos_language_chewing_options.html">
-        <include src="options/chromeos_language_hangul_options.html">
-        <include src="options/chromeos_language_mozc_options.html">
-        <include src="options/chromeos_language_pinyin_options.html">
-        <include src="options/chromeos_labs.html">
-        <include src="options/chromeos_accounts_options.html">
-        <include src="options/chromeos_proxy.html">
-     </if>
-     <include src="options/advanced_options.html">
-     <include src="options/autofill_options.html">
-     <include src="options/browser_options.html">
-     <include src="options/content_settings.html">
-     <include src="options/passwords_exceptions.html">
-     <include src="options/personal_options.html">
-     <include src="options/search_engine_manager.html">
-     <include src="options/sync_options.html">
-     <include src="options/about_page.html">
+     <div class="hidden" id="managed-prefs-banner">
+       <span id="managed-prefs-icon"></span>
+       <span i18n-content="managedPrefsBannerText"></span>
+     </div>
+     <div id="mainview-content">
+       <if expr="pp_ifdef('chromeos')">
+         <include src="options/chromeos_system_options.html">
+         <include src="options/chromeos_internet_options.html">
+         <include src="options/chromeos_language_options.html">
+         <include src="options/chromeos_language_chewing_options.html">
+         <include src="options/chromeos_language_hangul_options.html">
+         <include src="options/chromeos_language_mozc_options.html">
+         <include src="options/chromeos_language_pinyin_options.html">
+         <include src="options/chromeos_labs.html">
+         <include src="options/chromeos_accounts_options.html">
+         <include src="options/chromeos_proxy.html">
+       </if>
+       <include src="options/about_page.html">
+       <include src="options/advanced_options.html">
+       <include src="options/autofill_options.html">
+       <include src="options/browser_options.html">
+       <include src="options/content_settings.html">
+       <include src="options/passwords_exceptions.html">
+       <include src="options/personal_options.html">
+       <include src="options/search_engine_manager.html">
+       <include src="options/sync_options.html">
+     </div>
   </div>
 </div>
 

@@ -11,8 +11,10 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
+#include "chrome/browser/dom_ui/options_managed_banner_handler.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
@@ -93,6 +95,10 @@ void BrowserOptionsHandler::Initialize() {
   UpdateDefaultBrowserState();
   UpdateStartupPages();
   UpdateSearchEngines();
+  banner_handler_.reset(
+      new OptionsManagedBannerHandler(dom_ui_,
+                                      ASCIIToUTF16("BrowserOptions"),
+                                      OPTIONS_PAGE_GENERAL));
 }
 
 void BrowserOptionsHandler::UpdateDefaultBrowserState() {

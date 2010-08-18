@@ -11,6 +11,8 @@
 #include "chrome/browser/pref_set_observer.h"
 #include "chrome/browser/shell_dialogs.h"
 
+class OptionsManagedBannerHandler;
+
 // Chrome advanced options page UI handler.
 class AdvancedOptionsHandler
     : public OptionsPageUIHandler,
@@ -82,6 +84,7 @@ class AdvancedOptionsHandler
   FilePathPrefMember default_download_location_;
   StringPrefMember auto_open_files_;
   scoped_ptr<PrefSetObserver> proxy_prefs_;
+  scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AdvancedOptionsHandler);
 };

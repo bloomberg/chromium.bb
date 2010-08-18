@@ -13,7 +13,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/dom_ui/options_managed_banner_handler.h"
 #include "chrome/browser/options_page_base.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -108,6 +110,13 @@ void PersonalOptionsHandler::RegisterMessages() {
       "themesSetGTK",
       NewCallback(this, &PersonalOptionsHandler::ThemesSetGTK));
 #endif
+}
+
+void PersonalOptionsHandler::Initialize() {
+  banner_handler_.reset(
+      new OptionsManagedBannerHandler(dom_ui_,
+                                      ASCIIToUTF16("PersonalOptions"),
+                                      OPTIONS_PAGE_CONTENT));
 }
 
 void PersonalOptionsHandler::SetSyncStatusUIString(const Value* value) {

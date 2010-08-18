@@ -84,6 +84,7 @@ html[dir='rtl'] #close-overlay {
   cursor: pointer;
   position: relative;
   width: 250px;
+  z-index: 2;
 }
 
 html[dir='rtl'] #navbar-container {
@@ -142,9 +143,46 @@ html[dir='rtl'] .navbar-item-selected {
 
 #mainview {
   -webkit-box-align: stretch;
-  width: 600px;
-  padding: 0 24px 24px;
-  position: relative;
+  padding: 0 0 0 251px;
+  margin: 0;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+#mainview-content {
+  width: 550px;
+  padding: 0 24px;
+}
+
+#managed-prefs-banner {
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(#fff2b7),
+                               color-stop(0.97, #fae691),
+                               to(#878787));
+  height: 31px;
+  width: 100%;
+}
+
+#managed-prefs-banner, span {
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+}
+
+#managed-prefs-icon {
+  background-image: url("chrome://theme/IDR_WARNING");
+  background-repeat: no-repeat;
+  background-position:center;
+  padding: 5px;
+  width: 24px;
+  height: 21px;
+  display: inline-block;
 }
 
 .page > h1 {

@@ -9,6 +9,8 @@
 #include "chrome/browser/dom_ui/options_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 
+class OptionsManagedBannerHandler;
+
 // Chrome personal options page UI handler.
 class PersonalOptionsHandler : public OptionsPageUIHandler {
  public:
@@ -17,6 +19,7 @@ class PersonalOptionsHandler : public OptionsPageUIHandler {
 
   // OptionsUIHandler implementation.
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void Initialize();
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
@@ -28,6 +31,8 @@ class PersonalOptionsHandler : public OptionsPageUIHandler {
 #if defined(TOOLKIT_GTK)
   virtual void ThemesSetGTK(const Value* value);
 #endif
+
+  scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalOptionsHandler);
 };

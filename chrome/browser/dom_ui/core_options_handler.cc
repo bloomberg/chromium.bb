@@ -67,6 +67,8 @@ void CoreOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTINGS_TITLE));
 #endif
+  localized_strings->SetString("managedPrefsBannerText",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_MANAGED_PREFS));
 
   localized_strings->SetString("ok",
       l10n_util::GetStringUTF16(IDS_OK));

@@ -8,10 +8,12 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/values.h"
+#include "chrome/browser/dom_ui/options_managed_banner_handler.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/notification_service.h"
@@ -128,6 +130,10 @@ void AdvancedOptionsHandler::Initialize() {
 #if defined(OS_WIN)
   SetupSSLConfigSettings();
 #endif
+  banner_handler_.reset(
+      new OptionsManagedBannerHandler(dom_ui_,
+                                      ASCIIToUTF16("AdvancedOptions"),
+                                      OPTIONS_PAGE_ADVANCED));
 }
 
 DOMMessageHandler* AdvancedOptionsHandler::Attach(DOMUI* dom_ui) {

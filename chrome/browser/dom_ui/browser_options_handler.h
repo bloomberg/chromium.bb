@@ -12,6 +12,7 @@
 #include "chrome/browser/shell_integration.h"
 
 class CustomHomePagesTableModel;
+class OptionsManagedBannerHandler;
 
 // Chrome browser options page UI handler.
 class BrowserOptionsHandler : public OptionsPageUIHandler,
@@ -85,6 +86,7 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
   // CustomHomePagesTableModel, consider changing it to something more like
   // TemplateURLModel.
   scoped_ptr<CustomHomePagesTableModel> startup_custom_pages_table_model_;
+  scoped_ptr<OptionsManagedBannerHandler> banner_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserOptionsHandler);
 };
