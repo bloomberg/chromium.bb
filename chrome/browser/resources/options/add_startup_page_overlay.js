@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
-  var OptionsPage = options.OptionsPage;
+  const OptionsPage = options.OptionsPage;
+  const ArrayDataModel = cr.ui.ArrayDataModel;
+  const ListSingleSelectionModel = cr.ui.ListSingleSelectionModel;
 
   /**
    * AddStartupPageOverlay class
@@ -28,8 +29,6 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      $('addStartupPageURL').focus();
-
       var self = this;
       var addForm = $('addStartupPageForm');
       addForm.onreset = cr.bind(this.dismissOverlay_, this);
@@ -46,6 +45,19 @@ cr.define('options', function() {
         if (e.keyCode == 27)  // Esc
           $('addStartupPageForm').reset();
       };
+
+      var list = $('addStartupRecentPageList');
+      options.add_startup_page.RecentPageList.decorate(list);
+      var selectionModel = new ListSingleSelectionModel;
+      list.selectionModel = selectionModel;
+
+      selectionModel.addEventListener('change',
+                                      cr.bind(this.selectionChanged_, this));
+
+      this.addEventListener('visibleChange', function(event) {
+          $('addStartupPageURL').focus();
+          $('addStartupRecentPageList').redraw();
+      });
     },
 
     /**
@@ -67,6 +79,46 @@ cr.define('options', function() {
       $('addStartupPageAddButton').disabled =
           $('addStartupPageURL').value == '';
     },
+
+    /**
+      * Updates the recent pages list list with the given entries.
+      * @private
+      * @param {Array} pages List of recent pages.
+      */
+    updateRecentPageList_: function(pages) {
+      $('addStartupRecentPageList').dataModel = new ArrayDataModel(pages);
+    },
+
+    /**
+     * Handles selection changes in the list so that we can populate the input
+     * field.
+     * @private
+     * @param {!cr.Event} e Event with change info.
+     */
+    selectionChanged_: function(e) {
+      var selectedIndex =
+          $('addStartupRecentPageList').selectionModel.selectedIndex;
+      if (selectedIndex != -1)
+        chrome.send('updateAddStartupFieldWithPage', [String(selectedIndex)]);
+    },
+
+    /**
+      * Sets the value of the input field to the given string.
+      * @private
+      * @param {string} url String value to set the input field to.
+      */
+    setInputFieldValue_: function(url) {
+      $('addStartupPageURL').value = url;
+      this.updateAddButtonState_();
+    },
+  };
+
+  AddStartupPageOverlay.updateRecentPageList = function(pages) {
+    AddStartupPageOverlay.getInstance().updateRecentPageList_(pages);
+  };
+
+  AddStartupPageOverlay.setInputFieldValue = function(url) {
+    AddStartupPageOverlay.getInstance().setInputFieldValue_(url);
   };
 
   // Export

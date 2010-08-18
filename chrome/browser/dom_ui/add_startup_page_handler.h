@@ -6,18 +6,36 @@
 #define CHROME_BROWSER_DOM_UI_ADD_STARTUP_PAGE_HANDLER_H_
 #pragma once
 
+#include "app/table_model_observer.h"
 #include "chrome/browser/dom_ui/options_ui.h"
 
+class PossibleURLModel;
+
 // Chrome personal options page UI handler.
-class AddStartupPageHandler : public OptionsPageUIHandler {
+class AddStartupPageHandler : public OptionsPageUIHandler,
+                              public TableModelObserver {
  public:
   AddStartupPageHandler();
   virtual ~AddStartupPageHandler();
 
-  // OptionsUIHandler implementation.
+  // OptionsPageUIHandler implementation.
+  virtual void Initialize();
   virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void RegisterMessages();
+
+  // TableModelObserver implementation.
+  virtual void OnModelChanged();
+  virtual void OnItemsChanged(int start, int length);
+  virtual void OnItemsAdded(int start, int length);
+  virtual void OnItemsRemoved(int start, int length);
 
  private:
+  // Request to update the text field with the URL of the recent page at the
+  // given index, formatted for user input. Called from DOMUI.
+  void UpdateFieldWithRecentPage(const Value* value);
+
+  scoped_ptr<PossibleURLModel> url_table_model_;
+
   DISALLOW_COPY_AND_ASSIGN(AddStartupPageHandler);
 };
 

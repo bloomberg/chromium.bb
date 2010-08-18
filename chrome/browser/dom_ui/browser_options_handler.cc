@@ -323,6 +323,7 @@ void BrowserOptionsHandler::AddStartupPage(const Value* value) {
   GURL url = URLFixerUpper::FixupURL(url_string, std::string());
 
   startup_custom_pages_table_model_->Add(index, url);
+  SaveStartupPagesPref();
 }
 
 void BrowserOptionsHandler::SaveStartupPagesPref() {

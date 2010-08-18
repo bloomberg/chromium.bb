@@ -6,14 +6,26 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/singleton.h"
+#include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
+#include "chrome/browser/possible_url_model.h"
+#include "chrome/browser/pref_service.h"
+#include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/net_util.h"
 
 AddStartupPageHandler::AddStartupPageHandler() {
 }
 
 AddStartupPageHandler::~AddStartupPageHandler() {
+  if (url_table_model_.get())
+    url_table_model_->SetObserver(NULL);
 }
 
 void AddStartupPageHandler::GetLocalizedValues(
@@ -29,3 +41,75 @@ void AddStartupPageHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CANCEL));
 }
 
+void AddStartupPageHandler::Initialize() {
+  Profile* profile = dom_ui_->GetProfile();
+  // Create our favicon data source.
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>::get(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(new DOMUIFavIconSource(profile))));
+
+  url_table_model_.reset(new PossibleURLModel());
+  if (url_table_model_.get()) {
+    url_table_model_->SetObserver(this);
+    url_table_model_->Reload(profile);
+  }
+}
+
+void AddStartupPageHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback(
+      "updateAddStartupFieldWithPage",
+      NewCallback(this, &AddStartupPageHandler::UpdateFieldWithRecentPage));
+}
+
+void AddStartupPageHandler::UpdateFieldWithRecentPage(const Value* value) {
+  int index;
+  if (!ExtractIntegerValue(value, &index)) {
+    NOTREACHED();
+    return;
+  }
+  std::wstring languages = UTF8ToWide(
+      dom_ui_->GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  // Because this gets parsed by FixupURL(), it's safe to omit the scheme or
+  // trailing slash, and unescape most characters, but we need to not drop any
+  // username/password, or unescape anything that changes the meaning.
+  std::wstring url_string = net::FormatUrl(
+      url_table_model_->GetURL(index), languages,
+      net::kFormatUrlOmitAll & ~net::kFormatUrlOmitUsernamePassword,
+      UnescapeRule::SPACES, NULL, NULL, NULL);
+
+  scoped_ptr<Value> url_value(
+      Value::CreateStringValue(WideToUTF16Hack(url_string)));
+  dom_ui_->CallJavascriptFunction(L"AddStartupPageOverlay.setInputFieldValue",
+                                  *url_value.get());
+}
+
+void AddStartupPageHandler::OnModelChanged() {
+  ListValue pages;
+  for (int i = 0; i < url_table_model_->RowCount(); ++i) {
+    DictionaryValue* dict = new DictionaryValue();
+    dict->SetString("title", WideToUTF16Hack(url_table_model_->GetText(
+        i, IDS_ASI_PAGE_COLUMN)));
+    dict->SetString("displayURL", WideToUTF16Hack(url_table_model_->GetText(
+        i, IDS_ASI_URL_COLUMN)));
+    dict->SetString("url", url_table_model_->GetURL(i).spec());
+    pages.Append(dict);
+  }
+
+  dom_ui_->CallJavascriptFunction(L"AddStartupPageOverlay.updateRecentPageList",
+                                  pages);
+}
+
+void AddStartupPageHandler::OnItemsChanged(int start, int length) {
+  OnModelChanged();
+}
+
+void AddStartupPageHandler::OnItemsAdded(int start, int length) {
+  OnModelChanged();
+}
+
+void AddStartupPageHandler::OnItemsRemoved(int start, int length) {
+  OnModelChanged();
+}

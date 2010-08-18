@@ -14,7 +14,7 @@
 #searchEngineList .name {
   background-position: left;
   background-repeat: no-repeat;
-  -webkit-padding-start: 18px;
+  -webkit-padding-start: 20px;
 }
 html[dir=rtl] #searchEngineList .name {
   background-position: right;
