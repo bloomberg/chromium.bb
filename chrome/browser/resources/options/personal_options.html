@@ -14,7 +14,9 @@
       <div id="synced-controls" class="hidden">
         <div class="section-text" id="synced_to_user_with_time"></div>
         <div>
+<if expr="not pp_ifdef('chromeos')">
           <button id="stop-sync" i18n-content="stop_sync"></button>
+</if>
           <button id="sync-customize" i18n-content="sync_customize"></button>
         </div>
       </div>

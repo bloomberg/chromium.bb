@@ -26,9 +26,6 @@ cr.define('options', function() {
       // Call base class implementation to starts preference initialization.
       OptionsPage.prototype.initializePage.call(this);
 
-      $('stop-sync').onclick = function(event) {
-        OptionsPage.showOverlay('stopSyncingOverlay');
-      };
       $('sync-customize').onclick = function(event) {
         OptionsPage.showPageByName('sync');
       };
@@ -67,6 +64,9 @@ cr.define('options', function() {
       };
 
       if (!cr.isChromeOS) {
+        $('stop-sync').onclick = function(event) {
+          OptionsPage.showOverlay('stopSyncingOverlay');
+        };
         $('import_data').onclick = function(event) {
             OptionsPage.showOverlay('importDataOverlay');
         };
