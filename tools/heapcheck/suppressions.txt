@@ -957,3 +957,11 @@
    fun:Callback1::Type* NewCallback
    fun:PrefValueStoreTest_TestConcurrentPolicyRefresh_Test::TestBody
 }
+
+{
+   bug_52552
+   Heapcheck:Leak
+   ...
+   fun:browser_sync::SessionModelAssociator::AppendForeignSessionFromSpecifics
+   ...
+}
