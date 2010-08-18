@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
+#include "third_party/sqlite/sqlite3.h"
 
 // forward declarations of classes defined here
 class FilePath;

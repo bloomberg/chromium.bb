@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "chrome/common/sqlite_utils.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
+#include "third_party/sqlite/sqlite3.h"
 
 // SqliteStatementCache -------------------------------------------------------
 

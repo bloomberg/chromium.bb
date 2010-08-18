@@ -7,7 +7,7 @@
 #include "chrome/common/child_thread.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebKitClient;

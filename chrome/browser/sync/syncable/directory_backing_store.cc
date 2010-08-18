@@ -26,7 +26,7 @@
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/common/sqlite_utils.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
+#include "third_party/sqlite/sqlite3.h"
 
 // Sometimes threads contend on the DB lock itself, especially when one thread
 // is calling SaveChanges.  In the worst case scenario, the user can put his

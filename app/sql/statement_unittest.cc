@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
+#include "third_party/sqlite/sqlite3.h"
 
 class StatementErrorHandler : public sql::ErrorDelegate {
  public:

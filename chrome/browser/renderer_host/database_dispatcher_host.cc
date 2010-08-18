@@ -18,7 +18,7 @@
 #include "chrome/browser/renderer_host/database_permission_request.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"

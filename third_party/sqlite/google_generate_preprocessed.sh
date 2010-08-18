@@ -3,6 +3,8 @@
 # Copyright 2007 Google Inc. All Rights Reserved.
 # Author: shess@google.com (Scott Hess)
 
+cd src
+
 mkdir bld
 cd bld
 ../configure

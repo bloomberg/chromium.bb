@@ -69,7 +69,7 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "net/base/net_util.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
+#include "third_party/sqlite/sqlite3.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebColor.h"

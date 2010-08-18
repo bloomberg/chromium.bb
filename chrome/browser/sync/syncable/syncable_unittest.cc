@@ -35,7 +35,7 @@
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/sync/engine/test_syncable_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
+#include "third_party/sqlite/sqlite3.h"
 
 using browser_sync::TestIdFactory;
 using std::cout;

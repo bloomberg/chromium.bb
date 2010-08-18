@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/sqlite/preprocessed/sqlite3.h"
+#include "third_party/sqlite/sqlite3.h"
 
 namespace sql {
 
