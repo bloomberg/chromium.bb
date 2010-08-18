@@ -59,6 +59,8 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/browser/service/service_process_control.h"
+#include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/child_process.h"
@@ -73,6 +75,7 @@
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/result_codes.h"
+#include "chrome/common/service_process_type.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "grit/app_locale_settings.h"
@@ -1364,6 +1367,19 @@ int BrowserMain(const MainFunctionParams& parameters) {
     // child process (e.g. when launched by PyAuto).
   if (parsed_command_line.HasSwitch(switches::kWaitForDebugger)) {
     ChildProcess::WaitForDebugger(L"Browser");
+  }
+
+  // If remoting or cloud print proxy is enabled and setup has been completed
+  // we start the service process here.
+  // The prerequisite for running the service process is that we have IO, UI
+  // and PROCESS_LAUNCHER threads up and running.
+  // TODO(hclam): Need to check for cloud print proxy too.
+  if (parsed_command_line.HasSwitch(switches::kEnableRemoting)) {
+    if (user_prefs->GetBoolean(prefs::kRemotingHasSetupCompleted)) {
+      ServiceProcessControl* control = ServiceProcessControlManager::instance()
+          ->GetProcessControl(profile, kServiceProcessRemoting);
+       control->Launch(NULL);
+    }
   }
 
   int result_code = ResultCodes::NORMAL_EXIT;

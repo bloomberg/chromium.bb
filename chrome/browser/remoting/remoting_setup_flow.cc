@@ -68,14 +68,6 @@ void RemotingSetupFlow::OnDialogClosed(const std::string& json_retval) {
   delete this;
 }
 
-// static
-void RemotingSetupFlow::GetArgsForGaiaLogin(DictionaryValue* args) {
-  args->SetString("iframeToShow", "login");
-  args->SetString("user", "");
-  args->SetInteger("error", 0);
-  args->SetBoolean("editable_user", true);
-}
-
 void RemotingSetupFlow::GetDOMMessageHandlers(
     std::vector<DOMMessageHandler*>* handlers) const {
   // Create the message handler only after we are asked.
@@ -168,13 +160,24 @@ void RemotingSetupFlow::OnProcessLaunched() {
   process_control_->EnableRemotingWithTokens(login_, remoting_token_,
                                              sync_token_);
   message_handler_->ShowSetupDone();
+
+  // Save the preference that we have completed the setup of remoting.
+  profile_->GetPrefs()->SetBoolean(prefs::kRemotingHasSetupCompleted, true);
 }
 
 // static
 RemotingSetupFlow* RemotingSetupFlow::Run(Profile* profile) {
   // Set the arguments for showing the gaia login page.
   DictionaryValue args;
-  GetArgsForGaiaLogin(&args);
+  args.SetString("iframeToShow", "login");
+  args.SetString("user", "");
+  args.SetInteger("error", 0);
+  args.SetBoolean("editable_user", true);
+
+  if (profile->GetPrefs()->GetBoolean(prefs::kRemotingHasSetupCompleted)) {
+    args.SetString("iframeToShow", "done");
+  }
+
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
@@ -194,7 +197,7 @@ void OpenRemotingSetupDialog(Profile* profile) {
   RemotingSetupFlow::Run(profile->GetOriginalProfile());
 }
 
-// TODO(hclam): Need to refcount RemotingSetupFlow. I need to lifetime of
-// objects are all correct.
+// TODO(hclam): Need to refcount RemotingSetupFlow. I need to fix
+// lifetime of objects.
 DISABLE_RUNNABLE_METHOD_REFCOUNT(RemotingSetupFlow);
 DISABLE_RUNNABLE_METHOD_REFCOUNT(RemotingSetupMessageHandler);

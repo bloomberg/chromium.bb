@@ -914,6 +914,8 @@ const char kLoginDatabaseMigrated[] = "login_database.migrated";
 // The root URL of the cloud print service.
 const char kCloudPrintServiceURL[] = "cloud_print.service_url";
 
+const char kRemotingHasSetupCompleted[] = "remoting.has_setup_completed";
+
 // The list of BackgroundContents that should be loaded when the browser
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
@@ -934,6 +936,9 @@ extern const char kCloudPrintEmail[] = "cloud_print.email";
 // Settings specific to underlying print system.
 extern const char kCloudPrintPrintSystemSettings[] =
     "cloud_print.print_system_settings";
+
+// Used by the service process to determine if the remoting host is enabled.
+const char kRemotingHostEnabled[] = "remoting.host_enabled";
 
 // Boolean to disable proxy altogether. If true, other proxy
 // preferences are ignored.
