@@ -13,7 +13,7 @@ vars = {
 
 deps = {
   "src/breakpad/src":
-    "http://google-breakpad.googlecode.com/svn/trunk/src@639",
+    "http://google-breakpad.googlecode.com/svn/trunk/src@657",
 
   "src/build/util/support":
     "/trunk/deps/support@20411",
