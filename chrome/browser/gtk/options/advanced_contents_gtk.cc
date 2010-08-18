@@ -759,20 +759,6 @@ PrivacySection::PrivacySection(Profile* profile)
   safe_browsing_.Init(prefs::kSafeBrowsingEnabled, profile->GetPrefs(), this);
   enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
                                  g_browser_process->local_state(), this);
-
-  gtk_widget_set_sensitive(enable_link_doctor_checkbox_,
-                           !alternate_error_pages_.IsManaged());
-  gtk_widget_set_sensitive(enable_suggest_checkbox_,
-                           !use_suggest_.IsManaged());
-  gtk_widget_set_sensitive(enable_dns_prefetching_checkbox_,
-                           !dns_prefetch_enabled_.IsManaged());
-  gtk_widget_set_sensitive(enable_safe_browsing_checkbox_,
-                           !safe_browsing_.IsManaged());
-#if defined(GOOGLE_CHROME_BUILD)
-  gtk_widget_set_sensitive(reporting_enabled_checkbox_,
-                           !enable_metrics_recording_.IsManaged());
-#endif
-
   NotifyPrefChanged(NULL);
 }
 
@@ -890,28 +876,45 @@ void PrivacySection::OnLoggingChange(GtkWidget* widget,
 void PrivacySection::NotifyPrefChanged(const std::string* pref_name) {
   pref_changing_ = true;
   if (!pref_name || *pref_name == prefs::kAlternateErrorPagesEnabled) {
+    gtk_widget_set_sensitive(
+        GTK_WIDGET(enable_link_doctor_checkbox_),
+        !alternate_error_pages_.IsManaged());
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(enable_link_doctor_checkbox_),
         alternate_error_pages_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kSearchSuggestEnabled) {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(enable_suggest_checkbox_),
-                                 use_suggest_.GetValue());
+    gtk_widget_set_sensitive(
+        GTK_WIDGET(enable_suggest_checkbox_),
+        !use_suggest_.IsManaged());
+    gtk_toggle_button_set_active(
+        GTK_TOGGLE_BUTTON(enable_suggest_checkbox_),
+        use_suggest_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kDnsPrefetchingEnabled) {
+    gtk_widget_set_sensitive(
+        GTK_WIDGET(enable_dns_prefetching_checkbox_),
+        !dns_prefetch_enabled_.IsManaged());
     bool enabled = dns_prefetch_enabled_.GetValue();
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(enable_dns_prefetching_checkbox_), enabled);
     chrome_browser_net::EnablePredictor(enabled);
   }
   if (!pref_name || *pref_name == prefs::kSafeBrowsingEnabled) {
+    gtk_widget_set_sensitive(
+        GTK_WIDGET(enable_safe_browsing_checkbox_),
+        !safe_browsing_.IsManaged());
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(enable_safe_browsing_checkbox_),
         safe_browsing_.GetValue());
   }
 #if defined(GOOGLE_CHROME_BUILD)
   if (!pref_name || *pref_name == prefs::kMetricsReportingEnabled) {
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(reporting_enabled_checkbox_),
+    gtk_widget_set_sensitive(
+        GTK_WIDGET(reporting_enabled_checkbox_),
+        !enable_metrics_recording_.IsManaged());
+    gtk_toggle_button_set_active(
+        GTK_TOGGLE_BUTTON(reporting_enabled_checkbox_),
         enable_metrics_recording_.GetValue());
     ResolveMetricsReportingEnabled();
   }
