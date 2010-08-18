@@ -735,10 +735,10 @@
    fun:_ZN7logging17MakeCheckOpStringIiiEEPSsRKT_RKT0_PKc
 }
 {
-   Linux tests don't bother to undo net::TestServerLauncher::LoadTestRootCert().
+   Linux tests don't bother to undo net::TestServer::LoadTestRootCert().
    Memcheck:Leak
    ...
-   fun:_ZN3net18TestServerLauncher16LoadTestRootCertEv
+   fun:_ZN3net10TestServer16LoadTestRootCertEv
 }
 {
    # uitest's ResourceDispatcherTest.CrossSiteAfterCrash crashes on purpose
