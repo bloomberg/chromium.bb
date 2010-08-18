@@ -59,6 +59,7 @@ class SafeBrowsingService
   // interacting with the blocking page.
   struct UnsafeResource {
     GURL url;
+    GURL original_url;
     ResourceType::Type resource_type;
     UrlCheckResult threat_type;
     Client* client;
@@ -100,7 +101,12 @@ class SafeBrowsingService
   void CancelCheck(Client* client);
 
   // Called on the IO thread to display an interstitial page.
+  // |url| is the url of the resource that matches a safe browsing list.
+  // If the request contained a chain of redirects, |url| is the last url
+  // in the chain, and |original_url| is the first one (the root of the
+  // chain). Otherwise, |original_url| = |url|.
   void DisplayBlockingPage(const GURL& url,
+                           const GURL& original_url,
                            ResourceType::Type resource_type,
                            UrlCheckResult result,
                            Client* client,

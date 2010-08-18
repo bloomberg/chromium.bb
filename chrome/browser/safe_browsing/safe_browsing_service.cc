@@ -148,6 +148,7 @@ void SafeBrowsingService::CancelCheck(Client* client) {
 }
 
 void SafeBrowsingService::DisplayBlockingPage(const GURL& url,
+                                              const GURL& original_url,
                                               ResourceType::Type resource_type,
                                               UrlCheckResult result,
                                               Client* client,
@@ -173,6 +174,7 @@ void SafeBrowsingService::DisplayBlockingPage(const GURL& url,
 
   UnsafeResource resource;
   resource.url = url;
+  resource.original_url = original_url;
   resource.resource_type = resource_type;
   resource.threat_type= result;
   resource.client = client;
@@ -744,8 +746,8 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     return;
   }
 
-  // Report the malware sub-resource to the SafeBrowsing servers if we have a
-  // malware sub-resource on a safe page and only if the user has opted in to
+  // Report the malware resource to the SafeBrowsing servers if we have a
+  // malware resource on a safe page and only if the user has opted in to
   // reporting statistics.
   const MetricsService* metrics = g_browser_process->metrics_service();
   DCHECK(metrics);
@@ -756,9 +758,23 @@ void SafeBrowsingService::DoDisplayBlockingPage(
     NavigationEntry* entry = wc->controller().GetActiveEntry();
     if (entry)
       referrer_url = entry->referrer();
+    bool is_subresource = resource.resource_type != ResourceType::MAIN_FRAME;
 
-    if (resource.url != page_url || !referrer_url.is_empty()) {
-      bool is_subresource = resource.resource_type != ResourceType::MAIN_FRAME;
+    // When the malicious url is on the main frame, and resource.original_url
+    // is not the same as the resource.url, that means we have a redirect from
+    // resource.original_url to resource.url.
+    // Also, at this point, page_url points to the _previous_ page that we
+    // were on. We replace page_url with resource.original_url and referrer
+    // with page_url.
+    if (!is_subresource &&
+        !resource.original_url.is_empty() &&
+        resource.original_url != resource.url) {
+      referrer_url = page_url;
+      page_url = resource.original_url;
+    }
+
+    if ((!page_url.is_empty() && resource.url != page_url) ||
+        !referrer_url.is_empty()) {
       ChromeThread::PostTask(
           ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(this,
@@ -794,6 +810,9 @@ void SafeBrowsingService::ReportMalware(const GURL& malware_url,
     if (!full_hits.empty())
       return;
   }
+
+  DLOG(INFO) << "ReportMalware: " << malware_url << " " << page_url << " " <<
+      referrer_url << " " << is_subresource;
 
   protocol_manager_->ReportMalware(malware_url, page_url, referrer_url,
                                    is_subresource);
