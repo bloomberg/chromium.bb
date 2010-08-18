@@ -11,6 +11,10 @@
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
+namespace remoting {
+class HostKeyPair;
+}  // namespace remoting
+
 // A class to provide access to the remoting directory service.
 // TODO(hclam): Should implement this in Javascript.
 class RemotingDirectoryService : public URLFetcher::Delegate {
@@ -45,12 +49,25 @@ class RemotingDirectoryService : public URLFetcher::Delegate {
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
+  const std::string& host_id() const { return host_id_; }
+  const std::string& host_name() const { return host_name_; }
+  remoting::HostKeyPair* host_key_pair() const {
+    return host_key_pair_.get();
+  }
+
  private:
   Client* client_;
   scoped_ptr<URLFetcher> fetcher_;
 
   // True if a URL request has made and response is pending.
   bool request_pending_;
+
+  // Host key generated during host registration.
+  scoped_ptr<remoting::HostKeyPair> host_key_pair_;
+
+  // Host info used for registration.
+  std::string host_id_;
+  std::string host_name_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingDirectoryService);
 };

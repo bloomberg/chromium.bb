@@ -24,6 +24,7 @@ class NetworkChangeNotifier;
 namespace remoting {
 class ChromotingHost;
 class ChromotingHostContext;
+class HostKeyPair;
 class JsonHostConfig;
 }
 
@@ -106,7 +107,7 @@ class ServiceProcess : public RemotingDirectoryService::Client {
       const std::string& token,
       const std::string& host_id,
       const std::string& host_name,
-      const std::string& private_key);
+      remoting::HostKeyPair* host_key_pair);
 
   // Load settings for chromoting from json file.
   void LoadChromotingConfig();
@@ -128,6 +129,12 @@ class ServiceProcess : public RemotingDirectoryService::Client {
   scoped_ptr<remoting::ChromotingHostContext> chromoting_context_;
   scoped_refptr<remoting::ChromotingHost> chromoting_host_;
   scoped_ptr<RemotingDirectoryService> remoting_directory_;
+
+  // Temporary storage for remoting credentials. The content is cleared
+  // after it is saved.
+  std::string remoting_login_;
+  std::string remoting_token_;
+  std::string talk_token_;
 #endif
 
   // An event that will be signalled when we shutdown.

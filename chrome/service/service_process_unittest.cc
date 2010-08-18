@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/waitable_event.h"
 #include "chrome/service/service_process.h"
+#include "remoting/host/host_key_pair.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,18 +21,6 @@ TEST(ServiceProcessTest, DISABLED_Run) {
 }
 
 #if defined(ENABLE_REMOTING)
-// TODO(hclam): This method should be made into a util.
-static std::string GeneratePrivateKey() {
-  scoped_ptr<base::RSAPrivateKey> key(base::RSAPrivateKey::Create(2048));
-
-  std::vector<uint8> private_key_buf;
-  key->ExportPrivateKey(&private_key_buf);
-  std::string private_key_str(private_key_buf.begin(), private_key_buf.end());
-  std::string private_key_base64;
-  base::Base64Encode(private_key_str, &private_key_base64);
-  return private_key_base64;
-}
-
 // This test seems to break randomly so disabling it.
 TEST(ServiceProcessTest, DISABLED_RunChromoting) {
   MessageLoopForUI main_message_loop;
@@ -39,8 +28,9 @@ TEST(ServiceProcessTest, DISABLED_RunChromoting) {
   EXPECT_TRUE(process.Initialize(&main_message_loop));
 
   // Then config the chromoting host and start it.
-  process.SaveChromotingConfig("hello", "world", "it's a", "good day",
-                               GeneratePrivateKey());
+  remoting::HostKeyPair key;
+  key.Generate();
+  process.SaveChromotingConfig("hello", "world", "it's a", "good day", &key);
   EXPECT_TRUE(process.StartChromotingHost());
   EXPECT_TRUE(process.ShutdownChromotingHost());
   EXPECT_TRUE(process.Teardown());
@@ -66,8 +56,9 @@ TEST(ServiceProcessTest, DISABLED_RunChromotingUntilShutdown) {
       .WillOnce(QuitMessageLoop(&main_message_loop));
 
   // Then config the chromoting host and start it.
-  process.SaveChromotingConfig("hello", "world", "it's a", "good day",
-                               GeneratePrivateKey());
+  remoting::HostKeyPair key;
+  key.Generate();
+  process.SaveChromotingConfig("hello", "world", "it's a", "good day", &key);
   EXPECT_TRUE(process.StartChromotingHost());
   MessageLoop::current()->Run();
 

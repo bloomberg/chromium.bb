@@ -126,9 +126,13 @@ bool ServiceProcess::EnableChromotingHostWithTokens(
     const std::string& login,
     const std::string& remoting_token,
     const std::string& talk_token) {
-  remoting_directory_.reset(new RemotingDirectoryService(this));
+  // Save the login info and tokens.
+  remoting_login_ = login;
+  remoting_token_ = remoting_token;
+  talk_token_ = talk_token;
 
-  // TODO(hclam): Complete the API calling to the remoting directory.
+  // Use the remoting directory to register the host.
+  remoting_directory_.reset(new RemotingDirectoryService(this));
   remoting_directory_->AddHost(remoting_token);
   return true;
 }
@@ -192,7 +196,17 @@ bool ServiceProcess::ShutdownChromotingHost() {
 }
 
 void ServiceProcess::OnRemotingHostAdded() {
-  // TODO(hclam): Need to save the keys and configuration here.
+  // Save configuration for chromoting.
+  SaveChromotingConfig(remoting_login_,
+                       talk_token_,
+                       remoting_directory_->host_id(),
+                       remoting_directory_->host_name(),
+                       remoting_directory_->host_key_pair());
+  remoting_directory_.reset();
+  remoting_login_ = "";
+  remoting_token_ = "";
+  talk_token_ = "";
+
   // TODO(hclam): If we have a problem we need to send an IPC message back
   // to the client that started this.
   bool ret = StartChromotingHost();
@@ -200,8 +214,13 @@ void ServiceProcess::OnRemotingHostAdded() {
 }
 
 void ServiceProcess::OnRemotingDirectoryError() {
-  // TODO(hclam): Implement.
-  NOTIMPLEMENTED() << "Remoting directory error";
+  remoting_directory_.reset();
+  remoting_login_ = "";
+  remoting_token_ = "";
+  talk_token_ = "";
+
+  // TODO(hclam): If we have a problem we need to send an IPC message back
+  // to the client that started this.
 }
 
 // A util function to update the login information to host config.
@@ -209,27 +228,29 @@ static void SaveChromotingConfigFunc(remoting::JsonHostConfig* config,
                                      const std::string& login,
                                      const std::string& token,
                                      const std::string& host_id,
-                                     const std::string& host_name,
-                                     const std::string& private_key) {
+                                     const std::string& host_name) {
   config->SetString(remoting::kXmppLoginConfigPath, login);
   config->SetString(remoting::kXmppAuthTokenConfigPath, token);
   config->SetString(remoting::kHostIdConfigPath, host_id);
   config->SetString(remoting::kHostNameConfigPath, host_name);
-  config->SetString(remoting::kPrivateKeyConfigPath, private_key);
 }
 
-void ServiceProcess::SaveChromotingConfig(const std::string& login,
-                                          const std::string& token,
-                                          const std::string& host_id,
-                                          const std::string& host_name,
-                                          const std::string& private_key) {
+void ServiceProcess::SaveChromotingConfig(
+    const std::string& login,
+    const std::string& token,
+    const std::string& host_id,
+    const std::string& host_name,
+    remoting::HostKeyPair* host_key_pair) {
   // First we need to load the config first.
   LoadChromotingConfig();
 
   // And then do the update.
   chromoting_config_->Update(
       NewRunnableFunction(&SaveChromotingConfigFunc, chromoting_config_.get(),
-                          login, token, host_id, host_name, private_key));
+                          login, token, host_id, host_name));
+
+  // And then save the key pair.
+  host_key_pair->Save(chromoting_config_);
 }
 
 void ServiceProcess::LoadChromotingConfig() {
