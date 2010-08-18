@@ -11,8 +11,8 @@ cursor_images =					\
 	top_left_corner.png			\
 	top_right_corner.png			\
 	top_side.png				\
-	xterm.png
-
+	xterm.png				\
+	hand1.png
 
 all :
 

@@ -161,6 +161,12 @@ wl_client_connection_update(struct wl_connection *connection,
 	return wl_event_source_fd_update(client->source, mask);
 }
 
+WL_EXPORT struct wl_display *
+wl_client_get_display(struct wl_client *client)
+{
+	return client->display;
+}
+
 static void
 wl_display_post_range(struct wl_display *display, struct wl_client *client)
 {

@@ -402,17 +402,13 @@ wl_display_allocate_id(struct wl_display *display)
 }
 
 WL_EXPORT void
-wl_surface_set_user_data(struct wl_surface *surface, void *user_data)
+wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data)
 {
-	struct wl_proxy *proxy = (struct wl_proxy *) surface;
-
 	proxy->user_data = user_data;
 }
 
 WL_EXPORT void *
-wl_surface_get_user_data(struct wl_surface *surface)
+wl_proxy_get_user_data(struct wl_proxy *proxy)
 {
-	struct wl_proxy *proxy = (struct wl_proxy *) surface;
-
 	return proxy->user_data;
 }

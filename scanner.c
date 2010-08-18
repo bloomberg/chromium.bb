@@ -273,6 +273,22 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		       interface->name,
 		       interface->name);
 
+	printf("static inline void\n"
+	       "wl_%s_set_user_data(struct wl_%s *%s, void *user_data)\n"
+	       "{\n"
+	       "\twl_proxy_set_user_data((struct wl_proxy *) %s, user_data);\n"
+	       "}\n\n",
+	       interface->name, interface->name, interface->name,
+	       interface->name);
+
+	printf("static inline void *\n"
+	       "wl_%s_get_user_data(struct wl_%s *%s)\n"
+	       "{\n"
+	       "\treturn wl_proxy_get_user_data((struct wl_proxy *) %s);\n"
+	       "}\n\n",
+	       interface->name, interface->name, interface->name,
+	       interface->name);
+
 	if (wl_list_empty(message_list))
 		return;
 
@@ -424,7 +440,14 @@ static const char client_prototypes[] =
 
 	"extern int\n"
 	"wl_proxy_add_listener(struct wl_proxy *proxy,\n"
-	"\t\t      void (**implementation)(void), void *data);\n\n";
+	"\t\t      void (**implementation)(void), void *data);\n\n"
+
+	"extern void\n"
+	"wl_proxy_set_user_data(struct wl_proxy *proxy, void *user_data);\n\n"
+
+	"extern void *\n"
+	"wl_proxy_get_user_data(struct wl_proxy *proxy);\n\n";
+
 
 static void
 emit_header(struct protocol *protocol, int server)

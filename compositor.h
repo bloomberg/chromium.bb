@@ -69,7 +69,8 @@ enum wlsc_grab_type {
 	WLSC_DEVICE_GRAB_RESIZE_BOTTOM_RIGHT = 10,
 	WLSC_DEVICE_GRAB_RESIZE_MASK = 15,
 	WLSC_DEVICE_GRAB_MOVE = 16,
-	WLSC_DEVICE_GRAB_MOTION = 17
+	WLSC_DEVICE_GRAB_MOTION = 17,
+	WLSC_DEVICE_GRAB_DRAG = 18
 };
 
 enum wlsc_pointer_type {
@@ -106,6 +107,7 @@ struct wlsc_input_device {
 	int32_t grab_width, grab_height;
 	int32_t grab_dx, grab_dy;
 	uint32_t grab_button;
+	struct wl_drag drag;
 
 	struct wlsc_listener listener;
 };
@@ -118,6 +120,7 @@ struct wlsc_drm {
 
 struct wlsc_buffer {
 	struct wl_buffer base;
+	int32_t width, height;
 	EGLImageKHR image;
 	struct wl_visual *visual;
 };
@@ -131,7 +134,7 @@ struct wlsc_compositor {
 	EGLContext context;
 	GLuint fbo, vbo;
 	GLuint proj_uniform, tex_uniform;
-	EGLImageKHR *pointer_images;
+	struct wlsc_buffer *pointer_buffers;
 	struct wl_display *wl_display;
 
 	/* We implement the shell interface. */

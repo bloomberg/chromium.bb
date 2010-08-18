@@ -124,6 +124,22 @@ struct wl_visual {
 	struct wl_object base;
 };
 
+struct wl_drag {
+	struct wl_object base;
+	struct wl_surface *source;
+	struct wl_surface *pointer_focus;
+	struct wl_client *target;
+	int32_t x, y, sx, sy;
+	struct wl_input_device *input_device;
+	struct wl_array types;
+	const char *type;
+	uint32_t time;
+
+	struct wl_buffer *buffer;
+	int32_t hotspot_x;
+	int32_t hotspot_y;
+};
+
 void
 wl_client_post_event(struct wl_client *client,
 		      struct wl_object *sender,
@@ -158,6 +174,9 @@ wl_display_post_frame(struct wl_display *display,
 void
 wl_client_add_resource(struct wl_client *client,
 		       struct wl_resource *resource);
+
+struct wl_display *
+wl_client_get_display(struct wl_client *client);
 
 void
 wl_resource_destroy(struct wl_resource *resource, struct wl_client *client);

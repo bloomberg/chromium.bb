@@ -62,9 +62,6 @@ wl_display_get_premultiplied_argb_visual(struct wl_display *display);
 struct wl_visual *
 wl_display_get_rgb_visual(struct wl_display *display);
 
-void wl_surface_set_user_data(struct wl_surface *surface, void *user_data);
-void *wl_surface_get_user_data(struct wl_surface *surface);
-
 #ifdef  __cplusplus
 }
 #endif

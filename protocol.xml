@@ -96,6 +96,94 @@
     </event>
   </interface>
 
+  <interface name="drag" version="1">
+    <request name="prepare">
+      <!-- Start a drag action from given surface and device for the
+	   grab started by the button click at time -->
+      <arg name="surface" type="object" interface="surface"/>
+      <arg name="time" type="uint"/>
+      <arg name="buffer" type="object" interface="buffer"/>
+      <arg name="hotspot_x" type="int"/>
+      <arg name="hotspot_y" type="int"/>
+    </request>
+
+    <!-- Add an offered mime type.  Can be called several times to
+         offer multiple types, but must be called before 'activate'. -->
+    <request name="offer">
+      <arg name="type" type="string"/>
+    </request>
+
+    <request name="activate"/>
+
+    <!-- Cancel the drag. -->
+    <request name="cancel"/>
+
+    <!-- Send the data to the target that accepted the offer -->
+    <request name="send">
+      <arg name="contents" type="array"/>
+    </request>
+
+    <!-- Called by the drag target to accept the offer of the given
+         type -->
+    <request name="accept">
+      <arg name="type" type="string"/>
+    </request>
+
+    <!-- Sent at connect time to announce the association -->
+    <event name="device">
+      <arg name="device" type="object" interface="input_device"/>
+    </event>
+
+    <!-- Similar to device::pointer_focus.  Sent to potential
+	 target surfaces to offer drag data.  If the device
+	 leaves the window, the drag stops or the originator cancels
+	 the drag, this event is sent with the NULL surface. -->
+    <event name="pointer_focus">
+      <arg name="time" type="uint"/>
+      <arg name="surface" type="object" interface="surface"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="surface_x" type="int"/>
+      <arg name="surface_y" type="int"/>
+    </event>
+
+    <!-- Sent after the pointer_focus event to announce the types
+	 offered.  One event per offered mime type. -->
+    <event name="offer">
+      <arg name="type" type="string"/>
+    </event>
+
+    <!-- Similar to device::motion.  Sent to potential target surfaces
+	 as the drag pointer moves around in the surface. -->
+    <event name="motion">
+      <arg name="time" type="uint"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="surface_x" type="int"/>
+      <arg name="surface_y" type="int"/>
+    </event>
+
+    <!-- Sent to drag originator in response to pointer_focus and
+         motion events.  If a target does not accept any of the
+         offered types, type is NULL -->
+    <event name="target">
+      <arg name="mime_type" type="string"/>
+    </event>
+
+    <!-- Sent to drag originator when the drag is finished.  It's also
+	 sent in case an originator tries to activate a drag after the
+	 grab was released.  If the originator didn't receive a
+	 'target' event before receiving the 'finish' event, no drag
+	 target was found and the originator should not send data. -->
+    <event name="finish"/>
+
+    <!-- Sent to target, contains dragged data.  Ends transaction on
+	 the target side. -->
+    <event name="drop">
+      <arg name="contents" type="array"/>
+    </event>
+  </interface>
+
   <interface name="surface" version="1">
     <request name="destroy"/>
 
