@@ -6,6 +6,13 @@
 
 #include "media/ffmpeg/ffmpeg_common.h"
 
+// Because Chromium could be build with FFMPEG version other than FFMPEG-MT
+// by using GYP_DEFINES variable "use-system-ffmpeg". The following code will
+// not build with vanilla FFMPEG. We will fall back to "disable direct
+// rendering" when that happens.
+// TODO(jiesun): Actually we could do better than this: we should modify the
+// following code to work with vanilla FFMPEG.
+
 namespace media {
 
 FFmpegVideoAllocator::FFmpegVideoAllocator()
@@ -15,15 +22,18 @@ FFmpegVideoAllocator::FFmpegVideoAllocator()
 
 void FFmpegVideoAllocator::Initialize(AVCodecContext* codec_context,
                                       VideoFrame::Format surface_format) {
+#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
   surface_format_ = surface_format;
   get_buffer_ = codec_context->get_buffer;
   release_buffer_ = codec_context->release_buffer;
   codec_context->get_buffer = AllocateBuffer;
   codec_context->release_buffer = ReleaseBuffer;
   codec_context->opaque = this;
+#endif
 }
 
 void FFmpegVideoAllocator::Stop(AVCodecContext* codec_context) {
+#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
   // Restore default buffer allocator functions.
   // This does not work actually, because in ffmpeg-mt, there are
   // multiple codec_context copies per threads. each context maintain
@@ -44,28 +54,32 @@ void FFmpegVideoAllocator::Stop(AVCodecContext* codec_context) {
   for (int i = 0; i < kMaxFFmpegThreads; ++i)
     available_frames_[i].clear();
   codec_index_map_.clear();
+#endif
 }
 
 void FFmpegVideoAllocator::DisplayDone(
     AVCodecContext* codec_context,
     scoped_refptr<VideoFrame> video_frame) {
+#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
   RefCountedAVFrame* ffmpeg_video_frame =
       reinterpret_cast<RefCountedAVFrame*>(video_frame->private_buffer());
   if (ffmpeg_video_frame->Release() == 0) {
     int index = codec_index_map_[ffmpeg_video_frame->av_frame_.owner];
     available_frames_[index].push_back(ffmpeg_video_frame);
   }
+#endif
 }
 
 scoped_refptr<VideoFrame> FFmpegVideoAllocator::DecodeDone(
     AVCodecContext* codec_context,
     AVFrame* av_frame) {
+  scoped_refptr<VideoFrame> frame;
+#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
   RefCountedAVFrame* ffmpeg_video_frame =
       reinterpret_cast<RefCountedAVFrame*>(av_frame->opaque);
   ffmpeg_video_frame->av_frame_ = *av_frame;
   ffmpeg_video_frame->AddRef();
 
-  scoped_refptr<VideoFrame> frame;
   VideoFrame::CreateFrameExternal(
       VideoFrame::TYPE_SYSTEM_MEMORY, surface_format_,
       codec_context->width, codec_context->height, 3,
@@ -75,6 +89,7 @@ scoped_refptr<VideoFrame> FFmpegVideoAllocator::DecodeDone(
       StreamSample::kInvalidTimestamp,
       ffmpeg_video_frame,  // |private_buffer_|.
       &frame);
+#endif
   return frame;
 }
 
@@ -94,6 +109,7 @@ void FFmpegVideoAllocator::ReleaseBuffer(AVCodecContext* codec_context,
 
 int FFmpegVideoAllocator::InternalAllocateBuffer(
     AVCodecContext* codec_context, AVFrame* av_frame) {
+#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
   // If |codec_context| is not yet known to us, we add it to our map.
   if (codec_index_map_.find(codec_context) == codec_index_map_.end()) {
     int next_index = codec_index_map_.size();
@@ -124,11 +140,13 @@ int FFmpegVideoAllocator::InternalAllocateBuffer(
   av_frame->opaque = ffmpeg_video_frame;
   av_frame->type = FF_BUFFER_TYPE_USER;
   ffmpeg_video_frame->AddRef();
+#endif
   return 0;
 }
 
 void FFmpegVideoAllocator::InternalReleaseBuffer(
     AVCodecContext* codec_context, AVFrame* av_frame) {
+#ifdef FF_THREAD_FRAME  // Only defined in FFMPEG-MT.
   if (av_frame->opaque == NULL) {
     // This could happened in two scenario:
     // 1. FFMPEG-MT H264 codec seems to allocate one frame during
@@ -154,6 +172,8 @@ void FFmpegVideoAllocator::InternalReleaseBuffer(
 
   for(int k = 0; k < 4; ++k)
     av_frame->data[k]=NULL;
+#endif
 }
 
 } // namespace media
+
