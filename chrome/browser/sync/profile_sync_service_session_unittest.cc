@@ -232,8 +232,8 @@ TEST_F(ProfileSyncServiceSessionTest, WriteFilledSessionToNode) {
   ASSERT_TRUE(sync_specifics != NULL);
 
   // Check that this machine's data is not included in the foreign windows.
-  std::vector<ForeignSession*> foreign_sessions;
-  model_associator_->GetSessionDataFromSyncModel(&foreign_sessions);
+  ScopedVector<ForeignSession> foreign_sessions;
+  model_associator_->GetSessionDataFromSyncModel(&foreign_sessions.get());
   ASSERT_EQ(foreign_sessions.size(), 0U);
 
   // Get the windows for this machine from the node and check that they were
@@ -243,8 +243,8 @@ TEST_F(ProfileSyncServiceSessionTest, WriteFilledSessionToNode) {
   sync_api::ReadNode node(&trans);
   ASSERT_TRUE(node.InitByClientTagLookup(syncable::SESSIONS,
       machine_tag));
-  model_associator_->AppendForeignSessionWithID(sync_id, &foreign_sessions,
-      &trans);
+  model_associator_->AppendForeignSessionWithID(sync_id,
+      &foreign_sessions.get(), &trans);
   ASSERT_EQ(foreign_sessions.size(), 1U);
   ASSERT_EQ(1U,  foreign_sessions[0]->windows.size());
   ASSERT_EQ(2U, foreign_sessions[0]->windows[0]->tabs.size());
@@ -316,8 +316,8 @@ TEST_F(ProfileSyncServiceSessionTest, WriteForeignSessionToNode) {
   scoped_ptr<const sync_pb::SessionSpecifics> sync_specifics(
       model_associator_->GetChromeNodeFromSyncId(sync_id));
   ASSERT_TRUE(sync_specifics != NULL);
-  std::vector<ForeignSession*> foreign_sessions;
-  model_associator_->GetSessionDataFromSyncModel(&foreign_sessions);
+  ScopedVector<ForeignSession> foreign_sessions;
+  model_associator_->GetSessionDataFromSyncModel(&foreign_sessions.get());
   ASSERT_EQ(foreign_sessions.size(), 1U);
   ASSERT_EQ(1U,  foreign_sessions[0]->windows.size());
   ASSERT_EQ(1U, foreign_sessions[0]->windows[0]->tabs.size());

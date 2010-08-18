@@ -207,10 +207,11 @@ SessionService* SessionModelAssociator::GetSessionService() {
 
 void SessionModelAssociator::InitializeCurrentMachineTag() {
   sync_api::WriteTransaction trans(sync_service_->backend()->
-    GetUserShareHandle());
+      GetUserShareHandle());
   syncable::Directory* dir =
-    trans.GetWrappedWriteTrans()->directory();
-  current_machine_tag_ = "session_sync" + dir->cache_guid();
+      trans.GetWrappedWriteTrans()->directory();
+  current_machine_tag_ = "session_sync";
+  current_machine_tag_.append(dir->cache_guid());
 }
 
 // See PopulateSessionSpecificsTab for use.  May add functionality that includes
