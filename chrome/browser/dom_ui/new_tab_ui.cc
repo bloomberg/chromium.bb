@@ -74,6 +74,8 @@ class PaintTimer : public RenderWidgetHost::PaintObserver {
   }
 
   // A callback that is invoked whenever our RenderWidgetHost paints.
+  virtual void RenderWidgetHostWillPaint(RenderWidgetHost* rhw) {}
+
   virtual void RenderWidgetHostDidPaint(RenderWidgetHost* rwh) {
     last_paint_ = base::TimeTicks::Now();
   }

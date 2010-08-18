@@ -8,7 +8,6 @@
 
 class BackingStore;
 class RenderWidgetHost;
-class SkBitmap;
 
 namespace gfx {
 class Size;

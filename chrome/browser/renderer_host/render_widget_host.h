@@ -124,11 +124,11 @@ struct ViewHostMsg_UpdateRect_Params;
 class RenderWidgetHost : public IPC::Channel::Listener,
                          public IPC::Channel::Sender {
  public:
-  // An interface that gets called whenever a paint occurs.
-  // Used in performance tests.
+  // An interface that gets called before and after a paint.
   class PaintObserver {
    public:
     virtual ~PaintObserver() {}
+    virtual void RenderWidgetHostWillPaint(RenderWidgetHost* rhw) = 0;
     virtual void RenderWidgetHostDidPaint(RenderWidgetHost* rwh) = 0;
   };
 

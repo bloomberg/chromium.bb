@@ -721,6 +721,9 @@ void RenderWidgetHost::OnMsgUpdateRect(
     const ViewHostMsg_UpdateRect_Params& params) {
   TimeTicks paint_start = TimeTicks::Now();
 
+  if (paint_observer_.get())
+    paint_observer_->RenderWidgetHostWillPaint(this);
+
   // Update our knowledge of the RenderWidget's size.
   current_size_ = params.view_size;
 
