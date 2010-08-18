@@ -1076,6 +1076,7 @@
         'browser/safe_browsing/protocol_manager_unittest.cc',
         'browser/safe_browsing/protocol_parser_unittest.cc',
         'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
+        'browser/safe_browsing/safe_browsing_database_bloom_unittest.cc',
         'browser/safe_browsing/safe_browsing_database_unittest.cc',
         'browser/safe_browsing/safe_browsing_store_file_unittest.cc',
         'browser/safe_browsing/safe_browsing_store_sqlite_unittest.cc',

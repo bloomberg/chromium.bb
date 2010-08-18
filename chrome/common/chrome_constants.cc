@@ -89,7 +89,7 @@ const FilePath::CharType kFaviconsFilename[] = FPL("Favicons");
 const FilePath::CharType kHistoryFilename[] = FPL("History");
 const FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
-const FilePath::CharType kSafeBrowsingFilename[] = FPL("Safe Browsing");
+const FilePath::CharType kSafeBrowsingFilename[] = FPL("Safe Browsing Bloom");
 // WARNING: SingletonSocket can't contain spaces, because otherwise
 // chrome_process_util_linux would be broken.
 const FilePath::CharType kSingletonSocketFilename[] = FPL("SingletonSocket");

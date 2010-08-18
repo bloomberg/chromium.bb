@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,14 @@ uint32 HashMix(BloomFilter::HashKey hash_key, uint32 c) {
 }
 
 }  // namespace
+
+// static
+int BloomFilter::FilterSizeForKeyCount(int key_count) {
+  const int default_min = BloomFilter::kBloomFilterMinSize;
+  const int number_of_keys = std::max(key_count, default_min);
+  return std::min(number_of_keys * BloomFilter::kBloomFilterSizeRatio,
+                  BloomFilter::kBloomFilterMaxSize * 8);
+}
 
 BloomFilter::BloomFilter(int bit_size) {
   for (int i = 0; i < kNumHashKeys; ++i)
@@ -115,7 +123,7 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
   return new BloomFilter(data.release(), byte_size, hash_keys);
 }
 
-bool BloomFilter::WriteFile(const FilePath& filter_name) {
+bool BloomFilter::WriteFile(const FilePath& filter_name) const {
   net::FileStream filter;
 
   if (filter.Open(filter_name,
@@ -138,7 +146,7 @@ bool BloomFilter::WriteFile(const FilePath& filter_name) {
     return false;
 
   for (int i = 0; i < num_keys; ++i) {
-    bytes_written = filter.Write(reinterpret_cast<char*>(&hash_keys_[i]),
+    bytes_written = filter.Write(reinterpret_cast<const char*>(&hash_keys_[i]),
                                  sizeof(hash_keys_[i]), NULL);
     if (bytes_written != sizeof(hash_keys_[i]))
       return false;
@@ -151,4 +159,3 @@ bool BloomFilter::WriteFile(const FilePath& filter_name) {
 
   return true;
 }
-

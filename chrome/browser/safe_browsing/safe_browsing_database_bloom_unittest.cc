@@ -15,8 +15,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
-#include "chrome/browser/safe_browsing/safe_browsing_database.h"
-#include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
+#include "chrome/browser/safe_browsing/safe_browsing_database_bloom.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,14 +39,14 @@ SBFullHash Sha256Hash(const std::string& str) {
 
 }  // namespace
 
-class SafeBrowsingDatabaseTest : public PlatformTest {
+class SafeBrowsingDatabaseBloomTest : public PlatformTest {
  public:
   virtual void SetUp() {
     PlatformTest::SetUp();
 
     // Setup a database in a temporary directory.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    database_.reset(new SafeBrowsingDatabaseNew);
+    database_.reset(new SafeBrowsingDatabaseBloom);
     database_filename_ =
         temp_dir_.path().AppendASCII("SafeBrowsingTestDatabase");
     database_->Init(database_filename_);
@@ -89,13 +88,13 @@ class SafeBrowsingDatabaseTest : public PlatformTest {
   // Utility function for setting up the database for the caching test.
   void PopulateDatabaseForCacheTest();
 
-  scoped_ptr<SafeBrowsingDatabaseNew> database_;
+  scoped_ptr<SafeBrowsingDatabaseBloom> database_;
   FilePath database_filename_;
   ScopedTempDir temp_dir_;
 };
 
 // Tests retrieving list name information.
-TEST_F(SafeBrowsingDatabaseTest, ListName) {
+TEST_F(SafeBrowsingDatabaseBloomTest, ListName) {
   SBChunkList chunks;
 
   // Insert some malware add chunks.
@@ -226,7 +225,7 @@ TEST_F(SafeBrowsingDatabaseTest, ListName) {
 }
 
 // Checks database reading and writing.
-TEST_F(SafeBrowsingDatabaseTest, Database) {
+TEST_F(SafeBrowsingDatabaseBloomTest, Database) {
   SBChunkList chunks;
 
   // Add a simple chunk with one hostkey.
@@ -538,7 +537,7 @@ TEST_F(SafeBrowsingDatabaseTest, Database) {
 
 
 // Test adding zero length chunks to the database.
-TEST_F(SafeBrowsingDatabaseTest, ZeroSizeChunk) {
+TEST_F(SafeBrowsingDatabaseBloomTest, ZeroSizeChunk) {
   SBChunkList chunks;
 
   // Populate with a couple of normal chunks.
@@ -660,7 +659,7 @@ TEST_F(SafeBrowsingDatabaseTest, ZeroSizeChunk) {
 }
 
 // Utility function for setting up the database for the caching test.
-void SafeBrowsingDatabaseTest::PopulateDatabaseForCacheTest() {
+void SafeBrowsingDatabaseBloomTest::PopulateDatabaseForCacheTest() {
   // Add a simple chunk with one hostkey and cache it.
   SBChunkHost host;
   host.host = Sha256Prefix("www.evil.com/");
@@ -697,11 +696,12 @@ void SafeBrowsingDatabaseTest::PopulateDatabaseForCacheTest() {
   database_->CacheHashResults(prefixes, results);
 }
 
-TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
+TEST_F(SafeBrowsingDatabaseBloomTest, HashCaching) {
   PopulateDatabaseForCacheTest();
 
   // We should have both full hashes in the cache.
-  EXPECT_EQ(database_->pending_hashes_.size(), 2U);
+  SafeBrowsingDatabaseBloom::HashCache* hash_cache = database_->hash_cache();
+  EXPECT_EQ(hash_cache->size(), 2U);
 
   // Test the cache lookup for the first prefix.
   std::string listname;
@@ -772,8 +772,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   database_->ContainsUrl(GURL("http://www.evil.com/malware.html"),
                          &listname, &prefixes, &full_hashes, Time::Now());
   EXPECT_TRUE(full_hashes.empty());
-  EXPECT_TRUE(database_->full_hashes_.empty());
-  EXPECT_TRUE(database_->pending_hashes_.empty());
+  EXPECT_TRUE(database_->hash_cache()->empty());
 
   prefixes.clear();
   full_hashes.clear();
@@ -782,21 +781,17 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   // the cached entries' received time to make them older, since the database
   // cache insert uses Time::Now(). First, store some entries.
   PopulateDatabaseForCacheTest();
-
-  std::vector<SBAddFullHash>* hash_cache = &database_->pending_hashes_;
+  hash_cache = database_->hash_cache();
   EXPECT_EQ(hash_cache->size(), 2U);
 
   // Now adjust one of the entries times to be in the past.
   base::Time expired = base::Time::Now() - base::TimeDelta::FromMinutes(60);
   const SBPrefix key = Sha256Prefix("www.evil.com/malware.html");
-  std::vector<SBAddFullHash>::iterator iter;
-  for (iter = hash_cache->begin(); iter != hash_cache->end(); ++iter) {
-    if (iter->full_hash.prefix == key) {
-      iter->received = static_cast<int32>(expired.ToTimeT());
-      break;
-    }
-  }
-  EXPECT_TRUE(iter != hash_cache->end());
+  SafeBrowsingDatabaseBloom::HashList& entries = (*hash_cache)[key];
+  SafeBrowsingDatabaseBloom::HashCacheEntry entry = entries.front();
+  entries.pop_front();
+  entry.received = expired;
+  entries.push_back(entry);
 
   database_->ContainsUrl(GURL("http://www.evil.com/malware.html"),
                          &listname, &prefixes, &full_hashes, expired);
@@ -822,13 +817,13 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   database_->CacheHashResults(prefix_misses, empty_full_hash);
 
   // Prefixes with no full results are misses.
-  EXPECT_EQ(database_->prefix_miss_cache_.size(), 2U);
+  EXPECT_EQ(database_->prefix_miss_cache()->size(), 2U);
 
   // Update the database.
   PopulateDatabaseForCacheTest();
 
   // Prefix miss cache should be cleared.
-  EXPECT_TRUE(database_->prefix_miss_cache_.empty());
+  EXPECT_TRUE(database_->prefix_miss_cache()->empty());
 
   // Cache a GetHash miss for a particular prefix, and even though the prefix is
   // in the database, it is flagged as a miss so looking up the associated URL
@@ -956,7 +951,7 @@ struct ChunksInfo {
 };
 
 // TODO(shess): Move this into SafeBrowsingDatabaseTest.
-void PerformUpdate(SafeBrowsingDatabaseNew* database,
+void PerformUpdate(SafeBrowsingDatabaseBloom* database,
                    const FilePath& database_filename,
                    const FilePath& initial_db,
                    const std::vector<ChunksInfo>& chunks,
@@ -991,7 +986,6 @@ void PerformUpdate(SafeBrowsingDatabaseNew* database,
     database->InsertChunks(chunks[i].listname, *chunks[i].chunks);
 
   database->UpdateFinished(true);
-
   gotIOCounters = gotIOCounters && metric->GetIOCounters(&after);
 
   if (gotIOCounters) {
@@ -1018,7 +1012,7 @@ void PerformUpdate(SafeBrowsingDatabaseNew* database,
   PrintStat("c:SB.TransactionCommit");
 }
 
-void UpdateDatabase(SafeBrowsingDatabaseNew* database,
+void UpdateDatabase(SafeBrowsingDatabaseBloom* database,
                     const FilePath& database_filename,
                     const FilePath& initial_db,
                     const FilePath& response_path,
@@ -1119,7 +1113,7 @@ FilePath GetOldUpdatesPath() {
 // Counts the IO needed for the initial update of a database.
 // test\data\safe_browsing\download_update.py was used to fetch the add/sub
 // chunks that are read, in order to get repeatable runs.
-TEST_F(SafeBrowsingDatabaseTest, DatabaseInitialIO) {
+TEST_F(SafeBrowsingDatabaseBloomTest, DatabaseInitialIO) {
   UpdateDatabase(database_.get(), database_filename_,
                  FilePath(), FilePath(), FilePath().AppendASCII("initial"));
 }
@@ -1127,25 +1121,25 @@ TEST_F(SafeBrowsingDatabaseTest, DatabaseInitialIO) {
 // Counts the IO needed to update a month old database.
 // The data files were generated by running "..\download_update.py postdata"
 // in the "safe_browsing\old" directory.
-TEST_F(SafeBrowsingDatabaseTest, DatabaseOldIO) {
+TEST_F(SafeBrowsingDatabaseBloomTest, DatabaseOldIO) {
   UpdateDatabase(database_.get(), database_filename_, GetOldSafeBrowsingPath(),
                  GetOldResponsePath(), GetOldUpdatesPath());
 }
 
 // Like DatabaseOldIO but only the deletes.
-TEST_F(SafeBrowsingDatabaseTest, DatabaseOldDeletesIO) {
+TEST_F(SafeBrowsingDatabaseBloomTest, DatabaseOldDeletesIO) {
   UpdateDatabase(database_.get(), database_filename_,
                  GetOldSafeBrowsingPath(), GetOldResponsePath(), FilePath());
 }
 
 // Like DatabaseOldIO but only the updates.
-TEST_F(SafeBrowsingDatabaseTest, DatabaseOldUpdatesIO) {
+TEST_F(SafeBrowsingDatabaseBloomTest, DatabaseOldUpdatesIO) {
   UpdateDatabase(database_.get(), database_filename_,
                  GetOldSafeBrowsingPath(), FilePath(), GetOldUpdatesPath());
 }
 
 // Does a a lot of addel's on very large chunks.
-TEST_F(SafeBrowsingDatabaseTest, DatabaseOldLotsofDeletesIO) {
+TEST_F(SafeBrowsingDatabaseBloomTest, DatabaseOldLotsofDeletesIO) {
   std::vector<ChunksInfo> chunks;
   std::vector<SBChunkDelete> deletes;
   SBChunkDelete del;

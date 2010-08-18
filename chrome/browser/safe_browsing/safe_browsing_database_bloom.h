@@ -6,18 +6,19 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_BLOOM_H_
 #pragma once
 
+#include <list>
 #include <set>
-#include <string>
-#include <vector>
 
+#include "base/hash_tables.h"
 #include "base/lock.h"
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
-namespace base {
-  class Time;
-}
-
+class BloomFilter;
 struct sqlite3;
 class SqliteCompiledStatement;
 class SqliteStatementCache;
@@ -29,7 +30,7 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   SafeBrowsingDatabaseBloom();
   virtual ~SafeBrowsingDatabaseBloom();
 
-  // SafeBrowsingDatabase interface:
+  // Implement SafeBrowsingDatabase interface.
   virtual void Init(const FilePath& filename);
   virtual bool ResetDatabase();
   virtual bool ContainsUrl(const GURL& url,
@@ -40,14 +41,36 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   virtual void InsertChunks(const std::string& list_name,
                             const SBChunkList& chunks);
   virtual void DeleteChunks(const std::vector<SBChunkDelete>& chunk_deletes);
-  virtual void GetListsInfo(std::vector<SBListChunkRanges>* lists);
   virtual void CacheHashResults(
       const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits);
-  virtual bool UpdateStarted();
+  virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists);
   virtual void UpdateFinished(bool update_succeeded);
 
  private:
+  friend class SafeBrowsingDatabaseBloomTest;
+  FRIEND_TEST(SafeBrowsingDatabaseBloomTest, HashCaching);
+
+  struct HashCacheEntry {
+    SBFullHash full_hash;
+    int list_id;
+    int add_chunk_id;
+    int sub_chunk_id;
+    base::Time received;
+  };
+
+  typedef std::list<HashCacheEntry> HashList;
+  typedef base::hash_map<SBPrefix, HashList> HashCache;
+
+  // Load the bloom filter off disk, or generates one if it doesn't exist.
+  virtual void LoadBloomFilter();
+
+  // Deletes the on-disk bloom filter, i.e. because it's stale.
+  virtual void DeleteBloomFilter();
+
+  // Writes the current bloom filter to disk.
+  virtual void WriteBloomFilter();
+
   struct SBPair {
     int chunk_id;
     SBPrefix prefix;
@@ -84,6 +107,12 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   // Return a comma separated list of chunk ids that are in the database for
   // the given list and chunk type.
   void GetChunkIds(int list_id, ChunkType type, std::string* list);
+
+  // Old implementation methods which have been consolidated into new
+  // |UpdateStarted()| interface.  Retained to minimize changes to
+  // this code.
+  void GetListsInfo(std::vector<SBListChunkRanges>* lists);
+  bool UpdateStarted();
 
   // Generate a bloom filter.
   virtual void BuildBloomFilter();
@@ -199,6 +228,18 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
 
   // A store for GetHash results that have not yet been written to the database.
   HashList pending_full_hashes_;
+
+  scoped_ptr<HashCache> hash_cache_;
+  HashCache* hash_cache() { return hash_cache_.get(); }
+
+  // Cache of prefixes that returned empty results (no full hash match).
+  typedef std::set<SBPrefix> PrefixCache;
+  PrefixCache prefix_miss_cache_;
+  PrefixCache* prefix_miss_cache() { return &prefix_miss_cache_; }
+
+  FilePath filename_;
+  FilePath bloom_filter_filename_;
+  scoped_refptr<BloomFilter> bloom_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseBloom);
 };

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -46,7 +46,7 @@ class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
 
   // Loading and storing the filter from / to disk.
   static BloomFilter* LoadFile(const FilePath& filter_name);
-  bool WriteFile(const FilePath& filter_name);
+  bool WriteFile(const FilePath& filter_name) const;
 
   // How many bits to use per item. See the design doc for more information.
   static const int kBloomFilterSizeRatio = 25;
@@ -58,6 +58,13 @@ class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
   // Force a maximum size on the bloom filter to avoid using too much memory
   // (in bytes).
   static const int kBloomFilterMaxSize = 2 * 1024 * 1024;
+
+  // Use the above constants to calculate an appropriate size to pass
+  // to the BloomFilter constructor based on the intended |key_count|.
+  // TODO(shess): This is very clunky.  It would be cleaner to have
+  // the constructor manage this, but at this time the unit and perf
+  // tests wish to make their own calculations.
+  static int FilterSizeForKeyCount(int key_count);
 
  private:
   friend class base::RefCountedThreadSafe<BloomFilter>;
