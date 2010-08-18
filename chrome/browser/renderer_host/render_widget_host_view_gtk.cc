@@ -320,6 +320,8 @@ class RenderWidgetHostViewGtkWidget {
       event->x = x;
       event->y = y;
     }
+
+    host_view->ModifyEventForEdgeDragging(widget, event);
     host_view->GetRenderWidgetHost()->ForwardMouseEvent(
         WebInputEventFactory::mouseEvent(event));
     return FALSE;
@@ -477,7 +479,9 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       parent_(NULL),
       is_popup_first_mouse_release_(true),
       was_focused_before_grab_(false),
-      do_x_grab_(false) {
+      do_x_grab_(false),
+      dragged_at_horizontal_edge_(0),
+      dragged_at_vertical_edge_(0) {
   host_->set_view(this);
 
   // Enable experimental out-of-process GPU rendering.
@@ -838,6 +842,58 @@ VideoLayer* RenderWidgetHostViewGtk::AllocVideoLayer(const gfx::Size& size) {
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
+}
+
+void RenderWidgetHostViewGtk::ModifyEventForEdgeDragging(
+    GtkWidget* widget, GdkEventMotion* event) {
+  // If the widget is aligned with an edge of the monitor its on and the user
+  // attempts to drag past that edge we track the number of times it has
+  // occurred, so that we can force the widget to scroll when it otherwise
+  // would be unable to, by modifying the (x,y) position in the drag
+  // event that we forward on to webkit. If we get a move that's no longer a
+  // drag or a drag indicating the user is no longer at that edge we stop
+  // altering the drag events.
+  int new_dragged_at_horizontal_edge = 0;
+  int new_dragged_at_vertical_edge = 0;
+  // Used for checking the edges of the monitor. We cache the values to save
+  // roundtrips to the X server.
+  static gfx::Size drag_monitor_size;
+  if (event->state & GDK_BUTTON1_MASK) {
+    if (drag_monitor_size.IsEmpty()) {
+      // We can safely cache the monitor size for the duration of a drag.
+      GdkScreen* screen = gtk_widget_get_screen(widget);
+      int monitor =
+          gdk_screen_get_monitor_at_point(screen, event->x_root, event->y_root);
+      GdkRectangle geometry;
+      gdk_screen_get_monitor_geometry(screen, monitor, &geometry);
+      drag_monitor_size.SetSize(geometry.width, geometry.height);
+    }
+
+    // Check X and Y independently, as the user could be dragging into a corner.
+    if (event->x == 0 && event->x_root == 0) {
+      new_dragged_at_horizontal_edge = dragged_at_horizontal_edge_ - 1;
+    } else if (widget->allocation.width - 1 == static_cast<gint>(event->x) &&
+        drag_monitor_size.width() - 1 == static_cast<gint>(event->x_root)) {
+      new_dragged_at_horizontal_edge = dragged_at_horizontal_edge_ + 1;
+    }
+
+    if (event->y == 0 && event->y_root == 0) {
+      new_dragged_at_vertical_edge = dragged_at_vertical_edge_ - 1;
+    } else if (widget->allocation.height - 1 == static_cast<gint>(event->y) &&
+        drag_monitor_size.height() - 1 == static_cast<gint>(event->y_root)) {
+      new_dragged_at_vertical_edge = dragged_at_vertical_edge_ + 1;
+    }
+
+    event->x_root += new_dragged_at_horizontal_edge;
+    event->x += new_dragged_at_horizontal_edge;
+    event->y_root += new_dragged_at_vertical_edge;
+    event->y += new_dragged_at_vertical_edge;
+  } else {
+    // Clear whenever we get a non-drag mouse move.
+    drag_monitor_size.SetSize(0, 0);
+  }
+  dragged_at_horizontal_edge_ = new_dragged_at_horizontal_edge;
+  dragged_at_vertical_edge_ = new_dragged_at_vertical_edge;
 }
 
 void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {

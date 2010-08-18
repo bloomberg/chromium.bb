@@ -90,6 +90,11 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   gfx::NativeView native_view() const { return view_.get(); }
 
+  // If the widget is aligned with an edge of the monitor its on and the user
+  // attempts to drag past that edge we track the number of times it has
+  // occurred, so that we can force the widget to scroll when it otherwise
+  // would be unable to.
+  void ModifyEventForEdgeDragging(GtkWidget* widget, GdkEventMotion* event);
   void Paint(const gfx::Rect&);
 
   // Called by GtkIMContextWrapper to forward a keyboard event to renderer.
@@ -193,6 +198,16 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // The size that we want the renderer to be.  We keep this in a separate
   // variable because resizing in GTK+ is async.
   gfx::Size requested_size_;
+
+  // The number of times the user has dragged against horizontal edge  of the
+  // monitor (if the widget is aligned with that edge). Negative values
+  // indicate the left edge, positive the right.
+  int dragged_at_horizontal_edge_;
+
+  // The number of times the user has dragged against vertical edge  of the
+  // monitor (if the widget is aligned with that edge). Negative values
+  // indicate the top edge, positive the bottom.
+  int dragged_at_vertical_edge_;
 
 #if defined(OS_CHROMEOS)
   // Custimized tooltip window.
