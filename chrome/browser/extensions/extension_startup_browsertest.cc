@@ -31,6 +31,11 @@
 class ExtensionStartupTestBase : public InProcessBrowserTest {
  public:
   ExtensionStartupTestBase() : enable_extensions_(false) {
+#if defined(OS_CHROMEOS)
+    num_expected_extensions_ = 3;
+#else
+    num_expected_extensions_ = 4;
+#endif
   }
 
  protected:
@@ -124,6 +129,8 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
   FilePath user_scripts_dir_;
   bool enable_extensions_;
   FilePath load_extension_;
+
+  int num_expected_extensions_;
 };
 
 
@@ -139,7 +146,8 @@ class ExtensionsStartupTest : public ExtensionStartupTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
-  WaitForServicesToStart(4, true);  // 1 component extension and 3 others.
+  // 1 component extension and 2 or 3 others, depending on the platform.
+  WaitForServicesToStart(num_expected_extensions_, true);
   TestInjection(true, true);
 }
 
@@ -152,7 +160,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
 // Tests that disallowing file access on an extension prevents it from injecting
 // script into a page with a file URL.
 IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, MAYBE_NoFileAccess) {
-  WaitForServicesToStart(4, true);  // 1 component extension and 3 others.
+  // 1 component extension and 2 or 3 others, depending on the platform.
+  WaitForServicesToStart(num_expected_extensions_, true);
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   for (size_t i = 0; i < service->extensions()->size(); ++i) {

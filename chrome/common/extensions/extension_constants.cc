@@ -268,6 +268,10 @@ const char* kReservedMessageFound =
     "Reserved key * found in message catalog.";
 const char* kThemesCannotContainExtensions =
     "A theme cannot contain extensions code.";
+#if defined(OS_CHROMEOS)
+const char* kIllegalPlugins =
+    "Extensions cannot install plugins on Chrome OS";
+#endif
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {

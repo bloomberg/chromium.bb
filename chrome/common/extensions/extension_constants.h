@@ -173,6 +173,9 @@ namespace extension_manifest_errors {
   extern const char* kReservedMessageFound;
   extern const char* kThemesCannotContainExtensions;
   extern const char* kWebContentMustBeEnabled;
+#if defined(OS_CHROMEOS)
+  extern const char* kIllegalPlugins;
+#endif
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {
