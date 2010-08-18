@@ -174,8 +174,7 @@ void MediatorThreadImpl::DoLogin(
   // TODO(akalin): Use an existing HostResolver from somewhere (maybe
   // the IOThread one).
   host_resolver_ =
-      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL);
+      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism);
 
   // Start a new pump for the login.
   login_.reset();

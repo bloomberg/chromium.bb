@@ -87,11 +87,6 @@ body {
   color: blue;
 }
 
-#requestsListTableBody .source_HOST_RESOLVER_IMPL_JOB,
-#requestsListTableBody .source_HOST_RESOLVER_IMPL_REQUEST {
-  color: #308080;
-}
-
 #requestsListTableBody .source_SOCKET {
   color: purple;
 }

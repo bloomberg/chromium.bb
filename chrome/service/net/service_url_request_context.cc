@@ -22,8 +22,7 @@ ServiceURLRequestContextGetter::ServiceURLRequestContextGetter()
 
 ServiceURLRequestContext::ServiceURLRequestContext() {
   host_resolver_ =
-      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL);
+      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism);
   DCHECK(g_service_process);
   // TODO(sanjeevr): Change CreateSystemProxyConfigService to accept a
   // MessageLoopProxy* instead of MessageLoop*.

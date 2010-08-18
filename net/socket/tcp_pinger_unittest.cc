@@ -66,8 +66,7 @@ void TCPPingerTest::SetUp() {
 TEST_F(TCPPingerTest, Ping) {
   net::AddressList addr;
   scoped_refptr<net::HostResolver> resolver(
-      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL));
+      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism));
 
   net::HostResolver::RequestInfo info("localhost", listen_port_);
   int rv = resolver->Resolve(info, &addr, NULL, NULL, net::BoundNetLog());
@@ -81,8 +80,7 @@ TEST_F(TCPPingerTest, Ping) {
 TEST_F(TCPPingerTest, PingFail) {
   net::AddressList addr;
   scoped_refptr<net::HostResolver> resolver(
-      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
-                                    NULL));
+      net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism));
 
   // "Kill" "server"
   listen_sock_ = NULL;

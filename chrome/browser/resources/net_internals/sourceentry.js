@@ -67,11 +67,8 @@ SourceEntry.prototype.update = function(logEntry) {
   var curStartEntry = this.getStartEntry_();
 
   // If we just got the first entry for this source.
-  if (prevStartEntry != curStartEntry) {
-    if (!prevStartEntry)
-      this.createRow_();
-    else
-      this.updateDescription_();
+  if (!prevStartEntry && curStartEntry) {
+    this.createRow_();
 
     // Only apply the filter during the first update.
     // TODO(eroman): once filters use other data, apply it on each update.
@@ -119,11 +116,6 @@ SourceEntry.prototype.onMouseout_ = function() {
   this.setMouseoverStyle(false);
 };
 
-SourceEntry.prototype.updateDescription_ = function() {
-  this.descriptionCell_.innerHTML = '';
-  addTextNode(this.descriptionCell_, this.getDescription());
-}
-
 SourceEntry.prototype.createRow_ = function() {
   // Create a row.
   var tr = addNode(this.parentView_.tableBody_, 'tr');
@@ -139,7 +131,6 @@ SourceEntry.prototype.createRow_ = function() {
 
   var typeCell = addNode(tr, 'td');
   var descriptionCell = addNode(tr, 'td');
-  this.descriptionCell_ = descriptionCell;
 
   // Connect listeners.
   checkbox.onchange = this.onCheckboxToggled_.bind(this);
@@ -159,7 +150,7 @@ SourceEntry.prototype.createRow_ = function() {
     addTextNode(idCell, "-");
   var sourceTypeString = this.getSourceTypeString();
   addTextNode(typeCell, sourceTypeString);
-  this.updateDescription_();
+  addTextNode(descriptionCell, this.getDescription());
 
   // Add a CSS classname specific to this source type (so CSS can specify
   // different stylings for different types).
@@ -191,9 +182,6 @@ SourceEntry.prototype.getDescription = function() {
       return e.params.url;
     case LogSourceType.CONNECT_JOB:
       return e.params.group_name;
-    case LogSourceType.HOST_RESOLVER_IMPL_REQUEST:
-    case LogSourceType.HOST_RESOLVER_IMPL_JOB:
-      return e.params.host;
   }
 
   return '';
@@ -208,12 +196,11 @@ SourceEntry.prototype.getDescription = function() {
 SourceEntry.prototype.getStartEntry_ = function() {
   if (this.entries_.length < 1)
     return undefined;
-  if (this.entries_.length >= 2) {
-    if (this.entries_[0].type == LogEventType.REQUEST_ALIVE ||
-        this.entries_[0].type == LogEventType.SOCKET_POOL_CONNECT_JOB)
-      return this.entries_[1];
-  }
-  return this.entries_[0];
+  if (this.entries_[0].type != LogEventType.REQUEST_ALIVE)
+    return this.entries_[0];
+  if (this.entries_.length < 2)
+    return undefined;
+  return this.entries_[1];
 };
 
 SourceEntry.prototype.getLogEntries = function() {
