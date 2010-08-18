@@ -97,10 +97,17 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // to send the image to the server on each expose.
   CairoCachedSurface* GetSurfaceNamed(int id, GtkWidget* widget_on_display);
 
-  // Returns a CairoCachedSurface for a particular Display for an image
-  // resource that's unthemed.
-  CairoCachedSurface* GetUnthemedSurfaceNamed(
-      int id, GtkWidget* widget_on_display);
+  // Same as above, but auto-mirrors the underlying pixbuf in RTL mode.
+  CairoCachedSurface* GetRTLEnabledSurfaceNamed(int id,
+                                                GtkWidget* widget_on_display);
+
+  // Same as above, but gets the resource from the ResourceBundle instead of the
+  // BrowserThemeProvider.
+  // NOTE: Never call this with resource IDs that are ever passed to the above
+  // two functions!  Depending on which call comes first, all callers will
+  // either get the themed or the unthemed version.
+  CairoCachedSurface* GetUnthemedSurfaceNamed(int id,
+                                              GtkWidget* widget_on_display);
 
   // Returns colors that we pass to webkit to match the system theme.
   const SkColor& get_focus_ring_color() const { return focus_ring_color_; }
@@ -200,6 +207,11 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Returns a tint that's the color of the current highlighted text in an
   // entry.
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
+
+  // Implements GetXXXSurfaceNamed(), given the appropriate pixbuf to use.
+  CairoCachedSurface* GetSurfaceNamedImpl(int id,
+                                          GdkPixbuf* pixbuf,
+                                          GtkWidget* widget_on_display);
 
   // Handles signal from GTK that our theme has been changed.
   CHROMEGTK_CALLBACK_1(GtkThemeProvider, void, OnStyleSet, GtkStyle*);

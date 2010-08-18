@@ -481,42 +481,29 @@ void GtkThemeProvider::GetScrollbarColors(GdkColor* thumb_active_color,
 }
 
 CairoCachedSurface* GtkThemeProvider::GetSurfaceNamed(
-    int id, GtkWidget* widget_on_display) {
-  GdkDisplay* display = gtk_widget_get_display(widget_on_display);
-  CairoCachedSurfaceMap& surface_map = per_display_surfaces_[display];
+    int id,
+    GtkWidget* widget_on_display) {
+  return GetSurfaceNamedImpl(id, GetPixbufNamed(id), widget_on_display);
+}
 
-  // Check to see if we already have the pixbuf in the cache.
-  CairoCachedSurfaceMap::const_iterator found = surface_map.find(id);
-  if (found != surface_map.end())
-    return found->second;
-
-  GdkPixbuf* pixbuf = GetPixbufNamed(id);
-  CairoCachedSurface* surface = new CairoCachedSurface;
-  surface->UsePixbuf(pixbuf);
-
-  surface_map[id] = surface;
-
-  return surface;
+CairoCachedSurface* GtkThemeProvider::GetRTLEnabledSurfaceNamed(
+    int id,
+    GtkWidget* widget_on_display) {
+  // We flip the sign of |id| when passing it to GetSurfaceNamedImpl() for the
+  // same reason that BrowserThemeProvider::GetPixbufImpl() does: so that if one
+  // location calls this function with a resource ID, and another place calls
+  // GetSurfaceNamed() with the same ID, they'll correctly get different
+  // surfaces in RTL mode.
+  return GetSurfaceNamedImpl(-id, GetRTLEnabledPixbufNamed(id),
+                             widget_on_display);
 }
 
 CairoCachedSurface* GtkThemeProvider::GetUnthemedSurfaceNamed(
-    int id, GtkWidget* widget_on_display) {
-  GdkDisplay* display = gtk_widget_get_display(widget_on_display);
-  CairoCachedSurfaceMap& surface_map = per_display_unthemed_surfaces_[display];
-
-  // Check to see if we already have the pixbuf in the cache.
-  CairoCachedSurfaceMap::const_iterator found = surface_map.find(id);
-  if (found != surface_map.end())
-    return found->second;
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  GdkPixbuf* pixbuf = rb.GetPixbufNamed(id);
-  CairoCachedSurface* surface = new CairoCachedSurface;
-  surface->UsePixbuf(pixbuf);
-
-  surface_map[id] = surface;
-
-  return surface;
+    int id,
+    GtkWidget* widget_on_display) {
+  return GetSurfaceNamedImpl(id,
+      ResourceBundle::GetSharedInstance().GetPixbufNamed(id),
+      widget_on_display);
 }
 
 // static
@@ -995,6 +982,26 @@ void GtkThemeProvider::GetSelectedEntryForegroundHSL(
   GtkStyle* style = gtk_rc_get_style(fake_entry_.get());
   const GdkColor color = style->text[GTK_STATE_SELECTED];
   color_utils::SkColorToHSL(GdkToSkColor(&color), tint);
+}
+
+CairoCachedSurface* GtkThemeProvider::GetSurfaceNamedImpl(
+    int id,
+    GdkPixbuf* pixbuf,
+    GtkWidget* widget_on_display) {
+  GdkDisplay* display = gtk_widget_get_display(widget_on_display);
+  CairoCachedSurfaceMap& surface_map = per_display_surfaces_[display];
+
+  // Check to see if we already have the pixbuf in the cache.
+  CairoCachedSurfaceMap::const_iterator found = surface_map.find(id);
+  if (found != surface_map.end())
+    return found->second;
+
+  CairoCachedSurface* surface = new CairoCachedSurface;
+  surface->UsePixbuf(pixbuf);
+
+  surface_map[id] = surface;
+
+  return surface;
 }
 
 void GtkThemeProvider::OnDestroyChromeButton(GtkWidget* button) {

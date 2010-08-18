@@ -148,7 +148,6 @@
       <include name="IDR_FINDINPAGE_PREV_P" file="find_prev_d.png" type="BINDATA" />
       <include name="IDR_FIND_BOX_BACKGROUND" file="find_box_bg.png" type="BINDATA" />
       <include name="IDR_FIND_BOX_BACKGROUND_LEFT" file="find_box_bg_left.png" type="BINDATA" />
-      <include name="IDR_FIND_BOX_BACKGROUND_LEFT_RTL" file="find_box_bg_left_rtl.png" type="BINDATA" />
       <include name="IDR_FIND_DIALOG_LEFT" file="find_dialog_left.png" type="BINDATA" />
       <include name="IDR_FIND_DIALOG_MIDDLE" file="find_dialog_middle.png" type="BINDATA" />
       <include name="IDR_FIND_DIALOG_RIGHT" file="find_dialog_right.png" type="BINDATA" />

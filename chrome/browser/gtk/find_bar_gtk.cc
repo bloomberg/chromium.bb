@@ -869,10 +869,9 @@ gboolean FindBarGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
     GtkAllocation border_allocation = bar->border_bin_->allocation;
 
     // Blit the left part of the background image once on the left.
-    bool rtl = base::i18n::IsRTL();
-    CairoCachedSurface* background_left = bar->theme_provider_->GetSurfaceNamed(
-        rtl ? IDR_FIND_BOX_BACKGROUND_LEFT_RTL : IDR_FIND_BOX_BACKGROUND_LEFT,
-        widget);
+    CairoCachedSurface* background_left =
+        bar->theme_provider_->GetRTLEnabledSurfaceNamed(
+        IDR_FIND_BOX_BACKGROUND_LEFT, widget);
     background_left->SetSource(cr, border_allocation.x, border_allocation.y);
     cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REPEAT);
     cairo_rectangle(cr, border_allocation.x, border_allocation.y,
