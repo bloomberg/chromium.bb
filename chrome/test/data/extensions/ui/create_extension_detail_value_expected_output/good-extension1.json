@@ -24,13 +24,13 @@
   "views": [
     {
       "path": "bar.html",
-      "render_proess_id": 42,
-      "render_view_id": 88
+      "renderProcessId": 42,
+      "renderViewId": 88
     },
     {
       "path": "dog.html",
-      "render_proess_id": 0,
-      "render_view_id": 0
+      "renderProcessId": 0,
+      "renderViewId": 0
     }
   ],
   "hasPopupAction": false,
