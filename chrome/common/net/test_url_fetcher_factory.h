@@ -20,7 +20,9 @@
 // URLFetcher.
 // Typical usage:
 //   // TestURLFetcher requires a MessageLoop:
-//   MessageLoopForUI message_loop;
+//   MessageLoopForIO message_loop;
+//   // and IO thread to clean up request_context etc.
+//   ChromeThread io_thread(ChromeThread::IO, &message_loop);
 //   // Create and register factory.
 //   TestURLFetcherFactory factory;
 //   URLFetcher::set_factory(&factory);
