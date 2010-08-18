@@ -341,6 +341,29 @@ o3d.ParamParamArray = function() {
 };
 o3d.inherit('ParamParamArray', 'Param');
 
+/**
+ * Acts like ParamParamArray, but asks its owner object to update the array
+ * contents every time its value is queried.
+ *
+ * @constructor
+ * @extends {o3d.ParamParamArray}
+ */
+o3d.ParamParamArrayOutput = function() {
+  o3d.ParamParamArray.call(this);
+};
+o3d.inherit('ParamParamArrayOutput', 'ParamParamArray');
+o3d.ParamParamArrayOutput.prototype.__defineGetter__("value",
+    function() {
+      this.owner_.updateOutputs(this);
+      return this.value_;
+    }
+);
+o3d.ParamParamArrayOutput.prototype.__defineSetter__("value",
+    function(value) {
+      // Creating a new array is fine.
+      this.value_ = value;
+    }
+);
 
 /**
  * @constructor

@@ -296,7 +296,8 @@ o3d.Effect.prototype.getUniforms_ =
       this.program_, this.gl.ACTIVE_UNIFORMS);
   for (var i = 0; i < numUniforms; ++i) {
     var info = this.gl.getActiveUniform(this.program_, i);
-    if (info.name.indexOf('[') != -1) {
+    var name = info.name;
+    if (name.indexOf('[') != -1) {
       // This is an array param and we need to individually query each item in
       // the array to get its location.
       var baseName = info.name.substring(0, info.name.indexOf('['));
@@ -312,10 +313,10 @@ o3d.Effect.prototype.getUniforms_ =
       };
     } else {
       // Not an array param.
-      this.uniforms_[info.name] = {
+      this.uniforms_[name] = {
           info: info,
           kind: o3d.Effect.ELEMENT,
-          location: this.gl.getUniformLocation(this.program_, info.name)
+          location: this.gl.getUniformLocation(this.program_, name)
       };
     }
   }
@@ -391,9 +392,22 @@ o3d.Effect.semanticMap_ = {
   'texCoord4': {semantic: o3d.Stream.TEXCOORD, index: 4, gl_index: 9},
   'texCoord5': {semantic: o3d.Stream.TEXCOORD, index: 5, gl_index: 10},
   'texCoord6': {semantic: o3d.Stream.TEXCOORD, index: 6, gl_index: 11},
-  'texCoord7': {semantic: o3d.Stream.TEXCOORD, index: 7, gl_index: 12}
+  'texCoord7': {semantic: o3d.Stream.TEXCOORD, index: 7, gl_index: 12},
+  'influenceWeights': {semantic: o3d.Stream.INFLUENCE_WEIGHTS, index: 0,
+                       gl_index: 13},
+  'influenceIndices': {semantic: o3d.Stream.INFLUENCE_INDICES, index: 0,
+                       gl_index: 14}
 };
 
+o3d.Effect.reverseSemanticMap_ = [];
+(function(){
+  var revmap = o3d.Effect.reverseSemanticMap_;
+  for (var key in o3d.Effect.semanticMap_) {
+    var value = o3d.Effect.semanticMap_[key];
+    revmap[value.semantic] = revmap[value.semantic] || [];
+    revmap[value.semantic][value.index] = value.gl_index;
+  }
+})();
 
 /**
  * For each of the effect's uniform parameters, creates corresponding
@@ -419,7 +433,12 @@ o3d.Effect.prototype.createUniformParameters =
     if (!sasTypes[name]) {
       switch (uniformData.kind) {
         case o3d.Effect.ARRAY:
-          param_object.createParam(name, 'ParamParamArray');
+          var param = param_object.createParam(name, 'ParamParamArray');
+          var array = new o3d.ParamArray;
+          array.gl = this.gl;
+          array.resize(uniformData.info.size,
+              paramTypes[uniformData.info.type]);
+          param.value = array;
           break;
         case o3d.Effect.STRUCT:
           o3d.notImplemented();

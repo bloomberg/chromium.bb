@@ -140,11 +140,15 @@ o3d.DrawList.prototype.render = function() {
     var paramObjects = [
       transform,
       drawElement,
-      element,
+      element
+    ];
+    if (element.streamBank) {
+      paramObjects.push(element.streamBank);
+    }
+    paramObjects.push(
       material,
       effect,
-      o3d.Param.SAS
-    ];
+      o3d.Param.SAS);
 
     effect.searchForParams_(paramObjects);
 

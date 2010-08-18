@@ -41,7 +41,7 @@ o3d.Stream = function(semantic, semantic_index, field, start_index) {
   this.field = field;
   this.startIndex = start_index;
 };
-o3d.inherit('Stream', 'NamedObject')
+o3d.inherit('Stream', 'NamedObject');
 
 /**
  * @type {number}
@@ -56,7 +56,9 @@ o3d.Stream.Semantic = goog.typedef;
  *  TANGENT,
  *  BINORMAL,
  *  COLOR,
- *  TEXCOORD
+ *  TEXCOORD,
+ *  INFLUENCE_WEIGHTS,
+ *  INFLUENCE_INDICES
  *
  * Semantics used when binding buffers to the streambank.  They determine how
  * the Stream links up to the shader inputs.
@@ -68,6 +70,8 @@ o3d.Stream.TANGENT = 3;
 o3d.Stream.BINORMAL = 4;
 o3d.Stream.COLOR = 5;
 o3d.Stream.TEXCOORD = 6;
+o3d.Stream.INFLUENCE_WEIGHTS = 7;
+o3d.Stream.INFLUENCE_INDICES = 8;
 
 
 
@@ -106,7 +110,7 @@ o3d.Stream.prototype.startIndex = 0;
  *     and its buffer.
  * @private
  */
-o3d.Stream.prototype.getMaxVertices = function() {
+o3d.Stream.prototype.getMaxVertices_ = function() {
   var buffer = this.field.buffer;
   if (!buffer)
     return 0;

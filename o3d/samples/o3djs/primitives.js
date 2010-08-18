@@ -540,6 +540,9 @@ o3djs.primitives.VertexInfoBase.prototype.createShapeByType = function(
             requiredStream.addElement(1, 1, 1, 1);
           }
           break;
+        case o3djs.base.o3d.Stream.INFLUENCE_WEIGHTS:
+        case o3djs.base.o3d.Stream.INFLUENCE_INDICES:
+          break;
         default:
           throw 'Missing stream for semantic ' + semantic +
               ' with semantic index ' + semanticIndex;

@@ -77,8 +77,103 @@ o3d.Skin = function() {
    * @private
    */
   this.highest_influences_ = 0;
+
+  /**
+   * True if the list of weights and matrix index streams could be downloaded.
+   *
+   * @type {boolean}
+   * @private
+   */
+  this.supports_vertex_shader_ = false;
+
+  /**
+   * Whether the WEIGHTS and MATRIX_INDICES buffers are up-to-date.
+   *
+   * @type {boolean}
+   * @private
+   */
+  this.buffers_valid_ = false;
+
+  /**
+   * Vertex buffer containing indices and weights for this skin.
+   *
+   * @type {VertexBuffer}
+   */
+  this.vertex_buffer_ = null;
+
+  /**
+   * Buffer in which to store vertex weights.
+   * weights_field_ will be passed into the WEIGHTS stream.
+   *
+   * @type {o3d.Field}
+   * @private
+   */
+  this.weights_field_ = null;
+
+  /**
+   * Buffer in which to store list of matrix_indices per vertex.
+   * matrix_indices_field_ will be passed into the MATRIX_INDICES stream.
+   *
+   * @type {o3d.Field}
+   * @private
+   */
+  this.matrix_indices_field_ = null;
 };
 o3d.inherit('Skin', 'NamedObject');
+
+/**
+ * Updates the weights and indices vertex buffers attached to this skin, only
+ * if they have been invalidated by some param change.
+ * Also checks if we can support skinning based on the number of bones we need
+ * in this skin.
+ * @private
+ * @return {boolean} true if our mesh is small enough to enable skin shader.
+ */
+o3d.Skin.prototype.updateVertexShader = function() {
+  if (!this.buffers_valid_) {
+    var numcomp = 4;
+    var numvert = this.influences.length;
+    if (!this.weights_field_ && !this.matrix_indices_field_) {
+      var vertex_buffer = new o3d.VertexBuffer;
+      vertex_buffer.gl = this.gl;
+      this.weights_field_ =
+          vertex_buffer.createField("FloatField", numcomp);
+      this.matrix_indices_field_ =
+          vertex_buffer.createField("FloatField", numcomp);
+      vertex_buffer.allocateElements(numvert);
+    }
+    var ii, jj;
+    var weights_field = this.weights_field_;
+    var indices_field = this.matrix_indices_field_;
+    var highest_influences = this.getHighestInfluences();
+
+    this.buffers_valid_ = true;
+    weights_field.buffer.lock();
+    indices_field.buffer.lock();
+    var max_num_bones = o3d.SkinEval.getMaxNumBones(this);
+    this.supports_vertex_shader_ = (highest_influences <= numcomp) &&
+        (this.inverseBindPoseMatrices.length <= max_num_bones);
+    if (this.supports_vertex_shader_) {
+      // NOTE: If you make these Array's instead, you must initialize to 0.
+      var weights_arr = new Float32Array(numvert * numcomp);
+      var indices_arr = new Float32Array(numvert * numcomp);
+      // Float32rray is initialized to 0 by default.
+      for (ii = 0; ii < numvert; ++ii) {
+        var influence = this.influences[ii];
+        for (jj = 0; jj < influence.length && jj < numcomp * 2; jj += 2) {
+          indices_arr[ii * numcomp + jj / 2] = influence[jj];
+          weights_arr[ii * numcomp + jj / 2] = influence[jj + 1];
+        }
+      }
+      weights_field.setAt(0, weights_arr);
+      indices_field.setAt(0, indices_arr);
+    }
+    // Otherwise, weights will be filled with 0's by default.
+    weights_field.buffer.unlock();
+    indices_field.buffer.unlock();
+  }
+  return this.supports_vertex_shader_;
+};
 
 /**
  * Sets the influences for an individual vertex.
@@ -98,6 +193,7 @@ o3d.Skin.prototype.setVertexInfluences = function(
   }
   this.influences[vertex_index] = influences;
   this.info_valid_ = false;
+  this.buffers_valid_ = false;
 };
 
 /**
@@ -228,6 +324,13 @@ o3d.SkinEval = function() {
   this.bones_ = [];
 
   /**
+   * Float32 array containing all matrices in 3x4 format.
+   * @type {Float32Array}
+   * @private
+   */
+  this.bone_array_ = null;
+
+  /**
    * Cache of StreamInfo objects for input values. Saved to avoid reallocating.
    * @type {!Array<o3d.SkinEval.StreamInfo>}
    * @private
@@ -240,6 +343,16 @@ o3d.SkinEval = function() {
    * @private
    */
   this.output_stream_infos_ = [];
+
+  /**
+   * The base matrix to subtract from the matrices before skinning.
+   *
+   * @type {ParamArray}
+   * @private
+   */
+  this.createParam("boneToWorld3x4", "ParamParamArrayOutput");
+
+  this.usingSkinShader = 0.0;
 };
 o3d.inherit('SkinEval', 'StreamBank');
 
@@ -249,6 +362,28 @@ o3d.inherit('SkinEval', 'StreamBank');
  * @type {!Array<!Array<number>>}
  */
 o3d.ParamObject.setUpO3DParam_(o3d.SkinEval, "base", "ParamMatrix4");
+
+/**
+ * Non-zero if we are using a shader for skinning.
+ *
+ * Holds state of whether the boneToWorld3x4 uniform is being used. If its
+ * value has been read, copy over the original vertex buffers, else we
+ * assume the shader does not support skinning.
+ *
+ * Do not write to this value. Set disableShader to true instead.
+ *
+ * @type {number}
+ * @see disableShader
+ */
+o3d.ParamObject.setUpO3DParam_(o3d.SkinEval, "usingSkinShader", "ParamFloat");
+
+/**
+ * Set this value to true to force skin not to use a shader.
+ *
+ * @type {boolean}
+ * @default false
+ */
+o3d.ParamObject.setUpO3DParam_(o3d.SkinEval, "disableShader", "ParamBoolean");
 
 /**
  * The Skin to use for skinning.
@@ -261,6 +396,62 @@ o3d.ParamObject.setUpO3DParam_(o3d.SkinEval, "skin", "ParamSkin");
  * @type {ParamArray}
  */
 o3d.ParamObject.setUpO3DParam_(o3d.SkinEval, "matrices", "ParamArray");
+
+/**
+ * Skins use 3 vec4's per matrix, since the last row is redundant.
+ * If we don't know, 32 is safe minimum value required by standard = (128-32)/3.
+ * @param {!o3d.NamedObject} obj Some object with access to gl.
+ * @return {number} Maximum number of bones allowed for shader-based skinning.
+ */
+o3d.SkinEval.getMaxNumBones = function(obj) {
+  // Quote from spec:
+  // GL_MAX_VERTEX_UNIFORM_VECTORS
+  // params returns one value, the maximum number of four-element
+  // floating-point, integer, or boolean vectors that can be held in
+  // uniform variable storage for a vertex shader.
+  // The value must be at least 128. See glUniform.
+  var gl = obj.gl;
+  var maxVertexUniformVectors = gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS);
+  return Math.floor((maxVertexUniformVectors - 32) / 3);
+};
+
+/**
+ * Someone bound a stream to this SkinEval. Enable the shader on the primitive,
+ * and bind any additional weights or indices streams if necessary.
+ *
+ * @param {o3d.VertexSource} dest VertexSource that bound to this VertexSource.
+ * @param {o3d.ParamVertexBufferStream} dest_param Other param which was bound.
+ * @override
+ */
+o3d.SkinEval.prototype.streamWasBound_ = function(
+    dest, semantic, semantic_index) {
+  this.skin.updateVertexShader();
+
+  if (this.skin.weights_field_ && this.skin.matrix_indices_field_) {
+    var weights_stream = dest.getVertexStream(o3d.Stream.INFLUENCE_WEIGHTS, 0);
+    var indices_stream = dest.getVertexStream(o3d.Stream.INFLUENCE_INDICES, 0);
+    if (!weights_stream || !indices_stream ||
+        weights_stream.field != this.skin.weights_field_ ||
+        indices_stream.field != this.skin.matrix_indices_field_) {
+      dest.setVertexStream(o3d.Stream.INFLUENCE_WEIGHTS, 0,
+          this.skin.weights_field_, 0);
+      dest.setVertexStream(o3d.Stream.INFLUENCE_INDICES, 0,
+          this.skin.matrix_indices_field_, 0);
+    }
+
+    var destParam = dest.getParam("boneToWorld3x4");
+    if (!destParam) {
+      destParam = dest.createParam("boneToWorld3x4", "ParamParamArray");
+    }
+    destParam.bind(this.getParam("boneToWorld3x4"));
+
+    destParam = dest.getParam("usingSkinShader");
+    if (!destParam) {
+      destParam = dest.createParam("usingSkinShader", "ParamFloat");
+    }
+    destParam.bind(this.getParam("usingSkinShader"));
+  }
+};
 
 /**
  * Multiplies input by weight, and adds with and returns into output.
@@ -299,14 +490,16 @@ o3d.SkinEval.prototype.multiplyAdd_ = function(input, weight, output) {
 };
 
 /**
+ * Initializes all the input and output streams for this mesh, but does no
+ * copying yet. You should follow with uninitStreams_ when you are done.
+ *
  * @param {o3d.Skin} skin The skin.
  * @private
  */
-o3d.SkinEval.prototype.doSkinning_ = function(skin) {
+o3d.SkinEval.prototype.initStreams_ = function(skin) {
   var ii, jj, ll, num_streams;
-  var influences_array = skin.influences;
 
-  var num_vertices = influences_array.length;
+  var num_vertices = this.skin.influences.length;
   // Update our inputs, lock all the inputs and outputs and check that we have
   // the same number of vertices as vertex influences.
   for (ii = 0, num_streams = 0; ii < this.vertex_streams_.length; ++ii) {
@@ -318,14 +511,14 @@ o3d.SkinEval.prototype.doSkinning_ = function(skin) {
         // Make sure our upstream streams are ready
         var input = source_param.inputConnection;
         if (input && input.isAClassName("ParamVertexBufferStream")) {
-          input.updateOutputs();  // will automatically mark us as valid.
+          input.owner_.updateStreams();  // will automatically mark us as valid.
         } else {
           // Mark source_param as valid so we don't evaluate a second time.
           // TODO(pathorn): Caching previous computed values.
         }
 
         var source_stream = source_param.stream;
-        if (source_stream.getMaxVertices() != num_vertices) {
+        if (source_stream.getMaxVertices_() != num_vertices) {
           // TODO: Change semantic below to semantic_name.
           this.gl.client.error_callback("SkinEval.doSkinning_: "
               + "stream " + source_stream.semantic + " index "
@@ -370,7 +563,7 @@ o3d.SkinEval.prototype.doSkinning_ = function(skin) {
                 + destination_param.className + " not ParamVertexBufferStream");
           }
           var destination_stream = destination_param.stream;
-          if (destination_stream.getMaxVertices() != num_vertices) {
+          if (destination_stream.getMaxVertices_() != num_vertices) {
             this.gl.client.error_callback("SkinEval.doSkinning_: "
                 + "stream " + destination_stream.semantic + " index "
                 + destination_stream.semanticIndex + " targeted by SkinEval '"
@@ -399,7 +592,41 @@ o3d.SkinEval.prototype.doSkinning_ = function(skin) {
     }
   }
 
-  // skin.
+  this.input_stream_infos_.length = num_streams;
+  this.output_stream_infos_.length = num_streams;
+};
+
+/**
+ * Saves the result of the skinning operation in the graphics hardware.
+ *
+ * @private
+ */
+o3d.SkinEval.prototype.uninitStreams_ = function() {
+  // Unlock any buffers that were locked during skinning
+  for (ii = 0; ii < this.input_stream_infos_.length; ++ii) {
+    this.input_stream_infos_[ii].uninit();
+  }
+  for (ii = 0; ii < this.output_stream_infos_.length; ++ii) {
+    var output_streams = this.output_stream_infos_[ii];
+    for (var jj = 0; jj < output_streams.length; ++jj) {
+      output_streams[jj].uninit();
+    }
+  }
+};
+
+/**
+ * Does skinning in software. Performs the actual matrix-point mulitplications
+ * and saves the result in all the output streams.
+ *
+ * @private
+ */
+o3d.SkinEval.prototype.doSkinning_ = function() {
+  this.initStreams_();
+
+  var ii, jj, ll;
+  var influences_array = this.skin.influences;
+  var num_vertices = influences_array.length;
+
   for (ii = 0; ii < num_vertices; ++ii) {
     var influences = influences_array[ii];
     if (influences.length) {
@@ -422,7 +649,7 @@ o3d.SkinEval.prototype.doSkinning_ = function(skin) {
       }
 
       // for each source, compute and copy to destination.
-      for (jj = 0; jj < num_streams; ++jj) {
+      for (jj = 0; jj < this.input_stream_infos_.length; ++jj) {
         var input_stream_info = this.input_stream_infos_[jj];
         input_stream_info.compute_function_(accumulated_matrix);
         var output_streams = this.output_stream_infos_[jj];
@@ -433,10 +660,14 @@ o3d.SkinEval.prototype.doSkinning_ = function(skin) {
       }
     }
   }
+
+  this.uninitStreams_();
 };
 
 /**
- * Updates the Bones.
+ * Updates the bones from this.matrices.
+ *
+ * @private
  */
 o3d.SkinEval.prototype.updateBones_ = function() {
   // Get our matrices.
@@ -498,19 +729,71 @@ o3d.SkinEval.prototype.updateBones_ = function() {
  * Updates the VertexBuffers bound to streams on this VertexSource.
  */
 o3d.SkinEval.prototype.updateStreams = function() {
-  this.updateBones_();
-  this.doSkinning_(this.skin);
-  var ii;
-  // Unlock any buffers that were locked during skinning
-  for (ii = 0; ii < this.input_stream_infos_.length; ++ii) {
-    this.input_stream_infos_[ii].uninit();
+  if (this.disableShader || !this.usingSkinShader ||
+      !this.skin.updateVertexShader()) {
+    this.updateBones_();
+    this.doSkinning_(this.skin);
+    this.usingSkinShader = 0.0;
   }
-  for (ii = 0; ii < this.output_stream_infos_.length; ++ii) {
-    var output_streams = this.output_stream_infos_[ii];
-    for (var jj = 0; jj < output_streams.length; ++jj) {
-      output_streams[jj].uninit();
+};
+
+/**
+ * Should be called on boneToWorld3x4's get value.
+ * Updates ParamArray for bones uniform sent to vertex shader.
+ *
+ * @param {ParamParamArrayOutput} param The array uniform parameter to update.
+ * @return {ParamArray} The array containing all of the float4 params.
+ */
+o3d.SkinEval.prototype.updateOutputs = function(param) {
+  this.updateBones_();
+  if (!this.bone_array_) {
+    this.bone_array_ = new o3d.ParamArray;
+    this.bone_array_.gl = this.gl;
+    var max_num_bones = o3d.SkinEval.getMaxNumBones(this);
+    this.bone_array_.resize(max_num_bones * 3, "ParamFloat4");
+    param.value = this.bone_array_;
+  }
+  var boneArray = this.bone_array_;
+  var ii, jj;
+  if (!this.disableShader && this.skin.updateVertexShader()) {
+    // Is this the first time the param has been read?
+    if (!this.usingSkinShader) {
+      // If so, we disable skinning in software.
+      this.usingSkinShader = 1.0;
+      // Copy the default positions of all vertex buffers.
+      this.initStreams_();
+      var num_vertices = this.skin.influences.length;
+      for (ii = 0; ii < this.input_stream_infos_.length; ++ii) {
+        var input_stream_info = this.input_stream_infos_[ii];
+        var output_streams = this.output_stream_infos_[ii];
+        for (jj = 0; jj < output_streams.length; ++jj) {
+          var values = input_stream_info.field_.getAt(0, num_vertices);
+          output_streams[jj].field_.setAt(0, values);
+        }
+      }
+      this.uninitStreams_();
+    }
+    var row;
+    for (ii = 0; ii < this.bones_.length; ++ii) {
+      var bone = this.bones_[ii];
+      row = boneArray.getParam(ii*3);
+      row.value[0] = bone[0][0];
+      row.value[1] = bone[1][0];
+      row.value[2] = bone[2][0];
+      row.value[3] = bone[3][0];
+      row = boneArray.getParam(ii*3 + 1);
+      row.value[0] = bone[0][1];
+      row.value[1] = bone[1][1];
+      row.value[2] = bone[2][1];
+      row.value[3] = bone[3][1];
+      row = boneArray.getParam(ii*3 + 2);
+      row.value[0] = bone[0][2];
+      row.value[1] = bone[1][2];
+      row.value[2] = bone[2][2];
+      row.value[3] = bone[3][2];
     }
   }
+  return boneArray;
 };
 
 /**

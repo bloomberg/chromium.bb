@@ -62,7 +62,9 @@ o3d.VertexSource.prototype.bindStream = function(
             dest_param.stream.field.className &&
         source_param.stream.field.numComponents ==
         dest_param.stream.field.numComponents) {
-      return dest_param.bind(source_param);
+      dest_param.bind(source_param);
+      source.streamWasBound_(this, semantic, semantic_index);
+      return true;
     }
   }
 
@@ -98,5 +100,16 @@ o3d.VertexSource.prototype.unbindStream = function(semantic, semantic_index) {
 o3d.VertexSource.prototype.getVertexStreamParam = function(
     semantic, semantic_index) {
   o3d.notImplemented();
+};
+
+/**
+ * Used by bindStream. Derived classes may override if needed.
+ *
+ * @param {o3d.VertexSource} dest VertexSource that bound to this VertexSource.
+ * @param {o3d.ParamVertexBufferStream} dest_param Other param which was bound.
+ * @protected
+ */
+o3d.VertexSource.prototype.streamWasBound_ = function(
+    dest, semantic, semantic_index) {
 };
 

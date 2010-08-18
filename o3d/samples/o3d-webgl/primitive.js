@@ -127,19 +127,20 @@ o3d.Primitive.prototype.render = function() {
       for (var semantic_index = 0;
            semantic_index < streams.length;
            ++semantic_index) {
-        var gl_index = semantic + semantic_index - 1;
-        var stream_param = streams[semantic_index];
+        var gl_index = o3d.Effect.reverseSemanticMap_[semantic][semantic_index];
+        var stream = streams[semantic_index].stream;
+        var field = stream.field;
+        var buffer = field.buffer;
 
+        var stream_param = streams[semantic_index];
         while (!stream_param.owner_.updateStreams &&
                stream_param.inputConnection) {
           stream_param = stream_param.inputConnection;
         }
         if (stream_param.owner_.updateStreams) {
+          // By now, stream_param should point to the SkinEval's streams.
           stream_param.owner_.updateStreams();  // Triggers updating.
         }
-        var stream = streams[semantic_index].stream;
-        var field = stream.field;
-        var buffer = field.buffer;
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer.gl_buffer_);
         this.gl.enableVertexAttribArray(gl_index);
