@@ -48,7 +48,6 @@
       'app/chromium_strings.grd',
       'app/generated_resources.grd',
       'app/google_chrome_strings.grd',
-      'app/policy/policy_templates.grd',
     ],
     'chrome_resources_grds': [
       # Data resources.
@@ -1794,6 +1793,61 @@
                   },
                 },
               },
+            }],
+          ],
+        },
+        {
+          # policy_templates has different inputs and outputs, so it can't use
+          # the rules of chrome_strings
+          'target_name': 'policy_templates',
+          'type': 'none',
+          'actions': [
+            {
+              'action_name': 'policy_templates',
+              'variables': {
+                'input_path': 'app/policy/policy_templates.grd',
+                'conditions': [
+                  ['branding=="Chrome"', {
+                    # TODO(mmoss) The .grd files look for _google_chrome, but for
+                    # consistency they should look for GOOGLE_CHROME_BUILD like C++.
+                    # Clean this up when Windows moves to gyp.
+                    'chrome_build': '_google_chrome',
+                  }, {  # else: branding!="Chrome"
+                    'chrome_build': '_chromium',
+                  }],
+                ],
+              },
+              'inputs': [
+                '<!@(<(grit_info_cmd) --inputs <(input_path))',
+              ],
+              'outputs': [
+                '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
+              ],
+              'action': [
+                '<@(grit_cmd)',
+                '-i', '<(input_path)', 'build',
+                '-o', '<(grit_out_dir)',
+                '-D', '<(chrome_build)'
+              ],
+              'conditions': [
+                ['chromeos==1', {
+                  'action': ['-D', 'chromeos'],
+                }],
+                ['use_titlecase_in_grd_files==1', {
+                  'action': ['-D', 'use_titlecase'],
+                }],
+              ],
+              'message': 'Generating policy templates from <(input_path)',
+            },
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '<(grit_out_dir)',
+            ],
+          },
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': ['../build/win/system.gyp:cygwin'],
             }],
           ],
         },
