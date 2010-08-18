@@ -4134,3 +4134,19 @@
    fun:_ZN10disk_cache10InFlightIO14InvokeCallbackEPNS_12BackgroundIOEb
    fun:_ZN10disk_cache12BackgroundIO13OnIOSignalledEv
 }
+{
+   bug_52552_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12browser_sync22SessionModelAssociator33AppendForeignSessionFromSpecificsEPKN7sync_pb16SessionSpecificsEPSt6vectorIP14ForeignSessionSaIS7_EE
+   fun:_ZN12browser_sync22SessionModelAssociator26AppendForeignSessionWithIDExPSt6vectorIP14ForeignSessionSaIS3_EEPN8sync_api15BaseTransactionE
+   fun:_ZN12browser_sync59ProfileSyncServiceSessionTest_WriteFilledSessionToNode_Test8TestBodyEv
+}
+{
+   bug_52552_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12browser_sync22SessionModelAssociator33AppendForeignSessionFromSpecificsEPKN7sync_pb16SessionSpecificsEPSt6vectorIP14ForeignSessionSaIS7_EE
+   fun:_ZN12browser_sync22SessionModelAssociator27GetSessionDataFromSyncModelEPSt6vectorIP14ForeignSessionSaIS3_EE
+   fun:_ZN12browser_sync60ProfileSyncServiceSessionTest_WriteForeignSessionToNode_Test8TestBodyEv
+}
