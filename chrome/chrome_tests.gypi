@@ -1630,6 +1630,7 @@
         'browser/first_run/first_run_browsertest.cc',
         'browser/geolocation/access_token_store_browsertest.cc',
         'browser/geolocation/geolocation_browsertest.cc',
+        'browser/idbbindingutilities_browsertest.cc',
         'browser/gtk/view_id_util_browsertest.cc',
         'browser/in_process_webkit/indexed_db_browsertest.cc',
         'browser/net/cookie_policy_browsertest.cc',

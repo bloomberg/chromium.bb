@@ -14,6 +14,7 @@
 #include "printing/native_metafile.h"
 
 class GURL;
+class SerializedScriptValue;
 class SkBitmap;
 
 namespace gfx {
@@ -67,6 +68,25 @@ class UtilityThread : public ChildThread {
     printing::NativeMetafile* metafile,
     int* highest_rendered_page_number);
 #endif   // defined(OS_WIN)
+
+  // IPC for extracting IDBKeys from SerializedScriptValues, used by IndexedDB.
+  void OnIDBKeysFromValuesAndKeyPath(
+      int id,
+      const std::vector<SerializedScriptValue>& serialized_script_values,
+      const string16& idb_key_path);
+
+  // IPC to notify we'll be running in batch mode instead of quitting after
+  // any of the IPCs above, we'll only quit during OnBatchModeFinished().
+  void OnBatchModeStarted();
+
+  // IPC to notify batch mode has finished and we should now quit.
+  void OnBatchModeFinished();
+
+  // Releases the process if we are not (or no longer) in batch mode.
+  void ReleaseProcessIfNeeded();
+
+  // True when we're running in batch mode.
+  bool batch_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThread);
 };

@@ -18,10 +18,12 @@ UtilityProcessHost::UtilityProcessHost(ResourceDispatcherHost* rdh,
                                        ChromeThread::ID client_thread_id)
     : BrowserChildProcessHost(UTILITY_PROCESS, rdh),
       client_(client),
-      client_thread_id_(client_thread_id) {
+      client_thread_id_(client_thread_id),
+      is_batch_mode_(false) {
 }
 
 UtilityProcessHost::~UtilityProcessHost() {
+  DCHECK(!is_batch_mode_);
 }
 
 bool UtilityProcessHost::StartExtensionUnpacker(const FilePath& extension) {
@@ -59,11 +61,37 @@ bool UtilityProcessHost::StartImageDecoding(
   return true;
 }
 
+bool UtilityProcessHost::StartIDBKeysFromValuesAndKeyPath(
+    int id, const std::vector<SerializedScriptValue>& serialized_values,
+    const string16& key_path)  {
+  if (!StartProcess(FilePath()))
+    return false;
+
+  Send(new UtilityMsg_IDBKeysFromValuesAndKeyPath(
+      id, serialized_values, key_path));
+  return true;
+}
+
+bool UtilityProcessHost::StartBatchMode()  {
+  CHECK(!is_batch_mode_);
+  is_batch_mode_ = StartProcess(FilePath());
+  Send(new UtilityMsg_BatchMode_Started());
+  return is_batch_mode_;
+}
+
+void UtilityProcessHost::EndBatchMode()  {
+  CHECK(is_batch_mode_);
+  is_batch_mode_ = false;
+  Send(new UtilityMsg_BatchMode_Finished());
+}
+
 FilePath UtilityProcessHost::GetUtilityProcessCmd() {
   return GetChildPath(true);
 }
 
 bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
+  if (is_batch_mode_)
+    return true;
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
   set_name(L"utility process");
@@ -159,5 +187,9 @@ void UtilityProcessHost::Client::OnMessageReceived(
                         Client::OnDecodeImageSucceeded)
     IPC_MESSAGE_HANDLER(UtilityHostMsg_DecodeImage_Failed,
                         Client::OnDecodeImageFailed)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded,
+                        Client::OnIDBKeysFromValuesAndKeyPathSucceeded)
+    IPC_MESSAGE_HANDLER(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,
+                        Client::OnIDBKeysFromValuesAndKeyPathFailed)
   IPC_END_MESSAGE_MAP_EX()
 }

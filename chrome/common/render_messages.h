@@ -23,7 +23,7 @@
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/extensions/extension_extent.h" // used in struct
 #include "chrome/common/font_descriptor_mac.h"
-#include "chrome/common/indexed_db_key.h"              // used in struct
+#include "chrome/common/indexed_db_param_traits.h"
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/renderer_preferences.h"        // used in struct
@@ -75,8 +75,6 @@ struct WebAccessibility;
 
 struct EditCommand;
 class ExtensionExtent;
-class IndexedDBKey;
-class SerializedScriptValue;
 
 class SkBitmap;
 class URLPattern;
@@ -1497,21 +1495,7 @@ struct ParamTraits<SyncLoadResult> {
   }
 };
 
-template <>
-struct ParamTraits<SerializedScriptValue> {
-  typedef SerializedScriptValue param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
-};
 
-template <>
-struct ParamTraits<IndexedDBKey> {
-  typedef IndexedDBKey param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
-};
 
 // Traits for FormData structure to pack/unpack.
 template <>

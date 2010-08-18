@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/extensions/update_manifest.h"
+#include "chrome/common/indexed_db_param_traits.h"
 #include "ipc/ipc_message_utils.h"
 
 namespace IPC {

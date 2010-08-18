@@ -41,6 +41,7 @@
 // Substitution map for l10n messages.
 typedef std::map<std::string, std::string> SubstitutionMap;
 
+class SerializedScriptValue;
 class SkBitmap;
 struct ThumbnailScore;
 class WebCursor;

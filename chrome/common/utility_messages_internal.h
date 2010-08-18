@@ -48,6 +48,20 @@ IPC_BEGIN_MESSAGES(Utility)
                        gfx::Rect,                // Render Area
                        int,                      // DPI
                        std::vector<printing::PageRange>)
+
+  // Tell the utility process to extract the given IDBKeyPath from the
+  // SerializedScriptValue vector and reply with the corresponding IDBKeys.
+  IPC_MESSAGE_CONTROL3(UtilityMsg_IDBKeysFromValuesAndKeyPath,
+                       int,     // id
+                       std::vector<SerializedScriptValue>,
+                       string16) // IDBKeyPath
+
+  // Tells the utility process that it's running in batch mode.
+  IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Started)
+
+  // Tells the utility process that it can shutdown.
+  IPC_MESSAGE_CONTROL0(UtilityMsg_BatchMode_Finished)
+
 IPC_END_MESSAGES(Utility)
 
 //------------------------------------------------------------------------------
@@ -110,5 +124,16 @@ IPC_BEGIN_MESSAGES(UtilityHost)
   IPC_SYNC_MESSAGE_CONTROL1_0(UtilityHostMsg_PreCacheFont,
                               LOGFONT /* font data */)
 #endif  // defined(OS_WIN)
+
+  // Reply when the utility process has succeeded in obtaining the value for
+  // IDBKeyPath.
+  IPC_MESSAGE_CONTROL2(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Succeeded,
+                       int /* id */,
+                       std::vector<IndexedDBKey> /* value */)
+
+  // Reply when the utility process has failed in obtaining the value for
+  // IDBKeyPath.
+  IPC_MESSAGE_CONTROL1(UtilityHostMsg_IDBKeysFromValuesAndKeyPath_Failed,
+                       int /* id */)
 
 IPC_END_MESSAGES(UtilityHost)

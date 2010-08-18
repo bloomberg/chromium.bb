@@ -279,6 +279,8 @@
         'ftp_directory_listing_response_delegate.h',
         'glue_serialize.cc',
         'glue_serialize.h',
+        'idb_bindings.cc',
+        'idb_bindings.h',
         'image_decoder.cc',
         'image_decoder.h',
         'image_resource_fetcher.cc',
