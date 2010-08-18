@@ -72,7 +72,7 @@ fi
 
 echo "translating x8664 $1"
 
-${LLC} ${LLC_X8664_FLAGS[@]} -f $1 -o asm_combined
+${LLC} ${LLC_X8664_FLAGS[@]} $1 -o asm_combined
 
 ${SEL_LDR} -d -- ${AS} ${AS_X8664_FLAGS[@]} asm_combined -o obj_combined
 
