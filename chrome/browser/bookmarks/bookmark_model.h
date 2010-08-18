@@ -315,13 +315,6 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // combobox of most recently modified groups.
   void ResetDateGroupModified(const BookmarkNode* node);
 
-  // TODO(munjal): Remove wstring overload once all code is moved to string16.
-#if !defined(WCHAR_T_IS_UTF16)
-  void GetBookmarksWithTitlesMatching(
-      const std::wstring& text,
-      size_t max_count,
-      std::vector<bookmark_utils::TitleMatch>* matches);
-#endif
   void GetBookmarksWithTitlesMatching(
       const string16& text,
       size_t max_count,

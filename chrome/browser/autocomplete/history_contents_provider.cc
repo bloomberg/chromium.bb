@@ -267,8 +267,8 @@ void HistoryContentsProvider::QueryBookmarks(const AutocompleteInput& input) {
 
   TimeTicks start_time = TimeTicks::Now();
   std::vector<bookmark_utils::TitleMatch> matches;
-  bookmark_model->GetBookmarksWithTitlesMatching(input.text(), kMaxMatches,
-                                                 &matches);
+  bookmark_model->GetBookmarksWithTitlesMatching(WideToUTF16Hack(input.text()),
+                                                 kMaxMatches, &matches);
   for (size_t i = 0; i < matches.size(); ++i)
     AddBookmarkTitleMatchToResults(matches[i]);
   UMA_HISTOGRAM_TIMES("Omnibox.QueryBookmarksTime",

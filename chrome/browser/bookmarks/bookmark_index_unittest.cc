@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,8 @@ class BookmarkIndexTest : public testing::Test {
   void ExpectMatches(const std::wstring& query,
                      const std::vector<std::wstring> expected_titles) {
     std::vector<bookmark_utils::TitleMatch> matches;
-    model_->GetBookmarksWithTitlesMatching(query, 1000, &matches);
+    model_->GetBookmarksWithTitlesMatching(WideToUTF16Hack(query), 1000,
+                                           &matches);
     ASSERT_EQ(expected_titles.size(), matches.size());
     for (size_t i = 0; i < expected_titles.size(); ++i) {
       bool found = false;
@@ -82,7 +83,8 @@ class BookmarkIndexTest : public testing::Test {
   void ExpectMatchPositions(const std::wstring& query,
                             const Snippet::MatchPositions& expected_positions) {
     std::vector<bookmark_utils::TitleMatch> matches;
-    model_->GetBookmarksWithTitlesMatching(query, 1000, &matches);
+    model_->GetBookmarksWithTitlesMatching(WideToUTF16Hack(query), 1000,
+                                           &matches);
     ASSERT_EQ(1U, matches.size());
     const bookmark_utils::TitleMatch& match = matches[0];
     ASSERT_EQ(expected_positions.size(), match.match_positions.size());
@@ -197,7 +199,7 @@ TEST_F(BookmarkIndexTest, HonorMax) {
   AddBookmarksWithTitles(input, ARRAYSIZE_UNSAFE(input));
 
   std::vector<bookmark_utils::TitleMatch> matches;
-  model_->GetBookmarksWithTitlesMatching(L"ABc", 1, &matches);
+  model_->GetBookmarksWithTitlesMatching(ASCIIToUTF16("ABc"), 1, &matches);
   EXPECT_EQ(1U, matches.size());
 }
 
@@ -208,7 +210,7 @@ TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
                                           GURL("http://www.google.com"));
 
   std::vector<bookmark_utils::TitleMatch> matches;
-  model_->GetBookmarksWithTitlesMatching(L"i", 100, &matches);
+  model_->GetBookmarksWithTitlesMatching(ASCIIToUTF16("i"), 100, &matches);
   ASSERT_EQ(1U, matches.size());
   EXPECT_TRUE(matches[0].node == n1);
   EXPECT_TRUE(matches[0].match_positions.empty());
@@ -275,7 +277,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
 
   // Populate match nodes.
   std::vector<bookmark_utils::TitleMatch> matches;
-  model->GetBookmarksWithTitlesMatching(L"google", 4, &matches);
+  model->GetBookmarksWithTitlesMatching(ASCIIToUTF16("google"), 4, &matches);
 
   // The resulting order should be:
   // 1. Google (google.com) 100
@@ -290,7 +292,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
 
   matches.clear();
   // Select top two matches.
-  model->GetBookmarksWithTitlesMatching(L"google", 2, &matches);
+  model->GetBookmarksWithTitlesMatching(ASCIIToUTF16("google"), 2, &matches);
 
   EXPECT_EQ(2, static_cast<int>(matches.size()));
   EXPECT_EQ(data[0].url, matches[0].node->GetURL());

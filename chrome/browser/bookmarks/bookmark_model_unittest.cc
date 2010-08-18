@@ -13,6 +13,7 @@
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -218,7 +219,7 @@ TEST_F(BookmarkModelTest, AddGroup) {
 
 TEST_F(BookmarkModelTest, RemoveURL) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  const std::wstring title(L"foo");
+  const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
   model.AddURL(root, 0, title, url);
   ClearCounts();
@@ -234,12 +235,12 @@ TEST_F(BookmarkModelTest, RemoveURL) {
 
 TEST_F(BookmarkModelTest, RemoveGroup) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  const BookmarkNode* group = model.AddGroup(root, 0, L"foo");
+  const BookmarkNode* group = model.AddGroup(root, 0, ASCIIToUTF16("foo"));
 
   ClearCounts();
 
   // Add a URL as a child.
-  const std::wstring title(L"foo");
+  const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
   model.AddURL(group, 0, title, url);
 
@@ -272,7 +273,7 @@ TEST_F(BookmarkModelTest, SetTitle) {
 
 TEST_F(BookmarkModelTest, SetURL) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  const std::wstring title(L"foo");
+  const string16 title(ASCIIToUTF16("foo"));
   GURL url("http://foo.com");
   const BookmarkNode* node = model.AddURL(root, 0, title, url);
 
@@ -287,10 +288,10 @@ TEST_F(BookmarkModelTest, SetURL) {
 
 TEST_F(BookmarkModelTest, Move) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
-  std::wstring title(L"foo");
+  const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
   const BookmarkNode* node = model.AddURL(root, 0, title, url);
-  const BookmarkNode* group1 = model.AddGroup(root, 0, L"foo");
+  const BookmarkNode* group1 = model.AddGroup(root, 0, ASCIIToUTF16("foo"));
   ClearCounts();
 
   model.Move(node, group1, 0);
@@ -370,7 +371,7 @@ TEST_F(BookmarkModelTest, Copy) {
 TEST_F(BookmarkModelTest, ParentForNewNodes) {
   ASSERT_EQ(model.GetBookmarkBarNode(), model.GetParentForNewNodes());
 
-  const std::wstring title(L"foo");
+  const string16 title(ASCIIToUTF16("foo"));
   const GURL url("http://foo.com");
 
   model.AddURL(model.other_node(), 0, title, url);
@@ -380,9 +381,10 @@ TEST_F(BookmarkModelTest, ParentForNewNodes) {
 // Make sure recently modified stays in sync when adding a URL.
 TEST_F(BookmarkModelTest, MostRecentlyModifiedGroups) {
   // Add a group.
-  const BookmarkNode* group = model.AddGroup(model.other_node(), 0, L"foo");
+  const BookmarkNode* group = model.AddGroup(model.other_node(), 0,
+                                             ASCIIToUTF16("foo"));
   // Add a URL to it.
-  model.AddURL(group, 0, L"blah", GURL("http://foo.com"));
+  model.AddURL(group, 0, ASCIIToUTF16("blah"), GURL("http://foo.com"));
 
   // Make sure group is in the most recently modified.
   std::vector<const BookmarkNode*> most_recent_groups =
@@ -406,19 +408,19 @@ TEST_F(BookmarkModelTest, MostRecentlyAddedEntries) {
   Time base_time = Time::Now();
   BookmarkNode* n1 = AsMutable(model.AddURL(model.GetBookmarkBarNode(),
                                   0,
-                                  L"blah",
+                                  ASCIIToUTF16("blah"),
                                   GURL("http://foo.com/0")));
   BookmarkNode* n2 = AsMutable(model.AddURL(model.GetBookmarkBarNode(),
                                   1,
-                                  L"blah",
+                                  ASCIIToUTF16("blah"),
                                   GURL("http://foo.com/1")));
   BookmarkNode* n3 = AsMutable(model.AddURL(model.GetBookmarkBarNode(),
                                   2,
-                                  L"blah",
+                                  ASCIIToUTF16("blah"),
                                   GURL("http://foo.com/2")));
   BookmarkNode* n4 = AsMutable(model.AddURL(model.GetBookmarkBarNode(),
                                   3,
-                                  L"blah",
+                                  ASCIIToUTF16("blah"),
                                   GURL("http://foo.com/3")));
   n1->set_date_added(base_time + TimeDelta::FromDays(4));
   n2->set_date_added(base_time + TimeDelta::FromDays(3));
@@ -450,9 +452,9 @@ TEST_F(BookmarkModelTest, GetMostRecentlyAddedNodeForURL) {
   Time base_time = Time::Now();
   const GURL url("http://foo.com/0");
   BookmarkNode* n1 = AsMutable(model.AddURL(
-      model.GetBookmarkBarNode(), 0, L"blah", url));
+      model.GetBookmarkBarNode(), 0, ASCIIToUTF16("blah"), url));
   BookmarkNode* n2 = AsMutable(model.AddURL(
-      model.GetBookmarkBarNode(), 1, L"blah", url));
+      model.GetBookmarkBarNode(), 1, ASCIIToUTF16("blah"), url));
   n1->set_date_added(base_time + TimeDelta::FromDays(4));
   n2->set_date_added(base_time + TimeDelta::FromDays(3));
 
@@ -467,8 +469,8 @@ TEST_F(BookmarkModelTest, GetMostRecentlyAddedNodeForURL) {
 // Makes sure GetBookmarks removes duplicates.
 TEST_F(BookmarkModelTest, GetBookmarksWithDups) {
   const GURL url("http://foo.com/0");
-  model.AddURL(model.GetBookmarkBarNode(), 0, L"blah", url);
-  model.AddURL(model.GetBookmarkBarNode(), 1, L"blah", url);
+  model.AddURL(model.GetBookmarkBarNode(), 0, ASCIIToUTF16("blah"), url);
+  model.AddURL(model.GetBookmarkBarNode(), 1, ASCIIToUTF16("blah"), url);
 
   std::vector<GURL> urls;
   model.GetBookmarks(&urls);
@@ -514,7 +516,7 @@ TEST_F(BookmarkModelTest, NotifyURLsStarred) {
   StarredListener listener;
   const GURL url("http://foo.com/0");
   const BookmarkNode* n1 = model.AddURL(
-      model.GetBookmarkBarNode(), 0, L"blah", url);
+      model.GetBookmarkBarNode(), 0, ASCIIToUTF16("blah"), url);
 
   // Starred notification should be sent.
   EXPECT_EQ(1, listener.notification_count_);
@@ -527,7 +529,7 @@ TEST_F(BookmarkModelTest, NotifyURLsStarred) {
   // Add another bookmark for the same URL. This should not send any
   // notification.
   const BookmarkNode* n2 = model.AddURL(
-      model.GetBookmarkBarNode(), 1, L"blah", url);
+      model.GetBookmarkBarNode(), 1, ASCIIToUTF16("blah"), url);
 
   EXPECT_EQ(0, listener.notification_count_);
 

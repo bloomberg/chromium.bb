@@ -488,14 +488,6 @@ void BookmarkModel::ResetDateGroupModified(const BookmarkNode* node) {
   SetDateGroupModified(node, Time());
 }
 
-#if !defined(WCHAR_T_IS_UTF16)
-void BookmarkModel::GetBookmarksWithTitlesMatching(
-    const std::wstring& text,
-    size_t max_count,
-    std::vector<bookmark_utils::TitleMatch>* matches) {
-  GetBookmarksWithTitlesMatching(WideToUTF16(text), max_count, matches);
-}
-#endif
 void BookmarkModel::GetBookmarksWithTitlesMatching(
     const string16& text,
     size_t max_count,
@@ -503,7 +495,8 @@ void BookmarkModel::GetBookmarksWithTitlesMatching(
   if (!loaded_)
     return;
 
-  index_->GetBookmarksWithTitlesMatching(UTF16ToWide(text), max_count, matches);
+  index_->GetBookmarksWithTitlesMatching(UTF16ToWideHack(text), max_count,
+                                         matches);
 }
 
 void BookmarkModel::ClearStore() {
