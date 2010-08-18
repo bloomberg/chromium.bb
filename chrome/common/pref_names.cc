@@ -763,12 +763,6 @@ const char kShouldShowWelcomePage[] = "show-welcome-page";
 // correct Google domain/country code for whatever location the user is in.
 const char kLastKnownGoogleURL[] = "browser.last_known_google_url";
 
-// String containing the last prompted Google URL to the user.
-// If the user is using .x TLD for Google URL and gets prompted about .y TLD
-// for Google URL, and says "no", we should leave the search engine set to .x
-// but not prompt again until the domain changes away from .y.
-const char kLastPromptedGoogleURL[] = "browser.last_prompted_google_url";
-
 // String containing the last known intranet redirect URL, if any.  See
 // intranet_redirect_detector.h for more information.
 const char kLastKnownIntranetRedirectOrigin[] = "";

@@ -277,7 +277,6 @@ extern const char kShouldUseMinimalFirstRunBubble[];
 extern const char kShouldShowWelcomePage[];
 
 extern const char kLastKnownGoogleURL[];
-extern const char kLastPromptedGoogleURL[];
 extern const char kLastKnownIntranetRedirectOrigin[];
 
 extern const char kCountryIDAtInstall[];

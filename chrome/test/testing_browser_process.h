@@ -19,8 +19,6 @@
 #include "base/string_util.h"
 #include "base/waitable_event.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/google_url_tracker.h"
-#include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_service.h"
 
 class IOThread;
@@ -30,8 +28,7 @@ class TestingBrowserProcess : public BrowserProcess {
   TestingBrowserProcess()
       : shutdown_event_(new base::WaitableEvent(true, false)),
         module_ref_count_(0),
-        app_locale_("en"),
-        pref_service_(NULL) {
+        app_locale_("en") {
   }
 
   virtual ~TestingBrowserProcess() {
@@ -75,7 +72,7 @@ class TestingBrowserProcess : public BrowserProcess {
   }
 
   virtual PrefService* local_state() {
-    return pref_service_;
+    return NULL;
   }
 
   virtual IconManager* icon_manager() {
@@ -111,7 +108,7 @@ class TestingBrowserProcess : public BrowserProcess {
   }
 
   virtual GoogleURLTracker* google_url_tracker() {
-    return google_url_tracker_.get();
+    return NULL;
   }
 
   virtual IntranetRedirectDetector* intranet_redirect_detector() {
@@ -164,22 +161,12 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual void SetIPCLoggingEnabled(bool enable) {}
 #endif
 
-  void SetPrefService(PrefService* pref_service) {
-    pref_service_ = pref_service;
-  }
-  void SetGoogleURLTracker(GoogleURLTracker* google_url_tracker) {
-    google_url_tracker_.reset(google_url_tracker);
-  }
-
  private:
   NotificationService notification_service_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
   unsigned int module_ref_count_;
   scoped_ptr<Clipboard> clipboard_;
   std::string app_locale_;
-
-  PrefService* pref_service_;
-  scoped_ptr<GoogleURLTracker> google_url_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

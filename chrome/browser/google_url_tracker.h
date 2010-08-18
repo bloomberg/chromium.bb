@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,17 +13,11 @@
 #include "chrome/common/net/url_fetcher.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/network_change_notifier.h"
 
-class InfoBarDelegate;
-class NavigationController;
 class PrefService;
-class TabContents;
-class TemplateURL;
 
-// This object is responsible for checking the Google URL once per network
-// change, and if necessary prompting the user to see if they want to change to
-// using it.  The current and last prompted values are saved to prefs.
+// This object is responsible for updating the Google URL at most once per run,
+// and tracking the currently known value, which is also saved to a pref.
 //
 // Most consumers should only call GoogleURL(), which is guaranteed to
 // synchronously return a value at all times (even during startup or in unittest
@@ -35,17 +29,8 @@ class TemplateURL;
 // performed (ever) unless at least one consumer registers interest by calling
 // RequestServerCheck().
 class GoogleURLTracker : public URLFetcher::Delegate,
-                         public NotificationObserver,
-                         public net::NetworkChangeNotifier::Observer {
+                         public NotificationObserver {
  public:
-  class InfoBarDelegateFactory {
-   public:
-    virtual ~InfoBarDelegateFactory() {}
-    virtual InfoBarDelegate* CreateInfoBar(TabContents* tab_contents,
-                                           GoogleURLTracker* google_url_tracker,
-                                           const GURL& new_google_url);
-  };
-
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->google_url_tracker_.  No code other than the
   // GoogleURLTracker itself should actually use
@@ -54,7 +39,7 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   // anyway).
   GoogleURLTracker();
 
-  virtual ~GoogleURLTracker();
+  ~GoogleURLTracker();
 
   // Returns the current Google URL.  This will return a valid URL even in
   // unittest mode.
@@ -63,38 +48,27 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   static GURL GoogleURL();
 
   // Requests that the tracker perform a server check to update the Google URL
-  // as necessary.  This will happen at most once per network change, not
-  // sooner than five seconds after startup (checks requested before that time
-  // will occur then; checks requested afterwards will occur immediately, if
-  // no other checks have been made during this run).
+  // as necessary.  This will happen at most once per run, not sooner than five
+  // seconds after startup (checks requested before that time will occur then;
+  // checks requested afterwards will occur immediately, if no other checks have
+  // been made during this run).
   //
   // In unittest mode, this function does nothing.
   static void RequestServerCheck();
 
   static void RegisterPrefs(PrefService* prefs);
 
-  // Notifies the tracker that the user has started a Google search.
-  // If prompting is necessary, we then listen for the subsequent
-  // NAV_ENTRY_PENDING notification to get the appropriate NavigationController.
-  // When the load commits, we'll show the infobar.
-  static void GoogleURLSearchCommitted();
-
   static const char kDefaultGoogleHomepage[];
-  static const char kSearchDomainCheckURL[];
-
-  // Methods called from InfoBar delegate.
-  void AcceptGoogleURL(const GURL& google_url);
-  void InfoBarClosed();
-  void RedoSearch();
-
-  NavigationController* controller() const { return controller_; }
 
  private:
-  friend class GoogleURLTrackerTest;
+  FRIEND_TEST_ALL_PREFIXES(GoogleURLTrackerTest, CheckAndConvertURL);
+
+  // Determines if |url| is an appropriate source for a new Google base URL, and
+  // update |base_url| to the appropriate base URL if so.  Returns whether the
+  // check succeeded (and thus whether |base_url| was actually updated).
+  static bool CheckAndConvertToGoogleBaseURL(const GURL& url, GURL* base_url);
 
   // Registers consumer interest in getting an updated URL from the server.
-  // It will be notified as NotificationType::GOOGLE_URL_UPDATED, so the
-  // consumer should observe this notification before calling this.
   void SetNeedToFetch();
 
   // Called when the five second startup sleep has finished.  Runs any pending
@@ -118,22 +92,10 @@ class GoogleURLTracker : public URLFetcher::Delegate,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // NetworkChangeNotifier::Observer
-  virtual void OnIPAddressChanged();
-
-  void SearchCommitted();
-
-  void ShowGoogleURLInfoBarIfNecessary(TabContents* tab_contents);
-
   NotificationRegistrar registrar_;
-  // TODO(ukai): GoogleURLTracker should track google domain (e.g. google.co.uk)
-  // rather than URL (e.g. http://www.google.co.uk/), so that user could
-  // configure to use https in search engine templates.
   GURL google_url_;
-  GURL fetched_google_url_;
-  ScopedRunnableMethodFactory<GoogleURLTracker> runnable_method_factory_;
+  ScopedRunnableMethodFactory<GoogleURLTracker> fetcher_factory_;
   scoped_ptr<URLFetcher> fetcher_;
-  int fetcher_id_;
   bool in_startup_sleep_;  // True if we're in the five-second "no fetching"
                            // period that begins at browser start.
   bool already_fetched_;   // True if we've already fetched a URL once this run;
@@ -141,19 +103,10 @@ class GoogleURLTracker : public URLFetcher::Delegate,
   bool need_to_fetch_;     // True if a consumer actually wants us to fetch an
                            // updated URL.  If this is never set, we won't
                            // bother to fetch anything.
-                           // Consumers should observe
-                           // NotificationType::GOOGLE_URL_UPDATED.
   bool request_context_available_;
                            // True when the profile has been loaded and the
                            // default request context created, so we can
                            // actually do the fetch with the right data.
-  bool need_to_prompt_;    // True if the last fetched Google URL is not
-                           // matched with current user's default Google URL
-                           // nor the last prompted Google URL.
-  NavigationController* controller_;
-  scoped_ptr<InfoBarDelegateFactory> infobar_factory_;
-  InfoBarDelegate* infobar_;
-  GURL search_url_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLTracker);
 };
