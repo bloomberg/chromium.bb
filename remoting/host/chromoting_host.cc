@@ -255,11 +255,6 @@ void ChromotingHost::DoShutdown() {
     jingle_client_->Close();
   }
 
-  // Stop the heartbeat sender.
-  if (heartbeat_sender_) {
-    heartbeat_sender_->Stop();
-  }
-
   // Lastly call the shutdown task.
   if (shutdown_task_.get()) {
     shutdown_task_->Run();

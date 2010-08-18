@@ -109,7 +109,6 @@ void ServiceProcessControl::ConnectInternal() {
   base::Thread* io_thread = g_browser_process->io_thread();
 
   // TODO(hclam): Determine the the channel id from profile and type.
-  // TODO(hclam): Handle error connecting to channel.
   const std::string channel_id = GetServiceProcessChannelName(type_);
   channel_.reset(
       new IPC::SyncChannel(channel_id, IPC::Channel::MODE_CLIENT, this, NULL,
@@ -121,10 +120,8 @@ void ServiceProcessControl::ConnectInternal() {
 void ServiceProcessControl::Launch(Task* task) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (channel_.get()) {
-    if (task) {
-      task->Run();
-      delete task;
-    }
+    task->Run();
+    delete task;
     return;
   }
 
@@ -165,7 +162,7 @@ void ServiceProcessControl::OnProcessLaunched(Task* task) {
     // After we have successfully created the service process we try to connect
     // to it. The launch task is transfered to a connect task.
     ConnectInternal();
-  } else if (task) {
+  } else {
     // If we don't have process handle that means launching the service process
     // has failed.
     task->Run();
@@ -186,8 +183,6 @@ void ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
 
 void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (!connect_done_task_.get())
-    return;
   connect_done_task_->Run();
   connect_done_task_.reset();
 }
@@ -195,8 +190,6 @@ void ServiceProcessControl::OnChannelConnected(int32 peer_pid) {
 void ServiceProcessControl::OnChannelError() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   channel_.reset();
-  if (!connect_done_task_.get())
-    return;
   connect_done_task_->Run();
   connect_done_task_.reset();
 }

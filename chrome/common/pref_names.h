@@ -353,9 +353,6 @@ extern const char kCloudPrintXMPPAuthToken[];
 extern const char kCloudPrintEmail[];
 extern const char kCloudPrintPrintSystemSettings[];
 
-extern const char kRemotingHasSetupCompleted[];
-extern const char kRemotingHostEnabled[];
-
 extern const char kNoProxyServer[];
 extern const char kProxyAutoDetect[];
 extern const char kProxyServer[];

@@ -1965,7 +1965,6 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar, true);
   prefs->RegisterBooleanPref(prefs::kUseVerticalTabs, false);
   prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
-  prefs->RegisterBooleanPref(prefs::kRemotingHasSetupCompleted, false);
 }
 
 // static

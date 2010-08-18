@@ -44,7 +44,8 @@ html[os='mac'] input[type='submit'] {
 </style>
 <script>
   function setShowFirstTimeSetupSummary() {
-    // TODO(hclam): Show the information for the first time setup.
+    document.getElementById("summary").innerHTML =
+      templateData['firsttimesetupsummary'];
   }
   function setMessage(msg) {
     document.getElementById('msgContent').innerHTML = msg;
@@ -56,7 +57,8 @@ html[os='mac'] input[type='submit'] {
 </head>
 <body i18n-values=".style.fontFamily:fontfamily">
   <div class="remoting-header" i18n-content="success"></div>
-  <div id="msgContent">Setup completed.</div>
+  <div id="msgContent"></div>
+  <div id="summary" i18n-content="setupsummary"></div>
   <div class="remoting-footer">
     <input id="close" type="submit" i18n-values="value:okay"
            onclick='chrome.send("DialogClose", [""])' />
