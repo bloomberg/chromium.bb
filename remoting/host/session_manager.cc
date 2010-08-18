@@ -381,6 +381,11 @@ void SessionManager::DoEncode(
     scoped_refptr<CaptureData> capture_data) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
+  if (!capture_data->dirty_rects().size()) {
+    capture_loop_->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &SessionManager::DoFinishEncode));
+  }
+
   // TODO(hclam): Enable |force_refresh| if a new client was
   // added.
   encoder_->Encode(capture_data, false,
