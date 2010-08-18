@@ -69,6 +69,7 @@
  *
  * - verbose builtin that is like FcPatternPrint
  * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
+ * - allow indexing in +, -, ? filtering?
  * - conditional/filtering/deletion on binding (using '(w)'/'(s)'/'(=)' notation)
  */
 
@@ -436,6 +437,7 @@ interpret_filter_in (FcFormatContext *c,
 
     do
     {
+	/* XXX binding */
 	if (!read_word (c) ||
 	    !FcObjectSetAdd (os, (const char *) c->word))
 	{
@@ -636,6 +638,7 @@ interpret_enumerate (FcFormatContext *c,
 	    FcPatternDel (subpat, os->objects[0]);
 	    if ((lang = FcStrListNext (lang_strs)))
 	    {
+		/* XXX binding? */
 		FcPatternAddString (subpat, os->objects[0], lang);
 		done = FcFalse;
 	    }
@@ -654,6 +657,7 @@ interpret_enumerate (FcFormatContext *c,
 		if (FcResultMatch ==
 		    FcPatternGet (pat, os->objects[i], idx, &v))
 		{
+		    /* XXX binding */
 		    FcPatternAdd (subpat, os->objects[i], v, FcFalse);
 		    done = FcFalse;
 		}
@@ -788,6 +792,8 @@ cescape (FcFormatContext *c,
 	 const FcChar8   *str,
 	 FcStrBuf        *buf)
 {
+    /* XXX escape \n etc? */
+
     while(*str)
     {
 	switch (*str)
@@ -825,6 +831,8 @@ xmlescape (FcFormatContext *c,
 	   const FcChar8   *str,
 	   FcStrBuf        *buf)
 {
+    /* XXX escape \n etc? */
+
     while(*str)
     {
 	switch (*str)
