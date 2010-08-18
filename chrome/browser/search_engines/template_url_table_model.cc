@@ -18,6 +18,7 @@
 #include "gfx/codec/png_codec.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 // Group IDs used by TemplateURLTableModel.
 static const int kMainGroupID = 0;

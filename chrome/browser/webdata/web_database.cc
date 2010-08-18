@@ -22,7 +22,9 @@
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/codec/png_codec.h"
+#include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 // Encryptor is now in place for Windows and Mac.  The Linux implementation
 // currently obfuscates only.  Mac Encryptor implementation can block the

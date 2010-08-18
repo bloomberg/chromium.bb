@@ -19,6 +19,7 @@
 #include "grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 

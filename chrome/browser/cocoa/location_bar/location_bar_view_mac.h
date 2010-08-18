@@ -20,7 +20,6 @@
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/content_settings_types.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 @class AutocompleteTextField;
 class CommandUpdater;
@@ -33,6 +32,7 @@ class LocationIconDecoration;
 class PageActionDecoration;
 class Profile;
 class SelectedKeywordDecoration;
+class SkBitmap;
 class StarDecoration;
 class ToolbarModel;
 

@@ -12,10 +12,10 @@
 #include "app/table_model.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/favicon_service.h"
-#include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
+class GURL;
 class Profile;
+class SkBitmap;
 class TableModelObserver;
 
 // CustomHomePagesTableModel is the model for the TableView showing the list
@@ -24,7 +24,7 @@ class TableModelObserver;
 class CustomHomePagesTableModel : public TableModel {
  public:
   explicit CustomHomePagesTableModel(Profile* profile);
-  virtual ~CustomHomePagesTableModel() {}
+  virtual ~CustomHomePagesTableModel();
 
   // Sets the set of urls that this model contains.
   void SetURLs(const std::vector<GURL>& urls);
@@ -52,24 +52,7 @@ class CustomHomePagesTableModel : public TableModel {
  private:
   // Each item in the model is represented as an Entry. Entry stores the URL,
   // title, and favicon of the page.
-  struct Entry {
-    Entry() : title_handle(0), fav_icon_handle(0) {}
-
-    // URL of the page.
-    GURL url;
-
-    // Page title.  If this is empty, we'll display the URL as the entry.
-    std::wstring title;
-
-    // Icon for the page.
-    SkBitmap icon;
-
-    // If non-zero, indicates we're loading the title for the page.
-    HistoryService::Handle title_handle;
-
-    // If non-zero, indicates we're loading the favicon for the page.
-    FaviconService::Handle fav_icon_handle;
-  };
+  struct Entry;
 
   // Loads the title and favicon for the specified entry.
   void LoadTitleAndFavIcon(Entry* entry);

@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/search_provider.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
@@ -601,7 +602,8 @@ int SearchProvider::CalculateRelevanceForHistory(const Time& time,
   // points, while the relevance of a search two weeks ago is discounted about
   // 450 points.
   const double elapsed_time = std::max((Time::Now() - time).InSecondsF(), 0.);
-  const int score_discount = static_cast<int>(6.5 * pow(elapsed_time, 0.3));
+  const int score_discount =
+      static_cast<int>(6.5 * std::pow(elapsed_time, 0.3));
 
   // Don't let scores go below 0.  Negative relevance scores are meaningful in
   // a different way.

@@ -20,6 +20,7 @@
 #include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/password_form.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +32,12 @@
 using base::Time;
 using webkit_glue::FormField;
 using webkit_glue::PasswordForm;
+
+WDAppImagesResult::WDAppImagesResult() : has_all_images(false) {
+}
+
+WDAppImagesResult::~WDAppImagesResult() {
+}
 
 WebDataService::WebDataService()
   : is_running_(false),

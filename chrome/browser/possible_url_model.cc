@@ -6,8 +6,10 @@
 
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
+#include "app/text_elider.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
+#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
@@ -17,6 +19,7 @@
 #include "gfx/codec/png_codec.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -31,6 +34,20 @@ const int kPossibleURLTimeScope = 30;
 
 }  // anonymous namespace
 
+// Contains the data needed to show a result.
+struct PossibleURLModel::Result {
+  Result() : index(0) {}
+
+  GURL url;
+  // Index of this Result in results_. This is used as the key into
+  // fav_icon_map_ to lookup the favicon for the url, as well as the index
+  // into results_ when the favicon is received.
+  size_t index;
+  gfx::SortedDisplayURL display_url;
+  std::wstring title;
+};
+
+
 PossibleURLModel::PossibleURLModel()
     : profile_(NULL),
       observer_(NULL) {
@@ -38,6 +55,9 @@ PossibleURLModel::PossibleURLModel()
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_fav_icon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
   }
+}
+
+PossibleURLModel::~PossibleURLModel() {
 }
 
 void PossibleURLModel::Reload(Profile *profile) {
@@ -83,6 +103,10 @@ void PossibleURLModel::OnHistoryQueryComplete(HistoryService::Handle h,
   fav_icon_map_.clear();
   if (observer_)
     observer_->OnModelChanged();
+}
+
+int PossibleURLModel::RowCount() {
+  return static_cast<int>(results_.size());
 }
 
 const GURL& PossibleURLModel::GetURL(int row) {

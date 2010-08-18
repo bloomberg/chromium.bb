@@ -17,9 +17,30 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/png_codec.h"
+#include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+
+struct CustomHomePagesTableModel::Entry {
+  Entry() : title_handle(0), fav_icon_handle(0) {}
+
+  // URL of the page.
+  GURL url;
+
+  // Page title.  If this is empty, we'll display the URL as the entry.
+  std::wstring title;
+
+  // Icon for the page.
+  SkBitmap icon;
+
+  // If non-zero, indicates we're loading the title for the page.
+  HistoryService::Handle title_handle;
+
+  // If non-zero, indicates we're loading the favicon for the page.
+  FaviconService::Handle fav_icon_handle;
+};
 
 CustomHomePagesTableModel::CustomHomePagesTableModel(Profile* profile)
     : default_favicon_(NULL),
@@ -27,6 +48,9 @@ CustomHomePagesTableModel::CustomHomePagesTableModel(Profile* profile)
       observer_(NULL) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   default_favicon_ = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
+}
+
+CustomHomePagesTableModel::~CustomHomePagesTableModel() {
 }
 
 void CustomHomePagesTableModel::SetURLs(const std::vector<GURL>& urls) {

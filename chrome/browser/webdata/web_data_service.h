@@ -15,7 +15,6 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/form_field.h"
 
 class AutofillChange;
@@ -25,6 +24,7 @@ class CreditCard;
 struct IE7PasswordInfo;
 #endif
 class MessageLoop;
+class SkBitmap;
 class Task;
 class WebDatabase;
 
@@ -77,7 +77,8 @@ typedef std::vector<AutofillChange> AutofillChangeList;
 
 // Result from GetWebAppImages.
 struct WDAppImagesResult {
-  WDAppImagesResult() : has_all_images(false) {}
+  WDAppImagesResult();
+  ~WDAppImagesResult();
 
   // True if SetWebAppHasAllImages(true) was invoked.
   bool has_all_images;

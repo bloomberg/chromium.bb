@@ -23,6 +23,7 @@
 #include "gfx/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 

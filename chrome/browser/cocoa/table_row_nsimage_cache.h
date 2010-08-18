@@ -9,7 +9,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+
+class SkBitmap;
 
 // There are several dialogs that display tabular data with one SkBitmap
 // per row. This class converts these SkBitmaps to NSImages on demand, and

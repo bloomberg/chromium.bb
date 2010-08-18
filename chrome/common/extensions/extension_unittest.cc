@@ -25,11 +25,13 @@
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/png_codec.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/mime_sniffer.h"
 #include "skia/ext/image_operations.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace keys = extension_manifest_keys;
 namespace values = extension_manifest_values;

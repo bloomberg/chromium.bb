@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 TableRowNSImageCache::TableRowNSImageCache(Table* model)
     : model_(model),

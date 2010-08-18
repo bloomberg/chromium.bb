@@ -133,6 +133,9 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
       prompt_type_(NUM_PROMPT_TYPES),
       ALLOW_THIS_IN_INITIALIZER_LIST(tracker_(this)) {}
 
+ExtensionInstallUI::~ExtensionInstallUI() {
+}
+
 void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
                                         Extension* extension) {
   DCHECK(ui_loop_ == MessageLoop::current());

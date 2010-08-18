@@ -52,7 +52,7 @@ class ExtensionInstallUI : public ImageLoadingTracker::Observer {
 
   explicit ExtensionInstallUI(Profile* profile);
 
-  virtual ~ExtensionInstallUI() {}
+  virtual ~ExtensionInstallUI();
 
   // This is called by the installer to verify whether the installation should
   // proceed. This is declared virtual for testing.

@@ -51,6 +51,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 
 // TODO(shess): This code is mostly copied from the gtk

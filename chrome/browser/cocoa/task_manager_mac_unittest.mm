@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 

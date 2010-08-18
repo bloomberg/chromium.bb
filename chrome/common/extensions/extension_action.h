@@ -11,16 +11,16 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/scoped_ptr.h"
-#include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
 class Canvas;
 class Rect;
 }
+
+class GURL;
+class SkBitmap;
 
 // ExtensionAction encapsulates the state of a browser or page action.
 // Instances can have both global and per-tab state. If a property does not have
@@ -30,6 +30,9 @@ class ExtensionAction {
   // Use this ID to indicate the default state for properties that take a tab_id
   // parameter.
   static const int kDefaultTabId;
+
+  ExtensionAction();
+  ~ExtensionAction();
 
   // extension id
   std::string extension_id() const { return extension_id_; }
@@ -46,22 +49,13 @@ class ExtensionAction {
 
   // Set the url which the popup will load when the user clicks this action's
   // icon.  Setting an empty URL will disable the popup for a given tab.
-  void SetPopupUrl(int tab_id, const GURL& url) {
-    // We store |url| even if it is empty, rather than removing a URL from the
-    // map.  If an extension has a default popup, and removes it for a tab via
-    // the API, we must remember that there is no popup for that specific tab.
-    // If we removed the tab's URL, GetPopupURL would incorrectly return the
-    // default URL.
-    SetValue(&popup_url_, tab_id, url);
-  }
+  void SetPopupUrl(int tab_id, const GURL& url);
 
   // Use HasPopup() to see if a popup should be displayed.
-  bool HasPopup(int tab_id) {
-    return !GetPopupUrl(tab_id).is_empty();
-  }
+  bool HasPopup(int tab_id);
 
   // Get the URL to display in a popup.
-  GURL GetPopupUrl(int tab_id) { return GetValue(&popup_url_, tab_id); }
+  GURL GetPopupUrl(int tab_id);
 
   // Set this action's title on a specific tab.
   void SetTitle(int tab_id, const std::string& title) {
@@ -80,21 +74,15 @@ class ExtensionAction {
   // for the path.
 
   // Set this action's icon bitmap on a specific tab.
-  void SetIcon(int tab_id, const SkBitmap& bitmap) {
-    SetValue(&icon_, tab_id, bitmap);
-  }
+  void SetIcon(int tab_id, const SkBitmap& bitmap);
+
   // Get the icon for a tab, or the default if no icon was set.
-  SkBitmap GetIcon(int tab_id) { return GetValue(&icon_, tab_id); }
+  SkBitmap GetIcon(int tab_id);
 
   // Set this action's icon index for a specific tab.  For use with
   // icon_paths(), only used in page actions.
-  void SetIconIndex(int tab_id, int index) {
-    if (static_cast<size_t>(index) >= icon_paths_.size()) {
-      NOTREACHED();
-      return;
-    }
-    SetValue(&icon_index_, tab_id, index);
-  }
+  void SetIconIndex(int tab_id, int index);
+
   // Get this action's icon index for a tab, or the default if no icon index
   // was set.
   int GetIconIndex(int tab_id) {

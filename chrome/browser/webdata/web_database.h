@@ -14,8 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/glue/form_field.h"
 
 class AutofillChange;
 class AutofillEntry;
@@ -23,6 +21,7 @@ class AutoFillProfile;
 class CreditCard;
 class FilePath;
 class NotificationService;
+class SkBitmap;
 class WebDatabaseTest;
 
 namespace base {
@@ -30,6 +29,7 @@ class Time;
 }
 
 namespace webkit_glue {
+class FormField;
 struct PasswordForm;
 }
 

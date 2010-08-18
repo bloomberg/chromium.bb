@@ -11,10 +11,9 @@
 #include <vector>
 
 #include "app/table_model.h"
-#include "app/text_elider.h"
-#include "base/string_util.h"
 #include "chrome/browser/history/history.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+
+class SkBitmap;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -26,18 +25,14 @@
 class PossibleURLModel : public TableModel {
  public:
   PossibleURLModel();
-
-  virtual ~PossibleURLModel() {
-  }
+  virtual ~PossibleURLModel();
 
   void Reload(Profile *profile);
 
   void OnHistoryQueryComplete(HistoryService::Handle h,
                               history::QueryResults* result);
 
-  virtual int RowCount() {
-    return static_cast<int>(results_.size());
-  }
+  virtual int RowCount();
 
   const GURL& GetURL(int row);
 
@@ -60,19 +55,6 @@ class PossibleURLModel : public TableModel {
   }
 
  private:
-  // Contains the data needed to show a result.
-  struct Result {
-    Result() : index(0) {}
-
-    GURL url;
-    // Index of this Result in results_. This is used as the key into
-    // fav_icon_map_ to lookup the favicon for the url, as well as the index
-    // into results_ when the favicon is received.
-    size_t index;
-    gfx::SortedDisplayURL display_url;
-    std::wstring title;
-  };
-
   // The current profile.
   Profile* profile_;
 
@@ -83,6 +65,7 @@ class PossibleURLModel : public TableModel {
   CancelableRequestConsumerT<size_t, NULL> consumer_;
 
   // The results we're showing.
+  struct Result;
   std::vector<Result> results_;
 
   // Map Result::index -> Favicon.

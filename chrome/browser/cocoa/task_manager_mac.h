@@ -14,6 +14,7 @@
 #include "chrome/browser/task_manager.h"
 
 @class WindowSizeAutosaver;
+class SkBitmap;
 class TaskManagerMac;
 
 // This class is responsible for loading the task manager window and for
@@ -75,8 +76,8 @@ class TaskManagerMac : public TaskManagerModelObserver,
   void WindowWasClosed();
 
   // TableRowNSImageCache::Table
-  virtual int RowCount() const { return model_->ResourceCount(); }
-  virtual SkBitmap GetIcon(int r) const { return model_->GetResourceIcon(r); }
+  virtual int RowCount() const;
+  virtual SkBitmap GetIcon(int r) const;
 
   // Creates the task manager if it doesn't exist; otherwise, it activates the
   // existing task manager window.

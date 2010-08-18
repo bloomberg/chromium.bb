@@ -14,6 +14,7 @@
 #import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 
@@ -533,6 +534,14 @@ NSImage* TaskManagerMac::GetImageForRow(int row) {
 void TaskManagerMac::WindowWasClosed() {
   delete this;
   instance_ = NULL;
+}
+
+int TaskManagerMac::RowCount() const {
+  return model_->ResourceCount();
+}
+
+SkBitmap TaskManagerMac::GetIcon(int r) const {
+  return model_->GetResourceIcon(r);
 }
 
 // static
