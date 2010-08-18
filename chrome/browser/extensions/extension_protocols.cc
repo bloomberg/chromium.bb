@@ -72,6 +72,14 @@ bool AllowExtensionResourceLoad(URLRequest* request,
   const ResourceDispatcherHostRequestInfo* info =
       ResourceDispatcherHost::InfoForRequest(request);
 
+  // We have seen crashes where info is NULL: crbug.com/52374.
+  if (!info) {
+    LOG(ERROR) << "Allowing load of " << request->url().spec()
+               << "from unknown origin. Could not find user data for "
+               << "request.";
+    return true;
+  }
+
   GURL origin_url(info->frame_origin());
 
   // chrome:// URLs are always allowed to load chrome-extension:// resources.
@@ -81,32 +89,46 @@ bool AllowExtensionResourceLoad(URLRequest* request,
 
   // Disallow loading of packaged resources for hosted apps. We don't allow
   // hybrid hosted/packaged apps.
-  if (context->ExtensionHasWebExtent(request->url().host()))
+  if (context->ExtensionHasWebExtent(request->url().host())) {
+    LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
+               << "hosted app.";
     return false;
-
-  // chrome-extension:// pages can load resources from extensions and packaged
-  // apps. This is allowed for legacy reasons.
-  if (origin_url.SchemeIs(chrome::kExtensionScheme))
-    return true;
-
-  // Extension resources should only be loadable from web pages which the
-  // extension has host permissions to (and therefore could be running script
-  // in, which might need access to the extension resources).
-  ExtensionExtent host_permissions =
-      context->GetEffectiveHostPermissionsForExtension(request->url().host());
-  if (!origin_url.is_empty() && !host_permissions.ContainsURL(origin_url))
-    return false;
+  }
 
   // Don't allow toplevel navigations to extension resources in incognito mode.
   // This is because an extension must run in a single process, and an
   // incognito tab prevents that.
   if (context->is_off_the_record() &&
       info->resource_type() == ResourceType::MAIN_FRAME) {
+    LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
+               << "incognito tab.";
     return false;
   }
 
-  // Otherwise, the resource load is allowed.
-  return true;
+  // Otherwise, pages are allowed to load resources from extensions if the
+  // extension has host permissions to (and therefore could be running script
+  // in, which might need access to the extension resources).
+  //
+  // Exceptions are:
+  // - empty origin (needed for some edge cases when we have empty origins)
+  // - chrome-extension:// (for legacy reasons -- some extensions interop)
+  // - data: (basic HTML notifications use data URLs internally)
+  if (origin_url.is_empty() ||
+      origin_url.SchemeIs(chrome::kExtensionScheme) |
+      origin_url.SchemeIs(chrome::kDataScheme)) {
+    return true;
+  } else {
+    ExtensionExtent host_permissions =
+        context->GetEffectiveHostPermissionsForExtension(request->url().host());
+    if (host_permissions.ContainsURL(origin_url)) {
+      return true;
+    } else {
+      LOG(ERROR) << "Denying load of " << request->url().spec() << " from "
+                 << origin_url.spec() << " because the extension does not have "
+                 << "access to the requesting page.";
+      return false;
+    }
+  }
 }
 
 }  // namespace

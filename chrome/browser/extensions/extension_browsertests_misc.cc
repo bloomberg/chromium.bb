@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_util.h"
 #include "base/ref_counted.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
@@ -98,6 +99,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OriginPrivileges) {
       L"window.domAutomationController.send(document.title)",
       &result);
   EXPECT_EQ(result, "Image failed to load");
+
+  // A data URL. Data URLs should always be able to load chrome-extension://
+  // resources.
+  std::string file_source;
+  ASSERT_TRUE(file_util::ReadFileToString(
+      test_data_dir_.AppendASCII("origin_privileges")
+                    .AppendASCII("index.html"), &file_source));
+  ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string("data:text/html;charset=utf-8,") + file_source));
+  ui_test_utils::ExecuteJavaScriptAndExtractString(
+    browser()->GetSelectedTabContents()->render_view_host(), L"",
+      L"window.domAutomationController.send(document.title)",
+      &result);
+  EXPECT_EQ(result, "Loaded");
 
   // A different extension. Extensions should always be able to load each
   // other's resources.
