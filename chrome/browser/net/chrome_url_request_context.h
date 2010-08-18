@@ -133,9 +133,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   // Callback for when an extension is unloaded.
   void OnUnloadedExtension(const std::string& id);
 
-  // False only if cookies are globally blocked without exception.
-  bool AreCookiesEnabled() const;
-
   // Returns true if this context is an external request context, like
   // ChromeFrame.
   virtual bool IsExternal() const {

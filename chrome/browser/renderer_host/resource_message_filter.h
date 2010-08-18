@@ -153,9 +153,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                        IPC::Message* reply_msg);
   void OnDeleteCookie(const GURL& url,
                       const std::string& cookieName);
-  void OnGetCookiesEnabled(const GURL& url,
-                           const GURL& first_party_for_cookies,
-                           bool* enabled);
   void OnPluginFileDialog(const IPC::Message& msg,
                           bool multiple_files,
                           const std::wstring& title,

@@ -863,13 +863,6 @@ void ChromeURLRequestContext::OnUnloadedExtension(const std::string& id) {
   }
 }
 
-bool ChromeURLRequestContext::AreCookiesEnabled() const {
-  ContentSetting setting =
-      host_content_settings_map_->GetDefaultContentSetting(
-          CONTENT_SETTINGS_TYPE_COOKIES);
-  return setting != CONTENT_SETTING_BLOCK;
-}
-
 ChromeURLRequestContext::ChromeURLRequestContext(
     ChromeURLRequestContext* other) {
   CheckCurrentlyOnIOThread();

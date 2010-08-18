@@ -370,7 +370,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies,
                                       OnGetRawCookies)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DeleteCookie, OnDeleteCookie)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_GetCookiesEnabled, OnGetCookiesEnabled)
 #if defined(OS_MACOSX)
       IPC_MESSAGE_HANDLER(ViewHostMsg_LoadFont, OnLoadFont)
 #endif
@@ -658,13 +657,6 @@ void ResourceMessageFilter::OnDeleteCookie(const GURL& url,
                                            const std::string& cookie_name) {
   URLRequestContext* context = GetRequestContextForURL(url);
   context->cookie_store()->DeleteCookie(url, cookie_name);
-}
-
-void ResourceMessageFilter::OnGetCookiesEnabled(
-    const GURL& url,
-    const GURL& first_party_for_cookies,
-    bool* enabled) {
-  *enabled = GetRequestContextForURL(url)->AreCookiesEnabled();
 }
 
 #if defined(OS_MACOSX)
