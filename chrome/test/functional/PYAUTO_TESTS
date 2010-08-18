@@ -61,6 +61,7 @@
     '-autofill',
     # codesign tests should run *after* signing. crbug.com/50481
     '-codesign',
+    '-content.ContentTest.testThreeWindows',  # crbug.com/47457
   ],
 
   'linux': [  # linux != chromeos
