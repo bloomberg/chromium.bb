@@ -32,17 +32,15 @@ std::wstring DownloadItemModel::GetStatusText() {
   int64 total = download_->total_bytes();
 
   DataUnits amount_units = GetByteDisplayUnits(total);
-  const string16 simple_size = WideToUTF16Hack(FormatBytes(size, amount_units,
-                                                           false));
+  const string16 simple_size = FormatBytes(size, amount_units, false);
 
   // In RTL locales, we render the text "size/total" in an RTL context. This
   // is problematic since a string such as "123/456 MB" is displayed
   // as "MB 123/456" because it ends with an LTR run. In order to solve this,
   // we mark the total string as an LTR string if the UI layout is
   // right-to-left so that the string "456 MB" is treated as an LTR run.
-  string16 simple_total = WideToUTF16Hack(FormatBytes(total, amount_units,
-                                                      true));
-  simple_total = base::i18n::GetDisplayStringInLTRDirectionality(simple_total);
+  string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
+      FormatBytes(total, amount_units, true));
 
   TimeDelta remaining;
   string16 simple_time;
@@ -71,8 +69,7 @@ std::wstring DownloadItemModel::GetStatusText() {
           // Instead of displaying "0 B" we keep the "Starting..." string.
           status_text = (size == 0) ?
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING) :
-              WideToUTF16Hack(FormatBytes(size, GetByteDisplayUnits(size),
-                                          true));
+              FormatBytes(size, GetByteDisplayUnits(size), true);
         } else {
           status_text = l10n_util::GetStringFUTF16(
               IDS_DOWNLOAD_STATUS_IN_PROGRESS, simple_size, simple_total,
