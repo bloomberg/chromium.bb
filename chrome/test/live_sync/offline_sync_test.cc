@@ -16,7 +16,7 @@ class OfflineSyncTest : public LiveSyncTest {
   DISALLOW_COPY_AND_ASSIGN(OfflineSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OfflineSyncTest, DISABLED_OfflineStart) {
+IN_PROC_BROWSER_TEST_F(OfflineSyncTest, OfflineStart) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   DisableNetwork(GetProfile(0));
 
