@@ -20,7 +20,6 @@ from SCons.Script import GetBuildFailures
 Dir('src/third_party_mod/gtest').addRepository(
     Dir('#/../testing/gtest'))
 
-
 # ----------------------------------------------------------
 # REPORT
 # ----------------------------------------------------------
