@@ -57,7 +57,9 @@ PassiveLogCollector::PassiveLogCollector()
   trackers_[net::NetLog::SOURCE_INIT_PROXY_RESOLVER] =
       &init_proxy_resolver_tracker_;
   trackers_[net::NetLog::SOURCE_SPDY_SESSION] = &spdy_session_tracker_;
-
+  trackers_[net::NetLog::SOURCE_HOST_RESOLVER_IMPL_REQUEST] =
+      &dns_request_tracker_;
+  trackers_[net::NetLog::SOURCE_HOST_RESOLVER_IMPL_JOB] = &dns_job_tracker_;
   // Make sure our mapping is up-to-date.
   for (size_t i = 0; i < arraysize(trackers_); ++i)
     DCHECK(trackers_[i]) << "Unhandled SourceType: " << i;
@@ -485,3 +487,50 @@ PassiveLogCollector::SpdySessionTracker::DoAddEntry(const Entry& entry,
     return ACTION_NONE;
   }
 }
+
+//----------------------------------------------------------------------------
+// DNSRequestTracker
+//----------------------------------------------------------------------------
+
+const size_t PassiveLogCollector::DNSRequestTracker::kMaxNumSources = 200;
+const size_t PassiveLogCollector::DNSRequestTracker::kMaxGraveyardSize = 20;
+
+PassiveLogCollector::DNSRequestTracker::DNSRequestTracker()
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
+}
+
+PassiveLogCollector::SourceTracker::Action
+PassiveLogCollector::DNSRequestTracker::DoAddEntry(const Entry& entry,
+                                                   SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
+  if (entry.type == net::NetLog::TYPE_HOST_RESOLVER_IMPL_REQUEST &&
+      entry.phase == net::NetLog::PHASE_END) {
+    return ACTION_MOVE_TO_GRAVEYARD;
+  } else {
+    return ACTION_NONE;
+  }
+}
+
+//----------------------------------------------------------------------------
+// DNSJobTracker
+//----------------------------------------------------------------------------
+
+const size_t PassiveLogCollector::DNSJobTracker::kMaxNumSources = 100;
+const size_t PassiveLogCollector::DNSJobTracker::kMaxGraveyardSize = 15;
+
+PassiveLogCollector::DNSJobTracker::DNSJobTracker()
+    : SourceTracker(kMaxNumSources, kMaxGraveyardSize, NULL) {
+}
+
+PassiveLogCollector::SourceTracker::Action
+PassiveLogCollector::DNSJobTracker::DoAddEntry(const Entry& entry,
+                                               SourceInfo* out_info) {
+  AddEntryToSourceInfo(entry, out_info);
+  if (entry.type == net::NetLog::TYPE_HOST_RESOLVER_IMPL_JOB &&
+      entry.phase == net::NetLog::PHASE_END) {
+    return ACTION_MOVE_TO_GRAVEYARD;
+  } else {
+    return ACTION_NONE;
+  }
+}
+

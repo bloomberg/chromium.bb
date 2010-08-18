@@ -28,7 +28,7 @@
 
 namespace {
 
-net::HostResolver* CreateGlobalHostResolver() {
+net::HostResolver* CreateGlobalHostResolver(net::NetLog* net_log) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   size_t parallelism = net::HostResolver::kDefaultParallelism;
@@ -48,7 +48,7 @@ net::HostResolver* CreateGlobalHostResolver() {
   }
 
   net::HostResolver* global_host_resolver =
-      net::CreateSystemHostResolver(parallelism);
+      net::CreateSystemHostResolver(parallelism, net_log);
 
   // Determine if we should disable IPv6 support.
   if (!command_line.HasSwitch(switches::kEnableIPv6)) {
@@ -187,7 +187,7 @@ void IOThread::Init() {
   network_change_observer_.reset(
       new LoggingNetworkChangeObserver(globals_->net_log.get()));
 
-  globals_->host_resolver = CreateGlobalHostResolver();
+  globals_->host_resolver = CreateGlobalHostResolver(globals_->net_log.get());
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver));
 }

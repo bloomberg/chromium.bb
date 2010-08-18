@@ -283,6 +283,36 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
     DISALLOW_COPY_AND_ASSIGN(SpdySessionTracker);
   };
 
+  // Tracks the log entries for the last seen SOURCE_HOST_RESOLVER_IMPL_REQUEST.
+  class DNSRequestTracker : public SourceTracker {
+   public:
+    static const size_t kMaxNumSources;
+    static const size_t kMaxGraveyardSize;
+
+    DNSRequestTracker();
+
+   protected:
+    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DNSRequestTracker);
+  };
+
+  // Tracks the log entries for the last seen SOURCE_HOST_RESOLVER_IMPL_JOB.
+  class DNSJobTracker : public SourceTracker {
+   public:
+    static const size_t kMaxNumSources;
+    static const size_t kMaxGraveyardSize;
+
+    DNSJobTracker();
+
+   protected:
+    virtual Action DoAddEntry(const Entry& entry, SourceInfo* out_info);
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DNSJobTracker);
+  };
+
   PassiveLogCollector();
   ~PassiveLogCollector();
 
@@ -317,6 +347,8 @@ class PassiveLogCollector : public ChromeNetLog::Observer {
   RequestTracker socket_stream_tracker_;
   InitProxyResolverTracker init_proxy_resolver_tracker_;
   SpdySessionTracker spdy_session_tracker_;
+  DNSRequestTracker dns_request_tracker_;
+  DNSJobTracker dns_job_tracker_;
 
   // This array maps each NetLog::SourceType to one of the tracker instances
   // defined above. Use of this array avoid duplicating the list of trackers
