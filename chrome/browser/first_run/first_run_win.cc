@@ -712,6 +712,7 @@ void FirstRun::AutoImport(Profile* profile,
   FirstRun::SetShowFirstRunBubblePref(true);
   // Set the first run bubble to minimal.
   FirstRun::SetMinimalFirstRunBubblePref();
+  FirstRun::SetShowWelcomePagePref();
 
   process_singleton->Unlock();
   FirstRun::CreateSentinel();
