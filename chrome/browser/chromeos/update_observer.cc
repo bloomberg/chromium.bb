@@ -15,61 +15,22 @@ namespace chromeos {
 
 UpdateObserver::UpdateObserver(Profile* profile)
     : notification_(profile, "update.chromeos", IDR_NOTIFICATION_UPDATE,
-                    l10n_util::GetStringUTF16(IDS_UPDATE_TITLE)),
-      progress_(-1) {}
+                    l10n_util::GetStringUTF16(IDS_UPDATE_TITLE)) {}
 
 UpdateObserver::~UpdateObserver() {
   notification_.Hide();
 }
 
 void UpdateObserver::UpdateStatusChanged(UpdateLibrary* library) {
-  switch (library->status().status) {
-    case UPDATE_STATUS_IDLE:
-    case UPDATE_STATUS_CHECKING_FOR_UPDATE:
-      // Do nothing in these cases, we don't want to notify the user of the
-      // check unless there is an update. We don't hide here because
-      // we want the final state to be sticky.
-      break;
-    case UPDATE_STATUS_UPDATE_AVAILABLE:
-      notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE),
-                         false);
-      break;
-    case UPDATE_STATUS_DOWNLOADING:
-    {
-      int progress = static_cast<int>(library->status().download_progress *
-          100.0);
-      if (progress != progress_) {
-        progress_ = progress;
-        notification_.Show(l10n_util::GetStringFUTF16(IDS_UPDATE_DOWNLOADING,
-            base::IntToString16(progress_)), false);
-      }
-    }
-      break;
-    case UPDATE_STATUS_VERIFYING:
-      notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING),
-                         false);
-      break;
-    case UPDATE_STATUS_FINALIZING:
-      notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING),
-                         false);
-      break;
-    case UPDATE_STATUS_UPDATED_NEED_REBOOT:
-      notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED), true);
-      break;
-    case UPDATE_STATUS_REPORTING_ERROR_EVENT:
-      // If the update engine encounters an error and we have already
-      // notified the user of the update progress, show an error
-      // notification. Don't show anything otherwise -- for example,
-      // in cases where the update engine encounters an error while
-      // checking for an update.
-      if (notification_.visible()) {
-        notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_ERROR), true);
-      }
-      break;
-    default:
-      notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_ERROR), true);
-      break;
+#if 0
+  // TODO seanparent@chromium.org : This update should only be shown when an
+  // update is critical and should include a restart button using the
+  // update_engine restart API. Currently removed entirely per Kan's request.
+
+  if (library->status().status == UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+    notification_.Show(l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED), true);
   }
+#endif
 }
 
 }  // namespace chromeos
