@@ -20,6 +20,8 @@ namespace speech_input {
 // SpeechInputCallerId::second holds the request ID given by the element.
 typedef std::pair<int, int> SpeechInputCallerId;
 
+class SpeexEncoder;
+
 // Records audio, sends recorded audio to server and translates server response
 // to recognition result.
 class SpeechRecognizer
@@ -92,6 +94,7 @@ class SpeechRecognizer
 
   scoped_ptr<SpeechRecognitionRequest> request_;
   scoped_refptr<media::AudioInputController> audio_controller_;
+  scoped_ptr<SpeexEncoder> encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizer);
 };

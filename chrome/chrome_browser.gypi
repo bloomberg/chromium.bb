@@ -36,6 +36,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/hunspell/hunspell.gyp:hunspell',
+        '../third_party/speex/speex.gyp:libspeex',
         '../webkit/support/webkit_support.gyp:appcache',
         '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:glue',

@@ -14,9 +14,6 @@
 
 namespace {
 
-// TODO(satish): Change this once speex compression is enabled for audio.
-const char kMimeRawAudio[] = "audio/l16; rate=8000";
-
 const char* const kHypothesesString = "hypotheses";
 const char* const kUtteranceString = "utterance";
 
@@ -101,12 +98,13 @@ SpeechRecognitionRequest::SpeechRecognitionRequest(
   DCHECK(delegate);
 }
 
-bool SpeechRecognitionRequest::Send(const std::string& audio_data) {
+bool SpeechRecognitionRequest::Send(const std::string& content_type,
+                                    const std::string& audio_data) {
   DCHECK(!url_fetcher_.get());
 
   url_fetcher_.reset(URLFetcher::Create(
       url_fetcher_id_for_tests, url_, URLFetcher::POST, this));
-  url_fetcher_->set_upload_data(kMimeRawAudio, audio_data);
+  url_fetcher_->set_upload_data(content_type, audio_data);
   url_fetcher_->set_request_context(url_context_);
 
   // The speech recognition API does not require user identification as part

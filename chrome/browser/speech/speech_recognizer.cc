@@ -9,14 +9,25 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
+#include "third_party/speex/include/speex/speex.h"
 
 using media::AudioInputController;
 using std::list;
 using std::string;
 
 namespace {
-const char* kDefaultSpeechRecognitionUrl =
+const char* const kDefaultSpeechRecognitionUrl =
     "http://www.google.com/speech-api/v1/recognize?lang=en-us&client=chromium";
+const char* const kContentTypeSpeex =
+    "audio/x-speex-with-header-byte; rate=16000";
+const int kAudioSampleRate = 16000;
+const int kSpeexEncodingQuality = 8;
+const int kMaxSpeexFrameLength = 110;  // (44kbps rate sampled at 32kHz).
+
+// Since the frame length gets written out as a byte in the encoded packet,
+// make sure it is within the byte range.
+COMPILE_ASSERT(kMaxSpeexFrameLength <= 0xFF, invalidLength);
+
 const int kAudioPacketIntervalMs = 100;  // Record 100ms long audio packets.
 const int kNumAudioChannels = 1;  // Speech is recorded as mono.
 const int kNumBitsPerAudioSample = 16;
@@ -24,10 +35,72 @@ const int kNumBitsPerAudioSample = 16;
 
 namespace speech_input {
 
+// Provides a simple interface to encode raw audio using the Speex codec.
+class SpeexEncoder {
+ public:
+  SpeexEncoder();
+  ~SpeexEncoder();
+
+  int samples_per_frame() const { return samples_per_frame_; }
+
+  // Encodes each frame of raw audio in |raw_samples| and adds the
+  // encoded frames as a set of strings to the |encoded_frames| list.
+  // Ownership of the newly added strings is transferred to the caller.
+  void Encode(const string& raw_samples,
+              std::list<std::string*>* encoded_frames);
+
+ private:
+  SpeexBits bits_;
+  void* encoder_state_;
+  int samples_per_frame_;
+  char encoded_frame_data_[kMaxSpeexFrameLength + 1];  // +1 for the frame size.
+};
+
+SpeexEncoder::SpeexEncoder() {
+  speex_bits_init(&bits_);
+  encoder_state_ = speex_encoder_init(&speex_wb_mode);
+  DCHECK(encoder_state_);
+  speex_encoder_ctl(encoder_state_, SPEEX_GET_FRAME_SIZE, &samples_per_frame_);
+  DCHECK(samples_per_frame_ > 0);
+  int quality = kSpeexEncodingQuality;
+  speex_encoder_ctl(encoder_state_, SPEEX_SET_QUALITY, &quality);
+  int vbr = 1;
+  speex_encoder_ctl(encoder_state_, SPEEX_SET_VBR, &vbr);
+}
+
+SpeexEncoder::~SpeexEncoder() {
+  speex_bits_destroy(&bits_);
+  speex_encoder_destroy(encoder_state_);
+}
+
+void SpeexEncoder::Encode(const string& raw_samples,
+                          std::list<std::string*>* encoded_frames) {
+  const short* samples = reinterpret_cast<const short*>(raw_samples.data());
+  DCHECK((raw_samples.length() % sizeof(short)) == 0);
+  int num_samples = raw_samples.length() / sizeof(short);
+
+  // Drop incomplete frames, typically those which come in when recording stops.
+  num_samples -= (num_samples % samples_per_frame_);
+  for (int i = 0; i < num_samples; i += samples_per_frame_) {
+    speex_bits_reset(&bits_);
+    speex_encode_int(encoder_state_, const_cast<spx_int16_t*>(samples + i),
+                     &bits_);
+
+    // Encode the frame and place the size of the frame as the first byte. This
+    // is the packet format for MIME type x-speex-with-header-byte.
+    int frame_length = speex_bits_write(&bits_, encoded_frame_data_ + 1,
+                                        kMaxSpeexFrameLength);
+    encoded_frame_data_[0] = static_cast<char>(frame_length);
+    encoded_frames->push_back(new string(encoded_frame_data_,
+                                         frame_length + 1));
+  }
+}
+
 SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
                                    const SpeechInputCallerId& caller_id)
     : delegate_(delegate),
-      caller_id_(caller_id) {
+      caller_id_(caller_id),
+      encoder_(new SpeexEncoder()) {
 }
 
 SpeechRecognizer::~SpeechRecognizer() {
@@ -43,10 +116,12 @@ bool SpeechRecognizer::StartRecording() {
   DCHECK(!audio_controller_.get());
   DCHECK(!request_.get() || !request_->HasPendingRequest());
 
+  int samples_per_packet = (kAudioSampleRate * kAudioPacketIntervalMs) / 1000;
+  DCHECK((samples_per_packet % encoder_->samples_per_frame()) == 0);
   audio_controller_ = AudioInputController::Create(this,
       AudioManager::AUDIO_PCM_LINEAR, kNumAudioChannels,
-      AudioManager::kTelephoneSampleRate, kNumBitsPerAudioSample,
-      (AudioManager::kTelephoneSampleRate * kAudioPacketIntervalMs) / 1000);
+      kAudioSampleRate, kNumBitsPerAudioSample,
+      samples_per_packet);
   DCHECK(audio_controller_.get());
   LOG(INFO) << "SpeechRecognizer starting record.";
   audio_controller_->Record();
@@ -110,7 +185,7 @@ void SpeechRecognizer::StopRecording() {
       Profile::GetDefaultRequestContext(),
       GURL(kDefaultSpeechRecognitionUrl),
       this));
-  request_->Send(data);
+  request_->Send(kContentTypeSpeex, data);
   ReleaseAudioBuffers();  // No need to keep the audio anymore.
 }
 
@@ -165,9 +240,11 @@ void SpeechRecognizer::HandleOnData(string* data) {
     return;
   }
 
+  encoder_->Encode(*data, &audio_buffers_);
+  delete data;
+
   // TODO(satish): Once we have streaming POST, start sending the data received
   // here as POST chunks.
-  audio_buffers_.push_back(data);
 }
 
 void SpeechRecognizer::SetRecognitionResult(bool error, const string16& value) {

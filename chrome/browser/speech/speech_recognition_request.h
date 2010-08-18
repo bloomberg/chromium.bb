@@ -41,7 +41,7 @@ class SpeechRecognitionRequest : public URLFetcher::Delegate {
   // Sends a new request with the given audio data, returns true if successful.
   // The same object can be used to send multiple requests but only after the
   // previous request has completed.
-  bool Send(const std::string& audio_data);
+  bool Send(const std::string& content_type, const std::string& audio_data);
 
   bool HasPendingRequest() { return url_fetcher_ != NULL; }
 

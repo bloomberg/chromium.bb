@@ -13,6 +13,10 @@ using media::AudioInputController;
 using media::TestAudioInputController;
 using media::TestAudioInputControllerFactory;
 
+namespace {
+const int kAudioPacketLengthBytes = 1000;
+}
+
 namespace speech_input {
 
 class SpeechRecognizerTest : public SpeechRecognizerDelegate,
@@ -87,7 +91,7 @@ TEST_F(SpeechRecognizerTest, CancelNoData) {
 }
 
 TEST_F(SpeechRecognizerTest, StopWithData) {
-  uint8 data[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+  uint8 data[kAudioPacketLengthBytes] = { 0 };
 
   // Start recording, give some data and then stop. This should wait for the
   // network callback to arrive before completion.
@@ -116,7 +120,7 @@ TEST_F(SpeechRecognizerTest, StopWithData) {
 }
 
 TEST_F(SpeechRecognizerTest, CancelWithData) {
-  uint8 data[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+  uint8 data[kAudioPacketLengthBytes] = { 0 };
 
   // Start recording, give some data and then cancel. This should not create
   // a network request and finish immediately.
@@ -147,7 +151,7 @@ TEST_F(SpeechRecognizerTest, AudioControllerErrorNoData) {
 }
 
 TEST_F(SpeechRecognizerTest, AudioControllerErrorWithData) {
-  uint8 data[] = { 1, 2, 3, 4, 5, 6, 7, 8 };
+  uint8 data[kAudioPacketLengthBytes] = { 0 };
 
   // Check if things tear down properly if AudioInputController threw an error
   // after giving some audio data.
