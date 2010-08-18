@@ -38,6 +38,7 @@ PageActionDecoration::PageActionDecoration(
       tracker_(this),
       current_tab_id_(-1),
       preview_enabled_(false) {
+  DCHECK(profile);
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
       page_action->extension_id(), false);
   DCHECK(extension);
@@ -60,8 +61,7 @@ PageActionDecoration::PageActionDecoration(
       Source<Profile>(profile_));
 }
 
-PageActionDecoration::~PageActionDecoration() {
-}
+PageActionDecoration::~PageActionDecoration() {}
 
 // Always |kPageActionIconMaxSize| wide.  |ImageDecoration| draws the
 // image centered.
@@ -219,10 +219,12 @@ NSMenu* PageActionDecoration::GetMenu() {
   DCHECK(extension);
   if (!extension)
     return nil;
-  return [[[ExtensionActionContextMenu alloc]
-            initWithExtension:extension
-                      profile:profile_
-              extensionAction:page_action_] autorelease];
+  menu_.reset([[ExtensionActionContextMenu alloc]
+      initWithExtension:extension
+                profile:profile_
+        extensionAction:page_action_]);
+
+  return menu_.get();
 }
 
 void PageActionDecoration::Observe(

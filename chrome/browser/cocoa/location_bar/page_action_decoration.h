@@ -12,6 +12,7 @@
 #include "googleurl/src/gurl.h"
 
 class ExtensionAction;
+@class ExtensionActionContextMenu;
 class LocationBarViewMac;
 class Profile;
 class TabContents;
@@ -100,6 +101,9 @@ class PageActionDecoration : public ImageDecoration,
 
   // The string to show for a tooltip.
   scoped_nsobject<NSString> tooltip_;
+
+  // The context menu for the Page Action.
+  scoped_nsobject<ExtensionActionContextMenu> menu_;
 
   // This is used for post-install visual feedback. The page_action
   // icon is briefly shown even if it hasn't been enabled by its
