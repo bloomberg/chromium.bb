@@ -393,6 +393,22 @@ void LanguageMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
                                   GetActiveInputMethods());
   RebuildModel();
   language_menu_.Rebuild();
+
+  // Disallow the menu widget to grab the keyboard focus. This is necessary to
+  // enable users to change status of an input method (e.g. change the input
+  // mode from Japanese Hiragana to Japanese Katakana) without discarding a
+  // preedit string. See crosbug.com/5796 for details. Note that menus other
+  // than this one should not call the Gtk+ API since it is a special API only
+  // for a menu related to IME/keyboard. See the Gtk+ API reference at:
+  // http://library.gnome.org/devel/gtk/stable/GtkMenuShell.html
+  gfx::NativeMenu native_menu = language_menu_.GetNativeMenu();
+  if (native_menu) {
+    gtk_menu_shell_set_take_focus(GTK_MENU_SHELL(native_menu), FALSE);
+  } else {
+    LOG(ERROR)
+        << "Can't call gtk_menu_shell_set_take_focus since NativeMenu is NULL";
+  }
+
   language_menu_.UpdateStates();
   language_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
