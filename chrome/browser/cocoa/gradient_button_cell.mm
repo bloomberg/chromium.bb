@@ -522,23 +522,30 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   ThemeProvider* themeProvider = [window themeProvider];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
 
-  // Stroke the borders and appropriate fill gradient. If we're borderless,
-  // the only time we want to draw the inner gradient is if we're highlighted.
+  // Stroke the borders and appropriate fill gradient. If we're borderless, the
+  // only time we want to draw the inner gradient is if we're highlighted or if
+  // we're the first responder (when "Full Keyboard Access" is turned on).
   if (([self isBordered] && ![self showsBorderOnlyWhileMouseInside]) ||
       pressed ||
       [self isMouseInside] ||
-      [self isContinuousPulsing]) {
+      [self isContinuousPulsing] ||
+      [self showsFirstResponder]) {
 
     // When pulsing we want the bookmark to stand out a little more.
     BOOL showClickedGradient = pressed ||
         (pulseState_ == gradient_button_cell::kPulsingContinuous);
+
+    // When first responder, turn the hover alpha all the way up.
+    CGFloat hoverAlpha = [self hoverAlpha];
+    if ([self showsFirstResponder])
+      hoverAlpha = 1.0;
 
     [self drawBorderAndFillForTheme:themeProvider
                         controlView:controlView
                           innerPath:innerPath
                 showClickedGradient:showClickedGradient
               showHighlightGradient:[self isHighlighted]
-                         hoverAlpha:[self hoverAlpha]
+                         hoverAlpha:hoverAlpha
                              active:active
                           cellFrame:cellFrame
                     defaultGradient:nil];
