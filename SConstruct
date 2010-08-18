@@ -1925,6 +1925,13 @@ def SanityCheckAndMapExtraction(all_envs, selected_envs):
       print 'ASPPCOM:', asppcom
       DumpCompilerVersion(cc, env)
       print
+    rev_file = 'toolchain/linux_arm-untrusted/REV'
+    if os.path.exists(rev_file):
+      for line in open(rev_file).read().split('\n'):
+        if "Revision:" in line:
+          print "PNACL : %s" % line
+
+
 
   if 'TRUSTED' not in family_map or 'UNTRUSTED' not in family_map:
     Banner('W A R N I N G:')
