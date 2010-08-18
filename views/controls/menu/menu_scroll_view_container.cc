@@ -217,7 +217,7 @@ void MenuScrollViewContainer::PaintBackground(gfx::Canvas* canvas) {
   paint.setStyle(SkPaint::kFill_Style);
   paint.setXfermodeMode(SkXfermode::kSrc_Mode);
 
-  canvas->FillRectInt(0, 0, width(), height(), paint);
+  canvas->DrawRectInt(0, 0, width(), height(), paint);
 #else
   // This is the same as COLOR_TOOLBAR.
   canvas->AsCanvasSkia()->drawColor(SkColorSetRGB(210, 225, 246),

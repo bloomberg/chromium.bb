@@ -227,7 +227,8 @@ void CanvasSkia::DrawStringInt(const std::wstring& text,
 // pixel against both the halo color and transparent since DrawStringWithHalo
 // will modify the bitmap as it goes, and clears pixels shouldn't count as
 // changed.
-static bool pixelShouldGetHalo(const SkBitmap& bitmap, int x, int y,
+static bool pixelShouldGetHalo(const SkBitmap& bitmap,
+                               int x, int y,
                                SkColor halo_color) {
   if (x > 0 &&
       *bitmap.getAddr32(x - 1, y) != halo_color &&
@@ -263,7 +264,7 @@ void CanvasSkia::DrawStringWithHalo(const std::wstring& text,
   CanvasSkia text_canvas(w + 2, h + 2, true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
-  text_canvas.FillRectInt(0, 0, w + 2, h + 2, bkgnd_paint);
+  text_canvas.DrawRectInt(0, 0, w + 2, h + 2, bkgnd_paint);
 
   // Draw the text into the temporary buffer. This will have correct
   // ClearType since the background color is the same as the halo color.

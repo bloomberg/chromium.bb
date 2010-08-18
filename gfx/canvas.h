@@ -97,10 +97,6 @@ class Canvas {
   // See scale() for specifics.
   virtual void ScaleInt(int x, int y) = 0;
 
-  // Fills the given rectangle with the given paint's parameters.
-  virtual void FillRectInt(int x, int y, int w, int h,
-                           const SkPaint& paint) = 0;
-
   // Fills the specified region with the specified color using a transfer
   // mode of SkXfermode::kSrcOver_Mode.
   virtual void FillRectInt(const SkColor& color,
@@ -124,6 +120,10 @@ class Canvas {
   virtual void DrawRectInt(const SkColor& color,
                            int x, int y, int w, int h,
                            SkXfermode::Mode mode) = 0;
+
+  // Draws the given rectangle with the given paint's parameters.
+  virtual void DrawRectInt(int x, int y, int w, int h,
+                           const SkPaint& paint) = 0;
 
   // Draws a single pixel line with the specified color.
   virtual void DrawLineInt(const SkColor& color,

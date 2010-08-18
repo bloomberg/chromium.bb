@@ -202,11 +202,6 @@ void CanvasDirect2D::ScaleInt(int x, int y) {
   rt_->SetTransform(transform);
 }
 
-void CanvasDirect2D::FillRectInt(int x, int y, int w, int h,
-                                 const SkPaint& paint) {
-  NOTIMPLEMENTED();
-}
-
 void CanvasDirect2D::FillRectInt(const SkColor& color,
                                  int x, int y, int w, int h) {
   ScopedComPtr<ID2D1SolidColorBrush> solid_brush;
@@ -230,6 +225,11 @@ void CanvasDirect2D::DrawRectInt(const SkColor& color,
 void CanvasDirect2D::DrawRectInt(const SkColor& color,
                                  int x, int y, int w, int h,
                                  SkXfermode::Mode mode) {
+  NOTIMPLEMENTED();
+}
+
+void CanvasDirect2D::DrawRectInt(int x, int y, int w, int h,
+                                 const SkPaint& paint) {
   NOTIMPLEMENTED();
 }
 

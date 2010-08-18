@@ -335,8 +335,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     paint.setColor(SkColorSetARGB(200, 255, 255, 255));
     paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
     paint.setStyle(SkPaint::kFill_Style);
-    canvas->FillRectInt(
-        0, 0, width(),
+    canvas->DrawRectInt(0, 0, width(),
         height() - 2,  // Visible region that overlaps the toolbar.
         paint);
   }
