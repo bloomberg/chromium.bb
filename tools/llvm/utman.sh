@@ -110,26 +110,26 @@ readonly PNACL_ARM_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-arm"
 readonly PNACL_X8632_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8632"
 readonly PNACL_X8664_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-x8664"
 readonly PNACL_BITCODE_ROOT="${PNACL_TOOLCHAIN_ROOT}/libs-bitcode"
+readonly PNACL_BC_X8632_ROOT="${PNACL_X8632_ROOT}-bc"
+readonly PNACL_BC_X8664_ROOT="${PNACL_X8664_ROOT}-bc"
+readonly PNACL_BC_ARM_ROOT="${PNACL_ARM_ROOT}-bc"
 
 # PNaCl client-toolchain (sandboxed) binary locations
 readonly PNACL_CLIENT_TC_ROOT="$(pwd)/toolchain/sandboxed_translators"
 readonly PNACL_CLIENT_TC_X8632="${PNACL_CLIENT_TC_ROOT}/x8632"
 readonly PNACL_CLIENT_TC_X8664="${PNACL_CLIENT_TC_ROOT}/x8664"
 
-readonly UTMAN_EXPERIMENTAL=${UTMAN_EXPERIMENTAL:-false}
-if ! ${UTMAN_EXPERIMENTAL}; then
-  # Current milestones within each Hg repo:
-  readonly LLVM_REV=de95d2b6c570
-  readonly LLVM_GCC_REV=408df9d0016a
-  readonly NEWLIB_REV=c74ed6d22b4f
-  readonly BINUTILS_REV=808542c052d8
-else
-  # Experimental milestones
-  readonly LLVM_REV=6230486907a8
-  readonly LLVM_GCC_REV=4e2927c6f57a
-  readonly NEWLIB_REV=c74ed6d22b4f
-  readonly BINUTILS_REV=79db169b3d17
-fi
+# Current milestones in each repo
+readonly LLVM_REV=00e7ece90dbc
+readonly LLVM_GCC_REV=6da5d51ee4ac
+readonly NEWLIB_REV=c74ed6d22b4f
+readonly BINUTILS_REV=b013303e1fb2
+
+## Old milestones
+##readonly LLVM_REV=de95d2b6c570
+##readonly LLVM_GCC_REV=408df9d0016a
+##readonly NEWLIB_REV=c74ed6d22b4f
+##readonly BINUTILS_REV=808542c052d8
 
 # Repositories
 readonly REPO_LLVM_GCC="llvm-gcc.nacl-llvm-branches"
@@ -650,6 +650,7 @@ everything() {
   misc-tools
 
   verify
+  bitcode-to-native
 }
 
 #@ all                   - Alias for 'everything'
@@ -911,7 +912,8 @@ llvm-install() {
        make ${MAKE_OPTS} install
 
   mkdir -p "${BFD_PLUGIN_DIR}"
-  ln -sf ../../lib/LLVMgold.so "${BFD_PLUGIN_DIR}"
+
+  ln -sf ../../lib/libLLVMgold.so "${BFD_PLUGIN_DIR}"
   ln -sf ../../lib/libLTO.so "${BFD_PLUGIN_DIR}"
   spopd
 }
@@ -2513,6 +2515,100 @@ verify() {
   #for i in ${PNACL_BITCODE_ROOT}/*.o ; do
   #done
 }
+
+#@ bitcode-to-native  -  Convert all bitcode libraries to native form
+bitcode-to-native() {
+
+  StepBanner "BC-TO-NATIVE" "Converting bitcode libraries to native code"
+
+  rm -rf "${PNACL_BC_X8632_ROOT}"
+  mkdir -p "${PNACL_BC_X8632_ROOT}"
+
+  rm -rf "${PNACL_BC_X8664_ROOT}"
+  mkdir -p "${PNACL_BC_X8664_ROOT}"
+
+  rm -rf "${PNACL_BC_ARM_ROOT}"
+  mkdir -p "${PNACL_BC_ARM_ROOT}"
+
+  local tmp="/tmp/ar-${RANDOM}${RANDOM}"
+  local a=""
+
+  ARCHIVE_LIST="libc.a libnacl.a libstdc++.a libnosys.a libm.a"
+
+  for a in ${ARCHIVE_LIST} ; do
+    rm -rf "${tmp}"
+    mkdir -p "${tmp}"
+    cp "${PNACL_BITCODE_ROOT}/${a}" "${tmp}"
+    spushd ${tmp}
+    mkdir ar-x8632
+    mkdir ar-x8664
+    mkdir ar-arm
+    StepBanner "BC-TO-NATIVE" "Converting ${a}"
+    ${LLVM_AR} x "${a}"
+    for objfile in *.o ; do
+      bitcode-to-native-x8632 "${objfile}" "ar-x8632/${objfile}" &
+      bitcode-to-native-x8664 "${objfile}" "ar-x8664/${objfile}" &
+      bitcode-to-native-arm   "${objfile}" "ar-arm/${objfile}" &
+      wait
+    done
+
+    local ARM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
+    local X8632_AR=${NACL_TOOLCHAIN}/bin/nacl-ar
+    local X8664_AR=${NACL_TOOLCHAIN}/bin/nacl64-ar
+
+    (cd ar-x8632; ${X8632_AR} cq "${a}" *.o; ${X8632_AR} s "${a}") &
+    (cd ar-x8664; ${X8664_AR} cq "${a}" *.o; ${X8664_AR} s "${a}") &
+    (cd ar-arm  ; ${ARM_AR} cq "${a}" *.o; ${ARM_AR} s "${a}") &
+    wait
+
+    mv "ar-x8632/${a}" "${PNACL_BC_X8632_ROOT}"
+    mv "ar-x8664/${a}" "${PNACL_BC_X8664_ROOT}"
+    mv "ar-arm/${a}"   "${PNACL_BC_ARM_ROOT}"
+    spopd
+  done
+}
+
+bitcode-to-native-x8632() {
+  local objfile="$1"
+  local destfile="$2"
+  local sfile="${objfile}.x8632.s"
+
+  ${INSTALL_DIR}/bin/llc -march=x86 -mcpu=pentium4 "${objfile}" -o "${sfile}"
+  ${NACL_TOOLCHAIN}/bin/nacl64-as --32 --nacl-align 5 -n \
+                                  -march=pentium4 -mtune=i386 \
+                                  "${sfile}" -o "${destfile}"
+  rm "${sfile}"
+}
+
+bitcode-to-native-x8664() {
+  local objfile="$1"
+  local destfile="$2"
+  local sfile="${objfile}.x8664.s"
+
+  ${INSTALL_DIR}/bin/llc -march=x86-64 -mcpu=core2 "${objfile}" -o "${sfile}"
+  ${NACL_TOOLCHAIN}/bin/nacl64-as --64 --nacl-align 5 -n -mtune=core2 \
+                                  "${sfile}" -o "${destfile}"
+  rm "${sfile}"
+}
+
+bitcode-to-native-arm() {
+  local objfile="$1"
+  local destfile="$2"
+  local sfile="${objfile}.arm.s"
+
+  ${INSTALL_DIR}/bin/llc -march=arm -mcpu=cortex-a8 -mattr=-neon -mattr=+vfp3 \
+                         -arm-reserve-r9 -sfi-cp-fudge \
+                         -sfi-cp-fudge-percent=75 -sfi-store -sfi-stack \
+                         -sfi-branch -sfi-data -no-inline-jumptables \
+                         "${objfile}" -o "${sfile}"
+
+  ${INSTALL_DIR}/bin/arm-none-linux-gnueabi-as -mfpu=vfp3 -march=armv7-a \
+                         "${sfile}" -o "${destfile}"
+
+  rm "${sfile}"
+}
+
+
 
 ######################################################################
 ######################################################################

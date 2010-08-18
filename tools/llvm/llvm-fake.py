@@ -62,7 +62,7 @@ BASE_ARM_INCLUDE = BASE_ARM + '/arm-none-linux-gnueabi/include'
 
 LD_SCRIPT_ARM = BASE_ARM + '/ld_script_arm_untrusted'
 
-GOLD_PLUGIN = BASE_ARM + '/lib/LLVMgold.so'
+GOLD_PLUGIN = BASE_ARM + '/lib/libLLVMgold.so'
 
 # NOTE: derived from
 # toolchain/linux_x86/nacl64/lib/ldscripts/elf_nacl.x
@@ -552,6 +552,12 @@ def MassageFinalLinkCommandPnacl(args, arch, flags):
     out.append(native_dir + '/crtn.o')
     out.append('-L' + native_dir)
     out.append('-lgcc')
+
+  if '--native-bc-libs' in args:
+    out.remove('--native-bc-libs')
+    out.append('-L' + native_dir + '-bc')
+    out += ['-lm','-lc','-lnacl','-lstdc++','-lc','-lnosys']
+
   return out
 
 
@@ -693,7 +699,12 @@ def Incarnation_bc_final(argv):
 def Incarnation_translate(argv):
   argv.pop(0) # drop porgram name
   arch, argv = ExtractArch(argv)
-  combined_bitcode_file = argv.pop(0)
+
+  bcfiles = [a for a in argv if a.endswith('.bc')]
+  assert len(bcfiles) == 1
+  combined_bitcode_file = bcfiles[0]
+  argv.remove(combined_bitcode_file)
+
   Translate(combined_bitcode_file, argv, arch)
 
 ######################################################################
