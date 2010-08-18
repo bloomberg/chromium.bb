@@ -833,7 +833,11 @@ TEST(ExtensionTest, IsPrivilegeIncrease) {
     { "permissions4", false },  // plugin -> plugin,tabs
     { "plugin1", false },  // plugin -> plugin
     { "plugin2", false },  // plugin -> none
+#if defined(OS_CHROMEOS)
+    { "plugin3", false },  // none -> plugin (illegal on Chrome OS)
+#else
     { "plugin3", true },  // none -> plugin
+#endif
     { "storage", false },  // none -> storage
     { "notifications", false }  // none -> notifications
   };
