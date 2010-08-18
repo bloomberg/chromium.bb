@@ -187,3 +187,4 @@ hooks = [
     "action": ["python", "o3d/build/gyp_o3d", "o3d/build/o3d.gyp", "o3d/tests/lab/ChangeResolution/change_resolution.gyp"],
   },
 ]
+
