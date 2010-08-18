@@ -62,30 +62,9 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(
       GetI18nContentValue(kChewingHsuSelKeyType),
       l10n_util::GetStringUTF16(kChewingHsuSelKeyType.label_message_id));
-
-  int hsu_sel_key_type_min = std::numeric_limits<int>::max();
-  int hsu_sel_key_type_max = std::numeric_limits<int>::min();
-  for (size_t i = 0;
-       i < LanguageMultipleChoicePreference<int>::kMaxItems;
-       ++i) {
-    if (kChewingHsuSelKeyType.values_and_ids[i].item_message_id == 0)
-      break;
-    const int value =
-        kChewingHsuSelKeyType.values_and_ids[i].ibus_config_value;
-    if (value <= hsu_sel_key_type_min)
-      hsu_sel_key_type_min = value;
-    if (value >= hsu_sel_key_type_max)
-      hsu_sel_key_type_max = value;
-  }
-  DCHECK_NE(hsu_sel_key_type_min, std::numeric_limits<int>::max());
-  DCHECK_NE(hsu_sel_key_type_max, std::numeric_limits<int>::min());
-
-  localized_strings->SetString(
-      GetTemplateDataMinName(kChewingHsuSelKeyType),
-      base::IntToString(hsu_sel_key_type_min));
-  localized_strings->SetString(
-      GetTemplateDataMaxName(kChewingHsuSelKeyType),
-      base::IntToString(hsu_sel_key_type_max));
+  localized_strings->Set(
+      GetTemplateDataPropertyName(kChewingHsuSelKeyType),
+      CreateMultipleChoiceList(kChewingHsuSelKeyType));
 }
 
 }  // namespace chromeos

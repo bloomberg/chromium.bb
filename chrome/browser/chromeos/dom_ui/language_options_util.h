@@ -8,7 +8,9 @@
 
 #include <string>
 
+#include "app/l10n_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 
 class ListValue;
@@ -41,12 +43,47 @@ std::string GetTemplateDataMaxName(const T& preference) {
   return std::string(preference.ibus_config_name) + "Max";
 }
 
+// Creates a Value object from the given value. Here we use function
+// overloading to handle string and integer preferences in
+// CreateMultipleChoiceList.
+Value* CreateValue(const char* in_value) {
+  return Value::CreateStringValue(in_value);
+}
+
+// See comments above.
+Value* CreateValue(int in_value) {
+  return Value::CreateIntegerValue(in_value);
+}
+
 }  // namespace
 
 namespace chromeos {
 
+// Creates a multiple choice list from the given preference.
+template <typename T>
 ListValue* CreateMultipleChoiceList(
-    const LanguageMultipleChoicePreference<const char*>& preference);
+    const LanguageMultipleChoicePreference<T>& preference) {
+  int list_length = 0;
+  for (size_t i = 0;
+       i < LanguageMultipleChoicePreference<T>::kMaxItems;
+       ++i) {
+    if (preference.values_and_ids[i].item_message_id == 0)
+      break;
+    ++list_length;
+  }
+  DCHECK_GT(list_length, 0);
+
+  ListValue* list_value = new ListValue();
+  for (int i = 0; i < list_length; ++i) {
+    ListValue* option = new ListValue();
+    option->Append(CreateValue(
+        preference.values_and_ids[i].ibus_config_value));
+    option->Append(Value::CreateStringValue(l10n_util::GetStringUTF16(
+        preference.values_and_ids[i].item_message_id)));
+    list_value->Append(option);
+  }
+  return list_value;
+}
 
 }  // namespace chromeos
 
