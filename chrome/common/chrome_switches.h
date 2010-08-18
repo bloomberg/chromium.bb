@@ -79,6 +79,7 @@ extern const char kDisableRendererAccessibility[];
 extern const char kDisableSessionStorage[];
 extern const char kDisableSharedWorkers[];
 extern const char kDisableSiteSpecificQuirks[];
+extern const char kDisableSSLFalseStart[];
 extern const char kDisableSync[];
 extern const char kDisableSyncApps[];
 extern const char kDisableSyncAutofill[];

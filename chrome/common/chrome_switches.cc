@@ -226,6 +226,9 @@ const char kDisableSharedWorkers[]          = "disable-shared-workers";
 // Disable site-specific tailoring to compatibility issues in WebKit.
 const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 
+// Disable False Start in SSL and TLS connections.
+const char kDisableSSLFalseStart[]          = "disable-ssl-false-start";
+
 // Disable syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
