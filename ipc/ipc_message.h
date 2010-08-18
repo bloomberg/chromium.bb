@@ -157,7 +157,7 @@ class Message : public Pickle {
   }
 
   // Used for async messages with no parameters.
-  static void Log(const Message* msg, std::wstring* l) {
+  static void Log(const Message* msg, std::string* l) {
   }
 
   // Find the end of the message data that starts at range_start.  Returns NULL
@@ -185,8 +185,8 @@ class Message : public Pickle {
 
   void set_received_time(int64 time) const;
   int64 received_time() const { return received_time_; }
-  void set_output_params(const std::wstring& op) const { output_params_ = op; }
-  const std::wstring& output_params() const { return output_params_; }
+  void set_output_params(const std::string& op) const { output_params_ = op; }
+  const std::string& output_params() const { return output_params_; }
   // The following four functions are needed so we can log sync messages with
   // delayed replies.  We stick the log data from the sent message into the
   // reply message, so that when it's sent and we have the output parameters
@@ -257,7 +257,7 @@ class Message : public Pickle {
 #ifdef IPC_MESSAGE_LOG_ENABLED
   // Used for logging.
   mutable int64 received_time_;
-  mutable std::wstring output_params_;
+  mutable std::string output_params_;
   mutable LogData* log_data_;
   mutable bool dont_log_;
 #endif

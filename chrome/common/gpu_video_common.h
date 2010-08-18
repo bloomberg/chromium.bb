@@ -108,7 +108,7 @@ struct ParamTraits<GpuVideoServiceInfoParam> {
   typedef GpuVideoServiceInfoParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -116,7 +116,7 @@ struct ParamTraits<GpuVideoDecoderInfoParam> {
   typedef GpuVideoDecoderInfoParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -124,7 +124,7 @@ struct ParamTraits<GpuVideoDecoderInitParam> {
   typedef GpuVideoDecoderInitParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -132,7 +132,7 @@ struct ParamTraits<GpuVideoDecoderInitDoneParam> {
   typedef GpuVideoDecoderInitDoneParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -140,7 +140,7 @@ struct ParamTraits<GpuVideoDecoderInputBufferParam> {
   typedef GpuVideoDecoderInputBufferParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -148,7 +148,7 @@ struct ParamTraits<GpuVideoDecoderOutputBufferParam> {
   typedef GpuVideoDecoderOutputBufferParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -156,7 +156,7 @@ struct ParamTraits<GpuVideoDecoderErrorInfoParam> {
   typedef GpuVideoDecoderErrorInfoParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -164,7 +164,7 @@ struct ParamTraits<GpuVideoDecoderFormatChangeParam> {
   typedef GpuVideoDecoderFormatChangeParam param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 };
 

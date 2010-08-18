@@ -24,9 +24,9 @@ TEST_F(AboutIPCControllerTest, TestFilter) {
   IPC::LogData data;
 
   // Make sure generic names do NOT get filtered.
-  std::wstring names[] = { L"PluginProcessingIsMyLife",
-                           L"ViewMsgFoo",
-                           L"NPObjectHell" };
+  std::string names[] = { "PluginProcessingIsMyLife",
+                          "ViewMsgFoo",
+                          "NPObjectHell" };
   for (size_t i = 0; i < arraysize(names); i++) {
     data.message_name = names[i];
     scoped_nsobject<CocoaLogData> cdata([[CocoaLogData alloc]
@@ -35,7 +35,7 @@ TEST_F(AboutIPCControllerTest, TestFilter) {
   }
 
   // Flip a checkbox, see it filtered, flip back, all is fine.
-  data.message_name = L"ViewMsgFoo";
+  data.message_name = "ViewMsgFoo";
   scoped_nsobject<CocoaLogData> cdata([[CocoaLogData alloc]
                                         initWithLogData:data]);
   [controller setDisplayViewMessages:NO];

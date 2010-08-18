@@ -32,6 +32,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/pepper_widget.h"

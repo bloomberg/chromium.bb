@@ -207,13 +207,13 @@ TEST(IPCMessageTest, Geoposition) {
   EXPECT_EQ(input.error_code, output.error_code);
   EXPECT_EQ(input.error_message, output.error_message);
 
-  std::wstring log_message;
+  std::string log_message;
   IPC::LogParam(output, &log_message);
-  EXPECT_STREQ(L"<Geoposition>"
-               L"0.100000 51.300000 13.700000 42.240000 "
-               L"9.300000 55.000000 120.000000 "
-               L"1977 unittest error message for geoposition"
-               L"<Geoposition::ErrorCode>2",
+  EXPECT_STREQ("<Geoposition>"
+               "0.100000 51.300000 13.700000 42.240000 "
+               "9.300000 55.000000 120.000000 "
+               "1977 unittest error message for geoposition"
+               "<Geoposition::ErrorCode>2",
                log_message.c_str());
 }
 

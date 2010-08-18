@@ -54,8 +54,8 @@ struct ParamTraits<AutomationMsg_Find_Params> {
       ReadParam(m, iter, &p->match_case) &&
       ReadParam(m, iter, &p->find_next);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<AutomationMsg_Find_Params>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<AutomationMsg_Find_Params>");
   }
 };
 
@@ -72,20 +72,20 @@ struct ParamTraits<AutomationMsg_NavigationResponseValues> {
     *p = static_cast<AutomationMsg_NavigationResponseValues>(type);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring control;
+  static void Log(const param_type& p, std::string* l) {
+    std::string control;
     switch (p) {
      case AUTOMATION_MSG_NAVIGATION_ERROR:
-      control = L"AUTOMATION_MSG_NAVIGATION_ERROR";
+      control = "AUTOMATION_MSG_NAVIGATION_ERROR";
       break;
      case AUTOMATION_MSG_NAVIGATION_SUCCESS:
-      control = L"AUTOMATION_MSG_NAVIGATION_SUCCESS";
+      control = "AUTOMATION_MSG_NAVIGATION_SUCCESS";
       break;
      case AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED:
-      control = L"AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED";
+      control = "AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED";
       break;
      default:
-      control = L"UNKNOWN";
+      control = "UNKNOWN";
       break;
     }
 
@@ -106,17 +106,17 @@ struct ParamTraits<AutomationMsg_ExtensionResponseValues> {
     *p = static_cast<AutomationMsg_ExtensionResponseValues>(type);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring control;
+  static void Log(const param_type& p, std::string* l) {
+    std::string control;
     switch (p) {
      case AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED:
-      control = L"AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED";
+      control = "AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED";
       break;
      case AUTOMATION_MSG_EXTENSION_INSTALL_FAILED:
-      control = L"AUTOMATION_MSG_EXTENSION_INSTALL_FAILED";
+      control = "AUTOMATION_MSG_EXTENSION_INSTALL_FAILED";
       break;
      default:
-      control = L"UNKNOWN";
+      control = "UNKNOWN";
       break;
     }
 
@@ -137,23 +137,23 @@ struct ParamTraits<AutomationMsg_ExtensionProperty> {
     *p = static_cast<AutomationMsg_ExtensionProperty>(type);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring control;
+  static void Log(const param_type& p, std::string* l) {
+    std::string control;
     switch (p) {
      case AUTOMATION_MSG_EXTENSION_ID:
-      control = L"AUTOMATION_MSG_EXTENSION_ID";
+      control = "AUTOMATION_MSG_EXTENSION_ID";
       break;
      case AUTOMATION_MSG_EXTENSION_NAME:
-      control = L"AUTOMATION_MSG_EXTENSION_NAME";
+      control = "AUTOMATION_MSG_EXTENSION_NAME";
       break;
      case AUTOMATION_MSG_EXTENSION_VERSION:
-      control = L"AUTOMATION_MSG_EXTENSION_VERSION";
+      control = "AUTOMATION_MSG_EXTENSION_VERSION";
       break;
      case AUTOMATION_MSG_EXTENSION_BROWSER_ACTION_INDEX:
-      control = L"AUTOMATION_MSG_EXTENSION_BROWSER_ACTION_INDEX";
+      control = "AUTOMATION_MSG_EXTENSION_BROWSER_ACTION_INDEX";
       break;
      default:
-      control = L"UNKNOWN";
+      control = "UNKNOWN";
       break;
     }
 
@@ -174,23 +174,23 @@ struct ParamTraits<SecurityStyle> {
     *p = static_cast<SecurityStyle>(type);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring control;
+  static void Log(const param_type& p, std::string* l) {
+    std::string control;
     switch (p) {
      case SECURITY_STYLE_UNKNOWN:
-      control = L"SECURITY_STYLE_UNKNOWN";
+      control = "SECURITY_STYLE_UNKNOWN";
       break;
      case SECURITY_STYLE_UNAUTHENTICATED:
-      control = L"SECURITY_STYLE_UNAUTHENTICATED";
+      control = "SECURITY_STYLE_UNAUTHENTICATED";
       break;
      case SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      control = L"SECURITY_STYLE_AUTHENTICATION_BROKEN";
+      control = "SECURITY_STYLE_AUTHENTICATION_BROKEN";
       break;
      case SECURITY_STYLE_AUTHENTICATED:
-      control = L"SECURITY_STYLE_AUTHENTICATED";
+      control = "SECURITY_STYLE_AUTHENTICATED";
       break;
      default:
-      control = L"UNKNOWN";
+      control = "UNKNOWN";
       break;
     }
 
@@ -211,20 +211,20 @@ struct ParamTraits<NavigationEntry::PageType> {
     *p = static_cast<NavigationEntry::PageType>(type);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring control;
+  static void Log(const param_type& p, std::string* l) {
+    std::string control;
     switch (p) {
      case NavigationEntry::NORMAL_PAGE:
-      control = L"NORMAL_PAGE";
+      control = "NORMAL_PAGE";
       break;
      case NavigationEntry::ERROR_PAGE:
-      control = L"ERROR_PAGE";
+      control = "ERROR_PAGE";
       break;
      case NavigationEntry::INTERSTITIAL_PAGE:
-      control = L"INTERSTITIAL_PAGE";
+      control = "INTERSTITIAL_PAGE";
       break;
      default:
-      control = L"UNKNOWN";
+      control = "UNKNOWN";
       break;
     }
 
@@ -271,26 +271,26 @@ struct ParamTraits<Reposition_Params> {
            ReadParam(m, iter, &p->set_parent) &&
            ReadParam(m, iter, &p->parent_window);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.window, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.window_insert_after, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.left, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.top, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.width, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.height, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.flags, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.set_parent, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.parent_window, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 #endif  // defined(OS_WIN)
@@ -321,18 +321,18 @@ struct ParamTraits<AutomationURLRequest> {
            ReadParam(m, iter, &p->extra_request_headers) &&
            ReadParam(m, iter, &p->upload_data);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.method, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.referrer, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.extra_request_headers, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.upload_data, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -365,20 +365,20 @@ struct ParamTraits<AutomationURLResponse> {
            ReadParam(m, iter, &p->redirect_url) &&
            ReadParam(m, iter, &p->redirect_status);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.mime_type, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.headers, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.content_length, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.last_modified, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.redirect_url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.redirect_status, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -420,26 +420,26 @@ struct ParamTraits<ExternalTabSettings> {
            ReadParam(m, iter, &p->referrer) &&
            ReadParam(m, iter, &p->infobars_enabled);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.parent, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.dimensions, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.style, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.is_off_the_record, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.load_requests_via_automation, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.handle_top_level_requests, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.initial_url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.referrer, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.infobars_enabled, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -481,26 +481,26 @@ struct ParamTraits<NavigationInfo> {
            ReadParam(m, iter, &p->displayed_insecure_content) &&
            ReadParam(m, iter, &p->ran_insecure_content);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.navigation_type, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.relative_offset, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.navigation_index, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.title, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.referrer, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.security_style, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.displayed_insecure_content, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.ran_insecure_content, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -555,22 +555,22 @@ struct ParamTraits<ContextMenuParams> {
       ReadParam(m, iter, &p->page_url) &&
       ReadParam(m, iter, &p->frame_url);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.screen_x, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.screen_y, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.link_url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.unfiltered_link_url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.src_url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.page_url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.frame_url, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -601,18 +601,18 @@ struct ParamTraits<AttachExternalTabParams> {
         ReadParam(m, iter, &p->user_gesture);
   }
 
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.cookie, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.dimensions, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.disposition, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.user_gesture, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 

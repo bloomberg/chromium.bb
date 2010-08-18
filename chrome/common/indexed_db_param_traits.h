@@ -39,14 +39,14 @@ struct ParamTraits<SerializedScriptValue> {
     r->set_data(data);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<SerializedScriptValue>(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<SerializedScriptValue>(");
     LogParam(p.is_null(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.is_invalid(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.data(), l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -86,14 +86,14 @@ struct ParamTraits<IndexedDBKey> {
     NOTREACHED();
     return false;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<IndexedDBKey>(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<IndexedDBKey>(");
     LogParam(int(p.type()), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.string(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.number(), l);
-    l->append(L")");
+    l->append(")");
   }
 };
 

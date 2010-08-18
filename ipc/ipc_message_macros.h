@@ -461,22 +461,22 @@ void class_name::OnMessageReceived(const IPC::Message& msg) \
 #ifndef IPC_LOG_TABLE_CREATED
 #define IPC_LOG_TABLE_CREATED
 typedef void (*LogFunction)(uint32 type,
-                           std::wstring* name,
+                           std::string* name,
                            const IPC::Message* msg,
-                           std::wstring* params);
+                           std::string* params);
 
 LogFunction g_log_function_mapping[LastMsgIndex];
 #endif
 
 
 #define IPC_BEGIN_MESSAGES(label) \
-  void label##MsgLog(uint32 type, std::wstring* name, const IPC::Message* msg, std::wstring* params) { \
+  void label##MsgLog(uint32 type, std::string* name, const IPC::Message* msg, std::string* params) { \
   switch (type) {
 
 #define IPC_END_MESSAGES(label) \
      default: \
       if (name) \
-        *name = L"[UNKNOWN " L ## #label L" MSG"; \
+        *name = "[UNKNOWN " #label " MSG]"; \
     } \
   } \
   class LoggerRegisterHelper##label { \
@@ -490,7 +490,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
 #define IPC_MESSAGE_LOG(msg_class) \
      case msg_class##__ID: \
       if (name) \
-        *name = L ## #msg_class; \
+        *name = #msg_class; \
       if (msg && params) \
         msg_class::Log(msg, params); \
       break;
@@ -738,7 +738,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                \
       msg_class(const type1& arg1);                                 \
       ~msg_class();                                                 \
-      static void Log(const Message* msg, std::wstring* l);         \
+      static void Log(const Message* msg, std::string* l);          \
   };
 
 #define IPC_MESSAGE_CONTROL2(msg_class, type1, type2)                   \
@@ -747,7 +747,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                    \
       msg_class(const type1& arg1, const type2& arg2);                  \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_MESSAGE_CONTROL3(msg_class, type1, type2, type3)            \
@@ -757,7 +757,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                    \
       msg_class(const type1& arg1, const type2& arg2, const type3& arg3); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_MESSAGE_CONTROL4(msg_class, type1, type2, type3, type4)     \
@@ -768,7 +768,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       msg_class(const type1& arg1, const type2& arg2, const type3& arg3, \
                 const type4& arg4);                                     \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_MESSAGE_CONTROL5(msg_class, type1, type2, type3, type4, type5) \
@@ -779,7 +779,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       msg_class(const type1& arg1, const type2& arg2,                   \
                 const type3& arg3, const type4& arg4, const type5& arg5); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_MESSAGE_ROUTED0(msg_class) \
@@ -796,7 +796,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                    \
       msg_class(int32 routing_id, const type1& arg1);                   \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_MESSAGE_ROUTED2(msg_class, type1, type2)                    \
@@ -806,7 +806,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                    \
       msg_class(int32 routing_id, const type1& arg1, const type2& arg2); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_MESSAGE_ROUTED3(msg_class, type1, type2, type3)             \
@@ -817,7 +817,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       msg_class(int32 routing_id, const type1& arg1, const type2& arg2, \
                 const type3& arg3);                                     \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_MESSAGE_ROUTED4(msg_class, type1, type2, type3, type4)      \
@@ -828,7 +828,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       msg_class(int32 routing_id, const type1& arg1, const type2& arg2, \
                 const type3& arg3, const type4& arg4);                  \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_MESSAGE_ROUTED5(msg_class, type1, type2, type3, type4, type5) \
@@ -840,7 +840,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       msg_class(int32 routing_id, const type1& arg1, const type2& arg2, \
                 const type3& arg3, const type4& arg4, const type5& arg5); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL0_0(msg_class) \
@@ -849,7 +849,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                \
       msg_class();                                                  \
       ~msg_class();                                                 \
-      static void Log(const Message* msg, std::wstring* l);         \
+      static void Log(const Message* msg, std::string* l);          \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL0_1(msg_class, type1_out)               \
@@ -858,7 +858,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                    \
       msg_class(type1_out* arg1);                                       \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL0_2(msg_class, type1_out, type2_out) \
@@ -868,7 +868,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(type1_out* arg1, type2_out* arg2);                         \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL0_3(msg_class, type1_out, type2_out, type3_out) \
@@ -879,7 +879,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(type1_out* arg1, type2_out* arg2, type3_out* arg3);    \
    ~msg_class();                                                        \
-   static void Log(const Message* msg, std::wstring* l);                \
+   static void Log(const Message* msg, std::string* l);                 \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL1_0(msg_class, type1_in)                \
@@ -889,7 +889,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                    \
       msg_class(const type1_in& arg1);                                  \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL1_1(msg_class, type1_in, type1_out)     \
@@ -899,7 +899,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                    \
       msg_class(const type1_in& arg1, type1_out* arg2);                 \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL1_2(msg_class, type1_in, type1_out, type2_out) \
@@ -909,7 +909,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, type1_out* arg2, type2_out* arg3);   \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL1_3(msg_class, type1_in, type1_out, type2_out, type3_out) \
@@ -920,7 +920,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL2_0(msg_class, type1_in, type2_in)      \
@@ -930,7 +930,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                    \
       msg_class(const type1_in& arg1, const type2_in& arg2);            \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL2_1(msg_class, type1_in, type2_in, type1_out) \
@@ -940,7 +940,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
       enum { ID = msg_class##__ID };                                    \
       msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL2_2(msg_class, type1_in, type2_in, type1_out, type2_out) \
@@ -951,7 +951,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL2_3(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out) \
@@ -962,7 +962,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4, type3_out* arg5); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL3_1(msg_class, type1_in, type2_in, type3_in, type1_out) \
@@ -973,7 +973,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL3_2(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out) \
@@ -984,7 +984,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL3_3(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out) \
@@ -995,7 +995,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5, type3_out* arg6); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL4_1(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out) \
@@ -1006,7 +1006,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg6); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_CONTROL4_2(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out) \
@@ -1017,7 +1017,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED0_0(msg_class) \
@@ -1026,7 +1026,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id);     \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED0_1(msg_class, type1_out) \
@@ -1035,7 +1035,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, type1_out* arg1);  \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);             \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED0_2(msg_class, type1_out, type2_out) \
@@ -1045,7 +1045,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, type1_out* arg1, type2_out* arg2); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED0_3(msg_class, type1_out, type2_out, type3_out) \
@@ -1056,7 +1056,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, type1_out* arg1, type2_out* arg2, type3_out* arg3); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_0(msg_class, type1_in) \
@@ -1066,7 +1066,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_1(msg_class, type1_in, type1_out) \
@@ -1076,7 +1076,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, type1_out* arg2);    \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_2(msg_class, type1_in, type1_out, type2_out) \
@@ -1086,7 +1086,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, type1_out* arg2, type2_out* arg3); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_3(msg_class, type1_in, type1_out, type2_out, type3_out) \
@@ -1097,7 +1097,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED1_4(msg_class, type1_in, type1_out, type2_out, type3_out, type4_out) \
@@ -1108,7 +1108,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, type1_out* arg2, type2_out* arg3, type3_out* arg4, type4_out* arg5); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED2_0(msg_class, type1_in, type2_in) \
@@ -1118,7 +1118,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED2_1(msg_class, type1_in, type2_in, type1_out) \
@@ -1128,7 +1128,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED2_2(msg_class, type1_in, type2_in, type1_out, type2_out) \
@@ -1139,7 +1139,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED2_3(msg_class, type1_in, type2_in, type1_out, type2_out, type3_out) \
@@ -1150,7 +1150,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, type1_out* arg3, type2_out* arg4, type3_out* arg5); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED3_0(msg_class, type1_in, type2_in, type3_in) \
@@ -1160,7 +1160,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
     };
 
 #define IPC_SYNC_MESSAGE_ROUTED3_1(msg_class, type1_in, type2_in, type3_in, type1_out) \
@@ -1171,7 +1171,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED3_2(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out) \
@@ -1182,7 +1182,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED3_3(msg_class, type1_in, type2_in, type3_in, type1_out, type2_out, type3_out) \
@@ -1193,7 +1193,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, type1_out* arg4, type2_out* arg5, type3_out* arg6); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED4_0(msg_class, type1_in, type2_in, type3_in, type4_in) \
@@ -1204,7 +1204,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED4_1(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out) \
@@ -1215,7 +1215,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg6); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED4_2(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out) \
@@ -1226,7 +1226,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED4_3(msg_class, type1_in, type2_in, type3_in, type4_in, type1_out, type2_out, type3_out) \
@@ -1237,7 +1237,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, type1_out* arg5, type2_out* arg6, type3_out* arg7); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED5_0(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in) \
@@ -1248,7 +1248,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type5_in& arg5); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED5_1(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out) \
@@ -1259,7 +1259,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type5_in& arg5, type1_out* arg6); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED5_2(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out) \
@@ -1270,7 +1270,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type4_in& arg5, type1_out* arg6, type2_out* arg7); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #define IPC_SYNC_MESSAGE_ROUTED5_3(msg_class, type1_in, type2_in, type3_in, type4_in, type5_in, type1_out, type2_out, type3_out) \
@@ -1281,7 +1281,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
    enum { ID = msg_class##__ID }; \
    msg_class(int routing_id, const type1_in& arg1, const type2_in& arg2, const type3_in& arg3, const type4_in& arg4, const type4_in& arg5, type1_out* arg6, type2_out* arg7, type3_out* arg8); \
       ~msg_class();                                                     \
-      static void Log(const Message* msg, std::wstring* l);             \
+      static void Log(const Message* msg, std::string* l);              \
   };
 
 #endif  // #if defined()

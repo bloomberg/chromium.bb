@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string_number_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/test/automation/automation_handle_tracker.h"
 #include "googleurl/src/gurl.h"
@@ -87,30 +88,30 @@ struct ParamTraits<AutocompleteMatchData> {
     return true;
   }
 
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"[");
-    l->append(UTF8ToWide(p.provider_name));
-    l->append(L" ");
-    l->append(UTF8ToWide(base::IntToString(p.relevance)));
-    l->append(L" ");
-    l->append(p.deletable ? L"true" : L"false");
-    l->append(L" ");
-    l->append(p.fill_into_edit);
-    l->append(L" ");
-    l->append(UTF8ToWide(base::IntToString(p.inline_autocomplete_offset)));
-    l->append(L" ");
-    l->append(UTF8ToWide(p.destination_url.spec()));
-    l->append(L" ");
-    l->append(p.contents);
-    l->append(L" ");
-    l->append(p.description);
-    l->append(L" ");
-    l->append(p.is_history_what_you_typed_match ? L"true" : L"false");
-    l->append(L" ");
-    l->append(UTF8ToWide(p.type));
-    l->append(L" ");
-    l->append(p.starred ? L"true" : L"false");
-    l->append(L"]");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("[");
+    l->append(p.provider_name);
+    l->append(" ");
+    l->append(base::IntToString(p.relevance));
+    l->append(" ");
+    l->append(p.deletable ? "true" : "false");
+    l->append(" ");
+    LogParam(p.fill_into_edit, l);
+    l->append(" ");
+    l->append(base::IntToString(p.inline_autocomplete_offset));
+    l->append(" ");
+    l->append(p.destination_url.spec());
+    l->append(" ");
+    LogParam(p.contents, l);
+    l->append(" ");
+    LogParam(p.description, l);
+    l->append(" ");
+    l->append(p.is_history_what_you_typed_match ? "true" : "false");
+    l->append(" ");
+    l->append(p.type);
+    l->append(" ");
+    l->append(p.starred ? "true" : "false");
+    l->append("]");
   }
 };
 }  // namespace IPC

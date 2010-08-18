@@ -27,7 +27,7 @@
 #include "base/thread.h"
 #include "base/thread_local.h"
 #include "base/trace_event.h"
-
+#include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

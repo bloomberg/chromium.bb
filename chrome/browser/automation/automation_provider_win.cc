@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/keyboard_codes.h"
 #include "base/trace_event.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_extension_function.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/common/webkit_param_traits.h"
 
+#include "base/format_macros.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
@@ -27,16 +28,16 @@ bool ParamTraits<WebKit::WebRect>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->height);
 }
 
-void ParamTraits<WebKit::WebRect>::Log(const param_type& p, std::wstring* l) {
-  l->append(L"(");
+void ParamTraits<WebKit::WebRect>::Log(const param_type& p, std::string* l) {
+  l->append("(");
   LogParam(p.x, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.y, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.width, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.height, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<WebKit::WebScreenInfo>::Write(Message* m, const param_type& p) {
@@ -58,18 +59,18 @@ bool ParamTraits<WebKit::WebScreenInfo>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<WebKit::WebScreenInfo>::Log(const param_type& p,
-                                             std::wstring* l) {
-  l->append(L"(");
+                                             std::string* l) {
+  l->append("(");
   LogParam(p.depth, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.depthPerComponent, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.isMonochrome, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.rect, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.availableRect, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<WebKit::WebFindOptions>::Write(Message* m,
@@ -88,14 +89,20 @@ bool ParamTraits<WebKit::WebFindOptions>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<WebKit::WebFindOptions>::Log(const param_type& p,
-                                              std::wstring* l) {
-  l->append(L"(");
+                                              std::string* l) {
+  l->append("(");
   LogParam(p.forward, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.matchCase, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.findNext, l);
-  l->append(L")");
+  l->append(")");
+}
+
+void ParamTraits<WebKit::WebCache::ResourceTypeStat>::Log(
+    const param_type& p, std::string* l) {
+  l->append(StringPrintf("%" PRIuS " %" PRIuS " %" PRIuS " %" PRIuS,
+                         p.count, p.size, p.liveSize, p.decodedSize));
 }
 
 void ParamTraits<WebKit::WebMediaPlayerAction>::Write(Message* m,
@@ -115,25 +122,25 @@ bool ParamTraits<WebKit::WebMediaPlayerAction>::Read(const Message* m,
 }
 
 void ParamTraits<WebKit::WebMediaPlayerAction>::Log(const param_type& p,
-                                                    std::wstring* l) {
-  l->append(L"(");
+                                                    std::string* l) {
+  l->append("(");
   switch (p.type) {
     case WebKit::WebMediaPlayerAction::Play:
-      l->append(L"Play");
+      l->append("Play");
       break;
     case WebKit::WebMediaPlayerAction::Mute:
-      l->append(L"Mute");
+      l->append("Mute");
       break;
     case WebKit::WebMediaPlayerAction::Loop:
-      l->append(L"Loop");
+      l->append("Loop");
       break;
     default:
-      l->append(L"Unknown");
+      l->append("Unknown");
       break;
   }
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.enable, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<WebKit::WebCompositionUnderline>::Write(Message* m,
@@ -155,16 +162,16 @@ bool ParamTraits<WebKit::WebCompositionUnderline>::Read(
 }
 
 void ParamTraits<WebKit::WebCompositionUnderline>::Log(const param_type& p,
-                                                       std::wstring* l) {
-  l->append(L"(");
+                                                       std::string* l) {
+  l->append("(");
   LogParam(p.startOffset, l);
-  l->append(L",");
+  l->append(",");
   LogParam(p.endOffset, l);
-  l->append(L":");
+  l->append(":");
   LogParam(p.color, l);
-  l->append(L":");
+  l->append(":");
   LogParam(p.thick, l);
-  l->append(L")");
+  l->append(")");
 }
 
 }  // namespace IPC

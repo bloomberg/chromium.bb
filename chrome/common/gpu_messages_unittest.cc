@@ -29,7 +29,7 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   EXPECT_EQ(input.pixel_shader_version(), output.pixel_shader_version());
   EXPECT_EQ(input.vertex_shader_version(), output.vertex_shader_version());
 
-  std::wstring log_message;
+  std::string log_message;
   IPC::LogParam(output, &log_message);
-  EXPECT_STREQ(L"<GPUInfo> 10de 429 6.14.11.7715", log_message.c_str());
+  EXPECT_STREQ("<GPUInfo> 10de 429 6.14.11.7715", log_message.c_str());
 }

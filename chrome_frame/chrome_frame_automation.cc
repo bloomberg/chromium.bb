@@ -17,6 +17,7 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
+#include "base/utf_string_conversions.h"
 #include "base/waitable_event.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_constants.h"

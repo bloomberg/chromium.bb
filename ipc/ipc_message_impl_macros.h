@@ -97,7 +97,7 @@
 #define IPC_ASYNC_MESSAGE_DTOR_AND_LOG(msg_class)                       \
   msg_class::~msg_class() {}                                            \
                                                                         \
-  void msg_class::Log(const Message* msg, std::wstring* l) {            \
+  void msg_class::Log(const Message* msg, std::string* l) {             \
     Param p;                                                            \
     if (Read(msg, &p))                                                  \
       IPC::LogParam(p, l);                                              \
@@ -198,7 +198,7 @@
 #define IPC_SYNC_MESSAGE_DTOR_AND_LOG(msg_class)                        \
   msg_class::~msg_class() {}                                            \
                                                                         \
-  void msg_class::Log(const Message* msg, std::wstring* l) {            \
+  void msg_class::Log(const Message* msg, std::string* l) {             \
     if (msg->is_sync()) {                                               \
       TupleTypes<SendParam>::ValueTuple p;                              \
       if (ReadSendParam(msg, &p))                                       \

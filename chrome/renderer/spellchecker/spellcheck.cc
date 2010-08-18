@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/renderer/render_thread.h"

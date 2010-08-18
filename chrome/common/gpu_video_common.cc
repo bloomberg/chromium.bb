@@ -23,8 +23,8 @@ bool ParamTraits<GpuVideoServiceInfoParam>::Read(
 }
 
 void ParamTraits<GpuVideoServiceInfoParam>::Log(
-    const GpuVideoServiceInfoParam& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d, %d, %d)",
+    const GpuVideoServiceInfoParam& p, std::string* l) {
+  l->append(StringPrintf("(%d, %d, %d)",
             p.video_service_route_id_,
             p.video_service_host_route_id_,
             p.service_available_));
@@ -49,8 +49,8 @@ bool ParamTraits<GpuVideoDecoderInfoParam>::Read(
 }
 
 void ParamTraits<GpuVideoDecoderInfoParam>::Log(
-    const GpuVideoDecoderInfoParam& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d, %d, %d)",
+    const GpuVideoDecoderInfoParam& p, std::string* l) {
+  l->append(StringPrintf("(%d, %d, %d)",
             p.decoder_id_,
             p.decoder_route_id_,
             p.decoder_host_route_id_));
@@ -75,8 +75,8 @@ bool ParamTraits<GpuVideoDecoderInitParam>::Read(
 }
 
 void ParamTraits<GpuVideoDecoderInitParam>::Log(
-    const GpuVideoDecoderInitParam& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d, %d %d)", p.codec_id_, p.width_, p.height_));
+    const GpuVideoDecoderInitParam& p, std::string* l) {
+  l->append(StringPrintf("(%d, %d %d)", p.codec_id_, p.width_, p.height_));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -112,8 +112,8 @@ bool ParamTraits<GpuVideoDecoderInitDoneParam>::Read(
 }
 
 void ParamTraits<GpuVideoDecoderInitDoneParam>::Log(
-    const GpuVideoDecoderInitDoneParam& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d)", p.stride_));
+    const GpuVideoDecoderInitDoneParam& p, std::string* l) {
+  l->append(StringPrintf("(%d)", p.stride_));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -135,8 +135,8 @@ bool ParamTraits<GpuVideoDecoderInputBufferParam>::Read(
 }
 
 void ParamTraits<GpuVideoDecoderInputBufferParam>::Log(
-    const GpuVideoDecoderInputBufferParam& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d %d %d)",
+    const GpuVideoDecoderInputBufferParam& p, std::string* l) {
+  l->append(StringPrintf("(%d %d %d)",
                          static_cast<int>(p.timestamp_),
                          p.offset_, p.size_));
 }
@@ -160,8 +160,8 @@ bool ParamTraits<GpuVideoDecoderOutputBufferParam>::Read(
 }
 
 void ParamTraits<GpuVideoDecoderOutputBufferParam>::Log(
-    const GpuVideoDecoderOutputBufferParam& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d %d) %x",
+    const GpuVideoDecoderOutputBufferParam& p, std::string* l) {
+  l->append(StringPrintf("(%d %d) %x",
                          static_cast<int>(p.timestamp_),
                          static_cast<int>(p.duration_),
                          p.flags_));
@@ -182,8 +182,8 @@ bool ParamTraits<GpuVideoDecoderErrorInfoParam>::Read(
 }
 
 void ParamTraits<GpuVideoDecoderErrorInfoParam>::Log(
-    const GpuVideoDecoderErrorInfoParam& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d)", p.error_id));
+    const GpuVideoDecoderErrorInfoParam& p, std::string* l) {
+  l->append(StringPrintf("(%d)", p.error_id));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -203,8 +203,8 @@ bool ParamTraits<GpuVideoDecoderFormatChangeParam>::Read(
 }
 
 void ParamTraits<GpuVideoDecoderFormatChangeParam>::Log(
-    const GpuVideoDecoderFormatChangeParam& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d %d)", p.input_buffer_size_,
+    const GpuVideoDecoderFormatChangeParam& p, std::string* l) {
+  l->append(StringPrintf("(%d %d)", p.input_buffer_size_,
                          p.output_buffer_size_));
 }
 };

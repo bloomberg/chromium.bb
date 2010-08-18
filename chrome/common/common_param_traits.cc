@@ -93,8 +93,8 @@ bool ParamTraits<SkBitmap>::Read(const Message* m, void** iter, SkBitmap* r) {
   return bmp_data->InitSkBitmapFromData(r, variable_data, variable_data_size);
 }
 
-void ParamTraits<SkBitmap>::Log(const SkBitmap& p, std::wstring* l) {
-  l->append(StringPrintf(L"<SkBitmap>"));
+void ParamTraits<SkBitmap>::Log(const SkBitmap& p, std::string* l) {
+  l->append("<SkBitmap>");
 }
 
 #endif  // EXCLUDE_SKIA_DEPENDENCIES
@@ -114,8 +114,8 @@ bool ParamTraits<GURL>::Read(const Message* m, void** iter, GURL* p) {
   return true;
 }
 
-void ParamTraits<GURL>::Log(const GURL& p, std::wstring* l) {
-  l->append(UTF8ToWide(p.spec()));
+void ParamTraits<GURL>::Log(const GURL& p, std::string* l) {
+  l->append(p.spec());
 }
 
 void ParamTraits<gfx::Point>::Write(Message* m, const gfx::Point& p) {
@@ -134,8 +134,8 @@ bool ParamTraits<gfx::Point>::Read(const Message* m, void** iter,
   return true;
 }
 
-void ParamTraits<gfx::Point>::Log(const gfx::Point& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d, %d)", p.x(), p.y()));
+void ParamTraits<gfx::Point>::Log(const gfx::Point& p, std::string* l) {
+  l->append(StringPrintf("(%d, %d)", p.x(), p.y()));
 }
 
 
@@ -160,8 +160,8 @@ bool ParamTraits<gfx::Rect>::Read(const Message* m, void** iter, gfx::Rect* r) {
   return true;
 }
 
-void ParamTraits<gfx::Rect>::Log(const gfx::Rect& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d, %d, %d, %d)", p.x(), p.y(),
+void ParamTraits<gfx::Rect>::Log(const gfx::Rect& p, std::string* l) {
+  l->append(StringPrintf("(%d, %d, %d, %d)", p.x(), p.y(),
                          p.width(), p.height()));
 }
 
@@ -181,8 +181,8 @@ bool ParamTraits<gfx::Size>::Read(const Message* m, void** iter, gfx::Size* r) {
   return true;
 }
 
-void ParamTraits<gfx::Size>::Log(const gfx::Size& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%d, %d)", p.width(), p.height()));
+void ParamTraits<gfx::Size>::Log(const gfx::Size& p, std::string* l) {
+  l->append(StringPrintf("(%d, %d)", p.width(), p.height()));
 }
 
 void ParamTraits<ContentSetting>::Write(Message* m, const param_type& p) {
@@ -200,7 +200,7 @@ bool ParamTraits<ContentSetting>::Read(const Message* m, void** iter,
   return true;
 }
 
-void ParamTraits<ContentSetting>::Log(const param_type& p, std::wstring* l) {
+void ParamTraits<ContentSetting>::Log(const param_type& p, std::string* l) {
   LogParam(static_cast<int>(p), l);
 }
 
@@ -220,8 +220,8 @@ bool ParamTraits<ContentSettings>::Read(
 }
 
 void ParamTraits<ContentSettings>::Log(
-    const ContentSettings& p, std::wstring* l) {
-  l->append(StringPrintf(L"<ContentSettings>"));
+    const ContentSettings& p, std::string* l) {
+  l->append("<ContentSettings>");
 }
 
 void ParamTraits<webkit_glue::WebApplicationInfo>::Write(
@@ -261,8 +261,8 @@ bool ParamTraits<webkit_glue::WebApplicationInfo>::Read(
 }
 
 void ParamTraits<webkit_glue::WebApplicationInfo>::Log(
-    const webkit_glue::WebApplicationInfo& p, std::wstring* l) {
-  l->append(L"<WebApplicationInfo>");
+    const webkit_glue::WebApplicationInfo& p, std::string* l) {
+  l->append("<WebApplicationInfo>");
 }
 
 void ParamTraits<URLRequestStatus>::Write(Message* m, const param_type& p) {
@@ -281,37 +281,37 @@ bool ParamTraits<URLRequestStatus>::Read(const Message* m, void** iter,
   return true;
 }
 
-void ParamTraits<URLRequestStatus>::Log(const param_type& p, std::wstring* l) {
-  std::wstring status;
+void ParamTraits<URLRequestStatus>::Log(const param_type& p, std::string* l) {
+  std::string status;
   switch (p.status()) {
     case URLRequestStatus::SUCCESS:
-      status = L"SUCCESS";
+      status = "SUCCESS";
       break;
     case URLRequestStatus::IO_PENDING:
-      status = L"IO_PENDING ";
+      status = "IO_PENDING ";
       break;
     case URLRequestStatus::HANDLED_EXTERNALLY:
-      status = L"HANDLED_EXTERNALLY";
+      status = "HANDLED_EXTERNALLY";
       break;
     case URLRequestStatus::CANCELED:
-      status = L"CANCELED";
+      status = "CANCELED";
       break;
     case URLRequestStatus::FAILED:
-      status = L"FAILED";
+      status = "FAILED";
       break;
     default:
-      status = L"UNKNOWN";
+      status = "UNKNOWN";
       break;
   }
   if (p.status() == URLRequestStatus::FAILED)
-    l->append(L"(");
+    l->append("(");
 
   LogParam(status, l);
 
   if (p.status() == URLRequestStatus::FAILED) {
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.os_error(), l);
-    l->append(L")");
+    l->append(")");
   }
 }
 
@@ -340,8 +340,8 @@ bool ParamTraits<ThumbnailScore>::Read(const Message* m, void** iter,
   return true;
 }
 
-void ParamTraits<ThumbnailScore>::Log(const param_type& p, std::wstring* l) {
-  l->append(StringPrintf(L"(%f, %d, %d)",
+void ParamTraits<ThumbnailScore>::Log(const param_type& p, std::string* l) {
+  l->append(StringPrintf("(%f, %d, %d)",
                          p.boring_score, p.good_clipping, p.at_top));
 }
 
@@ -360,9 +360,9 @@ bool ParamTraits<Geoposition::ErrorCode>::Read(
 }
 
 void ParamTraits<Geoposition::ErrorCode>::Log(
-    const Geoposition::ErrorCode& p, std::wstring* l) {
+    const Geoposition::ErrorCode& p, std::string* l) {
   int error_code = p;
-  l->append(StringPrintf(L"<Geoposition::ErrorCode>%d", error_code));
+  l->append(StringPrintf("<Geoposition::ErrorCode>%d", error_code));
 }
 
 void ParamTraits<Geoposition>::Write(Message* m, const Geoposition& p) {
@@ -393,17 +393,17 @@ bool ParamTraits<Geoposition>::Read(
   return ret;
 }
 
-void ParamTraits<Geoposition>::Log(const Geoposition& p, std::wstring* l) {
+void ParamTraits<Geoposition>::Log(const Geoposition& p, std::string* l) {
   l->append(
       StringPrintf(
-          L"<Geoposition>"
-          L"%.6f %.6f %.6f %.6f "
-          L"%.6f %.6f %.6f ",
+          "<Geoposition>"
+          "%.6f %.6f %.6f %.6f "
+          "%.6f %.6f %.6f ",
           p.latitude, p.longitude, p.accuracy, p.altitude,
           p.altitude_accuracy, p.speed, p.heading));
   LogParam(p.timestamp, l);
-  l->append(L" ");
-  l->append(UTF8ToWide(p.error_message));
+  l->append(" ");
+  l->append(p.error_message);
   LogParam(p.error_code, l);
 }
 
@@ -442,8 +442,8 @@ bool ParamTraits<webkit_glue::PasswordForm>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->blacklisted_by_user);
 }
 void ParamTraits<webkit_glue::PasswordForm>::Log(const param_type& p,
-                                                 std::wstring* l) {
-  l->append(L"<PasswordForm>");
+                                                 std::string* l) {
+  l->append("<PasswordForm>");
 }
 
 void ParamTraits<printing::PageRange>::Write(Message* m, const param_type& p) {
@@ -458,12 +458,12 @@ bool ParamTraits<printing::PageRange>::Read(
 }
 
 void ParamTraits<printing::PageRange>::Log(
-    const param_type& p, std::wstring* l) {
-  l->append(L"(");
+    const param_type& p, std::string* l) {
+  l->append("(");
   LogParam(p.to, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.from, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<printing::NativeMetafile>::Write(
@@ -490,8 +490,8 @@ bool ParamTraits<printing::NativeMetafile>::Read(
 }
 
 void ParamTraits<printing::NativeMetafile>::Log(
-    const param_type& p, std::wstring* l) {
-  l->append(StringPrintf(L"<printing::NativeMetafile>"));
+    const param_type& p, std::string* l) {
+  l->append("<printing::NativeMetafile>");
 }
 
 }  // namespace IPC

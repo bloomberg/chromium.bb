@@ -68,13 +68,15 @@ class Logging {
   // Like the *MsgLog functions declared for each message class, except this
   // calls the correct one based on the message type automatically.  Defined in
   // ipc_logging.cc.
-  static void GetMessageText(uint32 type, std::wstring* name,
-                             const Message* message, std::wstring* params);
+  static void GetMessageText(uint32 type, std::string* name,
+                             const Message* message, std::string* params);
 
+  // Logging function. |name| is a string in ASCII and |params| is a string in
+  // UTF-8.
   typedef void (*LogFunction)(uint32 type,
-                             std::wstring* name,
+                             std::string* name,
                              const Message* msg,
-                             std::wstring* params);
+                             std::string* params);
 
   static void SetLoggerFunctions(LogFunction *functions);
 

@@ -50,18 +50,18 @@ struct ParamTraits<importer::ProfileInfo> {
 
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.description, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(static_cast<int>(p.browser_type), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.source_path, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.app_path, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(static_cast<int>(p.services_supported), l);
-    l->append(L")");
+    l->append(")");
   }
 };  // ParamTraits<importer::ProfileInfo>
 
@@ -105,24 +105,24 @@ struct ParamTraits<history::URLRow> {
     p->set_favicon_id(favicon_id);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.id(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.url(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.title(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.visit_count(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.typed_count(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.last_visit(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.hidden(), l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.favicon_id(), l);
-    l->append(L")");
+    l->append(")");
   }
 };  // ParamTraits<history::URLRow>
 
@@ -145,18 +145,18 @@ struct ParamTraits<ProfileWriter::BookmarkEntry> {
         (ReadParam(m, iter, &p->title)) &&
         (ReadParam(m, iter, &p->creation_time));
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.in_toolbar, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.path, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.title, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.creation_time, l);
-    l->append(L")");
+    l->append(")");
   }
 };  // ParamTraits<ProfileWriter::BookmarkEntry>
 
@@ -175,14 +175,14 @@ struct ParamTraits<history::ImportedFavIconUsage> {
         ReadParam(m, iter, &p->png_data) &&
         ReadParam(m, iter, &p->urls);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.favicon_url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.png_data, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.urls, l);
-    l->append(L")");
+    l->append(")");
   }
 };  // ParamTraits<history::ImportedFavIconUsage
 
@@ -206,8 +206,8 @@ struct ParamTraits<TemplateURLRef> {
     *p = TemplateURLRef(url, index_offset, page_offset);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<TemplateURLRef>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<TemplateURLRef>");
   }
 };
 
@@ -234,8 +234,8 @@ struct ParamTraits<TemplateURL::ImageRef> {
     *p = TemplateURL::ImageRef(type, width, height, url);  // here in
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<TemplateURL::ImageRef>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<TemplateURL::ImageRef>");
   }
 };
 
@@ -356,8 +356,8 @@ struct ParamTraits<TemplateURL> {
     p->set_prepopulate_id(prepopulate_id);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<TemplateURL>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<TemplateURL>");
   }
 };
 

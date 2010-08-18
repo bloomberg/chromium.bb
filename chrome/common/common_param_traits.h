@@ -61,7 +61,7 @@ struct ParamTraits<SkBitmap> {
   // r->SetConfig() and r->SetPixels() are called.
   static bool Read(const Message* m, void** iter, param_type* r);
 
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 
@@ -70,7 +70,7 @@ struct ParamTraits<GURL> {
   typedef GURL param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 
@@ -79,7 +79,7 @@ struct ParamTraits<gfx::Point> {
   typedef gfx::Point param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -87,7 +87,7 @@ struct ParamTraits<gfx::Rect> {
   typedef gfx::Rect param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -95,7 +95,7 @@ struct ParamTraits<gfx::Size> {
   typedef gfx::Size param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -103,7 +103,7 @@ struct ParamTraits<ContentSetting> {
   typedef ContentSetting param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -121,7 +121,7 @@ struct ParamTraits<ContentSettingsType> {
     *r = static_cast<param_type>(value);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
+  static void Log(const param_type& p, std::string* l) {
     LogParam(static_cast<int>(p), l);
   }
 };
@@ -131,7 +131,7 @@ struct ParamTraits<ContentSettings> {
   typedef ContentSettings param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -161,8 +161,8 @@ struct ParamTraits<gfx::NativeWindow> {
     return result;
 #endif
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<gfx::NativeWindow>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<gfx::NativeWindow>");
   }
 };
 
@@ -179,7 +179,7 @@ struct ParamTraits<PageZoom::Function> {
     *r = static_cast<param_type>(value);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
+  static void Log(const param_type& p, std::string* l) {
     LogParam(static_cast<int>(p), l);
   }
 };
@@ -198,7 +198,7 @@ struct ParamTraits<WindowOpenDisposition> {
     *r = static_cast<param_type>(value);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
+  static void Log(const param_type& p, std::string* l) {
     LogParam(static_cast<int>(p), l);
   }
 };
@@ -213,8 +213,8 @@ struct ParamTraits<WebCursor> {
   static bool Read(const Message* m, void** iter, param_type* r)  {
     return r->Deserialize(m, iter);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<WebCursor>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<WebCursor>");
   }
 };
 
@@ -224,7 +224,7 @@ struct ParamTraits<webkit_glue::WebApplicationInfo> {
   typedef webkit_glue::WebApplicationInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 
@@ -240,12 +240,12 @@ struct ParamTraits<TransportDIB::Id> {
     return (ReadParam(m, iter, &r->handle) &&
             ReadParam(m, iter, &r->sequence_num));
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"TransportDIB(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("TransportDIB(");
     LogParam(p.handle, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.sequence_num, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 #endif
@@ -256,7 +256,7 @@ struct ParamTraits<URLRequestStatus> {
   typedef URLRequestStatus param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 
@@ -303,8 +303,8 @@ struct ParamTraits<net::UploadData::Element> {
     }
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<net::UploadData::Element>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<net::UploadData::Element>");
   }
 };
 
@@ -336,8 +336,8 @@ struct ParamTraits<scoped_refptr<net::UploadData> > {
     (*r)->set_identifier(identifier);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<net::UploadData>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<net::UploadData>");
   }
 };
 
@@ -346,7 +346,7 @@ struct ParamTraits<ThumbnailScore> {
   typedef ThumbnailScore param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -354,7 +354,7 @@ struct ParamTraits<Geoposition> {
   typedef Geoposition param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -362,7 +362,7 @@ struct ParamTraits<Geoposition::ErrorCode> {
   typedef Geoposition::ErrorCode param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -370,7 +370,7 @@ struct ParamTraits<webkit_glue::PasswordForm> {
   typedef webkit_glue::PasswordForm param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -378,7 +378,7 @@ struct ParamTraits<printing::PageRange> {
   typedef printing::PageRange param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -386,7 +386,7 @@ struct ParamTraits<printing::NativeMetafile> {
   typedef printing::NativeMetafile param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 }  // namespace IPC

@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
 #include "gfx/codec/jpeg_codec.h"

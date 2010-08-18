@@ -60,20 +60,20 @@ struct ParamTraits<GpuHostMsg_AcceleratedSurfaceSetIOSurface_Params> {
         ReadParam(m, iter, &p->height) &&
         ReadParam(m, iter, &p->identifier);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.renderer_id, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.render_view_id, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.window, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.width, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.height, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.identifier, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 #endif
@@ -103,9 +103,9 @@ struct ParamTraits<GPUInfo> {
                        pixel_shader_version, vertex_shader_version);
     return ret;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-  l->append(StringPrintf(L"<GPUInfo> %x %x %ls",
-    p.vendor_id(), p.device_id(), p.driver_version().c_str()));
+  static void Log(const param_type& p, std::string* l) {
+    l->append(StringPrintf("<GPUInfo> %x %x %ls",
+        p.vendor_id(), p.device_id(), p.driver_version().c_str()));
   }
 };
 
@@ -132,8 +132,8 @@ struct ParamTraits<gpu::CommandBuffer::State> {
       return false;
     }
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<CommandBuffer::State>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<CommandBuffer::State>");
   }
 };
 }  // namespace IPC

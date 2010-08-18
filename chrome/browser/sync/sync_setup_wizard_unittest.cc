@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/google_service_auth_error.h"

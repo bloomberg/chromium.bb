@@ -49,7 +49,7 @@ struct ParamTraits<WebKit::WebRect> {
   typedef WebKit::WebRect param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -57,7 +57,7 @@ struct ParamTraits<WebKit::WebScreenInfo> {
   typedef WebKit::WebScreenInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -73,7 +73,7 @@ struct ParamTraits<WebKit::WebConsoleMessage::Level> {
     *r = static_cast<param_type>(value);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
+  static void Log(const param_type& p, std::string* l) {
     LogParam(static_cast<int>(p), l);
   }
 };
@@ -91,7 +91,7 @@ struct ParamTraits<WebKit::WebPopupType> {
     *r = static_cast<param_type>(value);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
+  static void Log(const param_type& p, std::string* l) {
     LogParam(static_cast<int>(p), l);
   }
 };
@@ -101,7 +101,7 @@ struct ParamTraits<WebKit::WebFindOptions> {
   typedef WebKit::WebFindOptions param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -117,41 +117,41 @@ struct ParamTraits<WebKit::WebInputEvent::Type> {
     *p = static_cast<WebKit::WebInputEvent::Type>(type);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    const wchar_t* type;
+  static void Log(const param_type& p, std::string* l) {
+    const char* type;
     switch (p) {
      case WebKit::WebInputEvent::MouseDown:
-      type = L"MouseDown";
+      type = "MouseDown";
       break;
      case WebKit::WebInputEvent::MouseUp:
-      type = L"MouseUp";
+      type = "MouseUp";
       break;
      case WebKit::WebInputEvent::MouseMove:
-      type = L"MouseMove";
+      type = "MouseMove";
       break;
      case WebKit::WebInputEvent::MouseLeave:
-      type = L"MouseLeave";
+      type = "MouseLeave";
       break;
      case WebKit::WebInputEvent::MouseEnter:
-      type = L"MouseEnter";
+      type = "MouseEnter";
       break;
      case WebKit::WebInputEvent::MouseWheel:
-      type = L"MouseWheel";
+      type = "MouseWheel";
       break;
      case WebKit::WebInputEvent::RawKeyDown:
-      type = L"RawKeyDown";
+      type = "RawKeyDown";
       break;
      case WebKit::WebInputEvent::KeyDown:
-      type = L"KeyDown";
+      type = "KeyDown";
       break;
      case WebKit::WebInputEvent::KeyUp:
-      type = L"KeyUp";
+      type = "KeyUp";
       break;
      default:
-      type = L"None";
+      type = "None";
       break;
     }
-    LogParam(std::wstring(type), l);
+    LogParam(std::string(type), l);
   }
 };
 
@@ -173,8 +173,8 @@ struct ParamTraits<WebKit::WebCache::UsageStats> {
       ReadParam(m, iter, &r->liveSize) &&
       ReadParam(m, iter, &r->deadSize);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<WebCache::UsageStats>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<WebCache::UsageStats>");
   }
 };
 
@@ -195,10 +195,7 @@ struct ParamTraits<WebKit::WebCache::ResourceTypeStat> {
         ReadParam(m, iter, &r->decodedSize);
     return result;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"%d %d %d %d", p.count, p.size, p.liveSize,
-        p.decodedSize));
-  }
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -220,14 +217,14 @@ struct ParamTraits<WebKit::WebCache::ResourceTypeStats> {
       ReadParam(m, iter, &r->fonts);
     return result;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<WebCoreStats>");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("<WebCoreStats>");
     LogParam(p.images, l);
     LogParam(p.cssStyleSheets, l);
     LogParam(p.scripts, l);
     LogParam(p.xslStyleSheets, l);
     LogParam(p.fonts, l);
-    l->append(L"</WebCoreStats>");
+    l->append("</WebCoreStats>");
   }
 };
 
@@ -244,7 +241,7 @@ struct ParamTraits<WebKit::WebTextDirection> {
     *r = static_cast<param_type>(value);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
+  static void Log(const param_type& p, std::string* l) {
     LogParam(static_cast<int>(p), l);
   }
 };
@@ -261,8 +258,8 @@ struct ParamTraits<WebKit::WebDragOperation> {
     *r = static_cast<param_type>(temp);
     return res;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"%d", p));
+  static void Log(const param_type& p, std::string* l) {
+    l->append(StringPrintf("%d", p));
   }
 };
 
@@ -271,7 +268,7 @@ struct ParamTraits<WebKit::WebMediaPlayerAction> {
   typedef WebKit::WebMediaPlayerAction param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* r);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -293,7 +290,7 @@ struct ParamTraits<WebKit::WebCompositionUnderline> {
   typedef WebKit::WebCompositionUnderline param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template <>
@@ -309,21 +306,21 @@ struct ParamTraits<WebKit::WebTextInputType> {
     *p = static_cast<param_type>(type);
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    std::wstring control;
+  static void Log(const param_type& p, std::string* l) {
+    std::string control;
     switch (p) {
       case WebKit::WebTextInputTypeNone:
-        control = L"WebKit::WebTextInputTypeNone";
+        control = "WebKit::WebTextInputTypeNone";
         break;
       case WebKit::WebTextInputTypeText:
-        control = L"WebKit::WebTextInputTypeText";
+        control = "WebKit::WebTextInputTypeText";
         break;
       case WebKit::WebTextInputTypePassword:
-        control = L"WebKit::WebTextInputTypePassword";
+        control = "WebKit::WebTextInputTypePassword";
         break;
       default:
         NOTIMPLEMENTED();
-        control = L"UNKNOWN";
+        control = "UNKNOWN";
         break;
     }
     LogParam(control, l);

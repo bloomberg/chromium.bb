@@ -68,20 +68,20 @@ bool ParamTraits<ViewMsg_Navigate_Params>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<ViewMsg_Navigate_Params>::Log(const param_type& p,
-                                               std::wstring* l) {
-  l->append(L"(");
+                                               std::string* l) {
+  l->append("(");
   LogParam(p.page_id, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.url, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.transition, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.state, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.navigation_type, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.request_time, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<webkit_glue::FormField>::Write(Message* m,
@@ -118,8 +118,8 @@ bool ParamTraits<webkit_glue::FormField>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<webkit_glue::FormField>::Log(const param_type& p,
-                                              std::wstring* l) {
-  l->append(L"<FormField>");
+                                              std::string* l) {
+  l->append("<FormField>");
 }
 
 void ParamTraits<ContextMenuParams>::Write(Message* m, const param_type& p) {
@@ -179,8 +179,8 @@ bool ParamTraits<ContextMenuParams>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<ContextMenuParams>::Log(const param_type& p,
-                                         std::wstring* l) {
-  l->append(L"<ContextMenuParams>");
+                                         std::string* l) {
+  l->append("<ContextMenuParams>");
 }
 
 void ParamTraits<ViewHostMsg_UpdateRect_Params>::Write(
@@ -211,26 +211,26 @@ bool ParamTraits<ViewHostMsg_UpdateRect_Params>::Read(
 }
 
 void ParamTraits<ViewHostMsg_UpdateRect_Params>::Log(const param_type& p,
-                                                     std::wstring* l) {
-  l->append(L"(");
+                                                     std::string* l) {
+  l->append("(");
   LogParam(p.bitmap, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.bitmap_rect, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.dx, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.dy, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.scroll_rect, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.copy_rects, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.view_size, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.plugin_window_moves, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.flags, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<webkit_glue::WebPluginGeometry>::Write(Message* m,
@@ -255,20 +255,20 @@ bool ParamTraits<webkit_glue::WebPluginGeometry>::Read(
 }
 
 void ParamTraits<webkit_glue::WebPluginGeometry>::Log(const param_type& p,
-                                                      std::wstring* l) {
-  l->append(L"(");
+                                                      std::string* l) {
+  l->append("(");
   LogParam(p.window, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.window_rect, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.clip_rect, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.cutout_rects, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.rects_valid, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.visible, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<WebPluginMimeType>::Write(Message* m, const param_type& p) {
@@ -285,14 +285,14 @@ bool ParamTraits<WebPluginMimeType>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &r->description);
 }
 
-void ParamTraits<WebPluginMimeType>::Log(const param_type& p, std::wstring* l) {
-  l->append(L"(");
+void ParamTraits<WebPluginMimeType>::Log(const param_type& p, std::string* l) {
+  l->append("(");
   LogParam(p.mime_type, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.file_extensions, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.description, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<WebPluginInfo>::Write(Message* m, const param_type& p) {
@@ -315,21 +315,21 @@ bool ParamTraits<WebPluginInfo>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &r->enabled);
 }
 
-void ParamTraits<WebPluginInfo>::Log(const param_type& p, std::wstring* l) {
-  l->append(L"(");
+void ParamTraits<WebPluginInfo>::Log(const param_type& p, std::string* l) {
+  l->append("(");
   LogParam(p.name, l);
-  l->append(L", ");
-  l->append(L", ");
+  l->append(", ");
+  l->append(", ");
   LogParam(p.path, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.version, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.desc, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.mime_types, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.enabled, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<webkit_glue::PasswordFormFillData>::Write(
@@ -348,8 +348,8 @@ bool ParamTraits<webkit_glue::PasswordFormFillData>::Read(
 }
 
 void ParamTraits<webkit_glue::PasswordFormFillData>::Log(const param_type& p,
-                                                         std::wstring* l) {
-  l->append(L"<PasswordFormFillData>");
+                                                         std::string* l) {
+  l->append("<PasswordFormFillData>");
 }
 
 void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Write(
@@ -372,8 +372,8 @@ bool ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Read(
 }
 
 void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Log(
-    const param_type& p, std::wstring* l) {
-  l->append(L"<HttpResponseHeaders>");
+    const param_type& p, std::string* l) {
+  l->append("<HttpResponseHeaders>");
 }
 
 void ParamTraits<webkit_glue::FormData>::Write(Message* m,
@@ -398,8 +398,8 @@ bool ParamTraits<webkit_glue::FormData>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<webkit_glue::FormData>::Log(const param_type& p,
-                                             std::wstring* l) {
-  l->append(L"<FormData>");
+                                             std::string* l) {
+  l->append("<FormData>");
 }
 
 void ParamTraits<RendererPreferences>::Write(Message* m, const param_type& p) {
@@ -472,8 +472,8 @@ bool ParamTraits<RendererPreferences>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<RendererPreferences>::Log(const param_type& p,
-                                           std::wstring* l) {
-  l->append(L"<RendererPreferences>");
+                                           std::string* l) {
+  l->append("<RendererPreferences>");
 }
 
 void ParamTraits<WebPreferences>::Write(Message* m, const param_type& p) {
@@ -570,8 +570,8 @@ bool ParamTraits<WebPreferences>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->memory_info_enabled);
 }
 
-void ParamTraits<WebPreferences>::Log(const param_type& p, std::wstring* l) {
-  l->append(L"<WebPreferences>");
+void ParamTraits<WebPreferences>::Log(const param_type& p, std::string* l) {
+  l->append("<WebPreferences>");
 }
 
 void ParamTraits<WebDropData>::Write(Message* m, const param_type& p) {
@@ -604,8 +604,8 @@ bool ParamTraits<WebDropData>::Read(const Message* m, void** iter,
       ReadParam(m, iter, &p->file_contents);
 }
 
-void ParamTraits<WebDropData>::Log(const param_type& p, std::wstring* l) {
-  l->append(L"<WebDropData>");
+void ParamTraits<WebDropData>::Log(const param_type& p, std::string* l) {
+  l->append("<WebDropData>");
 }
 
 void ParamTraits<URLPattern>::Write(Message* m, const param_type& p) {
@@ -625,7 +625,7 @@ bool ParamTraits<URLPattern>::Read(const Message* m, void** iter,
   return p->Parse(spec);
 }
 
-void ParamTraits<URLPattern>::Log(const param_type& p, std::wstring* l) {
+void ParamTraits<URLPattern>::Log(const param_type& p, std::string* l) {
   LogParam(p.GetAsString(), l);
 }
 
@@ -639,12 +639,12 @@ bool ParamTraits<EditCommand>::Read(const Message* m, void** iter,
   return ReadParam(m, iter, &p->name) && ReadParam(m, iter, &p->value);
 }
 
-void ParamTraits<EditCommand>::Log(const param_type& p, std::wstring* l) {
-  l->append(L"(");
+void ParamTraits<EditCommand>::Log(const param_type& p, std::string* l) {
+  l->append("(");
   LogParam(p.name, l);
-  l->append(L":");
+  l->append(":");
   LogParam(p.value, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<webkit_glue::WebCookie>::Write(Message* m,
@@ -673,8 +673,8 @@ bool ParamTraits<webkit_glue::WebCookie>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<webkit_glue::WebCookie>::Log(const param_type& p,
-                                              std::wstring* l) {
-  l->append(L"<WebCookie>");
+                                              std::string* l) {
+  l->append("<WebCookie>");
 }
 
 void ParamTraits<ExtensionExtent>::Write(Message* m, const param_type& p) {
@@ -694,7 +694,7 @@ bool ParamTraits<ExtensionExtent>::Read(const Message* m, void** iter,
   return true;
 }
 
-void ParamTraits<ExtensionExtent>::Log(const param_type& p, std::wstring* l) {
+void ParamTraits<ExtensionExtent>::Log(const param_type& p, std::string* l) {
   LogParam(p.patterns(), l);
 }
 
@@ -721,22 +721,22 @@ bool ParamTraits<appcache::AppCacheResourceInfo>::Read(
 }
 
 void ParamTraits<appcache::AppCacheResourceInfo>::Log(const param_type& p,
-                                                      std::wstring* l) {
-  l->append(L"(");
+                                                      std::string* l) {
+  l->append("(");
   LogParam(p.url, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.size, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.is_manifest, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.is_master, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.is_fallback, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.is_foreign, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.is_explicit, l);
-  l->append(L")");
+  l->append(")");
 }
 
 void ParamTraits<appcache::AppCacheInfo>::Write(Message* m,
@@ -764,24 +764,24 @@ bool ParamTraits<appcache::AppCacheInfo>::Read(const Message* m, void** iter,
 }
 
 void ParamTraits<appcache::AppCacheInfo>::Log(const param_type& p,
-                                              std::wstring* l) {
-  l->append(L"(");
+                                              std::string* l) {
+  l->append("(");
   LogParam(p.manifest_url, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.creation_time, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.last_update_time, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.last_access_time, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.cache_id, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.status, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.size, l);
-  l->append(L")");
+  l->append(")");
   LogParam(p.is_complete, l);
-  l->append(L", ");
+  l->append(", ");
 }
 
 void ParamTraits<webkit_glue::WebAccessibility>::Write(Message* m,
@@ -819,24 +819,24 @@ bool ParamTraits<webkit_glue::WebAccessibility>::Read(
 }
 
 void ParamTraits<webkit_glue::WebAccessibility>::Log(const param_type& p,
-                                                     std::wstring* l) {
-  l->append(L"(");
+                                                     std::string* l) {
+  l->append("(");
   LogParam(p.id, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.name, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.value, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(static_cast<int>(p.role), l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(static_cast<int>(p.state), l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.location, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.attributes, l);
-  l->append(L", ");
+  l->append(", ");
   LogParam(p.children, l);
-  l->append(L")");
+  l->append(")");
 }
 
 }  // namespace IPC

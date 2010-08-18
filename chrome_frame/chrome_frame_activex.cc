@@ -19,6 +19,7 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/trace_event.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"

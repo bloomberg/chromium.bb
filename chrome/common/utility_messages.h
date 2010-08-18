@@ -36,18 +36,18 @@ struct ParamTraits<UpdateManifest::Result> {
            ReadParam(m, iter, &p->package_hash) &&
            ReadParam(m, iter, &p->crx_url);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.extension_id, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.version, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.browser_min_version, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.package_hash, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.crx_url, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -62,12 +62,12 @@ struct ParamTraits<UpdateManifest::Results> {
     return ReadParam(m, iter, &p->list) &&
            ReadParam(m, iter, &p->daystart_elapsed_seconds);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.list, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.daystart_elapsed_seconds, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 

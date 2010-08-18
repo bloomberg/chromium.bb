@@ -8,6 +8,7 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/utf_string_conversions.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_plugin.h"
 #include "chrome_frame/test/http_server.h"

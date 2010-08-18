@@ -18,6 +18,7 @@
 #include "base/file_version_info.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/render_messages.h"

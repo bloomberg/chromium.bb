@@ -100,13 +100,14 @@ void CreateColumn(uint32 start, uint32 end, HWND hwnd,
   control_ptr->InsertColumn(0, L"id", LVCFMT_LEFT, 230);
 
   for (uint32 i = start; i < end; i++) {
-    std::wstring name;
+    std::string name;
     IPC::Logging::GetMessageText(i, &name, NULL, NULL);
+    std::wstring wname = UTF8ToWide(name);
 
     int index = control_ptr->InsertItem(
-        LVIF_TEXT | LVIF_PARAM, 0, name.c_str(), 0, 0, 0, i);
+        LVIF_TEXT | LVIF_PARAM, 0, wname.c_str(), 0, 0, 0, i);
 
-    control_ptr->SetItemText(index, 0, name.c_str());
+    control_ptr->SetItemText(index, 0, wname.c_str());
 
     if (disabled_messages.find(i) == disabled_messages.end())
       control_ptr->SetCheckState(index, TRUE);
@@ -406,10 +407,12 @@ void AboutIPCDialog::Log(const IPC::LogData& data) {
   message_list_.SetItemText(index, kChannelColumn,
                             ASCIIToWide(data.channel).c_str());
 
-  std::wstring message_name;
+  std::string message_name;
   IPC::Logging::GetMessageText(data.type, &message_name, NULL, NULL);
-  message_list_.SetItemText(index, kMessageColumn, message_name.c_str());
-  message_list_.SetItemText(index, kFlagsColumn, data.flags.c_str());
+  message_list_.SetItemText(index, kMessageColumn,
+                            UTF8ToWide(message_name).c_str());
+  message_list_.SetItemText(index, kFlagsColumn,
+                            UTF8ToWide(data.flags).c_str());
 
   int64 time_to_send = (base::Time::FromInternalValue(data.receive) -
       sent).InMilliseconds();
@@ -424,7 +427,8 @@ void AboutIPCDialog::Log(const IPC::LogData& data) {
   temp = StringPrintf(L"%d", time_to_process);
   message_list_.SetItemText(index, kProcessColumn, temp.c_str());
 
-  message_list_.SetItemText(index, kParamsColumn, data.params.c_str());
+  message_list_.SetItemText(index, kParamsColumn,
+                            UTF8ToWide(data.params).c_str());
   message_list_.EnsureVisible(index, FALSE);
 }
 

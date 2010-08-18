@@ -38,19 +38,19 @@
 }
 
 - (NSString*)message {
-  if (data_.message_name == L"") {
+  if (data_.message_name == "") {
     int high = data_.type >> 12;
     int low = data_.type - (high<<12);
     return [NSString stringWithFormat:@"type=(%d,%d) 0x%x,0x%x",
                      high, low, high, low];
   }
   else {
-    return base::SysWideToNSString(data_.message_name);
+    return base::SysUTF8ToNSString(data_.message_name);
   }
 }
 
 - (NSString*)flags {
-  return base::SysWideToNSString(data_.flags);
+  return base::SysUTF8ToNSString(data_.flags);
 }
 
 - (NSString*)dispatch {
@@ -68,7 +68,7 @@
 }
 
 - (NSString*)parameters {
-  return base::SysWideToNSString(data_.params);
+  return base::SysUTF8ToNSString(data_.params);
 }
 
 @end

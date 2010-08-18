@@ -150,30 +150,30 @@ struct ParamTraits<PluginMsg_Init_Params> {
 #endif
            ;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.containing_window, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.page_url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.arg_names, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.arg_values, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.load_manually, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.host_render_view_routing_id, l);
 #if defined(OS_MACOSX)
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.containing_window_frame, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.containing_content_frame, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.containing_window_has_focus, l);
 #endif
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -197,20 +197,20 @@ struct ParamTraits<PluginHostMsg_URLRequest_Params> {
       ReadParam(m, iter, &p->notify_id) &&
       ReadParam(m, iter, &p->popups_allowed);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.url, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.method, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.target, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.buffer, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.notify_id, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.popups_allowed, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -234,20 +234,20 @@ struct ParamTraits<PluginMsg_DidReceiveResponseParams> {
       ReadParam(m, iter, &r->last_modified) &&
       ReadParam(m, iter, &r->request_is_seekable);
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.id, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.mime_type, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.headers, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.expected_length, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.last_modified, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.request_is_seekable, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -280,14 +280,14 @@ struct ParamTraits<WebInputEventPointer> {
     *r = event;
     return true;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p->size, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p->type, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p->timeStampSeconds, l);
-    l->append(L")");
+    l->append(")");
   }
 };
 
@@ -300,14 +300,14 @@ struct ParamTraits<NPIdentifier_Param> {
   static bool Read(const Message* m, void** iter, param_type* r) {
     return webkit_glue::DeserializeNPIdentifier(*m, iter, &r->identifier);
   }
-  static void Log(const param_type& p, std::wstring* l) {
+  static void Log(const param_type& p, std::string* l) {
     if (WebKit::WebBindings::identifierIsString(p.identifier)) {
       NPUTF8* str = WebKit::WebBindings::utf8FromIdentifier(p.identifier);
-      l->append(UTF8ToWide(str));
+      l->append(str);
       NPN_MemFree(str);
     } else {
-      l->append(UTF8ToWide(base::IntToString(
-          WebKit::WebBindings::intFromIdentifier(p.identifier))));
+      l->append(base::IntToString(
+          WebKit::WebBindings::intFromIdentifier(p.identifier)));
     }
   }
 };
@@ -362,7 +362,7 @@ struct ParamTraits<NPVariant_Param> {
 
     return result;
   }
-  static void Log(const param_type& p, std::wstring* l) {
+  static void Log(const param_type& p, std::string* l) {
     if (p.type == NPVARIANT_PARAM_BOOL) {
       LogParam(p.bool_value, l);
     } else if (p.type == NPVARIANT_PARAM_INT) {
@@ -408,22 +408,22 @@ struct ParamTraits<PluginMsg_UpdateGeometry_Param> {
 #endif
       ;
   }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
     LogParam(p.window_rect, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.clip_rect, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.windowless_buffer, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.background_buffer, l);
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.transparent, l);
 #if defined(OS_MACOSX)
-    l->append(L", ");
+    l->append(", ");
     LogParam(p.ack_key, l);
 #endif
-    l->append(L")");
+    l->append(")");
   }
 };
 

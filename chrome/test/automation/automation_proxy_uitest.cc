@@ -12,6 +12,7 @@
 #include "base/i18n/rtl.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
+#include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/net/url_request_slow_http_job.h"

@@ -11,6 +11,7 @@
 #include "base/scoped_bstr_win.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 #include "chrome_frame/bho.h"
 #include "chrome_frame/bind_context_info.h"
