@@ -1,0 +1,52 @@
+<div id="pageData-name" class="pageData">What's New in Extensions?</div>
+
+
+<!-- <div id="pageData-showTOC" class="pageData">true</div> -->
+
+<style>
+#changes-listing .section {
+  margin-top:1em;
+}
+</style>
+
+<h4>Google Chrome 6</h4>
+<ul id="changes-listing">
+  <li class="section"><b>New APIs</b>
+    <ul>
+      <li>The <a href="contextMenus.html">Context Menus API</a> allows you to
+        add context menus to pages or specific objects on a page
+      <li>The <a href="cookies.html">Cookies API</a> allows you to manage the
+        browser's cookie system 
+      <li>The <a href="idle.html">Idle API</a> allows you to detect when the
+        machine's idle state changes
+    </ul>
+  <li class="section"><b>Manifest Changes</b>
+    <ul>
+      <li>The <a href="manifest.html#geolocation">geolocation</a> permission
+        gives an extension access to the user's physical location
+      <li><a href="match_patterns.html">Match patterns</a> can now select all
+        schemes or all urls
+      <li>Access to file:/// URLs no longer triggers the "access to your machine"
+        security warning, but now requires user opt-in from the extension
+        management page
+    </ul>
+  <li class="section"><b>Additions to existing APIs</b>
+    <ul>
+      <li><a
+        href="extension.html#method-getViews">chrome.extension.getViews()</a>
+        can now return popup views
+      <li>Added <a
+        href="windows.html#property-WINDOW_ID_NONE">WINDOW_ID_NONE</a> constant
+        for when focus shifts away from the browser
+      <li>The <a
+        href="tabs.html#method-getCurrent">chrome.tabs.getCurrent()</a> method
+        returns the tab associated with the currently executing script
+    </ul>
+  <li class="section"><b>New experimental APIs</b>
+    <ul>
+      <li>The <a href="experimental.omnibox.html">Omnibox API</a> allows you to
+        add functionality to the browser's omnibox
+      <li>The <a href="experimental.infobars.html">Infobars API</a> allows you
+        to add UI panels across the top of a tab
+    </ul>
+</ul>

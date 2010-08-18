@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Cross-Origin XMLHttpRequest - Google Chrome Extensions - Google Code</title></head>
+  <title>What's New in Extensions? - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -157,7 +157,7 @@
         <ul>
           <li><a href="getstarted.html">Getting Started</a></li>
           <li><a href="overview.html">Overview</a></li>
-          <li><a href="whats_new.html">What's New?</a></li>
+          <li class="leftNavSelected">What's New?</li>
           <li><h2><a href="devguide.html">Developer's Guide</a></h2>
             <ul>
               <li>Browser UI
@@ -186,7 +186,7 @@
                   <li><a href="a11y.html">Accessibility</a></li>
                   <li><a href="background_pages.html">Background Pages</a></li>
                   <li><a href="content_scripts.html">Content Scripts</a></li>
-                  <li class="leftNavSelected">Cross-Origin XHR</li>
+                  <li><a href="xhr.html">Cross-Origin XHR</a></li>
                   <li><a href="idle.html">Idle</a></li>
                   <li><a href="i18n.html">Internationalization</a></li>
                   <li><a href="messaging.html">Message Passing</a></li>
@@ -227,7 +227,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Cross-Origin XMLHttpRequest</h1>
+        <h1 class="page_title">What's New in Extensions?</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc" style="display: none; ">
@@ -288,171 +288,55 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Cross-Origin XMLHttpRequest</div>
+        <div id="static"><div id="pageData-name" class="pageData">What's New in Extensions?</div>
 
-<!-- BEGIN AUTHORED CONTENT -->
-<p id="classSummary">
-Regular web pages can use the
-<a href="http://www.w3.org/TR/XMLHttpRequest/">XMLHttpRequest</a>
-object to send and receive data from remote servers,
-but they're limited by the
-<a href="http://en.wikipedia.org/wiki/Same_origin_policy">same origin policy</a>.
-Extensions aren't so limited.
-An extension can talk to remote servers outside of its origin,
-as long as it first requests cross-origin permissions.</p>
 
-<p class="note">
-<b>Note:</b>
-Content scripts can't directly make cross-origin requests.
-However, a content script can
-send a message to its parent extension
-that asks the extension to make a cross-origin request.
-For an example of this technique, see the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/howto/contentscript_xhr">contentscript_xhr example</a>.
-</p>
+<!-- <div id="pageData-showTOC" class="pageData">true</div> -->
 
-<h2 id="extension-origin">Extension origin</h2>
-<p>Each running extension exists within its own separate security origin. Without
-requesting additional privileges, the extension can use
-XMLHttpRequest to get resources within its installation. For example, if
-an extension contains a JSON configuration file called <code>config.json</code>,
-in a <code>config_resources</code> folder, the extension can retrieve the file's contents like
-this:</p>
-
-<pre>var xhr = new XMLHttpRequest();
-xhr.onreadystatechange = handleStateChange; // Implemented elsewhere.
-xhr.open("GET", chrome.extension.getURL('/config_resources/config.json'), true);
-xhr.send();
-</pre>
-
-<p class="caution">
-<b>Bug note:</b>
-Until <a href="http://crbug.com/41024">bug 41024</a> is fixed,
-the preceding code won't work.
-</p>
-
-<p>If the extension attempts to use a security origin other than itself,
-say http://www.google.com,
-the browser disallows it
-unless the extension has requested the appropriate cross-origin permissions.
-</p>
-
-<h2 id="requesting-permission">Requesting cross-origin permissions</h2>
-
-<p>By adding hosts or host match patterns (or both) to the
-<a href="manifest.html#permissions">permissions</a> section of the
-<a href="manifest.html">manifest</a> file, the extension can request access to
-remote servers outside of its origin.</p>
-
-<pre>{
-  "name": "My extension",
-  ...
-  <b>"permissions": [
-    "http://www.google.com/"
-  ]</b>,
-  ...
-}</pre>
-
-<p>Cross-origin permission values can be fully qualified host names,
-like these:</p>
-
-<ul>
-  <li> "http://www.google.com/" </li>
-  <li> "http://www.gmail.com/" </li>
-</ul>
-
-<p>Or they can be match patterns, like these:</p>
-
-<ul>
-  <li> "http://*.google.com/" </li>
-  <li> "http://*/" </li>
-</ul>
-
-<p>
-A match pattern of "http://*/" allows HTTP access to all reachable domains.
-Note that here,
-match patterns are similar to <a href="match_patterns.html">content script
-match patterns</a>,
-but any path information following the host is ignored.</p>
-
-<p>Also note that access is granted both by host and by scheme. If an extension
-wants both secure and non-secure HTTP access to a given host or set
-of hosts, it must declare the permissions separately:</p>
-
-<pre>"permissions": [
-  "http://www.google.com/",
-  "https://www.google.com/"
-]
-</pre>
-
-<h2 id="security-considerations">Security considerations</h2>
-
-<p>
-When using resources retrieved via XMLHttpRequest, your background page should
-be careful not to fall victim to <a href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
-scripting</a>.  Specifically, avoid using dangerous APIs such as the below:
-</p>
-<pre>background.html
-===============
-var xhr = new XMLHttpRequest();
-xhr.open("GET", "http://api.example.com/data.json", true);
-xhr.onreadystatechange = function() {
-  if (xhr.readyState == 4) {
-    // WARNING! Might be evaluating an evil script!
-    var resp = eval("(" + xhr.responseText + ")");
-    ...
-  }
+<style>
+#changes-listing .section {
+  margin-top:1em;
 }
-xhr.send();
+</style>
 
-background.html
-===============
-var xhr = new XMLHttpRequest();
-xhr.open("GET", "http://api.example.com/data.json", true);
-xhr.onreadystatechange = function() {
-  if (xhr.readyState == 4) {
-    // WARNING! Might be injecting a malicious script!
-    document.getElementById("resp").innerHTML = xhr.responseText;
-    ...
-  }
-}
-xhr.send();
-</pre>
-<p>
-Instead, prefer safer APIs that do not run scripts:
-</p>
-<pre>background.html
-===============
-var xhr = new XMLHttpRequest();
-xhr.open("GET", "http://api.example.com/data.json", true);
-xhr.onreadystatechange = function() {
-  if (xhr.readyState == 4) {
-    // JSON.parse does not evaluate the attacker's scripts.
-    var resp = JSON.parse(xhr.responseText);
-  }
-}
-xhr.send();
-
-background.html
-===============
-var xhr = new XMLHttpRequest();
-xhr.open("GET", "http://api.example.com/data.json", true);
-xhr.onreadystatechange = function() {
-  if (xhr.readyState == 4) {
-    // innerText does not let the attacker inject HTML elements.
-    document.getElementById("resp").innerText = xhr.responseText;
-  }
-}
-xhr.send();
-</pre>
-<p>
-Additionally, be especially careful of resource retrieved via HTTP.  If your
-extension is used on a hostile network, an network attacker (aka a <a href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">"man-in-the-middle"</a>)
-could modify the response and, potentially, attack your extension.  Instead,
-prefer HTTPS whenever possible.
-</p>
-
-<!-- END AUTHORED CONTENT -->
+<h4>Google Chrome 6</h4>
+<ul id="changes-listing">
+  <li class="section"><b>New APIs</b>
+    <ul>
+      <li>The <a href="contextMenus.html">Context Menus API</a> allows you to
+        add context menus to pages or specific objects on a page
+      </li><li>The <a href="cookies.html">Cookies API</a> allows you to manage the
+        browser's cookie system 
+      </li><li>The <a href="idle.html">Idle API</a> allows you to detect when the
+        machine's idle state changes
+    </li></ul>
+  </li><li class="section"><b>Manifest Changes</b>
+    <ul>
+      <li>The <a href="manifest.html#geolocation">geolocation</a> permission
+        gives an extension access to the user's physical location
+      </li><li><a href="match_patterns.html">Match patterns</a> can now select all
+        schemes or all urls
+      </li><li>Access to file:/// URLs no longer triggers the "access to your machine"
+        security warning, but now requires user opt-in from the extension
+        management page
+    </li></ul>
+  </li><li class="section"><b>Additions to existing APIs</b>
+    <ul>
+      <li><a href="extension.html#method-getViews">chrome.extension.getViews()</a>
+        can now return popup views
+      </li><li>Added <a href="windows.html#property-WINDOW_ID_NONE">WINDOW_ID_NONE</a> constant
+        for when focus shifts away from the browser
+      </li><li>The <a href="tabs.html#method-getCurrent">chrome.tabs.getCurrent()</a> method
+        returns the tab associated with the currently executing script
+    </li></ul>
+  </li><li class="section"><b>New experimental APIs</b>
+    <ul>
+      <li>The <a href="experimental.omnibox.html">Omnibox API</a> allows you to
+        add functionality to the browser's omnibox
+      </li><li>The <a href="experimental.infobars.html">Infobars API</a> allows you
+        to add UI panels across the top of a tab
+    </li></ul>
+</li></ul>
 </div>
 
         <!-- API PAGE -->

@@ -844,29 +844,6 @@
       ], 
       "icon": "news_icon.png", 
       "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
-      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE", 
-      "source_files": [
-        "feed.html", 
-        "manifest.json"
-      ], 
-      "path": "examples\/extensions\/news_a11y\/", 
-      "api_calls": [
-        "chrome.tabs.create"
-      ], 
-      "id": "597015d3bcce3da693b02314afd607bec4f55291", 
-      "protocols": [
-        "http:\/\/"
-      ], 
-      "name": "News Reader"
-    }, 
-    {
-      "features": [
-        "browser_action", 
-        "popup", 
-        "tabs"
-      ], 
-      "icon": "news_icon.png", 
-      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
       "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE", 
       "source_files": [
         "_locales\/en\/messages.json", 
@@ -883,6 +860,29 @@
       "id": "6444e5c8ae112a6a433909c5e770669cd16e2e5f", 
       "protocols": [
         "http:\/\/", 
+        "http:\/\/"
+      ], 
+      "name": "News Reader"
+    }, 
+    {
+      "features": [
+        "browser_action", 
+        "popup", 
+        "tabs"
+      ], 
+      "icon": "news_icon.png", 
+      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
+      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE", 
+      "source_files": [
+        "feed.html", 
+        "manifest.json"
+      ], 
+      "path": "examples\/extensions\/news_a11y\/", 
+      "api_calls": [
+        "chrome.tabs.create"
+      ], 
+      "id": "597015d3bcce3da693b02314afd607bec4f55291", 
+      "protocols": [
         "http:\/\/"
       ], 
       "name": "News Reader"
