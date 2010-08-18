@@ -358,12 +358,13 @@ void URLFetcherProtectTestPassedThrough::OnURLFetchComplete(
     // Check that suggested back off time is bigger than 0.
     EXPECT_GT(fetcher_->backoff_delay().InMicroseconds(), 0);
     EXPECT_FALSE(data.empty());
-    delete fetcher_;
-    io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
   } else {
     // We should not get here!
-    FAIL();
+    ADD_FAILURE();
   }
+
+  delete fetcher_;
+  io_message_loop_proxy()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
 }
 
 
