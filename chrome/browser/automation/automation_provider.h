@@ -963,43 +963,4 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   DISALLOW_COPY_AND_ASSIGN(AutomationProvider);
 };
 
-// When life started, the AutomationProvider class was a singleton and was meant
-// only for UI tests. It had specific behavior (like for example, when the
-// channel was shut down. it closed all open Browsers). The new
-// AutomationProvider serves other purposes than just UI testing. This class is
-// meant to provide the OLD functionality for backward compatibility
-class TestingAutomationProvider : public AutomationProvider,
-                                  public BrowserList::Observer,
-                                  public NotificationObserver {
- public:
-  explicit TestingAutomationProvider(Profile* profile);
-
-  // BrowserList::Observer implementation
-  // Called immediately after a browser is added to the list
-  virtual void OnBrowserAdded(const Browser* browser);
-  // Called immediately before a browser is removed from the list
-  virtual void OnBrowserRemoving(const Browser* browser);
-
-  // IPC implementations
-  virtual void OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelError();
-
- private:
-  virtual ~TestingAutomationProvider();
-
-  // IPC Message callbacks.
-  void CloseBrowser(int handle, IPC::Message* reply_message);
-  void CloseBrowserAsync(int browser_handle);
-  void ActivateTab(int handle, int at_index, int* status);
-  void AppendTab(int handle, const GURL& url, IPC::Message* reply_message);
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  void OnRemoveProvider();  // Called via PostTask
-
-  NotificationRegistrar registrar_;
-};
-
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_H_
