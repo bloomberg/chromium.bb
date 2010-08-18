@@ -8,3 +8,9 @@
 // WebKit merge 65318:65411
 // r65381 is suspected. This test causes the next one to crash.
 BUGJAPHET SKIP : fast/events/popup-allowed-from-gesture-initiated-form-submit.html = PASS
+
+// Not sure when it started to fail.
+BUGYUTAK WIN LINUX DEBUG : http/tests/misc/image-blocked-src-change.html = PASS TEXT
+
+// Started to crash around Chromium r56408.
+BUGYUTAK LINUX RELEASE : fast/js/array-every.html = PASS CRASH
