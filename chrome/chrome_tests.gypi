@@ -1434,7 +1434,9 @@
             'Debug_Base': {
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                  # Forcing incremental build off to try to avoid incremental
+                  # linking errors on 64-bit bots too. http://crbug.com/52555
+                  'LinkIncremental': '1',
                 },
               },
             },
