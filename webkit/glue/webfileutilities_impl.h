@@ -2,20 +2,20 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef WEBFILESYSTEM_IMPL_H_
-#define WEBFILESYSTEM_IMPL_H_
+#ifndef WEBFILEUTILITIES_IMPL_H_
+#define WEBFILEUTILITIES_IMPL_H_
 
 #include "base/platform_file.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileUtilities.h"
 
 namespace webkit_glue {
 
-class WebFileSystemImpl : public WebKit::WebFileSystem {
+class WebFileUtilitiesImpl : public WebKit::WebFileUtilities {
  public:
-  WebFileSystemImpl();
-  virtual ~WebFileSystemImpl() { }
+  WebFileUtilitiesImpl();
+  virtual ~WebFileUtilitiesImpl() { }
 
-  // WebFileSystem methods:
+  // WebFileUtilities methods:
   virtual bool fileExists(const WebKit::WebString& path);
   virtual bool deleteFile(const WebKit::WebString& path);
   virtual bool deleteEmptyDirectory(const WebKit::WebString& path);
@@ -51,4 +51,4 @@ class WebFileSystemImpl : public WebKit::WebFileSystem {
 
 }  // namespace webkit_glue
 
-#endif  // WEBFILESYSTEM_IMPL_H_
+#endif  // WEBFILEUTILITIES_IMPL_H_

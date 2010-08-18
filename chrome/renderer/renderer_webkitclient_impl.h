@@ -28,7 +28,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   // WebKitClient methods:
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
-  virtual WebKit::WebFileSystem* fileSystem();
+  virtual WebKit::WebFileUtilities* fileUtilities();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual WebKit::WebCookieJar* cookieJar();
   virtual bool sandboxEnabled();
@@ -74,8 +74,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
 
   scoped_ptr<webkit_glue::WebClipboardImpl> clipboard_;
 
-  class FileSystem;
-  scoped_ptr<FileSystem> file_system_;
+  class FileUtilities;
+  scoped_ptr<FileUtilities> file_utilities_;
 
   class MimeRegistry;
   scoped_ptr<MimeRegistry> mime_registry_;

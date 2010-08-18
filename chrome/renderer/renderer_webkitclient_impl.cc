@@ -33,7 +33,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webclipboard_impl.h"
-#include "webkit/glue/webfilesystem_impl.h"
+#include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)
@@ -80,8 +80,8 @@ class RendererWebKitClientImpl::MimeRegistry
       const WebKit::WebString&);
 };
 
-class RendererWebKitClientImpl::FileSystem
-    : public webkit_glue::WebFileSystemImpl {
+class RendererWebKitClientImpl::FileUtilities
+    : public webkit_glue::WebFileUtilitiesImpl {
  public:
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual bool getFileModificationTime(const WebKit::WebString& path,
@@ -117,12 +117,12 @@ class RendererWebKitClientImpl::SandboxSupport
 
 RendererWebKitClientImpl::RendererWebKitClientImpl()
     : clipboard_(new webkit_glue::WebClipboardImpl),
-      file_system_(new RendererWebKitClientImpl::FileSystem),
+      file_utilities_(new RendererWebKitClientImpl::FileUtilities),
       mime_registry_(new RendererWebKitClientImpl::MimeRegistry),
       sandbox_support_(new RendererWebKitClientImpl::SandboxSupport),
       sudden_termination_disables_(0),
       shared_worker_repository_(new WebSharedWorkerRepositoryImpl) {
-  file_system_->set_sandbox_enabled(sandboxEnabled());
+  file_utilities_->set_sandbox_enabled(sandboxEnabled());
 }
 
 RendererWebKitClientImpl::~RendererWebKitClientImpl() {
@@ -138,8 +138,8 @@ WebKit::WebMimeRegistry* RendererWebKitClientImpl::mimeRegistry() {
   return mime_registry_.get();
 }
 
-WebKit::WebFileSystem* RendererWebKitClientImpl::fileSystem() {
-  return file_system_.get();
+WebKit::WebFileUtilities* RendererWebKitClientImpl::fileUtilities() {
+  return file_utilities_.get();
 }
 
 WebKit::WebSandboxSupport* RendererWebKitClientImpl::sandboxSupport() {
@@ -327,7 +327,7 @@ WebString RendererWebKitClientImpl::MimeRegistry::preferredExtensionForMIMEType(
 
 //------------------------------------------------------------------------------
 
-bool RendererWebKitClientImpl::FileSystem::getFileSize(const WebString& path,
+bool RendererWebKitClientImpl::FileUtilities::getFileSize(const WebString& path,
                                                        long long& result) {
   if (SendSyncMessageFromAnyThread(new ViewHostMsg_GetFileSize(
           webkit_glue::WebStringToFilePath(path),
@@ -339,7 +339,7 @@ bool RendererWebKitClientImpl::FileSystem::getFileSize(const WebString& path,
   return false;
 }
 
-bool RendererWebKitClientImpl::FileSystem::getFileModificationTime(
+bool RendererWebKitClientImpl::FileUtilities::getFileModificationTime(
     const WebString& path,
     double& result) {
   base::Time time;
@@ -353,7 +353,7 @@ bool RendererWebKitClientImpl::FileSystem::getFileModificationTime(
   return false;
 }
 
-base::PlatformFile RendererWebKitClientImpl::FileSystem::openFile(
+base::PlatformFile RendererWebKitClientImpl::FileUtilities::openFile(
     const WebString& path,
     int mode) {
   IPC::PlatformFileForTransit handle = IPC::InvalidPlatformFileForTransit();

@@ -31,8 +31,8 @@ WebMimeRegistry* WorkerWebKitClientImpl::mimeRegistry() {
   return this;
 }
 
-WebKit::WebFileSystem* WorkerWebKitClientImpl::fileSystem() {
-  return &file_system_;
+WebKit::WebFileUtilities* WorkerWebKitClientImpl::fileUtilities() {
+  return &file_utilities_;
 }
 
 WebSandboxSupport* WorkerWebKitClientImpl::sandboxSupport() {

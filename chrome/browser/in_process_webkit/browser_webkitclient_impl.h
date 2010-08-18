@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
 #pragma once
 
-#include "webkit/glue/webfilesystem_impl.h"
+#include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
 
 class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
@@ -16,7 +16,7 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   // WebKitClient methods:
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
-  virtual WebKit::WebFileSystem* fileSystem();
+  virtual WebKit::WebFileUtilities* fileUtilities();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual bool sandboxEnabled();
   virtual unsigned long long visitedLinkHash(const char* canonicalURL,
@@ -47,7 +47,7 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
                                  bool sync_dir);
 
  private:
-  webkit_glue::WebFileSystemImpl file_system_;
+  webkit_glue::WebFileUtilitiesImpl file_utilities_;
 };
 
 #endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_

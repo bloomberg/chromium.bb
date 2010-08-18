@@ -107,7 +107,7 @@ TestWebKitClient::TestWebKitClient(bool unit_test_mode)
 
   WebKit::WebDatabase::setObserver(&database_system_);
 
-  file_system_.set_sandbox_enabled(false);
+  file_utilities_.set_sandbox_enabled(false);
 
 #if defined(OS_WIN)
   // Ensure we pick up the default theme engine.
@@ -141,8 +141,8 @@ WebKit::WebClipboard* TestWebKitClient::clipboard() {
   return &mock_clipboard_;
 }
 
-WebKit::WebFileSystem* TestWebKitClient::fileSystem() {
-  return &file_system_;
+WebKit::WebFileUtilities* TestWebKitClient::fileUtilities() {
+  return &file_utilities_;
 }
 
 WebKit::WebSandboxSupport* TestWebKitClient::sandboxSupport() {

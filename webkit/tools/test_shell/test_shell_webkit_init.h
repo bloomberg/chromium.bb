@@ -10,7 +10,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageNamespace.h"
 #include "webkit/glue/webclipboard_impl.h"
-#include "webkit/glue/webfilesystem_impl.h"
+#include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
@@ -35,8 +35,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   WebKit::WebClipboard* clipboard();
 
-  virtual WebKit::WebFileSystem* fileSystem() {
-    return &file_system_;
+  virtual WebKit::WebFileUtilities* fileUtilities() {
+    return &file_utilities_;
   }
 
   virtual WebKit::WebSandboxSupport* sandboxSupport() {
@@ -136,7 +136,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
   webkit_glue::WebClipboardImpl real_clipboard_;
-  webkit_glue::WebFileSystemImpl file_system_;
+  webkit_glue::WebFileUtilitiesImpl file_utilities_;
   ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;

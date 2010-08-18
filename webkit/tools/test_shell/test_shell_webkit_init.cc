@@ -69,7 +69,7 @@ TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
 
   WebKit::WebDatabase::setObserver(&database_system_);
 
-  file_system_.set_sandbox_enabled(false);
+  file_utilities_.set_sandbox_enabled(false);
 
 #if defined(OS_WIN)
   // Ensure we pick up the default theme engine.

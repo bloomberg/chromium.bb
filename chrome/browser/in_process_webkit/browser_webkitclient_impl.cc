@@ -13,7 +13,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 BrowserWebKitClientImpl::BrowserWebKitClientImpl() {
-  file_system_.set_sandbox_enabled(false);
+  file_utilities_.set_sandbox_enabled(false);
 }
 
 WebKit::WebClipboard* BrowserWebKitClientImpl::clipboard() {
@@ -26,8 +26,8 @@ WebKit::WebMimeRegistry* BrowserWebKitClientImpl::mimeRegistry() {
   return NULL;
 }
 
-WebKit::WebFileSystem* BrowserWebKitClientImpl::fileSystem() {
-  return &file_system_;
+WebKit::WebFileUtilities* BrowserWebKitClientImpl::fileUtilities() {
+  return &file_utilities_;
 }
 
 WebKit::WebSandboxSupport* BrowserWebKitClientImpl::sandboxSupport() {

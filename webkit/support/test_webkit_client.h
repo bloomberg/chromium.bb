@@ -5,7 +5,7 @@
 #ifndef WEBKIT_SUPPORT_TEST_WEBKIT_CLIENT_H_
 #define WEBKIT_SUPPORT_TEST_WEBKIT_CLIENT_H_
 
-#include "webkit/glue/webfilesystem_impl.h"
+#include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitclient_impl.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
@@ -22,7 +22,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   WebKit::WebClipboard* clipboard();
-  virtual WebKit::WebFileSystem* fileSystem();
+  virtual WebKit::WebFileUtilities* fileUtilities();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
   virtual WebKit::WebCookieJar* cookieJar();
   virtual bool sandboxEnabled();
@@ -65,7 +65,7 @@ class TestWebKitClient : public webkit_glue::WebKitClientImpl {
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
-  webkit_glue::WebFileSystemImpl file_system_;
+  webkit_glue::WebFileUtilitiesImpl file_utilities_;
   ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;
