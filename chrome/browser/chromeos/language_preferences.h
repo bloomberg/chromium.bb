@@ -233,8 +233,6 @@ const LanguageBooleanPrefs kPinyinBooleanPrefs[] = {
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_FULL_PUNCT },
   { prefs::kLanguagePinyinInitSimplifiedChinese, true, "InitSimplifiedChinese",
     IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_SIMPLIFIED_CHINESE },
-  { prefs::kLanguagePinyinTradCandidate, false, "TradCandidate",
-    IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_TRAD_CANDIDATE },
   // TODO(yusukes): Support PINYIN_{INCOMPLETE,CORRECT,FUZZY}_... prefs (32
   // additional boolean prefs.)
 };

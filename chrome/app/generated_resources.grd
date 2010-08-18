@@ -8286,7 +8286,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_SHIFT_SELECT_PINYIN"
                desc="The checkbox label for a Pinyin input method preference">
-        Use Shift to select a candidate
+        Use left and right Shift keys to select 2nd and 3rd candidates
       </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_MINUS_EQUAL_PAGE"
                desc="The checkbox label for a Pinyin input method preference">
@@ -8319,10 +8319,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_INIT_SIMPLIFIED_CHINESE"
                desc="The checkbox label for a Pinyin input method preference">
         Initial Chinese mode is Simplified Chinese
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_SETTING_TRAD_CANDIDATE"
-               desc="The checkbox label for a Pinyin input method preference">
-        Display candidates in Traditional Chinese
       </message>
 
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PINYIN_DOUBLE_SCHEMA"
