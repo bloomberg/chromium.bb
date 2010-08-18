@@ -225,10 +225,27 @@ input[type="checkbox"] {
   background-color: pink;
 }
 
+list > .heading {
+  color: #666666;
+}
+
+list > .heading:hover {
+  background-color: transparent;
+  border-color: transparent;
+}
+
 .left-side-table {
   display: -webkit-box;
 }
 
 .left-side-table > div:first-child {
   -webkit-box-flex: 1;
+}
+
+.left-side-table > :last-child {
+  -webkit-padding-start: 20px;
+}
+
+.left-side-table > :last-child button {
+  width: 100%;
 }

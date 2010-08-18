@@ -34,7 +34,3 @@ html[dir=rtl] #searchEngineList .name {
   border-bottom: solid 1px black;
   border-top: 1px solid black;
 }
-
-.left-side-table :last-child button {
-  width: 100%;
-}
