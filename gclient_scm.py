@@ -9,6 +9,7 @@ import os
 import posixpath
 import re
 import subprocess
+import sys
 import time
 
 import scm
@@ -873,6 +874,11 @@ class SVNWrapper(SCMWrapper):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
+    # Do a flush of sys.stdout every 10 secs or so otherwise it may never be
+    # flushed fast enough for buildbot.
+    last_flushed_at = time.time()
+    sys.stdout.flush()
+
     for file_status in scm.SVN.CaptureStatus(path):
       file_path = os.path.join(path, file_status[1])
       if file_status[0][0] == 'X':
@@ -884,6 +890,13 @@ class SVNWrapper(SCMWrapper):
         logging.info('%s%s' % (file[0], file[1]))
       else:
         print(file_path)
+        # Flush at least 10 seconds between line writes.  We wait at least 10
+        # seconds to avoid overloading the reader that called us with output,
+        # which can slow busy readers down.
+        if (time.time() - last_flushed_at) > 10:
+          last_flushed_at = time.time()
+          sys.stdout.flush()
+
       if file_status[0].isspace():
         logging.error('No idea what is the status of %s.\n'
                       'You just found a bug in gclient, please ping '
