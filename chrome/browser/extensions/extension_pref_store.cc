@@ -115,7 +115,7 @@ void ExtensionPrefStore::UpdateOnePref(const char* path) {
   }
 
   if (pref_service)
-    pref_service->FireObserversIfChanged(path, old_value.get());
+    pref_service->pref_notifier()->OnPreferenceSet(path, old_value.get());
 }
 
 void ExtensionPrefStore::UpdatePrefs(const PrefValueMap* pref_values) {

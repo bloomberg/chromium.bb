@@ -2143,6 +2143,8 @@
         'browser/power_save_blocker_win.cc',
         'browser/pref_member.cc',
         'browser/pref_member.h',
+        'browser/pref_notifier.cc',
+        'browser/pref_notifier.h',
         'browser/pref_service.cc',
         'browser/pref_service.h',
         'browser/pref_set_observer.cc',

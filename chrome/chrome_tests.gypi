@@ -1050,6 +1050,7 @@
         'browser/policy/mock_configuration_policy_provider.h',
         'browser/policy/mock_configuration_policy_store.h',
         'browser/pref_member_unittest.cc',
+        'browser/pref_notifier_unittest.cc',
         'browser/pref_service_unittest.cc',
         'browser/pref_set_observer_unittest.cc',
         'browser/pref_value_store_unittest.cc',

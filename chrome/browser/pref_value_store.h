@@ -18,23 +18,19 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/pref_notifier.h"
 #include "chrome/common/pref_store.h"
 
 class PrefStore;
 class Profile;
 
-// The class PrefValueStore provides values for preferences. Each Preference
-// has a unique name. This name is used to retrieve the value of a Preference.
-// The value of a preference can be either managed, user-defined or recommended.
-// Managed preference values are set (managed) by a third person (like an
-// admin for example). They have the highest priority and can not be
-// altered by the user.
-// User-defined values are chosen by the user. If there is already
-// a managed value for a preference the user-defined value is ignored and
-// the managed value is used (returned).
-// Otherwise user-defined values have a higher precedence than recommended
-// values. Recommended preference values are set by a third person
-// (like an admin).
+// The PrefValueStore manages various sources of values for Preferences
+// (e.g., configuration policies, extensions, and user settings). It returns
+// the value of a Preference from the source with the highest priority, and
+// allows setting user-defined values for preferences that are not managed.
+// See PrefNotifier for a list of the available preference sources (PrefStores)
+// and their descriptions.
+//
 // Unless otherwise explicitly noted, all of the methods of this class must
 // be called on the UI thread.
 class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
@@ -73,6 +69,11 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
 
   // Returns true if the PrefValueStore contains the given preference.
   bool HasPrefPath(const char* name) const;
+
+  // Returns true if the effective value of the preference has changed from its
+  // |old_value|. Virtual so it can be mocked for a unit test.
+  // TODO(pamg): Also return true when the controlling PrefStore changes.
+  virtual bool PrefHasChanged(const char* path, const Value* old_value);
 
   // Returns true if the PrefValueStore is read-only.
   // Because the managed and recommended PrefStores are always read-only, the
@@ -151,27 +152,14 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   FRIEND_TEST_ALL_PREFIXES(PrefValueStoreTest,
                            TestRefreshPolicyPrefsCompletion);
 
-  // PrefStores must be listed here in order from highest to lowest priority.
-  enum PrefStoreType {
-    // Not associated with an actual PrefStore but used as invalid marker, e.g.
-    // as return value.
-    INVALID = -1,
-    MANAGED = 0,
-    EXTENSION,
-    COMMAND_LINE,
-    USER,
-    RECOMMENDED,
-    PREF_STORE_TYPE_MAX = RECOMMENDED
-  };
+  scoped_ptr<PrefStore> pref_stores_[PrefNotifier::PREF_STORE_TYPE_MAX + 1];
 
-  scoped_ptr<PrefStore> pref_stores_[PREF_STORE_TYPE_MAX + 1];
-
-  bool PrefValueInStore(const char* name, PrefStoreType type);
+  bool PrefValueInStore(const char* name, PrefNotifier::PrefStoreType type);
 
   // Returns the pref store type identifying the source that controls the
   // Preference identified by |name|. If none of the sources has a value,
   // INVALID is returned.
-  PrefStoreType ControllingPrefStoreForPref(const char* name);
+  PrefNotifier::PrefStoreType ControllingPrefStoreForPref(const char* name);
 
   // Called during policy refresh after ReadPrefs completes on the thread
   // that initiated the policy refresh. RefreshPolicyPrefsCompletion takes

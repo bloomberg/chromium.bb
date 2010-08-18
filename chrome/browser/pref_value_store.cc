@@ -46,7 +46,7 @@ bool PrefValueStore::GetValue(const std::string& name,
                               Value** out_value) const {
   // Check the |PrefStore|s in order of their priority from highest to lowest
   // to find the value of the preference described by the given preference name.
-  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
+  for (size_t i = 0; i <= PrefNotifier::PREF_STORE_TYPE_MAX; ++i) {
     if (pref_stores_[i].get() &&
         pref_stores_[i]->prefs()->Get(name.c_str(), out_value)) {
       return true;
@@ -59,7 +59,7 @@ bool PrefValueStore::GetValue(const std::string& name,
 
 bool PrefValueStore::WritePrefs() {
   bool success = true;
-  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
+  for (size_t i = 0; i <= PrefNotifier::PREF_STORE_TYPE_MAX; ++i) {
     if (pref_stores_[i].get())
       success = pref_stores_[i]->WritePrefs() && success;
   }
@@ -67,7 +67,7 @@ bool PrefValueStore::WritePrefs() {
 }
 
 void PrefValueStore::ScheduleWritePrefs() {
-  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
+  for (size_t i = 0; i <= PrefNotifier::PREF_STORE_TYPE_MAX; ++i) {
     if (pref_stores_[i].get())
       pref_stores_[i]->ScheduleWritePrefs();
   }
@@ -75,7 +75,7 @@ void PrefValueStore::ScheduleWritePrefs() {
 
 PrefStore::PrefReadError PrefValueStore::ReadPrefs() {
   PrefStore::PrefReadError result = PrefStore::PREF_READ_ERROR_NONE;
-  for (size_t i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
+  for (size_t i = 0; i <= PrefNotifier::PREF_STORE_TYPE_MAX; ++i) {
     if (pref_stores_[i].get()) {
       PrefStore::PrefReadError this_error = pref_stores_[i]->ReadPrefs();
       if (result == PrefStore::PREF_READ_ERROR_NONE)
@@ -94,49 +94,60 @@ bool PrefValueStore::HasPrefPath(const char* path) const {
   return rv;
 }
 
+bool PrefValueStore::PrefHasChanged(const char* path,
+                                    const Value* old_value) {
+  Value* new_value = NULL;
+  GetValue(path, &new_value);
+  // Some unit tests have no values for certain prefs.
+  return (!new_value || !old_value->Equals(new_value));
+}
+
 // Note the |DictionaryValue| referenced by the |PrefStore| user_prefs_
 // (returned by the method prefs()) takes the ownership of the Value referenced
 // by in_value.
 void PrefValueStore::SetUserPrefValue(const char* name, Value* in_value) {
-  pref_stores_[USER]->prefs()->Set(name, in_value);
+  pref_stores_[PrefNotifier::USER_STORE]->prefs()->Set(name, in_value);
 }
 
 bool PrefValueStore::ReadOnly() {
-  return pref_stores_[USER]->ReadOnly();
+  return pref_stores_[PrefNotifier::USER_STORE]->ReadOnly();
 }
 
 void PrefValueStore::RemoveUserPrefValue(const char* name) {
-  if (pref_stores_[USER].get()) {
-    pref_stores_[USER]->prefs()->Remove(name, NULL);
+  if (pref_stores_[PrefNotifier::USER_STORE].get()) {
+    pref_stores_[PrefNotifier::USER_STORE]->prefs()->Remove(name, NULL);
   }
 }
 
 bool PrefValueStore::PrefValueInManagedStore(const char* name) {
-  return PrefValueInStore(name, MANAGED);
+  return PrefValueInStore(name, PrefNotifier::MANAGED_STORE);
 }
 
 bool PrefValueStore::PrefValueInExtensionStore(const char* name) {
-  return PrefValueInStore(name, EXTENSION);
+  return PrefValueInStore(name, PrefNotifier::EXTENSION_STORE);
 }
 
 bool PrefValueStore::PrefValueInUserStore(const char* name) {
-  return PrefValueInStore(name, USER);
+  return PrefValueInStore(name, PrefNotifier::USER_STORE);
 }
 
 bool PrefValueStore::PrefValueFromExtensionStore(const char* name) {
-  return ControllingPrefStoreForPref(name) == EXTENSION;
+  return ControllingPrefStoreForPref(name) == PrefNotifier::EXTENSION_STORE;
 }
 
 bool PrefValueStore::PrefValueFromUserStore(const char* name) {
-  return ControllingPrefStoreForPref(name) == USER;
+  return ControllingPrefStoreForPref(name) == PrefNotifier::USER_STORE;
 }
 
 bool PrefValueStore::PrefValueUserModifiable(const char* name) {
-  PrefStoreType effective_store = ControllingPrefStoreForPref(name);
-  return effective_store >= USER || effective_store == INVALID;
+  PrefNotifier::PrefStoreType effective_store =
+      ControllingPrefStoreForPref(name);
+  return effective_store >= PrefNotifier::USER_STORE ||
+         effective_store == PrefNotifier::INVALID_STORE;
 }
 
-bool PrefValueStore::PrefValueInStore(const char* name, PrefStoreType type) {
+bool PrefValueStore::PrefValueInStore(const char* name,
+                                      PrefNotifier::PrefStoreType type) {
   if (!pref_stores_[type].get()) {
     // No store of that type set, so this pref can't be in it.
     return false;
@@ -145,13 +156,13 @@ bool PrefValueStore::PrefValueInStore(const char* name, PrefStoreType type) {
   return pref_stores_[type]->prefs()->Get(name, &tmp_value);
 }
 
-PrefValueStore::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
+PrefNotifier::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
     const char* name) {
-  for (int i = 0; i <= PREF_STORE_TYPE_MAX; ++i) {
-    if (PrefValueInStore(name, static_cast<PrefStoreType>(i)))
-      return static_cast<PrefStoreType>(i);
+  for (int i = 0; i <= PrefNotifier::PREF_STORE_TYPE_MAX; ++i) {
+    if (PrefValueInStore(name, static_cast<PrefNotifier::PrefStoreType>(i)))
+      return static_cast<PrefNotifier::PrefStoreType>(i);
   }
-  return INVALID;
+  return PrefNotifier::INVALID_STORE;
 }
 
 void PrefValueStore::RefreshPolicyPrefsCompletion(
@@ -159,9 +170,11 @@ void PrefValueStore::RefreshPolicyPrefsCompletion(
     PrefStore* new_recommended_pref_store,
     AfterRefreshCallback* callback_pointer) {
   scoped_ptr<AfterRefreshCallback> callback(callback_pointer);
-  DictionaryValue* managed_prefs_before(pref_stores_[MANAGED]->prefs());
+  DictionaryValue* managed_prefs_before(
+      pref_stores_[PrefNotifier::MANAGED_STORE]->prefs());
   DictionaryValue* managed_prefs_after(new_managed_pref_store->prefs());
-  DictionaryValue* recommended_prefs_before(pref_stores_[RECOMMENDED]->prefs());
+  DictionaryValue* recommended_prefs_before(
+      pref_stores_[PrefNotifier::RECOMMENDED_STORE]->prefs());
   DictionaryValue* recommended_prefs_after(new_recommended_pref_store->prefs());
 
   std::vector<std::string> changed_managed_paths;
@@ -182,8 +195,9 @@ void PrefValueStore::RefreshPolicyPrefsCompletion(
                  changed_paths.begin());
   changed_paths.resize(last_insert - changed_paths.begin());
 
-  pref_stores_[MANAGED].reset(new_managed_pref_store);
-  pref_stores_[RECOMMENDED].reset(new_recommended_pref_store);
+  pref_stores_[PrefNotifier::MANAGED_STORE].reset(new_managed_pref_store);
+  pref_stores_[PrefNotifier::RECOMMENDED_STORE].reset(
+      new_recommended_pref_store);
   callback->Run(changed_paths);
 }
 
@@ -241,9 +255,9 @@ PrefValueStore::PrefValueStore(PrefStore* managed_prefs,
                                PrefStore* command_line_prefs,
                                PrefStore* user_prefs,
                                PrefStore* recommended_prefs) {
-  pref_stores_[MANAGED].reset(managed_prefs);
-  pref_stores_[EXTENSION].reset(extension_prefs);
-  pref_stores_[COMMAND_LINE].reset(command_line_prefs);
-  pref_stores_[USER].reset(user_prefs);
-  pref_stores_[RECOMMENDED].reset(recommended_prefs);
+  pref_stores_[PrefNotifier::MANAGED_STORE].reset(managed_prefs);
+  pref_stores_[PrefNotifier::EXTENSION_STORE].reset(extension_prefs);
+  pref_stores_[PrefNotifier::COMMAND_LINE_STORE].reset(command_line_prefs);
+  pref_stores_[PrefNotifier::USER_STORE].reset(user_prefs);
+  pref_stores_[PrefNotifier::RECOMMENDED_STORE].reset(recommended_prefs);
 }

@@ -20,7 +20,6 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 #include "grit/chromium_strings.h"
@@ -93,29 +92,14 @@ PrefService* PrefService::CreateUserPrefService(const FilePath& pref_filename) {
 
 PrefService::PrefService(PrefValueStore* pref_value_store)
     : pref_value_store_(pref_value_store) {
+  pref_notifier_.reset(new PrefNotifier(this, pref_value_store));
   InitFromStorage();
-  registrar_.Add(this,
-                 NotificationType(NotificationType::POLICY_CHANGED),
-                 NotificationService::AllSources());
 }
 
 PrefService::~PrefService() {
   DCHECK(CalledOnValidThread());
-
-  // Verify that there are no pref observers when we shut down.
-  for (PrefObserverMap::iterator it = pref_observers_.begin();
-       it != pref_observers_.end(); ++it) {
-    NotificationObserverList::Iterator obs_iterator(*(it->second));
-    if (obs_iterator.GetNext()) {
-      LOG(WARNING) << "pref observer found at shutdown " << it->first;
-    }
-  }
-
   STLDeleteContainerPointers(prefs_.begin(), prefs_.end());
   prefs_.clear();
-  STLDeleteContainerPairSecondPointers(pref_observers_.begin(),
-                                       pref_observers_.end());
-  pref_observers_.clear();
 }
 
 void PrefService::InitFromStorage() {
@@ -341,39 +325,6 @@ bool PrefService::IsManagedPreference(const char* pref_name) const {
   return false;
 }
 
-void PrefService::FireObserversIfChanged(const char* path,
-                                         const Value* old_value) {
-  if (PrefIsChanged(path, old_value))
-    FireObservers(path);
-}
-
-void PrefService::FireObservers(const char* path) {
-  DCHECK(CalledOnValidThread());
-
-  // Convert path to a std::string because the Details constructor requires a
-  // class.
-  std::string path_str(path);
-  PrefObserverMap::iterator observer_iterator = pref_observers_.find(path_str);
-  if (observer_iterator == pref_observers_.end())
-    return;
-
-  NotificationObserverList::Iterator it(*(observer_iterator->second));
-  NotificationObserver* observer;
-  while ((observer = it.GetNext()) != NULL) {
-    observer->Observe(NotificationType::PREF_CHANGED,
-                      Source<PrefService>(this),
-                      Details<std::string>(&path_str));
-  }
-}
-
-bool PrefService::PrefIsChanged(const char* path,
-                                const Value* old_value) {
-  Value* new_value = NULL;
-  pref_value_store_->GetValue(path, &new_value);
-  // Some unit tests have no values for certain prefs.
-  return (!new_value || !old_value->Equals(new_value));
-}
-
 const DictionaryValue* PrefService::GetDictionary(const char* path) const {
   DCHECK(CalledOnValidThread());
 
@@ -404,49 +355,12 @@ const ListValue* PrefService::GetList(const char* path) const {
 
 void PrefService::AddPrefObserver(const char* path,
                                   NotificationObserver* obs) {
-  DCHECK(CalledOnValidThread());
-
-  const Preference* pref = FindPreference(path);
-  if (!pref) {
-    NOTREACHED() << "Trying to add an observer for an unregistered pref: "
-        << path;
-    return;
-  }
-
-  // Get the pref observer list associated with the path.
-  NotificationObserverList* observer_list = NULL;
-  PrefObserverMap::iterator observer_iterator = pref_observers_.find(path);
-  if (observer_iterator == pref_observers_.end()) {
-    observer_list = new NotificationObserverList;
-    pref_observers_[path] = observer_list;
-  } else {
-    observer_list = observer_iterator->second;
-  }
-
-  // Verify that this observer doesn't already exist.
-  NotificationObserverList::Iterator it(*observer_list);
-  NotificationObserver* existing_obs;
-  while ((existing_obs = it.GetNext()) != NULL) {
-    DCHECK(existing_obs != obs) << path << " observer already registered";
-    if (existing_obs == obs)
-      return;
-  }
-
-  // Ok, safe to add the pref observer.
-  observer_list->AddObserver(obs);
+  pref_notifier_->AddPrefObserver(path, obs);
 }
 
 void PrefService::RemovePrefObserver(const char* path,
                                      NotificationObserver* obs) {
-  DCHECK(CalledOnValidThread());
-
-  PrefObserverMap::iterator observer_iterator = pref_observers_.find(path);
-  if (observer_iterator == pref_observers_.end()) {
-    return;
-  }
-
-  NotificationObserverList* observer_list = observer_iterator->second;
-  observer_list->RemoveObserver(obs);
+  pref_notifier_->RemovePrefObserver(path, obs);
 }
 
 void PrefService::RegisterPreference(Preference* pref) {
@@ -472,8 +386,10 @@ void PrefService::ClearPref(const char* path) {
   bool has_old_value = pref_value_store_->GetValue(path, &value);
   pref_value_store_->RemoveUserPrefValue(path);
 
+  // TODO(pamg): Removing the user value when there's a higher-priority setting
+  // doesn't change the value and shouldn't fire observers.
   if (has_old_value)
-    FireObservers(path);
+    pref_notifier_->FireObservers(path);
 }
 
 void PrefService::Set(const char* path, const Value& value) {
@@ -492,7 +408,7 @@ void PrefService::Set(const char* path, const Value& value) {
     scoped_ptr<Value> old_value(GetPrefCopy(path));
     if (!old_value->Equals(&value)) {
       pref_value_store_->RemoveUserPrefValue(path);
-      FireObservers(path);
+      pref_notifier_->FireObservers(path);
     }
     return;
   }
@@ -504,7 +420,7 @@ void PrefService::Set(const char* path, const Value& value) {
   scoped_ptr<Value> old_value(GetPrefCopy(path));
   pref_value_store_->SetUserPrefValue(path, value.DeepCopy());
 
-  FireObserversIfChanged(path, old_value.get());
+  pref_notifier_->OnUserPreferenceSet(path, old_value.get());
 }
 
 void PrefService::SetBoolean(const char* path, bool value) {
@@ -528,7 +444,7 @@ void PrefService::SetBoolean(const char* path, bool value) {
   Value* new_value = Value::CreateBooleanValue(value);
   pref_value_store_->SetUserPrefValue(path, new_value);
 
-  FireObserversIfChanged(path, old_value.get());
+  pref_notifier_->OnUserPreferenceSet(path, old_value.get());
 }
 
 void PrefService::SetInteger(const char* path, int value) {
@@ -552,7 +468,7 @@ void PrefService::SetInteger(const char* path, int value) {
   Value* new_value = Value::CreateIntegerValue(value);
   pref_value_store_->SetUserPrefValue(path, new_value);
 
-  FireObserversIfChanged(path, old_value.get());
+  pref_notifier_->OnUserPreferenceSet(path, old_value.get());
 }
 
 void PrefService::SetReal(const char* path, double value) {
@@ -576,7 +492,7 @@ void PrefService::SetReal(const char* path, double value) {
   Value* new_value = Value::CreateRealValue(value);
   pref_value_store_->SetUserPrefValue(path, new_value);
 
-  FireObserversIfChanged(path, old_value.get());
+  pref_notifier_->OnUserPreferenceSet(path, old_value.get());
 }
 
 void PrefService::SetString(const char* path, const std::string& value) {
@@ -600,7 +516,7 @@ void PrefService::SetString(const char* path, const std::string& value) {
   Value* new_value = Value::CreateStringValue(value);
   pref_value_store_->SetUserPrefValue(path, new_value);
 
-  FireObserversIfChanged(path, old_value.get());
+  pref_notifier_->OnUserPreferenceSet(path, old_value.get());
 }
 
 void PrefService::SetFilePath(const char* path, const FilePath& value) {
@@ -632,7 +548,7 @@ void PrefService::SetFilePath(const char* path, const FilePath& value) {
   pref_value_store_->SetUserPrefValue(path, new_value);
 #endif
 
-  FireObserversIfChanged(path, old_value.get());
+  pref_notifier_->OnUserPreferenceSet(path, old_value.get());
 }
 
 void PrefService::SetInt64(const char* path, int64 value) {
@@ -656,7 +572,7 @@ void PrefService::SetInt64(const char* path, int64 value) {
   Value* new_value = Value::CreateStringValue(base::Int64ToString(value));
   pref_value_store_->SetUserPrefValue(path, new_value);
 
-  FireObserversIfChanged(path, old_value.get());
+  pref_notifier_->OnUserPreferenceSet(path, old_value.get());
 }
 
 int64 PrefService::GetInt64(const char* path) const {
@@ -802,38 +718,6 @@ bool PrefService::Preference::IsUserControlled() const {
   return pref_value_store_->PrefValueFromUserStore(name_.c_str());
 }
 
-void PrefService::FireObserversForRefreshedManagedPrefs(
-    std::vector<std::string> changed_prefs_paths) {
-  DCHECK(CalledOnValidThread());
-  std::vector<std::string>::const_iterator current;
-  for (current = changed_prefs_paths.begin();
-       current != changed_prefs_paths.end();
-       ++current) {
-    FireObservers(current->c_str());
-  }
-}
-
 bool PrefService::Preference::IsUserModifiable() const {
   return pref_value_store_->PrefValueUserModifiable(name_.c_str());
-}
-
-void PrefService::Observe(NotificationType type,
-                          const NotificationSource& source,
-                          const NotificationDetails& details) {
-  if (type == NotificationType::POLICY_CHANGED) {
-      PrefValueStore::AfterRefreshCallback* callback =
-          NewCallback(this,
-                      &PrefService::FireObserversForRefreshedManagedPrefs);
-      // The notification of the policy refresh can come from any thread,
-      // but the manipulation of the PrefValueStore must happen on the UI
-      // thread, thus the policy refresh must be explicitly started on it.
-      ChromeThread::PostTask(
-          ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(
-              pref_value_store_.get(),
-              &PrefValueStore::RefreshPolicyPrefs,
-              ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore(),
-              ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(),
-              callback));
-  }
 }

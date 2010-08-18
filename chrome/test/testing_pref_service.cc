@@ -62,11 +62,11 @@ void TestingPrefService::SetPref(PrefStore* pref_store,
                                  const char* path,
                                  Value* value) {
   pref_store->prefs()->Set(path, value);
-  FireObservers(path);
+  pref_notifier()->FireObservers(path);
 }
 
 void TestingPrefService::RemovePref(PrefStore* pref_store,
                                     const char* path) {
   pref_store->prefs()->Remove(path, NULL);
-  FireObservers(path);
+  pref_notifier()->FireObservers(path);
 }

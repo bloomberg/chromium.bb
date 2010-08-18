@@ -16,5 +16,5 @@ ScopedPrefUpdate::ScopedPrefUpdate(PrefService* service, const wchar_t* path)
       path_(WideToUTF8(path)) {}
 
 ScopedPrefUpdate::~ScopedPrefUpdate() {
-  service_->FireObservers(path_.c_str());
+  service_->pref_notifier()->FireObservers(path_.c_str());
 }

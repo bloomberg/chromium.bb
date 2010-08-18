@@ -13,26 +13,17 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/hash_tables.h"
 #include "base/non_thread_safe.h"
-#include "base/observer_list.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/pref_value_store.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_store.h"
 
-class NotificationDetails;
-class NotificationSource;
-class NotificationType;
-class Preference;
+class NotificationObserver;
+class PrefNotifier;
 class Profile;
-class ScopedPrefUpdate;
 
-class PrefService : public NonThreadSafe,
-                    public NotificationObserver {
+class PrefService : public NonThreadSafe {
  public:
   // A helper class to store all the information associated with a preference.
   class Preference {
@@ -114,8 +105,8 @@ class PrefService : public NonThreadSafe,
   // preferences).
   static PrefService* CreateUserPrefService(const FilePath& pref_filename);
 
-  // This constructor is primarily used by tests. The |PrefValueStore| provides
-  // preference values.
+  // This constructor is primarily used by tests. The |pref_value_store|
+  // provides preference values.
   explicit PrefService(PrefValueStore* pref_value_store);
 
   virtual ~PrefService();
@@ -225,20 +216,15 @@ class PrefService : public NonThreadSafe,
   // preference is not registered.
   const Preference* FindPreference(const char* pref_name) const;
 
-  // For the given pref_name, fire any observer of the pref only if |old_value|
-  // is different from the current value.  Virtual so it can be mocked for a
-  // unit test.
-  virtual void FireObserversIfChanged(const char* pref_name,
-                                      const Value* old_value);
-
   bool read_only() const { return pref_value_store_->ReadOnly(); }
 
- protected:
-  // For the given pref_name, fire any observer of the pref.
-  void FireObservers(const char* pref_name);
+  PrefNotifier* pref_notifier() const { return pref_notifier_.get(); }
 
-  // This should only be accessed by subclasses for unit-testing.
-  bool PrefIsChanged(const char* path, const Value* old_value);
+ protected:
+  // The PrefNotifier handles registering and notifying preference observers.
+  // It is created and owned by this PrefService. Subclasses may access it for
+  // unit testing.
+  scoped_ptr<PrefNotifier> pref_notifier_;
 
  private:
   // Add a preference to the PreferenceMap.  If the pref already exists, return
@@ -256,41 +242,12 @@ class PrefService : public NonThreadSafe,
   // This should only be called from the constructor.
   void InitFromStorage();
 
-  // NotificationObserver methods:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // Called after a policy refresh to notify relevant preference observers.
-  // |changed_prefs_paths| is the vector of preference paths changed by the
-  // policy update. It is passed by value and not reference because
-  // this method is called asynchronously as a callback from another thread.
-  // Copying the vector guarantees that the vector's lifecycle spans the
-  // method's invocation.
-  void FireObserversForRefreshedManagedPrefs(
-      std::vector<std::string> changed_prefs_paths);
-
-  // The value of a Preference can be:
-  // managed, user defined, recommended or default.
-  // The PrefValueStore manages enforced, user defined and recommended values
-  // for Preferences. It returns the value of a Preference with the
-  // highest priority, and allows to set user defined values for preferences
-  // that are not managed.
+  // The PrefValueStore provides prioritized preference values. It is created
+  // and owned by this PrefService. Subclasses may access it for unit testing.
   scoped_refptr<PrefValueStore> pref_value_store_;
-
-  NotificationRegistrar registrar_;
 
   // A set of all the registered Preference objects.
   PreferenceSet prefs_;
-
-  // A map from pref names to a list of observers.  Observers get fired in the
-  // order they are added.
-  typedef ObserverList<NotificationObserver> NotificationObserverList;
-  typedef base::hash_map<std::string, NotificationObserverList*>
-      PrefObserverMap;
-  PrefObserverMap pref_observers_;
-
-  friend class ScopedPrefUpdate;
 
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };

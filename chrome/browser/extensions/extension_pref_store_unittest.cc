@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <gtest/gtest.h>
-
 #include <string>
 #include <vector>
 
@@ -15,6 +13,8 @@
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/testing_pref_service.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
@@ -76,26 +76,34 @@ class TestExtensionPrefStore : public ExtensionPrefStore {
   PrefService* pref_service_;
 };
 
-class MockPrefService : public PrefService {
+// Mock PrefNotifier that allows the notifications to be tracked.
+class MockPrefNotifier : public PrefNotifier {
  public:
-  explicit MockPrefService(PrefValueStore* value_store)
-      : PrefService(value_store),
-        fired_observers_(false) {}
+  MockPrefNotifier(PrefService* service, PrefValueStore* value_store)
+    : PrefNotifier(service, value_store) {}
 
-  // Tracks whether the observers would have been notified.
-  virtual void FireObserversIfChanged(const char* pref_name,
-                                      const Value* old_value) {
-    fired_observers_ = PrefIsChanged(pref_name, old_value);
-  }
+  virtual ~MockPrefNotifier() {}
 
-  bool fired_observers_;
+  MOCK_METHOD1(FireObservers, void(const char* path));
 };
 
-// Use static constants to avoid confusing std::map with hard-coded strings.
-static const char* kPref1 = "path1.subpath";
-static const char* kPref2 = "path2";
-static const char* kPref3 = "path3";
-static const char* kPref4 = "path4";
+// Mock PrefService that allows the PrefNotifier to be injected.
+class MockPrefService : public PrefService {
+ public:
+  explicit MockPrefService(PrefValueStore* pref_value_store)
+      : PrefService(pref_value_store) {
+  }
+
+  void SetPrefNotifier(MockPrefNotifier* notifier) {
+    pref_notifier_.reset(notifier);
+  }
+};
+
+// Use constants to avoid confusing std::map with hard-coded strings.
+const char kPref1[] = "path1.subpath";
+const char kPref2[] = "path2";
+const char kPref3[] = "path3";
+const char kPref4[] = "path4";
 
 }  // namespace
 
@@ -316,28 +324,36 @@ TEST(ExtensionPrefStoreTest, UninstallExtensionFromMiddle) {
 }
 
 TEST(ExtensionPrefStoreTest, NotifyWhenNeeded) {
+  using testing::Mock;
+
   TestExtensionPrefStore* eps = new TestExtensionPrefStore;
   ASSERT_TRUE(eps->ext1 != NULL);
 
   // The PrefValueStore takes ownership of the PrefStores; in this case, that's
   // only an ExtensionPrefStore. Likewise, the PrefService takes ownership of
-  // the PrefValueStore.
+  // the PrefValueStore and PrefNotifier.
   PrefValueStore* value_store = new TestingPrefService::TestingPrefValueStore(
       NULL, eps, NULL, NULL, NULL);
   scoped_ptr<MockPrefService> pref_service(new MockPrefService(value_store));
+  MockPrefNotifier* pref_notifier = new MockPrefNotifier(pref_service.get(),
+      value_store);
+  pref_service->SetPrefNotifier(pref_notifier);
+
   eps->SetPrefService(pref_service.get());
   pref_service->RegisterStringPref(kPref1, std::string());
 
+  EXPECT_CALL(*pref_notifier, FireObservers(kPref1));
   eps->InstallExtensionPref(eps->ext1, kPref1,
       Value::CreateStringValue("https://www.chromium.org"));
-  EXPECT_TRUE(pref_service->fired_observers_);
+  Mock::VerifyAndClearExpectations(pref_notifier);
+
+  EXPECT_CALL(*pref_notifier, FireObservers(kPref1)).Times(0);
   eps->InstallExtensionPref(eps->ext1, kPref1,
       Value::CreateStringValue("https://www.chromium.org"));
-  EXPECT_FALSE(pref_service->fired_observers_);
+  Mock::VerifyAndClearExpectations(pref_notifier);
+
+  EXPECT_CALL(*pref_notifier, FireObservers(kPref1)).Times(2);
   eps->InstallExtensionPref(eps->ext1, kPref1,
       Value::CreateStringValue("chrome://newtab"));
-  EXPECT_TRUE(pref_service->fired_observers_);
-
   eps->UninstallExtension(eps->ext1);
-  EXPECT_TRUE(pref_service->fired_observers_);
 }

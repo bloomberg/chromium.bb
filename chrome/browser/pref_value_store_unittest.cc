@@ -15,6 +15,16 @@
 using testing::_;
 using testing::Mock;
 
+namespace {
+
+class MockPolicyRefreshCallback {
+ public:
+  MockPolicyRefreshCallback() {}
+  MOCK_METHOD1(DoCallback, void(const std::vector<std::string>));
+};
+
+}  // namespace
+
 // Names of the preferences used in this test program.
 namespace prefs {
   const char kCurrentThemeID[] = "extensions.theme.id";
@@ -31,7 +41,7 @@ namespace prefs {
   const char kApplicationLocale[] = "intl.app_locale";
 }
 
-// Potentailly expected values of all preferences used in this test program.
+// Potentially expected values of all preferences used in this test program.
 // The "user" namespace is defined globally in an ARM system header, so we need
 // something different here.
 namespace user_pref {
@@ -281,6 +291,25 @@ TEST_F(PrefValueStoreTest, HasPrefPath) {
   EXPECT_FALSE(pref_value_store_->HasPrefPath(prefs::kMissingPref));
 }
 
+TEST_F(PrefValueStoreTest, PrefHasChanged) {
+  ASSERT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomepage));
+
+  // Pretend we used to have a different enforced value set.
+  scoped_ptr<Value> value(Value::CreateStringValue("http://www.youtube.com"));
+  EXPECT_TRUE(pref_value_store_->PrefHasChanged(prefs::kHomepage, value.get()));
+
+  // Pretend we used to have the same enforced value set.
+  value.reset(Value::CreateStringValue(enforced_pref::kHomepageValue));
+  EXPECT_FALSE(pref_value_store_->PrefHasChanged(prefs::kHomepage,
+      value.get()));
+
+  // Really set a new value in a lower-priority store.
+  Value* new_value = Value::CreateStringValue("http://www.chromium.org");
+  pref_value_store_->SetUserPrefValue(prefs::kHomepage, new_value);
+  EXPECT_FALSE(pref_value_store_->PrefHasChanged(prefs::kHomepage,
+      value.get()));
+}
+
 TEST_F(PrefValueStoreTest, ReadPrefs) {
   pref_value_store_->ReadPrefs();
   // The ReadPrefs method of the |DummyPrefStore| deletes the |pref_store|s
@@ -455,12 +484,6 @@ TEST_F(PrefValueStoreTest, PrefValueInUserStore) {
   EXPECT_FALSE(pref_value_store_->PrefValueInUserStore(prefs::kMissingPref));
   EXPECT_FALSE(pref_value_store_->PrefValueFromUserStore(prefs::kMissingPref));
 }
-
-class MockPolicyRefreshCallback {
- public:
-  MockPolicyRefreshCallback() {}
-  MOCK_METHOD1(DoCallback, void(const std::vector<std::string>));
-};
 
 TEST_F(PrefValueStoreTest, TestPolicyRefresh) {
   // pref_value_store_ is initialized by PrefValueStoreTest to have values
