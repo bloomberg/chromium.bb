@@ -4,6 +4,8 @@
 
 #include "chrome/browser/status_icons/status_tray.h"
 
+#include <algorithm>
+
 #include "base/stl_util-inl.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
@@ -16,29 +18,23 @@ StatusTray::~StatusTray() {
 
 void StatusTray::RemoveAllIcons() {
   // Walk any active status icons and delete them.
-  STLDeleteContainerPairSecondPointers(status_icons_.begin(),
-                                       status_icons_.end());
+  STLDeleteContainerPointers(status_icons_.begin(), status_icons_.end());
   status_icons_.clear();
 }
 
-StatusIcon* StatusTray::GetStatusIcon(const string16& identifier) {
-  StatusIconMap::const_iterator iter = status_icons_.find(identifier);
-  if (iter != status_icons_.end())
-    return iter->second;
-
-  // No existing StatusIcon, create a new one.
-  StatusIcon* icon = CreateStatusIcon();
+StatusIcon* StatusTray::CreateStatusIcon() {
+  StatusIcon* icon = CreatePlatformStatusIcon();
   if (icon)
-    status_icons_[identifier] = icon;
+    status_icons_.push_back(icon);
   return icon;
 }
 
-void StatusTray::RemoveStatusIcon(const string16& identifier) {
-  StatusIconMap::iterator iter = status_icons_.find(identifier);
+void StatusTray::RemoveStatusIcon(StatusIcon* icon) {
+  StatusIconList::iterator iter = std::find(
+      status_icons_.begin(), status_icons_.end(), icon);
   if (iter != status_icons_.end()) {
-    // Free the StatusIcon from the map (can't put scoped_ptr in a map, so we
-    // have to do it manually).
-    delete iter->second;
+    // Free the StatusIcon from the list.
+    delete *iter;
     status_icons_.erase(iter);
   }
 }

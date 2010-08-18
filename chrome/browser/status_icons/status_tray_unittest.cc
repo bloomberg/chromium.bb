@@ -21,35 +21,26 @@ class MockStatusIcon : public StatusIcon {
 
 class TestStatusTray : public StatusTray {
  public:
-  MOCK_METHOD0(CreateStatusIcon, StatusIcon*());
+  MOCK_METHOD0(CreatePlatformStatusIcon, StatusIcon*());
 };
 
 TEST(StatusTrayTest, Create) {
   // Check for creation and leaks.
   TestStatusTray tray;
-  EXPECT_CALL(tray, CreateStatusIcon()).WillOnce(Return(new MockStatusIcon()));
-  tray.GetStatusIcon(ASCIIToUTF16("test"));
+  EXPECT_CALL(tray,
+      CreatePlatformStatusIcon()).WillOnce(Return(new MockStatusIcon()));
+  tray.CreateStatusIcon();
 }
 
-TEST(StatusTrayTest, GetIconTwice) {
+// Make sure that removing an icon removes it from the list.
+TEST(StatusTrayTest, CreateRemove) {
   TestStatusTray tray;
-  string16 id = ASCIIToUTF16("test");
-  // We should not try to create a new icon if we get the same ID twice.
-  EXPECT_CALL(tray, CreateStatusIcon()).WillOnce(Return(new MockStatusIcon()));
-  StatusIcon* icon =  tray.GetStatusIcon(id);
-  EXPECT_EQ(icon, tray.GetStatusIcon(id));
-}
-
-TEST(StatusTrayTest, GetIconAfterRemove) {
-  TestStatusTray tray;
-  string16 id = ASCIIToUTF16("test");
-  EXPECT_CALL(tray, CreateStatusIcon()).Times(2)
-      .WillOnce(Return(new MockStatusIcon()))
-      .WillOnce(Return(new MockStatusIcon()));
-  StatusIcon* icon =  tray.GetStatusIcon(id);
-  EXPECT_EQ(icon, tray.GetStatusIcon(id));
-
-  // If we remove the icon, then we should create a new one the next time in.
-  tray.RemoveStatusIcon(id);
-  tray.GetStatusIcon(id);
+  EXPECT_CALL(tray,
+      CreatePlatformStatusIcon()).WillOnce(Return(new MockStatusIcon()));
+  StatusIcon* icon = tray.CreateStatusIcon();
+  EXPECT_EQ(1U, tray.status_icons_.size());
+  tray.RemoveStatusIcon(icon);
+  EXPECT_EQ(0U, tray.status_icons_.size());
+  // Calling again should do nothing.
+  tray.RemoveStatusIcon(icon);
 }

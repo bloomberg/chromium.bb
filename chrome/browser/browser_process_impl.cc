@@ -43,7 +43,6 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/status_icons/status_tray_manager.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -359,13 +358,6 @@ NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
   return notification_ui_manager_.get();
 }
 
-StatusTrayManager* BrowserProcessImpl::status_tray_manager() {
-  DCHECK(CalledOnValidThread());
-  if (!status_tray_manager_.get())
-    CreateStatusTrayManager();
-  return status_tray_manager_.get();
-}
-
 IconManager* BrowserProcessImpl::icon_manager() {
   DCHECK(CalledOnValidThread());
   if (!created_icon_manager_)
@@ -642,11 +634,6 @@ void BrowserProcessImpl::CreateNotificationUIManager() {
   DCHECK(notification_ui_manager_.get() == NULL);
   notification_ui_manager_.reset(NotificationUIManager::Create());
   created_notification_ui_manager_ = true;
-}
-
-void BrowserProcessImpl::CreateStatusTrayManager() {
-  DCHECK(status_tray_manager_.get() == NULL);
-  status_tray_manager_.reset(new StatusTrayManager());
 }
 
 void BrowserProcessImpl::CreateTabCloseableStateWatcher() {

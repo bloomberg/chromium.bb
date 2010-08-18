@@ -250,6 +250,8 @@ extern const char kKeywordEditorWindowPlacement[];
 extern const char kPreferencesWindowPlacement[];
 extern const char kMemoryCacheSize[];
 
+extern const char kBackgroundModeEnabled[];
+
 extern const char kDownloadDefaultDirectory[];
 extern const char kDownloadExtensionsToOpen[];
 extern const char kDownloadDirUpgraded[];

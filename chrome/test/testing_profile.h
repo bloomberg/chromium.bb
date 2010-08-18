@@ -236,6 +236,9 @@ class TestingProfile : public Profile {
   virtual BackgroundContentsService* GetBackgroundContentsService() {
     return NULL;
   }
+  virtual StatusTray* GetStatusTray() {
+    return NULL;
+  }
   virtual FilePath last_selected_directory() {
     return last_selected_directory_;
   }

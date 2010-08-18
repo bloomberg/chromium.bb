@@ -40,8 +40,7 @@ const char kFrameNameKey[] = "name";
 
 BackgroundContentsService::BackgroundContentsService(
     Profile* profile, const CommandLine* command_line)
-    : prefs_(NULL),
-      always_keep_alive_(command_line->HasSwitch(switches::kKeepAliveForTest)) {
+    : prefs_(NULL) {
   // Don't load/store preferences if the proper switch is not enabled, or if
   // the parent profile is off the record.
   if (!profile->IsOffTheRecord() &&
@@ -85,14 +84,6 @@ void BackgroundContentsService::StartObserving(Profile* profile) {
   // BackgroundContents.
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  Source<Profile>(profile));
-
-  if (always_keep_alive_ && !profile->IsOffTheRecord()) {
-    // For testing, keep the browser process alive until there is an explicit
-    // shutdown.
-    registrar_.Add(this, NotificationType::APP_TERMINATING,
-                   NotificationService::AllSources());
-    BrowserList::StartKeepAlive();
-  }
 }
 
 void BackgroundContentsService::Observe(NotificationType type,
@@ -120,11 +111,6 @@ void BackgroundContentsService::Observe(NotificationType type,
     case NotificationType::EXTENSION_UNLOADED:
       ShutdownAssociatedBackgroundContents(
           ASCIIToUTF16(Details<Extension>(details)->id()));
-      break;
-    case NotificationType::APP_TERMINATING:
-      // Performing an explicit shutdown, so allow the browser process to exit.
-      DCHECK(always_keep_alive_);
-      BrowserList::EndKeepAlive();
       break;
     default:
       NOTREACHED();

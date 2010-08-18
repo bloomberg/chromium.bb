@@ -27,7 +27,7 @@ TEST(StatusTrayGtkTest, CreateTray) {
 TEST(StatusTrayGtkTest, CreateIcon) {
   // Create an icon, set the images and tooltip, then shut it down.
   StatusTrayGtk tray;
-  StatusIcon* icon = tray.GetStatusIcon(ASCIIToUTF16("test"));
+  StatusIcon* icon = tray.CreateStatusIcon();
   SkBitmap* bitmap = ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_STATUS_TRAY_ICON);
   icon->SetImage(*bitmap);
@@ -38,8 +38,7 @@ TEST(StatusTrayGtkTest, CreateIcon) {
 TEST(StatusTrayGtkTest, ClickOnIcon) {
   // Create an icon, send a fake click event, make sure observer is called.
   StatusTrayGtk tray;
-  StatusIconGtk* icon = static_cast<StatusIconGtk*>(
-      tray.GetStatusIcon(ASCIIToUTF16("test")));
+  StatusIconGtk* icon = static_cast<StatusIconGtk*>(tray.CreateStatusIcon());
   MockStatusIconObserver observer;
   icon->AddObserver(&observer);
   EXPECT_CALL(observer, OnClicked());

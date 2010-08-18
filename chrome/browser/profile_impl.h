@@ -87,6 +87,7 @@ class ProfileImpl : public Profile,
   virtual WebKitContext* GetWebKitContext();
   virtual DesktopNotificationService* GetDesktopNotificationService();
   virtual BackgroundContentsService* GetBackgroundContentsService();
+  virtual StatusTray* GetStatusTray();
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions();
   virtual NTPResourceCache* GetNTPResourceCache();
@@ -181,6 +182,8 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_ptr<DesktopNotificationService> desktop_notification_service_;
   scoped_ptr<BackgroundContentsService> background_contents_service_;
+  scoped_ptr<BackgroundModeManager> background_mode_manager_;
+  scoped_ptr<StatusTray> status_tray_;
   scoped_refptr<PersonalDataManager> personal_data_manager_;
   scoped_ptr<PinnedTabService> pinned_tab_service_;
   bool history_service_created_;

@@ -15,7 +15,7 @@ class StatusTrayGtk : public StatusTray {
 
  protected:
   // Overriden from StatusTray:
-  virtual StatusIcon* CreateStatusIcon();
+  virtual StatusIcon* CreatePlatformStatusIcon();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StatusTrayGtk);

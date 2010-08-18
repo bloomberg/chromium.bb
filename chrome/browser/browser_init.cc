@@ -41,7 +41,6 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/status_icons/status_tray_manager.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -443,14 +442,6 @@ bool BrowserInit::LaunchBrowser(const CommandLine& command_line,
     chromeos::SystemKeyEventListener::instance();
   }
 #endif
-
-  if (command_line.HasSwitch(switches::kRestoreBackgroundContents) ||
-      command_line.HasSwitch(switches::kKeepAliveForTest)) {
-    // Create status icons
-    StatusTrayManager* tray = g_browser_process->status_tray_manager();
-    if (tray)
-      tray->Init(profile);
-  }
   return true;
 }
 

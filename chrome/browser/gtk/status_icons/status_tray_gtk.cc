@@ -12,7 +12,7 @@ StatusTrayGtk::StatusTrayGtk() {
 StatusTrayGtk::~StatusTrayGtk() {
 }
 
-StatusIcon* StatusTrayGtk::CreateStatusIcon() {
+StatusIcon* StatusTrayGtk::CreatePlatformStatusIcon() {
   return new StatusIconGtk();
 }
 

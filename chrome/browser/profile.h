@@ -35,6 +35,7 @@ class DatabaseTracker;
 
 class AutocompleteClassifier;
 class BackgroundContentsService;
+class BackgroundModeManager;
 class BookmarkModel;
 class BrowserThemeProvider;
 class ChromeAppCacheService;
@@ -65,6 +66,7 @@ class SessionService;
 class SpellCheckHost;
 class SSLConfigServiceManager;
 class SSLHostState;
+class StatusTray;
 class TransportSecurityPersister;
 class SQLitePersistentCookieStore;
 class TabRestoreService;
@@ -404,6 +406,11 @@ class Profile {
 
   // Returns the service that manages BackgroundContents for this profile.
   virtual BackgroundContentsService* GetBackgroundContentsService() = 0;
+
+  // Returns the StatusTray, which provides an API for displaying status icons
+  // in the system status tray. Returns NULL if status icons are not supported
+  // on this platform (or this is a unit test).
+  virtual StatusTray* GetStatusTray() = 0;
 
   // Marks the profile as cleanly shutdown.
   //

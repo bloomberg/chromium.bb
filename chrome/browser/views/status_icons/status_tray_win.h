@@ -22,7 +22,7 @@ class StatusTrayWin : public StatusTray {
                            LPARAM lparam);
  protected:
   // Overriden from StatusTray:
-  virtual StatusIcon* CreateStatusIcon();
+  virtual StatusIcon* CreatePlatformStatusIcon();
 
  private:
   // Static callback invoked when a message comes in to our messaging window.

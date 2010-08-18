@@ -51,7 +51,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   virtual DevToolsManager* devtools_manager();
   virtual Clipboard* clipboard();
   virtual NotificationUIManager* notification_ui_manager();
-  virtual StatusTrayManager* status_tray_manager();
   virtual IconManager* icon_manager();
   virtual ThumbnailGenerator* GetThumbnailGenerator();
   virtual AutomationProviderList* InitAutomationProviderList();
@@ -156,9 +155,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   // Manager for desktop notification UI.
   bool created_notification_ui_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
-
-  // Manager for status tray.
-  scoped_ptr<StatusTrayManager> status_tray_manager_;
 
   scoped_ptr<AutomationProviderList> automation_provider_list_;
 

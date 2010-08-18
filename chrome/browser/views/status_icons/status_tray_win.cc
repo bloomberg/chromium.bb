@@ -49,11 +49,10 @@ LRESULT CALLBACK StatusTrayWin::WndProc(HWND hwnd,
         case WM_LBUTTONDOWN:
           // Walk our icons, find which one was clicked on, and invoke its
           // DispatchClickEvent() method.
-          for (StatusIconMap::const_iterator iter = status_icons().begin();
+          for (StatusIconList::const_iterator iter = status_icons().begin();
                iter != status_icons().end();
                ++iter) {
-            StatusIconWin* win_icon =
-                static_cast<StatusIconWin*>(iter->second);
+            StatusIconWin* win_icon = static_cast<StatusIconWin*>(*iter);
             if (win_icon->icon_id() == wparam)
               win_icon->DispatchClickEvent();
           }
@@ -70,7 +69,7 @@ StatusTrayWin::~StatusTrayWin() {
   UnregisterClass(chrome::kStatusTrayWindowClass, GetModuleHandle(NULL));
 }
 
-StatusIcon* StatusTrayWin::CreateStatusIcon() {
+StatusIcon* StatusTrayWin::CreatePlatformStatusIcon() {
   return new StatusIconWin(next_icon_id_++, window_, kStatusIconMessage);
 }
 

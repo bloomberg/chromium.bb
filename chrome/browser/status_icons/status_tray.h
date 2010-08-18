@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_H_
 #pragma once
 
-#include "base/hash_tables.h"
-#include "base/scoped_ptr.h"
+#include <vector>
+
+#include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 
 class StatusIcon;
 
@@ -16,38 +18,37 @@ class StatusIcon;
 class StatusTray {
  public:
   // Static factory method that is implemented separately for each platform to
-  // produce the appropriate platform-specific instance.
+  // produce the appropriate platform-specific instance. Returns NULL if this
+  // platform does not support status icons.
   static StatusTray* Create();
 
   virtual ~StatusTray();
 
-  // Gets the current status icon associated with this identifier, or creates
-  // a new one if none exists. The StatusTray retains ownership of the
-  // StatusIcon. Returns NULL if the status tray icon could not be created.
-  StatusIcon* GetStatusIcon(const string16& identifier);
+  // Creates a new StatusIcon. The StatusTray retains ownership of the
+  // StatusIcon. Returns NULL if the StatusIcon could not be created.
+  StatusIcon* CreateStatusIcon();
 
   // Removes the current status icon associated with this identifier, if any.
-  void RemoveStatusIcon(const string16& identifier);
+  void RemoveStatusIcon(StatusIcon* icon);
 
  protected:
   StatusTray();
-  // Factory method for creating a status icon.
-  virtual StatusIcon* CreateStatusIcon() = 0;
+  // Factory method for creating a status icon for this platform.
+  virtual StatusIcon* CreatePlatformStatusIcon() = 0;
 
   // Removes all StatusIcons (used by derived classes to clean up in case they
   // track external state used by the StatusIcons).
   void RemoveAllIcons();
 
-  typedef base::hash_map<string16, StatusIcon*> StatusIconMap;
+  typedef std::vector<StatusIcon*> StatusIconList;
   // Returns the list of active status icons so subclasses can operate on them.
-  const StatusIconMap& status_icons() { return status_icons_; }
+  const StatusIconList& status_icons() { return status_icons_; }
 
  private:
-  // Map containing all active StatusIcons.
-  // Key: String identifiers (passed in to GetStatusIcon)
-  // Value: The StatusIcon associated with that identifier (strong pointer -
-  //   StatusIcons are freed when the StatusTray destructor is called).
-  StatusIconMap status_icons_;
+  FRIEND_TEST_ALL_PREFIXES(StatusTrayTest, CreateRemove);
+
+  // List containing all active StatusIcons.
+  StatusIconList status_icons_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusTray);
 };

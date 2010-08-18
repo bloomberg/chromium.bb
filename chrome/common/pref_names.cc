@@ -687,6 +687,10 @@ const char kPreferencesWindowPlacement[] = "preferences.window_placement";
 // renderer's in-memory cache of objects.
 const char kMemoryCacheSize[] = "renderer.memory_cache.size";
 
+// Boolean that records if chrome should run in background mode when background
+// apps are installed.
+const char kBackgroundModeEnabled[] = "background_mode.enabled";
+
 // String which specifies where to download files to by default.
 const char kDownloadDefaultDirectory[] = "download.default_directory";
 

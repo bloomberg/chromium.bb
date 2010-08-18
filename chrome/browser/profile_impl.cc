@@ -17,6 +17,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/background_contents_service.h"
+#include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_prefs.h"
@@ -56,6 +57,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
+#include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/tabs/pinned_tab_service.h"
@@ -335,6 +337,15 @@ ProfileImpl::ProfileImpl(const FilePath& path)
 
   pinned_tab_service_.reset(new PinnedTabService(this));
 
+  // Initialize the BackgroundModeManager - this has to be done here before
+  // InitExtensions() is called because it relies on receiving notifications
+  // when extensions are loaded. BackgroundModeManager is not needed under
+  // ChromeOS because Chrome is always running (no need for special keep-alive
+  // or launch-on-startup support).
+#if !defined(OS_CHROMEOS)
+  background_mode_manager_.reset(new BackgroundModeManager(this));
+#endif
+
   background_contents_service_.reset(
       new BackgroundContentsService(this, CommandLine::ForCurrentProcess()));
 
@@ -578,6 +589,12 @@ ExtensionsService* ProfileImpl::GetExtensionsService() {
 
 BackgroundContentsService* ProfileImpl::GetBackgroundContentsService() {
   return background_contents_service_.get();
+}
+
+StatusTray* ProfileImpl::GetStatusTray() {
+  if (!status_tray_.get())
+    status_tray_.reset(StatusTray::Create());
+  return status_tray_.get();
 }
 
 UserScriptMaster* ProfileImpl::GetUserScriptMaster() {

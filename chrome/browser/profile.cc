@@ -203,6 +203,10 @@ class OffTheRecordProfileImpl : public Profile,
     return background_contents_service_.get();
   }
 
+  virtual StatusTray* GetStatusTray() {
+    return GetOriginalProfile()->GetStatusTray();
+  }
+
   virtual UserScriptMaster* GetUserScriptMaster() {
     return GetOriginalProfile()->GetUserScriptMaster();
   }
