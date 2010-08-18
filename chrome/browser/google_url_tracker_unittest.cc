@@ -70,14 +70,13 @@ class TestInfoBarDelegateFactory
 class GoogleURLTrackerTest : public testing::Test {
  protected:
   GoogleURLTrackerTest()
-      : message_loop_(MessageLoop::TYPE_IO),
-        io_thread_(ChromeThread::IO, &message_loop_),
-        original_default_request_context_(NULL) {
+      : original_default_request_context_(NULL) {
   }
 
   void SetUp() {
     original_default_request_context_ = Profile::GetDefaultRequestContext();
     Profile::set_default_request_context(NULL);
+    message_loop_ = new MessageLoop(MessageLoop::TYPE_IO);
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
     testing_profile_.reset(new TestingProfile);
     TestingBrowserProcess* testing_browser_process =
@@ -100,6 +99,7 @@ class GoogleURLTrackerTest : public testing::Test {
     testing_browser_process->SetPrefService(NULL);
     testing_profile_.reset();
     network_change_notifier_.reset();
+    delete message_loop_;
     Profile::set_default_request_context(original_default_request_context_);
   }
 
@@ -214,8 +214,7 @@ class GoogleURLTrackerTest : public testing::Test {
   }
 
  private:
-  MessageLoop message_loop_;
-  ChromeThread io_thread_;
+  MessageLoop* message_loop_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<TestingProfile> testing_profile_;
 
