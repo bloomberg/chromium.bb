@@ -145,6 +145,7 @@ static void Start(Options *options) {
                                          "symbol_file",
                                          options->proxy,
                                          options->proxy_user_pwd,
+                                         "",
                                          &response,
                                          &error);
 
