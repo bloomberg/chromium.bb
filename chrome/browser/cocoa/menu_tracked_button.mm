@@ -15,6 +15,8 @@
 
 @implementation MenuTrackedButton
 
+@synthesize tracking = tracking_;
+
 - (void)updateTrackingAreas {
   [super updateTrackingAreas];
   [self removeTrackingRect:trackingTag_];
@@ -71,6 +73,7 @@
     return [super mouseUp:theEvent];
   }
   [self performClick:self];
+  tracking_ = NO;
 }
 
 - (void)doHighlight:(BOOL)highlight {

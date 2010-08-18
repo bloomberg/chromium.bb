@@ -54,6 +54,7 @@
 #include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager.h"
+#include "chrome/browser/ui_thread_helpers.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/child_process_host.h"
@@ -1030,7 +1031,7 @@ void ResourceMessageFilter::OnV8HeapStatsOnUIThread(
 
 void ResourceMessageFilter::OnDidZoomURL(const GURL& url,
                                          int zoom_level) {
-  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+  ui_thread_helpers::PostTaskWhileRunningMenu(FROM_HERE,
       NewRunnableMethod(this,
                         &ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread,
                         url, zoom_level));

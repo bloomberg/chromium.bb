@@ -106,6 +106,9 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
   // Getters.
   Browser* browser() const { return browser_; }
 
+  // Calculates |zoom_label_| in response to a zoom change.
+  void UpdateZoomControls();
+
  private:
   // Testing constructor used for mocking.
   friend class ::MockWrenchMenuModel;
@@ -118,8 +121,7 @@ class WrenchMenuModel : public menus::SimpleMenuModel,
   void CreateCutCopyPaste();
   void CreateZoomFullscreen();
 
-  // Calculates |zoom_label_| in response to a zoom change.
-  void UpdateZoomControls();
+  // Gets the current zoom information from the renderer.
   double GetZoom(bool* enable_increment, bool* enable_decrement);
 
   string16 GetSyncMenuLabel() const;

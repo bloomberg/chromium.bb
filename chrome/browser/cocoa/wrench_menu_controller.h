@@ -9,11 +9,16 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/cocoa_protocols_mac.h"
+#include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/menu_controller.h"
 
 @class MenuTrackedRootView;
 @class ToolbarController;
 class WrenchMenuModel;
+
+namespace WrenchMenuControllerInternal {
+class ZoomLevelObserver;
+}  // namespace WrenchMenuControllerInternal
 
 // The Wrench menu has a creative layout, with buttons in menu items. There is
 // a cross-platform model for this special menu, but on the Mac it's easier to
@@ -34,6 +39,8 @@ class WrenchMenuModel;
   IBOutlet NSButton* zoomDisplay_;
   IBOutlet NSButton* zoomMinus_;
   IBOutlet NSButton* zoomFullScreen_;
+
+  scoped_ptr<WrenchMenuControllerInternal::ZoomLevelObserver> observer_;
 }
 
 // Designated initializer; called within the NIB.

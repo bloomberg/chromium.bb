@@ -36,6 +36,8 @@
   NSTrackingRectTag trackingTag_;
 }
 
+@property (nonatomic, readonly, getter=isTracking) BOOL tracking;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_MENU_TRACKED_BUTTON_H_

@@ -13,18 +13,53 @@
 #import "chrome/browser/cocoa/menu_tracked_root_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/wrench_menu_model.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 @interface WrenchMenuController (Private)
 - (void)adjustPositioning;
 - (void)performCommandDispatch:(NSNumber*)tag;
+- (NSButton*)zoomDisplay;
 @end
+
+namespace WrenchMenuControllerInternal {
+
+class ZoomLevelObserver : public NotificationObserver {
+ public:
+  explicit ZoomLevelObserver(WrenchMenuController* controller)
+      : controller_(controller) {
+    registrar_.Add(this, NotificationType::ZOOM_LEVEL_CHANGED,
+                   NotificationService::AllSources());
+  }
+
+  void Observe(NotificationType type,
+               const NotificationSource& source,
+               const NotificationDetails& details) {
+    DCHECK_EQ(type.value, NotificationType::ZOOM_LEVEL_CHANGED);
+    WrenchMenuModel* wrenchMenuModel = [controller_ wrenchMenuModel];
+    wrenchMenuModel->UpdateZoomControls();
+    const string16 level =
+        wrenchMenuModel->GetLabelForCommandId(IDC_ZOOM_PERCENT_DISPLAY);
+    [[controller_ zoomDisplay] setTitle:SysUTF16ToNSString(level)];
+  }
+
+ private:
+  NotificationRegistrar registrar_;
+  WrenchMenuController* controller_;  // Weak; owns this.
+};
+
+}  // namespace WrenchMenuControllerInternal
 
 @implementation WrenchMenuController
 
 - (id)init {
-  self = [super init];
+  if ((self = [super init])) {
+    observer_.reset(new WrenchMenuControllerInternal::ZoomLevelObserver(self));
+  }
   return self;
 }
 
@@ -98,12 +133,22 @@
 // NSCarbonMenuWindow; this screws up the typical |-commandDispatch:| system.
 - (IBAction)dispatchWrenchMenuCommand:(id)sender {
   NSInteger tag = [sender tag];
-  // The custom views within the Wrench menu are abnormal and keep the menu open
-  // after a target-action. Close the menu manually.
-  // TODO(rsesek): It'd be great if the zoom buttons didn't have to close the
-  // menu. See http://crbug.com/48679 for more info.
-  [menu_ cancelTracking];
-  [self dispatchCommandInternal:tag];
+  if (sender == zoomPlus_ || sender == zoomMinus_) {
+    // Do a direct dispatch rather than scheduling on the outermost run loop,
+    // which would not get hit until after the menu had closed.
+    [self performCommandDispatch:[NSNumber numberWithInt:tag]];
+
+    // The zoom buttons should not close the menu if opened sticky.
+    if ([sender respondsToSelector:@selector(isTracking)] &&
+        [sender performSelector:@selector(isTracking)]) {
+      [menu_ cancelTracking];
+    }
+  } else {
+    // The custom views within the Wrench menu are abnormal and keep the menu
+    // open after a target-action.  Close the menu manually.
+    [menu_ cancelTracking];
+    [self dispatchCommandInternal:tag];
+  }
 }
 
 - (void)dispatchCommandInternal:(NSInteger)tag {
@@ -195,6 +240,10 @@
   parentFrame.size.width += delta;
   parentFrame.origin.x -= delta;
   [[editCut_ superview] setFrame:parentFrame];
+}
+
+- (NSButton*)zoomDisplay {
+  return zoomDisplay_;
 }
 
 @end  // @implementation WrenchMenuController
