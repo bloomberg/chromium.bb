@@ -305,7 +305,7 @@ void ExtensionsDOMHandler::RegisterMessages() {
       NewCallback(this, &ExtensionsDOMHandler::HandleSelectFilePathMessage));
 }
 
-void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
+void ExtensionsDOMHandler::HandleRequestExtensionsData(const ListValue* args) {
   DictionaryValue* results = new DictionaryValue();
 
   // Add the extensions to the results structure.
@@ -415,23 +415,21 @@ ExtensionInstallUI* ExtensionsDOMHandler::GetExtensionInstallUI() {
   return install_ui_.get();
 }
 
-void ExtensionsDOMHandler::HandleToggleDeveloperMode(const Value* value) {
+void ExtensionsDOMHandler::HandleToggleDeveloperMode(const ListValue* args) {
   bool developer_mode = dom_ui_->GetProfile()->GetPrefs()
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   dom_ui_->GetProfile()->GetPrefs()->SetBoolean(
       prefs::kExtensionsUIDeveloperMode, !developer_mode);
 }
 
-void ExtensionsDOMHandler::HandleInspectMessage(const Value* value) {
+void ExtensionsDOMHandler::HandleInspectMessage(const ListValue* args) {
   std::string render_process_id_str;
   std::string render_view_id_str;
   int render_process_id;
   int render_view_id;
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 2);
-  CHECK(list->GetString(0, &render_process_id_str));
-  CHECK(list->GetString(1, &render_view_id_str));
+  CHECK(args->GetSize() == 2);
+  CHECK(args->GetString(0, &render_process_id_str));
+  CHECK(args->GetString(1, &render_view_id_str));
   CHECK(base::StringToInt(render_process_id_str, &render_process_id));
   CHECK(base::StringToInt(render_view_id_str, &render_view_id));
   RenderViewHost* host = RenderViewHost::FromID(render_process_id,
@@ -446,22 +444,17 @@ void ExtensionsDOMHandler::HandleInspectMessage(const Value* value) {
       DEVTOOLS_TOGGLE_ACTION_SHOW_CONSOLE);
 }
 
-void ExtensionsDOMHandler::HandleReloadMessage(const Value* value) {
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 1);
-  std::string extension_id;
-  CHECK(list->GetString(0, &extension_id));
+void ExtensionsDOMHandler::HandleReloadMessage(const ListValue* args) {
+  std::string extension_id = WideToASCII(ExtractStringValue(args));
+  CHECK(!extension_id.empty());
   extensions_service_->ReloadExtension(extension_id);
 }
 
-void ExtensionsDOMHandler::HandleEnableMessage(const Value* value) {
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 2);
+void ExtensionsDOMHandler::HandleEnableMessage(const ListValue* args) {
+  CHECK(args->GetSize() == 2);
   std::string extension_id, enable_str;
-  CHECK(list->GetString(0, &extension_id));
-  CHECK(list->GetString(1, &enable_str));
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetString(1, &enable_str));
   if (enable_str == "true") {
     ExtensionPrefs* prefs = extensions_service_->extension_prefs();
     if (prefs->DidExtensionEscalatePermissions(extension_id)) {
@@ -477,13 +470,11 @@ void ExtensionsDOMHandler::HandleEnableMessage(const Value* value) {
   }
 }
 
-void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const Value* value) {
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 2);
+void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const ListValue* args) {
+  CHECK(args->GetSize() == 2);
   std::string extension_id, enable_str;
-  CHECK(list->GetString(0, &extension_id));
-  CHECK(list->GetString(1, &enable_str));
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetString(1, &enable_str));
   Extension* extension = extensions_service_->GetExtensionById(extension_id,
                                                                true);
   DCHECK(extension);
@@ -504,13 +495,11 @@ void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const Value* value) {
   ignore_notifications_ = false;
 }
 
-void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const Value* value) {
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 2);
+void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const ListValue* args) {
+  CHECK(args->GetSize() == 2);
   std::string extension_id, allow_str;
-  CHECK(list->GetString(0, &extension_id));
-  CHECK(list->GetString(1, &allow_str));
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetString(1, &allow_str));
   Extension* extension = extensions_service_->GetExtensionById(extension_id,
                                                                true);
   DCHECK(extension);
@@ -518,21 +507,15 @@ void ExtensionsDOMHandler::HandleAllowFileAccessMessage(const Value* value) {
   extensions_service_->SetAllowFileAccess(extension, allow_str == "true");
 }
 
-void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 1);
-  std::string extension_id;
-  CHECK(list->GetString(0, &extension_id));
-
-  Extension *extension =
-      extensions_service_->GetExtensionById(extension_id, true);
+void ExtensionsDOMHandler::HandleUninstallMessage(const ListValue* args) {
+  Extension* extension = GetExtension(args);
   if (!extension)
     return;
 
   if (!extension_id_prompting_.empty())
-    return;  // only one prompt at a time
+    return;  // Only one prompt at a time.
 
+  std::string extension_id = WideToASCII(ExtractStringValue(args));
   extension_id_prompting_ = extension_id;
 
   GetExtensionInstallUI()->ConfirmUninstall(this, extension);
@@ -561,27 +544,18 @@ void ExtensionsDOMHandler::InstallUIAbort() {
   extension_id_prompting_ = "";
 }
 
-void ExtensionsDOMHandler::HandleOptionsMessage(const Value* value) {
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 1);
-  std::string extension_id;
-  CHECK(list->GetString(0, &extension_id));
-  Extension *extension =
-      extensions_service_->GetExtensionById(extension_id, false);
-  if (!extension || extension->options_url().is_empty()) {
+void ExtensionsDOMHandler::HandleOptionsMessage(const ListValue* args) {
+  Extension* extension = GetExtension(args);
+  if (!extension || extension->options_url().is_empty())
     return;
-  }
   dom_ui_->GetProfile()->GetExtensionProcessManager()->OpenOptionsPage(
       extension, NULL);
 }
 
-void ExtensionsDOMHandler::HandleLoadMessage(const Value* value) {
+void ExtensionsDOMHandler::HandleLoadMessage(const ListValue* args) {
   FilePath::StringType string_path;
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 1) << list->GetSize();
-  CHECK(list->GetString(0, &string_path));
+  CHECK(args->GetSize() == 1) << args->GetSize();
+  CHECK(args->GetString(0, &string_path));
   extensions_service_->LoadExtension(FilePath(string_path));
 }
 
@@ -591,14 +565,12 @@ void ExtensionsDOMHandler::ShowAlert(const std::string& message) {
   dom_ui_->CallJavascriptFunction(L"alert", arguments);
 }
 
-void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
+void ExtensionsDOMHandler::HandlePackMessage(const ListValue* args) {
   std::string extension_path;
   std::string private_key_path;
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 2);
-  CHECK(list->GetString(0, &extension_path));
-  CHECK(list->GetString(1, &private_key_path));
+  CHECK(args->GetSize() == 2);
+  CHECK(args->GetString(0, &extension_path));
+  CHECK(args->GetString(1, &private_key_path));
 
   FilePath root_directory =
       FilePath::FromWStringHack(UTF8ToWide(extension_path));
@@ -639,21 +611,18 @@ void ExtensionsDOMHandler::OnPackFailure(const std::string& error) {
   ShowAlert(error);
 }
 
-void ExtensionsDOMHandler::HandleAutoUpdateMessage(const Value* value) {
+void ExtensionsDOMHandler::HandleAutoUpdateMessage(const ListValue* args) {
   ExtensionUpdater* updater = extensions_service_->updater();
-  if (updater) {
+  if (updater)
     updater->CheckNow();
-  }
 }
 
-void ExtensionsDOMHandler::HandleSelectFilePathMessage(const Value* value) {
+void ExtensionsDOMHandler::HandleSelectFilePathMessage(const ListValue* args) {
   std::string select_type;
   std::string operation;
-  CHECK(value->IsType(Value::TYPE_LIST));
-  const ListValue* list = static_cast<const ListValue*>(value);
-  CHECK(list->GetSize() == 2);
-  CHECK(list->GetString(0, &select_type));
-  CHECK(list->GetString(1, &operation));
+  CHECK(args->GetSize() == 2);
+  CHECK(args->GetString(0, &select_type));
+  CHECK(args->GetString(1, &operation));
 
   SelectFileDialog::Type type = SelectFileDialog::SELECT_FOLDER;
   static SelectFileDialog::FileTypeInfo info;
@@ -662,12 +631,12 @@ void ExtensionsDOMHandler::HandleSelectFilePathMessage(const Value* value) {
     type = SelectFileDialog::SELECT_OPEN_FILE;
 
   string16 select_title;
-  if (operation == "load")
+  if (operation == "load") {
     select_title = l10n_util::GetStringUTF16(IDS_EXTENSION_LOAD_FROM_DIRECTORY);
-  else if (operation == "packRoot")
+  } else if (operation == "packRoot") {
     select_title = l10n_util::GetStringUTF16(
         IDS_EXTENSION_PACK_DIALOG_SELECT_ROOT);
-  else if (operation == "pem") {
+  } else if (operation == "pem") {
     select_title = l10n_util::GetStringUTF16(
         IDS_EXTENSION_PACK_DIALOG_SELECT_KEY);
     info.extensions.push_back(std::vector<FilePath::StringType>());
@@ -735,6 +704,12 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
     default:
       NOTREACHED();
   }
+}
+
+Extension* ExtensionsDOMHandler::GetExtension(const ListValue* args) {
+  std::string extension_id = WideToASCII(ExtractStringValue(args));
+  CHECK(!extension_id.empty());
+  return extensions_service_->GetExtensionById(extension_id, false);
 }
 
 void ExtensionsDOMHandler::MaybeUpdateAfterNotification() {

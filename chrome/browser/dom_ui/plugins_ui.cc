@@ -137,15 +137,15 @@ class PluginsDOMHandler : public DOMMessageHandler {
   virtual void RegisterMessages();
 
   // Callback for the "requestPluginsData" message.
-  void HandleRequestPluginsData(const Value* value);
+  void HandleRequestPluginsData(const ListValue* args);
 
   // Callback for the "enablePlugin" message.
-  void HandleEnablePluginMessage(const Value* value);
+  void HandleEnablePluginMessage(const ListValue* args);
 
   // Callback for the "showTermsOfService" message. This really just opens a new
   // window with about:terms. Flash can't link directly to about:terms due to
   // the security model.
-  void HandleShowTermsOfServiceMessage(const Value* value);
+  void HandleShowTermsOfServiceMessage(const ListValue* args);
 
  private:
   // Creates a dictionary containing all the information about the given plugin;
@@ -174,37 +174,33 @@ void PluginsDOMHandler::RegisterMessages() {
       NewCallback(this, &PluginsDOMHandler::HandleShowTermsOfServiceMessage));
 }
 
-void PluginsDOMHandler::HandleRequestPluginsData(const Value* value) {
+void PluginsDOMHandler::HandleRequestPluginsData(const ListValue* args) {
   DictionaryValue* results = new DictionaryValue();
   results->Set("plugins", plugin_updater::GetPluginGroupsData());
 
   dom_ui_->CallJavascriptFunction(L"returnPluginsData", *results);
 }
 
-void PluginsDOMHandler::HandleEnablePluginMessage(const Value* value) {
+void PluginsDOMHandler::HandleEnablePluginMessage(const ListValue* args) {
   // Be robust in accepting badness since plug-ins display HTML (hence
   // JavaScript).
-  if (!value->IsType(Value::TYPE_LIST))
-    return;
-
-  const ListValue* list = static_cast<const ListValue*>(value);
-  if (list->GetSize() != 3)
+  if (args->GetSize() != 3)
     return;
 
   std::string enable_str;
   std::string is_group_str;
-  if (!list->GetString(1, &enable_str) || !list->GetString(2, &is_group_str))
+  if (!args->GetString(1, &enable_str) || !args->GetString(2, &is_group_str))
     return;
 
   if (is_group_str == "true") {
     string16 group_name;
-    if (!list->GetString(0, &group_name))
+    if (!args->GetString(0, &group_name))
       return;
 
     plugin_updater::EnablePluginGroup(enable_str == "true", group_name);
   } else {
     FilePath::StringType file_path;
-    if (!list->GetString(0, &file_path))
+    if (!args->GetString(0, &file_path))
       return;
 
     plugin_updater::EnablePluginFile(enable_str == "true", file_path);
@@ -216,7 +212,7 @@ void PluginsDOMHandler::HandleEnablePluginMessage(const Value* value) {
   plugin_updater::UpdatePreferences(dom_ui_->GetProfile());
 }
 
-void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const Value* value) {
+void PluginsDOMHandler::HandleShowTermsOfServiceMessage(const ListValue* args) {
   // Show it in a new browser window....
   Browser* browser = Browser::Create(dom_ui_->GetProfile());
   browser->OpenURL(GURL(chrome::kAboutTermsURL),

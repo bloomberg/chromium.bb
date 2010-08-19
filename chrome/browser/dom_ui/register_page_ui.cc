@@ -67,8 +67,8 @@ class RegisterPageHandler : public DOMMessageHandler,
 
  private:
   // Handlers for JS DOMUI messages.
-  void HandleGetRegistrationUrl(const Value* value);
-  void HandleGetUserInfo(const Value* value);
+  void HandleGetRegistrationUrl(const ListValue* args);
+  void HandleGetUserInfo(const ListValue* args);
 
 #if defined(OS_CHROMEOS)
   // Callback from chromeos::VersionLoader giving the version.
@@ -158,7 +158,7 @@ void RegisterPageHandler::RegisterMessages() {
 #endif
 }
 
-void RegisterPageHandler::HandleGetRegistrationUrl(const Value* value) {
+void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   if (WizardController::default_controller() &&
       WizardController::default_controller()->GetCustomization()) {
@@ -174,7 +174,7 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const Value* value) {
 #endif
 }
 
-void RegisterPageHandler::HandleGetUserInfo(const Value* value) {
+void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
      version_loader_.GetVersion(

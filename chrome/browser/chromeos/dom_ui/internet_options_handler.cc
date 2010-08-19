@@ -104,19 +104,14 @@ void InternetOptionsHandler::CreateModalPopup(views::WindowDelegate* view) {
   window->Show();
 }
 
-void InternetOptionsHandler::ButtonClickCallback(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-  const ListValue* list_value = static_cast<const ListValue*>(value);
+void InternetOptionsHandler::ButtonClickCallback(const ListValue* args) {
   std::string str_type;
   std::string service_path;
   std::string command;
-  if (list_value->GetSize() != 3 ||
-      !list_value->GetString(0, &str_type) ||
-      !list_value->GetString(1, &service_path) ||
-      !list_value->GetString(2, &command)) {
+  if (args->GetSize() != 3 ||
+      !args->GetString(0, &str_type) ||
+      !args->GetString(1, &service_path) ||
+      !args->GetString(2, &command)) {
     NOTREACHED();
     return;
   }

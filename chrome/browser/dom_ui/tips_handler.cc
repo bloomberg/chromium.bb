@@ -30,7 +30,7 @@ void TipsHandler::RegisterMessages() {
       NewCallback(this, &TipsHandler::HandleGetTips));
 }
 
-void TipsHandler::HandleGetTips(const Value* content) {
+void TipsHandler::HandleGetTips(const ListValue* args) {
   // List containing the tips to be displayed.
   ListValue list_value;
 

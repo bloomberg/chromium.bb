@@ -23,7 +23,7 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   virtual void RegisterMessages();
 
  private:
-  void HandleClearBrowserData(const Value* value);
+  void HandleClearBrowserData(const ListValue* value);
 
   // Callback from BrowsingDataRemover. Closes the dialog.
   virtual void OnBrowsingDataRemoverDone();

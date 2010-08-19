@@ -179,8 +179,8 @@ class FlowHandler : public DOMMessageHandler {
   virtual void RegisterMessages();
 
   // Callbacks from the page.
-  void HandleSubmitAuth(const Value* value);
-  void HandleChooseDataTypes(const Value* value);
+  void HandleSubmitAuth(const ListValue* args);
+  void HandleChooseDataTypes(const ListValue* args);
 
   // These functions control which part of the HTML is visible.
   void ShowGaiaLogin(const DictionaryValue& args);

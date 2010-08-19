@@ -147,13 +147,13 @@ void BrowsingHistoryHandler::RegisterMessages() {
       NewCallback(this, &BrowsingHistoryHandler::HandleClearBrowsingData));
 }
 
-void BrowsingHistoryHandler::HandleGetHistory(const Value* value) {
+void BrowsingHistoryHandler::HandleGetHistory(const ListValue* args) {
   // Anything in-flight is invalid.
   cancelable_search_consumer_.CancelAllRequests();
 
   // Get arguments (if any).
   int day = 0;
-  ExtractIntegerValue(value, &day);
+  ExtractIntegerValue(args, &day);
 
   // Set our query options.
   history::QueryOptions options;
@@ -173,14 +173,14 @@ void BrowsingHistoryHandler::HandleGetHistory(const Value* value) {
       NewCallback(this, &BrowsingHistoryHandler::QueryComplete));
 }
 
-void BrowsingHistoryHandler::HandleSearchHistory(const Value* value) {
+void BrowsingHistoryHandler::HandleSearchHistory(const ListValue* args) {
   // Anything in-flight is invalid.
   cancelable_search_consumer_.CancelAllRequests();
 
   // Get arguments (if any).
   int month = 0;
   string16 query;
-  ExtractSearchHistoryArguments(value, &month, &query);
+  ExtractSearchHistoryArguments(args, &month, &query);
 
   // Set the query ranges for the given month.
   history::QueryOptions options = CreateMonthQueryOptions(month);
@@ -198,17 +198,15 @@ void BrowsingHistoryHandler::HandleSearchHistory(const Value* value) {
       NewCallback(this, &BrowsingHistoryHandler::QueryComplete));
 }
 
-void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const Value* value) {
+void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
   if (cancelable_delete_consumer_.HasPendingRequests()) {
     dom_ui_->CallJavascriptFunction(L"deleteFailed");
     return;
   }
 
-  DCHECK(value && value->GetType() == Value::TYPE_LIST);
-
   // Get day to delete data from.
   int visit_time = 0;
-  ExtractIntegerValue(value, &visit_time);
+  ExtractIntegerValue(args, &visit_time);
   base::Time::Exploded exploded;
   base::Time::FromTimeT(
       static_cast<time_t>(visit_time)).LocalExplode(&exploded);
@@ -218,9 +216,8 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const Value* value) {
 
   // Get URLs.
   std::set<GURL> urls;
-  const ListValue* list_value = static_cast<const ListValue*>(value);
-  for (ListValue::const_iterator v = list_value->begin() + 1;
-       v != list_value->end(); ++v) {
+  for (ListValue::const_iterator v = args->begin() + 1;
+       v != args->end(); ++v) {
     if ((*v)->GetType() != Value::TYPE_STRING)
       continue;
     const StringValue* string_value = static_cast<const StringValue*>(*v);
@@ -237,7 +234,7 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const Value* value) {
       NewCallback(this, &BrowsingHistoryHandler::RemoveComplete));
 }
 
-void BrowsingHistoryHandler::HandleClearBrowsingData(const Value* value) {
+void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
   // TODO(beng): This is an improper direct dependency on Browser. Route this
   // through some sort of delegate.
   Browser* browser = BrowserList::FindBrowserWithProfile(dom_ui_->GetProfile());
@@ -305,33 +302,18 @@ void BrowsingHistoryHandler::RemoveComplete() {
   dom_ui_->CallJavascriptFunction(L"deleteComplete");
 }
 
-void BrowsingHistoryHandler::ExtractSearchHistoryArguments(const Value* value,
-                                                           int* month,
-                                                           string16* query) {
+void BrowsingHistoryHandler::ExtractSearchHistoryArguments(
+      const ListValue* args,
+      int* month,
+      string16* query) {
+  CHECK(args->GetSize() == 2);
+  query->clear();
+  CHECK(args->GetString(0, query));
+
+  string16 string16_value;
+  CHECK(args->GetString(1, &string16_value));
   *month = 0;
-
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    Value* list_member;
-
-    // Get search string.
-    if (list_value->Get(0, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-        static_cast<const StringValue*>(list_member);
-      string_value->GetAsString(query);
-    }
-
-    // Get search month.
-    if (list_value->Get(1, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-        static_cast<const StringValue*>(list_member);
-      string16 string16_value;
-      string_value->GetAsString(&string16_value);
-      base::StringToInt(string16_value, month);
-    }
-  }
+  base::StringToInt(string16_value, month);
 }
 
 history::QueryOptions BrowsingHistoryHandler::CreateMonthQueryOptions(

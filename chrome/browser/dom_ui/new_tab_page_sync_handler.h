@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 
-class Value;
+class ListValue;
 
 // Sends sync-state changes to the New Tab Page for UI updating and forwards
 // link clicks on the page to the sync service.
@@ -27,9 +27,9 @@ class NewTabPageSyncHandler : public DOMMessageHandler,
   virtual void RegisterMessages();
 
   // Callback for "GetSyncMessage".
-  void HandleGetSyncMessage(const Value* value);
+  void HandleGetSyncMessage(const ListValue* args);
   // Callback for "SyncLinkClicked".
-  void HandleSyncLinkClicked(const Value* value);
+  void HandleSyncLinkClicked(const ListValue* args);
 
   // ProfileSyncServiceObserver
   virtual void OnStateChanged();

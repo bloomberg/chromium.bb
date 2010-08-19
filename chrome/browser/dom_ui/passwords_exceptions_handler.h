@@ -26,15 +26,15 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
   PasswordStore* GetPasswordStore();
 
   // Fired when user clicks 'show saved passwords' button in personal page.
-  void LoadSavedPasswords(const Value* value);
+  void LoadSavedPasswords(const ListValue* args);
 
   // Remove an entry.
   // @param value the entry index to be removed.
-  void RemoveEntry(const Value* value);
+  void RemoveEntry(const ListValue* args);
 
   // Get password value for the selected entry.
   // @param value the selected entry index.
-  void ShowSelectedPassword(const Value* value);
+  void ShowSelectedPassword(const ListValue* args);
 
   // Sets the password list contents to the given data. We take ownership of
   // the PasswordForms in the vector.

@@ -77,19 +77,9 @@ void ImportDataHandler::DetectSupportedBrowsers() {
       supported_browsers);
 }
 
-void ImportDataHandler::ImportData(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-
-  const ListValue* param_values = static_cast<const ListValue*>(value);
-  std::string string_value;
-  if (param_values->GetSize() != 1 ||
-     !param_values->GetString(0, &string_value)) {
-    NOTREACHED();
-    return;
-  }
+void ImportDataHandler::ImportData(const ListValue* args) {
+  std::string string_value = WideToUTF8(ExtractStringValue(args));
+  CHECK(!string_value.empty());
   int browser_index = string_value[0] - '0';
 
   uint16 items = importer::NONE;

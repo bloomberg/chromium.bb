@@ -49,27 +49,27 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // Callback for the "coreOptionsInitialize" message.  This message will
   // trigger the Initialize() method of all other handlers so that final
   // setup can be performed before the page is shown.
-  void HandleInitialize(const Value* value);
+  void HandleInitialize(const ListValue* args);
 
   // Callback for the "fetchPrefs" message. This message accepts the list of
   // preference names passed as |value| parameter (ListValue). It passes results
   // dictionary of preference values by calling prefsFetched() JS method on the
   // page.
-  void HandleFetchPrefs(const Value* value);
+  void HandleFetchPrefs(const ListValue* args);
 
   // Callback for the "observePrefs" message. This message initiates
   // notification observing for given array of preference names.
-  void HandleObservePrefs(const Value* value);
+  void HandleObservePrefs(const ListValue* args);
 
   // Callbacks for the "set<type>Pref" message. This message saves the new
   // preference value. The input value is an array of strings representing
   // name-value preference pair.
-  void HandleSetBooleanPref(const Value* value);
-  void HandleSetIntegerPref(const Value* value);
-  void HandleSetStringPref(const Value* value);
-  void HandleSetObjectPref(const Value* value);
+  void HandleSetBooleanPref(const ListValue* args);
+  void HandleSetIntegerPref(const ListValue* args);
+  void HandleSetStringPref(const ListValue* args);
+  void HandleSetObjectPref(const ListValue* args);
 
-  void HandleSetPref(const Value* value, Value::ValueType type);
+  void HandleSetPref(const ListValue* args, Value::ValueType type);
 
   void NotifyPrefChanged(const std::string* pref_name);
 

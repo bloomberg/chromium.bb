@@ -16,8 +16,8 @@
 
 class DictionaryValue;
 class DOMUI;
+class ListValue;
 class PrefService;
-class Value;
 
 class TipsHandler : public DOMMessageHandler {
  public:
@@ -29,7 +29,7 @@ class TipsHandler : public DOMMessageHandler {
   virtual void RegisterMessages();
 
   // Callback which pulls tips data from the preferences.
-  void HandleGetTips(const Value* content);
+  void HandleGetTips(const ListValue* args);
 
   // Register tips cache with pref service.
   static void RegisterUserPrefs(PrefService* prefs);

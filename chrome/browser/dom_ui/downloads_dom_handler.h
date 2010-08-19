@@ -13,7 +13,7 @@
 #include "chrome/browser/download/download_item.h"
 #include "chrome/browser/download/download_manager.h"
 
-class Value;
+class ListValue;
 
 // The handler for Javascript messages related to the "downloads" view,
 // also observes changes to the download manager.
@@ -38,37 +38,37 @@ class DownloadsDOMHandler : public DOMMessageHandler,
   virtual void ModelChanged();
 
   // Callback for the "getDownloads" message.
-  void HandleGetDownloads(const Value* value);
+  void HandleGetDownloads(const ListValue* args);
 
   // Callback for the "openFile" message - opens the file in the shell.
-  void HandleOpenFile(const Value* value);
+  void HandleOpenFile(const ListValue* args);
 
   // Callback for the "drag" message - initiates a file object drag.
-  void HandleDrag(const Value* value);
+  void HandleDrag(const ListValue* args);
 
   // Callback for the "saveDangerous" message - specifies that the user
   // wishes to save a dangerous file.
-  void HandleSaveDangerous(const Value* value);
+  void HandleSaveDangerous(const ListValue* args);
 
   // Callback for the "discardDangerous" message - specifies that the user
   // wishes to discard (remove) a dangerous file.
-  void HandleDiscardDangerous(const Value* value);
+  void HandleDiscardDangerous(const ListValue* args);
 
   // Callback for the "show" message - shows the file in explorer.
-  void HandleShow(const Value* value);
+  void HandleShow(const ListValue* args);
 
   // Callback for the "pause" message - pauses the file download.
-  void HandlePause(const Value* value);
+  void HandlePause(const ListValue* args);
 
   // Callback for the "remove" message - removes the file download from shelf
   // and list.
-  void HandleRemove(const Value* value);
+  void HandleRemove(const ListValue* args);
 
   // Callback for the "cancel" message - cancels the download.
-  void HandleCancel(const Value* value);
+  void HandleCancel(const ListValue* args);
 
   // Callback for the "clearAll" message - clears all the downloads.
-  void HandleClearAll(const Value* value);
+  void HandleClearAll(const ListValue* args);
 
  private:
   // Send the current list of downloads to the page.
@@ -81,7 +81,7 @@ class DownloadsDOMHandler : public DOMMessageHandler,
   DownloadItem* GetDownloadById(int id);
 
   // Return the download that is referred to in a given value.
-  DownloadItem* GetDownloadByValue(const Value* value);
+  DownloadItem* GetDownloadByValue(const ListValue* args);
 
   // Current search text.
   std::wstring search_text_;

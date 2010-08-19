@@ -33,10 +33,10 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   scoped_ptr<KeywordEditorController> controller_;
 
   // Removes the search engine at the given index. Called from DOMUI.
-  void RemoveSearchEngine(const Value* value);
+  void RemoveSearchEngine(const ListValue* args);
 
   // Sets the search engine at the given index to be default. Called from DOMUI.
-  void SetDefaultSearchEngine(const Value* value);
+  void SetDefaultSearchEngine(const ListValue* args);
 
   // Returns a dictionary to pass to DOMUI representing the given group heading.
   DictionaryValue* CreateDictionaryForHeading(int group_index);

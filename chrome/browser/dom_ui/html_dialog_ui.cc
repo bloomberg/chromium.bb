@@ -59,12 +59,13 @@ void HtmlDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
   }
 }
 
-void HtmlDialogUI::OnDialogClosed(const Value* content) {
+void HtmlDialogUI::OnDialogClosed(const ListValue* args) {
   HtmlDialogUIDelegate** delegate = GetPropertyAccessor().GetProperty(
       tab_contents()->property_bag());
-  if (delegate)
+  if (delegate) {
     (*delegate)->OnDialogClosed(
-        dom_ui_util::GetJsonResponseFromFirstArgumentInList(content));
+        dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
+  }
 }
 
 ExternalHtmlDialogUI::ExternalHtmlDialogUI(TabContents* tab_contents)

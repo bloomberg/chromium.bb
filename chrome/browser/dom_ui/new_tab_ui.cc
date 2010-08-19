@@ -131,10 +131,10 @@ class RecentlyClosedTabsHandler : public DOMMessageHandler,
   // Callback for the "reopenTab" message. Rewrites the history of the
   // currently displayed tab to be the one in TabRestoreService with a
   // history of a session passed in through the content pointer.
-  void HandleReopenTab(const Value* content);
+  void HandleReopenTab(const ListValue* args);
 
   // Callback for the "getRecentlyClosedTabs" message.
-  void HandleGetRecentlyClosedTabs(const Value* content);
+  void HandleGetRecentlyClosedTabs(const ListValue* args);
 
   // Observer callback for TabRestoreService::Observer. Sends data on
   // recently closed tabs to the javascript side of this page to
@@ -181,39 +181,21 @@ RecentlyClosedTabsHandler::~RecentlyClosedTabsHandler() {
     tab_restore_service_->RemoveObserver(this);
 }
 
-void RecentlyClosedTabsHandler::HandleReopenTab(const Value* content) {
+void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
   Browser* browser = Browser::GetBrowserForController(
       &dom_ui_->tab_contents()->controller(), NULL);
   if (!browser)
     return;
 
-  // Extract the integer value of the tab session to restore from the
-  // incoming string array. This will be greatly simplified when
-  // DOMUIBindings::send() is generalized to all data types instead of
-  // silently failing when passed anything other then an array of
-  // strings.
-  if (content->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(content);
-    Value* list_member;
-    if (list_value->Get(0, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-          static_cast<const StringValue*>(list_member);
-      std::string session_to_restore_str;
-      if (string_value->GetAsString(&session_to_restore_str)) {
-        int session_to_restore;
-        base::StringToInt(session_to_restore_str, &session_to_restore);
-        tab_restore_service_->RestoreEntryById(browser, session_to_restore,
-                                               true);
-        // The current tab has been nuked at this point; don't touch any member
-        // variables.
-      }
-    }
-  }
+  int session_to_restore;
+  if (ExtractIntegerValue(args, &session_to_restore))
+    tab_restore_service_->RestoreEntryById(browser, session_to_restore, true);
+  // The current tab has been nuked at this point; don't touch any member
+  // variables.
 }
 
 void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
-    const Value* content) {
+    const ListValue* args) {
   if (!tab_restore_service_) {
     tab_restore_service_ = dom_ui_->GetProfile()->GetTabRestoreService();
 
@@ -351,10 +333,10 @@ class MetricsHandler : public DOMMessageHandler {
   virtual void RegisterMessages();
 
   // Callback which records a user action.
-  void HandleMetrics(const Value* content);
+  void HandleMetrics(const ListValue* args);
 
   // Callback for the "logEventTime" message.
-  void HandleLogEventTime(const Value* content);
+  void HandleLogEventTime(const ListValue* args);
 
  private:
 
@@ -369,35 +351,14 @@ void MetricsHandler::RegisterMessages() {
       NewCallback(this, &MetricsHandler::HandleLogEventTime));
 }
 
-void MetricsHandler::HandleMetrics(const Value* content) {
-  if (content && content->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(content);
-    Value* list_member;
-    if (list_value->Get(0, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-          static_cast<const StringValue*>(list_member);
-      std::string string_action;
-      // TODO(viettrungluu): this usage of |RecordComputedAction()| doesn't
-      // conform with the docs; scripts can't pick this up.
-      if (string_value->GetAsString(&string_action))
-        UserMetrics::RecordComputedAction(string_action, dom_ui_->GetProfile());
-    }
-  }
+void MetricsHandler::HandleMetrics(const ListValue* args) {
+  std::string string_action = WideToUTF8(ExtractStringValue(args));
+  UserMetrics::RecordComputedAction(string_action, dom_ui_->GetProfile());
 }
 
-void MetricsHandler::HandleLogEventTime(const Value* content) {
-  if (content && content->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(content);
-    Value* list_member;
-    if (list_value->Get(0, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      std::string event_name;
-      if (list_member->GetAsString(&event_name)) {
-        dom_ui_->tab_contents()->LogNewTabTime(event_name);
-      }
-    }
-  }
+void MetricsHandler::HandleLogEventTime(const ListValue* args) {
+  std::string event_name = WideToUTF8(ExtractStringValue(args));
+  dom_ui_->tab_contents()->LogNewTabTime(event_name);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -414,7 +375,7 @@ class NewTabPageSetHomePageHandler : public DOMMessageHandler {
   virtual void RegisterMessages();
 
   // Callback for "setHomePage".
-  void HandleSetHomePage(const Value* value);
+  void HandleSetHomePage(const ListValue* args);
 
  private:
 
@@ -427,7 +388,7 @@ void NewTabPageSetHomePageHandler::RegisterMessages() {
 }
 
 void NewTabPageSetHomePageHandler::HandleSetHomePage(
-    const Value* value) {
+    const ListValue* args) {
   dom_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
                                                 true);
   ListValue list_value;

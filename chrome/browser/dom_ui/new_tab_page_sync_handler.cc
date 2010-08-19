@@ -110,7 +110,7 @@ void NewTabPageSyncHandler::RegisterMessages() {
       NewCallback(this, &NewTabPageSyncHandler::HandleSyncLinkClicked));
 }
 
-void NewTabPageSyncHandler::HandleGetSyncMessage(const Value* value) {
+void NewTabPageSyncHandler::HandleGetSyncMessage(const ListValue* args) {
   waiting_for_initial_page_load_ = false;
   BuildAndSendSyncStatus();
 }
@@ -147,7 +147,7 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
                         UTF16ToUTF8(status_msg), UTF16ToUTF8(link_text));
 }
 
-void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
+void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
   DCHECK(!waiting_for_initial_page_load_);
   DCHECK(sync_service_);
   if (!sync_service_->IsSyncEnabled())

@@ -9,19 +9,13 @@
 
 namespace dom_ui_util {
 
-std::string GetJsonResponseFromFirstArgumentInList(const Value* content) {
-  return GetJsonResponseFromArgumentList(content, 0);
+std::string GetJsonResponseFromFirstArgumentInList(const ListValue* args) {
+  return GetJsonResponseFromArgumentList(args, 0);
 }
 
-std::string GetJsonResponseFromArgumentList(const Value* content,
+std::string GetJsonResponseFromArgumentList(const ListValue* args,
                                             size_t list_index) {
   std::string result;
-
-  if (!content || !content->IsType(Value::TYPE_LIST))  {
-    NOTREACHED();
-    return result;
-  }
-  const ListValue* args = static_cast<const ListValue*>(content);
   if (args->GetSize() <= list_index) {
     NOTREACHED();
     return result;
@@ -30,6 +24,8 @@ std::string GetJsonResponseFromArgumentList(const Value* content,
   Value* value = NULL;
   if (args->Get(list_index, &value))
     value->GetAsString(&result);
+  else
+    NOTREACHED();
 
   return result;
 }

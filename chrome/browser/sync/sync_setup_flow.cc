@@ -127,8 +127,8 @@ static bool GetDataTypeChoiceData(const std::string& json,
   return true;
 }
 
-void FlowHandler::HandleSubmitAuth(const Value* value) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(value));
+void FlowHandler::HandleSubmitAuth(const ListValue* args) {
+  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   std::string username, password, captcha;
   if (json.empty())
     return;
@@ -144,8 +144,8 @@ void FlowHandler::HandleSubmitAuth(const Value* value) {
     flow_->OnUserSubmittedAuth(username, password, captcha);
 }
 
-void FlowHandler::HandleChooseDataTypes(const Value* value) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(value));
+void FlowHandler::HandleChooseDataTypes(const ListValue* args) {
+  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   bool sync_everything;
   syncable::ModelTypeSet chosen_types;
   if (json.empty())

@@ -106,7 +106,7 @@ class MediaplayerHandler : public DOMMessageHandler,
   virtual void RegisterMessages();
 
   // Callback for the "currentOffsetChanged" message.
-  void HandleCurrentOffsetChanged(const Value* value);
+  void HandleCurrentOffsetChanged(const ListValue* args);
 
   void FirePlaylistChanged(const std::string& path,
                            bool force,
@@ -116,18 +116,18 @@ class MediaplayerHandler : public DOMMessageHandler,
 
   void EnqueueMediaFile(const GURL& url);
 
-  void GetPlaylistValue(ListValue& value);
+  void GetPlaylistValue(ListValue& args);
 
   // Callback for the "playbackError" message.
-  void HandlePlaybackError(const Value* value);
+  void HandlePlaybackError(const ListValue* args);
 
   // Callback for the "getCurrentPlaylist" message.
-  void HandleGetCurrentPlaylist(const Value* value);
+  void HandleGetCurrentPlaylist(const ListValue* args);
 
-  void HandleTogglePlaylist(const Value* value);
-  void HandleShowPlaylist(const Value* value);
-  void HandleSetCurrentPlaylistOffset(const Value* value);
-  void HandleToggleFullscreen(const Value* value);
+  void HandleTogglePlaylist(const ListValue* args);
+  void HandleShowPlaylist(const ListValue* args);
+  void HandleSetCurrentPlaylistOffset(const ListValue* args);
+  void HandleToggleFullscreen(const ListValue* args);
 
   const UrlVector& GetCurrentPlaylist();
 
@@ -245,12 +245,12 @@ void MediaplayerHandler::RegisterMessages() {
       NewCallback(this, &MediaplayerHandler::HandleShowPlaylist));
 }
 
-void MediaplayerHandler::GetPlaylistValue(ListValue& value) {
+void MediaplayerHandler::GetPlaylistValue(ListValue& urls) {
   for (size_t x = 0; x < current_playlist_.size(); x++) {
     DictionaryValue* url_value = new DictionaryValue();
     url_value->SetString(kPropertyPath, current_playlist_[x].url.spec());
     url_value->SetBoolean(kPropertyError, current_playlist_[x].haderror);
-    value.Append(url_value);
+    urls.Append(url_value);
   }
 }
 
@@ -269,22 +269,14 @@ int MediaplayerHandler::GetCurrentPlaylistOffset() {
   return current_offset_;
 }
 
-void MediaplayerHandler::HandleToggleFullscreen(const Value* value) {
+void MediaplayerHandler::HandleToggleFullscreen(const ListValue* args) {
   MediaPlayer::Get()->ToggleFullscreen();
 }
 
-void MediaplayerHandler::HandleSetCurrentPlaylistOffset(const Value* value) {
-  ListValue results_value;
-  DictionaryValue info_value;
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    // Get the new playlist offset;
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    std::string val;
-    if (list_value->GetString(0, &val)) {
-      int id = atoi(val.c_str());
-      MediaPlayer::Get()->SetPlaylistOffset(id);
-    }
-  }
+void MediaplayerHandler::HandleSetCurrentPlaylistOffset(const ListValue* args) {
+  int id;
+  CHECK(ExtractIntegerValue(args, &id));
+  MediaPlayer::Get()->SetPlaylistOffset(id);
 }
 
 void MediaplayerHandler::FirePlaylistChanged(const std::string& path,
@@ -317,51 +309,36 @@ void MediaplayerHandler::EnqueueMediaFile(const GURL& url) {
   MediaPlayer::Get()->NotifyPlaylistChanged();
 }
 
-void MediaplayerHandler::HandleCurrentOffsetChanged(const Value* value) {
-  ListValue results_value;
-  DictionaryValue info_value;
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    std::string val;
-
-    // Get the new playlist offset;
-    if (list_value->GetString(0, &val)) {
-      int id = atoi(val.c_str());
-      current_offset_ = id;
-      MediaPlayer::Get()->NotifyPlaylistChanged();
-    }
-  }
+void MediaplayerHandler::HandleCurrentOffsetChanged(const ListValue* args) {
+  CHECK(ExtractIntegerValue(args, &current_offset_));
+  MediaPlayer::Get()->NotifyPlaylistChanged();
 }
 
-void MediaplayerHandler::HandlePlaybackError(const Value* value) {
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    std::string error;
-    std::string url;
-    // Get path string.
-    if (list_value->GetString(0, &error)) {
-      LOG(ERROR) << "Playback error" << error;
-    }
-    if (list_value->GetString(1, &url)) {
-      for (size_t x = 0; x < current_playlist_.size(); x++) {
-        if (current_playlist_[x].url == GURL(url)) {
-          current_playlist_[x].haderror = true;
-        }
+void MediaplayerHandler::HandlePlaybackError(const ListValue* args) {
+  std::string error;
+  std::string url;
+  // Get path string.
+  if (args->GetString(0, &error))
+    LOG(ERROR) << "Playback error" << error;
+  if (args->GetString(1, &url)) {
+    for (size_t x = 0; x < current_playlist_.size(); x++) {
+      if (current_playlist_[x].url == GURL(url)) {
+        current_playlist_[x].haderror = true;
       }
-      FirePlaylistChanged(std::string(), false, current_offset_);
     }
+    FirePlaylistChanged(std::string(), false, current_offset_);
   }
 }
 
-void MediaplayerHandler::HandleGetCurrentPlaylist(const Value* value) {
+void MediaplayerHandler::HandleGetCurrentPlaylist(const ListValue* args) {
   FirePlaylistChanged(std::string(), false, current_offset_);
 }
 
-void MediaplayerHandler::HandleTogglePlaylist(const Value* value) {
+void MediaplayerHandler::HandleTogglePlaylist(const ListValue* args) {
   MediaPlayer::Get()->TogglePlaylistWindowVisible();
 }
 
-void MediaplayerHandler::HandleShowPlaylist(const Value* value) {
+void MediaplayerHandler::HandleShowPlaylist(const ListValue* args) {
   MediaPlayer::Get()->ShowPlaylistWindow();
 }
 

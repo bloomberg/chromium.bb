@@ -98,7 +98,7 @@ void AppLauncherHandler::CreateAppInfo(Extension* extension,
   value->SetString("icon", icon_url.spec());
 }
 
-void AppLauncherHandler::HandleGetApps(const Value* value) {
+void AppLauncherHandler::HandleGetApps(const ListValue* args) {
   bool show_debug_link = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAppsDebug);
 
@@ -129,12 +129,7 @@ void AppLauncherHandler::HandleGetApps(const Value* value) {
   }
 }
 
-void AppLauncherHandler::HandleLaunchApp(const Value* value) {
-  if (!value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-
+void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   std::string extension_id;
   std::string launch_container;
   int left = 0;
@@ -142,13 +137,12 @@ void AppLauncherHandler::HandleLaunchApp(const Value* value) {
   int width = 0;
   int height = 0;
 
-  const ListValue* list = static_cast<const ListValue*>(value);
-  if (!list->GetString(0, &extension_id) ||
-      !list->GetString(1, &launch_container) ||
-      !ExtractInt(list, 2, &left) ||
-      !ExtractInt(list, 3, &top) ||
-      !ExtractInt(list, 4, &width) ||
-      !ExtractInt(list, 5, &height)) {
+  if (!args->GetString(0, &extension_id) ||
+      !args->GetString(1, &launch_container) ||
+      !ExtractInt(args, 2, &left) ||
+      !ExtractInt(args, 3, &top) ||
+      !ExtractInt(args, 4, &width) ||
+      !ExtractInt(args, 5, &height)) {
     NOTREACHED();
     return;
   }
@@ -207,18 +201,8 @@ void AppLauncherHandler::AnimateAppIcon(Extension* extension,
   }
 }
 
-void AppLauncherHandler::HandleUninstallApp(const Value* value) {
-  if (!value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-
-  std::string extension_id;
-  const ListValue* list = static_cast<const ListValue*>(value);
-  if (!list->GetString(0, &extension_id)) {
-    NOTREACHED();
-    return;
-  }
+void AppLauncherHandler::HandleUninstallApp(const ListValue* args) {
+  std::string extension_id = WideToUTF8(ExtractStringValue(args));
 
   // Make sure that the extension exists.
   Extension* extension =

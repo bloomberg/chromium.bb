@@ -40,30 +40,30 @@ class AdvancedOptionsHandler
  private:
   // Callback for the "selectDownloadLocation" message.  This will prompt
   // the user for a destination folder using platform-specific APIs.
-  void HandleSelectDownloadLocation(const Value* value);
+  void HandleSelectDownloadLocation(const ListValue* args);
 
   // Callback for the "autoOpenFileTypesResetToDefault" message.  This will
   // remove all auto-open file-type settings.
-  void HandleAutoOpenButton(const Value* value);
+  void HandleAutoOpenButton(const ListValue* args);
 
 #if defined(OS_WIN)
   // Callback for the "Check SSL Revocation" checkbox.  This is needed so we
   // can support manual handling on Windows.
-  void HandleCheckRevocationCheckbox(const Value* value);
+  void HandleCheckRevocationCheckbox(const ListValue* args);
 
   // Callback for the "Use SSL2" checkbox.  This is needed so we can support
   // manual handling on Windows.
-  void HandleUseSSL2Checkbox(const Value* value);
+  void HandleUseSSL2Checkbox(const ListValue* args);
 #endif
 
 #if !defined(OS_CHROMEOS)
   // Callback for the "showNetworkProxySettings" message. This will invoke
   // an appropriate dialog for configuring proxy settings.
-  void ShowNetworkProxySettings(const Value* value);
+  void ShowNetworkProxySettings(const ListValue* args);
 
   // Callback for the "showManageSSLCertificates" message. This will invoke
   // an appropriate certificate management action based on the platform.
-  void ShowManageSSLCertificates(const Value* value);
+  void ShowManageSSLCertificates(const ListValue* args);
 #endif
 
   // Setup the download path based on user preferences.

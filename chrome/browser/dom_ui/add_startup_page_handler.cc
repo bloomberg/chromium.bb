@@ -52,9 +52,9 @@ void AddStartupPageHandler::RegisterMessages() {
       NewCallback(this, &AddStartupPageHandler::UpdateFieldWithRecentPage));
 }
 
-void AddStartupPageHandler::UpdateFieldWithRecentPage(const Value* value) {
+void AddStartupPageHandler::UpdateFieldWithRecentPage(const ListValue* args) {
   int index;
-  if (!ExtractIntegerValue(value, &index)) {
+  if (!ExtractIntegerValue(args, &index)) {
     NOTREACHED();
     return;
   }

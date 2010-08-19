@@ -24,10 +24,10 @@ class DictionaryValue;
 class Extension;
 class ExtensionsService;
 class FilePath;
+class ListValue;
 class PrefService;
 class RenderProcessHost;
 class UserScript;
-class Value;
 
 // Information about a page running in an extension, for example a toolstrip,
 // a background page, or a tab contents.
@@ -134,46 +134,49 @@ class ExtensionsDOMHandler
 
  private:
   // Callback for "requestExtensionsData" message.
-  void HandleRequestExtensionsData(const Value* value);
+  void HandleRequestExtensionsData(const ListValue* args);
 
   // Callback for "toggleDeveloperMode" message.
-  void HandleToggleDeveloperMode(const Value* value);
+  void HandleToggleDeveloperMode(const ListValue* args);
 
   // Callback for "inspect" message.
-  void HandleInspectMessage(const Value* value);
+  void HandleInspectMessage(const ListValue* args);
 
   // Callback for "reload" message.
-  void HandleReloadMessage(const Value* value);
+  void HandleReloadMessage(const ListValue* args);
 
   // Callback for "enable" message.
-  void HandleEnableMessage(const Value* value);
+  void HandleEnableMessage(const ListValue* args);
 
   // Callback for "enableIncognito" message.
-  void HandleEnableIncognitoMessage(const Value* value);
+  void HandleEnableIncognitoMessage(const ListValue* args);
 
   // Callback for "allowFileAcces" message.
-  void HandleAllowFileAccessMessage(const Value* value);
+  void HandleAllowFileAccessMessage(const ListValue* args);
 
   // Callback for "uninstall" message.
-  void HandleUninstallMessage(const Value* value);
+  void HandleUninstallMessage(const ListValue* args);
 
   // Callback for "options" message.
-  void HandleOptionsMessage(const Value* value);
+  void HandleOptionsMessage(const ListValue* args);
 
   // Callback for "load" message.
-  void HandleLoadMessage(const Value* value);
+  void HandleLoadMessage(const ListValue* args);
 
   // Callback for "pack" message.
-  void HandlePackMessage(const Value* value);
+  void HandlePackMessage(const ListValue* args);
 
   // Callback for "autoupdate" message.
-  void HandleAutoUpdateMessage(const Value* value);
+  void HandleAutoUpdateMessage(const ListValue* args);
 
   // Utility for calling javascript window.alert in the page.
   void ShowAlert(const std::string& message);
 
   // Callback for "selectFilePath" message.
-  void HandleSelectFilePathMessage(const Value* value);
+  void HandleSelectFilePathMessage(const ListValue* args);
+
+  // Utility for callbacks that get an extension ID as the sole argument.
+  Extension* GetExtension(const ListValue* args);
 
   // Forces a UI update if appropriate after a notification is received.
   void MaybeUpdateAfterNotification();

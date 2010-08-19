@@ -123,9 +123,9 @@ class CloudPrintFlowHandler : public DOMMessageHandler,
                        const NotificationDetails& details);
 
   // Callbacks from the page.
-  void HandleShowDebugger(const Value* value);
-  void HandleSendPrintData(const Value* value);
-  void HandleSetPageParameters(const Value* value);
+  void HandleShowDebugger(const ListValue* args);
+  void HandleSendPrintData(const ListValue* args);
+  void HandleSetPageParameters(const ListValue* args);
 
   // Call to get the debugger loaded on our hosted dialog page
   // specifically.  Since we're not in an official browser tab, only

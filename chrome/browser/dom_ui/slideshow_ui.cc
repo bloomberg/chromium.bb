@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "base/time.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "chrome/browser/chrome_thread.h"
@@ -75,12 +76,12 @@ class SlideshowHandler : public net::DirectoryLister::DirectoryListerDelegate,
   virtual DOMMessageHandler* Attach(DOMUI* dom_ui);
   virtual void RegisterMessages();
 
-  void GetChildrenForPath(FilePath& path, bool is_refresh);
+  void GetChildrenForPath(const FilePath& path, bool is_refresh);
 
   // Callback for the "getChildren" message.
-  void HandleGetChildren(const Value* value);
+  void HandleGetChildren(const ListValue* args);
 
-  void HandleRefreshDirectory(const Value* value);
+  void HandleRefreshDirectory(const ListValue* args);
 
  private:
   bool PathIsImageFile(const char* filename);
@@ -168,28 +169,17 @@ void SlideshowHandler::RegisterMessages() {
       NewCallback(this, &SlideshowHandler::HandleRefreshDirectory));
 }
 
-void SlideshowHandler::HandleRefreshDirectory(const Value* value) {
+void SlideshowHandler::HandleRefreshDirectory(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    std::string path;
-
-    // Get path string.
-    if (list_value->GetString(0, &path)) {
-      FilePath currentpath;
-      currentpath = FilePath(path);
-      GetChildrenForPath(currentpath, true);
-    } else {
-      LOG(ERROR) << "Unable to get string";
-      return;
-    }
-  }
+  std::string path = WideToUTF8(ExtractStringValue(args));
+  GetChildrenForPath(FilePath(path), true);
 #endif
 }
 
-void SlideshowHandler::GetChildrenForPath(FilePath& path, bool is_refresh) {
+void SlideshowHandler::GetChildrenForPath(const FilePath& path,
+                                          bool is_refresh) {
   filelist_value_.reset(new ListValue());
-  currentpath_ = FilePath(path);
+  currentpath_ = path;
 
   if (lister_.get()) {
     lister_->Cancel();
@@ -211,29 +201,11 @@ void SlideshowHandler::GetChildrenForPath(FilePath& path, bool is_refresh) {
   lister_->Start();
 }
 
-void SlideshowHandler::HandleGetChildren(const Value* value) {
+void SlideshowHandler::HandleGetChildren(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  std::string path;
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    Value* list_member;
-
-    // Get search string.
-    if (list_value->Get(0, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-          static_cast<const StringValue*>(list_member);
-      string_value->GetAsString(&path);
-    }
-
-  } else {
-    LOG(ERROR) << "Wasn't able to get the List if requested files.";
-    return;
-  }
   filelist_value_.reset(new ListValue());
-  FilePath currentpath;
-  currentpath = FilePath(path);
-  GetChildrenForPath(currentpath, false);
+  std::string path = WideToUTF8(ExtractStringValue(args));
+  GetChildrenForPath(FilePath(path), false);
 #endif
 }
 

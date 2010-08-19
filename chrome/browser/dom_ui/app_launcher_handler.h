@@ -37,13 +37,13 @@ class AppLauncherHandler
   static void CreateAppInfo(Extension* extension, DictionaryValue* value);
 
   // Callback for the "getApps" message.
-  void HandleGetApps(const Value* value);
+  void HandleGetApps(const ListValue* args);
 
   // Callback for the "launchApp" message.
-  void HandleLaunchApp(const Value* value);
+  void HandleLaunchApp(const ListValue* args);
 
   // Callback for the "uninstallApp" message.
-  void HandleUninstallApp(const Value* value);
+  void HandleUninstallApp(const ListValue* args);
 
  private:
   // Starts the animation of the app icon.

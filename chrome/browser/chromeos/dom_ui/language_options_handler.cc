@@ -216,20 +216,9 @@ DictionaryValue* LanguageOptionsHandler::GetUiLanguageCodeSet() {
 }
 
 void LanguageOptionsHandler::UiLanguageChangeCallback(
-    const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    LOG(INFO) << "NOTREACHED";
-    return;
-  }
-  const ListValue* list_value = static_cast<const ListValue*>(value);
-  std::string language_code;
-  if (list_value->GetSize() != 1 ||
-      !list_value->GetString(0, &language_code)) {
-    NOTREACHED();
-    LOG(INFO) << "NOTREACHED";
-    return;
-  }
+    const ListValue* args) {
+  std::string language_code = WideToASCII(ExtractStringValue(args));
+  CHECK(!language_code.empty());
   PrefService* prefs = g_browser_process->local_state();
   prefs->SetString(prefs::kApplicationLocale, language_code);
   prefs->SavePersistentPrefs();
@@ -237,7 +226,7 @@ void LanguageOptionsHandler::UiLanguageChangeCallback(
       L"options.LanguageOptions.uiLanguageSaved");
 }
 
-void LanguageOptionsHandler::RestartCallback(const Value* value) {
+void LanguageOptionsHandler::RestartCallback(const ListValue* args) {
   Browser* browser = Browser::GetBrowserForController(
       &dom_ui_->tab_contents()->controller(), NULL);
   // TODO(kochi): For ChromiumOS, just exiting means browser restart.

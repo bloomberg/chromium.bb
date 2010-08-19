@@ -46,7 +46,7 @@ class DOMUI {
   virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
   // Used by DOMMessageHandlers.
-  typedef Callback1<const Value*>::Type MessageCallback;
+  typedef Callback1<const ListValue*>::Type MessageCallback;
   void RegisterMessageCallback(const std::string& message,
                                MessageCallback* callback);
 
@@ -168,10 +168,10 @@ class DOMMessageHandler {
   virtual void RegisterMessages() = 0;
 
   // Extract an integer value from a list Value.
-  bool ExtractIntegerValue(const Value* value, int* out_int);
+  bool ExtractIntegerValue(const ListValue* value, int* out_int);
 
   // Extract a string value from a list Value.
-  std::wstring ExtractStringValue(const Value* value);
+  std::wstring ExtractStringValue(const ListValue* value);
 
   DOMUI* dom_ui_;
 

@@ -32,7 +32,7 @@ class AddStartupPageHandler : public OptionsPageUIHandler,
  private:
   // Request to update the text field with the URL of the recent page at the
   // given index, formatted for user input. Called from DOMUI.
-  void UpdateFieldWithRecentPage(const Value* value);
+  void UpdateFieldWithRecentPage(const ListValue* args);
 
   scoped_ptr<PossibleURLModel> url_table_model_;
 

@@ -25,11 +25,11 @@ class PersonalOptionsHandler : public OptionsPageUIHandler {
   virtual void RegisterMessages();
 
  private:
-  virtual void SetSyncStatusUIString(const Value* value);
-  virtual void ThemesReset(const Value* value);
-  virtual void ThemesGallery(const Value* value);
+  virtual void SetSyncStatusUIString(const ListValue* args);
+  virtual void ThemesReset(const ListValue* args);
+  virtual void ThemesGallery(const ListValue* args);
 #if defined(TOOLKIT_GTK)
-  virtual void ThemesSetGTK(const Value* value);
+  virtual void ThemesSetGTK(const ListValue* args);
 #endif
 
   scoped_ptr<OptionsManagedBannerHandler> banner_handler_;

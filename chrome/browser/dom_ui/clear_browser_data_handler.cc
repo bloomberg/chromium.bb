@@ -89,7 +89,7 @@ void ClearBrowserDataHandler::RegisterMessages() {
       NewCallback(this, &ClearBrowserDataHandler::HandleClearBrowserData));
 }
 
-void ClearBrowserDataHandler::HandleClearBrowserData(const Value* value) {
+void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
   Profile *profile = dom_ui_->GetProfile();
   PrefService *prefs = profile->GetPrefs();
 

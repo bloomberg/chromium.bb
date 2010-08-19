@@ -161,25 +161,20 @@ void DOMMessageHandler::SetURLAndTitle(DictionaryValue* dictionary,
   dictionary->SetString("title", title_to_set);
 }
 
-bool DOMMessageHandler::ExtractIntegerValue(const Value* value, int* out_int) {
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    std::string string_value;
-    if (list_value->GetString(0, &string_value)) {
-      base::StringToInt(string_value, out_int);
-      return true;
-    }
-  }
+bool DOMMessageHandler::ExtractIntegerValue(const ListValue* value,
+                                            int* out_int) {
+  std::string string_value;
+  if (value->GetString(0, &string_value))
+    return base::StringToInt(string_value, out_int);
+  NOTREACHED();
   return false;
 }
 
 // TODO(viettrungluu): convert to string16 (or UTF-8 std::string?).
-std::wstring DOMMessageHandler::ExtractStringValue(const Value* value) {
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(value);
-    string16 string16_value;
-    if (list_value->GetString(0, &string16_value))
-      return UTF16ToWideHack(string16_value);
-  }
+std::wstring DOMMessageHandler::ExtractStringValue(const ListValue* value) {
+  string16 string16_value;
+  if (value->GetString(0, &string16_value))
+    return UTF16ToWideHack(string16_value);
+  NOTREACHED();
   return std::wstring();
 }

@@ -154,7 +154,7 @@ class NetInternalsMessageHandler::IOThreadImpl
       public ConnectionTester::Delegate {
  public:
   // Type for methods that can be used as MessageHandler callbacks.
-  typedef void (IOThreadImpl::*MessageHandler)(const Value*);
+  typedef void (IOThreadImpl::*MessageHandler)(const ListValue*);
 
   // Creates a proxy for |handler| that will live on the IO thread.
   // |handler| is a weak pointer, since it is possible for the DOMMessageHandler
@@ -184,17 +184,17 @@ class NetInternalsMessageHandler::IOThreadImpl
 
   // This message is called after the webpage's onloaded handler has fired.
   // it indicates that the renderer is ready to start receiving captured data.
-  void OnRendererReady(const Value* value);
+  void OnRendererReady(const ListValue* list);
 
-  void OnGetProxySettings(const Value* value);
-  void OnReloadProxySettings(const Value* value);
-  void OnGetBadProxies(const Value* value);
-  void OnClearBadProxies(const Value* value);
-  void OnGetHostResolverCache(const Value* value);
-  void OnClearHostResolverCache(const Value* value);
-  void OnGetPassiveLogEntries(const Value* value);
-  void OnStartConnectionTests(const Value* value);
-  void OnGetHttpCacheInfo(const Value* value);
+  void OnGetProxySettings(const ListValue* list);
+  void OnReloadProxySettings(const ListValue* list);
+  void OnGetBadProxies(const ListValue* list);
+  void OnClearBadProxies(const ListValue* list);
+  void OnGetHostResolverCache(const ListValue* list);
+  void OnClearHostResolverCache(const ListValue* list);
+  void OnGetPassiveLogEntries(const ListValue* list);
+  void OnStartConnectionTests(const ListValue* list);
+  void OnGetHttpCacheInfo(const ListValue* list);
 
   // ChromeNetLog::Observer implementation:
   virtual void OnAddEntry(net::NetLog::EventType type,
@@ -216,7 +216,7 @@ class NetInternalsMessageHandler::IOThreadImpl
   class CallbackHelper;
 
   // Helper that runs |method| with |arg|, and deletes |arg| on completion.
-  void DispatchToMessageHandler(Value* arg, MessageHandler method);
+  void DispatchToMessageHandler(ListValue* arg, MessageHandler method);
 
   // Helper that executes |function_name| in the attached renderer.
   // The function takes ownership of |arg|.
@@ -251,20 +251,21 @@ class NetInternalsMessageHandler::IOThreadImpl::CallbackHelper
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   }
 
-  virtual void RunWithParams(const Tuple1<const Value*>& params) {
+  virtual void RunWithParams(const Tuple1<const ListValue*>& params) {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
     // We need to make a copy of the value in order to pass it over to the IO
     // thread. We will delete this in IOThreadImpl::DispatchMessageHandler().
-    Value* value_copy = params.a ? params.a->DeepCopy() : NULL;
+    ListValue* list_copy = static_cast<ListValue*>(
+        params.a ? params.a->DeepCopy() : NULL);
 
     if (!ChromeThread::PostTask(
             ChromeThread::IO, FROM_HERE,
             NewRunnableMethod(instance_.get(),
                               &IOThreadImpl::DispatchToMessageHandler,
-                              value_copy, method_))) {
-      // Failed posting the task, avoid leaking |value_copy|.
-      delete value_copy;
+                              list_copy, method_))) {
+      // Failed posting the task, avoid leaking |list_copy|.
+      delete list_copy;
     }
   }
 
@@ -426,7 +427,7 @@ void NetInternalsMessageHandler::IOThreadImpl::Detach() {
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
-    const Value* value) {
+    const ListValue* list) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(!is_observing_log_) << "notifyReady called twice";
 
@@ -566,7 +567,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnRendererReady(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
-    const Value* value) {
+    const ListValue* list) {
   URLRequestContext* context = context_getter_->GetURLRequestContext();
   net::ProxyService* proxy_service = context->proxy_service();
 
@@ -582,7 +583,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetProxySettings(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
-    const Value* value) {
+    const ListValue* list) {
   URLRequestContext* context = context_getter_->GetURLRequestContext();
   context->proxy_service()->ForceReloadProxyConfig();
 
@@ -591,13 +592,13 @@ void NetInternalsMessageHandler::IOThreadImpl::OnReloadProxySettings(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
-    const Value* value) {
+    const ListValue* list) {
   URLRequestContext* context = context_getter_->GetURLRequestContext();
 
   const net::ProxyRetryInfoMap& bad_proxies_map =
       context->proxy_service()->proxy_retry_info();
 
-  ListValue* list = new ListValue();
+  ListValue* dict_list = new ListValue();
 
   for (net::ProxyRetryInfoMap::const_iterator it = bad_proxies_map.begin();
        it != bad_proxies_map.end(); ++it) {
@@ -608,14 +609,14 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetBadProxies(
     dict->SetString("proxy_uri", proxy_uri);
     dict->SetString("bad_until", TickCountToString(retry_info.bad_until));
 
-    list->Append(dict);
+    dict_list->Append(dict);
   }
 
-  CallJavascriptFunction(L"g_browser.receivedBadProxies", list);
+  CallJavascriptFunction(L"g_browser.receivedBadProxies", dict_list);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
-    const Value* value) {
+    const ListValue* list) {
   URLRequestContext* context = context_getter_->GetURLRequestContext();
   context->proxy_service()->ClearBadProxiesCache();
 
@@ -624,7 +625,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearBadProxies(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverCache(
-    const Value* value) {
+    const ListValue* list) {
 
   net::HostCache* cache =
       GetHostResolverCache(context_getter_->GetURLRequestContext());
@@ -683,7 +684,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverCache(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
-    const Value* value) {
+    const ListValue* list) {
   net::HostCache* cache =
       GetHostResolverCache(context_getter_->GetURLRequestContext());
 
@@ -695,34 +696,31 @@ void NetInternalsMessageHandler::IOThreadImpl::OnClearHostResolverCache(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetPassiveLogEntries(
-    const Value* value) {
+    const ListValue* list) {
   ChromeNetLog* net_log = io_thread_->globals()->net_log.get();
 
   PassiveLogCollector::EntryList passive_entries;
   net_log->passive_collector()->GetAllCapturedEvents(&passive_entries);
 
-  ListValue* list = new ListValue();
+  ListValue* dict_list = new ListValue();
   for (size_t i = 0; i < passive_entries.size(); ++i) {
     const PassiveLogCollector::Entry& e = passive_entries[i];
-    list->Append(net::NetLog::EntryToDictionaryValue(e.type,
-                                                     e.time,
-                                                     e.source,
-                                                     e.phase,
-                                                     e.params,
-                                                     false));
+    dict_list->Append(net::NetLog::EntryToDictionaryValue(e.type,
+                                                          e.time,
+                                                          e.source,
+                                                          e.phase,
+                                                          e.params,
+                                                          false));
   }
 
-  CallJavascriptFunction(L"g_browser.receivedPassiveLogEntries", list);
+  CallJavascriptFunction(L"g_browser.receivedPassiveLogEntries", dict_list);
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
-    const Value* value) {
+    const ListValue* list) {
   // |value| should be: [<URL to test>].
   string16 url_str;
-  if (value && value->GetType() == Value::TYPE_LIST) {
-    const ListValue* list = static_cast<const ListValue*>(value);
-    list->GetString(0, &url_str);
-  }
+  CHECK(list->GetString(0, &url_str));
 
   // Try to fix-up the user provided URL into something valid.
   // For example, turn "www.google.com" into "http://www.google.com".
@@ -733,7 +731,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
-    const Value* value) {
+    const ListValue* list) {
   DictionaryValue* info_dict = new DictionaryValue();
   DictionaryValue* stats_dict = new DictionaryValue();
 
@@ -802,7 +800,7 @@ NetInternalsMessageHandler::IOThreadImpl::OnCompletedConnectionTestSuite() {
 }
 
 void NetInternalsMessageHandler::IOThreadImpl::DispatchToMessageHandler(
-    Value* arg, MessageHandler method) {
+    ListValue* arg, MessageHandler method) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   (this->*method)(arg);
   delete arg;

@@ -44,20 +44,20 @@ class BrowserOptionsHandler : public OptionsPageUIHandler,
 
  private:
   // Makes this the default browser. Called from DOMUI.
-  void BecomeDefaultBrowser(const Value* value);
+  void BecomeDefaultBrowser(const ListValue* args);
 
   // Sets the search engine at the given index to be default. Called from DOMUI.
-  void SetDefaultSearchEngine(const Value* value);
+  void SetDefaultSearchEngine(const ListValue* args);
 
   // Removes the startup page at the given indexes. Called from DOMUI.
-  void RemoveStartupPages(const Value* value);
+  void RemoveStartupPages(const ListValue* args);
 
   // Adds a startup page with the given URL after the given index.
   // Called from DOMUI.
-  void AddStartupPage(const Value* value);
+  void AddStartupPage(const ListValue* args);
 
   // Sets the startup page set to the current pages. Called from DOMUI.
-  void SetStartupPagesToCurrentPages(const Value* value);
+  void SetStartupPagesToCurrentPages(const ListValue* args);
 
   // Returns the string ID for the given default browser state.
   int StatusStringIdForState(ShellIntegration::DefaultBrowserState state);

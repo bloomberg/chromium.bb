@@ -323,7 +323,7 @@ void CloudPrintFlowHandler::Observe(NotificationType type,
   }
 }
 
-void CloudPrintFlowHandler::HandleShowDebugger(const Value* value) {
+void CloudPrintFlowHandler::HandleShowDebugger(const ListValue* args) {
   ShowDebugger();
 }
 
@@ -342,7 +342,7 @@ CloudPrintFlowHandler::CreateCloudPrintDataSender() {
   return new CloudPrintDataSender(print_data_helper_.get(), print_job_title_);
 }
 
-void CloudPrintFlowHandler::HandleSendPrintData(const Value* value) {
+void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // This will cancel any ReadPrintDataFile() or SendPrintDataFile()
   // requests in flight (this is anticipation of when setting page
@@ -359,8 +359,8 @@ void CloudPrintFlowHandler::HandleSendPrintData(const Value* value) {
   }
 }
 
-void CloudPrintFlowHandler::HandleSetPageParameters(const Value* value) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(value));
+void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
+  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   if (json.empty())
     return;
 

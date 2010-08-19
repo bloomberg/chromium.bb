@@ -31,11 +31,11 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
  private:
   void UpdateAllExceptionsViewsFromModel();
   void UpdateExceptionsViewFromModel(ContentSettingsType type);
-  void SetContentFilter(const Value* value);
-  void SetAllowThirdPartyCookies(const Value* value);
-  void RemoveExceptions(const Value* value);
-  void SetException(const Value* value);
-  void CheckExceptionPatternValidity(const Value* value);
+  void SetContentFilter(const ListValue* args);
+  void SetAllowThirdPartyCookies(const ListValue* args);
+  void RemoveExceptions(const ListValue* args);
+  void SetException(const ListValue* args);
+  void CheckExceptionPatternValidity(const ListValue* args);
 
   NotificationRegistrar notification_registrar_;
 

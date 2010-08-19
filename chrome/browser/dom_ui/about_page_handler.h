@@ -26,10 +26,10 @@ class AboutPageHandler : public OptionsPageUIHandler {
 
  private:
 
-  void PageReady(const Value* value);
+  void PageReady(const ListValue* args);
 
 #if defined(OS_CHROMEOS)
-  void CheckNow(const Value* value);
+  void CheckNow(const ListValue* args);
   // Callback from chromeos::VersionLoader giving the version.
   void OnOSVersion(chromeos::VersionLoader::Handle handle,
                    std::string version);

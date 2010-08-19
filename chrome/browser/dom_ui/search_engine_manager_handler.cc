@@ -134,9 +134,9 @@ DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
   return dict;
 }
 
-void SearchEngineManagerHandler::SetDefaultSearchEngine(const Value* value) {
+void SearchEngineManagerHandler::SetDefaultSearchEngine(const ListValue* args) {
   int index;
-  if (!ExtractIntegerValue(value, &index)) {
+  if (!ExtractIntegerValue(args, &index)) {
     NOTREACHED();
     return;
   }
@@ -146,9 +146,9 @@ void SearchEngineManagerHandler::SetDefaultSearchEngine(const Value* value) {
   controller_->MakeDefaultTemplateURL(index);
 }
 
-void SearchEngineManagerHandler::RemoveSearchEngine(const Value* value) {
+void SearchEngineManagerHandler::RemoveSearchEngine(const ListValue* args) {
   int index;
-  if (!ExtractIntegerValue(value, &index)) {
+  if (!ExtractIntegerValue(args, &index)) {
     NOTREACHED();
     return;
   }

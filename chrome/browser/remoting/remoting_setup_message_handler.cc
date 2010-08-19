@@ -20,8 +20,8 @@ void RemotingSetupMessageHandler::RegisterMessages() {
       NewCallback(this, &RemotingSetupMessageHandler::HandleSubmitAuth));
 }
 
-void RemotingSetupMessageHandler::HandleSubmitAuth(const Value* value) {
-  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(value));
+void RemotingSetupMessageHandler::HandleSubmitAuth(const ListValue* args) {
+  std::string json(dom_ui_util::GetJsonResponseFromFirstArgumentInList(args));
   std::string username, password, captcha;
   if (json.empty())
     return;

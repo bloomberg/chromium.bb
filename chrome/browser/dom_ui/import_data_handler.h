@@ -25,7 +25,7 @@ class ImportDataHandler : public OptionsPageUIHandler,
 
  private:
   void DetectSupportedBrowsers();
-  void ImportData(const Value* value);
+  void ImportData(const ListValue* args);
 
   //Callback from ImporterHost. Close the Dialog.
   virtual void ImportStarted();

@@ -20,7 +20,7 @@ class StopSyncingHandler : public OptionsPageUIHandler {
   virtual void RegisterMessages();
 
  private:
-  void StopSyncing(const Value* value);
+  void StopSyncing(const ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(StopSyncingHandler);
 };

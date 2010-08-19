@@ -112,8 +112,8 @@ void CoreOptionsHandler::RegisterMessages() {
       NewCallback(this, &CoreOptionsHandler::HandleSetObjectPref));
 }
 
-void CoreOptionsHandler::HandleInitialize(const Value* value) {
-  (static_cast<OptionsUI*>(dom_ui_))->InitializeHandlers();
+void CoreOptionsHandler::HandleInitialize(const ListValue* args) {
+  static_cast<OptionsUI*>(dom_ui_)->InitializeHandlers();
 }
 
 Value* CoreOptionsHandler::FetchPref(const std::string& pref_name) {
@@ -164,21 +164,16 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
   }
 }
 
-void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST))
-    return;
-
-  const ListValue* param_values = static_cast<const ListValue*>(value);
-
+void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
   // First param is name of callback function, so, there needs to be at least
   // one more element for the actual preference identifier.
   const size_t kMinFetchPrefsParamCount = 2;
-  if (param_values->GetSize() < kMinFetchPrefsParamCount)
+  if (args->GetSize() < kMinFetchPrefsParamCount)
     return;
 
   // Get callback JS function name.
   Value* callback;
-  if (!param_values->Get(0, &callback) || !callback->IsType(Value::TYPE_STRING))
+  if (!args->Get(0, &callback) || !callback->IsType(Value::TYPE_STRING))
     return;
 
   string16 callback_function;
@@ -189,8 +184,8 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
   DictionaryValue result_value;
   Value* list_member;
 
-  for (size_t i = 1; i < param_values->GetSize(); i++) {
-    if (!param_values->Get(i, &list_member))
+  for (size_t i = 1; i < args->GetSize(); i++) {
+    if (!args->Get(i, &list_member))
       break;
 
     if (!list_member->IsType(Value::TYPE_STRING))
@@ -206,27 +201,24 @@ void CoreOptionsHandler::HandleFetchPrefs(const Value* value) {
                                   result_value);
 }
 
-void CoreOptionsHandler::HandleObservePrefs(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST))
-    return;
-
-  const ListValue* list_value = static_cast<const ListValue*>(value);
+void CoreOptionsHandler::HandleObservePrefs(const ListValue* args) {
+  DictionaryValue result_value;
 
   // First param is name is JS callback function name, the rest are pref
   // identifiers that we are observing.
   const size_t kMinObservePrefsParamCount = 2;
-  if (list_value->GetSize() < kMinObservePrefsParamCount)
+  if (args->GetSize() < kMinObservePrefsParamCount)
     return;
 
   // Get preference change callback function name.
   string16 callback_func_name;
-  if (!list_value->GetString(0, &callback_func_name))
+  if (!args->GetString(0, &callback_func_name))
     return;
 
   // Get all other parameters - pref identifiers.
-  for (size_t i = 1; i < list_value->GetSize(); i++) {
+  for (size_t i = 1; i < args->GetSize(); i++) {
     Value* list_member;
-    if (!list_value->Get(i, &list_member))
+    if (!args->Get(i, &list_member))
       break;
 
     // Just ignore bad pref identifiers for now.
@@ -244,36 +236,33 @@ void CoreOptionsHandler::HandleObservePrefs(const Value* value) {
   }
 }
 
-void CoreOptionsHandler::HandleSetBooleanPref(const Value* value) {
-  HandleSetPref(value, Value::TYPE_BOOLEAN);
+void CoreOptionsHandler::HandleSetBooleanPref(const ListValue* args) {
+  HandleSetPref(args, Value::TYPE_BOOLEAN);
 }
 
-void CoreOptionsHandler::HandleSetIntegerPref(const Value* value) {
-  HandleSetPref(value, Value::TYPE_INTEGER);
+void CoreOptionsHandler::HandleSetIntegerPref(const ListValue* args) {
+  HandleSetPref(args, Value::TYPE_INTEGER);
 }
 
-void CoreOptionsHandler::HandleSetStringPref(const Value* value) {
-  HandleSetPref(value, Value::TYPE_STRING);
+void CoreOptionsHandler::HandleSetStringPref(const ListValue* args) {
+  HandleSetPref(args, Value::TYPE_STRING);
 }
 
-void CoreOptionsHandler::HandleSetObjectPref(const Value* value) {
-  HandleSetPref(value, Value::TYPE_NULL);
+void CoreOptionsHandler::HandleSetObjectPref(const ListValue* args) {
+  HandleSetPref(args, Value::TYPE_NULL);
 }
 
-void CoreOptionsHandler::HandleSetPref(const Value* value,
+void CoreOptionsHandler::HandleSetPref(const ListValue* args,
                                        Value::ValueType type) {
-  if (!value || !value->IsType(Value::TYPE_LIST))
-    return;
-  const ListValue* param_values = static_cast<const ListValue*>(value);
-  if (param_values->GetSize() != 2)
+  if (args->GetSize() != 2)
     return;
 
   std::string pref_name;
-  if (!param_values->GetString(0, &pref_name))
+  if (!args->GetString(0, &pref_name))
     return;
 
   std::string value_string;
-  if (!param_values->GetString(1, &value_string))
+  if (!args->GetString(1, &value_string))
     return;
 
   SetPref(pref_name, type, value_string);

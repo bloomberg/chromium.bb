@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/foreign_session_handler.h"
 
 #include "base/scoped_vector.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/dom_ui/value_helper.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -70,32 +71,21 @@ SessionModelAssociator* ForeignSessionHandler::GetModelAssociator() {
       GetSessionModelAssociator();
 }
 
-void ForeignSessionHandler::HandleGetForeignSessions(const Value* content) {
+void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
   SessionModelAssociator* associator = GetModelAssociator();
   if (associator)
     GetForeignSessions(associator);
 }
 
 void ForeignSessionHandler::HandleReopenForeignSession(
-    const Value* content) {
+    const ListValue* args) {
   // Extract the machine tag and use it to obtain the id for the node we are
   // looking for.  Send it along with a valid associator to OpenForeignSessions.
-  if (content->GetType() == Value::TYPE_LIST) {
-    const ListValue* list_value = static_cast<const ListValue*>(content);
-    Value* list_member;
-    if (list_value->Get(0, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING) {
-      const StringValue* string_value =
-          static_cast<const StringValue*>(list_member);
-      std::string session_string_value;
-      if (string_value->GetAsString(&session_string_value)) {
-        SessionModelAssociator* associator = GetModelAssociator();
-        if (associator) {
-          int64 id = associator->GetSyncIdFromChromeId(session_string_value);
-          OpenForeignSession(associator, id);
-        }
-      }
-    }
+  std::string session_string_value = WideToUTF8(ExtractStringValue(args));
+  SessionModelAssociator* associator = GetModelAssociator();
+  if (associator && !session_string_value.empty()) {
+    int64 id = associator->GetSyncIdFromChromeId(session_string_value);
+    OpenForeignSession(associator, id);
   }
 }
 

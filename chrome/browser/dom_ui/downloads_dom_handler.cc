@@ -139,8 +139,8 @@ void DownloadsDOMHandler::ModelChanged() {
   SendCurrentDownloads();
 }
 
-void DownloadsDOMHandler::HandleGetDownloads(const Value* value) {
-  std::wstring new_search = ExtractStringValue(value);
+void DownloadsDOMHandler::HandleGetDownloads(const ListValue* args) {
+  std::wstring new_search = ExtractStringValue(args);
   if (search_text_.compare(new_search) != 0) {
     search_text_ = new_search;
     ModelChanged();
@@ -149,14 +149,14 @@ void DownloadsDOMHandler::HandleGetDownloads(const Value* value) {
   }
 }
 
-void DownloadsDOMHandler::HandleOpenFile(const Value* value) {
-  DownloadItem* file = GetDownloadByValue(value);
+void DownloadsDOMHandler::HandleOpenFile(const ListValue* args) {
+  DownloadItem* file = GetDownloadByValue(args);
   if (file)
     download_manager_->OpenDownload(file, NULL);
 }
 
-void DownloadsDOMHandler::HandleDrag(const Value* value) {
-  DownloadItem* file = GetDownloadByValue(value);
+void DownloadsDOMHandler::HandleDrag(const ListValue* args) {
+  DownloadItem* file = GetDownloadByValue(args);
   if (file) {
     IconManager* im = g_browser_process->icon_manager();
     SkBitmap* icon = im->LookupIcon(file->full_path(), IconLoader::NORMAL);
@@ -165,43 +165,43 @@ void DownloadsDOMHandler::HandleDrag(const Value* value) {
   }
 }
 
-void DownloadsDOMHandler::HandleSaveDangerous(const Value* value) {
-  DownloadItem* file = GetDownloadByValue(value);
+void DownloadsDOMHandler::HandleSaveDangerous(const ListValue* args) {
+  DownloadItem* file = GetDownloadByValue(args);
   if (file)
     download_manager_->DangerousDownloadValidated(file);
 }
 
-void DownloadsDOMHandler::HandleDiscardDangerous(const Value* value) {
-  DownloadItem* file = GetDownloadByValue(value);
+void DownloadsDOMHandler::HandleDiscardDangerous(const ListValue* args) {
+  DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Remove(true);
 }
 
-void DownloadsDOMHandler::HandleShow(const Value* value) {
-  DownloadItem* file = GetDownloadByValue(value);
+void DownloadsDOMHandler::HandleShow(const ListValue* args) {
+  DownloadItem* file = GetDownloadByValue(args);
   if (file)
       download_manager_->ShowDownloadInShell(file);
 }
 
-void DownloadsDOMHandler::HandlePause(const Value* value) {
-  DownloadItem* file = GetDownloadByValue(value);
+void DownloadsDOMHandler::HandlePause(const ListValue* args) {
+  DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->TogglePause();
 }
 
-void DownloadsDOMHandler::HandleRemove(const Value* value) {
-  DownloadItem* file = GetDownloadByValue(value);
+void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
+  DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Remove(false);
 }
 
-void DownloadsDOMHandler::HandleCancel(const Value* value) {
-  DownloadItem* file = GetDownloadByValue(value);
+void DownloadsDOMHandler::HandleCancel(const ListValue* args) {
+  DownloadItem* file = GetDownloadByValue(args);
   if (file)
     file->Cancel(true);
 }
 
-void DownloadsDOMHandler::HandleClearAll(const Value* value) {
+void DownloadsDOMHandler::HandleClearAll(const ListValue* args) {
   download_manager_->RemoveAllDownloads();
 }
 
@@ -240,9 +240,9 @@ DownloadItem* DownloadsDOMHandler::GetDownloadById(int id) {
   return NULL;
 }
 
-DownloadItem* DownloadsDOMHandler::GetDownloadByValue(const Value* value) {
+DownloadItem* DownloadsDOMHandler::GetDownloadByValue(const ListValue* args) {
   int id;
-  if (ExtractIntegerValue(value, &id)) {
+  if (ExtractIntegerValue(args, &id)) {
     return GetDownloadById(id);
   }
   return NULL;

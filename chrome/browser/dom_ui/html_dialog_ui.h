@@ -91,7 +91,7 @@ class HtmlDialogUI : public DOMUI {
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
 
   // JS message handler.
-  void OnDialogClosed(const Value* content);
+  void OnDialogClosed(const ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(HtmlDialogUI);
 };

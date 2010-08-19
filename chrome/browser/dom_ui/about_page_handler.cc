@@ -246,7 +246,7 @@ void AboutPageHandler::RegisterMessages() {
 #endif
 }
 
-void AboutPageHandler::PageReady(const Value* value) {
+void AboutPageHandler::PageReady(const ListValue* args) {
 #if defined(OS_CHROMEOS)
   // Version information is loaded from a callback
   loader_.GetVersion(&consumer_,
@@ -262,7 +262,7 @@ void AboutPageHandler::PageReady(const Value* value) {
 
 #if defined(OS_CHROMEOS)
 
-void AboutPageHandler::CheckNow(const Value* value) {
+void AboutPageHandler::CheckNow(const ListValue* args) {
   if (chromeos::InitiateUpdateCheck)
     chromeos::InitiateUpdateCheck();
 }

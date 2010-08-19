@@ -127,7 +127,7 @@ class SelectFileDialogImpl : public SelectFileDialog {
     virtual void RegisterMessages();
 
     // Callback for the "setDialogTitle" message.
-    void HandleSetDialogTitle(const Value* value);
+    void HandleSetDialogTitle(const ListValue* args);
 
    private:
     FileBrowseDelegate* delegate_;
@@ -460,8 +460,8 @@ void SelectFileDialogImpl::FileBrowseDelegateHandler::RegisterMessages() {
 }
 
 void SelectFileDialogImpl::FileBrowseDelegateHandler::HandleSetDialogTitle(
-    const Value* value) {
-  std::wstring new_title = ExtractStringValue(value);
+    const ListValue* args) {
+  std::wstring new_title = ExtractStringValue(args);
   if (new_title != delegate_->title_) {
     delegate_->title_ = new_title;
 

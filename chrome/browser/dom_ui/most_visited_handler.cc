@@ -117,7 +117,7 @@ void MostVisitedHandler::RegisterMessages() {
       NewCallback(this, &MostVisitedHandler::HandleRemovePinnedURL));
 }
 
-void MostVisitedHandler::HandleGetMostVisited(const Value* value) {
+void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
   if (!got_first_most_visited_request_) {
     // If our intial data is already here, return it.
     SendPagesValue();
@@ -175,33 +175,16 @@ void MostVisitedHandler::StartQueryForMostVisited() {
   }
 }
 
-void MostVisitedHandler::HandleBlacklistURL(const Value* value) {
-  if (!value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-  std::string url;
-  const ListValue* list = static_cast<const ListValue*>(value);
-  if (list->GetSize() == 0 || !list->GetString(0, &url)) {
-    NOTREACHED();
-    return;
-  }
+void MostVisitedHandler::HandleBlacklistURL(const ListValue* args) {
+  std::string url = WideToUTF8(ExtractStringValue(args));
   BlacklistURL(GURL(url));
 }
 
-void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const Value* urls) {
-  if (!urls->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-  const ListValue* list = static_cast<const ListValue*>(urls);
-  if (list->GetSize() == 0) {
-    NOTREACHED();
-    return;
-  }
+void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const ListValue* args) {
+  DCHECK(args->GetSize() != 0);
 
-  for (ListValue::const_iterator iter = list->begin();
-       iter != list->end(); ++iter) {
+  for (ListValue::const_iterator iter = args->begin();
+       iter != args->end(); ++iter) {
     std::string url;
     bool r = (*iter)->GetAsString(&url);
     if (!r) {
@@ -221,7 +204,7 @@ void MostVisitedHandler::HandleRemoveURLsFromBlacklist(const Value* urls) {
   }
 }
 
-void MostVisitedHandler::HandleClearBlacklist(const Value* value) {
+void MostVisitedHandler::HandleClearBlacklist(const ListValue* args) {
   UserMetrics::RecordAction(UserMetricsAction("MostVisited_BlacklistCleared"),
                             dom_ui_->GetProfile());
 
@@ -234,40 +217,34 @@ void MostVisitedHandler::HandleClearBlacklist(const Value* value) {
   url_blacklist_->Clear();
 }
 
-void MostVisitedHandler::HandleAddPinnedURL(const Value* value) {
-  if (!value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-
-  const ListValue* list = static_cast<const ListValue*>(value);
-  DCHECK_EQ(5U, list->GetSize()) << "Wrong number of params to addPinnedURL";
+void MostVisitedHandler::HandleAddPinnedURL(const ListValue* args) {
+  DCHECK_EQ(5U, args->GetSize()) << "Wrong number of params to addPinnedURL";
   MostVisitedPage mvp;
   std::string tmp_string;
   string16 tmp_string16;
   int index;
 
-  bool r = list->GetString(0, &tmp_string);
+  bool r = args->GetString(0, &tmp_string);
   DCHECK(r) << "Missing URL in addPinnedURL from the NTP Most Visited.";
   mvp.url = GURL(tmp_string);
 
-  r = list->GetString(1, &tmp_string16);
+  r = args->GetString(1, &tmp_string16);
   DCHECK(r) << "Missing title in addPinnedURL from the NTP Most Visited.";
   mvp.title = tmp_string16;
 
-  r = list->GetString(2, &tmp_string);
+  r = args->GetString(2, &tmp_string);
   DCHECK(r) << "Failed to read the favicon URL in addPinnedURL from the NTP "
             << "Most Visited.";
   if (!tmp_string.empty())
     mvp.favicon_url = GURL(tmp_string);
 
-  r = list->GetString(3, &tmp_string);
+  r = args->GetString(3, &tmp_string);
   DCHECK(r) << "Failed to read the thumbnail URL in addPinnedURL from the NTP "
             << "Most Visited.";
   if (!tmp_string.empty())
     mvp.thumbnail_url = GURL(tmp_string);
 
-  r = list->GetString(4, &tmp_string);
+  r = args->GetString(4, &tmp_string);
   DCHECK(r) << "Missing index in addPinnedURL from the NTP Most Visited.";
   base::StringToInt(tmp_string, &index);
 
@@ -298,18 +275,8 @@ void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
   // Don't call HandleGetMostVisited. Let the client call this as needed.
 }
 
-void MostVisitedHandler::HandleRemovePinnedURL(const Value* value) {
-  if (!value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-
-  const ListValue* list = static_cast<const ListValue*>(value);
-  std::string url;
-
-  bool r = list->GetString(0, &url);
-  DCHECK(r) << "Failed to read the URL to remove from the NTP Most Visited.";
-
+void MostVisitedHandler::HandleRemovePinnedURL(const ListValue* args) {
+  std::string url = WideToUTF8(ExtractStringValue(args));
   RemovePinnedURL(GURL(url));
 }
 

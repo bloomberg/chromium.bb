@@ -197,7 +197,8 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
   }
 }
 
-void AdvancedOptionsHandler::HandleSelectDownloadLocation(const Value* value) {
+void AdvancedOptionsHandler::HandleSelectDownloadLocation(
+    const ListValue* args) {
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
   select_folder_dialog_ = SelectFileDialog::Create(this);
   select_folder_dialog_->SelectFile(
@@ -214,58 +215,33 @@ void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
   SetupDownloadLocationPath();
 }
 
-void AdvancedOptionsHandler::HandleAutoOpenButton(const Value* value) {
+void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
   DCHECK(dom_ui_);
   DownloadManager* manager = dom_ui_->GetProfile()->GetDownloadManager();
   if (manager) manager->ResetAutoOpenFiles();
 }
 
 #if defined(OS_WIN)
-void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
-    LOG(WARNING) << "checkRevocationCheckboxAction called with missing or " <<
-        "invalid value";
-    return;
-  }
-  const ListValue* list = static_cast<const ListValue*>(value);
-  if (list->GetSize() < 1) {
-    LOG(WARNING) << "checkRevocationCheckboxAction called with too few " <<
-        "arguments";
-    return;
-  }
-  std::string checked_str;
-  if (list->GetString(0, &checked_str)) {
-    net::SSLConfigServiceWin::SetRevCheckingEnabled(checked_str == "true");
-  }
+void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
+    const ListValue* args) {
+  std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  net::SSLConfigServiceWin::SetRevCheckingEnabled(checked_str == "true");
 }
 
-void AdvancedOptionsHandler::HandleUseSSL2Checkbox(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
-    LOG(WARNING) << "useSSL2CheckboxAction called with missing or " <<
-    "invalid value";
-    return;
-  }
-  const ListValue* list = static_cast<const ListValue*>(value);
-  if (list->GetSize() < 1) {
-    LOG(WARNING) << "useSSL2CheckboxAction called with too few " <<
-    "arguments";
-    return;
-  }
-  std::string checked_str;
-  if (list->GetString(0, &checked_str)) {
-    net::SSLConfigServiceWin::SetSSL2Enabled(checked_str == "true");
-  }
+void AdvancedOptionsHandler::HandleUseSSL2Checkbox(const ListValue* args) {
+  std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  net::SSLConfigServiceWin::SetSSL2Enabled(checked_str == "true");
 }
 #endif
 
 #if !defined(OS_CHROMEOS)
-void AdvancedOptionsHandler::ShowNetworkProxySettings(const Value* value) {
+void AdvancedOptionsHandler::ShowNetworkProxySettings(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ShowProxySettings"), NULL);
   DCHECK(dom_ui_);
   AdvancedOptionsUtilities::ShowNetworkProxySettings(dom_ui_->tab_contents());
 }
 
-void AdvancedOptionsHandler::ShowManageSSLCertificates(const Value* value) {
+void AdvancedOptionsHandler::ShowManageSSLCertificates(const ListValue* args) {
   UserMetricsRecordAction(UserMetricsAction("Options_ManageSSLCertificates"),
                           NULL);
   DCHECK(dom_ui_);

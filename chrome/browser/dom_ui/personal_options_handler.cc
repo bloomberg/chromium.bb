@@ -119,7 +119,7 @@ void PersonalOptionsHandler::Initialize() {
                                       OPTIONS_PAGE_CONTENT));
 }
 
-void PersonalOptionsHandler::SetSyncStatusUIString(const Value* value) {
+void PersonalOptionsHandler::SetSyncStatusUIString(const ListValue* args) {
   DCHECK(dom_ui_);
 
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
@@ -135,7 +135,7 @@ void PersonalOptionsHandler::SetSyncStatusUIString(const Value* value) {
   }
 }
 
-void PersonalOptionsHandler::ThemesReset(const Value* value) {
+void PersonalOptionsHandler::ThemesReset(const ListValue* args) {
   DCHECK(dom_ui_);
 
   UserMetricsRecordAction(UserMetricsAction("Options_ThemesReset"),
@@ -143,7 +143,7 @@ void PersonalOptionsHandler::ThemesReset(const Value* value) {
   dom_ui_->GetProfile()->ClearTheme();
 }
 
-void PersonalOptionsHandler::ThemesGallery(const Value* value) {
+void PersonalOptionsHandler::ThemesGallery(const ListValue* args) {
   DCHECK(dom_ui_);
 
   UserMetricsRecordAction(UserMetricsAction("Options_ThemesGallery"),
@@ -152,7 +152,7 @@ void PersonalOptionsHandler::ThemesGallery(const Value* value) {
 }
 
 #if defined(TOOLKIT_GTK)
-void PersonalOptionsHandler::ThemesSetGTK(const Value* value) {
+void PersonalOptionsHandler::ThemesSetGTK(const ListValue* args) {
   DCHECK(dom_ui_);
 
   UserMetricsRecordAction(UserMetricsAction("Options_GtkThemeSet"),

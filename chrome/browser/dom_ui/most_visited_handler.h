@@ -35,22 +35,22 @@ class MostVisitedHandler : public DOMMessageHandler,
   virtual void RegisterMessages();
 
   // Callback for the "getMostVisited" message.
-  void HandleGetMostVisited(const Value* value);
+  void HandleGetMostVisited(const ListValue* args);
 
   // Callback for the "blacklistURLFromMostVisited" message.
-  void HandleBlacklistURL(const Value* url);
+  void HandleBlacklistURL(const ListValue* args);
 
   // Callback for the "removeURLsFromMostVisitedBlacklist" message.
-  void HandleRemoveURLsFromBlacklist(const Value* url);
+  void HandleRemoveURLsFromBlacklist(const ListValue* args);
 
   // Callback for the "clearMostVisitedURLsBlacklist" message.
-  void HandleClearBlacklist(const Value* url);
+  void HandleClearBlacklist(const ListValue* args);
 
   // Callback for the "addPinnedURL" message.
-  void HandleAddPinnedURL(const Value* value);
+  void HandleAddPinnedURL(const ListValue* args);
 
   // Callback for the "removePinnedURL" message.
-  void HandleRemovePinnedURL(const Value* value);
+  void HandleRemovePinnedURL(const ListValue* args);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

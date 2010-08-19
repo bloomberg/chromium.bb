@@ -22,7 +22,7 @@ class RemotingSetupMessageHandler : public DOMMessageHandler {
   virtual void RegisterMessages();
 
   // Callbacks from the page.
-  void HandleSubmitAuth(const Value* value);
+  void HandleSubmitAuth(const ListValue* args);
 
   // These functions control which part of the HTML is visible.
   // TODO(hclam): I really don't feel right about exposing these as public

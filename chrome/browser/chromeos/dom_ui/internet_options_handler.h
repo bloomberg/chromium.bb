@@ -35,9 +35,9 @@ class InternetOptionsHandler : public OptionsPageUIHandler,
   // Open a modal popup dialog.
   void CreateModalPopup(views::WindowDelegate* view);
   // Open options dialog for network.
-  // |value| will be [ network_type, service_path, command ]
+  // |args| will be [ network_type, service_path, command ]
   // And command is one of 'options', 'connect', disconnect', or 'forget'
-  void ButtonClickCallback(const Value* value);
+  void ButtonClickCallback(const ListValue* args);
 
     // Creates the map of a network
   ListValue* GetNetwork(const std::string& service_path, const SkBitmap& icon,

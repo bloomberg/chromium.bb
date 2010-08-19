@@ -138,7 +138,7 @@ void BrowserOptionsHandler::UpdateDefaultBrowserState() {
 #endif
 }
 
-void BrowserOptionsHandler::BecomeDefaultBrowser(const Value* value) {
+void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
 #if defined(OS_MACOSX)
   if (ShellIntegration::SetAsDefaultBrowser())
     UpdateDefaultBrowserState();
@@ -214,20 +214,12 @@ void BrowserOptionsHandler::OnTemplateURLModelChanged() {
                                   search_engines, *(default_value.get()));
 }
 
-void BrowserOptionsHandler::SetDefaultSearchEngine(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
+void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
+  int selected_index = -1;
+  if (!ExtractIntegerValue(args, &selected_index)) {
     NOTREACHED();
     return;
   }
-  const ListValue* param_values = static_cast<const ListValue*>(value);
-  std::string string_value;
-  if (param_values->GetSize() != 1 ||
-      !param_values->GetString(0, &string_value)) {
-    NOTREACHED();
-    return;
-  }
-  int selected_index;
-  base::StringToInt(string_value, &selected_index);
 
   std::vector<const TemplateURL*> model_urls =
       template_url_model_->GetTemplateURLs();
@@ -286,20 +278,16 @@ void BrowserOptionsHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-void BrowserOptionsHandler::SetStartupPagesToCurrentPages(const Value* value) {
+void BrowserOptionsHandler::SetStartupPagesToCurrentPages(
+    const ListValue* args) {
   startup_custom_pages_table_model_->SetToCurrentlyOpenPages();
   SaveStartupPagesPref();
 }
 
-void BrowserOptionsHandler::RemoveStartupPages(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-  const ListValue* param_values = static_cast<const ListValue*>(value);
-  for (int i = param_values->GetSize() - 1; i >= 0; --i) {
+void BrowserOptionsHandler::RemoveStartupPages(const ListValue* args) {
+  for (int i = args->GetSize() - 1; i >= 0; --i) {
     std::string string_value;
-    if (!param_values->GetString(i, &string_value)) {
+    if (!args->GetString(i, &string_value)) {
       NOTREACHED();
       return;
     }
@@ -316,18 +304,13 @@ void BrowserOptionsHandler::RemoveStartupPages(const Value* value) {
   SaveStartupPagesPref();
 }
 
-void BrowserOptionsHandler::AddStartupPage(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-  const ListValue* param_values = static_cast<const ListValue*>(value);
+void BrowserOptionsHandler::AddStartupPage(const ListValue* args) {
   std::string url_string;
   std::string index_string;
   int index;
-  if (param_values->GetSize() != 2 ||
-      !param_values->GetString(0, &url_string) ||
-      !param_values->GetString(1, &index_string) ||
+  if (args->GetSize() != 2 ||
+      !args->GetString(0, &url_string) ||
+      !args->GetString(1, &index_string) ||
       !base::StringToInt(index_string, &index)) {
     NOTREACHED();
     return;

@@ -69,31 +69,15 @@ void ShownSectionsHandler::Observe(NotificationType type,
   dom_ui_->CallJavascriptFunction(L"setShownSections", sections_value);
 }
 
-void ShownSectionsHandler::HandleGetShownSections(const Value* value) {
+void ShownSectionsHandler::HandleGetShownSections(const ListValue* args) {
   int sections = pref_service_->GetInteger(prefs::kNTPShownSections);
   FundamentalValue sections_value(sections);
   dom_ui_->CallJavascriptFunction(L"onShownSections", sections_value);
 }
 
-void ShownSectionsHandler::HandleSetShownSections(const Value* value) {
-  if (!value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-
-  const ListValue* list = static_cast<const ListValue*>(value);
-  std::string mode_string;
-
-  if (list->GetSize() < 1) {
-    NOTREACHED() << "setShownSections called with too few arguments";
-    return;
-  }
-
-  bool r = list->GetString(0, &mode_string);
-  DCHECK(r) << "Missing value in setShownSections from the NTP Most Visited.";
-
+void ShownSectionsHandler::HandleSetShownSections(const ListValue* args) {
   int mode;
-  base::StringToInt(mode_string, &mode);
+  CHECK(ExtractIntegerValue(args, &mode));
   int old_mode = pref_service_->GetInteger(prefs::kNTPShownSections);
 
   if (old_mode != mode) {

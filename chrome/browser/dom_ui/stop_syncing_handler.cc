@@ -38,7 +38,7 @@ void StopSyncingHandler::RegisterMessages() {
       NewCallback(this, &StopSyncingHandler::StopSyncing));
 }
 
-void StopSyncingHandler::StopSyncing(const Value* value){
+void StopSyncingHandler::StopSyncing(const ListValue* args){
   DCHECK(dom_ui_);
   ProfileSyncService* service = dom_ui_->GetProfile()->GetProfileSyncService();
   if(service != NULL && ProfileSyncService::IsSyncEnabled()) {

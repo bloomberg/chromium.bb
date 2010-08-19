@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,10 +38,10 @@ class ShownSectionsHandler : public DOMMessageHandler,
                        const NotificationDetails& details);
 
   // Callback for "getShownSections" message.
-  void HandleGetShownSections(const Value* value);
+  void HandleGetShownSections(const ListValue* args);
 
   // Callback for "setShownSections" message.
-  void HandleSetShownSections(const Value* value);
+  void HandleSetShownSections(const ListValue* args);
 
   static void RegisterUserPrefs(PrefService* pref_service);
 

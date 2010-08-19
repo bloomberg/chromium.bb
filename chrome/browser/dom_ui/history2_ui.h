@@ -52,16 +52,16 @@ class BrowsingHistoryHandler2 : public DOMMessageHandler,
   virtual void RegisterMessages();
 
   // Callback for the "getHistory" message.
-  void HandleGetHistory(const Value* value);
+  void HandleGetHistory(const ListValue* args);
 
   // Callback for the "searchHistory" message.
-  void HandleSearchHistory(const Value* value);
+  void HandleSearchHistory(const ListValue* args);
 
   // Callback for the "removeURLsOnOneDay" message.
-  void HandleRemoveURLsOnOneDay(const Value* value);
+  void HandleRemoveURLsOnOneDay(const ListValue* args);
 
   // Handle for "clearBrowsingData" message.
-  void HandleClearBrowsingData(const Value* value);
+  void HandleClearBrowsingData(const ListValue* args);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
@@ -77,7 +77,7 @@ class BrowsingHistoryHandler2 : public DOMMessageHandler,
   void RemoveComplete();
 
   // Extract the arguments from the call to HandleSearchHistory.
-  void ExtractSearchHistoryArguments(const Value* value,
+  void ExtractSearchHistoryArguments(const ListValue* args,
                                      int* month,
                                      string16* query);
 

@@ -75,48 +75,23 @@ PasswordStore* PasswordsExceptionsHandler::GetPasswordStore() {
   return profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 }
 
-void PasswordsExceptionsHandler::LoadSavedPasswords(const Value* value) {
+void PasswordsExceptionsHandler::LoadSavedPasswords(const ListValue* args) {
   populater_.Populate();
 }
 
-void PasswordsExceptionsHandler::RemoveEntry(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
+void PasswordsExceptionsHandler::RemoveEntry(const ListValue* args) {
+  int index;
+  CHECK(ExtractIntegerValue(args, &index));
 
-  const ListValue* param_values = static_cast<const ListValue*>(value);
-  std::string string_value;
-  if (param_values->GetSize() != 1 ||
-    !param_values->GetString(0, &string_value)) {
-    NOTREACHED();
-    return;
-  }
-  int selected_index;
-  base::StringToInt(string_value, &selected_index);
-
-  GetPasswordStore()->RemoveLogin(*password_list_[selected_index]);
-  delete password_list_[selected_index];
-  password_list_.erase(password_list_.begin() + selected_index);
+  GetPasswordStore()->RemoveLogin(*password_list_[index]);
+  delete password_list_[index];
+  password_list_.erase(password_list_.begin() + index);
   SetPasswordList();
 }
 
-void PasswordsExceptionsHandler::ShowSelectedPassword(const Value* value) {
-  if (!value || !value->IsType(Value::TYPE_LIST)) {
-    NOTREACHED();
-    return;
-  }
-
-  const ListValue* param_values = static_cast<const ListValue*>(value);
-  std::string string_value;
-  if (param_values->GetSize() != 1 ||
-    !param_values->GetString(0, &string_value)) {
-    NOTREACHED();
-    return;
-  }
-
+void PasswordsExceptionsHandler::ShowSelectedPassword(const ListValue* args) {
   int index;
-  base::StringToInt(string_value, &index);
+  CHECK(ExtractIntegerValue(args, &index));
 
   std::string pass = UTF16ToUTF8(password_list_[index]->password_value);
   scoped_ptr<Value> password_string(Value::CreateStringValue(pass));

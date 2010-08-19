@@ -317,12 +317,11 @@ void ContentSettingsHandler::RegisterMessages() {
                   &ContentSettingsHandler::CheckExceptionPatternValidity));
 }
 
-void ContentSettingsHandler::SetContentFilter(const Value* value) {
-  const ListValue* list_value = static_cast<const ListValue*>(value);
-  DCHECK_EQ(2U, list_value->GetSize());
+void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
+  DCHECK_EQ(2U, args->GetSize());
   std::string group, setting;
-  if (!(list_value->GetString(0, &group) &&
-        list_value->GetString(1, &setting))) {
+  if (!(args->GetString(0, &group) &&
+        args->GetString(1, &setting))) {
     NOTREACHED();
     return;
   }
@@ -332,24 +331,23 @@ void ContentSettingsHandler::SetContentFilter(const Value* value) {
       ContentSettingFromString(setting));
 }
 
-void ContentSettingsHandler::SetAllowThirdPartyCookies(const Value* value) {
-  std::wstring allow = ExtractStringValue(value);
+void ContentSettingsHandler::SetAllowThirdPartyCookies(const ListValue* args) {
+  std::wstring allow = ExtractStringValue(args);
 
   dom_ui_->GetProfile()->GetHostContentSettingsMap()->SetBlockThirdPartyCookies(
       allow == L"true");
 }
 
-void ContentSettingsHandler::RemoveExceptions(const Value* value) {
-  const ListValue* list_value = static_cast<const ListValue*>(value);
+void ContentSettingsHandler::RemoveExceptions(const ListValue* args) {
   size_t arg_i = 0;
   std::string type_string;
-  CHECK(list_value->GetString(arg_i++, &type_string));
+  CHECK(args->GetString(arg_i++, &type_string));
 
   HostContentSettingsMap* settings_map =
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
-  while (arg_i < list_value->GetSize()) {
+  while (arg_i < args->GetSize()) {
     std::string pattern;
-    bool rv = list_value->GetString(arg_i++, &pattern);
+    bool rv = args->GetString(arg_i++, &pattern);
     DCHECK(rv);
     settings_map->SetContentSetting(
         HostContentSettingsMap::Pattern(pattern),
@@ -359,15 +357,14 @@ void ContentSettingsHandler::RemoveExceptions(const Value* value) {
   }
 }
 
-void ContentSettingsHandler::SetException(const Value* value) {
-  const ListValue* list_value = static_cast<const ListValue*>(value);
+void ContentSettingsHandler::SetException(const ListValue* args) {
   size_t arg_i = 0;
   std::string type_string;
-  CHECK(list_value->GetString(arg_i++, &type_string));
+  CHECK(args->GetString(arg_i++, &type_string));
   std::string pattern;
-  CHECK(list_value->GetString(arg_i++, &pattern));
+  CHECK(args->GetString(arg_i++, &pattern));
   std::string setting;
-  CHECK(list_value->GetString(arg_i++, &setting));
+  CHECK(args->GetString(arg_i++, &setting));
 
   HostContentSettingsMap* settings_map =
       dom_ui_->GetProfile()->GetHostContentSettingsMap();
@@ -377,13 +374,13 @@ void ContentSettingsHandler::SetException(const Value* value) {
                                   ContentSettingFromString(setting));
 }
 
-void ContentSettingsHandler::CheckExceptionPatternValidity(const Value* value) {
-  const ListValue* list_value = static_cast<const ListValue*>(value);
+void ContentSettingsHandler::CheckExceptionPatternValidity(
+    const ListValue* args) {
   size_t arg_i = 0;
   Value* type;
-  CHECK(list_value->Get(arg_i++, &type));
+  CHECK(args->Get(arg_i++, &type));
   std::string pattern_string;
-  CHECK(list_value->GetString(arg_i++, &pattern_string));
+  CHECK(args->GetString(arg_i++, &pattern_string));
 
   HostContentSettingsMap::Pattern pattern(pattern_string);
 
