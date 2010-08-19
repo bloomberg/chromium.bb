@@ -40,7 +40,7 @@
             Undocumented.
           </dd>
           <dd jsdisplay="$this.description"
-              jsvalues=".innerHTML:$this.description">
+              jsvalues=".innerHTML:substituteTypeRefs($this.description)">
             Description of this parameter from the json schema.
           </dd>
           <dd jsdisplay="$this.min_version">
@@ -366,7 +366,7 @@
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span jscontent="getSignatureString(parameters)">Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span jscontent="getSignatureString(parameters)">Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div jsselect="parameters">
                       <div transclude="valueTemplate">

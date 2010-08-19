@@ -28,8 +28,10 @@
     "chrome.extension.onConnect": "extension.html#event-onConnect", 
     "chrome.bookmarks.removeTree": "bookmarks.html#method-removeTree", 
     "chrome.bookmarks.get": "bookmarks.html#method-get", 
+    "chrome.experimental.sidebar.hide": "experimental.sidebar.html#method-hide", 
     "chrome.bookmarks.getRecent": "bookmarks.html#method-getRecent", 
     "chrome.history.onVisitRemoved": "history.html#event-onVisitRemoved", 
+    "chrome.experimental.sidebar.navigate": "experimental.sidebar.html#method-navigate", 
     "chrome.windows.getCurrent": "windows.html#method-getCurrent", 
     "chrome.bookmarks.onChanged": "bookmarks.html#event-onChanged", 
     "chrome.tabs.detectLanguage": "tabs.html#method-detectLanguage", 
@@ -40,12 +42,14 @@
     "chrome.history.deleteRange": "history.html#method-deleteRange", 
     "chrome.tabs.connect": "tabs.html#method-connect", 
     "chrome.cookies.set": "cookies.html#method-set", 
+    "chrome.experimental.sidebar.setBadgeText": "experimental.sidebar.html#method-setBadgeText", 
     "chrome.experimental.webNavigation.onBeforeNavigate": "experimental.webNavigation.html#event-onBeforeNavigate", 
     "chrome.pageAction.setIcon": "pageAction.html#method-setIcon", 
     "chrome.experimental.clipboard.executeCopy": "experimental.clipboard.html#method-executeCopy", 
     "chrome.bookmarks.move": "bookmarks.html#method-move", 
     "chrome.experimental.webRequest.onBeforeRedirect": "experimental.webRequest.html#event-onBeforeRedirect", 
     "chrome.tabs.getCurrent": "tabs.html#method-getCurrent", 
+    "chrome.experimental.sidebar.getState": "experimental.sidebar.html#method-getState", 
     "chrome.browserAction.setTitle": "browserAction.html#method-setTitle", 
     "chrome.contextMenus.remove": "contextMenus.html#method-remove", 
     "chrome.experimental.omnibox.onInputStarted": "experimental.omnibox.html#event-onInputStarted", 
@@ -70,6 +74,8 @@
     "chrome.extension.getBackgroundPage": "extension.html#method-getBackgroundPage", 
     "chrome.pageAction.hide": "pageAction.html#method-hide", 
     "chrome.experimental.omnibox.styleMatch": "experimental.omnibox.html#method-styleMatch", 
+    "chrome.experimental.sidebar.expand": "experimental.sidebar.html#method-expand", 
+    "chrome.experimental.sidebar.onStateChanged": "experimental.sidebar.html#event-onStateChanged", 
     "chrome.tabs.executeScript": "tabs.html#method-executeScript", 
     "chrome.cookies.remove": "cookies.html#method-remove", 
     "chrome.extension.getExtensionTabs": "extension.html#method-getExtensionTabs", 
@@ -83,14 +89,17 @@
     "chrome.extension.onRequestExternal": "extension.html#event-onRequestExternal", 
     "chrome.bookmarks.onRemoved": "bookmarks.html#event-onRemoved", 
     "chrome.contextMenus.update": "contextMenus.html#method-update", 
+    "chrome.experimental.sidebar.setTitle": "experimental.sidebar.html#method-setTitle", 
     "chrome.bookmarks.export": "bookmarks.html#method-export", 
     "chrome.experimental.clipboard.executeCut": "experimental.clipboard.html#method-executeCut", 
     "chrome.windows.getLastFocused": "windows.html#method-getLastFocused", 
+    "chrome.experimental.sidebar.show": "experimental.sidebar.html#method-show", 
     "chrome.tabs.onSelectionChanged": "tabs.html#event-onSelectionChanged", 
     "chrome.cookies.onChanged": "cookies.html#event-onChanged", 
     "chrome.windows.update": "windows.html#method-update", 
     "chrome.extension.getURL": "extension.html#method-getURL", 
     "chrome.idle.queryState": "idle.html#method-queryState", 
+    "chrome.experimental.sidebar.setIcon": "experimental.sidebar.html#method-setIcon", 
     "chrome.experimental.omnibox.onInputChanged": "experimental.omnibox.html#event-onInputChanged", 
     "chrome.experimental.webRequest.onErrorOccurred": "experimental.webRequest.html#event-onErrorOccurred", 
     "chrome.tabs.onMoved": "tabs.html#event-onMoved", 
@@ -100,6 +109,7 @@
     "chrome.windows.remove": "windows.html#method-remove", 
     "chrome.tabs.sendRequest": "tabs.html#method-sendRequest", 
     "chrome.browserAction.setBadgeText": "browserAction.html#method-setBadgeText", 
+    "chrome.experimental.sidebar.collapse": "experimental.sidebar.html#method-collapse", 
     "chrome.browserAction.setIcon": "browserAction.html#method-setIcon", 
     "chrome.experimental.omnibox.onInputEntered": "experimental.omnibox.html#event-onInputEntered", 
     "chrome.experimental.proxy.useCustomProxySettings": "experimental.proxy.html#method-useCustomProxySettings", 
@@ -844,6 +854,29 @@
       ], 
       "icon": "news_icon.png", 
       "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
+      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE", 
+      "source_files": [
+        "feed.html", 
+        "manifest.json"
+      ], 
+      "path": "examples\/extensions\/news_a11y\/", 
+      "api_calls": [
+        "chrome.tabs.create"
+      ], 
+      "id": "597015d3bcce3da693b02314afd607bec4f55291", 
+      "protocols": [
+        "http:\/\/"
+      ], 
+      "name": "News Reader"
+    }, 
+    {
+      "features": [
+        "browser_action", 
+        "popup", 
+        "tabs"
+      ], 
+      "icon": "news_icon.png", 
+      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
       "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.I18N.GETMESSAGE CHROME.TABS.CREATE", 
       "source_files": [
         "_locales\/en\/messages.json", 
@@ -860,29 +893,6 @@
       "id": "6444e5c8ae112a6a433909c5e770669cd16e2e5f", 
       "protocols": [
         "http:\/\/", 
-        "http:\/\/"
-      ], 
-      "name": "News Reader"
-    }, 
-    {
-      "features": [
-        "browser_action", 
-        "popup", 
-        "tabs"
-      ], 
-      "icon": "news_icon.png", 
-      "description": "Displays the first 5 items from the 'Google News - top news' RSS feed in a popup.", 
-      "search_string": "NEWS READER DISPLAYS THE FIRST 5 ITEMS FROM THE GOOGLE NEWS - TOP NEWS RSS FEED IN A POPUP. BROWSER_ACTION POPUP TABS CHROME.TABS.CREATE", 
-      "source_files": [
-        "feed.html", 
-        "manifest.json"
-      ], 
-      "path": "examples\/extensions\/news_a11y\/", 
-      "api_calls": [
-        "chrome.tabs.create"
-      ], 
-      "id": "597015d3bcce3da693b02314afd607bec4f55291", 
-      "protocols": [
         "http:\/\/"
       ], 
       "name": "News Reader"

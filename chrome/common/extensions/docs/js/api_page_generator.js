@@ -381,6 +381,33 @@ function getStaticTOC() {
   return retval;
 }
 
+// This function looks in the description for strings of the form
+// "$ref:TYPE_ID" (where TYPE_ID is something like "Tab" or "HistoryItem") and
+// substitutes a link to the documentation for that type.
+function substituteTypeRefs(description) {
+  var regexp = /\$ref\:\w+/g;
+  var matches = description.match(regexp);
+  if (!matches) {
+    return description;
+  }
+  var result = description;
+  for (var i = 0; i < matches.length; i++) {
+    var type = matches[i].split(":")[1];
+    var page = null;
+    try {
+      page = getTypeRefPage({"$ref": type});
+    } catch (error) {
+      console.log("substituteTypeRefs couldn't find page for type " + type);
+      continue;
+    }
+    var replacement = "<a href='" + page + "#type-" + type + "'>" + type +
+                      "</a>";
+    result = result.replace(matches[i], replacement);
+  }
+
+  return result;
+}
+
 function getTypeRefPage(type) {
   return typeModule[type.$ref].namespace + ".html";
 }
