@@ -451,7 +451,8 @@ class SVN(object):
             if (x.startswith('svn: OPTIONS of') or
                 x.startswith('svn: PROPFIND of') or
                 x.startswith('svn: REPORT of') or
-                x.startswith('svn: Unknown hostname')):
+                x.startswith('svn: Unknown hostname') or
+                x.startswith('svn: Server sent unexpected return value')):
               return True
           return False
 
