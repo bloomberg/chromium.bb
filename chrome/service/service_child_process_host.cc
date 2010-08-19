@@ -7,7 +7,9 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/common/result_codes.h"
+
 #if defined(OS_WIN)
+#include "base/file_path.h"
 #include "chrome/common/sandbox_policy.h"
 #endif  // defined(OS_WIN)
 
@@ -30,4 +32,3 @@ bool ServiceChildProcessHost::Launch(CommandLine* cmd_line) {
   return (handle() != base::kNullProcessHandle);
 #endif  // !defined(OS_WIN)
 }
-

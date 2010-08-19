@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,11 @@
 #define CHROME_INSTALLER_UTIL_MOVE_TREE_WORK_ITEM_H_
 #pragma once
 
-#include <string>
 #include <windows.h>
 
+#include <string>
+
+#include "base/file_path.h"
 #include "chrome/installer/util/work_item.h"
 
 // A WorkItem subclass that recursively move a file system hierarchy from

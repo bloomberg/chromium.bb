@@ -7,7 +7,6 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
-#include <string>
 #include <exdisp.h>
 #include <exdispid.h>
 #include <mshtml.h>
@@ -15,7 +14,10 @@
 #include <shobjidl.h>
 #include <windows.h>
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
 #include "base/scoped_comptr_win.h"

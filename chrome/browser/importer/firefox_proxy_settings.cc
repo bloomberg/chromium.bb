@@ -4,6 +4,7 @@
 
 #include "chrome/browser/importer/firefox_proxy_settings.h"
 
+#include "base/file_path.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/values.h"

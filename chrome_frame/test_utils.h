@@ -10,7 +10,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
-#include "base/file_path.h"
+class FilePath;
 
 extern const wchar_t kChromeFrameDllName[];
 extern const wchar_t kChromeLauncherExeName[];
@@ -26,7 +26,7 @@ extern const wchar_t kChromeLauncherExeName[];
 class ScopedChromeFrameRegistrar {
  public:
   ScopedChromeFrameRegistrar();
-  ScopedChromeFrameRegistrar(const std::wstring& path);
+  explicit ScopedChromeFrameRegistrar(const std::wstring& path);
   virtual ~ScopedChromeFrameRegistrar();
 
   void RegisterChromeFrameAtPath(const std::wstring& path);

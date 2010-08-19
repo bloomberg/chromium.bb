@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
@@ -73,4 +72,3 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
 typedef JobStatusUpdater::Delegate JobStatusUpdaterDelegate;
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_JOB_STATUS_UPDATER_H_
-

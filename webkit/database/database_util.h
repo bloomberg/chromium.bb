@@ -5,9 +5,10 @@
 #ifndef WEBKIT_DATABASE_DATABASE_UTIL_H_
 #define WEBKIT_DATABASE_DATABASE_UTIL_H_
 
-#include "base/file_path.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
+
+class FilePath;
 
 namespace webkit_database {
 

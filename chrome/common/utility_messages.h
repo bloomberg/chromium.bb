@@ -9,8 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
-#include "base/values.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/indexed_db_param_traits.h"

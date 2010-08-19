@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/extension_sync_traits.h"
 
+#include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/protocol/app_specifics.pb.h"

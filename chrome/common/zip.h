@@ -6,7 +6,7 @@
 #define CHROME_COMMON_ZIP_H_
 #pragma once
 
-#include "base/file_path.h"
+class FilePath;
 
 // Zip the contents of src_dir into dest_file. src_path must be a directory.
 // An entry will *not* be created in the zip for the root folder -- children

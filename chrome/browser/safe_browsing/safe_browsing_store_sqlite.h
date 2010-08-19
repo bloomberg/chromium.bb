@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/file_path.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

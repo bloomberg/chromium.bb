@@ -15,12 +15,12 @@
 #endif  // defined(OS_WIN)
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_type.h"
 #include "ipc/ipc_channel.h"
 
 class CommandLine;
+class FilePath;
 
 namespace IPC {
 class Message;
@@ -123,4 +123,3 @@ class ChildProcessHost : public IPC::Channel::Listener {
 };
 
 #endif  // CHROME_COMMON_CHILD_PROCESS_HOST_H_
-

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
 #include <windows.h>
 #include <msi.h>
 #include <shellapi.h>
 #include <shlobj.h>
+
+#include <string>
 
 #include "base/at_exit.h"
 #include "base/basictypes.h"
@@ -18,6 +19,7 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/install.h"

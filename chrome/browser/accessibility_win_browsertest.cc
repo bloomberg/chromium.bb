@@ -5,7 +5,6 @@
 #include <atlbase.h>
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/scoped_comptr_win.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"

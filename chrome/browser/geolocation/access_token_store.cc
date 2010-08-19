@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/access_token_store.h"
 
+#include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"

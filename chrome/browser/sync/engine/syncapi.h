@@ -43,7 +43,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
@@ -52,6 +51,8 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "googleurl/src/gurl.h"
+
+class FilePath;
 
 namespace browser_sync {
 class ModelSafeWorkerRegistrar;

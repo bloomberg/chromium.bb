@@ -9,13 +9,13 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/native_library.h"
 #include "base/ref_counted.h"
 #include "build/build_config.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin.h"
 
+class FilePath;
 struct WebPluginInfo;
 
 namespace NPAPI {

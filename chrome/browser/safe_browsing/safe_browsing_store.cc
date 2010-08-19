@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 
+#include <algorithm>
+
 namespace {
 
 // Find items matching between |subs| and |adds|, and remove them,
@@ -135,6 +137,7 @@ void SBProcessSubs(std::vector<SBAddPrefix>* add_prefixes,
   RemoveMatchingPrefixes(removed_adds, add_full_hashes);
   RemoveMatchingPrefixes(removed_adds, sub_full_hashes);
 
+  // http://crbug.com/52385
   // TODO(shess): AFAICT this pass is not done on the trunk.  I
   // believe that's a bug, but it may not matter because full-hash
   // subs almost never happen (I think you'd need multiple collisions

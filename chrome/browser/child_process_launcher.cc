@@ -17,6 +17,7 @@
 #include "chrome/common/result_codes.h"
 
 #if defined(OS_WIN)
+#include "base/file_path.h"
 #include "chrome/common/sandbox_policy.h"
 #elif defined(OS_LINUX)
 #include "base/singleton.h"

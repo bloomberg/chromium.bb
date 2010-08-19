@@ -10,6 +10,7 @@ extern "C" {
 
 #include <map>
 
+#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/sandbox_mac.h"

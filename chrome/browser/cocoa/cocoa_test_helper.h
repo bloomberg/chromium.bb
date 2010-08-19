@@ -10,7 +10,6 @@
 
 #import "base/chrome_application_mac.h"
 #include "base/debug_util.h"
-#include "base/file_path.h"
 #include "base/mac_util.h"
 #include "base/path_service.h"
 #import "base/scoped_nsautorelease_pool.h"

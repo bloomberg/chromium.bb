@@ -5,6 +5,7 @@
 #include "chrome/browser/service/service_process_control.h"
 
 #include "base/command_line.h"
+#include "base/file_path.h"
 #include "base/process_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"

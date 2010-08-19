@@ -10,10 +10,11 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/file_path.h"
 #include "base/task.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
+
+class FilePath;
 
 // SafeBrowsingStore provides a storage abstraction for the
 // safe-browsing data used to build the bloom filter.  The items

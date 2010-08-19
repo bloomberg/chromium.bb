@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,16 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_PIPE_READER_H_
 #pragma once
 
-#include <fcntl.h>
 #include <stdio.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
+
+class FilePath;
 
 namespace chromeos {
 
@@ -30,14 +28,8 @@ namespace chromeos {
 
 class PipeReader {
  public:
-  explicit PipeReader(const FilePath& pipe_name)
-      : pipe_(NULL),
-        pipe_name_(pipe_name.value()) {
-  }
-  virtual ~PipeReader() {
-    if (pipe_)
-      fclose(pipe_);
-  }
+  explicit PipeReader(const FilePath& pipe_name);
+  virtual ~PipeReader();
 
   // Reads data from the pipe up until either a '\n' or |bytes_to_read| bytes.
   virtual std::string Read(const uint32 bytes_to_read);

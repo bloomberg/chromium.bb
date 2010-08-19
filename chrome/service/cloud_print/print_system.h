@@ -10,9 +10,10 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "base/values.h"
+
+class DictionaryValue;
+class FilePath;
 
 // This is the interface for platform-specific code for cloud print
 namespace cloud_print {

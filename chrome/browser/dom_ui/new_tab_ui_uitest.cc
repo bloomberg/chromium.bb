@@ -4,7 +4,6 @@
 
 #include "chrome/test/ui/ui_test.h"
 
-#include "base/file_path.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"

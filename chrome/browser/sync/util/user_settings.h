@@ -9,11 +9,12 @@
 #include <map>
 #include <string>
 
-#include "base/file_path.h"
 #include "base/lock.h"
 #include "build/build_config.h"
 
 extern "C" struct sqlite3;
+
+class FilePath;
 
 namespace browser_sync {
 

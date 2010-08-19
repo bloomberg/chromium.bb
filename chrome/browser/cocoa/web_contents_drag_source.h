@@ -8,7 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/file_path.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
@@ -61,4 +60,4 @@
 
 @end
 
-#endif // define CHROME_BROWSER_COCOA_WEB_CONTENTS_DRAG_SOURCE_H_
+#endif  // CHROME_BROWSER_COCOA_WEB_CONTENTS_DRAG_SOURCE_H_

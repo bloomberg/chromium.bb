@@ -10,6 +10,7 @@
 #include <map>
 #include <vector>
 
+#include "base/file_path.h"
 #include "webkit/glue/plugins/pepper_plugin_module.h"
 
 struct PepperPluginInfo {

@@ -6,8 +6,6 @@
 
 #include <set>
 
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "net/base/file_stream.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"

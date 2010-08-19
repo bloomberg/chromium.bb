@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"

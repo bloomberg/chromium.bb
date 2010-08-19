@@ -4,7 +4,6 @@
 
 #import "chrome/browser/cocoa/web_contents_drag_source.h"
 
-#include "base/file_path.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"

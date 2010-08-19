@@ -6,6 +6,8 @@
 #define CHROME_SERVICE_SERVICE_UTILITY_PROCESS_HOST_H_
 #pragma once
 
+#include "build/build_config.h"
+
 #if defined(OS_WIN)
 #include <windows.h>
 #endif  // defined(OS_WIN)
@@ -13,7 +15,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "ipc/ipc_channel.h"
@@ -21,6 +22,7 @@
 #include "printing/native_metafile.h"
 
 class CommandLine;
+class FilePath;
 
 namespace base {
 class MessageLoopProxy;
@@ -118,4 +120,3 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
 };
 
 #endif  // CHROME_SERVICE_SERVICE_UTILITY_PROCESS_HOST_H_
-

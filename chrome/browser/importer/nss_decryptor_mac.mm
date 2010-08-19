@@ -6,12 +6,12 @@
 
 #include <dlfcn.h>
 
+#include "base/file_path.h"
+#include "base/logging.h"
 #include "base/sys_string_conversions.h"
 
 #include "chrome/browser/importer/nss_decryptor_mac.h"
 #include "chrome/browser/importer/firefox_importer_utils.h"
-
-#include "base/logging.h"
 
 // static
 const wchar_t NSSDecryptor::kNSS3Library[] = L"libnss3.dylib";

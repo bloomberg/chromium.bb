@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -30,7 +29,6 @@ class GoogleAuthenticatorTest;
 class LoginStatusConsumer;
 
 class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
-
  public:
   explicit GoogleAuthenticator(LoginStatusConsumer* consumer);
   virtual ~GoogleAuthenticator();

@@ -15,7 +15,6 @@
 #include <string>
 
 #include "app/clipboard/clipboard.h"
-#include "base/file_path.h"
 #include "base/string16.h"
 
 class Pickle;

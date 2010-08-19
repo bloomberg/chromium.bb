@@ -1,12 +1,14 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 #ifndef CHROME_FRAME_TEST_NET_PROCESS_SINGLETON_SUBCLASS_H_
 #define CHROME_FRAME_TEST_NET_PROCESS_SINGLETON_SUBCLASS_H_
 
 #include <windows.h>
-#include "base/file_path.h"
 
+#include <string>
+
+class FilePath;
 struct FunctionStub;
 
 class ProcessSingletonSubclassDelegate {
@@ -17,7 +19,7 @@ class ProcessSingletonSubclassDelegate {
 
 class ProcessSingletonSubclass {
  public:
-  ProcessSingletonSubclass(ProcessSingletonSubclassDelegate* delegate);
+  explicit ProcessSingletonSubclass(ProcessSingletonSubclassDelegate* delegate);
   ~ProcessSingletonSubclass();
 
   bool Subclass(const FilePath& user_data_dir);
@@ -33,4 +35,3 @@ class ProcessSingletonSubclass {
 };
 
 #endif  // CHROME_FRAME_TEST_NET_PROCESS_SINGLETON_SUBCLASS_H_
-

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/file_path.h"
 #include "chrome/browser/dummy_pref_store.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/pref_value_store.h"

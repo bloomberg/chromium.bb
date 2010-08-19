@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -19,6 +18,8 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
+
+class FilePath;
 
 namespace chromeos {
 

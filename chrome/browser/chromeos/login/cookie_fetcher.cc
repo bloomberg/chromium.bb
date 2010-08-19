@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 
 #include "base/command_line.h"
-#include "base/file_path.h"
 #include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/client_login_response_handler.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
 
-#include "base/file_path.h"
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/string_util.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGIN_WEBPLUGIN_DELEGATE_IMPL_H_
-#define WEBKIT_GLUE_PLUGIN_WEBPLUGIN_DELEGATE_IMPL_H_
+#ifndef WEBKIT_GLUE_PLUGINS_WEBPLUGIN_DELEGATE_IMPL_H_
+#define WEBKIT_GLUE_PLUGINS_WEBPLUGIN_DELEGATE_IMPL_H_
 
 #include "build/build_config.h"
 
@@ -11,7 +11,6 @@
 #include <list>
 #include <set>
 
-#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "base/time.h"
@@ -31,6 +30,8 @@
 
 typedef struct _GdkDrawable GdkPixmap;
 #endif
+
+class FilePath;
 
 namespace NPAPI {
 class PluginInstance;
@@ -297,7 +298,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // layout of this process with the one of the browser process.
   HKL keyboard_layout_;
   int parent_thread_id_;
-#endif // OS_WIN
+#endif  // defined(OS_WIN)
 
 #if defined(USE_X11)
   // The SHM pixmap for a windowless plugin.
@@ -498,4 +499,4 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegateImpl);
 };
 
-#endif  // WEBKIT_GLUE_PLUGIN_WEBPLUGIN_DELEGATE_IMPL_H_
+#endif  // WEBKIT_GLUE_PLUGINS_WEBPLUGIN_DELEGATE_IMPL_H_

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 
-#include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_value_store.h"

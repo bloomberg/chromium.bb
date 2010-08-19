@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,9 @@
 
 #include <string>
 #include "base/message_loop_proxy.h"
-#include "base/file_path.h"
 #include "net/http/http_cache.h"
 
+class FilePath;
 class GURL;
 class TestShellRequestContext;
 

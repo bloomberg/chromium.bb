@@ -8,10 +8,10 @@
 
 #include <string>
 
-#include "base/file_path.h"
 #include "chrome/common/extensions/extension.h"
 
 class ExtensionMessageBundle;
+class FilePath;
 
 // Utilties for manipulating the on-disk storage of extensions.
 namespace extension_file_util {
@@ -72,6 +72,6 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
 // Get a relative file path from a chrome-extension:// URL.
 FilePath ExtensionURLToRelativeFilePath(const GURL& url);
 
-}  // extension_file_util
+}  // namespace extension_file_util
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_FILE_UTIL_H_

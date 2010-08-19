@@ -12,13 +12,13 @@
 #include <string>
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/common/pref_store.h"
 
+class FilePath;
 class NotificationObserver;
 class PrefNotifier;
 class Profile;

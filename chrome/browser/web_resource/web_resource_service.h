@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/file_path.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/utility_process_host.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
@@ -88,4 +89,3 @@ class WebResourceService
 };
 
 #endif  // CHROME_BROWSER_WEB_RESOURCE_WEB_RESOURCE_SERVICE_H_
-

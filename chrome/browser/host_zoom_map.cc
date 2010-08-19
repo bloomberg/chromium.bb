@@ -4,6 +4,7 @@
 
 #include "chrome/browser/host_zoom_map.h"
 
+#include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_service.h"

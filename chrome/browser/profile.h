@@ -9,7 +9,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
@@ -48,6 +47,7 @@ class ExtensionProcessManager;
 class ExtensionMessageService;
 class ExtensionsService;
 class FaviconService;
+class FilePath;
 class FindBarState;
 class GeolocationContentSettingsMap;
 class GeolocationPermissionContext;

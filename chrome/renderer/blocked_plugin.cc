@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/file_path.h"
 #include "base/string_piece.h"
 #include "base/values.h"
 #include "chrome/common/jstemplate_builder.h"

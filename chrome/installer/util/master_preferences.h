@@ -12,10 +12,11 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/file_path.h"
-#include "base/values.h"
 #include "googleurl/src/gurl.h"
 #include "chrome/installer/util/master_preferences_constants.h"
+
+class DictionaryValue;
+class FilePath;
 
 namespace installer_util {
 

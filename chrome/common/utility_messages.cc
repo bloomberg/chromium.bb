@@ -4,6 +4,7 @@
 
 #include "chrome/common/utility_messages.h"
 
+#include "base/values.h"
 #define MESSAGES_INTERNAL_IMPL_FILE \
   "chrome/common/utility_messages_internal.h"
 #include "ipc/ipc_message_impl_macros.h"

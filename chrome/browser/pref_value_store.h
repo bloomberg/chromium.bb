@@ -11,18 +11,18 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
 #include "base/scoped_ptr.h"
-#include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_notifier.h"
 #include "chrome/common/pref_store.h"
 
+class FilePath;
 class PrefStore;
 class Profile;
+class Value;
 
 // The PrefValueStore manages various sources of values for Preferences
 // (e.g., configuration policies, extensions, and user settings). It returns

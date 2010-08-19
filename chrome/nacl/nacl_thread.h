@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 #define CHROME_NACL_NACL_THREAD_H_
 #pragma once
 
-#include "base/file_path.h"
 #include "base/native_library.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/nacl_types.h"

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_path.h"
 #include "base/file_version_info.h"
 #include "base/file_version_info_win.h"
 #include "chrome_frame/utils.h"
@@ -284,4 +285,3 @@ TEST(UtilTests, ParseVersionTest) {
   EXPECT_TRUE(ParseVersion(L"1.2.3.4", &high, &low) && high == 1 && low == 2);
   EXPECT_TRUE(ParseVersion(L"10.20", &high, &low) && high == 10 && low == 20);
 }
-

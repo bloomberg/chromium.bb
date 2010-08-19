@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGIN_PLUGIN_STREAM_H__
-#define WEBKIT_GLUE_PLUGIN_PLUGIN_STREAM_H__
+#ifndef WEBKIT_GLUE_PLUGINS_PLUGIN_STREAM_H_
+#define WEBKIT_GLUE_PLUGINS_PLUGIN_STREAM_H_
+
+#include "build/build_config.h"
 
 #include <string>
 #include <vector>
 
+#if defined(OS_POSIX)
 #include "base/file_path.h"
+#endif
 #include "base/ref_counted.h"
 #include "third_party/npapi/bindings/npapi.h"
 
@@ -110,7 +114,8 @@ class PluginStream : public base::RefCounted<PluginStream> {
 
   // Send the data to the plugin, returning how many bytes it accepted, or -1
   // if an error occurred.
-  int TryWriteToPlugin(const char *buf, const int length, const int data_offset);
+  int TryWriteToPlugin(const char *buf, const int length,
+                       const int data_offset);
 
   // The callback which calls TryWriteToPlugin.
   void OnDelayDelivery();
@@ -141,6 +146,6 @@ class PluginStream : public base::RefCounted<PluginStream> {
   DISALLOW_COPY_AND_ASSIGN(PluginStream);
 };
 
-} // namespace NPAPI
+}  // namespace NPAPI
 
-#endif // WEBKIT_GLUE_PLUGIN_PLUGIN_STREAM_H__
+#endif  // WEBKIT_GLUE_PLUGINS_PLUGIN_STREAM_H_

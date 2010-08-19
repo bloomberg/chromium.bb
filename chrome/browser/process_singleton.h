@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,13 +13,16 @@
 #endif
 
 #include "base/basictypes.h"
+#if defined(USE_X11)
 #include "base/file_path.h"
+#endif
 #include "base/logging.h"
 #include "base/non_thread_safe.h"
 #include "base/ref_counted.h"
 #include "gfx/native_widget_types.h"
 
 class CommandLine;
+class FilePath;
 
 // ProcessSingleton ----------------------------------------------------------
 //
@@ -129,7 +132,7 @@ class ProcessSingleton : public NonThreadSafe {
 
   HWND remote_window_;  // The HWND_MESSAGE of another browser.
   HWND window_;  // The HWND_MESSAGE window.
-#elif !defined(OS_MACOSX)
+#elif defined(USE_X11)
   // Path in file system to the socket.
   FilePath socket_path_;
 

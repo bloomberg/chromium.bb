@@ -8,10 +8,8 @@
 
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
-#include "base/values.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/common/notification_observer.h"

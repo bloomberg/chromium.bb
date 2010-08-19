@@ -4,7 +4,6 @@
 
 #include "webkit/glue/plugins/pepper_webplugin_impl.h"
 
-#include "base/file_path.h"
 #include "base/message_loop.h"
 #include "third_party/ppapi/c/pp_var.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
