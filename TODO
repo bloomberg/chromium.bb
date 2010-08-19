@@ -50,6 +50,19 @@ Core wayland protocol
       finish event too.  Either way, the state of the drag blocks on
       the client.  What if we drag to a client that doesn't doo dnd?
 
+   How do we animate the drag icon back to the drag origin in case of
+   a failed drag?
+
+   How to handle surfaces from clients that don't know about dnd or
+   don't care?  Maybe the dnd object should have a
+   dnd.register_surface() method so clients can opt-in the surfaces
+   that will participate in dnd.  Or just assume client is not
+   participating until we receive an accept request.
+
+   May need to look at all offer events before we can decide which one
+   to go with.  Problem is, we don't know when we've seen that last
+   offer event.
+
  - copy-n-paste, store data in server (only one mime-type available)
    or do X style (content mime-type negotiation, but data goes away
    when client quits).

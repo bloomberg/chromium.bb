@@ -57,7 +57,6 @@ struct display {
 	struct wl_shell *shell;
 	struct wl_drm *drm;
 	struct wl_output *output;
-	struct wl_drag *drag;
 	struct rectangle screen_allocation;
 	int authenticated;
 	EGLDisplay dpy;
@@ -719,6 +718,17 @@ input_get_position(struct input *input, int32_t *x, int32_t *y)
 }
 
 void
+display_add_drag_listener(struct display *display,
+			  const struct wl_drag_listener *drag_listener,
+			  void *data)
+{
+	struct input *input;
+
+	wl_list_for_each(input, &display->input_list, link)
+		wl_drag_add_listener(input->drag, drag_listener, data);
+}
+
+void
 window_start_drag(struct window *window, struct input *input, uint32_t time,
 		  struct wl_buffer *buffer, int32_t x, int32_t y)
 {
@@ -1072,7 +1082,7 @@ drag_handle_device(void *data,
 
 	input = wl_input_device_get_user_data(device);
 	input->drag = drag;
-
+	wl_drag_set_user_data(drag, input);
 }
 
 static void
@@ -1081,14 +1091,12 @@ drag_pointer_focus(void *data,
 		   uint32_t time, struct wl_surface *surface,
 		   int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
 {
-	fprintf(stderr, "drag pointer focus %p\n", surface);
 }
 
 static void
 drag_offer(void *data,
 	   struct wl_drag *drag, const char *type)
 {
-	fprintf(stderr, "drag offer %s\n", type);
 }
 
 static void
@@ -1097,7 +1105,6 @@ drag_motion(void *data,
 	    uint32_t time,
 	    int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
 {
-	fprintf(stderr, "drag motion %d,%d\n", surface_x, surface_y);
 }
 
 static void
@@ -1109,7 +1116,6 @@ drag_target(void *data,
 static void
 drag_finish(void *data, struct wl_drag *drag)
 {
-	fprintf(stderr, "drag finish\n");
 }
 
 static void
@@ -1133,6 +1139,7 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
 	struct display *d = data;
+	struct wl_drag *drag;
 
 	if (strcmp(interface, "compositor") == 0) {
 		d->compositor = wl_compositor_create(display, id);
@@ -1150,8 +1157,8 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		d->drm = wl_drm_create(display, id);
 		wl_drm_add_listener(d->drm, &drm_listener, d);
 	} else if (strcmp(interface, "drag") == 0) {
-		d->drag = wl_drag_create(display, id);
-		wl_drag_add_listener(d->drag, &drag_listener, d);
+		drag = wl_drag_create(display, id);
+		wl_drag_add_listener(drag, &drag_listener, NULL);
 	}
 }
 

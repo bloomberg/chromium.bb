@@ -1000,6 +1000,8 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 			  struct wlsc_surface *surface, uint32_t time,
 			  int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
+	char **p, **end;
+
 	if (drag->pointer_focus == &surface->base)
 		return;
 
@@ -1009,12 +1011,20 @@ wl_drag_set_pointer_focus(struct wl_drag *drag,
 				      &drag->base,
 				      WL_DRAG_POINTER_FOCUS,
 				      time, NULL, 0, 0, 0, 0);
-	if (surface)
+	if (surface) {
 		wl_surface_post_event(&surface->base,
 				      &drag->base,
 				      WL_DRAG_POINTER_FOCUS,
 				      time, &surface->base,
 				      x, y, sx, sy);
+
+		end = drag->types.data + drag->types.size;
+		for (p = drag->types.data; p < end; p++)
+			wl_surface_post_event(&surface->base,
+					      &drag->base,
+					      WL_DRAG_OFFER, *p);
+	}
+
 
 	drag->pointer_focus = &surface->base;
 }
@@ -1133,6 +1143,26 @@ drag_accept(struct wl_client *client,
 {
 	char **p, **end;
 
+	/* If the client responds to drag motion events after the
+	 * pointer has left the surface, we just discard the accept
+	 * requests.  The drag source just won't get the corresponding
+	 * 'target' events and the next surface/root will start
+	 * sending events. */
+	if (drag->pointer_focus == NULL)
+		return;
+
+	/* The accept request may arrive after the pointer has left
+	 * the surface that received the drag motion events that
+	 * triggered the request.  But if the pointer re-enters the
+	 * surface (or another surface from the same client) and we
+	 * receive the 'accept' requests from the first visit to the
+	 * surface later, this check will pass.  Then we end up
+	 * sending the 'target' event for the old 'accept' requests
+	 * events *after* potentially sending 'target' from the root
+	 * surface, out of order.  So we need to track the time of
+	 * pointer_focus and this request needs a time stamp so we can
+	 * compare and reject 'accept' requests that are older than
+	 * the pointer_focus in timestamp. */
 	if (drag->pointer_focus->client != client)
 		return;
 

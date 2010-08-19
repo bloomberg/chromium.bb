@@ -207,6 +207,82 @@ dnd_get_item(struct dnd *dnd, int32_t x, int32_t y)
 }
 
 static void
+drag_handle_device(void *data,
+		   struct wl_drag *drag, struct wl_input_device *device)
+{
+}
+
+static void
+drag_pointer_focus(void *data,
+		   struct wl_drag *drag,
+		   uint32_t time, struct wl_surface *surface,
+		   int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
+{
+	fprintf(stderr, "drag pointer focus %p\n", surface);
+
+	wl_drag_accept(drag, "text/plain");
+}
+
+static void
+drag_offer(void *data,
+	   struct wl_drag *drag, const char *type)
+{
+	fprintf(stderr, "drag offer %s\n", type);
+}
+
+static void
+drag_motion(void *data,
+	    struct wl_drag *drag,
+	    uint32_t time,
+	    int32_t x, int32_t y, int32_t surface_x, int32_t surface_y)
+{
+	fprintf(stderr, "drag motion %d,%d\n", surface_x, surface_y);
+
+	/* FIXME: Need to correlate this with the offer event.
+	 * Problem is, we don't know when we've seen that last offer
+	 * event, and we might need to look at all of them before we
+	 * can decide which one to go with. */
+	wl_drag_accept(drag, "text/plain");
+}
+
+static void
+drag_target(void *data,
+	    struct wl_drag *drag, const char *mime_type)
+{
+	fprintf(stderr, "target %s\n", mime_type);
+}
+
+static void
+drag_finish(void *data, struct wl_drag *drag)
+{
+	fprintf(stderr, "drag finish\n");
+	struct wl_array a;
+	char text[] = "[drop data]";
+
+	a.data = text;
+	a.size = sizeof text;
+
+	wl_drag_send(drag, &a);
+}
+
+static void
+drag_data(void *data,
+	  struct wl_drag *drag, struct wl_array *contents)
+{
+	fprintf(stderr, "drag drop, data %s\n", contents->data);
+}
+
+static const struct wl_drag_listener drag_listener = {
+	drag_handle_device,
+	drag_pointer_focus,
+	drag_offer,
+	drag_motion,
+	drag_target,
+	drag_finish,
+	drag_data
+};
+
+static void
 dnd_button_handler(struct window *window,
 		   struct input *input, uint32_t time,
 		   int button, int state, void *data)
@@ -351,6 +427,8 @@ main(int argc, char *argv[])
 	srandom(tv.tv_usec);
 
 	d = display_create(&argc, &argv, option_entries);
+
+	display_add_drag_listener(d, &drag_listener, d);
 
 	dnd = dnd_create (d);
 

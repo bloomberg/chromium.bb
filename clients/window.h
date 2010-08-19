@@ -60,6 +60,11 @@ display_get_pointer_surface(struct display *display, int pointer,
 			    int *hotspot_x, int *hotspot_y);
 
 void
+display_add_drag_listener(struct display *display,
+			  const struct wl_drag_listener *drag_listener,
+			  void *data);
+
+void
 display_run(struct display *d);
 
 enum {
