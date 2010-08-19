@@ -9,7 +9,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/cocoa/applescript/bookmark_folder_applescript.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"

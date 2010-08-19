@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/thread.h"
 #include "chrome/browser/geolocation/device_data_provider.h"

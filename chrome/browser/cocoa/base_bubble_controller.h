@@ -5,8 +5,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/cocoa_protocols_mac.h"
-#include "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
 
 @class InfoBubbleView;
 

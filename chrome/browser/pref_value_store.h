@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
-#include "base/string16.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/pref_notifier.h"

@@ -9,7 +9,6 @@
 #include <map>
 #include <vector>
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_default.h"
 #include "chrome/browser/webdata/web_data_service.h"

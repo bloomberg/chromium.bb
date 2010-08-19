@@ -8,7 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/download/download_shelf.h"
 
 class BaseDownloadItemModel;

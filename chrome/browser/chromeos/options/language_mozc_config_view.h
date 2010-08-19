@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/pref_member.h"

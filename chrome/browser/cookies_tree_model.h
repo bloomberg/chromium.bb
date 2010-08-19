@@ -11,7 +11,7 @@
 
 #include "app/tree_node_model.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"

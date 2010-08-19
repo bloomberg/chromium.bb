@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

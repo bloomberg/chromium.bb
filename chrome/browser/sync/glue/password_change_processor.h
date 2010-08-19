@@ -9,7 +9,6 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

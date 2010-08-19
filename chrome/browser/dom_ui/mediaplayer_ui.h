@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui.h"

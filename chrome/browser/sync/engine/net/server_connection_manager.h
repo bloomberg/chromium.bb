@@ -12,7 +12,6 @@
 #include "base/atomicops.h"
 #include "base/lock.h"
 #include "base/logging.h"
-#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/common/deprecated/event_sys.h"

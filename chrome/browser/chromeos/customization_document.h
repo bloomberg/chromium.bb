@@ -12,7 +12,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class DictionaryValue;

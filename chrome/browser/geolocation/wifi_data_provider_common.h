@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/task.h"
 #include "base/thread.h"

@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/profile.h"
 
 

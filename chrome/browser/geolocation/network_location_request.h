@@ -9,6 +9,7 @@
 #include <string>
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/geolocation/device_data_provider.h"
 #include "chrome/common/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"

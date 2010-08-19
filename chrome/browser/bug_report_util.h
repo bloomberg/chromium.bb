@@ -13,7 +13,6 @@
 #include "base/mac_util.h"
 #include "base/sys_info.h"
 #endif
-#include "base/scoped_ptr.h"
 #include "chrome/browser/userfeedback/proto/common.pb.h"
 #include "chrome/browser/userfeedback/proto/extension.pb.h"
 #include "chrome/browser/userfeedback/proto/math.pb.h"

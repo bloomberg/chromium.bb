@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "cros/chromeos_system.h"
 #include "unicode/timezone.h"

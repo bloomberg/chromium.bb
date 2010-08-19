@@ -5,8 +5,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/cocoa_protocols_mac.h"
-#include "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
 #include "net/base/cookie_monster.h"
 
 @class CocoaCookieTreeNode;

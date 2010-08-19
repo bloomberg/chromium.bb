@@ -11,7 +11,6 @@
 #include <sensors.h>
 #include <Windows.h>
 
-#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "base/win_util.h"
 

@@ -12,7 +12,6 @@
 #include "app/gtk_signal_registrar.h"
 #include "app/slide_animation.h"
 #include "app/throb_animation.h"
-#include "base/scoped_ptr.h"
 
 // This class handles the "throbbing" of a GtkChromeButton. The visual effect
 // of throbbing is created by painting partially transparent hover effects. It

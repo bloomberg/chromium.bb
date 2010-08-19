@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 
 namespace chromeos {

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CROS_CROS_MOCK_H_
 #define CHROME_BROWSER_CHROMEOS_CROS_CROS_MOCK_H_
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "cros/chromeos_input_method.h"

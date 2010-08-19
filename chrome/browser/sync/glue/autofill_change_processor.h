@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SYNC_GLUE_AUTOFILL_CHANGE_PROCESSOR_H_
 #pragma once
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/personal_data_manager.h"

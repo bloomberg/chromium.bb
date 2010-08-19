@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #import "base/scoped_nsautorelease_pool.h"
 #import "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
 #include "chrome/common/chrome_constants.h"
 #include "testing/platform_test.h"
 

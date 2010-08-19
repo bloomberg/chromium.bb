@@ -12,7 +12,6 @@
 #include "base/observer_list.h"
 #include "base/platform_thread.h"
 #include "base/singleton.h"
-#include "base/string16.h"
 #include "base/timer.h"
 #include "cros/chromeos_network.h"
 

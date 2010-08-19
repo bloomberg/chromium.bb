@@ -10,7 +10,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"

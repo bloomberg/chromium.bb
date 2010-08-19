@@ -31,9 +31,9 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/non_thread_safe.h"
+#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "base/scoped_ptr.h"
 #include "base/task.h"
 
 // The following data structures are used to store cell radio data and wifi

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "net/server/http_listen_socket.h"
 #include "net/url_request/url_request.h"
 

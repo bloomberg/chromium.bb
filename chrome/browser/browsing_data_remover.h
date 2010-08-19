@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/observer_list.h"
-#include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/cancelable_request.h"

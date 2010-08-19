@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
+#include "base/ref_counted.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/common/notification_registrar.h"

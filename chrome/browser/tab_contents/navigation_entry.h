@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/tab_contents/security_style.h"
 #include "chrome/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"

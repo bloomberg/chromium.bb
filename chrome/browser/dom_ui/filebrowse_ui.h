@@ -8,12 +8,10 @@
 
 #include <string>
 
-#include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/history/history.h"
 #include "net/base/directory_lister.h"
-
 
 class Browser;
 class Profile;

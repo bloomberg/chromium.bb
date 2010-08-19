@@ -6,7 +6,6 @@
 
 #include "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
 
 class CookiePromptModalDialog;
 class CookieTreeNode;

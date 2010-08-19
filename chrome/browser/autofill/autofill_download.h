@@ -10,9 +10,7 @@
 #include <vector>
 #include <string>
 
-#include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
-#include "base/string16.h"
 #include "base/time.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/field_types.h"

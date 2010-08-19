@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
 
 class GURL;

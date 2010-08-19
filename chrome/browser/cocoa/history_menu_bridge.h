@@ -9,8 +9,8 @@
 #import <Cocoa/Cocoa.h>
 #include <map>
 
+#include "base/ref_counted.h"
 #include "base/scoped_nsobject.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/cancelable_request.h"
 #import "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"

@@ -8,9 +8,9 @@
 
 #include "chrome/browser/geolocation/wifi_data_provider_common.h"
 
-#include "base/scoped_ptr.h"
-
-namespace chromeos { class NetworkLibrary; }
+namespace chromeos {
+class NetworkLibrary;
+}
 
 class WifiDataProviderChromeOs : public WifiDataProviderCommon {
  public:

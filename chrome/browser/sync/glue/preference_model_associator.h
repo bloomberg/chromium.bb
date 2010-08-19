@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
