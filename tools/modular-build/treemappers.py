@@ -62,14 +62,18 @@ def SetPath(tree, path, value):
 # and use the file-based identity tracking method discussed below.
 
 
+# This is primarily a workaround for the multilib layout that newlib
+# produces from "make install".  It outputs to "lib/32", whereas
+# everyone else outputs to "lib32", and gcc's search path has "lib32"
+# not "lib/32".
 # This is done instead of the lib32 -> lib/32 symlink that Makefile uses.
 # TODO(mseaborn): Fix newlib to not output using this odd layout.
-def MungeMultilibDir(tree):
-  lib32 = tree.get("nacl64", {}).get("lib", {}).get("32")
-  if lib32 is not None:
-    assert "lib32" not in tree["nacl64"]
-    del tree["nacl64"]["lib"]["32"]
-    tree["nacl64"]["lib32"] = lib32
+def MungeMultilibDir(tree, arch, bits):
+  libdir = tree.get(arch, {}).get("lib", {}).get(bits)
+  if libdir is not None:
+    assert "lib" + bits not in tree[arch]
+    del tree[arch]["lib"][bits]
+    tree[arch]["lib" + bits] = libdir
 
 
 def LibraryPathVar():
@@ -99,7 +103,8 @@ exec ${0%%/*}/../original-bin/%(script_name)s "$@"
 
 def CombineInstallTrees(*trees):
   for tree in trees:
-    MungeMultilibDir(tree)
+    MungeMultilibDir(tree, "nacl64", "32")
+    MungeMultilibDir(tree, "nacl", "64")
   combined = UnionDir(*trees)
   AddEnvVarWrapperScripts(combined)
   return combined
@@ -110,15 +115,15 @@ def AddHeadersToNewlib(newlib_source, nacl_headers):
   return newlib_source
 
 
-def InstallLinkerScripts(glibc_tree):
-  return {"nacl64": {"lib": glibc_tree["nacl"]["dyn-link"]}}
+def InstallLinkerScripts(glibc_tree, arch):
+  return {arch: {"lib": glibc_tree["nacl"]["dyn-link"]}}
 
 
-def InstallKernelHeaders(include_dir_parent):
-  return {"nacl64": include_dir_parent}
+def InstallKernelHeaders(include_dir_parent, arch):
+  return {arch: include_dir_parent}
 
 
-def SubsetNaClHeaders(input_headers):
+def SubsetNaClHeaders(input_headers, arch):
   # We install only a subset of the NaCl headers from
   # service_runtime/include.  We don't want the headers for POSIX
   # interfaces that are provided by glibc, e.g. sys/mman.h.
@@ -136,7 +141,7 @@ def SubsetNaClHeaders(input_headers):
   # in glibc.
   SetPath(result, "machine/_default_types.h",
           FileSnapshotInMemory("/* Intentionally empty */\n"))
-  return {"nacl64": {"include": result}}
+  return {arch: {"include": result}}
 
 
 # The functions above are fairly cheap, so we could run them each

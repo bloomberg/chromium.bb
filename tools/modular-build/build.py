@@ -74,15 +74,6 @@ def GetSources():
     }
 
 
-common_gcc_options = [
-    "--disable-libmudflap",
-    "--disable-decimal-float",
-    "--disable-libssp",
-    "--disable-libstdcxx-pch",
-    "--disable-shared",
-    "--target=nacl64"]
-
-
 def GetTargets(src):
   top_dir = os.path.abspath("out")
   src = dict((src_name,
@@ -134,6 +125,15 @@ def GetTargets(src):
   # be pulled in whenever gcc is declared as a dependency.
   gcc_libs = ["gmp", "mpfr"]
 
+  arch = "nacl64"
+  common_gcc_options = [
+      "--disable-libmudflap",
+      "--disable-decimal-float",
+      "--disable-libssp",
+      "--disable-libstdcxx-pch",
+      "--disable-shared",
+      "--target=%s" % arch]
+
   modules["nacl_src"] = btarget.ExistingSource("nacl-src", nacl_dir)
   modules["nacl-headers"] = \
       btarget.ExportHeaders("nacl-headers", os.path.join(top_dir, "headers"),
@@ -147,7 +147,7 @@ def GetTargets(src):
   AddAutoconfModule(
       "binutils", "binutils", deps=[],
       configure_opts=[
-          "--target=nacl64",
+          "--target=%s" % arch,
           "CFLAGS=-DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"])
   AddAutoconfModule(
       "pre-gcc", "gcc", deps=["binutils"] + gcc_libs,
@@ -172,7 +172,7 @@ def GetTargets(src):
           "--enable-newlib-io-long-long",
           "--enable-newlib-io-c99-formats",
           "--enable-newlib-mb",
-          "--target=nacl64"],
+          "--target=%s" % arch],
       configure_env=["CFLAGS=-O2"],
       make_cmd=["make", "CFLAGS_FOR_TARGET=-m64 -O2"])
 
@@ -207,13 +207,13 @@ def GetTargets(src):
           "CFLAGS=-Dinhibit_libc -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
       make_cmd=["make", "all"])
 
-  for arch in ("32", "64"):
+  for arch_bits in ("32", "64"):
     AddSconsModule(
-        "libnacl_x86_%s" % arch,
+        "libnacl_x86_%s" % arch_bits,
         deps=["binutils", "full-gcc", "newlib",
               "libnacl_headers", "nc_threads"] + gcc_libs,
         scons_args=["MODE=nacl_extra_sdk", "extra_sdk_update",
-                    "platform=x86-%s" % arch])
+                    "platform=x86-%s" % arch_bits])
 
   # Note that ordering is significant in the dependencies: nc_threads
   # must come after newlib in order to override newlib's pthread.h.
@@ -234,7 +234,7 @@ int main() {
       os.path.join(top_dir, "build", "hello"),
       newlib_toolchain,
       hello_c,
-      compiler=["nacl64-gcc", "-m32"])
+      compiler=["%s-gcc" % arch, "-m32"])
   module_list.append(modules["hello"])
 
   # libnacl_nocpp and newlib are dependencies for the "forced unwind
@@ -245,9 +245,9 @@ int main() {
       deps=["binutils", "full-gcc", "libnacl_nocpp", "newlib"] + gcc_libs,
       explicitly_passed_deps=[src["linux_headers"]],
       configure_opts=[
-          "--prefix=/nacl64",
+          "--prefix=/%s" % arch,
           "--host=i486-linux-gnu",
-          "CC=nacl64-gcc -m32",
+          "CC=%s-gcc -m32" % arch,
           ("CFLAGS=-march=i486 -pipe -fno-strict-aliasing -O2 "
            "-mno-tls-direct-seg-refs -g"),
           ("--with-headers=%s" %
@@ -264,7 +264,7 @@ int main() {
   modules["linker_scripts"] = btarget.TreeMapper(
       "linker_scripts",
       os.path.join(top_dir, "install", "linker_scripts"),
-      treemappers.InstallLinkerScripts, [src["glibc"]])
+      treemappers.InstallLinkerScripts, [src["glibc"]], args=[arch])
   # TODO(mseaborn): One day the NaCl headers should be substitutable
   # for the Linux headers here, but I would expect them to be very
   # similar.  i.e. Same filenames, same #defined numbers, but a subset
@@ -272,11 +272,11 @@ int main() {
   modules["installed_linux_headers"] = btarget.TreeMapper(
       "installed_linux_headers",
       os.path.join(top_dir, "install", "linux_headers"),
-      treemappers.InstallKernelHeaders, [src["linux_headers"]])
+      treemappers.InstallKernelHeaders, [src["linux_headers"]], args=[arch])
   modules["installed_nacl_headers"] = btarget.TreeMapper(
       "installed_nacl_headers",
       os.path.join(top_dir, "install", "nacl_headers"),
-      treemappers.SubsetNaClHeaders, [modules["nacl-headers"]])
+      treemappers.SubsetNaClHeaders, [modules["nacl-headers"]], args=[arch])
 
   glibc_toolchain_deps = [
       "binutils", "full-gcc", "glibc", "wrappers", "linker_scripts",

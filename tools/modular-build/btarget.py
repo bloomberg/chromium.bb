@@ -300,14 +300,14 @@ def SconsBuild(name, dest_dir, src_dir, prefix_obj, scons_args):
                      deps=[src_dir, prefix_obj])
 
 
-def TreeMapper(name, dest_dir, map_func, input_trees):
+def TreeMapper(name, dest_dir, map_func, input_trees, args=[]):
   def DoBuild():
     result = map_func(*[dirtree.MakeSnapshotFromPath(input_tree.dest_path)
-                        for input_tree in input_trees])
+                        for input_tree in input_trees] + args)
     ResetDir(dest_dir)
     dirtree.WriteSnapshotToPath(result, dest_dir)
   return BuildTarget(name, dest_dir, DoBuild,
-                     args=["tree_mapper", map_func.function_identity],
+                     args=["tree_mapper", map_func.function_identity] + args,
                      deps=input_trees)
 
 
