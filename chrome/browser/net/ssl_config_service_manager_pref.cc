@@ -145,8 +145,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   config->ssl2_enabled = ssl2_enabled_.GetValue();
   config->ssl3_enabled = ssl3_enabled_.GetValue();
   config->tls1_enabled = tls1_enabled_.GetValue();
-  config->dnssec_enabled = net::SSLConfigService::dnssec_enabled();
-  config->false_start_enabled = net::SSLConfigService::false_start_enabled();
+  net::SSLConfigService::SetSSLConfigFlags(config);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

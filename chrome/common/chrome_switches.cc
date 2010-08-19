@@ -22,6 +22,12 @@ const char kActivateOnLaunch[]              = "activate-on-launch";
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
 
+// Disable checking of the renegotiation extension and any future checks over
+// and above what a "traditional" SSL stack might do. This has been requested
+// in order to support some web development tools that intercept SSL
+// connections.
+const char kAllowSSLMITMProxies[]           = "allow-ssl-mitm-proxies";
+
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
