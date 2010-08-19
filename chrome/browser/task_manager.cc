@@ -59,8 +59,8 @@ int ValueCompare(T value1, T value2) {
 
 string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
-      WideToUTF16Hack(FormatBytes(stat.size, DATA_UNITS_KIBIBYTE, false)),
-      WideToUTF16Hack(FormatBytes(stat.liveSize, DATA_UNITS_KIBIBYTE, false)));
+      FormatBytes(stat.size, DATA_UNITS_KIBIBYTE, false),
+      FormatBytes(stat.liveSize, DATA_UNITS_KIBIBYTE, false));
 }
 
 }  // namespace
@@ -126,8 +126,8 @@ string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   if (net_usage == 0)
     return ASCIIToUTF16("0");
-  string16 net_byte = WideToUTF16(
-      FormatSpeed(net_usage, GetByteDisplayUnits(net_usage), true));
+  string16 net_byte = FormatSpeed(net_usage, GetByteDisplayUnits(net_usage),
+                                  true);
   // Force number string to have LTR directionality.
   return base::i18n::GetDisplayStringInLTRDirectionality(net_byte);
 }
@@ -217,12 +217,12 @@ string16 TaskManagerModel::GetResourceV8MemoryAllocatedSize(
   if (!resources_[index]->ReportsV8MemoryStats())
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
-      WideToUTF16Hack(FormatBytes(resources_[index]->GetV8MemoryAllocated(),
-                                  DATA_UNITS_KIBIBYTE,
-                                  false)),
-      WideToUTF16Hack(FormatBytes(resources_[index]->GetV8MemoryUsed(),
-                                  DATA_UNITS_KIBIBYTE,
-                                  false)));
+      FormatBytes(resources_[index]->GetV8MemoryAllocated(),
+                  DATA_UNITS_KIBIBYTE,
+                  false),
+      FormatBytes(resources_[index]->GetV8MemoryUsed(),
+                  DATA_UNITS_KIBIBYTE,
+                  false));
 }
 
 bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
@@ -477,8 +477,7 @@ string16 TaskManagerModel::GetMemCellText(int64 number) const {
 #else
   // System expectation is to show "100 KB", "200 MB", etc.
   // TODO(thakis): Switch to metric units (as opposed to powers of two).
-  return WideToUTF16Hack(
-      FormatBytes(number, GetByteDisplayUnits(number), /*show_units=*/true));
+  return FormatBytes(number, GetByteDisplayUnits(number), /*show_units=*/true);
 #endif
 }
 

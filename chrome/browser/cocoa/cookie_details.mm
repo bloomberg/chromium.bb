@@ -153,7 +153,7 @@
     canEditExpiration_ = NO;
     databaseDescription_.reset([base::SysUTF8ToNSString(
         databaseInfo->description) retain]);
-    fileSize_.reset([base::SysWideToNSString(FormatBytes(databaseInfo->size,
+    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(databaseInfo->size,
         GetByteDisplayUnits(databaseInfo->size), true)) retain]);
     lastModified_.reset([base::SysWideToNSString(
         base::TimeFormatFriendlyDateAndTime(
@@ -168,7 +168,7 @@
     type_ = kCocoaCookieDetailsTypeTreeLocalStorage;
     canEditExpiration_ = NO;
     domain_.reset([base::SysUTF8ToNSString(storageInfo->origin) retain]);
-    fileSize_.reset([base::SysWideToNSString(FormatBytes(storageInfo->size,
+    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(storageInfo->size,
         GetByteDisplayUnits(storageInfo->size), true)) retain]);
     lastModified_.reset([base::SysWideToNSString(
         base::TimeFormatFriendlyDateAndTime(
@@ -183,7 +183,7 @@
     canEditExpiration_ = NO;
     manifestURL_.reset([base::SysUTF8ToNSString(
         appcacheInfo->manifest_url.spec()) retain]);
-    fileSize_.reset([base::SysWideToNSString(FormatBytes(appcacheInfo->size,
+    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(appcacheInfo->size,
         GetByteDisplayUnits(appcacheInfo->size), true)) retain]);
     created_.reset([base::SysWideToNSString(
         base::TimeFormatFriendlyDateAndTime(
@@ -206,7 +206,7 @@
     domain_.reset([base::SysUTF8ToNSString(domain) retain]);
     databaseDescription_.reset(
         [base::SysUTF16ToNSString(databaseDescription) retain]);
-    fileSize_.reset([base::SysWideToNSString(FormatBytes(fileSize,
+    fileSize_.reset([base::SysUTF16ToNSString(FormatBytes(fileSize,
         GetByteDisplayUnits(fileSize), true)) retain]);
   }
   return self;
