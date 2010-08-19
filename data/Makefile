@@ -16,6 +16,8 @@ cursor_images =					\
 
 all :
 
+clean :
+
 install :
 	install -d $(datadir)/wayland
 	install $(cursor_images) $(datadir)/wayland
