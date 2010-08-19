@@ -23,6 +23,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/notification_service.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
 namespace chromeos {

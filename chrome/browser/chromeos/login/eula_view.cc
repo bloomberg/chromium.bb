@@ -24,6 +24,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/dom_view.h"
 #include "chrome/common/native_web_keyboard_event.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "grit/chromium_strings.h"

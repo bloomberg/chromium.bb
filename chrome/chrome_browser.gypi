@@ -457,6 +457,8 @@
         'browser/chromeos/gview_request_interceptor.h',
         'browser/chromeos/input_method/input_method_util.cc',
         'browser/chromeos/input_method/input_method_util.h',
+        'browser/chromeos/language_preferences.cc',
+        'browser/chromeos/language_preferences.h',
         'browser/chromeos/login/account_creation_view.cc',
         'browser/chromeos/login/account_creation_view.h',
         'browser/chromeos/login/account_screen.cc',

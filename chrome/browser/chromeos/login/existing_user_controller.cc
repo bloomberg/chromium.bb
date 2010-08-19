@@ -30,6 +30,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "gfx/native_widget_types.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/screen.h"
 #include "views/widget/widget_gtk.h"

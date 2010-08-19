@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "grit/generated_resources.h"
 
 namespace chromeos {
 
