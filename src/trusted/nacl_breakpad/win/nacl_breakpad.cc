@@ -95,7 +95,7 @@ LONG CALLBACK VectoredHandler(PEXCEPTION_POINTERS pExceptionPointers) {
 //
 void NaClBreakpadInit() {
   const wchar_t kCrashReportURL[] =
-    L"http://crash-staging-collector.corp.google.com/cr/report";
+    L"https://clients2.google.com/cr/staging_report";
 
   // Get the alternate dump directory. We use the temp path.
   wchar_t tempPathArr[MAX_PATH] = {0};
@@ -130,7 +130,7 @@ void NaClBreakpadInit() {
     // does not mean "succeeded" -- the upload may have been rejected or
     // throttled, but in those cases we also don't want to see it again.
     if (result != google_breakpad::RESULT_FAILED) {
-      DeleteFile(fdat.cFileName);
+      DeleteFile(path.c_str());
     }
   }
 
@@ -138,7 +138,8 @@ void NaClBreakpadInit() {
   // Clear out old crash dumps
   //
   while (FindNextFile(hFind, &fdat)) {
-    DeleteFile(fdat.cFileName);
+    wstring path = dumpPath + fdat.cFileName;
+    DeleteFile(path.c_str());
   }
 
   FindClose(hFind);
