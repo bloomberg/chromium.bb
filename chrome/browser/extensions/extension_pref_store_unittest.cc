@@ -20,11 +20,12 @@ namespace {
 
 class TestExtensionPrefStore : public ExtensionPrefStore {
  public:
-  TestExtensionPrefStore() : ExtensionPrefStore(NULL),
-                             ext1(NULL),
-                             ext2(NULL),
-                             ext3(NULL),
-                             pref_service_(NULL) {
+  TestExtensionPrefStore()
+      : ExtensionPrefStore(NULL, PrefNotifier::EXTENSION_STORE),
+        ext1(NULL),
+        ext2(NULL),
+        ext3(NULL),
+        pref_service_(NULL) {
     // Can't use ASSERT_TRUE here because a constructor can't return a value.
     if (!temp_dir_.CreateUniqueTempDir()) {
       ADD_FAILURE() << "Failed to create temp dir";

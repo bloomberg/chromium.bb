@@ -38,15 +38,15 @@ PrefNotifier::~PrefNotifier() {
 }
 
 void PrefNotifier::OnPreferenceSet(const char* pref_name,
+                                   PrefNotifier::PrefStoreType new_store,
                                    const Value* old_value) {
-  if (pref_value_store_->PrefHasChanged(pref_name, old_value))
+  if (pref_value_store_->PrefHasChanged(pref_name, new_store, old_value))
     FireObservers(pref_name);
 }
 
 void PrefNotifier::OnUserPreferenceSet(const char* pref_name,
                                        const Value* old_value) {
-  // TODO(pamg): Adjust to account for source PrefStore.
-  OnPreferenceSet(pref_name, old_value);
+  OnPreferenceSet(pref_name, PrefNotifier::USER_STORE, old_value);
 }
 
 void PrefNotifier::FireObservers(const char* path) {

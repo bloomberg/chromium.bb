@@ -292,22 +292,69 @@ TEST_F(PrefValueStoreTest, HasPrefPath) {
 }
 
 TEST_F(PrefValueStoreTest, PrefHasChanged) {
-  ASSERT_TRUE(pref_value_store_->PrefValueInManagedStore(prefs::kHomepage));
+  // Pref controlled by highest-priority store, set to same value in same store.
+  const char managed_pref_path[] = "managed_pref";
+  const char same_str[] = "same value";
+  scoped_ptr<Value> same_value(Value::CreateStringValue(same_str));
+  enforced_pref_store_->prefs()->SetString(managed_pref_path, same_str);
+  EXPECT_FALSE(pref_value_store_->PrefHasChanged(managed_pref_path,
+      static_cast<PrefNotifier::PrefStoreType>(0), same_value.get()));
 
-  // Pretend we used to have a different enforced value set.
-  scoped_ptr<Value> value(Value::CreateStringValue("http://www.youtube.com"));
-  EXPECT_TRUE(pref_value_store_->PrefHasChanged(prefs::kHomepage, value.get()));
+  // Pref controlled by highest-priority store, set to different value in
+  // same store.
+  const char other_str[] = "other value";
+  scoped_ptr<Value> other_value(Value::CreateStringValue(other_str));
+  EXPECT_TRUE(pref_value_store_->PrefHasChanged(managed_pref_path,
+      static_cast<PrefNotifier::PrefStoreType>(0), other_value.get()));
 
-  // Pretend we used to have the same enforced value set.
-  value.reset(Value::CreateStringValue(enforced_pref::kHomepageValue));
-  EXPECT_FALSE(pref_value_store_->PrefHasChanged(prefs::kHomepage,
-      value.get()));
+  // Pref controlled by user store, set to same value in user store, no lower
+  // store has a value.
+  const char user_pref_path[] = "user_pref";
+  user_pref_store_->prefs()->SetString(user_pref_path, same_str);
+  EXPECT_FALSE(pref_value_store_->PrefHasChanged(user_pref_path,
+      PrefNotifier::USER_STORE, same_value.get()));
 
-  // Really set a new value in a lower-priority store.
-  Value* new_value = Value::CreateStringValue("http://www.chromium.org");
-  pref_value_store_->SetUserPrefValue(prefs::kHomepage, new_value);
-  EXPECT_FALSE(pref_value_store_->PrefHasChanged(prefs::kHomepage,
-      value.get()));
+  // Pref controlled by user store, set to new value in user store, no lower
+  // store has a value.
+  EXPECT_TRUE(pref_value_store_->PrefHasChanged(user_pref_path,
+      PrefNotifier::USER_STORE, other_value.get()));
+
+  // Pref controlled by user store, set to same value in user store, some lower
+  // store has a value.
+  const char third_str[] = "third value";
+  recommended_pref_store_->prefs()->SetString(user_pref_path, third_str);
+  // This is not necessarily the correct behavior, but it is the current
+  // behavior. See comments in pref_value_store.h and .cc.
+  EXPECT_TRUE(pref_value_store_->PrefHasChanged(user_pref_path,
+      PrefNotifier::USER_STORE, same_value.get()));
+
+  // Pref controlled by user store, set to new value in user store, some lower
+  // store has a value.
+  EXPECT_TRUE(pref_value_store_->PrefHasChanged(user_pref_path,
+      PrefNotifier::USER_STORE, other_value.get()));
+
+  // Pref controlled by user store, set to same value in managed store.
+  EXPECT_TRUE(pref_value_store_->PrefHasChanged(user_pref_path,
+      PrefNotifier::MANAGED_STORE, same_value.get()));
+
+  // Pref controlled by user store, set to new value in managed store.
+  EXPECT_TRUE(pref_value_store_->PrefHasChanged(user_pref_path,
+      PrefNotifier::MANAGED_STORE, other_value.get()));
+
+  // Pref controlled by highest-priority store, set to any value in user store.
+  EXPECT_FALSE(pref_value_store_->PrefHasChanged(managed_pref_path,
+      PrefNotifier::USER_STORE, same_value.get()));
+
+  // Pref controlled by lowest-priority store, set to same value in same store.
+  const char recommended_pref_path[] = "recommended_pref";
+  recommended_pref_store_->prefs()->SetString(recommended_pref_path, same_str);
+  EXPECT_FALSE(pref_value_store_->PrefHasChanged(recommended_pref_path,
+      PrefNotifier::PREF_STORE_TYPE_MAX, same_value.get()));
+
+  // Pref controlled by lowest-priority store, set to different value in same
+  // store.
+  EXPECT_TRUE(pref_value_store_->PrefHasChanged(recommended_pref_path,
+      PrefNotifier::PREF_STORE_TYPE_MAX, other_value.get()));
 }
 
 TEST_F(PrefValueStoreTest, ReadPrefs) {

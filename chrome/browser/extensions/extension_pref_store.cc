@@ -12,9 +12,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 
-ExtensionPrefStore::ExtensionPrefStore(Profile* profile)
+ExtensionPrefStore::ExtensionPrefStore(Profile* profile,
+                                       PrefNotifier::PrefStoreType type)
     : prefs_(new DictionaryValue()),
-      profile_(profile) {
+      profile_(profile),
+      type_(type) {
   RegisterObservers();
 }
 
@@ -114,8 +116,10 @@ void ExtensionPrefStore::UpdateOnePref(const char* path) {
     }
   }
 
-  if (pref_service)
-    pref_service->pref_notifier()->OnPreferenceSet(path, old_value.get());
+  if (pref_service) {
+    pref_service->pref_notifier()->OnPreferenceSet(
+        path, type_, old_value.get());
+  }
 }
 
 void ExtensionPrefStore::UpdatePrefs(const PrefValueMap* pref_values) {

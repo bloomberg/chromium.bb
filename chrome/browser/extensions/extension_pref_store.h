@@ -15,6 +15,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/pref_notifier.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_store.h"
 
@@ -31,7 +32,7 @@ class Value;
 class ExtensionPrefStore : public PrefStore,
                            public NotificationObserver {
  public:
-  explicit ExtensionPrefStore(Profile* profile);
+  ExtensionPrefStore(Profile* profile, PrefNotifier::PrefStoreType type);
   virtual ~ExtensionPrefStore();
 
   // Begins tracking the preference and value an extension wishes to set. This
@@ -111,6 +112,9 @@ class ExtensionPrefStore : public PrefStore,
   // NULL (for the local-state preferences), in which case we watch all
   // extensions.
   Profile* profile_;
+
+  // My PrefStore type, assigned by the PrefValueStore.
+  PrefNotifier::PrefStoreType type_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPrefStore);
 };

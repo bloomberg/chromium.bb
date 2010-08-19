@@ -71,9 +71,17 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   bool HasPrefPath(const char* name) const;
 
   // Returns true if the effective value of the preference has changed from its
-  // |old_value|. Virtual so it can be mocked for a unit test.
-  // TODO(pamg): Also return true when the controlling PrefStore changes.
-  virtual bool PrefHasChanged(const char* path, const Value* old_value);
+  // |old_value| (which should be the effective value of the preference as
+  // reported by GetValue() or the PrefService before the PrefStore changed it),
+  // or if the store controlling the pref has changed. Virtual so it can be
+  // mocked for a unit test.
+  // TODO(pamg): If we're setting the same value as we already had, into the
+  // same store that was controlling it before, and there's also a value set in
+  // a lower-priority store, *and* we're not the highest-priority store, then
+  // this will return true when it shouldn't. Fix that if it causes problems.
+  virtual bool PrefHasChanged(const char* path,
+                              PrefNotifier::PrefStoreType new_store,
+                              const Value* old_value);
 
   // Returns true if the PrefValueStore is read-only.
   // Because the managed and recommended PrefStores are always read-only, the
@@ -155,6 +163,14 @@ class PrefValueStore : public base::RefCountedThreadSafe<PrefValueStore> {
   scoped_ptr<PrefStore> pref_stores_[PrefNotifier::PREF_STORE_TYPE_MAX + 1];
 
   bool PrefValueInStore(const char* name, PrefNotifier::PrefStoreType type);
+
+  // Returns true if the preference |name| is found in any PrefStore starting
+  // just beyond the |boundary|, non-inclusive, and checking either
+  // higher-priority stores (if |higher_priority| is true) or lower-priority
+  // stores.
+  bool PrefValueInStoreRange(const char* name,
+                             PrefNotifier::PrefStoreType boundary,
+                             bool higher_priority);
 
   // Returns the pref store type identifying the source that controls the
   // Preference identified by |name|. If none of the sources has a value,

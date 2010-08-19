@@ -31,7 +31,7 @@ PrefValueStore* PrefValueStore::CreatePrefValueStore(
 
   if (!user_only) {
     managed = ConfigurationPolicyPrefStore::CreateManagedPolicyPrefStore();
-    extension = new ExtensionPrefStore(profile);
+    extension = new ExtensionPrefStore(profile, PrefNotifier::EXTENSION_STORE);
     command_line = new CommandLinePrefStore(CommandLine::ForCurrentProcess());
     recommended =
         ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore();
@@ -95,11 +95,30 @@ bool PrefValueStore::HasPrefPath(const char* path) const {
 }
 
 bool PrefValueStore::PrefHasChanged(const char* path,
+                                    PrefNotifier::PrefStoreType new_store,
                                     const Value* old_value) {
+  DCHECK(new_store != PrefNotifier::INVALID_STORE);
+  // Replying that the pref has changed may cause extra work, but it should
+  // not be actively harmful.
+  if (new_store == PrefNotifier::INVALID_STORE)
+    return true;
+
   Value* new_value = NULL;
   GetValue(path, &new_value);
   // Some unit tests have no values for certain prefs.
-  return (!new_value || !old_value->Equals(new_value));
+  if (!new_value || !old_value->Equals(new_value))
+    return true;
+
+  // If there's a value in a store with lower priority than the |new_store|,
+  // and no value in a store with higher priority, assume the |new_store| just
+  // took control of the pref. (This assumption is wrong if the new value
+  // and store are both the same as the old one, but that situation should be
+  // rare, and reporting a change when none happened should not be harmful.)
+  if (PrefValueInStoreRange(path, new_store, false) &&
+      !PrefValueInStoreRange(path, new_store, true))
+    return true;
+
+  return false;
 }
 
 // Note the |DictionaryValue| referenced by the |PrefStore| user_prefs_
@@ -155,6 +174,23 @@ bool PrefValueStore::PrefValueInStore(const char* name,
   Value* tmp_value;
   return pref_stores_[type]->prefs()->Get(name, &tmp_value);
 }
+
+bool PrefValueStore::PrefValueInStoreRange(const char* name,
+                                           PrefNotifier::PrefStoreType boundary,
+                                           bool higher_priority) {
+  // Higher priorities are lower PrefStoreType values. The range is
+  // non-inclusive of the boundary.
+  int start = higher_priority ? 0 : boundary + 1;
+  int end = higher_priority ? boundary - 1 :
+      PrefNotifier::PREF_STORE_TYPE_MAX;
+
+  for (int i = start; i <= end ; ++i) {
+    if (PrefValueInStore(name, static_cast<PrefNotifier::PrefStoreType>(i)))
+      return true;
+  }
+  return false;
+}
+
 
 PrefNotifier::PrefStoreType PrefValueStore::ControllingPrefStoreForPref(
     const char* name) {

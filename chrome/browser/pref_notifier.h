@@ -51,14 +51,17 @@ class PrefNotifier : public NonThreadSafe,
 
   virtual ~PrefNotifier();
 
-  // For the given pref_name, fire any observer of the pref only if |old_value|
-  // is different from the current value.
-  // TODO(pamg): Also send notifications if the controlling store has changed.
-  void OnPreferenceSet(const char* pref_name, const Value* old_value);
+  // For the given pref_name, fire any observer of the pref if |old_value| is
+  // different from the current value, or if the store controlling the value
+  // has changed.
+  // TODO(pamg): Currently notifies in some cases when it shouldn't. See
+  // comments for PrefHasChanged() in pref_value_store.h.
+  void OnPreferenceSet(const char* pref_name,
+                       PrefNotifier::PrefStoreType new_store,
+                       const Value* old_value);
 
-  // For the given pref_name, fire any observer of the pref only if |old_value|
-  // is different from the current value. Convenience method to be called when
-  // a preference is set in the USER_STORE.
+  // Convenience method to be called when a preference is set in the
+  // USER_STORE. See OnPreferenceSet().
   void OnUserPreferenceSet(const char* pref_name, const Value* old_value);
 
   // For the given pref_name, fire any observer of the pref. Virtual so it can

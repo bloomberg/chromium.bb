@@ -64,7 +64,9 @@ class MockPrefValueStore : public PrefValueStore {
   virtual ~MockPrefValueStore() {}
 
   // This mock version returns true if the pref path starts with "changed".
-  virtual bool PrefHasChanged(const char* path, const Value* old_value) {
+  virtual bool PrefHasChanged(const char* path,
+                              PrefNotifier::PrefStoreType new_store,
+                              const Value* old_value) {
     std::string path_str(path);
     if (path_str.compare(0, 7, "changed") == 0)
       return true;
@@ -114,10 +116,16 @@ class PrefNotifierTest : public testing::Test {
 
 
 TEST_F(PrefNotifierTest, OnPreferenceSet) {
-  EXPECT_CALL(*notifier_, FireObservers(kChangedPref));
+  EXPECT_CALL(*notifier_, FireObservers(kChangedPref))
+      .Times(PrefNotifier::PREF_STORE_TYPE_MAX + 1);
   EXPECT_CALL(*notifier_, FireObservers(kUnchangedPref)).Times(0);
-  notifier_->OnPreferenceSet(kChangedPref, NULL);
-  notifier_->OnPreferenceSet(kUnchangedPref, NULL);
+
+  for (size_t i = 0; i <= PrefNotifier::PREF_STORE_TYPE_MAX; ++i) {
+    notifier_->OnPreferenceSet(kChangedPref,
+        static_cast<PrefNotifier::PrefStoreType>(i), NULL);
+    notifier_->OnPreferenceSet(kUnchangedPref,
+        static_cast<PrefNotifier::PrefStoreType>(i), NULL);
+  }
 }
 
 TEST_F(PrefNotifierTest, OnUserPreferenceSet) {
@@ -210,13 +218,13 @@ TEST_F(PrefNotifierTest, FireObservers) {
       Source<PrefService>(pref_service_.get()),
       Truly(DetailsAreChangedPref)));
   EXPECT_CALL(obs2_, Observe(_, _, _)).Times(0);
-  notifier_->OnPreferenceSet(kChangedPref, NULL);
+  notifier_->OnUserPreferenceSet(kChangedPref, NULL);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
 
   EXPECT_CALL(obs1_, Observe(_, _, _)).Times(0);
   EXPECT_CALL(obs2_, Observe(_, _, _)).Times(0);
-  notifier_->OnPreferenceSet(kUnchangedPref, NULL);
+  notifier_->OnUserPreferenceSet(kUnchangedPref, NULL);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
 
@@ -231,13 +239,13 @@ TEST_F(PrefNotifierTest, FireObservers) {
       Field(&NotificationType::value, NotificationType::PREF_CHANGED),
       Source<PrefService>(pref_service_.get()),
       Truly(DetailsAreChangedPref)));
-  notifier_->OnPreferenceSet(kChangedPref, NULL);
+  notifier_->OnUserPreferenceSet(kChangedPref, NULL);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
 
   EXPECT_CALL(obs1_, Observe(_, _, _)).Times(0);
   EXPECT_CALL(obs2_, Observe(_, _, _)).Times(0);
-  notifier_->OnPreferenceSet(kUnchangedPref, NULL);
+  notifier_->OnUserPreferenceSet(kUnchangedPref, NULL);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
 
@@ -249,13 +257,13 @@ TEST_F(PrefNotifierTest, FireObservers) {
       Field(&NotificationType::value, NotificationType::PREF_CHANGED),
       Source<PrefService>(pref_service_.get()),
       Truly(DetailsAreChangedPref)));
-  notifier_->OnPreferenceSet(kChangedPref, NULL);
+  notifier_->OnUserPreferenceSet(kChangedPref, NULL);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
 
   EXPECT_CALL(obs1_, Observe(_, _, _)).Times(0);
   EXPECT_CALL(obs2_, Observe(_, _, _)).Times(0);
-  notifier_->OnPreferenceSet(kUnchangedPref, NULL);
+  notifier_->OnUserPreferenceSet(kUnchangedPref, NULL);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
 
@@ -267,13 +275,13 @@ TEST_F(PrefNotifierTest, FireObservers) {
       Field(&NotificationType::value, NotificationType::PREF_CHANGED),
       Source<PrefService>(pref_service_.get()),
       Truly(DetailsAreChangedPref)));
-  notifier_->OnPreferenceSet(kChangedPref, NULL);
+  notifier_->OnUserPreferenceSet(kChangedPref, NULL);
   Mock::VerifyAndClearExpectations(&obs1_);
   Mock::VerifyAndClearExpectations(&obs2_);
 
   EXPECT_CALL(obs1_, Observe(_, _, _)).Times(0);
   EXPECT_CALL(obs2_, Observe(_, _, _)).Times(0);
-  notifier_->OnPreferenceSet(kUnchangedPref, NULL);
+  notifier_->OnUserPreferenceSet(kUnchangedPref, NULL);
 
   notifier_->RemovePrefObserver(kChangedPref, &obs2_);
   notifier_->RemovePrefObserver(kUnchangedPref, &obs2_);
