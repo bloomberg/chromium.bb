@@ -58,7 +58,7 @@ class AutomationMessageSender : public IPC::Message::Sender {
 class AutomationProxy : public IPC::Channel::Listener,
                         public AutomationMessageSender {
  public:
-  explicit AutomationProxy(int command_execution_timeout_ms);
+  AutomationProxy(int command_execution_timeout_ms, bool disconnect_on_failure);
   virtual ~AutomationProxy();
 
   // IPC callback
@@ -292,6 +292,10 @@ class AutomationProxy : public IPC::Channel::Listener,
   // set this to true if building the automation proxy into a module with
   // a version resource.
   bool perform_version_check_;
+
+  // If true, the proxy will disconnect the IPC channel on first failure
+  // to send an IPC message. This helps avoid long timeouts in tests.
+  bool disconnect_on_failure_;
 
   // Delay to let the browser execute the command.
   base::TimeDelta command_execution_timeout_;

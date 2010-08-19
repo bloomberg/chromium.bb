@@ -128,7 +128,7 @@ class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
 
 ChromeFrameAutomationProxyImpl::ChromeFrameAutomationProxyImpl(
     AutomationProxyCacheEntry* entry, int launch_timeout)
-    : AutomationProxy(launch_timeout), proxy_entry_(entry) {
+    : AutomationProxy(launch_timeout, false), proxy_entry_(entry) {
   TRACE_EVENT_BEGIN("chromeframe.automationproxy", this, "");
 
   sync_ = new CFMsgDispatcher();

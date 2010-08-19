@@ -624,7 +624,7 @@ const char simple_data_url[] =
     "</body></html>";
 
 ExternalTabUITestMockClient::ExternalTabUITestMockClient(int execution_timeout)
-    : AutomationProxy(execution_timeout),
+    : AutomationProxy(execution_timeout, false),
       host_window_style_(WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_VISIBLE),
       host_window_(NULL) {
 }

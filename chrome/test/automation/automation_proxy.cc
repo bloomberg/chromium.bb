@@ -91,13 +91,15 @@ class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
 }  // anonymous namespace
 
 
-AutomationProxy::AutomationProxy(int command_execution_timeout_ms)
+AutomationProxy::AutomationProxy(int command_execution_timeout_ms,
+                                 bool disconnect_on_failure)
     : app_launched_(true, false),
       initial_loads_complete_(true, false),
       new_tab_ui_load_complete_(true, false),
       shutdown_event_(new base::WaitableEvent(true, false)),
       app_launch_signaled_(0),
       perform_version_check_(false),
+      disconnect_on_failure_(disconnect_on_failure),
       command_execution_timeout_(
           TimeDelta::FromMilliseconds(command_execution_timeout_ms)),
       listener_thread_id_(0) {
@@ -113,12 +115,10 @@ AutomationProxy::AutomationProxy(int command_execution_timeout_ms)
 }
 
 AutomationProxy::~AutomationProxy() {
-  DCHECK(shutdown_event_.get() != NULL);
-  shutdown_event_->Signal();
   // Destruction order is important. Thread has to outlive the channel and
   // tracker has to outlive the thread since we access the tracker inside
   // AutomationMessageFilter::OnMessageReceived.
-  channel_.reset();
+  Disconnect();
   thread_.reset();
   tracker_.reset();
 }
@@ -379,6 +379,8 @@ bool AutomationProxy::SendProxyConfig(const std::string& new_proxy_config) {
 }
 
 void AutomationProxy::Disconnect() {
+  DCHECK(shutdown_event_.get() != NULL);
+  shutdown_event_->Signal();
   channel_.reset();
 }
 
@@ -389,7 +391,9 @@ void AutomationProxy::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void AutomationProxy::OnChannelError() {
-  DLOG(ERROR) << "Channel error in AutomationProxy.";
+  LOG(ERROR) << "Channel error in AutomationProxy.";
+  if (disconnect_on_failure_)
+    Disconnect();
 }
 
 scoped_refptr<WindowProxy> AutomationProxy::GetActiveWindow() {
@@ -450,7 +454,19 @@ bool AutomationProxy::Send(IPC::Message* message) {
     return false;
   }
 
-  return channel_->SendWithTimeout(message, command_execution_timeout_ms());
+  bool success = channel_->SendWithTimeout(message,
+                                           command_execution_timeout_ms());
+
+  if (!success && disconnect_on_failure_) {
+    // Send failed (possibly due to a timeout). Browser is likely in a weird
+    // state, and further IPC requests are extremely likely to fail (possibly
+    // timeout, which would make tests slower). Disconnect the channel now
+    // to avoid the slowness.
+    LOG(ERROR) << "Disconnecting channel after error!";
+    Disconnect();
+  }
+
+  return success;
 }
 
 void AutomationProxy::InvalidateHandle(const IPC::Message& message) {

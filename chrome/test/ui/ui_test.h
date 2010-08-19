@@ -634,6 +634,8 @@ class UITest : public UITestBase, public PlatformTest {
   virtual void SetUp();
   virtual void TearDown();
 
+  virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
+
  private:
   MessageLoop message_loop_;  // Enables PostTask to main thread.
 };

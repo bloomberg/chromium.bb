@@ -265,8 +265,7 @@ void UITestBase::InitializeTimeouts() {
 }
 
 AutomationProxy* UITestBase::CreateAutomationProxy(int execution_timeout) {
-  // By default we create a plain vanilla AutomationProxy.
-  return new AutomationProxy(execution_timeout);
+  return new AutomationProxy(execution_timeout, false);
 }
 
 void UITestBase::LaunchBrowserAndServer() {
@@ -1540,3 +1539,11 @@ void UITest::TearDown() {
   UITestBase::TearDown();
   PlatformTest::TearDown();
 }
+
+AutomationProxy* UITest::CreateAutomationProxy(int execution_timeout) {
+  // Make the AutomationProxy disconnect the channel on the first error,
+  // so that we avoid spending a lot of time in timeouts. The browser is likely
+  // hosed if we hit those errors.
+  return new AutomationProxy(execution_timeout, true);
+}
+
