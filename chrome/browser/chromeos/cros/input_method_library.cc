@@ -53,7 +53,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
         active_input_method_(kHardwareKeyboardLayout),
         need_input_method_set_(false),
         ime_handle_(0),
-        candidate_window_handle_(0) {
+        candidate_window_handle_(0),
+        failure_count_(0) {
     scoped_ptr<InputMethodDescriptors> input_method_descriptors(
         CreateFallbackInputMethodDescriptors());
     current_input_method_ = input_method_descriptors->at(0);
@@ -232,8 +233,19 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     } else {
       if (!timer_.IsRunning()) {
         static const int64 kTimerIntervalInMsec = 100;
+        failure_count_ = 0;
         timer_.Start(base::TimeDelta::FromMilliseconds(kTimerIntervalInMsec),
                      this, &InputMethodLibraryImpl::FlushImeConfig);
+      } else {
+        static const int kMaxRetries = 15;
+        ++failure_count_;
+        if (failure_count_ > kMaxRetries) {
+          LOG(ERROR) << "FlushImeConfig: Max retries exceeded. " <<
+                        "active_input_method: " << active_input_method_ <<
+                        " pending_config_requests.size: " <<
+                        pending_config_requests_.size();
+          timer_.Stop();
+        }
       }
     }
     if (active_input_methods_are_changed) {
@@ -449,6 +461,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   }
 
   void SetDeferImeStartup(bool defer) {
+    LOG(INFO) << "Setting DeferImeStartup to " << defer;
     defer_ime_startup_ = defer;
   }
   // A reference to the language api, to allow callbacks when the input method
@@ -489,6 +502,8 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
 
   int ime_handle_;
   int candidate_window_handle_;
+
+  int failure_count_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodLibraryImpl);
 };
