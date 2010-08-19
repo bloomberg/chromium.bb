@@ -1728,8 +1728,15 @@ void Browser::OpenTaskManager() {
 }
 
 void Browser::OpenBugReportDialog() {
+#if defined(OS_CHROMEOS)
   UserMetrics::RecordAction(UserMetricsAction("ReportBug"), profile_);
   window_->ShowReportBugDialog();
+#else
+  TabContents* contents = GetSelectedTabContents();
+  if (!contents)
+    return;
+  ShowBrokenPageTab(contents);
+#endif
 }
 
 void Browser::ToggleBookmarkBar() {

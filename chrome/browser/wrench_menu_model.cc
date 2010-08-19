@@ -147,8 +147,6 @@ void ToolsMenuModel::Build(Browser* browser) {
   AddItemWithStringId(IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
 
   AddSeparator();
-  AddItemWithStringId(IDC_REPORT_BUG, IDS_REPORT_BUG);
-  AddSeparator();
 
   encoding_menu_model_.reset(new EncodingMenuModel(browser));
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,

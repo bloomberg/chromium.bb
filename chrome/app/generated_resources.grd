@@ -4227,59 +4227,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BUGREPORT_TITLE" desc="Dialog title for bug report dialog">
         Report Bug or Broken Web Site
       </message>
-      <message name="IDS_BUGREPORT_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
+      <message name="IDS_BUGREPORT_REPORT_PAGE_TITLE" desc="Label showing title of the page that will be reported">
         Page title:
       </message>
-      <message name="IDS_BUGREPORT_REPORT_URL_LABEL" desc="Label showing the URL that will be reported">
+      <message name="IDS_BUGREPORT_REPORT_URL_LABEL" desc="Label showing URL that will be reported">
         Page URL:
       </message>
-      <message name="IDS_BUGREPORT_USER_EMAIL_LABEL" desc="Label showing the e-mail address that will be reported">
+      <message name="IDS_BUGREPORT_USER_EMAIL_LABEL" desc="Label showing URL that will be reported">
         User e-mail:
       </message>
-      <message name="IDS_BUGREPORT_DESCRIPTION_LABEL" desc="Label for the description field">
+      <message name="IDS_BUGREPORT_DESCRIPTION_LABEL" desc="Label for description field">
         Description:
       </message>
-      <message name="IDS_BUGREPORT_SCREENSHOT_LABEL" desc="Label for the screenshot field">
-        Screenshot:
-      </message>
-      <!-- For Mac compatibility -->
-      <message name="IDS_BUGREPORT_SOMETHING_MISSING" desc="In Title Case: Report a bug/problem type: Something's missing">
-        Something's Missing
-      </message>
-      <message name="IDS_BUGREPORT_BROWSER_CRASH" desc="Report a bug/problem type: Browser crashed">
-        Browser crash... go boom
-      </message>
-      <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="Report a bug/problem type: General feedback/other">
-        General feedback/other
-      </message>
-      <message name="IDS_BUGREPORT_PAGE_LOOKS_ODD" desc="Report a bug/problem type: Page looks odd">
-        Page looks odd
-      </message>
-      <message name="IDS_BUGREPORT_PAGE_WONT_LOAD" desc="Report a bug/problem type: Page won't load">
-        Page won't load
-      </message>
-      <message name="IDS_BUGREPORT_CANT_SIGN_IN" desc="Report a bug/problem type: Can't sign in">
-        Can't sign in
-      </message>
-      <!-- /Mac Compat -->
       <if expr="pp_ifdef('chromeos')">
-        <message name="IDS_BUGREPORT_NOTIFICATION_TITLE" desc="Title for the notification given to the user on completion (successful or failed) of user feedback">
-          Feedback submission status
-        </message>
-        <message name="IDS_BUGREPORT_FEEDBACK_STATUS_SUCCESS" desc="Message for the status of a feedback submission on success">
-          User Feedback submission succeeded
-        </message>
-        <message name="IDS_BUGREPORT_FEEDBACK_STATUS_FAIL" desc="Message for the status of a feedback submission failure">
-          User feedback submission failed: $1
+        <message name="IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE" desc="Radio button for including a new screen image on the bug report dialog box">
+          Send last active tab screen shot
         </message>
         <message name="IDS_BUGREPORT_INCLUDE_LAST_SCREEN_IMAGE" desc="Radio button for including the last screen image on the bug report dialog box">
           Send last saved screen shot
         </message>
-        <message name="IDS_BUGREPORT_CURRENT_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
-          Send a current page screen shot
-        </message>
-        <message name="IDS_BUGREPORT_SAVED_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
-          Send a saved screen shot
+        <message name="IDS_BUGREPORT_INCLUDE_NO_SCREEN_IMAGE" desc="Radio button for not including a screen image on the bug report dialog box">
+          Do not send a screen shot
         </message>
         <message name="IDS_BUGREPORT_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
           Send system information
@@ -4294,24 +4262,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BUGREPORT_INCLUDE_PAGE_IMAGE_CHKBOX" desc="Checkbox for including page image">
         Send screen shot of current page
       </message>
-      <message name="IDS_BUGREPORT_INCLUDE_NEW_SCREEN_IMAGE" desc="Radio button for including a new screen image on the bug report dialog box">
-        Send last active tab screen shot
-      </message>
-      <message name="IDS_BUGREPORT_INCLUDE_NO_SCREENSHOT" desc="Radio button for not including a screen image on the bug report dialog box">
-        Do not send a screen shot
-      </message>
       <message name="IDS_BUGREPORT_BUG_TYPE" desc="Label for bug type">
         Bug type:
       </message>
-      <message name="IDS_BUGREPORT_PHISHING_PAGE" desc="Report a bug/problem type: Phishing page">
-        Phishing page
-      </message>
-      <message name="IDS_BUGREPORT_NO_ISSUE_SELECTED" desc="Message shown when no issue is selected before hitting submit">
-        Please select an issue type from the drop down before sending the report
-      </message>
-      <message name="IDS_BUGREPORT_ISSUE_WITH" desc="Label for issue with">
-        I see an issue with:
-      </message>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_BUGREPORT_CONNECTIVITY_ISSUE" desc="Report a bug/problem type: Connectivity">
+          Connectivity
+        </message>
+        <message name="IDS_BUGREPORT_SYNC_ISSUE" desc="Report a bug/problem type: Sync">
+          Sync
+        </message>
+        <message name="IDS_BUGREPORT_PAGE_FORMATTING" desc="Report a bug/problem type: Page formatting or layout">
+          Page formatting
+        </message>
+        <message name="IDS_BUGREPORT_EXTENSION_ISSUE" desc="Report a bug/problem type: Extensions or apps">
+          Extensions or apps
+        </message>
+        <message name="IDS_BUGREPORT_SUSPEND_ISSUE" desc="Report a bug/problem type: Suspend or resume">
+          Suspend or resume
+        </message>
+        <message name="IDS_BUGREPORT_CRASH_ISSUE" desc="Report a bug/problem type: Crash">
+          Crash
+        </message>
+      </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_BUGREPORT_SEND_REPORT" desc="Text for OK button on dialog">
           Send report
@@ -4319,85 +4292,55 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="Text for report phishing button">
           Open phishing report
         </message>
-        <message name="IDS_BUGREPORT_CHOOSE_ISSUE" desc="In Title Case: Report a bug/problem type: Choose issue with">
-          (choose an issue below)
+        <message name="IDS_BUGREPORT_PAGE_WONT_LOAD" desc="Report a bug/problem type: Page won't load">
+          Page won't load
         </message>
-        <message name="IDS_BUGREPORT_PAGE_FORMATTING" desc="In Title Case: Report a bug/problem type: Page formatting or layout">
-          Page formatting or layout
+        <message name="IDS_BUGREPORT_PAGE_LOOKS_ODD" desc="Report a bug/problem type: Page looks odd">
+          Page looks odd
         </message>
-        <message name="IDS_BUGREPORT_PAGE_LOAD" desc="In Title Case: Report a bug/problem type: Pages not loading">
-          Pages not loading
+        <message name="IDS_BUGREPORT_PHISHING_PAGE" desc="Report a bug/problem type: Phishing page">
+          Phishing page
         </message>
-        <message name="IDS_BUGREPORT_PLUGINS" desc="In Title Case: Report a bug/problem type: Plug-ins">
-          Plug-ins (e.g. Adobe Flash Player, Quicktime, etc)
+        <message name="IDS_BUGREPORT_CANT_SIGN_IN" desc="Report a bug/problem type: Can't sign in">
+          Can't sign in
         </message>
-        <message name="IDS_BUGREPORT_TABS" desc="In Title Case: Report a bug/problem type: Tabs or windows">
-          Tabs or windows
+        <message name="IDS_BUGREPORT_SOMETHING_MISSING" desc="Report a bug/problem type: Something's missing">
+          Something's missing
         </message>
-        <message name="IDS_BUGREPORT_NETWORK" desc="In Title Case: Report a bug/problem type: Network connection">
-          Network connection
+        <message name="IDS_BUGREPORT_BROWSER_CRASH" desc="Report a bug/problem type: Browser crashed">
+          Browser crash... go boom
         </message>
-        <message name="IDS_BUGREPORT_CONNECTIVITY" desc="In Title Case: Report a bug/problem type: Connectivity issues">
-          Network connection
-        </message>
-        <message name="IDS_BUGREPORT_STANDBY_RESUME" desc="In Title Case: Report a bug/problem type: Standby or Resume">
-          Network connection
-        </message>
-        <message name="IDS_BUGREPORT_SYNC" desc="In Title Case: Report a bug/problem type: Synced preferences">
-          Synced preferences
-        </message>
-        <message name="IDS_BUGREPORT_CRASHES" desc="In Title Case: Report a bug/problem type: Crashes">
-          Crashes
-        </message>
-        <message name="IDS_BUGREPORT_EXTENSIONS" desc="In Title Case: Report a bug/problem type: Extensions or apps">
-          Extensions or apps
-        </message>
-        <message name="IDS_BUGREPORT_OTHER" desc="In Title Case: Report a bug/problem type: Other">
-          Other
-        </message>
-        <message name="IDS_BUGREPORT_GENERAL" desc="Report a bug/problem type: General feedback/other">
+        <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="Report a bug/problem type: General feedback/other">
           General feedback/other
-        </message>
-        <message name="IDS_BUGREPORT_PREVIEW_REPORT" desc="Text for the preview report button on dialog">
-          Preview report
         </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_BUGREPORT_SEND_REPORT" desc="Text for the send report button on dialog">
-          Send report
+        <message name="IDS_BUGREPORT_SEND_REPORT" desc="In Title Case: Text for OK button on dialog">
+          Send Report
         </message>
-        <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="Text for report phishing button">
-          Open phishing report
+        <message name="IDS_BUGREPORT_SEND_PHISHING_REPORT" desc="In Title Case: Text for report phishing button">
+          Open Phishing Report
         </message>
-        <message name="IDS_BUGREPORT_CHOOSE_ISSUE" desc="In Title Case: Report a bug/problem type: Choose issue with">
-          (choose an issue below)
+        <message name="IDS_BUGREPORT_PAGE_WONT_LOAD" desc="In Title Case: Report a bug/problem type: Page won't load">
+          Page Won't Load
         </message>
-        <message name="IDS_BUGREPORT_PAGE_FORMATTING" desc="In Title Case: Report a bug/problem type: Page formatting or layout">
-          Page formatting or layout
+        <message name="IDS_BUGREPORT_PAGE_LOOKS_ODD" desc="In Title Case: Report a bug/problem type: Page looks odd">
+          Page Looks Odd
         </message>
-        <message name="IDS_BUGREPORT_PAGE_LOAD" desc="In Title Case: Report a bug/problem type: Pages not loading">
-          Pages not loading
+        <message name="IDS_BUGREPORT_PHISHING_PAGE" desc="In Title Case: Report a bug/problem type: Phishing page">
+          Phishing Page
         </message>
-        <message name="IDS_BUGREPORT_PLUGINS" desc="In Title Case: Report a bug/problem type: Plug-ins">
-          Plug-ins (e.g. Adobe Flash Player, Quicktime, etc)
+        <message name="IDS_BUGREPORT_CANT_SIGN_IN" desc="In Title Case: Report a bug/problem type: Can't sign in">
+          Can't Sign In
         </message>
-        <message name="IDS_BUGREPORT_TABS" desc="In Title Case: Report a bug/problem type: Tabs or windows">
-          Tabs or windows
+        <message name="IDS_BUGREPORT_SOMETHING_MISSING" desc="In Title Case: Report a bug/problem type: Something's missing">
+          Something's Missing
         </message>
-        <message name="IDS_BUGREPORT_NETWORK" desc="In Title Case: Report a bug/problem type: Network connection">
-          Network connection
+        <message name="IDS_BUGREPORT_BROWSER_CRASH" desc="In Title Case: Report a bug/problem type: Browser crashed">
+          Browser Crash... Go Boom
         </message>
-        <message name="IDS_BUGREPORT_SYNC" desc="In Title Case: Report a bug/problem type: Synced preferences">
-          Synced preferences
-        </message>
-        <message name="IDS_BUGREPORT_CRASHES" desc="In Title Case: Report a bug/problem type: Crashes">
-          Crashes
-        </message>
-        <message name="IDS_BUGREPORT_EXTENSIONS" desc="In Title Case: Report a bug/problem type: Extensions or apps">
-          Extensions or apps
-        </message>
-        <message name="IDS_BUGREPORT_OTHER" desc="In Title Case: Report a bug/problem type: Other">
-          Other
+        <message name="IDS_BUGREPORT_OTHER_PROBLEM" desc="In Title Case: Report a bug/problem type: General feedback/other">
+          General feedback/other
         </message>
       </if>
 

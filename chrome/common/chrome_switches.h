@@ -163,7 +163,6 @@ extern const char kExperimentalSpellcheckerFeatures[];
 extern const char kExplicitlyAllowedPorts[];
 extern const char kExtensionProcess[];
 extern const char kExtensionsUpdateFrequency[];
-extern const char kFeedbackServer[];
 extern const char kFileDescriptorLimit[];
 extern const char kFirstRun[];
 extern const char kForceFieldTestNameAndValue[];

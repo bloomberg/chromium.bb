@@ -63,21 +63,19 @@ class BugReportUtil {
   //     all the call sites or making it a wrapper around another util.
   static void SetOSVersion(std::string *os_version);
 
-  // This sets the address of the feedback server to be used by SendReport
-  static void SetFeedbackServer(const std::string& server);
-
   // Generates bug report data.
   static void SendReport(Profile* profile,
       const std::string& page_title_text,
       int problem_type,
       const std::string& page_url_text,
+      const std::string& user_email_text,
       const std::string& description,
       const char* png_data,
       int png_data_length,
       int png_width,
 #if defined(OS_CHROMEOS)
       int png_height,
-      const std::string& user_email_text,
+      const std::string& problem_type_text,
       const chromeos::LogDictionaryType* const sys_info);
 #else
       int png_height);
@@ -94,8 +92,6 @@ class BugReportUtil {
   static void AddFeedbackData(
       userfeedback::ExternalExtensionSubmit* feedback_data,
       const std::string& key, const std::string& value);
-
-  static std::string feedback_server_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BugReportUtil);
 };

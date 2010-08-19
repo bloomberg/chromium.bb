@@ -113,6 +113,7 @@
         base::SysNSStringToUTF8(pageTitle_),
         [self bugTypeFromIndex],
         base::SysNSStringToUTF8(pageURL_),
+        std::string(),
         base::SysNSStringToUTF8(bugDescription_),
         sendScreenshot_ && !pngData_.empty() ?
             reinterpret_cast<const char *>(&(pngData_[0])) : NULL,
