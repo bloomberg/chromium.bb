@@ -395,11 +395,8 @@ if os.environ.get('TARGET_CODE') and not ARGUMENTS.get('bitcode'):
     time.sleep(10)
 
 if TARGET_NAME == 'arm' and not ARGUMENTS.get('bitcode'):
-    Banner("please update your scons invocations to include bitcode=1\n"
-           "execution continues in 10 sec")
+    # This has always been a silent default on ARM.
     ARGUMENTS['bitcode'] = 1
-    import time
-    time.sleep(10)
 
 # Determine where the object files go
 if BUILD_NAME == TARGET_NAME:
