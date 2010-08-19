@@ -200,7 +200,7 @@ class TileSet {
   const Tile& tile_at(int index) const { return *tiles_[index]; }
 
  private:
-  std::vector<Tile*> tiles_;
+  ScopedVector<Tile> tiles_;
 
   int selected_index_;
   int initial_index_;

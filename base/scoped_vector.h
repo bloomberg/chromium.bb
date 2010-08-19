@@ -27,7 +27,7 @@ class ScopedVector {
 
   std::vector<T*>* operator->() { return &v; }
   const std::vector<T*>* operator->() const { return &v; }
-  T* operator[](size_t i) { return v[i]; }
+  T*& operator[](size_t i) { return v[i]; }
   const T* operator[](size_t i) const { return v[i]; }
 
   bool empty() const { return v.empty(); }
@@ -54,6 +54,7 @@ class ScopedVector {
   }
 
   void reset() { STLDeleteElements(&v); }
+  void resize(size_t new_size) { v.resize(new_size); }
 
  private:
   std::vector<T*> v;
