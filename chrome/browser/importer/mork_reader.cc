@@ -584,5 +584,5 @@ void ImportHistoryFromFirefox2(const FilePath& file, ImporterBridge* bridge) {
   for (MorkReader::iterator i = reader.begin(); i != reader.end(); ++i)
     AddToHistory(i->second, data, &rows);
   if (!rows.empty())
-    bridge->SetHistoryItems(rows, history::SOURCE_FIREFOX_IMPORTED);
+    bridge->SetHistoryItems(rows);
 }

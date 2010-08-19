@@ -78,9 +78,8 @@ class HistoryBackendMock : public HistoryBackend {
   MOCK_METHOD2(GetVisitsForURL, bool(history::URLID id,
                                      history::VisitVector* visits));
   MOCK_METHOD2(UpdateURL, bool(history::URLID id, const history::URLRow& url));
-  MOCK_METHOD3(AddVisits, bool(const GURL& url,
-                               const std::vector<base::Time>& visits,
-                               history::VisitSource visit_source));
+  MOCK_METHOD2(AddVisits, bool(const GURL& url,
+                               const std::vector<base::Time>& visits));
   MOCK_METHOD1(RemoveVisits, bool(const history::VisitVector& visits));
   MOCK_METHOD2(GetURL, bool(const GURL& url_id, history::URLRow* url_row));
   MOCK_METHOD2(SetPageTitle, void(const GURL& url, const std::wstring& title));
@@ -341,8 +340,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncNoMerge) {
       WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
   EXPECT_CALL((*history_backend_.get()), GetVisitsForURL(_, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<1>(native_visits), Return(true)));
-  EXPECT_CALL((*history_backend_.get()),
-      AddVisits(_, _, history::SOURCE_SYNCED)).WillRepeatedly(Return(true));
+  EXPECT_CALL((*history_backend_.get()), AddVisits(_, _)).
+      WillRepeatedly(Return(true));
 
   std::vector<history::URLRow> sync_entries;
   sync_entries.push_back(sync_entry);
@@ -386,8 +385,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncMerge) {
       WillOnce(DoAll(SetArgumentPointee<0>(native_entries), Return(true)));
   EXPECT_CALL((*history_backend_.get()), GetVisitsForURL(_, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<1>(native_visits), Return(true)));
-  EXPECT_CALL((*history_backend_.get()),
-      AddVisits(_, _, history::SOURCE_SYNCED)). WillRepeatedly(Return(true));
+  EXPECT_CALL((*history_backend_.get()), AddVisits(_, _)).
+      WillRepeatedly(Return(true));
 
   std::vector<history::URLRow> sync_entries;
   sync_entries.push_back(sync_entry);

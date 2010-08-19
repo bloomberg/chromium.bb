@@ -1745,11 +1745,10 @@ void TabContents::UpdateHistoryForNavigation(
       if (!redirects.empty())
         redirects.back() = virtual_url;
       hs->AddPage(virtual_url, this, params.page_id, params.referrer,
-                  params.transition, redirects, history::SOURCE_BROWSED,
-                  details.did_replace_entry);
+                  params.transition, redirects, details.did_replace_entry);
     } else {
       hs->AddPage(params.url, this, params.page_id, params.referrer,
-                  params.transition, params.redirects, history::SOURCE_BROWSED,
+                  params.transition, params.redirects,
                   details.did_replace_entry);
     }
   }

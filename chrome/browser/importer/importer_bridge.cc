@@ -61,12 +61,10 @@ void InProcessImporterBridge::SetFavIcons(
 }
 
 void InProcessImporterBridge::SetHistoryItems(
-    const std::vector<history::URLRow> &rows,
-    history::VisitSource visit_source) {
+    const std::vector<history::URLRow> &rows) {
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(writer_, &ProfileWriter::AddHistoryPage,
-                        rows, visit_source));
+      NewRunnableMethod(writer_, &ProfileWriter::AddHistoryPage, rows));
 }
 
 void InProcessImporterBridge::SetKeywords(
@@ -152,9 +150,8 @@ void ExternalProcessImporterBridge::SetFavIcons(
 }
 
 void ExternalProcessImporterBridge::SetHistoryItems(
-    const std::vector<history::URLRow> &rows,
-    history::VisitSource visit_source) {
-  profile_import_thread_->NotifyHistoryImportReady(rows, visit_source);
+    const std::vector<history::URLRow> &rows) {
+  profile_import_thread_->NotifyHistoryImportReady(rows);
 }
 
 void ExternalProcessImporterBridge::SetKeywords(

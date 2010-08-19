@@ -175,8 +175,7 @@ void HistoryURLProviderTest::FillData() {
     const GURL current_url(cur.url);
     history_service_->AddPageWithDetails(current_url, UTF8ToUTF16(cur.title),
                                          cur.visit_count, cur.typed_count,
-                                         visit_time, false,
-                                         history::SOURCE_BROWSED);
+                                         visit_time, false);
   }
 }
 
@@ -316,8 +315,7 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
     history_service_->AddPageWithDetails(GURL(redirect[i].url),
                                          UTF8ToUTF16("Title"),
                                          redirect[i].count, redirect[i].count,
-                                         Time::Now(), false,
-                                         history::SOURCE_BROWSED);
+                                         Time::Now(), false);
   }
 
   // Create a B->C->A redirect chain, but set the visit counts such that they
@@ -329,8 +327,7 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   redirects_to_a.push_back(GURL(redirect[2].url));
   redirects_to_a.push_back(GURL(redirect[0].url));
   history_service_->AddPage(GURL(redirect[0].url), NULL, 0, GURL(),
-                            PageTransition::TYPED, redirects_to_a,
-                            history::SOURCE_BROWSED, true);
+                            PageTransition::TYPED, redirects_to_a, true);
 
   // Because all the results are part of a redirect chain with other results,
   // all but the first one (A) should be culled. We should get the default

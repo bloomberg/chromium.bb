@@ -105,8 +105,7 @@ void ProfileImportThread::NotifyEnded() {
 }
 
 void ProfileImportThread::NotifyHistoryImportReady(
-    const std::vector<history::URLRow> &rows,
-    history::VisitSource visit_source) {
+    const std::vector<history::URLRow> &rows) {
   Send(new ProfileImportProcessHostMsg_NotifyHistoryImportStart(rows.size()));
 
   std::vector<history::URLRow>::const_iterator it;
@@ -118,8 +117,7 @@ void ProfileImportThread::NotifyHistoryImportReady(
         it + kNumHistoryRowsToSend : rows.end();
     row_group.assign(it, end_group);
 
-    Send(new ProfileImportProcessHostMsg_NotifyHistoryImportGroup(row_group,
-         visit_source));
+    Send(new ProfileImportProcessHostMsg_NotifyHistoryImportGroup(row_group));
   }
 }
 

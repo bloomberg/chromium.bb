@@ -280,7 +280,7 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
     }
   }
   if (new_urls) {
-    history_backend_->AddPagesWithDetails(*new_urls, history::SOURCE_SYNCED);
+    history_backend_->AddPagesWithDetails(*new_urls);
   }
   if (updated_urls) {
     for (TypedUrlUpdateVector::const_iterator url = updated_urls->begin();
@@ -294,8 +294,7 @@ bool TypedUrlModelAssociator::WriteToHistoryBackend(
   if (new_visits) {
     for (TypedUrlVisitVector::const_iterator visits = new_visits->begin();
          visits != new_visits->end(); ++visits) {
-           if (!history_backend_->AddVisits(visits->first, visits->second,
-                                            history::SOURCE_SYNCED)) {
+      if (!history_backend_->AddVisits(visits->first, visits->second)) {
         LOG(ERROR) << "Could not add visits.";
         return false;
       }

@@ -56,8 +56,6 @@ class ExpireHistoryTest : public testing::Test,
  protected:
   // Called by individual tests when they want data populated.
   void AddExampleData(URLID url_ids[3], Time visit_times[4]);
-  // Add visits with source information.
-  void AddExampleSourceData(const GURL& url, URLID* id);
 
   // Returns true if the given favicon/thumanil has an entry in the DB.
   bool HasFavIcon(FavIconID favicon_id);
@@ -229,26 +227,26 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
   visit_row1.url_id = url_ids[0];
   visit_row1.visit_time = visit_times[0];
   visit_row1.is_indexed = true;
-  main_db_->AddVisit(&visit_row1, SOURCE_BROWSED);
+  main_db_->AddVisit(&visit_row1);
 
   VisitRow visit_row2;
   visit_row2.url_id = url_ids[1];
   visit_row2.visit_time = visit_times[1];
   visit_row2.is_indexed = true;
-  main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
+  main_db_->AddVisit(&visit_row2);
 
   VisitRow visit_row3;
   visit_row3.url_id = url_ids[1];
   visit_row3.visit_time = visit_times[2];
   visit_row3.is_indexed = true;
   visit_row3.transition = PageTransition::TYPED;
-  main_db_->AddVisit(&visit_row3, SOURCE_BROWSED);
+  main_db_->AddVisit(&visit_row3);
 
   VisitRow visit_row4;
   visit_row4.url_id = url_ids[2];
   visit_row4.visit_time = visit_times[3];
   visit_row4.is_indexed = true;
-  main_db_->AddVisit(&visit_row4, SOURCE_BROWSED);
+  main_db_->AddVisit(&visit_row4);
 
   // Full text index for each visit.
   text_db_->AddPageData(url_row1.url(), visit_row1.url_id, visit_row1.visit_id,
@@ -267,35 +265,6 @@ void ExpireHistoryTest::AddExampleData(URLID url_ids[3], Time visit_times[4]) {
   text_db_->AddPageData(url_row3.url(), visit_row4.url_id, visit_row4.visit_id,
                         visit_row4.visit_time, UTF8ToUTF16("title"),
                         UTF8ToUTF16("goats body"));
-}
-
-void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
-  if (!main_db_.get())
-    return;
-
-  Time last_visit_time = Time::Now();
-  // Add one URL.
-  URLRow url_row1(url);
-  url_row1.set_last_visit(last_visit_time);
-  url_row1.set_visit_count(4);
-  URLID url_id = main_db_->AddURL(url_row1);
-  *id = url_id;
-
-  // Four times for each visit.
-  VisitRow visit_row1(url_id, last_visit_time - TimeDelta::FromDays(4), 0,
-                      PageTransition::TYPED, 0);
-  main_db_->AddVisit(&visit_row1, SOURCE_SYNCED);
-
-  VisitRow visit_row2(url_id, last_visit_time - TimeDelta::FromDays(3), 0,
-                      PageTransition::TYPED, 0);
-  main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
-
-  VisitRow visit_row3(url_id, last_visit_time - TimeDelta::FromDays(2), 0,
-                      PageTransition::TYPED, 0);
-  main_db_->AddVisit(&visit_row3, SOURCE_EXTENSION);
-
-  VisitRow visit_row4(url_id, last_visit_time, 0, PageTransition::TYPED, 0);
-  main_db_->AddVisit(&visit_row4, SOURCE_FIREFOX_IMPORTED);
 }
 
 bool ExpireHistoryTest::HasFavIcon(FavIconID favicon_id) {
@@ -844,50 +813,6 @@ TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {
   // Now, read all visits and verify that there's at least one.
   EXPECT_TRUE(all->Read(now, main_db_.get(), &visits, 1));
   EXPECT_EQ(1U, visits.size());
-}
-
-// Tests how ArchiveSomeOldHistory treats source information.
-TEST_F(ExpireHistoryTest, ArchiveSomeOldHistoryWithSource) {
-  const GURL url("www.testsource.com");
-  URLID url_id;
-  AddExampleSourceData(url, &url_id);
-  const ExpiringVisitsReader* reader = expirer_.GetAllVisitsReader();
-
-  // Archiving all the visits we added.
-  ASSERT_FALSE(expirer_.ArchiveSomeOldHistory(Time::Now(), reader, 10));
-
-  URLRow archived_row;
-  ASSERT_TRUE(archived_db_->GetRowForURL(url, &archived_row));
-  VisitVector archived_visits;
-  archived_db_->GetVisitsForURL(archived_row.id(), &archived_visits);
-  ASSERT_EQ(4U, archived_visits.size());
-  VisitSourceMap sources;
-  archived_db_->GetVisitsSource(archived_visits, &sources);
-  ASSERT_EQ(3U, sources.size());
-  int result = 0;
-  VisitSourceMap::iterator iter;
-  for (int i = 0; i < 4; i++) {
-    iter = sources.find(archived_visits[i].visit_id);
-    if (iter == sources.end())
-      continue;
-    switch (iter->second) {
-      case history::SOURCE_EXTENSION:
-        result |= 0x1;
-        break;
-      case history::SOURCE_FIREFOX_IMPORTED:
-        result |= 0x2;
-        break;
-      case history::SOURCE_SYNCED:
-        result |= 0x4;
-      default:
-        break;
-    }
-  }
-  EXPECT_EQ(0x7, result);
-  main_db_->GetVisitsSource(archived_visits, &sources);
-  EXPECT_EQ(0U, sources.size());
-  main_db_->GetVisitsForURL(url_id, &archived_visits);
-  EXPECT_EQ(0U, archived_visits.size());
 }
 
 // TODO(brettw) add some visits with no URL to make sure everything is updated

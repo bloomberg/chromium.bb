@@ -111,7 +111,7 @@ class HistoryQueryTest : public testing::Test {
 
       history_->AddPage(url, test_entries[i].time, id_scope, page_id, GURL(),
                         PageTransition::LINK, history::RedirectList(),
-                        history::SOURCE_BROWSED, false);
+                        false);
       history_->SetPageTitle(url, UTF8ToUTF16(test_entries[i].title));
       history_->SetPageContents(url, UTF8ToUTF16(test_entries[i].body));
     }
@@ -314,7 +314,7 @@ TEST_F(HistoryQueryTest, FTSArchived) {
   row2.set_last_visit(Time::Now());
   urls_to_add.push_back(row2);
 
-  history_->AddPagesWithDetails(urls_to_add, history::SOURCE_BROWSED);
+  history_->AddPagesWithDetails(urls_to_add);
 
   QueryOptions options;
   QueryResults results;

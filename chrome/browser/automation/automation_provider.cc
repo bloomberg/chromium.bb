@@ -1836,7 +1836,6 @@ void AutomationProvider::AddHistoryItem(Browser* browser,
               GURL(),
               PageTransition::LINK,
               history::RedirectList(),
-              history::SOURCE_BROWSED,
               false);
   if (title.length())
     hs->SetPageTitle(gurl, title);

@@ -109,8 +109,7 @@ void SearchProviderTest::SetUp() {
   term1_url_ = GURL(default_t_url_->url()->ReplaceSearchTerms(
       *default_t_url_, UTF16ToWide(term1_), 0, std::wstring()));
   history->AddPageWithDetails(term1_url_, string16(), 1, 1,
-                              base::Time::Now(), false,
-                              history::SOURCE_BROWSED);
+                              base::Time::Now(), false);
   history->SetKeywordSearchTermsForURL(term1_url_, default_t_url_->id(),
                                        term1_);
 
@@ -127,8 +126,7 @@ void SearchProviderTest::SetUp() {
   keyword_url_ = GURL(keyword_t_url_->url()->ReplaceSearchTerms(
       *keyword_t_url_, UTF16ToWide(keyword_term_), 0, std::wstring()));
   history->AddPageWithDetails(keyword_url_, string16(), 1, 1,
-                              base::Time::Now(), false,
-                              history::SOURCE_BROWSED);
+                              base::Time::Now(), false);
   history->SetKeywordSearchTermsForURL(keyword_url_, keyword_t_url_->id(),
                                        keyword_term_);
 

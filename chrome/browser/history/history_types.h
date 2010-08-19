@@ -176,27 +176,9 @@ class URLRow {
   // We support the implicit copy constuctor and operator=.
 };
 
-// The enumeration of all possible sources of visits is listed below.
-// The source will be propogated along with a URL or a visit item
-// and eventually be stored in the history database,
-// visit_source table specifically.
-// Different from page transition types, they describe the origins of visits.
-// (Warning): Please don't change any existing values while it is ok to add
-// new values when needed.
-typedef enum {
-  SOURCE_SYNCED = 0,         // Synchronized from somewhere else.
-  SOURCE_BROWSED = 1,        // User browsed.
-  SOURCE_EXTENSION = 2,      // Added by an externsion.
-  SOURCE_FIREFOX_IMPORTED = 3,
-  SOURCE_IE_IMPORTED = 4,
-  SOURCE_SAFARI_IMPORTED = 5,
-} VisitSource;
+// VisitRow -------------------------------------------------------------------
 
 typedef int64 VisitID;
-// Structure to hold the mapping between each visit's id and its source.
-typedef std::map<VisitID, VisitSource> VisitSourceMap;
-
-// VisitRow -------------------------------------------------------------------
 
 // Holds all information associated with a specific visit. A visit holds time
 // and referrer information for one time a URL is visited.

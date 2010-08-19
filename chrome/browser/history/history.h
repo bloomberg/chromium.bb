@@ -185,7 +185,6 @@ class HistoryService : public CancelableRequestProvider,
                const GURL& referrer,
                PageTransition::Type transition,
                const history::RedirectList& redirects,
-               history::VisitSource visit_source,
                bool did_replace_entry);
 
   // For adding pages to history with a specific time. This is for testing
@@ -197,13 +196,12 @@ class HistoryService : public CancelableRequestProvider,
                const GURL& referrer,
                PageTransition::Type transition,
                const history::RedirectList& redirects,
-               history::VisitSource visit_source,
                bool did_replace_entry);
 
   // For adding pages to history where no tracking information can be done.
-  void AddPage(const GURL& url, history::VisitSource visit_source) {
-    AddPage(url, NULL, 0, GURL(), PageTransition::LINK,
-            history::RedirectList(), visit_source, false);
+  void AddPage(const GURL& url) {
+    AddPage(url, NULL, 0, GURL(), PageTransition::LINK, history::RedirectList(),
+            false);
   }
 
   // Sets the title for the given page. The page should be in history. If it
@@ -537,12 +535,10 @@ class HistoryService : public CancelableRequestProvider,
                           int visit_count,
                           int typed_count,
                           base::Time last_visit,
-                          bool hidden,
-                          history::VisitSource visit_source);
+                          bool hidden);
 
   // The same as AddPageWithDetails() but takes a vector.
-  void AddPagesWithDetails(const std::vector<history::URLRow>& info,
-                           history::VisitSource visit_source);
+  void AddPagesWithDetails(const std::vector<history::URLRow>& info);
 
   // Starts the TopSites migration in the HistoryThread. Called by the
   // BackendDelegate.

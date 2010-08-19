@@ -42,8 +42,7 @@ class ProfileImportThread : public ChildThread {
   void NotifyEnded();
 
   // Bridging methods that move data back across the process boundary.
-  void NotifyHistoryImportReady(const std::vector<history::URLRow> &rows,
-                                history::VisitSource visit_source);
+  void NotifyHistoryImportReady(const std::vector<history::URLRow> &rows);
   void NotifyHomePageImportReady(const GURL& home_page);
   void NotifyBookmarksImportReady(
       const std::vector<ProfileWriter::BookmarkEntry>& bookmarks,

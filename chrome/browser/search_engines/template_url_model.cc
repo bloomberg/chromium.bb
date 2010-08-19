@@ -1009,7 +1009,7 @@ void TemplateURLModel::AddTabToSearchVisit(const TemplateURL& t_url) {
   // autocompleted even if the user doesn't type the url in directly.
   history->AddPage(url, NULL, 0, GURL(),
                    PageTransition::KEYWORD_GENERATED,
-                   history::RedirectList(), history::SOURCE_BROWSED, false);
+                   history::RedirectList(), false);
 }
 
 // static

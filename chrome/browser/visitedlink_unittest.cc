@@ -371,7 +371,7 @@ TEST_F(VisitedLinkTest, Rebuild) {
   // initialize the visited link DB.
   int history_count = g_test_count / 2;
   for (int i = 0; i < history_count; i++)
-    history_service_->AddPage(TestURL(i), history::SOURCE_BROWSED);
+    history_service_->AddPage(TestURL(i));
 
   // Initialize the visited link DB. Since the visited links file doesn't exist
   // and we don't suppress history rebuilding, this will load from history.

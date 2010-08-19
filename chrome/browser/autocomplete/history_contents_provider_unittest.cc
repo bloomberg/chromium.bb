@@ -73,8 +73,7 @@ class HistoryContentsProviderTest : public testing::Test,
       Time t = Time::Now() - TimeDelta::FromDays(arraysize(test_entries) + i);
 
       history_service->AddPage(url, t, id_scope, i, GURL(),
-                               PageTransition::LINK, history::RedirectList(),
-                               history::SOURCE_BROWSED, false);
+          PageTransition::LINK, history::RedirectList(), false);
       history_service->SetPageTitle(url, UTF8ToUTF16(test_entries[i].title));
       history_service->SetPageContents(url, UTF8ToUTF16(test_entries[i].body));
     }

@@ -405,7 +405,7 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
 
     // No redirect case (one element means just the page itself).
     last_ids = AddPageVisit(request->url, last_recorded_time_,
-                            last_ids.second, t, request->visit_source);
+                            last_ids.second, t);
 
     // Update the segment for this visit. KEYWORD_GENERATED visits should not
     // result in changing most visited, so we don't update segments (most
@@ -471,8 +471,7 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
       // them anyway, and if we ever decide to, we can reconstruct their order
       // from the redirect chain.
       last_ids = AddPageVisit(request->redirects[redirect_index],
-                              last_recorded_time_, last_ids.second,
-                              t, request->visit_source);
+                              last_recorded_time_, last_ids.second, t);
       if (t & PageTransition::CHAIN_START) {
         // Update the segment for this visit.
         UpdateSegments(request->redirects[redirect_index],
@@ -652,8 +651,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     const GURL& url,
     Time time,
     VisitID referring_visit,
-    PageTransition::Type transition,
-    VisitSource visit_source) {
+    PageTransition::Type transition) {
   // Top-level frame navigations are visible, everything else is hidden
   bool new_hidden = !PageTransition::IsMainFrame(transition);
 
@@ -710,7 +708,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
   // Add the visit with the time to the database.
   VisitRow visit_info(url_id, time, referring_visit, transition, 0);
-  VisitID visit_id = db_->AddVisit(&visit_info, visit_source);
+  VisitID visit_id = db_->AddVisit(&visit_info);
 
   if (visit_info.visit_time < first_recorded_time_)
     first_recorded_time_ = visit_info.visit_time;
@@ -729,8 +727,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
   return std::make_pair(url_id, visit_id);
 }
 
-void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls,
-                                         VisitSource visit_source) {
+void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls) {
   if (!db_.get())
     return;
 
@@ -792,7 +789,7 @@ void HistoryBackend::AddPagesWithDetails(const std::vector<URLRow>& urls,
         PageTransition::LINK | PageTransition::CHAIN_START |
         PageTransition::CHAIN_END, 0);
     visit_info.is_indexed = has_indexed;
-    if (!visit_database->AddVisit(&visit_info, visit_source)) {
+    if (!visit_database->AddVisit(&visit_info)) {
       NOTREACHED() << "Adding visit failed.";
       return;
     }
@@ -909,12 +906,11 @@ bool HistoryBackend::UpdateURL(URLID id, const history::URLRow& url) {
 }
 
 bool HistoryBackend::AddVisits(const GURL& url,
-                               const std::vector<base::Time>& visits,
-                               VisitSource visit_source) {
+                               const std::vector<base::Time>& visits) {
   if (db_.get()) {
     for (std::vector<base::Time>::const_iterator visit = visits.begin();
          visit != visits.end(); ++visit) {
-      if (!AddPageVisit(url, *visit, 0, 0, visit_source).first) {
+      if (!AddPageVisit(url, *visit, 0, 0).first) {
         return false;
       }
     }

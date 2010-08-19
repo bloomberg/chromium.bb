@@ -304,7 +304,7 @@ bool AddUrlHistoryFunction::RunImpl() {
     return false;
 
   HistoryService* hs = profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  hs->AddPage(url, history::SOURCE_EXTENSION);
+  hs->AddPage(url);
 
   SendResponse(true);
   return true;

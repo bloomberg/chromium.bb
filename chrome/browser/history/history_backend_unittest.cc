@@ -15,8 +15,6 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
 #include "chrome/browser/history/in_memory_database.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/thumbnail_score.h"
@@ -77,7 +75,7 @@ class HistoryBackendTest : public testing::Test {
     scoped_refptr<history::HistoryAddPageArgs> request(
         new history::HistoryAddPageArgs(
             redirects.back(), Time::Now(), scope, page_id, GURL(),
-            redirects, PageTransition::LINK, history::SOURCE_BROWSED, true));
+            redirects, PageTransition::LINK, true));
     backend_->AddPage(request);
   }
 
@@ -97,8 +95,7 @@ class HistoryBackendTest : public testing::Test {
       redirects.push_back(url2);
     scoped_refptr<HistoryAddPageArgs> request(
         new HistoryAddPageArgs(url2, base::Time(), dummy_scope, 0, url1,
-            redirects, PageTransition::CLIENT_REDIRECT,
-            history::SOURCE_BROWSED, did_replace));
+            redirects, PageTransition::CLIENT_REDIRECT, did_replace));
     backend_->AddPage(request);
 
     *transition1 = getTransition(url1);
@@ -113,10 +110,6 @@ class HistoryBackendTest : public testing::Test {
     VisitVector visits;
     EXPECT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
     return visits[0].transition;
-  }
-
-  FilePath getTestDir() {
-    return test_dir_;
   }
 
   BookmarkModel bookmark_model_;
@@ -222,7 +215,7 @@ TEST_F(HistoryBackendTest, DeleteAll) {
   std::vector<URLRow> rows;
   rows.push_back(row2);  // Reversed order for the same reason as favicons.
   rows.push_back(row1);
-  backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
+  backend_->AddPagesWithDetails(rows);
 
   URLID row1_id = backend_->db_->GetRowForURL(row1.url(), NULL);
   URLID row2_id = backend_->db_->GetRowForURL(row2.url(), NULL);
@@ -352,7 +345,7 @@ TEST_F(HistoryBackendTest, URLsNoLongerBookmarked) {
   std::vector<URLRow> rows;
   rows.push_back(row2);  // Reversed order for the same reason as favicons.
   rows.push_back(row1);
-  backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
+  backend_->AddPagesWithDetails(rows);
 
   URLID row1_id = backend_->db_->GetRowForURL(row1.url(), NULL);
   URLID row2_id = backend_->db_->GetRowForURL(row2.url(), NULL);
@@ -461,8 +454,7 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   scoped_refptr<HistoryAddPageArgs> request(
       new HistoryAddPageArgs(url, visit_time, NULL, 0, GURL(),
                              history::RedirectList(),
-                             PageTransition::KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false));
+                             PageTransition::KEYWORD_GENERATED, false));
   backend_->AddPage(request);
 
   // A row should have been added for the url.
@@ -545,7 +537,7 @@ TEST_F(HistoryBackendTest, ImportedFaviconsTest) {
   std::vector<URLRow> rows;
   rows.push_back(row1);
   rows.push_back(row2);
-  backend_->AddPagesWithDetails(rows, history::SOURCE_BROWSED);
+  backend_->AddPagesWithDetails(rows);
   URLRow url_row1, url_row2;
   EXPECT_FALSE(backend_->db_->GetRowForURL(row1.url(), &url_row1) == 0);
   EXPECT_FALSE(backend_->db_->GetRowForURL(row2.url(), &url_row2) == 0);
@@ -600,8 +592,7 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
 
   // Visit the url with username, password.
   backend_->AddPageVisit(url, base::Time::Now(), 0,
-    PageTransition::GetQualifier(PageTransition::TYPED),
-    history::SOURCE_BROWSED);
+    PageTransition::GetQualifier(PageTransition::TYPED));
 
   // Fetch the row information about stripped url from history db.
   VisitVector visits;
@@ -619,216 +610,6 @@ TEST_F(HistoryBackendTest, DeleteThumbnailsDatabaseTest) {
   EXPECT_TRUE(backend_->thumbnail_db_->NeedsMigrationToTopSites());
   backend_->delegate_->StartTopSitesMigration();
   EXPECT_FALSE(backend_->thumbnail_db_->NeedsMigrationToTopSites());
-}
-
-TEST_F(HistoryBackendTest, AddPageVisitSource) {
-  ASSERT_TRUE(backend_.get());
-
-  GURL url("http://www.google.com");
-
-  // Clear all history.
-  backend_->DeleteAllHistory();
-
-  // Assume visiting the url from an externsion.
-  backend_->AddPageVisit(url, base::Time::Now(), 0, PageTransition::TYPED,
-                         history::SOURCE_EXTENSION);
-  // Assume the url is imported from Firefox.
-  backend_->AddPageVisit(url, base::Time::Now(), 0, PageTransition::TYPED,
-                         history::SOURCE_FIREFOX_IMPORTED);
-  // Assume this url is also synced.
-  backend_->AddPageVisit(url, base::Time::Now(), 0, PageTransition::TYPED,
-                         history::SOURCE_SYNCED);
-
-  // Fetch the row information about the url from history db.
-  VisitVector visits;
-  URLID row_id = backend_->db_->GetRowForURL(url, NULL);
-  backend_->db_->GetVisitsForURL(row_id, &visits);
-
-  // Check if all the visits to the url are stored in database.
-  ASSERT_EQ(3U, visits.size());
-  VisitSourceMap visit_sources;
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
-  ASSERT_EQ(3U, visit_sources.size());
-  int sources = 0;
-  for (int i = 0; i < 3; i++) {
-    switch (visit_sources[visits[i].visit_id]) {
-      case history::SOURCE_EXTENSION:
-        sources |= 0x1;
-        break;
-      case history::SOURCE_FIREFOX_IMPORTED:
-        sources |= 0x2;
-        break;
-      case history::SOURCE_SYNCED:
-        sources |= 0x4;
-      default:
-        break;
-    }
-  }
-  EXPECT_EQ(0x7, sources);
-}
-
-TEST_F(HistoryBackendTest, AddPageArgsSource) {
-  ASSERT_TRUE(backend_.get());
-
-  GURL url("http://testpageargs.com");
-
-  // Assume this page is browsed by user.
-  scoped_refptr<HistoryAddPageArgs> request1(
-      new HistoryAddPageArgs(url, base::Time::Now(), NULL, 0, GURL(),
-                             history::RedirectList(),
-                             PageTransition::KEYWORD_GENERATED,
-                             history::SOURCE_BROWSED, false));
-  backend_->AddPage(request1);
-  // Assume this page is synced.
-  scoped_refptr<HistoryAddPageArgs> request2(
-      new HistoryAddPageArgs(url, base::Time::Now(), NULL, 0, GURL(),
-                             history::RedirectList(),
-                             PageTransition::LINK,
-                             history::SOURCE_SYNCED, false));
-  backend_->AddPage(request2);
-  // Assume this page is browsed again.
-  scoped_refptr<HistoryAddPageArgs> request3(
-      new HistoryAddPageArgs(url, base::Time::Now(), NULL, 0, GURL(),
-                             history::RedirectList(),
-                             PageTransition::TYPED,
-                             history::SOURCE_BROWSED, false));
-  backend_->AddPage(request3);
-
-  // Three visits should be added with proper sources.
-  VisitVector visits;
-  URLRow row;
-  URLID id = backend_->db()->GetRowForURL(url, &row);
-  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
-  ASSERT_EQ(3U, visits.size());
-  VisitSourceMap visit_sources;
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
-  ASSERT_EQ(1U, visit_sources.size());
-  EXPECT_EQ(history::SOURCE_SYNCED, visit_sources.begin()->second);
-}
-
-TEST_F(HistoryBackendTest, AddVisitsSource) {
-  ASSERT_TRUE(backend_.get());
-
-  GURL url1("http://www.cnn.com");
-  std::vector<base::Time> visits1;
-  visits1.push_back(Time::Now() - base::TimeDelta::FromDays(5));
-  visits1.push_back(Time::Now() - base::TimeDelta::FromDays(1));
-  visits1.push_back(Time::Now());
-
-  GURL url2("http://www.example.com");
-  std::vector<base::Time> visits2;
-  visits2.push_back(Time::Now() - base::TimeDelta::FromDays(10));
-  visits2.push_back(Time::Now());
-
-  // Clear all history.
-  backend_->DeleteAllHistory();
-
-  // Add the visits.
-  backend_->AddVisits(url1, visits1, history::SOURCE_IE_IMPORTED);
-  backend_->AddVisits(url2, visits2, history::SOURCE_SYNCED);
-
-  // Verify the visits were added with their sources.
-  VisitVector visits;
-  URLRow row;
-  URLID id = backend_->db()->GetRowForURL(url1, &row);
-  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
-  ASSERT_EQ(3U, visits.size());
-  VisitSourceMap visit_sources;
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
-  ASSERT_EQ(3U, visit_sources.size());
-  for (int i = 0; i < 3; i++)
-    EXPECT_EQ(history::SOURCE_IE_IMPORTED, visit_sources[visits[i].visit_id]);
-  id = backend_->db()->GetRowForURL(url2, &row);
-  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
-  ASSERT_EQ(2U, visits.size());
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
-  ASSERT_EQ(2U, visit_sources.size());
-  for (int i = 0; i < 2; i++)
-    EXPECT_EQ(history::SOURCE_SYNCED, visit_sources[visits[i].visit_id]);
-}
-
-TEST_F(HistoryBackendTest, RemoveVisitsSource) {
-  ASSERT_TRUE(backend_.get());
-
-  GURL url1("http://www.cnn.com");
-  std::vector<base::Time> visits1;
-  visits1.push_back(Time::Now() - base::TimeDelta::FromDays(5));
-  visits1.push_back(Time::Now());
-
-  GURL url2("http://www.example.com");
-  std::vector<base::Time> visits2;
-  visits2.push_back(Time::Now() - base::TimeDelta::FromDays(10));
-  visits2.push_back(Time::Now());
-
-  // Clear all history.
-  backend_->DeleteAllHistory();
-
-  // Add the visits.
-  backend_->AddVisits(url1, visits1, history::SOURCE_IE_IMPORTED);
-  backend_->AddVisits(url2, visits2, history::SOURCE_SYNCED);
-
-  // Verify the visits of url1 were added.
-  VisitVector visits;
-  URLRow row;
-  URLID id = backend_->db()->GetRowForURL(url1, &row);
-  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
-  ASSERT_EQ(2U, visits.size());
-  // Remove these visits.
-  ASSERT_TRUE(backend_->RemoveVisits(visits));
-
-  // Now check only url2's source in visit_source table.
-  VisitSourceMap visit_sources;
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
-  ASSERT_EQ(0U, visit_sources.size());
-  id = backend_->db()->GetRowForURL(url2, &row);
-  ASSERT_TRUE(backend_->db()->GetVisitsForURL(id, &visits));
-  ASSERT_EQ(2U, visits.size());
-  backend_->db_->GetVisitsSource(visits, &visit_sources);
-  ASSERT_EQ(2U, visit_sources.size());
-  for (int i = 0; i < 2; i++)
-    EXPECT_EQ(history::SOURCE_SYNCED, visit_sources[visits[i].visit_id]);
-}
-
-// Test for migration of adding visit_source table.
-TEST_F(HistoryBackendTest, MigrationVisitSource) {
-  ASSERT_TRUE(backend_.get());
-
-  FilePath old_history_path;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &old_history_path));
-  old_history_path = old_history_path.AppendASCII("History");
-  old_history_path = old_history_path.AppendASCII("HistoryNoSource");
-
-  // Copy history database file to current directory so that it will be deleted
-  // in Teardown.
-  FilePath new_history_path(getTestDir());
-  file_util::Delete(new_history_path, true);
-  file_util::CreateDirectory(new_history_path);
-  FilePath new_history_file = new_history_path.Append(chrome::kHistoryFilename);
-  ASSERT_TRUE(file_util::CopyFile(old_history_path, new_history_file));
-
-  backend_->Closing();
-  backend_ = new HistoryBackend(new_history_path,
-                                new HistoryBackendTestDelegate(this),
-                                &bookmark_model_);
-  backend_->Init(false);
-
-  // Now the database should already be migrated.
-  // Check version first.
-  int cur_version = HistoryDatabase::GetCurrentVersion();
-  sql::Connection db;
-  ASSERT_TRUE(db.Open(new_history_file));
-  sql::Statement s(db.GetUniqueStatement(
-      "SELECT value FROM meta WHERE key = 'version'"));
-  ASSERT_TRUE(s.Step());
-  int file_version = s.ColumnInt(0);
-  EXPECT_EQ(cur_version, file_version);
-
-  // Check visit_source table is created and empty.
-  s.Assign(db.GetUniqueStatement(
-      "SELECT name FROM sqlite_master WHERE name=\"visit_source\""));
-  ASSERT_TRUE(s.Step());
-  s.Assign(db.GetUniqueStatement("SELECT * FROM visit_source LIMIT 10"));
-  EXPECT_FALSE(s.Step());
 }
 
 }  // namespace history

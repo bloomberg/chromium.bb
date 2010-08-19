@@ -34,9 +34,8 @@ class VisitDatabase {
 
   // Adds a line to the visit database with the given information, returning
   // the added row ID on success, 0 on failure. The given visit is updated with
-  // the new row ID on success. In addition, adds its source into visit_source
-  // table.
-  VisitID AddVisit(VisitRow* visit, VisitSource source);
+  // the new row ID on success.
+  VisitID AddVisit(VisitRow* visit);
 
   // Deletes the given visit from the database. If a visit with the given ID
   // doesn't exist, it will not do anything.
@@ -144,10 +143,6 @@ class VisitDatabase {
 
   // Get the time of the first item in our database.
   bool GetStartDate(base::Time* first_visit);
-
-  // Get the source information about the given visits.
-  void GetVisitsSource(const VisitVector& visits,
-                       VisitSourceMap* sources);
 
  protected:
   // Returns the database for the functions in this interface.

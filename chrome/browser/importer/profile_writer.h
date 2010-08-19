@@ -12,7 +12,6 @@
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/history/history_types.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;
@@ -73,8 +72,7 @@ class ProfileWriter : public base::RefCountedThreadSafe<ProfileWriter> {
 #if defined(OS_WIN)
   virtual void AddIE7PasswordInfo(const IE7PasswordInfo& info);
 #endif
-  virtual void AddHistoryPage(const std::vector<history::URLRow>& page,
-                              history::VisitSource visit_source);
+  virtual void AddHistoryPage(const std::vector<history::URLRow>& page);
   virtual void AddHomepage(const GURL& homepage);
   // Adds the bookmarks to the BookmarkModel.
   // |options| is a bitmask of BookmarkOptions and dictates how and
