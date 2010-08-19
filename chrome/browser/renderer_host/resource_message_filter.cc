@@ -1558,7 +1558,7 @@ void ResourceMessageFilter::OnKeygen(uint32 key_size_index,
            FROM_HERE,
            NewRunnableMethod(
                this, &ResourceMessageFilter::OnKeygenOnWorkerThread,
-               key_size_in_bits, challenge_string, reply_msg),
+               key_size_in_bits, challenge_string, url, reply_msg),
            true)) {
     NOTREACHED() << "Failed to dispatch keygen task to worker pool";
     ViewHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
@@ -1570,13 +1570,14 @@ void ResourceMessageFilter::OnKeygen(uint32 key_size_index,
 void ResourceMessageFilter::OnKeygenOnWorkerThread(
     int key_size_in_bits,
     const std::string& challenge_string,
+    const GURL& url,
     IPC::Message* reply_msg) {
   DCHECK(reply_msg);
   // Verify we are on a worker thread.
   DCHECK(!MessageLoop::current());
 
   // Generate a signed public key and challenge, then send it back.
-  net::KeygenHandler keygen_handler(key_size_in_bits, challenge_string);
+  net::KeygenHandler keygen_handler(key_size_in_bits, challenge_string, url);
 
   ViewHostMsg_Keygen::WriteReplyParams(
       reply_msg,
