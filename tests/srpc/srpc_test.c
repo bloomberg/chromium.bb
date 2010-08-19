@@ -110,8 +110,8 @@ NaClSrpcError CharArrayMethod(NaClSrpcChannel *channel,
                               NaClSrpcArg **out_args) {
   int i, length;
   if (out_args[0]->u.caval.count != in_args[0]->u.caval.count) {
-    printf("Mismatch: %d %d\n", (int) in_args[0]->u.caval.count,
-           (int) out_args[0]->u.caval.count);
+    printf("CharArrayMethod: count mismatch: in=%d out=%d\n",
+           (int) in_args[0]->u.caval.count, (int) out_args[0]->u.caval.count);
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   length = in_args[0]->u.caval.count;

@@ -35,6 +35,8 @@ var PluginProperties = function() {
   // TODO(gregoryd, sehr): remove the check when the tests pass on Chrome.
   var is_chrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
   // Test the properties of plugin instances.
+
+  // height
   if (!is_chrome) {
     // Attempt to set height with invalid type.
     expectFail('plugin_height_null',
@@ -56,6 +58,8 @@ var PluginProperties = function() {
              function() {
                server.height = 100;
              });
+
+  // width
   if (!is_chrome) {
     // Attempt to set width with invalid type.
     expectFail('plugin_width_null',
@@ -77,6 +81,8 @@ var PluginProperties = function() {
              function() {
                server.width = 100;
              });
+
+  // videoUpdateMode
   if (!is_chrome) {
     // Attempt to set videoUpdateMode with invalid type.
     expectFail('plugin_video_null',
@@ -98,6 +104,8 @@ var PluginProperties = function() {
              function() {
                server.videoUpdateMode = 1;
              });
+
+  // src
   if (!is_chrome) {
     // Attempt to set src with invalid type.
     expectFail('plugin_src_null',
