@@ -2376,11 +2376,17 @@ each locale. -->
       <message name="IDS_BLOCKED_JAVASCRIPT_LINK" desc="Link to JavaScript section of content blocking management dialog, displayed in bubble when a page tries to run JavaScript.">
         Manage JavaScript blocking...
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display plug-ins.">
+      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to display plug-ins.">
+        The following plug-ins were blocked on this page:
+      </message>
+      <message name="IDS_BLOCKED_PLUGINS_MESSAGE" desc="Tooltip and message when a page is not allowed to display plug-ins.">
         Plug-ins were blocked on this page.
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
+      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK_ALL" desc="Radio button choice to unblock a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
         Always allow plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
+      </message>
+      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK" desc="Radio button choice to unblock a site from using *a specific set* of plug-ins, displayed in bubble when a page tries to use plug-ins.">
+        Always allow these plug-ins on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
       </message>
       <message name="IDS_BLOCKED_PLUGINS_NO_ACTION" desc="Radio button choice to continue blocking a site from using plug-ins, displayed in bubble when a page tries to use plug-ins.">
         Continue blocking plug-ins
@@ -2390,6 +2396,9 @@ each locale. -->
       </message>
       <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plug-ins.">
         Run all plug-ins this time
+      </message>
+      <message name="IDS_BLOCKED_PLUGINS_UNBLOCK_SHORT" desc="Button to unblock nonsandboxed plug-ins on a site">
+        Always allow
       </message>
 
       <!-- SSL error strings -->

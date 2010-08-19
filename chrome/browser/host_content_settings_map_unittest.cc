@@ -550,13 +550,11 @@ TEST_F(HostContentSettingsMapTest, NonDefaultSettings) {
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));
 }
 
-// TODO(bauerb): Enable once HostContentSettingsMap::RequiersResourceIdentifier
-// is changed.
-#if 0
 TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   // This feature is currently behind a flag.
   CommandLine cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableClickToPlay);
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableResourceContentSettings);
 
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
@@ -584,11 +582,12 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
 TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
   // This feature is currently behind a flag.
   CommandLine cl(*CommandLine::ForCurrentProcess());
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableClickToPlay);
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableResourceContentSettings);
 
   TestingProfile profile;
-  profile.GetPrefs()->SetUserPref(prefs::kContentSettingsPatterns,
-      base::JSONReader::Read(
+  profile.GetPrefs()->Set(prefs::kContentSettingsPatterns,
+      *base::JSONReader::Read(
       "{\"[*.]example.com\":{\"per_plugin\":{\"someplugin\":2}}}", false));
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
@@ -621,6 +620,5 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
                prefs_as_json.c_str());
   *CommandLine::ForCurrentProcess() = cl;
 }
-#endif
 
 }  // namespace

@@ -16,6 +16,7 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/thread.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/worker_pool.h"
 #include "chrome/browser/appcache/appcache_dispatcher_host.h"
@@ -712,6 +713,7 @@ void ResourceMessageFilter::OnGetPluginInfo(const GURL& url,
                                             const std::string& mime_type,
                                             bool* found,
                                             WebPluginInfo* info,
+                                            ContentSetting* setting,
                                             std::string* actual_mime_type) {
   bool allow_wildcard = true;
   *found = NPAPI::PluginList::Singleton()->GetPluginInfo(url,
@@ -722,6 +724,19 @@ void ResourceMessageFilter::OnGetPluginInfo(const GURL& url,
   if (*found) {
     info->enabled = info->enabled &&
         plugin_service_->PrivatePluginAllowedForURL(info->path, policy_url);
+    HostContentSettingsMap* map = profile_->GetHostContentSettingsMap();
+#if defined(OS_POSIX)
+    std::string resource = info->path.value();
+#elif defined(OS_WIN)
+    std::string resource = base::SysWideToUTF8(info->path.value());
+#endif
+    *setting = map->GetNonDefaultContentSetting(
+        policy_url, CONTENT_SETTINGS_TYPE_PLUGINS, resource);
+    if (*setting == CONTENT_SETTING_DEFAULT &&
+        map->GetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS) ==
+            CONTENT_SETTING_BLOCK) {
+      *setting = CONTENT_SETTING_BLOCK;
+    }
   }
 }
 

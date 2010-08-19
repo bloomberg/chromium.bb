@@ -1482,7 +1482,8 @@ void TabContents::AddPopup(TabContents* new_contents,
     if (!blocked_popups_)
       blocked_popups_ = new BlockedPopupContainer(this);
     blocked_popups_->AddTabContents(new_contents, initial_pos);
-    content_settings_delegate_->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
+    content_settings_delegate_->OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS,
+                                                 std::string());
   }
 }
 

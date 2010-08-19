@@ -93,6 +93,15 @@ class TestMessageReceiver {
     *out3 = false;
   }
 
+  void On_3_4(bool in1, int in2, std::string in3, int* out1, bool* out2,
+              std::string* out3, bool* out4) {
+    DCHECK(in1  && in2 == 3 && in3 == "3_4");
+    *out1 = 34;
+    *out2 = true;
+    *out3 = "3_4";
+    *out4 = false;
+  }
+
   bool Send(IPC::Message* message) {
     // gets the reply message, stash in global
     DCHECK(g_reply == NULL);
@@ -114,6 +123,7 @@ class TestMessageReceiver {
       IPC_MESSAGE_HANDLER(Msg_C_3_1, On_3_1)
       IPC_MESSAGE_HANDLER(Msg_C_3_2, On_3_2)
       IPC_MESSAGE_HANDLER(Msg_C_3_3, On_3_3)
+      IPC_MESSAGE_HANDLER(Msg_C_3_4, On_3_4)
       IPC_MESSAGE_HANDLER(Msg_R_0_1, On_0_1)
       IPC_MESSAGE_HANDLER(Msg_R_0_2, On_0_2)
       IPC_MESSAGE_HANDLER(Msg_R_0_3, On_0_3)
@@ -200,6 +210,11 @@ TEST(IPCSyncMessageTest, Main) {
   bool1 = true;
   Send(new Msg_C_3_3(3, "3_3", true, &string1, &int1, &bool1));
   DCHECK(string1 == "3_3" && int1 == 33 && !bool1);
+
+  bool1 = false;
+  bool bool2 = true;
+  Send(new Msg_C_3_4(true, 3, "3_4", &int1, &bool1, &string1, &bool2));
+  DCHECK(int1 == 34 && bool1 && string1 == "3_4" && !bool2);
 
   // Routed messages, just a copy of the above but with extra routing paramater
   Send(new Msg_R_0_1(0, &bool1));

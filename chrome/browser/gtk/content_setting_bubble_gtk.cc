@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/i18n/rtl.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/content_setting_bubble_model.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -21,6 +22,7 @@
 #include "gfx/gtk_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
+#include "webkit/glue/plugins/plugin_list.h"
 
 // Padding between content and edge of info bubble.
 static const int kContentBorder = 7;
@@ -77,6 +79,33 @@ void ContentSettingBubbleGtk::BuildBubble() {
     GtkWidget* label = gtk_label_new(content.title.c_str());
     gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
     gtk_box_pack_start(GTK_BOX(bubble_content), label, FALSE, FALSE, 0);
+  }
+
+  const std::set<std::string>& plugins = content.resource_identifiers;
+  if (!plugins.empty()) {
+    GtkWidget* list_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+
+    for (std::set<std::string>::const_iterator it = plugins.begin();
+        it != plugins.end(); ++it) {
+      WebPluginInfo plugin;
+      std::string name;
+      if (NPAPI::PluginList::Singleton()->GetPluginInfoByPath(FilePath(*it),
+                                                              &plugin)) {
+        name = UTF16ToUTF8(plugin.name);
+      } else {
+        name = *it;
+      }
+
+      GtkWidget* label = gtk_label_new(name.c_str());
+      GtkWidget* label_box = gtk_hbox_new(FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(label_box), label, FALSE, FALSE, 0);
+
+      gtk_box_pack_start(GTK_BOX(list_content),
+                         label_box,
+                         FALSE, FALSE, 0);
+    }
+    gtk_box_pack_start(GTK_BOX(bubble_content), list_content, FALSE, FALSE,
+                       gtk_util::kControlSpacing);
   }
 
   if (content_setting_bubble_model_->content_type() ==

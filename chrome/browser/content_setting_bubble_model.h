@@ -58,6 +58,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
     PopupItems popup_items;
     RadioGroup radio_group;
     std::vector<DomainList> domain_lists;
+    std::set<std::string> resource_identifiers;
     std::string manage_link;
     std::string clear_link;
     std::string info_link;
@@ -111,6 +112,7 @@ class ContentSettingBubbleModel : public NotificationObserver {
   void set_load_plugins_link_enabled(bool enabled) {
     bubble_content_.load_plugins_link_enabled = enabled;
   }
+  void AddBlockedResource(const std::string& resource_identifier);
 
  private:
   TabContents* tab_contents_;

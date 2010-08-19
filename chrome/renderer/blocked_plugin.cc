@@ -57,7 +57,7 @@ BlockedPlugin::BlockedPlugin(RenderView* render_view,
   values.SetString("updatePlugin",
       l10n_util::GetStringUTF16(IDS_PLUGIN_UPDATE));
   values.SetString("message",
-      l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_TITLE));
+      l10n_util::GetStringUTF16(IDS_BLOCKED_PLUGINS_MESSAGE));
   if (group)
     values.Set("pluginGroup", group->GetDataForUI());
 

@@ -21,6 +21,7 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/appcache/appcache_dispatcher.h"
@@ -561,10 +562,11 @@ WebPlugin* RenderView::CreatePluginNoCheck(WebFrame* frame,
                                            const WebPluginParams& params) {
   WebPluginInfo info;
   bool found;
+  ContentSetting setting;
   std::string mime_type;
   Send(new ViewHostMsg_GetPluginInfo(
       params.url, frame->top()->url(), params.mimeType.utf8(), &found,
-      &info, &mime_type));
+      &info, &setting, &mime_type));
   if (!found || !info.enabled)
     return NULL;
   scoped_refptr<pepper::PluginModule> pepper_module =
@@ -2258,6 +2260,8 @@ void RenderView::runModal() {
 WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                     const WebPluginParams& params) {
   bool found = false;
+  ContentSetting setting = CONTENT_SETTING_DEFAULT;
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
   WebPluginInfo info;
   GURL url(params.url);
   std::string actual_mime_type;
@@ -2266,6 +2270,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
                                      params.mimeType.utf8(),
                                      &found,
                                      &info,
+                                     &setting,
                                      &actual_mime_type));
 
   if (!found)
@@ -2275,8 +2280,7 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   group->AddPlugin(info, 0);
 
   if (!info.enabled) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableOutdatedPlugins) &&
+    if (cmd->HasSwitch(switches::kDisableOutdatedPlugins) &&
         group->IsVulnerable()) {
       Send(new ViewHostMsg_DisabledOutdatedPlugin(routing_id_,
                                                   group->GetGroupName(),
@@ -2287,10 +2291,17 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
   }
 
   if (info.path.value() != kDefaultPluginLibraryName) {
-    if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS)) {
-      DCHECK(CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableClickToPlay));
-      didNotAllowPlugins(frame);
+    std::string resource;
+    if (cmd->HasSwitch(switches::kEnableResourceContentSettings)) {
+#if defined(OS_POSIX)
+      resource = info.path.value();
+#elif defined(OS_WIN)
+      resource = base::SysWideToUTF8(info.path.value());
+#endif
+    }
+    if (setting == CONTENT_SETTING_BLOCK) {
+      DCHECK(cmd->HasSwitch(switches::kEnableClickToPlay));
+      DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, resource);
       return CreatePluginPlaceholder(frame, params, NULL);
     }
     scoped_refptr<pepper::PluginModule> pepper_module =
@@ -2298,8 +2309,10 @@ WebPlugin* RenderView::createPlugin(WebFrame* frame,
     if (pepper_module)
       return CreatePepperPlugin(frame, params, info.path, pepper_module.get());
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kBlockNonSandboxedPlugins)) {
+            switches::kBlockNonSandboxedPlugins) &&
+        setting != CONTENT_SETTING_ALLOW) {
       Send(new ViewHostMsg_NonSandboxedPluginBlocked(routing_id_,
+                                                     resource,
                                                      group->GetGroupName()));
       return CreatePluginPlaceholder(frame, params, NULL);
     }
@@ -2449,7 +2462,7 @@ bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
   if (IsWhitelistedForContentSettings(frame))
     return true;
 
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES);
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES, std::string());
   return false;  // Other protocols fall through here.
 }
 
@@ -3245,11 +3258,11 @@ bool RenderView::allowDatabase(
   return result;
 }
 void RenderView::didNotAllowScript(WebKit::WebFrame* frame) {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
 }
 
 void RenderView::didNotAllowPlugins(WebKit::WebFrame* frame) {
-  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, std::string());
 }
 
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
@@ -3796,10 +3809,12 @@ bool RenderView::AllowContentType(ContentSettingsType settings_type) {
     CONTENT_SETTING_BLOCK;
 }
 
-void RenderView::DidBlockContentType(ContentSettingsType settings_type) {
+void RenderView::DidBlockContentType(ContentSettingsType settings_type,
+                                     const std::string& resource_identifier) {
   if (!content_blocked_[settings_type]) {
     content_blocked_[settings_type] = true;
-    Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
+    Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type,
+                                        resource_identifier));
   }
 }
 

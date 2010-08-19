@@ -1263,12 +1263,23 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Return information about a plugin for the given URL and MIME type. If there
   // is no matching plugin, |found| is set to false.
-  IPC_SYNC_MESSAGE_CONTROL3_3(ViewHostMsg_GetPluginInfo,
+  // If |enabled| in the WebPluginInfo struct is false, the plug-in is basically
+  // treated as if it was not installed at all.
+  // If |setting| is set to CONTENT_SETTING_BLOCK, the plug-in is blocked by the
+  // content settings for |policy_url|. It still appears in navigator.plugins in
+  // Javascript though, and can be loaded via click-to-play.
+  // If |setting| is set to CONTENT_SETTING_ALLOW, the domain is explicitly
+  // white-listed for the plug-in.
+  // If |setting| is set to CONTENT_SETTING_DEFAULT, the plug-in is neither
+  // blocked nor white-listed, which means that it's allowed by default and
+  // can still be blocked if it's non-sandboxed.
+  IPC_SYNC_MESSAGE_CONTROL3_4(ViewHostMsg_GetPluginInfo,
                               GURL /* url */,
                               GURL /* policy_url */,
                               std::string /* mime_type */,
                               bool /* found */,
                               WebPluginInfo /* plugin info */,
+                              ContentSetting /* setting */,
                               std::string /* actual_mime_type */)
 
   // Requests spellcheck for a word.
@@ -1299,8 +1310,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Tells the browser that content in the current page was blocked due to the
   // user's content settings.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_ContentBlocked,
-                      ContentSettingsType /* type of blocked content */)
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_ContentBlocked,
+                      ContentSettingsType, /* type of blocked content */
+                      std::string /* resource identifier */)
 
   // Tells the browser that  a specific Appcache manifest in the current page
   // was accessed.
@@ -1688,7 +1700,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       int /* status */)
 
   // Notifies when a non-sandboxed plugin was blocked.
-  IPC_MESSAGE_ROUTED1(ViewHostMsg_NonSandboxedPluginBlocked,
+  // |plugin| is the identifier for the plugin (currently its path),
+  // |name| is its user-visible name.
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_NonSandboxedPluginBlocked,
+                      std::string /* plugin */,
                       string16 /* name */)
 
   // Notifies when a blocked plugin was loaded via click-to-load.
