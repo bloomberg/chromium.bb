@@ -95,7 +95,7 @@ TEST_F(KeywordEditorControllerTest, Add) {
   EXPECT_EQ(L"a", turl->short_name());
   EXPECT_EQ(L"b", turl->keyword());
   EXPECT_TRUE(turl->url() != NULL);
-  EXPECT_TRUE(turl->url()->url() == "http://c");
+  EXPECT_EQ("http://c", turl->url()->url());
 }
 
 // Tests modifying a TemplateURL.
@@ -112,7 +112,7 @@ TEST_F(KeywordEditorControllerTest, Modify) {
   EXPECT_EQ(L"a1", turl->short_name());
   EXPECT_EQ(L"b1", turl->keyword());
   EXPECT_TRUE(turl->url() != NULL);
-  EXPECT_TRUE(turl->url()->url() == "http://c1");
+  EXPECT_EQ("http://c1", turl->url()->url());
 }
 
 // Tests making a TemplateURL the default search provider.
@@ -121,12 +121,29 @@ TEST_F(KeywordEditorControllerTest, MakeDefault) {
   ClearChangeCount();
 
   const TemplateURL* turl = model_->GetTemplateURLs()[0];
-  controller_->MakeDefaultTemplateURL(0);
+  int new_default = controller_->MakeDefaultTemplateURL(0);
+  EXPECT_EQ(0, new_default);
   // Making an item the default sends a handful of changes. Which are sent isn't
   // important, what is important is 'something' is sent.
   ASSERT_TRUE(items_changed_count_ > 0 || added_count_ > 0 ||
               removed_count_ > 0);
   ASSERT_TRUE(model_->GetDefaultSearchProvider() == turl);
+
+  // Making it default a second time should fail.
+  new_default = controller_->MakeDefaultTemplateURL(0);
+  EXPECT_EQ(-1, new_default);
+}
+
+TEST_F(KeywordEditorControllerTest, MakeDefaultNoWebData) {
+  // Simulate a failure to load Web Data.
+  model_->OnWebDataServiceRequestDone(NULL, NULL);
+
+  controller_->AddTemplateURL(L"a", L"b", "http://c{searchTerms}");
+  ClearChangeCount();
+
+  // This should not result in a crash.
+  int new_default = controller_->MakeDefaultTemplateURL(0);
+  EXPECT_EQ(0, new_default);
 }
 
 // Mutates the TemplateURLModel and make sure table model is updating

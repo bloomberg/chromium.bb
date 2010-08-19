@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url_table_model.h"
 
+#include <string>
 #include <vector>
 
 #include "app/l10n_util.h"
@@ -161,8 +162,9 @@ void TemplateURLTableModel::Reload() {
     // NOTE: we don't use ShowInDefaultList here to avoid things bouncing
     // the lists while editing.
     if (!template_url->show_in_default_list() &&
-        !template_url->IsExtensionKeyword())
+        !template_url->IsExtensionKeyword()) {
       entries_.push_back(new ModelEntry(this, *template_url));
+    }
   }
 
   if (observer_)
@@ -245,8 +247,8 @@ void TemplateURLTableModel::Remove(int index) {
   template_url_model_->RemoveObserver(this);
   const TemplateURL* template_url = &GetTemplateURL(index);
 
-  scoped_ptr<ModelEntry> entry(entries_[static_cast<int>(index)]);
-  entries_.erase(entries_.begin() + static_cast<int>(index));
+  scoped_ptr<ModelEntry> entry(entries_[index]);
+  entries_.erase(entries_.begin() + index);
   if (index < last_search_engine_index_)
     last_search_engine_index_--;
   if (observer_)
@@ -345,8 +347,13 @@ int TemplateURLTableModel::MakeDefaultTemplateURL(int index) {
 
   // The formatting of the default engine is different; notify the table that
   // both old and new entries have changed.
-  if (current_default != NULL)
-    NotifyChanged(IndexOfTemplateURL(current_default));
+  if (current_default != NULL) {
+    int old_index = IndexOfTemplateURL(current_default);
+    // current_default may not be in the list of TemplateURLs if the database is
+    // corrupt and the default TemplateURL is used from preferences
+    if (old_index >= 0)
+      NotifyChanged(old_index);
+  }
   const int new_index = IndexOfTemplateURL(keyword);
   NotifyChanged(new_index);
 
@@ -355,8 +362,10 @@ int TemplateURLTableModel::MakeDefaultTemplateURL(int index) {
 }
 
 void TemplateURLTableModel::NotifyChanged(int index) {
-  if (observer_)
+  if (observer_) {
+    DCHECK_GE(index, 0);
     observer_->OnItemsChanged(index, 1);
+  }
 }
 
 void TemplateURLTableModel::FavIconAvailable(ModelEntry* entry) {
