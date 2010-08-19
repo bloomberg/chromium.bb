@@ -9,16 +9,11 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
-#include "base/timer.h"
-#include "chrome/browser/spellcheck_host_observer.h"
-#include "chrome/common/notification_registrar.h"
+#include "base/logging.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/preferences.h"
-#endif
-
+namespace base {
+class Time;
+}
 namespace history {
 class TopSites;
 }

@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile_manager.h"
