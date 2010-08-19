@@ -171,18 +171,22 @@ DictionaryValue* ParseDistributionPreferences(
     return NULL;
   }
   std::string json_data;
-  if (!file_util::ReadFileToString(master_prefs_path, &json_data))
+  if (!file_util::ReadFileToString(master_prefs_path, &json_data)) {
+    LOG(WARNING) << "Failed to read master prefs file.";
     return NULL;
-
+  }
   JSONStringValueSerializer json(json_data);
-  scoped_ptr<Value> root(json.Deserialize(NULL, NULL));
-
-  if (!root.get())
+  std::string error;
+  scoped_ptr<Value> root(json.Deserialize(NULL, &error));
+  if (!root.get()) {
+    LOG(WARNING) << "Failed to parse master prefs file: " << error;
     return NULL;
-
-  if (!root->IsType(Value::TYPE_DICTIONARY))
+  }
+  if (!root->IsType(Value::TYPE_DICTIONARY)) {
+    LOG(WARNING) << "Failed to parse master prefs file: "
+                 << "Root item must be a dictionary.";
     return NULL;
-
+  }
   return static_cast<DictionaryValue*>(root.release());
 }
 

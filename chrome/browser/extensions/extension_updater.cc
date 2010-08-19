@@ -161,7 +161,8 @@ void ManifestFetchesBuilder::AddExtension(const Extension& extension) {
   AddExtensionData(extension.location(),
                    extension.id(),
                    *extension.version(),
-                   extension.is_theme(),
+                   (extension.is_theme() ? PendingExtensionInfo::THEME
+                                         : PendingExtensionInfo::EXTENSION),
                    extension.update_url());
 }
 
@@ -173,8 +174,13 @@ void ManifestFetchesBuilder::AddPendingExtension(
   // non-zero versions).
   scoped_ptr<Version> version(
       Version::GetVersionFromString("0.0.0.0"));
-  AddExtensionData(Extension::INTERNAL, id, *version,
-                   info.is_theme, info.update_url);
+
+  Extension::Location location =
+      (info.is_from_sync ? Extension::INTERNAL
+                         : Extension::EXTERNAL_PREF_DOWNLOAD);
+
+  AddExtensionData(location, id, *version,
+                   info.expected_crx_type, info.update_url);
 }
 
 void ManifestFetchesBuilder::ReportStats() const {
@@ -208,8 +214,9 @@ void ManifestFetchesBuilder::AddExtensionData(
     Extension::Location location,
     const std::string& id,
     const Version& version,
-    bool is_theme,
+    PendingExtensionInfo::ExpectedCrxType crx_type,
     GURL update_url) {
+
   // Only internal and external extensions can be autoupdated.
   if (location != Extension::INTERNAL &&
       !Extension::IsExternalLocation(location)) {
@@ -241,7 +248,7 @@ void ManifestFetchesBuilder::AddExtensionData(
     url_stats_.other_url_count++;
   }
 
-  if (is_theme) {
+  if (crx_type == PendingExtensionInfo::THEME) {
     url_stats_.theme_count++;
   }
 

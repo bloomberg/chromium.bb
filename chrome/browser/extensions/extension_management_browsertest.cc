@@ -253,3 +253,65 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
             extensions->at(size_before)->id());
   ASSERT_EQ("2.0", extensions->at(size_before)->VersionString());
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const char* kExtensionId = "ogjcoiohnmldgjemafoockdghcjciccf";
+  // We don't want autoupdate blacklist checks.
+  service->updater()->set_blacklist_checks_enabled(false);
+
+  FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
+
+  // Note: This interceptor gets requests on the IO thread.
+  scoped_refptr<AutoUpdateInterceptor> interceptor(new AutoUpdateInterceptor());
+  URLFetcher::enable_interception_for_tests(true);
+
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/manifest",
+                                     basedir.AppendASCII("manifest_v2.xml"));
+  interceptor->SetResponseOnIOThread("http://localhost/autoupdate/v2.crx",
+                                     basedir.AppendASCII("v2.crx"));
+
+  const size_t size_before = service->extensions()->size();
+  ASSERT_TRUE(service->disabled_extensions()->empty());
+
+  // The code that reads external_extensions.json uses this method to inform
+  // the ExtensionsService of an extension to download.  Using the real code
+  // is race-prone, because instantating the ExtensionService starts a read
+  // of external_extensions.json before this test function starts.
+  service->AddPendingExtensionFromExternalUpdateUrl(
+      kExtensionId, GURL("http://localhost/autoupdate/manifest"));
+
+  // Run autoupdate and make sure version 2 of the extension was installed.
+  service->updater()->CheckNow();
+  ASSERT_TRUE(WaitForExtensionInstall());
+  const ExtensionList* extensions = service->extensions();
+  ASSERT_EQ(size_before + 1, extensions->size());
+  ASSERT_EQ(kExtensionId, extensions->at(size_before)->id());
+  ASSERT_EQ("2.0", extensions->at(size_before)->VersionString());
+
+  // Uninstalling the extension should set a pref that keeps the extension from
+  // being installed again the next time external_extensions.json is read.
+
+  UninstallExtension(kExtensionId);
+
+  std::set<std::string> killed_ids;
+  service->extension_prefs()->GetKilledExtensionIds(&killed_ids);
+  EXPECT_TRUE(killed_ids.end() != killed_ids.find(kExtensionId))
+      << "Uninstalling should set kill bit on externaly installed extension.";
+
+  // Installing from non-external source.
+  ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
+
+  killed_ids.clear();
+  service->extension_prefs()->GetKilledExtensionIds(&killed_ids);
+  EXPECT_TRUE(killed_ids.end() == killed_ids.find(kExtensionId))
+      << "Reinstalling should clear the kill bit.";
+
+  // Uninstalling from a non-external source should not set the kill bit.
+  UninstallExtension(kExtensionId);
+
+  killed_ids.clear();
+  service->extension_prefs()->GetKilledExtensionIds(&killed_ids);
+  EXPECT_TRUE(killed_ids.end() == killed_ids.find(kExtensionId))
+      << "Uninstalling non-external extension should not set kill bit.";
+}

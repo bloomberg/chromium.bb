@@ -97,20 +97,24 @@ void GetExplicitOriginsInExtent(Extension* extension,
 
 }  // namespace
 
-PendingExtensionInfo::PendingExtensionInfo(const GURL& update_url,
-                                           bool is_theme,
-                                           bool install_silently,
-                                           bool enable_on_install,
-                                           bool enable_incognito_on_install)
+PendingExtensionInfo::PendingExtensionInfo(
+    const GURL& update_url,
+    PendingExtensionInfo::ExpectedCrxType expected_crx_type,
+    bool is_from_sync,
+    bool install_silently,
+    bool enable_on_install,
+    bool enable_incognito_on_install)
     : update_url(update_url),
-      is_theme(is_theme),
+      expected_crx_type(expected_crx_type),
+      is_from_sync(is_from_sync),
       install_silently(install_silently),
       enable_on_install(enable_on_install),
       enable_incognito_on_install(enable_incognito_on_install) {}
 
 PendingExtensionInfo::PendingExtensionInfo()
     : update_url(),
-      is_theme(false),
+      expected_crx_type(PendingExtensionInfo::UNKNOWN),
+      is_from_sync(true),
       install_silently(false),
       enable_on_install(false),
       enable_incognito_on_install(false) {}
@@ -274,7 +278,9 @@ void ExtensionsService::UpdateExtension(const std::string& id,
                                         const FilePath& extension_path,
                                         const GURL& download_url) {
   PendingExtensionMap::const_iterator it = pending_extensions_.find(id);
-  if ((it == pending_extensions_.end()) &&
+  bool is_pending_extension = (it != pending_extensions_.end());
+
+  if (!is_pending_extension &&
       !GetExtensionByIdInternal(id, true, true)) {
     LOG(WARNING) << "Will not update extension " << id
                  << " because it is not installed or pending";
@@ -289,7 +295,7 @@ void ExtensionsService::UpdateExtension(const std::string& id,
   // We want a silent install only for non-pending extensions and
   // pending extensions that have install_silently set.
   ExtensionInstallUI* client =
-      ((it == pending_extensions_.end()) || it->second.install_silently) ?
+      (!is_pending_extension || it->second.install_silently) ?
       NULL : new ExtensionInstallUI(profile_);
 
   scoped_refptr<CrxInstaller> installer(
@@ -297,32 +303,59 @@ void ExtensionsService::UpdateExtension(const std::string& id,
                        this,  // frontend
                        client));
   installer->set_expected_id(id);
+  if (is_pending_extension && !it->second.is_from_sync)
+    installer->set_install_source(Extension::EXTERNAL_PREF_DOWNLOAD);
   installer->set_delete_source(true);
   installer->set_original_url(download_url);
   installer->InstallCrx(extension_path);
 }
 
-void ExtensionsService::AddPendingExtension(
+void ExtensionsService::AddPendingExtensionFromSync(
     const std::string& id, const GURL& update_url,
-    bool is_theme, bool install_silently,
-    bool enable_on_install, bool enable_incognito_on_install) {
+    PendingExtensionInfo::ExpectedCrxType expected_crx_type,
+    bool install_silently, bool enable_on_install,
+    bool enable_incognito_on_install) {
   if (GetExtensionByIdInternal(id, true, true)) {
     LOG(DFATAL) << "Trying to add pending extension " << id
                 << " which already exists";
     return;
   }
   AddPendingExtensionInternal(
-      id, update_url, is_theme, install_silently,
+      id, update_url, expected_crx_type, true, install_silently,
       enable_on_install, enable_incognito_on_install);
+}
+
+void ExtensionsService::AddPendingExtensionFromExternalUpdateUrl(
+    const std::string& id, const GURL& update_url) {
+  // Add the extension to this list of extensions to update.
+  // We do not know if the id refers to a theme, so make is_theme unknown.
+  const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
+      PendingExtensionInfo::UNKNOWN;
+  const bool kIsFromSync = false;
+  const bool kInstallSilently = true;
+  const bool kEnableOnInstall = true;
+  const bool kEnableIncognitoOnInstall = false;
+
+  if (GetExtensionByIdInternal(id, true, true)) {
+    LOG(DFATAL) << "Trying to add extension " << id
+                << " by external update, but it is already installed.";
+    return;
+  }
+
+  AddPendingExtensionInternal(id, update_url, kExpectedCrxType, kIsFromSync,
+                              kInstallSilently, kEnableOnInstall,
+                              kEnableIncognitoOnInstall);
 }
 
 void ExtensionsService::AddPendingExtensionInternal(
     const std::string& id, const GURL& update_url,
-    bool is_theme, bool install_silently,
+    PendingExtensionInfo::ExpectedCrxType expected_crx_type,
+    bool is_from_sync, bool install_silently,
     bool enable_on_install, bool enable_incognito_on_install) {
   pending_extensions_[id] =
-      PendingExtensionInfo(update_url, is_theme, install_silently,
-                           enable_on_install, enable_incognito_on_install);
+      PendingExtensionInfo(update_url, expected_crx_type, is_from_sync,
+                           install_silently, enable_on_install,
+                           enable_incognito_on_install);
 }
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
@@ -1024,14 +1057,22 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
       pending_extensions_.find(extension->id());
   if (it != pending_extensions_.end()) {
     PendingExtensionInfo pending_extension_info = it->second;
+    PendingExtensionInfo::ExpectedCrxType expected_crx_type =
+        pending_extension_info.expected_crx_type;
+    bool is_from_sync = pending_extension_info.is_from_sync;
     pending_extensions_.erase(it);
     it = pending_extensions_.end();
+
     // Set initial state from pending extension data.
-    if (pending_extension_info.is_theme != extension->is_theme()) {
+    PendingExtensionInfo::ExpectedCrxType actual_crx_type =
+        (extension->is_theme() ? PendingExtensionInfo::THEME
+                               : PendingExtensionInfo::EXTENSION);
+
+    if (expected_crx_type != PendingExtensionInfo::UNKNOWN &&
+        expected_crx_type != actual_crx_type) {
       LOG(WARNING)
           << "Not installing pending extension " << extension->id()
-          << " with is_theme = " << extension->is_theme()
-          << "; expected is_theme = " << pending_extension_info.is_theme;
+          << " with is_theme = " << extension->is_theme();
       // Delete the extension directory since we're not going to
       // load it.
       ChromeThread::PostTask(
@@ -1039,13 +1080,29 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
           NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
       return;
     }
+
+    // If |extension| is not syncable, and was installed via sync, disallow
+    // the instanation.
+    //
+    // Themes are always allowed.  Because they contain no active code, they
+    // are less of a risk than extensions.
+    //
+    // If |is_from_sync| is false, then the install was not initiated by sync,
+    // and this check should pass.  Extensions that were installed from an
+    // update URL in external_extensions.json are an example.  They are not
+    // syncable, because the user did not make an explicit choice to install
+    // them.  However, they were installed through the update mechanism, so
+    // control must pass into this function.
+    //
+    // TODO(akalin): When we do apps sync, we have to work with its
+    // traits, too.
     const browser_sync::ExtensionSyncTraits extension_sync_traits =
         browser_sync::GetExtensionSyncTraits();
     const browser_sync::ExtensionSyncTraits app_sync_traits =
         browser_sync::GetAppSyncTraits();
     // If an extension is a theme, we bypass the valid/syncable check
     // as themes are harmless.
-    if (!extension->is_theme() &&
+    if (!extension->is_theme() && is_from_sync &&
         !browser_sync::IsExtensionValidAndSyncable(
             *extension, extension_sync_traits.allowed_extension_types) &&
         !browser_sync::IsExtensionValidAndSyncable(
@@ -1073,7 +1130,7 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
           NewRunnableFunction(&DeleteFileHelper, extension->path(), true));
       return;
     }
-    if (pending_extension_info.is_theme) {
+    if (extension->is_theme()) {
       DCHECK(pending_extension_info.enable_on_install);
       initial_state = Extension::ENABLED;
       DCHECK(!pending_extension_info.enable_incognito_on_install);
@@ -1187,10 +1244,11 @@ void ExtensionsService::SetProviderForTesting(
           location, test_provider));
 }
 
-void ExtensionsService::OnExternalExtensionFound(const std::string& id,
-                                                 const std::string& version,
-                                                 const FilePath& path,
-                                                 Extension::Location location) {
+void ExtensionsService::OnExternalExtensionFileFound(
+         const std::string& id,
+         const std::string& version,
+         const FilePath& path,
+         Extension::Location location) {
   // Before even bothering to unpack, check and see if we already have this
   // version. This is important because these extensions are going to get
   // installed on every startup.
@@ -1303,7 +1361,8 @@ ExtensionsServiceBackend::ExtensionsServiceBackend(
     const FilePath& install_directory)
         : frontend_(NULL),
           install_directory_(install_directory),
-          alert_on_error_(false) {
+          alert_on_error_(false),
+          external_extension_added_(false) {
   // TODO(aa): This ends up doing blocking IO on the UI thread because it reads
   // pref data in the ctor and that is called on the UI thread. Would be better
   // to re-read data each time we list external extensions, anyway.
@@ -1396,13 +1455,22 @@ void ExtensionsServiceBackend::CheckForExternalUpdates(
   // they could install an extension manually themselves anyway.
   alert_on_error_ = false;
   frontend_ = frontend;
+  external_extension_added_ = false;
 
   // Ask each external extension provider to give us a call back for each
-  // extension they know about. See OnExternalExtensionFound.
+  // extension they know about. See OnExternalExtension(File|UpdateUrl)Found.
+
   for (ProviderMap::const_iterator i = external_extension_providers_.begin();
        i != external_extension_providers_.end(); ++i) {
     ExternalExtensionProvider* provider = i->second.get();
     provider->VisitRegisteredExtension(this, ids_to_ignore);
+  }
+
+  if (external_extension_added_ && frontend->updater()) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+            NewRunnableMethod(
+                frontend->updater(), &ExtensionUpdater::CheckNow));
   }
 }
 
@@ -1441,14 +1509,25 @@ void ExtensionsServiceBackend::SetProviderForTesting(
       linked_ptr<ExternalExtensionProvider>(test_provider);
 }
 
-void ExtensionsServiceBackend::OnExternalExtensionFound(
+void ExtensionsServiceBackend::OnExternalExtensionFileFound(
     const std::string& id, const Version* version, const FilePath& path,
     Extension::Location location) {
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(
-          frontend_, &ExtensionsService::OnExternalExtensionFound, id,
+          frontend_, &ExtensionsService::OnExternalExtensionFileFound, id,
           version->GetString(), path, location));
+}
+
+void ExtensionsServiceBackend::OnExternalExtensionUpdateUrlFound(
+         const std::string& id, const GURL& update_url) {
+  if (frontend_->GetExtensionById(id, true)) {
+    // Already installed.  Do not change the update URL that the extension set.
+    return;
+  }
+
+  frontend_->AddPendingExtensionFromExternalUpdateUrl(id, update_url);
+  external_extension_added_ |= true;
 }
 
 void ExtensionsServiceBackend::ReloadExtensionManifests(

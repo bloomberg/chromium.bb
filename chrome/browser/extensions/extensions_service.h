@@ -45,8 +45,18 @@ class Version;
 // update URL of a pending extension may be blank, in which case a
 // default one is assumed.
 struct PendingExtensionInfo {
+  // TODO(skerner): Consider merging ExpectedCrxType with
+  // browser_sync::ExtensionType.
+  enum ExpectedCrxType {
+    UNKNOWN,  // Sometimes we don't know the type of a pending item.  An
+              // update URL from external_extensions.json is one such case.
+    THEME,
+    EXTENSION
+  };
+
   PendingExtensionInfo(const GURL& update_url,
-                       bool is_theme,
+                       ExpectedCrxType expected_crx_type,
+                       bool is_from_sync,
                        bool install_silently,
                        bool enable_on_install,
                        bool enable_incognito_on_install);
@@ -54,7 +64,8 @@ struct PendingExtensionInfo {
   PendingExtensionInfo();
 
   GURL update_url;
-  bool is_theme;
+  ExpectedCrxType expected_crx_type;
+  bool is_from_sync;  // This update check was initiated from sync.
   bool install_silently;
   bool enable_on_install;
   bool enable_incognito_on_install;
@@ -205,10 +216,16 @@ class ExtensionsService
   //
   // TODO(akalin): Replace |install_silently| with a list of
   // pre-enabled permissions.
-  void AddPendingExtension(
+  void AddPendingExtensionFromSync(
       const std::string& id, const GURL& update_url,
-      bool is_theme, bool install_silently,
-      bool enable_on_install, bool enable_incognito_on_install);
+      const PendingExtensionInfo::ExpectedCrxType expected_crx_type,
+      bool install_silently, bool enable_on_install,
+      bool enable_incognito_on_install);
+
+  // Given an extension id and an update URL, schedule the extension
+  // to be fetched, installed, and activated.
+  void AddPendingExtensionFromExternalUpdateUrl(const std::string& id,
+                                                const GURL& update_url);
 
   // Reloads the specified extension.
   void ReloadExtension(const std::string& extension_id);
@@ -293,10 +310,10 @@ class ExtensionsService
                             bool allow_privilege_increase);
 
   // Called by the backend when an external extension is found.
-  void OnExternalExtensionFound(const std::string& id,
-                                const std::string& version,
-                                const FilePath& path,
-                                Extension::Location location);
+  void OnExternalExtensionFileFound(const std::string& id,
+                                    const std::string& version,
+                                    const FilePath& path,
+                                    Extension::Location location);
 
   // Go through each extensions in pref, unload blacklisted extensions
   // and update the blacklist state in pref.
@@ -366,7 +383,8 @@ class ExtensionsService
   // id is not already installed.
   void AddPendingExtensionInternal(
       const std::string& id, const GURL& update_url,
-      bool is_theme, bool install_silently,
+      PendingExtensionInfo::ExpectedCrxType crx_type,
+      bool is_from_sync, bool install_silently,
       bool enable_on_install, bool enable_incognito_on_install);
 
   // Handles sending notification that |extension| was loaded.
@@ -507,10 +525,13 @@ class ExtensionsServiceBackend
                              ExternalExtensionProvider* test_provider);
 
   // ExternalExtensionProvider::Visitor implementation.
-  virtual void OnExternalExtensionFound(const std::string& id,
-                                        const Version* version,
-                                        const FilePath& path,
-                                        Extension::Location location);
+  virtual void OnExternalExtensionFileFound(const std::string& id,
+                                            const Version* version,
+                                            const FilePath& path,
+                                            Extension::Location location);
+
+  virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
+                                                 const GURL& update_url);
 
   // Reloads the given extensions from their manifests on disk (instead of what
   // we have cached in the prefs).
@@ -565,6 +586,11 @@ class ExtensionsServiceBackend
   typedef std::map<Extension::Location,
                    linked_ptr<ExternalExtensionProvider> > ProviderMap;
   ProviderMap external_extension_providers_;
+
+  // Set to true by OnExternalExtensionUpdateUrlFound() when an external
+  // extension URL is found.  Used in CheckForExternalUpdates() to see
+  // if an update check is needed to install pending extensions.
+  bool external_extension_added_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsServiceBackend);
 };

@@ -126,16 +126,17 @@ void SetCurrentThemeFromThemeSpecifics(
       // No extension with this id exists -- we must install it; we do
       // so by adding it as a pending extension and then triggering an
       // auto-update cycle.
-      const bool kIsTheme = true;
+      const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
+          PendingExtensionInfo::THEME;
       // Themes don't need to install silently as they just pop up an
       // informational dialog after installation instead of a
       // confirmation dialog.
       const bool kInstallSilently = false;
       const bool kEnableOnInstall = true;
       const bool kEnableIncognitoOnInstall = false;
-      extensions_service->AddPendingExtension(
-          id, update_url, kIsTheme, kInstallSilently,
-          kEnableOnInstall, kEnableIncognitoOnInstall);
+      extensions_service->AddPendingExtensionFromSync(
+          id, update_url, kExpectedCrxType,
+          kInstallSilently, kEnableOnInstall, kEnableIncognitoOnInstall);
       ExtensionUpdater* extension_updater = extensions_service->updater();
       // Auto-updates should now be on always (see the construction of
       // the ExtensionsService in ProfileImpl::InitExtensions()).

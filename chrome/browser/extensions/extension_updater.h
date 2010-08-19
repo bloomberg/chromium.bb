@@ -111,7 +111,7 @@ class ManifestFetchesBuilder {
   void AddExtensionData(Extension::Location location,
                         const std::string& id,
                         const Version& version,
-                        bool is_theme,
+                        PendingExtensionInfo::ExpectedCrxType crx_type,
                         GURL update_url);
 
   ExtensionUpdateService* service_;

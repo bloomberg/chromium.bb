@@ -14,8 +14,11 @@
 #include "chrome/common/json_value_serializer.h"
 
 // Constants for keeping track of extension preferences.
+const char kLocation[] = "location";
+const char kState[] = "state";
 const char kExternalCrx[] = "external_crx";
 const char kExternalVersion[] = "external_version";
+const char kExternalUpdateUrl[] = "external_update_url";
 
 ExternalPrefExtensionProvider::ExternalPrefExtensionProvider() {
   FilePath json_file;
@@ -53,33 +56,61 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
 
     FilePath::StringType external_crx;
     std::string external_version;
-    if (!extension->GetString(kExternalCrx, &external_crx) ||
-        !extension->GetString(kExternalVersion, &external_version)) {
+    std::string external_update_url;
+
+    bool has_external_crx = extension->GetString(kExternalCrx, &external_crx);
+    bool has_external_version = extension->GetString(kExternalVersion,
+                                                     &external_version);
+    bool has_external_update_url = extension->GetString(kExternalUpdateUrl,
+                                                        &external_update_url);
+    if (has_external_crx != has_external_version) {
       LOG(WARNING) << "Malformed extension dictionary for extension: "
-                   << extension_id.c_str();
+                   << extension_id.c_str() << ".  " << kExternalCrx
+                   << " and " << kExternalVersion << " must be used together.";
       continue;
     }
 
-    if (external_crx.find(FilePath::kParentDirectory) !=
-        base::StringPiece::npos) {
-      LOG(WARNING) << "Path traversal not allowed in path: "
-                   << external_crx.c_str();
+    if (has_external_crx == has_external_update_url) {
+      LOG(WARNING) << "Malformed extension dictionary for extension: "
+                   << extension_id.c_str() << ".  Exactly one of the "
+                   << "followng keys should be used: " << kExternalCrx
+                   << ", " << kExternalUpdateUrl << ".";
       continue;
     }
 
-    // See if it's an absolute path...
-    FilePath path(external_crx);
-    if (!path.IsAbsolute()) {
-      // Try path as relative path from external extension dir.
-      FilePath base_path;
-      PathService::Get(app::DIR_EXTERNAL_EXTENSIONS, &base_path);
-      path = base_path.Append(external_crx);
+    if (has_external_crx) {
+      if (external_crx.find(FilePath::kParentDirectory) !=
+          base::StringPiece::npos) {
+        LOG(WARNING) << "Path traversal not allowed in path: "
+                     << external_crx.c_str();
+        continue;
+      }
+
+      // See if it's an absolute path...
+      FilePath path(external_crx);
+      if (!path.IsAbsolute()) {
+        // Try path as relative path from external extension dir.
+        FilePath base_path;
+        PathService::Get(app::DIR_EXTERNAL_EXTENSIONS, &base_path);
+        path = base_path.Append(external_crx);
+      }
+
+      scoped_ptr<Version> version;
+      version.reset(Version::GetVersionFromString(external_version));
+      visitor->OnExternalExtensionFileFound(extension_id, version.get(), path,
+                                            Extension::EXTERNAL_PREF);
+      continue;
     }
 
-    scoped_ptr<Version> version;
-    version.reset(Version::GetVersionFromString(external_version));
-    visitor->OnExternalExtensionFound(extension_id, version.get(), path,
-                                      Extension::EXTERNAL_PREF);
+    DCHECK(has_external_update_url);  // Checking of keys above ensures this.
+    GURL update_url(external_update_url);
+    if (!update_url.is_valid()) {
+      LOG(WARNING) << "Malformed extension dictionary for extension: "
+                   << extension_id.c_str() << ".  " << kExternalUpdateUrl
+                   << " must be a valid URL: " << external_update_url;
+      continue;
+    }
+    visitor->OnExternalExtensionUpdateUrlFound(extension_id, update_url);
   }
 }
 

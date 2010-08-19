@@ -42,9 +42,11 @@ class Extension {
     EXTERNAL_REGISTRY,  // A crx file from an external directory (via eg the
                         // registry on Windows).
     LOAD,               // --load-extension.
-    COMPONENT           // An integral component of Chrome itself, which happens
-                        // to be implemented as an extension. We don't show
-                        // these in the management UI.
+    COMPONENT,          // An integral component of Chrome itself, which
+                        // happens to be implemented as an extension. We don't
+                        // show these in the management UI.
+    EXTERNAL_PREF_DOWNLOAD  // A crx file from an external directory (via
+                            // prefs), installed from an update URL.
   };
 
   enum State {
@@ -160,7 +162,8 @@ class Extension {
   // Whether the |location| is external or not.
   static inline bool IsExternalLocation(Location location) {
     return location == Extension::EXTERNAL_PREF ||
-           location == Extension::EXTERNAL_REGISTRY;
+           location == Extension::EXTERNAL_REGISTRY ||
+           location == Extension::EXTERNAL_PREF_DOWNLOAD;
   }
 
   // Returns an absolute url to a resource inside of an extension. The

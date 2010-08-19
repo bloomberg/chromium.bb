@@ -24,10 +24,15 @@ class ExternalExtensionProvider {
   // is not transferred to the visitor.
   class Visitor {
    public:
-     virtual void OnExternalExtensionFound(const std::string& id,
-                                           const Version* version,
-                                           const FilePath& path,
-                                           Extension::Location location) = 0;
+     virtual void OnExternalExtensionFileFound(
+         const std::string& id,
+         const Version* version,
+         const FilePath& path,
+         Extension::Location location) = 0;
+
+     virtual void OnExternalExtensionUpdateUrlFound(
+         const std::string& id,
+         const GURL& update_url) = 0;
 
    protected:
      virtual ~Visitor() {}

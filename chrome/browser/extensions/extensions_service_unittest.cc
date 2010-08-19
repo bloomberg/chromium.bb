@@ -125,7 +125,7 @@ class MockExtensionProvider : public ExternalExtensionProvider {
       scoped_ptr<Version> version;
       version.reset(Version::GetVersionFromString(i->second.first));
 
-      visitor->OnExternalExtensionFound(
+      visitor->OnExternalExtensionFileFound(
           i->first, version.get(), i->second.second, location_);
     }
   }
@@ -183,10 +183,10 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
     return ids_found_;
   }
 
-  virtual void OnExternalExtensionFound(const std::string& id,
-                                        const Version* version,
-                                        const FilePath& path,
-                                        Extension::Location unused) {
+  virtual void OnExternalExtensionFileFound(const std::string& id,
+                                            const Version* version,
+                                            const FilePath& path,
+                                            Extension::Location unused) {
     ++ids_found_;
     DictionaryValue* pref;
     // This tests is to make sure that the provider only notifies us of the
@@ -205,6 +205,22 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
       EXPECT_EQ(Extension::EXTERNAL_PREF, location);
 
       // Remove it so we won't count it ever again.
+      prefs_->Remove(id, NULL);
+    }
+  }
+
+  virtual void OnExternalExtensionUpdateUrlFound(const std::string& id,
+                                                 const GURL& update_url) {
+    ++ids_found_;
+    DictionaryValue* pref;
+    // This tests is to make sure that the provider only notifies us of the
+    // values we gave it. So if the id we doesn't exist in our internal
+    // dictionary then something is wrong.
+    EXPECT_TRUE(prefs_->GetDictionary(id, &pref))
+       << L"Got back ID (" << id.c_str() << ") we weren't expecting";
+
+    if (pref) {
+      // Remove it so we won't count it again.
       prefs_->Remove(id, NULL);
     }
   }
@@ -895,7 +911,7 @@ TEST_F(ExtensionsServiceTest, InstallExtension) {
   InstallExtension(path, false);
   ValidatePrefKeyCount(pref_count);
 
-  // Extensions cannot have folders or files that have underscores except ofr in
+  // Extensions cannot have folders or files that have underscores except in
   // certain whitelisted cases (eg _locales). This is an example of a broader
   // class of validation that we do to the directory structure of the extension.
   // We did not used to handle this correctly for installation.
@@ -1443,26 +1459,31 @@ TEST_F(ExtensionsServiceTest, AddPendingExtension) {
 
   const std::string kFakeId("fake-id");
   const GURL kFakeUpdateURL("http:://fake.update/url");
-  const bool kFakeIsTheme(false);
+  const PendingExtensionInfo::ExpectedCrxType kFakeExpectedCrxType =
+      PendingExtensionInfo::EXTENSION;
   const bool kFakeInstallSilently(true);
   const Extension::State kFakeInitialState(Extension::ENABLED);
   const bool kFakeInitialIncognitoEnabled(false);
 
-  service_->AddPendingExtension(
-      kFakeId, kFakeUpdateURL, kFakeIsTheme, kFakeInstallSilently,
+  service_->AddPendingExtensionFromSync(
+      kFakeId, kFakeUpdateURL, kFakeExpectedCrxType, kFakeInstallSilently,
       kFakeInitialState, kFakeInitialIncognitoEnabled);
   PendingExtensionMap::const_iterator it =
       service_->pending_extensions().find(kFakeId);
   ASSERT_TRUE(it != service_->pending_extensions().end());
   EXPECT_EQ(kFakeUpdateURL, it->second.update_url);
-  EXPECT_EQ(kFakeIsTheme, it->second.is_theme);
+  EXPECT_EQ(kFakeExpectedCrxType, it->second.expected_crx_type);
   EXPECT_EQ(kFakeInstallSilently, it->second.install_silently);
 }
 
 namespace {
 const char kGoodId[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char kGoodUpdateURL[] = "http://good.update/url";
-const bool kGoodIsTheme = false;
+const PendingExtensionInfo::ExpectedCrxType kCrxTypeTheme =
+    PendingExtensionInfo::THEME;
+const PendingExtensionInfo::ExpectedCrxType kCrxTypeExtension =
+    PendingExtensionInfo::EXTENSION;
+const bool kGoodIsFromSync = true;
 const bool kGoodInstallSilently = true;
 const Extension::State kGoodInitialState = Extension::DISABLED;
 const bool kGoodInitialIncognitoEnabled = true;
@@ -1471,8 +1492,8 @@ const bool kGoodInitialIncognitoEnabled = true;
 // Test updating a pending extension.
 TEST_F(ExtensionsServiceTest, UpdatePendingExtension) {
   InitializeEmptyExtensionsService();
-  service_->AddPendingExtension(
-      kGoodId, GURL(kGoodUpdateURL), kGoodIsTheme,
+  service_->AddPendingExtensionFromSync(
+      kGoodId, GURL(kGoodUpdateURL), kCrxTypeExtension,
       kGoodInstallSilently, kGoodInitialState,
       kGoodInitialIncognitoEnabled);
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
@@ -1499,8 +1520,9 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtension) {
 // Test updating a pending theme.
 TEST_F(ExtensionsServiceTest, UpdatePendingTheme) {
   InitializeEmptyExtensionsService();
-  service_->AddPendingExtension(
-      theme_crx, GURL(), true, false, Extension::ENABLED, false);
+  service_->AddPendingExtensionFromSync(
+      theme_crx, GURL(), PendingExtensionInfo::THEME,
+      false, Extension::ENABLED, false);
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), theme_crx));
 
   FilePath extensions_path;
@@ -1519,6 +1541,54 @@ TEST_F(ExtensionsServiceTest, UpdatePendingTheme) {
   EXPECT_FALSE(service_->IsIncognitoEnabled(extension));
 }
 
+// Test updating a pending CRX as if the source is an external extension
+// with an update URL.  In this case we don't know if the CRX is a theme
+// or not.
+TEST_F(ExtensionsServiceTest, UpdatePendingExternalCrx) {
+  InitializeEmptyExtensionsService();
+  service_->AddPendingExtensionFromExternalUpdateUrl(theme_crx, GURL());
+
+  EXPECT_TRUE(ContainsKey(service_->pending_extensions(), theme_crx));
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("theme.crx");
+  UpdateExtension(theme_crx, path, ENABLED);
+
+  EXPECT_FALSE(ContainsKey(service_->pending_extensions(), theme_crx));
+
+  Extension* extension = service_->GetExtensionById(theme_crx, true);
+  ASSERT_TRUE(extension);
+
+  EXPECT_EQ(Extension::ENABLED,
+            service_->extension_prefs()->GetExtensionState(extension->id()));
+  EXPECT_FALSE(service_->IsIncognitoEnabled(extension));
+}
+
+// Updating a theme should fail if the updater is explicitly told that
+// the CRX is not a theme.
+TEST_F(ExtensionsServiceTest, UpdatePendingCrxThemeMismatch) {
+  InitializeEmptyExtensionsService();
+  service_->AddPendingExtensionFromSync(
+      theme_crx, GURL(),
+      PendingExtensionInfo::EXTENSION,
+      true, Extension::ENABLED, false);
+
+  EXPECT_TRUE(ContainsKey(service_->pending_extensions(), theme_crx));
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("theme.crx");
+  UpdateExtension(theme_crx, path, FAILED_SILENTLY);
+
+  EXPECT_FALSE(ContainsKey(service_->pending_extensions(), theme_crx));
+
+  Extension* extension = service_->GetExtensionById(theme_crx, true);
+  ASSERT_FALSE(extension);
+}
+
 // TODO(akalin): Test updating a pending extension non-silently once
 // we can mock out ExtensionInstallUI and inject our version into
 // UpdateExtension().
@@ -1527,9 +1597,9 @@ TEST_F(ExtensionsServiceTest, UpdatePendingTheme) {
 TEST_F(ExtensionsServiceTest, UpdatePendingExtensionWrongIsTheme) {
   InitializeEmptyExtensionsService();
   // Add pending extension with a flipped is_theme.
-  service_->AddPendingExtension(
-      kGoodId, GURL(kGoodUpdateURL), !kGoodIsTheme,
-      kGoodInstallSilently, kGoodInitialState,
+  service_->AddPendingExtensionFromSync(
+      kGoodId, GURL(kGoodUpdateURL),
+      kCrxTypeTheme, kGoodInstallSilently, kGoodInitialState,
       kGoodInitialIncognitoEnabled);
   EXPECT_TRUE(ContainsKey(service_->pending_extensions(), kGoodId));
 
@@ -1574,13 +1644,15 @@ TEST_F(ExtensionsServiceTest, UpdatePendingExtensionAlreadyInstalled) {
   ASSERT_EQ(1u, service_->extensions()->size());
   Extension* good = service_->extensions()->at(0);
 
+  EXPECT_FALSE(good->is_theme());
+
   // Use AddPendingExtensionInternal() as AddPendingExtension() would
   // balk.
   service_->AddPendingExtensionInternal(
-      good->id(), good->update_url(), good->is_theme(),
-      kGoodInstallSilently, kGoodInitialState,
+      good->id(), good->update_url(),
+      PendingExtensionInfo::EXTENSION,
+      kGoodIsFromSync, kGoodInstallSilently, kGoodInitialState,
       kGoodInitialIncognitoEnabled);
-
   UpdateExtension(good->id(), path, INSTALLED);
 
   EXPECT_FALSE(ContainsKey(service_->pending_extensions(), kGoodId));
@@ -2172,25 +2244,33 @@ TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
         "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\": {"
           "\"external_crx\": \"RandomExtension2.crx\","
           "\"external_version\": \"2.0\""
+        "},"
+        "\"cccccccccccccccccccccccccccccccc\": {"
+          "\"external_update_url\": \"http:\\\\foo.com/update\""
         "}"
       "}";
 
   MockProviderVisitor visitor;
   std::set<std::string> ignore_list;
-  EXPECT_EQ(2, visitor.Visit(json_data, ignore_list));
+  EXPECT_EQ(3, visitor.Visit(json_data, ignore_list));
   ignore_list.insert("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-  EXPECT_EQ(1, visitor.Visit(json_data, ignore_list));
+  EXPECT_EQ(2, visitor.Visit(json_data, ignore_list));
   ignore_list.insert("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
+  EXPECT_EQ(1, visitor.Visit(json_data, ignore_list));
+  ignore_list.insert("cccccccccccccccccccccccccccccccc");
   EXPECT_EQ(0, visitor.Visit(json_data, ignore_list));
 
-  // Use a json that contains three invalid extensions:
+  // Use a json that contains six invalid extensions:
   // - One that is missing the 'external_crx' key.
   // - One that is missing the 'external_version' key.
   // - One that is specifying .. in the path.
+  // - One that specifies both a file and update URL.
+  // - One that specifies no file or update URL.
+  // - One that has an update URL that is not well formed.
   // - Plus one valid extension to make sure the json file is parsed properly.
   json_data =
       "{"
-        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
+        "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\": {"
           "\"external_version\": \"1.0\""
         "},"
         "\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\": {"
@@ -2200,7 +2280,17 @@ TEST_F(ExtensionsServiceTest, ExternalPrefProvider) {
           "\"external_crx\": \"..\\\\foo\\\\RandomExtension2.crx\","
           "\"external_version\": \"2.0\""
         "},"
-        "\"dddddddddddddddddddddddddddddddddd\": {"
+        "\"dddddddddddddddddddddddddddddddd\": {"
+          "\"external_crx\": \"..\\\\foo\\\\RandomExtension2.crx\","
+          "\"external_version\": \"2.0\","
+          "\"external_update_url\": \"http:\\\\foo.com/update\""
+        "},"
+        "\"eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\": {"
+        "},"
+        "\"ffffffffffffffffffffffffffffffff\": {"
+          "\"external_update_url\": \"This string is not avalid URL\""
+        "},"
+        "\"gggggggggggggggggggggggggggggggg\": {"
           "\"external_crx\": \"RandomValidExtension.crx\","
           "\"external_version\": \"1.0\""
         "}"

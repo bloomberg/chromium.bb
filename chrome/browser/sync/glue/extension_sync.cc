@@ -292,9 +292,12 @@ void TryUpdateClient(
     GURL update_url(specifics.update_url());
     // TODO(akalin): Replace silent update with a list of enabled
     // permissions.
-    extensions_service->AddPendingExtension(
-        id, update_url, false, true,
-        specifics.enabled(), specifics.incognito_enabled());
+    extensions_service->AddPendingExtensionFromSync(
+        id, update_url,
+        PendingExtensionInfo::EXTENSION,
+        true,  // install_silently
+        specifics.enabled(),
+        specifics.incognito_enabled());
   }
   DCHECK(!extension_data->NeedsUpdate(ExtensionData::SERVER));
 }

@@ -112,15 +112,19 @@ std::string GenerateId(std::string input) {
 // name and version are all based on their index.
 void CreateTestPendingExtensions(int count, const GURL& update_url,
                                  PendingExtensionMap* pending_extensions) {
+  PendingExtensionInfo::ExpectedCrxType crx_type;
   for (int i = 1; i <= count; i++) {
-    bool is_theme = (i % 2) == 0;
+    crx_type = ((i % 2) ? PendingExtensionInfo::EXTENSION
+                        : PendingExtensionInfo::THEME);
+    const bool kIsFromSync = true;
     const bool kInstallSilently = true;
     const Extension::State kInitialState = Extension::ENABLED;
     const bool kInitialIncognitoEnabled = false;
     std::string id = GenerateId(StringPrintf("extension%i", i));
     (*pending_extensions)[id] =
-        PendingExtensionInfo(update_url, is_theme, kInstallSilently,
-                             kInitialState, kInitialIncognitoEnabled);
+        PendingExtensionInfo(update_url, crx_type, kIsFromSync,
+                             kInstallSilently, kInitialState,
+                             kInitialIncognitoEnabled);
   }
 }
 
@@ -548,14 +552,17 @@ class ExtensionUpdaterTest : public testing::Test {
     updater->FetchUpdatedExtension(id, test_url, hash, version->GetString());
 
     if (pending) {
-      const bool kIsTheme = false;
+      const PendingExtensionInfo::ExpectedCrxType kExpectedCrxType =
+          PendingExtensionInfo::EXTENSION;
+      const bool kIsFromSync = true;
       const bool kInstallSilently = true;
       const Extension::State kInitialState = Extension::ENABLED;
       const bool kInitialIncognitoEnabled = false;
       PendingExtensionMap pending_extensions;
       pending_extensions[id] =
-          PendingExtensionInfo(test_url, kIsTheme, kInstallSilently,
-                               kInitialState, kInitialIncognitoEnabled);
+          PendingExtensionInfo(test_url, kExpectedCrxType, kIsFromSync,
+                               kInstallSilently, kInitialState,
+                               kInitialIncognitoEnabled);
       service.set_pending_extensions(pending_extensions);
     }
 
@@ -883,18 +890,21 @@ TEST(ExtensionUpdaterTest, TestManifestFetchesBuilderAddExtension) {
   // Extensions with invalid update URLs should be rejected.
   builder.AddPendingExtension(
       GenerateId("foo"), PendingExtensionInfo(GURL("http:google.com:foo"),
+                                              PendingExtensionInfo::EXTENSION,
                                               false, false, true, false));
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // Extensions with empty IDs should be rejected.
   builder.AddPendingExtension(
-      "", PendingExtensionInfo(GURL(), false, false, true, false));
+      "", PendingExtensionInfo(GURL(), PendingExtensionInfo::EXTENSION,
+                               false, false, true, false));
   EXPECT_TRUE(builder.GetFetches().empty());
 
   // Extensions with empty update URLs should have a default one
   // filled in.
   builder.AddPendingExtension(
       GenerateId("foo"), PendingExtensionInfo(GURL(),
+                                              PendingExtensionInfo::EXTENSION,
                                               false, false, true, false));
   std::vector<ManifestFetchData*> fetches = builder.GetFetches();
   ASSERT_EQ(1u, fetches.size());
