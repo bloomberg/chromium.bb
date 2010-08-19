@@ -2719,7 +2719,7 @@ test-all() {
 #@                       - run spec tests
 #@
 test-spec() {
-  if [[ $# < 2 ]]; then
+  if [[ $# -lt 2 ]]; then
     echo "not enough arguments for test-spec"
     exit 1
   fi;
@@ -2781,7 +2781,7 @@ timed-test-spec() {
   ./run_all.sh CleanBenchmarks "$@"
   ./run_all.sh PopulateFromSpecHarness ${official} "$@"
   ./run_all.sh TimedBuildAndRunBenchmarks ${setup} "$@"
-  CollectTimingInfo $(pwd) ${result_file} $1
+  CollectTimingInfo $(pwd) ${result_file} ${setup}
   spopd
 }
 

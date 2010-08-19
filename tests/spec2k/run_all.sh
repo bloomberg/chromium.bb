@@ -484,11 +484,9 @@ PopulateFromSpecHarness() {
 # Main
 ######################################################################
 
-#@
-#@ Default mode is:  BuildAndRunBenchmarks SetupPnaclArm
-if [[ $# = 0 ]] ; then
-  BuildAndRunBenchmarks SetupPnaclArm
-elif [ "$(type -t $1)" != "function" ]; then
+[ $# = 0 ] && set -- help  # Avoid reference to undefined $1.
+
+if [ "$(type -t $1)" != "function" ]; then
   Usage
   echo "ERROR: unknown mode '$1'." >&2
   exit 1
