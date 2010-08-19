@@ -152,7 +152,7 @@ TabGtk::TabGtk(TabDelegate* delegate)
                    G_CALLBACK(OnLeaveNotifyEventThunk), this);
   gtk_widget_add_events(event_box_,
         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-        GDK_LEAVE_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+        GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_container_add(GTK_CONTAINER(event_box_), TabRendererGtk::widget());
   gtk_widget_show_all(event_box_);
 }
