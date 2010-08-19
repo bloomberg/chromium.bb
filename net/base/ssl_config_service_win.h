@@ -6,8 +6,6 @@
 #define NET_BASE_SSL_CONFIG_SERVICE_WIN_H_
 #pragma once
 
-#include <set>
-
 #include "base/time.h"
 #include "net/base/ssl_config_service.h"
 

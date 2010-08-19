@@ -10,7 +10,6 @@
 
 #include <sstream>
 #include <string>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/message_loop.h"
