@@ -51,7 +51,7 @@ void LanguageOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("please_add_another_language",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_LANGUAGE));
-  localized_strings->SetString(L"ok_button", l10n_util::GetStringUTF16(IDS_OK));
+  localized_strings->SetString("ok_button", l10n_util::GetStringUTF16(IDS_OK));
   localized_strings->SetString("remove_button",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_REMOVE_BUTTON));
   localized_strings->SetString("restart_button",
