@@ -57,6 +57,7 @@ class AccessibilityTypes {
     ROLE_GRAPHIC,
     ROLE_GROUPING,
     ROLE_LINK,
+    ROLE_MENUBAR,
     ROLE_MENUITEM,
     ROLE_MENUPOPUP,
     ROLE_OUTLINE,

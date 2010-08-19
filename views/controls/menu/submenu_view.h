@@ -58,6 +58,9 @@ class SubmenuView : public View {
   virtual void DidChangeBounds(const gfx::Rect& previous,
                                const gfx::Rect& current);
 
+  // Override from View.
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+
   // Painting.
   void PaintChildren(gfx::Canvas* canvas);
 

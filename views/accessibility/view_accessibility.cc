@@ -809,6 +809,8 @@ int32 ViewAccessibility::MSAARole(AccessibilityTypes::Role role) {
       return ROLE_SYSTEM_GROUPING;
     case AccessibilityTypes::ROLE_LINK:
       return ROLE_SYSTEM_LINK;
+    case AccessibilityTypes::ROLE_MENUBAR:
+      return ROLE_SYSTEM_MENUBAR;
     case AccessibilityTypes::ROLE_MENUITEM:
       return ROLE_SYSTEM_MENUITEM;
     case AccessibilityTypes::ROLE_MENUPOPUP:
