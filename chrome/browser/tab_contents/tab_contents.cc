@@ -1907,7 +1907,6 @@ void TabContents::OnUserGesture() {
   if (limiter)
     limiter->OnUserGesture(this);
   ExternalProtocolHandler::PermitLaunchUrl();
-  controller_.OnUserGesture();
 }
 
 void TabContents::OnFindReply(int request_id,
