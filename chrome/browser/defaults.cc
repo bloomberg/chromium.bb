@@ -77,4 +77,6 @@ const bool kBrowserAliveWithNoWindows = false;
 
 const bool kPhantomTabsEnabled = false;
 
+bool bookmarks_enabled = true;
+
 }  // namespace browser_defaults
