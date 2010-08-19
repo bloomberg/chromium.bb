@@ -92,6 +92,14 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   if (IsBlacklistedPlugin(info))
     return false;
 
+  // Flip4Mac has a reproducible hang during a synchronous call from the render
+  // with certain content types (as well as a common crash). Disable by default
+  // to minimize those issues, but don't blacklist it so that users can choose
+  // to enable it.
+  if (StartsWith(info.name, ASCIIToUTF16("Flip4Mac Windows Media Plugin"),
+                 false))
+    DisablePlugin(info.path);
+
   // Hierarchy check
   // (we're loading plugins hierarchically from Library folders, so plugins we
   //  encounter earlier must override plugins we encounter later)
