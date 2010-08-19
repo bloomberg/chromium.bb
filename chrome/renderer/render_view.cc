@@ -4815,17 +4815,8 @@ void RenderView::DumpLoadHistograms() const {
   static const bool prefetching_fieldtrial =
       FieldTrialList::Find("Prefetch") &&
       !FieldTrialList::Find("Prefetch")->group_name().empty();
-  static const bool prefetching_explicitly_disabled =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableContentPrefetch);
-  if (navigation_state->was_prefetcher()) {
-    if (!prefetching_explicitly_disabled) {
-      PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcher",
-                    begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcher",
-                    begin_to_finish_all_loads);
-    }
-    if (prefetching_fieldtrial) {
+  if (prefetching_fieldtrial) {
+    if (navigation_state->was_prefetcher()) {
       PLT_HISTOGRAM(
           FieldTrial::MakeName("PLT.BeginToFinishDoc_ContentPrefetcher",
                                "Prefetch"),
@@ -4835,15 +4826,7 @@ void RenderView::DumpLoadHistograms() const {
                                "Prefetch"),
           begin_to_finish_all_loads);
     }
-  }
-  if (navigation_state->was_referred_by_prefetcher()) {
-    if (!prefetching_explicitly_disabled) {
-      PLT_HISTOGRAM("PLT.BeginToFinishDoc_ContentPrefetcherReferrer",
-                    begin_to_finish_doc);
-      PLT_HISTOGRAM("PLT.BeginToFinish_ContentPrefetcherReferrer",
-                    begin_to_finish_all_loads);
-    }
-    if (prefetching_fieldtrial) {
+    if (navigation_state->was_referred_by_prefetcher()) {
       PLT_HISTOGRAM(
           FieldTrial::MakeName("PLT.BeginToFinishDoc_ContentPrefetcherReferrer",
                                "Prefetch"),
@@ -4853,8 +4836,6 @@ void RenderView::DumpLoadHistograms() const {
                                "Prefetch"),
           begin_to_finish_all_loads);
     }
-  }
-  if (prefetching_fieldtrial) {
     UMA_HISTOGRAM_ENUMERATION(FieldTrial::MakeName("PLT.Abandoned", "Prefetch"),
                               abandoned_page ? 1 : 0, 2);
     PLT_HISTOGRAM(FieldTrial::MakeName("PLT.BeginToFinishDoc", "Prefetch"),

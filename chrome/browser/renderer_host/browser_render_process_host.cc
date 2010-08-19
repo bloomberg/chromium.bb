@@ -580,8 +580,6 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     switches::kEnableClickToPlay,
     switches::kEnableResourceContentSettings,
     switches::kPrelaunchGpuProcess,
-    switches::kEnableContentPrefetch,
-    switches::kDisableContentPrefetch,
     switches::kEnableAcceleratedCompositing,
     switches::kEnableAcceleratedDecoding,
   };
