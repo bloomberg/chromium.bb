@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(kochi): Generalize the notification as a component and put it
+// in js/cr/ui/notification.js .
+
 cr.define('options', function() {
 
   const OptionsPage = options.OptionsPage;
@@ -298,8 +301,6 @@ cr.define('options', function() {
         uiLanguageButton.className = 'text-button';
         uiLanguageButton.onclick = undefined;
       }
-      // TODO(kochi): Generalize this notification as a component and put it
-      // in js/cr/ui/notification.js .
       uiLanguageButton.style.display = 'block';
       $('language-options-ui-notification-bar').style.display = 'none';
     },
@@ -371,9 +372,9 @@ cr.define('options', function() {
       var checkbox = e.target;
       if (this.preloadEngines_.length == 1 && !checkbox.checked) {
         // Don't allow disabling the last input method.
-        // TODO(satorux): Show the message in a nicer way once we get a mock
-        // from UX. crosbug.com/5547.
-        alert(localStrings.getString('please_add_another_input_method'));
+        this.showNotification_(
+            localStrings.getString('please_add_another_input_method'),
+            localStrings.getString('ok_button'));
         checkbox.checked = true;
       }
       this.updatePreloadEnginesFromCheckboxes_();
@@ -419,9 +420,9 @@ cr.define('options', function() {
       // Don't allow removing the language if cerntain conditions are met.
       // See removePreloadEnginesByLanguageCode_() for details.
       if (!this.removePreloadEnginesByLanguageCode_(languageCode)) {
-        // TODO(satorux): Show the message in a nicer way once we get a mock
-        // from UX. crosbug.com/5546.
-        alert(localStrings.getString('please_add_another_language'));
+        this.showNotification_(
+            localStrings.getString('please_add_another_language'),
+            localStrings.getString('ok_button'));
         return;
       }
       languageOptionsList.removeSelectedLanguage();
@@ -554,6 +555,63 @@ cr.define('options', function() {
         }
       }
       return filteredPreloadEngines;
+    },
+
+    // TODO(kochi): This is an adapted copy from new_new_tab.js.
+    // If this will go as final UI, refactor this to share the component with
+    // new new tab page.
+    /**
+     * Shows notification
+     * @private
+     */
+    notificationTimeout_: null,
+    showNotification_ : function(text, actionText, opt_delay) {
+      var notificationElement = $('notification');
+      var actionLink = notificationElement.querySelector('.link-color');
+      var delay = opt_delay || 10000;
+
+      function show() {
+        window.clearTimeout(this.notificationTimeout_);
+        notificationElement.classList.add('show');
+        document.body.classList.add('notification-shown');
+      }
+
+      function hide() {
+        window.clearTimeout(this.notificationTimeout_);
+        notificationElement.classList.remove('show');
+        document.body.classList.remove('notification-shown');
+        // Prevent tabbing to the hidden link.
+        actionLink.tabIndex = -1;
+        // Setting tabIndex to -1 only prevents future tabbing to it. If,
+        // however, the user switches window or a tab and then moves back to
+        // this tab the element may gain focus. We therefore make sure that we
+        // blur the element so that the element focus is not restored when
+        // coming back to this window.
+        actionLink.blur();
+      }
+
+      function delayedHide() {
+        this.notificationTimeout_ = window.setTimeout(hide, delay);
+      }
+
+      notificationElement.firstElementChild.textContent = text;
+      actionLink.textContent = actionText;
+
+      actionLink.onclick = hide;
+      actionLink.onkeydown = function(e) {
+        if (e.keyIdentifier == 'Enter') {
+          hide();
+        }
+      };
+      notificationElement.onmouseover = show;
+      notificationElement.onmouseout = delayedHide;
+      actionLink.onfocus = show;
+      actionLink.onblur = delayedHide;
+      // Enable tabbing to the link now that it is shown.
+      actionLink.tabIndex = 0;
+
+      show();
+      delayedHide();
     }
   };
 

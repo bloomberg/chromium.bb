@@ -112,3 +112,52 @@
   padding: 0;
   margin: 0;
 }
+/* TODO(kochi): This is temporary copy from new_new_tab.css */
+/* Notification */
+
+#notification {
+  position: relative;
+  background-color: hsl(52, 100%, 80%);
+  border: 1px solid rgb(211, 211, 211);
+  border-radius: 6px;
+  padding: 7px 15px;
+  white-space: nowrap;
+  display: table;
+  /* Set the height and margin so that the element does not use any vertical
+    space */
+  height: 16px;
+  margin: -44px auto 12px auto;
+  font-weight: bold;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-transition: opacity .15s;
+  z-index: 1;
+  color: black;
+}
+
+#notification > * {
+  display: table-cell;
+  max-width: 500px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#notification.show {
+  opacity: 1;
+  pointer-events: all;
+  -webkit-transition: opacity 1s;
+}
+
+#notification .link {
+  cursor: pointer;
+  text-decoration: underline;
+  -webkit-appearance: none;
+  border: 0;
+  background: none;
+  color: rgba(0, 102, 204, 0.3);
+  -webkit-padding-start: 20px;
+}
+
+#notification .link-color {
+  color: rgb(0, 102, 204);
+}
