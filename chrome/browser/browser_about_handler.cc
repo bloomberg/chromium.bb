@@ -945,10 +945,10 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
   child_data->Append(child);
   BindProcessMetrics(child, info);
 
-  std::wstring child_label(ChildProcessInfo::GetTypeNameInEnglish(info->type));
+  std::string child_label(ChildProcessInfo::GetTypeNameInEnglish(info->type));
   if (info->is_diagnostics)
-    child_label.append(L" (diagnostics)");
-  child->SetString("child_name", WideToUTF16Hack(child_label));
+    child_label.append(" (diagnostics)");
+  child->SetString("child_name", child_label);
   ListValue* titles = new ListValue();
   child->Set("titles", titles);
   for (size_t i = 0; i < info->titles.size(); ++i)

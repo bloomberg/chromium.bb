@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/process.h"
+#include "base/string16.h"
 
 // Holds information about a child process.
 class ChildProcessInfo {
@@ -58,11 +59,11 @@ class ChildProcessInfo {
 
   // Returns an English name of the process type, should only be used for non
   // user-visible strings, or debugging pages like about:memory.
-  static std::wstring GetTypeNameInEnglish(ProcessType type);
+  static std::string GetTypeNameInEnglish(ProcessType type);
 
   // Returns a localized title for the child process.  For example, a plugin
   // process would be "Plug-in: Flash" when name is "Flash".
-  std::wstring GetLocalizedTitle() const;
+  string16 GetLocalizedTitle() const;
 
   // We define the < operator so that the ChildProcessInfo can be used as a key
   // in a std::map.

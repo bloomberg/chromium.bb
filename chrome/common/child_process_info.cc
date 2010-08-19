@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 
 ChildProcessInfo::ChildProcessInfo(const ChildProcessInfo& original)
@@ -38,42 +39,42 @@ ChildProcessInfo& ChildProcessInfo::operator=(
   return *this;
 }
 
-std::wstring ChildProcessInfo::GetTypeNameInEnglish(
+std::string ChildProcessInfo::GetTypeNameInEnglish(
     ChildProcessInfo::ProcessType type) {
   switch (type) {
     case BROWSER_PROCESS:
-      return L"Browser";
+      return "Browser";
     case RENDER_PROCESS:
-      return L"Tab";
+      return "Tab";
     case PLUGIN_PROCESS:
-      return L"Plug-in";
+      return "Plug-in";
     case WORKER_PROCESS:
-      return L"Web Worker";
+      return "Web Worker";
     case UTILITY_PROCESS:
-      return L"Utility";
+      return "Utility";
     case PROFILE_IMPORT_PROCESS:
-      return L"Profile Import helper";
+      return "Profile Import helper";
     case ZYGOTE_PROCESS:
-      return L"Zygote";
+      return "Zygote";
     case SANDBOX_HELPER_PROCESS:
-      return L"Sandbox helper";
+      return "Sandbox helper";
     case NACL_LOADER_PROCESS:
-      return L"Native Client module";
+      return "Native Client module";
     case NACL_BROKER_PROCESS:
-      return L"Native Client broker";
+      return "Native Client broker";
     case GPU_PROCESS:
-      return L"GPU";
+      return "GPU";
     case UNKNOWN_PROCESS:
-      default:
+    default:
       DCHECK(false) << "Unknown child process type!";
-      return L"Unknown";
-    }
+      return "Unknown";
+  }
 }
 
-std::wstring ChildProcessInfo::GetLocalizedTitle() const {
-  std::wstring title = name_;
+string16 ChildProcessInfo::GetLocalizedTitle() const {
+  string16 title = WideToUTF16Hack(name_);
   if (type_ == ChildProcessInfo::PLUGIN_PROCESS && title.empty())
-    title = l10n_util::GetString(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
+    title = l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UNKNOWN_PLUGIN_NAME);
 
   // Explicitly mark name as LTR if there is no strong RTL character,
   // to avoid the wrong concatenation result similar to "!Yahoo! Mail: the
@@ -84,7 +85,8 @@ std::wstring ChildProcessInfo::GetLocalizedTitle() const {
   int message_id;
   if (type_ == ChildProcessInfo::PLUGIN_PROCESS) {
     message_id = IDS_TASK_MANAGER_PLUGIN_PREFIX;
-    return l10n_util::GetStringF(message_id, title, version_.c_str());
+    return l10n_util::GetStringFUTF16(message_id, title,
+                                      WideToUTF16Hack(version_.c_str()));
   } else if (type_ == ChildProcessInfo::WORKER_PROCESS) {
     message_id = IDS_TASK_MANAGER_WORKER_PREFIX;
   } else if (type_ == ChildProcessInfo::UTILITY_PROCESS) {
@@ -100,7 +102,7 @@ std::wstring ChildProcessInfo::GetLocalizedTitle() const {
     return title;
   }
 
-  return l10n_util::GetStringF(message_id, title);
+  return l10n_util::GetStringFUTF16(message_id, title);
 }
 
 ChildProcessInfo::ChildProcessInfo(ProcessType type, int id) : type_(type) {

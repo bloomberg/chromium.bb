@@ -1850,8 +1850,7 @@ class GetChildProcessHostInfoTask : public Task {
       DictionaryValue* item = new DictionaryValue;
       item->SetString("name", WideToUTF16Hack(info->name()));
       item->SetString("type",
-                      WideToUTF16Hack(ChildProcessInfo::GetTypeNameInEnglish(
-                          info->type())));
+                      ChildProcessInfo::GetTypeNameInEnglish(info->type()));
       item->SetInteger("pid", base::GetProcId(info->handle()));
       child_processes_->Append(item);
     }

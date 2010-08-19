@@ -341,7 +341,7 @@ TaskManagerChildProcessResource::~TaskManagerChildProcessResource() {
 // TaskManagerResource methods:
 std::wstring TaskManagerChildProcessResource::GetTitle() const {
   if (title_.empty())
-    title_ = child_process_.GetLocalizedTitle();
+    title_ = UTF16ToWideHack(child_process_.GetLocalizedTitle());
 
   return title_;
 }
