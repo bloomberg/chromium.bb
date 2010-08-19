@@ -32,21 +32,10 @@ __version__ = '1.2'
 
 
 CODEREVIEW_SETTINGS = {
-  # Ideally, we want to set |CODE_REVIEW_SERVER| to a generic server like
-  # codereview.appspot.com and remove |CC_LIST| and |VIEW_VC|. In practice, we
-  # need these settings so developers making changes in directories such as
-  # Chromium's src/third_party/WebKit will send change lists to the correct
-  # server.
-  #
-  # To make gcl send reviews to a different server, check in a file named
+  # To make gcl send reviews to a server, check in a file named
   # "codereview.settings" (see |CODEREVIEW_SETTINGS_FILE| below) to your
   # project's base directory and add the following line to codereview.settings:
   # CODE_REVIEW_SERVER: codereview.yourserver.org
-  #
-  # Default values.
-  "CODE_REVIEW_SERVER": "codereview.chromium.org",
-  "CC_LIST": "chromium-reviews@chromium.org",
-  "VIEW_VC": "http://src.chromium.org/viewvc/chrome?view=rev&revision=",
 }
 
 # globals that store the root of the current repository and the directory where
@@ -55,6 +44,8 @@ REPOSITORY_ROOT = ""
 
 # Filename where we store repository specific information for gcl.
 CODEREVIEW_SETTINGS_FILE = "codereview.settings"
+CODEREVIEW_SETTINGS_FILE_NOT_FOUND = (
+    'No %s file found. Please add one.' % CODEREVIEW_SETTINGS_FILE)
 
 # Warning message when the change appears to be missing tests.
 MISSING_TEST_MSG = "Change contains new or modified methods, but no new tests!"
@@ -570,6 +561,8 @@ def SendToRietveld(request_path, payload=None,
                    content_type="application/octet-stream", timeout=None):
   """Send a POST/GET to Rietveld.  Returns the response body."""
   server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
+  if not server:
+    ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
   def GetUserCredentials():
     """Prompts the user for a username and password."""
     email = upload.GetEmail("Email (login for uploading to %s)" % server)
@@ -730,7 +723,10 @@ def CMDupload(change_info, args):
   clobber = FilterFlag(args, "--clobber")
 
   upload_arg = ["upload.py", "-y"]
-  upload_arg.append("--server=" + GetCodeReviewSetting("CODE_REVIEW_SERVER"))
+  server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
+  if not server:
+    ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
+  upload_arg.append("--server=%s" % server)
   upload_arg.extend(args)
 
   desc_file = ""
@@ -882,6 +878,8 @@ def CMDcommit(change_info, args):
   commit_message = change_info.description.replace('\r\n', '\n')
   if change_info.issue:
     server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
+    if not server:
+      ErrorExit(CODEREVIEW_SETTINGS_FILE_NOT_FOUND)
     if not server.startswith("http://") and not server.startswith("https://"):
       server = "http://" + server
     commit_message += ('\nReview URL: %s/%d' % (server, change_info.issue))

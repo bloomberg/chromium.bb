@@ -32,6 +32,7 @@ class GclUnittest(GclTestsBase):
     self.mox.ReplayAll()
     members = [
         'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE',
+        'CODEREVIEW_SETTINGS_FILE_NOT_FOUND',
         'CMDchange', 'CMDchanges', 'CMDcommit', 'CMDdelete', 'CMDdeleteempties',
         'CMDdescription', 'CMDdiff', 'CMDhelp', 'CMDlint', 'CMDnothave',
         'CMDopened', 'CMDpassthru', 'CMDpresubmit', 'CMDrename', 'CMDsettings',
