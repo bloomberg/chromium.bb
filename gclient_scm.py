@@ -702,7 +702,7 @@ class SVNWrapper(SCMWrapper):
     path = os.path.join(self._root_dir, self.relpath)
     if not os.path.isdir(path):
       raise gclient_utils.Error('Directory %s is not present.' % path)
-    command = ['diff']
+    command = ['diff', '-x', '--ignore-eol-style']
     command.extend(args)
 
     filterer = DiffFilterer(self.relpath)
