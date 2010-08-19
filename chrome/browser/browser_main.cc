@@ -83,7 +83,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_network_transaction.h"
+#include "net/http/http_stream_factory.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/spdy/spdy_session_pool.h"
 
@@ -494,10 +494,10 @@ void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
   }
 
   if (parsed_command_line.HasSwitch(switches::kIgnoreCertificateErrors))
-    net::HttpNetworkTransaction::IgnoreCertificateErrors(true);
+    net::HttpStreamFactory::set_ignore_certificate_errors(true);
 
   if (parsed_command_line.HasSwitch(switches::kHostRules))
-    net::HttpNetworkTransaction::SetHostMappingRules(
+    net::HttpStreamFactory::SetHostMappingRules(
         parsed_command_line.GetSwitchValueASCII(switches::kHostRules));
 
   if (parsed_command_line.HasSwitch(switches::kMaxSpdySessionsPerDomain)) {
