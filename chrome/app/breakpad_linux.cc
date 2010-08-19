@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#define SYS_SEGMENTNAME "syscalls" // For linux_syscall_support.h
+
 #include "chrome/app/breakpad_linux.h"
 
 #include <fcntl.h>
@@ -33,6 +35,12 @@
 #include "chrome/common/chrome_version_info_posix.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/google_update_settings.h"
+
+// Some versions of gcc are prone to warn about unused return values. In cases
+// where we either a) know the call cannot fail, or b) there is nothing we
+// can do when a call fails, we mark the return code as ignored. This avoids
+// spurious compiler warnings.
+#define IGNORE_RET(x) do { if (x); } while (0)
 
 static const char kUploadURL[] =
     "https://clients2.google.com/cr/report";
@@ -107,7 +115,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   if (sys_fstat(dumpfd, &st) != 0) {
     static const char msg[] = "Cannot upload crash dump: stat failed\n";
     sys_write(2, msg, sizeof(msg));
-    sys_close(dumpfd);
+    IGNORE_RET(sys_close(dumpfd));
     return -1;
   }
 
@@ -117,12 +125,12 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   if (!dump_data) {
     static const char msg[] = "Cannot upload crash dump: cannot alloc\n";
     sys_write(2, msg, sizeof(msg));
-    sys_close(dumpfd);
+    IGNORE_RET(sys_close(dumpfd));
     return -1;
   }
 
   sys_read(dumpfd, dump_data, st.st_size);
-  sys_close(dumpfd);
+  IGNORE_RET(sys_close(dumpfd));
 
   // We need to build a MIME block for uploading to the server. Since we are
   // going to fork and run wget, it needs to be written to a temp file.
@@ -156,7 +164,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
       static const char msg[] = "Failed to create temporary file in /tmp: "
           "cannot upload crash dump\n";
       sys_write(2, msg, sizeof(msg) - 1);
-      sys_close(ufd);
+      IGNORE_RET(sys_close(ufd));
       return -1;
     }
   } else {
@@ -164,7 +172,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     if (fd < 0) {
       static const char msg[] = "Failed to save crash dump: failed to open\n";
       sys_write(2, msg, sizeof(msg) - 1);
-      sys_close(ufd);
+      IGNORE_RET(sys_close(ufd));
       return -1;
     }
   }
@@ -176,7 +184,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   sys_read(ufd, &boundary_rand, sizeof(boundary_rand));
   write_uint64_hex(mime_boundary + 28, boundary_rand);
   mime_boundary[28 + 16] = 0;
-  sys_close(ufd);
+  IGNORE_RET(sys_close(ufd));
 
   // The define for the product version is a wide string, so we need to
   // downconvert it.
@@ -312,7 +320,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   iov[28].iov_base = const_cast<char*>(rn);
   iov[28].iov_len = sizeof(rn);
 
-  sys_writev(fd, iov, 29);
+  IGNORE_RET(sys_writev(fd, iov, 29));
 
   if (uptime >= 0) {
     struct kernel_timeval tv;
@@ -344,7 +352,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
         iov[8].iov_base = const_cast<char*>(rn);
         iov[8].iov_len = sizeof(rn);
 
-        sys_writev(fd, iov, 9);
+        IGNORE_RET(sys_writev(fd, iov, 9));
       }
     }
   }
@@ -370,7 +378,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     iov[8].iov_base = const_cast<char*>(rn);
     iov[8].iov_len = sizeof(rn);
 
-    sys_writev(fd, iov, 9);
+    IGNORE_RET(sys_writev(fd, iov, 9));
   }
 
   if (info.distro_length) {
@@ -394,7 +402,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     iov[8].iov_base = const_cast<char*>(rn);
     iov[8].iov_len = sizeof(rn);
 
-    sys_writev(fd, iov, 9);
+    IGNORE_RET(sys_writev(fd, iov, 9));
   }
 
   // For rendererers and plugins.
@@ -434,7 +442,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
       iov[9].iov_base = const_cast<char*>(rn);
       iov[9].iov_len = sizeof(rn);
 
-      sys_writev(fd, iov, 10);
+      IGNORE_RET(sys_writev(fd, iov, 10));
 
       done += len;
       crash_url_length -= len;
@@ -467,9 +475,9 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
   iov[10].iov_base = const_cast<char*>(rn);
   iov[10].iov_len = sizeof(rn);
 
-  sys_writev(fd, iov, 11);
+  IGNORE_RET(sys_writev(fd, iov, 11));
 
-  sys_close(fd);
+  IGNORE_RET(sys_close(fd));
 
   if (!info.upload)
     return 0;
@@ -508,30 +516,30 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     const int fd = sys_open("/proc/self/fd", O_DIRECTORY | O_RDONLY, 0);
     if (fd < 0) {
       for (unsigned i = 3; i < 8192; ++i)
-        sys_close(i);
+        IGNORE_RET(sys_close(i));
     } else {
       google_breakpad::DirectoryReader reader(fd);
       const char* name;
       while (reader.GetNextEntry(&name)) {
         int i;
         if (my_strtoui(&i, name) && i > 2 && i != fd)
-          sys_close(fd);
+          IGNORE_RET(sys_close(fd));
         reader.PopEntry();
       }
 
-      sys_close(fd);
+      IGNORE_RET(sys_close(fd));
     }
 
-    sys_setsid();
+    IGNORE_RET(sys_setsid());
 
     // Leave one end of a pipe in the wget process and watch for it getting
     // closed by the wget process exiting.
     int fds[2];
-    sys_pipe(fds);
+    IGNORE_RET(sys_pipe(fds));
 
     const pid_t child = sys_fork();
     if (child) {
-      sys_close(fds[1]);
+      IGNORE_RET(sys_close(fds[1]));
       char id_buf[17];
       const int len = HANDLE_EINTR(sys_read(fds[0], id_buf,
                                    sizeof(id_buf) - 1));
@@ -542,13 +550,13 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
         sys_write(2, id_buf, my_strlen(id_buf));
         sys_write(2, "\n", 1);
       }
-      sys_unlink(info.filename);
-      sys_unlink(temp_file);
+      IGNORE_RET(sys_unlink(info.filename));
+      IGNORE_RET(sys_unlink(temp_file));
       sys__exit(0);
     }
 
-    sys_close(fds[0]);
-    sys_dup2(fds[1], 3);
+    IGNORE_RET(sys_close(fds[0]));
+    IGNORE_RET(sys_dup2(fds[1], 3));
     static const char* const kWgetBinary = "/usr/bin/wget";
     const char* args[] = {
       kWgetBinary,
@@ -663,8 +671,12 @@ static bool
 NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
                        void* context) {
   const int fd = reinterpret_cast<intptr_t>(context);
-  int fds[2];
-  sys_socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
+  int fds[2] = { -1, -1 };
+  if (sys_socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {
+    static const char msg[] = "Failed to create socket for crash dumping.\n";
+    sys_write(2, msg, sizeof(msg)-1);
+    return false;
+  }
   char guid[kGuidSize + 1] = {0};
   char crash_url[kMaxActiveURLSize + 1] = {0};
   char distro[kDistroSize + 1] = {0};
@@ -716,10 +728,18 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
   ((int*) CMSG_DATA(hdr))[0] = fds[0];
   ((int*) CMSG_DATA(hdr))[1] = fds[1];
 
-  HANDLE_EINTR(sys_sendmsg(fd, &msg, 0));
-  sys_close(fds[1]);
+  if (HANDLE_EINTR(sys_sendmsg(fd, &msg, 0)) < 0) {
+    static const char msg[] = "Failed to tell parent about crash.\n";
+    sys_write(2, msg, sizeof(msg)-1);
+    IGNORE_RET(sys_close(fds[1]));
+    return false;
+  }
+  IGNORE_RET(sys_close(fds[1]));
 
-  HANDLE_EINTR(sys_read(fds[0], &b, 1));
+  if (HANDLE_EINTR(sys_read(fds[0], &b, 1)) != 1) {
+    static const char msg[] = "Parent failed to complete crash dump.\n";
+    sys_write(2, msg, sizeof(msg)-1);
+  }
 
   return true;
 }
