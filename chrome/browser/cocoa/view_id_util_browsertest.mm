@@ -78,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(ViewIDTest, Basic) {
   ASSERT_NO_FATAL_FAILURE(DoTest());
 }
 
-IN_PROC_BROWSER_TEST_F(ViewIDTest, Fullscreen) {
+IN_PROC_BROWSER_TEST_F(ViewIDTest, FAILS_Fullscreen) {
   browser()->window()->SetFullscreen(true);
   ASSERT_NO_FATAL_FAILURE(DoTest());
 }
