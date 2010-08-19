@@ -173,6 +173,8 @@
             'crash_report_sender',
           ],
           'sources': [
+            'src/client/mac/crash_generation/crash_generation_client.cc',
+            'src/client/mac/crash_generation/crash_generation_client.h',
             'src/client/mac/handler/protected_memory_allocator.cc',
             'src/client/mac/handler/exception_handler.cc',
             'src/client/mac/Framework/Breakpad.mm',
