@@ -160,7 +160,6 @@ gboolean ReloadButtonGtk::OnExpose(GtkWidget* widget,
 
 gboolean ReloadButtonGtk::OnLeaveNotify(GtkWidget* widget,
                                         GdkEventCrossing* event) {
-  is_mouse_hovered_ = false;
   ChangeMode(intended_mode_, false);
   return FALSE;
 }
