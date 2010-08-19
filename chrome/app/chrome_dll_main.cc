@@ -49,7 +49,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/platform_util.h"
@@ -573,7 +572,6 @@ int ChromeMain(int argc, char** argv) {
     CommandLine* singleton_command_line = CommandLine::ForCurrentProcess();
     singleton_command_line->AppendSwitch(switches::kDisableSync);
     singleton_command_line->AppendSwitch(switches::kDisableExtensions);
-    browser_defaults::bookmarks_enabled = false;
   }
 #endif
 

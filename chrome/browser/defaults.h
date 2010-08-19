@@ -74,13 +74,6 @@ extern const bool kAlwaysOpenIncognitoWindow;
 // Are phantom tabs enabled?
 extern const bool kPhantomTabsEnabled;
 
-//=============================================================================
-// Runtime "const" - set only once after parsing command line option and should
-// never be modified after that.
-
-// Are bookmark enabled? True by default.
-extern bool bookmarks_enabled;
-
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_
