@@ -58,7 +58,7 @@ class ViewIDTest : public InProcessBrowserTest {
           i == VIEW_ID_AUTOCOMPLETE ||
           i == VIEW_ID_CONTENTS_SPLIT ||
           i == VIEW_ID_SIDE_BAR_CONTAINER ||
-          i == VIEW_ID_SIDE_BAR_SPLIT)
+          i == VIEW_ID_SIDE_BAR_SPLIT) {
         continue;
       }
 
