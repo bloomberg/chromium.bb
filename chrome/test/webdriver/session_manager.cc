@@ -143,7 +143,8 @@ bool SessionManager::Create(std::string* id) {
   CommandLine::Init(0, NULL);
 
   // start chrome, if it doesn't startup in 8 seconds quit
-  scoped_ptr<Session> session(new Session(*id, new AutomationProxy(8000)));
+  scoped_ptr<Session> session(new Session(*id, new AutomationProxy(8000,
+                                                                   false)));
   if (session->proxy() == NULL) {
     LOG(WARNING) << "Could not allocate automation proxy" << std::endl;
     return false;
