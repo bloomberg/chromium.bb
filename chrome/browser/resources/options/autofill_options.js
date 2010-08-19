@@ -39,6 +39,21 @@ cr.define('options', function() {
       $('profileList').onchange = function(event) {
         self.updateRemoveButtonState_();
       };
+
+      Preferences.getInstance().addEventListener('autofill.enabled',
+          cr.bind(self.updateButtonState_, self));
+    },
+
+    /**
+     * Sets the enabled state of the button controls based on the current state
+     * of the |autoFillEnabled| checkbox.
+     * @private
+     */
+    updateButtonState_: function() {
+      var checkbox = $('autoFillEnabled');
+      $('addAddressButton').disabled = $('addCreditCardButton').disabled =
+          $('editButton').disabled = $('autoFillRemoveButton').disabled =
+              !checkbox.checked;
     },
 
     /**
