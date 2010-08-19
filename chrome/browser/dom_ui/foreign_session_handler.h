@@ -6,10 +6,6 @@
 #define CHROME_BROWSER_DOM_UI_FOREIGN_SESSION_HANDLER_H_
 #pragma once
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/glue/session_model_associator.h"

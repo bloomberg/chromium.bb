@@ -10,7 +10,6 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/non_thread_safe.h"
 #include "base/scoped_ptr.h"

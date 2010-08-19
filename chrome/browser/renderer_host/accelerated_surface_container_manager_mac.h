@@ -8,7 +8,6 @@
 
 #include <OpenGL/OpenGL.h>
 #include <map>
-#include <vector>
 
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"

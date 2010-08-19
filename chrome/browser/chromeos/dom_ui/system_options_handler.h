@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_DOM_UI_SYSTEM_OPTIONS_HANDLER_H_
 #pragma once
 
-#include <vector>
-
 #include "chrome/browser/chromeos/dom_ui/cros_options_page_ui_handler.h"
 
 class DictionaryValue;

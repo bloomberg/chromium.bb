@@ -9,7 +9,6 @@
 #include <atlcom.h>
 #include <locationapi.h>
 #include <sensors.h>
-#include <vector>
 #include <Windows.h>
 
 #include "base/scoped_ptr.h"
@@ -53,7 +52,7 @@ class Win7LocationApi {
   // This class is responsible for closing it.
   HINSTANCE prop_lib_;
   PropVariantToDoubleFunction PropVariantToDouble_function_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(Win7LocationApi);
 };
 

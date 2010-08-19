@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SYNC_GLUE_SESSION_CHANGE_PROCESSOR_H_
 #pragma once
 
-#include <vector>
 #include "base/basictypes.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service.h"

@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_HISTORY_H_
 #pragma once
 
-#include <vector>
-
 #include "base/basictypes.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/history.h"

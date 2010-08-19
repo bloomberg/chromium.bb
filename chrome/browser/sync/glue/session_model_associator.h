@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_SYNC_GLUE_SESSION_MODEL_ASSOCIATOR_H_
 #pragma once
 
-#include <map>
 #include <string>
 #include <vector>
+
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
