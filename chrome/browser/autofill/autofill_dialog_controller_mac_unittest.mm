@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/ref_counted.h"
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"

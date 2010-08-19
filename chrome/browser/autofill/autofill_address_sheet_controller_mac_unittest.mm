@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/autofill/autofill_address_sheet_controller_mac.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"

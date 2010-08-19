@@ -15,6 +15,7 @@
 #import "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/cocoa/constrained_window_mac.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"

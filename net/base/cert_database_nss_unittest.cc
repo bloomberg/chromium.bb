@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "net/base/cert_database.h"
 #include "net/base/net_errors.h"
 #include "net/base/x509_certificate.h"

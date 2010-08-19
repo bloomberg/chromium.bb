@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_common_unittest.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
 #include "chrome/browser/autofill/credit_card.h"

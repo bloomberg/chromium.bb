@@ -4,6 +4,7 @@
 
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/status_icons/status_icon_mac.h"
 #include "grit/browser_resources.h"

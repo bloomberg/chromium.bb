@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/cocoa/browser_accessibility.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"

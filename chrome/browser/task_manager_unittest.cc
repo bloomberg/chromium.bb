@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/utf_string_conversions.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"

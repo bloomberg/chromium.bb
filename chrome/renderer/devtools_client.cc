@@ -6,6 +6,7 @@
 
 #include "app/app_switches.h"
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"

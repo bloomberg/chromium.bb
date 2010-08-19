@@ -22,6 +22,7 @@
 #include "base/string_util.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/utf_string_conversions.h"
 
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/common/chrome_constants.h"

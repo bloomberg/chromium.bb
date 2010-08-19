@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/dom_ui/options_managed_banner_handler.h"
 #include "chrome/browser/download/download_manager.h"

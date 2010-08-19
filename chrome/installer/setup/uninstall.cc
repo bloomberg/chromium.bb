@@ -11,6 +11,7 @@
 #include "base/registry.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/chrome_constants.h"

@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 #include "chrome/test/webdriver/dispatch.h"
 #include "chrome/test/webdriver/session_manager.h"

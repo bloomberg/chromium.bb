@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/cocoa/page_info_window_mac.h"
 #import "chrome/browser/cocoa/page_info_window_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
