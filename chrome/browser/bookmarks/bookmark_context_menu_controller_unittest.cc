@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -86,18 +87,18 @@ class BookmarkContextMenuControllerTest : public testing::Test {
   void AddTestData() {
     std::string test_base = "file:///c:/tmp/";
 
-    model_->AddURL(model_->GetBookmarkBarNode(), 0, L"a",
+    model_->AddURL(model_->GetBookmarkBarNode(), 0, ASCIIToUTF16("a"),
                    GURL(test_base + "a"));
     const BookmarkNode* f1 =
-        model_->AddGroup(model_->GetBookmarkBarNode(), 1, L"F1");
-    model_->AddURL(f1, 0, L"f1a", GURL(test_base + "f1a"));
-    const BookmarkNode* f11 = model_->AddGroup(f1, 1, L"F11");
-    model_->AddURL(f11, 0, L"f11a", GURL(test_base + "f11a"));
-    model_->AddGroup(model_->GetBookmarkBarNode(), 2, L"F2");
-    model_->AddGroup(model_->GetBookmarkBarNode(), 3, L"F3");
+        model_->AddGroup(model_->GetBookmarkBarNode(), 1, ASCIIToUTF16("F1"));
+    model_->AddURL(f1, 0, ASCIIToUTF16("f1a"), GURL(test_base + "f1a"));
+    const BookmarkNode* f11 = model_->AddGroup(f1, 1, ASCIIToUTF16("F11"));
+    model_->AddURL(f11, 0, ASCIIToUTF16("f11a"), GURL(test_base + "f11a"));
+    model_->AddGroup(model_->GetBookmarkBarNode(), 2, ASCIIToUTF16("F2"));
+    model_->AddGroup(model_->GetBookmarkBarNode(), 3, ASCIIToUTF16("F3"));
     const BookmarkNode* f4 =
-        model_->AddGroup(model_->GetBookmarkBarNode(), 4, L"F4");
-    model_->AddURL(f4, 0, L"f4a", GURL(test_base + "f4a"));
+        model_->AddGroup(model_->GetBookmarkBarNode(), 4, ASCIIToUTF16("F4"));
+    model_->AddURL(f4, 0, ASCIIToUTF16("f4a"), GURL(test_base + "f4a"));
   }
 };
 

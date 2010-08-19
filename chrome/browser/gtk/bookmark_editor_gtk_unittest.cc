@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include <gtk/gtk.h>
 
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/gtk/bookmark_editor_gtk.h"
@@ -75,21 +76,21 @@ class BookmarkEditorGtkTest : public testing::Test {
   void AddTestData() {
     std::string test_base = base_path();
 
-    model_->AddURL(model_->GetBookmarkBarNode(), 0, L"a",
+    model_->AddURL(model_->GetBookmarkBarNode(), 0, ASCIIToUTF16("a"),
                    GURL(test_base + "a"));
     const BookmarkNode* f1 =
-        model_->AddGroup(model_->GetBookmarkBarNode(), 1, L"F1");
-    model_->AddURL(f1, 0, L"f1a", GURL(test_base + "f1a"));
-    const BookmarkNode* f11 = model_->AddGroup(f1, 1, L"F11");
-    model_->AddURL(f11, 0, L"f11a", GURL(test_base + "f11a"));
-    model_->AddGroup(model_->GetBookmarkBarNode(), 2, L"F2");
+        model_->AddGroup(model_->GetBookmarkBarNode(), 1, ASCIIToUTF16("F1"));
+    model_->AddURL(f1, 0, ASCIIToUTF16("f1a"), GURL(test_base + "f1a"));
+    const BookmarkNode* f11 = model_->AddGroup(f1, 1, ASCIIToUTF16("F11"));
+    model_->AddURL(f11, 0, ASCIIToUTF16("f11a"), GURL(test_base + "f11a"));
+    model_->AddGroup(model_->GetBookmarkBarNode(), 2, ASCIIToUTF16("F2"));
 
     // Children of the other node.
-    model_->AddURL(model_->other_node(), 0, L"oa",
+    model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("oa"),
                    GURL(test_base + "oa"));
     const BookmarkNode* of1 =
-        model_->AddGroup(model_->other_node(), 1, L"OF1");
-    model_->AddURL(of1, 0, L"of1a", GURL(test_base + "of1a"));
+        model_->AddGroup(model_->other_node(), 1, ASCIIToUTF16("OF1"));
+    model_->AddURL(of1, 0, ASCIIToUTF16("of1a"), GURL(test_base + "of1a"));
   }
 };
 

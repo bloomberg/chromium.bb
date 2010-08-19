@@ -4,7 +4,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/string16.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
@@ -19,7 +21,7 @@ class BookmarkEditorControllerTest : public CocoaTest {
   const BookmarkNode* default_node_;
   const BookmarkNode* default_parent_;
   const char* default_name_;
-  std::wstring default_title_;
+  string16 default_title_;
   BookmarkEditorController* controller_;
 
   virtual void SetUp() {
@@ -27,7 +29,7 @@ class BookmarkEditorControllerTest : public CocoaTest {
     BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
     default_parent_ = model->GetBookmarkBarNode();
     default_name_ = "http://www.zim-bop-a-dee.com/";
-    default_title_ = L"ooh title";
+    default_title_ = ASCIIToUTF16("ooh title");
     const BookmarkNode* default_node = model->AddURL(default_parent_, 0,
                                                      default_title_,
                                                      GURL(default_name_));
@@ -50,7 +52,7 @@ TEST_F(BookmarkEditorControllerTest, NoEdit) {
   [controller_ cancel:nil];
   ASSERT_EQ(default_parent_->GetChildCount(), 1);
   const BookmarkNode* child = default_parent_->GetChild(0);
-  EXPECT_EQ(child->GetTitle(), default_title_);
+  EXPECT_EQ(child->GetTitleAsString16(), default_title_);
   EXPECT_EQ(child->GetURL(), GURL(default_name_));
 }
 
@@ -70,7 +72,7 @@ TEST_F(BookmarkEditorControllerTest, EditURL) {
   [controller_ ok:nil];
   ASSERT_EQ(default_parent_->GetChildCount(), 1);
   const BookmarkNode* child = default_parent_->GetChild(0);
-  EXPECT_EQ(child->GetTitle(), default_title_);
+  EXPECT_EQ(child->GetTitleAsString16(), default_title_);
   EXPECT_EQ(child->GetURL(), GURL("http://yellow-sneakers.com/"));
 }
 
@@ -163,7 +165,7 @@ TEST_F(BookmarkEditorControllerNoNodeTest, NoNodeNoTree) {
 class BookmarkEditorControllerYesNodeTest : public CocoaTest {
  public:
   BrowserTestHelper browser_helper_;
-  std::wstring default_title_;
+  string16 default_title_;
   const char* url_name_;
   BookmarkEditorController* controller_;
 
@@ -171,7 +173,7 @@ class BookmarkEditorControllerYesNodeTest : public CocoaTest {
     CocoaTest::SetUp();
     BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
     const BookmarkNode* parent = model->GetBookmarkBarNode();
-    default_title_ = L"wooh title";
+    default_title_ = ASCIIToUTF16("wooh title");
     url_name_ = "http://www.zoom-baby-doo-da.com/";
     const BookmarkNode* node = model->AddURL(parent, 0, default_title_,
                                              GURL(url_name_));
@@ -192,7 +194,7 @@ class BookmarkEditorControllerYesNodeTest : public CocoaTest {
 };
 
 TEST_F(BookmarkEditorControllerYesNodeTest, YesNodeShowTree) {
-  EXPECT_NSEQ(base::SysWideToNSString(default_title_),
+  EXPECT_NSEQ(base::SysUTF16ToNSString(default_title_),
               [controller_ displayName]);
   EXPECT_NSEQ([NSString stringWithCString:url_name_
                                  encoding:NSUTF8StringEncoding],
@@ -226,35 +228,36 @@ class BookmarkEditorControllerTreeTest : public CocoaTest {
     //            b-2
     BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
     const BookmarkNode* root = model.GetBookmarkBarNode();
-    group_a_ = model.AddGroup(root, 0, L"a");
-    model.AddURL(group_a_, 0, L"a-0", GURL("http://a-0.com"));
-    model.AddURL(group_a_, 1, L"a-1", GURL("http://a-1.com"));
-    model.AddURL(group_a_, 2, L"a-2", GURL("http://a-2.com"));
+    group_a_ = model.AddGroup(root, 0, ASCIIToUTF16("a"));
+    model.AddURL(group_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
+    model.AddURL(group_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
+    model.AddURL(group_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
 
-    group_b_ = model.AddGroup(root, 1, L"b");
-    model.AddURL(group_b_, 0, L"b-0", GURL("http://b-0.com"));
-    group_bb_ = model.AddGroup(group_b_, 1, L"bb");
-    model.AddURL(group_bb_, 0, L"bb-0", GURL("http://bb-0.com"));
-    model.AddURL(group_bb_, 1, L"bb-1", GURL("http://bb-1.com"));
-    model.AddURL(group_bb_, 2, L"bb-2", GURL("http://bb-2.com"));
+    group_b_ = model.AddGroup(root, 1, ASCIIToUTF16("b"));
+    model.AddURL(group_b_, 0, ASCIIToUTF16("b-0"), GURL("http://b-0.com"));
+    group_bb_ = model.AddGroup(group_b_, 1, ASCIIToUTF16("bb"));
+    model.AddURL(group_bb_, 0, ASCIIToUTF16("bb-0"), GURL("http://bb-0.com"));
+    model.AddURL(group_bb_, 1, ASCIIToUTF16("bb-1"), GURL("http://bb-1.com"));
+    model.AddURL(group_bb_, 2, ASCIIToUTF16("bb-2"), GURL("http://bb-2.com"));
 
     // To find it later, this bookmark name must always have a URL
     // of http://bb-3.com or https://bb-3.com
     bb3_url_1_ = GURL("http://bb-3.com");
     bb3_url_2_ = GURL("https://bb-3.com");
-    bookmark_bb_3_ = model.AddURL(group_bb_, 3, L"bb-3", bb3_url_1_);
+    bookmark_bb_3_ = model.AddURL(group_bb_, 3, ASCIIToUTF16("bb-3"),
+                                  bb3_url_1_);
 
-    model.AddURL(group_bb_, 4, L"bb-4", GURL("http://bb-4.com"));
-    model.AddURL(group_b_, 2, L"b-1", GURL("http://b-2.com"));
-    model.AddURL(group_b_, 3, L"b-2", GURL("http://b-3.com"));
+    model.AddURL(group_bb_, 4, ASCIIToUTF16("bb-4"), GURL("http://bb-4.com"));
+    model.AddURL(group_b_, 2, ASCIIToUTF16("b-1"), GURL("http://b-2.com"));
+    model.AddURL(group_b_, 3, ASCIIToUTF16("b-2"), GURL("http://b-3.com"));
 
-    group_c_ = model.AddGroup(root, 2, L"c");
-    model.AddURL(group_c_, 0, L"c-0", GURL("http://c-0.com"));
-    model.AddURL(group_c_, 1, L"c-1", GURL("http://c-1.com"));
-    model.AddURL(group_c_, 2, L"c-2", GURL("http://c-2.com"));
-    model.AddURL(group_c_, 3, L"c-3", GURL("http://c-3.com"));
+    group_c_ = model.AddGroup(root, 2, ASCIIToUTF16("c"));
+    model.AddURL(group_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
+    model.AddURL(group_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
+    model.AddURL(group_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
+    model.AddURL(group_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
 
-    model.AddURL(root, 3, L"d", GURL("http://d-0.com"));
+    model.AddURL(root, 3, ASCIIToUTF16("d"), GURL("http://d-0.com"));
   }
 
   virtual BookmarkEditorController* CreateController() {

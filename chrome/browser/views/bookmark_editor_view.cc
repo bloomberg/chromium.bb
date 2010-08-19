@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/history.h"
@@ -528,7 +529,7 @@ void BookmarkEditorView::ApplyEdits(EditorNode* parent) {
   bb_model_->RemoveObserver(this);
 
   GURL new_url(GetInputURL());
-  std::wstring new_title(GetInputTitle());
+  string16 new_title(WideToUTF16Hack(GetInputTitle()));
 
   if (!show_tree_) {
     bookmark_utils::ApplyEditsWithNoGroupChange(
@@ -558,7 +559,7 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewGroups(
     if (child_b_node->value == 0) {
       // New group.
       child_bb_node = bb_model_->AddGroup(bb_node,
-          bb_node->GetChildCount(), child_b_node->GetTitle());
+          bb_node->GetChildCount(), child_b_node->GetTitleAsString16());
     } else {
       // Existing node, reset the title (BBModel ignores changes if the title
       // is the same).
@@ -570,7 +571,7 @@ void BookmarkEditorView::ApplyNameChangesAndCreateNewGroups(
         }
       }
       DCHECK(child_bb_node);
-      bb_model_->SetTitle(child_bb_node, child_b_node->GetTitle());
+      bb_model_->SetTitle(child_bb_node, child_b_node->GetTitleAsString16());
     }
     ApplyNameChangesAndCreateNewGroups(child_bb_node, child_b_node,
                                        parent_b_node, parent_bb_node);

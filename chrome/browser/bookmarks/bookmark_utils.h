@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/history/snippet.h"
@@ -165,7 +166,7 @@ const BookmarkNode* ApplyEditsWithNoGroupChange(
     BookmarkModel* model,
     const BookmarkNode* parent,
     const BookmarkEditor::EditDetails& details,
-    const std::wstring& new_title,
+    const string16& new_title,
     const GURL& new_url);
 
 // Modifies a bookmark node assuming that the parent of the node may have
@@ -176,7 +177,7 @@ const BookmarkNode* ApplyEditsWithPossibleGroupChange(
     BookmarkModel* model,
     const BookmarkNode* new_parent,
     const BookmarkEditor::EditDetails& details,
-    const std::wstring& new_title,
+    const string16& new_title,
     const GURL& new_url);
 
 // Toggles whether the bookmark bar is shown only on the new tab page or on

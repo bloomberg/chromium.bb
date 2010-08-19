@@ -17,13 +17,13 @@ typedef testing::Test BookmarkUtilsTest;
 TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {
   BookmarkModel model(NULL);
   const BookmarkNode* n1 =
-      model.AddURL(model.other_node(), 0, L"foo bar",
+      model.AddURL(model.other_node(), 0, ASCIIToUTF16("foo bar"),
                    GURL("http://www.google.com"));
   const BookmarkNode* n2 =
-      model.AddURL(model.other_node(), 0, L"baz buz",
+      model.AddURL(model.other_node(), 0, ASCIIToUTF16("baz buz"),
                    GURL("http://www.cnn.com"));
 
-  model.AddGroup(model.other_node(), 0, L"foo");
+  model.AddGroup(model.other_node(), 0, ASCIIToUTF16("foo"));
 
   std::vector<const BookmarkNode*> nodes;
   bookmark_utils::GetBookmarksContainingText(
@@ -53,7 +53,8 @@ TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {
 
 TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
   BookmarkModel model(NULL);
-  const BookmarkNode* node = model.AddURL(model.other_node(), 0, L"foo bar",
+  const BookmarkNode* node = model.AddURL(model.other_node(), 0,
+                                          ASCIIToUTF16("foo bar"),
                                           GURL("http://www.google.com"));
   // Matches to the title.
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
@@ -67,7 +68,7 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
 
   // Tests for a Japanese IDN.
   const wchar_t* kDecodedIdn = L"\x30B0\x30FC\x30B0\x30EB";
-  node = model.AddURL(model.other_node(), 0, L"foo bar",
+  node = model.AddURL(model.other_node(), 0, ASCIIToUTF16("foo bar"),
                       GURL("http://xn--qcka1pmc.jp"));
   // Unicode query doesn't match if languages have no "ja".
   ASSERT_FALSE(bookmark_utils::DoesBookmarkContainText(
@@ -80,7 +81,7 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
       node, L"qcka1pmc", L"ja"));
 
   // Tests with various lower/upper case characters.
-  node = model.AddURL(model.other_node(), 0, L"FOO bar",
+  node = model.AddURL(model.other_node(), 0, ASCIIToUTF16("FOO bar"),
                       GURL("http://www.google.com/search?q=ABC"));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
       node, L"foo", std::wstring()));
@@ -102,7 +103,8 @@ TEST_F(BookmarkUtilsTest, CopyPaste) {
   MessageLoopForUI loop;
 
   BookmarkModel model(NULL);
-  const BookmarkNode* node = model.AddURL(model.other_node(), 0, L"foo bar",
+  const BookmarkNode* node = model.AddURL(model.other_node(), 0,
+                                          ASCIIToUTF16("foo bar"),
                                           GURL("http://www.google.com"));
 
   // Copy a node to the clipboard.

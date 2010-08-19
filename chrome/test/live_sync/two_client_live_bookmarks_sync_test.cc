@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/rand_util.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
 
@@ -122,10 +124,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   GURL initial_url("http://www.google.com");
   GURL second_url("http://www.google.com/abc");
   GURL third_url("http://www.google.com/def");
-  wstring title = L"Google";
+  string16 title = ASCIIToUTF16("Google");
   {
-    const BookmarkNode* google = v->AddURL(bm0, bm_bar0, 0,
-        title, initial_url);
+    const BookmarkNode* google =
+        v->AddURL(bm0, bm_bar0, 0, UTF16ToWideHack(title), initial_url);
     ASSERT_TRUE(google != NULL);
   }
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));

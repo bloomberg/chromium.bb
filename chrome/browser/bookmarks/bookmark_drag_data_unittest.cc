@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #include "app/os_exchange_data_provider_win.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
@@ -118,9 +119,9 @@ TEST_F(BookmarkDragDataTest, Group) {
   profile.SetID(L"id");
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
-  const BookmarkNode* g1 = model->AddGroup(root, 0, L"g1");
-  const BookmarkNode* g11 = model->AddGroup(g1, 0, L"g11");
-  const BookmarkNode* g12 = model->AddGroup(g1, 0, L"g12");
+  const BookmarkNode* g1 = model->AddGroup(root, 0, ASCIIToUTF16("g1"));
+  const BookmarkNode* g11 = model->AddGroup(g1, 0, ASCIIToUTF16("g11"));
+  const BookmarkNode* g12 = model->AddGroup(g1, 0, ASCIIToUTF16("g12"));
 
   BookmarkDragData drag_data(g12);
   EXPECT_TRUE(drag_data.is_valid());
@@ -157,7 +158,7 @@ TEST_F(BookmarkDragDataTest, GroupWithChild) {
   profile.BlockUntilBookmarkModelLoaded();
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
-  const BookmarkNode* group = model->AddGroup(root, 0, L"g1");
+  const BookmarkNode* group = model->AddGroup(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));
   const std::wstring title(L"blah2");
@@ -196,7 +197,7 @@ TEST_F(BookmarkDragDataTest, MultipleNodes) {
   profile.BlockUntilBookmarkModelLoaded();
   BookmarkModel* model = profile.GetBookmarkModel();
   const BookmarkNode* root = model->GetBookmarkBarNode();
-  const BookmarkNode* group = model->AddGroup(root, 0, L"g1");
+  const BookmarkNode* group = model->AddGroup(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));
   const std::wstring title(L"blah2");

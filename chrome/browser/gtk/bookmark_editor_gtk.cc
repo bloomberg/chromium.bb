@@ -312,7 +312,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
 
   if (!show_tree_ || !selected_parent) {
     bookmark_utils::ApplyEditsWithNoGroupChange(
-        bb_model_, parent_, details_, UTF16ToWide(new_title), new_url);
+        bb_model_, parent_, details_, new_title, new_url);
     return;
   }
 
@@ -328,7 +328,7 @@ void BookmarkEditorGtk::ApplyEdits(GtkTreeIter* selected_parent) {
   }
 
   bookmark_utils::ApplyEditsWithPossibleGroupChange(
-      bb_model_, new_parent, details_, UTF16ToWide(new_title), new_url);
+      bb_model_, new_parent, details_, new_title, new_url);
 }
 
 void BookmarkEditorGtk::AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child) {

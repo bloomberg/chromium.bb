@@ -7,6 +7,7 @@
 #include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
@@ -39,28 +40,28 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
     //            b-4
     BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
     const BookmarkNode* root = model.GetBookmarkBarNode();
-    group_a_ = model.AddGroup(root, 0, L"a");
-    model.AddURL(group_a_, 0, L"a-0", GURL("http://a-0.com"));
-    model.AddURL(group_a_, 1, L"a-1", GURL("http://a-1.com"));
-    model.AddURL(group_a_, 2, L"a-2", GURL("http://a-2.com"));
+    group_a_ = model.AddGroup(root, 0, ASCIIToUTF16("a"));
+    model.AddURL(group_a_, 0, ASCIIToUTF16("a-0"), GURL("http://a-0.com"));
+    model.AddURL(group_a_, 1, ASCIIToUTF16("a-1"), GURL("http://a-1.com"));
+    model.AddURL(group_a_, 2, ASCIIToUTF16("a-2"), GURL("http://a-2.com"));
 
-    group_b_ = model.AddGroup(root, 1, L"b");
-    group_b_0_ = model.AddGroup(group_b_, 0, L"b-0");
-    model.AddURL(group_b_0_, 0, L"bb-0", GURL("http://bb-0.com"));
-    model.AddURL(group_b_, 1, L"b-1", GURL("http://b-1.com"));
-    model.AddURL(group_b_, 2, L"b-2", GURL("http://b-2.com"));
-    group_b_3_ = model.AddGroup(group_b_, 3, L"b-3");
-    model.AddURL(group_b_3_, 0, L"b-30", GURL("http://b-30.com"));
-    model.AddURL(group_b_3_, 1, L"b-31", GURL("http://b-31.com"));
-    model.AddURL(group_b_, 4, L"b-4", GURL("http://b-4.com"));
+    group_b_ = model.AddGroup(root, 1, ASCIIToUTF16("b"));
+    group_b_0_ = model.AddGroup(group_b_, 0, ASCIIToUTF16("b-0"));
+    model.AddURL(group_b_0_, 0, ASCIIToUTF16("bb-0"), GURL("http://bb-0.com"));
+    model.AddURL(group_b_, 1, ASCIIToUTF16("b-1"), GURL("http://b-1.com"));
+    model.AddURL(group_b_, 2, ASCIIToUTF16("b-2"), GURL("http://b-2.com"));
+    group_b_3_ = model.AddGroup(group_b_, 3, ASCIIToUTF16("b-3"));
+    model.AddURL(group_b_3_, 0, ASCIIToUTF16("b-30"), GURL("http://b-30.com"));
+    model.AddURL(group_b_3_, 1, ASCIIToUTF16("b-31"), GURL("http://b-31.com"));
+    model.AddURL(group_b_, 4, ASCIIToUTF16("b-4"), GURL("http://b-4.com"));
 
-    group_c_ = model.AddGroup(root, 2, L"c");
-    model.AddURL(group_c_, 0, L"c-0", GURL("http://c-0.com"));
-    model.AddURL(group_c_, 1, L"c-1", GURL("http://c-1.com"));
-    model.AddURL(group_c_, 2, L"c-2", GURL("http://c-2.com"));
-    model.AddURL(group_c_, 3, L"c-3", GURL("http://c-3.com"));
+    group_c_ = model.AddGroup(root, 2, ASCIIToUTF16("c"));
+    model.AddURL(group_c_, 0, ASCIIToUTF16("c-0"), GURL("http://c-0.com"));
+    model.AddURL(group_c_, 1, ASCIIToUTF16("c-1"), GURL("http://c-1.com"));
+    model.AddURL(group_c_, 2, ASCIIToUTF16("c-2"), GURL("http://c-2.com"));
+    model.AddURL(group_c_, 3, ASCIIToUTF16("c-3"), GURL("http://c-3.com"));
 
-    model.AddURL(root, 3, L"d", GURL("http://d-0.com"));
+    model.AddURL(root, 3, ASCIIToUTF16("d"), GURL("http://d-0.com"));
   }
 
   virtual BookmarkEditorBaseController* CreateController() {
@@ -207,7 +208,8 @@ TEST_F(BookmarkEditorBaseControllerTest, FolderAdded) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
 
   // Add a group node to the model, and verify it can be selected in the tree:
-  const BookmarkNode* group_added = model.AddGroup(root, 0, L"added");
+  const BookmarkNode* group_added = model.AddGroup(root, 0,
+                                                   ASCIIToUTF16("added"));
   [controller_ selectTestNodeInBrowser:group_added];
   EXPECT_EQ(group_added, [controller_ selectedNode]);
 

@@ -463,7 +463,7 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
       BookmarkModel* model = [self bookmarkModel];
       const BookmarkNode* newFolder =
       model->AddGroup(parentNode, i,
-                      base::SysNSStringToWide([subFolderInfo folderName]));
+                      base::SysNSStringToUTF16([subFolderInfo folderName]));
       // Update our dictionary with the actual folder node just created.
       [subFolderInfo setFolderNode:newFolder];
       [subFolderInfo setNewFolder:NO];

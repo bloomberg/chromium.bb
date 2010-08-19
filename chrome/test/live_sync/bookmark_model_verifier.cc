@@ -131,11 +131,13 @@ const BookmarkNode* BookmarkModelVerifier::AddGroup(BookmarkModel* model,
     const BookmarkNode* parent, int index, const wstring& title) {
   const BookmarkNode* v_parent = NULL;
   FindNodeInVerifier(model, parent, &v_parent);
-  const BookmarkNode* result = model->AddGroup(parent, index, title);
+  const BookmarkNode* result = model->AddGroup(parent, index,
+                                               WideToUTF16Hack(title));
   EXPECT_TRUE(result);
   if (!result)
     return NULL;
-  const BookmarkNode* v_node = model_->AddGroup(v_parent, index, title);
+  const BookmarkNode* v_node = model_->AddGroup(v_parent, index,
+                                                WideToUTF16Hack(title));
   EXPECT_TRUE(v_node);
   if (!v_node)
     return NULL;
@@ -246,8 +248,9 @@ const BookmarkNode* BookmarkModelVerifier::SetURL(BookmarkModel* model,
   FindNodeInVerifier(model, node, &v_node);
   const BookmarkNode* result = bookmark_utils::ApplyEditsWithNoGroupChange(
       model, node->GetParent(), BookmarkEditor::EditDetails(node),
-      node->GetTitle(), new_url);
+      node->GetTitleAsString16(), new_url);
   bookmark_utils::ApplyEditsWithNoGroupChange(model_, v_node->GetParent(),
-      BookmarkEditor::EditDetails(v_node), v_node->GetTitle(), new_url);
+      BookmarkEditor::EditDetails(v_node), v_node->GetTitleAsString16(),
+      new_url);
   return result;
 }

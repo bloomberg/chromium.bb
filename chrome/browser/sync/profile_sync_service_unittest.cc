@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -486,33 +486,35 @@ TEST_F(ProfileSyncServiceTest, BookmarkModelOperations) {
 
   // Test addition.
   const BookmarkNode* folder =
-      model_->AddGroup(model_->other_node(), 0, L"foobar");
+      model_->AddGroup(model_->other_node(), 0, ASCIIToUTF16("foobar"));
   ExpectSyncerNodeMatching(folder);
   ExpectModelMatch();
-  const BookmarkNode* folder2 = model_->AddGroup(folder, 0, L"nested");
+  const BookmarkNode* folder2 =
+      model_->AddGroup(folder, 0, ASCIIToUTF16("nested"));
   ExpectSyncerNodeMatching(folder2);
   ExpectModelMatch();
   const BookmarkNode* url1 = model_->AddURL(
-      folder, 0, L"Internets #1 Pies Site", GURL("http://www.easypie.com/"));
+      folder, 0, ASCIIToUTF16("Internets #1 Pies Site"),
+      GURL("http://www.easypie.com/"));
   ExpectSyncerNodeMatching(url1);
   ExpectModelMatch();
   const BookmarkNode* url2 = model_->AddURL(
-      folder, 1, L"Airplanes", GURL("http://www.easyjet.com/"));
+      folder, 1, ASCIIToUTF16("Airplanes"), GURL("http://www.easyjet.com/"));
   ExpectSyncerNodeMatching(url2);
   ExpectModelMatch();
 
   // Test modification.
-  model_->SetTitle(url2, L"EasyJet");
+  model_->SetTitle(url2, ASCIIToUTF16("EasyJet"));
   ExpectModelMatch();
   model_->Move(url1, folder2, 0);
   ExpectModelMatch();
   model_->Move(folder2, model_->GetBookmarkBarNode(), 0);
   ExpectModelMatch();
-  model_->SetTitle(folder2, L"Not Nested");
+  model_->SetTitle(folder2, ASCIIToUTF16("Not Nested"));
   ExpectModelMatch();
   model_->Move(folder, folder2, 0);
   ExpectModelMatch();
-  model_->SetTitle(folder, L"who's nested now?");
+  model_->SetTitle(folder, ASCIIToUTF16("who's nested now?"));
   ExpectModelMatch();
   model_->Copy(url2, model_->GetBookmarkBarNode(), 0);
   ExpectModelMatch();
@@ -734,27 +736,27 @@ TEST_F(ProfileSyncServiceTest, CornerCaseNames) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
 
-  const wchar_t* names[] = {
+  const char* names[] = {
       // The empty string.
-      L"",
+      "",
       // Illegal Windows filenames.
-      L"CON", L"PRN", L"AUX", L"NUL", L"COM1", L"COM2", L"COM3", L"COM4",
-      L"COM5", L"COM6", L"COM7", L"COM8", L"COM9", L"LPT1", L"LPT2", L"LPT3",
-      L"LPT4", L"LPT5", L"LPT6", L"LPT7", L"LPT8", L"LPT9",
+      "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4",
+      "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3",
+      "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
       // Current/parent directory markers.
-      L".", L"..", L"...",
+      ".", "..", "...",
       // Files created automatically by the Windows shell.
-      L"Thumbs.db", L".DS_Store",
+      "Thumbs.db", ".DS_Store",
       // Names including Win32-illegal characters, and path separators.
-      L"foo/bar", L"foo\\bar", L"foo?bar", L"foo:bar", L"foo|bar", L"foo\"bar",
-      L"foo'bar", L"foo<bar", L"foo>bar", L"foo%bar", L"foo*bar", L"foo]bar",
-      L"foo[bar",
+      "foo/bar", "foo\\bar", "foo?bar", "foo:bar", "foo|bar", "foo\"bar",
+      "foo'bar", "foo<bar", "foo>bar", "foo%bar", "foo*bar", "foo]bar",
+      "foo[bar",
   };
   // Create both folders and bookmarks using each name.
   GURL url("http://www.doublemint.com");
   for (size_t i = 0; i < arraysize(names); ++i) {
-    model_->AddGroup(model_->other_node(), 0, names[i]);
-    model_->AddURL(model_->other_node(), 0, names[i], url);
+    model_->AddGroup(model_->other_node(), 0, ASCIIToUTF16(names[i]));
+    model_->AddURL(model_->other_node(), 0, ASCIIToUTF16(names[i]), url);
   }
 
   // Verify that the browser model matches the sync model.
@@ -773,15 +775,15 @@ TEST_F(ProfileSyncServiceTest, RepeatedMiddleInsertion) {
   static const int kTimesToInsert = 256;
 
   // Create two book-end nodes to insert between.
-  model_->AddGroup(model_->other_node(), 0, L"Alpha");
-  model_->AddGroup(model_->other_node(), 1, L"Omega");
+  model_->AddGroup(model_->other_node(), 0, ASCIIToUTF16("Alpha"));
+  model_->AddGroup(model_->other_node(), 1, ASCIIToUTF16("Omega"));
   int count = 2;
 
   // Test insertion in first half of range by repeatedly inserting in second
   // position.
   for (int i = 0; i < kTimesToInsert; ++i) {
     string16 title = ASCIIToUTF16("Pre-insertion ") + base::IntToString16(i);
-    model_->AddGroup(model_->other_node(), 1, UTF16ToWideHack(title));
+    model_->AddGroup(model_->other_node(), 1, title);
     count++;
   }
 
@@ -789,7 +791,7 @@ TEST_F(ProfileSyncServiceTest, RepeatedMiddleInsertion) {
   // second-to-last position.
   for (int i = 0; i < kTimesToInsert; ++i) {
     string16 title = ASCIIToUTF16("Post-insertion ") + base::IntToString16(i);
-    model_->AddGroup(model_->other_node(), count - 1, UTF16ToWideHack(title));
+    model_->AddGroup(model_->other_node(), count - 1, title);
     count++;
   }
 
@@ -809,7 +811,7 @@ TEST_F(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService) {
 
   // Add a node which will be the target of the consistency violation.
   const BookmarkNode* node =
-      model_->AddGroup(model_->other_node(), 0, L"node");
+      model_->AddGroup(model_->other_node(), 0, ASCIIToUTF16("node"));
   ExpectSyncerNodeMatching(node);
 
   // Now destroy the syncer node as if we were the ProfileSyncService without
@@ -829,13 +831,13 @@ TEST_F(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService) {
 
   // Add a child to the inconsistent node.  This should cause detection of the
   // problem and the syncer should stop processing changes.
-  model_->AddGroup(node, 0, L"nested");
+  model_->AddGroup(node, 0, ASCIIToUTF16("nested"));
   EXPECT_FALSE(service_->ShouldPushChanges());
 
   // Try to add a node under a totally different parent.  This should also
   // fail -- the ProfileSyncService should stop processing changes after
   // encountering a consistency violation.
-  model_->AddGroup(model_->GetBookmarkBarNode(), 0, L"unrelated");
+  model_->AddGroup(model_->GetBookmarkBarNode(), 0, ASCIIToUTF16("unrelated"));
   EXPECT_FALSE(service_->ShouldPushChanges());
 
   // TODO(ncarter): We ought to test the ProfileSyncService state machine
@@ -849,8 +851,10 @@ TEST_F(ProfileSyncServiceTest, MergeDuplicates) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, SAVE_TO_STORAGE);
   StartSyncService();
 
-  model_->AddURL(model_->other_node(), 0, L"Dup", GURL("http://dup.com/"));
-  model_->AddURL(model_->other_node(), 0, L"Dup", GURL("http://dup.com/"));
+  model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("Dup"),
+                 GURL("http://dup.com/"));
+  model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("Dup"),
+                 GURL("http://dup.com/"));
 
   EXPECT_EQ(2, model_->other_node()->GetChildCount());
 
@@ -976,9 +980,9 @@ void ProfileSyncServiceTestWithData::PopulateFromTestData(
   for (int i = 0; i < size; ++i) {
     const TestData& item = data[i];
     if (item.url) {
-      model_->AddURL(node, i, item.title, GURL(item.url));
+      model_->AddURL(node, i, WideToUTF16Hack(item.title), GURL(item.url));
     } else {
-      model_->AddGroup(node, i, item.title);
+      model_->AddGroup(node, i, WideToUTF16Hack(item.title));
     }
   }
 }

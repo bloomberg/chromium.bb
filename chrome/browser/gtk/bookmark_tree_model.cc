@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -54,7 +54,7 @@ void RecursiveResolve(BookmarkModel* bb_model, const BookmarkNode* bb_node,
       const BookmarkNode* child_bb_node = NULL;
       if (id == 0) {
         child_bb_node = bb_model->AddGroup(bb_node, bb_node->GetChildCount(),
-                                           UTF16ToWide(title));
+                                           title);
       } else {
         // Existing node, reset the title (BBModel ignores changes if the title
         // is the same).

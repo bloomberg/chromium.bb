@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"  // namespace bookmarks
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
@@ -132,23 +133,23 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
     const BookmarkNode* parent = model->GetBookmarkBarNode();
     const BookmarkNode* folderA = model->AddGroup(parent,
                                                   parent->GetChildCount(),
-                                                  L"group");
+                                                  ASCIIToUTF16("group"));
     folderA_ = folderA;
     model->AddGroup(parent, parent->GetChildCount(),
-                    L"sibbling group");
+                    ASCIIToUTF16("sibbling group"));
     const BookmarkNode* folderB = model->AddGroup(folderA,
                                                   folderA->GetChildCount(),
-                                                  L"subgroup 1");
+                                                  ASCIIToUTF16("subgroup 1"));
     model->AddGroup(folderA,
                     folderA->GetChildCount(),
-                    L"subgroup 2");
-    model->AddURL(folderA, folderA->GetChildCount(), L"title a",
+                    ASCIIToUTF16("subgroup 2"));
+    model->AddURL(folderA, folderA->GetChildCount(), ASCIIToUTF16("title a"),
                   GURL("http://www.google.com/a"));
     longTitleNode_ = model->AddURL(
       folderA, folderA->GetChildCount(),
-      L"title super duper long long whoa momma title you betcha",
+      ASCIIToUTF16("title super duper long long whoa momma title you betcha"),
       GURL("http://www.google.com/b"));
-    model->AddURL(folderB, folderB->GetChildCount(), L"t",
+    model->AddURL(folderB, folderB->GetChildCount(), ASCIIToUTF16("t"),
                   GURL("http://www.google.com/c"));
 
     bar_.reset(
@@ -180,7 +181,8 @@ class BookmarkBarFolderControllerTest : public CocoaTest {
   int AddLotsOfNodes() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
     for (int i = 0; i < kLotsOfNodesCount; i++) {
-      model->AddURL(folderA_, folderA_->GetChildCount(), L"repeated title",
+      model->AddURL(folderA_, folderA_->GetChildCount(),
+                    ASCIIToUTF16("repeated title"),
                     GURL("http://www.google.com/repeated/url"));
     }
     return kLotsOfNodesCount;
@@ -291,7 +293,7 @@ TEST_F(BookmarkBarFolderControllerTest, PositionRightLeftRight) {
   int i;
   // Make some super duper deeply nested folders.
   for (i=0; i<count; i++) {
-    folder = model->AddGroup(folder, 0, L"nested folder");
+    folder = model->AddGroup(folder, 0, ASCIIToUTF16("nested folder"));
   }
 
   // Setup initial state for opening all folders.
@@ -1121,7 +1123,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   const BookmarkNode* parent = model.GetBookmarkBarNode();
   const BookmarkNode* folder = model.AddGroup(parent,
                                               parent->GetChildCount(),
-                                              L"BIG");
+                                              ASCIIToUTF16("BIG"));
 
   // Pop open the new folder window and verify it has one (empty) item.
   BookmarkButton* button = [bar_ buttonWithTitleEqualTo:@"BIG"];
@@ -1139,7 +1141,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_FALSE([folderController scrollable]);
 
   // Now add a real bookmark and reopen.
-  model.AddURL(folder, folder->GetChildCount(), L"a", GURL("http://a.com/"));
+  model.AddURL(folder, folder->GetChildCount(), ASCIIToUTF16("a"),
+               GURL("http://a.com/"));
   folderController = [bar_ folderController];
   EXPECT_TRUE(folderController);
   folderMenu = [folderController window];
@@ -1156,7 +1159,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_CGFLOAT_EQ(expectedWidth, menuWidth);
 
   // Add a wider bookmark and make sure the button widths match.
-  model.AddURL(folder, folder->GetChildCount(), L"A really, really long name",
+  model.AddURL(folder, folder->GetChildCount(),
+               ASCIIToUTF16("A really, really long name"),
                GURL("http://www.google.com/a"));
   EXPECT_LT(menuWidth, NSWidth([folderMenu frame]));
   EXPECT_LT(buttonWidth, NSWidth([button frame]));
@@ -1172,7 +1176,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   menuHeight = NSHeight([folderMenu frame]);
   NSUInteger tripWire = 0;  // Prevent a runaway.
   while (![folderController scrollable] && ++tripWire < 100) {
-    model.AddURL(folder, folder->GetChildCount(), L"B", GURL("http://b.com/"));
+    model.AddURL(folder, folder->GetChildCount(), ASCIIToUTF16("B"),
+                 GURL("http://b.com/"));
     oldMenuHeight = menuHeight;
     menuHeight = NSHeight([folderMenu frame]);
   }
@@ -1199,9 +1204,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, HoverThenDeleteBookmark) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
   const BookmarkNode* folder = model.AddGroup(root,
                                               root->GetChildCount(),
-                                              L"BIG");
+                                              ASCIIToUTF16("BIG"));
   for (int i = 0; i < kLotsOfNodesCount; i++)
-    model.AddURL(folder, folder->GetChildCount(), L"kid",
+    model.AddURL(folder, folder->GetChildCount(), ASCIIToUTF16("kid"),
                   GURL("http://kid.com/smile"));
 
   // Pop open the new folder window and hover one of its kids.

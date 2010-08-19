@@ -5,6 +5,7 @@
 #include "chrome/browser/bookmarks/bookmark_folder_editor_controller.h"
 
 #include "app/l10n_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
@@ -62,9 +63,9 @@ bool BookmarkFolderEditorController::IsValid(const std::wstring& text) {
 
 void BookmarkFolderEditorController::InputAccepted(const std::wstring& text) {
   if (IsNew())
-    model_->AddGroup(node_, index_, text);
+    model_->AddGroup(node_, index_, WideToUTF16Hack(text));
   else
-    model_->SetTitle(node_, text);
+    model_->SetTitle(node_, WideToUTF16Hack(text));
 }
 
 void BookmarkFolderEditorController::InputCanceled() {

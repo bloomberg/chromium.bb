@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -13,16 +14,16 @@
 
 namespace {
 
-const wchar_t kUrl1Title[] = L"url1";
-const wchar_t kUrl1Url[] = L"http://www.url1.com";
-const wchar_t kUrl2Title[] = L"url2";
-const wchar_t kUrl2Url[] = L"http://www.url2.com";
-const wchar_t kUrl3Title[] = L"url3";
-const wchar_t kUrl3Url[] = L"http://www.url3.com";
-const wchar_t kUrl4Title[] = L"url4";
-const wchar_t kUrl4Url[] = L"http://www.url4.com";
-const wchar_t kGroup1Title[] = L"group1";
-const wchar_t kGroup2Title[] = L"group2";
+const char kUrl1Title[] = "url1";
+const char kUrl1Url[] = "http://www.url1.com";
+const char kUrl2Title[] = "url2";
+const char kUrl2Url[] = "http://www.url2.com";
+const char kUrl3Title[] = "url3";
+const char kUrl3Url[] = "http://www.url3.com";
+const char kUrl4Title[] = "url4";
+const char kUrl4Url[] = "http://www.url4.com";
+const char kGroup1Title[] = "group1";
+const char kGroup2Title[] = "group2";
 
 // Helper to get a mutable bookmark node.
 static BookmarkNode* AsMutable(const BookmarkNode* node) {
@@ -37,22 +38,23 @@ class BookmarkCodecTest : public testing::Test {
   BookmarkModel* CreateTestModel1() {
     scoped_ptr<BookmarkModel> model(new BookmarkModel(NULL));
     const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();
-    model->AddURL(bookmark_bar, 0, kUrl1Title, GURL(kUrl1Url));
+    model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
     return model.release();
   }
   BookmarkModel* CreateTestModel2() {
     scoped_ptr<BookmarkModel> model(new BookmarkModel(NULL));
     const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();
-    model->AddURL(bookmark_bar, 0, kUrl1Title, GURL(kUrl1Url));
-    model->AddURL(bookmark_bar, 1, kUrl2Title, GURL(kUrl2Url));
+    model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
+    model->AddURL(bookmark_bar, 1, ASCIIToUTF16(kUrl2Title), GURL(kUrl2Url));
     return model.release();
   }
   BookmarkModel* CreateTestModel3() {
     scoped_ptr<BookmarkModel> model(new BookmarkModel(NULL));
     const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();
-    model->AddURL(bookmark_bar, 0, kUrl1Title, GURL(kUrl1Url));
-    const BookmarkNode* group1 = model->AddGroup(bookmark_bar, 1, kGroup1Title);
-    model->AddURL(group1, 0, kUrl2Title, GURL(kUrl2Url));
+    model->AddURL(bookmark_bar, 0, ASCIIToUTF16(kUrl1Title), GURL(kUrl1Url));
+    const BookmarkNode* group1 = model->AddGroup(bookmark_bar, 1,
+                                                 ASCIIToUTF16(kGroup1Title));
+    model->AddURL(group1, 0, ASCIIToUTF16(kUrl2Title), GURL(kUrl2Url));
     return model.release();
   }
 
@@ -266,10 +268,12 @@ TEST_F(BookmarkCodecTest, PersistIDsTest) {
   // ID persistence is working properly.
   const BookmarkNode* bookmark_bar = decoded_model.GetBookmarkBarNode();
   decoded_model.AddURL(
-      bookmark_bar, bookmark_bar->GetChildCount(), kUrl3Title, GURL(kUrl3Url));
+      bookmark_bar, bookmark_bar->GetChildCount(), ASCIIToUTF16(kUrl3Title),
+      GURL(kUrl3Url));
   const BookmarkNode* group2_node = decoded_model.AddGroup(
-      bookmark_bar, bookmark_bar->GetChildCount(), kGroup2Title);
-  decoded_model.AddURL(group2_node, 0, kUrl4Title, GURL(kUrl4Url));
+      bookmark_bar, bookmark_bar->GetChildCount(), ASCIIToUTF16(kGroup2Title));
+  decoded_model.AddURL(group2_node, 0, ASCIIToUTF16(kUrl4Title),
+                       GURL(kUrl4Url));
 
   BookmarkCodec encoder2;
   scoped_ptr<Value> model_value2(encoder2.Encode(&decoded_model));

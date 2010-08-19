@@ -265,13 +265,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // the specified id.
   const BookmarkNode* GetNodeByID(int64 id);
 
-  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // Adds a new group node at the specified position.
-#if !defined(WCHAR_T_IS_UTF16)
-  const BookmarkNode* AddGroup(const BookmarkNode* parent,
-                               int index,
-                               const std::wstring& title);
-#endif
   const BookmarkNode* AddGroup(const BookmarkNode* parent,
                                int index,
                                const string16& title);

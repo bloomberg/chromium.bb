@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/applescript/bookmark_folder_applescript.h"
 
 #import "base/scoped_nsobject.h"
+#import "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/applescript/bookmark_item_applescript.h"
@@ -45,7 +46,7 @@
 
   const BookmarkNode* node = model->AddGroup(bookmarkNode_,
                                              bookmarkNode_->GetChildCount(),
-                                             std::wstring());
+                                             string16());
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkFolder);
     return;
@@ -67,7 +68,7 @@
 
   const BookmarkNode* node = model->AddGroup(bookmarkNode_,
                                              position,
-                                             std::wstring());
+                                             string16());
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkFolder);
     return;

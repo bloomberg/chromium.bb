@@ -4,6 +4,7 @@
 
 #include "model_test_utils.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "googleurl/src/gurl.h"
 
@@ -47,7 +48,8 @@ std::wstring::size_type AddNodesFromString(BookmarkModel& model,
         tell = node_name.substr(part_length - 2, 2);
       if (tell == folder_tell) {
         node_name = node_name.substr(0, part_length - 2);
-        const BookmarkNode* new_node = model.AddGroup(node, index, node_name);
+        const BookmarkNode* new_node =
+            model.AddGroup(node, index, WideToUTF16Hack(node_name));
         end_pos = AddNodesFromString(model, new_node, model_string,
                                      end_pos + 1);
       } else {

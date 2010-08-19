@@ -4,6 +4,7 @@
 
 #include "base/keyboard_codes.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -215,31 +216,34 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     std::string test_base = "file:///c:/tmp/";
 
     const BookmarkNode* f1 = model_->AddGroup(
-        model_->GetBookmarkBarNode(), 0, L"F1");
-    model_->AddURL(f1, 0, L"f1a", GURL(test_base + "f1a"));
-    const BookmarkNode* f11 = model_->AddGroup(f1, 1, L"F11");
-    model_->AddURL(f11, 0, L"f11a", GURL(test_base + "f11a"));
+        model_->GetBookmarkBarNode(), 0, ASCIIToUTF16("F1"));
+    model_->AddURL(f1, 0, ASCIIToUTF16("f1a"), GURL(test_base + "f1a"));
+    const BookmarkNode* f11 = model_->AddGroup(f1, 1, ASCIIToUTF16("F11"));
+    model_->AddURL(f11, 0, ASCIIToUTF16("f11a"), GURL(test_base + "f11a"));
     if (big_menu) {
       for (int i = 1; i <= 100; ++i) {
-        model_->AddURL(f1, i + 1, L"f" + UTF8ToWide(base::IntToString(i)),
+        model_->AddURL(f1, i + 1, ASCIIToUTF16("f") + base::IntToString16(i),
                        GURL(test_base + "f" + base::IntToString(i)));
       }
     }
-    model_->AddURL(model_->GetBookmarkBarNode(), 1, L"a",
+    model_->AddURL(model_->GetBookmarkBarNode(), 1, ASCIIToUTF16("a"),
                    GURL(test_base + "a"));
-    model_->AddURL(model_->GetBookmarkBarNode(), 2, L"b",
+    model_->AddURL(model_->GetBookmarkBarNode(), 2, ASCIIToUTF16("b"),
                    GURL(test_base + "b"));
-    model_->AddURL(model_->GetBookmarkBarNode(), 3, L"c",
+    model_->AddURL(model_->GetBookmarkBarNode(), 3, ASCIIToUTF16("c"),
                    GURL(test_base + "c"));
-    model_->AddURL(model_->GetBookmarkBarNode(), 4, L"d",
+    model_->AddURL(model_->GetBookmarkBarNode(), 4, ASCIIToUTF16("d"),
                    GURL(test_base + "d"));
-    model_->AddURL(model_->other_node(), 0, L"oa", GURL(test_base + "oa"));
-    const BookmarkNode* of = model_->AddGroup(model_->other_node(), 1, L"OF");
-    model_->AddURL(of, 0, L"ofa", GURL(test_base + "ofa"));
-    model_->AddURL(of, 1, L"ofb", GURL(test_base + "ofb"));
-    const BookmarkNode* of2 = model_->AddGroup(model_->other_node(), 2, L"OF2");
-    model_->AddURL(of2, 0, L"of2a", GURL(test_base + "of2a"));
-    model_->AddURL(of2, 1, L"of2b", GURL(test_base + "of2b"));
+    model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("oa"),
+                   GURL(test_base + "oa"));
+    const BookmarkNode* of = model_->AddGroup(model_->other_node(), 1,
+                                              ASCIIToUTF16("OF"));
+    model_->AddURL(of, 0, ASCIIToUTF16("ofa"), GURL(test_base + "ofa"));
+    model_->AddURL(of, 1, ASCIIToUTF16("ofb"), GURL(test_base + "ofb"));
+    const BookmarkNode* of2 = model_->AddGroup(model_->other_node(), 2,
+                                               ASCIIToUTF16("OF2"));
+    model_->AddURL(of2, 0, ASCIIToUTF16("of2a"), GURL(test_base + "of2a"));
+    model_->AddURL(of2, 1, ASCIIToUTF16("of2b"), GURL(test_base + "of2b"));
   }
 
   gfx::Size bb_view_pref_;

@@ -84,9 +84,9 @@ class BookmarkHTMLWriterTest : public testing::Test {
                                       const GURL& url,
                                       const string16& title,
                                       base::Time creation_time,
-                                      const std::wstring& f1,
-                                      const std::wstring& f2,
-                                      const std::wstring& f3) {
+                                      const string16& f1,
+                                      const string16& f2,
+                                      const string16& f3) {
     ProfileWriter::BookmarkEntry entry;
     entry.in_toolbar = on_toolbar;
     entry.url = url;
@@ -94,11 +94,11 @@ class BookmarkHTMLWriterTest : public testing::Test {
     // to the importer.
     entry.path.push_back(L"x");
     if (!f1.empty()) {
-      entry.path.push_back(f1);
+      entry.path.push_back(UTF16ToWideHack(f1));
       if (!f2.empty()) {
-        entry.path.push_back(f2);
+        entry.path.push_back(UTF16ToWideHack(f2));
         if (!f3.empty())
-          entry.path.push_back(f3);
+          entry.path.push_back(UTF16ToWideHack(f3));
       }
     }
     entry.title = UTF16ToWideHack(title);
@@ -111,9 +111,9 @@ class BookmarkHTMLWriterTest : public testing::Test {
                                  const GURL& url,
                                  const string16& title,
                                  base::Time creation_time,
-                                 const std::wstring& f1,
-                                 const std::wstring& f2,
-                                 const std::wstring& f3) {
+                                 const string16& f1,
+                                 const string16& f2,
+                                 const string16& f3) {
     EXPECT_EQ(BookmarkValuesToString(on_toolbar, url, title, creation_time,
                                      f1, f2, f3),
               BookmarkEntryToString(entry));
@@ -173,10 +173,10 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   //   F3
   //     F4
   //       url1
-  std::wstring f1_title = L"F\"&;<1\"";
-  std::wstring f2_title = L"F2";
-  std::wstring f3_title = L"F 3";
-  std::wstring f4_title = L"F4";
+  string16 f1_title = ASCIIToUTF16("F\"&;<1\"");
+  string16 f2_title = ASCIIToUTF16("F2");
+  string16 f3_title = ASCIIToUTF16("F 3");
+  string16 f4_title = ASCIIToUTF16("F4");
   string16 url1_title = ASCIIToUTF16("url 1");
   string16 url2_title = ASCIIToUTF16("url&2");
   string16 url3_title = ASCIIToUTF16("url\"3");
@@ -245,22 +245,20 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   // Verify we got back what we wrote.
   ASSERT_EQ(7U, parsed_bookmarks.size());
   // Windows and ChromeOS builds use Sentence case.
-  std::wstring bookmark_folder_name =
-      l10n_util::GetString(IDS_BOOMARK_BAR_FOLDER_NAME);
+  string16 bookmark_folder_name =
+      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME);
   AssertBookmarkEntryEquals(parsed_bookmarks[0], false, url1, url1_title, t1,
-                            bookmark_folder_name, f1_title, std::wstring());
+                            bookmark_folder_name, f1_title, string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[1], false, url2, url2_title, t2,
                             bookmark_folder_name, f1_title, f2_title);
   AssertBookmarkEntryEquals(parsed_bookmarks[2], false, url3, url3_title, t3,
-                            bookmark_folder_name, std::wstring(),
-                            std::wstring());
+                            bookmark_folder_name, string16(), string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[3], false, url4, url4_title, t4,
-                            bookmark_folder_name, std::wstring(),
-                            std::wstring());
+                            bookmark_folder_name, string16(), string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[4], false, url1, url1_title, t1,
-                            std::wstring(), std::wstring(), std::wstring());
+                            string16(), string16(), string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[5], false, url2, url2_title, t2,
-                            std::wstring(), std::wstring(), std::wstring());
+                            string16(), string16(), string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[6], false, url1, url1_title, t1,
-                            f3_title, f4_title, std::wstring());
+                            f3_title, f4_title, string16());
 }

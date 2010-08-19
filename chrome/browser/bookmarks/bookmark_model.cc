@@ -358,13 +358,6 @@ const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) {
   return GetNodeByID(&root_, id);
 }
 
-#if !defined(WCHAR_T_IS_UTF16)
-const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
-                                            int index,
-                                            const std::wstring& title) {
-  return AddGroup(parent, index, WideToUTF16(title));
-}
-#endif
 const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
                                             int index,
                                             const string16& title) {

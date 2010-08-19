@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,9 @@
 #include <stack>
 #include <vector>
 
+#include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/favicon_service.h"
@@ -395,7 +397,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
         if (!foster_parent) {
           foster_parent = model->AddGroup(model->other_node(),
                                           model->other_node()->GetChildCount(),
-                                          std::wstring());
+                                          string16());
         }
         for (int i = dst->GetChildCount() - 1; i >= 0; --i) {
           model->Move(dst->GetChild(i), foster_parent,
@@ -484,10 +486,12 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
-    node = model->AddGroup(parent, index, sync_node->GetTitle());
+    node = model->AddGroup(parent, index,
+                           WideToUTF16Hack(sync_node->GetTitle()));
   } else {
     node = model->AddURL(parent, index,
-                         sync_node->GetTitle(), sync_node->GetURL());
+                         WideToUTF16Hack(sync_node->GetTitle()),
+                         sync_node->GetURL());
     SetBookmarkFavicon(sync_node, node, model->profile());
   }
   return node;

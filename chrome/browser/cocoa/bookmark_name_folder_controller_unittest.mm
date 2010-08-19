@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
@@ -45,7 +46,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNew) {
   [controller ok:nil];
   EXPECT_EQ(1, parent->GetChildCount());
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
-  EXPECT_EQ(L"Bozo", parent->GetChild(0)->GetTitle());
+  EXPECT_EQ(ASCIIToUTF16("Bozo"), parent->GetChild(0)->GetTitleAsString16());
 }
 
 // Add new but specify a sibling.
@@ -54,8 +55,10 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewWithSibling) {
   const BookmarkNode* parent = model->GetBookmarkBarNode();
 
   // Add 2 nodes.  We will place the new folder in the middle of these.
-  model->AddURL(parent, 0, L"title 1", GURL("http://www.google.com"));
-  model->AddURL(parent, 1, L"title 3", GURL("http://www.google.com"));
+  model->AddURL(parent, 0, ASCIIToUTF16("title 1"),
+                GURL("http://www.google.com"));
+  model->AddURL(parent, 1, ASCIIToUTF16("title 3"),
+                GURL("http://www.google.com"));
   EXPECT_EQ(2, parent->GetChildCount());
 
   scoped_nsobject<BookmarkNameFolderController>
@@ -73,7 +76,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewWithSibling) {
   // Confirm we now have 3, and that the new one is in the middle.
   EXPECT_EQ(3, parent->GetChildCount());
   EXPECT_TRUE(parent->GetChild(1)->is_folder());
-  EXPECT_EQ(L"middle", parent->GetChild(1)->GetTitle());
+  EXPECT_EQ(ASCIIToUTF16("middle"), parent->GetChild(1)->GetTitleAsString16());
 }
 
 // Make sure we are allowed to create a folder named "New Folder".
@@ -123,7 +126,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   const BookmarkNode* folder = model->AddGroup(parent,
                                                parent->GetChildCount(),
-                                               L"group");
+                                               ASCIIToUTF16("group"));
 
   // Rename the folder by creating a controller that originates from
   // the node.
@@ -139,7 +142,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
   [controller ok:nil];
   EXPECT_EQ(1, parent->GetChildCount());
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
-  EXPECT_EQ(L"Zobo", parent->GetChild(0)->GetTitle());
+  EXPECT_EQ(ASCIIToUTF16("Zobo"), parent->GetChild(0)->GetTitleAsString16());
 }
 
 TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {

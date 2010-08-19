@@ -106,7 +106,8 @@ void ProfileWriter::AddBookmarkEntry(
         }
       }
       if (child == NULL)
-        child = model->AddGroup(parent, parent->GetChildCount(), folder_name);
+        child = model->AddGroup(parent, parent->GetChildCount(),
+                                WideToUTF16Hack(folder_name));
       parent = child;
     }
     groups_added_to.insert(parent);

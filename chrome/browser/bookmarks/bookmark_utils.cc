@@ -536,7 +536,7 @@ bool DoesBookmarkContainText(const BookmarkNode* node,
 
 static const BookmarkNode* CreateNewNode(BookmarkModel* model,
     const BookmarkNode* parent, const BookmarkEditor::EditDetails& details,
-    const std::wstring& new_title, const GURL& new_url) {
+    const string16& new_title, const GURL& new_url) {
   const BookmarkNode* node;
   if (details.type == BookmarkEditor::EditDetails::NEW_URL) {
     node = model->AddURL(parent, parent->GetChildCount(), new_title, new_url);
@@ -557,7 +557,7 @@ static const BookmarkNode* CreateNewNode(BookmarkModel* model,
 
 const BookmarkNode* ApplyEditsWithNoGroupChange(BookmarkModel* model,
     const BookmarkNode* parent, const BookmarkEditor::EditDetails& details,
-    const std::wstring& new_title, const GURL& new_url) {
+    const string16& new_title, const GURL& new_url) {
   if (details.type == BookmarkEditor::EditDetails::NEW_URL ||
       details.type == BookmarkEditor::EditDetails::NEW_FOLDER) {
     return CreateNewNode(model, parent, details, new_title, new_url);
@@ -575,7 +575,7 @@ const BookmarkNode* ApplyEditsWithNoGroupChange(BookmarkModel* model,
 
 const BookmarkNode* ApplyEditsWithPossibleGroupChange(BookmarkModel* model,
     const BookmarkNode* new_parent, const BookmarkEditor::EditDetails& details,
-    const std::wstring& new_title, const GURL& new_url) {
+    const string16& new_title, const GURL& new_url) {
   if (details.type == BookmarkEditor::EditDetails::NEW_URL ||
       details.type == BookmarkEditor::EditDetails::NEW_FOLDER) {
     return CreateNewNode(model, new_parent, details, new_title, new_url);
