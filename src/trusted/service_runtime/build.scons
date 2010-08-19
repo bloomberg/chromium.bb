@@ -374,7 +374,8 @@ unittest_inputs = [
     'sel_ldr_test.cc',
 ]
 
-if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
+if (env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE'] and
+    (not env.get('COVERAGE_ENABLED') or not env.Bit('windows'))):
   unit_tests_exe = gtest_env.ComponentProgram('service_runtime_tests',
                                               unittest_inputs,
                                               EXTRA_LIBS=['gtest',
@@ -397,16 +398,17 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
       'run_service_runtime_tests')
 
 
-format_string_test_exe = sdl_env.ComponentProgram('format_string_test',
-                                                  ['format_string_test.c'],
-                                                  EXTRA_LIBS=['sel'])
-sdl_env.Requires(format_string_test_exe, crt)
-sdl_env.Requires(format_string_test_exe, sdl_dll)
+if not env.get('COVERAGE_ENABLED') or not env.Bit('windows'):
+  format_string_test_exe = sdl_env.ComponentProgram('format_string_test',
+                                                    ['format_string_test.c'],
+                                                    EXTRA_LIBS=['sel'])
+  sdl_env.Requires(format_string_test_exe, crt)
+  sdl_env.Requires(format_string_test_exe, sdl_dll)
 
-node = sdl_env.CommandTest(
-    'format_string_test.out',
-    command=[format_string_test_exe])
-sdl_env.AddNodeToTestSuite(node, ['small_tests'], 'run_format_string_test')
+  node = sdl_env.CommandTest(
+      'format_string_test.out',
+      command=[format_string_test_exe])
+  sdl_env.AddNodeToTestSuite(node, ['small_tests'], 'run_format_string_test')
 
 
 if env['TARGET_ARCHITECTURE'] == 'x86':
@@ -755,7 +757,8 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
 # ----------------------------------------------------------
 # More Death Tests
 # ----------------------------------------------------------
-if env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE']:
+if (env['TARGET_ARCHITECTURE'] == env['BUILD_ARCHITECTURE'] and
+    (not env.get('COVERAGE_ENABLED') or not env.Bit('windows'))):
   # NOTE: uses sdl and validator
   sel_ldr_thread_death_test_exe = sdl_env.ComponentProgram(
       'sel_ldr_thread_death_test',
