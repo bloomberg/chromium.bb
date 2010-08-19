@@ -314,7 +314,7 @@ class MemcheckAnalyzer:
   ''' Given a set of Valgrind XML files, parse all the errors out of them,
   unique them and output the results.'''
 
-  SANITY_TEST_SUPPRESSIONS_LINUX = {
+  SANITY_TEST_SUPPRESSIONS = {
       "Memcheck sanity test 01 (memory leak).": 1,
       "Memcheck sanity test 02 (malloc/read left).": 1,
       "Memcheck sanity test 03 (malloc/read right).": 1,
@@ -328,20 +328,6 @@ class MemcheckAnalyzer:
       "Memcheck sanity test 11 (write after delete).": 1,
       "Memcheck sanity test 12 (array deleted without []).": 1,
       "Memcheck sanity test 13 (single element deleted with []).": 1,
-  }
-
-  SANITY_TEST_SUPPRESSIONS_MAC = {
-      "Memcheck sanity test 01 (memory leak).": 1,
-      "Memcheck sanity test 02 (malloc/read left).": 1,
-      "Memcheck sanity test 03 (malloc/read right).": 1,
-      "Memcheck sanity test 06 (new/read left).": 1,
-      "Memcheck sanity test 07 (new/read right).": 1,
-      "Memcheck sanity test 10 (write after free).": 1,
-      "Memcheck sanity test 11 (write after delete).": 1,
-      "bug_49253 Memcheck sanity test 12 (array deleted without []) on Mac.": 1,
-      "bug_49253 Memcheck sanity test 13 (single element deleted with []) on Mac.": 1,
-      "bug_49253 Memcheck sanity test 04 (malloc/write left) or Memcheck sanity test 05 (malloc/write right) on Mac.": 2,
-      "bug_49253 Memcheck sanity test 08 (new/write left) or Memcheck sanity test 09 (new/write right) on Mac.": 2,
   }
 
   # Max time to wait for memcheck logs to complete.
@@ -527,15 +513,7 @@ class MemcheckAnalyzer:
     print "Suppressions used:"
     print "  count name"
 
-    if common.IsLinux():
-      remaining_sanity_supp = MemcheckAnalyzer.SANITY_TEST_SUPPRESSIONS_LINUX
-    elif common.IsMac():
-      remaining_sanity_supp = MemcheckAnalyzer.SANITY_TEST_SUPPRESSIONS_MAC
-    else:
-      remaining_sanity_supp = {}
-      if check_sanity:
-        logging.warn("No sanity test list for platform %s", sys.platform)
-
+    remaining_sanity_supp = MemcheckAnalyzer.SANITY_TEST_SUPPRESSIONS
     for (name, count) in sorted(suppcounts.items(),
                                 key=lambda (k,v): (v,k)):
       print "%7d %s" % (count, name)
