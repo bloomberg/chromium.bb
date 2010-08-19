@@ -11,6 +11,7 @@
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 #include "chrome/browser/chromeos/notifications/notification_panel.h"
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -181,14 +182,15 @@ class NotificationControlView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(NotificationControlView);
 };
 
-BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls)
+BalloonViewImpl::BalloonViewImpl(bool sticky, bool controls, bool dom_ui)
     : balloon_(NULL),
       html_contents_(NULL),
       method_factory_(this),
       stale_(false),
       sticky_(sticky),
       controls_(controls),
-      closed_(false) {
+      closed_(false),
+      dom_ui_(dom_ui) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
   set_parent_owned(false);
@@ -208,8 +210,9 @@ BalloonViewImpl::~BalloonViewImpl() {
 
 void BalloonViewImpl::Show(Balloon* balloon) {
   balloon_ = balloon;
-
   html_contents_ = new BalloonViewHost(balloon);
+  if (dom_ui_)
+    html_contents_->EnableDOMUI();
   AddChildView(html_contents_->view());
   notification_registrar_.Add(this,
     NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));

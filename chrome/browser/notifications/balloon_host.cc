@@ -23,7 +23,8 @@ BalloonHost::BalloonHost(Balloon* balloon)
     : render_view_host_(NULL),
       balloon_(balloon),
       initialized_(false),
-      should_notify_on_disconnect_(false) {
+      should_notify_on_disconnect_(false),
+      enable_dom_ui_(false) {
   DCHECK(balloon_);
 
   // If the notification is for an extension URL, make sure to use the extension
@@ -142,6 +143,8 @@ void BalloonHost::Init() {
   if (extension_function_dispatcher_.get()) {
     rvh->AllowBindings(BindingsPolicy::EXTENSION);
     rvh->set_is_extension_process(true);
+  } else if (enable_dom_ui_) {
+    rvh->AllowBindings(BindingsPolicy::DOM_UI);
   }
 
   // Do platform-specific initialization.
@@ -154,6 +157,12 @@ void BalloonHost::Init() {
   rvh->NavigateToURL(balloon_->notification().content_url());
 
   initialized_ = true;
+}
+
+void BalloonHost::EnableDOMUI() {
+  DCHECK(render_view_host_ == NULL) <<
+      "EnableDOMUI has to be called before a renderer is created.";
+  enable_dom_ui_ = true;
 }
 
 void BalloonHost::NotifyDisconnect() {

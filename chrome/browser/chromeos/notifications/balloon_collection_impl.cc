@@ -61,16 +61,28 @@ void BalloonCollectionImpl::Add(const Notification& notification,
     space_change_listener_->OnBalloonSpaceChanged();
 }
 
+bool BalloonCollectionImpl::AddDOMUIMessageCallback(
+    const Notification& notification,
+    const std::string& message,
+    MessageCallback* callback) {
+  Balloons::iterator iter = FindBalloon(notification);
+  if (iter == balloons_.end()) {
+    delete callback;
+    return false;
+  }
+  BalloonViewHost* host =
+      static_cast<BalloonViewHost*>((*iter)->view()->GetHost());
+  return host->AddDOMUIMessageCallback(message, callback);
+}
+
 void BalloonCollectionImpl::AddSystemNotification(
     const Notification& notification,
     Profile* profile,
     bool sticky,
     bool control) {
-  // TODO(oshima): We need to modify BallonCollection/MakeBalloon pattern
-  // in order to add unit tests for system notification.
   Balloon* new_balloon = new Balloon(notification, profile, this);
   new_balloon->set_view(
-      new chromeos::BalloonViewImpl(sticky, control));
+      new chromeos::BalloonViewImpl(sticky, control, true));
   balloons_.push_back(new_balloon);
   new_balloon->Show();
   notification_ui_->Add(new_balloon);
@@ -164,7 +176,7 @@ void BalloonCollectionImpl::Shutdown() {
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
   Balloon* new_balloon = new Balloon(notification, profile, this);
-  new_balloon->set_view(new chromeos::BalloonViewImpl(false, true));
+  new_balloon->set_view(new chromeos::BalloonViewImpl(false, true, false));
   return new_balloon;
 }
 

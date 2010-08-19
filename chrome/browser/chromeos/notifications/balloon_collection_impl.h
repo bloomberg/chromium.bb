@@ -6,10 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_NOTIFICATIONS_BALLOON_COLLECTION_IMPL_H_
 #pragma once
 
-#include <deque>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/chromeos/notifications/balloon_view_host.h"
 #include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/point.h"
@@ -70,6 +71,15 @@ class BalloonCollectionImpl : public BalloonCollection,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Adds a callback for DOMUI message. Returns true if the callback
+  // is succssfully registered, or false otherwise. It fails to add if
+  // there is no notification that matches NotificationDelegate::id(),
+  // or a callback for given message already exists. The callback
+  // object is owned and deleted by callee.
+  bool AddDOMUIMessageCallback(const Notification& notification,
+                               const std::string& message,
+                               MessageCallback* callback);
 
   // Adds new system notification.
   // |sticky| is used to indicate that the notification

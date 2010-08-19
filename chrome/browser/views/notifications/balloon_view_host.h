@@ -17,7 +17,7 @@ class BalloonViewHost : public BalloonHost {
  public:
   explicit BalloonViewHost(Balloon* balloon);
 
-  ~BalloonViewHost() {
+  virtual ~BalloonViewHost() {
      Shutdown();
   }
 

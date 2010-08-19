@@ -5,6 +5,8 @@
 #include "app/x11_util.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
@@ -50,6 +52,10 @@ class NotificationTest : public InProcessBrowserTest,
       : under_chromeos_(false),
         state_(PanelController::INITIAL),
         expected_(PanelController::INITIAL) {
+  }
+
+  void HandleDOMUIMessage(const Value* value) {
+    MessageLoop::current()->Quit();
   }
 
  protected:
@@ -546,6 +552,60 @@ IN_PROC_BROWSER_TEST_F(NotificationTest, TestCloseDismissAllNonSticky) {
   ui_test_utils::RunAllPendingInMessageLoop();
   EXPECT_EQ(1, tester->GetNotificationCount());
   EXPECT_EQ(1, tester->GetStickyNotificationCount());
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestAddDOMUIMessageCallback) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  Profile* profile = browser()->profile();
+
+  collection->AddSystemNotification(
+      NewMockNotification("1"), profile, false, false);
+
+  EXPECT_TRUE(collection->AddDOMUIMessageCallback(
+      NewMockNotification("1"),
+      "test",
+      NewCallback(
+          static_cast<NotificationTest*>(this),
+          &NotificationTest::HandleDOMUIMessage)));
+
+  // Adding callback for the same message twice should fail.
+  EXPECT_FALSE(collection->AddDOMUIMessageCallback(
+      NewMockNotification("1"),
+      "test",
+      NewCallback(
+          static_cast<NotificationTest*>(this),
+          &NotificationTest::HandleDOMUIMessage)));
+
+  // Adding callback to nonexistent notification should fail.
+  EXPECT_FALSE(collection->AddDOMUIMessageCallback(
+      NewMockNotification("2"),
+      "test1",
+      NewCallback(
+          static_cast<NotificationTest*>(this),
+          &NotificationTest::HandleDOMUIMessage)));
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationTest, TestDOMUIMessageCallback) {
+  BalloonCollectionImpl* collection = GetBalloonCollectionImpl();
+  Profile* profile = browser()->profile();
+  // a notification that sends 'test' domui message back to chrome.
+  const GURL content_url(
+      "data:text/html;charset=utf-8,"
+      "<html><script>function send() { chrome.send('test', ['']); }</script>"
+      "<body onload='send()'></body></html>");
+  collection->AddSystemNotification(
+      Notification(GURL(), content_url, string16(), string16(),
+                   new MockNotificationDelegate("1")),
+      profile,
+      false,
+      false);
+  EXPECT_TRUE(collection->AddDOMUIMessageCallback(
+      NewMockNotification("1"),
+      "test",
+      NewCallback(
+          static_cast<NotificationTest*>(this),
+          &NotificationTest::HandleDOMUIMessage)));
+  MessageLoop::current()->Run();
 }
 
 }  // namespace chromeos

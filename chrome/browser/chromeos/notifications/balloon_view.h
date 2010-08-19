@@ -28,13 +28,13 @@ class TextButton;
 class WidgetGtk;
 }  // namespace views
 
-class BalloonViewHost;
 class Notification;
 class NotificationDetails;
 class NotificationSource;
 
 namespace chromeos {
 
+class BalloonViewHost;
 class NotificationControlView;
 
 // A balloon view is the UI component for a notification panel.
@@ -42,8 +42,8 @@ class BalloonViewImpl : public BalloonView,
                         public views::View,
                         public NotificationObserver {
  public:
-  BalloonViewImpl(bool sticky, bool controls);
-  ~BalloonViewImpl();
+  BalloonViewImpl(bool sticky, bool controls, bool dom_ui);
+  virtual ~BalloonViewImpl();
 
   // views::View interface.
   virtual void Layout();
@@ -123,6 +123,8 @@ class BalloonViewImpl : public BalloonView,
   bool controls_;
   // True if the notification is being closed.
   bool closed_;
+  // True to enable domui in the notification.
+  bool dom_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewImpl);
 };
