@@ -1,0 +1,77 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/test/webdriver/commands/webdriver_command.h"
+
+#include <string>
+
+#include "base/logging.h"
+#include "base/singleton.h"
+#include "base/string_util.h"
+#include "base/values.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
+#include "chrome/app/chrome_dll_resource.h"
+#include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/test/automation/automation_proxy.h"
+#include "chrome/test/automation/browser_proxy.h"
+#include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/automation/window_proxy.h"
+#include "chrome/test/webdriver/utility_functions.h"
+#include "views/event.h"
+
+namespace webdriver {
+
+const std::string WebDriverCommand::kElementDictionaryKey = "ELEMENT";
+
+bool WebDriverCommand::IsElementIdDictionary(
+    const DictionaryValue* const dictionary) {
+  // Test that it has the element key and that it is a string.
+  Value* element_id;
+  return dictionary->Get(kElementDictionaryKey, &element_id) &&
+         element_id->GetType() == Value::TYPE_STRING;
+}
+
+DictionaryValue* WebDriverCommand::GetElementIdAsDictionaryValue(
+    const std::string& element_id) {
+  DictionaryValue* dictionary = new DictionaryValue;
+  dictionary->SetString(kElementDictionaryKey, element_id);
+  return dictionary;
+}
+
+bool WebDriverCommand::Init(Response* const response) {
+  // There should be at least 3 path segments to match "/session/$id".
+  std::string session_id = GetPathVariable(2);
+  if (session_id.length() == 0) {
+    response->set_value(Value::CreateStringValue("No session ID specified"));
+    response->set_status(kBadRequest);
+    return false;
+  }
+
+  LOG(INFO) << "Fetching session: " << session_id;
+  session_ = Singleton<SessionManager>::get()->GetSession(session_id);
+  if (session_ == NULL) {
+    response->set_value(Value::CreateStringValue(
+        "Session not found: " + session_id));
+    response->set_status(kSessionNotFound);
+    return false;
+  }
+
+  response->SetField("sessionId", Value::CreateStringValue(session_id));
+  return !RequiresValidTab() || VerifyTabIsValid(response);
+}
+
+bool WebDriverCommand::VerifyTabIsValid(Response* response) {
+  tab_ = session_->ActivateTab();
+  if (!tab_.get()) {
+    response->set_value(Value::CreateStringValue(
+        "Lost session window handle; did you close the window?"));
+    response->set_status(kNoSuchWindow);
+    return false;
+  }
+  return true;
+}
+}  // namespace webdriver
+

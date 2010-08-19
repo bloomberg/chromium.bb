@@ -440,6 +440,114 @@
       ],
     },
     {
+      # chromedriver is the chromium impelmentation of the WebDriver
+      # wire protcol.  A description of the WebDriver and examples can
+      # be found at: http://seleniumhq.org/docs/09_webdriver.html.
+      # The documention of the protocol implemented is at:
+      # http://code.google.com/p/selenium/wiki/JsonWireProtocol
+      'target_name': 'chromedriver',
+      'type': 'executable',
+      'dependencies': [
+        'browser',
+        'chrome',
+        'chrome_resources',
+        'chrome_strings',
+        'common',
+        'debugger',
+        'syncapi',
+        'test_support_ui',
+        '../base/base.gyp:base',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../net/net.gyp:net',
+        '../skia/skia.gyp:skia',
+        '../testing/gmock.gyp:gmock',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        '../third_party/libxml/libxml.gyp:libxml',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        '../third_party/mongoose/mongoose.h',
+        '../third_party/mongoose/mongoose.c',
+        '../third_party/webdriver/atoms.h',
+        'test/webdriver/dispatch.h',
+        'test/webdriver/dispatch.cc',
+        'test/webdriver/error_codes.h',
+        'test/webdriver/keymap.h',
+        'test/webdriver/keymap.cc',
+        'test/webdriver/server.cc',
+        'test/webdriver/session.h',
+        'test/webdriver/session.cc',
+        'test/webdriver/session_manager.h',
+        'test/webdriver/session_manager.cc',
+        'test/webdriver/utility_functions.h',
+        'test/webdriver/utility_functions.cc',
+        'test/webdriver/commands/command.h',
+        'test/webdriver/commands/command.cc',
+        'test/webdriver/commands/create_session.h',
+        'test/webdriver/commands/create_session.cc',
+        'test/webdriver/commands/response.h',
+        'test/webdriver/commands/session_with_id.h',
+        'test/webdriver/commands/session_with_id.cc',
+        'test/webdriver/commands/webdriver_command.h',
+        'test/webdriver/commands/webdriver_command.cc',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
+        ['OS=="linux" and toolkit_views==1', {
+          'dependencies': [
+            '../views/views.gyp:views',
+          ],
+        }],
+        ['OS=="win"', {
+          'include_dirs': [
+            'third_party/wtl/include',
+          ],
+          'dependencies': [
+            'crash_service',  # run time dependency
+            'security_tests',  # run time dependency
+            'test_support_common',
+            '../google_update/google_update.gyp:google_update',
+            '../views/views.gyp:views',
+            # run time dependency
+            '<(allocator_target)',
+          ],
+          'link_settings': {
+            'libraries': [
+              '-lOleAcc.lib',
+              '-lws2_32.lib',
+            ],
+          },
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          },
+        },],
+        ['OS=="linux" or OS=="freebsd"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }],
+      ],
+    },
+    {
       'target_name': 'nacl_security_tests',
       'type': 'shared_library',
       'msvs_guid': 'D705E8B8-4750-4F1F-BC8F-A7806872F504',
