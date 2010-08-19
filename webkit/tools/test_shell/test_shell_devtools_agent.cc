@@ -80,9 +80,10 @@ void TestShellDevToolsAgent::sendMessageToInspectorFrontend(
 void TestShellDevToolsAgent::forceRepaint() {
 }
 
-void TestShellDevToolsAgent::runtimeFeatureStateChanged(
-    const WebKit::WebString& feature, bool enabled) {
-  // TODO(loislo): implement this.
+void TestShellDevToolsAgent::runtimePropertyChanged(
+    const WebKit::WebString& name,
+    const WebKit::WebString& value) {
+  // TODO: Implement.
 }
 
 WebCString TestShellDevToolsAgent::injectedScriptSource() {
@@ -118,6 +119,12 @@ void TestShellDevToolsAgent::Call(const TestShellDevToolsCallArgs &args) {
     dev_tools_client_->all_messages_processed();
 }
 
+void TestShellDevToolsAgent::DelayedFrontendLoaded() {
+  WebDevToolsAgent *web_agent = GetWebAgent();
+  if (web_agent)
+    web_agent->frontendLoaded();
+}
+
 WebDevToolsAgent* TestShellDevToolsAgent::GetWebAgent() {
   if (!web_view_)
     return NULL;
@@ -141,9 +148,11 @@ void TestShellDevToolsAgent::detach() {
 }
 
 void TestShellDevToolsAgent::frontendLoaded() {
-  WebDevToolsAgent *web_agent = GetWebAgent();
-  if (web_agent)
-    web_agent->frontendLoaded();
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      call_method_factory_.NewRunnableMethod(
+          &TestShellDevToolsAgent::DelayedFrontendLoaded),
+      0);
 }
 
 bool TestShellDevToolsAgent::setTimelineProfilingEnabled(bool enabled) {

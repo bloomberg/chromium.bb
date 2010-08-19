@@ -33,8 +33,8 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
       const WebKit::WebString& data);
   virtual int hostIdentifier() { return routing_id_; }
   virtual void forceRepaint();
-  virtual void runtimeFeatureStateChanged(const WebKit::WebString& feature,
-                                          bool enabled);
+  virtual void runtimePropertyChanged(const WebKit::WebString& name,
+                                      const WebKit::WebString& value);
   virtual WebKit::WebCString injectedScriptSource();
   virtual WebKit::WebCString debuggerScriptSource();
 
@@ -52,6 +52,7 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
 
  private:
   void Call(const TestShellDevToolsCallArgs& args);
+  void DelayedFrontendLoaded();
   static void DispatchMessageLoop();
   WebKit::WebDevToolsAgent* GetWebAgent();
 
