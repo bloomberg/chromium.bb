@@ -187,6 +187,9 @@ typedef nacl_abi__off64_t nacl_abi_off64_t;
 #define NACL_ABI_OFF64_T_MIN ((nacl_abi_off64_t) 1 << 63)
 #define NACL_ABI_OFF64_T_MAX (~((nacl_abi_off64_t) 1 << 63))
 
+
+#if !(defined(__GLIBC__) && defined(__native_client__))
+
 #ifndef nacl_abi___blksize_t_defined
 #define nacl_abi___blksize_t_defined
 typedef int32_t nacl_abi___blksize_t;
@@ -199,6 +202,9 @@ typedef nacl_abi___blksize_t nacl_abi_blksize_t;
 #define NACL_PRIuNACL_BLKSIZE NACL_PRI_(u, NACL_ABI_WORDSIZE)
 #define NACL_PRIxNACL_BLKSIZE NACL_PRI_(x, NACL_ABI_WORDSIZE)
 #define NACL_PRIXNACL_BLKSIZE NACL_PRI_(X, NACL_ABI_WORDSIZE)
+
+#endif
+
 
 #define NACL_ABI_BLKSIZE_T_MIN \
   ((nacl_abi_blksize_t) 1 << (NACL_ABI_WORDSIZE - 1))

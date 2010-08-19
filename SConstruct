@@ -1602,6 +1602,8 @@ nacl_extra_sdk_env = pre_base_env.Clone(
       ['NACL_BLOCK_SHIFT', '5' ],
       ['DYNAMIC_ANNOTATIONS_ENABLED', '1' ],
       ['DYNAMIC_ANNOTATIONS_PREFIX', 'NACL_' ],
+      # This ensures that UINT32_MAX gets defined.
+      ['__STDC_LIMIT_MACROS', '1'],
       ],
     # NOTE: simplify pathnames in archive
     ARFLAGS = 'rcf'

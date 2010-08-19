@@ -273,11 +273,16 @@ int main() {
       "installed_linux_headers",
       os.path.join(top_dir, "install", "linux_headers"),
       treemappers.InstallKernelHeaders, [src["linux_headers"]])
+  modules["installed_nacl_headers"] = btarget.TreeMapper(
+      "installed_nacl_headers",
+      os.path.join(top_dir, "install", "nacl_headers"),
+      treemappers.SubsetNaClHeaders, [modules["nacl-headers"]])
 
+  glibc_toolchain_deps = [
+      "binutils", "full-gcc", "glibc", "wrappers", "linker_scripts",
+      "installed_linux_headers", "installed_nacl_headers"] + gcc_libs
   glibc_toolchain = MakeInstallPrefix(
-      "glibc_toolchain",
-      deps=["binutils", "full-gcc", "glibc", "wrappers", "linker_scripts",
-            "installed_linux_headers"] + gcc_libs)
+      "glibc_toolchain", deps=glibc_toolchain_deps)
 
   modules["hello_glibc"] = btarget.TestModule(
       "hello_glibc",
@@ -286,6 +291,23 @@ int main() {
       hello_c,
       compiler=["nacl-glibc-gcc"])
   module_list.append(modules["hello_glibc"])
+
+  # TODO(mseaborn): Add the following Scons targets when they work.
+  # These fail because libstdc++ assumes newlib (ctype_base.h wants
+  # to use "_U"):
+  #   google_nacl_npruntime
+  #   google_nacl_gpu
+  #   google_nacl_pgl
+  # This has a problem with PTHREAD_STACK_MIN:
+  #   google_nacl_platform
+  AddSconsModule(
+      "nacl_libs_glibc",
+      deps=glibc_toolchain_deps + ["libnacl_headers"],
+      scons_args=["MODE=nacl_extra_sdk", "--nacl_glibc",
+                  "gio",
+                  "google_nacl_imc",
+                  "libav",
+                  "libsrpc"])
 
   return module_list
 

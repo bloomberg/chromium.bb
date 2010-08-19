@@ -34,6 +34,14 @@ struct timeval;  /* sys/time.h */
 struct timezone;
 struct NaClImcMsgHdr;  /* sys/nacl_imc_api.h */
 
+/*
+ * TODO(mseaborn): Many of the functions here are defined in other,
+ * standard headers, e.g. mmap() is defined in <sys/mman.h>.  We use
+ * "#ifndef __GLIBC__" so that these definitions do not conflict with
+ * glibc's definitions, but eventually we should remove the
+ * conflicting definitions in this file.
+ */
+
 /**
  *  @nacl
  *  A stub library routine used to evaluate syscall performance.
@@ -52,7 +60,9 @@ extern void null_syscall(void);
  *  @return Returns non-negative file descriptor if successful.
  *  If open fails, it returns -1 and sets errno appropriately.
  */
+#ifndef __GLIBC__
 extern int open(char const *pathname, int flags, ...);
+#endif
 /**
  *  @posix
  *  Closes the specified file descriptor.
@@ -60,7 +70,9 @@ extern int open(char const *pathname, int flags, ...);
  *  @return Open returns zero on success.  On error, it returns -1 and sets
  *  errno appropriately.
  */
+#ifndef __GLIBC__
 extern int close(int desc);
+#endif
 /**
  *  @posix
  *  Reads count bytes from the resource designated by desc
@@ -71,7 +83,9 @@ extern int close(int desc);
  *  @return On success, read returns the number of bytes read.  On failure,
  *  returns -1 and sets errno appropriately.
  */
+#ifndef __GLIBC__
 extern int read(int desc, void *buf, size_t count);
+#endif
 /**
  *  @posix
  *  Writes count bytes from the buffer pointed to by buf to the
@@ -82,7 +96,9 @@ extern int read(int desc, void *buf, size_t count);
  *  @return On success, write returns the number of bytes written.  On failure,
  *  returns -1 and sets errno appropriately.
  */
+#ifndef __GLIBC__
 extern int write(int desc, void const *buf, size_t count);
+#endif
 /**
  *  @posix
  *  Moves the file offset associated with desc.
@@ -96,7 +112,9 @@ extern int write(int desc, void const *buf, size_t count);
  *  from the beginning of the file.  On failure, it returns -1 and sets errno
  *  appropriately.
  */
+#ifndef __GLIBC__
 extern off_t lseek(int desc, off_t offset, int whence);
+#endif
 /**
  *  @posix
  *  Manipulates device parameters of special files.
@@ -106,7 +124,9 @@ extern off_t lseek(int desc, off_t offset, int whence);
  *  @return Ioctl usually returns zero on success.  Some requests return
  *  positive values.  On failure, it returns -1 and sets errno appropriately.
  */
+#ifndef __GLIBC__
 extern int ioctl(int desc, int request, void *arg);
+#endif
 /**
  *  @nacl
  *  Sets the system break to the given address and return the address after
@@ -129,8 +149,10 @@ extern void *sysbrk(void *new_break);
  *  @return On success, mmap returns the address the descriptor was mapped
  *  into. On failure it returns MAP_FAILED and sets errno appropriately.
  */
+#ifndef __GLIBC__
 extern void *mmap(void *start, size_t length, int prot, int flags,
                   int desc, off_t offset);
+#endif
 /**
  *  @posix
  *  Unmaps the region of memory starting at a given start address with a given
@@ -140,14 +162,18 @@ extern void *mmap(void *start, size_t length, int prot, int flags,
  *  @return On success, munmap returns zero.  On failure, it returns -1 and
  *  sets errno appropriately.
  */
+#ifndef __GLIBC__
 extern int munmap(void *start, size_t length);
+#endif
 /**
  *  @posix
  *  Terminates the program, returning a specified exit status.
  *  @param status The status to be returned.
  *  @return Exit does not return.
  */
+#ifndef __GLIBC__
 extern void _exit(int status);
+#endif
 /**
  *  @nacl
  *  Terminates the current thread.
@@ -162,14 +188,18 @@ extern void thread_exit(void); /**< PENDING: describe */
  *  @return On success, gettimeofday returns zero.  On failure, it
  *  returns -1 and sets errno appropriately.
  */
+#ifndef __GLIBC__
 extern int gettimeofday(struct timeval *tv, void *tz);
+#endif
 /**
  *  @posix
  *  Returns approximate processor time used by a program.  (Deprecated.)
  *  @return clock returns a clock_t time value on success.  On failure, it
  *  returns -1 and sets errno appropriately.
  */
+#ifndef __GLIBC__
 extern clock_t clock(void);
+#endif
 /**
  *  @posix
  *  Suspends execution of the current thread by the specified time.
@@ -192,7 +222,9 @@ extern int nanosleep(const struct timespec *req, struct timespec *rem);
  *  @return On success, stat returns zero.  On error, it returns -1 and sets
  *  errno appropriately.
  */
+#ifndef __GLIBC__
 extern int stat(const char *path, struct stat *buf);
+#endif
 
 #if defined(HAVE_SDL)
 
@@ -310,7 +342,9 @@ extern int imc_socketpair(int pair[2]);
  *  @nacl
  *  Relinquish the processor voluntarily.
  */
+#ifndef __GLIBC__
 extern int sched_yield(void);
+#endif
 
 /**
  *  @nacl

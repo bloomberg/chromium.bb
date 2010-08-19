@@ -37,6 +37,19 @@ def UnionDir(*trees):
   return dest
 
 
+def GetPath(tree, path):
+  for element in path.split("/"):
+    tree = tree[element]
+  return tree
+
+
+def SetPath(tree, path, value):
+  elements = path.split("/")
+  for element in elements[:-1]:
+    tree = tree.setdefault(element, {})
+  tree[elements[-1]] = value
+
+
 # The tree mapper functions below -- AddHeadersToNewlib() and
 # InstallLinkerScripts() -- are ad-hoc, in the sense that they support
 # specific components that could not be treated uniformly.  They have
@@ -103,6 +116,27 @@ def InstallLinkerScripts(glibc_tree):
 
 def InstallKernelHeaders(include_dir_parent):
   return {"nacl64": include_dir_parent}
+
+
+def SubsetNaClHeaders(input_headers):
+  # We install only a subset of the NaCl headers from
+  # service_runtime/include.  We don't want the headers for POSIX
+  # interfaces that are provided by glibc, e.g. sys/mman.h.
+  result = {}
+  headers = [
+      "sys/nacl_imc_api.h",
+      "bits/nacl_imc_api.h",
+      "sys/nacl_syscalls.h",
+      "sys/audio_video.h",
+      "machine/_types.h"]
+  for filename in headers:
+    SetPath(result, filename, GetPath(input_headers, filename))
+  # TODO(mseaborn): _default_types.h is a newlibism.  We should remove
+  # dependencies on it.  Its definitions are supplied by other headers
+  # in glibc.
+  SetPath(result, "machine/_default_types.h",
+          FileSnapshotInMemory("/* Intentionally empty */\n"))
+  return {"nacl64": {"include": result}}
 
 
 # The functions above are fairly cheap, so we could run them each

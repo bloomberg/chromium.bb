@@ -13,10 +13,10 @@
 #include "native_client/src/shared/imc/nacl_imc.h"
 #endif  // __native_client__
 
-#include <bits/mman.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/nacl_syscalls.h>
 
 #include <algorithm>
