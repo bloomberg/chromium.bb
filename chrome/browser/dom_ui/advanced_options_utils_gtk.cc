@@ -126,7 +126,7 @@ void AdvancedOptionsUtilities::ShowNetworkProxySettings(
 void AdvancedOptionsUtilities::ShowManageSSLCertificates(
       TabContents* tab_contents) {
   tab_contents->OpenURL(GURL(kLinuxCertificatesConfigUrl), GURL(),
-                        NEW_WINDOW, PageTransition::LINK);
+                        NEW_FOREGROUND_TAB, PageTransition::LINK);
 }
 
 #endif  // !defined(OS_CHROMEOS)
