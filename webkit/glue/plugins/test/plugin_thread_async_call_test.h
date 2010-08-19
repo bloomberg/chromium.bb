@@ -5,8 +5,6 @@
 #ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
 #define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_THREAD_ASYNC_CALL_TEST_H_
 
-#include <vector>
-
 #include "base/scoped_ptr.h"
 #include "webkit/glue/plugins/test/plugin_test.h"
 

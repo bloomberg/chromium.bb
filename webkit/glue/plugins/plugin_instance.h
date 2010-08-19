@@ -9,7 +9,6 @@
 #define WEBKIT_GLUE_PLUGIN_PLUGIN_INSTANCE_H__
 
 #include <map>
-#include <set>
 #include <stack>
 #include <string>
 #include <vector>

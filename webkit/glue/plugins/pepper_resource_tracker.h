@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_RESOURCE_TRACKER_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_RESOURCE_TRACKER_H_
 
-#include <set>
+#include <utility>
 
 #include "base/atomic_sequence_num.h"
 #include "base/basictypes.h"

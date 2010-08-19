@@ -5,8 +5,6 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_VIDEO_DECODER_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_VIDEO_DECODER_H_
 
-#include <queue>
-
 #include "base/scoped_ptr.h"
 #include "third_party/ppapi/c/pp_video.h"
 #include "third_party/ppapi/c/ppb_video_decoder.h"

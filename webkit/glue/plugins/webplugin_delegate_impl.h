@@ -9,7 +9,6 @@
 
 #include <string>
 #include <list>
-#include <set>
 
 #include "base/ref_counted.h"
 #include "base/task.h"

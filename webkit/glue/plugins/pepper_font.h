@@ -5,8 +5,6 @@
 #ifndef WEBKIT_GLUE_PLUGINS_PEPPER_FONT_H_
 #define WEBKIT_GLUE_PLUGINS_PEPPER_FONT_H_
 
-#include <string>
-
 #include "base/scoped_ptr.h"
 #include "third_party/ppapi/c/ppb_font.h"
 #include "webkit/glue/plugins/pepper_resource.h"

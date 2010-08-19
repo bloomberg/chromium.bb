@@ -53,8 +53,6 @@
 #ifndef WEBKIT_GLUE_WEBMEDIAPLAYER_IMPL_H_
 #define WEBKIT_GLUE_WEBMEDIAPLAYER_IMPL_H_
 
-#include <vector>
-
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"

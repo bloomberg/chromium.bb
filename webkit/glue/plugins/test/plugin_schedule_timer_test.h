@@ -1,11 +1,9 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
 #define WEBKIT_GLUE_PLUGINS_TEST_PLUGIN_SCHEDULE_TIMER_TEST_H
-
-#include <vector>
 
 #include "base/at_exit.h"
 #include "base/time.h"

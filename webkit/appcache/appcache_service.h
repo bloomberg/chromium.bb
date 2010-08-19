@@ -5,8 +5,8 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_SERVICE_H_
 #define WEBKIT_APPCACHE_APPCACHE_SERVICE_H_
 
+#include <map>
 #include <set>
-#include <vector>
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"

@@ -6,7 +6,6 @@
 #define WEBKIT_GLUE_DOM_OPERATIONS_H__
 
 #include <string>
-#include <map>
 #include <vector>
 
 #include "gfx/size.h"

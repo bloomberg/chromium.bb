@@ -6,7 +6,6 @@
 #define WEBKIT_SUPPORT_WEBURL_LOADER_MOCK_FACTORY_H_
 
 #include <map>
-#include <vector>
 
 #include "base/file_path.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"

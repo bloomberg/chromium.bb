@@ -5,9 +5,7 @@
 #ifndef WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_H_
 #define WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_H_
 
-#include <algorithm>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/lock.h"
