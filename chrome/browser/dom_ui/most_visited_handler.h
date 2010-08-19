@@ -63,9 +63,6 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   static void RegisterUserPrefs(PrefService* prefs);
 
-  // Returns Chrome Store URL with locale applied.
-  static GURL GetChromeStoreURLWithLocale();
-
  private:
   struct MostVisitedPage;
 
@@ -111,11 +108,6 @@ class MostVisitedHandler : public DOMMessageHandler,
       const MostVisitedHandler::MostVisitedPage& page);
 
   static const std::vector<MostVisitedPage>& GetPrePopulatedPages();
-
-  static MostVisitedPage GetChromeStorePage();
-
-  // Whether we have any apps installed.
-  bool HasApps() const;
 
   NotificationRegistrar registrar_;
 

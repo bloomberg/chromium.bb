@@ -22,8 +22,6 @@
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/dom_ui/dom_ui_thumbnail_source.h"
 #include "chrome/browser/dom_ui/new_tab_ui.h"
-#include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/google_util.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/top_sites.h"
@@ -31,7 +29,6 @@
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
@@ -392,9 +389,6 @@ void MostVisitedHandler::SetPagesValue(std::vector<PageUsageData*>* data) {
   size_t pre_populated_index = 0;
   const std::vector<MostVisitedPage> pre_populated_pages =
       MostVisitedHandler::GetPrePopulatedPages();
-  bool add_chrome_store =
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableApps) &&
-      !HasApps();
 
   while (output_index < kMostVisitedPages) {
     bool found = false;
@@ -432,16 +426,6 @@ void MostVisitedHandler::SetPagesValue(std::vector<PageUsageData*>* data) {
       found = true;
     }
 
-    if (!found && add_chrome_store) {
-      mvp = GetChromeStorePage();
-      std::string key = GetDictionaryKeyForURL(mvp.url.spec());
-      if (!pinned_urls_->HasKey(key) && !url_blacklist_->HasKey(key) &&
-          seen_urls.find(mvp.url) == seen_urls.end()) {
-        found = true;
-      }
-      add_chrome_store = false;
-    }
-
     if (found) {
       // Add fillers as needed.
       while (pages_value_->GetSize() < output_index) {
@@ -458,30 +442,6 @@ void MostVisitedHandler::SetPagesValue(std::vector<PageUsageData*>* data) {
       seen_urls.insert(mvp.url);
     }
     output_index++;
-  }
-
-  // If we still need to show the Chrome Store go backwards until we find a non
-  // pinned item we can replace.
-  if (add_chrome_store) {
-    MostVisitedPage chrome_store_page = GetChromeStorePage();
-    if (seen_urls.find(chrome_store_page.url) != seen_urls.end())
-      return;
-
-    std::string key = GetDictionaryKeyForURL(chrome_store_page.url.spec());
-    if (url_blacklist_->HasKey(key))
-      return;
-
-    for (int i = kMostVisitedPages - 1; i >= 0; --i) {
-      GURL url = most_visited_urls_[i];
-      std::string key = GetDictionaryKeyForURL(url.spec());
-      if (!pinned_urls_->HasKey(key)) {
-        // Not pinned, replace.
-        DictionaryValue* page_value = new DictionaryValue();
-        SetMostVisistedPage(page_value, chrome_store_page);
-        pages_value_->Set(i, page_value);
-        return;
-      }
-    }
   }
 }
 
@@ -512,9 +472,6 @@ void MostVisitedHandler::SetPagesValueFromTopSites(
                l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_URL)) {
       page_value->SetString("thumbnailUrl",
           "chrome://theme/IDR_NEWTAB_THEMES_GALLERY_THUMBNAIL");
-    } else if (url.url == GetChromeStoreURLWithLocale()) {
-      page_value->SetString("thumbnailUrl",
-          "chrome://theme/IDR_NEWTAB_CHROME_STORE_PAGE_THUMBNAIL");
     }
 
     history::TopSites* ts = dom_ui_->GetProfile()->GetTopSites();
@@ -579,22 +536,6 @@ const std::vector<MostVisitedHandler::MostVisitedPage>&
   return pages;
 }
 
-// static
-MostVisitedHandler::MostVisitedPage MostVisitedHandler::GetChromeStorePage() {
-  MostVisitedHandler::MostVisitedPage page = {
-      l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE),
-      GetChromeStoreURLWithLocale(),
-      GURL("chrome://theme/IDR_NEWTAB_CHROME_STORE_PAGE_THUMBNAIL"),
-      GURL("chrome://theme/IDR_NEWTAB_CHROME_STORE_PAGE_FAVICON")};
-  return page;
-}
-
-// static
-GURL MostVisitedHandler::GetChromeStoreURLWithLocale() {
-  return google_util::AppendGoogleLocaleParam(
-      GURL(Extension::ChromeStoreURL()));
-}
-
 void MostVisitedHandler::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {
@@ -630,12 +571,4 @@ std::string MostVisitedHandler::GetDictionaryKeyForURL(const std::string& url) {
 void MostVisitedHandler::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedURLsBlacklist);
   prefs->RegisterDictionaryPref(prefs::kNTPMostVisitedPinnedURLs);
-}
-
-bool MostVisitedHandler::HasApps() const {
-  ExtensionsService* service = dom_ui_->GetProfile()->GetExtensionsService();
-  if (!service)
-    return false;
-
-  return service->HasApps();
 }

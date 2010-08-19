@@ -16,8 +16,6 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/most_visited_handler.h"
-#include "chrome/browser/extensions/extensions_service.h"
-#include "chrome/browser/google_util.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/top_sites_database.h"
@@ -271,63 +269,6 @@ static int IndexOf(const MostVisitedURLList& urls, const GURL& url) {
   return -1;
 }
 
-int TopSites::GetIndexForChromeStore(const MostVisitedURLList& urls) {
-  GURL store_url = MostVisitedHandler::GetChromeStoreURLWithLocale();
-  {
-    AutoLock lock(lock_);
-    if (IsBlacklisted(store_url))
-      return -1;
-  }
-
-  if (IndexOf(urls, store_url) != -1)
-    return -1;  // It's already there, no need to add.
-
-  // Should replace the first filler.
-  int first_filler = IndexOf(urls, GURL());
-  if (first_filler != -1)
-    return first_filler;
-
-  if (urls.size() < kTopSitesShown)
-    return urls.size();
-
-  // Should replace the last non-pinned url.
-  for (size_t i = kTopSitesShown - 1; i < urls.size(); i--) {
-    if (!IsURLPinned(urls[i].url))
-      return i;
-  }
-
-  // All urls are pinned.
-  return -1;
-}
-
-bool TopSites::AddChromeStore(MostVisitedURLList* urls) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableApps))
-    return false;
-
-  if (!profile_)
-    return false;
-
-  ExtensionsService* service = profile_->GetExtensionsService();
-  if (!service || service->HasApps())
-    return false;
-
-  int index = GetIndexForChromeStore(*urls);
-  if (index == -1)
-    return false;
-
-  if (static_cast<size_t>(index) >= urls->size())
-    urls->resize(index + 1);
-
-  // Chrome App store may replace an existing non-pinned thumbnail.
-  MostVisitedURL& url = (*urls)[index];
-  url.url = MostVisitedHandler::GetChromeStoreURLWithLocale();
-  url.title = l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE);
-  url.favicon_url =
-      GURL("chrome://theme/IDR_NEWTAB_CHROME_STORE_PAGE_FAVICON");
-  url.redirects.push_back(url.url);
-  return true;
-}
-
 bool TopSites::AddPrepopulatedPages(MostVisitedURLList* urls) {
   // TODO(arv): This needs to get the data from some configurable place.
   // http://crbug.com/17630
@@ -355,9 +296,6 @@ bool TopSites::AddPrepopulatedPages(MostVisitedURLList* urls) {
     urls->push_back(url);
     added = true;
   }
-
-  if (AddChromeStore(urls))
-    added = true;
 
   return added;
 }

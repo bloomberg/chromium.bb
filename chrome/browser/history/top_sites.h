@@ -153,7 +153,6 @@ class TopSites :
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, PinnedURLs);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, BlacklistingAndPinnedURLs);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, AddPrepopulatedPages);
-  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, GetIndexForChromeStore);
 
   ~TopSites();
 
@@ -269,14 +268,6 @@ class TopSites :
   void AddTemporaryThumbnail(const GURL& url,
                              const RefCountedBytes* thumbnail,
                              const ThumbnailScore& score);
-
-  // Returns an index of a thumbnail that should be replaced by the
-  // Chrome App Store. Returns -1 App Store should not be added.
-  int GetIndexForChromeStore(const MostVisitedURLList& urls);
-
-  // Adds Chrome App Store thumbnail to a list of URLs, if possible.
-  // Returns true if it was added.
-  bool AddChromeStore(MostVisitedURLList* urls);
 
   // Add prepopulated pages: 'welcome to Chrome' and themes gallery.
   // Returns true if any pages were added.
