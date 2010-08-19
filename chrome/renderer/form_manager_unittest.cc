@@ -812,7 +812,8 @@ TEST_F(FormManagerTest, OneLabelElementFirstControlElementDisabled) {
             fields[2]);
 }
 
-TEST_F(FormManagerTest, LabelsInferredFromText) {
+// Crashy, http://crbug.com/52731.
+TEST_F(FormManagerTest, DISABLED_LabelsInferredFromText) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://cnn.com\" method=\"post\">"
            "  First name:"
            "    <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
