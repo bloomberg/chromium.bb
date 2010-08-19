@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,12 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
 
   // Returns the bounds within which the TabStrip should be laid out.
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const = 0;
+
+  // Returns the y coordinate within the window at which the horizontal TabStrip
+  // begins, or (in vertical tabs mode) would begin.  If |restored| is true,
+  // this is calculated as if we were in restored mode regardless of the current
+  // mode.  This is used to correctly align theme images.
+  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const = 0;
 
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;

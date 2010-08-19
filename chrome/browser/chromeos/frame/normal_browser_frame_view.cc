@@ -91,9 +91,14 @@ gfx::Rect NormalBrowserFrameView::GetBoundsForTabStrip(
     return gfx::Rect(border_thickness, NonClientTopBorderHeight(),
                      ps.width(), browser_view_->height());
   }
-  return gfx::Rect(border_thickness, NonClientTopBorderHeight(),
+  return gfx::Rect(border_thickness, GetHorizontalTabStripVerticalOffset(false),
                    std::max(0, width() - (2 * border_thickness)),
                    tabstrip->GetPreferredHeight());
+}
+
+int NormalBrowserFrameView::GetHorizontalTabStripVerticalOffset(
+    bool restored) const {
+  return NonClientTopBorderHeight();
 }
 
 void NormalBrowserFrameView::UpdateThrobber(bool running) {
@@ -256,27 +261,30 @@ void NormalBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
 
   // Window frame mode and color
   SkBitmap* theme_frame;
-  int y = 0;
+  // HACK: This is to properly align the frame background with the tab
+  // background.  This was added because when this code was copied from the
+  // opaque frame code, that code didn't correctly handle maximized mode theme
+  // alignment.  That bug has since been fixed in a more general but more
+  // complex way in the opaque frame.  Since this file is eventually going to
+  // die (see crbug.com/52674), I'm just leaving this here rather than replacing
+  // it with the complex fix.
+  int y = -kCustomFrameBackgroundVerticalOffset;
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     theme_frame = rb.GetBitmapNamed(ShouldPaintAsActive() ?
         IDR_FRAME : IDR_FRAME_INACTIVE);
+    y = 0;  // These are never themed.
   } else if (!browser_view_->IsOffTheRecord()) {
     theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
         IDR_THEME_FRAME : IDR_THEME_FRAME_INACTIVE);
-    // TODO(oshima): gtk based CHROMEOS is using non custom frame
-    // mode which does this adjustment. This should be removed
-    // once it's fully migrated to views. -1 is due to the layout
-    // difference between views and gtk and will be removed.
-    // See http://crbug.com/28580.
-    y = -kCustomFrameBackgroundVerticalOffset - 1;
   } else {
     theme_frame = tp->GetBitmapNamed(ShouldPaintAsActive() ?
         IDR_THEME_FRAME_INCOGNITO: IDR_THEME_FRAME_INCOGNITO_INACTIVE);
-    y = -kCustomFrameBackgroundVerticalOffset - 1;
   }
-  // Draw the theme frame.
+  // Draw the theme frame.  It must be aligned with the tabstrip as if we were
+  // in restored mode.  Note that the top of the tabstrip is
+  // kTabstripTopShadowThickness px off the top of the screen.
   canvas->TileImageInt(*theme_frame, 0, y, width(), theme_frame->height());
 
   // Draw the theme frame overlay
@@ -284,7 +292,7 @@ void NormalBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
       browser_view_->IsBrowserTypeNormal()) {
     SkBitmap* theme_overlay = tp->GetBitmapNamed(ShouldPaintAsActive() ?
         IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
-    canvas->DrawBitmapInt(*theme_overlay, 0, 0);
+    canvas->DrawBitmapInt(*theme_overlay, 0, y);
   }
 
   if (!browser_view_->IsToolbarVisible()) {
@@ -328,14 +336,13 @@ void NormalBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
       tp->GetColor(BrowserThemeProvider::COLOR_TOOLBAR);
   canvas->FillRectInt(theme_toolbar_color, toolbar_bounds.x(), bottom_y,
                       toolbar_bounds.width(), bottom_edge_height);
-  toolbar_bounds.Inset(-kClientEdgeThickness, 0);
 
   int strip_height = browser_view_->GetTabStripHeight();
   SkBitmap* theme_toolbar = tp->GetBitmapNamed(IDR_THEME_TOOLBAR);
 
   canvas->TileImageInt(*theme_toolbar, toolbar_bounds.x(),
-      strip_height - kFrameShadowThickness, toolbar_bounds.x(),
-      bottom_y, toolbar_bounds.width(), theme_toolbar->height());
+      strip_height - kFrameShadowThickness, toolbar_bounds.x(), bottom_y,
+      toolbar_bounds.width(), theme_toolbar->height());
 
   canvas->DrawBitmapInt(*toolbar_left, 0, 0, toolbar_left->width(), split_point,
       toolbar_bounds.x() - toolbar_left->width(), toolbar_bounds.y(),

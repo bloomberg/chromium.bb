@@ -32,10 +32,12 @@ class DetachableToolbarView : public AccessibleToolbarView {
   // Gets the current amount of overlap atop the browser toolbar.
   virtual int GetToolbarOverlap() const = 0;
 
-  // Paint the background (including the theme image behind content area) when
-  // in bar/shelf is attached to the Chrome frame.
+  // Paints the background (including the theme image behind content area) when
+  // the bar/shelf is attached to the top toolbar.  |background_origin| is the
+  // origin to use for painting the theme image.
   static void PaintBackgroundAttachedMode(gfx::Canvas* canvas,
-                                          views::View* view);
+                                          views::View* view,
+                                          const gfx::Point& background_origin);
 
   // Calculate the rect for the content area of the bar/shelf. This is only
   // needed when the bar/shelf is detached from the Chrome frame (otherwise the

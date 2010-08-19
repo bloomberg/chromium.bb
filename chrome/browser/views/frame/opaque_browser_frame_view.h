@@ -33,6 +33,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
+  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
   virtual void UpdateThrobber(bool running);
   virtual gfx::Size GetMinimumSize();
 
@@ -50,7 +51,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // Overridden from views::View:
   virtual void Paint(gfx::Canvas* canvas);
-  virtual void PaintChildren(gfx::Canvas* canvas);
   virtual void Layout();
   virtual bool HitTest(const gfx::Point& l) const;
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
@@ -64,8 +64,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
  private:
   // Returns the thickness of the border that makes up the window frame edges.
-  // This does not include any client edge.
-  int FrameBorderThickness() const;
+  // This does not include any client edge.  If |restored| is true, acts as if
+  // the window is restored regardless of the real mode.
+  int FrameBorderThickness(bool restored) const;
 
   // Returns the height of the top resize area.  This is smaller than the frame
   // border height in order to increase the window draggable area.
@@ -76,15 +77,20 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int NonClientBorderThickness() const;
 
   // Returns the height of the entire nonclient top border, including the window
-  // frame, any title area, and any connected client edge.
-  int NonClientTopBorderHeight() const;
+  // frame, any title area, and any connected client edge.  If |restored| is
+  // true, acts as if the window is restored regardless of the real mode.  If
+  // |ignore_vertical_tabs| is true, acts as if vertical tabs are off regardless
+  // of the real state.
+  int NonClientTopBorderHeight(bool restored, bool ignore_vertical_tabs) const;
 
-  // Returns the y-coordinate of the caption buttons.
-  int CaptionButtonY() const;
+  // Returns the y-coordinate of the caption buttons.  If |restored| is true,
+  // acts as if the window is restored regardless of the real mode.
+  int CaptionButtonY(bool restored) const;
 
-  // Returns the thickness of the nonclient portion of the 3D edge along the
-  // bottom of the titlebar.
-  int TitlebarBottomThickness() const;
+  // Returns the thickness of the 3D edge along the bottom of the titlebar.  If
+  // |restored| is true, acts as if the window is restored regardless of the
+  // real mode.
+  int TitlebarBottomThickness(bool restored) const;
 
   // Returns the size of the titlebar icon.  This is used even when the icon is
   // not shown, e.g. to set the titlebar height.
@@ -101,6 +107,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   void PaintMaximizedFrameBorder(gfx::Canvas* canvas);
   void PaintTitleBar(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);
+  void PaintOTRAvatar(gfx::Canvas* canvas);
   void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
   // Layout various sub-components of this view.
@@ -111,15 +118,11 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
 
-  // Returns the bounds of |src| in the coordinate system of |dst|.
-  // TODO(sky): promote this to view.
-  static gfx::Rect GetViewBounds(views::View* src, views::View* dst);
-
   // The layout rect of the title, if visible.
   gfx::Rect title_bounds_;
 
-  // Off the record avatar icon.
-  views::ImageView* otr_avatar_icon_;
+  // The layout rect of the OTR avatar icon, if visible.
+  gfx::Rect otr_avatar_bounds_;
 
   // Window controls.
   views::ImageButton* minimize_button_;

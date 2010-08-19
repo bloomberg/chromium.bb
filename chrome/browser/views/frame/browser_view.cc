@@ -269,7 +269,9 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
     if (!toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   } else {
-    DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_);
+    DetachableToolbarView::PaintBackgroundAttachedMode(canvas, host_view_,
+        browser_view_->OffsetPointForToolbarBackgroundImage(
+        gfx::Point(host_view_->MirroredX(), host_view_->y())));
     if (host_view_->height() >= toolbar_overlap)
       DetachableToolbarView::PaintHorizontalBorder(canvas, host_view_);
   }
@@ -591,7 +593,16 @@ void BrowserView::WindowMoveOrResizeStarted() {
 }
 
 gfx::Rect BrowserView::GetToolbarBounds() const {
-  return toolbar_->bounds();
+  gfx::Rect toolbar_bounds(toolbar_->bounds());
+  if (toolbar_bounds.IsEmpty())
+    return toolbar_bounds;
+  // When using vertical tabs, the toolbar appears to extend behind the tab
+  // column.
+  if (UseVerticalTabs())
+    toolbar_bounds.Inset(tabstrip_->x() - toolbar_bounds.x(), 0, 0, 0);
+  // The apparent toolbar edges are outside the "real" toolbar edges.
+  toolbar_bounds.Inset(-views::NonClientFrameView::kClientEdgeThickness, 0);
+  return toolbar_bounds;
 }
 
 gfx::Rect BrowserView::GetClientAreaBounds() const {
@@ -619,8 +630,14 @@ int BrowserView::GetTabStripHeight() const {
   return IsTabStripVisible() ? tabstrip_->GetPreferredSize().height() : 0;
 }
 
-gfx::Rect BrowserView::GetTabStripBounds() const {
-  return frame_->GetBoundsForTabStrip(tabstrip_);
+gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
+    const gfx::Point& point) const {
+  // The background image starts tiling horizontally at the window left edge and
+  // vertically at the top edge of the horizontal tab strip (or where it would
+  // be).  We expect our parent's origin to be the window origin.
+  gfx::Point window_point(point.Add(gfx::Point(MirroredX(), y())));
+  window_point.Offset(0, -frame_->GetHorizontalTabStripVerticalOffset(false));
+  return window_point;
 }
 
 int BrowserView::GetSidebarWidth() const {
@@ -1778,11 +1795,12 @@ void BrowserView::Layout() {
     // Send the margins of the "user-perceived content area" of this
     // browser window so AeroPeekManager can render a background-tab image in
     // the area.
+    // TODO(pkasting) correct content inset??
     if (aeropeek_manager_.get()) {
       gfx::Insets insets(GetFindBarBoundingBox().y() + 1,
-                         GetTabStripBounds().x(),
-                         GetTabStripBounds().x(),
-                         GetTabStripBounds().x());
+                         0,
+                         0,
+                         0);
       aeropeek_manager_->SetContentInsets(insets);
     }
 #endif

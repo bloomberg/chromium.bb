@@ -34,6 +34,7 @@ class NormalBrowserFrameView : public BrowserNonClientFrameView,
 
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
+  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
   virtual void UpdateThrobber(bool running);
   virtual gfx::Size GetMinimumSize();
 

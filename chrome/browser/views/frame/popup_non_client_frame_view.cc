@@ -50,5 +50,10 @@ gfx::Rect PopupNonClientFrameView::GetBoundsForTabStrip(
   return gfx::Rect(0, 0, width(), tabstrip->GetPreferredHeight());
 }
 
+int PopupNonClientFrameView::GetHorizontalTabStripVerticalOffset(
+    bool restored) const {
+  return 0;
+}
+
 void PopupNonClientFrameView::UpdateThrobber(bool running) {
 }

@@ -78,9 +78,6 @@ class DropdownBarHost : public views::AcceleratorTarget,
   virtual void AnimationProgressed(const Animation* animation);
   virtual void AnimationEnded(const Animation* animation);
 
-  // Get the offset with which to paint the theme image.
-  void GetThemePosition(gfx::Rect* bounds);
-
   // During testing we can disable animations by setting this flag to true,
   // so that opening and closing the dropdown bar is shown instantly, instead of
   // having to poll it while it animates to open/closed status.

@@ -246,8 +246,8 @@ void BrowserViewLayout::Layout(views::View* host) {
   int top = LayoutTabStrip();
   if (browser_view_->IsTabStripVisible() && !browser_view_->UseVerticalTabs()) {
     tabstrip_->SetBackgroundOffset(gfx::Point(
-        tabstrip_->x() - browser_view_->GetToolbarBounds().x(),
-        tabstrip_->y()));
+        tabstrip_->MirroredX() + browser_view_->MirroredX(),
+        browser_view_->frame()->GetHorizontalTabStripVerticalOffset(false)));
   }
   top = LayoutToolbar(top);
   top = LayoutBookmarkAndInfoBars(top);

@@ -67,15 +67,6 @@ void BrowserFrameWin::Init() {
 BrowserFrameWin::~BrowserFrameWin() {
 }
 
-int BrowserFrameWin::GetTitleBarHeight() {
-  RECT caption = { 0 };
-  if (DwmGetWindowAttribute(GetNativeView(), DWMWA_CAPTION_BUTTON_BOUNDS,
-                            &caption, sizeof(RECT)) == S_OK) {
-    return caption.bottom;
-  }
-  return GetSystemMetrics(SM_CYCAPTION);
-}
-
 views::Window* BrowserFrameWin::GetWindow() {
   return this;
 }
@@ -94,6 +85,10 @@ int BrowserFrameWin::GetMinimizeButtonOffset() const {
 
 gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(BaseTabStrip* tabstrip) const {
   return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
+}
+
+int BrowserFrameWin::GetHorizontalTabStripVerticalOffset(bool restored) const {
+  return browser_frame_view_->GetHorizontalTabStripVerticalOffset(restored);
 }
 
 void BrowserFrameWin::UpdateThrobber(bool running) {
@@ -311,13 +306,10 @@ void BrowserFrameWin::UpdateDWMFrame() {
     // In maximized mode, we only have a titlebar strip of glass, no side/bottom
     // borders.
     if (!browser_view_->IsFullscreen()) {
-      if (browser_view_->UseVerticalTabs()) {
-        margins.cyTopHeight = GetTitleBarHeight();
-      } else {
-        margins.cyTopHeight =
-            GetBoundsForTabStrip(browser_view_->tabstrip()).bottom() +
-            kDWMFrameTopOffset;
-      }
+      gfx::Rect tabstrip_bounds(
+          GetBoundsForTabStrip(browser_view_->tabstrip()));
+      margins.cyTopHeight = (browser_view_->UseVerticalTabs() ?
+          tabstrip_bounds.y() : tabstrip_bounds.bottom()) + kDWMFrameTopOffset;
     }
   } else {
     // For popup and app windows we want to use the default margins.

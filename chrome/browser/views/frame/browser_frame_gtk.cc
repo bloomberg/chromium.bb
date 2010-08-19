@@ -71,6 +71,10 @@ gfx::Rect BrowserFrameGtk::GetBoundsForTabStrip(BaseTabStrip* tabstrip) const {
   return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
 }
 
+int BrowserFrameGtk::GetHorizontalTabStripVerticalOffset(bool restored) const {
+  return browser_frame_view_->GetHorizontalTabStripVerticalOffset(restored);
+}
+
 void BrowserFrameGtk::UpdateThrobber(bool running) {
   browser_frame_view_->UpdateThrobber(running);
 }

@@ -93,6 +93,12 @@ gfx::Rect AppPanelBrowserFrameView::GetBoundsForTabStrip(
   return gfx::Rect();
 }
 
+int AppPanelBrowserFrameView::GetHorizontalTabStripVerticalOffset(
+    bool restored) const {
+  // App panels are not themed and don't need this.
+  return 0;
+}
+
 void AppPanelBrowserFrameView::UpdateThrobber(bool running) {
   window_icon_->Update();
 }

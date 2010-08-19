@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,13 +36,11 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
 
   BrowserView* browser_view() const { return browser_view_; }
 
-  // Returns the height of the title bar.
-  int GetTitleBarHeight();
-
   // BrowserFrame implementation.
   virtual views::Window* GetWindow();
   virtual int GetMinimizeButtonOffset() const;
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
+  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const;
   virtual void UpdateThrobber(bool running);
   virtual void ContinueDraggingDetachedTab();
   virtual ThemeProvider* GetThemeProviderForFrame() const;

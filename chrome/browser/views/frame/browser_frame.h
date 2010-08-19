@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,11 @@ class BrowserFrame {
   // Retrieves the bounds, in non-client view coordinates for the specified
   // TabStrip.
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const = 0;
+
+  // Returns the y coordinate within the window at which the horizontal TabStrip
+  // begins (or would begin).  If |restored| is true, this is calculated as if
+  // we were in restored mode regardless of the current mode.
+  virtual int GetHorizontalTabStripVerticalOffset(bool restored) const = 0;
 
   // Tells the frame to update the throbber.
   virtual void UpdateThrobber(bool running) = 0;

@@ -17,6 +17,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/find_bar_host.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/view_ids.h"
 #include "gfx/canvas.h"
 #include "grit/generated_resources.h"
@@ -25,6 +26,7 @@
 #include "views/background.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
+#include "views/widget/widget.h"
 
 // The amount of whitespace to have before the find button.
 static const int kWhiteSpaceAfterMatchCountLabel = 1;
@@ -232,16 +234,26 @@ void FindBarView::SetFocusAndSelection(bool select_all) {
 void FindBarView::Paint(gfx::Canvas* canvas) {
   SkPaint paint;
 
+  // Determine the find bar size as well as the offset from which to tile the
+  // toolbar background image.  First, get the widget bounds.
+  gfx::Rect bounds;
+  GetWidget()->GetBounds(&bounds, true);
+  // Now convert from screen to parent coordinates.
+  gfx::Point origin(bounds.origin());
+  BrowserView* browser_view = host()->browser_view();
+  ConvertPointToView(NULL, browser_view, &origin);
+  bounds.set_origin(origin);
+  // Finally, calculate the background image tiling offset.
+  origin = browser_view->OffsetPointForToolbarBackgroundImage(origin);
+
   // First, we draw the background image for the whole dialog (3 images: left,
   // middle and right). Note, that the window region has been set by the
   // controller, so the whitespace in the left and right background images is
   // actually outside the window region and is therefore not drawn. See
   // FindInPageWidgetWin::CreateRoundedWindowEdges() for details.
   ThemeProvider* tp = GetThemeProvider();
-  gfx::Rect bounds;
-  host()->GetThemePosition(&bounds);
-  canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR), bounds.x(),
-                       bounds.y(), 0, 0, bounds.width(), bounds.height());
+  canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR), origin.x(),
+                       origin.y(), 0, 0, bounds.width(), bounds.height());
 
   // Now flip the canvas for the rest of the graphics if in RTL mode.
   canvas->Save();
