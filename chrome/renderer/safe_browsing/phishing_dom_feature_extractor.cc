@@ -188,7 +188,7 @@ void PhishingDOMFeatureExtractor::HandleLink(
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
   if (domain.empty()) {
-    LOG(ERROR) << "Could not extract domain from link: " << full_url;
+    DLOG(INFO) << "Could not extract domain from link: " << full_url;
     return;
   }
 
@@ -223,7 +223,7 @@ void PhishingDOMFeatureExtractor::HandleForm(
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
   if (domain.empty()) {
-    LOG(ERROR) << "Could not extract domain from form action: " << full_url;
+    DLOG(INFO) << "Could not extract domain from form action: " << full_url;
     return;
   }
 
@@ -245,7 +245,7 @@ void PhishingDOMFeatureExtractor::HandleImage(
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
   if (domain.empty()) {
-    LOG(ERROR) << "Could not extract domain from image src: " << full_url;
+    DLOG(INFO) << "Could not extract domain from image src: " << full_url;
     return;
   }
 
