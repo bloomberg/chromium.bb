@@ -35,8 +35,14 @@
 #include <fstream>
 
 #include "common/windows/string_utils-inl.h"
+#include "common/windows/wchar_logging.h"
 
 #include "common/windows/http_upload.h"
+
+// See comment in symupload.cc about #undef ERROR. Unfortunately this has to 
+// violate style guide and come after http_upload.h.
+#undef ERROR 
+#include "third_party/glog/glog/src/windows/glog/logging.h"
 
 namespace google_breakpad {
 
@@ -44,6 +50,28 @@ using std::ifstream;
 using std::ios;
 
 static const wchar_t kUserAgent[] = L"Breakpad/1.0 (Windows)";
+
+wchar_t lastErrorMessageBuffer[1024];
+
+// Helper method to convert Last Error into a text message.  Uses a static
+// buffer, so don't save the message across Win32 calls that might change
+// the last error.
+//
+// This function saves/restores the last error and it isn't thread safe.
+const wchar_t* FormatLastError() {
+  DWORD oldLastError = GetLastError();
+  wchar_t lastErrorTempBuffer[1024];
+  if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0,
+      lastErrorTempBuffer, 1024, NULL) == 0) {
+    wsprintf(lastErrorMessageBuffer, L"%d: (format message failed: %d)",
+        oldLastError, GetLastError());
+  } else {
+    wsprintf(lastErrorMessageBuffer, L"%d: %s", oldLastError,
+             lastErrorTempBuffer);
+  }
+  SetLastError(oldLastError);
+  return lastErrorMessageBuffer;
+}
 
 // Helper class which closes an internet handle when it goes away
 class HTTPUpload::AutoInternetHandle {
@@ -72,7 +100,19 @@ bool HTTPUpload::SendRequest(const wstring &url,
   if (response_code) {
     *response_code = 0;
   }
-
+  VLOG(1) << "HTTPUpload::SendRequest";
+  VLOG(1) << "\tURL: " << url;
+  VLOG(1) << "\tUpload_File: " << upload_file;
+  VLOG(1) << "\tFile_part_name: " << file_part_name;
+  VLOG(1) << "\tParameters: ";
+  string s;
+  if (VLOG_IS_ON(1)) {
+    for (std::map<wstring, wstring>::const_iterator it = parameters.begin();
+      it != parameters.end(); ++it) {
+        VLOG(1) << "\t\t" << it->first << " = " << it->second;
+    }
+  }
+  
   // TODO(bryner): support non-ASCII parameter names
   if (!CheckParameters(parameters)) {
     return false;
@@ -90,7 +130,9 @@ bool HTTPUpload::SendRequest(const wstring &url,
   components.lpszUrlPath = path;
   components.dwUrlPathLength = sizeof(path) / sizeof(path[0]);
   if (!InternetCrackUrl(url.c_str(), static_cast<DWORD>(url.size()),
-                        0, &components)) {
+      0, &components)) {
+    LOG(ERROR) << "InternetCrackUrl failed: " << FormatLastError();
+    LOG(ERROR) << "This indicates a malformed upload server name";
     return false;
   }
   bool secure = false;
@@ -106,6 +148,7 @@ bool HTTPUpload::SendRequest(const wstring &url,
                                            NULL,  // proxy bypass
                                            0));   // flags
   if (!internet.get()) {
+    LOG(ERROR) << "InternetOpen returned NULL: " << FormatLastError();
     return false;
   }
 
@@ -118,6 +161,7 @@ bool HTTPUpload::SendRequest(const wstring &url,
                                                 0,       // flags
                                                 NULL));  // context
   if (!connection.get()) {
+    LOG(ERROR) << "InternetConnect returned NULL: " << FormatLastError();
     return false;
   }
 
@@ -131,6 +175,7 @@ bool HTTPUpload::SendRequest(const wstring &url,
                                              http_open_flags,
                                              NULL));  // context
   if (!request.get()) {
+    LOG(ERROR) << "HttpOpenRequest returned NULL: " << FormatLastError();
     return false;
   }
 
@@ -152,13 +197,17 @@ bool HTTPUpload::SendRequest(const wstring &url,
                            INTERNET_OPTION_SEND_TIMEOUT,
                            timeout,
                            sizeof(timeout))) {
-      fwprintf(stderr, L"Could not unset send timeout, continuing...\n");
+       LOG(ERROR) << "InternetSetOption on send timeout returned NULL: "
+                  << FormatLastError();
+       fwprintf(stderr, L"Could not unset send timeout, continuing...\n");
     }
 
     if (!InternetSetOption(request.get(),
                            INTERNET_OPTION_RECEIVE_TIMEOUT,
                            timeout,
                            sizeof(timeout))) {
+      LOG(ERROR) << "InternetSetOption on receive timeout returned NULL: " 
+                 << FormatLastError();
       fwprintf(stderr, L"Could not unset receive timeout, continuing...\n");
     }
   }
@@ -166,6 +215,7 @@ bool HTTPUpload::SendRequest(const wstring &url,
   if (!HttpSendRequest(request.get(), NULL, 0,
                        const_cast<char *>(request_body.data()),
                        static_cast<DWORD>(request_body.size()))) {
+    LOG(ERROR) << "HttpSendRequest on send returned NULL: " << FormatLastError();
     return false;
   }
 
@@ -175,6 +225,7 @@ bool HTTPUpload::SendRequest(const wstring &url,
   if (!HttpQueryInfo(request.get(), HTTP_QUERY_STATUS_CODE,
                      static_cast<LPVOID>(&http_status), &http_status_size,
                      0)) {
+    LOG(ERROR) << "HttpQueryInfo after send returned NULL: " << FormatLastError();
     return false;
   }
 
@@ -187,6 +238,8 @@ bool HTTPUpload::SendRequest(const wstring &url,
 
   if (result) {
     result = ReadResponse(request.get(), response_body);
+  } else {
+    LOG(ERROR) << "Http send request returned: " << result;
   }
 
   return result;
@@ -397,11 +450,13 @@ bool HTTPUpload::CheckParameters(const map<wstring, wstring> &parameters) {
        pos != parameters.end(); ++pos) {
     const wstring &str = pos->first;
     if (str.size() == 0) {
+      LOG(ERROR) << "Parameter " << str << " had non ascii characters";
       return false;  // disallow empty parameter names
     }
     for (unsigned int i = 0; i < str.size(); ++i) {
       wchar_t c = str[i];
       if (c < 32 || c == '"' || c > 127) {
+        LOG(ERROR) << "Parameter " << str << " had non ascii characters";
         return false;
       }
     }

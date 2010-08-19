@@ -51,10 +51,14 @@
 #include <string>
 #include <vector>
 
-#include "common/windows/string_utils-inl.h"
-
 #include "common/windows/http_upload.h"
 #include "common/windows/pdb_source_line_writer.h"
+#include "common/windows/string_utils-inl.h"
+#include "common/windows/wchar_logging.h"
+// See http://code.google.com/p/google-glog/issues/detail?id=33 for why
+// this #undef is added.
+#undef ERROR
+#include "third_party/glog/glog/src/windows/glog/logging.h"
 
 using std::string;
 using std::wstring;
@@ -112,12 +116,15 @@ static bool DumpSymbolsToTempFile(const wchar_t *file,
                                   wstring *temp_file_path,
                                   PDBModuleInfo *pdb_info) {
   google_breakpad::PDBSourceLineWriter writer;
+  VLOG(1) << "DumpSymbolsToTempFile opening file";
   // Use EXE_FILE to get information out of the exe/dll in addition to the
   // pdb.  The name and version number of the exe/dll are of value, and
   // there's no way to locate an exe/dll given a pdb.
   if (!writer.Open(file, PDBSourceLineWriter::EXE_FILE)) {
+    VLOG(1) << "Error opening input module";
     return false;
   }
+  VLOG(1) << "DumpSymbolsToTempFile file opened";
 
   wchar_t temp_path[_MAX_PATH];
   if (GetTempPath(_MAX_PATH, temp_path) == 0) {
@@ -128,6 +135,7 @@ static bool DumpSymbolsToTempFile(const wchar_t *file,
   if (GetTempFileName(temp_path, L"sym", 0, temp_filename) == 0) {
     return false;
   }
+  VLOG(1) << "Temporary symbol filename is: " << temp_filename;
 
   FILE *temp_file = NULL;
 #if _MSC_VER >= 1400  // MSVC 2005/8
@@ -145,7 +153,8 @@ static bool DumpSymbolsToTempFile(const wchar_t *file,
   fclose(temp_file);
   if (!success) {
     _wunlink(temp_filename);
-    return false;
+  	LOG(ERROR) << "Error writing to temp file";  
+	return false;
   }
 
   *temp_file_path = temp_filename;
@@ -160,9 +169,22 @@ void printUsageAndExit() {
   exit(0);
 }
 int wmain(int argc, wchar_t *argv[]) {
+  char progname[MAX_PATH];
+  size_t convertedChars;
+  wcstombs_s(&convertedChars, progname, MAX_PATH, argv[0], _TRUNCATE);
+  google::InitGoogleLogging(progname);
+
   if ((argc != 3) &&
       (argc != 5)) {
     printUsageAndExit();
+  }
+
+  if (argc == 5) {
+    VLOG(1) << "Module: " << argv[3];
+    VLOG(1) << "Server: " << argv[4];
+  } else {
+    VLOG(1) << "Module: " << argv[1];
+    VLOG(1) << "Server: " << argv[2];
   }
 
   const wchar_t *module, *url;
@@ -181,12 +203,15 @@ int wmain(int argc, wchar_t *argv[]) {
     }
   }
 
+  VLOG(1) << "Beginning symbol dump";
   wstring symbol_file;
   PDBModuleInfo pdb_info;
   if (!DumpSymbolsToTempFile(module, &symbol_file, &pdb_info)) {
     fwprintf(stderr, L"Could not get symbol data from %s\n", module);
+    LOG(ERROR) << "Could not get symbol data from " << module;
     return 1;
   }
+  VLOG(1) << "Symbol dump completed to " << symbol_file;
 
   wstring code_file = WindowsStringUtils::GetBaseName(wstring(module));
 
