@@ -19,8 +19,3 @@ DiskCacheBackendTest.*DisableFailure*
 # Strange reports from __NSThread__main__ appeared with the new TSan binaries
 # See http://crbug.com/38926
 DirectoryLister*
-
-# See http://crbug.com/44570
-HttpNetworkTransactionTest.StopsReading204
-# See http://crbug.com/51145
-HttpNetworkTransactionTest.Incomplete100ThenEOF
