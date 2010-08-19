@@ -147,6 +147,8 @@
         'renderer/render_view.h',
         'renderer/render_widget.cc',
         'renderer/render_widget.h',
+        'renderer/render_widget_fullscreen.cc',
+        'renderer/render_widget_fullscreen.h',
         'renderer/renderer_glue.cc',
         'renderer/renderer_histogram_snapshots.cc',
         'renderer/renderer_histogram_snapshots.h',

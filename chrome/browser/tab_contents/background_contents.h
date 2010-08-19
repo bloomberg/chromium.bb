@@ -89,12 +89,15 @@ class BackgroundContents : public RenderViewHostDelegate,
       WindowContainerType window_container_type,
       const string16& frame_name);
   virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
+  virtual void CreateNewFullscreenWidget(
+      int route_id, WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture);
   virtual void ShowCreatedWidget(int route_id,
                                  const gfx::Rect& initial_pos);
+  virtual void ShowCreatedFullscreenWidget(int route_id);
   virtual void ShowContextMenu(const ContextMenuParams& params) {}
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_operations,

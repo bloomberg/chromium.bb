@@ -182,6 +182,11 @@ void BackgroundContents::CreateNewWidget(int route_id,
   NOTREACHED();
 }
 
+void BackgroundContents::CreateNewFullscreenWidget(
+    int route_id, WebKit::WebPopupType popup_type) {
+  NOTREACHED();
+}
+
 void BackgroundContents::ShowCreatedWindow(int route_id,
                                            WindowOpenDisposition disposition,
                                            const gfx::Rect& initial_pos,
@@ -196,3 +201,6 @@ void BackgroundContents::ShowCreatedWidget(int route_id,
   NOTIMPLEMENTED();
 }
 
+void BackgroundContents::ShowCreatedFullscreenWidget(int route_id) {
+  NOTIMPLEMENTED();
+}

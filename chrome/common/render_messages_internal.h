@@ -1022,8 +1022,16 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               WebKit::WebPopupType /* popup type */,
                               int /* route_id */)
 
-  // These two messages are sent to the parent RenderViewHost to display the
-  // page/widget that was created by CreateWindow/CreateWidget.  routing_id
+  // Similar to ViewHostMsg_CreateWidget except the widget is a full screen
+  // window.
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateFullscreenWidget,
+                              int /* opener_id */,
+                              WebKit::WebPopupType /* popup type */,
+                              int /* route_id */)
+
+  // These three messages are sent to the parent RenderViewHost to display the
+  // page/widget that was created by
+  // CreateWindow/CreateWidget/CreateFullscreenWidget. routing_id
   // refers to the id that was returned from the Create message above.
   // The initial_position parameter is a rectangle in screen coordinates.
   //
@@ -1038,6 +1046,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED2(ViewHostMsg_ShowWidget,
                       int /* route_id */,
                       gfx::Rect /* initial_pos */)
+
+  // Message to show a full screen widget.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
+                      int /* route_id */)
 
   // Message to show a popup menu using native cocoa controls (Mac only).
   IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowPopup,

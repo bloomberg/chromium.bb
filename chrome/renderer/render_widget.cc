@@ -17,6 +17,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "gfx/point.h"
 #include "gfx/size.h"
+#include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
@@ -42,12 +43,14 @@ using WebKit::WebInputEvent;
 using WebKit::WebNavigationPolicy;
 using WebKit::WebPopupMenu;
 using WebKit::WebPopupMenuInfo;
+using WebKit::WebPopupType;
 using WebKit::WebRect;
 using WebKit::WebScreenInfo;
 using WebKit::WebSize;
 using WebKit::WebTextDirection;
 using WebKit::WebTextInputType;
 using WebKit::WebVector;
+using WebKit::WebWidget;
 
 RenderWidget::RenderWidget(RenderThreadBase* render_thread,
                            WebKit::WebPopupType popup_type)
@@ -84,7 +87,7 @@ RenderWidget::~RenderWidget() {
   RenderProcess::current()->ReleaseProcess();
 }
 
-/*static*/
+// static
 RenderWidget* RenderWidget::Create(int32 opener_id,
                                    RenderThreadBase* render_thread,
                                    WebKit::WebPopupType popup_type) {
@@ -93,6 +96,20 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
                                                         popup_type);
   widget->Init(opener_id);  // adds reference
   return widget;
+}
+
+// static
+WebWidget* RenderWidget::CreateWebWidget(RenderWidget* render_widget) {
+  switch (render_widget->popup_type_) {
+    case WebKit::WebPopupTypeNone: // Nothing to create.
+      break;
+    case WebKit::WebPopupTypeSelect:
+    case WebKit::WebPopupTypeSuggestion:
+      return WebPopupMenu::create(render_widget);
+    default:
+      NOTREACHED();
+  }
+  return NULL;
 }
 
 void RenderWidget::ConfigureAsExternalPopupMenu(const WebPopupMenuInfo& info) {
@@ -106,15 +123,23 @@ void RenderWidget::ConfigureAsExternalPopupMenu(const WebPopupMenuInfo& info) {
 }
 
 void RenderWidget::Init(int32 opener_id) {
+  DoInit(opener_id,
+         RenderWidget::CreateWebWidget(this),
+         new ViewHostMsg_CreateWidget(opener_id, popup_type_, &routing_id_));
+}
+
+
+void RenderWidget::DoInit(int32 opener_id,
+                          WebKit::WebWidget* web_widget,
+                          IPC::SyncMessage* create_widget_message) {
   DCHECK(!webwidget_);
 
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
 
-  webwidget_ = WebPopupMenu::create(this);
+  webwidget_ = web_widget;
 
-  bool result = render_thread_->Send(
-      new ViewHostMsg_CreateWidget(opener_id, popup_type_, &routing_id_));
+  bool result = render_thread_->Send(create_widget_message);
   if (result) {
     render_thread_->AddRoute(routing_id_, this);
     // Take a reference on behalf of the RenderThread.  This will be balanced

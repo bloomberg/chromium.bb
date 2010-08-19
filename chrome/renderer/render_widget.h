@@ -33,11 +33,16 @@ namespace gfx {
 class Point;
 }
 
+namespace IPC {
+class SyncMessage;
+}
+
 namespace skia {
 class PlatformCanvas;
 }
 
 namespace WebKit {
+class WebWidget;
 struct WebPopupMenuInfo;
 }
 
@@ -58,6 +63,9 @@ class RenderWidget : public IPC::Channel::Listener,
   static RenderWidget* Create(int32 opener_id,
                               RenderThreadBase* render_thread,
                               WebKit::WebPopupType popup_type);
+
+  // Creates a WebWidget based on the popup type.
+  static WebKit::WebWidget* CreateWebWidget(RenderWidget* render_widget);
 
   // Called after Create to configure a RenderWidget to be rendered by the host
   // as a popup menu with the given data.
@@ -127,6 +135,11 @@ class RenderWidget : public IPC::Channel::Listener,
   // Initializes this view with the given opener.  CompleteInit must be called
   // later.
   void Init(int32 opener_id);
+
+  // Called by Init and subclasses to perform initialization.
+  void DoInit(int32 opener_id,
+              WebKit::WebWidget* web_widget,
+              IPC::SyncMessage* create_widget_message);
 
   // Finishes creation of a pending view started with Init.
   void CompleteInit(gfx::NativeViewId parent);

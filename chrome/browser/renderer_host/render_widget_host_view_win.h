@@ -120,6 +120,7 @@ class RenderWidgetHostViewWin
   // Implementation of RenderWidgetHostView:
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos);
+  virtual void InitAsFullscreen(RenderWidgetHostView* parent_host_view);
   virtual RenderWidgetHost* GetRenderWidgetHost() const;
   virtual void DidBecomeSelected();
   virtual void WasHidden();

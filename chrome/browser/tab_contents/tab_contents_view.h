@@ -169,6 +169,11 @@ class TabContentsView : public RenderViewHostDelegate::View {
       WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
                                          const gfx::Rect& initial_pos);
+  virtual void ShowCreatedFullscreenWidgetInternal(
+      RenderWidgetHostView* widget_host_view);
+  virtual RenderWidgetHostView* CreateNewFullscreenWidgetInternal(
+      int route_id,
+      WebKit::WebPopupType popup_type);
 
   // Common implementations of some RenderViewHostDelegate::View methods.
   RenderViewHostDelegateViewHelper delegate_view_helper_;
@@ -182,6 +187,8 @@ class TabContentsView : public RenderViewHostDelegate::View {
       WindowContainerType window_container_type,
       const string16& frame_name);
   virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
+  virtual void CreateNewFullscreenWidget(
+      int route_id, WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
@@ -189,6 +196,7 @@ class TabContentsView : public RenderViewHostDelegate::View {
   virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
   virtual void Activate();
   virtual void Deactivate();
+  virtual void ShowCreatedFullscreenWidget(int route_id);
 
   // The TabContents whose contents we display.
   TabContents* tab_contents_;

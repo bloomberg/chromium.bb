@@ -48,6 +48,11 @@ void TabContentsView::CreateNewWidget(int route_id,
   CreateNewWidgetInternal(route_id, popup_type);
 }
 
+void TabContentsView::CreateNewFullscreenWidget(
+    int route_id, WebKit::WebPopupType popup_type) {
+  CreateNewFullscreenWidgetInternal(route_id, popup_type);
+}
+
 void TabContentsView::ShowCreatedWindow(int route_id,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_pos,
@@ -74,6 +79,12 @@ void TabContentsView::Deactivate() {
   tab_contents_->delegate()->Deactivate();
 }
 
+void TabContentsView::ShowCreatedFullscreenWidget(int route_id) {
+  RenderWidgetHostView* widget_host_view =
+      delegate_view_helper_.GetCreatedWidget(route_id);
+  ShowCreatedFullscreenWidgetInternal(widget_host_view);
+}
+
 bool TabContentsView::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
   return tab_contents_->delegate() &&
@@ -97,6 +108,12 @@ RenderWidgetHostView* TabContentsView::CreateNewWidgetInternal(
       tab_contents()->render_view_host()->process());
 }
 
+RenderWidgetHostView* TabContentsView::CreateNewFullscreenWidgetInternal(
+    int route_id, WebKit::WebPopupType popup_type) {
+  return delegate_view_helper_.CreateNewFullscreenWidget(
+      route_id, popup_type, tab_contents()->render_view_host()->process());
+}
+
 void TabContentsView::ShowCreatedWidgetInternal(
     RenderWidgetHostView* widget_host_view, const gfx::Rect& initial_pos) {
   if (tab_contents_->delegate())
@@ -104,5 +121,14 @@ void TabContentsView::ShowCreatedWidgetInternal(
 
   widget_host_view->InitAsPopup(tab_contents_->GetRenderWidgetHostView(),
                                 initial_pos);
+  widget_host_view->GetRenderWidgetHost()->Init();
+}
+
+void TabContentsView::ShowCreatedFullscreenWidgetInternal(
+    RenderWidgetHostView* widget_host_view) {
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->RenderWidgetShowing();
+
+  widget_host_view->InitAsFullscreen(tab_contents_->GetRenderWidgetHostView());
   widget_host_view->GetRenderWidgetHost()->Init();
 }

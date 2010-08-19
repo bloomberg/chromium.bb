@@ -712,6 +712,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP_EX(RenderViewHost, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnMsgShowView)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnMsgShowWidget)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
+                        OnMsgShowFullscreenWidget)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_RunModal, OnMsgRunModal)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnMsgRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewGone, OnMsgRenderViewGone)
@@ -894,6 +896,13 @@ void RenderViewHost::CreateNewWidget(int route_id,
     view->CreateNewWidget(route_id, popup_type);
 }
 
+void RenderViewHost::CreateNewFullscreenWidget(
+    int route_id, WebKit::WebPopupType popup_type) {
+  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  if (view)
+    view->CreateNewFullscreenWidget(route_id, popup_type);
+}
+
 void RenderViewHost::OnMsgShowView(int route_id,
                                    WindowOpenDisposition disposition,
                                    const gfx::Rect& initial_pos,
@@ -910,6 +919,14 @@ void RenderViewHost::OnMsgShowWidget(int route_id,
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
   if (view) {
     view->ShowCreatedWidget(route_id, initial_pos);
+    Send(new ViewMsg_Move_ACK(route_id));
+  }
+}
+
+void RenderViewHost::OnMsgShowFullscreenWidget(int route_id) {
+  RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
+  if (view) {
+    view->ShowCreatedFullscreenWidget(route_id);
     Send(new ViewMsg_Move_ACK(route_id));
   }
 }

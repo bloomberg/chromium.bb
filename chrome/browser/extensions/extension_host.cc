@@ -527,6 +527,12 @@ void ExtensionHost::CreateNewWidget(int route_id,
   CreateNewWidgetInternal(route_id, popup_type);
 }
 
+void ExtensionHost::CreateNewFullscreenWidget(int route_id,
+                                              WebKit::WebPopupType popup_type) {
+  NOTREACHED()
+      << "ExtensionHost does not support showing full screen popups yet.";
+}
+
 RenderWidgetHostView* ExtensionHost::CreateNewWidgetInternal(
     int route_id, WebKit::WebPopupType popup_type) {
   return delegate_view_helper_.CreateNewWidget(route_id, popup_type,
@@ -553,6 +559,11 @@ void ExtensionHost::ShowCreatedWidget(int route_id,
                                       const gfx::Rect& initial_pos) {
   ShowCreatedWidgetInternal(delegate_view_helper_.GetCreatedWidget(route_id),
                             initial_pos);
+}
+
+void ExtensionHost::ShowCreatedFullscreenWidget(int route_id) {
+  NOTREACHED()
+      << "ExtensionHost does not support showing full screen popups yet.";
 }
 
 void ExtensionHost::ShowCreatedWidgetInternal(

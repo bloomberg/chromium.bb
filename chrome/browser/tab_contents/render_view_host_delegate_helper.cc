@@ -14,6 +14,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_widget_fullscreen_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
@@ -124,6 +125,18 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
   // Popups should not get activated.
   widget_view->set_popup_type(popup_type);
   // Save the created widget associated with the route so we can show it later.
+  pending_widget_views_[route_id] = widget_view;
+  return widget_view;
+}
+
+RenderWidgetHostView*
+RenderViewHostDelegateViewHelper::CreateNewFullscreenWidget(
+    int route_id, WebKit::WebPopupType popup_type, RenderProcessHost* process) {
+  RenderWidgetFullscreenHost* fullscreen_widget_host =
+      new RenderWidgetFullscreenHost(process, route_id);
+  RenderWidgetHostView* widget_view =
+      RenderWidgetHostView::CreateViewForWidget(fullscreen_widget_host);
+  widget_view->set_popup_type(popup_type);
   pending_widget_views_[route_id] = widget_view;
   return widget_view;
 }

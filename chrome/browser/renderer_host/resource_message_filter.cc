@@ -367,6 +367,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
 
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnMsgCreateWindow)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnMsgCreateWidget)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
+                          OnMsgCreateFullscreenWidget)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCookie, OnSetCookie)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetCookies, OnGetCookies)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetRawCookies,
@@ -564,6 +566,12 @@ void ResourceMessageFilter::OnMsgCreateWidget(int opener_id,
                                               WebKit::WebPopupType popup_type,
                                               int* route_id) {
   render_widget_helper_->CreateNewWidget(opener_id, popup_type, route_id);
+}
+
+void ResourceMessageFilter::OnMsgCreateFullscreenWidget(
+    int opener_id, WebKit::WebPopupType popup_type, int* route_id) {
+  render_widget_helper_->CreateNewFullscreenWidget(
+      opener_id, popup_type, route_id);
 }
 
 void ResourceMessageFilter::OnSetCookie(const IPC::Message& message,

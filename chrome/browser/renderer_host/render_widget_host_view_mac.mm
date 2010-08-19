@@ -352,6 +352,11 @@ void RenderWidgetHostViewMac::InitAsPopup(
   [cocoa_view_ setFrame:initial_frame];
 }
 
+void RenderWidgetHostViewMac::InitAsFullscreen(
+    RenderWidgetHostView* parent_host_view) {
+  NOTIMPLEMENTED() << "Full screen not implemented on Mac";
+}
+
 RenderWidgetHost* RenderWidgetHostViewMac::GetRenderWidgetHost() const {
   return render_widget_host_;
 }

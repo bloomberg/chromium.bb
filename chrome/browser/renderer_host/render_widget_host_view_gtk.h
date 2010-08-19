@@ -52,6 +52,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // RenderWidgetHostView implementation.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,
                            const gfx::Rect& pos);
+  virtual void InitAsFullscreen(RenderWidgetHostView* parent_host_view);
   virtual RenderWidgetHost* GetRenderWidgetHost() const { return host_; }
   virtual void DidBecomeSelected();
   virtual void WasHidden();
@@ -123,6 +124,13 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   // Update the display cursor for the render view.
   void ShowCurrentCursor();
+
+  // Helper method for InitAsPopup() and InitAsFullscreen().
+  void DoInitAsPopup(
+      RenderWidgetHostView* parent_host_view,
+      GtkWindowType window_type,
+      const gfx::Rect& pos,  // Ignored if is_fullscreen is true.
+      bool is_fullscreen);
 
   // The model object.
   RenderWidgetHost* host_;

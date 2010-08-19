@@ -63,6 +63,7 @@
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view_visitor.h"
+#include "chrome/renderer/render_widget_fullscreen.h"
 #include "chrome/renderer/renderer_webapplicationcachehost_impl.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/speech_input_dispatcher.h"
@@ -1698,6 +1699,13 @@ WebWidget* RenderView::createPopupMenu(const WebPopupMenuInfo& info) {
                                               render_thread_,
                                               WebKit::WebPopupTypeSelect);
   widget->ConfigureAsExternalPopupMenu(info);
+  return widget->webwidget();
+}
+
+WebWidget* RenderView::createFullscreenWindow(WebKit::WebPopupType popup_type) {
+  RenderWidget* widget = RenderWidgetFullscreen::Create(routing_id_,
+                                                        render_thread_,
+                                                        popup_type);
   return widget->webwidget();
 }
 

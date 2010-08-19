@@ -17,6 +17,12 @@ TEST_F(RenderViewHostTest, FilterAbout) {
   EXPECT_EQ(GURL("about:blank"), controller().GetActiveEntry()->url());
 }
 
+// Create a full screen popup RenderWidgetHost and View.
+TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
+  int routing_id = process()->GetNextRoutingID();
+  rvh()->CreateNewFullscreenWidget(routing_id, WebKit::WebPopupTypeNone);
+}
+
 // The test that follow trigger DCHECKS in debug build.
 #if defined(NDEBUG)
 

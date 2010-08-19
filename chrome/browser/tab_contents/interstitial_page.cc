@@ -94,12 +94,15 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
       const string16& frame_name);
   virtual void CreateNewWidget(int route_id,
                                WebKit::WebPopupType popup_type);
+  virtual void CreateNewFullscreenWidget(int route_id,
+                                         WebKit::WebPopupType popup_type);
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
                                  bool user_gesture);
   virtual void ShowCreatedWidget(int route_id,
                                  const gfx::Rect& initial_pos);
+  virtual void ShowCreatedFullscreenWidget(int route_id);
   virtual void ShowContextMenu(const ContextMenuParams& params);
   virtual void StartDragging(const WebDropData& drop_data,
                              WebDragOperationsMask operations_allowed,
@@ -571,6 +574,13 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::CreateNewWidget(
   NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
 }
 
+void
+InterstitialPage::InterstitialPageRVHViewDelegate::CreateNewFullscreenWidget(
+    int route_id, WebKit::WebPopupType popup_type) {
+  NOTREACHED()
+      << "InterstitialPage does not support showing full screen popups.";
+}
+
 void InterstitialPage::InterstitialPageRVHViewDelegate::ShowCreatedWindow(
     int route_id, WindowOpenDisposition disposition,
     const gfx::Rect& initial_pos, bool user_gesture) {
@@ -580,6 +590,13 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::ShowCreatedWindow(
 void InterstitialPage::InterstitialPageRVHViewDelegate::ShowCreatedWidget(
     int route_id, const gfx::Rect& initial_pos) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
+}
+
+void
+InterstitialPage::InterstitialPageRVHViewDelegate::ShowCreatedFullscreenWidget(
+    int route_id) {
+  NOTREACHED()
+      << "InterstitialPage does not support showing full screen popups.";
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::ShowContextMenu(

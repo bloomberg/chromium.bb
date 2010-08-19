@@ -130,6 +130,9 @@ class RenderWidgetHelper
   void CreateNewWidget(int opener_id,
                        WebKit::WebPopupType popup_type,
                        int* route_id);
+  void CreateNewFullscreenWidget(int opener_id,
+                                 WebKit::WebPopupType popup_type,
+                                 int* route_id);
 
 #if defined(OS_MACOSX)
   // Called on the IO thread to handle the allocation of a TransportDIB.  If
@@ -176,6 +179,11 @@ class RenderWidgetHelper
   void OnCreateWidgetOnUI(int opener_id,
                           int route_id,
                           WebKit::WebPopupType popup_type);
+
+  // Called on the UI thread to create a full screen widget.
+  void OnCreateFullscreenWidgetOnUI(int opener_id,
+                                    int route_id,
+                                    WebKit::WebPopupType popup_type);
 
   // Called on the IO thread to cancel resource requests for the render widget.
   void OnCancelResourceRequests(int render_widget_id);

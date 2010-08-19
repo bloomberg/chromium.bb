@@ -433,6 +433,9 @@ class RenderViewHost : public RenderWidgetHost {
   // if this widget is a popup and what kind of popup it is (select, autofill).
   void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
 
+  // Creates a full screen RenderWidget.
+  void CreateNewFullscreenWidget(int route_id, WebKit::WebPopupType popup_type);
+
   // Sends the response to an extension api call.
   void SendExtensionResponse(int request_id, bool success,
                              const std::string& response,
@@ -488,6 +491,7 @@ class RenderViewHost : public RenderWidgetHost {
                      const gfx::Rect& initial_pos,
                      bool user_gesture);
   void OnMsgShowWidget(int route_id, const gfx::Rect& initial_pos);
+  void OnMsgShowFullscreenWidget(int route_id);
   void OnMsgRunModal(IPC::Message* reply_msg);
   void OnMsgRenderViewReady();
   void OnMsgRenderViewGone();
