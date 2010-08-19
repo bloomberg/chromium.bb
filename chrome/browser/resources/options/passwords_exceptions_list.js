@@ -10,14 +10,12 @@ cr.define('options.passwordsExceptions', function() {
 
   /**
    * Creates a new passwords list item.
-   * @param contentType passwords or passwordsExceptions
    * @param {Array} entry A pair of the form [url, username].
    * @constructor
    * @extends {cr.ui.ListItem}
    */
-  function PasswordsListItem(contentType, entry) {
+  function PasswordsListItem(entry) {
     var el = cr.doc.createElement('li');
-    el.contentType = contentType;
     el.dataItem = entry;
     el.__proto__ = PasswordsListItem.prototype;
     el.decorate();
@@ -38,15 +36,14 @@ cr.define('options.passwordsExceptions', function() {
       var urlLabel = cr.doc.createElement('span');
       urlLabel.textContent = this.url;
       this.appendChild(urlLabel);
-      this.urlLabel = urlLabel;
 
-      if (this.contentType == 'passwords') {
-        var usernameLabel = cr.doc.createElement('span');
-        usernameLabel.textContent = this.username;
-        usernameLabel.className = 'passwordsUsername';
-        this.appendChild(usernameLabel);
-        this.usernameLabel = usernameLabel;
-      }
+      var usernameLabel = cr.doc.createElement('span');
+      usernameLabel.textContent = this.username;
+      usernameLabel.className = 'passwordsUsername';
+      this.appendChild(usernameLabel);
+
+      this.urlLabel = urlLabel;
+      this.usernameLabel = usernameLabel;
     },
 
     /**
@@ -65,15 +62,11 @@ cr.define('options.passwordsExceptions', function() {
      * @type {string}
      */
     get username() {
-      if (this.contentType == 'passwords')
-        return this.dataItem[1];
-      else
-        return undefined;
-     },
-     set username(username) {
-      if (this.contentType == 'passwords')
-        this.dataItem[1] = username;
-     },
+      return this.dataItem[1];
+    },
+    set username(username) {
+      this.dataItem[1] = username;
+    },
   };
 
   /**
@@ -99,7 +92,7 @@ cr.define('options.passwordsExceptions', function() {
      * @param {Object} entry The element from the data model for this row.
      */
     createItem: function(entry) {
-      return new PasswordsListItem(this.contentType, entry);
+      return new PasswordsListItem(entry);
     },
 
     /**
@@ -122,21 +115,12 @@ cr.define('options.passwordsExceptions', function() {
      */
     removeSelectedRow: function() {
       var selectedIndex = this.selectionModel.selectedIndex;
-      PasswordsExceptions.removeEntry(this.contentType, selectedIndex);
+      PasswordsExceptions.removeAutofillable(selectedIndex);
     },
 
     showSelectedPassword: function() {
-      if (this.contentType == 'passwords') {
-        var selectedIndex = this.selectionModel.selectedIndex;
-        PasswordsExceptions.showSelectedPassword(selectedIndex);
-      }
-    },
-
-    /**
-     * The length of the list.
-     */
-    get length() {
-      return this.dataModel.length;
+      var selectedIndex = this.selectionModel.selectedIndex;
+      PasswordsExceptions.showSelectedPassword(selectedIndex);
     },
 
   };
@@ -153,56 +137,37 @@ cr.define('options.passwordsExceptions', function() {
       PasswordsList.decorate(this.passwordsList);
       this.passwordsList.selectionModel.addEventListener(
           'change', cr.bind(this.handleOnSelectionChange_, this));
-      this.passwordsList.dataModel.addEventListener(
-          'change', cr.bind(this.handleOnDataModelChange_, this));
 
       var removeRow = cr.doc.createElement('button');
       removeRow.textContent = templateData.passwordsRemoveButton;
       this.appendChild(removeRow);
       this.removeRow = removeRow;
 
-      var removeAll = cr.doc.createElement('button');
-      removeAll.textContent = templateData.passwordsRemoveAllButton;
-      this.appendChild(removeAll);
-      this.removeAll = removeAll;
+      var showHidePassword = cr.doc.createElement('button');
+      showHidePassword.textContent = templateData.passwordsShowButton;
+      this.appendChild(showHidePassword);
+      this.showHidePassword = showHidePassword;
+      this.showingPassword = false
 
-      if (this.contentType == 'passwords') {
-        var showHidePassword = cr.doc.createElement('button');
-        showHidePassword.textContent = templateData.passwordsShowButton;
-        this.appendChild(showHidePassword);
-        this.showHidePassword = showHidePassword;
-        this.showingPassword = false
-
-        var passwordLabel = cr.doc.createElement('span');
-        this.appendChild(passwordLabel);
-        this.passwordLabel = passwordLabel;
-      }
+      var passwordLabel = cr.doc.createElement('span');
+      this.appendChild(passwordLabel);
+      this.passwordLabel = passwordLabel;
 
       var self = this;
       removeRow.onclick = function(event) {
         self.passwordsList.removeSelectedRow();
       };
 
-      if (this.contentType == 'passwords') {
-        showHidePassword.onclick = function(event) {
-          if(self.showingPassword) {
-            self.passwordLabel.textContent = "";
-            this.textContent = templateData.passwordsShowButton;
-          } else {
-            self.passwordsList.showSelectedPassword();
-            this.textContent = templateData.passwordsHideButton;
-          }
-          self.showingPassword = !self.showingPassword;
-        };
-
-        removeAll.onclick = function(event) {
-          OptionsPage.showOverlay('passwordsRemoveAllOverlay');
-        };
-      } else {
-        removeAll.onclick = function(event) {
-          PasswordsExceptions.removeAll(this.contentType);
-        };
-      }
+      showHidePassword.onclick = function(event) {
+        if(self.showingPassword) {
+          self.passwordLabel.textContent = "";
+          this.textContent = templateData.passwordsShowButton;
+        } else {
+          self.passwordsList.showSelectedPassword();
+          this.textContent = templateData.passwordsHideButton;
+        }
+        self.showingPassword = !self.showingPassword;
+      };
 
       this.updateButtonSensitivity();
     },
@@ -219,45 +184,28 @@ cr.define('options.passwordsExceptions', function() {
     },
 
     displayReturnedPassword: function(password) {
-      if (this.contentType == 'passwords') {
-        this.passwordLabel.textContent = password;
-      }
+      this.passwordLabel.textContent = password;
     },
 
     /**
      * Update the button's states
      */
     updateButtonSensitivity: function() {
-      var selectionSize = this.passwordsList.selectedItems.length;
+      var selectionSize = autofillableLoginsList.selectedItems.length;
       this.removeRow.disabled = selectionSize == 0;
-      if (this.contentType == 'passwords')
-        this.showHidePassword.disabled = selectionSize == 0;
+      this.showHidePassword.disabled = selectionSize == 0;
     },
 
-    updateRemoveAllSensitivity: function() {
-      this.removeAll.disabled = this.passwordsList.length == 0;
-    },
     /**
      * Callback from selection model
      * @param {!cr.Event} ce Event with change info.
      * @private
      */
     handleOnSelectionChange_: function(ce) {
-      if (this.contentType == 'passwords') {
-        this.passwordLabel.textContent = "";
-        this.showHidePassword.textContent = templateData.passwordsShowButton;
-        this.showingPassword = false;
-      }
+      this.passwordLabel.textContent = "";
+      this.showHidePassword.textContent = templateData.passwordsShowButton;
+      this.showingPassword = false;
       this.updateButtonSensitivity();
-    },
-
-    /**
-     * Callback from data model
-     * @param {!cr.Event} ce Event with change info.
-     * @private
-     */
-    handleOnDataModelChange_: function(ce) {
-      this.updateRemoveAllSensitivity();
     },
   };
 

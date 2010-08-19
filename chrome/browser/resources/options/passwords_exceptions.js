@@ -28,11 +28,12 @@ cr.define('options', function() {
     initializePage: function() {
       OptionsPage.prototype.initializePage.call(this);
 
-      var areas = document.querySelectorAll(
-          '#passwordsExceptionsPage div[contentType]');
-      for (var i = 0; i < areas.length; i++) {
-        options.passwordsExceptions.ListArea.decorate(areas[i]);
-      }
+      options.passwordsExceptions.ListArea.decorate($('passwordsArea'));
+
+      // TODO(sargrass): Passwords filter page --------------------------
+
+      // TODO(sargrass): Exceptions filter page -------------------------
+
     },
 
     setAutofillableLogins_: function(entries) {
@@ -47,27 +48,8 @@ cr.define('options', function() {
     chrome.send('loadSavedPasswords');
   };
 
-  /**
-   * Call to remove a row.
-   * @param tab contentType of the tab currently on.
-   * @param rowIndex indicating the row to remove.
-   */
-  PasswordsExceptions.removeEntry = function(tab, rowIndex) {
-    if(tab == 'passwords')
-      chrome.send('removeSavedPassword', [String(rowIndex)]);
-    else
-      chrome.send('removePasswordsException', [String(rowIndex)]);
-  };
-
-  /**
-   * Call to remove all saved passwords or passwords exceptions.
-   * @param tab contentType of the tab currently on.
-   */
-  PasswordsExceptions.removeAll = function(tab) {
-    if(tab == 'passwords')
-      chrome.send('removeAllSavedPasswords');
-    else
-      chrome.send('removeAllPasswordsExceptions')
+  PasswordsExceptions.removeAutofillable = function(index) {
+    chrome.send('removeAutofillable', [String(index)]);
   };
 
   PasswordsExceptions.showSelectedPassword = function(index) {

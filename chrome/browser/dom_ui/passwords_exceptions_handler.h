@@ -28,19 +28,9 @@ class PasswordsExceptionsHandler : public OptionsPageUIHandler {
   // Fired when user clicks 'show saved passwords' button in personal page.
   void LoadSavedPasswords(const Value* value);
 
-  // Remove a saved password.
+  // Remove an entry.
   // @param value the entry index to be removed.
-  void RemoveSavedPassword(const Value* value);
-
-  // Remove an password exception.
-  // @param value the entry index to be removed.
-  void RemovePasswordsException(const Value* value);
-
-  // Remove all saved passwords
-  void RemoveAllSavedPasswords(const Value* value);
-
-  // Remove All password exceptions
-  void RemoveAllPasswordsExceptions(const Value* value);
+  void RemoveEntry(const Value* value);
 
   // Get password value for the selected entry.
   // @param value the selected entry index.
