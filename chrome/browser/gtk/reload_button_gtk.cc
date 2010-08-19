@@ -38,12 +38,12 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
 
   gtk_widget_set_app_paintable(widget_.get(), TRUE);
 
+  g_signal_connect(widget_.get(), "clicked",
+                   G_CALLBACK(OnClickedThunk), this);
   g_signal_connect(widget_.get(), "expose-event",
                    G_CALLBACK(OnExposeThunk), this);
   g_signal_connect(widget_.get(), "leave-notify-event",
                    G_CALLBACK(OnLeaveNotifyThunk), this);
-  g_signal_connect(widget_.get(), "clicked",
-                   G_CALLBACK(OnClickedThunk), this);
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
 
   gtk_widget_set_has_tooltip(widget_.get(), TRUE);
@@ -76,9 +76,9 @@ void ReloadButtonGtk::ChangeMode(Mode mode, bool force) {
         !timer_running() : (visible_mode_ != MODE_STOP))) {
     timer_.Stop();
     visible_mode_ = mode;
-    gtk_widget_queue_draw(widget_.get());
 
     UpdateThemeButtons();
+    gtk_widget_queue_draw(widget_.get());
   }
 }
 
@@ -96,20 +96,6 @@ void ReloadButtonGtk::Observe(NotificationType type,
 
 void ReloadButtonGtk::OnButtonTimer() {
   ChangeMode(intended_mode_, true);
-}
-
-gboolean ReloadButtonGtk::OnExpose(GtkWidget* widget,
-                                   GdkEventExpose* e) {
-  if (theme_provider_ && theme_provider_->UseGtkTheme())
-    return FALSE;
-  return ((visible_mode_ == MODE_RELOAD) ? reload_ : stop_).OnExpose(
-      widget, e, hover_controller_.GetCurrentValue());
-}
-
-gboolean ReloadButtonGtk::OnLeaveNotify(GtkWidget* widget,
-                                        GdkEventCrossing* event) {
-  ChangeMode(intended_mode_, true);
-  return FALSE;
 }
 
 void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
@@ -154,16 +140,29 @@ void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
                    NULL);
     }
 
-    // Stop the timer.
-    timer_.Stop();
-
     // Start a timer - while this timer is running, the reload button cannot be
     // changed to a stop button.  We do not set |intended_mode_| to MODE_STOP
     // here as we want to wait for the browser to tell us that it has started
     // loading (and this may occur only after some delay).
+    timer_.Stop();
     timer_.Start(base::TimeDelta::FromMilliseconds(button_delay_), this,
                  &ReloadButtonGtk::OnButtonTimer);
   }
+}
+
+gboolean ReloadButtonGtk::OnExpose(GtkWidget* widget,
+                                   GdkEventExpose* e) {
+  if (theme_provider_ && theme_provider_->UseGtkTheme())
+    return FALSE;
+  return ((visible_mode_ == MODE_RELOAD) ? reload_ : stop_).OnExpose(
+      widget, e, hover_controller_.GetCurrentValue());
+}
+
+gboolean ReloadButtonGtk::OnLeaveNotify(GtkWidget* widget,
+                                        GdkEventCrossing* event) {
+  is_mouse_hovered_ = false;
+  ChangeMode(intended_mode_, false);
+  return FALSE;
 }
 
 gboolean ReloadButtonGtk::OnQueryTooltip(GtkWidget* sender,

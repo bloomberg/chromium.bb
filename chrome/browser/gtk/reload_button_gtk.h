@@ -42,10 +42,10 @@ class ReloadButtonGtk : public NotificationObserver {
  private:
   friend class ReloadButtonGtkPeer;
 
+  CHROMEGTK_CALLBACK_0(ReloadButtonGtk, void, OnClicked);
   CHROMEGTK_CALLBACK_1(ReloadButtonGtk, gboolean, OnExpose, GdkEventExpose*);
   CHROMEGTK_CALLBACK_1(ReloadButtonGtk, gboolean, OnLeaveNotify,
                        GdkEventCrossing*);
-  CHROMEGTK_CALLBACK_0(ReloadButtonGtk, void, OnClicked);
   CHROMEGTK_CALLBACK_4(ReloadButtonGtk, gboolean, OnQueryTooltip, gint, gint,
                        gboolean, GtkTooltip*);
 
