@@ -25,7 +25,15 @@
 // ipc_message_utils_impl.h in those files) and exported, instead of expanded
 // at every call site. Special note: GCC happily accepts the attribute before
 // the method declaration, but only acts on it if it is after.
+#if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100) >= 40500
+// Starting in gcc 4.5, the noinline no longer implies the concept covered by
+// the introduced noclone attribute, which will create specialized versions of
+// functions/methods when certain types are constant.
+// www.gnu.org/software/gcc/gcc-4.5/changes.html
+#define IPC_MSG_NOINLINE  __attribute__((noinline, noclone));
+#else
 #define IPC_MSG_NOINLINE  __attribute__((noinline));
+#endif
 #elif defined(COMPILER_MSVC)
 // MSVC++ doesn't do this.
 #define IPC_MSG_NOINLINE
