@@ -46,10 +46,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/cryptographer.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 
 class FilePath;

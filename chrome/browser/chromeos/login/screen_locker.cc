@@ -486,7 +486,7 @@ void ScreenLocker::Init() {
   lock_window->set_toplevel_focus_widget(lock_widget_->window_contents());
 }
 
-void ScreenLocker::OnLoginFailure(const std::string& error) {
+void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
   DLOG(INFO) << "OnLoginFailure";
   EnableInput();
   // Don't enable signout button here as we're showing
@@ -500,8 +500,9 @@ void ScreenLocker::OnLoginFailure(const std::string& error) {
   if (error_info_)
     error_info_->Close();
   std::wstring msg = l10n_util::GetString(IDS_LOGIN_ERROR_AUTHENTICATING);
-  if (!error.empty())
-    msg += L"\n" + ASCIIToWide(error);
+  const std::string error_text = error.GetErrorString();
+  if (!error_text.empty())
+    msg += L"\n" + ASCIIToWide(error_text);
 
   InputMethodLibrary* input_method_library =
       CrosLibrary::Get()->GetInputMethodLibrary();

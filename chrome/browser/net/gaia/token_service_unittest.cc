@@ -159,8 +159,7 @@ TEST_F(TokenServiceTest, NotificationSuccess) {
 TEST_F(TokenServiceTest, NotificationFailed) {
   EXPECT_EQ(0U, success_tracker_.size());
   EXPECT_EQ(0U, failure_tracker_.size());
-  GaiaAuthConsumer::GaiaAuthError error;
-  error.code = GaiaAuthConsumer::REQUEST_CANCELED;
+  GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
   service_.OnIssueAuthTokenFailure(GaiaConstants::kSyncService, error);
   EXPECT_EQ(0U, success_tracker_.size());
   EXPECT_EQ(1U, failure_tracker_.size());

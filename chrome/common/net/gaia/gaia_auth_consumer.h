@@ -8,6 +8,8 @@
 
 #include <string>
 
+class GoogleServiceAuthError;
+
 // An interface that defines the callbacks for objects that
 // GaiaAuthenticator2 can return data to.
 class GaiaAuthConsumer {
@@ -37,38 +39,15 @@ class GaiaAuthConsumer {
     std::string data;  // Full contents of ClientLogin return.
   };
 
-  enum GaiaAuthErrorCode {
-    NETWORK_ERROR,
-    REQUEST_CANCELED,
-    TWO_FACTOR,  // Callers can treat this as a success.
-    PERMISSION_DENIED
-  };
-
-  struct GaiaAuthError {
-    inline bool operator==(const GaiaAuthError &b) const {
-      if (code != b.code) {
-        return false;
-      }
-      if (code == NETWORK_ERROR) {
-        return network_error == b.network_error;
-      }
-      return true;
-    }
-
-    GaiaAuthErrorCode code;
-    int network_error;  // This field is only valid if NETWORK_ERROR occured.
-    std::string data;  // TODO(chron): Remove this field. Should preparse data.
-  };
-
   virtual ~GaiaAuthConsumer() {}
 
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) {}
-  virtual void OnClientLoginFailure(const GaiaAuthError& error) {}
+  virtual void OnClientLoginFailure(const GoogleServiceAuthError& error) {}
 
   virtual void OnIssueAuthTokenSuccess(const std::string& service,
                                        const std::string& auth_token) {}
   virtual void OnIssueAuthTokenFailure(const std::string& service,
-                                       const GaiaAuthError& error) {}
+                                       const GoogleServiceAuthError& error) {}
 };
 
 #endif  // CHROME_COMMON_NET_GAIA_GAIA_AUTH_CONSUMER_H_

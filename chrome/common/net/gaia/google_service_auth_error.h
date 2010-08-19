@@ -19,11 +19,12 @@
 // may forward declare and typedef GoogleServiceAuthError to something shorter
 // in the comfort of your own translation unit.
 
-#ifndef CHROME_BROWSER_GOOGLE_SERVICE_AUTH_ERROR_H_
-#define CHROME_BROWSER_GOOGLE_SERVICE_AUTH_ERROR_H_
+#ifndef CHROME_COMMON_NET_GAIA_GOOGLE_SERVICE_AUTH_ERROR_H_
+#define CHROME_COMMON_NET_GAIA_GOOGLE_SERVICE_AUTH_ERROR_H_
 #pragma once
 
 #include <string>
+#include "base/logging.h"
 #include "googleurl/src/gurl.h"
 
 class GoogleServiceAuthError {
@@ -31,6 +32,9 @@ class GoogleServiceAuthError {
   enum State {
     // The user is authenticated.
     NONE = 0,
+
+    // The password is valid but we need two factor to get a token.
+    TWO_FACTOR,
 
     // The credentials supplied to GAIA were either invalid, or the locally
     // cached credentials have expired.
@@ -43,6 +47,10 @@ class GoogleServiceAuthError {
     // response to either failure to connect to GAIA or failure to connect to
     // the service needing GAIA tokens during authentication.
     CONNECTION_FAILED,
+
+    // The requestor of the authentication step cancelled the request
+    // prior to completion.
+    REQUEST_CANCELED,
 
     // The user needs to satisfy a CAPTCHA challenge to unlock their account.
     // If no other information is available, this can be resolved by visiting
@@ -61,8 +69,28 @@ class GoogleServiceAuthError {
     GURL unlock_url;    // Pretty unlock page containing above captcha.
   };
 
+  // For test only.
+  inline bool operator==(const GoogleServiceAuthError &b) const {
+    return (state_ == b.state_ &&
+            network_error_ == b.network_error_ &&
+            captcha_.token == b.captcha_.token &&
+            captcha_.image_url == b.captcha_.image_url &&
+            captcha_.unlock_url == b.captcha_.unlock_url);
+  }
+
   // Construct a GoogleServiceAuthError from a State with no additional data.
-  explicit GoogleServiceAuthError(State s) : state_(s) {}
+  explicit GoogleServiceAuthError(State s)
+      : state_(s),
+        captcha_("", GURL(), GURL()),
+        network_error_(0) {
+    DCHECK(s != CONNECTION_FAILED);
+  }
+
+  // Construct a GoogleServiceAuthError from a network error.
+  // It will be created with CONNECTION_FAILED set.
+  static GoogleServiceAuthError FromConnectionError(int error) {
+    return GoogleServiceAuthError(CONNECTION_FAILED, error);
+  }
 
   // Construct a CAPTCHA_REQUIRED error with CAPTCHA challenge data.
   static GoogleServiceAuthError FromCaptchaChallenge(
@@ -84,17 +112,28 @@ class GoogleServiceAuthError {
   // The error information.
   const State& state() const { return state_; }
   const Captcha& captcha() const { return captcha_; }
+  const int network_error() const {
+    return network_error_;
+  }
 
  private:
+  GoogleServiceAuthError(State s, int error)
+      : state_(s),
+        captcha_("", GURL(), GURL()),
+        network_error_(error) {
+  }
+
   GoogleServiceAuthError(State s, const std::string& captcha_token,
                          const GURL& captcha_image_url,
                          const GURL& captcha_unlock_url)
       : state_(s),
-        captcha_(captcha_token, captcha_image_url, captcha_unlock_url) {
+        captcha_(captcha_token, captcha_image_url, captcha_unlock_url),
+        network_error_(0) {
   }
 
   State state_;
   Captcha captcha_;
+  int network_error_;
 };
 
-#endif  // CHROME_BROWSER_GOOGLE_SERVICE_AUTH_ERROR_H_
+#endif  // CHROME_COMMON_NET_GAIA_GOOGLE_SERVICE_AUTH_ERROR_H_

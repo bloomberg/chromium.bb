@@ -47,16 +47,6 @@ const size_t kMaxUsers = 6;
 // Used to indicate no user has been selected.
 const size_t kNotSelected = -1;
 
-// ClientLogin response parameters.
-const char kError[] = "Error=";
-const char kCaptchaError[] = "CaptchaRequired";
-const char kCaptchaUrlParam[] = "CaptchaUrl=";
-const char kCaptchaTokenParam[] = "CaptchaToken=";
-const char kParamSuffix[] = "\n";
-
-// URL prefix for CAPTCHA image.
-const char kCaptchaUrlPrefix[] = "http://www.google.com/accounts/";
-
 // Checks if display names are unique. If there are duplicates, enables
 // tooltips with full emails to let users distinguish their accounts.
 // Otherwise, disables the tooltips.
@@ -290,9 +280,11 @@ void ExistingUserController::SelectUser(int index) {
   }
 }
 
-void ExistingUserController::OnLoginFailure(const std::string& error) {
+void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   LOG(INFO) << "OnLoginFailure";
   ClearCaptchaState();
+
+  std::string error = failure.GetErrorString();
 
   // Check networking after trying to login in case user is
   // cached locally or the local admin account.
@@ -302,28 +294,25 @@ void ExistingUserController::OnLoginFailure(const std::string& error) {
   } else if (!network->Connected()) {
     ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
   } else {
-    std::string error_code = LoginUtils::ExtractClientLoginParam(error,
-                                                                 kError,
-                                                                 kParamSuffix);
-    std::string captcha_url;
-    if (error_code == kCaptchaError)
-      captcha_url = LoginUtils::ExtractClientLoginParam(error,
-                                                        kCaptchaUrlParam,
-                                                        kParamSuffix);
-    if (captcha_url.empty()) {
-      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
+
+    if (failure.reason() == LoginFailure::NETWORK_AUTH_FAILED &&
+        failure.error().state() == GoogleServiceAuthError::CAPTCHA_REQUIRED) {
+      if (!failure.error().captcha().image_url.is_empty()) {
+        // Save token for next login retry.
+        login_token_ = failure.error().captcha().token;
+        CaptchaView* view =
+            new CaptchaView(failure.error().captcha().image_url);
+        view->set_delegate(this);
+        views::Window* window = views::Window::CreateChromeWindow(
+            GetNativeWindow(), gfx::Rect(), view);
+        window->SetIsAlwaysOnTop(true);
+        window->Show();
+      } else {
+        LOG(WARNING) << "No captcha image url was found?";
+        ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
+      }
     } else {
-      // Save token for next login retry.
-      login_token_ = LoginUtils::ExtractClientLoginParam(error,
-                                                         kCaptchaTokenParam,
-                                                         kParamSuffix);
-      CaptchaView* view =
-          new CaptchaView(GURL(kCaptchaUrlPrefix + captcha_url));
-      view->set_delegate(this);
-      views::Window* window = views::Window::CreateChromeWindow(
-          GetNativeWindow(), gfx::Rect(), view);
-      window->SetIsAlwaysOnTop(true);
-      window->Show();
+      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
     }
   }
 

@@ -41,6 +41,7 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "base/gtest_prod_util.h"
 
 class URLRequestContextGetter;
@@ -70,15 +71,16 @@ class TokenService : public GaiaAuthConsumer,
 
   class TokenRequestFailedDetails {
    public:
-    TokenRequestFailedDetails() {}
+    TokenRequestFailedDetails()
+        : error_(GoogleServiceAuthError::NONE) {}
     TokenRequestFailedDetails(const std::string& service,
-                              const GaiaAuthError& error)
+                              const GoogleServiceAuthError& error)
         : service_(service), error_(error) {}
     const std::string& service() const { return service_; }
-    const GaiaAuthError& error() const { return error_; }
+    const GoogleServiceAuthError& error() const { return error_; }
    private:
     std::string service_;
-    GaiaAuthError error_;
+    GoogleServiceAuthError error_;
   };
 
   // Initialize this token service with a request source
@@ -125,7 +127,7 @@ class TokenService : public GaiaAuthConsumer,
   virtual void OnIssueAuthTokenSuccess(const std::string& service,
                                        const std::string& auth_token);
   virtual void OnIssueAuthTokenFailure(const std::string& service,
-                                       const GaiaAuthError& error);
+                                       const GoogleServiceAuthError& error);
 
   // WebDataServiceConsumer implementation.
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
@@ -137,7 +139,7 @@ class TokenService : public GaiaAuthConsumer,
                                       const std::string& auth_token);
 
   void FireTokenRequestFailedNotification(const std::string& service,
-                                          const GaiaAuthError& error);
+                                          const GoogleServiceAuthError& error);
 
   void LoadTokensIntoMemory(const std::map<std::string, std::string>& in_toks,
                             std::map<std::string, std::string>* out_toks);

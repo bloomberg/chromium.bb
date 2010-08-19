@@ -18,7 +18,6 @@
 #include "chrome/browser/cocoa/html_dialog_window_controller_cppsafe.h"
 #endif
 #include "chrome/browser/dom_ui/dom_ui_util.h"
-#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "gfx/font.h"
 #include "grit/locale_settings.h"

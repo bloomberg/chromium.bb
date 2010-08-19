@@ -31,13 +31,6 @@ class LoginUtils {
   // Task posted to the UI thread.
   static void DoBrowserLaunch(Profile* profile);
 
-  // Extracts specified param from given ClientLogin response.
-  // Returns the param value if found, empty string otherwise.
-  // Ex. prefix: "Auth=", suffix: "\n"
-  static std::string ExtractClientLoginParam(const std::string& credentials,
-                                             const std::string& param_prefix,
-                                             const std::string& param_suffix);
-
   virtual ~LoginUtils() {}
 
   // Invoked after the user has successfully logged in. This launches a browser

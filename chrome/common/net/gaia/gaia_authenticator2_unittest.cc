@@ -12,6 +12,7 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/gaia/gaia_authenticator2_unittest.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/test_url_fetcher_factory.h"
 #include "chrome/common/net/url_fetcher.h"
@@ -47,6 +48,27 @@ class GaiaAuthenticator2Test : public testing::Test {
     EXPECT_EQ(token, out_token);
   }
 
+  void RunErrorParsingTest(const std::string& data,
+                           const std::string& error,
+                           const std::string& error_url,
+                           const std::string& captcha_url,
+                           const std::string& captcha_token) {
+    std::string out_error;
+    std::string out_error_url;
+    std::string out_captcha_url;
+    std::string out_captcha_token;
+
+    GaiaAuthenticator2::ParseClientLoginFailure(data,
+                                                &out_error,
+                                                &out_error_url,
+                                                &out_captcha_url,
+                                                &out_captcha_token);
+    EXPECT_EQ(error, out_error);
+    EXPECT_EQ(error_url, out_error_url);
+    EXPECT_EQ(captcha_url, out_captcha_url);
+    EXPECT_EQ(captcha_token, out_captcha_token);
+  }
+
   ResponseCookies cookies_;
   GURL client_login_source_;
   GURL issue_auth_token_source_;
@@ -61,28 +83,30 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
   MOCK_METHOD1(OnClientLoginSuccess, void(const ClientLoginResult& result));
   MOCK_METHOD2(OnIssueAuthTokenSuccess, void(const std::string& service,
       const std::string& token));
-  MOCK_METHOD1(OnClientLoginFailure, void(const GaiaAuthError& error));
+  MOCK_METHOD1(OnClientLoginFailure,
+      void(const GoogleServiceAuthError& error));
   MOCK_METHOD2(OnIssueAuthTokenFailure, void(const std::string& service,
-      const GaiaAuthError& error));
+      const GoogleServiceAuthError& error));
 };
 
 TEST_F(GaiaAuthenticator2Test, ErrorComparator) {
-  GaiaAuthConsumer::GaiaAuthError expected_error;
-  expected_error.code = GaiaAuthConsumer::NETWORK_ERROR;
-  expected_error.network_error = -101;
+  GoogleServiceAuthError expected_error =
+      GoogleServiceAuthError::FromConnectionError(-101);
 
-  GaiaAuthConsumer::GaiaAuthError matching_error;
-  matching_error.code = GaiaAuthConsumer::NETWORK_ERROR;
-  matching_error.network_error = -101;
+  GoogleServiceAuthError matching_error =
+      GoogleServiceAuthError::FromConnectionError(-101);
 
   EXPECT_TRUE(expected_error == matching_error);
 
-  expected_error.network_error = 6;
+  expected_error = GoogleServiceAuthError::FromConnectionError(6);
 
   EXPECT_FALSE(expected_error == matching_error);
 
-  expected_error.code = GaiaAuthConsumer::PERMISSION_DENIED;
-  matching_error.code = GaiaAuthConsumer::PERMISSION_DENIED;
+  expected_error = GoogleServiceAuthError(GoogleServiceAuthError::NONE);
+
+  EXPECT_FALSE(expected_error == matching_error);
+
+  matching_error = GoogleServiceAuthError(GoogleServiceAuthError::NONE);
 
   EXPECT_TRUE(expected_error == matching_error);
 }
@@ -91,9 +115,8 @@ TEST_F(GaiaAuthenticator2Test, LoginNetFailure) {
   int error_no = net::ERR_CONNECTION_RESET;
   URLRequestStatus status(URLRequestStatus::FAILED, error_no);
 
-  GaiaAuthConsumer::GaiaAuthError expected_error;
-  expected_error.code = GaiaAuthConsumer::NETWORK_ERROR;
-  expected_error.network_error = error_no;
+  GoogleServiceAuthError expected_error =
+      GoogleServiceAuthError::FromConnectionError(error_no);
 
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientLoginFailure(expected_error))
@@ -114,9 +137,8 @@ TEST_F(GaiaAuthenticator2Test, TokenNetFailure) {
   int error_no = net::ERR_CONNECTION_RESET;
   URLRequestStatus status(URLRequestStatus::FAILED, error_no);
 
-  GaiaAuthConsumer::GaiaAuthError expected_error;
-  expected_error.code = GaiaAuthConsumer::NETWORK_ERROR;
-  expected_error.network_error = error_no;
+  GoogleServiceAuthError expected_error =
+      GoogleServiceAuthError::FromConnectionError(error_no);
 
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnIssueAuthTokenFailure(_, expected_error))
@@ -138,8 +160,8 @@ TEST_F(GaiaAuthenticator2Test, LoginDenied) {
   std::string data("Error: NO!");
   URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
 
-  GaiaAuthConsumer::GaiaAuthError expected_error;
-  expected_error.code = GaiaAuthConsumer::PERMISSION_DENIED;
+  GoogleServiceAuthError expected_error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
 
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientLoginFailure(expected_error))
@@ -164,6 +186,22 @@ TEST_F(GaiaAuthenticator2Test, ParseRequest) {
   RunParsingTest("\nAuth=auth\n", "", "", "auth");
   RunParsingTest("SID=sid", "sid", "", "");
 }
+
+TEST_F(GaiaAuthenticator2Test, ParseErrorRequest) {
+  RunErrorParsingTest("Url=U\n"
+                      "Error=E\n"
+                      "CaptchaToken=T\n"
+                      "CaptchaUrl=C\n", "E", "U", "C", "T");
+  RunErrorParsingTest("CaptchaToken=T\n"
+                      "Error=E\n"
+                      "Url=U\n"
+                      "CaptchaUrl=C\n", "E", "U", "C", "T");
+  RunErrorParsingTest("\n\n\nCaptchaToken=T\n"
+                      "\nError=E\n"
+                      "\nUrl=U\n"
+                      "CaptchaUrl=C\n", "E", "U", "C", "T");
+}
+
 
 TEST_F(GaiaAuthenticator2Test, OnlineLogin) {
   std::string data("SID=sid\nLSID=lsid\nAuth=auth\n");
@@ -218,12 +256,11 @@ TEST_F(GaiaAuthenticator2Test, CheckNormalErrorCode) {
 }
 
 TEST_F(GaiaAuthenticator2Test, TwoFactorLogin) {
-  std::string response =
-      StringPrintf("Error=BadAuthentication\n%s\n",
-                   GaiaAuthenticator2::kSecondFactor);
+  std::string response = StringPrintf("Error=BadAuthentication\n%s\n",
+      GaiaAuthenticator2::kSecondFactor);
 
-  GaiaAuthConsumer::GaiaAuthError error;
-  error.code = GaiaAuthConsumer::TWO_FACTOR;
+  GoogleServiceAuthError error =
+      GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR);
 
   MockGaiaConsumer consumer;
   EXPECT_CALL(consumer, OnClientLoginFailure(error))
@@ -238,6 +275,25 @@ TEST_F(GaiaAuthenticator2Test, TwoFactorLogin) {
                           RC_FORBIDDEN,
                           cookies_,
                           response);
+}
+
+TEST_F(GaiaAuthenticator2Test, CaptchaParse) {
+  URLRequestStatus status(URLRequestStatus::SUCCESS, 0);
+  std::string data = "Url=http://www.google.com/login/captcha\n"
+                     "Error=CaptchaRequired\n"
+                     "CaptchaToken=CCTOKEN\n"
+                     "CaptchaUrl=Captcha?ctoken=CCTOKEN\n";
+  GoogleServiceAuthError error =
+      GaiaAuthenticator2::GenerateAuthError(data, status);
+
+  std::string token = "CCTOKEN";
+  GURL image_url("http://www.google.com/accounts/Captcha?ctoken=CCTOKEN");
+  GURL unlock_url("http://www.google.com/login/captcha");
+
+  EXPECT_EQ(error.state(), GoogleServiceAuthError::CAPTCHA_REQUIRED);
+  EXPECT_EQ(error.captcha().token, token);
+  EXPECT_EQ(error.captcha().image_url, image_url);
+  EXPECT_EQ(error.captcha().unlock_url, unlock_url);
 }
 
 TEST_F(GaiaAuthenticator2Test, FullLogin) {

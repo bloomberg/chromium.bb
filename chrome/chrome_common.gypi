@@ -373,6 +373,7 @@
         'common/net/gaia/gaia_authenticator.h',
         'common/net/gaia/gaia_authenticator2.cc',
         'common/net/gaia/gaia_authenticator2.h',
+        'common/net/gaia/google_service_auth_error.h',
         'common/net/gaia/signin.h',
       ],
       'dependencies': [

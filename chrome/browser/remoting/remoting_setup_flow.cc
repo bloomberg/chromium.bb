@@ -14,7 +14,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui_util.h"
-#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/service/service_process_control_manager.h"
 #include "chrome/common/net/gaia/gaia_authenticator2.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_process_type.h"
 #include "gfx/font.h"
@@ -103,7 +103,7 @@ void RemotingSetupFlow::OnUserSubmittedAuth(const std::string& user,
 }
 
 void RemotingSetupFlow::OnClientLoginFailure(
-    const GaiaAuthConsumer::GaiaAuthError& error) {
+    const GoogleServiceAuthError& error) {
   message_handler_->ShowGaiaFailed();
   authenticator_.reset();
 }
@@ -150,7 +150,7 @@ void RemotingSetupFlow::OnIssueAuthTokenSuccess(const std::string& service,
 }
 
 void RemotingSetupFlow::OnIssueAuthTokenFailure(const std::string& service,
-                                                const GaiaAuthError& error) {
+    const GoogleServiceAuthError& error) {
   // TODO(hclam): Do something to show the error.
   authenticator_.reset();
 }

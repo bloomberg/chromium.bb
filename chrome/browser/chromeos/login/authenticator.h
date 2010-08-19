@@ -54,7 +54,7 @@ class Authenticator : public base::RefCountedThreadSafe<Authenticator> {
   // and also call back to the login UI.
   virtual void OnLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
-  virtual void OnLoginFailure(const std::string& data) = 0;
+  virtual void OnLoginFailure(const LoginFailure& error) = 0;
 
   // Call these methods on the UI thread.
   // If a password logs the user in online, but cannot be used to

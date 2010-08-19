@@ -74,7 +74,8 @@ void LoginScreen::ClearErrors() {
     bubble_->Close();
 }
 
-void LoginScreen::OnLoginFailure(const std::string& error) {
+void LoginScreen::OnLoginFailure(const LoginFailure& failure) {
+  const std::string error = failure.GetErrorString();
   LOG(INFO) << "LoginManagerView: OnLoginFailure() " << error;
   NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
 

@@ -264,18 +264,4 @@ void LoginUtils::DoBrowserLaunch(Profile* profile) {
                              &return_code);
 }
 
-std::string LoginUtils::ExtractClientLoginParam(
-    const std::string& credentials,
-    const std::string& param_prefix,
-    const std::string& param_suffix) {
-  size_t start = credentials.find(param_prefix);
-  if (start == std::string::npos)
-    return std::string();
-  start += param_prefix.size();
-  size_t end = credentials.find(param_suffix, start);
-  if (end == std::string::npos)
-    return std::string();
-  return credentials.substr(start, end - start);
-}
-
 }  // namespace chromeos

@@ -42,7 +42,7 @@ class MockConsumer : public LoginStatusConsumer {
  public:
   MockConsumer() {}
   ~MockConsumer() {}
-  MOCK_METHOD1(OnLoginFailure, void(const std::string& error));
+  MOCK_METHOD1(OnLoginFailure, void(const LoginFailure& error));
   MOCK_METHOD2(OnLoginSuccess, void(const std::string& username,
       const GaiaAuthConsumer::ClientLoginResult& result));
   MOCK_METHOD0(OnOffTheRecordLoginSuccess, void(void));
@@ -395,15 +395,14 @@ TEST_F(GoogleAuthenticatorTest, LoginNetFailure) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  int error_no = net::ERR_CONNECTION_RESET;
-  std::string data(net::ErrorToString(error_no));
+  GoogleServiceAuthError error =
+      GoogleServiceAuthError::FromConnectionError(net::ERR_CONNECTION_RESET);
 
-  GaiaAuthConsumer::GaiaAuthError error;
-  error.code = GaiaAuthConsumer::NETWORK_ERROR;
-  error.network_error = error_no;
+  LoginFailure failure =
+      LoginFailure::FromNetworkAuthFailure(error);
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginFailure(data))
+  EXPECT_CALL(consumer, OnLoginFailure(failure))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*mock_library_, CheckKey(username_, hash_ascii_))
@@ -420,8 +419,8 @@ TEST_F(GoogleAuthenticatorTest, LoginDenied) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  GaiaAuthConsumer::GaiaAuthError error;
-  error.code = GaiaAuthConsumer::PERMISSION_DENIED;
+  GoogleServiceAuthError client_error(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginFailure(_))
@@ -430,7 +429,7 @@ TEST_F(GoogleAuthenticatorTest, LoginDenied) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnClientLoginFailure(error);
+  auth->OnClientLoginFailure(client_error);
   message_loop.RunAllPending();
 }
 
@@ -438,22 +437,22 @@ TEST_F(GoogleAuthenticatorTest, CaptchaErrorOutputted) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  // TODO(chron): Swap out this captcha passing for actual captcha parsing.
-  GaiaAuthConsumer::GaiaAuthError error;
-  error.code = GaiaAuthConsumer::PERMISSION_DENIED;
-  error.data = "Url=http://www.google.com/login/captcha\n"
-               "Error=CaptchaRequired\n"
-               "CaptchaToken=DQAAAGgA...dkI1LK9\n"
-               "CaptchaUrl=Captcha?ctoken=...\n";
+  GoogleServiceAuthError auth_error =
+      GoogleServiceAuthError::FromCaptchaChallenge(
+          "CCTOKEN",
+          GURL("http://www.google.com/accounts/Captcha?ctoken=CCTOKEN"),
+          GURL("http://www.google.com/login/captcha"));
+
+  LoginFailure failure = LoginFailure::FromNetworkAuthFailure(auth_error);
 
   MockConsumer consumer;
-  EXPECT_CALL(consumer, OnLoginFailure(error.data))
+  EXPECT_CALL(consumer, OnLoginFailure(failure))
       .Times(1)
       .RetiresOnSaturation();
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnClientLoginFailure(error);
+  auth->OnClientLoginFailure(auth_error);
   message_loop.RunAllPending();
 }
 
@@ -461,9 +460,8 @@ TEST_F(GoogleAuthenticatorTest, OfflineLogin) {
   MessageLoopForUI message_loop;
   ChromeThread ui_thread(ChromeThread::UI, &message_loop);
 
-  GaiaAuthConsumer::GaiaAuthError error;
-  error.code = GaiaAuthConsumer::NETWORK_ERROR;
-  error.network_error = net::ERR_CONNECTION_RESET;
+  GoogleServiceAuthError auth_error(
+      GoogleServiceAuthError::FromConnectionError(net::ERR_CONNECTION_RESET));
 
   MockConsumer consumer;
   EXPECT_CALL(consumer, OnLoginSuccess(username_, result_))
@@ -478,7 +476,7 @@ TEST_F(GoogleAuthenticatorTest, OfflineLogin) {
 
   scoped_refptr<GoogleAuthenticator> auth(new GoogleAuthenticator(&consumer));
   PrepForLogin(auth.get());
-  auth->OnClientLoginFailure(error);
+  auth->OnClientLoginFailure(auth_error);
   message_loop.RunAllPending();
 }
 
@@ -516,7 +514,7 @@ TEST_F(GoogleAuthenticatorTest, CheckLocalaccount) {
   PrepForLogin(auth.get());
   auth->SetLocalaccount(username_);
 
-  auth->CheckLocalaccount(std::string());
+  auth->CheckLocalaccount(LoginFailure(LoginFailure::LOGIN_TIMED_OUT));
 }
 
 namespace {
@@ -536,11 +534,11 @@ static void OnSuccessQuitAndFail(
 }
 
 // Compatible with LoginStatusConsumer::OnLoginFailure()
-static void OnFailQuit(const std::string& error) {
+static void OnFailQuit(const LoginFailure& error) {
   MessageLoop::current()->Quit();
 }
 
-static void OnFailQuitAndFail(const std::string& error) {
+static void OnFailQuitAndFail(const LoginFailure& error) {
   ADD_FAILURE() << "Login should have succeeded!";
   MessageLoop::current()->Quit();
 }
@@ -576,7 +574,7 @@ TEST_F(GoogleAuthenticatorTest, LocalaccountLogin) {
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(auth.get(),
                         &GoogleAuthenticator::CheckLocalaccount,
-                        std::string("fail")));
+                        LoginFailure(LoginFailure::LOGIN_TIMED_OUT)));
   message_loop.RunAllPending();
   // The foregoing has now rescheduled itself in a few ms because we don't
   // yet have the localaccount loaded off disk.

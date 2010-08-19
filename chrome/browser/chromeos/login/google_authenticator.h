@@ -22,6 +22,8 @@
 class Lock;
 class Profile;
 class GaiaAuthenticator2;
+class GoogleServiceAuthError;
+class LoginFailure;
 
 namespace chromeos {
 
@@ -72,9 +74,9 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
   // These methods must be called on the UI thread, as they make DBus calls
   // and also call back to the login UI.
   void OnLoginSuccess(const GaiaAuthConsumer::ClientLoginResult& credentials);
-  void CheckOffline(const std::string& error);
-  void CheckLocalaccount(const std::string& error);
-  void OnLoginFailure(const std::string& error);
+  void CheckOffline(const LoginFailure& error);
+  void CheckLocalaccount(const LoginFailure& error);
+  void OnLoginFailure(const LoginFailure& error);
 
   // Call these methods on the UI thread.
   void RecoverEncryptedData(
@@ -91,7 +93,7 @@ class GoogleAuthenticator : public Authenticator, public GaiaAuthConsumer {
 
   // Callbacks from GaiaAuthenticator2
   virtual void OnClientLoginFailure(
-      const GaiaAuthConsumer::GaiaAuthError& error);
+      const GoogleServiceAuthError& error);
   virtual void OnClientLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
 

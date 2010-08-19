@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/test/live_sync/live_sync_test.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"

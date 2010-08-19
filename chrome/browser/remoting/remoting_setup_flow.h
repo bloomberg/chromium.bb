@@ -19,6 +19,7 @@
 class GaiaAuthenticator2;
 class RemotingSetupMessageHandler;
 class ServiceProcessControl;
+class GoogleServiceAuthError;
 
 // The state machine used by Remoting for setup wizard.
 class RemotingSetupFlow : public HtmlDialogUIDelegate,
@@ -70,13 +71,13 @@ class RemotingSetupFlow : public HtmlDialogUIDelegate,
 
   // GaiaAuthConsumer implementation.
   virtual void OnClientLoginFailure(
-      const GaiaAuthConsumer::GaiaAuthError& error);
+      const GoogleServiceAuthError& error);
   virtual void OnClientLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials);
   virtual void OnIssueAuthTokenSuccess(const std::string& service,
                                        const std::string& auth_token);
   virtual void OnIssueAuthTokenFailure(const std::string& service,
-                                       const GaiaAuthError& error);
+                                       const GoogleServiceAuthError& error);
 
   // Called by RemotingSetupMessageHandler.
   void OnUserSubmittedAuth(const std::string& user,

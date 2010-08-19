@@ -138,7 +138,7 @@ void TokenService::FireTokenAvailableNotification(
 
 void TokenService::FireTokenRequestFailedNotification(
     const std::string& service,
-    const GaiaAuthError& error) {
+    const GoogleServiceAuthError& error) {
 
   TokenRequestFailedDetails details(service, error);
   NotificationService::current()->Notify(
@@ -157,7 +157,7 @@ void TokenService::OnIssueAuthTokenSuccess(const std::string& service,
 }
 
 void TokenService::OnIssueAuthTokenFailure(const std::string& service,
-                                           const GaiaAuthError& error) {
+    const GoogleServiceAuthError& error) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   LOG(WARNING) << "Auth token issuing failed for service:" << service;
   FireTokenRequestFailedNotification(service, error);

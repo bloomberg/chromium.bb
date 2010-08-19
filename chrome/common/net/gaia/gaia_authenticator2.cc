@@ -9,6 +9,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "net/base/load_flags.h"
@@ -40,6 +41,20 @@ const char GaiaAuthenticator2::kIssueAuthTokenFormat[] =
     "LSID=%s&"
     "service=%s&"
     "Session=true";
+
+// static
+const char GaiaAuthenticator2::kCaptchaError[] = "CaptchaRequired";
+// static
+const char GaiaAuthenticator2::kErrorParam[] = "Error";
+// static
+const char GaiaAuthenticator2::kErrorUrlParam[] = "Url";
+// static
+const char GaiaAuthenticator2::kCaptchaUrlParam[] = "CaptchaUrl";
+// static
+const char GaiaAuthenticator2::kCaptchaTokenParam[] = "CaptchaToken";
+// static
+const char GaiaAuthenticator2::kCaptchaUrlPrefix[] =
+    "http://www.google.com/accounts/";
 
 // static
 const char GaiaAuthenticator2::kCookiePersistence[] = "true";
@@ -161,6 +176,32 @@ void GaiaAuthenticator2::ParseClientLoginResponse(const std::string& data,
   }
 }
 
+// static
+void GaiaAuthenticator2::ParseClientLoginFailure(const std::string& data,
+                                                 std::string* error,
+                                                 std::string* error_url,
+                                                 std::string* captcha_url,
+                                                 std::string* captcha_token) {
+  using std::vector;
+  using std::pair;
+  using std::string;
+
+  vector<pair<string, string> > tokens;
+  base::SplitStringIntoKeyValuePairs(data, '=', '\n', &tokens);
+  for (vector<pair<string, string> >::iterator i = tokens.begin();
+      i != tokens.end(); ++i) {
+    if (i->first == kErrorParam) {
+      error->assign(i->second);
+    } else if (i->first == kErrorUrlParam) {
+      error_url->assign(i->second);
+    } else if (i->first == kCaptchaUrlParam) {
+      captcha_url->assign(i->second);
+    } else if (i->first == kCaptchaTokenParam) {
+      captcha_token->assign(i->second);
+    }
+  }
+}
+
 void GaiaAuthenticator2::StartClientLogin(const std::string& username,
                                           const std::string& password,
                                           const char* const service,
@@ -205,31 +246,42 @@ void GaiaAuthenticator2::StartIssueAuthToken(const std::string& sid,
   fetcher_->Start();
 }
 
-GaiaAuthConsumer::GaiaAuthError GaiaAuthenticator2::GenerateAuthError(
+// static
+GoogleServiceAuthError GaiaAuthenticator2::GenerateAuthError(
     const std::string& data,
     const URLRequestStatus& status) {
 
-  GaiaAuthConsumer::GaiaAuthError error;
-  error.data = data;
-
   if (!status.is_success()) {
     if (status.status() == URLRequestStatus::CANCELED) {
-      error.code = GaiaAuthConsumer::REQUEST_CANCELED;
+      return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
     } else {
-      error.code = GaiaAuthConsumer::NETWORK_ERROR;
-      error.network_error = status.os_error();
       LOG(WARNING) << "Could not reach Google Accounts servers: errno "
-        << status.os_error();
+          << status.os_error();
+      return GoogleServiceAuthError::FromConnectionError(status.os_error());
     }
   } else {
     if (IsSecondFactorSuccess(data)) {
-      error.code = GaiaAuthConsumer::TWO_FACTOR;
-    } else {
-      error.code = GaiaAuthConsumer::PERMISSION_DENIED;
+      return GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR);
     }
+
+    std::string error;
+    std::string url;
+    std::string captcha_url;
+    std::string captcha_token;
+    ParseClientLoginFailure(data, &error, &url, &captcha_url, &captcha_token);
+
+    if (error == kCaptchaError) {
+      GURL image_url(kCaptchaUrlPrefix + captcha_url);
+      GURL unlock_url(url);
+      return GoogleServiceAuthError::FromCaptchaChallenge(
+          captcha_token, image_url, unlock_url);
+    }
+
+    return GoogleServiceAuthError(
+        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
   }
 
-  return error;
+  NOTREACHED();
 }
 
 void GaiaAuthenticator2::OnClientLoginFetched(const std::string& data,

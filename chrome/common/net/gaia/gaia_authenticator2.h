@@ -86,6 +86,14 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   // The format of the POST body for IssueAuthToken.
   static const char kIssueAuthTokenFormat[];
 
+  // Constants for parsing ClientLogin errors.
+  static const char kCaptchaError[];
+  static const char kErrorParam[];
+  static const char kErrorUrlParam[];
+  static const char kCaptchaUrlParam[];
+  static const char kCaptchaTokenParam[];
+  static const char kCaptchaUrlPrefix[];
+
   // Process the results of a ClientLogin fetch.
   void OnClientLoginFetched(const std::string& data,
                             const URLRequestStatus& status,
@@ -101,10 +109,16 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
                                        std::string* lsid,
                                        std::string* token);
 
-  // From a URLFetcher result, generate an appropriate GaiaAuthError.
+  static void ParseClientLoginFailure(const std::string& data,
+                                      std::string* error,
+                                      std::string* error_url,
+                                      std::string* captcha_url,
+                                      std::string* captcha_token);
+
+  // From a URLFetcher result, generate an appropriate error.
   // From the API documentation, both IssueAuthToken and ClientLogin have
   // the same error returns.
-  static GaiaAuthConsumer::GaiaAuthError GenerateAuthError(
+  static GoogleServiceAuthError GenerateAuthError(
       const std::string& data,
       const URLRequestStatus& status);
 
@@ -145,9 +159,10 @@ class GaiaAuthenticator2 : public URLFetcher::Delegate {
   bool fetch_pending_;
 
   friend class GaiaAuthenticator2Test;
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, LoginNetFailure);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, CaptchaParse);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, CheckNormalErrorCode);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, CheckTwoFactorResponse);
+  FRIEND_TEST_ALL_PREFIXES(GaiaAuthenticator2Test, LoginNetFailure);
 
   DISALLOW_COPY_AND_ASSIGN(GaiaAuthenticator2);
 };

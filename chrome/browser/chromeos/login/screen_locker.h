@@ -28,6 +28,7 @@ class InputEventObserver;
 class MessageBubble;
 class MouseEventRelay;
 class ScreenLockView;
+class LoginFailure;
 
 namespace test {
 class ScreenLockerTester;
@@ -45,7 +46,7 @@ class ScreenLocker : public LoginStatusConsumer,
   void Init();
 
   // LoginStatusConsumer implements:
-  virtual void OnLoginFailure(const std::string& error);
+  virtual void OnLoginFailure(const chromeos::LoginFailure& error);
   virtual void OnLoginSuccess(const std::string& username,
       const GaiaAuthConsumer::ClientLoginResult& result);
 

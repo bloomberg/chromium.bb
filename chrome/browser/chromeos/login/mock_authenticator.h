@@ -10,6 +10,7 @@
 
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class Profile;
@@ -44,11 +45,13 @@ class MockAuthenticator : public Authenticator {
                             GaiaAuthConsumer::ClientLoginResult()));
       return true;
     } else {
+      GoogleServiceAuthError error(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
       ChromeThread::PostTask(
           ChromeThread::UI, FROM_HERE,
           NewRunnableMethod(this,
                             &MockAuthenticator::OnLoginFailure,
-                            std::string("Login failed")));
+                            LoginFailure::FromNetworkAuthFailure(error)));
       return false;
     }
   }
@@ -69,8 +72,8 @@ class MockAuthenticator : public Authenticator {
     consumer_->OnLoginSuccess(expected_username_, credentials);
   }
 
-  void OnLoginFailure(const std::string& data) {
-      consumer_->OnLoginFailure(data);
+  void OnLoginFailure(const LoginFailure& failure) {
+      consumer_->OnLoginFailure(failure);
       LOG(INFO) << "Posting a QuitTask to UI thread";
       ChromeThread::PostTask(
           ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);

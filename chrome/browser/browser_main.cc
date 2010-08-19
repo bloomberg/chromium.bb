@@ -740,8 +740,8 @@ class StubLogin : public chromeos::LoginStatusConsumer {
         std::string());
   }
 
-  void OnLoginFailure(const std::string& error) {
-    LOG(ERROR) << "Login Failure: " << error;
+  void OnLoginFailure(const chromeos::LoginFailure& error) {
+    LOG(ERROR) << "Login Failure: " << error.GetErrorString();
     delete this;
   }
 

@@ -86,7 +86,7 @@ class ExistingUserController : public WmMessageListener::Observer,
   virtual void SelectUser(int index);
 
   // LoginStatusConsumer:
-  virtual void OnLoginFailure(const std::string& error);
+  virtual void OnLoginFailure(const LoginFailure& error);
   virtual void OnLoginSuccess(const std::string& username,
       const GaiaAuthConsumer::ClientLoginResult& credentials);
   virtual void OnOffTheRecordLoginSuccess();
