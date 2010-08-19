@@ -133,16 +133,31 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
         url_path = repo_root
       else:
         url_path = dir_info["URL"]
-      content = ""
       while True:
         # Look in the repository at the current level for the file.
-        svn_path = url_path + "/" + filename
-        content, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
-        if not rc:
-          # Exit the loop if the file was found. Override content.
+        for _ in range(5):
+          content = ""
+          try:
+            # Take advantage of the fact that svn won't output to stderr in case
+            # of success but will do in case of failure so don't mind putting
+            # stderr into content_array.
+            content_array = []
+            svn_path = url_path + "/" + filename
+            SVN.RunAndFilterOutput(['cat', svn_path, '--non-interactive'], '.',
+                                   False, False, content_array.append)
+            # Exit the loop if the file was found. Override content.
+            content = '\n'.join(content_array)
+            break
+          except gclient_utils.Error, e:
+            if content_array[0].startswith(
+                'svn: Can\'t get username or password'):
+              ErrorExit('Your svn credentials expired. Please run svn update '
+                        'to fix the cached credentials')
+            if not content_array[0].startswith('svn: File not found:'):
+              # Try again.
+              continue
+        if content:
           break
-        # Make sure to mark settings as empty if not found.
-        content = ""
         if url_path == repo_root:
           # Reached the root. Abandoning search.
           break
@@ -192,8 +207,10 @@ def RunShellWithReturnCode(command, print_output=False):
   # Use a shell for subcommands on Windows to get a PATH search, and because svn
   # may be a batch file.
   use_shell = sys.platform.startswith("win")
+  env = os.environ.copy()
+  env['LANGUAGE'] = 'en'
   p = subprocess.Popen(command, stdout=subprocess.PIPE,
-                       stderr=subprocess.STDOUT, shell=use_shell,
+                       stderr=subprocess.STDOUT, shell=use_shell, env=env,
                        universal_newlines=True)
   if print_output:
     output_array = []
