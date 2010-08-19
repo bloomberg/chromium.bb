@@ -12,14 +12,14 @@
  *
  *  @constructor
  */
-function DataView(mainBoxId, outputTextBoxId, exportTextButtonId,
-                  stripCookiesCheckboxId) {
+function DataView(mainBoxId, outputTextBoxId,
+                  exportTextButtonId, stripCookiesCheckboxId) {
   DivView.call(this, mainBoxId);
 
   this.textPre_ = document.getElementById(outputTextBoxId);
   this.stripCookiesCheckbox_ = document.getElementById(stripCookiesCheckboxId);
-  var exportTextButton = document.getElementById(exportTextButtonId);
 
+  var exportTextButton = document.getElementById(exportTextButtonId);
   exportTextButton.onclick = this.onExportToText_.bind(this);
 }
 
@@ -135,6 +135,8 @@ DataView.prototype.onExportToText_ = function() {
 
   // Open a new window to display this text.
   this.setText_(text.join('\n'));
+
+  this.selectText_();
 };
 
 DataView.prototype.appendRequestsPrintedAsText_ = function(out) {
@@ -212,4 +214,14 @@ DataView.prototype.formatExpirationTime_ = function(timeTicks) {
   return 't=' + d.getTime() + (isExpired ? ' [EXPIRED]' : '');
 };
 
+/**
+ * Select all text from log dump.
+ */
+DataView.prototype.selectText_ = function() {
+  var selection = window.getSelection();
+  selection.removeAllRanges();
 
+  var range = document.createRange();
+  range.selectNodeContents(this.textPre_);
+  selection.addRange(range);
+};
