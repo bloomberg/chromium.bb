@@ -30,12 +30,17 @@ def MapSnapshotToContents(tree):
                  for key, value in tree.iteritems())
 
 
+def GetExample(dir_name):
+  return dirtree.CopyTree(os.path.join(os.path.dirname(__file__),
+                                       "examples", dir_name))
+
+
 class BuildTargetTests(TempDirTestCase):
 
   def test_src(self):
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
-                              dirtree.CopyTree("examples/minimal"))
+                               GetExample("minimal"))
     self.assertEquals(PlanToString([src]), "src: yes\n")
     btarget.Rebuild([src], open(os.devnull, "w"))
     self.assertEquals(PlanToString([src]), "src: no\n")
@@ -44,7 +49,7 @@ class BuildTargetTests(TempDirTestCase):
   def test_build(self):
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
-                              dirtree.CopyTree("examples/minimal"))
+                               GetExample("minimal"))
     input_prefix = btarget.UnionDir("input",
                                     os.path.join(tempdir, "prefix"),
                                     [])
@@ -81,7 +86,7 @@ class BuildTargetTests(TempDirTestCase):
   def test_building_specific_targets(self):
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
-                              dirtree.CopyTree("examples/minimal"))
+                               GetExample("minimal"))
     input_prefix = btarget.UnionDir("input",
                                     os.path.join(tempdir, "prefix"),
                                     [])
@@ -151,7 +156,7 @@ class BuildTargetTests(TempDirTestCase):
     # but not the usual "make install DESTDIR=DIR".
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
-                              dirtree.CopyTree("examples/minimal"))
+                               GetExample("minimal"))
     input_prefix = btarget.UnionDir("input",
                                     os.path.join(tempdir, "prefix"),
                                     [])
@@ -261,8 +266,8 @@ class BuildTargetTests(TempDirTestCase):
   def test_component_with_library(self):
     top_dir = self.MakeTempDir()
     src_dirs = {
-        "libhello": dirtree.CopyTree("examples/libhello"),
-        "library-user": dirtree.CopyTree("examples/library-user")}
+        "libhello": GetExample("libhello"),
+        "library-user": GetExample("library-user")}
     src = dict((src_name,
                 btarget.SourceTarget("%s-src" % src_name,
                                      os.path.join(top_dir, "source", src_name),
