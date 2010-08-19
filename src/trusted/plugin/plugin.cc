@@ -241,6 +241,16 @@ bool Plugin::SendAsyncMessage1(void* obj, SrpcParams* params) {
   return result;
 }
 
+bool Plugin::StartSrpcServicesWrapper(void* obj, SrpcParams* params) {
+  Plugin* plugin = reinterpret_cast<Plugin*>(obj);
+  nacl::string error_string;
+  if (!plugin->StartSrpcServices(&error_string)) {
+    params->set_exception_string(error_string.c_str());
+    return false;
+  }
+  return true;
+}
+
 static int const kAbiHeaderBuffer = 256;  // must be at least EI_ABIVERSION + 1
 
 void Plugin::LoadMethods() {
@@ -251,6 +261,7 @@ void Plugin::LoadMethods() {
   AddMethodCall(NullPluginMethod, "__nullPluginMethod", "s", "i");
   AddMethodCall(SendAsyncMessage0, "__sendAsyncMessage0", "s", "");
   AddMethodCall(SendAsyncMessage1, "__sendAsyncMessage1", "sh", "");
+  AddMethodCall(StartSrpcServicesWrapper, "__startSrpcServices", "", "");
   // Properties implemented by Plugin.
   AddPropertyGet(GetModuleReadyProperty, "__moduleReady", "i");
   AddPropertySet(SetModuleReadyProperty, "__moduleReady", "i");
@@ -602,27 +613,36 @@ bool Plugin::Load(nacl::string logical_url,
   }
 
   PLUGIN_PRINTF(("Plugin::Load (started sel_ldr)\n"));
+  // Plugin takes ownership of socket_address_ from service_runtime_,
+  // so we do not need to call AddRef().
   socket_address_ = service_runtime_->default_socket_address();
   PLUGIN_PRINTF(("Plugin::Load (established socket address %p)\n",
                  static_cast<void*>(socket_address_)));
+  if (!StartSrpcServices(&error_string)) {
+    browser_interface_->Alert(instance_id(), error_string);
+    return false;
+  }
+  return true;
+}
 
+bool Plugin::StartSrpcServices(nacl::string* error) {
+  if (socket_ != NULL) {
+    socket_->Unref();
+    socket_ = NULL;
+  }
   socket_ = socket_address_->handle()->Connect();
   if (socket_ == NULL) {
-    browser_interface->Alert(instance_id(),
-                             "Load: Failed to connect using SRPC");
+    *error = "Load: Failed to connect using SRPC";
     return false;
   }
   socket_->handle()->StartJSObjectProxy(this);
   // Create the listener thread and initialize the nacl module.
   if (!InitializeModuleMultimedia(socket_, service_runtime_)) {
-    browser_interface->Alert(instance_id(),
-                             "Load: Failed to initialise multimedia");
+    *error = "Load: Failed to initialise multimedia";
     return false;
   }
   PLUGIN_PRINTF(("Plugin::Load (established socket %p)\n",
                  static_cast<void*>(socket_)));
-  // Plugin takes ownership of socket_ from service_runtime_,
-  // so we do not need to call NPN_RetainObject.
   // Invoke the onload handler, if any.
   RunOnloadHandler();
   return true;

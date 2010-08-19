@@ -186,6 +186,8 @@ class Plugin : public PortableHandle {
                                nacl::DescWrapper** fds, int fds_count);
   static bool SendAsyncMessage0(void* obj, SrpcParams* params);
   static bool SendAsyncMessage1(void* obj, SrpcParams* params);
+  bool StartSrpcServices(nacl::string* error);
+  static bool StartSrpcServicesWrapper(void* obj, SrpcParams* params);
 };
 
 // MutexLock support for video locking.  It is in this file to avoid copying

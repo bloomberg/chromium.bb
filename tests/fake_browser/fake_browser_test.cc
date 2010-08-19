@@ -522,6 +522,23 @@ void DestroyPluginInstance(NPP plugin_instance, bool reverse_deallocate) {
 
   printf("object count = %"NACL_PRIuS"\n", all_objects.size());
 
+  // A plugin might call NPN_PluginThreadAsyncCall() during
+  // NPP_Destroy(), but we don't have to run the callbacks.  The docs
+  // say: "The browser might not execute calls successfully registered
+  // with this API call during plugin termination. Plugins should
+  // perform appropriate synchronization with the code in their
+  // NPP_Destroy() routine to ensure correct execution and avoid
+  // memory leaks."
+  // - https://developer.mozilla.org/en/NPN_PluginThreadAsyncCall
+  printf("PluginThreadAsyncCall count = %"NACL_PRIuS"\n",
+         callback_queue.size());
+  // Clear the queue so that we don't run its contents in the next
+  // test.  TODO(mseaborn): Put callback_queue into a browser-side
+  // plugin instance object so that we don't have this issue.
+  while (!callback_queue.empty()) {
+    callback_queue.pop();
+  }
+
   if (reverse_deallocate) {
     // This helps to test for this bug:
     // http://code.google.com/p/nativeclient/issues/detail?id=652
@@ -843,6 +860,59 @@ void TestAsyncMessages() {
   DestroyPluginInstance(plugin_instance, /* reverse_deallocate= */ false);
 }
 
+void TestDeferredSrpcInit() {
+  printf("Test __startSrpcServices()...\n");
+  const char* nexe_url = "http://localhost/deferred_srpc_init.nexe";
+
+  NPMIMEType mime_type = const_cast<char*>("application/x-nacl-srpc");
+  NPP plugin_instance = new NPP_t;
+  CheckRetval(plugin_funcs.newp(mime_type, plugin_instance, NP_EMBED,
+                                0, NULL, NULL, NULL));
+
+  NPObject* plugin_obj;
+  CheckRetval(plugin_funcs.getvalue(plugin_instance,
+                                    NPPVpluginScriptableNPObject, &plugin_obj));
+  NPVariant url;
+  STRINGZ_TO_NPVARIANT(nexe_url, url);
+  CHECK(fb_NPN_SetProperty(plugin_instance, plugin_obj,
+                           fb_NPN_GetStringIdentifier("src"), &url));
+  RunQueuedCallbacks(plugin_instance);
+
+  NPVariant result;
+  // The first invocation of "test_method" should fail: the subprocess
+  // does not declare any SRPC methods on the first initialisation.
+  CHECK(!fb_NPN_Invoke(plugin_instance, plugin_obj,
+                       fb_NPN_GetStringIdentifier("test_method"), NULL, 0,
+                       &result));
+
+  // In order to test getting an error from __startSrpcServices(), the
+  // subprocess rejects the second connection too.
+  exception_expected = true;
+  CHECK(!fb_NPN_Invoke(plugin_instance, plugin_obj,
+                       fb_NPN_GetStringIdentifier("__startSrpcServices"),
+                       NULL, 0, &result));
+  CHECK(!exception_expected);
+
+  // However, the next connection is accepted.
+  CHECK(fb_NPN_Invoke(plugin_instance, plugin_obj,
+                      fb_NPN_GetStringIdentifier("__startSrpcServices"),
+                      NULL, 0, &result));
+  CHECK(NPVARIANT_IS_VOID(result));
+
+  // The second invocation of "test_method" should succeed, now that
+  // we have retried initialising SRPC.
+  CHECK(fb_NPN_Invoke(plugin_instance, plugin_obj,
+                      fb_NPN_GetStringIdentifier("test_method"), NULL, 0,
+                      &result));
+  CHECK(NPVARIANT_IS_STRING(result));
+  std::string actual(result.value.stringValue.UTF8Characters,
+                     result.value.stringValue.UTF8Length);
+  AssertStringsEqual(actual, "Deferred SRPC connection worked.");
+  fb_NPN_ReleaseVariantValue(&result);
+
+  DestroyPluginInstance(plugin_instance, false);
+}
+
 int main(int argc, char** argv) {
   // Turn off stdout buffering to aid debugging in case of a crash.
   setvbuf(stdout, NULL, _IONBF, 0);
@@ -908,6 +978,8 @@ int main(int argc, char** argv) {
   TestNPModuleLeak();
 
   TestAsyncMessages();
+
+  TestDeferredSrpcInit();
 
   NPShutdownType shutdown_func =
     reinterpret_cast<NPShutdownType>(
