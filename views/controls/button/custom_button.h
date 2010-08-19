@@ -103,13 +103,6 @@ class CustomButton : public Button,
   scoped_ptr<ThrobAnimation> hover_animation_;
 
  private:
-  // Set / test whether the button is highlighted (in the hover state).
-  void SetHighlighted(bool highlighted);
-  bool IsHighlighted() const;
-
-  // Returns whether the button is pushed.
-  bool IsPushed() const;
-
   // Should we animate when the state changes? Defaults to true, but false while
   // throbbing.
   bool animate_on_state_change_;
