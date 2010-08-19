@@ -160,31 +160,11 @@ bool IsFullFrame(PP_Instance instance_id) {
   return instance->full_frame();
 }
 
-bool SetCursor(PP_Instance instance_id,
-               PP_CursorType type,
-               PP_Resource custom_image_id,
-               const PP_Point* hot_spot) {
-  PluginInstance* instance = PluginInstance::FromPPInstance(instance_id);
-  if (!instance)
-    return false;
-
-  scoped_refptr<ImageData> custom_image(
-      Resource::GetAs<ImageData>(custom_image_id));
-  if (custom_image.get()) {
-    // TODO: implement custom cursors.
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  return instance->SetCursor(type);
-}
-
 const PPB_Instance ppb_instance = {
   &GetWindowObject,
   &GetOwnerElementObject,
   &BindGraphicsDeviceContext,
   &IsFullFrame,
-  &SetCursor,
 };
 
 void NumberOfFindResultsChanged(PP_Instance instance_id,
