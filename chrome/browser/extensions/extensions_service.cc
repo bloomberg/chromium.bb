@@ -200,9 +200,6 @@ ExtensionsService::ExtensionsService(Profile* profile,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_TERMINATED,
                  Source<Profile>(profile_));
-  // We outlive the profile, so we don't unregister these.
-  prefs->AddPrefObserver(prefs::kExtensionInstallAllowList, this);
-  prefs->AddPrefObserver(prefs::kExtensionInstallDenyList, this);
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -217,7 +214,7 @@ ExtensionsService::ExtensionsService(Profile* profile,
 
   backend_ = new ExtensionsServiceBackend(install_directory_);
 
-  // Use monochrome icons for Omnibox icons.
+  // Use monochrome icons for omnibox icons.
   omnibox_icon_manager_.set_monochrome(true);
 }
 
@@ -764,22 +761,6 @@ void ExtensionsService::UpdateExtensionBlacklist(
   }
 }
 
-void ExtensionsService::CheckAdminBlacklist() {
-  std::vector<std::string> to_be_removed;
-  // Loop through extensions list, unload installed extensions.
-  for (ExtensionList::const_iterator iter = extensions_.begin();
-       iter != extensions_.end(); ++iter) {
-    Extension* extension = (*iter);
-    if (!extension_prefs_->IsExtensionAllowedByPolicy(extension->id()))
-      to_be_removed.push_back(extension->id());
-  }
-
-  // UnloadExtension will change the extensions_ list. So, we should
-  // call it outside the iterator loop.
-  for (unsigned int i = 0; i < to_be_removed.size(); ++i)
-    UnloadExtension(to_be_removed[i]);
-}
-
 bool ExtensionsService::IsIncognitoEnabled(const Extension* extension) {
   // If this is a component extension we always allow it to work in incognito
   // mode.
@@ -1295,14 +1276,6 @@ void ExtensionsService::Observe(NotificationType type,
       // Unload the entire extension. We want it to be in a consistent state:
       // either fully working or not loaded at all, but never half-crashed.
       UnloadExtension(host->extension()->id());
-      break;
-    }
-
-    case NotificationType::PREF_CHANGED: {
-      std::string* pref_name = Details<std::string>(details).ptr();
-      DCHECK(*pref_name == prefs::kExtensionInstallAllowList ||
-             *pref_name == prefs::kExtensionInstallDenyList);
-      CheckAdminBlacklist();
       break;
     }
 

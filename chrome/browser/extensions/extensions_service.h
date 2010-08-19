@@ -77,7 +77,6 @@ class ExtensionUpdateService {
                                       bool include_disabled) = 0;
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) = 0;
-  virtual void CheckAdminBlacklist() = 0;
   virtual bool HasInstalledExtensions() = 0;
 
   virtual ExtensionPrefs* extension_prefs() = 0;
@@ -303,11 +302,6 @@ class ExtensionsService
   // and update the blacklist state in pref.
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist);
-
-  // Go through each extension and unload those that the network admin has
-  // put on the blacklist (not to be confused with the Google managed blacklist
-  // set of extensions.
-  virtual void CheckAdminBlacklist();
 
   void set_extensions_enabled(bool enabled) { extensions_enabled_ = enabled; }
   bool extensions_enabled() { return extensions_enabled_; }
