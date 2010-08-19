@@ -260,11 +260,6 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
   FilePath test_extensions_dir_;
 };
 
-// WebInspector opens.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestHostIsPresent) {
-  RunTest("testHostIsPresent", kSimplePage);
-}
-
 // Tests resources panel enabling.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEnableResourcesTab) {
   RunTest("testEnableResourcesTab", kSimplePage);
@@ -356,11 +351,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
 // http://trac.webkit.org/changeset/64124/trunk.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
   RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
-}
-
-// Tests eval on call frame.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
-  RunTest("testEvalOnCallFrame", kDebuggerTestPage);
 }
 
 // Tests that scope can be expanded and contains expected variables.
