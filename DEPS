@@ -76,6 +76,8 @@ deps = {
     Var("chromium_trunk") + "/src/gpu/command_buffer@" + Var("chrome_rev"),
   "ppapi":
     "http://ppapi.googlecode.com/svn/trunk@" +  Var("ppapi_rev"),
+  "third_party/lcov":
+    Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
 }
 
 deps_os = {
@@ -92,14 +94,6 @@ deps_os = {
     "third_party/NSIS":
       (Var("native_client_trunk") + "/src/third_party/NSIS@" +
        Var("tools_rev")),
-  },
-  "mac": {
-    "third_party/lcov":
-      Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
-  },
-  "unix": {
-    "third_party/lcov":
-      Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
   },
 }
 

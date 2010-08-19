@@ -344,8 +344,26 @@ def generate(env):
           '$COVERAGE_ANALYZER -sym_path=. ${COVERAGE_OUTPUT_FILE}.pre.coverage',
           'c:\\Windows\\System32\\regsvr32.exe /S /U '
           '$COVERAGE_ANALYZER_DIR/msdia80.dll',
-          SCons.Script.Copy('$COVERAGE_OUTPUT_FILE',
-                            '${COVERAGE_OUTPUT_FILE}.pre.coverage.lcov'),
+          # TODO(bradnelson): eliminate cygwin dependency.
+          #     Cygwin is assumed to be present so this script can call
+          #     cygpath inside.
+          #     NOTE: cygwin is only required for coverage on windows.
+          ('c:\\cygwin\\bin\\bash -c "'
+           'PATH=/cygdrive/c/cygwin/bin '
+           'build/filter_windows_lcov.py '
+           "< `cygpath '${COVERAGE_OUTPUT_FILE}.pre.coverage.lcov'` "
+           "> `cygpath '${COVERAGE_OUTPUT_FILE}'` \""),
+          # TODO(bradnelson): eliminate cygwin dependency.
+          #     Cygwin is assumed to be present because genhtml is filled with
+          #     unix-y pathing assumptions.
+          #     NOTE: cygwin is only required for coverage on windows.
+          ('c:\\cygwin\\bin\\bash -c "'
+           'PATH=/cygdrive/c/cygwin/bin '
+           '$COVERAGE_GENHTML '
+           '--output-directory '
+           "`/usr/bin/cygpath '${COVERAGE_HTML_DIR}'` "
+           "`/usr/bin/cygpath '${COVERAGE_OUTPUT_FILE}'` "
+           '"'),
       ],
       COVERAGE_EXTRA_PATHS=['$COVERAGE_ANALYZER_DIR'],
       # Directories for which EXEs and DLLs should by instrumented on install.

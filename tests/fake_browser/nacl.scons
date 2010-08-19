@@ -61,17 +61,18 @@ sel_ldr = trusted_env.File(
 # TODO(mseaborn): Setting NACLLOG is a workaround for
 # http://code.google.com/p/nativeclient/issues/detail?id=669
 log_file = env.File('fake_browser_log_file.out').abspath
-node = env.CommandTest('fake_browser_test.out',
-                       [fake_browser[0], plugin,
-                        "srpc_hw.nexe", srpc_hello_world_prog,
-                        "npapi_hw.nexe", npapi_hello_world_prog,
-                        "async_message_test.nexe", async_message_prog,
-                        "hello_world.nexe", simplest_hello_world_prog,
-                        "spin.nexe", spin_prog,
-                        "deferred_srpc_init.nexe", deferred_srpc_init_prog],
-                       'medium',
-                       osenv=('NACL_SEL_LDR=%s,NACLLOG=%s'
-                              % (sel_ldr, log_file)),
-                       extra_deps=[sel_ldr])
+if not trusted_env.get('COVERAGE_ENABLED') or not trusted_env.Bit('windows'):
+  node = env.CommandTest('fake_browser_test.out',
+                         [fake_browser[0], plugin,
+                          'srpc_hw.nexe', srpc_hello_world_prog,
+                          'npapi_hw.nexe', npapi_hello_world_prog,
+                          'async_message_test.nexe', async_message_prog,
+                          'hello_world.nexe', simplest_hello_world_prog,
+                          'spin.nexe', spin_prog,
+                          'deferred_srpc_init.nexe', deferred_srpc_init_prog],
+                         'medium',
+                         osenv=('NACL_SEL_LDR=%s,NACLLOG=%s'
+                                % (sel_ldr, log_file)),
+                         extra_deps=[sel_ldr])
 
-env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_test')
+  env.AddNodeToTestSuite(node, ['medium_tests'], 'run_fake_browser_test')

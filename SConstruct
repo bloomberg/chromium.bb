@@ -793,6 +793,12 @@ def CommandSelLdrTestNacl(env, name, command,
                           loader='sel_ldr',
                           size='medium',
                           **extra):
+  # Disable all sel_ldr tests for windows under coverage.
+  # Currently several .S files block sel_ldr from being instrumented.
+  # See http://code.google.com/p/nativeclient/issues/detail?id=831
+  if (env['TRUSTED_ENV'].get('COVERAGE_ENABLED') and
+      env['TRUSTED_ENV'].Bit('windows')):
+    return []
 
   sel_ldr = GetSelLdr(env, loader);
   if not sel_ldr:
@@ -1779,6 +1785,8 @@ windows_coverage_env = windows_env.Clone(
     # TODO(bradnelson): switch nacl to common testing process so this won't be
     #    needed.
     MANIFEST_FILE = None,
+    COVERAGE_ANALYZER_DIR=r'..\third_party\coverage_analyzer\bin',
+    COVERAGE_ANALYZER='$COVERAGE_ANALYZER_DIR\coverage_analyzer.exe',
 )
 # TODO(bradnelson): switch nacl to common testing process so this won't be
 #    needed.
@@ -1789,12 +1797,6 @@ windows_coverage_env.FilterOut(BUILD_GROUPS = ['default'])
 windows_coverage_env.Append(LINKFLAGS = ['/NODEFAULTLIB:msvcrt'])
 AddDualLibrary(windows_coverage_env)
 environment_list.append(windows_coverage_env)
-
-# TODO(bradnelson): this test current doesn't interact well with coverage.
-#   This needs to be fixed.
-windows_coverage_env.FilterOut(
-    COVERAGE_TARGETS = ['small_tests', 'medium_tests'],
-)
 
 mac_coverage_env = mac_env.Clone(
     tools = ['code_coverage'],
