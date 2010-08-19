@@ -178,8 +178,8 @@ void DevToolsAgent::OnAttach(
     for (DevToolsRuntimeProperties::const_iterator it =
              runtime_properties.begin();
          it != runtime_properties.end(); ++it) {
-      web_agent->setRuntimeFeatureEnabled(WebString::fromUTF8(it->first),
-                                          it->second == "true");
+      web_agent->setRuntimeProperty(WebString::fromUTF8(it->first),
+                                    WebString::fromUTF8(it->second));
     }
   }
 }
@@ -213,7 +213,8 @@ void DevToolsAgent::OnInspectElement(int x, int y) {
 void DevToolsAgent::OnSetApuAgentEnabled(bool enabled) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent)
-    web_agent->setRuntimeFeatureEnabled("apu-agent", enabled);
+    web_agent->setRuntimeProperty("apu-agent", enabled ?
+        WebString::fromUTF8("true") : WebString::fromUTF8("false"));
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
