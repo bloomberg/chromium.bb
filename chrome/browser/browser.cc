@@ -3738,80 +3738,6 @@ Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
   return browser;
 }
 
-bool Browser::HandleCrossAppNavigation(TabContents* source,
-                                       const GURL& url,
-                                       const GURL& referrer,
-                                       WindowOpenDisposition* disposition,
-                                       PageTransition::Type transition) {
-  // Can be null in unit tests.
-  ExtensionsService* service = profile_->GetExtensionsService();
-  if (!service)
-    return false;
-
-  // Can be null, e.g., when executed in a browser with no tabs.
-  if (!source)
-    return false;
-
-  // Get the source extension, if any.
-  Extension* source_extension = source->extension_app();
-  if (!source_extension)
-    source_extension = extension_app_;
-
-  // Get the destination URL's extension, if any.
-  Extension* destination_extension = service->GetExtensionByURL(url);
-  if (!destination_extension)
-    destination_extension = service->GetExtensionByWebExtent(url);
-
-  // If they are the same, nothing to do.
-  if (source_extension == destination_extension)
-    return false;
-
-  // If there is a source extension and the new URL is part of its browse
-  // extent, also do nothing.
-  if (source_extension && source_extension->browse_extent().ContainsURL(url))
-    return false;
-
-  if (destination_extension) {
-    // Search for an existing app window for this app.
-    for (BrowserList::const_iterator iter = BrowserList::begin();
-         iter != BrowserList::end(); ++iter) {
-      // Found an app window, open the URL there.
-      if ((*iter)->extension_app() == destination_extension) {
-        (*iter)->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
-        (*iter)->window()->Show();
-        return true;
-      }
-    }
-
-    // If the extension wants to be opened in a window, but there is no
-    // existing window, create one, then open the URL there.
-    if (destination_extension->launch_container() ==
-        Extension::LAUNCH_WINDOW) {
-      Browser::OpenApplicationWindow(profile_, destination_extension,
-                                     Extension::LAUNCH_WINDOW, url, NULL);
-      return true;
-    }
-  }
-
-  // Otherwise, we are opening a normal web page.
-  //
-  // If our source tab is in an app window, we don't want to open the tab
-  // there. Find a normal browser to open it in.
-  if (extension_app_) {
-    Browser* browser = GetOrCreateTabbedBrowser(profile_);
-    browser->OpenURL(url, referrer, NEW_FOREGROUND_TAB, transition);
-    browser->window()->Show();
-    return true;
-  }
-
-  // If our source tab is an app tab, don't allow normal web content to
-  // overwrite it.
-  if (source->extension_app() && *disposition == CURRENT_TAB)
-    *disposition = NEW_FOREGROUND_TAB;
-
-  return false;
-}
-
 // static
 WindowOpenDisposition Browser::AdjustWindowOpenDispositionForTab(
     bool is_pinned,
@@ -3878,17 +3804,6 @@ void Browser::OpenURLAtIndex(TabContents* source,
       referrer,
       transition,
       disposition);
-
-  if (HandleCrossAppNavigation(current_tab, url, referrer, &disposition,
-                               transition)) {
-    // If the source tab was brand new, we can be left with an empty tab which
-    // looks ugly. Close it. It is still kinda ugly to have a tab flash visible
-    // for a second, then disappear. But I think it is better than having a
-    // dead tab just hang around.
-    if (source->controller().entry_count() == 0)
-      CloseTabContents(source);
-    return;
-  }
 
   // If the URL is part of the same web site, then load it in the same
   // SiteInstance (and thus the same process).  This is an optimization to
