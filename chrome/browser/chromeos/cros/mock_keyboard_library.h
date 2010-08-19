@@ -18,6 +18,7 @@ class MockKeyboardLibrary : public KeyboardLibrary {
   MockKeyboardLibrary() {}
   virtual ~MockKeyboardLibrary() {}
 
+  MOCK_CONST_METHOD0(GetHardwareKeyboardLayoutName, std::string(void));
   MOCK_CONST_METHOD0(GetCurrentKeyboardLayoutName, std::string(void));
   MOCK_METHOD1(SetCurrentKeyboardLayoutByName, bool(const std::string&));
   MOCK_METHOD1(RemapModifierKeys, bool(const ModifierMap&));
