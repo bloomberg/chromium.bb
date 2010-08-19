@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('options.add_startup_page', function() {
+cr.define('options.browser_options', function() {
   const List = cr.ui.List;
   const ListItem = cr.ui.ListItem;
 
   /**
-   * Creates a new recent page list item.
+   * Creates a new startup page list item.
    * @param {Object} pageInfo The page this item represents.
    * @constructor
    * @extends {cr.ui.ListItem}
    */
-  function RecentPageListItem(pageInfo) {
+  function StartupPageListItem(pageInfo) {
     var el = cr.doc.createElement('div');
-    el.pageInfo = pageInfo;
-    RecentPageListItem.decorate(el);
+    el.pageInfo_ = pageInfo;
+    StartupPageListItem.decorate(el);
     return el;
   }
 
   /**
-   * Decorates an element as a recent page list item.
+   * Decorates an element as a startup page list item.
    * @param {!HTMLElement} el The element to decorate.
    */
-  RecentPageListItem.decorate = function(el) {
-    el.__proto__ = RecentPageListItem.prototype;
+  StartupPageListItem.decorate = function(el) {
+    el.__proto__ = StartupPageListItem.prototype;
     el.decorate();
   };
 
-  RecentPageListItem.prototype = {
+  StartupPageListItem.prototype = {
     __proto__: ListItem.prototype,
 
     /** @inheritDoc */
@@ -38,31 +38,27 @@ cr.define('options.add_startup_page', function() {
       var titleEl = this.ownerDocument.createElement('span');
       titleEl.className = 'title';
       titleEl.classList.add('favicon-cell');
-      titleEl.textContent = this.pageInfo['title'];
+      titleEl.textContent = this.pageInfo_['title'];
       titleEl.style.backgroundImage = url('chrome://favicon/' +
-                                         this.pageInfo['url']);
-
-      var urlEL = this.ownerDocument.createElement('span');
-      urlEL.className = 'url';
-      urlEL.textContent = this.pageInfo['displayURL'];
+                                          this.pageInfo_['url']);
+      titleEl.title = this.pageInfo_['tooltip'];
 
       this.appendChild(titleEl);
-      this.appendChild(urlEL);
     },
   };
 
-  var RecentPageList = cr.ui.define('list');
+  var StartupPageList = cr.ui.define('list');
 
-  RecentPageList.prototype = {
+  StartupPageList.prototype = {
     __proto__: List.prototype,
 
     /** @inheritDoc */
     createItem: function(pageInfo) {
-      return new RecentPageListItem(pageInfo);
+      return new StartupPageListItem(pageInfo);
     },
   };
 
   return {
-    RecentPageList: RecentPageList
+    StartupPageList: StartupPageList
   };
 });

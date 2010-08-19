@@ -46,6 +46,7 @@ cr.define('options.search_engines', function() {
       } else {
         var nameEl = this.ownerDocument.createElement('div');
         nameEl.className = 'name';
+        nameEl.classList.add('favicon-cell');
         nameEl.textContent = engine['name'];
         nameEl.style.backgroundImage = url('chrome://favicon/iconurl/' +
                                            engine['iconURL']);

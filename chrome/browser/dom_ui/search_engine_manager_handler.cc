@@ -6,11 +6,9 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
-#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
@@ -27,14 +25,6 @@ SearchEngineManagerHandler::~SearchEngineManagerHandler() {
 }
 
 void SearchEngineManagerHandler::Initialize() {
-  // Create our favicon data source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          Singleton<ChromeURLDataManager>::get(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new DOMUIFavIconSource(dom_ui_->GetProfile()))));
-
   controller_.reset(new KeywordEditorController(dom_ui_->GetProfile()));
   controller_->table_model()->SetObserver(this);
 }

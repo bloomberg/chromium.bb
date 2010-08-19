@@ -7,10 +7,13 @@
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
+#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/dom_ui/options_managed_banner_handler.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
@@ -92,6 +95,14 @@ void BrowserOptionsHandler::RegisterMessages() {
 }
 
 void BrowserOptionsHandler::Initialize() {
+  // Create our favicon data source.
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>::get(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(new DOMUIFavIconSource(dom_ui_->GetProfile()))));
+
   UpdateDefaultBrowserState();
   UpdateStartupPages();
   UpdateSearchEngines();
@@ -246,15 +257,16 @@ void BrowserOptionsHandler::UpdateStartupPages() {
 }
 
 void BrowserOptionsHandler::OnModelChanged() {
-  // TODO(stuartmorgan): Add support for showing favicons.
   ListValue startup_pages;
   int page_count = startup_custom_pages_table_model_->RowCount();
+  std::vector<GURL> urls = startup_custom_pages_table_model_->GetURLs();
   for (int i = 0; i < page_count; ++i) {
     DictionaryValue* entry = new DictionaryValue();
     entry->SetString("title", WideToUTF16Hack(
-                        startup_custom_pages_table_model_->GetText(i, 0)));
+        startup_custom_pages_table_model_->GetText(i, 0)));
+    entry->SetString("url", urls[i].spec());
     entry->SetString("tooltip", WideToUTF16Hack(
-                         startup_custom_pages_table_model_->GetTooltip(i)));
+        startup_custom_pages_table_model_->GetTooltip(i)));
     startup_pages.Append(entry);
   }
 

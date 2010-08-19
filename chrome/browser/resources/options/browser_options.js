@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
-
-  var OptionsPage = options.OptionsPage;
+  const OptionsPage = options.OptionsPage;
+  const ArrayDataModel = cr.ui.ArrayDataModel;
+  const ListSelectionModel = cr.ui.ListSelectionModel;
 
   //
   // BrowserOptions class
@@ -28,16 +29,11 @@ cr.define('options', function() {
       OptionsPage.prototype.initializePage.call(this);
 
       // Wire up controls.
-      var self = this;
-      $('startupPages').onchange = function(event) {
-        self.updateRemoveButtonState_();
-      };
       $('startupAddButton').onclick = function(event) {
         OptionsPage.showOverlay('addStartupPageOverlay');
       };
-      $('startupRemoveButton').onclick = function(event) {
-        self.removeSelectedStartupPages_();
-      };
+      $('startupRemoveButton').onclick = cr.bind(
+          this.removeSelectedStartupPages_, this);
       $('startupUseCurrentButton').onclick = function(event) {
         chrome.send('setStartupPagesToCurrentPages');
       };
@@ -49,6 +45,17 @@ cr.define('options', function() {
           chrome.send('becomeDefaultBrowser');
         };
       }
+
+      var list = $('startupPages');
+      options.browser_options.StartupPageList.decorate(list);
+      list.selectionModel = new ListSelectionModel;
+
+      list.selectionModel.addEventListener(
+          'change', cr.bind(this.updateRemoveButtonState_, this));
+
+      this.addEventListener('visibleChange', function(event) {
+        $('startupPages').redraw();
+      });
 
       // Initialize control enabled states.
       Preferences.getInstance().addEventListener('session.restore_on_startup',
@@ -115,14 +122,6 @@ cr.define('options', function() {
     },
 
     /**
-     * Clears the startup page list.
-     * @private
-     */
-    clearStartupPages_: function() {
-      $('startupPages').textContent = '';
-    },
-
-    /**
      * Returns true if the custom startup page control block should
      * be enabled.
      * @private
@@ -139,17 +138,7 @@ cr.define('options', function() {
      * @param {Array} pages List of startup pages.
      */
     updateStartupPages_: function(pages) {
-      // TODO(stuartmorgan): Replace <select> with a DOMUI List.
-      this.clearStartupPages_();
-      pageList = $('startupPages');
-      pageCount = pages.length;
-      for (var i = 0; i < pageCount; i++) {
-        var page = pages[i];
-        var option = new Option(page['title']);
-        option.title = page['tooltip'];
-        pageList.appendChild(option);
-      }
-
+      $('startupPages').dataModel = new ArrayDataModel(pages);
       this.updateRemoveButtonState_();
     },
 
@@ -160,7 +149,6 @@ cr.define('options', function() {
      */
     updateCustomStartupPageControlStates_: function() {
       var disable = !this.shouldEnableCustomStartupPageControls_();
-      $('startupPages').disabled = disable;
       $('startupAddButton').disabled = disable;
       $('startupUseCurrentButton').disabled = disable;
       this.updateRemoveButtonState_();
@@ -174,7 +162,7 @@ cr.define('options', function() {
     updateRemoveButtonState_: function() {
       var groupEnabled = this.shouldEnableCustomStartupPageControls_();
       $('startupRemoveButton').disabled = !groupEnabled ||
-          ($('startupPages').selectedIndex == -1);
+          ($('startupPages').selectionModel.selectedIndex == -1);
     },
 
     /**
@@ -182,13 +170,8 @@ cr.define('options', function() {
      * @private
      */
     removeSelectedStartupPages_: function() {
-      var pageSelect = $('startupPages');
-      var optionCount = pageSelect.options.length;
-      var selections = [];
-      for (var i = 0; i < optionCount; i++) {
-        if (pageSelect.options[i].selected)
-          selections.push(String(i));
-      }
+      var selections =
+          $('startupPages').selectionModel.selectedIndexes.map(String);
       chrome.send('removeStartupPages', selections);
     },
 
@@ -197,7 +180,7 @@ cr.define('options', function() {
      * @private
      */
     addStartupPage_: function(url) {
-      var firstSelection = $('startupPages').selectedIndex;
+      var firstSelection = $('startupPages').selectionModel.selectedIndex;
       chrome.send('addStartupPage', [url, String(firstSelection)]);
     },
 
@@ -213,7 +196,7 @@ cr.define('options', function() {
     /**
      * Set the default search engine based on the popup selection.
      */
-    setDefaultBrowser: function() {
+    setDefaultSearchEngine: function() {
       var engineSelect = $('defaultSearchEngine');
       var selectedIndex = engineSelect.selectedIndex;
       if (selectedIndex >= 0) {

@@ -6,12 +6,9 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
-#include "base/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/possible_url_model.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -42,19 +39,10 @@ void AddStartupPageHandler::GetLocalizedValues(
 }
 
 void AddStartupPageHandler::Initialize() {
-  Profile* profile = dom_ui_->GetProfile();
-  // Create our favicon data source.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          Singleton<ChromeURLDataManager>::get(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(new DOMUIFavIconSource(profile))));
-
   url_table_model_.reset(new PossibleURLModel());
   if (url_table_model_.get()) {
     url_table_model_->SetObserver(this);
-    url_table_model_->Reload(profile);
+    url_table_model_->Reload(dom_ui_->GetProfile());
   }
 }
 

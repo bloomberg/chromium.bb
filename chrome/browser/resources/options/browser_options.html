@@ -13,14 +13,19 @@
           pref="session.restore_on_startup" value="4"><span
           i18n-content="startupShowPages"></span></label>
       <div class="suboption">
-        <select id="startupPages" size="3" multiple>
-        </select><br>
-        <button id="startupAddButton"
-            i18n-content="startupAddButton"></button>
-        <button id="startupRemoveButton"
-            i18n-content="startupRemoveButton"></button>
-        <button id="startupUseCurrentButton"
-            i18n-content="startupUseCurrent"></button>
+        <div class="left-side-table">
+          <div>
+            <list id="startupPages"></list>
+          </div>
+          <div>
+            <div><button id="startupAddButton"
+                i18n-content="startupAddButton"></button></div>
+            <div><button id="startupRemoveButton"
+                i18n-content="startupRemoveButton"></button></div>
+            <div><button id="startupUseCurrentButton"
+                i18n-content="startupUseCurrent"></button></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -47,7 +52,7 @@
     <h3 i18n-content="defaultSearchGroupName"></h3>
     <div>
       <select id="defaultSearchEngine"
-          onchange="BrowserOptions.getInstance().setDefaultBrowser()">
+          onchange="BrowserOptions.getInstance().setDefaultSearchEngine()">
       </select>
       <button id="defaultSearchManageEnginesButton"
           i18n-content="defaultSearchManageEnginesLink"></button>

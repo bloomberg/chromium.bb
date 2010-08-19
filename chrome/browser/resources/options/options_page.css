@@ -214,6 +214,10 @@ section > h3 {
   font-size: 100%;
 }
 
+section > div:only-of-type {
+  -webkit-box-flex: 1;
+}
+
 .option {
   margin-top: 0;
 }
@@ -286,4 +290,13 @@ list > .heading:hover {
 
 .left-side-table > :last-child button {
   width: 100%;
+}
+
+.favicon-cell {
+  background-position: left;
+  background-repeat: no-repeat;
+  -webkit-padding-start: 20px;
+}
+html[dir=rtl] .favicon-cell {
+  background-position: right;
 }

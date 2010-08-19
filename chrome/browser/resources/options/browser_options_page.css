@@ -1,4 +1,9 @@
-#startupPages, #homepageURL {
+#startupPages {
+  border: solid 1px #999999;
+  height: 100px;
+}
+
+#homepageURL {
   width: 100%;
 }
 
