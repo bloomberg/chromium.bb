@@ -241,11 +241,6 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
     audio_renderer_host_->Destroy();
 
   ClearTransportDIBCache();
-
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_PORT_DELETED_DEBUG,
-      Source<IPC::Message::Sender>(this),
-      NotificationService::NoDetails());
 }
 
 bool BrowserRenderProcessHost::Init(bool is_extensions_process) {

@@ -36,11 +36,6 @@ ExtensionPortContainer::~ExtensionPortContainer() {
 
   if (port_id_ != -1)
     service_->CloseChannel(port_id_);
-
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_PORT_DELETED_DEBUG,
-      Source<IPC::Message::Sender>(this),
-      NotificationService::NoDetails());
 }
 
 bool ExtensionPortContainer::PostResponseToExternalPort(

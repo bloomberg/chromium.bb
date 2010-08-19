@@ -900,12 +900,6 @@ class NotificationType {
     // object.
     EXTENSION_PREF_CHANGED,
 
-    // Debugging ---------------------------------------------------------------
-
-    // TODO(mpcomplete): Sent to diagnose a bug. Remove when fixed.
-    // http://code.google.com/p/chromium/issues/detail?id=21201
-    EXTENSION_PORT_DELETED_DEBUG,
-
     // Desktop Notifications ---------------------------------------------------
 
     // This notification is sent when a balloon is connected to a renderer

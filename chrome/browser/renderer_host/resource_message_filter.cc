@@ -221,7 +221,6 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
-      extensions_message_service_(profile->GetExtensionMessageService()),
       render_widget_helper_(render_widget_helper),
       audio_renderer_host_(audio_renderer_host),
       appcache_dispatcher_host_(
@@ -1266,24 +1265,52 @@ void ResourceMessageFilter::OnOpenChannelToExtension(
     int routing_id, const std::string& source_extension_id,
     const std::string& target_extension_id,
     const std::string& channel_name, int* port_id) {
-  if (extensions_message_service_.get()) {
-    *port_id = extensions_message_service_->
-        OpenChannelToExtension(routing_id, source_extension_id,
-                               target_extension_id, channel_name, this);
-  } else {
-    *port_id = -1;
-  }
+  int port2_id;
+  ExtensionMessageService::AllocatePortIdPair(port_id, &port2_id);
+
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OpenChannelToExtensionOnUIThread,
+          id(), routing_id, port2_id, source_extension_id,
+          target_extension_id, channel_name));
+}
+
+void ResourceMessageFilter::OpenChannelToExtensionOnUIThread(
+    int source_process_id, int source_routing_id,
+    int receiver_port_id,
+    const std::string& source_extension_id,
+    const std::string& target_extension_id,
+    const std::string& channel_name) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  profile_->GetExtensionMessageService()->OpenChannelToExtension(
+      source_process_id, source_routing_id, receiver_port_id,
+      source_extension_id, target_extension_id, channel_name);
 }
 
 void ResourceMessageFilter::OnOpenChannelToTab(
     int routing_id, int tab_id, const std::string& extension_id,
     const std::string& channel_name, int* port_id) {
-  if (extensions_message_service_.get()) {
-    *port_id = extensions_message_service_->
-        OpenChannelToTab(routing_id, tab_id, extension_id, channel_name, this);
-  } else {
-    *port_id = -1;
-  }
+  int port2_id;
+  ExtensionMessageService::AllocatePortIdPair(port_id, &port2_id);
+
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OpenChannelToTabOnUIThread,
+          id(), routing_id, port2_id, tab_id, extension_id, channel_name));
+}
+
+void ResourceMessageFilter::OpenChannelToTabOnUIThread(
+    int source_process_id, int source_routing_id,
+    int receiver_port_id,
+    int tab_id,
+    const std::string& extension_id,
+    const std::string& channel_name) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  profile_->GetExtensionMessageService()->OpenChannelToTab(
+      source_process_id, source_routing_id, receiver_port_id,
+      tab_id, extension_id, channel_name);
 }
 
 bool ResourceMessageFilter::CheckBenchmarkingEnabled() const {

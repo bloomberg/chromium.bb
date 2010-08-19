@@ -35,7 +35,6 @@ class AudioRendererHost;
 class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
-class ExtensionMessageService;
 struct FontDescriptor;
 class GeolocationDispatcherHost;
 class HostZoomMap;
@@ -325,9 +324,19 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                                 const std::string& source_extension_id,
                                 const std::string& target_extension_id,
                                 const std::string& channel_name, int* port_id);
+  void OpenChannelToExtensionOnUIThread(int source_process_id,
+                                        int source_routing_id,
+                                        int receiver_port_id,
+                                        const std::string& source_extension_id,
+                                        const std::string& target_extension_id,
+                                        const std::string& channel_name);
   void OnOpenChannelToTab(int routing_id, int tab_id,
                           const std::string& extension_id,
                           const std::string& channel_name, int* port_id);
+  void OpenChannelToTabOnUIThread(int source_process_id, int source_routing_id,
+                                  int receiver_port_id,
+                                  int tab_id, const std::string& extension_id,
+                                  const std::string& channel_name);
 
   void OnCloseCurrentConnections();
   void OnSetCacheMode(bool enabled);
@@ -418,9 +427,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // A request context that holds a cookie store for chrome-extension URLs.
   scoped_refptr<URLRequestContextGetter> extensions_request_context_;
-
-  // Used for routing extension messages.
-  scoped_refptr<ExtensionMessageService> extensions_message_service_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 

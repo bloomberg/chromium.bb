@@ -10,17 +10,13 @@
 #include <set>
 #include <string>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "ipc/ipc_message.h"
 
 class GURL;
 class Profile;
-class RenderProcessHost;
-class ResourceMessageFilter;
 class TabContents;
 
 // This class manages message and event passing between renderer processes.
@@ -44,9 +40,11 @@ class TabContents;
 // port: an IPC::Message::Sender interface and an optional routing_id (in the
 // case that the port is a tab).  The Sender is usually either a
 // RenderProcessHost or a RenderViewHost.
+
+// TODO(mpcomplete): Remove refcounting and make Profile the sole owner of this
+// class. Then we can get rid of ProfileDestroyed().
 class ExtensionMessageService
-    : public base::RefCountedThreadSafe<
-          ExtensionMessageService, ChromeThread::DeleteOnUIThread>,
+    : public base::RefCounted<ExtensionMessageService>,
       public NotificationObserver {
  public:
   // Javascript function name constants.
@@ -65,7 +63,9 @@ class ExtensionMessageService
   static std::string GetPerExtensionEventName(const std::string& event_name,
                                               const std::string& extension_id);
 
-  // --- UI thread only:
+  // Allocates a pair of port ids.
+  // NOTE: this can be called from any thread.
+  static void AllocatePortIdPair(int* port1, int* port2);
 
   explicit ExtensionMessageService(Profile* profile);
 
@@ -79,13 +79,6 @@ class ExtensionMessageService
 
   // Returns true if there is at least one listener for the given event.
   bool HasEventListener(const std::string& event_name);
-
-  // Closes the message channel associated with the given port, and notifies
-  // the other side.
-  void CloseChannel(int port_id);
-
-  // Sends a message from a renderer to the given port.
-  void PostMessageFromRenderer(int port_id, const std::string& message);
 
   // Send an event to every registered extension renderer.  If
   // |has_incognito_data| is true, the event is only sent to extension with the
@@ -101,6 +94,23 @@ class ExtensionMessageService
       const std::string& extension_id,
       const std::string& event_name, const std::string& event_args,
       bool has_incognito_data, const GURL& event_url);
+
+  // Given an extension's ID, opens a channel between the given renderer "port"
+  // and every listening context owned by that extension. |channel_name| is
+  // an optional identifier for use by extension developers.
+  void OpenChannelToExtension(
+      int source_process_id, int source_routing_id, int receiver_port_id,
+      const std::string& source_extension_id,
+      const std::string& target_extension_id,
+      const std::string& channel_name);
+
+  // Same as above, but opens a channel to the tab with the given ID.  Messages
+  // are restricted to that tab, so if there are multiple tabs in that process,
+  // only the targeted tab will receive messages.
+  void OpenChannelToTab(
+      int source_process_id, int source_routing_id, int receiver_port_id,
+      int tab_id, const std::string& extension_id,
+      const std::string& channel_name);
 
   // Given an extension ID, opens a channel between the given
   // automation "port" or DevTools service and that extension. the
@@ -124,31 +134,15 @@ class ExtensionMessageService
       const std::string& extension_id, const std::string& channel_name,
       TabContents* target_tab_contents, IPC::Message::Sender* source);
 
-  // --- IO thread only:
+  // Closes the message channel associated with the given port, and notifies
+  // the other side.
+  void CloseChannel(int port_id);
 
-  // Given an extension's ID, opens a channel between the given renderer "port"
-  // and every listening context owned by that extension.  Returns a port ID
-  // to be used for posting messages between the processes.  |channel_name| is
-  // an optional identifier for use by extension developers.
-  // This runs on the IO thread so that it can be used in a synchronous IPC
-  // message.
-  int OpenChannelToExtension(int routing_id,
-                             const std::string& source_extension_id,
-                             const std::string& target_extension_id,
-                             const std::string& channel_name,
-                             ResourceMessageFilter* source);
-
-  // Same as above, but opens a channel to the tab with the given ID.  Messages
-  // are restricted to that tab, so if there are multiple tabs in that process,
-  // only the targeted tab will receive messages.
-  int OpenChannelToTab(int routing_id, int tab_id,
-                       const std::string& extension_id,
-                       const std::string& channel_name,
-                       ResourceMessageFilter* source);
+  // Sends a message from a renderer to the given port.
+  void PostMessageFromRenderer(int port_id, const std::string& message);
 
  private:
-  friend class ChromeThread;
-  friend class DeleteTask<ExtensionMessageService>;
+  friend class base::RefCounted<ExtensionMessageService>;
   friend class MockExtensionMessageService;
 
   // A map of channel ID to its channel object.
@@ -156,36 +150,17 @@ class ExtensionMessageService
 
   virtual ~ExtensionMessageService();
 
-  // Allocates a pair of port ids.
-  // NOTE: this can be called from any thread.
-  void AllocatePortIdPair(int* port1, int* port2);
-
-  void CloseChannelImpl(MessageChannelMap::iterator channel_iter, int port_id,
-                        bool notify_other_port);
-
-  // --- UI thread only:
-
-  // Handles channel creation and notifies the destinations that a channel was
-  // opened.
-  void OpenChannelToExtensionOnUIThread(
-    int source_process_id, int source_routing_id, int receiver_port_id,
-    const std::string& source_extension_id,
-    const std::string& target_extension_id,
-    const std::string& channel_name);
-
-  void OpenChannelToTabOnUIThread(
-    int source_process_id, int source_routing_id, int receiver_port_id,
-    int tab_id, const std::string& extension_id,
-    const std::string& channel_name);
-
-  // Common between OpenChannelOnUIThread and OpenSpecialChannelToExtension.
-  bool OpenChannelOnUIThreadImpl(
+  // Common among Open(Special)Channel* variants.
+  bool OpenChannelImpl(
       IPC::Message::Sender* source,
       const std::string& tab_json,
       const MessagePort& receiver, int receiver_port_id,
       const std::string& source_extension_id,
       const std::string& target_extension_id,
       const std::string& channel_name);
+
+  void CloseChannelImpl(MessageChannelMap::iterator channel_iter, int port_id,
+                        bool notify_other_port);
 
   // NotificationObserver interface.
   void Observe(NotificationType type,
@@ -207,15 +182,6 @@ class ExtensionMessageService
   // to that event.
   typedef std::map<std::string, std::set<int> > ListenerMap;
   ListenerMap listeners_;
-
-  // --- UI or IO thread:
-
-  // For generating unique channel IDs.
-  int next_port_id_;
-
-  // Protects the next_port_id_ variable, since it can be
-  // used on the IO thread or the UI thread.
-  Lock next_port_id_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageService);
 };
