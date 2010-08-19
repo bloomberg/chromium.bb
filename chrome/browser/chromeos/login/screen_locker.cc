@@ -169,6 +169,11 @@ class LockWindow : public views::WidgetGtk {
     return false;
   }
 
+  virtual void OnDestroy(GtkWidget* object) {
+    LOG(INFO) << "OnDestroy: LockWindow destroyed";
+    views::WidgetGtk::OnDestroy(object);
+  }
+
   virtual void ClearNativeFocus() {
     DCHECK(toplevel_focus_widget_);
     gtk_widget_grab_focus(toplevel_focus_widget_);
@@ -256,9 +261,10 @@ class GrabWidget : public views::WidgetGtk {
 };
 
 void GrabWidget::TryGrabAllInputs() {
-  if (kbd_grab_status_ != GDK_GRAB_SUCCESS)
+  if (kbd_grab_status_ != GDK_GRAB_SUCCESS) {
     kbd_grab_status_ = gdk_keyboard_grab(window_contents()->window, FALSE,
                                          GDK_CURRENT_TIME);
+  }
   if (mouse_grab_status_ != GDK_GRAB_SUCCESS) {
     mouse_grab_status_ =
         gdk_pointer_grab(window_contents()->window,
@@ -293,7 +299,7 @@ void GrabWidget::TryGrabAllInputs() {
 // addition to other background components.
 class ScreenLockerBackgroundView : public chromeos::BackgroundView {
  public:
-  ScreenLockerBackgroundView(views::WidgetGtk* lock_widget)
+  explicit ScreenLockerBackgroundView(views::WidgetGtk* lock_widget)
       : lock_widget_(lock_widget) {
   }
 
@@ -520,9 +526,7 @@ void ScreenLocker::OnLoginFailure(const std::string& error) {
 
 void ScreenLocker::OnLoginSuccess(const std::string& username,
     const GaiaAuthConsumer::ClientLoginResult& unused) {
-
-  DLOG(INFO) << "OnLoginSuccess";
-
+  LOG(INFO) << "OnLoginSuccess: Sending Unlock request.";
   if (CrosLibrary::Get()->EnsureLoaded())
     CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();
 }
@@ -590,16 +594,16 @@ void ScreenLocker::Show() {
     browser->ToggleFullscreenMode();
   }
 
-  // TODO(oshima): Currently, PowerManager may send a lock screen event
-  // even if a screen is locked. Investigate & solve the issue and
-  // enable this again if it's possible.
-  // DCHECK(!screen_locker_);
   if (!screen_locker_) {
+    LOG(INFO) << "Show: Locking screen";
     ScreenLocker* locker =
         new ScreenLocker(UserManager::Get()->logged_in_user());
     locker->Init();
   } else {
-    LOG(INFO) << "Show(): screen locker already exists. "
+    // PowerManager re-sends lock screen signal if it doesn't
+    // receive the response within timeout. Just send complete
+    // signal.
+    LOG(INFO) << "Show: locker already exists. "
               << "just sending completion event";
     if (CrosLibrary::Get()->EnsureLoaded())
       CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
@@ -610,7 +614,7 @@ void ScreenLocker::Show() {
 void ScreenLocker::Hide() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   DCHECK(screen_locker_);
-  LOG(INFO) << "Hide Screen Locker:" << screen_locker_;
+  LOG(INFO) << "Hide: Deleting ScreenLocker:" << screen_locker_;
   MessageLoopForUI::current()->DeleteSoon(FROM_HERE, screen_locker_);
 }
 
@@ -618,13 +622,17 @@ void ScreenLocker::Hide() {
 void ScreenLocker::UnlockScreenFailed() {
   DCHECK(MessageLoop::current()->type() == MessageLoop::TYPE_UI);
   if (screen_locker_) {
+    // Power manager decided no to unlock the screen even if a user
+    // typed in password, for example, when a user closed the lid
+    // immediately after typing in the password.
+    LOG(INFO) << "UnlockScreenFailed: re-enabling screen locker";
     screen_locker_->EnableInput();
   } else {
     // This can happen when a user requested unlock, but PowerManager
     // rejected because the computer is closed, then PowerManager unlocked
     // because it's open again and the above failure message arrives.
     // This'd be extremely rare, but may still happen.
-    LOG(INFO) << "Screen is unlocked";
+    LOG(INFO) << "UnlockScreenFailed: screen is already unlocked.";
   }
 }
 
@@ -646,7 +654,7 @@ ScreenLocker::~ScreenLocker() {
   gdk_pointer_ungrab(GDK_CURRENT_TIME);
 
   DCHECK(lock_window_);
-  LOG(INFO) << "Closing ScreenLocker window";
+  LOG(INFO) << "~ScreenLocker(): Closing ScreenLocker window";
   lock_window_->Close();
   // lock_widget_ will be deleted by gtk's destroy signal.
   screen_locker_ = NULL;
@@ -664,7 +672,7 @@ void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
 }
 
 void ScreenLocker::ScreenLockReady() {
-  DLOG(INFO) << "ScreenLockReady";
+  LOG(INFO) << "ScreenLockReady: sending completed signal to power manager.";
   // Don't show the password field until we grab all inputs.
   lock_widget_->GetRootView()->SetVisible(true);
   EnableInput();
