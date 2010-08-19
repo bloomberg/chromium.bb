@@ -631,36 +631,34 @@ void PrivacySection::InitControlLayout() {
   safe_browsing_.Init(prefs::kSafeBrowsingEnabled, profile()->GetPrefs(), this);
   enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
                                  g_browser_process->local_state(), this);
-
-
-  enable_link_doctor_checkbox_->SetEnabled(!alternate_error_pages_.IsManaged());
-  enable_suggest_checkbox_->SetEnabled(!use_suggest_.IsManaged());
-  enable_dns_prefetching_checkbox_->SetEnabled(
-      !dns_prefetch_enabled_.IsManaged());
-  enable_safe_browsing_checkbox_->SetEnabled(!safe_browsing_.IsManaged());
-#if defined(GOOGLE_CHROME_BUILD)
-  reporting_enabled_checkbox_->SetEnabled(
-      !enable_metrics_recording_.IsManaged());
-#endif
 }
 
 void PrivacySection::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kAlternateErrorPagesEnabled) {
+    enable_link_doctor_checkbox_->SetEnabled(
+        !alternate_error_pages_.IsManaged());
     enable_link_doctor_checkbox_->SetChecked(
         alternate_error_pages_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kSearchSuggestEnabled) {
+    enable_suggest_checkbox_->SetEnabled(!use_suggest_.IsManaged());
     enable_suggest_checkbox_->SetChecked(use_suggest_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kDnsPrefetchingEnabled) {
+    enable_dns_prefetching_checkbox_->SetEnabled(
+        !dns_prefetch_enabled_.IsManaged());
     bool enabled = dns_prefetch_enabled_.GetValue();
     enable_dns_prefetching_checkbox_->SetChecked(enabled);
     chrome_browser_net::EnablePredictor(enabled);
   }
-  if (!pref_name || *pref_name == prefs::kSafeBrowsingEnabled)
+  if (!pref_name || *pref_name == prefs::kSafeBrowsingEnabled) {
+    enable_safe_browsing_checkbox_->SetEnabled(!safe_browsing_.IsManaged());
     enable_safe_browsing_checkbox_->SetChecked(safe_browsing_.GetValue());
+  }
   if (reporting_enabled_checkbox_ &&
       (!pref_name || *pref_name == prefs::kMetricsReportingEnabled)) {
+    reporting_enabled_checkbox_->SetEnabled(
+        !enable_metrics_recording_.IsManaged());
     reporting_enabled_checkbox_->SetChecked(
         enable_metrics_recording_.GetValue());
     ResolveMetricsReportingEnabled();
