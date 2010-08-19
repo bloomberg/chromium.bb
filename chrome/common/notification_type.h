@@ -1059,6 +1059,11 @@ class NotificationType {
     // TokenAvailableDetails object.
     TOKEN_AVAILABLE,
 
+    // Sent when the sidebar state is changed.
+    // The source is a SidebarManager instance, the details are the changed
+    // SidebarContainer object.
+    SIDEBAR_CHANGED,
+
     // If a token request failed, one of these is issued per failed request.
     // The source is a TokenService on the Profile. The details are a
     // TokenRequestFailedDetails object.

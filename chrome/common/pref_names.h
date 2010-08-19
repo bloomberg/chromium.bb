@@ -310,6 +310,8 @@ extern const char kExtensionInstallDenyList[];
 
 extern const char kExtensionBlacklistUpdateVersion[];
 
+extern const char kExtensionSidebarWidth[];
+
 extern const char kNTPMostVisitedURLsBlacklist[];
 extern const char kNTPMostVisitedPinnedURLs[];
 extern const char kNTPTipsCache[];

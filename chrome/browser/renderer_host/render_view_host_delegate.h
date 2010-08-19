@@ -45,6 +45,7 @@ class SSLAddCertHandler;
 class TabContents;
 struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
+struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_GetSearchProviderInstallState_Params;
 struct ViewHostMsg_RunFileChooser_Params;
@@ -716,11 +717,8 @@ class RenderViewHostDelegate {
 
   // A message was sent from HTML-based UI.
   // By default we ignore such messages.
-  virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const ListValue* content,
-                                   const GURL& source_url,
-                                   int request_id,
-                                   bool has_callback) {}
+  virtual void ProcessDOMUIMessage(
+      const ViewHostMsg_DomMessage_Params& params) {}
 
   // A message for external host. By default we ignore such messages.
   // |receiver| can be a receiving script and |message| is any

@@ -20,6 +20,7 @@ class PrefService;
 class Profile;
 class RenderViewHost;
 class TabContents;
+struct ViewHostMsg_DomMessage_Params;
 
 // This class implements DOMUI for extensions and allows extensions to put UI in
 // the main tab contents area.
@@ -38,11 +39,7 @@ class ExtensionDOMUI
   // DOMUI
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RenderViewReused(RenderViewHost* render_view_host);
-  virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const ListValue* content,
-                                   const GURL& source_url,
-                                   int request_id,
-                                   bool has_callback);
+  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
   // ExtensionFunctionDispatcher::Delegate
   virtual Browser* GetBrowser() const;

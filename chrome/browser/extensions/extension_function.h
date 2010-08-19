@@ -90,6 +90,9 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
   void set_include_incognito(bool include) { include_incognito_ = include; }
   bool include_incognito() { return include_incognito_; }
 
+  void set_user_gesture(bool user_gesture) { user_gesture_ = user_gesture; }
+  bool user_gesture() const { return user_gesture_; }
+
   // Execute the API. Clients should call set_raw_args() and
   // set_request_id() before calling this method. Derived classes should be
   // ready to return raw_result() and error() before returning from this
@@ -148,6 +151,9 @@ class ExtensionFunction : public base::RefCountedThreadSafe<ExtensionFunction> {
 
   // True if this callback should include information from incognito contexts.
   bool include_incognito_;
+
+  // True if the call was made in response of user gesture.
+  bool user_gesture_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };

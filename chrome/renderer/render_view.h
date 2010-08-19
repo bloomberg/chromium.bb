@@ -241,10 +241,7 @@ class RenderView : public RenderWidget,
 
   // Extensions ----------------------------------------------------------------
 
-  void SendExtensionRequest(const std::string& name, const ListValue& args,
-                            const GURL& source_url,
-                            int request_id,
-                            bool has_callback);
+  void SendExtensionRequest(const ViewHostMsg_DomMessage_Params& params);
 
   void OnExtensionResponse(int request_id, bool success,
                            const std::string& response,

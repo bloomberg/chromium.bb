@@ -832,6 +832,8 @@ const char kNextExtensionsUpdateCheck[] = "extensions.autoupdate.next_check";
 const char kExtensionBlacklistUpdateVersion[] =
     "extensions.blacklistupdate.version";
 
+const char kExtensionSidebarWidth[] = "extensions.sidebar.width";
+
 // New Tab Page URLs that should not be shown as most visited thumbnails.
 const char kNTPMostVisitedURLsBlacklist[] = "ntp.most_visited_blacklist";
 

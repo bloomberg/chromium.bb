@@ -259,8 +259,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetPopupView);
     } else if (name->Equals(v8::String::New("GetPopupParentWindow"))) {
       return v8::FunctionTemplate::New(GetPopupParentWindow);
-    } else if (name->Equals(v8::String::New("SetExtensionActionIcon"))) {
-      return v8::FunctionTemplate::New(SetExtensionActionIcon);
+    } else if (name->Equals(v8::String::New("SetIconCommon"))) {
+      return v8::FunctionTemplate::New(SetIconCommon);
     } else if (name->Equals(v8::String::New("IsExtensionProcess"))) {
       return v8::FunctionTemplate::New(IsExtensionProcess);
     }
@@ -416,8 +416,9 @@ class ExtensionImpl : public ExtensionBase {
 
   // Common code for starting an API request to the browser. |value_args|
   // contains the request's arguments.
+  // Steals value_args contents for efficiency.
   static v8::Handle<v8::Value> StartRequestCommon(
-      const v8::Arguments& args, const ListValue& value_args) {
+      const v8::Arguments& args, ListValue* value_args) {
     // Get the current RenderView so that we can send a routed IPC message from
     // the correct source.
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
@@ -448,8 +449,14 @@ class ExtensionImpl : public ExtensionBase {
     GetPendingRequestMap()[request_id].reset(new PendingRequest(
         current_context, name));
 
-    renderview->SendExtensionRequest(name, value_args, source_url,
-                                     request_id, has_callback);
+    ViewHostMsg_DomMessage_Params params;
+    params.name = name;
+    params.arguments.Swap(value_args);
+    params.source_url = source_url;
+    params.request_id = request_id;
+    params.has_callback = has_callback;
+    params.user_gesture = webframe->isProcessingUserGesture();
+    renderview->SendExtensionRequest(params);
 
     return v8::Undefined();
   }
@@ -469,15 +476,11 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
     }
 
-    return StartRequestCommon(args, static_cast<const ListValue&>(
-        *value_args.get()));
+    return StartRequestCommon(args, static_cast<ListValue*>(value_args.get()));
   }
 
-  // A special request for setting the extension action icon. This function
-  // accepts a canvas ImageData object, so it needs to do extra processing
-  // before sending the request to the browser.
-  static v8::Handle<v8::Value> SetExtensionActionIcon(
-      const v8::Arguments& args) {
+  static bool ConvertImageDataToBitmapValue(
+      const v8::Arguments& args, Value** bitmap_value) {
     v8::Local<v8::Object> extension_args = args[1]->ToObject();
     v8::Local<v8::Object> details =
         extension_args->Get(v8::String::New("0"))->ToObject();
@@ -491,7 +494,7 @@ class ExtensionImpl : public ExtensionBase {
     int data_length = data->Get(v8::String::New("length"))->Int32Value();
     if (data_length != 4 * width * height) {
       NOTREACHED() << "Invalid argument to setIcon. Expecting ImageData.";
-      return v8::Undefined();
+      return false;
     }
 
     SkBitmap bitmap;
@@ -512,8 +515,24 @@ class ExtensionImpl : public ExtensionBase {
     // Construct the Value object.
     IPC::Message bitmap_pickle;
     IPC::WriteParam(&bitmap_pickle, bitmap);
-    Value* bitmap_value = BinaryValue::CreateWithCopiedBuffer(
+    *bitmap_value = BinaryValue::CreateWithCopiedBuffer(
         static_cast<const char*>(bitmap_pickle.data()), bitmap_pickle.size());
+
+    return true;
+  }
+
+  // A special request for setting the extension action icon and the sidebar
+  // mini tab icon. This function accepts a canvas ImageData object, so it needs
+  // to do extra processing before sending the request to the browser.
+  static v8::Handle<v8::Value> SetIconCommon(
+      const v8::Arguments& args) {
+    Value* bitmap_value = NULL;
+    if (!ConvertImageDataToBitmapValue(args, &bitmap_value))
+      return v8::Undefined();
+
+    v8::Local<v8::Object> extension_args = args[1]->ToObject();
+    v8::Local<v8::Object> details =
+        extension_args->Get(v8::String::New("0"))->ToObject();
 
     DictionaryValue* dict = new DictionaryValue();
     dict->Set("imageData", bitmap_value);
@@ -526,7 +545,7 @@ class ExtensionImpl : public ExtensionBase {
     ListValue list_value;
     list_value.Append(dict);
 
-    return StartRequestCommon(args, list_value);
+    return StartRequestCommon(args, &list_value);
   }
 
   static v8::Handle<v8::Value> GetRenderViewId(const v8::Arguments& args) {

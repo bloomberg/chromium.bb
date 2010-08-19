@@ -83,6 +83,7 @@ class TabContentsSSLHelper;
 class TabContentsView;
 class URLPattern;
 struct ThumbnailScore;
+struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewHostMsg_RunFileChooser_Params;
 struct WebPreferences;
@@ -920,11 +921,7 @@ class TabContents : public PageNavigator,
                               WindowOpenDisposition disposition);
   virtual void DomOperationResponse(const std::string& json_string,
                                     int automation_id);
-  virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const ListValue* content,
-                                   const GURL& source_url,
-                                   int request_id,
-                                   bool has_callback);
+  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
   virtual void ProcessExternalHostMessage(const std::string& message,
                                           const std::string& origin,
                                           const std::string& target);

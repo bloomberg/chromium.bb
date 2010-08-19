@@ -39,6 +39,7 @@
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_rlz_module.h"
+#include "chrome/browser/extensions/extension_sidebar_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #if defined(OS_CHROMEOS)
@@ -249,6 +250,17 @@ void FactoryRegistry::ResetFunctions() {
 
   // Proxies.
   RegisterFunction<UseCustomProxySettingsFunction>();
+
+  // Sidebar.
+  RegisterFunction<CollapseSidebarFunction>();
+  RegisterFunction<ExpandSidebarFunction>();
+  RegisterFunction<GetStateSidebarFunction>();
+  RegisterFunction<HideSidebarFunction>();
+  RegisterFunction<NavigateSidebarFunction>();
+  RegisterFunction<SetBadgeTextSidebarFunction>();
+  RegisterFunction<SetIconSidebarFunction>();
+  RegisterFunction<SetTitleSidebarFunction>();
+  RegisterFunction<ShowSidebarFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {
@@ -400,20 +412,18 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   return browser;
 }
 
-void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
-                                                const ListValue* args,
-                                                const GURL& source_url,
-                                                int request_id,
-                                                bool has_callback) {
+void ExtensionFunctionDispatcher::HandleRequest(
+    const ViewHostMsg_DomMessage_Params& params) {
   scoped_refptr<ExtensionFunction> function(
-      FactoryRegistry::instance()->NewFunction(name));
+      FactoryRegistry::instance()->NewFunction(params.name));
   function->set_dispatcher_peer(peer_);
   function->set_profile(profile_);
   function->set_extension_id(extension_id());
-  function->SetArgs(args);
-  function->set_source_url(source_url);
-  function->set_request_id(request_id);
-  function->set_has_callback(has_callback);
+  function->SetArgs(&params.arguments);
+  function->set_source_url(params.source_url);
+  function->set_request_id(params.request_id);
+  function->set_has_callback(params.has_callback);
+  function->set_user_gesture(params.user_gesture);
   ExtensionsService* service = profile()->GetExtensionsService();
   DCHECK(service);
   Extension* extension = service->GetExtensionById(extension_id(), false);
@@ -421,7 +431,8 @@ void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
   function->set_include_incognito(service->IsIncognitoEnabled(extension));
 
   ExtensionsQuotaService* quota = service->quota_service();
-  if (quota->Assess(extension_id(), function, args, base::TimeTicks::Now())) {
+  if (quota->Assess(extension_id(), function, &params.arguments,
+                    base::TimeTicks::Now())) {
     // See crbug.com/39178.
     ExternalProtocolHandler::PermitLaunchUrl();
 

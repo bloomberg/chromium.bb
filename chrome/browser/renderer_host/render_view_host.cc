@@ -1279,11 +1279,6 @@ void RenderViewHost::OnMsgDOMUISend(
     return;
   }
 
-  // DOMUI doesn't use these values yet.
-  // TODO(aa): When DOMUI is ported to ExtensionFunctionDispatcher, send real
-  // values here.
-  const int kRequestId = -1;
-  const bool kHasCallback = false;
   scoped_ptr<Value> value;
   if (!content.empty()) {
     value.reset(base::JSONReader::Read(content, false));
@@ -1295,11 +1290,18 @@ void RenderViewHost::OnMsgDOMUISend(
     }
   }
 
-  delegate_->ProcessDOMUIMessage(message,
-                                 static_cast<const ListValue*>(value.get()),
-                                 source_url,
-                                 kRequestId,
-                                 kHasCallback);
+  ViewHostMsg_DomMessage_Params params;
+  params.name = message;
+  if (value.get())
+    params.arguments.Swap(static_cast<ListValue*>(value.get()));
+  params.source_url = source_url;
+  // DOMUI doesn't use these values yet.
+  // TODO(aa): When DOMUI is ported to ExtensionFunctionDispatcher, send real
+  // values here.
+  params.request_id = -1;
+  params.has_callback = false;
+  params.user_gesture = false;
+  delegate_->ProcessDOMUIMessage(params);
 }
 
 void RenderViewHost::OnMsgForwardMessageToExternalHost(
@@ -1904,21 +1906,17 @@ void RenderViewHost::OnRequestNotificationPermission(
   }
 }
 
-void RenderViewHost::OnExtensionRequest(const std::string& name,
-                                        const ListValue& args,
-                                        const GURL& source_url,
-                                        int request_id,
-                                        bool has_callback) {
+void RenderViewHost::OnExtensionRequest(
+    const ViewHostMsg_DomMessage_Params& params) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
           HasExtensionBindings(process()->id())) {
     // This can happen if someone uses window.open() to open an extension URL
     // from a non-extension context.
-    BlockExtensionRequest(request_id);
+    BlockExtensionRequest(params.request_id);
     return;
   }
 
-  delegate_->ProcessDOMUIMessage(name, &args, source_url, request_id,
-      has_callback);
+  delegate_->ProcessDOMUIMessage(params);
 }
 
 void RenderViewHost::SendExtensionResponse(int request_id, bool success,

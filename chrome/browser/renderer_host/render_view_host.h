@@ -36,6 +36,7 @@ struct ContextMenuParams;
 struct MediaPlayerAction;
 struct ThumbnailScore;
 struct ViewHostMsg_DidPrintPage_Params;
+struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_RunFileChooser_Params;
 struct ViewHostMsg_ShowNotification_Params;
 struct ViewMsg_Navigate_Params;
@@ -636,10 +637,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnCancelDesktopNotification(int notification_id);
   void OnRequestNotificationPermission(const GURL& origin, int callback_id);
 
-  void OnExtensionRequest(const std::string& name, const ListValue& args,
-                          const GURL& source_url,
-                          int request_id,
-                          bool has_callback);
+  void OnExtensionRequest(const ViewHostMsg_DomMessage_Params& params);
   void OnExtensionPostMessage(int port_id, const std::string& message);
   void OnAccessibilityFocusChange(int acc_obj_id);
   void OnAccessibilityObjectStateChange(int acc_obj_id);

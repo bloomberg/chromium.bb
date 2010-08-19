@@ -71,6 +71,12 @@ enum ViewID {
   // The Download shelf.
   VIEW_ID_DOWNLOAD_SHELF,
 
+  // The Sidebar container.
+  VIEW_ID_SIDE_BAR_CONTAINER,
+
+  // The sidebar split.
+  VIEW_ID_SIDE_BAR_SPLIT,
+
   // Used in chrome/browser/gtk/view_id_util_browsertests.cc
   // If you add new ids, make sure the above test passes.
   VIEW_ID_PREDEFINED_COUNT

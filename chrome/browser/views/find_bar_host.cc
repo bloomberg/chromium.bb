@@ -227,8 +227,9 @@ gfx::Rect FindBarHost::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
   // Place the view in the top right corner of the widget boundaries (top left
   // for RTL languages).
   gfx::Rect view_location;
-  int x = base::i18n::IsRTL() ?
-      widget_bounds.x() : widget_bounds.width() - prefsize.width();
+  int x = widget_bounds.x();
+  if (!base::i18n::IsRTL())
+    x += widget_bounds.width() - prefsize.width();
   int y = widget_bounds.y();
   view_location.SetRect(x, y, prefsize.width(), prefsize.height());
 

@@ -74,11 +74,7 @@ class BalloonHost : public RenderViewHostDelegate,
   virtual RenderViewHostDelegate::View* GetViewDelegate() {
     return this;
   }
-  virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const ListValue* content,
-                                   const GURL& source_url,
-                                   int request_id,
-                                   bool has_callback);
+  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
   // RenderViewHostDelegate::View methods. Only the ones for opening new
   // windows are currently implemented.

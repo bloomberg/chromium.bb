@@ -29,6 +29,7 @@ class NotificationUIManager;
 class PrefService;
 class ProfileManager;
 class ResourceDispatcherHost;
+class SidebarManager;
 class TabCloseableStateWatcher;
 class ThumbnailGenerator;
 
@@ -63,6 +64,7 @@ class BrowserProcess {
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;
   virtual DevToolsManager* devtools_manager() = 0;
+  virtual SidebarManager* sidebar_manager() = 0;
   virtual Clipboard* clipboard() = 0;
 
   // Returns the manager for desktop notifications.

@@ -349,6 +349,9 @@ class BrowserWindowTesting {
   // Returns the TabContentsContainer.
   virtual views::View* GetTabContentsContainerView() const = 0;
 
+  // Returns the TabContentsContainer.
+  virtual views::View* GetSidebarContainerView() const = 0;
+
   // Returns the ToolbarView.
   virtual ToolbarView* GetToolbarView() const = 0;
 #endif

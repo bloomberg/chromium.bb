@@ -4587,17 +4587,9 @@ void RenderView::OnWindowFrameChanged(const gfx::Rect& window_frame,
 }
 #endif  // OS_MACOSX
 
-void RenderView::SendExtensionRequest(const std::string& name,
-                                      const ListValue& args,
-                                      const GURL& source_url,
-                                      int request_id,
-                                      bool has_callback) {
-  Send(new ViewHostMsg_ExtensionRequest(routing_id_,
-                                        name,
-                                        args,
-                                        source_url,
-                                        request_id,
-                                        has_callback));
+void RenderView::SendExtensionRequest(
+    const ViewHostMsg_DomMessage_Params& params) {
+  Send(new ViewHostMsg_ExtensionRequest(routing_id_, params));
 }
 
 void RenderView::OnExtensionResponse(int request_id,

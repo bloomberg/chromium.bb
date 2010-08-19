@@ -20,9 +20,10 @@ class GURL;
 class ListValue;
 class Profile;
 class RenderViewHost;
-class Value;
 class TabContents;
 class ThemeProvider;
+class Value;
+struct ViewHostMsg_DomMessage_Params;
 
 // A DOMUI sets up the datasources and message handlers for a given HTML-based
 // UI. It is contained by a DOMUIManager.
@@ -42,11 +43,7 @@ class DOMUI {
   virtual void RenderViewReused(RenderViewHost* render_view_host) {}
 
   // Called from TabContents.
-  virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const ListValue* content,
-                                   const GURL& source_url,
-                                   int request_id,
-                                   bool has_callback);
+  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
   // Used by DOMMessageHandlers.
   typedef Callback1<const Value*>::Type MessageCallback;

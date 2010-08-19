@@ -262,6 +262,7 @@ var chrome = chrome || {};
       "experimental.tts",
       "experimental.proxy",
       "experimental.rlz",
+      "experimental.sidebar",
       "experimental.webNavigation",
       "experimental.webRequest",
       "history",

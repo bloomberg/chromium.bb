@@ -43,6 +43,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -85,6 +86,7 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_icon_manager_(false),
       created_debugger_wrapper_(false),
       created_devtools_manager_(false),
+      created_sidebar_manager_(false),
       created_notification_ui_manager_(false),
       module_ref_count_(0),
       did_start_(false),
@@ -344,6 +346,13 @@ DevToolsManager* BrowserProcessImpl::devtools_manager() {
   if (!created_devtools_manager_)
     CreateDevToolsManager();
   return devtools_manager_.get();
+}
+
+SidebarManager* BrowserProcessImpl::sidebar_manager() {
+  DCHECK(CalledOnValidThread());
+  if (!created_sidebar_manager_)
+    CreateSidebarManager();
+  return sidebar_manager_.get();
 }
 
 Clipboard* BrowserProcessImpl::clipboard() {
@@ -615,6 +624,12 @@ void BrowserProcessImpl::CreateDevToolsManager() {
   DCHECK(devtools_manager_.get() == NULL);
   created_devtools_manager_ = true;
   devtools_manager_ = new DevToolsManager();
+}
+
+void BrowserProcessImpl::CreateSidebarManager() {
+  DCHECK(sidebar_manager_.get() == NULL);
+  created_sidebar_manager_ = true;
+  sidebar_manager_ = new SidebarManager();
 }
 
 void BrowserProcessImpl::CreateGoogleURLTracker() {

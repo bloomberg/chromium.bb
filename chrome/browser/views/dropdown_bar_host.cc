@@ -276,7 +276,7 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
   // TODO(brettw) this constant is evil. This is the amount of room we've added
   // to the window size, when we set the region, it can change the size.
   static const int kAddedWidth = 7;
-  int difference = new_pos.right() - kAddedWidth - widget_bounds.width() -
+  int difference = new_pos.right() - kAddedWidth - widget_bounds.right() -
       gfx::scrollbar_size() + 1;
   if (difference > 0) {
     Path::Point exclude[4];

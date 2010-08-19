@@ -144,6 +144,9 @@ class BrowserView : public BrowserBubbleHost,
   // offset of IDR_THEME_TOOLBAR.
   gfx::Rect GetTabStripBounds() const;
 
+  // Returns the width of the currently displayed sidebar or 0.
+  int GetSidebarWidth() const;
+
   // Accessor for the TabStrip.
   BaseTabStrip* tabstrip() const { return tabstrip_; }
 
@@ -316,6 +319,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual BookmarkBarView* GetBookmarkBarView() const;
   virtual LocationBarView* GetLocationBarView() const;
   virtual views::View* GetTabContentsContainerView() const;
+  virtual views::View* GetSidebarContainerView() const;
   virtual ToolbarView* GetToolbarView() const;
 
   // Overridden from NotificationObserver:
@@ -436,6 +440,12 @@ class BrowserView : public BrowserBubbleHost,
   // |contents| can be NULL.
   bool MaybeShowInfoBar(TabContents* contents);
 
+  // Updates sidebar UI according to the current tab and sidebar state.
+  void UpdateSidebar();
+  // Displays active sidebar linked to the |tab_contents| or hides sidebar UI,
+  // if there's no such sidebar.
+  void UpdateSidebarForContents(TabContents* tab_contents);
+
   // Updated devtools window for given contents.
   void UpdateDevToolsForContents(TabContents* tab_contents);
 
@@ -499,6 +509,42 @@ class BrowserView : public BrowserBubbleHost,
   // The Browser object we are associated with.
   scoped_ptr<Browser> browser_;
 
+  // BrowserView layout (LTR one is pictured here).
+  //
+  // --------------------------------------------------------------------------
+  // |         | Tabs (1)                                                     |
+  // |         |--------------------------------------------------------------|
+  // |         | Navigation buttons, menus and the address bar (toolbar_)     |
+  // |         |--------------------------------------------------------------|
+  // |         | All infobars (infobar_container_)                            |
+  // |         |--------------------------------------------------------------|
+  // |         | Bookmarks (bookmark_bar_view_)                               |
+  // |         |--------------------------------------------------------------|
+  // |         |Page content (contents_)              ||                      |
+  // |         |--------------------------------------|| Sidebar content      |
+  // |         || contents_container_ or             ||| (sidebar_container_) |
+  // |         || preview_container_                 |||                      |
+  // |         ||                                    |(3)                     |
+  // | Tabs (2)||                                    |||                      |
+  // |         ||                                    |||                      |
+  // |         ||                                    |||                      |
+  // |         ||                                    |||                      |
+  // |         |--------------------------------------||                      |
+  // |         |==(4)=========================================================|
+  // |         |                                                              |
+  // |         |                                                              |
+  // |         | Debugger (devtools_container_)                               |
+  // |         |                                                              |
+  // |         |                                                              |
+  // |         |--------------------------------------------------------------|
+  // |         | Active downloads (download_shelf_)                           |
+  // --------------------------------------------------------------------------
+  //
+  // (1) - tabstrip_, default position
+  // (2) - tabstrip_, position when side tabs are enabled
+  // (3) - sidebar_split_
+  // (4) - contents_split_
+
   // Tool/Info bars that we are currently showing. Used for layout.
   // active_bookmark_bar_ is either NULL, if the bookmark bar isn't showing,
   // or is bookmark_bar_view_ if the bookmark bar is showing.
@@ -518,6 +564,12 @@ class BrowserView : public BrowserBubbleHost,
 
   // The InfoBarContainer that contains InfoBars for the current tab.
   InfoBarContainer* infobar_container_;
+
+  // The view that contains sidebar for the current tab.
+  TabContentsContainer* sidebar_container_;
+
+  // Split view containing the contents container and sidebar container.
+  views::SingleSplitView* sidebar_split_;
 
   // The view that contains the selected TabContents.
   TabContentsContainer* contents_container_;

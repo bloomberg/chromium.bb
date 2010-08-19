@@ -6,6 +6,7 @@
 
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
+#include "chrome/browser/sidebar/sidebar_manager.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/download_shelf_view.h"
@@ -204,9 +205,15 @@ void BrowserViewLayout::Uninstalled(views::View* host) {}
 
 void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
   switch (view->GetID()) {
-    case VIEW_ID_CONTENTS_SPLIT:
-      contents_split_ = view;
-      contents_container_ = contents_split_->GetChildViewAt(0);
+    case VIEW_ID_CONTENTS_SPLIT: {
+        contents_split_ = view;
+        if (SidebarManager::IsSidebarAllowed()) {
+          views::View* sidebar_split = contents_split_->GetChildViewAt(0);
+          contents_container_ = sidebar_split->GetChildViewAt(0);
+        } else {
+          contents_container_ = contents_split_->GetChildViewAt(0);
+        }
+      }
       break;
     case VIEW_ID_INFO_BAR_CONTAINER:
       infobar_container_ = view;

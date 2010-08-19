@@ -125,11 +125,7 @@ class ExtensionHost : public RenderViewHostDelegate,
       RenderViewHost* render_view_host);
 
   virtual WebPreferences GetWebkitPrefs();
-  virtual void ProcessDOMUIMessage(const std::string& message,
-                                   const ListValue* content,
-                                   const GURL& source_url,
-                                   int request_id,
-                                   bool has_callback);
+  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,

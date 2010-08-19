@@ -162,16 +162,9 @@ void ExtensionDOMUI::RenderViewReused(RenderViewHost* render_view_host) {
   ResetExtensionBookmarkManagerEventRouter();
 }
 
-void ExtensionDOMUI::ProcessDOMUIMessage(const std::string& message,
-                                         const ListValue* content,
-                                         const GURL& source_url,
-                                         int request_id,
-                                         bool has_callback) {
-  extension_function_dispatcher_->HandleRequest(message,
-                                                content,
-                                                source_url,
-                                                request_id,
-                                                has_callback);
+void ExtensionDOMUI::ProcessDOMUIMessage(
+    const ViewHostMsg_DomMessage_Params& params) {
+  extension_function_dispatcher_->HandleRequest(params);
 }
 
 Browser* ExtensionDOMUI::GetBrowser() const {

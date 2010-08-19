@@ -49,6 +49,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   virtual ProfileManager* profile_manager();
   virtual PrefService* local_state();
   virtual DevToolsManager* devtools_manager();
+  virtual SidebarManager* sidebar_manager();
   virtual Clipboard* clipboard();
   virtual NotificationUIManager* notification_ui_manager();
   virtual IconManager* icon_manager();
@@ -100,6 +101,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateIconManager();
   void CreateDebuggerWrapper(int port, bool useHttp);
   void CreateDevToolsManager();
+  void CreateSidebarManager();
   void CreateGoogleURLTracker();
   void CreateIntranetRedirectDetector();
   void CreateNotificationUIManager();
@@ -149,6 +151,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   bool created_devtools_manager_;
   scoped_refptr<DevToolsManager> devtools_manager_;
+
+  bool created_sidebar_manager_;
+  scoped_refptr<SidebarManager> sidebar_manager_;
 
   scoped_ptr<Clipboard> clipboard_;
 

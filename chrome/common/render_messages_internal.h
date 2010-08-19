@@ -2007,12 +2007,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // A renderer sends this message when an extension process starts an API
   // request. The browser will always respond with a ViewMsg_ExtensionResponse.
-  IPC_MESSAGE_ROUTED5(ViewHostMsg_ExtensionRequest,
-                      std::string /* name */,
-                      ListValue /* arguments */,
-                      GURL /* source_url */,
-                      int /* callback id */,
-                      bool /* has_callback */)
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ExtensionRequest,
+                      ViewHostMsg_DomMessage_Params)
 
   // Notify the browser that this renderer added a listener to an event.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_ExtensionAddListener,

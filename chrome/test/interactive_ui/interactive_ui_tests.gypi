@@ -145,6 +145,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
 
         '<(DEPTH)/chrome/browser/accessibility_win_browsertest.cc',
+        # TODO: port sidebar.
+        '<(DEPTH)/chrome/browser/sidebar/sidebar_test.cc',
         '<(DEPTH)/chrome/browser/views/browser_views_accessibility_browsertest.cc',
       ],
       'conditions': [

@@ -17,7 +17,7 @@ var chrome = chrome || {};
   native function GetRenderViewId();
   native function GetPopupParentWindow();
   native function GetPopupView();
-  native function SetExtensionActionIcon();
+  native function SetIconCommon();
   native function IsExtensionProcess();
 
   var chromeHidden = GetChromeHidden();
@@ -535,9 +535,8 @@ var chrome = chrome || {};
     };
 
     var canvas;
-    function setIconCommon(details, name, parameters, actionType) {
-      var EXTENSION_ACTION_ICON_SIZE = 19;
-
+    function setIconCommon(details, name, parameters, actionType, iconSize,
+                           nativeFunction) {
       if ("iconIndex" in details) {
         sendRequest(name, [details], parameters);
       } else if ("imageData" in details) {
@@ -554,14 +553,14 @@ var chrome = chrome || {};
               "The imageData property must contain an ImageData object.");
         }
 
-        if (details.imageData.width > EXTENSION_ACTION_ICON_SIZE ||
-            details.imageData.height > EXTENSION_ACTION_ICON_SIZE) {
+        if (details.imageData.width > iconSize ||
+            details.imageData.height > iconSize) {
           throw new Error(
               "The imageData property must contain an ImageData object that " +
-              "is no larger than 19 pixels square.");
+              "is no larger than " + iconSize + " pixels square.");
         }
 
-        sendCustomRequest(SetExtensionActionIcon, name, [details], parameters);
+        sendCustomRequest(nativeFunction, name, [details], parameters);
       } else if ("path" in details) {
         var img = new Image();
         img.onerror = function() {
@@ -570,10 +569,8 @@ var chrome = chrome || {};
         }
         img.onload = function() {
           var canvas = document.createElement("canvas");
-          canvas.width = img.width > EXTENSION_ACTION_ICON_SIZE ?
-              EXTENSION_ACTION_ICON_SIZE : img.width;
-          canvas.height = img.height > EXTENSION_ACTION_ICON_SIZE ?
-              EXTENSION_ACTION_ICON_SIZE : img.height;
+          canvas.width = img.width > iconSize ? iconSize : img.width;
+          canvas.height = img.height > iconSize ? iconSize : img.height;
 
           var canvas_context = canvas.getContext('2d');
           canvas_context.clearRect(0, 0, canvas.width, canvas.height);
@@ -581,8 +578,7 @@ var chrome = chrome || {};
           delete details.path;
           details.imageData = canvas_context.getImageData(0, 0, canvas.width,
                                                           canvas.height);
-          sendCustomRequest(SetExtensionActionIcon, name, [details],
-                            parameters);
+          sendCustomRequest(nativeFunction, name, [details], parameters);
         }
         img.src = details.path;
       } else {
@@ -591,14 +587,29 @@ var chrome = chrome || {};
       }
     }
 
+    function setExtensionActionIconCommon(details, name, parameters,
+                                          actionType) {
+      var EXTENSION_ACTION_ICON_SIZE = 19;
+      setIconCommon(details, name, parameters, actionType,
+                    EXTENSION_ACTION_ICON_SIZE, SetIconCommon);
+    }
+
     apiFunctions["browserAction.setIcon"].handleRequest = function(details) {
-      setIconCommon(
+      setExtensionActionIconCommon(
           details, this.name, this.definition.parameters, "browser action");
     };
 
     apiFunctions["pageAction.setIcon"].handleRequest = function(details) {
-      setIconCommon(
+      setExtensionActionIconCommon(
           details, this.name, this.definition.parameters, "page action");
+    };
+
+    apiFunctions["experimental.sidebar.setIcon"].handleRequest =
+        function(details) {
+      var SIDEBAR_ICON_SIZE = 16;
+      setIconCommon(
+          details, this.name, this.definition.parameters, "sidebar",
+          SIDEBAR_ICON_SIZE, SetIconCommon);
     };
 
     apiFunctions["contextMenus.create"].handleRequest =

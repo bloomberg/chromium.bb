@@ -18,6 +18,7 @@
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
+#include "base/values.h"
 #include "chrome/common/common_param_traits.h"
 #include "chrome/common/css_colors.h"
 #include "chrome/common/dom_storage_common.h"
@@ -865,6 +866,27 @@ enum ViewHostMsg_EnablePreferredSizeChangedMode_Flags {
   kPreferredSizeWidth = 1 << 0,
   // Requesting the height currently requires a polling loop in render_view.cc.
   kPreferredSizeHeightThisIsSlow = 1 << 1,
+};
+
+// Parameters structure for ViewHostMsg_ExtensionRequest.
+struct ViewHostMsg_DomMessage_Params {
+  // Message name.
+  std::string name;
+
+  // List of message arguments.
+  ListValue arguments;
+
+  // URL of the frame request was sent from.
+  GURL source_url;
+
+  // Unique request id to match requests and responses.
+  int request_id;
+
+  // True if request has a callback specified.
+  bool has_callback;
+
+  // True if request is executed in response to an explicit user gesture.
+  bool user_gesture;
 };
 
 namespace IPC {
@@ -2711,6 +2733,44 @@ struct ParamTraits<ViewMsg_DeviceOrientationUpdated_Params> {
     l->append(")");
   }
 };
+// Traits for ViewHostMsg_DomMessage_Params structure to pack/unpack.
+template <>
+struct ParamTraits<ViewHostMsg_DomMessage_Params> {
+  typedef ViewHostMsg_DomMessage_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.name);
+    WriteParam(m, p.arguments);
+    WriteParam(m, p.source_url);
+    WriteParam(m, p.request_id);
+    WriteParam(m, p.has_callback);
+    WriteParam(m, p.user_gesture);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+      ReadParam(m, iter, &p->name) &&
+      ReadParam(m, iter, &p->arguments) &&
+      ReadParam(m, iter, &p->source_url) &&
+      ReadParam(m, iter, &p->request_id) &&
+      ReadParam(m, iter, &p->has_callback) &&
+      ReadParam(m, iter, &p->user_gesture);
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
+    LogParam(p.name, l);
+    l->append(", ");
+    LogParam(p.arguments, l);
+    l->append(", ");
+    LogParam(p.source_url, l);
+    l->append(", ");
+    LogParam(p.request_id, l);
+    l->append(", ");
+    LogParam(p.has_callback, l);
+    l->append(", ");
+    LogParam(p.user_gesture, l);
+    l->append(")");
+  }
+};
+
 }  // namespace IPC
 
 #define MESSAGES_INTERNAL_FILE "chrome/common/render_messages_internal.h"

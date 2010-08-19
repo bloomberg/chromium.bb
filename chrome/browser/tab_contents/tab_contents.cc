@@ -2585,20 +2585,15 @@ void TabContents::DomOperationResponse(const std::string& json_string,
                                        int automation_id) {
 }
 
-void TabContents::ProcessDOMUIMessage(const std::string& message,
-                                      const ListValue* content,
-                                      const GURL& source_url,
-                                      int request_id,
-                                      bool has_callback) {
+void TabContents::ProcessDOMUIMessage(
+    const ViewHostMsg_DomMessage_Params& params) {
   if (!render_manager_.dom_ui()) {
     // This can happen if someone uses window.open() to open an extension URL
     // from a non-extension context.
-    render_view_host()->BlockExtensionRequest(request_id);
+    render_view_host()->BlockExtensionRequest(params.request_id);
     return;
   }
-  render_manager_.dom_ui()->ProcessDOMUIMessage(message, content, source_url,
-                                                request_id,
-                                                has_callback);
+  render_manager_.dom_ui()->ProcessDOMUIMessage(params);
 }
 
 void TabContents::ProcessExternalHostMessage(const std::string& message,

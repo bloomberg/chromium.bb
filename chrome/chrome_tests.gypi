@@ -1720,6 +1720,7 @@
         'browser/extensions/extension_proxy_apitest.cc',
         'browser/extensions/extension_processes_apitest.cc',
         'browser/extensions/extension_rlz_apitest.cc',
+        'browser/extensions/extension_sidebar_apitest.cc',
         'browser/extensions/extension_startup_browsertest.cc',
         'browser/extensions/extension_storage_apitest.cc',
         'browser/extensions/extension_tabs_apitest.cc',

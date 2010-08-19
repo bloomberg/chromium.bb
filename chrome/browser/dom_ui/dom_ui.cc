@@ -16,6 +16,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
+#include "chrome/common/render_messages.h"
 
 namespace {
 
@@ -53,19 +54,15 @@ DOMUI::~DOMUI() {
 
 // DOMUI, public: -------------------------------------------------------------
 
-void DOMUI::ProcessDOMUIMessage(const std::string& message,
-                                const ListValue* content,
-                                const GURL& source_url,
-                                int request_id,
-                                bool has_callback) {
+void DOMUI::ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params) {
   // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =
-      message_callbacks_.find(message);
+      message_callbacks_.find(params.name);
   if (callback == message_callbacks_.end())
     return;
 
   // Forward this message and content on.
-  callback->second->Run(content);
+  callback->second->Run(&params.arguments);
 }
 
 void DOMUI::CallJavascriptFunction(const std::wstring& function_name) {

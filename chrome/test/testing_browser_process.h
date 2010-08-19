@@ -87,6 +87,10 @@ class TestingBrowserProcess : public BrowserProcess {
     return NULL;
   }
 
+  virtual SidebarManager* sidebar_manager() {
+    return NULL;
+  }
+
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher() {
     return NULL;
   }
