@@ -36,6 +36,22 @@ class TestingAutomationProvider : public AutomationProvider,
   void CloseBrowserAsync(int browser_handle);
   void ActivateTab(int handle, int at_index, int* status);
   void AppendTab(int handle, const GURL& url, IPC::Message* reply_message);
+  void GetActiveTabIndex(int handle, int* active_tab_index);
+  void CloseTab(int tab_handle, bool wait_until_closed,
+                IPC::Message* reply_message);
+  void GetCookies(const GURL& url, int handle, int* value_size,
+                  std::string* value);
+  void SetCookie(const GURL& url,
+                 const std::string value,
+                 int handle,
+                 int* response_value);
+  void DeleteCookie(const GURL& url, const std::string& cookie_name,
+                    int handle, bool* success);
+  void ShowCollectedCookiesDialog(int handle, bool* success);
+  void NavigateToURL(int handle, const GURL& url, IPC::Message* reply_message);
+  void NavigateToURLBlockUntilNavigationsComplete(int handle, const GURL& url,
+                                                  int number_of_navigations,
+                                                  IPC::Message* reply_message);
 
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

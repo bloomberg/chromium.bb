@@ -335,17 +335,6 @@ Extension* AutomationProvider::GetDisabledExtension(int extension_handle) {
 
 void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutomationProvider, message)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ActiveTabIndex, GetActiveTabIndex)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CloseTab, CloseTab)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetCookies, GetCookies)
-    IPC_MESSAGE_HANDLER(AutomationMsg_SetCookie, SetCookie)
-    IPC_MESSAGE_HANDLER(AutomationMsg_DeleteCookie, DeleteCookie)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ShowCollectedCookiesDialog,
-                        ShowCollectedCookiesDialog)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_NavigateToURL, NavigateToURL)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        AutomationMsg_NavigateToURLBlockUntilNavigationsComplete,
-        NavigateToURLBlockUntilNavigationsComplete)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsync, NavigationAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsyncWithDisposition,
                         NavigationAsyncWithDisposition)
@@ -584,36 +573,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 }
 
-void AutomationProvider::NavigateToURL(int handle, const GURL& url,
-                                       IPC::Message* reply_message) {
-  NavigateToURLBlockUntilNavigationsComplete(handle, url, 1, reply_message);
-}
-
-void AutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
-    int handle, const GURL& url, int number_of_navigations,
-    IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-
-    // Simulate what a user would do. Activate the tab and then navigate.
-    // We could allow navigating in a background tab in future.
-    Browser* browser = FindAndActivateTab(tab);
-
-    if (browser) {
-      AddNavigationStatusListener(tab, reply_message, number_of_navigations,
-                                  false);
-
-      // TODO(darin): avoid conversion to GURL
-      browser->OpenURL(url, GURL(), CURRENT_TAB, PageTransition::TYPED);
-      return;
-    }
-  }
-
-  AutomationMsg_NavigateToURL::WriteReplyParams(
-      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
-  Send(reply_message);
-}
-
 void AutomationProvider::NavigationAsync(int handle,
                                         const GURL& url,
                                         bool* status) {
@@ -777,14 +736,6 @@ void AutomationProvider::GetRedirectsFrom(int tab_handle,
   std::vector<GURL> empty;
   AutomationMsg_RedirectsFrom::WriteReplyParams(reply_message, false, empty);
   Send(reply_message);
-}
-
-void AutomationProvider::GetActiveTabIndex(int handle, int* active_tab_index) {
-  *active_tab_index = -1;  // -1 is the error code
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    *active_tab_index = browser->selected_index();
-  }
 }
 
 void AutomationProvider::GetBrowserLocale(string16* locale) {
@@ -1099,164 +1050,6 @@ Browser* AutomationProvider::FindAndActivateTab(
     browser->SelectTabContentsAt(tab_index, true);
 
   return browser;
-}
-
-namespace {
-
-class GetCookiesTask : public Task {
- public:
-  GetCookiesTask(const GURL& url,
-                 URLRequestContextGetter* context_getter,
-                 base::WaitableEvent* event,
-                 std::string* cookies)
-      : url_(url),
-        context_getter_(context_getter),
-        event_(event),
-        cookies_(cookies) {}
-
-  virtual void Run() {
-    *cookies_ = context_getter_->GetCookieStore()->GetCookies(url_);
-    event_->Signal();
-  }
-
- private:
-  const GURL& url_;
-  URLRequestContextGetter* const context_getter_;
-  base::WaitableEvent* const event_;
-  std::string* const cookies_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetCookiesTask);
-};
-
-std::string GetCookiesForURL(
-    const GURL& url,
-    URLRequestContextGetter* context_getter) {
-  std::string cookies;
-  base::WaitableEvent event(true /* manual reset */,
-                            false /* not initially signaled */);
-  CHECK(ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      new GetCookiesTask(url, context_getter, &event, &cookies)));
-  event.Wait();
-  return cookies;
-}
-
-class SetCookieTask : public Task {
- public:
-  SetCookieTask(const GURL& url,
-                const std::string& value,
-                URLRequestContextGetter* context_getter,
-                base::WaitableEvent* event,
-                bool* rv)
-      : url_(url),
-        value_(value),
-        context_getter_(context_getter),
-        event_(event),
-        rv_(rv) {}
-
-  virtual void Run() {
-    *rv_ = context_getter_->GetCookieStore()->SetCookie(url_, value_);
-    event_->Signal();
-  }
-
- private:
-  const GURL& url_;
-  const std::string& value_;
-  URLRequestContextGetter* const context_getter_;
-  base::WaitableEvent* const event_;
-  bool* const rv_;
-
-  DISALLOW_COPY_AND_ASSIGN(SetCookieTask);
-};
-
-bool SetCookieForURL(
-    const GURL& url,
-    const std::string& value,
-    URLRequestContextGetter* context_getter) {
-  base::WaitableEvent event(true /* manual reset */,
-                            false /* not initially signaled */);
-  bool rv = false;
-  CHECK(ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      new SetCookieTask(url, value, context_getter, &event, &rv)));
-  event.Wait();
-  return rv;
-}
-
-class DeleteCookieTask : public Task {
- public:
-  DeleteCookieTask(const GURL& url,
-                   const std::string& name,
-                   const scoped_refptr<URLRequestContextGetter>& context_getter)
-      : url_(url),
-        name_(name),
-        context_getter_(context_getter) {}
-
-  virtual void Run() {
-    net::CookieStore* cookie_store = context_getter_->GetCookieStore();
-    cookie_store->DeleteCookie(url_, name_);
-  }
-
- private:
-  const GURL url_;
-  const std::string name_;
-  const scoped_refptr<URLRequestContextGetter> context_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteCookieTask);
-};
-
-}  // namespace
-
-void AutomationProvider::GetCookies(const GURL& url, int handle,
-                                    int* value_size,
-                                    std::string* value) {
-  *value_size = -1;
-  if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-
-    // Since we are running on the UI thread don't call GetURLRequestContext().
-    *value = GetCookiesForURL(url, tab->profile()->GetRequestContext());
-    *value_size = static_cast<int>(value->size());
-  }
-}
-
-void AutomationProvider::SetCookie(const GURL& url,
-                                   const std::string value,
-                                   int handle,
-                                   int* response_value) {
-  *response_value = -1;
-
-  if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-
-    if (SetCookieForURL(url, value, tab->profile()->GetRequestContext()))
-      *response_value = 1;
-  }
-}
-
-void AutomationProvider::DeleteCookie(const GURL& url,
-                                      const std::string& cookie_name,
-                                      int handle, bool* success) {
-  *success = false;
-  if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
-    NavigationController* tab = tab_tracker_->GetResource(handle);
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        new DeleteCookieTask(url, cookie_name,
-                             tab->profile()->GetRequestContext()));
-    *success = true;
-  }
-}
-
-void AutomationProvider::ShowCollectedCookiesDialog(
-    int handle, bool* success) {
-  *success = false;
-  if (tab_tracker_->ContainsHandle(handle)) {
-    TabContents* tab_contents =
-        tab_tracker_->GetResource(handle)->tab_contents();
-    tab_contents->delegate()->ShowCollectedCookiesDialog(tab_contents);
-    *success = true;
-  }
 }
 
 void AutomationProvider::GetTabURL(int handle, bool* success, GURL* url) {
@@ -3533,23 +3326,6 @@ void AutomationProvider::HideInterstitialPage(int tab_handle,
     tab_contents->interstitial_page()->DontProceed();
     *success = true;
   }
-}
-
-void AutomationProvider::CloseTab(int tab_handle,
-                                  bool wait_until_closed,
-                                  IPC::Message* reply_message) {
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* controller = tab_tracker_->GetResource(tab_handle);
-    int index;
-    Browser* browser = Browser::GetBrowserForController(controller, &index);
-    DCHECK(browser);
-    new TabClosedNotificationObserver(this, wait_until_closed, reply_message);
-    browser->CloseContents(controller->tab_contents());
-    return;
-  }
-
-  AutomationMsg_CloseTab::WriteReplyParams(reply_message, false);
-  Send(reply_message);
 }
 
 void AutomationProvider::WaitForTabToBeRestored(int tab_handle,

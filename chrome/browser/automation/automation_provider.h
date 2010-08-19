@@ -154,23 +154,16 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   friend class PopupMenuWaiter;
   virtual ~AutomationProvider();
 
+  // Helper function to find the browser window that contains a given
+  // NavigationController and activate that tab.
+  // Returns the Browser if found.
+  Browser* FindAndActivateTab(NavigationController* contents);
+
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
+  scoped_ptr<AutomationTabTracker> tab_tracker_;
 
  private:
   // IPC Message callbacks.
-  void CloseTab(int tab_handle, bool wait_until_closed,
-                IPC::Message* reply_message);
-
-  void GetActiveTabIndex(int handle, int* active_tab_index);
-  void GetCookies(const GURL& url, int handle, int* value_size,
-                  std::string* value);
-  void SetCookie(const GURL& url,
-                 const std::string value,
-                 int handle,
-                 int* response_value);
-  void DeleteCookie(const GURL& url, const std::string& cookie_name,
-                    int handle, bool* success);
-  void ShowCollectedCookiesDialog(int handle, bool* success);
   void GetBrowserWindowCount(int* window_count);
   void GetBrowserLocale(string16* locale);
   void GetNormalBrowserWindowCount(int* window_count);
@@ -224,10 +217,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetTabIndex(int handle, int* tabstrip_index);
   void GetTabURL(int handle, bool* success, GURL* url);
   void HandleUnused(const IPC::Message& message, int handle);
-  void NavigateToURL(int handle, const GURL& url, IPC::Message* reply_message);
-  void NavigateToURLBlockUntilNavigationsComplete(int handle, const GURL& url,
-                                                  int number_of_navigations,
-                                                  IPC::Message* reply_message);
   void NavigationAsync(int handle, const GURL& url, bool* status);
   void NavigationAsyncWithDisposition(int handle,
                                       const GURL& url,
@@ -261,11 +250,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                          bool* success);
 
   void GetFocusedViewID(int handle, int* view_id);
-
-  // Helper function to find the browser window that contains a given
-  // NavigationController and activate that tab.
-  // Returns the Browser if found.
-  Browser* FindAndActivateTab(NavigationController* contents);
 
   // Deprecated.
   void ApplyAccelerator(int handle, int id);
@@ -930,7 +914,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
       extension_test_result_observer_;
   scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;
-  scoped_ptr<AutomationTabTracker> tab_tracker_;
   scoped_ptr<AutomationWindowTracker> window_tracker_;
   scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;
   scoped_ptr<NavigationControllerRestoredObserver> restore_tracker_;
