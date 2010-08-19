@@ -11,6 +11,7 @@
 
 #include "app/sql/statement.h"
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/url_constants.h"
@@ -50,6 +51,17 @@ bool VisitDatabase::InitVisitTable() {
       return false;
   }
 
+  // Visit source table contains the source information for all the visits. To
+  // save space, we do not record those user browsed visits which would be the
+  // majority in this table. Only other sources are recorded.
+  // Due to the tight relationship between visit_source and visits table, they
+  // should be created and dropped at the same time.
+  if (!GetDB().DoesTableExist("visit_source")) {
+    if (!GetDB().Execute("CREATE TABLE visit_source("
+                         "id INTEGER PRIMARY KEY,source INTEGER NOT NULL)"))
+        return false;
+  }
+
   // Index over url so we can quickly find visits for a page. This will just
   // fail if it already exists and we'll ignore it.
   GetDB().Execute("CREATE INDEX visits_url_index ON visits (url)");
@@ -67,6 +79,7 @@ bool VisitDatabase::InitVisitTable() {
 }
 
 bool VisitDatabase::DropVisitTable() {
+  GetDB().Execute("DROP TABLE visit_source");
   // This will also drop the indices over the table.
   return GetDB().Execute("DROP TABLE visits");
 }
@@ -93,7 +106,7 @@ void VisitDatabase::FillVisitVector(sql::Statement& statement,
   }
 }
 
-VisitID VisitDatabase::AddVisit(VisitRow* visit) {
+VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO visits "
       "(url, visit_time, from_visit, transition, segment_id, is_indexed) "
@@ -111,6 +124,20 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit) {
     return 0;
 
   visit->visit_id = GetDB().GetLastInsertRowId();
+
+  if (source != SOURCE_BROWSED) {
+    // Record the source of this visit when it is not browsed.
+    sql::Statement statement1(GetDB().GetCachedStatement(SQL_FROM_HERE,
+        "INSERT INTO visit_source (id, source) VALUES (?,?)"));
+    if (!statement1.is_valid())
+      return 0;
+
+    statement1.BindInt64(0, visit->visit_id);
+    statement1.BindInt64(1, source);
+    if (!statement1.Run())
+      return 0;
+  }
+
   return visit->visit_id;
 }
 
@@ -129,6 +156,16 @@ void VisitDatabase::DeleteVisit(const VisitRow& visit) {
   sql::Statement del(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM visits WHERE id=?"));
   if (!del)
+    return;
+  del.BindInt64(0, visit.visit_id);
+  del.Run();
+
+  // Try to delete the entry in visit_source table as well.
+  // If the visit was browsed, there is no corresponding entry in visit_source
+  // table, and nothing will be deleted.
+  del.Assign(GetDB().GetCachedStatement(SQL_FROM_HERE,
+             "DELETE FROM visit_source WHERE id=?"));
+  if (!del.is_valid())
     return;
   del.BindInt64(0, visit.visit_id);
   del.Run();
@@ -434,6 +471,44 @@ bool VisitDatabase::GetStartDate(base::Time* first_visit) {
   }
   *first_visit = base::Time::FromInternalValue(statement.ColumnInt64(0));
   return true;
+}
+
+void VisitDatabase::GetVisitsSource(const VisitVector& visits,
+                                    VisitSourceMap* sources) {
+  DCHECK(sources);
+  sources->clear();
+
+  // We query the source in batch. Here defines the batch size.
+  const size_t batch_size = 500;
+  size_t visits_size = visits.size();
+
+  size_t start_index = 0, end_index = 0;
+  while (end_index < visits_size) {
+    start_index = end_index;
+    end_index = end_index + batch_size < visits_size ? end_index + batch_size
+                                                     : visits_size;
+
+    // Compose the sql statement with a list of ids.
+    std::string sql = "SELECT id,source FROM visit_source ";
+    sql.append("WHERE id IN (");
+    // Append all the ids in the statement.
+    for (size_t j = start_index; j < end_index; j++) {
+      if (j != start_index)
+        sql.push_back(',');
+      sql.append(base::Int64ToString(visits[j].visit_id));
+    }
+    sql.append(") ORDER BY id");
+    sql::Statement statement(GetDB().GetUniqueStatement(sql.c_str()));
+    if (!statement)
+      return;
+
+    // Get the source entries out of the query result.
+    while (statement.Step()) {
+      std::pair<VisitID, VisitSource> source_entry(statement.ColumnInt64(0),
+          static_cast<VisitSource>(statement.ColumnInt(1)));
+      sources->insert(source_entry);
+    }
+  }
 }
 
 }  // namespace history

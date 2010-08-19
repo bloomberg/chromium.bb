@@ -258,8 +258,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   virtual bool UpdateURL(URLID id, const history::URLRow& url);
 
+  // While adding visits in batch, the source needs to be provided.
   virtual bool AddVisits(const GURL& url,
-                         const std::vector<base::Time>& visits);
+                         const std::vector<base::Time>& visits,
+                         VisitSource visit_source);
 
   virtual bool RemoveVisits(const VisitVector& visits);
 
@@ -292,7 +294,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Adds the given rows to the database if it doesn't exist. A visit will be
   // added for each given URL at the last visit time in the URLRow.
-  void AddPagesWithDetails(const std::vector<URLRow>& info);
+  // Each visit will have the visit_source type set.
+  void AddPagesWithDetails(const std::vector<URLRow>& info,
+                           VisitSource visit_source);
 
 #if defined(UNIT_TEST)
   HistoryDatabase* db() const { return db_.get(); }
@@ -312,6 +316,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, URLsNoLongerBookmarked);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, StripUsernamePasswordTest);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteThumbnailsDatabaseTest);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPageVisitSource);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddPageArgsSource);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, AddVisitsSource);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, RemoveVisitsSource);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationVisitSource);
   friend class ::TestingProfile;
 
   // Computes the name of the specified database on disk.
@@ -339,7 +348,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   std::pair<URLID, VisitID> AddPageVisit(const GURL& url,
                                          base::Time time,
                                          VisitID referring_visit,
-                                         PageTransition::Type transition);
+                                         PageTransition::Type transition,
+                                         VisitSource visit_source);
 
   // Returns a redirect chain in |redirects| for the VisitID
   // |cur_visit|. |cur_visit| is assumed to be valid. Assumes that

@@ -79,7 +79,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   visit_row.transition = 0;
   visit_row.segment_id = 0;
   visit_row.is_indexed = false;
-  VisitID visit_id = visit_db->AddVisit(&visit_row);
+  VisitID visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
 
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
@@ -89,7 +89,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.day_of_month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row);
+  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL2), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle2),
@@ -98,7 +98,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.day_of_month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row);
+  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL3), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle3),
@@ -108,7 +108,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row);
+  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL4), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle4),
@@ -117,7 +117,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.day_of_month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row);
+  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL5), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle5),
@@ -127,7 +127,7 @@ void AddAllPages(TextDatabaseManager& manager, VisitDatabase* visit_db,
   exploded.day_of_month++;
   visit_row.url_id = 2;
   visit_row.visit_time = Time::FromUTCExploded(exploded);
-  visit_id = visit_db->AddVisit(&visit_row);
+  visit_id = visit_db->AddVisit(&visit_row, SOURCE_BROWSED);
   times->push_back(visit_row.visit_time);
   manager.AddPageData(GURL(kURL1), visit_row.url_id, visit_row.visit_id,
                       visit_row.visit_time, UTF8ToUTF16(kTitle1),
@@ -242,7 +242,7 @@ TEST_F(TextDatabaseManagerTest, InsertCompleteVisit) {
   visit.transition = PageTransition::LINK;
   visit.segment_id = 0;
   visit.is_indexed = false;
-  visit_db.AddVisit(&visit);
+  visit_db.AddVisit(&visit, SOURCE_BROWSED);
 
   // Add a full text indexed entry for that visit.
   const GURL url(kURL2);
@@ -335,7 +335,7 @@ TEST_F(TextDatabaseManagerTest, PartialComplete) {
   VisitRow visit_row;
   visit_row.url_id = url_id;
   visit_row.visit_time = added_time;
-  visit_db.AddVisit(&visit_row);
+  visit_db.AddVisit(&visit_row, SOURCE_BROWSED);
 
   // Add a URL with no title or body, and say that it expired.
   manager.AddPageURL(url, 0, 0, added_time);

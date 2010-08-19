@@ -512,7 +512,7 @@ void ExpireHistoryBackend::ExpireURLsForVisits(
 void ExpireHistoryBackend::ArchiveURLsAndVisits(
     const VisitVector& visits,
     DeleteDependencies* dependencies) {
-  if (!archived_db_)
+  if (!archived_db_ || !main_db_)
     return;
 
   // Make sure all unique URL rows are added to the dependency list and the
@@ -539,6 +539,12 @@ void ExpireHistoryBackend::ArchiveURLsAndVisits(
     }
   }
 
+  // Retrieve the sources for all the archived visits before archiving.
+  // The returned visit_sources vector should contain the source for each visit
+  // from visits at the same index.
+  VisitSourceMap visit_sources;
+  main_db_->GetVisitsSource(visits, &visit_sources);
+
   // Now archive the visits since we know the URL ID to make them reference.
   // The source visit list should still reference the visits in the main DB, but
   // we will update it to reflect only the visits that were successfully
@@ -550,7 +556,9 @@ void ExpireHistoryBackend::ArchiveURLsAndVisits(
     VisitRow cur_visit(visits[i]);
     cur_visit.url_id = main_id_to_archived_id[cur_visit.url_id];
     cur_visit.referring_visit = 0;
-    archived_db_->AddVisit(&cur_visit);
+    VisitSourceMap::iterator iter = visit_sources.find(visits[i].visit_id);
+    archived_db_->AddVisit(&cur_visit,
+        iter == visit_sources.end() ? SOURCE_BROWSED : iter->second);
     // Ignore failures, we will delete it from the main DB no matter what.
   }
 }

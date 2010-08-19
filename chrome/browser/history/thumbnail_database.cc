@@ -499,7 +499,8 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(const FilePath& old_db_file,
   favicons.Close();
 
   // Can't attach within a transaction.
-  CommitTransaction();
+  if (transaction_nesting())
+    CommitTransaction();
 
   // Attach new DB.
   {

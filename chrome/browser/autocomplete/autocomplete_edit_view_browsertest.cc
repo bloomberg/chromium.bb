@@ -233,7 +233,8 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
       Time t = Time::Now() - TimeDelta::FromHours(i + 1);
       history_service->AddPageWithDetails(url, UTF8ToUTF16(cur.title),
                                           cur.visit_count,
-                                          cur.typed_count, t, false);
+                                          cur.typed_count, t, false,
+                                          history::SOURCE_BROWSED);
       history_service->SetPageContents(url, UTF8ToUTF16(cur.body));
       if (cur.starred) {
         bookmark_model->SetURLStarred(url, string16(), true);

@@ -73,19 +73,19 @@ class VisitDatabaseTest : public PlatformTest,
 TEST_F(VisitDatabaseTest, Add) {
   // Add one visit.
   VisitRow visit_info1(1, Time::Now(), 0, PageTransition::LINK, 0);
-  EXPECT_TRUE(AddVisit(&visit_info1));
+  EXPECT_TRUE(AddVisit(&visit_info1, SOURCE_BROWSED));
 
   // Add second visit for the same page.
   VisitRow visit_info2(visit_info1.url_id,
       visit_info1.visit_time + TimeDelta::FromSeconds(1), 1,
       PageTransition::TYPED, 0);
-  EXPECT_TRUE(AddVisit(&visit_info2));
+  EXPECT_TRUE(AddVisit(&visit_info2, SOURCE_BROWSED));
 
   // Add third visit for a different page.
   VisitRow visit_info3(2,
       visit_info1.visit_time + TimeDelta::FromSeconds(2), 0,
       PageTransition::LINK, 0);
-  EXPECT_TRUE(AddVisit(&visit_info3));
+  EXPECT_TRUE(AddVisit(&visit_info3, SOURCE_BROWSED));
 
   // Query the first two.
   std::vector<VisitRow> matches;
@@ -104,17 +104,17 @@ TEST_F(VisitDatabaseTest, Delete) {
   static const int kTime1 = 1000;
   VisitRow visit_info1(1, Time::FromInternalValue(kTime1), 0,
                        PageTransition::LINK, 0);
-  EXPECT_TRUE(AddVisit(&visit_info1));
+  EXPECT_TRUE(AddVisit(&visit_info1, SOURCE_BROWSED));
 
   static const int kTime2 = kTime1 + 1;
   VisitRow visit_info2(1, Time::FromInternalValue(kTime2),
                        visit_info1.visit_id, PageTransition::LINK, 0);
-  EXPECT_TRUE(AddVisit(&visit_info2));
+  EXPECT_TRUE(AddVisit(&visit_info2, SOURCE_BROWSED));
 
   static const int kTime3 = kTime2 + 1;
   VisitRow visit_info3(1, Time::FromInternalValue(kTime3),
                        visit_info2.visit_id, PageTransition::LINK, 0);
-  EXPECT_TRUE(AddVisit(&visit_info3));
+  EXPECT_TRUE(AddVisit(&visit_info3, SOURCE_BROWSED));
 
   // First make sure all the visits are there.
   std::vector<VisitRow> matches;
@@ -140,7 +140,7 @@ TEST_F(VisitDatabaseTest, Delete) {
 TEST_F(VisitDatabaseTest, Update) {
   // Make something in the database.
   VisitRow original(1, Time::Now(), 23, 22, 19);
-  AddVisit(&original);
+  AddVisit(&original, SOURCE_BROWSED);
 
   // Mutate that row.
   VisitRow modification(original);
@@ -167,7 +167,7 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
                                         PageTransition::CHAIN_END),
       0);
   visit_info1.visit_id = 1;
-  EXPECT_TRUE(AddVisit(&visit_info1));
+  EXPECT_TRUE(AddVisit(&visit_info1, SOURCE_BROWSED));
 
   // Add second visit for the same page.
   VisitRow visit_info2(visit_info1.url_id,
@@ -177,7 +177,7 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
                                         PageTransition::CHAIN_END),
       0);
   visit_info2.visit_id = 2;
-  EXPECT_TRUE(AddVisit(&visit_info2));
+  EXPECT_TRUE(AddVisit(&visit_info2, SOURCE_BROWSED));
 
   // Add third visit for a different page.
   VisitRow visit_info3(2,
@@ -186,7 +186,7 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
                                         PageTransition::CHAIN_START),
       0);
   visit_info3.visit_id = 3;
-  EXPECT_TRUE(AddVisit(&visit_info3));
+  EXPECT_TRUE(AddVisit(&visit_info3, SOURCE_BROWSED));
 
   // Add a redirect visit from the last page.
   VisitRow visit_info4(3,
@@ -195,7 +195,7 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
                                         PageTransition::CHAIN_END),
       0);
   visit_info4.visit_id = 4;
-  EXPECT_TRUE(AddVisit(&visit_info4));
+  EXPECT_TRUE(AddVisit(&visit_info4, SOURCE_BROWSED));
 
   // Add a subframe visit.
   VisitRow visit_info5(4,
@@ -205,7 +205,7 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
                                         PageTransition::CHAIN_END),
       0);
   visit_info5.visit_id = 5;
-  EXPECT_TRUE(AddVisit(&visit_info5));
+  EXPECT_TRUE(AddVisit(&visit_info5, SOURCE_BROWSED));
 
   // Query the visits for all time, we should not get the first (duplicate of
   // the second) or the redirect or subframe visits.
@@ -227,4 +227,37 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsInRange) {
   ASSERT_EQ(static_cast<size_t>(1), results.size());
   EXPECT_TRUE(IsVisitInfoEqual(results[0], visit_info4));
 }
+
+TEST_F(VisitDatabaseTest, VisitSource) {
+  // Add visits.
+  VisitRow visit_info1(111, Time::Now(), 0, PageTransition::LINK, 0);
+  ASSERT_TRUE(AddVisit(&visit_info1, SOURCE_BROWSED));
+
+  VisitRow visit_info2(112, Time::Now(), 1, PageTransition::TYPED, 0);
+  ASSERT_TRUE(AddVisit(&visit_info2, SOURCE_SYNCED));
+
+  VisitRow visit_info3(113, Time::Now(), 0, PageTransition::TYPED, 0);
+  ASSERT_TRUE(AddVisit(&visit_info3, SOURCE_EXTENSION));
+
+  // Query each visit.
+  std::vector<VisitRow> matches;
+  ASSERT_TRUE(GetVisitsForURL(111, &matches));
+  ASSERT_EQ(1U, matches.size());
+  VisitSourceMap sources;
+  GetVisitsSource(matches, &sources);
+  EXPECT_EQ(0U, sources.size());
+
+  ASSERT_TRUE(GetVisitsForURL(112, &matches));
+  ASSERT_EQ(1U, matches.size());
+  GetVisitsSource(matches, &sources);
+  ASSERT_EQ(1U, sources.size());
+  EXPECT_EQ(SOURCE_SYNCED, sources[matches[0].visit_id]);
+
+  ASSERT_TRUE(GetVisitsForURL(113, &matches));
+  ASSERT_EQ(1U, matches.size());
+  GetVisitsSource(matches, &sources);
+  ASSERT_EQ(1U, sources.size());
+  EXPECT_EQ(SOURCE_EXTENSION, sources[matches[0].visit_id]);
+}
+
 }  // namespace history

@@ -193,7 +193,8 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   const BookmarkNode* f1 = model->AddGroup(
       model->GetBookmarkBarNode(), 0, f1_title);
   model->AddURLWithCreationTime(f1, 0, url1_title, url1, t1);
-  profile.GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(url1);
+  profile.GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(url1,
+      history::SOURCE_BROWSED);
   profile.GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
                                                                   url1_favicon,
                                                                   icon_data);
