@@ -107,6 +107,18 @@ bool WebGraphicsContext3DCommandBufferImpl::isGLES2Compliant() {
   return true;
 }
 
+bool WebGraphicsContext3DCommandBufferImpl::isGLES2ParameterStrict() {
+  return false;
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::isGLES2NPOTStrict() {
+  return false;
+}
+
+bool WebGraphicsContext3DCommandBufferImpl::isErrorGeneratedOnOutOfBoundsAccesses() {
+  return false;
+}
+
 unsigned int WebGraphicsContext3DCommandBufferImpl::getPlatformTextureId() {
   DCHECK(context_);
   return ggl::GetParentTextureId(context_);

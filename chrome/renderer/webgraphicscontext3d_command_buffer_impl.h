@@ -51,6 +51,9 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual int sizeInBytes(int type);
 
   virtual bool isGLES2Compliant();
+  virtual bool isGLES2ParameterStrict();
+  virtual bool isGLES2NPOTStrict();
+  virtual bool isErrorGeneratedOnOutOfBoundsAccesses();
 
   virtual void reshape(int width, int height);
 
