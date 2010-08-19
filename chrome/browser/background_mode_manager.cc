@@ -24,7 +24,8 @@
 BackgroundModeManager::BackgroundModeManager(Profile* profile)
     : profile_(profile),
       background_app_count_(0),
-      status_tray_(NULL) {
+      status_tray_(NULL),
+      status_icon_(NULL) {
   // If background mode is disabled for unittests, just exit - don't listen for
   // any notifications.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
