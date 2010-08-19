@@ -31,12 +31,6 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile)
           switches::kDisableBackgroundMode))
     return;
 
-  // Only need status icons on windows/linux. ChromeOS doesn't allow exiting
-  // Chrome and Mac can use the dock icon instead.
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
-  status_tray_ = profile->GetStatusTray();
-#endif
-
   // If the -keep-alive-for-test flag is passed, then always keep chrome running
   // in the background until the user explicitly terminates it.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -168,6 +162,13 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
 }
 
 void BackgroundModeManager::CreateStatusTrayIcon() {
+  // Only need status icons on windows/linux. ChromeOS doesn't allow exiting
+  // Chrome and Mac can use the dock icon instead.
+#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+  if (!status_tray_)
+    status_tray_ = profile_->GetStatusTray();
+#endif
+
   // If the platform doesn't support status icons, or we've already created
   // our status icon, just return.
   if (!status_tray_ || status_icon_)
