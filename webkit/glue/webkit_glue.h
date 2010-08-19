@@ -265,6 +265,9 @@ std::string GetProductVersion();
 // Returns true if the embedder is running in single process mode.
 bool IsSingleProcess();
 
+// Enables/Disables Spdy for requests afterwards. Used for benchmarking.
+void EnableSpdy(bool enable);
+
 #if defined(OS_LINUX)
 // Return a read-only file descriptor to the font which best matches the given
 // properties or -1 on failure.

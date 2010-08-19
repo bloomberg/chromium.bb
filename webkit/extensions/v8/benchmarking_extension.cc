@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/stats_table.h"
+#include "net/http/http_network_layer.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "webkit/extensions/v8/benchmarking_extension.h"
 #include "webkit/glue/webkit_glue.h"
@@ -36,6 +37,10 @@ class BenchmarkingWrapper : public v8::Extension {
         "  native function GetCounter();"
         "  return GetCounter(name);"
         "};"
+        "chrome.benchmarking.enableSpdy = function(name) {"
+        "  native function EnableSpdy();"
+        "  EnableSpdy(name);"
+        "};"
         "chrome.benchmarking.isSingleProcess = function() {"
         "  native function IsSingleProcess();"
         "  return IsSingleProcess();"
@@ -48,6 +53,8 @@ class BenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(CloseConnections);
     } else if (name->Equals(v8::String::New("ClearCache"))) {
       return v8::FunctionTemplate::New(ClearCache);
+    } else if (name->Equals(v8::String::New("EnableSpdy"))) {
+      return v8::FunctionTemplate::New(EnableSpdy);
     } else if (name->Equals(v8::String::New("GetCounter"))) {
       return v8::FunctionTemplate::New(GetCounter);
     } else if (name->Equals(v8::String::New("IsSingleProcess"))) {
@@ -64,6 +71,14 @@ class BenchmarkingWrapper : public v8::Extension {
   static v8::Handle<v8::Value> ClearCache(const v8::Arguments& args) {
     webkit_glue::ClearCache();
     WebCache::clear();
+    return v8::Undefined();
+  }
+
+  static v8::Handle<v8::Value> EnableSpdy(const v8::Arguments& args) {
+    if (!args.Length() || !args[0]->IsBoolean())
+      return v8::Undefined();
+
+    webkit_glue::EnableSpdy(args[0]->BooleanValue());
     return v8::Undefined();
   }
 

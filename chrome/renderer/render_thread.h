@@ -199,6 +199,9 @@ class RenderThread : public RenderThreadBase,
   // Sends a message to the browser to clear the disk cache.
   void ClearCache();
 
+  // Sends a message to the browser to enable/disable spdy.
+  void EnableSpdy(bool enable);
+
   // Update the list of active extensions that will be reported when we crash.
   void UpdateActiveExtensions();
 

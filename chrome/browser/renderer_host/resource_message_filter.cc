@@ -84,6 +84,7 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
+#include "net/http/http_network_layer.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
@@ -485,6 +486,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ClearCache, OnClearCache)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DidGenerateCacheableMetadata,
                           OnCacheableMetadataAvailable)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_EnableSpdy, OnEnableSpdy)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileModificationTime,
                                       OnGetFileModificationTime)
@@ -1366,6 +1368,16 @@ void ResourceMessageFilter::OnCacheableMetadataAvailable(
   memcpy(buf->data(), &data.front(), data.size());
   cache->WriteMetadata(
       url, base::Time::FromDoubleT(expected_response_time), buf, data.size());
+}
+
+// TODO(lzheng): This only enables spdy over ssl. Enable spdy for http
+// when needed.
+void ResourceMessageFilter::OnEnableSpdy(bool enable) {
+  if (enable) {
+    net::HttpNetworkLayer::EnableSpdy("npn");
+  } else {
+    net::HttpNetworkLayer::EnableSpdy("npn-http");
+  }
 }
 
 void ResourceMessageFilter::OnGetFileSize(const FilePath& path,

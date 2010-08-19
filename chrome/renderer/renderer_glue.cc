@@ -312,6 +312,10 @@ bool IsSingleProcess() {
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 }
 
+void EnableSpdy(bool enable) {
+  RenderThread::current()->EnableSpdy(enable);
+}
+
 #if defined(OS_LINUX)
 int MatchFontWithFallback(const std::string& face, bool bold,
                           bool italic, int charset) {

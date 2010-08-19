@@ -2208,6 +2208,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int /* result */)
 
   // Message sent from the renderer to the browser to request that the browser
+  // enable or disable spdy.  Used for debugging/testing/benchmarking.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_EnableSpdy,
+                       bool /* enable */)
+
+  // Message sent from the renderer to the browser to request that the browser
   // cache |data| associated with |url|.
   IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
                        GURL /* url */,

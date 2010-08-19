@@ -72,6 +72,9 @@ bool IsSingleProcess() {
   return true;
 }
 
+void EnableSpdy(bool enable) {
+}
+
 #if defined(OS_LINUX)
 int MatchFontWithFallback(const std::string& face, bool bold,
                           bool italic, int charset) {

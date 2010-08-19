@@ -743,6 +743,10 @@ void RenderThread::ClearCache() {
   Send(new ViewHostMsg_ClearCache(&rv));
 }
 
+void RenderThread::EnableSpdy(bool enable) {
+  Send(new ViewHostMsg_EnableSpdy(enable));
+}
+
 void RenderThread::UpdateActiveExtensions() {
   // In single-process mode, the browser process reports the active extensions.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))

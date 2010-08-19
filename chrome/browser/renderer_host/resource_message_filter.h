@@ -335,6 +335,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnCacheableMetadataAvailable(const GURL& url,
                                     double expected_response_time,
                                     const std::vector<char>& data);
+  void OnEnableSpdy(bool enable);
   void OnGetFileSize(const FilePath& path, IPC::Message* reply_msg);
   void OnGetFileModificationTime(const FilePath& path, IPC::Message* reply_msg);
   void OnGetFileInfoOnFileThread(const FilePath& path,
