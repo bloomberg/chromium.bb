@@ -17,7 +17,7 @@ GOOGLETEST_CC_SRC=../../testing/gtest/src/gtest_main.cc \
 		  ../../testing/src/gmock-all.cc
 
 # Google Logging
-GOOGLELOG_LIB=../../third_party/linux/lib/glog/libglog.a
+GOOGLELOG_LIB=../../third_party/glog/glog/src/glog/libglog.a
 
 # Google Flags lib
 GOOGLEFLAGS_LIB=../../third_party/linux/lib/gflags/libgflags.a
