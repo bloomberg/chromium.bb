@@ -33,6 +33,7 @@ window.iterations = 10;
 window.clearConnections = true;
 window.clearCache = true;
 window.useNewTabs = true;
+window.enableSpdy = false;
 window.results = {};
 window.results.data = new Array();
 window.testUrl = "";
@@ -93,9 +94,9 @@ function nextBenchmark() {
 
 function show_options() {
   chrome.tabs.getSelected(null, function(tab) {
-    if (window.testUrl == "") {
-      window.testUrl = tab.url;
-    }
+  if (window.testUrl == "") {
+    window.testUrl = tab.url;
+  }
     var tabs = chrome.extension.getExtensionTabs();
     if (tabs && tabs.length) {
       tabs[0].setUrl(testUrl);
@@ -144,6 +145,7 @@ function Benchmark() {
 
     current_ = {};
     current_.url = url;
+    current_.viaSpdy = false;
     current_.startLoadResults = new Array();  // times to start
     current_.commitLoadResults = new Array();  // times to commit
     current_.docLoadResults = new Array();  // times to docload
@@ -173,12 +175,10 @@ function Benchmark() {
     // Push the result.
     window.results.data.push(current_);
 
-
     // If we're the last benchmark, close the window.
     if (benchmarks.length == 0) {
       chrome.tabs.remove(benchmarkWindow.id);
       benchmarkWindow = 0;
-
       show_options();
     }
   }
@@ -223,6 +223,12 @@ function Benchmark() {
       chrome.benchmarking.closeConnections();
     }
 
+    if (window.enableSpdy) {
+      chrome.benchmarking.enableSpdy(true);
+    } else {
+      chrome.benchmarking.enableSpdy(false);
+    }
+
     if (benchmarkWindow) {
       var benchmark = nextBenchmark();
       benchmark.pageStart();
@@ -242,21 +248,21 @@ function Benchmark() {
   }
 
   // Called when a page finishes loading.
-  this.pageFinished = function(csi) {
-    var requested = csi.requestTime;
-    var started = csi.startLoadTime;
+  this.pageFinished = function(load_times) {
+    var requested = load_times.requestTime;
+    var started = load_times.startLoadTime;
     var startLoadTime =
-        Math.round((csi.startLoadTime - requested) * 1000.0);
+        Math.round((load_times.startLoadTime - requested) * 1000.0);
     var commitLoadTime =
-        Math.round((csi.commitLoadTime - started) * 1000.0);
+        Math.round((load_times.commitLoadTime - started) * 1000.0);
     var docLoadTime =
-        Math.round((csi.finishDocumentLoadTime - started) * 1000.0);
+        Math.round((load_times.finishDocumentLoadTime - started) * 1000.0);
     var paintTime =
-        Math.round((csi.firstPaintTime - started) * 1000.0);
+        Math.round((load_times.firstPaintTime - started) * 1000.0);
     var totalTime =
-        Math.round((csi.finishLoadTime - started) * 1000.0);
-    var firstPaintAfterLoadTime = 
-        Math.round((csi.firstPaintAfterLoadTime - started) * 1000.0);
+        Math.round((load_times.finishLoadTime - started) * 1000.0);
+    var firstPaintAfterLoadTime =
+        Math.round((load_times.firstPaintAfterLoadTime - started) * 1000.0);
 
     if (paintTime < 0) {
       // If the user navigates away from the test while it is running,
@@ -272,7 +278,24 @@ function Benchmark() {
     totalTime_ += totalTime;
     count_++;
 
+    // Make sure the content can be fetched via spdy if it is enabled.
+    if (window.enableSpdy && !load_times.wasFetchedViaSpdy) {
+      alert("Can not fetch current url via spdy.\n" +
+            "Ending current test.");
+      runCount_ = 1;
+    }
+
+    // If last fetch was via spdy, current fetch should use spdy too. Same
+    // for vise versa.
+    if (current_.iterations > 0 &&
+        current_.viaSpdy != load_times.wasFetchedViaSpdy) {
+      alert("Error: viaSpdy for current fetch is different from last fetch!\n" +
+            "Ending current test.");
+      runCount_ = 1;
+    }
+
     // Record the result
+    current_.viaSpdy = load_times.wasFetchedViaSpdy;
     current_.iterations++;
     current_.startLoadResults.push(startLoadTime);
     current_.commitLoadResults.push(commitLoadTime);

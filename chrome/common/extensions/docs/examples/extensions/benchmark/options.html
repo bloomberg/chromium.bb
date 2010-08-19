@@ -292,6 +292,7 @@ function jsinit() {
   document.getElementById("clearconns").checked = extension.clearConnections;
   document.getElementById("clearcache").checked = extension.clearCache;
   document.getElementById("newtabs").checked = extension.useNewTabs;
+  document.getElementById("enablespdy").checked = extension.enableSpdy;
   setUrl(extension.testUrl);
 
   if (!baseline) {
@@ -316,11 +317,13 @@ function config() {
   var clearConnections = document.getElementById("clearconns").checked;
   var clearCache = document.getElementById("clearcache").checked;
   var useNewTabs = document.getElementById("newtabs").checked;
+  var enableSpdy = document.getElementById("enablespdy").checked;
   if (iterations > 0) {
     extension.iterations = iterations;
     extension.clearConnections = clearConnections;
     extension.clearCache = clearCache;
     extension.useNewTabs = useNewTabs;
+    extension.enableSpdy = enableSpdy;
   }
 }
 
@@ -374,9 +377,11 @@ function toggle(id) {
 <span>Iterations</span>
 <input id="iterations" type=text style="text-align:right">
 <input type="button" value="Clear Results" onclick="clearResults();">
+<nb/>
 Clear Connections?<input id="clearconns" type="checkbox">
 Clear Cache?<input id="clearcache" type="checkbox">
 Use New Tabs Per Page?<input id="newtabs" type="checkbox">
+Enable Spdy?<input id="enablespdy" type="checkbox">
 <form onsubmit="config(); run()">
   URL to load <input type="text" id="testurl" size=100>
   <input type="submit" value="Run"><P>
@@ -389,6 +394,7 @@ Use New Tabs Per Page?<input id="newtabs" type="checkbox">
   <tr>
   <th width=200px>url</th>
   <th width=50>iterations</th>
+  <th width=50>via spdy</th>
   <th width=50>start load mean</th>
   <th width=50>commit load mean</th>
   <th width=50>doc load mean</th>
@@ -413,6 +419,7 @@ Use New Tabs Per Page?<input id="newtabs" type="checkbox">
   <tr id="t.total" jsselect="totals">
   <td class="url">TOTALS <span jscontent="url"></span></td>
   <td class="avg" jseval="1"></td>
+  <td class="avg" jseval="1"></td>
   <td class="avg"><span jseval="val = startLoadMean.toFixed(1)" jscontent="val"></span></td>
   <td class="avg"><span jseval="val = commitLoadMean.toFixed(1)" jscontent="val"></span></td>
   <td class="avg"><span jseval="val = docLoadMean.toFixed(1)" jscontent="val"></span></td>
@@ -432,8 +439,9 @@ Use New Tabs Per Page?<input id="newtabs" type="checkbox">
   </tr>
 
   <tr jsselect="data">
-  <td class="url" jseval="$width = getWidth($this.mean, this)"><div jsvalues=".style.width:$width" class="bggraph"><a jsvalues="href:$this.url" jscontent="url"></a></div></td>
+  <td class="url" jseval="$width = getWidth($this.mean, this); url.length > 40 ? $suburl = url.substring(0,27) + '...' + url.substring(url.length-10, url.length) : $suburl=url"><div jsvalues=".style.width:$width" class="bggraph"><a jsvalues="href:$this.url" jscontent="$suburl"></a></div></td>
   <td class="avg" jseval="val = iterations" jscontent="val"></td>
+  <td class="avg" jseval="val = viaSpdy" jscontent="val"></td>
   <td class="avg" jseval="val = startLoadMean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = commitLoadMean.toFixed(1)" jscontent="val"></td>
   <td class="avg" jseval="val = docLoadMean.toFixed(1)" jscontent="val"></td>

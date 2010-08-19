@@ -14,12 +14,12 @@ function sendTimesToExtension() {
     return;
   }
 
-  var times = window.chrome.loadTimes();
+  var load_times = window.chrome.loadTimes();
 
   // If the load is not finished yet, schedule a timer to check again in a
   // little bit.
-  if (times.finishLoadTime != 0) {
-    benchmarkExtensionPort.postMessage({message: "load", url: benchmarkExtensionUrl, values: times});
+  if (load_times.finishLoadTime != 0) {
+    benchmarkExtensionPort.postMessage({message: "load", url: benchmarkExtensionUrl, values: load_times});
   } else {
     window.setTimeout(sendTimesToExtension, 100);
   }
