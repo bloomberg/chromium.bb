@@ -517,6 +517,9 @@ const char kExtensionProcess[]              = "extension";
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 
+// Alternative feedback server to use when submitting user feedback
+const char kFeedbackServer[]                = "feedback-server";
+
 // The file descriptor limit is set to the value of this switch, subject to the
 // OS hard limits. Useful for testing that file descriptor exhaustion is handled
 // gracefully.

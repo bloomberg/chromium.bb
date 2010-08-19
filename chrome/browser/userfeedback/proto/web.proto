@@ -8,7 +8,6 @@ package userfeedback;
 // Data present in Web related feedbacks
 
 import "annotations.proto";
-import "config.proto";
 import "dom.proto";
 import "math.proto";
 
