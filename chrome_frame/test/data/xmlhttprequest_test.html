@@ -21,7 +21,8 @@
                     "Failed to get XHR object");
         }
 
-        xhr.open("GET", "http://localhost:1337/echoheader?User-Agent", false);
+        var url = GetBaseUrlPath() + "echoheader?User-Agent";
+        xhr.open("GET", url, false);
         try {
           xhr.send(null);
           var pos = xhr.responseText.indexOf("chromeframe");
