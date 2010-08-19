@@ -267,7 +267,7 @@ void HungRendererDialogView::EndForTabContents(TabContents* contents) {
 // HungRendererDialogView, views::DialogDelegate implementation:
 
 std::wstring HungRendererDialogView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_PRODUCT_NAME);
+  return l10n_util::GetString(IDS_BROWSER_HANGMONITOR_RENDERER_TITLE);
 }
 
 void HungRendererDialogView::WindowClosing() {
