@@ -103,6 +103,12 @@ bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
       new_url.ReplaceComponents(replacements);
 }
 
+// Navigation within this limit since the last document load is considered to
+// be automatic (i.e., machine-initiated) rather than user-initiated unless
+// a user gesture has been observed.
+const base::TimeDelta kMaxAutoNavigationTimeDelta =
+    base::TimeDelta::FromSeconds(5);
+
 }  // namespace
 
 // NavigationController ---------------------------------------------------
@@ -125,6 +131,7 @@ NavigationController::NavigationController(TabContents* contents,
       max_restored_page_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(ssl_manager_(this)),
       needs_reload_(false),
+      user_gesture_observed_(false),
       session_storage_namespace_id_(profile->GetWebKitContext()->
           dom_storage_context()->AllocateSessionStorageNamespaceId()),
       pending_reload_(NO_RELOAD) {
@@ -493,11 +500,14 @@ void NavigationController::DocumentLoadedInFrame() {
   last_document_loaded_ = base::TimeTicks::Now();
 }
 
+void NavigationController::OnUserGesture() {
+  user_gesture_observed_ = true;
+}
+
 bool NavigationController::RendererDidNavigate(
     const ViewHostMsg_FrameNavigate_Params& params,
     int extra_invalidate_flags,
     LoadCommittedDetails* details) {
-
   // Save the previous state before we clobber it.
   if (GetLastCommittedEntry()) {
     details->previous_url = GetLastCommittedEntry()->url();
@@ -525,7 +535,6 @@ bool NavigationController::RendererDidNavigate(
 
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(params);
-
   switch (details->type) {
     case NavigationType::NEW_PAGE:
       RendererDidNavigateToNewPage(params, &(details->did_replace_entry));
@@ -685,6 +694,11 @@ bool NavigationController::IsRedirect(
   return params.redirects.size() > 1;
 }
 
+bool NavigationController::IsLikelyAutoNavigation(base::TimeTicks now) {
+  return !user_gesture_observed_ &&
+         (now - last_document_loaded_) < kMaxAutoNavigationTimeDelta;
+}
+
 void NavigationController::CreateNavigationEntriesFromTabNavigations(
     const std::vector<TabNavigation>& navigations,
     std::vector<linked_ptr<NavigationEntry> >* entries) {
@@ -725,6 +739,14 @@ void NavigationController::RendererDidNavigateToNewPage(
   new_entry->set_site_instance(tab_contents_->GetSiteInstance());
   new_entry->set_has_post_data(params.is_post);
 
+  // If the current entry is a redirection source and the redirection has
+  // occurred within kMaxAutoNavigationTimeDelta since the last document load,
+  // this is likely to be machine-initiated redirect and the entry needs to be
+  // replaced with the new entry to avoid unwanted redirections in navigating
+  // backward/forward.
+  // Otherwise, just insert the new entry.
+  *did_replace_entry = IsRedirect(params) &&
+                       IsLikelyAutoNavigation(base::TimeTicks::Now());
   InsertOrReplaceEntry(new_entry, *did_replace_entry);
 }
 
@@ -997,6 +1019,13 @@ void NavigationController::InsertOrReplaceEntry(NavigationEntry* entry,
 
   // This is a new page ID, so we need everybody to know about it.
   tab_contents_->UpdateMaxPageID(entry->page_id());
+
+  // When an entry is inserted, clear the user gesture observed flag.
+  // This is not done when replacing an entry (for example navigating within a
+  // page) because once a user has interacted with a page, we never want to
+  // mistake a subsequent navigation for an auto navigation.
+  if (!replace)
+    user_gesture_observed_ = false;
 }
 
 void NavigationController::SetWindowID(const SessionID& id) {
@@ -1011,7 +1040,7 @@ void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
 
   // For session history navigations only the pending_entry_index_ is set.
   if (!pending_entry_) {
-    DCHECK_NE(pending_entry_index_, -1);
+    DCHECK(pending_entry_index_ != -1);
     pending_entry_ = entries_[pending_entry_index_].get();
   }
 

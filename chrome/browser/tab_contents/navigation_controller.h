@@ -313,6 +313,9 @@ class NavigationController {
   // Called when a document has been loaded in a frame.
   void DocumentLoadedInFrame();
 
+  // Called when the user presses the mouse, enter key or space bar.
+  void OnUserGesture();
+
   // For use by TabContents ----------------------------------------------------
 
   // Handles updating the navigation state after the renderer has navigated.
@@ -558,6 +561,9 @@ class NavigationController {
 
   // The time ticks at which the last document was loaded.
   base::TimeTicks last_document_loaded_;
+
+  // Whether a user gesture has been observed since the last navigation.
+  bool user_gesture_observed_;
 
   // The session storage id that any (indirectly) owned RenderView should use.
   int64 session_storage_namespace_id_;
