@@ -517,8 +517,13 @@
             'test_support_common',
             '../google_update/google_update.gyp:google_update',
             '../views/views.gyp:views',
-            # run time dependency
-            '<(allocator_target)',
+          ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+            }],
           ],
           'link_settings': {
             'libraries': [
