@@ -42,8 +42,12 @@ class TabSpecificContentSettings
 
   virtual ~TabSpecificContentSettings() {}
 
-  // Resets the |content_blocked_| array and stored cookies.
-  void ClearBlockedContentSettings();
+  // Resets the |content_blocked_| and |content_accessed_| arrays, except for
+  // CONTENT_SETTINGS_TYPE_COOKIES related information.
+  void ClearBlockedContentSettingsExceptForCookies();
+
+  // Resets all cookies related information.
+  void ClearCookieSpecificContentSettings();
 
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);

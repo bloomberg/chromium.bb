@@ -1625,7 +1625,7 @@ void TabContents::DidNavigateMainFramePostCommit(
     }
 
     // Clear "blocked" flags.
-    content_settings_delegate_->ClearBlockedContentSettings();
+    content_settings_delegate_->ClearBlockedContentSettingsExceptForCookies();
     content_settings_delegate_->GeolocationDidNavigate(details);
 
     // Once the main frame is navigated, we're no longer considered to have
@@ -2065,6 +2065,8 @@ void TabContents::DidStartProvisionalLoadForFrame(
       NotificationType::FRAME_PROVISIONAL_LOAD_START,
       Source<NavigationController>(&controller_),
       Details<ProvisionalLoadDetails>(&details));
+  if (is_main_frame)
+    content_settings_delegate_->ClearCookieSpecificContentSettings();
 }
 
 void TabContents::DidStartReceivingResourceResponse(

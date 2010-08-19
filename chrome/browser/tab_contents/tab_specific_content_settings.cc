@@ -144,18 +144,28 @@ TabSpecificContentSettings::TabSpecificContentSettings(
       geolocation_settings_state_(profile),
       load_plugins_link_enabled_(true),
       delegate_(NULL) {
-  ClearBlockedContentSettings();
+  ClearBlockedContentSettingsExceptForCookies();
+  ClearCookieSpecificContentSettings();
   delegate_ = delegate;
 }
 
-void TabSpecificContentSettings::ClearBlockedContentSettings() {
+void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i) {
+    if (i == CONTENT_SETTINGS_TYPE_COOKIES)
+      continue;
     content_blocked_[i] = false;
     content_accessed_[i] = false;
   }
   load_plugins_link_enabled_ = true;
+  if (delegate_)
+    delegate_->OnContentSettingsAccessed(false);
+}
+
+void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
   blocked_local_shared_objects_.Reset();
   allowed_local_shared_objects_.Reset();
+  content_blocked_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
+  content_accessed_[CONTENT_SETTINGS_TYPE_COOKIES] = false;
   if (delegate_)
     delegate_->OnContentSettingsAccessed(false);
 }

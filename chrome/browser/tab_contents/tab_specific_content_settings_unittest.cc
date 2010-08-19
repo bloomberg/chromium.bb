@@ -73,9 +73,27 @@ TEST(TabSpecificContentSettingsTest, BlockedContent) {
   EXPECT_FALSE(
       content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_TRUE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+  content_settings.OnCookieAccessed(GURL("http://google.com"), "A=B", false);
+
+  // Block a cookie.
+  content_settings.OnCookieAccessed(GURL("http://google.com"), "C=D", true);
+  EXPECT_TRUE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
 
   // Reset blocked content settings.
-  content_settings.ClearBlockedContentSettings();
+  content_settings.ClearBlockedContentSettingsExceptForCookies();
+  EXPECT_TRUE(test_delegate.SettingsChanged());
+  EXPECT_FALSE(test_delegate.ContentBlocked());
+  EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
+  EXPECT_FALSE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  EXPECT_FALSE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
+  EXPECT_TRUE(
+      content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+  EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+
+  content_settings.ClearCookieSpecificContentSettings();
   EXPECT_TRUE(test_delegate.SettingsChanged());
   EXPECT_FALSE(test_delegate.ContentBlocked());
   EXPECT_FALSE(content_settings.IsContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES));
