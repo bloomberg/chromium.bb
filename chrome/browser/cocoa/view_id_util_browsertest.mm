@@ -56,7 +56,9 @@ class ViewIDTest : public InProcessBrowserTest {
       // Mac implementation does not support following ids yet.
       if (i == VIEW_ID_STAR_BUTTON ||
           i == VIEW_ID_AUTOCOMPLETE ||
-          i == VIEW_ID_CONTENTS_SPLIT) {
+          i == VIEW_ID_CONTENTS_SPLIT ||
+          i == VIEW_ID_SIDE_BAR_CONTAINER ||
+          i == VIEW_ID_SIDE_BAR_SPLIT)
         continue;
       }
 
