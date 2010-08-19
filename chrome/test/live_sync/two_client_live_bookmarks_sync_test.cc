@@ -949,7 +949,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 // Test Scribe ID - 371879.
-// TODO(rsimha): This currently fails due to http://crbug.com/50306.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     SC_DelBMFoldWithBMsNonEmptyAccountAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -1015,7 +1014,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 // Test Scribe ID - 371880.
-// TODO(rsimha): This currently fails due to http://crbug.com/50306.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     SC_DelBMFoldWithBMsAndBMFoldsNonEmptyACAfterwards) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -1117,7 +1115,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 }
 
 // Test Scribe ID - 371882.
-// TODO(rsimha): This currently fails due to http://crbug.com/50306.
 IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
     SC_DelBMFoldWithParentAndChildrenBMsAndBMFolds) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
