@@ -54,7 +54,7 @@ class NotificationTest : public InProcessBrowserTest,
         expected_(PanelController::INITIAL) {
   }
 
-  void HandleDOMUIMessage(const Value* value) {
+  void HandleDOMUIMessage(const ListValue* value) {
     MessageLoop::current()->Quit();
   }
 

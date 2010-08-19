@@ -6,6 +6,7 @@
 
 #include "base/stl_util-inl.h"
 #include "base/values.h"
+#include "chrome/common/render_messages.h"
 
 namespace chromeos {
 
@@ -24,24 +25,18 @@ bool BalloonViewHost::AddDOMUIMessageCallback(
   return ret.second;
 }
 
-void BalloonViewHost::ProcessDOMUIMessage(const std::string& message,
-                                          const ListValue* content,
-                                          const GURL& source_url,
-                                          int request_id,
-                                          bool has_callback) {
-  ::BalloonViewHost::ProcessDOMUIMessage(message,
-                                         content,
-                                         source_url,
-                                         request_id,
-                                         has_callback);
+void BalloonViewHost::ProcessDOMUIMessage(
+    const ViewHostMsg_DomMessage_Params& params) {
+  ::BalloonViewHost::ProcessDOMUIMessage(params);
+
   // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =
-      message_callbacks_.find(message);
+      message_callbacks_.find(params.name);
   if (callback == message_callbacks_.end())
     return;
 
   // Run callback.
-  callback->second->Run(content);
+  callback->second->Run(&params.arguments);
 }
 
 }  // namespace chromeos

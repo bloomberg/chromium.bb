@@ -14,13 +14,12 @@
 #include "base/callback.h"
 #include "gfx/native_widget_types.h"
 
-class Value;
 class ListValue;
 class GURL;
 
 namespace chromeos {
 
-typedef Callback1<const Value*>::Type MessageCallback;
+typedef Callback1<const ListValue*>::Type MessageCallback;
 
 class BalloonViewHost : public ::BalloonViewHost {
  public:
@@ -35,11 +34,7 @@ class BalloonViewHost : public ::BalloonViewHost {
                                MessageCallback* callback);
 
   // Process DOMUI message.
-  void ProcessDOMUIMessage(const std::string& message,
-                           const ListValue* content,
-                           const GURL& source_url,
-                           int request_id,
-                           bool has_callback);
+  virtual void ProcessDOMUIMessage(const ViewHostMsg_DomMessage_Params& params);
 
  private:
   // A map of message name -> message handling callback.
