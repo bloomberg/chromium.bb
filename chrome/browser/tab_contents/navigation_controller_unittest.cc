@@ -1192,7 +1192,6 @@ TEST_F(NavigationControllerTest, ClientRedirectAfterInPageNavigation) {
 
     // This should NOT generate a new entry.
     NavigationController::LoadCommittedDetails details;
-    controller().OnUserGesture();
     EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
     EXPECT_TRUE(notifications.Check2AndReset(
         NotificationType::NAV_LIST_PRUNED,
