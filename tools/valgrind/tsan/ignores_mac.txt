@@ -10,21 +10,6 @@ fun:*base*subtle*Release_Store*
 fun:*base*subtle*NoBarrier_Store*
 fun:*base*subtle*NoBarrier_CompareAndSwap*
 
-# 32-bit version of std::string
-# There is something very strange inside these functions.
-# Looks like they write zero to a global variable which
-# value is already zero. I.e. the race is benign.
-# Global var is _ZNSs4_Rep20_S_empty_rep_storageE
-# The race can only be reported on Mac since empty_rep is ignored by name
-# inside ThreadSanitizer. Unfortunately, we don't have global variable names
-# when running on Mac.
-fun:*_M_mutateE*
-fun_r:*_M_set_length_and_sharable*
-fun:*_M_is_leaked*
-fun:*_M_is_shared*
-fun:*_M_set_leaked*
-fun:*_M_set_sharable*
-
 # we ignore the Security libraries for now since
 # their instrumentation is very slow.
 # TODO(timurrrr): investigate whether we need to instrument them

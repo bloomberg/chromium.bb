@@ -38,6 +38,15 @@ fun:vfprintf
 fun:fwrite
 fun:fflush
 
+# False reports on std::string internals, see
+# http://code.google.com/p/data-race-test/issues/detail?id=40
+fun:*_M_mutateE*
+fun_r:*_M_set_length_and_sharable*
+fun:*_M_is_leaked*
+fun:*_M_is_shared*
+fun:*_M_set_leaked*
+fun:*_M_set_sharable*
+
 # Don't instrument intercepts
 src:*ts_valgrind_intercepts.c
 
