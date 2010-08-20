@@ -75,8 +75,8 @@ class AdvancedOptionsHandler
   // Setup the enabled state of the reset button.
   void SetupAutoOpenFileTypesDisabledAttribute();
 
-  // Setup the enabled state of the proxy settings button.
-  void SetupProxySettingsDisabledAttribute();
+  // Setup the proxy settings section UI.
+  void SetupProxySettingsSection();
 
 #if defined(OS_WIN)
   // Setup the checked state SSL related checkboxes.

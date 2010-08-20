@@ -85,19 +85,20 @@ var OptionsPage = options.OptionsPage;
   //
 
   // Set the download path.
-  AdvancedOptions.SetDownloadLocationPath = function (path) {
+  AdvancedOptions.SetDownloadLocationPath = function(path) {
     if (!cr.isChromeOS)
       $('downloadLocationPath').value = path;
   };
 
   // Set the enabled state for the autoOpenFileTypesResetToDefault button.
-  AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute = function (disabled) {
+  AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute = function(disabled) {
     $('autoOpenFileTypesResetToDefault').disabled = disabled;
   };
 
   // Set the enabled state for the proxy settings button.
-  AdvancedOptions.SetProxySettingsDisabledAttribute = function (disabled) {
+  AdvancedOptions.SetupProxySettingsSection = function(disabled, label) {
     $('proxiesConfigureButton').disabled = disabled;
+    $('proxiesLabel').textContent = label;
   };
 
   // Set the checked state for the sslCheckRevocation checkbox.

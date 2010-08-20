@@ -128,7 +128,7 @@ void AdvancedOptionsHandler::GetLocalizedValues(
 void AdvancedOptionsHandler::Initialize() {
   SetupDownloadLocationPath();
   SetupAutoOpenFileTypesDisabledAttribute();
-  SetupProxySettingsDisabledAttribute();
+  SetupProxySettingsSection();
 #if defined(OS_WIN)
   SetupSSLConfigSettings();
 #endif
@@ -197,6 +197,9 @@ void AdvancedOptionsHandler::Observe(NotificationType type,
       SetupDownloadLocationPath();
     } else if (*pref_name == prefs::kDownloadExtensionsToOpen) {
       SetupAutoOpenFileTypesDisabledAttribute();
+    } else {
+      // Assume that one of the proxy settings may have changed.
+      SetupProxySettingsSection();
     }
   }
 }
@@ -277,12 +280,29 @@ void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
       L"options.AdvancedOptions.SetAutoOpenFileTypesDisabledAttribute", value);
 }
 
-void AdvancedOptionsHandler::SetupProxySettingsDisabledAttribute() {
-  // Set the enabled state for the proxy settings button.
-  // We enable the button if proxy settings are not managed by a sysadmin.
-  FundamentalValue value(proxy_prefs_->IsManaged());
+void AdvancedOptionsHandler::SetupProxySettingsSection() {
+  // Disable the button if proxy settings are managed by a sysadmin or
+  // overridden by an extension.
+  PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
+  const PrefService::Preference* proxy_server =
+      pref_service->FindPreference(prefs::kProxyServer);
+  DCHECK(proxy_server);
+
+  FundamentalValue disabled(proxy_prefs_->IsManaged() ||
+                            proxy_server->IsExtensionControlled());
+
+  // Get the appropriate info string to describe the button.
+  string16 label_str;
+  if (proxy_server->IsExtensionControlled()) {
+    label_str = l10n_util::GetStringUTF16(IDS_OPTIONS_EXTENSION_PROXIES_LABEL);
+  } else {
+    label_str = l10n_util::GetStringFUTF16(IDS_OPTIONS_SYSTEM_PROXIES_LABEL,
+        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  }
+  StringValue label(label_str);
+
   dom_ui_->CallJavascriptFunction(
-      L"options.AdvancedOptions.SetProxySettingsDisabledAttribute", value);
+      L"options.AdvancedOptions.SetupProxySettingsSection", disabled, label);
 }
 
 #if defined(OS_WIN)
