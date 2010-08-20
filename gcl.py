@@ -153,6 +153,10 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
                 'svn: Can\'t get username or password'):
               ErrorExit('Your svn credentials expired. Please run svn update '
                         'to fix the cached credentials')
+            if content_array[0].startswith('svn: Can\'t get password'):
+              ErrorExit('If are using a Mac and svn --version shows 1.4.x, '
+                  'please hack gcl.py to remove --non-interactive usage, it\'s'
+                  'a bug on your installed copy')
             if not content_array[0].startswith('svn: File not found:'):
               # Try again.
               continue
