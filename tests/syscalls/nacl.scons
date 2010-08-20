@@ -58,3 +58,25 @@ if not env.Bit('host_windows'):
       sel_ldr_flags=['-d'],
                                    )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
+
+env.ComponentProgram('getpid_test.nexe', ['getpid_test.cc', 'test.cc'])
+node = env.CommandSelLdrTestNacl(
+    'getpid_test.out',
+    command=[env.File('getpid_test.nexe')],
+    stdout_golden=env.File('getpid_test.stdout'),
+    stdout_filter="'^(All tests PASSED)$|^(TEST.*)$'",
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_getpid_test')
+
+env.ComponentProgram('getpid_test.nexe', ['getpid_test.cc', 'test.cc'])
+node = env.CommandSelLdrTestNacl(
+    'getpid_test.out',
+    command=[env.File('getpid_test.nexe')],
+    stdout_golden=env.File('getpid_test.stdout'),
+    stdout_filter="'^(All tests PASSED)$|^(TEST.*)$'",
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_getpid_test')
