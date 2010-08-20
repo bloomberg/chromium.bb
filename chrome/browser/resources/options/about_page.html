@@ -4,10 +4,8 @@
     <section>
       <div>
         <!-- White space is significant between spans. -->
-        <if expr="pp_ifdef('chromeos')">
-          <div><span i18n-content="os"></span> <span id="osVersion0">
-            <span class="loading" i18n-content="loading"></span></span></div>
-        </if>
+        <div><span i18n-content="os"></span> <span id="osVersion0">
+          <span class="loading" i18n-content="loading"></span></span></div>
         <div>
           <span i18n-content="browser"></span>
           <span i18n-content="browser_version"></span>
@@ -30,14 +28,12 @@
                 i18n-content="development"></option>
       </select>
     </section>
-    <if expr="pp_ifdef('chromeos')">
-      <section>
-        <h3 i18n-content="os"></h3>
-        <div id="osVersion1">
-          <span class="loading" i18n-content="loading"></span>
-        </div>
-      </section>
-    </if>
+    <section>
+      <h3 i18n-content="os"></h3>
+      <div id="osVersion1">
+        <span class="loading" i18n-content="loading"></span>
+      </div>
+    </section>
     <section>
       <h3 i18n-content="browser"></h3>
       <div i18n-content="browser_version"></div>
