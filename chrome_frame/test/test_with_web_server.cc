@@ -22,8 +22,8 @@ using testing::_;
 using testing::StrCaseEq;
 
 const wchar_t kDocRoot[] = L"chrome_frame\\test\\data";
-const int kLongWaitTimeout = 60 * 1000;
-const int kShortWaitTimeout = 25 * 1000;
+const int kLongWaitTimeout = 15 * 1000;
+const int kShortWaitTimeout = 5 * 1000;
 
 namespace {
 
@@ -203,7 +203,7 @@ bool ChromeFrameTestWithWebServer::CheckResultFile(
 void ChromeFrameTestWithWebServer::SimpleBrowserTest(BrowserKind browser,
     const wchar_t* page, const wchar_t* result_file_to_check) {
   ASSERT_TRUE(LaunchBrowser(browser, page));
-  ASSERT_TRUE(WaitForTestToComplete(kLongWaitTimeout));
+  WaitForTestToComplete(kLongWaitTimeout);
   ASSERT_TRUE(CheckResultFile(result_file_to_check, "OK"));
 }
 
@@ -213,7 +213,7 @@ void ChromeFrameTestWithWebServer::OptionalBrowserTest(BrowserKind browser,
   if (!LaunchBrowser(browser, page)) {
     LOG(ERROR) << "Failed to launch browser " << ToString(browser);
   } else {
-    ASSERT_TRUE(WaitForTestToComplete(kLongWaitTimeout));
+    WaitForTestToComplete(kLongWaitTimeout);
     ASSERT_TRUE(CheckResultFile(result_file_to_check, "OK"));
   }
 }
@@ -253,7 +253,7 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
   EXPECT_TRUE(version_info);
   EXPECT_FALSE(version.empty());
   EXPECT_TRUE(LaunchBrowser(browser, page));
-  ASSERT_TRUE(WaitForTestToComplete(kLongWaitTimeout));
+  WaitForTestToComplete(kLongWaitTimeout);
   ASSERT_TRUE(CheckResultFile(result_file_to_check, WideToUTF8(version)));
 }
 

@@ -67,6 +67,8 @@ bool ChromeFrameHTTPServer::WaitToFinish(int milliseconds) {
   bool ret = test_server_.WaitToFinish(milliseconds);
   if (!ret) {
     LOG(ERROR) << "WaitToFinish failed with error:" << ::GetLastError();
+  } else {
+    ret = test_server_.Stop();
   }
   return ret;
 }
