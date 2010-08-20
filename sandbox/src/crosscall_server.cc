@@ -85,6 +85,8 @@ void CrossCallParamsEx::operator delete(void* raw_memory) throw() {
 CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
                                                        size_t buffer_size,
                                                        size_t* output_size) {
+  // IMPORTANT: Everything inside buffer_base and derived from it such
+  // as param_count and declared_size is untrusted.
   if (NULL == buffer_base) {
     return NULL;
   }
@@ -94,10 +96,12 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
   if (buffer_size > kMaxBufferSize) {
     return NULL;
   }
+
   char* backing_mem = NULL;
   size_t param_count = 0;
+  size_t declared_size;
+  size_t min_declared_size;
   CrossCallParamsEx* copied_params = NULL;
-  size_t actual_size;
 
   // Touching the untrusted buffer is done under a SEH try block. This
   // will catch memory access violations so we don't crash.
@@ -107,30 +111,28 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     // Check against the minimum size given the number of stated params
     // if too small we bail out.
     param_count = call_params->GetParamsCount();
-    if ((buffer_size - sizeof(CrossCallParams)) <
-        (sizeof(ptrdiff_t) * (param_count + 1))) {
-      // This test is subject to integer overflow but the next is not.
+
+    min_declared_size =
+        sizeof(CrossCallParamsEx) + (param_count * sizeof(ParamInfo));
+
+    if (min_declared_size < sizeof(CrossCallParams) ||
+       (buffer_size < min_declared_size)) {
+      // Integer overflow or computed size bigger than untrusted buffer.
       return NULL;
     }
 
-    actual_size = GetActualBufferSize(param_count, buffer_base);
-    if ((actual_size > buffer_size) || (0 == actual_size)) {
-      // It is too big or too many declared parameters.
+    declared_size = GetActualBufferSize(param_count, buffer_base);
+    if ((declared_size > buffer_size) ||
+        (declared_size < min_declared_size)) {
+      // declared size is bigger than buffer or smaller than computed size.
       return NULL;
     }
 
     // Now we copy the actual amount of the message.
-    actual_size += sizeof(ParamInfo);  // To get the last offset.
-    *output_size = actual_size;
-    backing_mem = new char[actual_size];
-    memset(backing_mem, 0, actual_size);
-    // Note that this is a placement new.
-#pragma warning(push)
-#pragma warning(disable: 4291)  // No matching operator delete.
-    // TODO(cpu): Remove this warning.
-    copied_params = new(backing_mem)CrossCallParamsEx();
-#pragma warning(pop)
-    memcpy(backing_mem, call_params, actual_size);
+    *output_size = declared_size;
+    backing_mem = new char[declared_size];
+    copied_params = reinterpret_cast<CrossCallParamsEx*>(backing_mem);
+    memcpy(backing_mem, call_params, declared_size);
 
   } __except(EXCEPTION_EXECUTE_HANDLER) {
     // In case of a windows exception we know it occurred while touching the
@@ -138,7 +140,9 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     return NULL;
   }
 
-  char* last_byte = &backing_mem[actual_size - 1];
+  const char* last_byte = &backing_mem[declared_size - 1];
+  const char* first_byte = &backing_mem[min_declared_size];
+
   // Verify here that all and each parameters make sense. This is done in the
   // local copy.
   for (size_t ix =0; ix != param_count; ++ix) {
@@ -149,6 +153,7 @@ CrossCallParamsEx* CrossCallParamsEx::CreateFromBuffer(void* buffer_base,
     if ((NULL == address) ||               // No null params.
         (INVALID_TYPE >= type) || (LAST_TYPE <= type) ||  // Unknown type.
         (address < backing_mem) ||         // Start cannot point before buffer.
+        (address < first_byte) ||          // Start cannot point too low.
         (address > last_byte) ||           // Start cannot point past buffer.
         ((address + size) < address) ||    // Invalid size.
         ((address + size) > last_byte)) {  // End cannot point past buffer.

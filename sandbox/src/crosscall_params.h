@@ -169,30 +169,33 @@ class CrossCallParams {
 // blob to be complex.
 //
 // As is, this class assumes that the layout of the blob is as follows. Assume
-// that NUMBER_PARAMS = 2:
+// that NUMBER_PARAMS = 2 and a 32-bit build:
 //
-// [ tag              4 bytes]
-// [ IsOnOut          4 bytes]
-// [ call return     52 bytes]
-// [ params count     4 bytes]
-// [ parameter 0 type 4 bytes]
-// [ parameter 0 /\   4 bytes] ---delta to ---\
-// [ parameter 0 size 4 bytes]                |
-// [ parameter 1 type 4 bytes]                |
-// [ parameter 1 /\   4 bytes]                |
-// [ parameter 1 size 4 bytes]                |
-// [ parameter 2 type 4 bytes]                |
-// [ parameter 2 /\   4 bytes] ----------------------\
-// [ parameter 2 size 4 bytes]                |      |
-// |-------------------------|                |      |
-// |                         | <--------------/      |
-// |                         |                       |
-// |                         | <---------------------/
-// |-------------------------|
+// [ tag                4 bytes]
+// [ IsOnOut            4 bytes]
+// [ call return       52 bytes]
+// [ params count       4 bytes]
+// [ parameter 0 type   4 bytes]
+// [ parameter 0 offset 4 bytes] ---delta to ---\
+// [ parameter 0 size   4 bytes]                |
+// [ parameter 1 type   4 bytes]                |
+// [ parameter 1 offset 4 bytes] ---------------|--\
+// [ parameter 1 size   4 bytes]                |  |
+// [ parameter 2 type   4 bytes]                |  |
+// [ parameter 2 offset 4 bytes] ----------------------\
+// [ parameter 2 size   4 bytes]                |  |   |
+// |---------------------------|                |  |   |
+// | value 0     (x bytes)     | <--------------/  |   |
+// | value 1     (y bytes)     | <-----------------/   |
+// |                           |                       |
+// | end of buffer             | <---------------------/
+// |---------------------------|
 //
 // Note that the actual number of params is NUMBER_PARAMS + 1
 // so that the size of each actual param can be computed from the difference
-// between one parameter and the next down
+// between one parameter and the next down. The offset of the last param
+// points to the end of the buffer and the type and size are undefined.
+//
 template <size_t NUMBER_PARAMS, size_t BLOCK_SIZE>
 class ActualCallParams : public CrossCallParams {
  public:
@@ -207,6 +210,14 @@ class ActualCallParams : public CrossCallParams {
   ActualCallParams(uint32 tag, uint32 number_params)
       : CrossCallParams(tag, number_params) {
     param_info_[0].offset_ = parameters_ - reinterpret_cast<char*>(this);
+  }
+
+  // Testing-only method. Allows setting the apparent size to a wrong value.
+  // returns the previous size.
+  size_t OverrideSize(size_t new_size) {
+    size_t previous_size = param_info_[NUMBER_PARAMS].offset_;
+    param_info_[NUMBER_PARAMS].offset_ = new_size;
+    return previous_size;
   }
 
   // Copies each paramter into the internal buffer. For each you must supply:
