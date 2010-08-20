@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SPEECH_SPEECH_INPUT_MANAGER_H_
 
 #include "base/basictypes.h"
-#include "base/ref_counted.h"
 #include "chrome/browser/speech/speech_recognizer.h"
 #include "ipc/ipc_message.h"
 

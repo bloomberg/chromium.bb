@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/string_number_conversions.h"

@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/ref_counted.h"
 #include "base/string16.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "gfx/native_widget_types.h"

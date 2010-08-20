@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/platform_file.h"
-#include "base/ref_counted.h"
 
 // This class provides asynchronous access to common file routines.
 class FileSystemProxy {

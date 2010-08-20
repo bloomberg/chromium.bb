@@ -14,7 +14,6 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/hash_tables.h"
-#include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "base/waitable_event_watcher.h"
 #include "chrome/common/notification_observer.h"

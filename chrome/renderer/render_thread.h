@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/shared_memory.h"
-#include "base/string16.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "build/build_config.h"

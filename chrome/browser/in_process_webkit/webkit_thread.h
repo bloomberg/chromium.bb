@@ -8,7 +8,6 @@
 
 #include "base/lock.h"
 #include "base/logging.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"

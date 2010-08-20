@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {

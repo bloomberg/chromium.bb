@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SIDEBAR_SIDEBAR_MANAGER_H_
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "base/ref_counted.h"

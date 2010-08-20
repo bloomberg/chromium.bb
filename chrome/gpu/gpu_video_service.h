@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/scoped_ptr.h"
 #include "base/ref_counted.h"
 #include "base/singleton.h"
 #include "chrome/gpu/gpu_video_decoder.h"

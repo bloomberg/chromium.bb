@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UPDATE_SCREEN_H_
 #pragma once
 
-#include "base/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/login/update_view.h"

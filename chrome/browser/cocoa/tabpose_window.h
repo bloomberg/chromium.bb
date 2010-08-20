@@ -10,7 +10,6 @@
 
 #include "base/scoped_cftyperef.h"
 
-#include "base/ref_counted.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"

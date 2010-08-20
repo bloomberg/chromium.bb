@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/json/json_writer.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"

@@ -9,7 +9,6 @@
 #include <ApplicationServices/ApplicationServices.h>
 
 #include "base/shared_memory.h"
-#include "base/string16.h"
 
 #ifdef __OBJC__
 @class NSFont;
