@@ -1106,12 +1106,20 @@ void TabContents::RemoveInfoBar(InfoBarDelegate* delegate) {
         NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
         Source<TabContents>(this),
         Details<InfoBarDelegate>(delegate));
-    infobar_delegates_.erase(it);
 
-    // Remove ourselves as an observer if we are tracking no more InfoBars.
-    if (infobar_delegates_.empty()) {
-      registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
-                        Source<NavigationController>(&controller_));
+    // Just to be safe, make sure the delegate was not removed by an observer.
+    it = find(infobar_delegates_.begin(), infobar_delegates_.end(), delegate);
+    if (it != infobar_delegates_.end()) {
+      infobar_delegates_.erase(it);
+      // Remove ourselves as an observer if we are tracking no more InfoBars.
+      if (infobar_delegates_.empty()) {
+        registrar_.Remove(this, NotificationType::NAV_ENTRY_COMMITTED,
+                          Source<NavigationController>(&controller_));
+      }
+    } else {
+      // If you hit this NOTREACHED, please comment in bug
+      // http://crbug.com/50428 how you got there.
+      NOTREACHED();
     }
   }
 }
@@ -1136,10 +1144,21 @@ void TabContents::ReplaceInfoBar(InfoBarDelegate* old_delegate,
       Source<TabContents>(this),
       Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> >(details.get()));
 
-  // Remove the old one.
-  infobar_delegates_.erase(it);
+  // Just to be safe, make sure the delegate was not removed by an observer.
+  it = find(infobar_delegates_.begin(), infobar_delegates_.end(), old_delegate);
+  if (it != infobar_delegates_.end()) {
+    // Remove the old one.
+    infobar_delegates_.erase(it);
+  } else {
+    // If you hit this NOTREACHED, please comment in bug
+    // http://crbug.com/50428 how you got there.
+    NOTREACHED();
+  }
 
   // Add the new one.
+  DCHECK(find(infobar_delegates_.begin(),
+              infobar_delegates_.end(), new_delegate) ==
+         infobar_delegates_.end());
   infobar_delegates_.push_back(new_delegate);
 }
 
@@ -1503,6 +1522,13 @@ void TabContents::ExpireInfoBars(
 
   for (int i = infobar_delegate_count() - 1; i >= 0; --i) {
     InfoBarDelegate* delegate = GetInfoBarDelegateAt(i);
+    if (!delegate) {
+      // If you hit this NOTREACHED, please comment in bug
+      // http://crbug.com/50428 how you got there.
+      NOTREACHED();
+      continue;
+    }
+
     if (delegate->ShouldExpire(details))
       RemoveInfoBar(delegate);
   }
