@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "remoting/base/decoder_verbatim.h"
+#include "remoting/base/decoder_zlib.h"
 
 namespace remoting {
 
@@ -174,7 +175,7 @@ void X11View::HandleBeginUpdateStream(HostMessage* msg) {
   // TODO(hclam): Use the information from the message to create the decoder.
   // We lazily construct the decoder.
   if (!decoder_.get()) {
-    decoder_.reset(new DecoderVerbatim());
+    decoder_.reset(new DecoderZlib());
   }
 
   // Tell the decoder to do start decoding.
