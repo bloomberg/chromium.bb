@@ -7,11 +7,13 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
+#include "chrome/renderer/renderer_webidbtransaction_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
+using WebKit::WebIDBTransaction;
 using WebKit::WebString;
 using WebKit::WebVector;
 
@@ -66,4 +68,19 @@ void RendererWebIDBDatabaseImpl::createObjectStore(
       RenderThread::current()->indexed_db_dispatcher();
   dispatcher->RequestIDBDatabaseCreateObjectStore(
       name, key_path, auto_increment, callbacks, idb_database_id_);
+}
+
+WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
+    const WebDOMStringList& names, unsigned short mode,
+    unsigned long timeout) {
+  std::vector<string16> object_stores(names.length());
+  for (unsigned int i = 0; i < names.length(); ++i) {
+    object_stores.push_back(names.item(i));
+  }
+
+  int transaction_id;
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBDatabaseTransaction(
+          idb_database_id_, object_stores, mode, timeout, &transaction_id));
+    return new RendererWebIDBTransactionImpl(transaction_id);
 }

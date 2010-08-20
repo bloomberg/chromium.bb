@@ -874,6 +874,10 @@ IPC_BEGIN_MESSAGES(View)
                        int /* code */,
                        string16 /* message */)
 
+  // IDBTransactionCallback message handlers.
+  IPC_MESSAGE_CONTROL1(ViewMsg_IDBTransactionCallbacksAbort,
+                       int /* transaction_id */)
+
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   // Tell the renderer process to begin or end IPC message logging.
   IPC_MESSAGE_CONTROL1(ViewMsg_SetIPCLoggingEnabled,
@@ -2279,6 +2283,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBFactoryOpen,
                        ViewHostMsg_IDBFactoryOpen_Params)
 
+  // WebIDBFactory::abortPendingTransactions() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBFactoryAbortPendingTransactions,
+                       std::vector<int32> /* transaction_ids */)
+
   // WebIDBDatabase::name() message.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_IDBDatabaseName,
                               int32, /* idb_database_id */
@@ -2316,6 +2324,18 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int32, /* idb_database_id */
                        int32, /* response_id */
                        string16 /* name */)
+
+  // WebIDBDatabase::transaction() message.
+  // TODO: make this message async. Have the renderer create a
+  // temporary ID and keep a map in the browser process of real
+  // IDs to temporary IDs. We can then update the transaction
+  // to its real ID asynchronously.
+  IPC_SYNC_MESSAGE_CONTROL4_1(ViewHostMsg_IDBDatabaseTransaction,
+                              int32, /* idb_database_id */
+                              std::vector<string16>, /* object_stores */
+                              int32, /* mode */
+                              int32, /* timeout */
+                              int32 /* idb_transaction_id */)
 
   // WebIDBDatabase::~WebIDBDatabase() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBDatabaseDestroyed,
@@ -2403,6 +2423,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // WebIDBDatabase::~WebIDBCursor() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBCursorDestroyed,
                        int32 /* idb_cursor_id */)
+
+  // WebIDBTransaction::~WebIDBTransaction() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBTransactionDestroyed,
+                       int32 /* idb_index_id */)
 
   // Get file size in bytes. Set result to -1 if failed to get the file size.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,
