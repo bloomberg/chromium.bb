@@ -324,7 +324,7 @@ void WrenchMenuModel::Build() {
   if (gtk_stock_lookup(GTK_STOCK_PREFERENCES, &stock_item)) {
     const char16 kUnderscore[] = { '_', 0 };
     string16 preferences;
-    RemoveChars(ASCIIToUTF16(stock_item.label), kUnderscore, &preferences);
+    RemoveChars(UTF8ToUTF16(stock_item.label), kUnderscore, &preferences);
     AddItem(IDC_OPTIONS, preferences);
   }
 #else
