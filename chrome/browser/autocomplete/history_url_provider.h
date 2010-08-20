@@ -6,16 +6,18 @@
 #define CHROME_BROWSER_AUTOCOMPLETE_HISTORY_URL_PROVIDER_H_
 #pragma once
 
-#include <vector>
-
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/history/history_types.h"
+#include "chrome/browser/autocomplete/history_provider_util.h"
 
 class MessageLoop;
 class Profile;
 
 namespace history {
-  class HistoryBackend;
+
+class HistoryBackend;
+class URLDatabase;
+class URLRow;
+
 }  // namespace history
 
 // How history autocomplete works
@@ -131,21 +133,12 @@ struct HistoryURLProviderParams {
 // anything on destruction.
 class HistoryURLProvider : public AutocompleteProvider {
  public:
-  HistoryURLProvider(ACProviderListener* listener, Profile* profile)
-      : AutocompleteProvider(listener, profile, "HistoryURL"),
-        prefixes_(GetPrefixes()),
-        params_(NULL) {
-  }
+  HistoryURLProvider(ACProviderListener* listener, Profile* profile);
 
 #ifdef UNIT_TEST
   HistoryURLProvider(ACProviderListener* listener,
                      Profile* profile,
-                     const std::wstring& languages)
-      : AutocompleteProvider(listener, profile, "History"),
-        prefixes_(GetPrefixes()),
-        params_(NULL),
-        languages_(languages) {
-  }
+                     const std::wstring& languages);
 #endif
   // no destructor (see note above)
 
@@ -301,10 +294,9 @@ class HistoryURLProvider : public AutocompleteProvider {
   // input identified by |source_index|. If |source_index| or an item before
   // is removed, the next item will be shifted, and this allows the caller to
   // pick up on the next one when this happens.
-  size_t RemoveSubsequentMatchesOf(
-      history::HistoryMatches* matches,
-      size_t source_index,
-      const std::vector<GURL>& remove) const;
+  size_t RemoveSubsequentMatchesOf(history::HistoryMatches* matches,
+                                   size_t source_index,
+                                   const std::vector<GURL>& remove) const;
 
   // Converts a line from the database into an autocomplete match for display.
   AutocompleteMatch HistoryMatchToACMatch(
