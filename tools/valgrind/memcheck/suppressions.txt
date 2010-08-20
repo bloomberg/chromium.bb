@@ -4150,17 +4150,6 @@
    fun:_ZN17URLRequestHttpJobD0Ev
 }
 {
-   bug_52828
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN4base10JSONReader10BuildValueEb
-   fun:_ZN4base10JSONReader11JsonToValueERKSsbb
-   fun:_ZN4base10JSONReader18ReadAndReturnErrorERKSsbPiPSs
-   fun:_ZN4base10JSONReader4ReadERKSsb
-   fun:_ZN81_GLOBAL__N_chrome_browser_host_content_settings_map_unittest.cc*
-}
-{
    bug_52831
    Memcheck:Leak
    fun:_Znw*
