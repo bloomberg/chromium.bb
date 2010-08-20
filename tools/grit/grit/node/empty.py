@@ -62,7 +62,7 @@ class TranslationsNode(base.Node):
 class OutputsNode(base.Node):
   '''The <outputs> element.'''
   def _IsValidChild(self, child):
-    return isinstance(child, io.OutputNode)
+    return isinstance(child, (io.OutputNode, misc.IfNode))
 
 
 class IdentifiersNode(GroupingNode):

@@ -59,9 +59,9 @@ class IfNodeUnittest(unittest.TestCase):
     bingo_message = messages_node.children[0].children[0]
     hello_message = messages_node.children[1].children[0]
     french_message = messages_node.children[2].children[0]
-    assert bingo_message.name == 'message'
-    assert hello_message.name == 'message'
-    assert french_message.name == 'message'
+    self.assertTrue(bingo_message.name == 'message')
+    self.assertTrue(hello_message.name == 'message')
+    self.assertTrue(french_message.name == 'message')
 
     grd.SetOutputContext('fr', {'hello' : '1'})
     self.failUnless(not bingo_message.SatisfiesOutputCondition())
@@ -78,6 +78,60 @@ class IfNodeUnittest(unittest.TestCase):
     self.failUnless(not hello_message.SatisfiesOutputCondition())
     self.failUnless(french_message.SatisfiesOutputCondition())
 
+  def testIffynessWithOutputNodes(self):
+    grd = grd_reader.Parse(StringIO.StringIO('''
+      <grit latest_public_release="2" source_lang_id="en-US" current_release="3" base_dir=".">
+        <outputs>
+          <output filename="uncond1.rc" type="rc_data" />
+          <if expr="lang == 'fr' or 'hello' in defs">
+            <output filename="only_fr.adm" type="adm" />
+            <output filename="only_fr.plist" type="plist" />
+          </if>
+          <if expr="lang == 'ru'">
+            <output filename="doc.html" type="document" />
+          </if>
+          <output filename="uncond2.adm" type="adm" />
+        </outputs>
+      </grit>'''), dir='.')
+
+    outputs_node = grd.children[0]
+    uncond1_output = outputs_node.children[0]
+    only_fr_adm_output = outputs_node.children[1].children[0]
+    only_fr_plist_output = outputs_node.children[1].children[1]
+    doc_output = outputs_node.children[2].children[0]
+    uncond2_output = outputs_node.children[0]
+    self.assertTrue(uncond1_output.name == 'output')
+    self.assertTrue(only_fr_adm_output.name == 'output')
+    self.assertTrue(only_fr_plist_output.name == 'output')
+    self.assertTrue(doc_output.name == 'output')
+    self.assertTrue(uncond2_output.name == 'output')
+
+    grd.SetOutputContext('ru', {'hello' : '1'})
+    outputs = [output.GetFilename() for output in grd.GetOutputFiles()]
+    self.assertEquals(
+        outputs,
+        ['uncond1.rc', 'only_fr.adm', 'only_fr.plist', 'doc.html',
+         'uncond2.adm'])
+
+    grd.SetOutputContext('ru', {'bingo': '2'})
+    outputs = [output.GetFilename() for output in grd.GetOutputFiles()]
+    self.assertEquals(
+        outputs,
+        ['uncond1.rc', 'doc.html', 'uncond2.adm'])
+
+    grd.SetOutputContext('fr', {'hello': '1'})
+    outputs = [output.GetFilename() for output in grd.GetOutputFiles()]
+    self.assertEquals(
+        outputs,
+        ['uncond1.rc', 'only_fr.adm', 'only_fr.plist', 'uncond2.adm'])
+
+    grd.SetOutputContext('en', {'bingo': '1'})
+    outputs = [output.GetFilename() for output in grd.GetOutputFiles()]
+    self.assertEquals(outputs, ['uncond1.rc', 'uncond2.adm'])
+
+    grd.SetOutputContext('fr', {'bingo': '1'})
+    outputs = [output.GetFilename() for output in grd.GetOutputFiles()]
+    self.assertNotEquals(outputs, ['uncond1.rc', 'uncond2.adm'])
 
 class ReleaseNodeUnittest(unittest.TestCase):
   def testPseudoControl(self):
