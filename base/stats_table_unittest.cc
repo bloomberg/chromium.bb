@@ -190,7 +190,8 @@ MULTIPROCESS_TEST_MAIN(StatsTableMultipleProcessMain) {
 }
 
 // Create a few processes and have them poke on their counters.
-TEST_F(StatsTableTest, MultipleProcesses) {
+// This test is slow and flaky http://crbug.com/10611
+TEST_F(StatsTableTest, FLAKY_MultipleProcesses) {
   // Create a stats table.
   const int kMaxProcs = 20;
   const int kMaxCounter = 5;
