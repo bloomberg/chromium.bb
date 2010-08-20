@@ -106,12 +106,6 @@ static bool GetDataTypeChoiceData(const std::string& json,
   if (sync_extensions)
     data_types->insert(syncable::EXTENSIONS);
 
-  bool sync_sessions;
-  if (!result->GetBoolean("syncSessions", &sync_sessions))
-    return false;
-  if (sync_sessions)
-    data_types->insert(syncable::SESSIONS);
-
   bool sync_typed_urls;
   if (!result->GetBoolean("syncTypedUrls", &sync_typed_urls))
     return false;

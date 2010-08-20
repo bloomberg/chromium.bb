@@ -135,9 +135,9 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
         new TypedUrlDataTypeController(this, profile_, pss));
   }
 
-  // Session sync is enabled by default.  Register unless explicitly
-  // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncSessions)) {
+  // Session sync is disabled by default.  Register only if explicitly
+  // enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncSessions)) {
     pss->RegisterDataTypeController(
         new SessionDataTypeController(this, pss));
   }
