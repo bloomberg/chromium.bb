@@ -55,15 +55,18 @@ const int kShelfBorderTopOverlap = 0;
 // Properties of the dismiss button.
 const int kDismissButtonWidth = 14;
 const int kDismissButtonHeight = 14;
-const int kDismissButtonRightMargin = 10;
+const int kDismissButtonTopMargin = 6;
+const int kDismissButtonRightMargin = 6;
 
 // Properties of the options menu.
-const int kOptionsButtonWidth = 26;
+const int kOptionsButtonWidth = 21;
 const int kOptionsButtonHeight = 14;
-const int kOptionsButtonRightMargin = 10;
+const int kOptionsButtonTopMargin = 5;
+const int kOptionsButtonRightMargin = 4;
 
 // Properties of the origin label.
-const int kLeftLabelMargin = 10;
+const int kLabelLeftMargin = 10;
+const int kLabelTopMargin = 6;
 
 // Size of the drop shadow.  The shadow is provided by BubbleBorder,
 // not this class.
@@ -78,7 +81,6 @@ const bool kAnimateEnabled = true;
 // The shelf height for the system default font size.  It is scaled
 // with changes in the default font size.
 const int kDefaultShelfHeight = 22;
-const int kShelfTopMargin = 6;
 
 // Menu commands
 const int kRevokePermissionCommand = 0;
@@ -247,7 +249,7 @@ gfx::Rect BalloonViewImpl::GetCloseButtonBounds() const {
   return gfx::Rect(
       width() - kDismissButtonWidth -
           kDismissButtonRightMargin - kRightShadowWidth,
-      kShelfTopMargin,
+      kDismissButtonTopMargin,
       kDismissButtonWidth,
       kDismissButtonHeight);
 }
@@ -257,15 +259,15 @@ gfx::Rect BalloonViewImpl::GetOptionsButtonBounds() const {
 
   return gfx::Rect(
       close_rect.x() - kOptionsButtonWidth - kOptionsButtonRightMargin,
-      kShelfTopMargin,
+      kOptionsButtonTopMargin,
       kOptionsButtonWidth,
       kOptionsButtonHeight);
 }
 
 gfx::Rect BalloonViewImpl::GetLabelBounds() const {
   return gfx::Rect(
-      kLeftShadowWidth + kLeftLabelMargin,
-      kShelfTopMargin,
+      kLeftShadowWidth + kLabelLeftMargin,
+      kLabelTopMargin,
       std::max(0, width() - kOptionsButtonWidth -
                kRightMargin),
       kOptionsButtonHeight);
@@ -330,12 +332,15 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   frame_container_->MoveAbove(html_container_);
 
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
-      rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
+                          rb.GetBitmapNamed(IDR_TAB_CLOSE));
   close_button_->SetImage(views::CustomButton::BS_HOT,
-      rb.GetBitmapNamed(IDR_BALLOON_CLOSE_HOVER));
+                          rb.GetBitmapNamed(IDR_TAB_CLOSE_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
-      rb.GetBitmapNamed(IDR_BALLOON_CLOSE_HOVER));
+                          rb.GetBitmapNamed(IDR_TAB_CLOSE_P));
   close_button_->SetBounds(GetCloseButtonBounds());
+  close_button_->SetBackground(SK_ColorBLACK,
+                               rb.GetBitmapNamed(IDR_TAB_CLOSE),
+                               rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
 
   options_menu_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_WRENCH));
   options_menu_button_->SetHoverIcon(*rb.GetBitmapNamed(IDR_BALLOON_WRENCH_H));
