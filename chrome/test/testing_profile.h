@@ -42,17 +42,6 @@ class TestingProfile : public Profile {
  public:
   TestingProfile();
 
-  // Creates a new profile by adding |count| to the end of the path. Use this
-  // when you need to have more than one TestingProfile running at the same
-  // time.
-  explicit TestingProfile(int count);
-
-  // Creates a new profile specifying the target directory.
-  // Use this as a temporary solution for tests requiring a ScopedTempDir.
-  // This directory must already exist.
-  // TODO(chron): Use a ScopedTempDir. Remove constructor. BUG=51833
-  explicit TestingProfile(const FilePath& directory);
-
   virtual ~TestingProfile();
 
   // Creates the favicon service. Consequent calls would recreate the service.
@@ -103,9 +92,8 @@ class TestingProfile : public Profile {
     return reinterpret_cast<ProfileId>(this);
   }
 
-  virtual FilePath GetPath() {
-    return path_;
-  }
+  virtual FilePath GetPath();
+
   // Sets whether we're off the record. Default is false.
   void set_off_the_record(bool off_the_record) {
     off_the_record_ = off_the_record;
@@ -261,9 +249,6 @@ class TestingProfile : public Profile {
   virtual CloudPrintProxyService* GetCloudPrintProxyService() { return NULL; }
 
  protected:
-  // The path of the profile; the various database and other files are relative
-  // to this.
-  FilePath path_;
   base::Time start_time_;
   scoped_ptr<TestingPrefService> prefs_;
 
@@ -347,6 +332,8 @@ class TestingProfile : public Profile {
 
   FilePath last_selected_directory_;
   scoped_refptr<history::TopSites> top_sites_;  // For history and thumbnails.
+
+  // We use a temporary directory to store testing profile data.
   ScopedTempDir temp_dir_;
 };
 

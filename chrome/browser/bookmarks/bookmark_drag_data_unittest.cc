@@ -100,7 +100,7 @@ TEST_F(BookmarkDragDataTest, URL) {
   EXPECT_TRUE(read_data.GetFirstNode(&profile) == node);
 
   // Make sure asking for the node with a different profile returns NULL.
-  TestingProfile profile2(1);
+  TestingProfile profile2;
   EXPECT_TRUE(read_data.GetFirstNode(&profile2) == NULL);
 
   // Writing should also put the URL and title on the clipboard.
@@ -146,7 +146,7 @@ TEST_F(BookmarkDragDataTest, Group) {
   EXPECT_TRUE(g12 == r_g12);
 
   // A different profile should return NULL for the node.
-  TestingProfile profile2(1);
+  TestingProfile profile2;
   EXPECT_TRUE(read_data.GetFirstNode(&profile2) == NULL);
 }
 

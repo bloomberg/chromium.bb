@@ -170,32 +170,29 @@ TestingProfile::TestingProfile()
       has_history_service_(false),
       off_the_record_(false),
       last_session_exited_cleanly_(true) {
-  PathService::Get(base::DIR_TEMP, &path_);
-  path_ = path_.Append(FILE_PATH_LITERAL("TestingProfilePath"));
-  file_util::Delete(path_, true);
-  file_util::CreateDirectory(path_);
-}
+  if (!temp_dir_.CreateUniqueTempDir()) {
+    LOG(ERROR) << "Failed to create unique temporary directory.";
 
-TestingProfile::TestingProfile(int count)
-    : start_time_(Time::Now()),
-      created_theme_provider_(false),
-      has_history_service_(false),
-      off_the_record_(false),
-      last_session_exited_cleanly_(true) {
-  PathService::Get(base::DIR_TEMP, &path_);
-  path_ = path_.Append(FILE_PATH_LITERAL("TestingProfilePath"));
-  path_ = path_.AppendASCII(base::IntToString(count));
-  file_util::Delete(path_, true);
-  file_util::CreateDirectory(path_);
-}
+    // Fallback logic in case we fail to create unique temporary directory.
+    FilePath system_tmp_dir;
+    bool success = PathService::Get(base::DIR_TEMP, &system_tmp_dir);
 
-TestingProfile::TestingProfile(const FilePath& path)
-    : start_time_(Time::Now()),
-      created_theme_provider_(false),
-      has_history_service_(false),
-      off_the_record_(false),
-      last_session_exited_cleanly_(true) {
-  path_ = path;
+    // We're severly screwed if we can't get the system temporary
+    // directory. Die now to avoid writing to the filesystem root
+    // or other bad places.
+    CHECK(success);
+
+    FilePath fallback_dir(system_tmp_dir.AppendASCII("TestingProfilePath"));
+    file_util::Delete(fallback_dir, true);
+    file_util::CreateDirectory(fallback_dir);
+    if (!temp_dir_.Set(fallback_dir)) {
+      // That shouldn't happen, but if it does, try to recover.
+      LOG(ERROR) << "Failed to use a fallback temporary directory.";
+
+      // We're screwed if this fails, see CHECK above.
+      CHECK(temp_dir_.Set(system_tmp_dir));
+    }
+  }
 }
 
 TestingProfile::~TestingProfile() {
@@ -210,8 +207,6 @@ TestingProfile::~TestingProfile() {
   if (top_sites_.get())
     top_sites_->ClearProfile();
   history::TopSites::DeleteTopSites(top_sites_);
-
-  file_util::Delete(path_, true);
 }
 
 void TestingProfile::CreateFaviconService() {
@@ -320,6 +315,11 @@ void TestingProfile::UseThemeProvider(BrowserThemeProvider* theme_provider) {
   theme_provider_.reset(theme_provider);
 }
 
+FilePath TestingProfile::GetPath() {
+  DCHECK(temp_dir_.IsValid());  // TODO(phajdan.jr): do it better.
+  return temp_dir_.path();
+}
+
 TestingPrefService* TestingProfile::GetTestingPrefService() {
   return static_cast<TestingPrefService*>(GetPrefs());
 }
@@ -360,8 +360,6 @@ PrefService* TestingProfile::GetPrefs() {
 history::TopSites* TestingProfile::GetTopSites() {
   if (!top_sites_.get()) {
     top_sites_ = new history::TopSites(this);
-    if (!temp_dir_.CreateUniqueTempDir())
-      return NULL;
     FilePath file_name = temp_dir_.path().AppendASCII("TopSites.db");
     top_sites_->Init(file_name);
   }

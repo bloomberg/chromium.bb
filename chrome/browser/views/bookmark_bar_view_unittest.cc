@@ -34,7 +34,7 @@ TEST_F(BookmarkBarViewTest, SwitchProfile) {
 
   EXPECT_EQ(1, bookmark_bar.GetBookmarkButtonCount());
 
-  TestingProfile profile2(0);
+  TestingProfile profile2;
   profile2.CreateBookmarkModel(true);
   profile2.BlockUntilBookmarkModelLoaded();
 

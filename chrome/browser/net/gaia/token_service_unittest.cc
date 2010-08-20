@@ -4,7 +4,6 @@
 //
 // This file defines a unit test for the profile's token service.
 
-#include "base/scoped_temp_dir.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/password_manager/encryptor.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -76,11 +75,9 @@ class TokenServiceTest : public testing::Test {
     credentials_.token = "token";
     credentials_.data = "data";
 
-    ASSERT_TRUE(temp_.CreateUniqueTempDir());
     ASSERT_TRUE(db_thread_.Start());
 
-    // Testing profile responsible for deleting the temp dir.
-    profile_.reset(new TestingProfile(temp_.Take()));
+    profile_.reset(new TestingProfile());
     profile_->CreateWebDataService(false);
     WaitForDBLoadCompletion();
 
@@ -128,7 +125,6 @@ class TokenServiceTest : public testing::Test {
   TokenFailedTracker failure_tracker_;
   GaiaAuthConsumer::ClientLoginResult credentials_;
   scoped_ptr<TestingProfile> profile_;
-  ScopedTempDir temp_;
 };
 
 TEST_F(TokenServiceTest, SanityCheck) {
