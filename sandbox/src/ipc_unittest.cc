@@ -332,6 +332,24 @@ TEST(IPCTest, CrossCallValidation) {
     EXPECT_TRUE(NULL == ccp);
   }
 #endif  // defined(NDEBUG)
+
+  ActualCallParams<1, 256> params_3(kTag, 1);
+  params_3.CopyParamIn(0, &value, sizeof(value), false, ULONG_TYPE);
+  buffer = const_cast<void*>(params_3.GetBuffer());
+  EXPECT_TRUE(NULL != buffer);
+
+  size_t correct_size = params_3.OverrideSize(1);
+  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, 256, &out_size);
+  EXPECT_TRUE(NULL == ccp);
+
+  // The correct_size is 8 bytes aligned.
+  params_3.OverrideSize(correct_size - 7);
+  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, 256, &out_size);
+  EXPECT_TRUE(NULL == ccp);
+
+  params_3.OverrideSize(correct_size);
+  ccp = CrossCallParamsEx::CreateFromBuffer(buffer, 256, &out_size);
+  EXPECT_TRUE(NULL != ccp);
 }
 
 // This structure is passed to the mock server threads to simulate
