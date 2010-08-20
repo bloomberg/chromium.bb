@@ -26,6 +26,7 @@
 #include <string>
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/net_errors.h"
 
 class GoogleServiceAuthError {
  public:
@@ -83,7 +84,10 @@ class GoogleServiceAuthError {
       : state_(s),
         captcha_("", GURL(), GURL()),
         network_error_(0) {
-    DCHECK(s != CONNECTION_FAILED);
+    // If the caller has no idea, then we just set it to a generic failure.
+    if (s == CONNECTION_FAILED) {
+      network_error_ = net::ERR_FAILED;
+    }
   }
 
   // Construct a GoogleServiceAuthError from a network error.
