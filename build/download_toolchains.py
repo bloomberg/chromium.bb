@@ -90,7 +90,7 @@ def main(argv):
         old_url = fh.read()
         fh.close()
         if old_url == url:
-          return
+          continue
       except IOError:
         pass
     try:
