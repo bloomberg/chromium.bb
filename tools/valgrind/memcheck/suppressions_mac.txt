@@ -239,6 +239,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*
+   fun:_ZN11sandboxtest8internal19RegisterSandboxTestIN12_GLOBAL__N_*
    fun:_Z41__static_initialization_and_destruction_0ii
    fun:_GLOBAL__I__ZNSt3tr112_GLOBAL__N_16ignoreE
    fun:_ZN16ImageLoaderMachO18doModInitFunctionsERKN11ImageLoader11LinkContextE
