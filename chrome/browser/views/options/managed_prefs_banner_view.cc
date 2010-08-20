@@ -38,6 +38,7 @@ void ManagedPrefsBannerView::Init() {
   content_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal,
                            kPrefsBannerPadding,
+                           kPrefsBannerPadding,
                            kRelatedControlSmallHorizontalSpacing));
   content_->AddChildView(warning_image_);
   content_->AddChildView(label_);

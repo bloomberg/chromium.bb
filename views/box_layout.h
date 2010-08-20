@@ -23,11 +23,13 @@ class BoxLayout : public LayoutManager {
     kVertical,
   };
 
-  // Use |inside_border_spacing| to add additional space between the child view
-  // area and the host view border. |between_child_spacing| controls the space
-  // in between child views.
+  // Use |inside_border_horizontal_spacing| and
+  // |inside_border_vertical_spacing| to add additional space between the child
+  // view area and the host view border. |between_child_spacing| controls the
+  // space in between child views.
   BoxLayout(Orientation orientation,
-            int inside_border_spacing,
+            int inside_border_horizontal_spacing,
+            int inside_border_vertical_spacing,
             int between_child_spacing);
   virtual ~BoxLayout() {}
 
@@ -39,7 +41,9 @@ class BoxLayout : public LayoutManager {
   const Orientation orientation_;
 
   // Spacing between child views and host view border.
-  const int inside_border_spacing_;
+  const int inside_border_horizontal_spacing_;
+  const int inside_border_vertical_spacing_;
+
   // Spacing to put in between child views.
   const int between_child_spacing_;
 

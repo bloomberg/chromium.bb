@@ -10,7 +10,7 @@
 #include "app/resource_bundle.h"
 #import "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/cocoa/content_settings_dialog_controller.h"
+#import "chrome/browser/cocoa/vertical_gradient_view.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
@@ -19,8 +19,20 @@
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/apple/ImageAndTextCell.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
-static const CGFloat kMinCollectedCookiesViewHeight = 116;
+namespace {
+// Colors for the infobar.
+const double kBannerGradientColorTop[3] =
+    {255.0 / 255.0, 242.0 / 255.0, 183.0 / 255.0};
+const double kBannerGradientColorBottom[3] =
+    {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
+const double kBannerStrokeColor = 135.0 / 255.0;
+
+// Minimal height for the collected cookies dialog.
+const CGFloat kMinCollectedCookiesViewHeight = 116;
+} // namespace
 
 #pragma mark Bridge between the constrained window delegate and the sheet
 
@@ -101,6 +113,13 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 #pragma mark Window Controller
 
+@interface CollectedCookiesWindowController(Private)
+-(void)showInfoBarForDomain:(const string16&)domain
+                    setting:(ContentSetting)setting;
+-(void)showInfoBarForMultipleDomainsAndSetting:(ContentSetting)setting;
+-(void)animateInfoBar;
+@end
+
 @implementation CollectedCookiesWindowController
 
 @synthesize allowedCookiesButtonsEnabled =
@@ -113,20 +132,78 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 
 - (id)initWithTabContents:(TabContents*)tabContents {
   DCHECK(tabContents);
+  infoBarVisible_ = NO;
+  tabContents_ = tabContents;
+
   NSString* nibpath =
       [mac_util::MainAppBundle() pathForResource:@"CollectedCookies"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
-    tabContents_ = tabContents;
-
     [self loadTreeModelFromTabContents];
+
+    animation_.reset([[NSViewAnimation alloc] init]);
+    [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
   }
   return self;
+}
+
+- (void)awakeFromNib {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSImage* infoIcon = rb.GetNSImageNamed(IDR_INFO);
+  DCHECK(infoIcon);
+  [infoBarIcon_ setImage:infoIcon];
+
+  // Initialize the banner gradient and stroke color.
+  NSColor* bannerStartingColor =
+      [NSColor colorWithCalibratedRed:kBannerGradientColorTop[0]
+                                green:kBannerGradientColorTop[1]
+                                 blue:kBannerGradientColorTop[2]
+                                alpha:1.0];
+  NSColor* bannerEndingColor =
+      [NSColor colorWithCalibratedRed:kBannerGradientColorBottom[0]
+                                green:kBannerGradientColorBottom[1]
+                                 blue:kBannerGradientColorBottom[2]
+                                alpha:1.0];
+  scoped_nsobject<NSGradient> bannerGradient(
+      [[NSGradient alloc] initWithStartingColor:bannerStartingColor
+                                    endingColor:bannerEndingColor]);
+  [infoBar_ setGradient:bannerGradient];
+
+  NSColor* bannerStrokeColor =
+      [NSColor colorWithCalibratedWhite:kBannerStrokeColor
+                                  alpha:1.0];
+  [infoBar_ setStrokeColor:bannerStrokeColor];
+
+  // Change the label of the blocked cookies part if necessary.
+  if (tabContents_->profile()->GetHostContentSettingsMap()->
+      BlockThirdPartyCookies()) {
+    [blockedCookiesText_ setStringValue:l10n_util::GetNSString(
+        IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED)];
+    CGFloat textDeltaY = [GTMUILocalizerAndLayoutTweaker
+        sizeToFitFixedWidthTextField:blockedCookiesText_];
+
+    // Shrink the upper custom view.
+    NSView* upperContentView = [[splitView_ subviews] objectAtIndex:0];
+    NSRect frame = [upperContentView frame];
+    [splitView_ setPosition:(frame.size.height - textDeltaY/2.0)
+           ofDividerAtIndex:0];
+
+    // Shrink the lower outline view.
+    frame = [lowerScrollView_ frame];
+    frame.size.height -= textDeltaY;
+    [lowerScrollView_ setFrame:frame];
+
+    // Move the label down so it actually fits.
+    frame = [blockedCookiesText_ frame];
+    frame.origin.y -= textDeltaY;
+    [blockedCookiesText_ setFrame:frame];
+  }
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
   [allowedOutlineView_ setDelegate:nil];
   [blockedOutlineView_ setDelegate:nil];
+  [animation_ stopAnimation];
   [self autorelease];
 }
 
@@ -137,6 +214,8 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
 - (void)addException:(ContentSetting)setting
    forTreeController:(NSTreeController*)controller {
   NSArray* nodes = [controller selectedNodes];
+  BOOL multipleDomainsChanged = NO;
+  string16 lastDomain;
   for (NSTreeNode* treeNode in nodes) {
     CocoaCookieTreeNode* node = [treeNode representedObject];
     CookieTreeNode* cookie = static_cast<CookieTreeNode*>([node treeNode]);
@@ -149,11 +228,14 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
     origin_node->CreateContentException(
         tabContents_->profile()->GetHostContentSettingsMap(),
         setting);
+    if (!lastDomain.empty())
+      multipleDomainsChanged = YES;
+    lastDomain = origin_node->GetTitleAsString16();
   }
-  [[ContentSettingsDialogController
-      showContentSettingsForType:CONTENT_SETTINGS_TYPE_COOKIES
-                         profile:tabContents_->profile()]
-      showCookieExceptions:self];
+  if (multipleDomainsChanged)
+    [self showInfoBarForMultipleDomainsAndSetting:setting];
+  else
+    [self showInfoBarForDomain:lastDomain setting:setting];
 }
 
 - (IBAction)allowOrigin:(id)sender {
@@ -297,6 +379,121 @@ void CollectedCookiesMac::OnSheetDidEnd(NSWindow* sheet) {
   model.reset(
       [[CocoaCookieTreeNode alloc] initWithNode:root]);
   [self setCocoaBlockedTreeModel:model.get()];  // Takes ownership.
+}
+
+-(void)showInfoBarForMultipleDomainsAndSetting:(ContentSetting)setting {
+  NSString* label;
+  switch (setting) {
+    case CONTENT_SETTING_BLOCK:
+      label = l10n_util::GetNSString(
+          IDS_COLLECTED_COOKIES_MULTIPLE_BLOCK_RULES_CREATED);
+      break;
+
+    case CONTENT_SETTING_ALLOW:
+      label = l10n_util::GetNSString(
+          IDS_COLLECTED_COOKIES_MULTIPLE_ALLOW_RULES_CREATED);
+      break;
+
+    case CONTENT_SETTING_SESSION_ONLY:
+      label = l10n_util::GetNSString(
+          IDS_COLLECTED_COOKIES_MULTIPLE_SESSION_RULES_CREATED);
+      break;
+
+    default:
+      NOTREACHED();
+      label = [[[NSString alloc] init] autorelease];
+  }
+  [infoBarText_ setStringValue:label];
+  [self animateInfoBar];
+}
+
+-(void)showInfoBarForDomain:(const string16&)domain
+                    setting:(ContentSetting)setting {
+  NSString* label;
+  switch (setting) {
+    case CONTENT_SETTING_BLOCK:
+      label = l10n_util::GetNSStringF(
+          IDS_COLLECTED_COOKIES_BLOCK_RULE_CREATED,
+          domain);
+      break;
+
+    case CONTENT_SETTING_ALLOW:
+      label = l10n_util::GetNSStringF(
+          IDS_COLLECTED_COOKIES_ALLOW_RULE_CREATED,
+          domain);
+      break;
+
+    case CONTENT_SETTING_SESSION_ONLY:
+      label = l10n_util::GetNSStringF(
+          IDS_COLLECTED_COOKIES_SESSION_RULE_CREATED,
+          domain);
+      break;
+
+    default:
+      NOTREACHED();
+      label = [[[NSString alloc] init] autorelease];
+  }
+  [infoBarText_ setStringValue:label];
+  [self animateInfoBar];
+}
+
+-(void)animateInfoBar {
+  if (infoBarVisible_)
+    return;
+
+  infoBarVisible_ = YES;
+
+  NSMutableArray* animations = [NSMutableArray arrayWithCapacity:3];
+
+  NSWindow* sheet = [self window];
+  NSRect sheetFrame = [sheet frame];
+  NSRect infoBarFrame = [infoBar_ frame];
+  NSRect splitViewFrame = [splitView_ frame];
+
+  // Calculate the end position of the info bar and set it to its start
+  // position.
+  infoBarFrame.origin.y = NSHeight(sheetFrame);
+  infoBarFrame.size.width = NSWidth(sheetFrame);
+  NSRect infoBarStartFrame = infoBarFrame;
+  infoBarStartFrame.origin.y += NSHeight(infoBarFrame);
+  infoBarStartFrame.size.height = 0.0;
+  [infoBar_ setFrame:infoBarStartFrame];
+  [[[self window] contentView] addSubview:infoBar_];
+
+  // Calculate the new position of the sheet.
+  sheetFrame.origin.y -= NSHeight(infoBarFrame);
+  sheetFrame.size.height += NSHeight(infoBarFrame);
+
+  // Slide the infobar in.
+  [animations addObject:
+      [NSDictionary dictionaryWithObjectsAndKeys:
+          infoBar_, NSViewAnimationTargetKey,
+          [NSValue valueWithRect:infoBarFrame],
+              NSViewAnimationEndFrameKey,
+          [NSValue valueWithRect:infoBarStartFrame],
+              NSViewAnimationStartFrameKey,
+          nil]];
+  // Make sure the split view ends up in the right position.
+  [animations addObject:
+      [NSDictionary dictionaryWithObjectsAndKeys:
+          splitView_, NSViewAnimationTargetKey,
+          [NSValue valueWithRect:splitViewFrame],
+              NSViewAnimationEndFrameKey,
+          nil]];
+
+  // Grow the sheet.
+  [animations addObject:
+      [NSDictionary dictionaryWithObjectsAndKeys:
+          sheet, NSViewAnimationTargetKey,
+          [NSValue valueWithRect:sheetFrame],
+              NSViewAnimationEndFrameKey,
+          nil]];
+  [animation_ setViewAnimations:animations];
+  // The default duration is 0.5s, which actually feels slow in here, so speed
+  // it up a bit.
+  [animation_ gtm_setDuration:0.2
+                    eventMask:NSLeftMouseUpMask];
+  [animation_ startAnimation];
 }
 
 @end

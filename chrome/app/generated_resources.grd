@@ -6148,13 +6148,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Collected cookies window -->
       <message name="IDS_COLLECTED_COOKIES_DIALOG_TITLE" desc="The title of the collect cookies dialog">
-        Cookies and site data were set
+        Cookies set by this page
       </message>
       <message name="IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_LABEL" desc="The label used to describe the cookies that were allowed">
         The following cookies were set when you viewed this page:
       </message>
       <message name="IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL" desc="The label used to describe the cookies that were blocked">
         The following cookies were blocked:
+      </message>
+      <message name="IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED" desc="The label used to describe the cookies that were blocked include a note that third-party cookies were blocked without exception.">
+        The following cookies were blocked (third-party cookies are being blocked without exception):
       </message>
       <message name="IDS_COLLECTED_COOKIES_ALLOW_BUTTON" desc="A button that lets the use create a content settings exception to allow certain domains.">
         Allow
@@ -6166,13 +6169,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Block
       </message>
       <message name="IDS_COLLECTED_COOKIES_ALLOW_RULE_CREATED" desc="A notification that is displayed when a content exception to allow cookies was created.">
-        Cookies from <ph name="HOST">$1<ex>example.com</ex></ph> allowed.
+        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> allowed.
       </message>
       <message name="IDS_COLLECTED_COOKIES_BLOCK_RULE_CREATED" desc="A notification that is displayed when a content exception to block cookies was created.">
-        Cookies from <ph name="HOST">$1<ex>example.com</ex></ph> blocked.
+        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> blocked.
       </message>
       <message name="IDS_COLLECTED_COOKIES_SESSION_RULE_CREATED" desc="A notification that is displayed when a content exception to allow cookies for session only was created.">
-        Cookies from <ph name="HOST">$1<ex>example.com</ex></ph> allowed for session only.
+        Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> allowed for session only.
       </message>
       <message name="IDS_COLLECTED_COOKIES_MULTIPLE_ALLOW_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies were created.">
         Cookies from multiple sites allowed.

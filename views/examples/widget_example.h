@@ -61,7 +61,7 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
 
   virtual void CreateExampleView(views::View* container) {
     container->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 2));
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 2));
     BuildButton(container, L"Create a popup widget", POPUP);
     BuildButton(container, L"Create a transparent popup widget",
                 TRANSPARENT_POPUP);
@@ -69,7 +69,7 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
     views::View* vert_container = new views::View();
     container->AddChildView(vert_container);
     vert_container->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 20));
+        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 20));
     BuildButton(vert_container, L"Create a child widget", CHILD);
     BuildButton(vert_container, L"Create a transparent child widget",
                 TRANSPARENT_CHILD);
@@ -103,7 +103,7 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
 
     views::View* button_container = new views::View();
     button_container->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 1));
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 1));
     button_container->AddChildView(close_button);
     button_container->AddChildView(native_button);
 

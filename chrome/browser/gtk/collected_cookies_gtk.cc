@@ -13,8 +13,56 @@
 #include "grit/generated_resources.h"
 
 namespace {
-// Height of the cookie tree view.
+// Width and height of the cookie tree view.
+const int kTreeViewWidth = 450;
 const int kTreeViewHeight = 150;
+
+// Padding within the banner box.
+const int kBannerPadding = 3;
+
+// Returns the text to display in the info bar when content settings were
+// created.
+const std::string GetInfobarLabel(ContentSetting setting,
+                                  bool multiple_domains_added,
+                                  const string16& domain_name) {
+  if (multiple_domains_added) {
+    switch (setting) {
+      case CONTENT_SETTING_BLOCK:
+        return l10n_util::GetStringUTF8(
+            IDS_COLLECTED_COOKIES_MULTIPLE_BLOCK_RULES_CREATED);
+
+      case CONTENT_SETTING_ALLOW:
+        return l10n_util::GetStringUTF8(
+            IDS_COLLECTED_COOKIES_MULTIPLE_ALLOW_RULES_CREATED);
+
+      case CONTENT_SETTING_SESSION_ONLY:
+        return l10n_util::GetStringUTF8(
+            IDS_COLLECTED_COOKIES_MULTIPLE_SESSION_RULES_CREATED);
+
+      default:
+        NOTREACHED();
+        return std::string();
+    }
+  }
+
+  switch (setting) {
+    case CONTENT_SETTING_BLOCK:
+      return l10n_util::GetStringFUTF8(
+          IDS_COLLECTED_COOKIES_BLOCK_RULE_CREATED, domain_name);
+
+    case CONTENT_SETTING_ALLOW:
+      return l10n_util::GetStringFUTF8(
+          IDS_COLLECTED_COOKIES_ALLOW_RULE_CREATED, domain_name);
+
+    case CONTENT_SETTING_SESSION_ONLY:
+      return l10n_util::GetStringFUTF8(
+          IDS_COLLECTED_COOKIES_SESSION_RULE_CREATED, domain_name);
+
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
 }  // namespace
 
 CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
@@ -29,6 +77,9 @@ CollectedCookiesGtk::CollectedCookiesGtk(GtkWindow* parent,
 }
 
 void CollectedCookiesGtk::Init() {
+  HostContentSettingsMap* host_content_settings_map =
+      tab_contents_->profile()->GetHostContentSettingsMap();
+
   dialog_ = gtk_vbox_new(FALSE, gtk_util::kContentAreaSpacing);
   gtk_box_set_spacing(GTK_BOX(dialog_), gtk_util::kContentAreaSpacing);
 
@@ -63,7 +114,7 @@ void CollectedCookiesGtk::Init() {
       new gtk_tree::TreeAdapter(this, allowed_cookies_tree_model_.get()));
   allowed_tree_ = gtk_tree_view_new_with_model(
       GTK_TREE_MODEL(allowed_cookies_tree_adapter_->tree_store()));
-  gtk_widget_set_size_request(allowed_tree_, -1, kTreeViewHeight);
+  gtk_widget_set_size_request(allowed_tree_, kTreeViewWidth, kTreeViewHeight);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(allowed_tree_), FALSE);
   gtk_tree_view_set_enable_tree_lines(GTK_TREE_VIEW(allowed_tree_), TRUE);
   gtk_container_add(GTK_CONTAINER(scroll_window), allowed_tree_);
@@ -99,15 +150,22 @@ void CollectedCookiesGtk::Init() {
                    G_CALLBACK(OnBlockAllowedButtonClickedThunk), this);
   gtk_container_add(GTK_CONTAINER(button_box), block_allowed_cookie_button_);
 
+  GtkWidget* separator = gtk_hseparator_new();
+  gtk_box_pack_start(GTK_BOX(dialog_), separator, TRUE, TRUE, 0);
+
   // Blocked Cookie list.
   cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_box_pack_start(GTK_BOX(dialog_), cookie_list_vbox, TRUE, TRUE, 0);
 
   label = gtk_label_new(
-      l10n_util::GetStringUTF8(IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL).
-          c_str());
+      l10n_util::GetStringUTF8(
+          host_content_settings_map->BlockThirdPartyCookies() ?
+              IDS_COLLECTED_COOKIES_BLOCKED_THIRD_PARTY_BLOCKING_ENABLED :
+              IDS_COLLECTED_COOKIES_BLOCKED_COOKIES_LABEL).c_str());
+  gtk_widget_set_size_request(label, kTreeViewWidth, -1);
+  gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), label, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(cookie_list_vbox), label, TRUE, TRUE, 0);
 
   scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
@@ -123,7 +181,7 @@ void CollectedCookiesGtk::Init() {
       new gtk_tree::TreeAdapter(this, blocked_cookies_tree_model_.get()));
   blocked_tree_ = gtk_tree_view_new_with_model(
       GTK_TREE_MODEL(blocked_cookies_tree_adapter_->tree_store()));
-  gtk_widget_set_size_request(blocked_tree_, -1, kTreeViewHeight);
+  gtk_widget_set_size_request(blocked_tree_, kTreeViewWidth, kTreeViewHeight);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(blocked_tree_), FALSE);
   gtk_tree_view_set_enable_tree_lines(GTK_TREE_VIEW(blocked_tree_), TRUE);
   gtk_container_add(GTK_CONTAINER(scroll_window), blocked_tree_);
@@ -165,6 +223,24 @@ void CollectedCookiesGtk::Init() {
                    G_CALLBACK(OnForSessionBlockedButtonClickedThunk), this);
   gtk_container_add(GTK_CONTAINER(button_box),
                     for_session_blocked_cookie_button_);
+
+  // Infobar.
+  infobar_ = gtk_frame_new(NULL);
+  GtkWidget* infobar_contents = gtk_hbox_new(FALSE, kBannerPadding);
+  gtk_container_set_border_width(GTK_CONTAINER(infobar_contents),
+                                 kBannerPadding);
+  gtk_container_add(GTK_CONTAINER(infobar_), infobar_contents);
+  GtkWidget* info_image =
+      gtk_image_new_from_stock(GTK_STOCK_DIALOG_INFO,
+                               GTK_ICON_SIZE_SMALL_TOOLBAR);
+  gtk_box_pack_start(GTK_BOX(infobar_contents), info_image, FALSE, FALSE, 0);
+  infobar_label_ = gtk_label_new(NULL);
+  gtk_box_pack_start(
+      GTK_BOX(infobar_contents), infobar_label_, FALSE, FALSE, 0);
+  gtk_widget_show_all(infobar_);
+  gtk_widget_set_no_show_all(infobar_, TRUE);
+  gtk_widget_hide(infobar_);
+  gtk_box_pack_start(GTK_BOX(dialog_), infobar_, TRUE, TRUE, 0);
 
   // Close button.
   button_box = gtk_hbutton_box_new();
@@ -259,6 +335,8 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
   GtkTreeModel* model;
   GList* paths =
       gtk_tree_selection_get_selected_rows(selection, &model);
+  string16 last_domain_name;
+  bool multiple_domains_added = false;
   for (GList* item = paths; item; item = item->next) {
     GtkTreeIter iter;
     gtk_tree_model_get_iter(
@@ -266,12 +344,23 @@ void CollectedCookiesGtk::AddExceptions(GtkTreeSelection* selection,
     CookieTreeOriginNode* node = static_cast<CookieTreeOriginNode*>(
         adapter->GetNode(&iter));
     if (node->CanCreateContentException()) {
+      if (!last_domain_name.empty())
+        multiple_domains_added = true;
+      last_domain_name = node->GetTitleAsString16();
       node->CreateContentException(
           tab_contents_->profile()->GetHostContentSettingsMap(), setting);
     }
   }
   g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
   g_list_free(paths);
+  if (last_domain_name.empty()) {
+    gtk_widget_hide(infobar_);
+  } else {
+    gtk_label_set_text(
+        GTK_LABEL(infobar_label_), GetInfobarLabel(
+            setting, multiple_domains_added, last_domain_name).c_str());
+    gtk_widget_show(infobar_);
+  }
 }
 
 void CollectedCookiesGtk::OnBlockAllowedButtonClicked(GtkWidget* button) {

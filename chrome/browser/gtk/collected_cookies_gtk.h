@@ -89,6 +89,10 @@ class CollectedCookiesGtk : public ConstrainedDialogDelegate,
   GtkTreeSelection* allowed_selection_;
   GtkTreeSelection* blocked_selection_;
 
+  // The infobar widget.
+  GtkWidget* infobar_;
+  GtkWidget* infobar_label_;
+
   // The tab contents.
   TabContents* tab_contents_;
 

@@ -17,6 +17,7 @@
 
 class ConstrainedWindow;
 class CookiesTreeModel;
+class InfobarView;
 class TabContents;
 namespace views {
 class Label;
@@ -52,9 +53,6 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
   // views::TreeViewController implementation.
   virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view);
 
-  // views::View implementation.
-  virtual gfx::Size GetPreferredSize();
-
  private:
   virtual ~CollectedCookiesWin();
 
@@ -89,6 +87,8 @@ class CollectedCookiesWin : public ConstrainedDialogDelegate,
 
   scoped_ptr<CookiesTreeModel> allowed_cookies_tree_model_;
   scoped_ptr<CookiesTreeModel> blocked_cookies_tree_model_;
+
+  InfobarView* infobar_;
 
   DISALLOW_COPY_AND_ASSIGN(CollectedCookiesWin);
 };

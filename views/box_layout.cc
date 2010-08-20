@@ -7,17 +7,20 @@
 namespace views {
 
 BoxLayout::BoxLayout(BoxLayout::Orientation orientation,
-                     int inside_border_spacing,
+                     int inside_border_horizontal_spacing,
+                     int inside_border_vertical_spacing,
                      int between_child_spacing)
     : orientation_(orientation),
-      inside_border_spacing_(inside_border_spacing),
+      inside_border_horizontal_spacing_(inside_border_horizontal_spacing),
+      inside_border_vertical_spacing_(inside_border_vertical_spacing),
       between_child_spacing_(between_child_spacing) {
 }
 
 void BoxLayout::Layout(View* host) {
   gfx::Rect childArea(gfx::Rect(host->size()));
   childArea.Inset(host->GetInsets());
-  childArea.Inset(inside_border_spacing_, inside_border_spacing_);
+  childArea.Inset(inside_border_horizontal_spacing_,
+                  inside_border_vertical_spacing_);
   int x = childArea.x();
   int y = childArea.y();
   for (int i = 0; i < host->GetChildViewCount(); ++i) {
@@ -58,9 +61,9 @@ gfx::Size BoxLayout::GetPreferredSize(View* host) {
     }
   }
   gfx::Insets insets(host->GetInsets());
-  return
-      gfx::Size(bounds.width() + insets.width() + 2 * inside_border_spacing_,
-                bounds.height() + insets.height() + 2 * inside_border_spacing_);
+  return gfx::Size(
+      bounds.width() + insets.width() + 2 * inside_border_horizontal_spacing_,
+      bounds.height() + insets.height() + 2 * inside_border_vertical_spacing_);
 }
 
 } // namespace views
