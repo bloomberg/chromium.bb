@@ -65,12 +65,14 @@ class LanguagePinyinConfigView : public views::ButtonListener,
   // Updates the pinyin checkboxes.
   void NotifyPrefChanged();
 
-  BooleanPrefMember pinyin_boolean_prefs_[kNumPinyinBooleanPrefs];
+  BooleanPrefMember pinyin_boolean_prefs_[
+      language_prefs::kNumPinyinBooleanPrefs];
   // TODO(yusukes): Support integer prefs if needed.
   views::View* contents_;
 
   // A checkboxes for Pinyin.
-  views::Checkbox* pinyin_boolean_checkboxes_[kNumPinyinBooleanPrefs];
+  views::Checkbox* pinyin_boolean_checkboxes_[
+      language_prefs::kNumPinyinBooleanPrefs];
 
   struct DoublePinyinSchemaPrefAndAssociatedCombobox {
     IntegerPrefMember multiple_choice_pref;

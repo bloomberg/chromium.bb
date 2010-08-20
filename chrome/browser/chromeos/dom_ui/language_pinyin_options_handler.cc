@@ -25,34 +25,35 @@ void LanguagePinyinOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Language Pinyin page - ChromeOS
-  for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     localized_strings->SetString(
-        GetI18nContentValue(kPinyinBooleanPrefs[i]),
-        l10n_util::GetStringUTF16(kPinyinBooleanPrefs[i].message_id));
+        GetI18nContentValue(language_prefs::kPinyinBooleanPrefs[i]),
+        l10n_util::GetStringUTF16(
+            language_prefs::kPinyinBooleanPrefs[i].message_id));
   }
 
   localized_strings->SetString(
-      GetI18nContentValue(kPinyinDoublePinyinSchema),
+      GetI18nContentValue(language_prefs::kPinyinDoublePinyinSchema),
       l10n_util::GetStringUTF16(
-          kPinyinDoublePinyinSchema.label_message_id));
+          language_prefs::kPinyinDoublePinyinSchema.label_message_id));
   ListValue* list_value = new ListValue();
   for (size_t i = 0;
-       i < LanguageMultipleChoicePreference<int>::kMaxItems;
+       i < language_prefs::LanguageMultipleChoicePreference<int>::kMaxItems;
        ++i) {
-    if (kPinyinDoublePinyinSchema.values_and_ids[i].
+    if (language_prefs::kPinyinDoublePinyinSchema.values_and_ids[i].
         item_message_id == 0)
       break;
     ListValue* option = new ListValue();
     option->Append(Value::CreateIntegerValue(
-        kPinyinDoublePinyinSchema.values_and_ids[i].
+        language_prefs::kPinyinDoublePinyinSchema.values_and_ids[i].
         ibus_config_value));
     option->Append(Value::CreateStringValue(l10n_util::GetStringUTF16(
-        kPinyinDoublePinyinSchema.values_and_ids[i].
+        language_prefs::kPinyinDoublePinyinSchema.values_and_ids[i].
         item_message_id)));
     list_value->Append(option);
   }
   localized_strings->Set(
-      GetTemplateDataPropertyName(kPinyinDoublePinyinSchema),
+      GetTemplateDataPropertyName(language_prefs::kPinyinDoublePinyinSchema),
       list_value);
 }
 

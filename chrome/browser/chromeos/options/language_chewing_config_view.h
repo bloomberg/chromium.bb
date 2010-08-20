@@ -70,20 +70,24 @@ class LanguageChewingConfigView : public views::ButtonListener,
   // Updates the chewing checkboxes.
   void NotifyPrefChanged();
 
-  BooleanPrefMember chewing_boolean_prefs_[kNumChewingBooleanPrefs];
-  IntegerPrefMember chewing_integer_prefs_[kNumChewingIntegerPrefs];
+  BooleanPrefMember chewing_boolean_prefs_[
+      language_prefs::kNumChewingBooleanPrefs];
+  IntegerPrefMember chewing_integer_prefs_[
+      language_prefs::kNumChewingIntegerPrefs];
   views::View* contents_;
 
   // Checkboxes for Chewing.
-  views::Checkbox* chewing_boolean_checkboxes_[kNumChewingBooleanPrefs];
+  views::Checkbox* chewing_boolean_checkboxes_[
+      language_prefs::kNumChewingBooleanPrefs];
 
-  views::Slider* chewing_integer_sliders_[kNumChewingIntegerPrefs];
+  views::Slider* chewing_integer_sliders_[
+      language_prefs::kNumChewingIntegerPrefs];
 
   struct ChewingPrefAndAssociatedCombobox {
     StringPrefMember multiple_choice_pref;
     LanguageComboboxModel<const char*>* combobox_model;
     LanguageCombobox* combobox;
-  } prefs_and_comboboxes_[kNumChewingMultipleChoicePrefs];
+  } prefs_and_comboboxes_[language_prefs::kNumChewingMultipleChoicePrefs];
 
   struct HsuSelKeyTypePrefAndAssociatedCombobox {
     IntegerPrefMember multiple_choice_pref;

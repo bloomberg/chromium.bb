@@ -560,8 +560,8 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   GetInputMethodIdsFromLanguageCode(language_code, type, &input_method_ids);
 
   if (std::count(input_method_ids.begin(), input_method_ids.end(),
-                 kHardwareKeyboardLayout) == 0) {
-    input_method_ids.push_back(kHardwareKeyboardLayout);
+                 language_prefs::kHardwareKeyboardLayout) == 0) {
+    input_method_ids.push_back(language_prefs::kHardwareKeyboardLayout);
   }
   // First, sort the vector by input method id, then by its display name.
   std::sort(input_method_ids.begin(), input_method_ids.end());
@@ -572,7 +572,8 @@ void EnableInputMethods(const std::string& language_code, InputMethodType type,
   value.type = ImeConfigValue::kValueTypeStringList;
   value.string_list_value = input_method_ids;
   InputMethodLibrary* library = CrosLibrary::Get()->GetInputMethodLibrary();
-  library->SetImeConfig(kGeneralSectionName, kPreloadEnginesConfigName, value);
+  library->SetImeConfig(language_prefs::kGeneralSectionName,
+                        language_prefs::kPreloadEnginesConfigName, value);
   if (!initial_input_method_id.empty()) {
     library->ChangeInputMethod(initial_input_method_id);
   }

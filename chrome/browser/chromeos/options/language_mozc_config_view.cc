@@ -25,7 +25,7 @@ namespace {
 enum ButtonTag {
   // 0 to kNumMozcBooleanPrefs - 1 are reserved for the checkboxes for integer
   // preferences.
-  kResetToDefaultsButton = chromeos::kNumMozcBooleanPrefs,
+  kResetToDefaultsButton = chromeos::language_prefs::kNumMozcBooleanPrefs,
 };
 }  // namespace
 
@@ -35,30 +35,34 @@ LanguageMozcConfigView::LanguageMozcConfigView(Profile* profile)
     : OptionsPageView(profile),
       contents_(NULL),
       reset_to_defaults_button_(NULL) {
-  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     MozcPrefAndAssociatedCheckbox& current = prefs_and_checkboxes_[i];
     current.boolean_pref.Init(
-        kMozcBooleanPrefs[i].pref_name, profile->GetPrefs(), this);
+        language_prefs::kMozcBooleanPrefs[i].pref_name, profile->GetPrefs(),
+        this);
     current.checkbox = NULL;
   }
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     current.multiple_choice_pref.Init(
-        kMozcMultipleChoicePrefs[i].pref_name, profile->GetPrefs(), this);
+        language_prefs::kMozcMultipleChoicePrefs[i].pref_name,
+        profile->GetPrefs(), this);
     current.combobox_model =
-        new LanguageComboboxModel<const char*>(&kMozcMultipleChoicePrefs[i]);
+        new LanguageComboboxModel<const char*>(
+            &language_prefs::kMozcMultipleChoicePrefs[i]);
     current.combobox = NULL;
   }
-  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
     MozcPrefAndAssociatedSlider& current = prefs_and_sliders_[i];
     current.integer_pref.Init(
-        kMozcIntegerPrefs[i].pref_name, profile->GetPrefs(), this);
+        language_prefs::kMozcIntegerPrefs[i].pref_name, profile->GetPrefs(),
+        this);
     current.slider = NULL;
   }
 }
 
 LanguageMozcConfigView::~LanguageMozcConfigView() {
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     delete prefs_and_comboboxes_[i].combobox_model;
   }
 }
@@ -71,7 +75,8 @@ void LanguageMozcConfigView::ButtonPressed(
     return;
   }
   views::Checkbox* checkbox = static_cast<views::Checkbox*>(sender);
-  DCHECK(pref_id >= 0 && pref_id < static_cast<int>(kNumMozcBooleanPrefs));
+  DCHECK(pref_id >= 0 && pref_id < static_cast<int>(
+      language_prefs::kNumMozcBooleanPrefs));
   prefs_and_checkboxes_[pref_id].boolean_pref.SetValue(checkbox->checked());
 }
 
@@ -81,7 +86,7 @@ void LanguageMozcConfigView::ItemChanged(
     LOG(ERROR) << "Invalid new_index: " << new_index;
     return;
   }
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     if (current.combobox == sender) {
       const std::string config_value =
@@ -96,11 +101,12 @@ void LanguageMozcConfigView::ItemChanged(
 
 void LanguageMozcConfigView::SliderValueChanged(views::Slider* sender) {
   size_t pref_id;
-  for (pref_id = 0; pref_id < kNumMozcIntegerPrefs; ++pref_id) {
+  for (pref_id = 0; pref_id < language_prefs::kNumMozcIntegerPrefs;
+       ++pref_id) {
     if (prefs_and_sliders_[pref_id].slider == sender)
       break;
   }
-  DCHECK(pref_id < kNumMozcIntegerPrefs);
+  DCHECK(pref_id < language_prefs::kNumMozcIntegerPrefs);
   prefs_and_sliders_[pref_id].integer_pref.SetValue(sender->value());
 }
 
@@ -158,23 +164,23 @@ void LanguageMozcConfigView::InitControlLayout() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     MozcPrefAndAssociatedCheckbox& current = prefs_and_checkboxes_[i];
     current.checkbox = new views::Checkbox(
-        l10n_util::GetString(kMozcBooleanPrefs[i].message_id));
+        l10n_util::GetString(language_prefs::kMozcBooleanPrefs[i].message_id));
     current.checkbox->set_listener(this);
     current.checkbox->set_tag(i);
   }
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     current.combobox = new LanguageCombobox(current.combobox_model);
     current.combobox->set_listener(this);
   }
-  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
     MozcPrefAndAssociatedSlider& current = prefs_and_sliders_[i];
     current.slider = new views::Slider(
-        kMozcIntegerPrefs[i].min_pref_value,
-        kMozcIntegerPrefs[i].max_pref_value,
+        language_prefs::kMozcIntegerPrefs[i].min_pref_value,
+        language_prefs::kMozcIntegerPrefs[i].max_pref_value,
         1,
         static_cast<views::Slider::StyleFlags>(
             views::Slider::STYLE_DRAW_VALUE |
@@ -191,23 +197,24 @@ void LanguageMozcConfigView::InitControlLayout() {
   layout->AddView(reset_to_defaults_button_);
 
   // Show the checkboxes.
-  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     const MozcPrefAndAssociatedCheckbox& current = prefs_and_checkboxes_[i];
     layout->StartRow(0, kColumnSetId);
     layout->AddView(current.checkbox, 3, 1);
   }
   // Show the comboboxes.
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     const MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     layout->StartRow(0, kColumnSetId);
     layout->AddView(new views::Label(current.combobox_model->GetLabel()));
     layout->AddView(current.combobox);
   }
-  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
     const MozcPrefAndAssociatedSlider& current = prefs_and_sliders_[i];
     layout->StartRow(0, kColumnSetId);
     layout->AddView(new views::Label(
-        l10n_util::GetString(kMozcIntegerPrefs[i].message_id)));
+        l10n_util::GetString(
+            language_prefs::kMozcIntegerPrefs[i].message_id)));
     layout->AddView(current.slider);
   }
   NotifyPrefChanged();  // Sync the slider with current Chrome prefs.
@@ -224,12 +231,12 @@ void LanguageMozcConfigView::Observe(NotificationType type,
 void LanguageMozcConfigView::NotifyPrefChanged() {
   // Update comboboxes.
   // TODO(yusukes): We don't have to update all UI controls.
-  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     MozcPrefAndAssociatedCheckbox& current = prefs_and_checkboxes_[i];
     const bool checked = current.boolean_pref.GetValue();
     current.checkbox->SetChecked(checked);
   }
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     MozcPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     const std::string value = current.multiple_choice_pref.GetValue();
     for (int i = 0; i < current.combobox_model->num_items(); ++i) {
@@ -239,7 +246,7 @@ void LanguageMozcConfigView::NotifyPrefChanged() {
       }
     }
   }
-  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
     MozcPrefAndAssociatedSlider& current = prefs_and_sliders_[i];
     const int value = current.integer_pref.GetValue();
     current.slider->SetValue(value);
@@ -247,17 +254,17 @@ void LanguageMozcConfigView::NotifyPrefChanged() {
 }
 
 void LanguageMozcConfigView::ResetToDefaults() {
-  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     prefs_and_checkboxes_[i].boolean_pref.SetValue(
-        kMozcBooleanPrefs[i].default_pref_value);
+        language_prefs::kMozcBooleanPrefs[i].default_pref_value);
   }
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     prefs_and_comboboxes_[i].multiple_choice_pref.SetValue(
-        kMozcMultipleChoicePrefs[i].default_pref_value);
+        language_prefs::kMozcMultipleChoicePrefs[i].default_pref_value);
   }
-  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
     prefs_and_sliders_[i].integer_pref.SetValue(
-        kMozcIntegerPrefs[i].default_pref_value);
+        language_prefs::kMozcIntegerPrefs[i].default_pref_value);
   }
   // Reflect the preference changes to the controls.
   NotifyPrefChanged();

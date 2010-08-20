@@ -50,7 +50,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
         ime_running_(false),
         ime_connected_(false),
         defer_ime_startup_(false),
-        active_input_method_(kHardwareKeyboardLayout),
+        active_input_method_(language_prefs::kHardwareKeyboardLayout),
         need_input_method_set_(false),
         ime_handle_(0),
         candidate_window_handle_(0),
@@ -105,7 +105,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
   void ChangeInputMethod(const std::string& input_method_id) {
     active_input_method_ = input_method_id;
     if (EnsureLoadedAndStarted()) {
-      if (input_method_id != kHardwareKeyboardLayout) {
+      if (input_method_id != language_prefs::kHardwareKeyboardLayout) {
         StartInputMethodProcesses();
       }
       chromeos::ChangeInputMethod(
@@ -171,12 +171,13 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
       const char* section,
       const char* config_name,
       const ImeConfigValue& value) {
-    if (!strcmp(kGeneralSectionName, section) &&
-        !strcmp(kPreloadEnginesConfigName, config_name)) {
+    if (!strcmp(language_prefs::kGeneralSectionName, section) &&
+        !strcmp(language_prefs::kPreloadEnginesConfigName, config_name)) {
       if (EnsureLoadedAndStarted()) {
         if (value.type == ImeConfigValue::kValueTypeStringList &&
             value.string_list_value.size() == 1 &&
-            value.string_list_value[0] == kHardwareKeyboardLayout) {
+            value.string_list_value[0] ==
+            language_prefs::kHardwareKeyboardLayout) {
           StopInputMethodProcesses();
         } else if (!defer_ime_startup_) {
           StartInputMethodProcesses();
@@ -201,7 +202,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
                                    config_name.c_str(),
                                    value)) {
           // Check if it's a change in active input methods.
-          if (config_name == kPreloadEnginesConfigName) {
+          if (config_name == language_prefs::kPreloadEnginesConfigName) {
             active_input_methods_are_changed = true;
           }
           // Successfully sent. Remove the command and proceed to the next one.
@@ -450,7 +451,7 @@ class InputMethodLibraryImpl : public InputMethodLibrary {
     ime_running_ = false;
     if (ime_handle_) {
       chromeos::ChangeInputMethod(input_method_status_connection_,
-                                  kHardwareKeyboardLayout);
+                                  language_prefs::kHardwareKeyboardLayout);
       kill(ime_handle_, SIGTERM);
       ime_handle_ = 0;
     }

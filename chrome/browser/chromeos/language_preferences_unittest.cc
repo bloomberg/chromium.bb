@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
+namespace language_prefs {
 
 namespace {
 
@@ -137,4 +138,5 @@ TEST(LanguagePreferencesTest, TestDefaultValuesOfIntegerRangePrefs) {
       &kXkbAutoRepeatIntervalPref, 1));
 }
 
+}  // namespace language_prefs
 }  // namespace chromeos

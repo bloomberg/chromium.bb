@@ -25,29 +25,34 @@ namespace chromeos {
 
 LanguageChewingConfigView::LanguageChewingConfigView(Profile* profile)
     : OptionsPageView(profile), contents_(NULL) {
-  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     chewing_boolean_prefs_[i].Init(
-        kChewingBooleanPrefs[i].pref_name, profile->GetPrefs(), this);
+        language_prefs::kChewingBooleanPrefs[i].pref_name,
+        profile->GetPrefs(), this);
     chewing_boolean_checkboxes_[i] = NULL;
   }
-  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     current.multiple_choice_pref.Init(
-        kChewingMultipleChoicePrefs[i].pref_name, profile->GetPrefs(), this);
+        language_prefs::kChewingMultipleChoicePrefs[i].pref_name,
+        profile->GetPrefs(), this);
     current.combobox_model =
-        new LanguageComboboxModel<const char*>(&kChewingMultipleChoicePrefs[i]);
+        new LanguageComboboxModel<const char*>(
+            &language_prefs::kChewingMultipleChoicePrefs[i]);
     current.combobox = NULL;
   }
 
   hsu_sel_key_type_.multiple_choice_pref.Init(
-      kChewingHsuSelKeyType.pref_name, profile->GetPrefs(), this);
+      language_prefs::kChewingHsuSelKeyType.pref_name, profile->GetPrefs(),
+      this);
   hsu_sel_key_type_.combobox_model =
-      new LanguageComboboxModel<int>(&kChewingHsuSelKeyType);
+      new LanguageComboboxModel<int>(&language_prefs::kChewingHsuSelKeyType);
   hsu_sel_key_type_.combobox = NULL;
 
-  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
     chewing_integer_prefs_[i].Init(
-        kChewingIntegerPrefs[i].pref_name, profile->GetPrefs(), this);
+        language_prefs::kChewingIntegerPrefs[i].pref_name,
+        profile->GetPrefs(), this);
     chewing_integer_sliders_[i] = NULL;
   }
 }
@@ -59,13 +64,14 @@ void LanguageChewingConfigView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   views::Checkbox* checkbox = static_cast<views::Checkbox*>(sender);
   const int pref_id = checkbox->tag();
-  DCHECK(pref_id >= 0 && pref_id < static_cast<int>(kNumChewingBooleanPrefs));
+  DCHECK(pref_id >= 0 && pref_id < static_cast<int>(
+      language_prefs::kNumChewingBooleanPrefs));
   chewing_boolean_prefs_[pref_id].SetValue(checkbox->checked());
 }
 
 void LanguageChewingConfigView::ItemChanged(
     views::Combobox* sender, int prev_index, int new_index) {
-  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     if (current.combobox == sender) {
       const std::string config_value =
@@ -87,11 +93,12 @@ void LanguageChewingConfigView::ItemChanged(
 
 void LanguageChewingConfigView::SliderValueChanged(views::Slider* sender) {
   size_t pref_id;
-  for (pref_id = 0; pref_id < kNumChewingIntegerPrefs; ++pref_id) {
+  for (pref_id = 0; pref_id < language_prefs::kNumChewingIntegerPrefs;
+       ++pref_id) {
     if (chewing_integer_sliders_[pref_id] == sender)
       break;
   }
-  DCHECK(pref_id < kNumChewingIntegerPrefs);
+  DCHECK(pref_id < language_prefs::kNumChewingIntegerPrefs);
   chewing_integer_prefs_[pref_id].SetValue(sender->value());
 }
 
@@ -144,13 +151,14 @@ void LanguageChewingConfigView::InitControlLayout() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     chewing_boolean_checkboxes_[i] = new views::Checkbox(
-        l10n_util::GetString(kChewingBooleanPrefs[i].message_id));
+        l10n_util::GetString(
+            language_prefs::kChewingBooleanPrefs[i].message_id));
     chewing_boolean_checkboxes_[i]->set_listener(this);
     chewing_boolean_checkboxes_[i]->set_tag(i);
   }
-  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     current.combobox = new LanguageCombobox(current.combobox_model);
     current.combobox->set_listener(this);
@@ -159,31 +167,32 @@ void LanguageChewingConfigView::InitControlLayout() {
       new LanguageCombobox(hsu_sel_key_type_.combobox_model);
   hsu_sel_key_type_.combobox->set_listener(this);
 
-  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
     chewing_integer_sliders_[i] = new views::Slider(
-        kChewingIntegerPrefs[i].min_pref_value,
-        kChewingIntegerPrefs[i].max_pref_value,
+        language_prefs::kChewingIntegerPrefs[i].min_pref_value,
+        language_prefs::kChewingIntegerPrefs[i].max_pref_value,
         1,
         static_cast<views::Slider::StyleFlags>(
             views::Slider::STYLE_DRAW_VALUE |
             views::Slider::STYLE_UPDATE_ON_RELEASE),
         this);
   }
-  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     layout->StartRow(0, kColumnSetId);
     layout->AddView(chewing_boolean_checkboxes_[i]);
   }
 
-  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
     layout->StartRow(0, kColumnSetId);
     layout->AddView(new views::Label(
-        l10n_util::GetString(kChewingIntegerPrefs[i].message_id)));
+        l10n_util::GetString(
+            language_prefs::kChewingIntegerPrefs[i].message_id)));
     layout->AddView(chewing_integer_sliders_[i]);
   }
   NotifyPrefChanged();
 
   // Show the comboboxes.
-  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     const ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     layout->StartRow(0, kColumnSetId);
     layout->AddView(new views::Label(current.combobox_model->GetLabel()));
@@ -204,15 +213,15 @@ void LanguageChewingConfigView::Observe(NotificationType type,
 }
 
 void LanguageChewingConfigView::NotifyPrefChanged() {
-  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     const bool checked = chewing_boolean_prefs_[i].GetValue();
     chewing_boolean_checkboxes_[i]->SetChecked(checked);
   }
-  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
     const int value = chewing_integer_prefs_[i].GetValue();
     chewing_integer_sliders_[i]->SetValue(value);
   }
-  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     ChewingPrefAndAssociatedCombobox& current = prefs_and_comboboxes_[i];
     const std::string value = current.multiple_choice_pref.GetValue();
     for (int i = 0; i < current.combobox_model->num_items(); ++i) {

@@ -94,20 +94,26 @@ class Preferences : public NotificationObserver {
   StringPrefMember language_hotkey_previous_engine_;
   StringPrefMember language_preferred_languages_;
   StringPrefMember language_preload_engines_;
-  BooleanPrefMember language_chewing_boolean_prefs_[kNumChewingBooleanPrefs];
+  BooleanPrefMember language_chewing_boolean_prefs_[
+      language_prefs::kNumChewingBooleanPrefs];
   StringPrefMember language_chewing_multiple_choice_prefs_[
-      kNumChewingMultipleChoicePrefs];
+      language_prefs::kNumChewingMultipleChoicePrefs];
   IntegerPrefMember language_chewing_hsu_sel_key_type_;
-  IntegerPrefMember language_chewing_integer_prefs_[kNumChewingIntegerPrefs];
+  IntegerPrefMember language_chewing_integer_prefs_[
+      language_prefs::kNumChewingIntegerPrefs];
   StringPrefMember language_hangul_keyboard_;
   StringPrefMember language_hangul_hanja_keys_;
-  BooleanPrefMember language_pinyin_boolean_prefs_[kNumPinyinBooleanPrefs];
-  IntegerPrefMember language_pinyin_int_prefs_[kNumPinyinIntegerPrefs];
+  BooleanPrefMember language_pinyin_boolean_prefs_[
+      language_prefs::kNumPinyinBooleanPrefs];
+  IntegerPrefMember language_pinyin_int_prefs_[
+      language_prefs::kNumPinyinIntegerPrefs];
   IntegerPrefMember language_pinyin_double_pinyin_schema_;
-  BooleanPrefMember language_mozc_boolean_prefs_[kNumMozcBooleanPrefs];
+  BooleanPrefMember language_mozc_boolean_prefs_[
+      language_prefs::kNumMozcBooleanPrefs];
   StringPrefMember language_mozc_multiple_choice_prefs_[
-      kNumMozcMultipleChoicePrefs];
-  IntegerPrefMember language_mozc_integer_prefs_[kNumMozcIntegerPrefs];
+      language_prefs::kNumMozcMultipleChoicePrefs];
+  IntegerPrefMember language_mozc_integer_prefs_[
+      language_prefs::kNumMozcIntegerPrefs];
   IntegerPrefMember language_xkb_remap_search_key_to_;
   IntegerPrefMember language_xkb_remap_control_key_to_;
   IntegerPrefMember language_xkb_remap_alt_key_to_;

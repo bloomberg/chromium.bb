@@ -99,9 +99,9 @@ void LanguageSwitchMenu::SwitchLanguage(const std::string& locale) {
     ResourceBundle::ReloadSharedInstance(locale);
 
     // Enable the keyboard layouts that are necessary for the new locale.
-    chromeos::input_method::EnableInputMethods(
-        locale, chromeos::input_method::kKeyboardLayoutsOnly,
-        kHardwareKeyboardLayout);
+    input_method::EnableInputMethods(
+        locale, input_method::kKeyboardLayoutsOnly,
+        language_prefs::kHardwareKeyboardLayout);
 
     // The following line does not seem to affect locale anyhow. Maybe in
     // future..

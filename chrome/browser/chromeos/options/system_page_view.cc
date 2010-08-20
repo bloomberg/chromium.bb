@@ -403,7 +403,8 @@ LanguageSection::LanguageSection(Profile* profile)
     : SettingsPageSection(profile,
                           IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE),
       xkb_modifier_combobox_(NULL),
-      xkb_modifier_combobox_model_(&kXkbModifierMultipleChoicePrefs),
+      xkb_modifier_combobox_model_(
+          &language_prefs::kXkbModifierMultipleChoicePrefs),
       xkb_auto_repeat_delay_slider_(NULL),
       xkb_auto_repeat_interval_slider_(NULL) {
   xkb_remap_search_key_pref_.Init(
@@ -415,9 +416,11 @@ LanguageSection::LanguageSection(Profile* profile)
   xkb_auto_repeat_pref_.Init(
       prefs::kLanguageXkbAutoRepeatEnabled, profile->GetPrefs(), this);
   xkb_auto_repeat_delay_pref_.Init(
-      kXkbAutoRepeatDelayPref.pref_name, profile->GetPrefs(), this);
+      language_prefs::kXkbAutoRepeatDelayPref.pref_name,
+      profile->GetPrefs(), this);
   xkb_auto_repeat_interval_pref_.Init(
-      kXkbAutoRepeatIntervalPref.pref_name, profile->GetPrefs(), this);
+      language_prefs::kXkbAutoRepeatIntervalPref.pref_name,
+      profile->GetPrefs(), this);
 }
 
 void LanguageSection::InitContents(GridLayout* layout) {
@@ -437,15 +440,15 @@ void LanguageSection::InitContents(GridLayout* layout) {
   xkb_auto_repeat_checkbox_->set_listener(this);
 
   xkb_auto_repeat_delay_slider_ = new views::Slider(
-      kXkbAutoRepeatDelayPref.min_pref_value,
-      kXkbAutoRepeatDelayPref.max_pref_value,
+      language_prefs::kXkbAutoRepeatDelayPref.min_pref_value,
+      language_prefs::kXkbAutoRepeatDelayPref.max_pref_value,
       1,
       static_cast<views::Slider::StyleFlags>(
           views::Slider::STYLE_UPDATE_ON_RELEASE),
       this);
   xkb_auto_repeat_interval_slider_ = new views::Slider(
-      kXkbAutoRepeatIntervalPref.min_pref_value,
-      kXkbAutoRepeatIntervalPref.max_pref_value,
+      language_prefs::kXkbAutoRepeatIntervalPref.min_pref_value,
+      language_prefs::kXkbAutoRepeatIntervalPref.max_pref_value,
       1,
       static_cast<views::Slider::StyleFlags>(
           views::Slider::STYLE_UPDATE_ON_RELEASE),
@@ -465,7 +468,8 @@ void LanguageSection::InitContents(GridLayout* layout) {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, quad_column_view_set_id());
   layout->AddView(new views::Label(
-      l10n_util::GetString(kXkbAutoRepeatDelayPref.message_id)),
+      l10n_util::GetString(
+          language_prefs::kXkbAutoRepeatDelayPref.message_id)),
                   1, 1, GridLayout::LEADING, GridLayout::CENTER);
   layout->AddView(new views::Label(
       l10n_util::GetString(
@@ -478,7 +482,8 @@ void LanguageSection::InitContents(GridLayout* layout) {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, quad_column_view_set_id());
   layout->AddView(new views::Label(
-      l10n_util::GetString(kXkbAutoRepeatIntervalPref.message_id)),
+      l10n_util::GetString(
+          language_prefs::kXkbAutoRepeatIntervalPref.message_id)),
                   1, 1, GridLayout::LEADING, GridLayout::CENTER);
   layout->AddView(new views::Label(
       l10n_util::GetString(
@@ -509,17 +514,17 @@ void LanguageSection::ItemChanged(views::Combobox* sender,
     default:
       LOG(ERROR) << "Unexpected mapping: " << new_index;
       /* fall through */
-    case kNoRemap:
+    case language_prefs::kNoRemap:
       xkb_remap_search_key_pref_.SetValue(kSearchKey);
       xkb_remap_control_key_pref_.SetValue(kLeftControlKey);
       xkb_remap_alt_key_pref_.SetValue(kLeftAltKey);
       break;
-    case kSwapCtrlAndAlt:
+    case language_prefs::kSwapCtrlAndAlt:
       xkb_remap_search_key_pref_.SetValue(kSearchKey);
       xkb_remap_control_key_pref_.SetValue(kLeftAltKey);
       xkb_remap_alt_key_pref_.SetValue(kLeftControlKey);
       break;
-    case kSwapSearchAndCtrl:
+    case language_prefs::kSwapSearchAndCtrl:
       xkb_remap_search_key_pref_.SetValue(kLeftControlKey);
       xkb_remap_control_key_pref_.SetValue(kSearchKey);
       xkb_remap_alt_key_pref_.SetValue(kLeftAltKey);
@@ -545,29 +550,32 @@ void LanguageSection::NotifyPrefChanged(const std::string* pref_name) {
     if ((search_remap == kSearchKey) &&
         (control_remap == kLeftControlKey) &&
         (alt_remap == kLeftAltKey)) {
-      xkb_modifier_combobox_->SetSelectedItem(kNoRemap);
+      xkb_modifier_combobox_->SetSelectedItem(language_prefs::kNoRemap);
     } else if ((search_remap == kLeftControlKey) &&
                (control_remap == kSearchKey) &&
                (alt_remap == kLeftAltKey)) {
-      xkb_modifier_combobox_->SetSelectedItem(kSwapSearchAndCtrl);
+      xkb_modifier_combobox_->SetSelectedItem(
+          language_prefs::kSwapSearchAndCtrl);
     } else if ((search_remap == kSearchKey) &&
                (control_remap == kLeftAltKey) &&
                (alt_remap == kLeftControlKey)) {
-      xkb_modifier_combobox_->SetSelectedItem(kSwapCtrlAndAlt);
+      xkb_modifier_combobox_->SetSelectedItem(language_prefs::kSwapCtrlAndAlt);
     } else {
       LOG(ERROR) << "Unexpected mapping. The prefs are updated by DOMUI?";
-      xkb_modifier_combobox_->SetSelectedItem(kNoRemap);
+      xkb_modifier_combobox_->SetSelectedItem(language_prefs::kNoRemap);
     }
   }
   if (!pref_name || *pref_name == prefs::kLanguageXkbAutoRepeatEnabled) {
     const bool enabled = xkb_auto_repeat_pref_.GetValue();
     xkb_auto_repeat_checkbox_->SetChecked(enabled);
   }
-  if (!pref_name || *pref_name == kXkbAutoRepeatDelayPref.pref_name) {
+  if (!pref_name ||
+      *pref_name == language_prefs::kXkbAutoRepeatDelayPref.pref_name) {
     const int delay_value = xkb_auto_repeat_delay_pref_.GetValue();
     xkb_auto_repeat_delay_slider_->SetValue(delay_value);
   }
-  if (!pref_name || *pref_name == kXkbAutoRepeatIntervalPref.pref_name) {
+  if (!pref_name ||
+      *pref_name == language_prefs::kXkbAutoRepeatIntervalPref.pref_name) {
     const int interval_value = xkb_auto_repeat_interval_pref_.GetValue();
     xkb_auto_repeat_interval_slider_->SetValue(interval_value);
   }

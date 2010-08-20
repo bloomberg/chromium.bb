@@ -11,6 +11,7 @@
 // This file defines types and declare variables used in "Languages and
 // Input" settings in Chromium OS.
 namespace chromeos {
+namespace language_prefs {
 
 // The struct is used for preferences consisting of multiple choices, like
 // punctuation types used in Japanese input method.
@@ -163,6 +164,7 @@ extern const char kPreferredKeyboardLayout[];
 // crosbug.com/5579.
 extern const char kHardwareKeyboardLayout[];
 
+}  // language_prefs
 }  // chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LANGUAGE_PREFERENCES_H_

@@ -441,7 +441,7 @@ void LanguageMenuButton::InputMethodChanged(InputMethodLibrary* obj) {
     // buttun for the login screen is destroyed.
     if (!logged_in_ && g_browser_process && g_browser_process->local_state()) {
         g_browser_process->local_state()->SetString(
-            kPreferredKeyboardLayout, current_input_method.id);
+            language_prefs::kPreferredKeyboardLayout, current_input_method.id);
         g_browser_process->local_state()->SavePersistentPrefs();
     }
   }
@@ -654,7 +654,8 @@ std::wstring LanguageMenuButton::GetTextForMenu(
 }
 
 void LanguageMenuButton::RegisterPrefs(PrefService* local_state) {
-  local_state->RegisterStringPref(kPreferredKeyboardLayout, "");
+  local_state->RegisterStringPref(language_prefs::kPreferredKeyboardLayout,
+                                  "");
 }
 
 void LanguageMenuButton::GetAmbiguousLanguageCodeSet(

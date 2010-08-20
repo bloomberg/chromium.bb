@@ -30,12 +30,12 @@ void LanguageHangulOptionsHandler::GetLocalizedValues(
 
 ListValue* LanguageHangulOptionsHandler::GetKeyboardLayoutList() {
   ListValue* keyboard_layout_list = new ListValue();
-  for (size_t i = 0; i < kNumHangulKeyboardNameIDPairs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumHangulKeyboardNameIDPairs; ++i) {
     ListValue* option = new ListValue();
     option->Append(Value::CreateStringValue(
-        kHangulKeyboardNameIDPairs[i].keyboard_id));
+        language_prefs::kHangulKeyboardNameIDPairs[i].keyboard_id));
     option->Append(Value::CreateStringValue(l10n_util::GetStringUTF16(
-        kHangulKeyboardNameIDPairs[i].message_id)));
+        language_prefs::kHangulKeyboardNameIDPairs[i].message_id)));
     keyboard_layout_list->Append(option);
   }
   return keyboard_layout_list;

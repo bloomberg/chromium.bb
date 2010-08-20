@@ -763,7 +763,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
     const std::string locale = g_browser_process->GetApplicationLocale();
     const std::string initial_input_method_id =
         g_browser_process->local_state()->GetString(
-            chromeos::kPreferredKeyboardLayout);
+            chromeos::language_prefs::kPreferredKeyboardLayout);
     chromeos::input_method::EnableInputMethods(
         locale, chromeos::input_method::kKeyboardLayoutsOnly,
         initial_input_method_id);

@@ -73,9 +73,11 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_DELAY_LONG));
   localized_strings->SetString("repeat_delay_min",
-      base::IntToString(chromeos::kXkbAutoRepeatDelayPref.min_pref_value));
+      base::IntToString(
+          chromeos::language_prefs::kXkbAutoRepeatDelayPref.min_pref_value));
   localized_strings->SetString("repeat_delay_max",
-      base::IntToString(chromeos::kXkbAutoRepeatDelayPref.max_pref_value));
+      base::IntToString(
+          chromeos::language_prefs::kXkbAutoRepeatDelayPref.max_pref_value));
   localized_strings->SetString("repeat_speed",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED));
@@ -86,9 +88,11 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_SLOW));
   localized_strings->SetString("repeat_speed_min",
-      base::IntToString(chromeos::kXkbAutoRepeatIntervalPref.min_pref_value));
+      base::IntToString(
+          chromeos::language_prefs::kXkbAutoRepeatIntervalPref.min_pref_value));
   localized_strings->SetString("repeat_speed_max",
-      base::IntToString(chromeos::kXkbAutoRepeatIntervalPref.max_pref_value));
+      base::IntToString(
+          chromeos::language_prefs::kXkbAutoRepeatIntervalPref.max_pref_value));
 
   localized_strings->SetString("accessibility_title",
       l10n_util::GetStringUTF16(
@@ -101,4 +105,3 @@ void SystemOptionsHandler::GetLocalizedValues(
       reinterpret_cast<chromeos::SystemSettingsProvider*>(
           settings_provider_.get())->GetTimezoneList());
 }
-

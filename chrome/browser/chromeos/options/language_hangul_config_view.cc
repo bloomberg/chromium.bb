@@ -28,10 +28,12 @@ namespace chromeos {
 class HangulKeyboardComboboxModel : public ComboboxModel {
  public:
   HangulKeyboardComboboxModel() {
-    for (size_t i = 0; i < kNumHangulKeyboardNameIDPairs; ++i) {
+    for (size_t i = 0; i < language_prefs::kNumHangulKeyboardNameIDPairs;
+         ++i) {
       layouts_.push_back(std::make_pair(
-          l10n_util::GetStringUTF8(kHangulKeyboardNameIDPairs[i].message_id),
-          kHangulKeyboardNameIDPairs[i].keyboard_id));
+          l10n_util::GetStringUTF8(
+              language_prefs::kHangulKeyboardNameIDPairs[i].message_id),
+          language_prefs::kHangulKeyboardNameIDPairs[i].keyboard_id));
     }
   }
 

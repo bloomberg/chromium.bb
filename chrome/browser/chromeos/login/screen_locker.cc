@@ -109,9 +109,10 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       if (value.string_list_value.empty()) {
         value.string_list_value.push_back(kFallbackInputMethodId);  // US qwerty
       }
-      language->SetImeConfig(chromeos::kGeneralSectionName,
-                             chromeos::kPreloadEnginesConfigName,
-                             value);
+      language->SetImeConfig(
+          chromeos::language_prefs::kGeneralSectionName,
+          chromeos::language_prefs::kPreloadEnginesConfigName,
+          value);
     }
   }
 
@@ -124,9 +125,10 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
       chromeos::ImeConfigValue value;
       value.type = chromeos::ImeConfigValue::kValueTypeStringList;
       value.string_list_value = saved_active_input_method_list_;
-      language->SetImeConfig(chromeos::kGeneralSectionName,
-                             chromeos::kPreloadEnginesConfigName,
-                             value);
+      language->SetImeConfig(
+          chromeos::language_prefs::kGeneralSectionName,
+          chromeos::language_prefs::kPreloadEnginesConfigName,
+          value);
       // Send previous input method id first so Ctrl+space would work fine.
       if (!saved_previous_input_method_id_.empty())
         language->ChangeInputMethod(saved_previous_input_method_id_);

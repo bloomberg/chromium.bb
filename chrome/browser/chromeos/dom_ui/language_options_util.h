@@ -62,10 +62,10 @@ namespace chromeos {
 // Creates a multiple choice list from the given preference.
 template <typename T>
 ListValue* CreateMultipleChoiceList(
-    const LanguageMultipleChoicePreference<T>& preference) {
+    const language_prefs::LanguageMultipleChoicePreference<T>& preference) {
   int list_length = 0;
   for (size_t i = 0;
-       i < LanguageMultipleChoicePreference<T>::kMaxItems;
+       i < language_prefs::LanguageMultipleChoicePreference<T>::kMaxItems;
        ++i) {
     if (preference.values_and_ids[i].item_message_id == 0)
       break;

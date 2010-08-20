@@ -8,6 +8,7 @@
 #include "grit/generated_resources.h"
 
 namespace chromeos {
+namespace language_prefs {
 
 // ---------------------------------------------------------------------------
 // For ibus-daemon
@@ -402,4 +403,5 @@ const LanguageIntegerRangePreference kXkbAutoRepeatIntervalPref = {
 const char kPreferredKeyboardLayout[] = "PreferredKeyboardLayout";
 const char kHardwareKeyboardLayout[] = "xkb:us::eng";
 
-}  // chromeos
+}  // namespace language_prefs
+}  // namespace chromeos

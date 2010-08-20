@@ -83,18 +83,18 @@ class LanguageMozcConfigView : public views::ButtonListener,
   struct MozcPrefAndAssociatedCheckbox {
     BooleanPrefMember boolean_pref;
     views::Checkbox* checkbox;
-  } prefs_and_checkboxes_[kNumMozcBooleanPrefs];
+  } prefs_and_checkboxes_[language_prefs::kNumMozcBooleanPrefs];
 
   struct MozcPrefAndAssociatedCombobox {
     StringPrefMember multiple_choice_pref;
     LanguageComboboxModel<const char*>* combobox_model;
     LanguageCombobox* combobox;
-  } prefs_and_comboboxes_[kNumMozcMultipleChoicePrefs];
+  } prefs_and_comboboxes_[language_prefs::kNumMozcMultipleChoicePrefs];
 
   struct MozcPrefAndAssociatedSlider {
     IntegerPrefMember integer_pref;
     views::Slider* slider;
-  } prefs_and_sliders_[kNumMozcIntegerPrefs];
+  } prefs_and_sliders_[language_prefs::kNumMozcIntegerPrefs];
 
   DISALLOW_COPY_AND_ASSIGN(LanguageMozcConfigView);
 };

@@ -34,65 +34,76 @@ void Preferences::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kLanguageCurrentInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguagePreviousInputMethod, "");
   prefs->RegisterStringPref(prefs::kLanguageHotkeyNextEngineInMenu,
-                            kHotkeyNextEngineInMenu);
+                            language_prefs::kHotkeyNextEngineInMenu);
   prefs->RegisterStringPref(prefs::kLanguageHotkeyPreviousEngine,
-                            kHotkeyPreviousEngine);
+                            language_prefs::kHotkeyPreviousEngine);
   prefs->RegisterStringPref(prefs::kLanguagePreferredLanguages, "");
   prefs->RegisterStringPref(prefs::kLanguagePreloadEngines,
                             kFallbackInputMethodId);  // EN layout
-  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
-    prefs->RegisterBooleanPref(kChewingBooleanPrefs[i].pref_name,
-                               kChewingBooleanPrefs[i].default_pref_value);
+  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
+    prefs->RegisterBooleanPref(
+        language_prefs::kChewingBooleanPrefs[i].pref_name,
+        language_prefs::kChewingBooleanPrefs[i].default_pref_value);
   }
-  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
-        kChewingMultipleChoicePrefs[i].pref_name,
-        kChewingMultipleChoicePrefs[i].default_pref_value);
+        language_prefs::kChewingMultipleChoicePrefs[i].pref_name,
+        language_prefs::kChewingMultipleChoicePrefs[i].default_pref_value);
   }
-  prefs->RegisterIntegerPref(kChewingHsuSelKeyType.pref_name,
-                             kChewingHsuSelKeyType.default_pref_value);
+  prefs->RegisterIntegerPref(
+      language_prefs::kChewingHsuSelKeyType.pref_name,
+      language_prefs::kChewingHsuSelKeyType.default_pref_value);
 
-  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
-    prefs->RegisterIntegerPref(kChewingIntegerPrefs[i].pref_name,
-                               kChewingIntegerPrefs[i].default_pref_value);
+  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
+    prefs->RegisterIntegerPref(
+        language_prefs::kChewingIntegerPrefs[i].pref_name,
+        language_prefs::kChewingIntegerPrefs[i].default_pref_value);
   }
   prefs->RegisterStringPref(
       prefs::kLanguageHangulKeyboard,
-      kHangulKeyboardNameIDPairs[0].keyboard_id);
-  prefs->RegisterStringPref(prefs::kLanguageHangulHanjaKeys, kHangulHanjaKeys);
-  for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
-    prefs->RegisterBooleanPref(kPinyinBooleanPrefs[i].pref_name,
-                               kPinyinBooleanPrefs[i].default_pref_value);
+      language_prefs::kHangulKeyboardNameIDPairs[0].keyboard_id);
+  prefs->RegisterStringPref(prefs::kLanguageHangulHanjaKeys,
+                            language_prefs::kHangulHanjaKeys);
+  for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
+    prefs->RegisterBooleanPref(
+        language_prefs::kPinyinBooleanPrefs[i].pref_name,
+        language_prefs::kPinyinBooleanPrefs[i].default_pref_value);
   }
-  for (size_t i = 0; i < kNumPinyinIntegerPrefs; ++i) {
-    prefs->RegisterIntegerPref(kPinyinIntegerPrefs[i].pref_name,
-                               kPinyinIntegerPrefs[i].default_pref_value);
+  for (size_t i = 0; i < language_prefs::kNumPinyinIntegerPrefs; ++i) {
+    prefs->RegisterIntegerPref(
+        language_prefs::kPinyinIntegerPrefs[i].pref_name,
+        language_prefs::kPinyinIntegerPrefs[i].default_pref_value);
   }
-  prefs->RegisterIntegerPref(kPinyinDoublePinyinSchema.pref_name,
-                             kPinyinDoublePinyinSchema.default_pref_value);
+  prefs->RegisterIntegerPref(
+      language_prefs::kPinyinDoublePinyinSchema.pref_name,
+      language_prefs::kPinyinDoublePinyinSchema.default_pref_value);
 
-  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
-    prefs->RegisterBooleanPref(kMozcBooleanPrefs[i].pref_name,
-                               kMozcBooleanPrefs[i].default_pref_value);
+  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
+    prefs->RegisterBooleanPref(
+        language_prefs::kMozcBooleanPrefs[i].pref_name,
+        language_prefs::kMozcBooleanPrefs[i].default_pref_value);
   }
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     prefs->RegisterStringPref(
-        kMozcMultipleChoicePrefs[i].pref_name,
-        kMozcMultipleChoicePrefs[i].default_pref_value);
+        language_prefs::kMozcMultipleChoicePrefs[i].pref_name,
+        language_prefs::kMozcMultipleChoicePrefs[i].default_pref_value);
   }
-  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
-    prefs->RegisterIntegerPref(kMozcIntegerPrefs[i].pref_name,
-                               kMozcIntegerPrefs[i].default_pref_value);
+  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
+    prefs->RegisterIntegerPref(
+        language_prefs::kMozcIntegerPrefs[i].pref_name,
+        language_prefs::kMozcIntegerPrefs[i].default_pref_value);
   }
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapSearchKeyTo, kSearchKey);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapControlKeyTo,
                              kLeftControlKey);
   prefs->RegisterIntegerPref(prefs::kLanguageXkbRemapAltKeyTo, kLeftAltKey);
   prefs->RegisterBooleanPref(prefs::kLanguageXkbAutoRepeatEnabled, true);
-  prefs->RegisterIntegerPref(kXkbAutoRepeatDelayPref.pref_name,
-                             kXkbAutoRepeatDelayPref.default_pref_value);
-  prefs->RegisterIntegerPref(kXkbAutoRepeatIntervalPref.pref_name,
-                             kXkbAutoRepeatIntervalPref.default_pref_value);
+  prefs->RegisterIntegerPref(
+      language_prefs::kXkbAutoRepeatDelayPref.pref_name,
+      language_prefs::kXkbAutoRepeatDelayPref.default_pref_value);
+  prefs->RegisterIntegerPref(
+      language_prefs::kXkbAutoRepeatIntervalPref.pref_name,
+      language_prefs::kXkbAutoRepeatIntervalPref.default_pref_value);
 }
 
 void Preferences::Init(PrefService* prefs) {
@@ -108,44 +119,44 @@ void Preferences::Init(PrefService* prefs) {
   language_preferred_languages_.Init(prefs::kLanguagePreferredLanguages,
                                      prefs, this);
   language_preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, this);
-  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     language_chewing_boolean_prefs_[i].Init(
-        kChewingBooleanPrefs[i].pref_name, prefs, this);
+        language_prefs::kChewingBooleanPrefs[i].pref_name, prefs, this);
   }
-  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
     language_chewing_multiple_choice_prefs_[i].Init(
-        kChewingMultipleChoicePrefs[i].pref_name, prefs, this);
+        language_prefs::kChewingMultipleChoicePrefs[i].pref_name, prefs, this);
   }
   language_chewing_hsu_sel_key_type_.Init(
-      kChewingHsuSelKeyType.pref_name, prefs, this);
-  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
+      language_prefs::kChewingHsuSelKeyType.pref_name, prefs, this);
+  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
     language_chewing_integer_prefs_[i].Init(
-        kChewingIntegerPrefs[i].pref_name, prefs, this);
+        language_prefs::kChewingIntegerPrefs[i].pref_name, prefs, this);
   }
   language_hangul_keyboard_.Init(prefs::kLanguageHangulKeyboard, prefs, this);
   language_hangul_hanja_keys_.Init(
       prefs::kLanguageHangulHanjaKeys, prefs, this);
-  for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
     language_pinyin_boolean_prefs_[i].Init(
-        kPinyinBooleanPrefs[i].pref_name, prefs, this);
+        language_prefs::kPinyinBooleanPrefs[i].pref_name, prefs, this);
   }
-  for (size_t i = 0; i < kNumPinyinIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumPinyinIntegerPrefs; ++i) {
     language_pinyin_int_prefs_[i].Init(
-        kPinyinIntegerPrefs[i].pref_name, prefs, this);
+        language_prefs::kPinyinIntegerPrefs[i].pref_name, prefs, this);
   }
   language_pinyin_double_pinyin_schema_.Init(
-      kPinyinDoublePinyinSchema.pref_name, prefs, this);
-  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
+      language_prefs::kPinyinDoublePinyinSchema.pref_name, prefs, this);
+  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
     language_mozc_boolean_prefs_[i].Init(
-        kMozcBooleanPrefs[i].pref_name, prefs, this);
+        language_prefs::kMozcBooleanPrefs[i].pref_name, prefs, this);
   }
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
     language_mozc_multiple_choice_prefs_[i].Init(
-        kMozcMultipleChoicePrefs[i].pref_name, prefs, this);
+        language_prefs::kMozcMultipleChoicePrefs[i].pref_name, prefs, this);
   }
-  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
     language_mozc_integer_prefs_[i].Init(
-        kMozcIntegerPrefs[i].pref_name, prefs, this);
+        language_prefs::kMozcIntegerPrefs[i].pref_name, prefs, this);
   }
   language_xkb_remap_search_key_to_.Init(
       prefs::kLanguageXkbRemapSearchKeyTo, prefs, this);
@@ -156,9 +167,9 @@ void Preferences::Init(PrefService* prefs) {
   language_xkb_auto_repeat_enabled_.Init(
       prefs::kLanguageXkbAutoRepeatEnabled, prefs, this);
   language_xkb_auto_repeat_delay_pref_.Init(
-      kXkbAutoRepeatDelayPref.pref_name, prefs, this);
+      language_prefs::kXkbAutoRepeatDelayPref.pref_name, prefs, this);
   language_xkb_auto_repeat_interval_pref_.Init(
-      kXkbAutoRepeatIntervalPref.pref_name, prefs, this);
+      language_prefs::kXkbAutoRepeatIntervalPref.pref_name, prefs, this);
 
   std::string locale(g_browser_process->GetApplicationLocale());
   // Add input methods based on the application locale when the user first
@@ -226,14 +237,14 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 
   if (!pref_name || *pref_name == prefs::kLanguageHotkeyNextEngineInMenu) {
     SetLanguageConfigStringListAsCSV(
-        kHotKeySectionName,
-        kNextEngineInMenuConfigName,
+        language_prefs::kHotKeySectionName,
+        language_prefs::kNextEngineInMenuConfigName,
         language_hotkey_next_engine_in_menu_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kLanguageHotkeyPreviousEngine) {
     SetLanguageConfigStringListAsCSV(
-        kHotKeySectionName,
-        kPreviousEngineConfigName,
+        language_prefs::kHotKeySectionName,
+        language_prefs::kPreviousEngineConfigName,
         language_hotkey_previous_engine_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kLanguagePreferredLanguages) {
@@ -241,86 +252,106 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     // preferencs, we don't need to send this to ibus-daemon.
   }
   if (!pref_name || *pref_name == prefs::kLanguagePreloadEngines) {
-    SetLanguageConfigStringListAsCSV(kGeneralSectionName,
-                                     kPreloadEnginesConfigName,
+    SetLanguageConfigStringListAsCSV(language_prefs::kGeneralSectionName,
+                                     language_prefs::kPreloadEnginesConfigName,
                                      language_preload_engines_.GetValue());
   }
-  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
-    if (!pref_name || *pref_name == kChewingBooleanPrefs[i].pref_name) {
-      SetLanguageConfigBoolean(kChewingSectionName,
-                               kChewingBooleanPrefs[i].ibus_config_name,
-                               language_chewing_boolean_prefs_[i].GetValue());
+  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
+    if (!pref_name ||
+        *pref_name == language_prefs::kChewingBooleanPrefs[i].pref_name) {
+      SetLanguageConfigBoolean(
+          language_prefs::kChewingSectionName,
+          language_prefs::kChewingBooleanPrefs[i].ibus_config_name,
+          language_chewing_boolean_prefs_[i].GetValue());
     }
   }
-  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs; ++i) {
-    if (!pref_name || *pref_name == kChewingMultipleChoicePrefs[i].pref_name) {
+  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs; ++i) {
+    if (!pref_name ||
+        *pref_name ==
+        language_prefs::kChewingMultipleChoicePrefs[i].pref_name) {
       SetLanguageConfigString(
-          kChewingSectionName,
-          kChewingMultipleChoicePrefs[i].ibus_config_name,
+          language_prefs::kChewingSectionName,
+          language_prefs::kChewingMultipleChoicePrefs[i].ibus_config_name,
           language_chewing_multiple_choice_prefs_[i].GetValue());
     }
   }
-  if (!pref_name || *pref_name == kChewingHsuSelKeyType.pref_name) {
+  if (!pref_name ||
+      *pref_name == language_prefs::kChewingHsuSelKeyType.pref_name) {
     SetLanguageConfigInteger(
-        kChewingSectionName,
-        kChewingHsuSelKeyType.ibus_config_name,
+        language_prefs::kChewingSectionName,
+        language_prefs::kChewingHsuSelKeyType.ibus_config_name,
         language_chewing_hsu_sel_key_type_.GetValue());
   }
-  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
-    if (!pref_name || *pref_name == kChewingIntegerPrefs[i].pref_name) {
-      SetLanguageConfigInteger(kChewingSectionName,
-                               kChewingIntegerPrefs[i].ibus_config_name,
-                               language_chewing_integer_prefs_[i].GetValue());
+  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
+    if (!pref_name ||
+        *pref_name == language_prefs::kChewingIntegerPrefs[i].pref_name) {
+      SetLanguageConfigInteger(
+          language_prefs::kChewingSectionName,
+          language_prefs::kChewingIntegerPrefs[i].ibus_config_name,
+          language_chewing_integer_prefs_[i].GetValue());
     }
   }
-  if (!pref_name || *pref_name == prefs::kLanguageHangulKeyboard) {
-    SetLanguageConfigString(kHangulSectionName, kHangulKeyboardConfigName,
+  if (!pref_name ||
+      *pref_name == prefs::kLanguageHangulKeyboard) {
+    SetLanguageConfigString(language_prefs::kHangulSectionName,
+                            language_prefs::kHangulKeyboardConfigName,
                             language_hangul_keyboard_.GetValue());
   }
   if (!pref_name || *pref_name == prefs::kLanguageHangulHanjaKeys) {
-    SetLanguageConfigString(kHangulSectionName, kHangulHanjaKeysConfigName,
+    SetLanguageConfigString(language_prefs::kHangulSectionName,
+                            language_prefs::kHangulHanjaKeysConfigName,
                             language_hangul_hanja_keys_.GetValue());
   }
-  for (size_t i = 0; i < kNumPinyinBooleanPrefs; ++i) {
-    if (!pref_name || *pref_name == kPinyinBooleanPrefs[i].pref_name) {
-      SetLanguageConfigBoolean(kPinyinSectionName,
-                               kPinyinBooleanPrefs[i].ibus_config_name,
-                               language_pinyin_boolean_prefs_[i].GetValue());
+  for (size_t i = 0; i < language_prefs::kNumPinyinBooleanPrefs; ++i) {
+    if (!pref_name ||
+        *pref_name == language_prefs::kPinyinBooleanPrefs[i].pref_name) {
+      SetLanguageConfigBoolean(
+          language_prefs::kPinyinSectionName,
+          language_prefs::kPinyinBooleanPrefs[i].ibus_config_name,
+          language_pinyin_boolean_prefs_[i].GetValue());
     }
   }
-  for (size_t i = 0; i < kNumPinyinIntegerPrefs; ++i) {
-    if (!pref_name || *pref_name == kPinyinIntegerPrefs[i].pref_name) {
-      SetLanguageConfigInteger(kPinyinSectionName,
-                               kPinyinIntegerPrefs[i].ibus_config_name,
-                               language_pinyin_int_prefs_[i].GetValue());
+  for (size_t i = 0; i < language_prefs::kNumPinyinIntegerPrefs; ++i) {
+    if (!pref_name ||
+        *pref_name == language_prefs::kPinyinIntegerPrefs[i].pref_name) {
+      SetLanguageConfigInteger(
+          language_prefs::kPinyinSectionName,
+          language_prefs::kPinyinIntegerPrefs[i].ibus_config_name,
+          language_pinyin_int_prefs_[i].GetValue());
     }
   }
-  if (!pref_name || *pref_name == kPinyinDoublePinyinSchema.pref_name) {
+  if (!pref_name ||
+      *pref_name == language_prefs::kPinyinDoublePinyinSchema.pref_name) {
     SetLanguageConfigInteger(
-        kPinyinSectionName,
-        kPinyinDoublePinyinSchema.ibus_config_name,
+        language_prefs::kPinyinSectionName,
+        language_prefs::kPinyinDoublePinyinSchema.ibus_config_name,
         language_pinyin_double_pinyin_schema_.GetValue());
   }
-  for (size_t i = 0; i < kNumMozcBooleanPrefs; ++i) {
-    if (!pref_name || *pref_name == kMozcBooleanPrefs[i].pref_name) {
-      SetLanguageConfigBoolean(kMozcSectionName,
-                               kMozcBooleanPrefs[i].ibus_config_name,
-                               language_mozc_boolean_prefs_[i].GetValue());
+  for (size_t i = 0; i < language_prefs::kNumMozcBooleanPrefs; ++i) {
+    if (!pref_name ||
+        *pref_name == language_prefs::kMozcBooleanPrefs[i].pref_name) {
+      SetLanguageConfigBoolean(
+          language_prefs::kMozcSectionName,
+          language_prefs::kMozcBooleanPrefs[i].ibus_config_name,
+          language_mozc_boolean_prefs_[i].GetValue());
     }
   }
-  for (size_t i = 0; i < kNumMozcMultipleChoicePrefs; ++i) {
-    if (!pref_name || *pref_name == kMozcMultipleChoicePrefs[i].pref_name) {
+  for (size_t i = 0; i < language_prefs::kNumMozcMultipleChoicePrefs; ++i) {
+    if (!pref_name ||
+        *pref_name == language_prefs::kMozcMultipleChoicePrefs[i].pref_name) {
       SetLanguageConfigString(
-          kMozcSectionName,
-          kMozcMultipleChoicePrefs[i].ibus_config_name,
+          language_prefs::kMozcSectionName,
+          language_prefs::kMozcMultipleChoicePrefs[i].ibus_config_name,
           language_mozc_multiple_choice_prefs_[i].GetValue());
     }
   }
-  for (size_t i = 0; i < kNumMozcIntegerPrefs; ++i) {
-    if (!pref_name || *pref_name == kMozcIntegerPrefs[i].pref_name) {
-      SetLanguageConfigInteger(kMozcSectionName,
-                               kMozcIntegerPrefs[i].ibus_config_name,
-                               language_mozc_integer_prefs_[i].GetValue());
+  for (size_t i = 0; i < language_prefs::kNumMozcIntegerPrefs; ++i) {
+    if (!pref_name ||
+        *pref_name == language_prefs::kMozcIntegerPrefs[i].pref_name) {
+      SetLanguageConfigInteger(
+          language_prefs::kMozcSectionName,
+          language_prefs::kMozcIntegerPrefs[i].ibus_config_name,
+          language_mozc_integer_prefs_[i].GetValue());
     }
   }
   if (!pref_name || (*pref_name == prefs::kLanguageXkbRemapSearchKeyTo ||

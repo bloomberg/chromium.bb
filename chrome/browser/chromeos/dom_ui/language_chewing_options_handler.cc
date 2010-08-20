@@ -27,15 +27,16 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   // Language Chewing page - ChromeOS
-  for (size_t i = 0; i < kNumChewingBooleanPrefs; ++i) {
+  for (size_t i = 0; i < language_prefs::kNumChewingBooleanPrefs; ++i) {
     localized_strings->SetString(
-        GetI18nContentValue(kChewingBooleanPrefs[i]),
-        l10n_util::GetStringUTF16(kChewingBooleanPrefs[i].message_id));
+        GetI18nContentValue(language_prefs::kChewingBooleanPrefs[i]),
+        l10n_util::GetStringUTF16(
+            language_prefs::kChewingBooleanPrefs[i].message_id));
   }
 
-  for (size_t i = 0; i < kNumChewingIntegerPrefs; ++i) {
-    const LanguageIntegerRangePreference& preference =
-        kChewingIntegerPrefs[i];
+  for (size_t i = 0; i < language_prefs::kNumChewingIntegerPrefs; ++i) {
+    const language_prefs::LanguageIntegerRangePreference& preference =
+        language_prefs::kChewingIntegerPrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
         l10n_util::GetStringUTF16(preference.message_id));
@@ -47,10 +48,10 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
         base::IntToString(preference.max_pref_value));
   }
 
-  for (size_t i = 0; i < kNumChewingMultipleChoicePrefs;
+  for (size_t i = 0; i < language_prefs::kNumChewingMultipleChoicePrefs;
        ++i) {
-    const LanguageMultipleChoicePreference<const char*>& preference =
-        kChewingMultipleChoicePrefs[i];
+    const language_prefs::LanguageMultipleChoicePreference<const char*>&
+        preference = language_prefs::kChewingMultipleChoicePrefs[i];
     localized_strings->SetString(
         GetI18nContentValue(preference),
         l10n_util::GetStringUTF16(preference.label_message_id));
@@ -60,11 +61,12 @@ void LanguageChewingOptionsHandler::GetLocalizedValues(
   }
 
   localized_strings->SetString(
-      GetI18nContentValue(kChewingHsuSelKeyType),
-      l10n_util::GetStringUTF16(kChewingHsuSelKeyType.label_message_id));
+      GetI18nContentValue(language_prefs::kChewingHsuSelKeyType),
+      l10n_util::GetStringUTF16(
+          language_prefs::kChewingHsuSelKeyType.label_message_id));
   localized_strings->Set(
-      GetTemplateDataPropertyName(kChewingHsuSelKeyType),
-      CreateMultipleChoiceList(kChewingHsuSelKeyType));
+      GetTemplateDataPropertyName(language_prefs::kChewingHsuSelKeyType),
+      CreateMultipleChoiceList(language_prefs::kChewingHsuSelKeyType));
 }
 
 }  // namespace chromeos

@@ -17,12 +17,14 @@ template <typename DataType>
 class LanguageComboboxModel : public ComboboxModel {
  public:
   explicit LanguageComboboxModel(
-      const LanguageMultipleChoicePreference<DataType>* pref_data)
+      const language_prefs::LanguageMultipleChoicePreference<DataType>*
+      pref_data)
           : pref_data_(pref_data), num_items_(0) {
     // Check how many items are defined in the |pref_data->values_and_ids|
     // array.
     for (size_t i = 0;
-         i < LanguageMultipleChoicePreference<DataType>::kMaxItems; ++i) {
+         i < language_prefs::LanguageMultipleChoicePreference<DataType>::
+             kMaxItems; ++i) {
       if ((pref_data_->values_and_ids)[i].item_message_id == 0) {
         break;
       }
@@ -67,7 +69,7 @@ class LanguageComboboxModel : public ComboboxModel {
   }
 
  private:
-  const LanguageMultipleChoicePreference<DataType>* pref_data_;
+  const language_prefs::LanguageMultipleChoicePreference<DataType>* pref_data_;
   int num_items_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageComboboxModel);
