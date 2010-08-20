@@ -793,7 +793,8 @@ def CommandSelLdrTestNacl(env, name, command,
   # Disable all sel_ldr tests for windows under coverage.
   # Currently several .S files block sel_ldr from being instrumented.
   # See http://code.google.com/p/nativeclient/issues/detail?id=831
-  if (env['TRUSTED_ENV'].get('COVERAGE_ENABLED') and
+  if ('TRUSTED_ENV' in env and
+      env['TRUSTED_ENV'].get('COVERAGE_ENABLED') and
       env['TRUSTED_ENV'].Bit('windows')):
     return []
 
