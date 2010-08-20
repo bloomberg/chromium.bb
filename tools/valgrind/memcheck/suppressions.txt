@@ -4115,7 +4115,7 @@
    fun:_ZNK8chromeos22SystemSettingsProvider3GetERKSsPP5Value
    fun:_ZNK8chromeos12CrosSettings3GetERKSsPP5Value
    fun:_ZN8chromeos26CoreChromeOSOptionsHandler9FetchPrefERKSs
-   fun:_ZN18CoreOptionsHandler16HandleFetchPrefsEPK5Value
+   fun:_ZN18CoreOptionsHandler16HandleFetchPrefs*Value
 }
 {
    bug_52371_b
@@ -4123,7 +4123,7 @@
    fun:_Znw*
    fun:_ZN8chromeos12CrosSettings19AddSettingsObserverEPKcP20NotificationObserver
    fun:_ZN8chromeos26CoreChromeOSOptionsHandler11ObservePrefERKSs
-   fun:_ZN18CoreOptionsHandler18HandleObservePrefsEPK5Value
+   fun:_ZN18CoreOptionsHandler18HandleObservePrefs*Value
 }
 {
    bug_52387
@@ -4181,7 +4181,7 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_52834
+   bug_52834_a
    Memcheck:Leak
    fun:_Znw*
    ...
@@ -4192,4 +4192,26 @@
    fun:_ZNK28MockRenderProcessHostFactory23CreateRenderProcessHostEP7Profile
    fun:_ZN12SiteInstance10GetProcessEv
    fun:_ZN14RenderViewHostC2EP12SiteInstanceP22RenderViewHostDelegateix
+}
+{
+   bug_52834_b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN5IDMapIN3IPC7Channel8ListenerEL23IDMapOwnershipSemantics0EE9AddWithIDEPS2_i
+   fun:_ZN17RenderProcessHost6AttachEPN3IPC7Channel8ListenerEi
+   fun:_ZN16RenderWidgetHostC2EP17RenderProcessHosti
+   ...
+   fun:_ZN26RenderWidgetFullscreenHostC1EP17RenderProcessHosti
+}
+{
+   bug_52836
+   Memcheck:Cond
+   ...
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+   fun:event_process_active
+   fun:event_base_loop
 }
