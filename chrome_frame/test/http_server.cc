@@ -64,7 +64,11 @@ void ChromeFrameHTTPServer::TearDown() {
 }
 
 bool ChromeFrameHTTPServer::WaitToFinish(int milliseconds) {
-  return test_server_.WaitToFinish(milliseconds);
+  bool ret = test_server_.WaitToFinish(milliseconds);
+  if (!ret) {
+    LOG(ERROR) << "WaitToFinish failed with error:" << ::GetLastError();
+  }
+  return ret;
 }
 
 // TODO(phajdan.jr): Change wchar_t* to std::string& and fix callers.
