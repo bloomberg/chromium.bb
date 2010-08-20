@@ -19,12 +19,13 @@
  * hand-craft malicious bit patterns that gas may refuse to produce.
  *
  * To write a new instruction pattern, or make sense of an existing one, use the
- * ARMv7-A ARM (available online).  Remember that ARM instructions are always
- * little-endian, and this is made explicit in these tests to ensure they pass
- * on both big- and little-endian machines.
+ * ARMv7-A ARM (available online).  Instructions in this file are written as
+ * 32-bit integers so the hex encoding matches the docs.
  */
 
 #include <vector>
+#include <string>
+#include <sstream>
 
 #include "gtest/gtest.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -32,6 +33,8 @@
 #include "native_client/src/trusted/validator_arm/validator.h"
 
 using std::vector;
+using std::string;
+using std::ostringstream;
 
 using nacl_arm_dec::Register;
 using nacl_arm_dec::RegisterList;
@@ -130,7 +133,7 @@ class ValidatorTests : public ::testing::Test {
   void validation_should_pass(const arm_inst *pattern,
                               size_t inst_count,
                               uint32_t base_addr,
-                              const char * const msg);
+                              const string &msg);
 
   /*
    * Tests a pattern that is forbidden in the SFI model.
@@ -141,8 +144,7 @@ class ValidatorTests : public ::testing::Test {
   vector<ProblemRecord> validation_should_fail(const arm_inst *pattern,
                                                size_t inst_count,
                                                uint32_t base_addr,
-                                               const char * const msg1,
-                                               const char * const msg2);
+                                               const string &msg);
 
   SfiValidator _validator;
 };
@@ -196,86 +198,230 @@ TEST_F(ValidatorTests, GeneratesCorrectMasksFromSizes) {
 // This is where untrusted code starts.  Most tests use this.
 static const uint32_t kDefaultBaseAddr = 0x20000;
 
-struct GoodPattern {
+/*
+ * Here are examples of every form of safe store permitted in a Native Client
+ * program.  These stores have common properties:
+ *  1. The high nibble is 0, to allow tests to write an arbitrary predicate.
+ *  2. They address memory only through r1.
+ *  3. They do not do anything dumb, like try to alter SP or PC.
+ */
+struct AnnotatedInstruction {
+  arm_inst inst;
   const char *about;
-  arm_inst instructions[2];
+};
+static const AnnotatedInstruction examples_of_safe_stores[] = {
+  // Single-register stores
+  { 0x05810000, "str r0, [r1]: simple no-displacement store" },
+  { 0x05810123, "str r0, [r1, #0x123]: positive displacement" },
+  { 0x05010123, "str r0, [r1, #-0x123]: negative displacement" },
+  { 0x05A10123, "str r0, [r1, #0x123]!: positive disp + writeback" },
+  { 0x05210123, "str r0, [r1, #-0x123]!: negative disp + writeback" },
+  { 0x04810123, "str r0, [r1], #0x123: positive post-indexing" },
+  { 0x04010123, "str r0, [r1], #-0x123: negative post-indexing" },
+  { 0x06810002, "str r0, [r1], r2: positive register post-indexing" },
+  { 0x06010002, "str r0, [r1], -r2: negative register post-indexing" },
+
+  // Two-register store
+  { 0x01C120F0, "strd r2, r3, [r1]: basic 64-bit store" },
+  { 0x01C124F2, "strd r2, r3, [r1, #42]: positive disp 64-bit store" },
+  { 0x014124F2, "strd r2, r3, [r1, #-42]: negative disp 64-bit store" },
+  { 0x01E124F2, "strd r2, r3, [r1, #42]!: positive disp 64-bit store + wb" },
+  { 0x016124F2, "strd r2, r3, [r1, #-42]!: negative disp 64-bit store + wb" },
+  { 0x00C124F2, "strd r2, r3, [r1], #42: post-inc 64-bit store" },
+  { 0x004124F2, "strd r2, r3, [r1], #-42: post-dec 64-bit store" },
+
+  // Store-exclusive
+  { 0x01810F92, "strex r0, r2, [r1]: store exclusive" },
+
+  // Store-multiple
+  { 0x0881FFFF, "stm r1, { r0-r15 }: store multiple, no writeback" },
+  { 0x08A1FFFF, "stm r1!, { r0-r15 }: store multiple, writeback" },
 };
 
-TEST_F(ValidatorTests, SimpleSafeMaskPatterns) {
-  static const GoodPattern patterns[] = {
-    { "Simple unconditional store with in-place mask",
-      { 0xE3C11103,  // bic r1, r1, #0xC0000000
-        0xE5810000,  // str r0, [r1]
-      }},
-    { "Simple unconditional store with implicit address move",
-      { 0xE3C31103,  // bic r1, r3, #0xC0000000
-        0xE5810000,  // str r0, [r1]
-      }},
-    { "Conditional store with in-place mask",
-      { 0x03C11103,  // biceq r1, r1, #0xC0000000
-        0x05810000,  // streq r0, [r1]
-      }},
+
+TEST_F(ValidatorTests, SafeMaskedStores) {
+  /*
+   * Produces many examples of masked stores using the safe store table (above)
+   * and the list of possible masking instructions (below).
+   *
+   * Each mask instruction must leave a valid (data) address in r1.
+   */
+
+  static const AnnotatedInstruction masks[] = {
+    { 0x03C11103, "bic r1, r1, #0xC0000000: simple in-place mask (form 1)" },
+    { 0x03C114C0, "bic r1, r1, #0xC0000000: simple in-place mask (form 2)" },
+    { 0x03C314C0, "bic r1, r3, #0xC0000000: mask with register move" },
+    { 0x03C114FF, "bic r1, r1, #0xFF000000: overzealous but correct mask" },
   };
 
-  for (unsigned i = 0; i < NACL_ARRAY_SIZE(patterns); i++) {
-    validation_should_pass(patterns[i].instructions,
-                           2,
-                           kDefaultBaseAddr,
-                           patterns[i].about);
+  for (unsigned p = 0; p < 15; p++) {
+    /*
+     * Conditionally executed instructions have a top nibble of 0..14.
+     * 15 is an escape sequence used to fit in additional encodings.
+     */
+    arm_inst predicate = p << 28;
+
+    for (unsigned m = 0; m < NACL_ARRAY_SIZE(masks); m++) {
+      for (unsigned s = 0; s < NACL_ARRAY_SIZE(examples_of_safe_stores); s++) {
+        ostringstream message;
+        message << masks[m].about
+                << ", "
+                << examples_of_safe_stores[s].about
+                << " (predicate #" << p << ")";
+        arm_inst program[] = {
+          masks[m].inst | predicate,
+          examples_of_safe_stores[s].inst | predicate,
+        };
+        validation_should_pass(program,
+                               2,
+                               kDefaultBaseAddr,
+                               message.str());
+      }
+    }
   }
 }
 
-/*
- * Describes an invalid mask instruction for the test below.  Fun fact: this
- * can't be anonymous in the function below, because NACL_ARRAY_SIZE breaks.
- */
-struct BadMask {
-  arm_inst instruction;
-  const char * about;
-};
+TEST_F(ValidatorTests, SafeConditionalStores) {
+  /*
+   * Produces many examples of conditional stores using the safe store table
+   * (above) and the list of possible conditional guards (below).
+   *
+   * Each conditional guard must set the Z flag iff r1 contains a valid address.
+   */
 
-TEST_F(ValidatorTests, RejectsInvalidMaskInstructionBeforeStore) {
-  static const BadMask invalid_masks[] = {
-    // This writes the address register, but doesn't mask it.
-    { 0xE1A01003, "mov r1, r3" },
-    // This "masks" the register, but doesn't clear any bits.
-    { 0xE3C31000, "bic r1, r3, #0" },
-    // This "masks" the register, but doesn't clear the right bits.
-    { 0xE3C31102, "bic r1, r3, #0x80000000" },
-    // This mask is correct, but has a different predicate from the store.
-    { 0x03C31103, "biceq r1, r3, #0xC0000000" },
+  static const AnnotatedInstruction guards[] = {
+    { 0x03110103, "tst r1, #0xC0000000: precise guard, GCC encoding" },
+    { 0x031104C0, "tst r1, #0xC0000000: precise guard, alternative encoding" },
+    { 0x031101C3, "tst r1, #0xF0000000: overzealous (but correct) guard" },
   };
 
-  arm_inst fragment[] = {
-    0x00000000,  // room for the bad mask to be copied in.
-    0xE5810000,  // str r0, [r1]
+  /*
+   * Currently we only support *unconditional* conditional stores.
+   * Meaning the guard is unconditional and the store is if-equal.
+   */
+  arm_inst guard_predicate = 0xE0000000, store_predicate = 0x00000000;
+  for (unsigned m = 0; m < NACL_ARRAY_SIZE(guards); m++) {
+    for (unsigned s = 0; s < NACL_ARRAY_SIZE(examples_of_safe_stores); s++) {
+      ostringstream message;
+      message << guards[m].about
+              << ", "
+              << examples_of_safe_stores[s].about
+              << " (predicate #" << guard_predicate << ")";
+      arm_inst program[] = {
+        guards[m].inst | guard_predicate,
+        examples_of_safe_stores[s].inst | store_predicate,
+      };
+      validation_should_pass(program,
+                             2,
+                             kDefaultBaseAddr,
+                             message.str());
+    }
+  }
+}
+
+
+TEST_F(ValidatorTests, InvalidMaskedStores) {
+  static const AnnotatedInstruction examples_of_invalid_masks[] = {
+    { 0x01A01003, "mov r1, r3: not even a mask" },
+    { 0x03C31000, "bic r1, r3, #0: doesn't mask anything" },
+    { 0x03C31102, "bic r1, r3, #0x80000000: doesn't mask enough bits" },
+    { 0x03C311C1, "bic r1, r3, #0x70000000: masks the wrong bits" },
   };
 
-  for (unsigned i = 0; i < NACL_ARRAY_SIZE(invalid_masks); i++) {
-    fragment[0] = invalid_masks[i].instruction;
+  for (unsigned p = 0; p < 15; p++) {
+    /*
+     * Conditionally executed instructions have a top nibble of 0..14.
+     * 15 is an escape sequence used to fit in additional encodings.
+     */
+    arm_inst predicate = p << 28;
 
-    vector<ProblemRecord> problems =
-        validation_should_fail(fragment,
-                               NACL_ARRAY_SIZE(fragment),
-                               kDefaultBaseAddr,
-                               "Store after a non-mask instruction must fail: ",
-                               invalid_masks[i].about);
+    for (unsigned m = 0; m < NACL_ARRAY_SIZE(examples_of_invalid_masks); m++) {
+      for (unsigned s = 0; s < NACL_ARRAY_SIZE(examples_of_safe_stores); s++) {
+        ostringstream message;
+        message << examples_of_invalid_masks[m].about
+                << ", "
+                << examples_of_safe_stores[s].about
+                << " (predicate #" << p << ")";
+        arm_inst program[] = {
+          examples_of_invalid_masks[m].inst | predicate,
+          examples_of_safe_stores[s].inst | predicate,
+        };
 
-    // Explicitly continue rather than ASSERT so that we run the other cases.
-    EXPECT_EQ(1U, problems.size());
-    if (problems.size() != 1) continue;
+        vector<ProblemRecord> problems =
+            validation_should_fail(program,
+                                   NACL_ARRAY_SIZE(program),
+                                   kDefaultBaseAddr,
+                                   message.str());
 
-    ProblemRecord first = problems[0];
-    EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr)
-        << "For bad mask after store, the problem must indicate the store: "
-        << invalid_masks[i].about;
-    EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety)
-        << "The store itself should decode as safe when used with bad mask: "
-        << invalid_masks[i].about;
-    EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeStore),
-              first.problem_code)
-        << "Problem code should complain about the store; bad mask: "
-        << invalid_masks[i].about;
+        // EXPECT/continue rather than ASSERT so that we run the other cases.
+        EXPECT_EQ(1U, problems.size());
+        if (problems.size() != 1) continue;
+
+        ProblemRecord first = problems[0];
+        EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr)
+            << "Problem report must point to the store: "
+            << message.str();
+        EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety)
+            << "Store should not be unsafe even though mask is bogus: "
+            << message.str();
+        EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeStore),
+                  first.problem_code)
+            << message;
+      }
+    }
+  }
+}
+
+TEST_F(ValidatorTests, InvalidConditionalStores) {
+  static const AnnotatedInstruction invalid_guards[] = {
+    { 0x03110100, "tst r1, #0: always sets Z" },
+    { 0x03110102, "tst r1, #0x80000000: doesn't test enough bits" },
+    { 0x031101C1, "tst r1, #0x70000000: doesn't test the right bits" },
+    { 0x01A01003, "mov r1, r3: not even a test" },
+    { 0x03310103, "teq r1, #0xC0000000: does the inverse of what we want" },
+    { 0x03510103, "cmp r1, #0xC0000000: does the inverse of what we want" },
+  };
+
+  /*
+   * We don't currently support conditional versions of the conditional guard.
+   *
+   * TODO(cbiffle): verify this in the test
+   */
+  static const arm_inst guard_predicate = 0xE0000000;  // unconditional
+  static const arm_inst store_predicate = 0x00000000;  // if-equal
+
+  for (unsigned m = 0; m < NACL_ARRAY_SIZE(invalid_guards); m++) {
+    for (unsigned s = 0; s < NACL_ARRAY_SIZE(examples_of_safe_stores); s++) {
+      ostringstream message;
+      message << invalid_guards[m].about
+              << ", "
+              << examples_of_safe_stores[s].about;
+      arm_inst program[] = {
+        invalid_guards[m].inst | guard_predicate,
+        examples_of_safe_stores[s].inst | store_predicate,
+      };
+
+      vector<ProblemRecord> problems =
+          validation_should_fail(program,
+                                 NACL_ARRAY_SIZE(program),
+                                 kDefaultBaseAddr,
+                                 message.str());
+
+      // EXPECT/continue rather than ASSERT so that we run the other cases.
+      EXPECT_EQ(1U, problems.size());
+      if (problems.size() != 1) continue;
+
+      ProblemRecord first = problems[0];
+      EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr)
+          << "Problem report must point to the store: "
+          << message.str();
+      EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety)
+          << "Store should not be unsafe even though guard is bogus: "
+          << message.str();
+      EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafeStore),
+                first.problem_code)
+          << message;
+    }
   }
 }
 
@@ -307,7 +453,7 @@ bool ValidatorTests::validate(const arm_inst *pattern,
 void ValidatorTests::validation_should_pass(const arm_inst *pattern,
                                             size_t inst_count,
                                             uint32_t base_addr,
-                                            const char * const msg) {
+                                            const string &msg) {
   // A couple sanity checks for correct usage.
   ASSERT_EQ(2U, inst_count)
       << "This routine only supports 2-instruction patterns.";
@@ -340,7 +486,7 @@ void ValidatorTests::validation_should_pass(const arm_inst *pattern,
 
   ProblemRecord first = problems[0];
   EXPECT_EQ(last_addr, first.vaddr)
-      << "Problem in valid pseudo-instruction ("
+      << "Problem in valid but mis-aligned pseudo-instruction ("
       << msg
       << ") must be reported at end of bundle";
   EXPECT_EQ(nacl_arm_dec::MAY_BE_SAFE, first.safety)
@@ -354,8 +500,7 @@ vector<ProblemRecord> ValidatorTests::validation_should_fail(
     const arm_inst *pattern,
     size_t inst_count,
     uint32_t base_addr,
-    const char * const msg1,
-    const char * const msg2) {
+    const string &msg) {
   /*
    * TODO(cbiffle): test at various overlapping and non-overlapping addresses,
    * like above.  Not that this is a spectacularly likely failure case, but
@@ -363,12 +508,12 @@ vector<ProblemRecord> ValidatorTests::validation_should_fail(
    */
   ProblemSpy spy;
   bool validation_result = validate(pattern, inst_count, base_addr, &spy);
-  EXPECT_FALSE(validation_result) << "Must fail: " << msg1 << msg2;
+  EXPECT_FALSE(validation_result) << "Expected to fail: " << msg;
 
   vector<ProblemRecord> problems = spy.get_problems();
   // Would use ASSERT here, but cannot ASSERT in non-void functions :-(
   EXPECT_NE(0U, problems.size())
-      << "Must report validation problems: " << msg1 << msg2;
+      << "Must report validation problems: " << msg;
 
   // The rest of the checking is done in the caller.
   return problems;
