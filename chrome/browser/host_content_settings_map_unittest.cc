@@ -586,9 +586,9 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifierPrefs) {
       switches::kEnableResourceContentSettings);
 
   TestingProfile profile;
-  profile.GetPrefs()->Set(prefs::kContentSettingsPatterns,
-      *base::JSONReader::Read(
+  scoped_ptr<Value> value(base::JSONReader::Read(
       "{\"[*.]example.com\":{\"per_plugin\":{\"someplugin\":2}}}", false));
+  profile.GetPrefs()->Set(prefs::kContentSettingsPatterns, *value);
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
 
