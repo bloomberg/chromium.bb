@@ -191,7 +191,7 @@ bool LiveSyncTest::SetupClients() {
         StringPrintf(FILE_PATH_LITERAL("Profile%d"), i)));
     EXPECT_FALSE(GetProfile(i) == NULL) << "GetProfile(" << i << ") failed.";
     clients_.push_back(new ProfileSyncServiceTestHarness(
-        GetProfile(i), username_, password_));
+        GetProfile(i), username_, password_, i));
     EXPECT_FALSE(GetClient(i) == NULL) << "GetClient(" << i << ") failed.";
   }
 

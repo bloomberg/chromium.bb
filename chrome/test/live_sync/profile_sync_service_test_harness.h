@@ -24,7 +24,7 @@ class Profile;
 class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
  public:
   ProfileSyncServiceTestHarness(Profile* p, const std::string& username,
-                                const std::string& password);
+                                const std::string& password, int id);
 
   // Creates a ProfileSyncService for the profile passed at construction and
   // enables sync.  Returns true only after sync has been fully initialized and
@@ -108,10 +108,12 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   virtual bool AwaitStatusChangeWithTimeout(int timeout_seconds,
                                             const std::string& reason);
 
-  // Returns true if the service initialized correctly.  Set
-  // is_auth_retry to true when calling this method second time after
-  // an autentication failure.
+  // Returns true if the service initialized correctly. Set is_auth_retry to
+  // true when calling this method second time after an authentication failure.
   bool WaitForServiceInit(bool is_auth_retry);
+
+  // Logs message with relevant info about client's sync state (if available).
+  void LogClientInfo(std::string message);
 
   WaitState wait_state_;
 
@@ -137,6 +139,9 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   // Credentials used for GAIA authentication.
   std::string username_;
   std::string password_;
+
+  // Client ID, used for logging purposes.
+  int id_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceTestHarness);
 };
