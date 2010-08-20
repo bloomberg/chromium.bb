@@ -57,7 +57,7 @@
     # We have to nest variables inside variables so that they can be overridden
     # through GYP_DEFINES.
     'variables': {
-      'use_accelerated_compositing%': 0,
+      'use_accelerated_compositing%': 1,
       'enable_svg%': 1,
       'enable_touch_events%': 1,
     },
@@ -65,7 +65,7 @@
     'enable_svg%': '<(enable_svg)',
     'enable_touch_events%': '<(enable_touch_events)',
     'conditions': [
-      ['OS=="win" or OS=="linux" or OS=="mac" or use_accelerated_compositing==1', {
+      ['(OS=="win" or OS=="linux" or OS=="mac") and use_accelerated_compositing==1', {
         'feature_defines': [
           'WTF_USE_ACCELERATED_COMPOSITING=1',
           'ENABLE_3D_RENDERING=1',
