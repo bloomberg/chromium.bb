@@ -20,7 +20,6 @@ namespace {
 
 // Not really constants.  Do not modify.  Use only after at least
 // one SrtSocket instance has been constructed.
-uintptr_t kSetOriginIdent;
 uintptr_t kStartModuleIdent;
 uintptr_t kLogIdent;
 uintptr_t kLoadModule;
@@ -31,8 +30,6 @@ void InitializeIdentifiers(plugin::BrowserInterface* browser_interface) {
   static bool initialized = false;
 
   if (!initialized) {  // branch likely
-    kSetOriginIdent =
-        browser_interface->StringToIdentifier("set_origin");
     kStartModuleIdent =
         browser_interface->StringToIdentifier("start_module");
     kLogIdent = browser_interface->StringToIdentifier("log");
@@ -57,28 +54,6 @@ SrtSocket::SrtSocket(ScriptableHandle* s, BrowserInterface* browser_interface)
 SrtSocket::~SrtSocket() {
   connected_socket_->Unref();
 }
-
-bool SrtSocket::SetOrigin(nacl::string origin) {
-  if (!(connected_socket()->HasMethod(kSetOriginIdent, METHOD_CALL))) {
-    PLUGIN_PRINTF(("No set_origin method was found\n"));
-    return false;
-  }
-  SrpcParams params;
-  bool success;
-  success = connected_socket()->InitParams(kSetOriginIdent,
-                                           METHOD_CALL,
-                                           &params);
-  if (!success) {
-    return false;
-  }
-
-  params.ins()[0]->u.sval = strdup(origin.c_str());
-  bool rpc_result = (connected_socket()->Invoke(kSetOriginIdent,
-                                                METHOD_CALL,
-                                                &params));
-  return rpc_result;
-}
-
 
 bool SrtSocket::LoadModule(NaClSrpcImcDescType desc) {
   if (!(connected_socket()->HasMethod(kLoadModule, METHOD_CALL))) {

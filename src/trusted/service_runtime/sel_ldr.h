@@ -164,7 +164,6 @@ struct NaClApp {
 
   struct NaClMutex          mu;
   struct NaClCondVar        cv;
-  char                      *origin;
   NaClErrorCode             module_load_status;
   int                       module_may_start;
 

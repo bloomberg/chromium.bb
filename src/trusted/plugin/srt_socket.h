@@ -24,7 +24,6 @@ class SrtSocket {
   SrtSocket(ScriptableHandle* s, BrowserInterface* browser_interface);
   ~SrtSocket();
 
-  bool SetOrigin(nacl::string origin);
   bool StartModule(int* load_status);
   bool LoadModule(NaClDesc* desc);
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)

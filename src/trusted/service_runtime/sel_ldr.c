@@ -84,7 +84,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
     goto cleanup_mu;
   }
 
-  nap->origin = (char *) NULL;
   nap->module_load_status = LOAD_STATUS_UNKNOWN;
   nap->module_may_start = 0;  /* only when secure_channel != NULL */
 
@@ -894,21 +893,6 @@ static NaClSrpcError NaClInitHandlePassingRpc(
 }
 #endif
 
-static NaClSrpcError NaClSecureChannelSetOriginRpc(
-    struct NaClSrpcChannel   *chan,
-    struct NaClSrpcArg       **in_args,
-    struct NaClSrpcArg       **out_args) {
-  struct NaClApp  *nap = (struct NaClApp *) chan->server_instance_data;
-
-  UNREFERENCED_PARAMETER(chan);
-  UNREFERENCED_PARAMETER(out_args);
-
-  free(nap->origin);
-  nap->origin = strdup(in_args[0]->u.sval);
-  NaClLog(4, "NaClSecureChannelSetOriginRpc: origin %s\n", nap->origin);
-  return NACL_SRPC_RESULT_OK;
-}
-
 static NaClSrpcError NaClSecureChannelStartModuleRpc(
     struct NaClSrpcChannel *chan,
     struct NaClSrpcArg     **in_args,
@@ -966,7 +950,6 @@ void WINAPI NaClSecureChannelThread(void *state) {
   static struct NaClSrpcHandlerDesc secure_handlers[] = {
     { "hard_shutdown::", NaClSecureChannelShutdownRpc, },
     { "start_module::i", NaClSecureChannelStartModuleRpc, },
-    { "set_origin:s:", NaClSecureChannelSetOriginRpc, },
     { "log:is:", NaClSecureChannelLog, },
     { "load_module:h:", NaClLoadModuleRpc, },
 #if NACL_WINDOWS && !defined(NACL_STANDALONE)

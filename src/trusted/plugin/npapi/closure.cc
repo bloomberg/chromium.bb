@@ -27,6 +27,53 @@
 
 struct NPObject;
 
+// In this file we perform the same-origin checks that the browser
+// normally performs for XMLHttpRequest because, with NPAPI, the
+// browser does not do these checks for us.
+// 
+// We do the same-origin check when an HTTP request completes, rather
+// than before sending the request.  Hence the same-origin policy only
+// impedes receiving data from other origins, not sending messages to
+// them.  Performing the origin check before the HTTP request is
+// difficult in the presence of redirects, and would not enforce much
+// given that sending messages across origins is possible using HTML
+// forms and <img> elements.
+//
+// When a plugin using NPAPI invokes NPP_GetURLNotify (on the behalf
+// of a NaCl module), it may provide a relative URL; even if it is not
+// a relative URL, 3xx redirects may change the source domain of the
+// actual web content as a side effect -- the 3xx redirects cause the
+// browser to make new HTTP connections, and the browser does not
+// notify the plugin as this is occurring.  However, when the browser
+// invokes NPN_NewStream and then either NPN_StreamAsFile or
+// NPP_WriteReady/NPP_Write to deliver the content, the NPStream
+// object contains the fully-qualified URL of the web content, after
+// redirections (if any).  This means that we should parse the FQ-URL
+// at NPN_NewStream or NPN_StreamAsFile, rather than try to
+// canonicalize the URL before passing it to NPP_GetURLNotify, since
+// we won't know the final FQ-URL at that point.
+//
+// This strategy also implies that we might allow any URL, e.g., a
+// tinyurl.com redirecting URL, to be used with NPP_GetURLNotify, and
+// allow the access if the final FQ-URL is the same domain.  This has
+// the hazard that we still are doing fetches to other domains
+// (including sending cookies specific to those domains), just not
+// making the results available to the NaCl module; the same thing
+// occurs if IMG SRC tags were scripted.
+//
+// A perhaps more important downside is that this is an easy way for
+// NaCl modules to leak information: the target web server is always
+// contacted, since we don't know if http://evil.org/leak?s3kr1t_inf0
+// might result in a 3xx redirect to an acceptable origin.  If we want
+// to prevent this, we could require that all URLs given to
+// NPP_GetURLNotify are either relative or are absolute with the same
+// origin as the module; this would prevent the scenario where an evil
+// module is hosted (e.g., in temporary upload directory that's
+// visible, or as a gmail attachment URL) at an innocent server to
+// extract confidential info and send it to third party servers.  An
+// explict network ACL a la /robots.txt might be useful to serve as an
+// ingress filter.
+
 namespace plugin {
 
 bool Closure::StartDownload() {
