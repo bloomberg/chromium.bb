@@ -46,18 +46,11 @@ cr.define('options', function() {
             }
           });
 
-
-      if(cr.isMac) {
-        $('showpasswords').onclick = function(event) {
-          //TODO(sargrass): Add the Mac implementation
-        }
-      } else {
-        $('showpasswords').onclick = function(event) {
-          PasswordsExceptions.load();
-          OptionsPage.showPageByName('passwordsExceptions');
-          OptionsPage.showTab($('passwords-nav-tab'));
-        };
-      }
+      $('showpasswords').onclick = function(event) {
+        PasswordsExceptions.load();
+        OptionsPage.showPageByName('passwordsExceptions');
+        OptionsPage.showTab($('passwords-nav-tab'));
+      };
 
       $('autofill_options').onclick = function(event) {
         OptionsPage.showPageByName('autoFillOptions');
