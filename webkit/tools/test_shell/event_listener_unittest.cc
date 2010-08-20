@@ -8,12 +8,12 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDOMEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDOMEventListener.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDOMMutationEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebEvent.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebEventListener.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMutationEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/tools/test_shell/test_shell.h"
@@ -25,7 +25,7 @@ namespace {
 using namespace WebKit;
 
 // This test exercices the event listener API from the WebKit API.
-class WebEventListenerTest : public TestShellTest {
+class WebDOMEventListenerTest : public TestShellTest {
  public:
   virtual void SetUp() {
     TestShellTest::SetUp();
@@ -63,36 +63,36 @@ class WebEventListenerTest : public TestShellTest {
   }
 };
 
-class TestWebEventListener : public WebEventListener {
+class TestWebDOMEventListener : public WebDOMEventListener {
  public:
-  TestWebEventListener() {}
-  virtual ~TestWebEventListener() {}
+  TestWebDOMEventListener() {}
+  virtual ~TestWebDOMEventListener() {}
 
-  virtual void handleEvent(const WebEvent& event) {
+  virtual void handleEvent(const WebDOMEvent& event) {
     events_.push_back(event);
   }
 
   size_t event_count() const { return events_.size(); }
 
-  WebEvent GetEventAt(int index) const { return events_.at(index); }
+  WebDOMEvent GetEventAt(int index) const { return events_.at(index); }
 
   void ClearEvents() { events_.clear(); }
 
  private:
-  std::vector<WebEvent> events_;
+  std::vector<WebDOMEvent> events_;
 };
 
 // Tests that the right mutation events are fired when a node is added/removed.
 // Note that the DOMSubtreeModified event is fairly vage, it only tells you
 // something changed for the target node.
-TEST_F(WebEventListenerTest, NodeAddedRemovedMutationEvent) {
-  TestWebEventListener event_listener;
+TEST_F(WebDOMEventListenerTest, NodeAddedRemovedMutationEvent) {
+  TestWebDOMEventListener event_listener;
   document().addEventListener("DOMSubtreeModified", &event_listener, false);
 
   // Test adding a node.
   ExecuteScript("addElement('newNode')");
   ASSERT_EQ(1U, event_listener.event_count());
-  WebEvent event = event_listener.GetEventAt(0);
+  WebDOMEvent event = event_listener.GetEventAt(0);
   ASSERT_TRUE(event.isMutationEvent());
   // No need to check any of the MutationEvent, WebKit does not set any.
   EXPECT_EQ("DIV", event.target().nodeName());
@@ -109,24 +109,24 @@ TEST_F(WebEventListenerTest, NodeAddedRemovedMutationEvent) {
 }
 
 // Tests the right mutation event is fired when a text node is modified.
-TEST_F(WebEventListenerTest, TextNodeModifiedMutationEvent) {
-  TestWebEventListener event_listener;
+TEST_F(WebDOMEventListenerTest, TextNodeModifiedMutationEvent) {
+  TestWebDOMEventListener event_listener;
   document().addEventListener("DOMSubtreeModified", &event_listener, false);
   ExecuteScript("changeText('div2', 'Hello')");
   ASSERT_EQ(1U, event_listener.event_count());
-  WebEvent event = event_listener.GetEventAt(0);
+  WebDOMEvent event = event_listener.GetEventAt(0);
   ASSERT_TRUE(event.isMutationEvent());
   ASSERT_EQ(WebNode::TextNode, event.target().nodeType());
 }
 
 // Tests the right mutation events are fired when an attribute is added/removed.
-TEST_F(WebEventListenerTest, AttributeMutationEvent) {
-  TestWebEventListener event_listener;
+TEST_F(WebDOMEventListenerTest, AttributeMutationEvent) {
+  TestWebDOMEventListener event_listener;
   document().addEventListener("DOMSubtreeModified", &event_listener, false);
   ExecuteScript("document.getElementById('div2').setAttribute('myAttr',"
                 "'some value')");
   ASSERT_EQ(1U, event_listener.event_count());
-  WebEvent event = event_listener.GetEventAt(0);
+  WebDOMEvent event = event_listener.GetEventAt(0);
   ASSERT_TRUE(event.isMutationEvent());
   EXPECT_EQ("DIV", event.target().nodeName());
   EXPECT_EQ("div2", GetNodeID(event.target()));
@@ -140,18 +140,19 @@ TEST_F(WebEventListenerTest, AttributeMutationEvent) {
   EXPECT_EQ("div2", GetNodeID(event.target()));
 }
 
-// Tests destroying WebEventListener and triggering events, we shouldn't crash.
-TEST_F(WebEventListenerTest, FireEventDeletedListener) {
-  TestWebEventListener*  event_listener = new TestWebEventListener();
+// Tests destroying WebDOMEventListener and triggering events, we shouldn't
+// crash.
+TEST_F(WebDOMEventListenerTest, FireEventDeletedListener) {
+  TestWebDOMEventListener*  event_listener = new TestWebDOMEventListener();
   document().addEventListener("DOMSubtreeModified", event_listener, false);
   delete event_listener;
   ExecuteScript("addElement('newNode')");  // That should fire an event.
 }
 
-// Tests registering several events on the same WebEventListener and triggering
-// events.
-TEST_F(WebEventListenerTest, SameListenerMultipleEvents) {
-  TestWebEventListener event_listener;
+// Tests registering several events on the same WebDOMEventListener and
+// triggering events.
+TEST_F(WebDOMEventListenerTest, SameListenerMultipleEvents) {
+  TestWebDOMEventListener event_listener;
   const WebString kDOMSubtreeModifiedType("DOMSubtreeModified");
   const WebString kDOMNodeRemovedType("DOMNodeRemoved");
   document().addEventListener(kDOMSubtreeModifiedType, &event_listener, false);
@@ -161,7 +162,7 @@ TEST_F(WebEventListenerTest, SameListenerMultipleEvents) {
   // Trigger a DOMSubtreeModified event by adding a node.
   ExecuteScript("addElement('newNode')");
   ASSERT_EQ(1U, event_listener.event_count());
-  WebEvent event = event_listener.GetEventAt(0);
+  WebDOMEvent event = event_listener.GetEventAt(0);
   ASSERT_TRUE(event.isMutationEvent());
   EXPECT_EQ("DIV", event.target().nodeName());
   EXPECT_EQ("topDiv", GetNodeID(event.target()));
@@ -180,8 +181,8 @@ TEST_F(WebEventListenerTest, SameListenerMultipleEvents) {
 }
 
 // Tests removing event listeners.
-TEST_F(WebEventListenerTest, RemoveEventListener) {
-  TestWebEventListener event_listener;
+TEST_F(WebDOMEventListenerTest, RemoveEventListener) {
+  TestWebDOMEventListener event_listener;
   const WebString kDOMSubtreeModifiedType("DOMSubtreeModified");
   // Adding twice the same listener for the same event, should be supported.
   document().addEventListener(kDOMSubtreeModifiedType, &event_listener, false);
@@ -193,15 +194,15 @@ TEST_F(WebEventListenerTest, RemoveEventListener) {
   event_listener.ClearEvents();
 
   // Remove one listener and trigger an event again.
-  document().removeEventListener(kDOMSubtreeModifiedType,
-                                 &event_listener, false);
+  document().removeEventListener(
+      kDOMSubtreeModifiedType, &event_listener, false);
   ExecuteScript("addElement('newerNode')");
   EXPECT_EQ(1U, event_listener.event_count());
   event_listener.ClearEvents();
 
   // Remove the last listener and trigger yet another event.
-  document().removeEventListener(kDOMSubtreeModifiedType,
-                                 &event_listener, false);
+  document().removeEventListener(
+      kDOMSubtreeModifiedType, &event_listener, false);
   ExecuteScript("addElement('newererNode')");
   EXPECT_EQ(0U, event_listener.event_count());
 }
