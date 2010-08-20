@@ -24,6 +24,7 @@ class ImportDataHandler : public OptionsPageUIHandler,
   virtual void RegisterMessages();
 
  private:
+  void LoadImporter(const ListValue* args);
   void DetectSupportedBrowsers();
   void ImportData(const ListValue* args);
 
@@ -34,7 +35,7 @@ class ImportDataHandler : public OptionsPageUIHandler,
   virtual void ImportEnded();
 
   // If non-null it means importing is in progress. ImporterHost takes care
-  // of deleting itself when done.import.
+  // of deleting itself when done import.
   scoped_refptr<ImporterHost> importer_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportDataHandler);

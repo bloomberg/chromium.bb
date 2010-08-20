@@ -109,6 +109,10 @@ cr.define('options', function() {
     },
   };
 
+  ImportDataOverlay.loadImporter = function() {
+    chrome.send('loadImporter');
+  };
+
   ImportDataOverlay.updateSupportedBrowsers = function(browsers) {
     ImportDataOverlay.getInstance().updateSupportedBrowsers_(browsers);
   };
@@ -141,8 +145,8 @@ cr.define('options', function() {
   };
 
   ImportDataOverlay.dismiss = function() {
-    OptionsPage.clearOverlays();
     ImportDataOverlay.setImportingState(false);
+    OptionsPage.clearOverlays();
   }
 
   // Export

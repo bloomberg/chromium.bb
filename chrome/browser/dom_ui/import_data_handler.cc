@@ -22,11 +22,13 @@ ImportDataHandler::ImportDataHandler() {
 }
 
 ImportDataHandler::~ImportDataHandler() {
+  if (importer_host_ != NULL) {
+    importer_host_->SetObserver(NULL);
+    importer_host_ = NULL;
+  }
 }
 
 void ImportDataHandler::Initialize() {
-  importer_host_ = new ImporterHost();
-  DetectSupportedBrowsers();
 }
 
 void ImportDataHandler::GetLocalizedValues(
@@ -54,7 +56,14 @@ void ImportDataHandler::GetLocalizedValues(
 
 void ImportDataHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback(
+      "loadImporter", NewCallback(this, &ImportDataHandler::LoadImporter));
+  dom_ui_->RegisterMessageCallback(
       "importData", NewCallback(this, &ImportDataHandler::ImportData));
+}
+
+void ImportDataHandler::LoadImporter(const ListValue* args) {
+  importer_host_ = new ImporterHost();
+  DetectSupportedBrowsers();
 }
 
 void ImportDataHandler::DetectSupportedBrowsers() {
@@ -120,4 +129,5 @@ void ImportDataHandler::ImportItemEnded(importer::ImportItem item) {
 
 void ImportDataHandler::ImportEnded() {
   dom_ui_->CallJavascriptFunction(L"ImportDataOverlay.dismiss");
+  importer_host_ = NULL;
 }

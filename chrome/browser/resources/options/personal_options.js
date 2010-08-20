@@ -68,7 +68,8 @@ cr.define('options', function() {
           OptionsPage.showOverlay('stopSyncingOverlay');
         };
         $('import_data').onclick = function(event) {
-            OptionsPage.showOverlay('importDataOverlay');
+          ImportDataOverlay.loadImporter();
+          OptionsPage.showOverlay('importDataOverlay');
         };
       }
 
