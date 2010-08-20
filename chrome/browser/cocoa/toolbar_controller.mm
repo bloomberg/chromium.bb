@@ -422,9 +422,6 @@ class NotificationBridge : public NotificationObserver {
     case IDC_FORWARD:
       button = forwardButton_;
       break;
-    case IDC_RELOAD:
-      button = reloadButton_;
-      break;
     case IDC_HOME:
       button = homeButton_;
       break;
@@ -438,7 +435,7 @@ class NotificationBridge : public NotificationObserver {
   [backButton_ setEnabled:commands->IsCommandEnabled(IDC_BACK) ? YES : NO];
   [forwardButton_
       setEnabled:commands->IsCommandEnabled(IDC_FORWARD) ? YES : NO];
-  [reloadButton_ setEnabled:commands->IsCommandEnabled(IDC_RELOAD) ? YES : NO];
+  [reloadButton_ setEnabled:YES];
   [homeButton_ setEnabled:commands->IsCommandEnabled(IDC_HOME) ? YES : NO];
 }
 
