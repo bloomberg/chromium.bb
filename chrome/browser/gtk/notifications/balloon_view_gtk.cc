@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -56,14 +57,6 @@ const int kRightMargin = 1;
 // balloon bottom.
 const int kShelfBorderTopOverlap = 0;
 
-// Properties of the dismiss button.
-const int kDismissButtonWidth = 60;
-const int kDismissButtonHeight = 20;
-
-// Properties of the options menu.
-const int kOptionsMenuWidth = 60;
-const int kOptionsMenuHeight = 20;
-
 // Properties of the origin label.
 const int kLeftLabelMargin = 8;
 
@@ -74,7 +67,7 @@ const int kTopShadowWidth = 0;
 const int kBottomShadowWidth = 0;
 
 // Space in pixels between text and icon on the buttons.
-const int kButtonIconSpacing = 10;
+const int kButtonSpacing = 4;
 
 // Number of characters to show in the origin label before ellipsis.
 const int kOriginLabelCharacters = 18;
@@ -82,7 +75,7 @@ const int kOriginLabelCharacters = 18;
 // The shelf height for the system default font size.  It is scaled
 // with changes in the default font size.
 const int kDefaultShelfHeight = 21;
-const int kShelfVerticalMargin = 3;
+const int kShelfVerticalMargin = 4;
 
 // The amount that the bubble collections class offsets from the side of the
 // screen.
@@ -262,11 +255,16 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   gtk_container_add(GTK_CONTAINER(label_alignment), source_label_);
   gtk_box_pack_start(GTK_BOX(hbox_), label_alignment, FALSE, FALSE, 0);
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
   // Create a button to dismiss the balloon and add it to the toolbar.
-  close_button_.reset(new CustomDrawButton(IDR_BALLOON_CLOSE,
-                                           IDR_BALLOON_CLOSE_HOVER,
-                                           IDR_BALLOON_CLOSE_HOVER,
-                                           0));
+  close_button_.reset(new CustomDrawButton(IDR_TAB_CLOSE,
+                                           IDR_TAB_CLOSE_P,
+                                           IDR_TAB_CLOSE_H,
+                                           IDR_TAB_CLOSE));
+  close_button_->SetBackground(SK_ColorBLACK,
+                               rb.GetBitmapNamed(IDR_TAB_CLOSE),
+                               rb.GetBitmapNamed(IDR_TAB_CLOSE_MASK));
   gtk_widget_set_tooltip_text(close_button_->widget(), dismiss_text.c_str());
   g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonThunk), this);
@@ -274,7 +272,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   GtkWidget* close_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(close_alignment),
                             kShelfVerticalMargin, kShelfVerticalMargin,
-                            0, kButtonIconSpacing);
+                            0, kButtonSpacing);
   gtk_container_add(GTK_CONTAINER(close_alignment), close_button_->widget());
   gtk_box_pack_end(GTK_BOX(hbox_), close_alignment, FALSE, FALSE, 0);
 
@@ -291,7 +289,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   GtkWidget* options_alignment = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
   gtk_alignment_set_padding(GTK_ALIGNMENT(options_alignment),
                             kShelfVerticalMargin, kShelfVerticalMargin,
-                            0, kButtonIconSpacing);
+                            0, kButtonSpacing);
   gtk_container_add(GTK_CONTAINER(options_alignment),
                     options_menu_button_->widget());
   gtk_box_pack_end(GTK_BOX(hbox_), options_alignment, FALSE, FALSE, 0);
