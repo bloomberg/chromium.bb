@@ -1090,7 +1090,7 @@ static bool GetTabById(int tab_id, Profile* profile,
 
 static std::string GetWindowTypeText(Browser::Type type) {
   // Note: for app popups, we report "app".
-  if ((type & Browser::TYPE_APP) != 0)
+  if ((type & Browser::TYPE_APP) != 0 || type == Browser::TYPE_EXTENSION_APP)
     return keys::kWindowTypeValueApp;
   if ((type & Browser::TYPE_POPUP) != 0)
     return keys::kWindowTypeValuePopup;

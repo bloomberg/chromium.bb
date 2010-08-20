@@ -172,7 +172,8 @@ bool BrowserHostsExtensionApp(Browser* browser,
   if (browser->profile() != profile)
      return false;
 
-  if (browser->type() != Browser::TYPE_APP_PANEL)
+  if (browser->type() != Browser::TYPE_EXTENSION_APP &&
+      browser->type() != Browser::TYPE_APP_PANEL)
     return false;
 
   if (browser->extension_app() != extension_app)
@@ -326,6 +327,8 @@ Browser* Browser::CreateForApp(const std::string& app_name,
 
   if (is_panel)
     type = TYPE_APP_PANEL;
+  else if (extension)
+    type = TYPE_EXTENSION_APP;
 
   Browser* browser = new Browser(type, profile);
   browser->app_name_ = app_name;
@@ -1174,16 +1177,16 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
   }
 
   if (!hide_ui_for_fullscreen) {
-    if (type() != TYPE_NORMAL)
+    if (type() != TYPE_NORMAL && type() != TYPE_EXTENSION_APP)
       features |= FEATURE_TITLEBAR;
 
-    if (type() == TYPE_NORMAL)
+    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
       features |= FEATURE_TABSTRIP;
 
-    if (type() == TYPE_NORMAL)
+    if (type() == TYPE_NORMAL || type() == TYPE_EXTENSION_APP)
       features |= FEATURE_TOOLBAR;
 
-    if ((type() & Browser::TYPE_APP) == 0)
+    if (type() != TYPE_EXTENSION_APP && (type() & Browser::TYPE_APP) == 0)
       features |= FEATURE_LOCATIONBAR;
   }
   return !!(features & feature);
@@ -2451,7 +2454,10 @@ void Browser::ToggleUseVerticalTabs() {
 }
 
 bool Browser::LargeIconsPermitted() const {
-  return false;
+  // We don't show the big icons in tabs for TYPE_EXTENSION_APP windows because
+  // for those windows, we already have a big icon in the top-left outside any
+  // tab. Having big tab icons too looks kinda redonk.
+  return TYPE_EXTENSION_APP != type();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
