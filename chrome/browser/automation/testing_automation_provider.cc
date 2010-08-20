@@ -5,11 +5,13 @@
 #include "chrome/browser/automation/testing_automation_provider.h"
 
 #include "base/command_line.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/login_prompt.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
@@ -124,7 +126,8 @@ class DeleteCookieTask : public Task {
 
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
-    : AutomationProvider(profile) {
+    : AutomationProvider(profile),
+      redirect_query_(0) {
   BrowserList::AddObserver(this);
   registrar_.Add(this, NotificationType::SESSION_END,
                  NotificationService::AllSources());
@@ -153,6 +156,20 @@ void TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         AutomationMsg_NavigateToURLBlockUntilNavigationsComplete,
         NavigateToURLBlockUntilNavigationsComplete)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsync, NavigationAsync)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NavigationAsyncWithDisposition,
+                        NavigationAsyncWithDisposition)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_GoBack, GoBack)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_GoForward, GoForward)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_Reload, Reload)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_SetAuth, SetAuth)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_CancelAuth, CancelAuth)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NeedsAuth, NeedsAuth)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_RedirectsFrom,
+                                    GetRedirectsFrom)
+    IPC_MESSAGE_HANDLER(AutomationMsg_BrowserWindowCount, GetBrowserWindowCount)
+    IPC_MESSAGE_HANDLER(AutomationMsg_NormalBrowserWindowCount,
+                        GetNormalBrowserWindowCount)
 
     IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
   IPC_END_MESSAGE_MAP()
@@ -334,6 +351,207 @@ void TestingAutomationProvider::NavigateToURLBlockUntilNavigationsComplete(
   AutomationMsg_NavigateToURL::WriteReplyParams(
       reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
   Send(reply_message);
+}
+
+void TestingAutomationProvider::NavigationAsync(int handle,
+                                                const GURL& url,
+                                                bool* status) {
+  NavigationAsyncWithDisposition(handle, url, CURRENT_TAB, status);
+}
+
+void TestingAutomationProvider::NavigationAsyncWithDisposition(
+    int handle,
+    const GURL& url,
+    WindowOpenDisposition disposition,
+    bool* status) {
+  *status = false;
+
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+
+    // Simulate what a user would do. Activate the tab and then navigate.
+    // We could allow navigating in a background tab in future.
+    Browser* browser = FindAndActivateTab(tab);
+
+    if (browser) {
+      // Don't add any listener unless a callback mechanism is desired.
+      // TODO(vibhor): Do this if such a requirement arises in future.
+      browser->OpenURL(url, GURL(), disposition, PageTransition::TYPED);
+      *status = true;
+    }
+  }
+}
+
+void TestingAutomationProvider::GoBack(int handle,
+                                       IPC::Message* reply_message) {
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    Browser* browser = FindAndActivateTab(tab);
+    if (browser && browser->command_updater()->IsCommandEnabled(IDC_BACK)) {
+      AddNavigationStatusListener(tab, reply_message, 1, false);
+      browser->GoBack(CURRENT_TAB);
+      return;
+    }
+  }
+
+  AutomationMsg_GoBack::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
+  Send(reply_message);
+}
+
+void TestingAutomationProvider::GoForward(int handle,
+                                          IPC::Message* reply_message) {
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    Browser* browser = FindAndActivateTab(tab);
+    if (browser && browser->command_updater()->IsCommandEnabled(IDC_FORWARD)) {
+      AddNavigationStatusListener(tab, reply_message, 1, false);
+      browser->GoForward(CURRENT_TAB);
+      return;
+    }
+  }
+
+  AutomationMsg_GoForward::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
+  Send(reply_message);
+}
+
+void TestingAutomationProvider::Reload(int handle,
+                                       IPC::Message* reply_message) {
+  if (tab_tracker_->ContainsHandle(handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(handle);
+    Browser* browser = FindAndActivateTab(tab);
+    if (browser && browser->command_updater()->IsCommandEnabled(IDC_RELOAD)) {
+      AddNavigationStatusListener(tab, reply_message, 1, false);
+      browser->Reload(CURRENT_TAB);
+      return;
+    }
+  }
+
+  AutomationMsg_Reload::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
+  Send(reply_message);
+}
+
+void TestingAutomationProvider::SetAuth(int tab_handle,
+                                        const std::wstring& username,
+                                        const std::wstring& password,
+                                        IPC::Message* reply_message) {
+  if (tab_tracker_->ContainsHandle(tab_handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
+
+    if (iter != login_handler_map_.end()) {
+      // If auth is needed again after this, assume login has failed.  This is
+      // not strictly correct, because a navigation can require both proxy and
+      // server auth, but it should be OK for now.
+      LoginHandler* handler = iter->second;
+      AddNavigationStatusListener(tab, reply_message, 1, false);
+      handler->SetAuth(username, password);
+      return;
+    }
+  }
+
+  AutomationMsg_SetAuth::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED);
+  Send(reply_message);
+}
+
+void TestingAutomationProvider::CancelAuth(int tab_handle,
+                                           IPC::Message* reply_message) {
+  if (tab_tracker_->ContainsHandle(tab_handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
+
+    if (iter != login_handler_map_.end()) {
+      // If auth is needed again after this, something is screwy.
+      LoginHandler* handler = iter->second;
+      AddNavigationStatusListener(tab, reply_message, 1, false);
+      handler->CancelAuth();
+      return;
+    }
+  }
+
+  AutomationMsg_CancelAuth::WriteReplyParams(
+      reply_message, AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED);
+  Send(reply_message);
+}
+
+void TestingAutomationProvider::NeedsAuth(int tab_handle, bool* needs_auth) {
+  *needs_auth = false;
+
+  if (tab_tracker_->ContainsHandle(tab_handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    LoginHandlerMap::iterator iter = login_handler_map_.find(tab);
+
+    if (iter != login_handler_map_.end()) {
+      // The LoginHandler will be in our map IFF the tab needs auth.
+      *needs_auth = true;
+    }
+  }
+}
+
+void TestingAutomationProvider::GetRedirectsFrom(int tab_handle,
+                                                 const GURL& source_url,
+                                                 IPC::Message* reply_message) {
+  DCHECK(!redirect_query_) << "Can only handle one redirect query at once.";
+  if (tab_tracker_->ContainsHandle(tab_handle)) {
+    NavigationController* tab = tab_tracker_->GetResource(tab_handle);
+    HistoryService* history_service =
+        tab->profile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
+
+    DCHECK(history_service) << "Tab " << tab_handle << "'s profile " <<
+                               "has no history service";
+    if (history_service) {
+      DCHECK(reply_message_ == NULL);
+      reply_message_ = reply_message;
+      // Schedule a history query for redirects. The response will be sent
+      // asynchronously from the callback the history system uses to notify us
+      // that it's done: OnRedirectQueryComplete.
+      redirect_query_ = history_service->QueryRedirectsFrom(
+          source_url, &consumer_,
+          NewCallback(this,
+                      &TestingAutomationProvider::OnRedirectQueryComplete));
+      return;  // Response will be sent when query completes.
+    }
+  }
+
+  // Send failure response.
+  std::vector<GURL> empty;
+  AutomationMsg_RedirectsFrom::WriteReplyParams(reply_message, false, empty);
+  Send(reply_message);
+}
+
+void TestingAutomationProvider::GetBrowserWindowCount(int* window_count) {
+  *window_count = static_cast<int>(BrowserList::size());
+}
+
+void TestingAutomationProvider::GetNormalBrowserWindowCount(int* window_count) {
+  *window_count = static_cast<int>(
+      BrowserList::GetBrowserCountForType(profile_, Browser::TYPE_NORMAL));
+}
+
+// TODO(brettw) change this to accept GURLs when history supports it
+void TestingAutomationProvider::OnRedirectQueryComplete(
+    HistoryService::Handle request_handle,
+    GURL from_url,
+    bool success,
+    history::RedirectList* redirects) {
+  DCHECK(request_handle == redirect_query_);
+  DCHECK(reply_message_ != NULL);
+
+  std::vector<GURL> redirects_gurl;
+  reply_message_->WriteBool(success);
+  if (success) {
+    for (size_t i = 0; i < redirects->size(); i++)
+      redirects_gurl.push_back(redirects->at(i));
+  }
+
+  IPC::ParamTraits<std::vector<GURL> >::Write(reply_message_, redirects_gurl);
+
+  Send(reply_message_);
+  redirect_query_ = 0;
+  reply_message_ = NULL;
 }
 
 void TestingAutomationProvider::OnBrowserAdded(const Browser* browser) {

@@ -53,10 +53,12 @@ class Extension;
 class ExtensionPortContainer;
 class ExtensionTestResultNotificationObserver;
 class ExternalTabContainer;
+class InitialLoadObserver;
 class LoginHandler;
 class MetricEventDurationObserver;
-class InitialLoadObserver;
+class NavigationController;
 class NavigationControllerRestoredObserver;
+class Profile;
 struct AutocompleteMatchData;
 
 namespace gfx {
@@ -166,11 +168,22 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
   scoped_ptr<AutomationTabTracker> tab_tracker_;
 
+  typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;
+  LoginHandlerMap login_handler_map_;
+
+  Profile* profile_;
+
+  // A pointer to reply message used when we do asynchronous processing in the
+  // message handler.
+  // TODO(phajdan.jr): Remove |reply_message_|, it is error-prone.
+  IPC::Message* reply_message_;
+
+  // Consumer for asynchronous history queries.
+  CancelableRequestConsumer consumer_;
+
  private:
   // IPC Message callbacks.
-  void GetBrowserWindowCount(int* window_count);
   void GetBrowserLocale(string16* locale);
-  void GetNormalBrowserWindowCount(int* window_count);
   void GetShowingAppModalDialog(bool* showing_dialog, int* dialog_button);
   void ClickAppModalDialogButton(int button, bool* success);
   void ShutdownSessionService(int handle, bool* result);
@@ -221,21 +234,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetTabIndex(int handle, int* tabstrip_index);
   void GetTabURL(int handle, bool* success, GURL* url);
   void HandleUnused(const IPC::Message& message, int handle);
-  void NavigationAsync(int handle, const GURL& url, bool* status);
-  void NavigationAsyncWithDisposition(int handle,
-                                      const GURL& url,
-                                      WindowOpenDisposition disposition,
-                                      bool* status);
-  void GoBack(int handle, IPC::Message* reply_message);
-  void GoForward(int handle, IPC::Message* reply_message);
-  void Reload(int handle, IPC::Message* reply_message);
-  void SetAuth(int tab_handle, const std::wstring& username,
-               const std::wstring& password, IPC::Message* reply_message);
-  void CancelAuth(int tab_handle, IPC::Message* reply_message);
-  void NeedsAuth(int tab_handle, bool* needs_auth);
-  void GetRedirectsFrom(int tab_handle,
-                        const GURL& source_url,
-                        IPC::Message* reply_message);
   void ExecuteJavascript(int handle,
                          const std::wstring& frame_xpath,
                          const std::wstring& script,
@@ -820,13 +818,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                             IPC::Message* reply_message);
 #endif
 
-  // Callback for history redirect queries.
-  virtual void OnRedirectQueryComplete(
-      HistoryService::Handle request_handle,
-      GURL from_url,
-      bool success,
-      history::RedirectList* redirects);
-
   // Returns the associated view for the tab handle passed in.
   // Returns NULL on failure.
   RenderViewHost* GetViewForTab(int tab_handle);
@@ -917,7 +908,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 #endif  // defined(OS_WIN)
 
   typedef ObserverList<NotificationObserver> NotificationObserverList;
-  typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;
   typedef std::map<int, ExtensionPortContainer*> PortContainerMap;
 
   scoped_ptr<IPC::ChannelProxy> channel_;
@@ -933,24 +923,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   scoped_ptr<AutomationWindowTracker> window_tracker_;
   scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;
   scoped_ptr<NavigationControllerRestoredObserver> restore_tracker_;
-  LoginHandlerMap login_handler_map_;
   PortContainerMap port_containers_;
   NotificationObserverList notification_observer_list_;
   scoped_refptr<AutomationResourceMessageFilter>
       automation_resource_message_filter_;
-
-  // Handle for an in-process redirect query. We expect only one redirect query
-  // at a time (we should have only one caller, and it will block while waiting
-  // for the results) so there is only one handle. When non-0, indicates a
-  // query in progress.
-  HistoryService::Handle redirect_query_;
-
-  // Consumer for asynchronous history queries.
-  CancelableRequestConsumer consumer_;
-
-  Profile* profile_;
-
-  IPC::Message* reply_message_;
 
   // Keep track of whether a popup menu has been opened since the last time
   // that StartTrackingPopupMenus has been called.
