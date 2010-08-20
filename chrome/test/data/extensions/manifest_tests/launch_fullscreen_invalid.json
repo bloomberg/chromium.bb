@@ -3,7 +3,6 @@
   "version": "1",
   "app": {
     "launch": {
-      "container": "window",
       "fullscreen": "true",
       "local_path": "bar.html"
     }

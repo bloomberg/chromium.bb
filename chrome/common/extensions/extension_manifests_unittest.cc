@@ -18,9 +18,9 @@
 
 namespace errors = extension_manifest_errors;
 
-class ManifestTest : public testing::Test {
+class ExtensionManifestTest : public testing::Test {
  public:
-  ManifestTest() : enable_apps_(true) {}
+  ExtensionManifestTest() : enable_apps_(true) {}
 
  protected:
   Extension* LoadExtension(const std::string& name,
@@ -76,7 +76,7 @@ class ManifestTest : public testing::Test {
   bool enable_apps_;
 };
 
-TEST_F(ManifestTest, AppsDisabledByDefault) {
+TEST_F(ExtensionManifestTest, AppsDisabledByDefault) {
 #if defined(OS_CHROMEOS)
   // On ChromeOS, apps are enabled by default.
   if (Extension::AppsAreEnabled())
@@ -87,19 +87,19 @@ TEST_F(ManifestTest, AppsDisabledByDefault) {
   LoadAndExpectError("launch_local_path.json", errors::kAppsNotEnabled);
 }
 
-TEST_F(ManifestTest, ValidApp) {
+TEST_F(ExtensionManifestTest, ValidApp) {
   scoped_ptr<Extension> extension(LoadAndExpectSuccess("valid_app.json"));
   ASSERT_EQ(2u, extension->web_extent().patterns().size());
   EXPECT_EQ("http://www.google.com/mail/*",
             extension->web_extent().patterns()[0].GetAsString());
   EXPECT_EQ("http://www.google.com/foobar/*",
             extension->web_extent().patterns()[1].GetAsString());
-  EXPECT_EQ(Extension::LAUNCH_WINDOW, extension->launch_container());
+  EXPECT_EQ(Extension::LAUNCH_TAB, extension->launch_container());
   EXPECT_EQ(false, extension->launch_fullscreen());
   EXPECT_EQ("http://www.google.com/mail/", extension->launch_web_url());
 }
 
-TEST_F(ManifestTest, AppWebUrls) {
+TEST_F(ExtensionManifestTest, AppWebUrls) {
   LoadAndExpectError("web_urls_wrong_type.json",
                      errors::kInvalidWebURLs);
   LoadAndExpectError("web_urls_invalid_1.json",
@@ -119,7 +119,7 @@ TEST_F(ManifestTest, AppWebUrls) {
             extension->web_extent().patterns()[0].GetAsString());
 }
 
-TEST_F(ManifestTest, AppBrowseUrls) {
+TEST_F(ExtensionManifestTest, AppBrowseUrls) {
   LoadAndExpectError("browse_urls_wrong_type.json",
                      errors::kInvalidBrowseURLs);
   LoadAndExpectError("browse_urls_invalid_1.json",
@@ -143,14 +143,11 @@ TEST_F(ManifestTest, AppBrowseUrls) {
             extension->browse_extent().patterns()[0].GetAsString());
 }
 
-TEST_F(ManifestTest, AppLaunchContainer) {
+TEST_F(ExtensionManifestTest, AppLaunchContainer) {
   scoped_ptr<Extension> extension;
 
   extension.reset(LoadAndExpectSuccess("launch_tab.json"));
   EXPECT_EQ(Extension::LAUNCH_TAB, extension->launch_container());
-
-  extension.reset(LoadAndExpectSuccess("launch_window.json"));
-  EXPECT_EQ(Extension::LAUNCH_WINDOW, extension->launch_container());
 
   extension.reset(LoadAndExpectSuccess("launch_panel.json"));
   EXPECT_EQ(Extension::LAUNCH_PANEL, extension->launch_container());
@@ -167,6 +164,8 @@ TEST_F(ManifestTest, AppLaunchContainer) {
   extension.reset(LoadAndExpectSuccess("launch_height.json"));
   EXPECT_EQ(480, extension->launch_height());
 
+  LoadAndExpectError("launch_window.json",
+                     errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_invalid_type.json",
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_invalid_value.json",
@@ -185,7 +184,7 @@ TEST_F(ManifestTest, AppLaunchContainer) {
                      errors::kInvalidLaunchHeight);
 }
 
-TEST_F(ManifestTest, AppLaunchURL) {
+TEST_F(ExtensionManifestTest, AppLaunchURL) {
   LoadAndExpectError("launch_path_and_url.json",
                      errors::kLaunchPathAndURLAreExclusive);
   LoadAndExpectError("launch_path_invalid_type.json",
@@ -208,7 +207,7 @@ TEST_F(ManifestTest, AppLaunchURL) {
             extension->GetFullLaunchURL());
 }
 
-TEST_F(ManifestTest, Override) {
+TEST_F(ExtensionManifestTest, Override) {
   LoadAndExpectError("override_newtab_and_history.json",
                      errors::kMultipleOverrides);
   LoadAndExpectError("override_invalid_page.json",
@@ -225,12 +224,12 @@ TEST_F(ManifestTest, Override) {
             extension->GetChromeURLOverrides().find("history")->second.spec());
 }
 
-TEST_F(ManifestTest, ChromeURLPermissionInvalid) {
+TEST_F(ExtensionManifestTest, ChromeURLPermissionInvalid) {
   LoadAndExpectError("permission_chrome_url_invalid.json",
       errors::kInvalidPermissionScheme);
 }
 
-TEST_F(ManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
+TEST_F(ExtensionManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
   LoadAndExpectError("permission_chrome_resources_url.json",
       errors::kInvalidPermissionScheme);
   std::string error;
@@ -242,12 +241,12 @@ TEST_F(ManifestTest, ChromeResourcesPermissionValidOnlyForComponents) {
   EXPECT_EQ("", error);
 }
 
-TEST_F(ManifestTest, ChromeURLContentScriptInvalid) {
+TEST_F(ExtensionManifestTest, ChromeURLContentScriptInvalid) {
   LoadAndExpectError("content_script_chrome_url_invalid.json",
       errors::kInvalidMatch);
 }
 
-TEST_F(ManifestTest, DevToolsExtensions) {
+TEST_F(ExtensionManifestTest, DevToolsExtensions) {
   LoadAndExpectError("devtools_extension_no_permissions.json",
       errors::kDevToolsExperimental);
   LoadAndExpectError("devtools_extension_url_invalid_type.json",
@@ -264,7 +263,7 @@ TEST_F(ManifestTest, DevToolsExtensions) {
   *CommandLine::ForCurrentProcess() = old_command_line;
 }
 
-TEST_F(ManifestTest, DisallowHybridApps) {
+TEST_F(ExtensionManifestTest, DisallowHybridApps) {
   LoadAndExpectError("disallow_hybrid_1.json",
                      errors::kHostedAppsCannotIncludeExtensionFeatures);
   LoadAndExpectError("disallow_hybrid_2.json",

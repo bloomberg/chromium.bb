@@ -7,7 +7,6 @@
       "http://www.google.com/foobar/"
     ],
     "launch": {
-      "container": "window",
       "web_url": "http://www.google.com/mail/"
     }
   },

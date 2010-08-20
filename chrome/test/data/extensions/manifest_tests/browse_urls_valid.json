@@ -3,7 +3,6 @@
   "version": "1",
   "app": {
     "launch": {
-      "container": "window",
       "web_url": "http://www.google.com/mail/"
     },
     "browse_urls": [

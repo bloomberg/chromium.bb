@@ -3,7 +3,7 @@
   "version": "1",
   "app": {
     "launch": {
-      "container": "window",
+      "container": "panel",
       "width": 640,
       "local_path": "bar.html"
     }

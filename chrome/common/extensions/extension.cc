@@ -669,8 +669,6 @@ bool Extension::LoadLaunchContainer(const DictionaryValue* manifest,
     launch_container_ = LAUNCH_PANEL;
   } else if (launch_container_string == values::kLaunchContainerTab) {
     launch_container_ = LAUNCH_TAB;
-  } else if (launch_container_string == values::kLaunchContainerWindow) {
-    launch_container_ = LAUNCH_WINDOW;
   } else {
     *error = errors::kInvalidLaunchContainer;
     return false;
