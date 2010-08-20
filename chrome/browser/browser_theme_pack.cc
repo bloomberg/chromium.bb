@@ -23,7 +23,7 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 14;
+const int kThemePackVersion = 15;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // int32_t. kHeaderID should always have the maximum value because we want the
@@ -126,21 +126,22 @@ PersistingImagesTable kPersistingImages[] = {
   { 27, IDR_RELOAD_H, NULL },
   { 28, IDR_RELOAD_P, NULL },
   { 29, IDR_STOP, NULL },
-  { 30, IDR_STOP_H, NULL },
-  { 31, IDR_STOP_P, NULL },
-  { 32, IDR_LOCATIONBG_C, NULL },
-  { 33, IDR_LOCATIONBG_L, NULL },
-  { 34, IDR_LOCATIONBG_R, NULL },
-  { 35, IDR_BROWSER_ACTIONS_OVERFLOW, NULL },
-  { 36, IDR_BROWSER_ACTIONS_OVERFLOW_H, NULL },
-  { 37, IDR_BROWSER_ACTIONS_OVERFLOW_P, NULL },
-  { 38, IDR_TOOLS, NULL },
-  { 39, IDR_TOOLS_H, NULL },
-  { 40, IDR_TOOLS_P, NULL },
-  { 41, IDR_MENU_DROPARROW, NULL },
-  { 42, IDR_THROBBER, NULL },
-  { 43, IDR_THROBBER_WAITING, NULL },
-  { 44, IDR_THROBBER_LIGHT, NULL },
+  { 30, IDR_STOP_D, NULL },
+  { 31, IDR_STOP_H, NULL },
+  { 32, IDR_STOP_P, NULL },
+  { 33, IDR_LOCATIONBG_C, NULL },
+  { 34, IDR_LOCATIONBG_L, NULL },
+  { 35, IDR_LOCATIONBG_R, NULL },
+  { 36, IDR_BROWSER_ACTIONS_OVERFLOW, NULL },
+  { 37, IDR_BROWSER_ACTIONS_OVERFLOW_H, NULL },
+  { 38, IDR_BROWSER_ACTIONS_OVERFLOW_P, NULL },
+  { 39, IDR_TOOLS, NULL },
+  { 40, IDR_TOOLS_H, NULL },
+  { 41, IDR_TOOLS_P, NULL },
+  { 42, IDR_MENU_DROPARROW, NULL },
+  { 43, IDR_THROBBER, NULL },
+  { 44, IDR_THROBBER_WAITING, NULL },
+  { 45, IDR_THROBBER_LIGHT, NULL },
 };
 
 int GetPersistentIDByName(const std::string& key) {

@@ -154,6 +154,7 @@ TEST_F(ReloadButtonTest, StopAfterReloadSet) {
   // Get to stop mode.
   [button_ setIsLoading:YES force:YES];
   EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_TRUE([button_ isEnabled]);
 
   // Expect the action once.
   [[mock_target expect] anAction:button_];
@@ -165,21 +166,23 @@ TEST_F(ReloadButtonTest, StopAfterReloadSet) {
   [NSApp postEvent:click.second atStart:YES];
   [button_ mouseDown:click.first];
   EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_TRUE([button_ isEnabled]);
 
   // Get back to stop mode.
   [button_ setIsLoading:YES force:YES];
   EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_TRUE([button_ isEnabled]);
 
-  // If hover prevented reload mode immediately taking effect, clicks
-  // should not send any action, but should still transition to reload
-  // mode.
+  // If hover prevented reload mode immediately taking effect, clicks should do
+  // nothing, because the button should be disabled.
   [button_ mouseEntered:nil];
   EXPECT_TRUE([button_ isMouseInside]);
   [button_ setIsLoading:NO force:NO];
   EXPECT_EQ([button_ tag], IDC_STOP);
+  EXPECT_FALSE([button_ isEnabled]);
   [NSApp postEvent:click.second atStart:YES];
   [button_ mouseDown:click.first];
-  EXPECT_EQ([button_ tag], IDC_RELOAD);
+  EXPECT_EQ([button_ tag], IDC_STOP);
 
   [button_ setTarget:nil];
 }

@@ -6,6 +6,7 @@
 
 #include "app/throb_animation.h"
 #include "base/keyboard_codes.h"
+#include "views/screen.h"
 
 namespace views {
 
@@ -71,8 +72,13 @@ bool CustomButton::GetAccessibleState(AccessibilityTypes::State* state) {
 }
 
 void CustomButton::SetEnabled(bool enabled) {
-  if (enabled ? (state_ == BS_DISABLED) : (state_ != BS_DISABLED))
-    SetState(enabled ? BS_NORMAL : BS_DISABLED);
+  if (enabled ? (state_ != BS_DISABLED) : (state_ == BS_DISABLED))
+    return;
+
+  if (enabled)
+    SetState(IsMouseHovered() ? BS_HOT : BS_NORMAL);
+  else
+    SetState(BS_DISABLED);
 }
 
 bool CustomButton::IsEnabled() const {
@@ -81,6 +87,17 @@ bool CustomButton::IsEnabled() const {
 
 bool CustomButton::IsFocusable() const {
   return (state_ != BS_DISABLED) && View::IsFocusable();
+}
+
+bool CustomButton::IsMouseHovered() const {
+  // If we haven't yet been placed in an onscreen view hierarchy, we can't be
+  // hovered.
+  if (!GetWidget())
+    return false;
+
+  gfx::Point cursor_pos(Screen::GetCursorScreenPoint());
+  ConvertPointToView(NULL, this, &cursor_pos);
+  return HitTest(cursor_pos);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

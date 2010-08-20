@@ -563,6 +563,8 @@ void ToolbarView::LoadImages() {
       tp->GetBitmapNamed(IDR_STOP_H));
   reload_->SetToggledImage(views::CustomButton::BS_PUSHED,
       tp->GetBitmapNamed(IDR_STOP_P));
+  reload_->SetToggledImage(views::CustomButton::BS_DISABLED,
+      tp->GetBitmapNamed(IDR_STOP_D));
 
   home_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_HOME));
   home_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_HOME_H));

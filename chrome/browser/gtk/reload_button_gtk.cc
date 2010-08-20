@@ -95,7 +95,7 @@ void ReloadButtonGtk::Observe(NotificationType type,
 }
 
 void ReloadButtonGtk::OnButtonTimer() {
-  ChangeMode(intended_mode_, true);
+  ChangeMode(intended_mode_, false);
 }
 
 void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
@@ -130,9 +130,6 @@ void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
       location_bar_->Revert();
     }
 
-    if (browser_)
-      browser_->ExecuteCommandWithDisposition(command, disposition);
-
     // Figure out the system double-click time.
     if (button_delay_ == 0) {
       GtkSettings* settings = gtk_settings_get_default();
@@ -142,11 +139,15 @@ void ReloadButtonGtk::OnClicked(GtkWidget* sender) {
 
     // Start a timer - while this timer is running, the reload button cannot be
     // changed to a stop button.  We do not set |intended_mode_| to MODE_STOP
-    // here as we want to wait for the browser to tell us that it has started
-    // loading (and this may occur only after some delay).
+    // here as the browser will do that when it actually starts loading (which
+    // may happen synchronously, thus the need to do this before telling the
+    // browser to execute the reload command).
     timer_.Stop();
     timer_.Start(base::TimeDelta::FromMilliseconds(button_delay_), this,
                  &ReloadButtonGtk::OnButtonTimer);
+
+    if (browser_)
+      browser_->ExecuteCommandWithDisposition(command, disposition);
   }
 }
 

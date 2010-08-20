@@ -455,8 +455,11 @@ void RootView::OnMouseReleased(const MouseEvent& e, bool canceled) {
 
 void RootView::OnMouseMoved(const MouseEvent& e) {
   View* v = GetViewForPoint(e.location());
-  // Find the first enabled view.
-  while (v && !v->IsEnabled())
+  // Find the first enabled view, or the existing move handler, whichever comes
+  // first.  The check for the existing handler is because if a view becomes
+  // disabled while handling moves, it's wrong to suddenly send ET_MOUSE_EXITED
+  // and ET_MOUSE_ENTERED events, because the mouse hasn't actually exited yet.
+  while (v && !v->IsEnabled() && (v != mouse_move_handler_))
     v = v->GetParent();
   if (v && v != this) {
     if (v != mouse_move_handler_) {

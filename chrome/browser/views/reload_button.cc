@@ -32,11 +32,18 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
   // If the change is forced, or the user isn't hovering the icon, or it's safe
   // to change it to the other image type, make the change immediately;
   // otherwise we'll let it happen later.
-  if (force || (state() != BS_HOT) || ((mode == MODE_STOP) ?
+  if (force || !IsMouseHovered() || ((mode == MODE_STOP) ?
       !timer_.IsRunning() : (visible_mode_ != MODE_STOP))) {
     timer_.Stop();
     SetToggled(mode == MODE_STOP);
     visible_mode_ = mode;
+    SetEnabled(true);
+
+  // We want to disable the button if we're preventing a change from stop to
+  // reload due to hovering, but not if we're preventing a change from reload to
+  // stop due to the timer running.  (There is no disabled reload state.)
+  } else if (visible_mode_ != MODE_RELOAD) {
+    SetEnabled(false);
   }
 }
 
@@ -74,17 +81,16 @@ void ReloadButton::ButtonPressed(views::Button* button,
       location_bar_->Revert();
     }
 
-    browser_->ExecuteCommandWithDisposition(command, disposition);
-
-    // Stop the timer.
-    timer_.Stop();
-
     // Start a timer - while this timer is running, the reload button cannot be
     // changed to a stop button.  We do not set |intended_mode_| to MODE_STOP
-    // here as we want to wait for the browser to tell us that it has started
-    // loading (and this may occur only after some delay).
+    // here as the browser will do that when it actually starts loading (which
+    // may happen synchronously, thus the need to do this before telling the
+    // browser to execute the reload command).
+    timer_.Stop();
     timer_.Start(base::TimeDelta::FromMilliseconds(GetDoubleClickTimeMS()),
                  this, &ReloadButton::OnButtonTimer);
+
+    browser_->ExecuteCommandWithDisposition(command, disposition);
   }
 }
 
@@ -107,5 +113,5 @@ bool ReloadButton::GetTooltipText(const gfx::Point& p, std::wstring* tooltip) {
 // ReloadButton, private:
 
 void ReloadButton::OnButtonTimer() {
-  ChangeMode(intended_mode_, true);
+  ChangeMode(intended_mode_, false);
 }

@@ -351,6 +351,7 @@
         <include name="IDR_STATUS_TRAY_ICON_PRESSED" file="chromium/product_logo_22.png" type="BINDATA" />
       </if>
       <include name="IDR_STOP" file="stop.png" type="BINDATA" />
+      <include name="IDR_STOP_D" file="stop_d.png" type="BINDATA" />
       <include name="IDR_STOP_H" file="stop_h.png" type="BINDATA" />
       <include name="IDR_STOP_P" file="stop_p.png" type="BINDATA" />
       <include name="IDR_TAB_ACTIVE_CENTER" file="tab_active_center.png" type="BINDATA" />
