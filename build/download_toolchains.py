@@ -83,10 +83,6 @@ def main(argv):
         options.base_url, version, flavor[0])
     parent_dir = os.path.dirname(os.path.dirname(__file__))
     dst = os.path.join(parent_dir, 'toolchain', flavor[1])
-    try:
-      shutil.rmtree(dst)
-    except OSError:
-      pass
     source_url_file = os.path.join(dst, 'SOURCE_URL')
     if version != 'latest':
       try:
@@ -97,10 +93,10 @@ def main(argv):
           return
       except IOError:
         pass
-
-    # Try to remove source url stamp (so failure triggers a retry).
     try:
-      os.remove(source_url_file)
+      # TODO(cbiffle): we really shouldn't do this until the unpack succeeds!
+      # See: http://code.google.com/p/nativeclient/issues/detail?id=834
+      shutil.rmtree(dst)
     except OSError:
       pass
 
