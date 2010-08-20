@@ -960,5 +960,5 @@
    Heapcheck:Leak
    fun:TestingProfile::CreateRequestContext
    fun:GoogleURLTrackerTest::CreateRequestContext
-   fun:GoogleURLTrackerTest_SearchCommitedAndUserSayNo_Test::TestBody
+   fun:GoogleURLTrackerTest*_Test::TestBody
 }
