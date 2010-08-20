@@ -78,29 +78,30 @@ static void GetV2Warnings(Extension* extension,
     warnings->push_back(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT2_WARNING_ALL_HOSTS));
   } else {
-    std::vector<URLPattern> hosts =
-        extension->GetEffectiveHostPermissions().patterns();
+    std::vector<std::string> hosts =
+        ExtensionInstallUI::GetDistinctHostsForDisplay(
+            extension->GetEffectiveHostPermissions().patterns());
     if (hosts.size() == 1) {
       warnings->push_back(
           l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_1_HOST,
-                                     UTF8ToUTF16(hosts.begin()->host())));
+                                     UTF8ToUTF16(hosts[0])));
     } else if (hosts.size() == 2) {
       warnings->push_back(
           l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_2_HOSTS,
-                                     UTF8ToUTF16(hosts.begin()->host()),
-                                     UTF8ToUTF16((++hosts.begin())->host())));
+                                     UTF8ToUTF16(hosts[0]),
+                                     UTF8ToUTF16(hosts[1])));
     } else if (hosts.size() == 3) {
       warnings->push_back(
           l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT2_WARNING_3_HOSTS,
-                                     UTF8ToUTF16(hosts.begin()->host()),
-                                     UTF8ToUTF16((++hosts.begin())->host()),
-                                     UTF8ToUTF16((++++hosts.begin())->host())));
+                                     UTF8ToUTF16(hosts[0]),
+                                     UTF8ToUTF16(hosts[1]),
+                                     UTF8ToUTF16(hosts[2])));
     } else if (hosts.size() >= 4) {
       warnings->push_back(
           l10n_util::GetStringFUTF16(
               IDS_EXTENSION_PROMPT2_WARNING_4_OR_MORE_HOSTS,
-              UTF8ToUTF16(hosts.begin()->host()),
-              UTF8ToUTF16((++hosts.begin())->host()),
+              UTF8ToUTF16(hosts[0]),
+              UTF8ToUTF16(hosts[1]),
               base::IntToString16(hosts.size() - 2)));
     }
   }
@@ -123,6 +124,22 @@ static void GetV2Warnings(Extension* extension,
 }
 
 }  // namespace
+
+std::vector<std::string> ExtensionInstallUI::GetDistinctHostsForDisplay(
+    const std::vector<URLPattern>& host_patterns) {
+  // Vector because we later want to access these by index.
+  std::vector<std::string> distinct_hosts;
+
+  for (size_t i = 0; i < host_patterns.size(); ++i) {
+    std::string candidate = host_patterns[i].host();
+    if (std::find(distinct_hosts.begin(), distinct_hosts.end(), candidate) ==
+                  distinct_hosts.end()) {
+      distinct_hosts.push_back(candidate);
+    }
+  }
+
+  return distinct_hosts;
+}
 
 ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
     : profile_(profile),
