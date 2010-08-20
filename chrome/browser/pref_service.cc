@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -80,6 +81,19 @@ void NotifyReadError(PrefService* pref, int message_id) {
 // static
 PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
                                             Profile* profile) {
+#if defined(OS_LINUX)
+  // We'd like to see what fraction of our users have the preferences
+  // stored on a network file system, as we've had no end of troubles
+  // with NFS/AFS.
+  // TODO(evanm): remove this once we've collected state.
+  file_util::FileSystemType fstype;
+  if (file_util::GetFileSystemType(pref_filename.DirName(), &fstype)) {
+    UMA_HISTOGRAM_ENUMERATION("PrefService.FileSystemType",
+                              static_cast<int>(fstype),
+                              file_util::FILE_SYSTEM_TYPE_COUNT);
+  }
+#endif
+
   return new PrefService(
       PrefValueStore::CreatePrefValueStore(pref_filename, profile, false));
 }
