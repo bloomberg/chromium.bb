@@ -20,6 +20,7 @@
 #include "base/nss_util.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -239,7 +240,6 @@ TEST_F(OwnerManagerTest, LoadOwnerKey) {
 }
 
 TEST_F(OwnerManagerTest, TakeOwnershipAlreadyOwned) {
-
   EXPECT_CALL(*mock_, GetOwnerKeyFilePath())
       .WillRepeatedly(Return(tmpfile_));
 
