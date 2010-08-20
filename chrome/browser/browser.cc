@@ -119,6 +119,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/views/app_launcher.h"
 #endif
 
@@ -669,7 +670,7 @@ void Browser::OpenHelpWindow(Profile* profile) {
 
 void Browser::OpenOptionsWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
-  browser->ShowOptionsTab();
+  browser->ShowOptionsTab(chrome::kDefaultOptionsSubPage);
   browser->window()->Show();
 }
 #endif
@@ -1805,9 +1806,10 @@ void Browser::ShowBrokenPageTab(TabContents* contents) {
   ShowSingletonTab(GURL(report_page_url));
 }
 
-void Browser::ShowOptionsTab() {
-  UserMetrics::RecordAction(UserMetricsAction("ShowOptions"), profile_);
-  ShowSingletonTab(GURL(chrome::kChromeUIOptionsURL));
+void Browser::ShowOptionsTab(const char* sub_page) {
+  ShowSingletonTab(GURL(StringPrintf("%s%s",
+                                     chrome::kChromeUIOptionsURL,
+                                     sub_page)));
 }
 
 void Browser::OpenClearBrowsingDataDialog() {
@@ -1817,18 +1819,23 @@ void Browser::OpenClearBrowsingDataDialog() {
 }
 
 void Browser::OpenOptionsDialog() {
+  UserMetrics::RecordAction(UserMetricsAction("ShowOptions"), profile_);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableTabbedOptions)) {
-    ShowOptionsTab();
+    ShowOptionsTab(chrome::kDefaultOptionsSubPage);
   } else {
-    UserMetrics::RecordAction(UserMetricsAction("ShowOptions"), profile_);
     ShowOptionsWindow(OPTIONS_PAGE_DEFAULT, OPTIONS_GROUP_NONE, profile_);
   }
 }
 
 void Browser::OpenKeywordEditor() {
   UserMetrics::RecordAction(UserMetricsAction("EditSearchEngines"), profile_);
-  window_->ShowSearchEnginesDialog();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    ShowOptionsTab(chrome::kSearchEnginesOptionsSubPage);
+  } else {
+    window_->ShowSearchEnginesDialog();
+  }
 }
 
 void Browser::OpenPasswordManager() {
@@ -1889,17 +1896,50 @@ void Browser::OpenAutoFillHelpTabAndActivate() {
   window_->Activate();
 }
 
+void Browser::OpenSearchEngineOptionsDialog() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    OpenKeywordEditor();
+  } else {
+    ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
+                      profile_);
+  }
+}
+
 #if defined(OS_CHROMEOS)
 void Browser::OpenSystemOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenSystemOptionsDialog"),
                             profile_);
-  ShowOptionsWindow(OPTIONS_PAGE_SYSTEM, OPTIONS_GROUP_NONE, profile_);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    ShowOptionsTab(chrome::kSystemOptionsSubPage);
+  } else {
+    ShowOptionsWindow(OPTIONS_PAGE_SYSTEM, OPTIONS_GROUP_NONE,
+                      profile_);
+  }
 }
 
 void Browser::OpenInternetOptionsDialog() {
   UserMetrics::RecordAction(UserMetricsAction("OpenInternetOptionsDialog"),
                             profile_);
-  ShowOptionsWindow(OPTIONS_PAGE_INTERNET, OPTIONS_GROUP_NONE, profile_);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    ShowOptionsTab(chrome::kInternetOptionsSubPage);
+  } else {
+    ShowOptionsWindow(OPTIONS_PAGE_INTERNET, OPTIONS_GROUP_DEFAULT_SEARCH,
+                      profile_);
+  }
+}
+
+void Browser::OpenLanguageOptionsDialog() {
+  UserMetrics::RecordAction(UserMetricsAction("OpenLanguageOptionsDialog"),
+                            profile_);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTabbedOptions)) {
+    ShowOptionsTab(chrome::kLanguageOptionsSubPage);
+  } else {
+    chromeos::LanguageConfigView::Show(profile_, NULL);
+  }
 }
 #endif
 
@@ -2164,6 +2204,7 @@ void Browser::ExecuteCommandWithDisposition(
 #if defined(OS_CHROMEOS)
     case IDC_SYSTEM_OPTIONS:        OpenSystemOptionsDialog();        break;
     case IDC_INTERNET_OPTIONS:      OpenInternetOptionsDialog();      break;
+    case IDC_LANGUAGE_OPTIONS:      OpenLanguageOptionsDialog();      break;
 #endif
 
     default:

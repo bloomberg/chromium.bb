@@ -264,6 +264,7 @@
 #define IDC_VIEW_MENU                   44000     // OSX only
 #define IDC_SYSTEM_OPTIONS              45000     // ChromeOS only
 #define IDC_INTERNET_OPTIONS            45100     // ChromeOS only
+#define IDC_LANGUAGE_OPTIONS            45200     // ChromeOS only
 #define IDC_HISTORY_MENU                46000     // OSX only
 #define IDC_INPUT_METHODS_MENU          46300     // Linux only
 

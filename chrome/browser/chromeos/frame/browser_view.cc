@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
-#include "chrome/browser/chromeos/options/language_config_view.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/chromeos/status/language_menu_button.h"
 #include "chrome/browser/chromeos/status/network_menu_button.h"
@@ -384,8 +383,7 @@ void BrowserView::OpenButtonOptions(const views::View* button_view) const {
   if (button_view == status_area_->network_view()) {
     browser()->OpenInternetOptionsDialog();
   } else if (button_view == status_area_->language_view()) {
-    LanguageConfigView::Show(GetProfile(),
-                             frame()->GetWindow()->GetNativeWindow());
+    browser()->OpenLanguageOptionsDialog();
   } else {
     browser()->OpenSystemOptionsDialog();
   }

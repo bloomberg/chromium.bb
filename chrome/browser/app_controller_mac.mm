@@ -50,6 +50,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
@@ -971,7 +972,7 @@ void RecordLastRunAppBundlePath() {
   if (parsed_command_line.HasSwitch(switches::kEnableTabbedOptions)) {
     if (Browser* browser = ActivateBrowser([self defaultProfile])) {
       // Show options tab in the active browser window.
-      browser->ShowOptionsTab();
+      browser->ShowOptionsTab(chrome::kDefaultOptionsSubPage);
     } else {
       // No browser window, so create one for the options tab.
       Browser::OpenOptionsWindow([self defaultProfile]);

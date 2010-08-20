@@ -8,10 +8,12 @@
 
 #include "app/gtk_util.h"
 #include "app/l10n_util.h"
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#include "chrome/browser/options_window.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/common/notification_service.h"
 #include "gfx/gtk_util.h"
@@ -171,10 +173,11 @@ void FirstRunBubble::HandleDestroy(GtkWidget* sender) {
 
 void FirstRunBubble::HandleKeepButton(GtkWidget* sender) {
   bubble_->Close();
-
 }
+
 void FirstRunBubble::HandleChangeButton(GtkWidget* sender) {
   bubble_->Close();
-  ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
-                    profile_);
+  Browser* browser = BrowserList::GetLastActive();
+  DCHECK(browser);
+  browser->OpenSearchEngineOptionsDialog();
 }

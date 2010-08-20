@@ -522,7 +522,7 @@ class Browser : public TabStripModelDelegate,
   void ShowDownloadsTab();
   void ShowExtensionsTab();
   void ShowBrokenPageTab(TabContents* contents);
-  void ShowOptionsTab();
+  void ShowOptionsTab(const char* sub_page);
   void OpenClearBrowsingDataDialog();
   void OpenOptionsDialog();
   void OpenKeywordEditor();
@@ -539,9 +539,11 @@ class Browser : public TabStripModelDelegate,
   void OpenThemeGalleryTabAndActivate();
   void OpenAutoFillHelpTabAndActivate();
   void OpenPrivacyDashboardTabAndActivate();
+  void OpenSearchEngineOptionsDialog();
 #if defined(OS_CHROMEOS)
-  void OpenSystemOptionsDialog();
   void OpenInternetOptionsDialog();
+  void OpenLanguageOptionsDialog();
+  void OpenSystemOptionsDialog();
 #endif
 
   virtual void UpdateDownloadShelfVisibility(bool visible);

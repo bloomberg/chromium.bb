@@ -114,6 +114,17 @@ const char kCloudPrintResourcesHost[] = "cloudprintresources";
 const char kNetworkViewInternalsURL[] = "chrome://net-internals/";
 const char kNetworkViewCacheURL[] = "chrome://view-http-cache/";
 
+// Option sub pages.
+const char kDefaultOptionsSubPage[] =  "";
+const char kBrowserOptionsSubPage[] =  "browser";
+const char kAdvancedOptionsSubPage[] =  "advanced";
+const char kSearchEnginesOptionsSubPage[] = "searchEngines";
+#if defined(OS_CHROMEOS)
+const char kSystemOptionsSubPage[] = "system";
+const char kLanguageOptionsSubPage[] = "language";
+const char kInternetOptionsSubPage[] = "internet";
+#endif
+
 void RegisterChromeSchemes() {
   // Don't need "chrome-internal" which was used in old versions of Chrome for
   // the new tab page.

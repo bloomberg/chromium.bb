@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/options_window.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "grit/chromium_strings.h"
@@ -149,10 +148,10 @@ void FirstRunBubbleView::ButtonPressed(views::Button* sender,
     UserMetrics::RecordAction(
                     UserMetricsAction("FirstRunBubbleView_ChangeButton"),
                     profile_);
+
     Browser* browser = BrowserList::GetLastActive();
     if (browser) {
-      ShowOptionsWindow(OPTIONS_PAGE_GENERAL, OPTIONS_GROUP_DEFAULT_SEARCH,
-                        browser->profile());
+      browser->OpenSearchEngineOptionsDialog();
     }
   }
 }

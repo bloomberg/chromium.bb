@@ -112,6 +112,17 @@ extern const char kCloudPrintResourcesHost[];
 extern const char kNetworkViewCacheURL[];
 extern const char kNetworkViewInternalsURL[];
 
+// Options sub-pages.
+extern const char kDefaultOptionsSubPage[];
+extern const char kBrowserOptionsSubPage[];
+extern const char kAdvancedOptionsSubPage[];
+extern const char kSearchEnginesOptionsSubPage[];
+#if defined(OS_CHROMEOS)
+extern const char kSystemOptionsSubPage[];
+extern const char kLanguageOptionsSubPage[];
+extern const char kInternetOptionsSubPage[];
+#endif
+
 // Call near the beginning of startup to register Chrome's internal URLs that
 // should be parsed as "standard" with the googleurl library.
 void RegisterChromeSchemes();
