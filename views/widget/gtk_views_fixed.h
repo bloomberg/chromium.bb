@@ -9,10 +9,11 @@
 #include <gdk/gdk.h>
 #include <gtk/gtkfixed.h>
 
-// GtkViewsFixed is a subclass of GtkFixed that can give child widgets their
-// current size rather than their requested size. This behavior is controlled
-// by gtk_views_fixed_set_use_allocated_size; the default is to use the
-// Widget's requested size.
+// GtkViewsFixed is a subclass of GtkFixed that can give child widgets
+// a set size rather than their requisitioned size (which is actually
+// a minimum size, and that can cause issues). This behavior is
+// controlled by gtk_views_fixed_set_widget_size; the default is to
+// use the Widget's requisitioned size.
 
 G_BEGIN_DECLS
 
@@ -43,7 +44,12 @@ GtkWidget* gtk_views_fixed_new();
 
 GType gtk_views_fixed_get_type();
 
-void gtk_views_fixed_set_use_allocated_size(GtkWidget* widget, bool value);
+// If width and height are 0, go back to using the requisitioned size.
+// Queues up a re-size on the widget.
+void gtk_views_fixed_set_widget_size(GtkWidget* widget, int width, int height);
+
+bool gtk_views_fixed_get_widget_size(GtkWidget* widget,
+                                     int* width, int* height);
 
 G_END_DECLS
 

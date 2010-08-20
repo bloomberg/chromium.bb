@@ -163,8 +163,7 @@ void DraggedTabView::PaintDetachedView(gfx::Canvas* canvas) {
   int image_x = kDragFrameBorderSize;
   int image_y = tab_size_.height();
   int image_w = ps.width() - kTwiceDragFrameBorderSize;
-  int image_h =
-      ps.height() - kTwiceDragFrameBorderSize - tab_size_.height();
+  int image_h = contents_size_.height();
   scale_canvas.FillRectInt(SK_ColorBLACK, image_x, image_y, image_w, image_h);
   photobooth_->PaintScreenshotIntoCanvas(
       &scale_canvas,

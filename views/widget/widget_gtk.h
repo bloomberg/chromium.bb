@@ -149,6 +149,11 @@ class WidgetGtk
   // Returns the RootView for |widget|.
   static RootView* GetRootViewForWidget(GtkWidget* widget);
 
+  // Gets the requested size of the widget.  This can be the size
+  // stored in properties for a GtkViewsFixed, or in the requisitioned
+  // size of other kinds of widgets.
+  void GetRequestedSize(gfx::Size* out) const;
+
   // Overriden from ActiveWindowWatcherX::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
 

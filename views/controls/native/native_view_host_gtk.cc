@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/focus/focus_manager.h"
+#include "views/widget/gtk_views_fixed.h"
 #include "views/widget/widget_gtk.h"
 
 namespace views {
@@ -228,12 +229,15 @@ void NativeViewHostGtk::ShowWidget(int x, int y, int w, int h) {
     fixed_h = std::min(installed_clip_bounds_.height(), h);
   }
 
+  // Don't call gtk_widget_size_allocate now, as we're possibly in the
+  // middle of a re-size, and it kicks off another re-size, and you
+  // get flashing.  Instead, we'll set the desired size as properties
+  // on the widget and queue the re-size.
+  gtk_views_fixed_set_widget_size(host_->native_view(), child_w, child_h);
+  gtk_fixed_move(GTK_FIXED(fixed_), host_->native_view(), child_x, child_y);
+
   // Size and place the fixed_.
   GetHostWidget()->PositionChild(fixed_, fixed_x, fixed_y, fixed_w, fixed_h);
-
-  // Size and place the hosted NativeView.
-  gtk_widget_set_size_request(host_->native_view(), child_w, child_h);
-  gtk_fixed_move(GTK_FIXED(fixed_), host_->native_view(), child_x, child_y);
 
   gtk_widget_show(fixed_);
   gtk_widget_show(host_->native_view());
@@ -272,7 +276,7 @@ void NativeViewHostGtk::CreateFixed(bool needs_window) {
 
   DestroyFixed();
 
-  fixed_ = gtk_fixed_new();
+  fixed_ = gtk_views_fixed_new();
   gtk_widget_set_name(fixed_, "views-native-view-host-fixed");
   gtk_fixed_set_has_window(GTK_FIXED(fixed_), needs_window);
   // Defeat refcounting. We need to own the fixed.

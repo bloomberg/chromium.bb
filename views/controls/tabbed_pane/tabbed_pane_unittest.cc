@@ -32,6 +32,10 @@ class TabbedPaneTest : public testing::Test, WindowDelegate {
 
   TabbedPane* tabbed_pane_;
 
+  void RunAllPending() {
+    message_loop_.RunAllPending();
+  }
+
  private:
   virtual void SetUp() {
     tabbed_pane_ = new TabbedPane();
@@ -69,6 +73,7 @@ TEST_F(TabbedPaneTest, SizeAndLayout) {
 
   // The bounds of our children should be smaller than the tabbed pane's bounds.
   tabbed_pane_->SetBounds(0, 0, 100, 200);
+  RunAllPending();
   gfx::Rect bounds(child1->bounds());
   EXPECT_GT(bounds.width(), 0);
   EXPECT_LT(bounds.width(), 100);

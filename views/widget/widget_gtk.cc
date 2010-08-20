@@ -331,7 +331,7 @@ void WidgetGtk::RemoveChild(GtkWidget* child) {
   // closed.
   if (GTK_IS_CONTAINER(window_contents_)) {
     gtk_container_remove(GTK_CONTAINER(window_contents_), child);
-    gtk_views_fixed_set_use_allocated_size(child, false);
+    gtk_views_fixed_set_widget_size(child, 0, 0);
   }
 }
 
@@ -340,9 +340,7 @@ void WidgetGtk::ReparentChild(GtkWidget* child) {
 }
 
 void WidgetGtk::PositionChild(GtkWidget* child, int x, int y, int w, int h) {
-  GtkAllocation alloc = { x, y, w, h };
-  gtk_widget_size_allocate(child, &alloc);
-  gtk_views_fixed_set_use_allocated_size(child, true);
+  gtk_views_fixed_set_widget_size(child, w, h);
   gtk_fixed_move(GTK_FIXED(window_contents_), child, x, y);
 }
 
@@ -427,6 +425,18 @@ void WidgetGtk::ResetDropTarget() {
 RootView* WidgetGtk::GetRootViewForWidget(GtkWidget* widget) {
   gpointer user_data = g_object_get_data(G_OBJECT(widget), "root-view");
   return static_cast<RootView*>(user_data);
+}
+
+void WidgetGtk::GetRequestedSize(gfx::Size* out) const {
+  int width, height;
+  if (GTK_IS_VIEWS_FIXED(widget_) &&
+      gtk_views_fixed_get_widget_size(GetNativeView(), &width, &height)) {
+    out->SetSize(width, height);
+  } else {
+    GtkRequisition requisition;
+    gtk_widget_get_child_requisition(GetNativeView(), &requisition);
+    out->SetSize(requisition.width, requisition.height);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
