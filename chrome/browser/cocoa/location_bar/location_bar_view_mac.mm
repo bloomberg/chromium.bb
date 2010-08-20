@@ -101,11 +101,13 @@ LocationBarViewMac::~LocationBarViewMac() {
 }
 
 void LocationBarViewMac::ShowFirstRunBubble(FirstRun::BubbleType bubble_type) {
+  // Disabled for chrome 6: http://crbug.com/52726
+
   // We need the browser window to be shown before we can show the bubble, but
   // we get called before that's happened.
-  Task* task = first_run_bubble_.NewRunnableMethod(
-      &LocationBarViewMac::ShowFirstRunBubbleInternal, bubble_type);
-  MessageLoop::current()->PostTask(FROM_HERE, task);
+  //Task* task = first_run_bubble_.NewRunnableMethod(
+  //    &LocationBarViewMac::ShowFirstRunBubbleInternal, bubble_type);
+  //MessageLoop::current()->PostTask(FROM_HERE, task);
 }
 
 void LocationBarViewMac::ShowFirstRunBubbleInternal(
