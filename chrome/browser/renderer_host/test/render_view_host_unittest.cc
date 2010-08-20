@@ -23,6 +23,37 @@ TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   rvh()->CreateNewFullscreenWidget(routing_id, WebKit::WebPopupTypeNone);
 }
 
+// Makes sure that RenderViewHost::is_waiting_for_unload_ack_ is false when
+// reloading a page. If is_waiting_for_unload_ack_ is not false when reloading
+// the tab may get closed out even though the user pressed the reload button.
+TEST_F(RenderViewHostTest, ResetUnloadOnReload) {
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+
+  // This test is for a subtle timing bug. Here's the sequence that triggered
+  // the bug:
+  // . go to a page.
+  // . go to a new page, preferably one that takes a while to resolve, such
+  //   as one on a site that doesn't exist.
+  //   . After this step is_waiting_for_unload_ack_ has been set to true on
+  //     the first RVH.
+  // . click stop before the page has been commited.
+  // . click reload.
+  //   . is_waiting_for_unload_ack_ is still true, and the if the hang monitor
+  //     fires the tab gets closed.
+
+  NavigateAndCommit(url1);
+  controller().LoadURL(url2, GURL(), 0);
+  // Simulate the ClosePage call which is normally sent by the URLRequest.
+  rvh()->ClosePage(true, 0, 0);
+  // Needed so that navigations are not suspended on the RVH. Normally handled
+  // by way of ViewHostMsg_ShouldClose_ACK.
+  contents()->render_manager()->ShouldClosePage(true, true);
+  contents()->Stop();
+  controller().Reload(false);
+  EXPECT_FALSE(rvh()->is_waiting_for_unload_ack());
+}
+
 // The test that follow trigger DCHECKS in debug build.
 #if defined(NDEBUG)
 

@@ -238,6 +238,10 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
     DCHECK(!suspended_nav_message_.get());
     suspended_nav_message_.reset(nav_message);
   } else {
+    // Unset this, otherwise if true and the hang monitor fires we'll
+    // incorrectly close the tab.
+    is_waiting_for_unload_ack_ = false;
+
     Send(nav_message);
 
     // Force the throbber to start. We do this because WebKit's "started

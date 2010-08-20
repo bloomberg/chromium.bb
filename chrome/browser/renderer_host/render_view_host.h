@@ -474,6 +474,11 @@ class RenderViewHost : public RenderWidgetHost {
   // in render_messages.h.
   void EnablePreferredSizeChangedMode(int flags);
 
+#if defined(UNIT_TEST)
+  // This shouldn't be necessary outside of testing.
+  bool is_waiting_for_unload_ack() { return is_waiting_for_unload_ack_; }
+#endif
+
  protected:
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
