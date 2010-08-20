@@ -58,21 +58,11 @@ def AddCoverageSetup(env):
   else:
     stop = []
 
-  # start must happen before tests run, stop must happen after.
-  for group in env.SubstList2('$COVERAGE_TARGETS'):
-    group_alias = env.Alias(group)
-    # Force each alias to happen after start but before stop.
-    env.Requires(group_alias, start)
-    env.Requires(stop, group_alias)
-    # Force each source of the aliases to happen after start but before stop.
-    # This is needed to work around non-standard aliases in some projects.
-    for test in group_alias:
-      for s in test.sources:
-        env.Requires(s, start)
-        env.Requires(stop, s)
+  targets = env.SubstList2('$COVERAGE_TARGETS')
+  targets = [env.Alias(t) for t in [start] + targets + [stop]]
 
   # Add an alias for coverage.
-  env.Alias('coverage', [start, stop])
+  env.Alias('coverage', targets)
 
 
 def generate(env):
