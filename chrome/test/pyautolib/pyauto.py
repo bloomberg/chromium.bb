@@ -490,10 +490,90 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     self._GetResultFromJSONRequest(cmd_dict)
 
   def WaitForAllDownloadsToComplete(self):
-    """Wait for all downloads to complete."""
-    # Implementation detail: uses the generic "JSON command" model
-    # (experimental)
+    """Wait for all downloads to complete.
+
+    Note: This method does not work for dangerous downloads. Use
+    WaitForGivenDownloadsToComplete (below) instead.
+    """
     self._GetResultFromJSONRequest({'command': 'WaitForAllDownloadsToComplete'})
+
+  def WaitForDownloadToComplete(self, download_path, timeout=-1):
+    """Wait for the given downloads to complete.
+
+    This method works for dangerous downloads as well as regular downloads.
+
+    Args:
+      download_path: The path to the final download. This is only necessary for
+                     the workaround described in the comments below and should
+                     be removed when downloads are re-implemented.
+      timeout: The timeout to use - default is WaitUntil's default timeout.
+    """
+    # TODO(alyssad): Remove this wait when downloads are re-implemented in a
+    # testable way.
+    self.WaitUntil(lambda path: os.path.exists(path), timeout=timeout,
+                   args=[download_path])
+
+  def PerformActionOnDownload(self, id, action, window_index=0):
+    """Perform the given action on the download with the given id.
+
+    Args:
+      id: The id of the download.
+      action: The action to perform on the download.
+              Possible actions:
+                'open': Opens the download (waits until it has completed first).
+                'toggle_open_files_like_this': Toggles the 'Always Open Files
+                    Of This Type' option.
+                'remove': Removes the file from downloads (not from disk).
+                'decline_dangerous_download': Equivalent to 'Discard' option
+                    after downloading a dangerous download (ex. an executable).
+                'save_dangerous_download': Equivalent to 'Save' option after
+                    downloading a dangerous file.
+                'toggle_pause': Toggles the paused state of the download. If the
+                    download completed before this call, it's a no-op.
+                'cancel': Cancel the download.
+      window_index: The window index, default is 0.
+
+    Returns:
+      A dictionary representing the updated download item (except in the case
+      of 'decline_dangerous_download', 'toggle_open_files_like_this', and
+      'remove', which return an empty dict).
+      Example dictionary:
+      { u'PercentComplete': 100,
+        u'file_name': u'file.txt',
+        u'full_path': u'/path/to/file.txt',
+        u'id': 0,
+        u'is_extension_install': False,
+        u'is_otr': False,
+        u'is_paused': False,
+        u'is_temporary': False,
+        u'open_when_complete': False,
+        u'referrer_url': u'',
+        u'safety_state': u'SAFE',
+        u'state': u'COMPLETE',
+        u'url':  u'file://url/to/file.txt'
+      }
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'PerformActionOnDownload',
+      'id': id,
+      'action': action
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=window_index)
+
+  def WaitForAlwaysOpenDownloadTypeToOpen(self, id):
+    """Wait for the given download to open.
+
+    Note: This method should not be used after PerformActionOnDownload('open').
+          It is used for files that are auto-downloaded based on the file type.
+
+    Args:
+      id: The id of the download.
+    """
+    cmd_dict = {  # Prepare command for the json interface
+      'command': 'WaitForAlwaysOpenDownloadTypeToOpen',
+      'id': id
+    }
+    self._GetResultFromJSONRequest(cmd_dict)
 
   def DownloadAndWaitForStart(self, file_url):
     """Trigger download for the given url and wait for downloads to start.

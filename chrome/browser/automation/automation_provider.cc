@@ -1842,22 +1842,8 @@ void AutomationProvider::AddHistoryItem(Browser* browser,
   reply.SendSuccess(NULL);
 }
 
-// Sample json input: { "command": "GetDownloadsInfo" }
-// Refer chrome/test/pyautolib/download_info.py for sample json output.
-void AutomationProvider::GetDownloadsInfo(Browser* browser,
-                                          DictionaryValue* args,
-                                          IPC::Message* reply_message) {
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  AutomationJSONReply reply(this, reply_message);
-
-  if (!profile_->HasCreatedDownloadManager()) {
-    reply.SendError("no download manager");
-    return;
-  }
-
-  std::vector<DownloadItem*> downloads;
-  profile_->GetDownloadManager()->GetAllDownloads(FilePath(), &downloads);
-
+DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
+    const DownloadItem* download) {
   std::map<DownloadItem::DownloadState, std::string> state_to_string;
   state_to_string[DownloadItem::IN_PROGRESS] = std::string("IN_PROGRESS");
   state_to_string[DownloadItem::CANCELLED] = std::string("CANCELLED");
@@ -1870,31 +1856,50 @@ void AutomationProvider::GetDownloadsInfo(Browser* browser,
   safety_state_to_string[DownloadItem::DANGEROUS_BUT_VALIDATED] =
       std::string("DANGEROUS_BUT_VALIDATED");
 
+  DictionaryValue* dl_item_value = new DictionaryValue;
+  dl_item_value->SetInteger("id", static_cast<int>(download->id()));
+  dl_item_value->SetString("url", download->url().spec());
+  dl_item_value->SetString("referrer_url", download->referrer_url().spec());
+  dl_item_value->SetString("file_name", download->GetFileName().value());
+  dl_item_value->SetString("full_path", download->full_path().value());
+  dl_item_value->SetBoolean("is_paused", download->is_paused());
+  dl_item_value->SetBoolean("open_when_complete",
+                            download->open_when_complete());
+  dl_item_value->SetBoolean("is_extension_install",
+                            download->is_extension_install());
+  dl_item_value->SetBoolean("is_temporary", download->is_temporary());
+  dl_item_value->SetBoolean("is_otr", download->is_otr());  // off-the-record
+  dl_item_value->SetString("state", state_to_string[download->state()]);
+  dl_item_value->SetString("safety_state",
+                           safety_state_to_string[download->safety_state()]);
+  dl_item_value->SetInteger("PercentComplete", download->PercentComplete());
+
+  return dl_item_value;
+}
+
+// Sample json input: { "command": "GetDownloadsInfo" }
+// Refer chrome/test/pyautolib/download_info.py for sample json output.
+void AutomationProvider::GetDownloadsInfo(Browser* browser,
+                                          DictionaryValue* args,
+                                          IPC::Message* reply_message) {
+  AutomationJSONReply reply(this, reply_message);
+
+  if (!profile_->HasCreatedDownloadManager()) {
+      reply.SendError("no download manager");
+      return;
+  }
+
+  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  std::vector<DownloadItem*> downloads;
+  profile_->GetDownloadManager()->GetAllDownloads(FilePath(), &downloads);
+
   ListValue* list_of_downloads = new ListValue;
   for (std::vector<DownloadItem*>::iterator it = downloads.begin();
        it != downloads.end();
        it++) {  // Fill info about each download item.
-    DictionaryValue* dl_item_value = new DictionaryValue;
-    dl_item_value->SetInteger("id", static_cast<int>((*it)->id()));
-    dl_item_value->SetString("url", (*it)->url().spec());
-    dl_item_value->SetString("referrer_url", (*it)->referrer_url().spec());
-    dl_item_value->SetString("file_name", (*it)->GetFileName().value());
-    dl_item_value->SetString("full_path", (*it)->full_path().value());
-    dl_item_value->SetBoolean("is_paused", (*it)->is_paused());
-    dl_item_value->SetBoolean("open_when_complete",
-                              (*it)->open_when_complete());
-    dl_item_value->SetBoolean("is_extension_install",
-                              (*it)->is_extension_install());
-    dl_item_value->SetBoolean("is_temporary", (*it)->is_temporary());
-    dl_item_value->SetBoolean("is_otr", (*it)->is_otr());  // off-the-record
-    dl_item_value->SetString("state", state_to_string[(*it)->state()]);
-    dl_item_value->SetString("safety_state",
-                             safety_state_to_string[(*it)->safety_state()]);
-    dl_item_value->SetInteger("PercentComplete", (*it)->PercentComplete());
-    list_of_downloads->Append(dl_item_value);
+    list_of_downloads->Append(GetDictionaryFromDownloadItem(*it));
   }
   return_value->Set("downloads", list_of_downloads);
-
   reply.SendSuccess(return_value.get());
   // All value objects allocated above are owned by |return_value|
   // and get freed by it.
@@ -1928,6 +1933,126 @@ void AutomationProvider::WaitForDownloadsToComplete(
        i++) {
     (*i)->AddObserver(item_observer);
   }
+}
+
+namespace {
+
+DownloadItem* GetDownloadItemFromId(int id, DownloadManager* download_manager) {
+  std::vector<DownloadItem*> downloads;
+  download_manager->GetAllDownloads(FilePath(), &downloads);
+  DownloadItem* selected_item = NULL;
+
+  for (std::vector<DownloadItem*>::iterator it = downloads.begin();
+       it != downloads.end();
+       it++) {
+    DownloadItem* curr_item = *it;
+    if (curr_item->id() == id) {
+      selected_item = curr_item;
+      break;
+    }
+  }
+  return selected_item;
+}
+
+} // namespace
+
+// See PerformActionOnDownload() in chrome/test/pyautolib/pyauto.py for sample
+// json input and output.
+void AutomationProvider::PerformActionOnDownload(Browser* browser,
+                                                 DictionaryValue* args,
+                                                 IPC::Message* reply_message) {
+  int id;
+  std::string action;
+
+  if (!profile_->HasCreatedDownloadManager()) {
+    AutomationJSONReply(this, reply_message).SendError("No download manager.");
+    return;
+  }
+  if (!args->GetInteger("id", &id) || !args->GetString("action", &action)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Must include int id and string action.");
+    return;
+  }
+
+  DownloadManager* download_manager = profile_->GetDownloadManager();
+  DownloadItem* selected_item = GetDownloadItemFromId(id, download_manager);
+  if (!selected_item) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("No download with an id of %d\n", id));
+    return;
+  }
+
+  if (action == "open") {
+    selected_item->AddObserver(
+        new AutomationProviderDownloadUpdatedObserver(
+            this, reply_message, true));
+    selected_item->OpenDownload();
+  } else if (action == "toggle_open_files_like_this") {
+    selected_item->OpenFilesBasedOnExtension(
+        !selected_item->ShouldOpenFileBasedOnExtension());
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+  } else if (action == "remove") {
+    download_manager->AddObserver(
+        new AutomationProviderDownloadModelChangedObserver(
+            this, reply_message, download_manager));
+    selected_item->Remove(false);
+  } else if (action == "decline_dangerous_download") {
+    // This is the same as removing the file with delete_file=true.
+    download_manager->AddObserver(
+        new AutomationProviderDownloadModelChangedObserver(
+            this, reply_message, download_manager));
+    selected_item->Remove(true);
+  } else if (action == "save_dangerous_download") {
+    selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
+        this, reply_message, false));
+    selected_item->DangerousDownloadValidated();
+  } else if (action == "toggle_pause") {
+    selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
+        this, reply_message, false));
+    // This will still return if download has already completed.
+    selected_item->TogglePause();
+  } else if (action == "cancel") {
+    selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
+        this, reply_message, false));
+    selected_item->Cancel(true);
+  } else {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("Invalid action '%s' given.", action.c_str()));
+  }
+}
+
+// See WaitForAlwaysOpenDownloadTypeToOpen() in chrome/test/pyautolib/pyauto.py
+// for sample json input.
+// Sample json output: {}
+void AutomationProvider::WaitForAlwaysOpenDownloadTypeToOpen(
+    Browser* browser, DictionaryValue* args, IPC::Message* reply_message) {
+  int id;
+
+  if (!profile_->HasCreatedDownloadManager()) {
+    AutomationJSONReply(this, reply_message).SendError("No download manager.");
+    return;
+  }
+  if (!args->GetInteger("id", &id)) {
+    AutomationJSONReply(this, reply_message).SendError(
+        "Must include int id.");
+    return;
+  }
+
+  DownloadItem* selected_item = GetDownloadItemFromId(
+      id, profile_->GetDownloadManager());
+  if (!selected_item) {
+    AutomationJSONReply(this, reply_message).SendError(
+        StringPrintf("No download with an id of %d\n", id));
+    return;
+  }
+
+  if (selected_item->auto_opened()) {
+    AutomationJSONReply(this, reply_message).SendSuccess(NULL);
+    return;
+  }
+  // The observer will reply after the download is opened.
+  selected_item->AddObserver(new AutomationProviderDownloadUpdatedObserver(
+      this, reply_message, true));
 }
 
 // Sample json input: { "command": "GetPrefsInfo" }
@@ -3089,6 +3214,10 @@ void AutomationProvider::SendJSONRequest(int handle,
   handler_map["GetDownloadsInfo"] = &AutomationProvider::GetDownloadsInfo;
   handler_map["WaitForAllDownloadsToComplete"] =
       &AutomationProvider::WaitForDownloadsToComplete;
+  handler_map["PerformActionOnDownload"] =
+      &AutomationProvider::PerformActionOnDownload;
+  handler_map["WaitForAlwaysOpenDownloadTypeToOpen"] =
+      &AutomationProvider::WaitForAlwaysOpenDownloadTypeToOpen;
 
   handler_map["GetInitialLoadTimes"] = &AutomationProvider::GetInitialLoadTimes;
 

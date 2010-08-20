@@ -25,6 +25,19 @@ class DownloadsTest(pyauto.PyUITest):
       return False
     return filecmp.cmp(file1, file2, shallow=False)
 
+  def _GetDownloadId(self, download_index=0):
+    """Return the download id for the download at the given index.
+
+    Args:
+      download_index: The index of the download in the list of downloads.
+                      Default is 0.
+    """
+    return self.GetDownloadsInfo().Downloads()[download_index]['id']
+
+  def _GetAllDownloadIDs(self):
+    """Return a list of all download ids."""
+    return [download['id'] for download in self.GetDownloadsInfo().Downloads()]
+
   def testNoDownloadWaitingNeeded(self):
     """Make sure "wait for downloads" returns quickly if we have none."""
     self.WaitForAllDownloadsToComplete()
@@ -51,6 +64,42 @@ class DownloadsTest(pyauto.PyUITest):
     # Verify that the file was correctly downloaded
     self.assertTrue(os.path.exists(downloaded_pkg))
     self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
+
+  def testDownloadDangerousFiles(self):
+    """Verify that we can download and save dangerous files."""
+    test_dir = os.path.abspath('.')
+    # This file is a .py file which is "dangerous"
+    file_path = os.path.join(test_dir, 'downloads.py')
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  'downloads.py')
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+
+    self.DownloadAndWaitForStart(file_url)
+    self.PerformActionOnDownload(self._GetDownloadId(),
+                                 'save_dangerous_download')
+    self.WaitForDownloadToComplete(downloaded_pkg)
+
+    # Verify that the file was downloaded.
+    self.assertTrue(os.path.exists(downloaded_pkg))
+    self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg))
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+
+  def testRemoveDownload(self):
+    """Verify that we can remove a download."""
+    test_dir = os.path.join(os.path.abspath(self.DataDir()), 'downloads')
+    file_path = os.path.join(test_dir, 'a_zip_file.zip')
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  'a_zip_file.zip')
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+
+    self.DownloadAndWaitForStart(file_url)
+    self.PerformActionOnDownload(self._GetDownloadId(), 'remove')
+
+    # The download is removed from downloads, but not from the disk.
+    self.assertFalse(self.GetDownloadsInfo().Downloads())
+    self.assertTrue(os.path.exists(downloaded_pkg))
 
   def testBigZip(self):
     """Verify that we can download a 1GB file.

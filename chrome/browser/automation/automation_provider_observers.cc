@@ -1064,6 +1064,37 @@ void AutomationProviderDownloadItemObserver::OnDownloadFileCompleted(
   }
 }
 
+void AutomationProviderDownloadUpdatedObserver::OnDownloadUpdated(
+    DownloadItem* download) {
+  // If this observer is watching for open, only send the reply if the download
+  // has been auto-opened.
+  if (wait_for_open_ && !download->auto_opened())
+    return;
+
+  download->RemoveObserver(this);
+  scoped_ptr<DictionaryValue> return_value(
+      provider_->GetDictionaryFromDownloadItem(download));
+  AutomationJSONReply(provider_, reply_message_).SendSuccess(
+      return_value.get());
+  delete this;
+}
+
+void AutomationProviderDownloadUpdatedObserver::OnDownloadOpened(
+    DownloadItem* download) {
+  download->RemoveObserver(this);
+  scoped_ptr<DictionaryValue> return_value(
+      provider_->GetDictionaryFromDownloadItem(download));
+  AutomationJSONReply(provider_, reply_message_).SendSuccess(
+      return_value.get());
+  delete this;
+}
+
+void AutomationProviderDownloadModelChangedObserver::ModelChanged() {
+  AutomationJSONReply(provider_, reply_message_).SendSuccess(NULL);
+  download_manager_->RemoveObserver(this);
+  delete this;
+}
+
 void AutomationProviderHistoryObserver::HistoryQueryComplete(
     HistoryService::Handle request_handle,
     history::QueryResults* results) {

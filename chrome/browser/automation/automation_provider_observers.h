@@ -622,6 +622,54 @@ class AutomationProviderDownloadItemObserver : public DownloadItem::Observer {
   DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadItemObserver);
 };
 
+// Allows the automation provider to wait until the download has been updated
+// or opened.
+class AutomationProviderDownloadUpdatedObserver
+    : public DownloadItem::Observer {
+ public:
+  AutomationProviderDownloadUpdatedObserver(
+      AutomationProvider* provider,
+      IPC::Message* reply_message,
+      bool wait_for_open)
+    : provider_(provider),
+      reply_message_(reply_message),
+      wait_for_open_(wait_for_open) {}
+
+  virtual void OnDownloadUpdated(DownloadItem* download);
+  virtual void OnDownloadOpened(DownloadItem* download);
+  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
+
+ private:
+  AutomationProvider* provider_;
+  IPC::Message* reply_message_;
+  bool wait_for_open_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadUpdatedObserver);
+};
+
+// Allows the automation provider to wait until the download model has changed
+// (because a new download has been added or removed).
+class AutomationProviderDownloadModelChangedObserver
+    : public DownloadManager::Observer {
+ public:
+  AutomationProviderDownloadModelChangedObserver(
+      AutomationProvider* provider,
+      IPC::Message* reply_message,
+      DownloadManager* download_manager)
+    : provider_(provider),
+      reply_message_(reply_message),
+      download_manager_(download_manager) {}
+
+  virtual void ModelChanged();
+
+ private:
+  AutomationProvider* provider_;
+  IPC::Message* reply_message_;
+  DownloadManager* download_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutomationProviderDownloadModelChangedObserver);
+};
+
 // Allows the automation provider to wait for history queries to finish.
 class AutomationProviderHistoryObserver {
  public:

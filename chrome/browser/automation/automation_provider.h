@@ -149,6 +149,10 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   bool AddExternalTab(ExternalTabContainer* external_tab);
 #endif
 
+  // Get the DictionaryValue equivalent for a download item. Caller owns the
+  // DictionaryValue.
+  DictionaryValue* GetDictionaryFromDownloadItem(const DownloadItem* download);
+
  protected:
   friend class base::RefCounted<AutomationProvider>;
   friend class PopupMenuWaiter;
@@ -358,6 +362,18 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void WaitForDownloadsToComplete(Browser* browser,
                                   DictionaryValue* args,
                                   IPC::Message* reply_message);
+
+  // Performs the given action on the specified download.
+  // Uses the JSON interface for input/output.
+  void PerformActionOnDownload(Browser* browser,
+                               DictionaryValue* args,
+                               IPC::Message* reply_message);
+
+  // Waits until the given download has been opened to reply.
+  // Uses the JSON interface for input/output.
+  void WaitForAlwaysOpenDownloadTypeToOpen(Browser* browser,
+                                           DictionaryValue* args,
+                                           IPC::Message* reply_message);
 
   // Get info about history.
   // Uses the JSON interface for input/output.
