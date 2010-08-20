@@ -4131,6 +4131,7 @@
    fun:_ZN12_GLOBAL__N_112CacheCreator10DoCallbackEi
    fun:_ZN12_GLOBAL__N_112CacheCreator12OnIOCompleteEi
    fun:_Z16DispatchToMethodIN12_GLOBAL__N_112CacheCreatorEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
+   ...
    fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
    fun:_ZN10disk_cache17InFlightBackendIO19OnOperationCompleteEPNS_12BackgroundIOEb
    fun:_ZN10disk_cache10InFlightIO14InvokeCallbackEPNS_12BackgroundIOEb
@@ -4147,4 +4148,11 @@
    fun:_ZN23ChromeURLRequestContextD0Ev
    ...
    fun:_ZN17URLRequestHttpJobD0Ev
+}
+{
+   bug_52826
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14TestingProfile20CreateRequestContextEv
+   fun:_ZN20GoogleURLTrackerTest20CreateRequestContextEv
 }
