@@ -1,0 +1,37 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.  Use
+# of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+if env.Bit('linux'):
+    env.Append(
+        CCFLAGS=['-fPIC', '-Wno-long-long',],
+        # Catch unresolved symbols in libraries.
+        LINKFLAGS=['-Wl,-z,defs'],
+        )
+
+if env.Bit('mac'):
+    env.Append(
+        CCFLAGS=['-Wno-long-long'],
+        CPPDEFINES = [ ['TARGET_API_MAC_CARBON', '1'], 'USE_SYSTEM_CONSOLE', ],
+        FRAMEWORKS = ['Carbon'],
+    )
+
+if env.Bit('windows'):
+    env.Append(
+        CCFLAGS = ['/EHsc',],
+        CPPDEFINES = ['WIN32', '_WINDOWS'],
+    )
+    env.Tool('atlmfc_vc80')
+
+env.DualLibrary('ppapi_browser',
+                ['object.cc',
+                 'utility.cc'])
+
+env.DualLibrary('ppapi_plugin',
+                ['plugin_core.cc',
+                 'plugin_instance.cc',
+                 'plugin_var.cc',
+                 'utility.cc'])

@@ -1,0 +1,224 @@
+/*
+ * Copyright 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
+ */
+
+#include <string.h>
+#include <map>
+#include <string>
+
+#include "native_client/tests/fake_browser_ppapi/fake_object.h"
+
+#include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/include/portability.h"
+#include "native_client/src/shared/ppapi_proxy/utility.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_var.h"
+#include "ppapi/c/pp_var.h"
+#include "ppapi/c/ppb_var.h"
+
+using ppapi_proxy::DebugPrintf;
+using ppapi_proxy::PluginVar;
+using fake_browser_ppapi::Object;
+
+namespace fake_browser_ppapi {
+
+const PPB_Var* ppb_var = NULL;
+
+bool Object::HasProperty(PP_Var name,
+                         PP_Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
+  DebugPrintf("Object::HasProperty: object=%p, name=",
+              reinterpret_cast<void*>(this));
+  PluginVar::Print(name);
+  DebugPrintf("\n");
+  Object* browser_obj = reinterpret_cast<Object*>(this);
+  Object::PropertyMap::iterator i =
+      browser_obj->properties()->find(PluginVar::VarToString(name));
+  return (i != browser_obj->properties()->end());
+}
+
+bool Object::HasMethod(PP_Var name,
+                       PP_Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
+  DebugPrintf("Object::HasMethod: object=%p, name=",
+              reinterpret_cast<void*>(this));
+  PluginVar::Print(name);
+  DebugPrintf("\n");
+  Object* browser_obj = reinterpret_cast<Object*>(this);
+  Object::MethodMap::iterator i =
+      browser_obj->methods()->find(PluginVar::VarToString(name));
+  return (i != browser_obj->methods()->end());
+}
+
+PP_Var Object::GetProperty(PP_Var name,
+                           PP_Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
+  DebugPrintf("Object::GetProperty: object=%p, name=",
+              reinterpret_cast<void*>(this));
+  PluginVar::Print(name);
+  DebugPrintf("\n");
+  Object* browser_obj = reinterpret_cast<Object*>(this);
+  Object::PropertyMap::iterator i =
+      browser_obj->properties()->find(PluginVar::VarToString(name));
+  if (i != browser_obj->properties()->end()) {
+    ppb_var->AddRef(*(i->second));
+    return *(i->second);
+  }
+  return PP_MakeVoid();
+}
+
+void Object::GetAllPropertyNames(uint32_t* property_count,
+                                 PP_Var** properties,
+                                 PP_Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
+  DebugPrintf("Object::GetAllPropertyNames: object=%p\n",
+              reinterpret_cast<void*>(this));
+  // Figure out the length of the vector.
+  Object* browser_obj = reinterpret_cast<Object*>(this);
+  Object::PropertyMap::iterator prop;
+  for (prop = browser_obj->properties()->begin();
+       prop != browser_obj->properties()->end(); ++prop) {
+    ++(*property_count);
+  }
+  Object::MethodMap::iterator meth;
+  for (meth = browser_obj->methods()->begin();
+       meth != browser_obj->methods()->end(); ++meth) {
+    ++(*property_count);
+  }
+  // Fill out the vector.
+  *properties =
+      reinterpret_cast<PP_Var*>(malloc(*property_count * sizeof(*properties)));
+  uint32_t i = 0;
+  for (prop = browser_obj->properties()->begin();
+       prop != browser_obj->properties()->end(); ++prop) {
+    (*properties)[i] =
+        ppb_var->VarFromUtf8(prop->first.c_str(),
+                             static_cast<uint32_t>(prop->first.size()));
+    ++i;
+  }
+  for (meth = browser_obj->methods()->begin();
+       meth != browser_obj->methods()->end(); ++meth) {
+    (*properties)[i] =
+        ppb_var->VarFromUtf8(meth->first.c_str(),
+                             static_cast<uint32_t>(meth->first.size()));
+    ++i;
+  }
+}
+
+void Object::SetProperty(PP_Var name,
+                         PP_Var value,
+                         PP_Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
+  DebugPrintf("Object::SetProperty: object=%p, name=",
+              reinterpret_cast<void*>(this));
+  PluginVar::Print(name);
+  DebugPrintf(", value=");
+  PluginVar::Print(value);
+  DebugPrintf("\n");
+  Object* browser_obj = reinterpret_cast<Object*>(this);
+  // Release the previous value in the map.
+  Object::PropertyMap::iterator i =
+      browser_obj->properties()->find(PluginVar::VarToString(name));
+  if (i != browser_obj->properties()->end()) {
+    ppb_var->Release(*(i->second));
+  }
+  PP_Var* newval = reinterpret_cast<PP_Var*>(malloc(sizeof(*newval)));
+  *newval = value;
+  ppb_var->AddRef(*newval);
+  (*browser_obj->properties())[PluginVar::VarToString(name)] = newval;
+}
+
+void Object::RemoveProperty(PP_Var name,
+                            PP_Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
+  DebugPrintf("Object::RemoveProperty: object=%p, name=",
+              reinterpret_cast<void*>(this));
+  PluginVar::Print(name);
+  DebugPrintf("\n");
+  Object* browser_obj = reinterpret_cast<Object*>(this);
+  // Release the value.
+  Object::PropertyMap::iterator i =
+      browser_obj->properties()->find(PluginVar::VarToString(name));
+  if (i != browser_obj->properties()->end()) {
+    ppb_var->Release(*(i->second));
+    browser_obj->properties()->erase(i);
+  }
+}
+
+PP_Var Object::Call(PP_Var method_name,
+                    uint32_t argc,
+                    PP_Var* argv,
+                    PP_Var* exception) {
+  Object* browser_obj = reinterpret_cast<Object*>(this);
+  UNREFERENCED_PARAMETER(exception);
+  DebugPrintf("Object::Call: object=%p, method_name=",
+              reinterpret_cast<void*>(this));
+  PluginVar::Print(method_name);
+  DebugPrintf(", argc=%"NACL_PRIu32", argv={ ", argc);
+  for (uint32_t i = 0; i < argc; ++i) {
+    PluginVar::Print(argv[i]);
+    if (i < argc - 1) {
+      DebugPrintf(", ");
+    }
+  }
+  DebugPrintf(" }\n");
+  Object::MethodMap::iterator i =
+      browser_obj->methods()->find(PluginVar::VarToString(method_name));
+  if (i != browser_obj->methods()->end()) {
+    return (i->second)(browser_obj, argc, argv, exception);
+  }
+  return PP_MakeVoid();
+}
+
+PP_Var Object::Construct(uint32_t argc,
+                         PP_Var* argv,
+                         PP_Var* exception) {
+  UNREFERENCED_PARAMETER(exception);
+  DebugPrintf("Object::Construct: object=%p",
+              reinterpret_cast<void*>(this));
+  DebugPrintf(", argc=%"NACL_PRIu32", argv={ ", argc);
+  for (uint32_t i = 0; i < argc; ++i) {
+    PluginVar::Print(argv[i]);
+    if (i < argc - 1) {
+      DebugPrintf(", ");
+    }
+  }
+  DebugPrintf(" }\n");
+  NACL_UNIMPLEMENTED();
+  return PP_MakeVoid();
+}
+
+void Object::Deallocate() {
+  DebugPrintf("Object::Deallocate: object=%p\n",
+              reinterpret_cast<void*>(this));
+  delete reinterpret_cast<Object*>(this);
+}
+
+Object::Object(const PropertyMap& properties, const MethodMap& methods) {
+  PropertyMap::const_iterator prop;
+  for (prop = properties.begin(); prop != properties.end(); ++prop) {
+    properties_[prop->first] = prop->second;
+  }
+  MethodMap::const_iterator meth;
+  for (meth = methods.begin(); meth != methods.end(); ++meth) {
+    methods_[meth->first] = meth->second;
+  }
+}
+
+PP_Var Object::New(const PropertyMap& properties, const MethodMap& methods) {
+  // Save the PPB_Var interface to be used in constructing objects.
+  if (ppb_var == NULL) {
+    ppb_var = reinterpret_cast<const PPB_Var*>(PluginVar::GetInterface());
+    if (ppb_var == NULL) {
+      return PP_MakeVoid();
+    }
+  }
+  Object* obj = new Object(properties, methods);
+  if (obj == NULL) {
+    return PP_MakeVoid();
+  }
+  return ppb_var->CreateObject(&ppapi_proxy::Object::object_class, obj);
+}
+
+}  // namespace fake_browser_ppapi
