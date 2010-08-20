@@ -24,7 +24,7 @@ class GclientUtilsUnittest(GclientUtilBase):
         'CheckCall', 'CheckCallError', 'Error', 'ExecutionQueue', 'FileRead',
         'FileWrite', 'FindFileUpwards', 'FindGclientRoot',
         'GetGClientRootAndEntries', 'GetNamedNodeText',
-        'GetNodeNamedAttributeText', 'PathDifference', 'ParseXML', 'Popen',
+        'GetNodeNamedAttributeText', 'PathDifference', 'ParseXML',
         'PrintableObject', 'RemoveDirectory', 'SplitUrlRevision',
         'SubprocessCall', 'SubprocessCallAndFilter', 'SyntaxErrorToError',
         'WorkItem',

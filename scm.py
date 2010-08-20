@@ -215,7 +215,7 @@ class GIT(object):
       # pipe at a time.
       # The -100 is an arbitrary limit so we don't search forever.
       cmd = ['git', 'log', '-100', '--pretty=medium']
-      proc = gclient_utils.Popen(cmd, stdout=subprocess.PIPE, cwd=cwd)
+      proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, cwd=cwd)
       for line in proc.stdout:
         match = git_svn_re.match(line)
         if match:
@@ -371,11 +371,19 @@ class SVN(object):
     """
     c = [SVN.COMMAND]
     c.extend(args)
+
+    # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for
+    # the svn.exe executable, but shell=True makes subprocess on Linux fail
+    # when it's called with a list because it only tries to execute the
+    # first string ("svn").
     stderr = None
     if not print_error:
       stderr = subprocess.PIPE
-    return gclient_utils.Popen(c, cwd=in_directory, stdout=subprocess.PIPE,
-        stderr=stderr).communicate()[0]
+    return subprocess.Popen(c,
+                            cwd=in_directory,
+                            shell=(sys.platform == 'win32'),
+                            stdout=subprocess.PIPE,
+                            stderr=stderr).communicate()[0]
 
   @staticmethod
   def RunAndGetFileList(verbose, args, in_directory, file_list):

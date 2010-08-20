@@ -653,7 +653,7 @@ class GitWrapper(SCMWrapper):
     cmd.extend(args)
     logging.debug(cmd)
     try:
-      sp = gclient_utils.Popen(cmd, cwd=cwd, stdout=stdout)
+      sp = subprocess.Popen(cmd, cwd=cwd, stdout=stdout)
       output = sp.communicate()[0]
     except OSError:
       raise gclient_utils.Error("git command '%s' failed to run." %

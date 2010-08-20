@@ -208,8 +208,14 @@ def ErrorExit(msg):
 
 def RunShellWithReturnCode(command, print_output=False):
   """Executes a command and returns the output and the return code."""
-  p = gclient_utils.Popen(command, stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT, universal_newlines=True)
+  # Use a shell for subcommands on Windows to get a PATH search, and because svn
+  # may be a batch file.
+  use_shell = sys.platform.startswith("win")
+  env = os.environ.copy()
+  env['LANGUAGE'] = 'en'
+  p = subprocess.Popen(command, stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT, shell=use_shell, env=env,
+                       universal_newlines=True)
   if print_output:
     output_array = []
     while True:

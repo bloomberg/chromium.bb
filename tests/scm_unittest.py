@@ -28,7 +28,6 @@ class BaseTestCase(SuperMoxTestBase):
 class BaseSCMTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(scm.gclient_utils, 'Popen')
     self.mox.StubOutWithMock(scm.gclient_utils, 'SubprocessCall')
     self.mox.StubOutWithMock(scm.gclient_utils, 'SubprocessCallAndFilter')
 
@@ -296,10 +295,11 @@ class SVNTestCase(BaseSCMTestCase):
 </status>
 """
     proc = self.mox.CreateMockAnything()
-    scm.gclient_utils.Popen(['svn', 'status', '--xml', '.'],
-                            cwd=None,
-                            stderr=None,
-                            stdout=scm.subprocess.PIPE).AndReturn(proc)
+    scm.subprocess.Popen(['svn', 'status', '--xml', '.'],
+                         cwd=None,
+                         shell=scm.sys.platform.startswith('win'),
+                         stderr=None,
+                         stdout=scm.subprocess.PIPE).AndReturn(proc)
     proc.communicate().AndReturn((text, 0))
 
     self.mox.ReplayAll()
@@ -328,10 +328,11 @@ class SVNTestCase(BaseSCMTestCase):
        </target>
        </status>"""
     proc = self.mox.CreateMockAnything()
-    scm.gclient_utils.Popen(['svn', 'status', '--xml'],
-                            cwd=None,
-                            stderr=None,
-                            stdout=scm.subprocess.PIPE).AndReturn(proc)
+    scm.subprocess.Popen(['svn', 'status', '--xml'],
+                         cwd=None,
+                         shell=scm.sys.platform.startswith('win'),
+                         stderr=None,
+                         stdout=scm.subprocess.PIPE).AndReturn(proc)
     proc.communicate().AndReturn((text, 0))
     self.mox.ReplayAll()
     info = scm.SVN.CaptureStatus(None)
