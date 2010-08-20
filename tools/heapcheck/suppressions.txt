@@ -957,3 +957,13 @@
    fun:Callback1::Type* NewCallback
    fun:PrefValueStoreTest_TestConcurrentPolicyRefresh_Test::TestBody
 }
+{
+   bug_52808
+   Heapcheck:Leak
+   ...
+   fun:base::JSONReader::BuildValue
+   fun:base::JSONReader::JsonToValue
+   fun:base::JSONReader::ReadAndReturnError
+   fun:base::JSONReader::Read
+   fun:::HostContentSettingsMapTest_ResourceIdentifierPrefs_Test::TestBody
+}
