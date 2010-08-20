@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class Profile;

@@ -27,6 +27,7 @@
 #include "base/linux_util.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
+#include "base/process_util.h"
 #include "base/rand_util.h"
 #include "base/scoped_ptr.h"
 #include "base/sys_info.h"

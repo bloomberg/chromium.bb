@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/thread_local.h"
+#include "chrome/common/notification_observer.h"
 
 static base::LazyInstance<base::ThreadLocalPointer<NotificationService> >
     lazy_tls_ptr(base::LINKER_INITIALIZED);

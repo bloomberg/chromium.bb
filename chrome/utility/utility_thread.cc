@@ -26,7 +26,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/image_decoder.h"
-
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 
 namespace {
 

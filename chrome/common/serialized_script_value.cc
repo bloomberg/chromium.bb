@@ -4,6 +4,7 @@
 
 #include "chrome/common/serialized_script_value.h"
 
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebSerializedScriptValue;

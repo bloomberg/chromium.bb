@@ -9,7 +9,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_type.h"
+
+class NotificationObserver;
+class NotificationSource;
 
 // Aids in registering for notifications and ensures that all registered
 // notifications are unregistered when the class is destroyed.

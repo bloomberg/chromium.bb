@@ -8,6 +8,7 @@
 
 #include "base/ref_counted.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "printing/printed_pages_source.h"
 

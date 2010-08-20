@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/ref_counted.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/view_types.h"
 

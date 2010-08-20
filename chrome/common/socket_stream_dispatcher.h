@@ -9,9 +9,19 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "ipc/ipc_channel.h"
-#include "ipc/ipc_message.h"
-#include "webkit/glue/websocketstreamhandle_bridge.h"
+
+namespace IPC {
+class Message;
+}
+
+namespace WebKit {
+class WebSocketStreamHandle;
+}
+
+namespace webkit_glue {
+class WebSocketStreamHandleBridge;
+class WebSocketStreamHandleDelegate;
+}
 
 // Dispatches socket stream related messages sent to a child process from the
 // main browser process.  There is one instance per child process.  Messages

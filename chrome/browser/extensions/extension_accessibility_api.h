@@ -15,6 +15,7 @@
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 // Observes the profile and routes accessibility notifications as events

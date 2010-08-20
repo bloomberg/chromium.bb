@@ -12,6 +12,7 @@
 #include "base/shared_memory.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/extensions/user_script.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 namespace base {

@@ -11,8 +11,9 @@
 #include <string>
 
 #include "base/ref_counted.h"
-#include "chrome/common/notification_registrar.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "ipc/ipc_message.h"
 
 class GURL;

@@ -14,6 +14,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/net/socket_stream.h"
 #include "googleurl/src/gurl.h"
+#include "ipc/ipc_message.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"
 

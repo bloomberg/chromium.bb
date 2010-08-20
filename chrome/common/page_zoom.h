@@ -6,6 +6,8 @@
 #define CHROME_COMMON_PAGE_ZOOM_H_
 #pragma once
 
+#include "base/basictypes.h"
+
 class PageZoom {
  public:
   // This enum is the parameter to various text/page zoom commands so we know

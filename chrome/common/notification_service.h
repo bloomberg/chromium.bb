@@ -14,7 +14,6 @@
 
 #include "base/observer_list.h"
 #include "chrome/common/notification_details.h"
-#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 

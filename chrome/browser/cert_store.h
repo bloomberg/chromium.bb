@@ -10,6 +10,7 @@
 
 #include "base/lock.h"
 #include "base/singleton.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "net/base/x509_certificate.h"
 

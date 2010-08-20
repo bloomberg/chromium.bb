@@ -6,6 +6,7 @@
 #define CHROME_RENDERER_BLOCKED_PLUGIN_H_
 #pragma once
 
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPluginParams.h"
 #include "webkit/glue/cpp_bound_class.h"

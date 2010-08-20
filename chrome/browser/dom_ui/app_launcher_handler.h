@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class Extension;

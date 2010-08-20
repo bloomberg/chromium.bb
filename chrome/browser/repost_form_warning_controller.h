@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/tab_contents/constrained_window.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class TabContents;

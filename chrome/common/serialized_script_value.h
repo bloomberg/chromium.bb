@@ -7,7 +7,10 @@
 #pragma once
 
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
+
+namespace WebKit {
+class WebSerializedScriptValue;
+}
 
 class SerializedScriptValue {
  public:

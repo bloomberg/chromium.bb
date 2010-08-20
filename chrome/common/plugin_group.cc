@@ -4,11 +4,13 @@
 
 #include "chrome/common/plugin_group.h"
 
+#include "base/linked_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "webkit/glue/plugins/plugin_list.h"
+#include "webkit/glue/plugins/webplugininfo.h"
 
 #if defined(OS_MACOSX)
 // Plugin Groups for Mac.

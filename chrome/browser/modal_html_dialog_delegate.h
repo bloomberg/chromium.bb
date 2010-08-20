@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 namespace gfx {

@@ -12,6 +12,7 @@
 #include "base/hash_tables.h"
 #include "base/non_thread_safe.h"
 #include "base/observer_list.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class NotificationObserver;

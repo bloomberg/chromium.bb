@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/gtk/owned_widget_gtk.h"
 #include "chrome/browser/gtk/view_id_util.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class RenderViewHost;

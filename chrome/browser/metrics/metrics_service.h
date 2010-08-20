@@ -18,6 +18,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/common/metrics_helpers.h"
 #include "chrome/common/net/url_fetcher.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 #if defined(OS_CHROMEOS)

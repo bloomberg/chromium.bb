@@ -7,6 +7,7 @@
 #pragma once
 
 #include "chrome/browser/views/tab_contents/native_tab_contents_container.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/view.h"
 

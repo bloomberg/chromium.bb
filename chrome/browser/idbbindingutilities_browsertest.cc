@@ -14,6 +14,7 @@
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/glue/idb_bindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSerializedScriptValue.h"
 
 using WebKit::WebSerializedScriptValue;
 

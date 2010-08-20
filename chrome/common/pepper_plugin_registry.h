@@ -6,8 +6,8 @@
 #define CHROME_COMMON_PEPPER_PLUGIN_REGISTRY_H_
 #pragma once
 
-#include <string>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/file_path.h"

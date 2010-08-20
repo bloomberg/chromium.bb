@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 namespace gfx {

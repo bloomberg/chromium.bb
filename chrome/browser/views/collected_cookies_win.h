@@ -10,6 +10,7 @@
 
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/tree/tree_view.h"
 #include "views/window/dialog_delegate.h"

@@ -14,6 +14,7 @@
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/singleton.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 // On OS X, the mach_port_t of a process is required to collect metrics about

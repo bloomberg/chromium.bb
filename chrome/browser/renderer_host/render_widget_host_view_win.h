@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_accessibility_manager_win.h"
 #include "chrome/browser/ime_input.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "webkit/glue/webcursor.h"
 

@@ -19,6 +19,7 @@
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
 #include "base/basictypes.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "gfx/point.h"
 #include "gfx/rect.h"

@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 class GURL;

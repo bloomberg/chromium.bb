@@ -9,6 +9,7 @@
 #include <map>
 
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
