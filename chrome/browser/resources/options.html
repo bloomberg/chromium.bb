@@ -45,6 +45,7 @@
 <script src="options/add_startup_page_overlay.js"></script>
 <script src="options/add_startup_page_recent_pages_list.js"></script>
 <script src="options/advanced_options.js"></script>
+<script src="options/autofill_edit_address_overlay.js"></script>
 <script src="options/autofill_options.js"></script>
 <script src="options/browser_options.js"></script>
 <script src="options/browser_options_startup_page_list.js"></script>
@@ -65,6 +66,7 @@
 var AboutPage = options.AboutPage;
 var AddStartupPageOverlay = options.AddStartupPageOverlay;
 var AdvancedOptions = options.AdvancedOptions;
+var AutoFillEditAddressOverlay = options.AutoFillEditAddressOverlay;
 var AutoFillOptions = options.AutoFillOptions;
 var BrowserOptions = options.BrowserOptions;
 var ClearBrowserDataOverlay = options.ClearBrowserDataOverlay;
@@ -98,6 +100,7 @@ function load() {
   OptionsPage.registerSubPage(PasswordsExceptions.getInstance());
   OptionsPage.registerSubPage(SearchEngineManager.getInstance());
   OptionsPage.registerOverlay(AddStartupPageOverlay.getInstance());
+  OptionsPage.registerOverlay(AutoFillEditAddressOverlay.getInstance());
   OptionsPage.registerOverlay(ClearBrowserDataOverlay.getInstance());
   OptionsPage.registerOverlay(FontSettingsOverlay.getInstance());
   OptionsPage.registerOverlay(ImportDataOverlay.getInstance());
@@ -172,6 +175,7 @@ window.onpopstate = function(e) {
 <link rel="stylesheet" href="options/options_page.css">
 <link rel="stylesheet" href="options/about_page.css">
 <link rel="stylesheet" href="options/add_startup_page_overlay.css">
+<link rel="stylesheet" href="options/autofill_edit_address_overlay.css">
 <link rel="stylesheet" href="options/autofill_options_page.css">
 <link rel="stylesheet" href="options/browser_options_page.css">
 <link rel="stylesheet" href="options/clear_browser_data_overlay.css">
@@ -192,6 +196,7 @@ window.onpopstate = function(e) {
 </div>
 <div id="overlay" class="overlay hidden">
   <include src="options/add_startup_page_overlay.html">
+  <include src="options/autofill_edit_address_overlay.html">
   <include src="options/clear_browser_data_overlay.html">
   <include src="options/font_settings_overlay.html">
   <include src="options/import_data_overlay.html">

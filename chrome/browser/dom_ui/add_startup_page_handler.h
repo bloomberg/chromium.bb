@@ -7,6 +7,7 @@
 #pragma once
 
 #include "app/table_model_observer.h"
+#include "base/basictypes.h"
 #include "chrome/browser/dom_ui/options_ui.h"
 
 class PossibleURLModel;
@@ -40,4 +41,3 @@ class AddStartupPageHandler : public OptionsPageUIHandler,
 };
 
 #endif  // CHROME_BROWSER_DOM_UI_ADD_STARTUP_PAGE_HANDLER_H_
-

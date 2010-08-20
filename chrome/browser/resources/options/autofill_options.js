@@ -39,6 +39,9 @@ cr.define('options', function() {
       $('profileList').onchange = function(event) {
         self.updateRemoveButtonState_();
       };
+      $('addAddressButton').onclick = function(event) {
+        OptionsPage.showOverlay('autoFillEditAddressOverlay');
+      };
 
       Preferences.getInstance().addEventListener('autofill.enabled',
           cr.bind(self.updateButtonState_, self));

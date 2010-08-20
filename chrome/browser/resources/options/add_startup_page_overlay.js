@@ -127,4 +127,3 @@ cr.define('options', function() {
   };
 
 });
-

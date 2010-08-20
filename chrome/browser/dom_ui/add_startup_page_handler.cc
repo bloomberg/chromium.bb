@@ -5,7 +5,6 @@
 #include "chrome/browser/dom_ui/add_startup_page_handler.h"
 
 #include "app/l10n_util.h"
-#include "base/basictypes.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

@@ -1138,6 +1138,8 @@
         'browser/dom_operation_notification_details.h',
         'browser/dom_ui/app_launcher_handler.cc',
         'browser/dom_ui/app_launcher_handler.h',
+        'browser/dom_ui/autofill_edit_address_handler.cc',
+        'browser/dom_ui/autofill_edit_address_handler.h',
         'browser/dom_ui/autofill_options_handler.cc',
         'browser/dom_ui/autofill_options_handler.h',
         'browser/dom_ui/bookmarks_ui.cc',
