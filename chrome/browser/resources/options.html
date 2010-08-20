@@ -24,6 +24,7 @@
 <script src="options/list_inline_header_selection_controller.js"></script>
 <script src="options/options_page.js"></script>
 <if expr="pp_ifdef('chromeos')">
+  <script src="options/about_page.js"></script>
   <script src="options/chromeos_internet_network_element.js"></script>
   <script src="options/chromeos_internet_options.js"></script>
   <script src="options/chromeos_language_add_language_overlay.js"></script>
@@ -34,6 +35,7 @@
   <script src="options/chromeos_accounts_user_list.js"></script>
   <script src="options/chromeos_accounts_user_name_edit.js"></script>
   <script>
+    var AboutPage = options.AboutPage;
     var AccountsOptions = options.AccountsOptions;
     var InternetOptions = options.InternetOptions;
     var LanguageHangulOptions = options.LanguageHangulOptions;
@@ -41,7 +43,6 @@
     var SystemOptions = options.SystemOptions;
   </script>
 </if>
-<script src="options/about_page.js"></script>
 <script src="options/add_startup_page_overlay.js"></script>
 <script src="options/add_startup_page_recent_pages_list.js"></script>
 <script src="options/advanced_options.js"></script>
@@ -63,7 +64,6 @@
 <script src="options/stop_syncing_overlay.js"></script>
 <script>
 
-var AboutPage = options.AboutPage;
 var AddStartupPageOverlay = options.AddStartupPageOverlay;
 var AdvancedOptions = options.AdvancedOptions;
 var AutoFillEditAddressOverlay = options.AutoFillEditAddressOverlay;
@@ -87,6 +87,7 @@ function load() {
   localStrings = new LocalStrings();
 
   if (cr.isChromeOS) {
+    OptionsPage.registerSubPage(AboutPage.getInstance());
     OptionsPage.register(SystemOptions.getInstance());
     OptionsPage.register(InternetOptions.getInstance());
   }
@@ -173,7 +174,6 @@ window.onpopstate = function(e) {
 <link rel="stylesheet" href="chrome://resources/css/list.css">
 <link rel="stylesheet" href="dom_ui.css">
 <link rel="stylesheet" href="options/options_page.css">
-<link rel="stylesheet" href="options/about_page.css">
 <link rel="stylesheet" href="options/add_startup_page_overlay.css">
 <link rel="stylesheet" href="options/autofill_edit_address_overlay.css">
 <link rel="stylesheet" href="options/autofill_options_page.css">
@@ -186,6 +186,7 @@ window.onpopstate = function(e) {
 <link rel="stylesheet" href="options/search_engine_manager.css">
 <link rel="stylesheet" href="options/subpages_tab_controls.css">
 <if expr="pp_ifdef('chromeos')">
+  <link rel="stylesheet" href="options/about_page.css">
   <link rel="stylesheet" href="options/chromeos_accounts_options_page.css">
   <link rel="stylesheet" href="options/chromeos_internet_options_page.css">
   <link rel="stylesheet" href="options/chromeos_language_options.css">
@@ -221,6 +222,7 @@ window.onpopstate = function(e) {
      </div>
      <div id="mainview-content">
        <if expr="pp_ifdef('chromeos')">
+         <include src="options/about_page.html">
          <include src="options/chromeos_system_options.html">
          <include src="options/chromeos_internet_options.html">
          <include src="options/chromeos_language_options.html">
@@ -232,7 +234,6 @@ window.onpopstate = function(e) {
          <include src="options/chromeos_accounts_options.html">
          <include src="options/chromeos_proxy.html">
        </if>
-       <include src="options/about_page.html">
        <include src="options/advanced_options.html">
        <include src="options/autofill_options.html">
        <include src="options/browser_options.html">
