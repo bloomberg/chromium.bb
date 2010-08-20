@@ -19,6 +19,13 @@ import pyauto
 class DownloadsTest(pyauto.PyUITest):
   """TestCase for Downloads."""
 
+  def _GetDangerousDownload(self):
+    """Returns the file url for a dangerous download for this OS."""
+    sub_path = os.path.join(self.DataDir(), 'downloads', 'dangerous')
+    if self.IsMac():
+      return os.path.join(sub_path, 'dangerous.dmg')
+    return os.path.join(sub_path, 'dangerous.exe')
+
   def _EqualFileContents(self, file1, file2):
     """Determine if 2 given files have the same contents."""
     if not (os.path.exists(file1) and os.path.exists(file2)):
@@ -67,12 +74,10 @@ class DownloadsTest(pyauto.PyUITest):
 
   def testDownloadDangerousFiles(self):
     """Verify that we can download and save dangerous files."""
-    test_dir = os.path.abspath('.')
-    # This file is a .py file which is "dangerous"
-    file_path = os.path.join(test_dir, 'downloads.py')
+    file_path = self._GetDangerousDownload()
     file_url = self.GetFileURLForPath(file_path)
     downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
-                                  'downloads.py')
+                                  os.path.basename(file_path))
     os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
 
     self.DownloadAndWaitForStart(file_url)
