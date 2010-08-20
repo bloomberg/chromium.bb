@@ -307,6 +307,10 @@ RenderThread::~RenderThread() {
   db_message_filter_ = NULL;
   RemoveFilter(devtools_agent_filter_.get());
 
+  // Shutdown the file thread if it's running.
+  if (file_thread_.get())
+    file_thread_->Stop();
+
   if (webkit_client_.get())
     WebKit::shutdown();
 
@@ -1099,4 +1103,14 @@ std::string RenderThread::GetExtensionIdByBrowseExtent(const GURL& url) {
   }
 
   return std::string();
+}
+
+scoped_refptr<base::MessageLoopProxy>
+RenderThread::GetFileThreadMessageLoopProxy() {
+  DCHECK(message_loop() == MessageLoop::current());
+  if (!file_thread_.get()) {
+    file_thread_.reset(new base::Thread("Renderer::FILE"));
+    file_thread_->Start();
+  }
+  return file_thread_->message_loop_proxy();
 }

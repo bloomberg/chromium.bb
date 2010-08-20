@@ -46,6 +46,11 @@ struct ViewMsg_ExtensionExtentsUpdated_Params;
 struct ViewMsg_New_Params;
 struct WebPreferences;
 
+namespace base {
+class MessageLoopProxy;
+class Thread;
+}
+
 namespace IPC {
 struct ChannelHandle;
 }
@@ -227,6 +232,11 @@ class RenderThread : public RenderThreadBase,
 
   std::string GetExtensionIdByBrowseExtent(const GURL& url);
 
+  // Returns a MessageLoopProxy instance corresponding to the message loop
+  // of the thread on which file operations should be run. Must be called
+  // on the renderer's main thread.
+  scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
+
  private:
   virtual void OnControlMessageReceived(const IPC::Message& msg);
 
@@ -364,6 +374,9 @@ class RenderThread : public RenderThreadBase,
   // installed app.
   struct ExtensionInfo;
   std::vector<ExtensionInfo> extension_extents_;
+
+  // A lazily initiated thread on which file operations are run.
+  scoped_ptr<base::Thread> file_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };
