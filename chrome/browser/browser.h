@@ -61,19 +61,12 @@ class Browser : public TabStripModelDelegate,
     TYPE_POPUP = 2,
     // The old-style app created via "Create application shortcuts".
     TYPE_APP = 4,
-    // The new-style app created by installing a crx. This kinda needs to be
-    // separate because we require larger icons and an application name that
-    // are found in the crx. If we ever decide to create this kind of app using
-    // some other system (eg some web standard), maybe we should generalize this
-    // name to TYPE_MULTITAB or something.
-    TYPE_EXTENSION_APP = 8,
     TYPE_APP_POPUP = TYPE_APP | TYPE_POPUP,
     TYPE_DEVTOOLS = TYPE_APP | 16,
     TYPE_APP_PANEL = TYPE_APP | 32,
     TYPE_ANY = TYPE_NORMAL |
                TYPE_POPUP |
                TYPE_APP |
-               TYPE_EXTENSION_APP |
                TYPE_DEVTOOLS |
                TYPE_APP_PANEL
   };
