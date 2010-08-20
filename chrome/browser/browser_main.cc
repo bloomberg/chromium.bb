@@ -344,15 +344,8 @@ void BrowserMainParts::SpdyFieldTrial() {
     const FieldTrial::Probability kSpdyDivisor = 1000;
     // To enable 100% npn_with_spdy, set npnhttp_probability = 0 and set
     // npnspdy_probability = FieldTrial::kAllRemainingProbability.
-    // To collect stats, make sure that FieldTrial are distributed among
-    // all the three groups:
-    // npn_with_spdy : 50%, npn_with_http : 25%, default (no npn, no spdy): 25%.
-    // a. npn_with_spdy and default: these are used to collect stats for
-    //    alternate protocol with spdy vs. no alternate protocol case.
-    // b. npn_with_spdy and npn_with_http: these are used to collect stats for
-    //    https vs. https over spdy case.
-    FieldTrial::Probability npnhttp_probability = 250;
-    FieldTrial::Probability npnspdy_probability = 500;
+    FieldTrial::Probability npnhttp_probability = 50;
+    FieldTrial::Probability npnspdy_probability = 950;
     scoped_refptr<FieldTrial> trial =
         new FieldTrial("SpdyImpact", kSpdyDivisor);
     // npn with only http support, no spdy.
