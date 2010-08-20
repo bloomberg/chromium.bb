@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/callback.h"
+#include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -17,7 +18,8 @@
 #include "net/base/net_util.h"
 
 PasswordsExceptionsHandler::PasswordsExceptionsHandler()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(populater_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(populater_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(exception_populater_(this)) {
 }
 
 PasswordsExceptionsHandler::~PasswordsExceptionsHandler() {
@@ -31,7 +33,7 @@ void PasswordsExceptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE));
   localized_strings->SetString("passwordsTabTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_SHOW_PASSWORDS_TAB_TITLE));
-  localized_strings->SetString("passwordsExceptionsTabTitle",
+  localized_strings->SetString("passwordExceptionsTabTitle",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_EXCEPTIONS_TAB_TITLE));
   localized_strings->SetString("passwordsSiteColumn",
       l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN));
@@ -60,14 +62,17 @@ void PasswordsExceptionsHandler::Initialize() {
 void PasswordsExceptionsHandler::RegisterMessages() {
   DCHECK(dom_ui_);
 
-  dom_ui_->RegisterMessageCallback(
-      "loadSavedPasswords",
-      NewCallback(this, &PasswordsExceptionsHandler::LoadSavedPasswords));
-  dom_ui_->RegisterMessageCallback(
-      "removeAutofillable",
-      NewCallback(this, &PasswordsExceptionsHandler::RemoveEntry));
-  dom_ui_->RegisterMessageCallback(
-      "showSelectedPassword",
+  dom_ui_->RegisterMessageCallback("loadLists",
+      NewCallback(this, &PasswordsExceptionsHandler::LoadLists));
+  dom_ui_->RegisterMessageCallback("removeSavedPassword",
+      NewCallback(this, &PasswordsExceptionsHandler::RemoveSavedPassword));
+  dom_ui_->RegisterMessageCallback("removePasswordException",
+      NewCallback(this, &PasswordsExceptionsHandler::RemovePasswordException));
+  dom_ui_->RegisterMessageCallback("removeAllSavedPasswords",
+      NewCallback(this, &PasswordsExceptionsHandler::RemoveAllSavedPasswords));
+  dom_ui_->RegisterMessageCallback("removeAllPasswordExceptions", NewCallback(
+      this, &PasswordsExceptionsHandler::RemoveAllPasswordExceptions));
+  dom_ui_->RegisterMessageCallback("showSelectedPassword",
       NewCallback(this, &PasswordsExceptionsHandler::ShowSelectedPassword));
 }
 
@@ -75,13 +80,17 @@ PasswordStore* PasswordsExceptionsHandler::GetPasswordStore() {
   return profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 }
 
-void PasswordsExceptionsHandler::LoadSavedPasswords(const ListValue* args) {
+void PasswordsExceptionsHandler::LoadLists(const ListValue* args) {
+  languages_ = UTF8ToWide(
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   populater_.Populate();
+  exception_populater_.Populate();
 }
 
-void PasswordsExceptionsHandler::RemoveEntry(const ListValue* args) {
+void PasswordsExceptionsHandler::RemoveSavedPassword(const ListValue* args) {
+  std::string string_value = WideToUTF8(ExtractStringValue(args));;
   int index;
-  CHECK(ExtractIntegerValue(args, &index));
+  base::StringToInt(string_value, &index);
 
   GetPasswordStore()->RemoveLogin(*password_list_[index]);
   delete password_list_[index];
@@ -89,9 +98,39 @@ void PasswordsExceptionsHandler::RemoveEntry(const ListValue* args) {
   SetPasswordList();
 }
 
-void PasswordsExceptionsHandler::ShowSelectedPassword(const ListValue* args) {
+void PasswordsExceptionsHandler::RemovePasswordException(const ListValue* args) {
+  std::string string_value = WideToUTF8(ExtractStringValue(args));;
   int index;
-  CHECK(ExtractIntegerValue(args, &index));
+  base::StringToInt(string_value, &index);
+
+  GetPasswordStore()->RemoveLogin(*password_exception_list_[index]);
+  delete password_exception_list_[index];
+  password_exception_list_.erase(password_exception_list_.begin() + index);
+  SetPasswordExceptionList();
+}
+
+void PasswordsExceptionsHandler::RemoveAllSavedPasswords(
+    const ListValue* args) {
+  PasswordStore* store = GetPasswordStore();
+  for (size_t i = 0; i < password_list_.size(); ++i)
+    store->RemoveLogin(*password_list_[i]);
+  STLDeleteElements(&password_list_);
+  SetPasswordList();
+}
+
+void PasswordsExceptionsHandler::RemoveAllPasswordExceptions(
+    const ListValue* args) {
+  PasswordStore* store = GetPasswordStore();
+  for (size_t i = 0; i < password_exception_list_.size(); ++i)
+    store->RemoveLogin(*password_exception_list_[i]);
+  STLDeleteElements(&password_exception_list_);
+  SetPasswordExceptionList();
+}
+
+void PasswordsExceptionsHandler::ShowSelectedPassword(const ListValue* args) {
+  std::string string_value = WideToUTF8(ExtractStringValue(args));;
+  int index;
+  base::StringToInt(string_value, &index);
 
   std::string pass = UTF16ToUTF8(password_list_[index]->password_value);
   scoped_ptr<Value> password_string(Value::CreateStringValue(pass));
@@ -100,20 +139,30 @@ void PasswordsExceptionsHandler::ShowSelectedPassword(const ListValue* args) {
 }
 
 void PasswordsExceptionsHandler::SetPasswordList() {
-  ListValue autofillableLogins;
-  std::wstring languages =
-      UTF8ToWide(profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
+  ListValue entries;
   for (size_t i = 0; i < password_list_.size(); ++i) {
     ListValue* entry = new ListValue();
     entry->Append(new StringValue(
-        WideToUTF8(net::FormatUrl(password_list_[i]->origin, languages))));
+        WideToUTF8(net::FormatUrl(password_list_[i]->origin, languages_))));
     entry->Append(new StringValue(
         UTF16ToUTF8(password_list_[i]->username_value)));
-    autofillableLogins.Append(entry);
+    entries.Append(entry);
   }
 
   dom_ui_->CallJavascriptFunction(
-      L"PasswordsExceptions.setAutofillableLogins", autofillableLogins);
+      L"PasswordsExceptions.setSavedPasswordsList", entries);
+}
+
+void PasswordsExceptionsHandler::SetPasswordExceptionList() {
+  ListValue entries;
+  for (size_t i = 0; i < password_exception_list_.size(); ++i) {
+    entries.Append(new StringValue(
+        WideToUTF8(net::FormatUrl(
+            password_exception_list_[i]->origin, languages_))));
+  }
+
+  dom_ui_->CallJavascriptFunction(
+      L"PasswordsExceptions.setPasswordExceptionsList", entries);
 }
 
 void PasswordsExceptionsHandler::PasswordListPopulater::Populate() {
@@ -129,4 +178,19 @@ void PasswordsExceptionsHandler::PasswordListPopulater::
   pending_login_query_ = 0;
   page_->password_list_ = result;
   page_->SetPasswordList();
+}
+
+void PasswordsExceptionsHandler::PasswordExceptionListPopulater::Populate() {
+  DCHECK(!pending_login_query_);
+  PasswordStore* store = page_->GetPasswordStore();
+  pending_login_query_ = store->GetBlacklistLogins(this);
+}
+
+void PasswordsExceptionsHandler::PasswordExceptionListPopulater::
+    OnPasswordStoreRequestDone(int handle,
+    const std::vector<webkit_glue::PasswordForm*>& result) {
+  DCHECK_EQ(pending_login_query_, handle);
+  pending_login_query_ = 0;
+  page_->password_exception_list_ = result;
+  page_->SetPasswordExceptionList();
 }

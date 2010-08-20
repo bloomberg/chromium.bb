@@ -1172,6 +1172,8 @@
         'browser/dom_ui/font_settings_utils_win.cc',
         'browser/dom_ui/passwords_exceptions_handler.cc',
         'browser/dom_ui/passwords_exceptions_handler.h',
+        'browser/dom_ui/passwords_remove_all_handler.cc',
+        'browser/dom_ui/passwords_remove_all_handler.h',
         'browser/dom_ui/personal_options_handler.cc',
         'browser/dom_ui/personal_options_handler.h',
         'browser/dom_ui/sync_options_handler.cc',
