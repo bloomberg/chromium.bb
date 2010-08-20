@@ -144,7 +144,6 @@
    fun:BookmarkStorage::BookmarkModelDeleted
    fun:*~BookmarkModel
 }
-
 {
    bug_30547_b
    Heapcheck:Leak
@@ -153,7 +152,6 @@
    fun:BookmarkStorage::SaveNow
    fun:BookmarkStorage::BookmarkModelDeleted
 }
-
 # IPCChannelTest.ChannelProxyTest leaks memory.
 {
    bug_26920_a
@@ -254,14 +252,12 @@
   fun:::RenderThreadTest::SetUp
   fun:testing::Test::Run
 }
-
 {
   bug_38206_a
   Heapcheck:Leak
   ...
   fun:GeolocationWifiDataProviderCommonTest::SetUp
 }
-
 {
   bug_38206_b
   Heapcheck:Leak
@@ -272,7 +268,6 @@
   fun:ScopedRunnableMethodFactory::RunnableMethod::Run
   fun:MessageLoop::RunTask
 }
-
 # TODO(glider): sometimes the stacks differ between the bot and the local run,
 # e.g. "base::subtle::RefCountedBase::RefCountedBase" vs. "RefCountedBase".
 {
@@ -294,21 +289,18 @@
   fun:FakeSyncShareTask::Run
   fun:MessageLoop::RunTask
 }
-
 {
   bug_38402
   Heapcheck:Leak
   fun:ProfileSyncFactoryImpl::CreateProfileSyncService
   fun:TestingProfile::CreateProfileSyncService
 }
-
 {
   bug_39007
   Heapcheck:Leak
   ...
   fun:RenderViewTest::TearDown
 }
-
 {
   bug_39009
   Heapcheck:Leak
@@ -316,7 +308,6 @@
   fun:BookmarkModel::Load
   fun:TestingProfile::CreateBookmarkModel
 }
-
 {
   bug_38487
   Heapcheck:Leak
@@ -329,14 +320,12 @@
   fun:scoped_ptr::reset
   fun:ProfileSyncServiceTypedUrlTest::TearDown
 }
-
 {
   bug_38490
   Heapcheck:Leak
   ...
   fun:browser_sync::SyncBackendHost::Core::NotifyFrontend
 }
-
 {
   bug_40499
   Heapcheck:Leak
@@ -432,7 +421,6 @@
    fun:WebKit::WebFrameImpl::loadRequest
    fun:TestShell::Navigate
 }
-
 {
    bug_46571_b
    Heapcheck:Leak
@@ -446,7 +434,6 @@
    fun:WebKit::WebFrameImpl::loadRequest
    fun:TestShell::Navigate
 }
-
 {
    bug_46571_c
    Heapcheck:Leak
@@ -469,7 +456,6 @@
    fun:AccessibilityController::BindToJavascript
    fun:TestShell::BindJSObjectsToWindow
 }
-
 {
    bug_46571_d
    Heapcheck:Leak
@@ -493,8 +479,6 @@
    fun:AccessibilityController::BindToJavascript
    fun:TestShell::BindJSObjectsToWindow
 }
-
-
 {
    bug_46571_e
    Heapcheck:Leak
@@ -519,7 +503,6 @@
    fun:main
    fun:__libc_start_main
 }
-
 # "*~TestShell" means "~TestShell" and "TestShell::~TestShell".
 {
    bug_46571_f
@@ -534,7 +517,6 @@
    fun:::MainWindowDestroyed
    fun:g_closure_invoke
 }
-
 # This is a variation from bug_46571_e.
 {
    bug_46571_g
@@ -564,8 +546,6 @@
    fun:main
    fun:__libc_start_main
 }
-
-
 {
    bug_32366
    Heapcheck:Leak
@@ -575,7 +555,6 @@
    fun:RunnableMethod::Run
    fun:MessageLoop::RunTask
 }
-
 {
    bug_46649_a
    Heapcheck:Leak
@@ -586,7 +565,6 @@
    fun:courgette::ReadVector
    fun:courgette::EncodedProgram::ReadFrom
 }
-
 {
    bug_46649_b
    Heapcheck:Leak
@@ -596,7 +574,6 @@
    fun:std::vector::push_back
    fun:courgette::EncodedProgram::AddRel32
 }
-
 {
    bug_46649_c
    Heapcheck:Leak
@@ -606,13 +583,11 @@
    fun:std::vector::push_back
    fun:courgette::EncodedProgram::AssembleTo
 }
-
 {
    bug_46649_d
    Heapcheck:Leak
    fun:EncodedProgramTest_Test_Test::TestBody
 }
-
 {
    bug_46649_e
    Heapcheck:Leak
@@ -624,7 +599,6 @@
    fun:courgette::EncodedProgram::DefineLabelCommon
    fun:courgette::EncodedProgram::DefineRel32Label
 }
-
 {
    bug_46649_f
    Heapcheck:Leak
@@ -636,7 +610,6 @@
    fun:courgette::EncodedProgram::DefineLabelCommon
    fun:courgette::EncodedProgram::DefineAbs32Label
 }
-
 {
    bug_46649_g
    Heapcheck:Leak
@@ -647,7 +620,6 @@
    fun:courgette::ReadU32Delta
    fun:courgette::EncodedProgram::ReadFrom
 }
-
 {
    bug_46649_h
    Heapcheck:Leak
@@ -657,7 +629,6 @@
    fun:std::vector::push_back
    fun:courgette::EncodedProgram::AddAbs32
 }
-
 {
    bug_46649_i
    Heapcheck:Leak
@@ -667,7 +638,6 @@
    fun:std::vector::push_back
    fun:courgette::EncodedProgram::AddOrigin
 }
-
 {
    bug_46658_a
    Heapcheck:Leak
@@ -702,7 +672,6 @@
    fun:WebCore::MainResourceLoader::addData
    fun:WebCore::ResourceLoader::didReceiveData
 }
-
 {
    bug_46658_b
    Heapcheck:Leak
@@ -737,7 +706,6 @@
    fun:WebCore::FrameLoader::receivedData
    fun:WebCore::MainResourceLoader::addData
 }
-
 {
    bug_46678_a
    Heapcheck:Leak
@@ -747,20 +715,17 @@
    fun:std::vector::push_back
    fun:remoting::Differ::MergeBlocks
 }
-
 {
    bug_46678_b
    Heapcheck:Leak
    fun:remoting::DifferTest::MarkBlocksAndCheckMerge
 }
-
 {
    bug_46678_c
    Heapcheck:Leak
    fun:remoting::DifferTest_*_Test::TestBody
    fun:testing::Test::Run
 }
-
 # '*ChromotingPlugin' stands for 'ChromotingPlugin' and
 # 'remoting::ChromotingPlugin::ChromotingPlugin'.
 {
@@ -770,7 +735,6 @@
    fun:*ChromotingPlugin
    fun:CreatePlugin
 }
-
 {
    bug_46678_e
    Heapcheck:Leak
@@ -779,21 +743,18 @@
    fun:void DispatchToMethod
    fun:RunnableMethod::Run
 }
-
 {
    bug_46715
    Heapcheck:Leak
    fun:WebCore::makeExternalString
    fun:WebCore::v8ExternalStringSlow
 }
-
 {
    bug_46886
    Heapcheck:Leak
    ...
    fun:*SpdyHttpStreamTest_SendRequest_Test*
 }
-
 {
    bug_19775_a
    Heapcheck:Leak
@@ -801,7 +762,6 @@
    fun:history::InMemoryHistoryBackend::Init
    fun:history::HistoryBackend::InitImpl
 }
-
 {
    bug_19775_b
    Heapcheck:Leak
@@ -809,7 +769,6 @@
    fun:history::HistoryBackend::InitImpl
    fun:history::HistoryBackend::Init
 }
-
 {
    bug_19775_c
    Heapcheck:Leak
@@ -817,7 +776,6 @@
    fun:HistoryService::BackendDelegate::DBLoaded
    fun:history::HistoryBackend::Init
 }
-
 {
    bug_19775_d
    Heapcheck:Leak
@@ -961,4 +919,46 @@
    fun:TestingProfile::CreateRequestContext
    fun:GoogleURLTrackerTest::CreateRequestContext
    fun:GoogleURLTrackerTest*_Test::TestBody
+}
+{
+   bug_52900_a
+   Heapcheck:Leak
+   ...
+   fun:MockRenderProcessHostFactory::CreateRenderProcessHost
+   fun:SiteInstance::GetProcess
+   fun:RenderViewHost
+   fun:TestRenderViewHost
+   fun:TestRenderViewHostFactory::CreateRenderViewHost
+   fun:RenderViewHostFactory::Create
+   fun:RenderViewHostManager::Init
+   fun:TabContents
+   fun:TestTabContents
+   fun:RenderViewHostTestHarness::SetUp
+}
+{
+   bug_52900_b
+   Heapcheck:Leak
+   ...
+   fun:RenderViewHostDelegateViewHelper::CreateNewFullscreenWidget
+   fun:TabContentsView::CreateNewFullscreenWidgetInternal
+   fun:TabContentsView::CreateNewFullscreenWidget
+   fun:RenderViewHost::CreateNewFullscreenWidget
+   fun:RenderViewHostTest_CreateFullscreenWidget_Test::TestBody
+}
+{
+   bug_52900_c
+   Heapcheck:Leak
+   ...
+   fun:IPC::TestSink::OnMessageReceived
+   fun:MockRenderProcessHost::Send
+   fun:PurgePluginListCache
+   fun:PluginService::Observe
+   fun:NotificationService::Notify
+   fun:ExtensionsService::NotifyExtensionLoaded
+   fun:ExtensionsService::OnExtensionLoaded
+   fun:ExtensionsService::LoadInstalledExtension
+   fun:ExtensionsService::ContinueLoadAllExtensions
+   fun:ExtensionsService::LoadAllExtensions
+   fun:ExtensionsService::Init
+   fun:ExtensionsServiceTest_CleanupOnStartup_Test::TestBody
 }
