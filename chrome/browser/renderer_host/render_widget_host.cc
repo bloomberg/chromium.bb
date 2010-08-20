@@ -225,8 +225,11 @@ void RenderWidgetHost::WasRestored() {
   BackingStore* backing_store = BackingStoreManager::Lookup(this);
   // If we already have a backing store for this widget, then we don't need to
   // repaint on restore _unless_ we know that our backing store is invalid.
+  // When accelerated compositing is on, we must always repaint, even when
+  // the backing store exists.
   bool needs_repainting;
-  if (needs_repainting_on_restore_ || !backing_store) {
+  if (needs_repainting_on_restore_ || !backing_store ||
+      is_gpu_rendering_active()) {
     needs_repainting = true;
     needs_repainting_on_restore_ = false;
   } else {
