@@ -284,10 +284,8 @@
   fun:BookmarkModel::AddNode
   fun:BookmarkModel::AddURLWithCreationTime
   fun:BookmarkModel::AddURL
-  fun:BookmarkModel::AddURL
   fun:BookmarkBarGtkUnittest_*
 }
-
 {
   bug_38305
   Heapcheck:Leak
