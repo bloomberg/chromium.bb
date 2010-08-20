@@ -13,6 +13,7 @@
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/rect.h"
 #include "chrome_frame/test/win_event_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,6 +50,18 @@ AccObject* AccObject::CreateFromWindow(HWND hwnd) {
       IID_IAccessible, reinterpret_cast<void**>(accessible.Receive()));
   if (accessible)
     return new AccObject(accessible);
+  return NULL;
+}
+
+// static
+AccObject* AccObject::CreateFromEvent(HWND hwnd, LONG object_id,
+                                      LONG child_id) {
+  ScopedComPtr<IAccessible> accessible;
+  ScopedVariant acc_child_id;
+  AccessibleObjectFromEvent(hwnd, object_id, child_id, accessible.Receive(),
+                            acc_child_id.Receive());
+  if (accessible && acc_child_id.type() == VT_I4)
+    return new AccObject(accessible, V_I4(&acc_child_id));
   return NULL;
 }
 
@@ -112,6 +125,22 @@ bool AccObject::Select() {
   }
   EXPECT_TRUE(did_select) << "Could not select AccObject: " << GetDescription();
   return did_select;
+}
+
+bool AccObject::SetValue(const std::wstring& value) {
+  ScopedBstr value_bstr(value.c_str());
+  EXPECT_HRESULT_SUCCEEDED(accessible_->put_accValue(child_id_, value_bstr));
+
+  // Double check that the object's value has actually changed. Some objects'
+  // values can not be changed.
+  bool did_set_value = false;
+  std::wstring actual_value = L"-";
+  if (GetValue(&actual_value) && value == actual_value) {
+    did_set_value = true;
+  }
+  EXPECT_TRUE(did_set_value) << "Could not set value for AccObject: "
+                             << GetDescription();
+  return did_set_value;
 }
 
 bool AccObject::GetName(std::wstring* name) {
@@ -233,9 +262,12 @@ bool AccObject::GetChildren(RefCountedAccObjectVector* client_objects) {
         objects.push_back(new AccObject(accessible_, V_I4(&children[i])));
         continue;
       } else if (FAILED(result)) {
-        LOG(ERROR) << "Failed to determine if child id refers to a full "
-                   << "object. Error: " << result;
-        return false;
+        DLOG(WARNING) << "Failed to determine if child id refers to a full "
+                      << "object. Error: " << result << std::endl
+                      << "Parent object: " << WideToUTF8(GetDescription())
+                      << std::endl << "Child ID: " << V_I4(&children[i]);
+        // Disregard this object.
+        continue;
       }
       // The object in question was actually a full object. It is saved in the
       // |dispatch| arg and will be added down below.
@@ -400,9 +432,9 @@ bool FindAccObjectInWindow(HWND hwnd, const AccObjectMatcher& matcher,
                            scoped_refptr<AccObject>* object) {
   DCHECK(object);
   EXPECT_TRUE(matcher.FindInWindow(hwnd, object));
-  EXPECT_TRUE(object) << "Element not found for matcher: "
+  EXPECT_TRUE(*object) << "Element not found for matcher: "
         << matcher.GetDescription();
-  if (!object)
+  if (!*object)
     DumpAccessibilityTreeForWindow(hwnd);
   return *object;
 }

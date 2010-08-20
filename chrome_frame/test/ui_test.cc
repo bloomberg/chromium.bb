@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/scoped_variant_win.h"
+#include "base/test/test_file_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
@@ -443,7 +444,7 @@ TEST_F(ContextMenuTest, CFInspector) {
                           kChromeFrameLongNavigationTimeoutInSeconds * 2);
 }
 
-TEST_F(ContextMenuTest, FLAKY_CFSaveAs) {
+TEST_F(ContextMenuTest, CFSaveAs) {
   server_mock_.ExpectAndServeAnyRequests(CFInvocation::MetaTag());
   MockWindowObserver win_observer_mock;
   InSequence expect_in_sequence_for_scope;
@@ -457,24 +458,22 @@ TEST_F(ContextMenuTest, FLAKY_CFSaveAs) {
   EXPECT_CALL(acc_observer_, OnMenuPopup(_))
       .WillOnce(DoDefaultAction(AccObjectMatcher(L"Save as...")));
 
+  // Get safe download name using temporary file.
   FilePath temp_file_path;
-  EXPECT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
+  ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
   temp_file_path = temp_file_path.ReplaceExtension(L".htm");
+  ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
 
-  const wchar_t* kSaveFileName = temp_file_path.value().c_str();
-  DeleteFile(kSaveFileName);
-
-  const char* kSaveDlgCaption = "Save As";
-  EXPECT_CALL(win_observer_mock, OnWindowDetected(_, StrEq(kSaveDlgCaption)))
+  EXPECT_CALL(win_observer_mock, OnWindowDetected(_, StrEq("Save As")))
       .WillOnce(testing::DoAll(
-          DelaySendString(&loop_, 100, kSaveFileName),
-          DelaySendChar(&loop_, 200, VK_RETURN, simulate_input::NONE),
-          DelayCloseBrowserMock(&loop_, 4000, &ie_mock_)));
+          SetAccObjectValue(AccObjectMatcher(L"File name:", L"", L"simple*"),
+                            temp_file_path.value()),
+          DoDefaultAction(AccObjectMatcher(L"Save", L"push button")),
+          CloseWhenFileSaved(&ie_mock_, temp_file_path, 5000)));
 
   LaunchIENavigateAndLoop(GetSimplePageUrl(),
                           kChromeFrameLongNavigationTimeoutInSeconds * 2);
-  ASSERT_NE(INVALID_FILE_ATTRIBUTES, GetFileAttributes(kSaveFileName));
-  ASSERT_TRUE(DeleteFile(kSaveFileName));
+  ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
 }
 
 // This tests that the about:version page can be opened via the CF context menu.

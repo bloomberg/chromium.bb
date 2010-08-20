@@ -200,6 +200,11 @@ void MockIEEventSinkTest::LaunchIENavigateAndLoop(const std::wstring& url,
   loop_.RunFor(timeout);
 }
 
+FilePath MockIEEventSinkTest::GetTestFilePath(
+    const std::wstring& relative_path) {
+  return server_mock_.root_dir().Append(relative_path);
+}
+
 std::wstring MockIEEventSinkTest::GetTestUrl(
     const std::wstring& relative_path) {
   return server_mock_.Resolve(relative_path.c_str());

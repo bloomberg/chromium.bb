@@ -7,10 +7,14 @@
 
 #include <windows.h>
 
+#include "base/basictypes.h"
+#include "base/platform_thread.h"
 #include "base/scoped_bstr_win.h"
+#include "base/time.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/chrome_frame_ui_test_utils.h"
+#include "chrome_frame/test/ie_event_sink.h"
 #include "chrome_frame/test/mock_ie_event_sink_test.h"
 #include "chrome_frame/test/simulate_input.h"
 #include "gfx/point.h"
@@ -216,6 +220,20 @@ ACTION_P(VerifyAddressBarUrlWithGcf, mock) {
   mock->event_sink()->ExpectAddressBarUrl(expected_url);
 }
 
+// Polls to see if the file is saved and closes the browser once it is.
+// This doesn't do any checking of the contents of the file.
+ACTION_P3(CloseWhenFileSaved, mock, file, timeout_ms) {
+  base::Time start = base::Time::Now();
+  while (!file_util::PathExists(file)) {
+    PlatformThread::Sleep(200);
+    if ((base::Time::Now() - start).InMilliseconds() > timeout_ms) {
+      ADD_FAILURE() << "File was not saved within timeout";
+      break;
+    }
+  }
+  mock->event_sink()->CloseWebBrowser();
+}
+
 ACTION_P2(OpenContextMenu, loop, delay) {
   loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
       simulate_input::SendScanCode, VK_F10, simulate_input::SHIFT), delay);
@@ -226,7 +244,7 @@ ACTION_P3(SelectItem, loop, delay, index) {
       simulate_input::NONE);
 }
 
-ACTION(FocusAccObject) {
+ACTION(FocusWindow) {
   scoped_refptr<AccObject> object;
   if (FindAccObjectInWindow(arg0, AccObjectMatcher(), &object))
     object->Focus();
@@ -248,6 +266,12 @@ ACTION_P(SelectAccObject, matcher) {
   scoped_refptr<AccObject> object;
   if (FindAccObjectInWindow(arg0, matcher, &object))
     object->Select();
+}
+
+ACTION_P2(SetAccObjectValue, matcher, value) {
+  scoped_refptr<AccObject> object;
+  if (FindAccObjectInWindow(arg0, matcher, &object))
+    object->SetValue(value);
 }
 
 ACTION(OpenContextMenuAsync) {

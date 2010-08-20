@@ -40,6 +40,10 @@ class AccObject : public base::RefCounted<AccObject> {
   // created AccObject.
   static AccObject* CreateFromWindow(HWND hwnd);
 
+  // Creates an AccObject corresponding to the object that generated a
+  // WinEvent. Returns NULL on failure.
+  static AccObject* CreateFromEvent(HWND hwnd, LONG object_id, LONG child_id);
+
   // Creates an AccObject from querying the given IDispatch. May return NULL
   // if the object does not implement IAccessible. The client owns the created
   // AccObject.
@@ -62,6 +66,9 @@ class AccObject : public base::RefCounted<AccObject> {
   // Selects this object. Returns whether the object is now selected. Will cause
   // test failure if the object is not selected.
   bool Select();
+
+  // Sets the value of the object. Will cause test failure if unsuccessful.
+  bool SetValue(const std::wstring& value);
 
   // Gets the name of the object and returns true on success.
   bool GetName(std::wstring* name);
