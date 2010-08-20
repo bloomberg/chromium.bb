@@ -1366,6 +1366,8 @@
         'browser/extensions/extension_infobar_module_constants.h',
         'browser/extensions/extension_infobar_delegate.cc',
         'browser/extensions/extension_infobar_delegate.h',
+        'browser/extensions/extension_input_api.cc',
+        'browser/extensions/extension_input_api.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
         'browser/extensions/extension_menu_manager.cc',
@@ -3667,6 +3669,14 @@
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.cc'],
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.h'],
                 ['exclude', '^browser/browser_list_gtk.cc'],
+              ],
+            }],
+            # Exclude these toolkit_views specific files again.
+            # (Required because of the '^browser/extensions/' include above)
+            ['toolkit_views==0', {
+              'sources/': [
+                ['exclude', '^browser/extensions/extension_input_api.cc'],
+                ['exclude', '^browser/extensions/extension_input_api.h'],
               ],
             }],
             # These GTK files haven't been ported to views, while ChromeOS has

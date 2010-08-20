@@ -30,6 +30,9 @@
 #include "chrome/browser/extensions/extension_idle_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
 #include "chrome/browser/extensions/extension_infobar_module.h"
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/extensions/extension_input_api.h"
+#endif
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_metrics_module.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
@@ -53,6 +56,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/url_constants.h"
+
 
 // FactoryRegistry -------------------------------------------------------------
 
@@ -261,6 +265,11 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<SetIconSidebarFunction>();
   RegisterFunction<SetTitleSidebarFunction>();
   RegisterFunction<ShowSidebarFunction>();
+
+#if defined(TOOLKIT_VIEWS)
+  // Input.
+  RegisterFunction<SendKeyboardEventInputFunction>();
+#endif
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

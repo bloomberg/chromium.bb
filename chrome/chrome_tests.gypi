@@ -1714,6 +1714,7 @@
         'browser/extensions/extension_i18n_apitest.cc',
         'browser/extensions/extension_incognito_apitest.cc',
         'browser/extensions/extension_infobar_apitest.cc',
+        'browser/extensions/extension_input_apitest.cc',
         'browser/extensions/extension_install_ui_browsertest.cc',
         'browser/extensions/extension_javascript_url_apitest.cc',
         'browser/extensions/extension_management_browsertest.cc',
@@ -1787,6 +1788,11 @@
           'sources!': [
             'browser/dom_ui/mediaplayer_browsertest.cc',
             'browser/dom_ui/file_browse_browsertest.cc',
+          ],
+        }],
+        ['toolkit_views==0', {
+          'sources!': [
+            'browser/extensions/extension_input_apitest.cc',
           ],
         }],
         ['OS!="linux" or toolkit_views==1', {
