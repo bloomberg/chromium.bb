@@ -97,6 +97,8 @@ string16 ChildProcessInfo::GetLocalizedTitle() const {
     message_id = IDS_TASK_MANAGER_NACL_PREFIX;
   } else if (type_ == ChildProcessInfo::NACL_BROKER_PROCESS) {
     message_id = IDS_TASK_MANAGER_NACL_BROKER_PREFIX;
+  } else if (type_ == ChildProcessInfo::GPU_PROCESS) {
+    message_id = IDS_TASK_MANAGER_GPU_PREFIX;
   } else {
     DCHECK(false) << "Need localized name for child process type.";
     return title;
