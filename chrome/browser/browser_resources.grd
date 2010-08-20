@@ -57,8 +57,8 @@ without changes to the corresponding grd file. eadee -->
       <include name="IDR_SYNC_CHOOSE_DATATYPES_HTML" file="sync\resources\choose_datatypes.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_DONE_HTML" file="sync\resources\setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_SYNC_SETUP_FLOW_HTML" file="sync\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_REMOTING_SETUP_FLOW_HTML" file="remoting\resources\setup_flow.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_REMOTING_SETUP_DONE_HTML" file="remoting\resources\setup_done.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_REMOTING_SETUP_FLOW_HTML" file="remoting\resources\remoting_setup_flow.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_REMOTING_SETUP_DONE_HTML" file="remoting\resources\remoting_setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
 
       <if expr="pp_ifdef('chromeos')">
