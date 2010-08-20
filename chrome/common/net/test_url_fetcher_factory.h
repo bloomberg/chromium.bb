@@ -53,6 +53,13 @@ class TestURLFetcher : public URLFetcher {
   // Returns the data uploaded on this URLFetcher.
   const std::string& upload_data() const { return URLFetcher::upload_data(); }
 
+  // Overriden to do nothing. URLFetcher implementation add reference
+  // to request_context_getter in core_, but it might not be released
+  // because we wouldn't call Core::CancelURLRequest.
+  // Without this, we'll see leaks of URLRequestContext in test.
+  virtual void set_requeset_context(
+      URLRequestContextGetter* request_context_getter) {}
+
  private:
   const GURL original_url_;
 

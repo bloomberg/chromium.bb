@@ -140,7 +140,8 @@ class URLFetcher {
 
   // Set the URLRequestContext on the request.  Must be called before the
   // request is started.
-  void set_request_context(URLRequestContextGetter* request_context_getter);
+  virtual void set_request_context(
+      URLRequestContextGetter* request_context_getter);
 
   // If |retry| is false, 5xx responses will be propagated to the observer,
   // if it is true URLFetcher will automatically re-execute the request,

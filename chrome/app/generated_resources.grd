@@ -9152,6 +9152,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
     </if>
 
+    <!-- GoogleURL tracker info bar -->
+    <message name="IDS_GOOGLE_URL_TRACKER_INFOBAR_MESSAGE" desc="Message displayed when the user's current Google TLD doesn't match the default for their location.">
+       It looks like you've moved.  Would you like to use <ph name="NEW_GOOGLE_URL">$1<ex>google.com</ex></ph>?
+    </message>
+
     </messages>
 
     <structures fallback_to_english="true">

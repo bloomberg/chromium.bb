@@ -5,6 +5,8 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 
 #include "app/l10n_util.h"
+#include "base/command_line.h"
+#include "base/environment.h"
 #include "base/stl_util-inl.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -17,6 +19,8 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/env_vars.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -126,9 +130,11 @@ void TemplateURLModel::Init(const Initializer* initializers,
   }
 
   // Request a server check for the correct Google URL if Google is the default
-  // search engine.
+  // search engine, not in headless mode and not in Chrome Frame.
   const TemplateURL* default_provider = GetDefaultSearchProvider();
-  if (default_provider) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  if (default_provider && !env->HasVar(env_vars::kHeadless) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
     const TemplateURLRef* default_provider_ref = default_provider->url();
     if (default_provider_ref && default_provider_ref->HasGoogleBaseURLs())
       GoogleURLTracker::RequestServerCheck();
