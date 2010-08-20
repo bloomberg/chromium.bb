@@ -1496,7 +1496,9 @@
    Memcheck:Param
    socketcall.sendmsg(msg.msg_iov[i])
    fun:sendmsg$UNIX2003
+   ...
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
+   ...
    fun:event_process_active
    fun:event_base_loop
 }
@@ -4133,4 +4135,16 @@
    fun:_ZN10disk_cache17InFlightBackendIO19OnOperationCompleteEPNS_12BackgroundIOEb
    fun:_ZN10disk_cache10InFlightIO14InvokeCallbackEPNS_12BackgroundIOEb
    fun:_ZN10disk_cache12BackgroundIO13OnIOSignalledEv
+}
+{
+   bug_52825
+   Memcheck:Addr4
+   fun:_ZNKSt8_Rb_treeIjSt4pairIKjP12ObserverListI20NotificationObserverLb0EEESt10_Select1stIS6_ESt4lessIjESaIS6_EE8_M_beginEv
+   fun:_ZNKSt8_Rb_treeIjSt4pairIKjP12ObserverListI20NotificationObserverLb0EEESt10_Select1stIS6_ESt4lessIjESaIS6_EE4findERS1_
+   fun:_ZNKSt3mapIjP12ObserverListI20NotificationObserverLb0EESt4lessIjESaISt4pairIKjS3_EEE4findERS7_
+   fun:_ZN19NotificationService6HasKeyERKSt3mapIjP12ObserverListI20NotificationObserverLb0EESt4lessIjESaISt4pairIKjS4_EEERK18NotificationSource
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN23ChromeURLRequestContextD0Ev
+   ...
+   fun:_ZN17URLRequestHttpJobD0Ev
 }
