@@ -1528,7 +1528,7 @@
    fun:CGColorTransformConvertData
 }
 {
-   bug_52681
+   bug_52681_a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN16ChildProcessHost13CreateChannelEv
@@ -1536,8 +1536,16 @@
    fun:_ZN18UtilityProcessHost22StartExtensionUnpackerERK8FilePath
    fun:_ZN14RunnableMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathE6Tuple1IS1_EE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
+}
+{
+   bug_52681_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16ChildProcessHost13CreateChannelEv
+   fun:_ZN18UtilityProcessHost12StartProcessERK8FilePath
+   fun:_ZN18UtilityProcessHost22StartExtensionUnpackerERK8FilePath
+   fun:_ZN26SandboxedExtensionUnpacker22StartProcessOnIOThreadERK8FilePath
+   fun:_Z16DispatchToMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathES1_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathE6Tuple1IS1_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
 }
