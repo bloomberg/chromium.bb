@@ -955,3 +955,10 @@
    fun:Callback1::Type* NewCallback
    fun:PrefValueStoreTest_TestConcurrentPolicyRefresh_Test::TestBody
 }
+{
+   bug_52826
+   Heapcheck:Leak
+   fun:TestingProfile::CreateRequestContext
+   fun:GoogleURLTrackerTest::CreateRequestContext
+   fun:GoogleURLTrackerTest_SearchCommitedAndUserSayNo_Test::TestBody
+}
