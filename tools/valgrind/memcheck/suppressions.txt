@@ -3748,8 +3748,6 @@
    ...
    fun:_ZN3IPC16MessageWithReplyI6Tuple2IiiE6Tuple1IRbEE18DispatchDelayReplyI18AutomationProviderMS8_FviiPNS_7MessageEEEEbPKS9_PT_T0_
    fun:_ZN18AutomationProvider17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_ZN3IPC11SyncChannel20ReceivedSyncMsgQueue16DispatchMessagesEv
 }
 {
    bug_50968
@@ -4155,4 +4153,15 @@
    fun:_Znw*
    fun:_ZN14TestingProfile20CreateRequestContextEv
    fun:_ZN20GoogleURLTrackerTest20CreateRequestContextEv
+}
+{
+   bug_52828
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN4base10JSONReader10BuildValueEb
+   fun:_ZN4base10JSONReader11JsonToValueERKSsbb
+   fun:_ZN4base10JSONReader18ReadAndReturnErrorERKSsbPiPSs
+   fun:_ZN4base10JSONReader4ReadERKSsb
+   fun:_ZN81_GLOBAL__N_chrome_browser_host_content_settings_map_unittest.cc*
 }
