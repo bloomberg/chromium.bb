@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">Google Chrome yanıt vermiyor. Şimdi yeniden başlatılsın mı?</translation>
 <translation id="2580411288591421699">Şu anda çalışmakta olan Google Chrome ile aynı sürüm yüklenemez. Lütfen Google Chrome'u kapatın ve tekrar deneyin.</translation>
 <translation id="7747138024166251722">Yükleyici geçici bir dizin oluşturamadı. Lütfen, kullanılabilir disk alanını ve yazılım yükleme iznini kontrol edin.</translation>
+<translation id="6008953001134414503">Bu değişikliğin geçerli olabilmesi için lütfen Google Chrome İşletim Sistemi'nden çıkış yapın ve tekrar oturum açın.</translation>
 <translation id="6009537148180854585">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; etki alanına ulaşmayı denediniz, ancak sunucunun sunduğu sertifika hata içeriyor. Google Chrome, hatalı bir sertifika kullanamaz ve bağlanmayı denediğiniz sitenin kimliğini doğrulayamıyor. Bağlantınız güvenli değil. Devam etmemelisiniz.</translation>
 <translation id="8738921060445980047">Bilinmeyen sürüm.</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">Profiliniz, Google Chrome'un daha yeni bir sürümünden olduğu için kullanılamıyor.\n\nBazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya Chrome'un daha yeni bir sürümünü kullanın.</translation>
 <translation id="7214670531148488183">Google Chrome, web'de gezinme deneyiminizi geliştirmek için web hizmetleri kullanabilir. İsterseniz bu hizmetleri devre dışı bırakabilirsiniz.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5840402478666768335">İsteğe Bağlı: Kullanıcı istatistiklerini ve çökme raporlarını Google'a otomatik olarak göndererek\nGoogle Chrome'u iyileştirmemize yardımcı olun</translation>
+<translation id="5008136264574452501">Google Chrome Canary Yapısı</translation>
 <translation id="911206726377975832">Tarama verileriniz de silinsin mi?</translation>
 <translation id="2044287590254833138">Google Chrome Araç Çubuğu</translation>
 <translation id="5074344184765391290">Chrome Eklentisi Ana Makinesi</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome, <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> açık kaynak projesi ve diğer <ph name="BEGIN_LINK_OSS"/>açık kaynak yazılımlar<ph name="END_LINK_OSS"/> ile oluşturulmuştur.</translation>
 <translation id="6921913858457830952">Google Chrome, yükleme işleminizi tamamlamaya hazır.</translation>
+<translation id="7436949144778751379">Google Chrome, Windows XP veya sonrasını gerektirir. Bazı özellikler çalışmayabilir.</translation>
 <translation id="7100330187273168372">Google Chrome, veri dizini üzerinde okuma ve yazma işlemi yapamaz:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Beni rahatsız etmeyin</translation>
 <translation id="2290095356545025170">Google Chrome'u kaldırmak istediğinizden emin misiniz?</translation>
-<translation id="6099374801190929276">Google Chrome formların kolayca doldurulabilmesini sağlamak için bu bilgiyi saklayacak.</translation>
 <translation id="6087062680442281307">Google Chrome, web sayfalarını ve uygulamaları yıldırım hızıyla çalıştıran bir web tarayıcısıdır. Hızlı, dengeli ve kullanımı kolaydır. Kötü amaçlı yazılımlara ve e-dolandırıcılığa karşı Google Chrome'un içinde yerleşik olarak bulunan koruma özellikleriyle web'de daha güvenli bir şekilde gezinin.</translation>
 <translation id="2115751172320447278">Telif Hakkı © 2006-2010 Google Inc. Tüm Hakları Saklıdır.</translation>
 <translation id="5941830788786076944">Google Chrome varsayılan tarayıcı olsun</translation>
-<translation id="5813295956179798212">Google Chrome Deneysel</translation>
 <translation id="5947389362804196214">Tercihleriniz okunamıyor.\n\nBazı özellikler kullanılamayabilir. Tercihlerde yapılan değişiklikler kaydedilmeyecektir.</translation>
 <translation id="4127951844153999091">Bu durumda, sertifikada listelenen adres, tarayıcınızın gitmeye çalıştığı web sitesinin adresiyle eşleşmez. Bunun olası nedenlerinden biri, iletişimlerinizin, farklı bir web sitesine ait sertifikayı sunan bir saldırgan tarafından kesilmesi olabilir, bu da hatalı eşleşmeye yol açabilir. Diğer olası bir nedense, sunucunun, ziyaret etmeye çalıştığınız web sitesi dahil olmak üzere birden çok web sitesi için, bu sertifika söz konusu web sitelerinin tümü için geçerli olmadığı halde, aynı sertifikayı döndürecek şekilde ayarlanmış olmasıdır. Google Chrome, kesin olarak &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etki alanına ulaştığınızı belirtebilir, ancak bunun ulaşmak istediğiniz &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; etki alanıyla aynı site olduğunu doğrulayamaz. Devam ederseniz Chrome daha fazla hatalı ad eşleşmesi aramaz. Genellikle bu noktadan sonra ilerlememek en iyisidir.</translation>
 <translation id="2712549016134575851">Yüklü başka bir uygulamayla çakışma tespit edildi.</translation>
 <translation id="7018032895891496381">Google Chrome şu anda <ph name="PAGE_TITLE"/> olarak ayarlanmış olan varsayılan arama motorunuzu kullanır. Varsayılan arama motorunuzun aynı kalmasını istiyor musunuz?</translation>
 <translation id="7161904924553537242">Google Chrome'a Hoş Geldiniz</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
-<translation id="8236873504073475138">Google Chrome, Windows 2000'i desteklemez. Bazı özellikler çalışmayabilir.</translation>
 <translation id="5318056482164160049">Google Chrome Eklenti Ana Makinesi</translation>
 <translation id="6126631249883707068">Google Chrome'un şifrenizi kaydetmesini istiyor musunuz?</translation>
 <translation id="5046764976540625289">Chrome'dan Çık</translation>
@@ -87,7 +88,6 @@
 <translation id="473183893665420670">Google Chrome seçeneklerini sıfırladığınızda, yaptığınız tüm değişiklikler varsayılan ayarlara geri döndürülür. Chrome seçeneklerini sıfırlamak istiyor musunuz?</translation>
 <translation id="3636771339108070045">Bu bilgisayarda Google Chrome'un daha yeni bir sürümü zaten var. Yazılım çalışmıyorsa, lütfen Google Chrome'u kaldırın ve yeniden indirin.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="3396666154568987767"><ph name="PROFILE_NAME"/> için Google Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Yükleyici arşivi bozuk veya geçersiz. Lütfen Google Chrome'u yeniden indirin.</translation>
 <translation id="6626317981028933585">Maalesef bu tarayıcı çalışırken Mozilla Firefox ayarlarınız kullanılamaz. Bu ayarları Google Chrome'a almak için çalışmanızı kaydedin ve tüm Firefox pencerelerini kapatın. Ardından Devam Et'i tıklayın.</translation>

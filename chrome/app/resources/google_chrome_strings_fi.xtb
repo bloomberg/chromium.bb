@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">Google Chrome ei vastaa. Käynnistetäänkö uudelleen?</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>
+<translation id="6008953001134414503">Muutos tulee voimaan, kun kirjaudut ulos Google Chrome -käyttöjärjestelmästä ja kirjaudut sitten uudelleen sisään.</translation>
 <translation id="6009537148180854585">Yritit päästä verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelimen esittämässä varmenteessa on virheitä. Google Chrome ei voi käyttää virheellistä varmennetta, eikä todentaa haluamasi sivuston identiteettiä.  Yhteytesi ei ole suojattu, eikä sinun tule jatkaa.</translation>
 <translation id="8738921060445980047">Tuntematon versio.</translation>
 <translation id="2485422356828889247">Poista</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">Profiiliasi ei voida käyttää koska se on peräisin Google Chromen uudemmasta versiosta.\n\n Kaikki ominaisuudet eivät välttämättä toimi. Valitse toinen profiili tai käytä uudempaa Chrome-versiota.</translation>
 <translation id="7214670531148488183">Google Chrome voi käyttää verkkopalveluita selauskokemuksen parantamiseen. Voit halutessasi poistaa palvelut käytöstä.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5840402478666768335">Valinnainen: lähetä automaattisesti käyttötilastoja ja virhe\nraportteja Google Chromen kehittämiseksi</translation>
+<translation id="5008136264574452501">Google Chromen Canary-versio</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="2044287590254833138">Google Chrome-työkalupalkki</translation>
 <translation id="5074344184765391290">Chrome-laajennuksen isäntä</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chromen mahdollistivat avoimen lähdekoodin projekti <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ja muut <ph name="BEGIN_LINK_OSS"/>avoimen lähdekoodin ohjelmistot<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome on valmis suorittamaan asennuksen loppuun.</translation>
+<translation id="7436949144778751379">Google Chrome vaatii Windows XP:n tai uudemman version. Jotkin ominaisuudet eivät välttämättä toimi.</translation>
 <translation id="7100330187273168372">Google Chrome ei voi lukea datahakemistoa :\n\n<ph name="USER_DATA_DIRECTORY"/>, eikä kirjoittaa siihen</translation>
 <translation id="6757767188268205357">Älä häiritse</translation>
 <translation id="2290095356545025170">Haluatko varmasti poistaa Google Chromen?</translation>
-<translation id="6099374801190929276">Google Chrome tallentaa nämä tiedot lomakkeiden täyttämisen helpottamiseksi.</translation>
 <translation id="6087062680442281307">Google Chrome on verkkoselain, jolla voit avata verkkosivuja ja sovelluksia salamannopeasti. Se on nopea, vakaa ja helppokäyttöinen. Selaat verkkoa turvallisemmin Google Chromen haittaohjelma- ja tietojenkalastelusuojauksen avulla.</translation>
 <translation id="2115751172320447278">Copyright © 2006-2010 Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="5941830788786076944">Tee Google Chromesta oletusselain</translation>
-<translation id="5813295956179798212">Kokeellinen Google Chrome</translation>
 <translation id="5947389362804196214">Asetuksiasi ei voi lukea.\n\nKaikkia toimintoja ei voi välttämättä käyttää eikä asetuksiin tehtäviä muutoksia tallenneta.</translation>
 <translation id="4127951844153999091">Tällöin varmenteessa mainittu osoite ei vastaa sen sivuston osoitetta, johon selaimesi yritti siirtyä. Yksi mahdollinen syy on, että hyökkääjä on siepannut yhteytesi ja esittää eri sivuston varmenteen. Toinen syy voi olla se, että palvelin on määritetty palauttamaan sama varmenne useille sivustoille, myös sille, johon yrität päästä, vaikka varmenne ei kelpaa kaikissa kyseessä olevissa sivustoissa. <ph name="DOMAIN2"/><ph name="DOMAIN"/> Jos jatkat, Chrome ei tarkista enää muita vastaamattomia nimiä. Yleensä on parempi olla jatkamatta tästä eteenpäin.</translation>
 <translation id="2712549016134575851">Ristiriita toisen asennetun sovelluksen kanssa havaittu.</translation>
 <translation id="7018032895891496381">Google Chrome käyttää oletushakukonettasi, joka on tällä hetkellä <ph name="PAGE_TITLE"/>. Haluatko säilyttää oletushakukoneen samana?</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
-<translation id="8236873504073475138">Google Chrome ei tue Windows 2000-käyttöjärjestelmää. Kaikki ominaisuudet eivät välttämättä toimi.</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
 <translation id="6126631249883707068">Haluatko, että Google Chrome tallentaa salasanasi?</translation>
 <translation id="5046764976540625289">Poistu Chromesta</translation>
@@ -87,7 +88,6 @@
 <translation id="473183893665420670">Kun tyhjennät Google Chromen asetukset, kaikki tekemäsi muutokset palautetaan oletusasetuksiksi. Haluatko tyhjentää Google Chromen asetukset?</translation>
 <translation id="3636771339108070045">Tietokoneessa on jo uudempi Google Chromen versio. Jos ohjelma ei toimi, poista Google Chromen asennus ja lataa se uudelleen.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="3396666154568987767">Google Chromen <ph name="PROFILE_NAME"/>-profiili</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Asennusohjelman arkistotiedosto on vioittunut tai se ei kelpaa. Lataa Google Chrome uudelleen.</translation>
 <translation id="6626317981028933585">Valitettavasti Mozilla Firefox-asetuksesi eivät ole käytettävissä kun kyseinen selain on toiminnassa. Tuodaksesi asetukset Google Chromeen, tallenna mahdolliset keskeneräiset työt ja sulje kaikki Firefox-ikkunat. Napsauta sitten Jatka.</translation>

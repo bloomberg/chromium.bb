@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">Przeglądarka Google Chrome nie odpowiada. Uruchomić ponownie?</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
+<translation id="6008953001134414503">Wyloguj się z systemu Google Chrome OS, a następnie zaloguj ponownie, aby zmiana zaczęła obowiązywać.</translation>
 <translation id="6009537148180854585">Podjęto próbę przejścia do witryny &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale certyfikat wyświetlony przez serwer zawiera błędy. Google Chrome nie może użyć certyfikatu z błędami ani zweryfikować tożsamości witryny, z którą miało nastąpić połączenie. Połączenie nie jest bezpieczne i nie należy wykonywać dalszych czynności.</translation>
 <translation id="8738921060445980047">Nieznana wersja.</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">Twój profil nie może zostać użyty ponieważ został utworzony w nowszej wersji przeglądarki Chrome.\n\nNiektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji przeglądarki Chrome.</translation>
 <translation id="7214670531148488183">Przeglądarka Google Chrome może korzystać z usług sieciowych w celu poprawy wygody użytkowania. Usługi te można opcjonalnie wyłączyć.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5840402478666768335">Opcjonalnie: pomóż udoskonalić przeglądarkę Google Chrome, automatycznie wysyłając do Google\nstatystyki użytkowania i raporty o awariach</translation>
+<translation id="5008136264574452501">Kompilacja Google Chrome Canary</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądarki?</translation>
 <translation id="2044287590254833138">Pasek narzędzi Google Chrome</translation>
 <translation id="5074344184765391290">Serwer wtyczek przeglądarki Chrome</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">Program Chrome</translation>
 <translation id="2874156562296220396">Stworzenie przeglądarki Google Chrome było możliwe dzięki projektowi open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> i innym <ph name="BEGIN_LINK_OSS"/>programom o otwartym kodzie źródłowym<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Przeglądarka Chrome jest gotowa do ukończenia instalacji.</translation>
+<translation id="7436949144778751379">Przeglądarka Google Chrome wymaga systemu Windows XP lub nowszego. Niektóre funkcje mogą nie działać.</translation>
 <translation id="7100330187273168372">Google Chrome nie może odczytać ani zapisać danych w katalogu:\n\n <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Nie proponuj więcej</translation>
 <translation id="2290095356545025170">Czy na pewno chcesz odinstalować przeglądarkę Google Chrome?</translation>
-<translation id="6099374801190929276">Aby ułatwić wypełnianie formularzy, Google Chrome będzie przechowywać te informacje.</translation>
 <translation id="6087062680442281307">Google Chrome jest przeglądarką internetową, w której witryny internetowe i aplikacje są szybkie jak błyskawica. Jest szybka, stabilna i łatwa w obsłudze. Dzięki wbudowanej ochronie przed złośliwym oprogramowaniem i wyłudzaniem informacji przeglądanie internetu przy użyciu przeglądarki Google Chrome jest bezpieczniejsze.</translation>
 <translation id="2115751172320447278">Copyright © 2006–2010 Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="5941830788786076944">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
-<translation id="5813295956179798212">Google Chrome Exp</translation>
 <translation id="5947389362804196214">Nie można odczytać ustawień.\n\nNiektóre funkcje mogą być niedostępne, a zmiany w ustawieniach nie zostaną zapisane.</translation>
 <translation id="4127951844153999091">W tym przypadku adres zawarty w certyfikacie nie jest zgodny z adresem witryny wpisanym w przeglądarce. Jednym z powodów takiej sytuacji może być przechwycenie komunikacji przez intruza, który przedstawia certyfikat innej witryny, co powoduje niezgodność. Inną przyczyną może być konfiguracja serwera zwracająca ten sam certyfikat dla wielu witryn (w tym witryny, którą chcesz wyświetlić) nawet w przypadku, gdy certyfikat nie jest ważny dla wszystkich witryn. Google Chrome może potwierdzić, że otwarty został adres &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale nie może zweryfikować, że jest to witryna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, która miała zostać wyświetlona. Jeśli przejdziesz dalej, aplikacja Chrome nie będzie sprawdzać kolejnych niezgodności nazw. Ogólnie nie zalecamy kontynuowania pracy na tej stronie.</translation>
 <translation id="2712549016134575851">Wykryto konflikt z inną zainstalowaną aplikacją.</translation>
 <translation id="7018032895891496381">Przeglądarka Google Chrome korzysta z domyślnej wyszukiwarki, którą jest obecnie <ph name="PAGE_TITLE"/>. Czy chcesz zachować tę domyślną wyszukiwarkę?</translation>
 <translation id="7161904924553537242">Google Chrome – witamy!</translation>
 <translation id="8669527147644353129">Pomoc Google Chrome</translation>
-<translation id="8236873504073475138">Google Chrome nie obsługuje systemu Windows 2000. Niektóre funkcje mogą nie działać prawidłowo.</translation>
 <translation id="5318056482164160049">Serwer wtyczek przeglądarki Google Chrome</translation>
 <translation id="6126631249883707068">Czy chcesz, aby przeglądarka Google Chrome zapisała hasło?</translation>
 <translation id="5046764976540625289">Zakończ Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="473183893665420670">Po zresetowaniu opcji Google Chrome wszelkie wprowadzone zmiany zostaną cofnięte do ustawień domyślnych. Czy chcesz zresetować opcje przeglądarki Chrome?</translation>
 <translation id="3636771339108070045">Na tym komputerze jest już zainstalowana nowsza wersja Google Chrome. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome i pobierz go ponownie.</translation>
 <translation id="4407807842708586359">System operacyjny Google Chrome</translation>
-<translation id="3396666154568987767">Przeglądarka Google Chrome dla: <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
 <translation id="1001534784610492198">Archiwum instalatora jest uszkodzone lub nieprawidłowe. Pobierz Google Chrome ponownie.</translation>
 <translation id="6626317981028933585">Niestety ustawienia przeglądarki Firefox są niedostępne, gdy aplikacja jest uruchomiona. Aby importować ustawienia do Google Chrome, zapisz bieżącą pracę i zamknij wszystkie okna Firefoxa. Następnie kliknij przycisk Kontynuj.</translation>

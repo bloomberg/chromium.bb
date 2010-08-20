@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">Hindi tumutugon ang Google Chrome. I-restart ngayon?</translation>
 <translation id="2580411288591421699">Hindi ma-install ang parehong bersyon ng Google Chrome na kasalukuyang tumatakbo. Mangyaring isara ang Google Chrome at muling subukan.</translation>
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
+<translation id="6008953001134414503">Mangyaring mag-sign out sa Google Chrome OS at mag-sign in muli upang maisagawa ang pagbabagong ito.</translation>
 <translation id="6009537148180854585">Tinatangka mong maabot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ngunit ang sertipiko na ipinakita ng server ay naglalaman ng mga error. Hindi magagamit ng Chrome ang isang sertipiko na may mga error at hindi mapatunayan ang pagkilala ng site na tinangka mong kumunekta sa. Ang iyong koneksyon ay hindi secure at dapat hindi magpatuloy.</translation>
 <translation id="8738921060445980047">Hindi kilalang bersyon.</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">Ang iyong profile ay hindi magagamit dahil ito ay mula sa isang bagong bersyon ng Google Chrome.\n\nIlang mga tampok ay maaaring hindi magagamit. Mangyaring tukuyin ang isang kakaibang derektoryo ng profile o gamitin ang isan bagong bersyon ng Chrome.</translation>
 <translation id="7214670531148488183">Maaaring gumamit ang Google Chrome ng mga serbisyo sa web upang mapabuti ang iyong karanasan sa pagba-browse. Maaari mong opsyonal na hindi paganahin ang mga serbisyong ito. </translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5840402478666768335">Opsyonal: Tumulong na gawing mas mahusay ang Google Chrome sa pamamagitan ng awtomatikong pagpapadala ng mga ulat ng mga istatistika at pag-crash\nsa Google</translation>
+<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Tatanggalin din ang iyong data sa pag-browse?</translation>
 <translation id="2044287590254833138">Toolbar ng Google Chrome</translation>
 <translation id="5074344184765391290">Plug-In Host ng Chrome</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Ang Google Chrome ay ginawang posible ng <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source project at iba pang <ph name="BEGIN_LINK_OSS"/>open source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Ang Chrome ay handang makumpleto sa iyong pag-install.</translation>
+<translation id="7436949144778751379">Kailangan ng Google Chrome ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
 <translation id="7100330187273168372">Hindi mababasa ang Google Chrome at isulat ito sa direktoryo ng data:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Huwag akong istorbohin</translation>
 <translation id="2290095356545025170">Sigurado ka bang nais mong i-uninstall ang Google Chrome?</translation>
-<translation id="6099374801190929276">Iiimbak ng Google Chrome ang impormasyong ito upang gawing mas madali ang pagpunan ng mga form.</translation>
 <translation id="6087062680442281307">Ang Google Chrome ay isang web browser na nagpapatakbo ng mga web page at application na kasingbilis ng kidlat. Mabilis ito, matatag, at madaling gamitin. I-browse ang web nang mas ligtas na may proteksyon sa malware at phishing na binuo sa Google Chrome.</translation>
 <translation id="2115751172320447278">Copyright © 2006-2010 Google Inc. Nakalaan ang Lahat ng Karapatan.</translation>
 <translation id="5941830788786076944">Gawin ang Google Chrome na default browser</translation>
-<translation id="5813295956179798212">Google Chrome Exp</translation>
 <translation id="5947389362804196214">Hindi mabasa ang iyong mga kagustuhan.\n\nMaaaring hindi magamit ang ilang mga tampok at hindi mase-save ang mga pagbabago sa kagustuhan.</translation>
 <translation id="4127951844153999091">Dahil dito, ang address ay nakalista sa sertipiko na walang katugmang address ng website na iyong sinubukang i-browse upang pumunta sa. Isang posibleng kadahilanan para sa iyong mga kumonikasyon na iyon na maaaring makuha sa pamamagitan ng isang pag-atake kung sino ang nagpapakita ng isang sertipiko para sa isang magkakaibang website, na dapat magsasanhi ng isang hindi patas. Iba pang posibleng kadahilanan na ang server ay naka-set up upang ibalik ang parehong sertipiko para sa maramihang mga website, kasama ang isang tinatangka mong bisitahin, kahit na ang sertipiko ay hindi wasto para sa lahat ng mga website na iyon. Maaaring sabihin ng Chrome na naabot mo na &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ngunit hindi matukoy na parehong site bilang &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; na nilalayon na maabot mo. Kung nagpatuloy ka, ang Chrome ay hindi na susuriin para sa anumang ilang mga hindi tugmang pangalan. Sa pangkalahatan, ito ay pinakamagandang hindi ipagpatuloy lampasan ang puntong ito.</translation>
 <translation id="2712549016134575851">May nakitang salungatan sa isa pang naka-install na application.</translation>
 <translation id="7018032895891496381">Ginagamit ng Google Chrome ang iyong default na search engine, na kasalukuyang nakatakda sa <ph name="PAGE_TITLE"/>. Nais mo bang panatilihin ang iyong default na search engine?</translation>
 <translation id="7161904924553537242">Maligayang pagdating sa Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
-<translation id="8236873504073475138">Hindi suportado ng Chrome ang Windows 2000. Ang ilang mga tampok ay maaaring hindi gumana.</translation>
 <translation id="5318056482164160049">Plug-In Host ng Google Chrome</translation>
 <translation id="6126631249883707068">Nais mo bang i-save ng Google Chrome ang iyong password?</translation>
 <translation id="5046764976540625289">Lumabas sa Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="473183893665420670">Kapag i-reset mo ang mga pagpipilian ng Google Chrome, maibabalik ang anumang mga pagbabagong isinagawa mo sa default na mga setting. Nais mo bang i-reset ang mga pagpipilian ng Chrome?</translation>
 <translation id="3636771339108070045">Mayroon nang mas bagong bersyon ng Google Chrome ang computer na ito. Kung hindi gumagana ang software, paki-uninstall ang Google Chrome at i-download muli ito.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="3396666154568987767">Google Chrome para sa <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Na-corrupt o hindi wasto ang installer archive. Paki-download muli ang Google Chrome.</translation>
 <translation id="6626317981028933585">Nakalulungkot, ang iyong mga setting ng Mozilla Firefox ay hindi magagamit habang tumatakbo ang browser. Upang mai-import ang mga setting sa Google Chrome, i-save ang iyong ginagawa at isara ang lahat ng mga window ng Firefox. Pagkatapos i-click ang Ipagpatuloy.</translation>

@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">Google 瀏覽器沒有回應。 是否要立即重新啟動？</translation>
 <translation id="2580411288591421699">您無法安裝這個版本的「Google 瀏覽器」，因為相同的版本目前正在執行中。請關閉「Google 瀏覽器」然後再試一次。</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
+<translation id="6008953001134414503">請先登出「Google Chrome 作業系統」，然後再次登入，這項變更才會生效。</translation>
 <translation id="6009537148180854585">您嘗試到達 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但是伺服器提供的憑證包含錯誤資訊。Google 瀏覽器無法使用包含錯誤資訊的憑證，也無法驗證您要連結的網站的身份。您的連線不安全，所以您必須就此停住。您的連線不安全，所以您必須就此停住。</translation>
 <translation id="8738921060445980047">未知版本。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">您的設定檔由於來自較新版本的 Google 瀏覽器，所以無法使用。\n\n某些功能可能無法提供。請指定另一個設定檔目錄，或使用較新版本的 Google 瀏覽器。</translation>
 <translation id="7214670531148488183">「Google 瀏覽器」會使用網頁服務來改善瀏覽功能，當然您也可以選擇停用這些服務。</translation>
 <translation id="1759842336958782510">Google 瀏覽器</translation>
+<translation id="5840402478666768335">選用：只要設定將使用統計資料及當機報告自動傳送給 Google，\n就能助我們一臂之力，讓「Google 瀏覽器」更臻完美。</translation>
+<translation id="5008136264574452501">Google Chrome Canary 版本</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="2044287590254833138">Google 瀏覽器工具列</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">瀏覽器公用程式</translation>
 <translation id="2874156562296220396">「Google 瀏覽器」的開發仰賴 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 開放原始碼計畫與其他<ph name="BEGIN_LINK_OSS"/>開放原始碼軟體<ph name="END_LINK_OSS"/>的協助才得以完成。</translation>
 <translation id="6921913858457830952">Google 瀏覽器已準備好完成您的安裝。</translation>
+<translation id="7436949144778751379">「Google 瀏覽器」需要 Windows XP 或更新版本的作業系統。某些功能可能無法執行。</translation>
 <translation id="7100330187273168372">Google 瀏覽器無法讀取或寫入資料目錄:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">不要再問我</translation>
 <translation id="2290095356545025170">您是否確定要解除安裝「Google 瀏覽器」？</translation>
-<translation id="6099374801190929276">Google 瀏覽器會儲存這項資訊，協助您輕鬆填寫表單。</translation>
 <translation id="6087062680442281307">「Google 瀏覽器」開啟網頁和執行應用程式的速度奇快無比！除了執行速度快、穩定且容易使用之外，它還內建防護機制，讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
 <translation id="2115751172320447278">版權所有 © 2006-2010 Google Inc。保留所有權利。</translation>
 <translation id="5941830788786076944">將 Google 瀏覽器設為我的預設瀏覽器</translation>
-<translation id="5813295956179798212">Google 瀏覽器實驗版</translation>
 <translation id="5947389362804196214">系統無法讀取您的偏好設定。\n\n部分功能可能無法使用，且系統也不會儲存任何偏好設定的變更。</translation>
 <translation id="4127951844153999091">在這個情況下，憑證所列的網址與瀏覽器嘗試前往的網址不符。憑證不符的其中一個可能原因是，攻擊者欄截了您的通訊，並且出示另一個網站的憑證。另一個可能的原因是，伺服器已設定為不同的網站傳回相同的憑證 (其中包括您嘗試造訪的網站)，而這個憑證可能對其中一些網站無效。Google 瀏覽器可以確定您已經到達 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但是無法驗證這與您嘗試前往的 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; 是同一個網站。如果您繼續，瀏覽器將不再檢查任何名稱不符的情況。一般而言，建議您就此停住。</translation>
 <translation id="2712549016134575851">偵測到與其他已安裝的應用程式互相衝突。</translation>
 <translation id="7018032895891496381">「Google 瀏覽器」使用您目前預設的搜尋引擎 <ph name="PAGE_TITLE"/>，要保留目前預設的搜尋引擎嗎？</translation>
 <translation id="7161904924553537242">歡迎使用 Google 瀏覽器</translation>
 <translation id="8669527147644353129">Google 瀏覽器小幫手</translation>
-<translation id="8236873504073475138">Google 瀏覽器不支援 Windows 2000。某些功能可能無法執行。</translation>
 <translation id="5318056482164160049">Google 瀏覽器外掛程式主控中心</translation>
 <translation id="6126631249883707068">您希望「Google 瀏覽器」儲存密碼嗎？</translation>
 <translation id="5046764976540625289">結束 Google 瀏覽器</translation>
@@ -87,7 +88,6 @@
 <translation id="473183893665420670">重設「Google 瀏覽器」選項時，先前的變更將返回預設設定。確定要重設「Google 瀏覽器」選項嗎？</translation>
 <translation id="3636771339108070045">此電腦已有更新的「Google 瀏覽器」版本可供使用，如果軟體無法順利運作，請移除「Google 瀏覽器」，然後重新下載一次。</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="3396666154568987767"><ph name="PROFILE_NAME"/>的 Google 瀏覽器快捷</translation>
 <translation id="3360895254066713204">瀏覽器小幫手</translation>
 <translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載「Google 瀏覽器」。</translation>
 <translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要匯入這些設定至 Google 瀏覽器，請儲存您的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>

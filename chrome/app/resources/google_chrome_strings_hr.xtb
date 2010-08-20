@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">Google Chrome ne reagira. Želite li ga ponovno pokrenuti?</translation>
 <translation id="2580411288591421699">Nije moguće instalirati istu verziju programa Google Chrome koja je trenutačno pokrenuta. Zatvorite Google Chrome i pokušajte ponovo.</translation>
 <translation id="7747138024166251722">Program za instalaciju nije izradio privremeni direktorij. Provjerite ima li slobodnog prostora na disku i postoji li dopuštenje za instalaciju softvera.</translation>
+<translation id="6008953001134414503">Odjavite se iz Google Chrome OS-a i prijavite se ponovo kako bi promjena počela vrijediti.</translation>
 <translation id="6009537148180854585">Pokušali ste pristupiti domeni &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali potvrda koju je prikazao poslužitelj sadrži pogreške. Google Chrome ne može koristiti potvrdu s pogreškama i ne može provjeriti valjanost identiteta web lokacije s kojom ste se pokušali povezati. Vaša veza nije sigurna i ne biste trebali nastaviti.</translation>
 <translation id="8738921060445980047">Nepoznata verzija.</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">Vaš profil se ne može koristiti jer pripada novijoj verziji programa Google Chrome.\n\nNeke značajke možda neće biti dostupne. Navedite neki drugi direktorij profila ili koristite noviju verziju programa Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome može koristiti web-usluge za poboljšavanje vašeg doživljaja pregledavanja. Te usluge po želji možete onemogućiti.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5840402478666768335">Dodatno: Pomozite nam da poboljšamo Google Chrome automatskim slanjem statistike o korištenju i izvješća\no padu sustava Googleu</translation>
+<translation id="5008136264574452501">Međuverzija Google Chrome Canary</translation>
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
 <translation id="2044287590254833138">Alatna traka programa Google Chrome:</translation>
 <translation id="5074344184765391290">Chrome host dodatka</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">Chrome uslužni program</translation>
 <translation id="2874156562296220396">Google Chrome omogućili su <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>, projekt utemeljen na otvorenom kôdu i drugi <ph name="BEGIN_LINK_OSS"/>softveri utemeljeni na otvorenom kôdu <ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome se sprema dovršiti Vašu instalaciju.</translation>
+<translation id="7436949144778751379">Google Chrome zahtijeva Windows XP ili noviji. Neke značajke možda neće raditi.</translation>
 <translation id="7100330187273168372">Google Chrome ne može čitati iz svojeg podatkovnog direktorija niti u njega pisati:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Ne ometaj me</translation>
 <translation id="2290095356545025170">Jeste li sigurni da želite deinstalirati Google Chrome?</translation>
-<translation id="6099374801190929276">Google Chrome spremit će ove informacije kako bi olakšao ispunjavanje obrazaca.</translation>
 <translation id="6087062680442281307">Google Chrome je web-preglednik koji web-stranice i aplikacije pokreće brzinom svjetlosti. Brz je, stabilan i jednostavan za korištenje. Sigurnije pregledavajte web uz zaštitu protiv zlonamjernog i špijunskog softvera koja je ugrađena u Google Chrome.</translation>
 <translation id="2115751172320447278">Autorsko pravo © 2006-2010 Google Inc. Sva prava pridržana.</translation>
 <translation id="5941830788786076944">Neka Google Chrome bude zadani preglednik.</translation>
-<translation id="5813295956179798212">Google Chrome Exp</translation>
 <translation id="5947389362804196214">Vaše postavke nije moguće čitati.\n\nNeke su značajke možda nedostupne i promjene postavki neće biti spremljene.</translation>
 <translation id="4127951844153999091">U tom slučaju adresa navedena u potvrdi ne odgovara adresi web lokacije na koju je pokušao otići Vaš preglednik. Jedan od mogućih razloga je taj da Vaše komunikacije presreće napadač koji prikazuje potvrdu za drugu web lokaciju, zbog čega dolazi do nepodudaranja. Drugi je mogući razlog taj što je poslužitelj postavljen tako da vraća istu potvrdu za više web lokacija, uključujući i za onu koju pokušavate posjetiti, iako ta potvrda nije valjana za sve te web lokacije. Google Chrome može sa sigurnošću reći da ste pristupili domeni &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ali ne može provjeriti da je ta web lokacija ista kao &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; kojoj ste htjeli pristupiti. Ako nastavite, Chrome neće provjeravati dodatna nepodudaranja naziva. Općenito govoreći, najbolje je da ne nastavite.</translation>
 <translation id="2712549016134575851">Otkriven je sukob s drugom instaliranom aplikacijom.</translation>
 <translation id="7018032895891496381">Google Chrome koristi vašu zadanu tražilicu koja je trenutno postavljena na <ph name="PAGE_TITLE"/>. Želite li zadržati zadanu tražilicu?</translation>
 <translation id="7161904924553537242">Dobro došli u Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
-<translation id="8236873504073475138">Google Chrome ne podržava sustav Windows 2000. Neke značajke možda neće raditi.</translation>
 <translation id="5318056482164160049">Google Chrome host dodatka</translation>
 <translation id="6126631249883707068">Želite li da vam Google Chrome spremi zaporku?</translation>
 <translation id="5046764976540625289">Zatvori Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="473183893665420670">Kada ponovno postavite opcije za Google Chrome, sve promjene koje ste napravili vratit će se na izvorne postavke. Želite li poništiti opcije za Chrome?</translation>
 <translation id="3636771339108070045">Ovo računalo već ima noviju verziju programa Google Chrome. Ako softver ne radi, deinstalirajte Google Chrome i ponovno ga preuzmite.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="3396666154568987767">Google Chrome za <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Arhiva programa za instalaciju je oštećena ili nevažeća. Ponovno preuzmite program Google Chrome.</translation>
 <translation id="6626317981028933585">Na žalost postavke vašeg preglednika Mozilla Firefox nisu dostupne dok je preglednik otvoren. Da biste te postavke unijeli u Google Chrome, spremite svoj posao i zatvorite sve prozore preglednika Firefox. Zatim kliknite &quot;Nastavak&quot;.</translation>

@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">Google Chrome не отвечает. Перезапустить браузер?</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>
+<translation id="6008953001134414503">Выйдите из Google Chrome OS и войдите снова, чтобы это изменение вступило в силу.</translation>
 <translation id="6009537148180854585">Вы попытались открыть &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако представленный сервером сертификат содержит ошибки. Браузер Google Chrome не может использовать сертификат с ошибками и проверить сайт, с которым вы пытались соединиться. Используемое соединение не является защищенным и продолжать далее не рекомендуется.</translation>
 <translation id="8738921060445980047">Неизвестная версия</translation>
 <translation id="2485422356828889247">Удалить</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">Невозможно использовать ваш профиль, так как он относится к более поздней версии Google Chrome.\n\nНекоторые функции могут быть недоступны. Укажите другой каталог с профилем или воспользуйтесь более поздней версией Chrome.</translation>
 <translation id="7214670531148488183">Для удобства пользователей в браузере Google Chrome могут использоваться различные веб-службы, облегчающие работу в Интернете. При желании эти службы можно отключить.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5840402478666768335">Необязательно. Автоматически отправлять в Google статистику использования и отчеты об аварийном завершении Google Chrome</translation>
+<translation id="5008136264574452501">Google Chrome – версия &quot;Канарейка&quot;</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
 <translation id="2044287590254833138">Панель инструментов Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome создан на основе <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> и другого <ph name="BEGIN_LINK_OSS"/>программного обеспечения с открытым исходным кодом<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Браузер Google Chrome готов завершить установку.</translation>
+<translation id="7436949144778751379">Для работы Google Chrome необходима ОС Windows XP и выше. Некоторые функции могут не работать.</translation>
 <translation id="7100330187273168372">Google Chrome не может выполнить чтение и запись в каталог данных: \n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Больше не спрашивать</translation>
 <translation id="2290095356545025170">Вы действительно хотите удалить Google Chrome?</translation>
-<translation id="6099374801190929276">Google Chrome сохранит эти данные, чтобы использовать их для автоматического заполнения форм.</translation>
 <translation id="6087062680442281307">Google Chrome – это быстрый и удобный браузер для работы с веб-страницами и приложениями. Он надежен и прост в использовании. Вы можете просматривать страницы в Интернете, полагаясь на защиту от вредоносного ПО и фишинга, которая уже встроена в Google Chrome.</translation>
 <translation id="2115751172320447278">© Google Inc., 2006–2010. Все права защищены.</translation>
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
-<translation id="5813295956179798212">Google Chrome Exp</translation>
 <translation id="5947389362804196214">Настройки не прочитаны.\n\nНекоторые функции могут быть недоступны, а изменения настроек не будут сохранены.</translation>
 <translation id="4127951844153999091">В этом случае указанный в сертификате адрес не соответствует тому веб-сайту, который вы попытались открыть. Одной из возможных причин является перехват данных злоумышленником, который предоставляет сертификат другого веб-сайта, что и приводит к несоответствию. Другая возможная причина состоит в том, что на сервере заданы настройки предоставлять один сертификат для нескольких веб-сайтов, включая и сайт, которые вы пытаетесь открыть, даже если этот сертификат недействителен для всех этих сайтов. Google Chrome может с уверенностью утверждать, что вы перешли на сайт &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, но не может удостовериться, что это именно тот сайт, который вы хотели посетить - &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. В случае продолжения браузер Chrome не будет проверять имена на несоответствие. Как правило, лучше не продолжать просмотр.</translation>
 <translation id="2712549016134575851">Обнаружен конфликт с другим установленным приложением.</translation>
 <translation id="7018032895891496381">Google Chrome использует вашу поисковую систему по умолчанию, сейчас это <ph name="PAGE_TITLE"/>. Продолжить использование этой системы?</translation>
 <translation id="7161904924553537242">Добро пожаловать в Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
-<translation id="8236873504073475138">Google Chrome не поддерживает Windows 2000. Некоторые функции могут не работать.</translation>
 <translation id="5318056482164160049">Хост подключаемых модулей Google Chrome</translation>
 <translation id="6126631249883707068">Сохранить пароль в Google Chrome?</translation>
 <translation id="5046764976540625289">Закрыть Chrome</translation>
@@ -87,10 +88,9 @@
 <translation id="473183893665420670">При сбросе параметров Google Chrome будут отменены любые внесенные изменения и восстановлены настройки по умолчанию. Продолжить?</translation>
 <translation id="3636771339108070045">На этом компьютере уже установлена самая поздняя версия браузера Google Chrome. Если программа не работает, удалите браузер Google Chrome и загрузите его снова.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="3396666154568987767">Google Chrome для профиля &quot;<ph name="PROFILE_NAME"/>&quot;</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Архив программы установки поврежден или имеет неправильный формат. Загрузите Google Chrome снова.</translation>
-<translation id="6626317981028933585">К сожалению, настройки Mozilla Firefox недоступны при открытом браузере. Чтобы импортировать настройки в Google Chrome, сохраните работу и закройте все окна Firefox. Затем нажмите Продолжить.</translation>
+<translation id="6626317981028933585">К сожалению, настройки Mozilla Firefox недоступны при открытом браузере. Чтобы импортировать настройки в Google Chrome, сохраните работу, закройте все окна Firefox и нажмите &quot;Далее&quot;.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="3419750618886995598">Обновление Chrome Frame</translation>
 <translation id="6049075767726609708">На этот компьютер администратором был установлен браузер Google Chrome системного уровня, который заменит вашу установку Google Chrome.</translation>

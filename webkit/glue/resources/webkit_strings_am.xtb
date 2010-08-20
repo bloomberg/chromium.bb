@@ -1,43 +1,30 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
-<translation id="4420062214988137980">የPlugin ጭነት ተሰናክሏል</translation>
 <translation id="1235745349614807883">የቅርብ ጊዜ ፍለጋዎችን አስወግድ</translation>
-<translation id="3825324228893189080">ተጨማሪ plugin ያስፈልጋል</translation>
-<translation id="2965480764085142436"><ph name="PLUGIN"/> plugin አልተጫነም</translation>
 <translation id="5048533449481078685">ዝርዝር አመልካች</translation>
 <translation id="4202807286478387388">ዝለል</translation>
 <translation id="4611115858363067980"><ph name="FILENAME"/><ph name="WIDTH"/>×<ph name="HEIGHT"/></translation>
-<translation id="4317653869502688143">እባክዎ <ph name="PLUGIN"/> plugin ለመጫን መፈለግዎን ያረጋግጡ። የሚያምኗቸውን plugins ብቻ መጫን ይኖርብዎታል።</translation>
 <translation id="7658239707568436148">ሰርዝ</translation>
 <translation id="795667975304826397">ምንም ፋይል አልተመረጠም</translation>
-<translation id="1275511093094545429"><ph name="PLUGIN"/> plugin ያስፈልጋል</translation>
-<translation id="8662565117025751661">የሚወርድ plugin…</translation>
 <translation id="8141602879876242471">ይህ ሊፈለግ የሚችል መረጃ ጠቋሚ ነው። የፍለጋ ቁልፍ ቃላት አስገባ፦</translation>
 <translation id="6845533974506654842">ተጫን</translation>
 <translation id="8244226242650769279">የምስል ካርታ</translation>
-<translation id="1383141426028388991">ከ<ph name="URL"/> plugin ለመጫን አልተቻለም</translation>
 <translation id="2548326553472216322">የቅርብ ጊዜ ፍለጋዎች የሉም</translation>
 <translation id="5944544982112848342">2048(ከፍተኛ ደረጃ)</translation>
 <translation id="3040011195152428237">አገናኝ</translation>
-<translation id="8281246460978372009">plugin ከተጫነ በኋላ፣ ለማደስ እዚህ ይጫኑ</translation>
 <translation id="7364796246159120393">ፋይል ምረጥ</translation>
 <translation id="8964020114565522021">ፋይል ወደዚህ ጎትት</translation>
 <translation id="838869780401515933">አመልክት</translation>
 <translation id="2846343701378493991">1024(መካከለኛ ደረጃ)</translation>
 <translation id="5476505524087279545">አታመልክት</translation>
-<translation id="679352192834563463">ይህን ይዘት ለማሳየት ምንም plugin የለም</translation>
 <translation id="3789841737615482174">ጫን</translation>
 <translation id="6663448176199120256">የቅርብ ጊዜ ፍለጋዎችን</translation>
-<translation id="3600343118165084788">plugin ለማውረድ እዚህ ይጫኑ</translation>
 <translation id="6807599807928161586">የድር ክልል</translation>
 <translation id="5939518447894949180">ዳግም አስጀምር</translation>
-<translation id="3771786644471114952">Plugin አግኝ</translation>
 <translation id="1842960171412779397">ምረጥ</translation>
 <translation id="6119846243427417423">አንቃ</translation>
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ፋይሎች</translation>
-<translation id="3926627843712816530">እባክዎ ይህን plugin ለመጫን መፈለግዎን ያረጋግጡ። የሚያምኗቸውን plugins ብቻ መጫን ይኖርብዎታል።</translation>
-<translation id="4838490908464673667">የሚፈለገው plugin አልተጫነም</translation>
 <translation id="8597182159515967513">ርእስ</translation>
 <translation id="2653659639078652383">አስገባ</translation>
 </translationbundle>

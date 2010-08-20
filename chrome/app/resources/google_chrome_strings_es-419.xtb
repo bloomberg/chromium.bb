@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">Google Chrome no responde. ¿Quieres reiniciarlo ahora?</translation>
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando actualmente. Cierra Google Chrome e intenta nuevamente.</translation>
 <translation id="7747138024166251722">El instalador no pudo crear un directorio temporal. Verifique si hay espacio disponible en el disco y cuenta con permiso para instalar software.</translation>
+<translation id="6008953001134414503">Sal del sistema operativo de Google Chrome y accede nuevamente para que se aplique este cambio.</translation>
 <translation id="6009537148180854585">Intentó ponerse en contacto con &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor presentó un certificado con errores. Google Chrome no puede utilizar un certificado con errores y no puede validar la identidad del sitio con la que intentó ponerse en contacto. Su conexión es insegura y no debería continuar.</translation>
 <translation id="8738921060445980047">Versión desconocida.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">No se puede utilizar su perfil porque pertenece a una versión más nueva de Google Chrome.\n\nEs posible que no pueda utilizar algunas funciones. Especifique otro directorio para el perfil o utilice una versión más nueva de Chrome.</translation>
 <translation id="7214670531148488183">Es posible que Google Chrome utilice servicios web con el objetivo de mejorar la navegación. Pero puedes desactivar estos servicios si así lo deseas.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5840402478666768335">Opcional: Ayúdanos a mejorar Google Chrome enviando de forma automática estadísticas de uso e informes\nde errores a Google</translation>
+<translation id="5008136264574452501">Compilación de Google Chrome Canario</translation>
 <translation id="911206726377975832">¿También eliminar datos de navegación?</translation>
 <translation id="2044287590254833138">Barra de herramientas de Google Chrome</translation>
 <translation id="5074344184765391290">Host complemento de Chrome</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">Utilidad de Chrome</translation>
 <translation id="2874156562296220396">Google Chrome es una realidad gracias al proyecto de código fuente abierto <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> y a otros <ph name="BEGIN_LINK_OSS"/>programas de código abierto<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome está listo para completar la instalación.</translation>
+<translation id="7436949144778751379">Google Chrome requiere Windows XP o versiones posteriores. Es posible que no funcionen algunas características.</translation>
 <translation id="7100330187273168372">Google Chrome no puede leer y escribir a su directorio de datos:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">No preguntar de nuevo</translation>
 <translation id="2290095356545025170">¿Estás seguro de que deseas desinstalar Google Chrome?</translation>
-<translation id="6099374801190929276">Google Chrome almacenará esta información para facilitar el llenado de formularios.</translation>
 <translation id="6087062680442281307">Google Chrome es un navegador web que ejecuta aplicaciones y páginas web a la velocidad de un rayo. Es rápido, estable y fácil de usar. Navega la web de manera más segura con protección contra software malicioso y suplantación de identidad (phishing) incorporada en Google Chrome.</translation>
 <translation id="2115751172320447278">Copyright © 2006-2010 Google Inc. Todos los derechos reservados.</translation>
 <translation id="5941830788786076944">Haga de Google Chrome su navegador predeterminado</translation>
-<translation id="5813295956179798212">Exp. de Google Chrome</translation>
 <translation id="5947389362804196214">No se pueden leer tus preferencias.\n\nEs posible que algunas funciones no estén disponibles y no se guardarán los cambios realizados a las preferencias.</translation>
 <translation id="4127951844153999091">En este caso, la dirección que figura en este certificado no coincide con la del sitio web a la que el navegador intentó ir. Es posible que esto ocurra debido a que un usuario malintencionado que presenta un certificado para otro sitio web está interceptando sus comunicaciones. Esto puede ser la causa de esa diferencia. O bien puede ocurrir que el servidor esté configurado para devolver el mismo certificado a varios sitios web, incluido el que está intentando visitar, aunque el certificado no sea válido para todos esos sitios web. Google Chrome puede asegurar que se conectó con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, pero no puede comprobar que es el mismo sitio que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; al que intentó conectarse. Si continúa, Chrome no comprobará si hay otros nombres que no coinciden. Generalmente, no recomendamos continuar.</translation>
 <translation id="2712549016134575851">Se detectó un conflicto con otra aplicación instalada.</translation>
 <translation id="7018032895891496381">Google Chrome utiliza tu motor de búsqueda predeterminado que está actualmente establecido como <ph name="PAGE_TITLE"/>. ¿Deseas mantener tu motor de búsqueda predeterminado?</translation>
 <translation id="7161904924553537242">Bienvenido a Google Chrome</translation>
 <translation id="8669527147644353129">Ayuda de Google Chrome</translation>
-<translation id="8236873504073475138">Google Chrome no es compatible con Windows 2000. Es posible que no pueda utilizar algunas funciones.</translation>
 <translation id="5318056482164160049">Host complemento de Google Chrome</translation>
 <translation id="6126631249883707068">¿Deseas que Google Chrome guarde tu contraseña?</translation>
 <translation id="5046764976540625289">Salir de Chrome</translation>
@@ -87,7 +88,6 @@
 <translation id="473183893665420670">Si restableces las opciones de Google Chrome, los cambios que hayas realizado volverán a la configuración predeterminada. ¿Deseas restablecer las opciones de Chrome?</translation>
 <translation id="3636771339108070045">Este equipo ya cuenta con una versión más reciente de Google Chrome. Si el software no funciona, desinstale Google Chrome y descárguelo nuevamente.</translation>
 <translation id="4407807842708586359">SO de Google Chrome</translation>
-<translation id="3396666154568987767">Google Chrome para <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Ayuda de Chrome</translation>
 <translation id="1001534784610492198">El instalador está dañado o no es válido. Descargue Google Chrome nuevamente.</translation>
 <translation id="6626317981028933585">Lamentablemente, las opciones de su Mozilla Firefox no están disponibles si el navegador se encuentra activado. Para importar esas opciones a Google Chrome, guarde su trabajo y cierre todas las ventanas de Firefox. Luego, haga clic en Continuar.</translation>

@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">Google Chrome reageert niet. Nu herstarten?</translation>
 <translation id="2580411288591421699">Kan dezelfde Google Chrome-versie die momenteel actief is, niet installeren. Sluit Google Chrome en probeer het opnieuw.</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of u nog schijfruimte heeft en of u toestemming heeft om software te installeren.</translation>
+<translation id="6008953001134414503">Meld u af bij Google Chrome OS en meld u weer aan om deze wijziging door te voeren.</translation>
 <translation id="6009537148180854585">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat geretourneerd dat fouten bevat. Google Chrome kan geen certificaten met fouten verwerken en kan de identiteit niet verifiëren van de site waarmee u verbinding probeert te maken. Uw verbinding is niet veilig en u kunt beter niet verdergaan.</translation>
 <translation id="8738921060445980047">Onbekende versie.</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">Chrome kan uw profiel niet gebruiken aangezien het van een nieuwere versie van Google Chrome is.\n\nSommige functies zijn misschien niet beschikbaar. Geef een andere profieldirectory aan of gebruik een nieuwere versie van Chrome.</translation>
 <translation id="7214670531148488183">Google Chrome kan webservices gebruiken om uw internetervaring te verbeteren. Als u wilt, kunt u deze services uitschakelen.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5840402478666768335">Optioneel: help Google Chrome beter te maken door automatisch gebruiksstatistieken en\ncrashmeldingen naar Google te verzenden</translation>
+<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Invoegtoepassingshost van Chrome</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">Chrome</translation>
 <translation id="2874156562296220396">Google Chrome wordt mogelijk gemaakt door het open-source project <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> en andere <ph name="BEGIN_LINK_OSS"/>open-source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">U kunt nu uw installatie van Google Chrome voltooien.</translation>
+<translation id="7436949144778751379">Voor Google Chrome is Windows XP of hoger vereist. Het is mogelijk dat sommige functies niet werken.</translation>
 <translation id="7100330187273168372">Google Chrome kan deze datadirectory niet lezen of beschrijven:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Vraag me niet meer</translation>
 <translation id="2290095356545025170">Weet u zeker dat u Google Chrome wilt verwijderen?</translation>
-<translation id="6099374801190929276">Google Chrome slaat deze informatie op zodat u gemakkelijker formulieren kunt invullen.</translation>
 <translation id="6087062680442281307">Google Chrome is een webbrowser die bliksemsnel webpagina's en online toepassingen kan weergeven. Het is snel, stabiel en gebruiksvriendelijk. Met Google Chrome kunt u veiliger op internet surfen dankzij de ingebouwde bescherming tegen phishing en malware.</translation>
 <translation id="2115751172320447278">Copyright © 2006-2010 Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="5941830788786076944">Google Chrome instellen als mijn standaardbrowser</translation>
-<translation id="5813295956179798212">Google Chrome Experimental</translation>
 <translation id="5947389362804196214">Uw voorkeuren kunnen niet worden gelezen.\n\nSommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren worden niet opgeslagen.</translation>
 <translation id="4127951844153999091">In dit geval komt het adres in het certificaat niet overeen met het adres van de website dat uw browser probeerde te bezoeken. Dit kan komen omdat uw communicatie wordt onderschept door een hacker die een certificaat voor een andere website retourneert, waardoor de adressen niet overeenkomen. Een andere mogelijkheid is dat de server is ingesteld op het retourneren van hetzelfde certificaat voor meerdere websites, inclusief de site die u probeert te bezoeken, hoewel dat certificaat niet geldig is voor al deze websites. Google Chrome kan garanderen dat u &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; heeft bereikt, maar kan niet verifiëren of dat dezelfde site is als &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, die u wilde bezoeken. Als u doorgaat, controleert Chrome niet verder op verschillen tussen namen. Over het algemeen is het beter hier niet verder te gaan.</translation>
 <translation id="2712549016134575851">Er is een conflict gedetecteerd met een andere geïnstalleerde toepassing.</translation>
 <translation id="7018032895891496381">Google Chrome gebruikt uw standaardzoekmachine. Deze is momenteel ingesteld op <ph name="PAGE_TITLE"/>. Wilt u uw standaardzoekmachine behouden?</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
-<translation id="8236873504073475138">Google Chrome ondersteunt Windows 2000 niet. Sommige functies werken mogelijk niet.</translation>
 <translation id="5318056482164160049">Invoegtoepassingshost van Google Chrome</translation>
 <translation id="6126631249883707068">Wilt u dat Google Chrome uw wachtwoord opslaat?</translation>
 <translation id="5046764976540625289">Chrome sluiten</translation>
@@ -87,7 +88,6 @@
 <translation id="473183893665420670">Wanneer u de opties van Google Chrome opnieuw instelt, worden de door u aangebrachte wijzigingen teruggezet naar de standaardinstellingen. Wilt u de opties van Google Chrome opnieuw instellen?</translation>
 <translation id="3636771339108070045">Er staat al een nieuwere versie van Google Chrome op deze computer. Als de software niet werkt, verwijdert u Google Chrome en downloadt u het programma opnieuw.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="3396666154568987767">Google Chrome voor <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="1001534784610492198">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Google Chrome opnieuw.</translation>
 <translation id="6626317981028933585">Uw instellingen voor Mozilla Firefox zijn helaas niet beschikbaar als deze browser is geopend. Sla uw werk op en sluit alle Firefox-vensters om de instellingen te kunnen importeren naar Google Chrome. Klik hierna op 'Doorgaan'.</translation>

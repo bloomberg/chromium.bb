@@ -43,6 +43,7 @@
 <translation id="2499193704281978000">A Google Chrome nem válaszol. Újraindítja most?</translation>
 <translation id="2580411288591421699">Nem lehet ugyanazt a Google Chrome verziót telepíteni, amely jelenleg is fut. Zárja be a Google Chrome-ot, és próbálja újra.</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
+<translation id="6008953001134414503">Kérjük, jelentkezzen ki a Google Chrome operációs rendszerből, majd jelentkezzen be újra, hogy érvénybe lépjenek a változtatások.</translation>
 <translation id="6009537148180854585">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; domaint, de a szerver tanúsítványa hibás. A Google Chrome nem tud hibás tanúsítványt feldolgozni; ennek következtében nem tudja igazolni azt a webhelyet, amelyet el akart érni. A kapcsolat nem biztonságos, ezért nem javasoljuk a továbblépést.</translation>
 <translation id="8738921060445980047">Ismeretlen verzió.</translation>
 <translation id="2485422356828889247">Eltávolítás</translation>
@@ -50,6 +51,8 @@
 <translation id="3324235665723428530">A profilja nem működik, mert az a Google Chrome egy újabb verziójából származik.\n\nLehetséges, hogy néhány funkció nem lesz elérhető. Kérjük, adjon meg egy másik profilmappát vagy használja a Google Chrome újabb verzióját.</translation>
 <translation id="7214670531148488183">A Google Chrome internetes szolgáltatásokat is használ a böngészés javításának érdekében - ezek a szolgáltatások letilthatók.</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="5840402478666768335">Nem kötelező: Segítsen a Google Chrome fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibabejelentéseket a Google részére</translation>
+<translation id="5008136264574452501">Google Chrome Canary Build</translation>
 <translation id="911206726377975832">Törli a böngészési adatait is?</translation>
 <translation id="2044287590254833138">Google Chrome Eszköztár</translation>
 <translation id="5074344184765391290">Chrome plug-in tárhely</translation>
@@ -58,21 +61,19 @@
 <translation id="595871952790078940">Chrome segédprogram</translation>
 <translation id="2874156562296220396">A Google Chrome a <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> nyílt forráskódú projektnek és további <ph name="BEGIN_LINK_OSS"/>nyílt forráskódú szoftvereknek<ph name="END_LINK_OSS"/> köszönhetően jött létre.</translation>
 <translation id="6921913858457830952">A Google Chrome készenáll a telepítés befejezésére.</translation>
+<translation id="7436949144778751379">A Google Chrome Windows XP-t vagy újabb operációs rendszert igényel. Korábbi verziójú operációs rendszeren lehet, hogy néhány funkció nem fog működni.</translation>
 <translation id="7100330187273168372">A Google Chrome nem tud beleírni és nem tudja olvasni a következő mappát:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="6757767188268205357">Ne zavarjanak ezzel</translation>
 <translation id="2290095356545025170">Biztos benne, hogy eltávolítja a Google Chrome-ot?</translation>
-<translation id="6099374801190929276">A Google Chrome ezt az információt azért tárolja, hogy könnyebb legyen az űrlapok kitöltése.</translation>
 <translation id="6087062680442281307">A Google Chrome olyan böngésző, amely villámsebesen futtatja a weboldalakat és az alkalmazásokat. Gyors, stabil és könnyen használható. A beépített, adathalászat és a rosszindulatú programok elleni védelemmel biztonságosabban böngészhet az interneten.</translation>
 <translation id="2115751172320447278">Copyright © 2006-2010 Google Inc. Minden jog fenntartva.</translation>
 <translation id="5941830788786076944">A Google Chrome beállítása alapértelmezett böngészőként</translation>
-<translation id="5813295956179798212">Google Chrome Exp</translation>
 <translation id="5947389362804196214">A preferenciáit nem sikerült olvasni.\n\nEgyes funkciókat esetleg nem ér el, és a preferenciáiban végrehajtott módosításokat nem menti a rendszer.</translation>
 <translation id="4127951844153999091">Ebben az esetben a tanúsítványban szereplő cím nem egyezik meg azzal a címmel, amelyet a böngészője megpróbált megnyitni. Ennek egyik lehetséges oka, hogy a kommunikációját egy támadó nyomon követi, aki egy másik webhely tanúsítványát mutatja fel, és ez eltéréseket okoz. Másik lehetséges ok, hogy a szervert úgy állították be, hogy több webhelynek (köztük annak, amelyet épp meg szeretett volna látogatni) is ugyanazt a tanúsítványt mutassa fel, holott nem érvényes az ottani összes webhelyre. A Google Chrome megállapította, hogy ezt az oldalt érte el: &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, azonban nem tudja megállíapítani pontosan, hogy ez ugyanaz a webhely-e, mint a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, amelyet megpróbált elérni. Ha folytatja, a Chrome nem ellenőrzi többé a nevek nem egyezését. Általánosságban: ennél a pontnál nem szabad tovább folytatni a műveletet.</translation>
 <translation id="2712549016134575851">A rendszer ütközést észlelt egy másik telepített alkalmazással.</translation>
 <translation id="7018032895891496381">A Google Chrome az alapértelmezett keresőmotort használja, amely jelenleg a(z) <ph name="PAGE_TITLE"/>. Megtartja az alapértelmezett keresőmotort?</translation>
 <translation id="7161904924553537242">Üdvözli Önt a Google Chrome!</translation>
 <translation id="8669527147644353129">Google Chrome segéd</translation>
-<translation id="8236873504073475138">A Google Chrome nem támogatja a Windows 2000-t. Lehetséges, hogy néhány funkció nem működik.</translation>
 <translation id="5318056482164160049">Google Chrome plug-in tárhely</translation>
 <translation id="6126631249883707068">Szeretné, hogy a Google Chrome elmentse jelszavát?</translation>
 <translation id="5046764976540625289">Kilépés a Chrome alkalmazásból</translation>
@@ -87,7 +88,6 @@
 <translation id="473183893665420670">Amikor alaphelyzetbe állítja a Google Chrome opcióit, a rendszer visszaállítja az eredeti beállításokat. Vissza szeretné állítani a Chrome beállításait?</translation>
 <translation id="3636771339108070045">A számítógépen már megtalálható a Google Chrome újabb verziója. Ha a szoftver nem működik, kérjük, távolítsa el, majd töltse le újra a Google Chrome alkalmazást.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
-<translation id="3396666154568987767">Google Chrome profil: <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome segéd</translation>
 <translation id="1001534784610492198">A telepítő tömörített állománya megsérült vagy érvénytelen. Kérjük, töltse le újra a Google Chrome böngészőt.</translation>
 <translation id="6626317981028933585">Sajnos a Mozilla Firefox beállításai nem érhetők el, amikor a böngésző fut. Ahhoz, hogy importálhassa ezeket a beállításokat a Google Chrome-ba, mentse el, amin dolgozik, majd zárja be az összes Firefox ablakot. Ezután kattintson a &quot;Folytatás&quot; gombra.</translation>
