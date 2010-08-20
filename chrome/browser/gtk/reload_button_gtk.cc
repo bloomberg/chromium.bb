@@ -160,7 +160,7 @@ gboolean ReloadButtonGtk::OnExpose(GtkWidget* widget,
 
 gboolean ReloadButtonGtk::OnLeaveNotify(GtkWidget* widget,
                                         GdkEventCrossing* event) {
-  ChangeMode(intended_mode_, false);
+  ChangeMode(intended_mode_, true);
   return FALSE;
 }
 
