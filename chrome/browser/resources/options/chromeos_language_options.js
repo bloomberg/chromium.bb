@@ -412,8 +412,9 @@ cr.define('options', function() {
       var languageCode = languageOptionsList.getSelectedLanguageCode();
       // Don't allow removing the language if it's as UI language.
       if (languageCode == templateData.currentUiLanguageCode) {
-        // TODO(satorux): Show the message in a nicer way. See above.
-        alert(localStrings.getString('this_language_is_currently_in_use'));
+        this.showNotification_(
+            localStrings.getString('this_language_is_currently_in_use'),
+            localStrings.getString('ok_button'));
         return;
       }
       // Disable input methods associated with |languageCode|.
