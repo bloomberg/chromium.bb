@@ -5,6 +5,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/background_mode_manager.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -19,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
 BackgroundModeManager::BackgroundModeManager(Profile* profile)
@@ -64,6 +66,9 @@ BackgroundModeManager::BackgroundModeManager(Profile* profile)
 }
 
 BackgroundModeManager::~BackgroundModeManager() {
+  // If we're going away, remove our status tray icon so we don't get any events
+  // from it.
+  RemoveStatusTrayIcon();
 }
 
 bool BackgroundModeManager::IsBackgroundModeEnabled() {
@@ -183,7 +188,30 @@ void BackgroundModeManager::CreateStatusTrayIcon() {
       IDR_STATUS_TRAY_ICON);
   status_icon_->SetImage(*bitmap);
   status_icon_->SetToolTip(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-  status_icon_->AddObserver(this);
+
+  // Create a context menu item for Chrome.
+  menus::SimpleMenuModel* menu = new menus::SimpleMenuModel(this);
+  menu->AddItem(IDC_ABOUT, l10n_util::GetStringFUTF16(IDS_ABOUT,
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  menu->AddSeparator();
+  menu->AddItemWithStringId(IDC_EXIT, IDS_EXIT);
+  status_icon_->SetContextMenu(menu);
+}
+
+bool BackgroundModeManager::IsCommandIdChecked(int command_id) const {
+  return false;
+}
+
+bool BackgroundModeManager::IsCommandIdEnabled(int command_id) const {
+  // For now, we do not support disabled items.
+  return true;
+}
+
+bool BackgroundModeManager::GetAcceleratorForCommandId(
+    int command_id,
+    menus::Accelerator* accelerator) {
+  // No accelerators for status icon context menus.
+  return false;
 }
 
 void BackgroundModeManager::RemoveStatusTrayIcon() {
@@ -192,9 +220,27 @@ void BackgroundModeManager::RemoveStatusTrayIcon() {
   status_icon_ = NULL;
 }
 
-void BackgroundModeManager::OnClicked() {
-  UserMetrics::RecordAction(UserMetricsAction("Exit"), profile_);
-  BrowserList::CloseAllBrowsersAndExit();
+
+void BackgroundModeManager::ExecuteCommand(int item) {
+  switch (item) {
+    case IDC_EXIT:
+      UserMetrics::RecordAction(UserMetricsAction("Exit"), profile_);
+      BrowserList::CloseAllBrowsersAndExit();
+      break;
+    case IDC_ABOUT: {
+      // Need to display a browser window to put up the about dialog.
+      Browser* browser = BrowserList::GetLastActive();
+      if (!browser) {
+        Browser::OpenEmptyWindow(profile_);
+        browser = BrowserList::GetLastActive();
+      }
+      browser->OpenAboutChromeDialog();
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 // static

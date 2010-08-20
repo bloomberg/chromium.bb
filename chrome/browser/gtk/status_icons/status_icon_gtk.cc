@@ -40,6 +40,11 @@ void StatusIconGtk::SetToolTip(const string16& tool_tip) {
   gtk_status_icon_set_tooltip(icon_, UTF16ToUTF8(tool_tip).c_str());
 }
 
+void StatusIconGtk::ResetContextMenu(menus::MenuModel* menu) {
+  // TODO(atwilson): Add support for context menus for GTK
+  // (http://crbug.com.37375).
+}
+
 void StatusIconGtk::OnClick(GtkWidget* widget) {
   DispatchClickEvent();
 }

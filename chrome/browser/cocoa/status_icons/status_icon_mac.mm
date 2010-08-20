@@ -75,3 +75,8 @@ void StatusIconMac::SetPressedImage(const SkBitmap& bitmap) {
 void StatusIconMac::SetToolTip(const string16& tool_tip) {
   [item() setToolTip:base::SysUTF16ToNSString(tool_tip)];
 }
+
+void StatusIconMac::ResetContextMenu(menus::MenuModel* menu) {
+  // TODO(atwilson): Add support for context menus for Mac when actually needed
+  // (not yet used by anything) - http://crbug.com/37375.
+}

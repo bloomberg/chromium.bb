@@ -41,20 +41,23 @@ LRESULT CALLBACK StatusTrayWin::WndProc(HWND hwnd,
                                         UINT message,
                                         WPARAM wparam,
                                         LPARAM lparam) {
-  // TODO(atwilson): Add support for right clicks and context menu messages
-  // (tracked in http://crbug.com/37375).
   switch (message) {
     case kStatusIconMessage:
       switch (lparam) {
         case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_CONTEXTMENU:
           // Walk our icons, find which one was clicked on, and invoke its
-          // DispatchClickEvent() method.
+          // HandleClickEvent() method.
           for (StatusIconList::const_iterator iter = status_icons().begin();
                iter != status_icons().end();
                ++iter) {
             StatusIconWin* win_icon = static_cast<StatusIconWin*>(*iter);
-            if (win_icon->icon_id() == wparam)
-              win_icon->DispatchClickEvent();
+            if (win_icon->icon_id() == wparam) {
+              POINT p;
+              GetCursorPos(&p);
+              win_icon->HandleClickEvent(p.x, p.y, lparam == WM_LBUTTONDOWN);
+            }
           }
           return TRUE;
       }

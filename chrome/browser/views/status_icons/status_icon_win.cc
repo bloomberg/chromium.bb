@@ -4,9 +4,11 @@
 
 #include "chrome/browser/views/status_icons/status_icon_win.h"
 
-#include "gfx/icon_util.h"
 #include "base/sys_string_conversions.h"
+#include "gfx/icon_util.h"
+#include "gfx/point.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "views/controls/menu/menu_2.h"
 
 StatusIconWin::StatusIconWin(UINT id, HWND window, UINT message)
     : icon_id_(id),
@@ -57,4 +59,31 @@ void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
   icon_data->cbSize = sizeof(icon_data);
   icon_data->hWnd = window_;
   icon_data->uID = icon_id_;
+}
+
+void StatusIconWin::ResetContextMenu(menus::MenuModel* menu) {
+  // If no items are passed, blow away our context menu.
+  if (!menu) {
+    context_menu_.reset();
+    return;
+  }
+
+  // Create context menu with the new contents.
+  context_menu_.reset(new views::Menu2(menu));
+}
+
+void StatusIconWin::HandleClickEvent(int x, int y, bool left_mouse_click) {
+  // Pass to the observer if appropriate.
+  if (left_mouse_click && HasObservers()) {
+    DispatchClickEvent();
+    return;
+  }
+
+  // Event not sent to the observer, so display the context menu if one exists.
+  if (context_menu_.get()) {
+    // Set our window as the foreground window, so the context menu closes when
+    // we click away from it.
+    SetForegroundWindow(window_);
+    context_menu_->RunContextMenuAt(gfx::Point(x, y));
+  }
 }

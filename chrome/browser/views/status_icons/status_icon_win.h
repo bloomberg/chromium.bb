@@ -10,7 +10,12 @@
 #include <shellapi.h>
 
 #include "base/scoped_handle_win.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/status_icons/status_icon.h"
+
+namespace views {
+class Menu2;
+}
 
 class StatusIconWin : public StatusIcon {
  public:
@@ -27,6 +32,14 @@ class StatusIconWin : public StatusIcon {
 
   UINT message_id() const { return message_id_; }
 
+  // Handles a click event from the user - if |left_button_click| is true and
+  // there is a registered observer, passes the click event to the observer,
+  // otherwise displays the context menu if there is one.
+  void HandleClickEvent(int x, int y, bool left_button_click);
+
+ protected:
+  virtual void ResetContextMenu(menus::MenuModel* menu);
+
  private:
   void InitIconData(NOTIFYICONDATA* icon_data);
 
@@ -41,6 +54,9 @@ class StatusIconWin : public StatusIcon {
 
   // The currently-displayed icon for the window.
   ScopedHICON icon_;
+
+  // Context menu associated with this icon (if any).
+  scoped_ptr<views::Menu2> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconWin);
 };

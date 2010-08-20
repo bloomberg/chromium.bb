@@ -26,6 +26,9 @@ class StatusIconMac : public StatusIcon {
   virtual void SetPressedImage(const SkBitmap& image);
   virtual void SetToolTip(const string16& tool_tip);
 
+ protected:
+  virtual void ResetContextMenu(menus::MenuModel* menu);
+
  private:
   // Getter for item_ that allows lazy initialization.
   NSStatusItem* item();

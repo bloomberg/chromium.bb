@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_BACKGROUND_MODE_MANAGER_H_
 #pragma once
 
+#include "app/menus/simple_menu_model.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "chrome/common/notification_observer.h"
@@ -34,7 +35,7 @@ class StatusTray;
 // background.
 class BackgroundModeManager
     : private NotificationObserver,
-      private StatusIcon::Observer {
+      private menus::SimpleMenuModel::Delegate {
  public:
   explicit BackgroundModeManager(Profile* profile);
   virtual ~BackgroundModeManager();
@@ -53,8 +54,12 @@ class BackgroundModeManager
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // StatusIcon::Observer implementation.
-  virtual void OnClicked();
+  // SimpleMenuModel::Delegate implementation.
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator);
+  virtual void ExecuteCommand(int command_id);
 
   // Called when an extension is loaded to manage count of background apps.
   void OnBackgroundAppLoaded();

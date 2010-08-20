@@ -26,6 +26,9 @@ class StatusIconGtk : public StatusIcon {
   // Exposed for testing.
   CHROMEGTK_CALLBACK_0(StatusIconGtk, void, OnClick);
 
+ protected:
+  virtual void ResetContextMenu(menus::MenuModel* menu);
+
  private:
   // The currently-displayed icon for the window.
   GtkStatusIcon* icon_;
