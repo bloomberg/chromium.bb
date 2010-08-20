@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/eula_view.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/html_page_screen.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_screen.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
@@ -210,6 +211,7 @@ const char WizardController::kUpdateScreenName[] = "update";
 const char WizardController::kUserImageScreenName[] = "image";
 const char WizardController::kEulaScreenName[] = "eula";
 const char WizardController::kRegistrationScreenName[] = "register";
+const char WizardController::kHTMLPageScreenName[] = "html";
 
 // Passing this parameter as a "first screen" initiates full OOBE flow.
 const char WizardController::kOutOfBoxScreenName[] = "oobe";
@@ -365,6 +367,23 @@ chromeos::RegistrationScreen* WizardController::GetRegistrationScreen() {
   return registration_screen_.get();
 }
 
+chromeos::HTMLPageScreen* WizardController::GetHTMLPageScreen() {
+  if (!html_page_screen_.get()) {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    std::string url;
+    // It's strange but args may contains empty strings.
+    for (size_t i = 0; i < command_line->args().size(); i++) {
+      if (!command_line->args()[i].empty()) {
+        DCHECK(url.empty()) << "More than one URL in command line";
+        url = command_line->args()[i];
+      }
+    }
+    DCHECK(!url.empty()) << "No URL in commane line";
+    html_page_screen_.reset(new chromeos::HTMLPageScreen(this, url));
+  }
+  return html_page_screen_.get();
+}
+
 void WizardController::ShowNetworkScreen() {
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetNetworkScreen());
@@ -441,6 +460,13 @@ void WizardController::ShowRegistrationScreen() {
 #if defined(OFFICIAL_BUILD)
   background_view_->SetOobeProgress(chromeos::BackgroundView::REGISTRATION);
 #endif
+}
+
+void WizardController::ShowHTMLPageScreen() {
+  LOG(INFO) << "Showing HTML page screen.";
+  SetStatusAreaVisible(true);
+  background_view_->SetOobeProgressBarVisible(false);
+  SetCurrentScreen(GetHTMLPageScreen());
 }
 
 void WizardController::SetStatusAreaVisible(bool visible) {
@@ -640,6 +666,8 @@ void WizardController::ShowFirstScreen(const std::string& first_screen_name) {
       // Just proceed to image screen.
       OnRegistrationSuccess();
     }
+  } else if (first_screen_name == kHTMLPageScreenName) {
+    ShowHTMLPageScreen();
   } else if (first_screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();

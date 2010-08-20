@@ -24,6 +24,7 @@ class AccountScreen;
 class BackgroundView;
 class EulaScreen;
 class ExistingUserController;
+class HTMLPageScreen;
 class LoginScreen;
 class NetworkScreen;
 class RegistrationScreen;
@@ -87,6 +88,7 @@ class WizardController : public chromeos::ScreenObserver,
   chromeos::UserImageScreen* GetUserImageScreen();
   chromeos::EulaScreen* GetEulaScreen();
   chromeos::RegistrationScreen* GetRegistrationScreen();
+  chromeos::HTMLPageScreen* GetHTMLPageScreen();
 
   // Show specific screen.
   void ShowNetworkScreen();
@@ -95,6 +97,7 @@ class WizardController : public chromeos::ScreenObserver,
   void ShowUserImageScreen();
   void ShowEulaScreen();
   void ShowRegistrationScreen();
+  void ShowHTMLPageScreen();
   // Shows the default login screen and returns NULL or shows images login
   // screen and returns the corresponding controller instance for optional
   // tweaking.
@@ -127,6 +130,7 @@ class WizardController : public chromeos::ScreenObserver,
   static const char kOutOfBoxScreenName[];
   static const char kTestNoScreenName[];
   static const char kEulaScreenName[];
+  static const char kHTMLPageScreenName[];
 
  private:
   // Exit handlers:
@@ -194,6 +198,7 @@ class WizardController : public chromeos::ScreenObserver,
   scoped_ptr<chromeos::UserImageScreen> user_image_screen_;
   scoped_ptr<chromeos::EulaScreen> eula_screen_;
   scoped_ptr<chromeos::RegistrationScreen> registration_screen_;
+  scoped_ptr<chromeos::HTMLPageScreen> html_page_screen_;
 
   // Screen that's currently active.
   WizardScreen* current_screen_;

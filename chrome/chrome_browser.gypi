@@ -495,6 +495,8 @@
         'browser/chromeos/login/google_authenticator.cc',
         'browser/chromeos/login/google_authenticator.h',
         'browser/chromeos/login/helper.cc',
+        'browser/chromeos/login/html_page_screen.cc',
+        'browser/chromeos/login/html_page_screen.h',
         'browser/chromeos/login/language_switch_menu.cc',
         'browser/chromeos/login/language_switch_menu.h',
         'browser/chromeos/login/login_html_dialog.cc',
