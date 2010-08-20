@@ -5,6 +5,7 @@
 #include <cert.h>
 #include <pk11pub.h>
 
+#include "base/crypto/scoped_nss_types.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/nss_util.h"
@@ -34,8 +35,30 @@ FilePath GetTestCertsDirectory() {
   return certs_dir;
 }
 
-}  // namespace
+CertificateList ListCertsInSlot(PK11SlotInfo* slot) {
+  CertificateList result;
+  CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
+  for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
+       !CERT_LIST_END(node, cert_list);
+       node = CERT_LIST_NEXT(node)) {
+    result.push_back(
+        X509Certificate::CreateFromHandle(
+            node->cert,
+            X509Certificate::SOURCE_LONE_CERT_IMPORT,
+            X509Certificate::OSCertHandles()));
+  }
+  CERT_DestroyCertList(cert_list);
+  return result;
+}
 
+std::string ReadTestFile(const std::string& name) {
+  std::string result;
+  FilePath cert_path = GetTestCertsDirectory().AppendASCII(name);
+  EXPECT_TRUE(file_util::ReadFileToString(cert_path, &result));
+  return result;
+}
+
+}  // namespace
 
 class CertDatabaseNSSTest : public testing::Test {
  public:
@@ -43,75 +66,51 @@ class CertDatabaseNSSTest : public testing::Test {
     ASSERT_TRUE(temp_db_dir_.CreateUniqueTempDir());
     ASSERT_TRUE(
         base::OpenTestNSSDB(temp_db_dir_.path(), "CertDatabaseNSSTest db"));
+    slot_.reset(base::GetDefaultNSSKeySlot());
+
+    // Test db should be empty at start of test.
+    EXPECT_EQ(0U, ListCertsInSlot(slot_.get()).size());
   }
   virtual void TearDown() {
     base::CloseTestNSSDB();
   }
+
+ protected:
+  base::ScopedPK11Slot slot_;
+  CertDatabase cert_db_;
+
  private:
   ScopedTempDir temp_db_dir_;
 };
 
 TEST_F(CertDatabaseNSSTest, ImportFromPKCS12WrongPassword) {
-  PK11SlotInfo* slot = base::GetDefaultNSSKeySlot();
-  CertDatabase cert_db;
+  std::string pkcs12_data = ReadTestFile("client.p12");
 
-  CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
-  // Test db should be empty at start of test.
-  EXPECT_TRUE(CERT_LIST_END(CERT_LIST_HEAD(cert_list), cert_list));
-  CERT_DestroyCertList(cert_list);
-
-  FilePath cert_path = GetTestCertsDirectory().AppendASCII("client.p12");
-  std::string cert_data;
-  ASSERT_TRUE(file_util::ReadFileToString(cert_path, &cert_data));
   EXPECT_EQ(ERR_PKCS12_IMPORT_BAD_PASSWORD,
-            cert_db.ImportFromPKCS12(cert_data, ASCIIToUTF16("")));
+            cert_db_.ImportFromPKCS12(pkcs12_data, ASCIIToUTF16("")));
 
-
-  cert_list = PK11_ListCertsInSlot(slot);
   // Test db should still be empty.
-  EXPECT_TRUE(CERT_LIST_END(CERT_LIST_HEAD(cert_list), cert_list));
-  CERT_DestroyCertList(cert_list);
-
-  PK11_FreeSlot(slot);
+  EXPECT_EQ(0U, ListCertsInSlot(slot_.get()).size());
 }
 
 TEST_F(CertDatabaseNSSTest, ImportFromPKCS12AndExportAgain) {
-  PK11SlotInfo* slot = base::GetDefaultNSSKeySlot();
-  CertDatabase cert_db;
+  std::string pkcs12_data = ReadTestFile("client.p12");
 
-  CERTCertList* cert_list = PK11_ListCertsInSlot(slot);
-  // Test db should be empty at start of test.
-  EXPECT_TRUE(CERT_LIST_END(CERT_LIST_HEAD(cert_list), cert_list));
-  CERT_DestroyCertList(cert_list);
+  EXPECT_EQ(OK, cert_db_.ImportFromPKCS12(pkcs12_data, ASCIIToUTF16("12345")));
 
-  FilePath cert_path = GetTestCertsDirectory().AppendASCII("client.p12");
-  std::string cert_data;
-  ASSERT_TRUE(file_util::ReadFileToString(cert_path, &cert_data));
-  EXPECT_EQ(OK, cert_db.ImportFromPKCS12(cert_data, ASCIIToUTF16("12345")));
-
-  cert_list = PK11_ListCertsInSlot(slot);
-  // Test db should be empty at start of test.
-  ASSERT_FALSE(CERT_LIST_END(CERT_LIST_HEAD(cert_list), cert_list));
-  scoped_refptr<X509Certificate> cert(
-      X509Certificate::CreateFromHandle(
-          CERT_LIST_HEAD(cert_list)->cert,
-          X509Certificate::SOURCE_LONE_CERT_IMPORT,
-          X509Certificate::OSCertHandles()));
-  CERT_DestroyCertList(cert_list);
+  CertificateList cert_list = ListCertsInSlot(slot_.get());
+  ASSERT_EQ(1U, cert_list.size());
+  scoped_refptr<X509Certificate> cert(cert_list[0]);
 
   EXPECT_EQ("testusercert",
             cert->subject().common_name);
 
   // TODO(mattm): move export test to seperate test case?
-  CertificateList certs;
-  certs.push_back(cert);
   std::string exported_data;
-  EXPECT_EQ(1, cert_db.ExportToPKCS12(certs, ASCIIToUTF16("exportpw"),
-                                      &exported_data));
+  EXPECT_EQ(1, cert_db_.ExportToPKCS12(cert_list, ASCIIToUTF16("exportpw"),
+                                       &exported_data));
   ASSERT_LT(0U, exported_data.size());
   // TODO(mattm): further verification of exported data?
-
-  PK11_FreeSlot(slot);
 }
 
 }  // namespace net
