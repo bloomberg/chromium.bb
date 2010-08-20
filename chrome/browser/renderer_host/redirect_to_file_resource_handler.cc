@@ -5,10 +5,10 @@
 #include "chrome/browser/renderer_host/redirect_to_file_resource_handler.h"
 
 #include "base/file_util.h"
+#include "base/file_util_proxy.h"
 #include "base/logging.h"
 #include "base/platform_file.h"
 #include "base/task.h"
-#include "chrome/browser/file_system_proxy.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/resource_response.h"
 #include "net/base/file_stream.h"
@@ -70,7 +70,8 @@ bool RedirectToFileResourceHandler::OnWillStart(int request_id,
     // TODO(darin): This is sub-optimal.  We should not delay starting the
     // network request like this.
     *defer = true;
-    FileSystemProxy::CreateTemporary(
+    base::FileUtilProxy::CreateTemporary(
+        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE),
         callback_factory_.NewCallback(
             &RedirectToFileResourceHandler::DidCreateTemporaryFile));
     return true;
@@ -142,7 +143,9 @@ void RedirectToFileResourceHandler::OnRequestClosed() {
   file_stream_->Close();
   file_stream_.reset();
 
-  FileSystemProxy::Delete(file_path_, NULL);
+  base::FileUtilProxy::Delete(
+        ChromeThread::GetMessageLoopProxyForThread(ChromeThread::FILE),
+        file_path_, NULL);
 }
 
 RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
