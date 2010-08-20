@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/string16.h"
 #include "gfx/native_widget_types.h"
 
 class BookmarkNode;
@@ -58,7 +59,7 @@ class BookmarkEditor {
 
     // If type == NEW_FOLDER, this is the urls/title pairs to add to the
     // folder.
-    std::vector<std::pair<GURL, std::wstring> > urls;
+    std::vector<std::pair<GURL, string16> > urls;
   };
 
   // Shows the bookmark editor. The bookmark editor allows editing an

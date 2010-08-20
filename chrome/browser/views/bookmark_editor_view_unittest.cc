@@ -309,7 +309,8 @@ TEST_F(BookmarkEditorViewTest, ChangeTitleNoTree) {
 // Creates a new folder.
 TEST_F(BookmarkEditorViewTest, NewFolder) {
   BookmarkEditor::EditDetails details;
-  details.urls.push_back(std::make_pair(GURL(base_path() + "x"), L"z"));
+  details.urls.push_back(std::make_pair(GURL(base_path() + "x"),
+                                        ASCIIToUTF16("z")));
   details.type = BookmarkEditor::EditDetails::NEW_FOLDER;
   CreateEditor(profile_.get(), model_->GetBookmarkBarNode(),
                details, BookmarkEditorView::SHOW_TREE);
@@ -339,7 +340,8 @@ TEST_F(BookmarkEditorViewTest, NewFolder) {
 // in then the editor is initially created showing.
 TEST_F(BookmarkEditorViewTest, MoveFolder) {
   BookmarkEditor::EditDetails details;
-  details.urls.push_back(std::make_pair(GURL(base_path() + "x"), L"z"));
+  details.urls.push_back(std::make_pair(GURL(base_path() + "x"),
+                                        ASCIIToUTF16("z")));
   details.type = BookmarkEditor::EditDetails::NEW_FOLDER;
   CreateEditor(profile_.get(), model_->GetBookmarkBarNode(),
                details, BookmarkEditorView::SHOW_TREE);

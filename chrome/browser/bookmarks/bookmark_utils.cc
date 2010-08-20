@@ -180,7 +180,7 @@ bool MoreRecentlyModified(const BookmarkNode* n1, const BookmarkNode* n2) {
 bool DoesBookmarkTextContainWords(const string16& text,
                                   const std::vector<string16>& words) {
   for (size_t i = 0; i < words.size(); ++i) {
-    if (text.find(words[i]) == std::wstring::npos)
+    if (text.find(words[i]) == string16::npos)
       return false;
   }
   return true;
@@ -616,15 +616,15 @@ void RegisterUserPrefs(PrefService* prefs) {
 
 void GetURLAndTitleToBookmark(TabContents* tab_contents,
                               GURL* url,
-                              std::wstring* title) {
+                              string16* title) {
   *url = tab_contents->GetURL();
-  *title = UTF16ToWideHack(tab_contents->GetTitle());
+  *title = tab_contents->GetTitle();
 }
 
 void GetURLsForOpenTabs(Browser* browser,
-    std::vector<std::pair<GURL, std::wstring> >* urls) {
+    std::vector<std::pair<GURL, string16> >* urls) {
   for (int i = 0; i < browser->tab_count(); ++i) {
-    std::pair<GURL, std::wstring> entry;
+    std::pair<GURL, string16> entry;
     GetURLAndTitleToBookmark(browser->GetTabContentsAt(i), &(entry.first),
                              &(entry.second));
     urls->push_back(entry);

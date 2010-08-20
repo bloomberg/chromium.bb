@@ -190,12 +190,12 @@ void RegisterUserPrefs(PrefService* prefs);
 // Fills in the URL and title for a bookmark of |tab_contents|.
 void GetURLAndTitleToBookmark(TabContents* tab_contents,
                               GURL* url,
-                              std::wstring* title);
+                              string16* title);
 
 // Returns, by reference in |urls|, the url and title pairs for each open
 // tab in browser.
 void GetURLsForOpenTabs(Browser* browser,
-                        std::vector<std::pair<GURL, std::wstring> >* urls);
+                        std::vector<std::pair<GURL, string16> >* urls);
 
 // Returns the parent for newly created folders/bookmarks. If |selection| has
 // one element and it is a folder, |selection[0]| is returned, otherwise

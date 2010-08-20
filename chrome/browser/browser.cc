@@ -1492,11 +1492,11 @@ void Browser::BookmarkCurrentPage() {
     return;  // Ignore requests until bookmarks are loaded.
 
   GURL url;
-  std::wstring title;
+  string16 title;
   bookmark_utils::GetURLAndTitleToBookmark(GetSelectedTabContents(), &url,
                                            &title);
   bool was_bookmarked = model->IsBookmarked(url);
-  model->SetURLStarred(url, WideToUTF16Hack(title), true);
+  model->SetURLStarred(url, title, true);
   // Make sure the model actually added a bookmark before showing the star. A
   // bookmark isn't created if the url is invalid.
   if (window_->IsActive() && model->IsBookmarked(url)) {
