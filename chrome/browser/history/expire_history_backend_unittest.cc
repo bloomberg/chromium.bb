@@ -78,7 +78,7 @@ class ExpireHistoryTest : public testing::Test,
 
   void StarURL(const GURL& url) {
     bookmark_model_.AddURL(
-        bookmark_model_.GetBookmarkBarNode(), 0, std::wstring(), url);
+        bookmark_model_.GetBookmarkBarNode(), 0, string16(), url);
   }
 
   static bool IsStringInFile(const FilePath& filename, const char* str);

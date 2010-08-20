@@ -24,11 +24,11 @@
       [self activeTabPairsVector];
   activeTabPairsVector->clear();
   activeTabPairsVector->push_back(
-      ActiveTabNameURLPair(L"at-0", GURL("http://at-0.com")));
+      ActiveTabNameURLPair(ASCIIToUTF16("at-0"), GURL("http://at-0.com")));
   activeTabPairsVector->push_back(
-      ActiveTabNameURLPair(L"at-1", GURL("http://at-1.com")));
+      ActiveTabNameURLPair(ASCIIToUTF16("at-1"), GURL("http://at-1.com")));
   activeTabPairsVector->push_back(
-      ActiveTabNameURLPair(L"at-2", GURL("http://at-2.com")));
+      ActiveTabNameURLPair(ASCIIToUTF16("at-2"), GURL("http://at-2.com")));
 }
 
 @end

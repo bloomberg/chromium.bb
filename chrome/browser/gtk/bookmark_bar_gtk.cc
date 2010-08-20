@@ -1231,7 +1231,7 @@ void BookmarkBarGtk::OnDragReceived(GtkWidget* widget,
       if (!url.is_valid())
         break;
       std::string title = bookmark_utils::GetNameForURL(url);
-      model_->AddURL(dest_node, index, UTF8ToWide(title), url);
+      model_->AddURL(dest_node, index, UTF8ToUTF16(title), url);
       dnd_success = TRUE;
       break;
     }

@@ -8,6 +8,7 @@
 #include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -32,7 +33,8 @@ class BookmarkIndexTest : public testing::Test {
   void AddBookmarksWithTitles(const std::vector<std::wstring>& titles) {
     GURL url("about:blank");
     for (size_t i = 0; i < titles.size(); ++i)
-      model_->AddURL(model_->other_node(), static_cast<int>(i), titles[i], url);
+      model_->AddURL(model_->other_node(), static_cast<int>(i),
+                     WideToUTF16Hack(titles[i]), url);
   }
 
   void ExpectMatches(const std::wstring& query,
@@ -206,7 +208,8 @@ TEST_F(BookmarkIndexTest, HonorMax) {
 // Makes sure if the lower case string of a bookmark title is more characters
 // than the upper case string no match positions are returned.
 TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
-  const BookmarkNode* n1 = model_->AddURL(model_->other_node(), 0, L"\u0130 i",
+  const BookmarkNode* n1 = model_->AddURL(model_->other_node(), 0,
+                                          WideToUTF16(L"\u0130 i"),
                                           GURL("http://www.google.com"));
 
   std::vector<bookmark_utils::TitleMatch> matches;
@@ -254,7 +257,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
     // Populate the InMemoryDatabase....
     url_db->AddURL(info);
     // Populate the BookmarkIndex.
-    model->AddURL(model->other_node(), i, UTF8ToWide(data[i].title),
+    model->AddURL(model->other_node(), i, UTF8ToUTF16(data[i].title),
                   data[i].url);
   }
 

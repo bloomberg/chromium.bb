@@ -270,14 +270,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
                                int index,
                                const string16& title);
 
-  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // Adds a url at the specified position.
-#if !defined(WCHAR_T_IS_UTF16)
-  const BookmarkNode* AddURL(const BookmarkNode* parent,
-                             int index,
-                             const std::wstring& title,
-                             const GURL& url);
-#endif
   const BookmarkNode* AddURL(const BookmarkNode* parent,
                              int index,
                              const string16& title,

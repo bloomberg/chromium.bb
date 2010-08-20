@@ -376,14 +376,6 @@ const BookmarkNode* BookmarkModel::AddGroup(const BookmarkNode* parent,
   return AddNode(AsMutable(parent), index, new_node, false);
 }
 
-#if !defined(WCHAR_T_IS_UTF16)
-const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
-                                          int index,
-                                          const std::wstring& title,
-                                          const GURL& url) {
-  return AddURL(parent, index, WideToUTF16(title), url);
-}
-#endif
 const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
                                           int index,
                                           const string16& title,

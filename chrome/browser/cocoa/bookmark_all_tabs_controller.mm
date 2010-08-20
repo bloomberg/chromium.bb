@@ -43,7 +43,7 @@
   const int tabCount = tabstrip_model->count();
   for (int i = 0; i < tabCount; ++i) {
     TabContents* tc = tabstrip_model->GetTabContentsAt(i);
-    const std::wstring tabTitle = UTF16ToWideHack(tc->GetTitle());
+    const string16 tabTitle = tc->GetTitle();
     const GURL& tabURL(tc->GetURL());
     ActiveTabNameURLPair tabPair(tabTitle, tabURL);
     activeTabPairsVector_.push_back(tabPair);

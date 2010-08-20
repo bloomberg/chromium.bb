@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "app/resource_bundle.h"
 #include "base/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
@@ -158,7 +159,8 @@ TEST_F(BookmarkButtonCellTest, Awake) {
 TEST_F(BookmarkButtonCellTest, FolderArrow) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* bar = model->GetBookmarkBarNode();
-  const BookmarkNode* node = model->AddURL(bar, bar->GetChildCount(), L"title",
+  const BookmarkNode* node = model->AddURL(bar, bar->GetChildCount(),
+                                           ASCIIToUTF16("title"),
                                            GURL("http://www.google.com"));
   scoped_nsobject<BookmarkButtonCell> cell(
     [[BookmarkButtonCell alloc] initForNode:node

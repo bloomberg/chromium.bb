@@ -547,10 +547,11 @@ TEST_F(ProfileSyncServiceTest, ServerChangeProcessing) {
   adds.AddURL(L"Some old site", "http://slog.thestranger.com/",
               bookmark_bar_id(), u1);
   // u5 tests an empty-string title.
-  std::string javascript_url("javascript:(function(){var w=window.open(" \
-                             "'about:blank','gnotesWin','location=0,menubar=0," \
-                             "scrollbars=0,status=0,toolbar=0,width=300," \
-                             "height=300,resizable');});");
+  std::string javascript_url(
+      "javascript:(function(){var w=window.open(" \
+      "'about:blank','gnotesWin','location=0,menubar=0," \
+      "scrollbars=0,status=0,toolbar=0,width=300," \
+      "height=300,resizable');});");
   adds.AddURL(L"", javascript_url, other_bookmarks_id(), 0);
 
   vector<sync_api::SyncManager::ChangeRecord>::const_iterator it;
@@ -1272,7 +1273,8 @@ TEST_F(ProfileSyncServiceTestWithData, ModelAssociationInvalidPersistence) {
   // the situation where bookmark model is different from sync model and
   // make sure model associator correctly rebuilds associations.
   const BookmarkNode* bookmark_bar_node = model_->GetBookmarkBarNode();
-  model_->AddURL(bookmark_bar_node, 0, L"xtra", GURL("http://www.xtra.com"));
+  model_->AddURL(bookmark_bar_node, 0, ASCIIToUTF16("xtra"),
+                 GURL("http://www.xtra.com"));
   // Now restart the sync service. This time it will try to use the persistent
   // associations and realize that they are invalid and hence will rebuild
   // associations.

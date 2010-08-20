@@ -125,7 +125,7 @@
 
   const BookmarkNode* node = model->AddURL(bookmarkNode_,
                                            bookmarkNode_->GetChildCount(),
-                                           std::wstring(),
+                                           string16(),
                                            url);
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkItem);
@@ -155,7 +155,7 @@
 
   const BookmarkNode* node = model->AddURL(bookmarkNode_,
                                            position,
-                                           std::wstring(),
+                                           string16(),
                                            url);
   if (!node) {
     AppleScript::SetError(AppleScript::errCreateBookmarkItem);

@@ -56,7 +56,7 @@ std::wstring::size_type AddNodesFromString(BookmarkModel& model,
         std::string url_string("http://");
         url_string += std::string(node_name.begin(), node_name.end());
         url_string += ".com";
-        model.AddURL(node, index, node_name, GURL(url_string));
+        model.AddURL(node, index, WideToUTF16Hack(node_name), GURL(url_string));
         ++end_pos;
       }
       ++index;

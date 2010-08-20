@@ -1,9 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/gtk/bookmark_bar_gtk.h"
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chrome_thread.h"
@@ -59,7 +60,7 @@ TEST_F(BookmarkBarGtkUnittest, HidesHelpMessageWithBookmark) {
 
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   model->AddURL(parent, parent->GetChildCount(),
-                L"title", GURL("http://one.com"));
+                ASCIIToUTF16("title"), GURL("http://one.com"));
 
   bookmark_bar_->Loaded(model);
   EXPECT_FALSE(bookmark_bar_->show_instructions_);
@@ -70,9 +71,9 @@ TEST_F(BookmarkBarGtkUnittest, BuildsButtons) {
 
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   model->AddURL(parent, parent->GetChildCount(),
-                L"title", GURL("http://one.com"));
+                ASCIIToUTF16("title"), GURL("http://one.com"));
   model->AddURL(parent, parent->GetChildCount(),
-                L"other", GURL("http://two.com"));
+                ASCIIToUTF16("other"), GURL("http://two.com"));
 
   bookmark_bar_->Loaded(model);
 

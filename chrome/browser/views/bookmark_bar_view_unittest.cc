@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
@@ -26,7 +27,7 @@ TEST_F(BookmarkBarViewTest, SwitchProfile) {
   profile()->GetBookmarkModel()->AddURL(
       profile()->GetBookmarkModel()->GetBookmarkBarNode(),
       0,
-      L"blah",
+      ASCIIToUTF16("blah"),
       GURL("http://www.google.com"));
 
   BookmarkBarView bookmark_bar(profile(), browser());

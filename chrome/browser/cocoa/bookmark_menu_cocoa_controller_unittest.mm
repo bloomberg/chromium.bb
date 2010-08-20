@@ -1,11 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string16.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
-#include "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
+#import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 @interface FakeBookmarkMenuController : BookmarkMenuCocoaController {
@@ -20,7 +21,7 @@
 
 - (id)init {
   if ((self = [super init])) {
-    std::wstring empty;
+    string16 empty;
     helper_ = new BrowserTestHelper();
     BookmarkModel* model = helper_->browser()->profile()->GetBookmarkModel();
     const BookmarkNode* bookmark_bar = model->GetBookmarkBarNode();

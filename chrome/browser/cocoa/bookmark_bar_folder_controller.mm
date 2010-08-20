@@ -1293,7 +1293,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     if (gurl.is_valid()) {
       bookmarkModel->AddURL(destParent,
                             destIndex++,
-                            base::SysNSStringToWide([titles objectAtIndex:i]),
+                            base::SysNSStringToUTF16([titles objectAtIndex:i]),
                             gurl);
       nodesWereAdded = YES;
     }

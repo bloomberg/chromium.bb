@@ -1,8 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
@@ -80,7 +81,8 @@ TEST_F(BookmarkButtonTest, FolderAndEmptyOrNot) {
   EXPECT_TRUE([button isFolder]);
   EXPECT_EQ([button bookmarkNode], node);
 
-  node = model->AddURL(node, 0, L"hi mom", GURL("http://www.google.com"));
+  node = model->AddURL(node, 0, ASCIIToUTF16("hi mom"),
+                       GURL("http://www.google.com"));
   [cell setBookmarkNode:node];
   EXPECT_FALSE([button isEmpty]);
   EXPECT_FALSE([button isFolder]);

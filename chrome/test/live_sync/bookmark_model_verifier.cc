@@ -10,6 +10,7 @@
 #include "app/tree_node_iterator.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/test/live_sync/live_bookmarks_sync_test.h"
@@ -183,11 +184,13 @@ const BookmarkNode* BookmarkModelVerifier::AddURL(BookmarkModel* model,
     const GURL& url) {
   const BookmarkNode* v_parent = NULL;
   FindNodeInVerifier(model, parent, &v_parent);
-  const BookmarkNode* result = model->AddURL(parent, index, title, url);
+  const BookmarkNode* result = model->AddURL(parent, index,
+                                             WideToUTF16Hack(title), url);
   EXPECT_TRUE(result);
   if (!result)
     return NULL;
-  const BookmarkNode* v_node = model_->AddURL(v_parent, index, title, url);
+  const BookmarkNode* v_node = model_->AddURL(v_parent, index,
+                                              WideToUTF16Hack(title), url);
   EXPECT_TRUE(v_node);
   if (!v_node)
     return NULL;

@@ -246,8 +246,10 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
 
   // add a few extra nodes to bookmark model and make sure IDs are still uniuqe.
   const BookmarkNode* bb_node = decoded_model->GetBookmarkBarNode();
-  decoded_model->AddURL(bb_node, 0, L"new url1", GURL(L"http://newurl1.com"));
-  decoded_model->AddURL(bb_node, 0, L"new url2", GURL(L"http://newurl2.com"));
+  decoded_model->AddURL(bb_node, 0, ASCIIToUTF16("new url1"),
+                        GURL("http://newurl1.com"));
+  decoded_model->AddURL(bb_node, 0, ASCIIToUTF16("new url2"),
+                        GURL("http://newurl2.com"));
 
   ExpectIDsUnique(decoded_model.get());
 }

@@ -4,6 +4,7 @@
 
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #include "app/l10n_util.h"
+#include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 
@@ -104,7 +105,7 @@
 - (NSNumber*)didCommit {
   NSString* name = [[self displayName] stringByTrimmingCharactersInSet:
                     [NSCharacterSet newlineCharacterSet]];
-  std::wstring newTitle = base::SysNSStringToWide(name);
+  string16 newTitle = base::SysNSStringToUTF16(name);
   const BookmarkNode* newParentNode = [self selectedNode];
   GURL newURL = [self GURLFromUrlField];
   if (!newURL.is_valid()) {

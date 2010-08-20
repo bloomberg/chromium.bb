@@ -409,7 +409,7 @@ bool CreateNewBookmarkFromNamedUrl(GtkSelectionData* selection_data,
   if (!gtk_dnd_util::ExtractNamedURL(selection_data, &url, &title))
     return false;
 
-  model->AddURL(parent, idx, UTF16ToWideHack(title), url);
+  model->AddURL(parent, idx, title, url);
   return true;
 }
 
@@ -419,7 +419,7 @@ bool CreateNewBookmarksFromURIList(GtkSelectionData* selection_data,
   gtk_dnd_util::ExtractURIList(selection_data, &urls);
   for (size_t i = 0; i < urls.size(); ++i) {
     std::string title = GetNameForURL(urls[i]);
-    model->AddURL(parent, idx++, UTF8ToWide(title), urls[i]);
+    model->AddURL(parent, idx++, UTF8ToUTF16(title), urls[i]);
   }
   return true;
 }

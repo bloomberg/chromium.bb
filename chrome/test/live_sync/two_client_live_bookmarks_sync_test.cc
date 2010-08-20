@@ -95,8 +95,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest, Sanity) {
     // Do something crazy and modify the same item from both clients!!
     const BookmarkNode* google_one = GetByUniqueURL(bm0, google_url);
     const BookmarkNode* google_two = GetByUniqueURL(bm1, google_url);
-    bm0->SetTitle(google_one, L"Google++");
-    bm1->SetTitle(google_two, L"Google--");
+    bm0->SetTitle(google_one, ASCIIToUTF16("Google++"));
+    bm1->SetTitle(google_two, ASCIIToUTF16("Google--"));
   }
 
   ASSERT_TRUE(ProfileSyncServiceTestHarness::AwaitQuiescence(clients()));
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   {
     const BookmarkNode* google_one = bm_bar0->GetChild(0);
-    bm0->SetTitle(google_one, L"Google1");
+    bm0->SetTitle(google_one, ASCIIToUTF16("Google1"));
   }
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   BookmarkModelVerifier::ExpectModelsMatch(bm0, bm1);
@@ -1864,17 +1864,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
   // Let's add 2 bookmarks (without favicon) on each client.
   {
     const BookmarkNode* bm_foo1 = bm0->AddURL(
-        bm_bar0, 0, L"Foo1", GURL("http://www.foo1.com"));
+        bm_bar0, 0, ASCIIToUTF16("Foo1"), GURL("http://www.foo1.com"));
     ASSERT_TRUE(bm_foo1 != NULL);
     const BookmarkNode* bm_foo3 = bm1->AddURL(
-        bm_bar1, 0, L"Foo3", GURL("http://www.foo3.com"));
+        bm_bar1, 0, ASCIIToUTF16("Foo3"), GURL("http://www.foo3.com"));
     ASSERT_TRUE(bm_foo3 != NULL);
 
     const BookmarkNode* bm_foo2 = bm0->AddURL(
-        bm_bar0, 1, L"Foo2", GURL("http://www.foo2.com"));
+        bm_bar0, 1, ASCIIToUTF16("Foo2"), GURL("http://www.foo2.com"));
     ASSERT_TRUE(bm_foo2 != NULL);
     const BookmarkNode* bm_foo4 = bm1->AddURL(
-        bm_bar1, 1, L"Foo4", GURL("http://www.foo4.com"));
+        bm_bar1, 1, ASCIIToUTF16("Foo4"), GURL("http://www.foo4.com"));
     ASSERT_TRUE(bm_foo4 != NULL);
   }
 
@@ -1906,8 +1906,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   // Let's add same bookmarks (without favicon) to both clients.
   for (int index = 0; index < 3; index++) {
-    wstring title(L"TestBookmark");
-    title.append(IntToWStringHack(index));
+    string16 title(ASCIIToUTF16("TestBookmark"));
+    title.append(base::IntToString16(index));
     string url("http://www.nofaviconurl");
     url.append(base::IntToString(index));
     url.append(".com");
@@ -1921,8 +1921,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   // Let's add some different bookmarks (without favicon) to client1.
   for (int index = 3; index < 11 ; index++) {
-    wstring title(L"Client1-TestBookmark");
-    title.append(IntToWStringHack(index));
+    string16 title(ASCIIToUTF16("Client1-TestBookmark"));
+    title.append(base::IntToString16(index));
     string url("http://www.client1-nofaviconurl");
     url.append(base::IntToString(index));
     url.append(".com");
@@ -1933,8 +1933,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
    // Let's add some different bookmarks (without favicon) to client2.
   for (int index = 3; index < 11 ; index++) {
-    wstring title(L"Client2-TestBookmark");
-    title.append(IntToWStringHack(index));
+    string16 title(ASCIIToUTF16("Client2-TestBookmark"));
+    title.append(base::IntToString16(index));
     string url("http://www.Client2-nofaviconurl");
     url.append(base::IntToString(index));
     url.append(".com");
@@ -1968,8 +1968,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   // Let's add same bookmarks (without favicon) to both clients.
   for (int index = 0; index < 3 ; index++) {
-    wstring title(L"TestBookmark");
-    title.append(IntToWStringHack(index));
+    string16 title(ASCIIToUTF16("TestBookmark"));
+    title.append(base::IntToString16(index));
     string url("http://www.nofaviconurl");
     url.append(base::IntToString(index));
     url.append(".com");
@@ -1983,8 +1983,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   // Let's add some different bookmarks (without favicon) to client2.
   for (int index = 3; index < 5 ; index++) {
-    wstring title(L"Client2-TestBookmark");
-    title.append(IntToWStringHack(index));
+    string16 title(ASCIIToUTF16("Client2-TestBookmark"));
+    title.append(base::IntToString16(index));
     string url("http://www.client2-nofaviconurl");
     url.append(base::IntToString(index));
     url.append(".com");
@@ -2018,8 +2018,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientLiveBookmarksSyncTest,
 
   // Let's add same bookmarks (without favicon) to both clients.
   for (int index = 0; index < 3 ; index++) {
-    wstring title(L"TestBookmark");
-    title.append(IntToWStringHack(index));
+    string16 title(ASCIIToUTF16("TestBookmark"));
+    title.append(base::IntToString16(index));
     string url("http://www.nofaviconurl");
     url.append(base::IntToString(index));
     url.append(".com");
