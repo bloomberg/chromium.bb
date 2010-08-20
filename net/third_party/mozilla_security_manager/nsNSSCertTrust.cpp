@@ -36,7 +36,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "chrome/third_party/mozilla_security_manager/nsNSSCertTrust.h"
+#include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
+
+namespace mozilla_security_manager {
 
 void
 nsNSSCertTrust::AddCATrust(PRBool ssl, PRBool email, PRBool objSign)
@@ -363,3 +365,5 @@ nsNSSCertTrust::hasTrust(unsigned int t, unsigned int v)
 {
   return !!(t & v);
 }
+
+}  // namespace mozilla_security_manager

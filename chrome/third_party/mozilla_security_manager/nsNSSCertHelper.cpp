@@ -48,9 +48,9 @@
 #include "base/i18n/number_formatting.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
+#include "net/third_party/mozilla_security_manager/nsNSSCertTrust.h"
 
 namespace {
 
