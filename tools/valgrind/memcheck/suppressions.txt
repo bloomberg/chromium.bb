@@ -3738,7 +3738,9 @@
    ...
    fun:_ZN30ChromeURLRequestContextFactoryC2EP7Profile
    fun:*FactoryForOffTheRecordC*EP7Profile
+   ...
    fun:_ZN29ChromeURLRequestContextGetter18CreateOffTheRecordEP7Profile
+   ...
    fun:_ZN23OffTheRecordProfileImpl*Profile
    fun:_ZN7Profile25CreateOffTheRecordProfileEv
    fun:_ZN11ProfileImpl22GetOffTheRecordProfileEv
@@ -4177,4 +4179,17 @@
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_52834
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN5IDMapIN3IPC7Channel8ListenerEL23IDMapOwnershipSemantics0EEC1Ev
+   fun:_ZN17RenderProcessHostC2EP7Profile
+   ...
+   fun:_ZN21MockRenderProcessHostC1EP7Profile
+   fun:_ZNK28MockRenderProcessHostFactory23CreateRenderProcessHostEP7Profile
+   fun:_ZN12SiteInstance10GetProcessEv
+   fun:_ZN14RenderViewHostC2EP12SiteInstanceP22RenderViewHostDelegateix
 }
