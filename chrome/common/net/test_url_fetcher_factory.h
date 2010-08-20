@@ -57,7 +57,7 @@ class TestURLFetcher : public URLFetcher {
   // to request_context_getter in core_, but it might not be released
   // because we wouldn't call Core::CancelURLRequest.
   // Without this, we'll see leaks of URLRequestContext in test.
-  virtual void set_requeset_context(
+  virtual void set_request_context(
       URLRequestContextGetter* request_context_getter) {}
 
  private:

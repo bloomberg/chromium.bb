@@ -4150,13 +4150,6 @@
    fun:_ZN17URLRequestHttpJobD0Ev
 }
 {
-   bug_52826
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14TestingProfile20CreateRequestContextEv
-   fun:_ZN20GoogleURLTrackerTest20CreateRequestContextEv
-}
-{
    bug_52828
    Memcheck:Leak
    fun:_Znw*
