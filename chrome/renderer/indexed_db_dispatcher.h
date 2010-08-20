@@ -11,7 +11,6 @@
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabase.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 
 class IndexedDBKey;
 class SerializedScriptValue;
@@ -70,9 +69,6 @@ class IndexedDBDispatcher {
       const WebKit::WebIDBKeyRange& idb_key_range, unsigned short direction,
       WebKit::WebIDBCallbacks* callbacks, int32 idb_object_store_id);
 
-  void RequestIDBTransactionSetCallbacks(
-      WebKit::WebIDBTransactionCallbacks* callbacks);
-
  private:
   // IDBCallback message handlers.
   void OnSuccessNull(int32 response_id);
@@ -84,13 +80,10 @@ class IndexedDBDispatcher {
   void OnSuccessSerializedScriptValue(int32 response_id,
                                       const SerializedScriptValue& value);
   void OnError(int32 response_id, int code, const string16& message);
-  void OnAbort(int transaction_id);
 
   // Careful! WebIDBCallbacks wraps non-threadsafe data types. It must be
   // destroyed and used on the same thread it was created on.
   IDMap<WebKit::WebIDBCallbacks, IDMapOwnPointer> pending_callbacks_;
-  IDMap<WebKit::WebIDBTransactionCallbacks, IDMapOwnPointer>
-      pending_transaction_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDispatcher);
 };

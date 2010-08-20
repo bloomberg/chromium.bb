@@ -20,9 +20,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBIndex.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBObjectStore.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebIDBTransaction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 
 using WebKit::WebDOMStringList;
 using WebKit::WebIDBCursor;
@@ -32,10 +30,8 @@ using WebKit::WebIDBIndex;
 using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyRange;
 using WebKit::WebIDBObjectStore;
-using WebKit::WebIDBTransaction;
 using WebKit::WebSecurityOrigin;
 using WebKit::WebSerializedScriptValue;
-using WebKit::WebVector;
 
 IndexedDBDispatcherHost::IndexedDBDispatcherHost(
     IPC::Message::Sender* sender, WebKitContext* webkit_context)
@@ -49,8 +45,6 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
           new ObjectStoreDispatcherHost(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(cursor_dispatcher_host_(
           new CursorDispatcherHost(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(transaction_dispatcher_host_(
-          new TransactionDispatcherHost(this))),
       process_handle_(0) {
   DCHECK(sender_);
   DCHECK(webkit_context_.get());
@@ -98,7 +92,6 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBCursorKey::ID:
     case ViewHostMsg_IDBCursorValue::ID:
     case ViewHostMsg_IDBFactoryOpen::ID:
-    case ViewHostMsg_IDBFactoryAbortPendingTransactions::ID:
     case ViewHostMsg_IDBDatabaseName::ID:
     case ViewHostMsg_IDBDatabaseDescription::ID:
     case ViewHostMsg_IDBDatabaseVersion::ID:
@@ -106,7 +99,6 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBDatabaseCreateObjectStore::ID:
     case ViewHostMsg_IDBDatabaseObjectStore::ID:
     case ViewHostMsg_IDBDatabaseRemoveObjectStore::ID:
-    case ViewHostMsg_IDBDatabaseTransaction::ID:
     case ViewHostMsg_IDBDatabaseDestroyed::ID:
     case ViewHostMsg_IDBIndexName::ID:
     case ViewHostMsg_IDBIndexKeyPath::ID:
@@ -123,7 +115,6 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBObjectStoreIndex::ID:
     case ViewHostMsg_IDBObjectStoreRemoveIndex::ID:
     case ViewHostMsg_IDBObjectStoreDestroyed::ID:
-    case ViewHostMsg_IDBTransactionDestroyed::ID:
       break;
     default:
       return false;
@@ -168,8 +159,7 @@ void IndexedDBDispatcherHost::OnMessageReceivedWebKit(
       database_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       index_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
       object_store_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
-      cursor_dispatcher_host_->OnMessageReceived(message, &msg_is_ok) ||
-      transaction_dispatcher_host_->OnMessageReceived(message, &msg_is_ok);
+      cursor_dispatcher_host_->OnMessageReceived(message, &msg_is_ok);
 
   if (!handled) {
     handled = true;
@@ -177,8 +167,6 @@ void IndexedDBDispatcherHost::OnMessageReceivedWebKit(
     IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost, message, msg_is_ok)
       IPC_MESSAGE_HANDLER(ViewHostMsg_IDBFactoryOpen,
                           OnIDBFactoryOpen)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_IDBFactoryAbortPendingTransactions,
-                          OnIDBFactoryAbortPendingTransactions)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   }
@@ -206,11 +194,6 @@ int32 IndexedDBDispatcherHost::Add(WebIDBObjectStore* idb_object_store) {
   return object_store_dispatcher_host_->map_.Add(idb_object_store);
 }
 
-void IndexedDBDispatcherHost::Add(WebIDBTransaction* idb_transaction) {
-  transaction_dispatcher_host_->map_.AddWithID(
-      idb_transaction, idb_transaction->id());
-}
-
 void IndexedDBDispatcherHost::OnIDBFactoryOpen(
     const ViewHostMsg_IDBFactoryOpen_Params& params) {
   // TODO(jorlow): Check the content settings map and use params.routing_id_
@@ -221,14 +204,6 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
       params.name_, params.description_,
       new IndexedDBCallbacks<WebIDBDatabase>(this, params.response_id_),
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin_), NULL);
-}
-
-void IndexedDBDispatcherHost::OnIDBFactoryAbortPendingTransactions(
-    const std::vector<int32>& ids) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-
-  WebVector<int32> pendingIDs = ids;
-  Context()->GetIDBFactory()->abortPendingTransactions(pendingIDs);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -302,8 +277,6 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
                                     OnObjectStore)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBDatabaseRemoveObjectStore,
                         OnRemoveObjectStore)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBDatabaseTransaction,
-                                    OnTransaction)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBDatabaseDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -393,31 +366,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRemoveObjectStore(
     return;
   idb_database->removeObjectStore(
       name, new IndexedDBCallbacks<WebIDBObjectStore>(parent_, response_id));
-}
-
-void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
-    int32 idb_database_id, const std::vector<string16>& names,
-    int32 mode, int32 timeout, IPC::Message* reply_msg) {
-  WebIDBDatabase* database = parent_->GetOrTerminateProcess(
-      &map_, idb_database_id, reply_msg,
-      ViewHostMsg_IDBDatabaseTransaction::ID);
-  if (!database)
-      return;
-
-  WebDOMStringList object_stores;
-  for (std::vector<string16>::const_iterator it = names.begin();
-       it != names.end(); ++it) {
-    object_stores.append(*it);
-  }
-
-  WebIDBTransaction* transaction = database->transaction(
-      object_stores, mode, timeout);
-  transaction->setCallbacks(
-      new IndexedDBTransactionCallbacks(parent_, transaction->id()));
-  parent_->Add(transaction);
-  ViewHostMsg_IDBDatabaseTransaction::WriteReplyParams(
-      reply_msg, transaction->id());
-  parent_->Send(reply_msg);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
@@ -667,7 +615,6 @@ bool IndexedDBDispatcherHost::CursorDispatcherHost::OnMessageReceived(
   return handled;
 }
 
-
 void IndexedDBDispatcherHost::CursorDispatcherHost::Send(
     IPC::Message* message) {
   // The macro magic in OnMessageReceived requires this to link, but it should
@@ -734,42 +681,4 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(
     int32 object_id) {
   parent_->DestroyObject(
       &map_, object_id, ViewHostMsg_IDBCursorDestroyed::ID);
-}
-
-//////////////////////////////////////////////////////////////////////
-// IndexedDBDispatcherHost::TransactionDispatcherHost
-//
-
-IndexedDBDispatcherHost::TransactionDispatcherHost::TransactionDispatcherHost(
-    IndexedDBDispatcherHost* parent)
-    : parent_(parent) {
-}
-
-IndexedDBDispatcherHost::
-    TransactionDispatcherHost::~TransactionDispatcherHost() {
-}
-
-bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
-    const IPC::Message& message, bool* msg_is_ok) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::TransactionDispatcherHost,
-                           message, *msg_is_ok)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_IDBTransactionDestroyed, OnDestroyed)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
-void IndexedDBDispatcherHost::TransactionDispatcherHost::Send(
-    IPC::Message* message) {
-  // The macro magic in OnMessageReceived requires this to link, but it should
-  // never actually be called.
-  NOTREACHED();
-  parent_->Send(message);
-}
-
-void IndexedDBDispatcherHost::TransactionDispatcherHost::OnDestroyed(
-    int32 object_id) {
-  parent_->DestroyObject(
-      &map_, object_id, ViewHostMsg_IDBTransactionDestroyed::ID);
 }
