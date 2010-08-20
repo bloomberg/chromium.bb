@@ -197,6 +197,7 @@ void MethodMap::AddMethod(uintptr_t method_id, MethodInfo *info) {
     abort();
   }
   method_map_[method_id] = info;
+  method_map_keys_.push_back(method_id);
 }
 
 }  // namespace plugin

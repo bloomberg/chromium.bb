@@ -200,11 +200,29 @@ void ScriptableHandlePpapi::RemoveProperty(const pp::Var& name,
 }
 
 
+void ScriptableHandlePpapi::GetAllPropertyNames(
+    std::vector<pp::Var>* properties,
+    pp::Var* exception) {
+  std::vector<uintptr_t>* ids = handle()->GetPropertyIdentifiers();
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
+                 "(ids=%"NACL_PRIuS")\n", ids->size()));
+  // TODO(polina): should methods also be added?
+  for (size_t i = 0; i < ids->size(); ++i) {
+    nacl::string name =
+        handle()->browser_interface()->IdentifierToString(ids->at(i));
+    properties->push_back(pp::Var(name));
+  }
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::GetAllPropertyNames "
+                 "(properties=%"NACL_PRIuS")\n", properties->size()));
+  UNREFERENCED_PARAMETER(exception);
+}
+
+
 pp::Var ScriptableHandlePpapi::Call(const pp::Var& name,
                                     const std::vector<pp::Var>& args,
                                     pp::Var* exception) {
   assert(name.is_string());
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::Call (name=%s, %"NACL_PRIdS
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::Call (name=%s, %"NACL_PRIuS
                  " args)\n", VarToString(name).c_str(), args.size()));
   return Invoke(METHOD_CALL, name.AsString(), "Call", args, exception);
 }
@@ -212,7 +230,7 @@ pp::Var ScriptableHandlePpapi::Call(const pp::Var& name,
 
 pp::Var ScriptableHandlePpapi::Construct(const std::vector<pp::Var>& args,
                                          pp::Var* exception) {
-  PLUGIN_PRINTF(("ScriptableHandlePpapi::Construct (%"NACL_PRIdS
+  PLUGIN_PRINTF(("ScriptableHandlePpapi::Construct (%"NACL_PRIuS
                  " args)\n", args.size()));
   return Error("constructor", "Construct", "constructor is not supported",
                exception);

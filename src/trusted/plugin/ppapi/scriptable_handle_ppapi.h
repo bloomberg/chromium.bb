@@ -22,7 +22,7 @@ namespace plugin {
 
 class PortableHandle;
 
-// Encapsulates a browser scriptable object for a PPAPI plugin.
+// Encapsulates a browser scriptable object for a PPAPI NaCl plugin.
 class ScriptableHandlePpapi : public pp::ScriptableObject,
                               public ScriptableHandle {
  public:
@@ -37,9 +37,9 @@ class ScriptableHandlePpapi : public pp::ScriptableObject,
   // Returns true for preloaded NaCl Plugin methods and SRPC methods exported
   // from a NaCl module. Does not set |exception|.
   virtual bool HasMethod(const pp::Var& name, pp::Var* exception);
+
   // Gets the value of a preloaded NaCl Plugin property.
   // Sets |exception| on failure.
-
   virtual pp::Var GetProperty(const pp::Var& name, pp::Var* exception);
   // Sets the value of a preloaded NaCl Plugin property.
   // Does not add new properties. Sets |exception| of failure.
@@ -47,6 +47,10 @@ class ScriptableHandlePpapi : public pp::ScriptableObject,
                            pp::Var* exception);
   // Set |exception| to indicate that property removal is not supported.
   virtual void RemoveProperty(const pp::Var& name, pp::Var* exception);
+  // Returns a list of all preloaded NaCl Plugin |properties|.
+  // Does not set |exception|.
+  virtual void GetAllPropertyNames(std::vector<pp::Var>* properties,
+                                   pp::Var* exception);
 
   // Calls preloaded NaCl Plugin methods or SRPC methods exported from
   // a NaCl module. Sets |exception| on failure.
@@ -66,8 +70,8 @@ class ScriptableHandlePpapi : public pp::ScriptableObject,
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ScriptableHandlePpapi);
-  // Prevent construction and destruction from outside the class:
-  // must use factory New() and base's Delete() methods instead.
+  // Prevent construction from outside the class:
+  // must use factory New() method instead.
   explicit ScriptableHandlePpapi(PortableHandle* handle);
   virtual ~ScriptableHandlePpapi();
 

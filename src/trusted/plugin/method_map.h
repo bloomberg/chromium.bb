@@ -9,12 +9,13 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_METHOD_MAP_H
 #define NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_METHOD_MAP_H
 
+#include <limits.h>
+#include <map>
+#include <vector>
+
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-
-#include <limits.h>
-#include <map>
 
 namespace plugin {
 
@@ -111,10 +112,14 @@ class MethodMap {
   MethodInfo* GetMethod(uintptr_t method_id);
   void AddMethod(uintptr_t method_id, MethodInfo* info);
 
+  typedef std::vector<uintptr_t> MethodMapKeys;
+  MethodMapKeys* Keys() { return &method_map_keys_; }
+
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(MethodMap);
   typedef std::map<uintptr_t, MethodInfo*> MethodMapStorage;
   MethodMapStorage method_map_;
+  MethodMapKeys method_map_keys_;
 };
 
 }  // namespace plugin

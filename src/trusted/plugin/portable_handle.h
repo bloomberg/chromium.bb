@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <map>
+#include <vector>
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/plugin/method_map.h"
@@ -53,9 +54,13 @@ class PortableHandle {
   // been deallocated or will be deallocated shortly.
   virtual void Invalidate() = 0;
 
-  // Generic NPAPI/IDispatch interface
+  // Generic dispatch interface
   bool Invoke(uintptr_t method_id, CallType call_type, SrpcParams* params);
   bool HasMethod(uintptr_t method_id, CallType call_type);
+
+  std::vector<uintptr_t>* GetPropertyIdentifiers() {
+    return property_get_methods_.Keys();
+  }
 
   // Get the method signature so ScriptableHandle can marshal the inputs
   bool InitParams(uintptr_t method_id, CallType call_type, SrpcParams* params);
