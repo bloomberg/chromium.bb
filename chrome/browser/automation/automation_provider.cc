@@ -1677,6 +1677,9 @@ void AutomationProvider::GetBrowserInfo(Browser* browser,
                         chrome::kHelperProcessExecutablePath);
   properties->SetString("command_line_string",
       CommandLine::ForCurrentProcess()->command_line_string());
+  FilePath dumps_path;
+  PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
+  properties->SetString("DIR_CRASH_DUMPS", dumps_path.value());
 
   std::string branding;
 #if defined(GOOGLE_CHROME_BUILD)

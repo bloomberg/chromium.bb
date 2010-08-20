@@ -29,6 +29,7 @@
     'codesign',
     'content',
     'cookies',
+    'crash_reporter',
     'downloads',
     'history',
     'infobars',

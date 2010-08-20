@@ -1394,7 +1394,7 @@ class Main(object):
     self._options, self._args = parser.parse_args()
 
     # Setup logging - start with defaults
-    level = logging.WARNING
+    level = logging.INFO
     format = None
 
     if self._options.verbose:
