@@ -297,7 +297,13 @@ TEST_F(StartupTest, PerfFewTabsReference) {
   RunPerfTestWithManyTabs("few_tabs", "cmdline-ref", 5, 2, false);
 }
 
-TEST_F(StartupTest, PerfRestoreFewTabs) {
+// http://crbug.com/52858
+#if defined(OS_MACOSX)
+#define MAYBE_PerfRestoreFewTabs FLAKY_PerfRestoreFewTabs
+#else
+#define MAYBE_PerfRestoreFewTabs PerfRestoreFewTabs
+#endif
+TEST_F(StartupTest, MAYBE_PerfRestoreFewTabs) {
   RunPerfTestWithManyTabs("few_tabs", "restore", 5, 2, true);
 }
 
@@ -306,13 +312,18 @@ TEST_F(StartupTest, PerfRestoreFewTabsReference) {
   RunPerfTestWithManyTabs("few_tabs", "restore-ref", 5, 2, true);
 }
 
-// http://crbug.com/46609
 #if defined(OS_MACOSX)
+// http://crbug.com/46609
 #define MAYBE_PerfSeveralTabsReference FLAKY_PerfSeveralTabsReference
 #define MAYBE_PerfSeveralTabs FLAKY_PerfSeveralTabs
+// http://crbug.com/52858
+#define MAYBE_PerfRestoreSeveralTabs FLAKY_PerfRestoreSeveralTabs
+#define MAYBE_PerfExtensionContentScript50 FLAKY_PerfExtensionContentScript50
 #else
 #define MAYBE_PerfSeveralTabsReference PerfSeveralTabsReference
 #define MAYBE_PerfSeveralTabs PerfSeveralTabs
+#define MAYBE_PerfRestoreSeveralTabs PerfRestoreSeveralTabs
+#define MAYBE_PerfExtensionContentScript50 PerfExtensionContentScript50
 #endif
 
 TEST_F(StartupTest, MAYBE_PerfSeveralTabs) {
@@ -324,7 +335,7 @@ TEST_F(StartupTest, MAYBE_PerfSeveralTabsReference) {
   RunPerfTestWithManyTabs("several_tabs", "cmdline-ref", 10, 4, false);
 }
 
-TEST_F(StartupTest, PerfRestoreSeveralTabs) {
+TEST_F(StartupTest, MAYBE_PerfRestoreSeveralTabs) {
   RunPerfTestWithManyTabs("several_tabs", "restore", 10, 4, true);
 }
 
@@ -347,7 +358,7 @@ TEST_F(StartupTest, PerfExtensionContentScript1) {
                  UITest::DEFAULT_THEME, 1, 0);
 }
 
-TEST_F(StartupTest, PerfExtensionContentScript50) {
+TEST_F(StartupTest, MAYBE_PerfExtensionContentScript50) {
   SetUpWithFileURL();
   SetUpWithExtensionsProfile("content_scripts50");
   RunStartupTest("warm", "extension_content_scripts50", WARM, NOT_IMPORTANT,
