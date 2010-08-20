@@ -34,21 +34,19 @@ ReloadButtonGtk::ReloadButtonGtk(LocationBarViewGtk* location_bar,
       reload_(theme_provider_, IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0),
       stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0),
       widget_(gtk_chrome_button_new()) {
-  gtk_widget_set_size_request(widget_.get(), reload_.Width(), reload_.Height());
+  gtk_widget_set_size_request(widget(), reload_.Width(), reload_.Height());
 
-  gtk_widget_set_app_paintable(widget_.get(), TRUE);
+  gtk_widget_set_app_paintable(widget(), TRUE);
 
-  g_signal_connect(widget_.get(), "clicked",
-                   G_CALLBACK(OnClickedThunk), this);
-  g_signal_connect(widget_.get(), "expose-event",
-                   G_CALLBACK(OnExposeThunk), this);
-  g_signal_connect(widget_.get(), "leave-notify-event",
+  g_signal_connect(widget(), "clicked", G_CALLBACK(OnClickedThunk), this);
+  g_signal_connect(widget(), "expose-event", G_CALLBACK(OnExposeThunk), this);
+  g_signal_connect(widget(), "leave-notify-event",
                    G_CALLBACK(OnLeaveNotifyThunk), this);
-  GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
+  GTK_WIDGET_UNSET_FLAGS(widget(), GTK_CAN_FOCUS);
 
-  gtk_widget_set_has_tooltip(widget_.get(), TRUE);
-  g_signal_connect(widget_.get(), "query-tooltip",
-                   G_CALLBACK(OnQueryTooltipThunk), this);
+  gtk_widget_set_has_tooltip(widget(), TRUE);
+  g_signal_connect(widget(), "query-tooltip", G_CALLBACK(OnQueryTooltipThunk),
+                   this);
 
   hover_controller_.Init(widget());
   gtk_util::SetButtonTriggersNavigation(widget());
@@ -78,7 +76,7 @@ void ReloadButtonGtk::ChangeMode(Mode mode, bool force) {
     visible_mode_ = mode;
 
     UpdateThemeButtons();
-    gtk_widget_queue_draw(widget_.get());
+    gtk_widget_queue_draw(widget());
   }
 }
 
@@ -188,29 +186,27 @@ void ReloadButtonGtk::UpdateThemeButtons() {
         (intended_mode_ == MODE_RELOAD) ? GTK_STOCK_REFRESH : GTK_STOCK_STOP,
         GTK_ICON_SIZE_SMALL_TOOLBAR, NULL);
 
-    gtk_button_set_image(GTK_BUTTON(widget_.get()),
+    gtk_button_set_image(GTK_BUTTON(widget()),
                          gtk_image_new_from_pixbuf(pixbuf));
     g_object_unref(pixbuf);
 
-    gtk_widget_set_size_request(widget_.get(), -1, -1);
+    gtk_widget_set_size_request(widget(), -1, -1);
     GtkRequisition req;
     gtk_widget_size_request(widget(), &req);
     GtkButtonWidth = std::max(GtkButtonWidth, req.width);
-    gtk_widget_set_size_request(widget_.get(), GtkButtonWidth, -1);
+    gtk_widget_set_size_request(widget(), GtkButtonWidth, -1);
 
-    gtk_widget_set_app_paintable(widget_.get(), FALSE);
-    gtk_widget_set_double_buffered(widget_.get(), TRUE);
+    gtk_widget_set_app_paintable(widget(), FALSE);
+    gtk_widget_set_double_buffered(widget(), TRUE);
   } else {
     gtk_button_set_image(GTK_BUTTON(widget()), NULL);
 
-    gtk_widget_set_size_request(widget_.get(), reload_.Width(),
-                                reload_.Height());
+    gtk_widget_set_size_request(widget(), reload_.Width(), reload_.Height());
 
-    gtk_widget_set_app_paintable(widget_.get(), TRUE);
+    gtk_widget_set_app_paintable(widget(), TRUE);
     // We effectively double-buffer by virtue of having only one image...
-    gtk_widget_set_double_buffered(widget_.get(), FALSE);
+    gtk_widget_set_double_buffered(widget(), FALSE);
   }
 
-  gtk_chrome_button_set_use_gtk_rendering(
-      GTK_CHROME_BUTTON(widget_.get()), use_gtk);
+  gtk_chrome_button_set_use_gtk_rendering(GTK_CHROME_BUTTON(widget()), use_gtk);
 }
