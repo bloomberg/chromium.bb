@@ -4185,10 +4185,6 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN5IDMapIN3IPC7Channel8ListenerEL23IDMapOwnershipSemantics0EEC1Ev
-   fun:_ZN17RenderProcessHostC2EP7Profile
-   ...
-   fun:_ZN21MockRenderProcessHostC1EP7Profile
    fun:_ZNK28MockRenderProcessHostFactory23CreateRenderProcessHostEP7Profile
    fun:_ZN12SiteInstance10GetProcessEv
    fun:_ZN14RenderViewHostC2EP12SiteInstanceP22RenderViewHostDelegateix
@@ -4214,4 +4210,15 @@
    fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
    fun:event_process_active
    fun:event_base_loop
+}
+{
+   bug_52837
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZNSt3mapISs8FilePathSt4lessISsESaISt4pairIKSsS0_EEE6insertESt17_Rb_tree_iteratorIS5_ERKS5_
+   fun:_ZNSt3mapISs8FilePathSt4lessISsESaISt4pairIKSsS0_EEEixERS4_
+   fun:_ZN17ExtensionsService15UnloadExtensionERKSs
+   fun:_ZN17ExtensionsService18UninstallExtensionERKSsb
+   fun:_ZN18AutomationProvider18UninstallExtensionEiPb
 }
