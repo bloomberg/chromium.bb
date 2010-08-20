@@ -203,7 +203,6 @@ class DecoderTester {
 
     // Test the content of the update rect.
     for (size_t i = 0; i < update_rects_.size(); ++i) {
-      LOG(INFO) << "Testing Rect " << i;
       EXPECT_FALSE(rects_.empty());
       gfx::Rect rect = rects_.front();
       rects_.pop_front();

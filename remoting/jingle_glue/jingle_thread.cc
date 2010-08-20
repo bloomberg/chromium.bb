@@ -41,8 +41,6 @@ void JingleThread::Start() {
 }
 
 void JingleThread::Run() {
-  LOG(INFO) << "Started Jingle thread.";
-
   MessageLoopForIO message_loop;
   message_loop_ = &message_loop;
 
@@ -60,8 +58,6 @@ void JingleThread::Run() {
 
   task_pump_ = NULL;
   message_loop_ = NULL;
-
-  LOG(INFO) << "Jingle thread finished.";
 }
 
 // This method is called every 20ms to process tasks from |message_loop_|
