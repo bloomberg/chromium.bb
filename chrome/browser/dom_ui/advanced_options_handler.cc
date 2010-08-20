@@ -29,6 +29,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "chrome/browser/gears_integration.h"
 #include "net/base/ssl_config_service_win.h"
 #endif
 
@@ -176,11 +177,14 @@ void AdvancedOptionsHandler::RegisterMessages() {
 #if defined(OS_WIN)
   // Setup Windows specific callbacks.
   dom_ui_->RegisterMessageCallback("checkRevocationCheckboxAction",
-     NewCallback(this,
-                 &AdvancedOptionsHandler::HandleCheckRevocationCheckbox));
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleCheckRevocationCheckbox));
   dom_ui_->RegisterMessageCallback("useSSL2CheckboxAction",
-     NewCallback(this,
-                 &AdvancedOptionsHandler::HandleUseSSL2Checkbox));
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleUseSSL2Checkbox));
+  dom_ui_->RegisterMessageCallback("showGearsSettings",
+      NewCallback(this,
+                  &AdvancedOptionsHandler::HandleShowGearsSettings));
 #endif
 }
 
@@ -231,6 +235,12 @@ void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
 void AdvancedOptionsHandler::HandleUseSSL2Checkbox(const ListValue* args) {
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
   net::SSLConfigServiceWin::SetSSL2Enabled(checked_str == "true");
+}
+
+void AdvancedOptionsHandler::HandleShowGearsSettings(const ListValue* args) {
+  UserMetricsRecordAction(UserMetricsAction("Options_GearsSettings"), NULL);
+  GearsSettingsPressed(
+      dom_ui_->tab_contents()->view()->GetTopLevelNativeWindow());
 }
 #endif
 

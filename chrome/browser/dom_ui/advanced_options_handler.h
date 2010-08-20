@@ -54,6 +54,9 @@ class AdvancedOptionsHandler
   // Callback for the "Use SSL2" checkbox.  This is needed so we can support
   // manual handling on Windows.
   void HandleUseSSL2Checkbox(const ListValue* args);
+
+  // Callback for the "Show Gears Settings" button.
+  void HandleShowGearsSettings(const ListValue* args);
 #endif
 
 #if !defined(OS_CHROMEOS)

@@ -77,6 +77,15 @@
 </if>
       <div><button id="fontSettingsConfigureFontsOnlyButton"
           i18n-content="fontSettingsConfigureFontsOnlyButton"></button></div>
+<if expr="os == 'win32'">
+      <div>
+        <label style="display:inline;">
+          <span i18n-content="gearSettingsGroupName"></span>
+          <button id="gearSettingsConfigureGearsButton"
+              i18n-content="gearSettingsConfigureGearsButton"></button>
+        </label>
+      </div>
+</if>
     </div>
   </section>
 <if expr="not pp_ifdef('chromeos')">

@@ -73,6 +73,9 @@ var OptionsPage = options.OptionsPage;
           chrome.send('useSSL2CheckboxAction',
               [String($('sslUseSSL2').checked)]);
         };
+        $('gearSettingsConfigureGearsButton').onclick = function(event) {
+          chrome.send('showGearsSettings');
+        };
       }
     }
   };
