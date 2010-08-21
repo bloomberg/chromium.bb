@@ -213,7 +213,7 @@ deps_os = {
        Var("nacl_revision")),
 
     "src/rlz":
-      "http://rlz.googlecode.com/svn/trunk@8",
+      "http://rlz.googlecode.com/svn/trunk@12",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
@@ -271,7 +271,7 @@ include_rules = [
   "+rlz",
 
   # For now, we allow ICU to be included by specifying "unicode/...", although
-  # this should probably change. 
+  # this should probably change.
   "+unicode",
   "+testing",
 ]
