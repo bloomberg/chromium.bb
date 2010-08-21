@@ -47,7 +47,8 @@ BackgroundContents::BackgroundContents(SiteInstance* site_instance,
 
 // Exposed to allow creating mocks.
 BackgroundContents::BackgroundContents()
-    : render_view_host_(NULL) {
+    : delegate_(NULL),
+      render_view_host_(NULL) {
 }
 
 void BackgroundContents::Observe(NotificationType type,
