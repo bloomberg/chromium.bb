@@ -83,6 +83,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
     DCHECK(automation_client_.get() != NULL);
     automation_client_->Reinitialize(this, url_fetcher_.get());
     is_automation_client_reused_ = true;
+    OnAutomationServerReady();
   } else {
     // The FinalConstruct implementation in the ChromeFrameActivexBase class
     // i.e. Base creates an instance of the ChromeFrameAutomationClient class
