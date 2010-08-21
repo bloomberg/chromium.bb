@@ -244,7 +244,13 @@ void FirstRunSearchEngineView::SetupControls() {
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   background_image_ = new views::ImageView();
-  background_image_->SetImage(rb.GetBitmapNamed(IDR_SEARCH_ENGINE_DIALOG_TOP));
+  if (text_direction_is_rtl_) {
+    background_image_->SetImage(rb.GetBitmapNamed(
+        IDR_SEARCH_ENGINE_DIALOG_TOP_RTL));
+  } else {
+    background_image_->SetImage(rb.GetBitmapNamed(
+        IDR_SEARCH_ENGINE_DIALOG_TOP));
+  }
   background_image_->SetHorizontalAlignment(ImageView::TRAILING);
   AddChildView(background_image_);
 
