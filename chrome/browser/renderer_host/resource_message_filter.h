@@ -35,6 +35,7 @@ class AudioRendererHost;
 class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
+class FileSystemDispatcherHost;
 struct FontDescriptor;
 class GeolocationDispatcherHost;
 class HostZoomMap;
@@ -471,6 +472,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // Used to handle device orientation related messages.
   scoped_refptr<device_orientation::DispatcherHost>
       device_orientation_dispatcher_host_;
+
+  // Handles FileSystem API related messages
+  scoped_refptr<FileSystemDispatcherHost> file_system_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

@@ -889,6 +889,23 @@ struct ViewHostMsg_DomMessage_Params {
   bool user_gesture;
 };
 
+struct ViewHostMsg_OpenFileSystemRequest_Params {
+  // The routing ID of the view initiating the request.
+  int routing_id;
+
+  // The response should have this id.
+  int request_id;
+
+  // The origin doing the initiating.
+  GURL origin_url;
+
+  // The requested FileSystem type.
+  WebKit::WebFileSystem::Type type;
+
+  // Indicates how much storage space (in bytes) the caller expects to need.
+  int64 requested_size;
+};
+
 namespace IPC {
 
 template <>
@@ -2767,6 +2784,39 @@ struct ParamTraits<ViewHostMsg_DomMessage_Params> {
     LogParam(p.has_callback, l);
     l->append(", ");
     LogParam(p.user_gesture, l);
+    l->append(")");
+  }
+};
+
+template <>
+struct ParamTraits<ViewHostMsg_OpenFileSystemRequest_Params> {
+  typedef ViewHostMsg_OpenFileSystemRequest_Params param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.routing_id);
+    WriteParam(m, p.request_id);
+    WriteParam(m, p.origin_url);
+    WriteParam(m, p.type);
+    WriteParam(m, p.requested_size);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    return
+        ReadParam(m, iter, &p->routing_id) &&
+        ReadParam(m, iter, &p->request_id) &&
+        ReadParam(m, iter, &p->origin_url) &&
+        ReadParam(m, iter, &p->type) &&
+        ReadParam(m, iter, &p->requested_size);
+  }
+  static void Log(const param_type& p, std::string* l) {
+    l->append("(");
+    LogParam(p.routing_id, l);
+    l->append(", ");
+    LogParam(p.request_id, l);
+    l->append(", ");
+    LogParam(p.origin_url, l);
+    l->append(", ");
+    LogParam(p.type, l);
+    l->append(", ");
+    LogParam(p.requested_size, l);
     l->append(")");
   }
 };

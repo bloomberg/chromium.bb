@@ -30,6 +30,7 @@
 #include "chrome/browser/device_orientation/dispatcher_host.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/file_system/file_system_dispatcher_host.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
 #include "chrome/browser/gpu_process_host.h"
@@ -244,7 +245,10 @@ ResourceMessageFilter::ResourceMessageFilter(
           GeolocationDispatcherHost::New(
               this->id(), profile->GetGeolocationPermissionContext()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(device_orientation_dispatcher_host_(
-          new device_orientation::DispatcherHost(this->id()))) {
+          new device_orientation::DispatcherHost(this->id()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
+          new FileSystemDispatcherHost(this,
+              profile->GetHostContentSettingsMap()))) {
   request_context_ = profile_->GetRequestContext();
   DCHECK(request_context_);
   DCHECK(media_request_context_);
@@ -273,6 +277,9 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 
   // Shut down the database dispatcher host.
   db_dispatcher_host_->Shutdown();
+
+  // Shut down the async file_system dispatcher host.
+  file_system_dispatcher_host_->Shutdown();
 
   // Let interested observers know we are being deleted.
   NotificationService::current()->Notify(
@@ -309,6 +316,7 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   dom_storage_dispatcher_host_->Init(id(), handle());
   indexed_db_dispatcher_host_->Init(id(), handle());
   db_dispatcher_host_->Init(handle());
+  file_system_dispatcher_host_->Init(handle());
 }
 
 void ResourceMessageFilter::OnChannelError() {
@@ -345,7 +353,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
           msg, this, next_route_id_callback(), &msg_is_ok) ||
       geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       speech_input_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
-      device_orientation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
+      device_orientation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      file_system_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.

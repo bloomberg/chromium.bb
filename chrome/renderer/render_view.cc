@@ -98,6 +98,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileChooserParams.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormControlElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -192,6 +194,8 @@ using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 using WebKit::WebEditingAction;
 using WebKit::WebFileChooserCompletion;
+using WebKit::WebFileSystem;
+using WebKit::WebFileSystemCallbacks;
 using WebKit::WebFindOptions;
 using WebKit::WebFormControlElement;
 using WebKit::WebFormElement;
@@ -405,6 +409,17 @@ static std::string DetermineTextLanguage(const string16& text) {
   }
   return language;
 }
+
+// Holds pending openFileSystem callbacks.
+struct RenderView::PendingOpenFileSystem {
+  explicit PendingOpenFileSystem(WebFileSystemCallbacks* c) : callbacks(c) {
+  }
+  ~PendingOpenFileSystem() {
+    if (callbacks)
+      callbacks->didFail(WebKit::WebFileErrorAbort);
+  }
+  WebFileSystemCallbacks* callbacks;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -780,6 +795,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityFocus, OnSetAccessibilityFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_AccessibilityDoDefaultAction,
                         OnAccessibilityDoDefaultAction)
+    IPC_MESSAGE_HANDLER(ViewMsg_OpenFileSystemRequest_Complete,
+                        OnOpenFileSystemRequestComplete)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -3366,6 +3383,28 @@ void RenderView::reportFindInPageSelection(int request_id,
                                   false));
 }
 
+void RenderView::openFileSystem(
+    WebFrame* frame,
+    WebFileSystem::Type type,
+    long long size,
+    WebFileSystemCallbacks* callbacks) {
+  scoped_ptr<PendingOpenFileSystem> request(
+      new PendingOpenFileSystem(callbacks));
+
+  WebSecurityOrigin origin = frame->securityOrigin();
+  if (origin.isEmpty())
+    return;  // Uninitialized document?
+
+  ViewHostMsg_OpenFileSystemRequest_Params params;
+  params.routing_id = routing_id_;
+  params.request_id = pending_file_system_requests_.Add(request.release());
+  params.origin_url = GURL(origin.toString());
+  params.type = type;
+  params.requested_size = size;
+
+  Send(new ViewHostMsg_OpenFileSystemRequest(params));
+}
+
 // webkit_glue::WebPluginPageDelegate -----------------------------------------
 
 webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
@@ -5502,4 +5541,18 @@ bool RenderView::IsNonLocalTopLevelNavigation(
     }
   }
   return false;
+}
+
+void RenderView::OnOpenFileSystemRequestComplete(
+    int request_id, bool accepted, const string16& name,
+    const string16& root_path) {
+  PendingOpenFileSystem* request = pending_file_system_requests_.Lookup(
+      request_id);
+  DCHECK(request);
+  if (accepted)
+    request->callbacks->didOpenFileSystem(name, root_path);
+  else
+    request->callbacks->didFail(WebKit::WebFileErrorSecurity);
+  request->callbacks = NULL;
+  pending_file_system_requests_.Remove(request_id);
 }

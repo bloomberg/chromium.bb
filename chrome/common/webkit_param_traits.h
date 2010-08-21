@@ -29,6 +29,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupType.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
@@ -325,6 +326,11 @@ struct ParamTraits<WebKit::WebTextInputType> {
     }
     LogParam(control, l);
   }
+};
+
+template <>
+struct SimilarTypeTraits<WebKit::WebFileSystem::Type> {
+  typedef int Type;
 };
 
 }  // namespace IPC

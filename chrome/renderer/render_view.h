@@ -16,6 +16,7 @@
 #include "app/surface/transport_dib.h"
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "base/id_map.h"
 #include "base/linked_ptr.h"
 #include "base/timer.h"
 #include "base/weak_ptr.h"
@@ -37,6 +38,7 @@
 #include "chrome/renderer/renderer_webcookiejar_impl.h"
 #include "chrome/renderer/translate_helper.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializerClient.h"
@@ -544,6 +546,11 @@ class RenderView : public RenderWidget,
                                          int active_match_ordinal,
                                          const WebKit::WebRect& sel);
 
+  virtual void openFileSystem(WebKit::WebFrame* frame,
+                              WebKit::WebFileSystem::Type,
+                              long long size,
+                              WebKit::WebFileSystemCallbacks* callbacks);
+
   // WebKit::WebPageSerializerClient implementation ----------------------------
 
   virtual void didSerializeDataForFrame(const WebKit::WebURL& frame_url,
@@ -780,6 +787,10 @@ class RenderView : public RenderWidget,
   void OnNotifyRendererViewType(ViewType::Type view_type);
   void OnFillPasswordForm(
       const webkit_glue::PasswordFormFillData& form_data);
+  void OnOpenFileSystemRequestComplete(int request_id,
+                                       bool accepted,
+                                       const string16& name,
+                                       const string16& root_path);
   void OnPaste();
   void OnPrintingDone(int document_cookie, bool success);
   void OnPrintPages();
@@ -1287,6 +1298,11 @@ class RenderView : public RenderWidget,
 
   // External host exposed through automation controller.
   ExternalHostBindings external_host_bindings_;
+
+  // Pending openFileSystem completion objects.
+  struct PendingOpenFileSystem;
+  IDMap<PendingOpenFileSystem, IDMapOwnPointer>
+      pending_file_system_requests_;
 
   // ---------------------------------------------------------------------------
   // ADDING NEW DATA? Please see if it fits appropriately in one of the above

@@ -998,6 +998,13 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED1(ViewMsg_DeviceOrientationUpdated,
                       ViewMsg_DeviceOrientationUpdated_Params)
 
+  // WebFrameClient::openFileSystem response messages.
+  IPC_MESSAGE_ROUTED4(ViewMsg_OpenFileSystemRequest_Complete,
+                      int /* request_id */,
+                      bool /* accepted */,
+                      string16 /* name */,
+                      string16 /* root_path */)
+
 IPC_END_MESSAGES(View)
 
 
@@ -2649,5 +2656,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // A RenderView requests to stop receiving device orientation updates.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_DeviceOrientation_StopUpdating,
                        int /* render_view_id */)
+
+//-----------------------------------------------------------------------------
+  // FileSystem API messages
+  // These are messages sent from the renderer to the browser process.
+
+  // WebFrameClient::openFileSystem() message.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_OpenFileSystemRequest,
+                       ViewHostMsg_OpenFileSystemRequest_Params)
 
 IPC_END_MESSAGES(ViewHost)
