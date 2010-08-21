@@ -18,9 +18,9 @@
 #include "views/controls/link.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
+#include "views/view.h"
 
 using views::FocusManager;
-using views::View;
 
 AccessibilityEventRouterViews::AccessibilityEventRouterViews()
     : most_recent_profile_(NULL),
@@ -35,7 +35,8 @@ AccessibilityEventRouterViews* AccessibilityEventRouterViews::GetInstance() {
   return Singleton<AccessibilityEventRouterViews>::get();
 }
 
-bool AccessibilityEventRouterViews::AddViewTree(View* view, Profile* profile) {
+bool AccessibilityEventRouterViews::AddViewTree(
+    views::View* view, Profile* profile) {
   if (view_tree_profile_map_[view] != NULL)
     return false;
 
@@ -43,21 +44,22 @@ bool AccessibilityEventRouterViews::AddViewTree(View* view, Profile* profile) {
   return true;
 }
 
-void AccessibilityEventRouterViews::RemoveViewTree(View* view) {
+void AccessibilityEventRouterViews::RemoveViewTree(views::View* view) {
   DCHECK(view_tree_profile_map_.find(view) !=
          view_tree_profile_map_.end());
   view_tree_profile_map_.erase(view);
 }
 
-void AccessibilityEventRouterViews::IgnoreView(View* view) {
+void AccessibilityEventRouterViews::IgnoreView(views::View* view) {
   view_info_map_[view].ignore = true;
 }
 
-void AccessibilityEventRouterViews::SetViewName(View* view, std::string name) {
+void AccessibilityEventRouterViews::SetViewName(
+    views::View* view, std::string name) {
   view_info_map_[view].name = name;
 }
 
-void AccessibilityEventRouterViews::RemoveView(View* view) {
+void AccessibilityEventRouterViews::RemoveView(views::View* view) {
   DCHECK(view_info_map_.find(view) != view_info_map_.end());
   view_info_map_.erase(view);
 }
@@ -87,11 +89,11 @@ void AccessibilityEventRouterViews::HandleAccessibilityEvent(
 //
 
 void AccessibilityEventRouterViews::FindView(
-    View* view, Profile** profile, bool* is_accessible) {
+    views::View* view, Profile** profile, bool* is_accessible) {
   *is_accessible = false;
 
   // First see if it's a descendant of an accessible view.
-  for (base::hash_map<View*, Profile*>::const_iterator iter =
+  for (base::hash_map<views::View*, Profile*>::const_iterator iter =
            view_tree_profile_map_.begin();
        iter != view_tree_profile_map_.end();
        ++iter) {
@@ -106,17 +108,17 @@ void AccessibilityEventRouterViews::FindView(
     return;
 
   // Now make sure it's not marked as a widget to be ignored.
-  base::hash_map<View*, ViewInfo>::const_iterator iter =
+  base::hash_map<views::View*, ViewInfo>::const_iterator iter =
       view_info_map_.find(view);
   if (iter != view_info_map_.end() && iter->second.ignore)
     *is_accessible = false;
 }
 
-std::string AccessibilityEventRouterViews::GetViewName(View* view) {
+std::string AccessibilityEventRouterViews::GetViewName(views::View* view) {
   std::string name;
 
   // First see if we have a name registered for this view.
-  base::hash_map<View*, ViewInfo>::const_iterator iter =
+  base::hash_map<views::View*, ViewInfo>::const_iterator iter =
       view_info_map_.find(view);
   if (iter != view_info_map_.end())
     name = iter->second.name;
@@ -132,7 +134,7 @@ std::string AccessibilityEventRouterViews::GetViewName(View* view) {
 }
 
 void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
-    View* view, NotificationType type) {
+    views::View* view, NotificationType type) {
   Profile* profile = NULL;
   bool is_accessible;
   FindView(view, &profile, &is_accessible);
@@ -172,25 +174,25 @@ void AccessibilityEventRouterViews::DispatchAccessibilityNotification(
 }
 
 void AccessibilityEventRouterViews::SendButtonNotification(
-    View* view, NotificationType type, Profile* profile) {
+    views::View* view, NotificationType type, Profile* profile) {
   AccessibilityButtonInfo info(profile, GetViewName(view));
   SendAccessibilityNotification(type, &info);
 }
 
 void AccessibilityEventRouterViews::SendLinkNotification(
-    View* view, NotificationType type, Profile* profile) {
+    views::View* view, NotificationType type, Profile* profile) {
   AccessibilityLinkInfo info(profile, GetViewName(view));
   SendAccessibilityNotification(type, &info);
 }
 
 void AccessibilityEventRouterViews::SendMenuNotification(
-    View* view, NotificationType type, Profile* profile) {
+    views::View* view, NotificationType type, Profile* profile) {
   AccessibilityMenuInfo info(profile, GetViewName(view));
   SendAccessibilityNotification(type, &info);
 }
 
 void AccessibilityEventRouterViews::SendMenuItemNotification(
-    View* view, NotificationType type, Profile* profile) {
+    views::View* view, NotificationType type, Profile* profile) {
   std::string name = GetViewName(view);
 
   bool has_submenu = false;
@@ -200,7 +202,7 @@ void AccessibilityEventRouterViews::SendMenuItemNotification(
   if (view->GetClassName() == views::MenuItemView::kViewClassName)
     has_submenu = static_cast<views::MenuItemView*>(view)->HasSubmenu();
 
-  View* parent_menu = view->GetParent();
+  views::View* parent_menu = view->GetParent();
   while (parent_menu != NULL && parent_menu->GetClassName() !=
          views::SubmenuView::kViewClassName) {
     parent_menu = parent_menu->GetParent();
@@ -234,7 +236,7 @@ void AccessibilityEventRouterViews::RecursiveGetMenuItemIndexAndCount(
 }
 
 bool AccessibilityEventRouterViews::IsMenuEvent(
-    View* view, NotificationType type) {
+    views::View* view, NotificationType type) {
   if (type == NotificationType::ACCESSIBILITY_MENU_OPENED ||
       type == NotificationType::ACCESSIBILITY_MENU_CLOSED)
     return true;

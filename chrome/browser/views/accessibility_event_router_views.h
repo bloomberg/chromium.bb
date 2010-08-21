@@ -14,10 +14,12 @@
 #include "base/singleton.h"
 #include "base/task.h"
 #include "chrome/browser/accessibility_events.h"
-#include "views/view.h"
-#include "views/widget/root_view.h"
+#include "views/accessibility/accessibility_types.h"
 
 class Profile;
+namespace views {
+class View;
+}
 
 // Allows us to use (View*) in a hash_map with gcc.
 #if defined(COMPILER_GCC)

@@ -13,13 +13,16 @@
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "chrome/browser/accessibility_events.h"
-#include "chrome/browser/views/accessibility_event_router_views.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #endif
 
+class AccessibilityEventRouterViews;
 class Profile;
+namespace views {
+class View;
+}
 
 // NOTE: This class is part of the Accessibility Extension API, which lets
 // extensions receive accessibility events. It's distinct from code that

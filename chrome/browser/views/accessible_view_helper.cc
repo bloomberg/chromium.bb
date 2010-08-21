@@ -7,13 +7,13 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/views/accessibility_event_router_views.h"
 #include "chrome/common/notification_service.h"
 #include "views/widget/widget.h"
-
-using views::View;
+#include "views/view.h"
 
 AccessibleViewHelper::AccessibleViewHelper(
-    View* view_tree, Profile* profile)
+    views::View* view_tree, Profile* profile)
     : accessibility_event_router_(AccessibilityEventRouterViews::GetInstance()),
       profile_(profile),
       view_tree_(view_tree) {
@@ -53,7 +53,7 @@ void AccessibleViewHelper::SendOpenWindowNotification(
       Details<AccessibilityWindowInfo>(&info));
 }
 
-void AccessibleViewHelper::IgnoreView(View* view) {
+void AccessibleViewHelper::IgnoreView(views::View* view) {
   if (!view_tree_)
     return;
 
@@ -61,7 +61,7 @@ void AccessibleViewHelper::IgnoreView(View* view) {
   managed_views_.push_back(view);
 }
 
-void AccessibleViewHelper::SetViewName(View* view, std::string name) {
+void AccessibleViewHelper::SetViewName(views::View* view, std::string name) {
   if (!view_tree_)
     return;
 
@@ -69,7 +69,7 @@ void AccessibleViewHelper::SetViewName(View* view, std::string name) {
   managed_views_.push_back(view);
 }
 
-void AccessibleViewHelper::SetViewName(View* view, int string_id) {
+void AccessibleViewHelper::SetViewName(views::View* view, int string_id) {
   if (!view_tree_)
     return;
 
