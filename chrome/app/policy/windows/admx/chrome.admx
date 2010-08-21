@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <policyDefinitions revision="1.0" schemaVersion="1.0">
   <policyNamespaces>
-    <target prefix="fullarmor" namespace="FullArmor.f92fd19a-29d5-48fc-a383-f102e04485f4" />
+    <target prefix="fullarmor" namespace="FullArmor.1048238f-d493-4a5d-a728-16df06ed4ac5" />
     <using prefix="windows" namespace="Microsoft.Policies.Windows" />
   </policyNamespaces>
   <supersededAdm fileName="D:\src\chromium\src\chrome\app\policy\windows\adm\en-US\chrome.adm" />
@@ -157,14 +157,14 @@
       <parentCategory ref="googlechrome" />
       <supportedOn ref="SUPPORTED_WINXPSP2" />
       <elements>
-        <list id="ExtensionInstallBlacklistDesc" valuePrefix=" " />
+        <list id="ExtensionInstallBlacklistDesc" valuePrefix="" />
       </elements>
     </policy>
     <policy name="ExtensionInstallWhitelist" class="Machine" displayName="$(string.ExtensionInstallWhitelist)" explainText="$(string.ExtensionInstallWhitelist_Explain)" presentation="$(presentation.ExtensionInstallWhitelist)" key="Software\Policies\Google\Chrome\ExtensionInstallWhitelist">
       <parentCategory ref="googlechrome" />
       <supportedOn ref="SUPPORTED_WINXPSP2" />
       <elements>
-        <list id="ExtensionInstallWhitelistDesc" valuePrefix=" " />
+        <list id="ExtensionInstallWhitelistDesc" valuePrefix="" />
       </elements>
     </policy>
   </policies>

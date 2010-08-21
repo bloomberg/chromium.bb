@@ -167,7 +167,7 @@ CLASS MACHINE
            KEYNAME "Software\Policies\Google\Chrome\ExtensionInstallBlacklist"
 
            PART !!ExtensionInstallBlacklistDesc LISTBOX
-              VALUEPREFIX " "
+              VALUEPREFIX ""
            END PART
        END POLICY
 
@@ -179,7 +179,7 @@ CLASS MACHINE
            KEYNAME "Software\Policies\Google\Chrome\ExtensionInstallWhitelist"
 
            PART !!ExtensionInstallWhitelistDesc LISTBOX
-              VALUEPREFIX " "
+              VALUEPREFIX ""
            END PART
        END POLICY
 
