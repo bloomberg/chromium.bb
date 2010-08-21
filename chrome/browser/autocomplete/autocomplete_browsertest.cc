@@ -28,6 +28,15 @@
 #define MAYBE_Basic Basic
 #endif
 
+// Autocomplete test is flaky on ChromeOS.
+// http://crbug.com/52928
+#if defined(OS_CHROMEOS)
+#define MAYBE_Autocomplete FLAKY_Autocomplete
+#else
+#define MAYBE_Autocomplete Autocomplete
+#endif
+
+
 namespace {
 
 std::wstring AutocompleteResultAsString(const AutocompleteResult& result) {
@@ -101,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Basic) {
   EXPECT_FALSE(location_bar->location_entry()->IsSelectAll());
 }
 
-IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, Autocomplete) {
+IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   // The results depend on the history backend being loaded. Make sure it is
   // loaded so that the autocomplete results are consistent.
   WaitForHistoryBackendToLoad();

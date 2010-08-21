@@ -19,6 +19,14 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/ui_test_utils.h"
 
+// Basic test is flaky on ChromeOS.
+// http://crbug.com/52929
+#if defined(OS_CHROMEOS)
+#define MAYBE_Basic FLAKY_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+
 namespace {
 
 std::wstring AutocompleteResultAsString(const AutocompleteResult& result) {
@@ -64,7 +72,7 @@ class OmniboxApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_Basic) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
