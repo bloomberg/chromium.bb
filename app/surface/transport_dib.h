@@ -18,9 +18,6 @@
 #include "app/x11_util.h"
 #endif
 
-namespace gfx {
-class Size;
-}
 namespace skia {
 class PlatformCanvas;
 }
@@ -176,7 +173,5 @@ class TransportDIB {
 
   DISALLOW_COPY_AND_ASSIGN(TransportDIB);
 };
-
-class MessageLoop;
 
 #endif  // APP_SURFACE_TRANSPORT_DIB_H_

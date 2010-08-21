@@ -222,11 +222,6 @@ class Histogram;
 class LinearHistogram;
 class Pickle;
 
-namespace disk_cache {
-  class StatsHistogram;
-};  // namespace disk_cache
-
-
 class Histogram : public base::RefCountedThreadSafe<Histogram> {
  public:
   typedef int Sample;  // Used for samples (and ranges of samples).

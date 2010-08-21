@@ -24,13 +24,8 @@ typedef unsigned long XID;
 typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.
 typedef struct _XDisplay Display;
 
-namespace base {
-class Thread;
-}
-
 namespace gfx {
 class Rect;
-class Size;
 }
 
 namespace x11_util {
