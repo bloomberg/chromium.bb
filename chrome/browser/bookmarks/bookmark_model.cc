@@ -705,10 +705,12 @@ BookmarkNode* BookmarkModel::CreateRootNodeFromStarredEntry(
          entry.type == history::StarredEntry::OTHER);
   BookmarkNode* node = new BookmarkNode(generate_next_node_id(), GURL());
   node->Reset(entry);
-  if (entry.type == history::StarredEntry::BOOKMARK_BAR)
-    node->SetTitle(l10n_util::GetString(IDS_BOOMARK_BAR_FOLDER_NAME));
-  else
-    node->SetTitle(l10n_util::GetString(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
+  if (entry.type == history::StarredEntry::BOOKMARK_BAR) {
+    node->SetTitle(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME));
+  } else {
+    node->SetTitle(
+        l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
+  }
   return node;
 }
 

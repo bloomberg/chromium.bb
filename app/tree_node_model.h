@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,12 +157,6 @@ class TreeNode : public TreeModelNode {
   }
 
   // Sets the title of the node.
-  // TODO(munjal): Remove wstring overload once all code is moved to string16.
-#if !defined(WCHAR_T_IS_UTF16)
-  void SetTitle(const std::wstring& string) {
-    title_ = WideToUTF16(string);
-  }
-#endif
   void SetTitle(const string16& string) {
     title_ = string;
   }
@@ -281,7 +275,7 @@ class TreeNodeModel : public TreeModel {
   virtual void SetTitle(TreeModelNode* node,
                         const std::wstring& title) {
     DCHECK(node);
-    AsNode(node)->SetTitle(title);
+    AsNode(node)->SetTitle(WideToUTF16Hack(title));
     NotifyObserverTreeNodeChanged(node);
   }
 

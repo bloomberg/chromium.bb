@@ -8,6 +8,7 @@
 #include "app/tree_model.h"
 #import "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/cocoa/clear_browsing_data_controller.h"
@@ -302,7 +303,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
   // Fake update the cookie folder's title. This would never happen in reality,
   // but it tests the code path that ultimately calls CocoaNodeFromTreeNode,
   // which is tested elsewhere.
-  node->SetTitle(L"Silly Change");
+  node->SetTitle(ASCIIToUTF16("Silly Change"));
   [controller_ modelObserver]->TreeNodeChanged(model, node);
 
   EXPECT_NSEQ(@"Silly Change", [cocoa_node title]);

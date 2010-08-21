@@ -157,9 +157,9 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   // the file.
   bb_node->set_type(BookmarkNode::BOOKMARK_BAR);
   other_folder_node->set_type(BookmarkNode::OTHER_NODE);
-  bb_node->SetTitle(l10n_util::GetString(IDS_BOOMARK_BAR_FOLDER_NAME));
+  bb_node->SetTitle(l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_FOLDER_NAME));
   other_folder_node->SetTitle(
-      l10n_util::GetString(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
+      l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
 
   return true;
 }

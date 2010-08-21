@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "app/tree_node_model.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TreeNodeModelTest : public testing::Test, public TreeModelObserver {
@@ -278,8 +280,8 @@ TEST_F(TreeNodeModelTest, SetTitle) {
   model.AddObserver(this);
   ClearCounts();
 
-  const std::wstring title(L"root2");
-  model.SetTitle(root, title);
+  const string16 title(ASCIIToUTF16("root2"));
+  model.SetTitle(root, UTF16ToWideHack(title));
   AssertObserverCount(0, 0, 1);
-  EXPECT_EQ(WideToUTF16(title), root->GetTitleAsString16());
+  EXPECT_EQ(title, root->GetTitleAsString16());
 }
