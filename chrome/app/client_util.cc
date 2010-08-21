@@ -77,17 +77,6 @@ std::wstring GetExecutablePath() {
   return exe_path.append(L"\\");
 }
 
-// Not generic, we only handle strings up to 128 chars.
-bool EnvQueryStr(const wchar_t* key_name, std::wstring* value) {
-  wchar_t out[128];
-  DWORD count = sizeof(out)/sizeof(out[0]);
-  DWORD rv = ::GetEnvironmentVariableW(key_name, out, count);
-  if ((rv == 0) || (rv >= count))
-    return false;
-  *value = out;
-  return true;
-}
-
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
 // value not being null to dermine if this path contains a valid dll.
@@ -206,10 +195,15 @@ HMODULE MainDllLoader::Load(std::wstring* version, std::wstring* file) {
   if (dll)
     return dll;
 
-  if (!EnvQueryStr(
-          BrowserDistribution::GetDistribution()->GetEnvVersionKey().c_str(),
-          version)) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+
+  std::string version_value;
+  if (!env->GetVar(WideToUTF8(
+          BrowserDistribution::GetDistribution()->GetEnvVersionKey()).c_str(),
+          &version_value)) {
     std::wstring reg_path(GetRegistryPath());
+
+    *version = UTF8ToWide(version_value);
     // Look into the registry to find the latest version.
     if (!GetVersion(dir.c_str(), reg_path.c_str(), version))
       return NULL;
