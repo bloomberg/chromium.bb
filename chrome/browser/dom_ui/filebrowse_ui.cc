@@ -107,7 +107,8 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void Init();
 
   // DirectoryLister::DirectoryListerDelegate methods:
-  virtual void OnListFile(const file_util::FileEnumerator::FindInfo& data);
+  virtual void OnListFile(
+      const net::DirectoryLister::DirectoryListerData& data);
   virtual void OnListDone(int error);
 
   // DOMMessageHandler implementation.
@@ -766,6 +767,7 @@ void FilebrowseHandler::GetChildrenForPath(FilePath& path, bool is_refresh) {
   }
   if (currentpath_ == default_download_path) {
     lister_ = new net::DirectoryLister(currentpath_,
+                                       false,
                                        net::DirectoryLister::DATE,
                                        this);
   } else {
@@ -785,13 +787,13 @@ void FilebrowseHandler::HandleGetChildren(const ListValue* args) {
 }
 
 void FilebrowseHandler::OnListFile(
-    const file_util::FileEnumerator::FindInfo& data) {
+    const net::DirectoryLister::DirectoryListerData& data) {
 #if defined(OS_WIN)
-  if (data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) {
+  if (data.info.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN) {
     return;
   }
 #elif defined(OS_POSIX)
-  if (data.filename[0] == '.') {
+  if (data.info.filename[0] == '.') {
     return;
   }
 #endif
@@ -799,18 +801,18 @@ void FilebrowseHandler::OnListFile(
   DictionaryValue* file_value = new DictionaryValue();
 
 #if defined(OS_WIN)
-  int64 size = (static_cast<int64>(data.nFileSizeHigh) << 32) |
-      data.nFileSizeLow;
-  file_value->SetString(kPropertyTitle, data.cFileName);
+  int64 size = (static_cast<int64>(data.info.nFileSizeHigh) << 32) |
+      data.info.nFileSizeLow;
+  file_value->SetString(kPropertyTitle, data.info.cFileName);
   file_value->SetString(kPropertyPath,
-                        currentpath_.Append(data.cFileName).value());
+                        currentpath_.Append(data.info.cFileName).value());
   file_value->SetBoolean(kPropertyDirectory,
-      (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? true : false);
+      (data.info.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? true : false);
 #elif defined(OS_POSIX)
-  file_value->SetString(kPropertyTitle, data.filename);
+  file_value->SetString(kPropertyTitle, data.info.filename);
   file_value->SetString(kPropertyPath,
-                        currentpath_.Append(data.filename).value());
-  file_value->SetBoolean(kPropertyDirectory, S_ISDIR(data.stat.st_mode));
+                        currentpath_.Append(data.info.filename).value());
+  file_value->SetBoolean(kPropertyDirectory, S_ISDIR(data.info.stat.st_mode));
 #endif
   filelist_value_->Append(file_value);
 }

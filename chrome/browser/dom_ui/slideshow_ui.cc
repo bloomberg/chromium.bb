@@ -69,7 +69,8 @@ class SlideshowHandler : public net::DirectoryLister::DirectoryListerDelegate,
   void Init();
 
   // DirectoryLister::DirectoryListerDelegate methods:
-  virtual void OnListFile(const file_util::FileEnumerator::FindInfo& data);
+  virtual void OnListFile(
+      const net::DirectoryLister::DirectoryListerData& data);
   virtual void OnListDone(int error);
 
   // DOMMessageHandler implementation.
@@ -228,21 +229,21 @@ bool SlideshowHandler::PathIsImageFile(const char* filename) {
 }
 
 void SlideshowHandler::OnListFile(
-    const file_util::FileEnumerator::FindInfo& data) {
+    const net::DirectoryLister::DirectoryListerData& data) {
 #if defined(OS_CHROMEOS)
-  if (data.filename[0] == '.') {
+  if (data.info.filename[0] == '.') {
     return;
   }
-  if (!PathIsImageFile(data.filename.c_str())) {
+  if (!PathIsImageFile(data.info.filename.c_str())) {
     return;
   }
 
   DictionaryValue* file_value = new DictionaryValue();
 
-  file_value->SetString(kPropertyTitle, data.filename);
+  file_value->SetString(kPropertyTitle, data.info.filename);
   file_value->SetString(kPropertyPath,
-                        currentpath_.Append(data.filename).value());
-  file_value->SetBoolean(kPropertyDirectory, S_ISDIR(data.stat.st_mode));
+                        currentpath_.Append(data.info.filename).value());
+  file_value->SetBoolean(kPropertyDirectory, S_ISDIR(data.info.stat.st_mode));
   filelist_value_->Append(file_value);
   std::string val;
   file_value->GetString(kPropertyTitle, &val);
