@@ -230,11 +230,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // loaded it is loaded and the observer of the model notified when done.
   const SkBitmap& GetFavIcon(const BookmarkNode* node);
 
-  // TODO(munjal): Remove wstring overload once all code is moved to string16.
   // Sets the title of the specified node.
-#if !defined(WCHAR_T_IS_UTF16)
-  void SetTitle(const BookmarkNode* node, const std::wstring& title);
-#endif
   void SetTitle(const BookmarkNode* node, const string16& title);
 
   // Sets the URL of the specified bookmark node.

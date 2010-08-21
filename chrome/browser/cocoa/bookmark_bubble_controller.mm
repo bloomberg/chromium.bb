@@ -327,7 +327,7 @@ void BookmarkBubbleNotificationBridge::Observe(
   NSString* oldTitle = base::SysWideToNSString(node_->GetTitle());
   NSString* newTitle = [nameTextField_ stringValue];
   if (![oldTitle isEqual:newTitle]) {
-    model_->SetTitle(node_, base::SysNSStringToWide(newTitle));
+    model_->SetTitle(node_, base::SysNSStringToUTF16(newTitle));
     UserMetrics::RecordAction(
         UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"),
         model_->profile());

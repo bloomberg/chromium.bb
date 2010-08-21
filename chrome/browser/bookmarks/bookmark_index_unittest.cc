@@ -191,7 +191,7 @@ TEST_F(BookmarkIndexTest, ChangeTitle) {
 
   // Remove the node and make sure we don't get back any results.
   const wchar_t* expected[] = { L"blah" };
-  model_->SetTitle(model_->other_node()->GetChild(0), L"blah");
+  model_->SetTitle(model_->other_node()->GetChild(0), ASCIIToUTF16("blah"));
   ExpectMatches(L"BlAh", expected, ARRAYSIZE_UNSAFE(expected));
 }
 

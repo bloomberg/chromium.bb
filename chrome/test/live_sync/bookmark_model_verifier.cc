@@ -203,8 +203,8 @@ void BookmarkModelVerifier::SetTitle(BookmarkModel* model,
                                      const wstring& title) {
   const BookmarkNode* v_node = NULL;
   FindNodeInVerifier(model, node, &v_node);
-  model->SetTitle(node, title);
-  model_->SetTitle(v_node, title);
+  model->SetTitle(node, WideToUTF16Hack(title));
+  model_->SetTitle(v_node, WideToUTF16Hack(title));
 }
 
 void BookmarkModelVerifier::Move(BookmarkModel* model, const BookmarkNode* node,

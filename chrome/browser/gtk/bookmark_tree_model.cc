@@ -66,7 +66,7 @@ void RecursiveResolve(BookmarkModel* bb_model, const BookmarkNode* bb_node,
           }
         }
         DCHECK(child_bb_node);
-        bb_model->SetTitle(child_bb_node, UTF16ToWide(title));
+        bb_model->SetTitle(child_bb_node, title);
       }
       RecursiveResolve(bb_model, child_bb_node,
                        tree_model, &child_iter,

@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
@@ -390,8 +391,8 @@ void BookmarkBubbleView::ApplyEdits() {
   BookmarkModel* model = profile_->GetBookmarkModel();
   const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url_);
   if (node) {
-    const std::wstring new_title = UTF16ToWide(title_tf_->text());
-    if (new_title != node->GetTitle()) {
+    const string16 new_title = title_tf_->text();
+    if (new_title != node->GetTitleAsString16()) {
       model->SetTitle(node, new_title);
       UserMetrics::RecordAction(
           UserMetricsAction("BookmarkBubble_ChangeTitleInBubble"),

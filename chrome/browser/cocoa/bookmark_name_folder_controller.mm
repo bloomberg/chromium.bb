@@ -90,7 +90,7 @@
   NSString* name = [nameField_ stringValue];
   BookmarkModel* model = profile_->GetBookmarkModel();
   if (node_) {
-    model->SetTitle(node_, base::SysNSStringToWide(name));
+    model->SetTitle(node_, base::SysNSStringToUTF16(name));
   } else {
     model->AddGroup(parent_,
                     newIndex_,

@@ -53,7 +53,7 @@ TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
 
   EXPECT_EQ(0, pingCount.get()->pings);
 
-  model->SetTitle(node, L"duper");
+  model->SetTitle(node, ASCIIToUTF16("duper"));
   EXPECT_EQ(1, pingCount.get()->pings);
   model->SetURL(node, GURL("http://www.google.com/reader"));
   EXPECT_EQ(2, pingCount.get()->pings);

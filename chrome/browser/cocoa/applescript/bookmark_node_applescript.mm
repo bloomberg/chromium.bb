@@ -99,7 +99,7 @@
   if (!model)
     return;
 
-  model->SetTitle(bookmarkNode_, base::SysNSStringToWide(aTitle));
+  model->SetTitle(bookmarkNode_, base::SysNSStringToUTF16(aTitle));
 }
 
 - (BookmarkModel*)bookmarkModel {

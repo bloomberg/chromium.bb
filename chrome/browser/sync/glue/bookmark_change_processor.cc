@@ -465,7 +465,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
 
     if (!src->GetIsFolder())
       model->SetURL(dst, src->GetURL());
-    model->SetTitle(dst, src->GetTitle());
+    model->SetTitle(dst, WideToUTF16Hack(src->GetTitle()));
 
     SetBookmarkFavicon(src, dst, model->profile());
   }

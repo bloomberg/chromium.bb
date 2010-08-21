@@ -241,12 +241,6 @@ const SkBitmap& BookmarkModel::GetFavIcon(const BookmarkNode* node) {
   return node->favicon();
 }
 
-#if !defined(WCHAR_T_IS_UTF16)
-void BookmarkModel::SetTitle(const BookmarkNode* node,
-                             const std::wstring& title) {
-  SetTitle(node, WideToUTF16(title));
-}
-#endif
 void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
   if (!node) {
     NOTREACHED();
