@@ -44,7 +44,7 @@ BackgroundContentsService::BackgroundContentsService(
   // Don't load/store preferences if the proper switch is not enabled, or if
   // the parent profile is off the record.
   if (!profile->IsOffTheRecord() &&
-      command_line->HasSwitch(switches::kRestoreBackgroundContents))
+      !command_line->HasSwitch(switches::kDisableRestoreBackgroundContents))
     prefs_ = profile->GetPrefs();
 
   // Listen for events to tell us when to load/unload persisted background

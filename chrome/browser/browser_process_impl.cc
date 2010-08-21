@@ -734,8 +734,7 @@ const char* const kSwitchesToRemoveOnAutorestart[] = {
 };
 
 const char* const kSwitchesToAddOnAutorestart[] = {
-  switches::kNoStartupWindow,
-  switches::kRestoreBackgroundContents
+  switches::kNoStartupWindow
 };
 
 void BrowserProcessImpl::RestartPersistentInstance() {

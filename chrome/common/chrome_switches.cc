@@ -223,6 +223,11 @@ const char kDisableRemoteFonts[]            = "disable-remote-fonts";
 // Turns off the accessibility in the renderer.
 const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
 
+// Prevents the URLs of BackgroundContents from being remembered and re-launched
+// when the browser restarts.
+const char kDisableRestoreBackgroundContents[] =
+    "disable-restore-background-contents";
+
 // Disable session storage.
 const char kDisableSessionStorage[]         = "disable-session-storage";
 
@@ -860,10 +865,6 @@ const char kRendererProcess[]               = "renderer";
 
 // Causes the renderer process to display a dialog on launch.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
-
-// Causes the URLs of BackgroundContents to be remembered and re-launched when
-// the browser restarts.
-const char kRestoreBackgroundContents[]     = "restore-background-contents";
 
 // Indicates the last session should be restored on startup. This overrides
 // the preferences value and is primarily intended for testing. The value of

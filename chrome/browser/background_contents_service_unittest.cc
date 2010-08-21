@@ -25,7 +25,6 @@ class BackgroundContentsServiceTest : public testing::Test {
   ~BackgroundContentsServiceTest() {}
   void SetUp() {
     command_line_.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
-    command_line_->AppendSwitch(switches::kRestoreBackgroundContents);
   }
 
   DictionaryValue* GetPrefs(Profile* profile) {
