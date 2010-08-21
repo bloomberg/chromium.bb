@@ -5,6 +5,12 @@ class CertificateType:
     openpgp = 1
     cryptoID = 2
 
+class ClientCertificateType:
+    rsa_sign = 1
+    dss_sign = 2
+    rsa_fixed_dh = 3
+    dss_fixed_dh = 4
+
 class HandshakeType:
     hello_request = 0
     client_hello = 1

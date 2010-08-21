@@ -21,3 +21,7 @@ Local Modifications:
   of byte arrays, each containing a DER-encoded distinguished name.
   tlslite/TLSConnection.py was changed to take a list of such byte arrays
   when creating a TLS server that will request client authentication.
+- patches/send_certificate_types.patch: tlslite/message.py was changed to
+  default to a certificate_types of [rsa_sign] in CertificateRequest. Apple's
+  Secure Transport library rejects an empty list and raises an SSL protocol
+  error.
