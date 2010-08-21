@@ -10,3 +10,14 @@ Local Modifications:
   http://sourceforge.net/mailarchive/forum.php?thread_name=41C9B18B.2010201%40ag.com&forum_name=tlslite-users
 - patches/python26.patch: Replace sha, md5 module imports with hashlib, as
   they are deprecated in Python 2.6
+- patches/ca_request.patch: tlslite/X509.py was changed to obtain the
+  DER-encoded distinguished name for a certificate, without requiring any
+  addition libraries.
+  tlslite/utils/ASN1Parser.py was changed to allow obtaining the unparsed
+  data for an element in a SEQUENCE, in addition to providing the parsed
+  value (tag and length removed)
+  tlslite/messages.py was changed from accepting/returning a single byte
+  array in the CertificateRequest message for the CA names to accept a list
+  of byte arrays, each containing a DER-encoded distinguished name.
+  tlslite/TLSConnection.py was changed to take a list of such byte arrays
+  when creating a TLS server that will request client authentication.

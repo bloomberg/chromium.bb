@@ -347,8 +347,7 @@ class CertificateRequest(HandshakeMsg):
     def __init__(self):
         self.contentType = ContentType.handshake
         self.certificate_types = []
-        #treat as opaque bytes for now
-        self.certificate_authorities = createByteArraySequence([])
+        self.certificate_authorities = []
 
     def create(self, certificate_types, certificate_authorities):
         self.certificate_types = certificate_types
@@ -358,7 +357,13 @@ class CertificateRequest(HandshakeMsg):
     def parse(self, p):
         p.startLengthCheck(3)
         self.certificate_types = p.getVarList(1, 1)
-        self.certificate_authorities = p.getVarBytes(2)
+        ca_list_length = p.get(2)
+        index = 0
+        self.certificate_authorities = []
+        while index != ca_list_length:
+          ca_bytes = p.getVarBytes(2)
+          self.certificate_authorities.append(ca_bytes)
+          index += len(ca_bytes)+2
         p.stopLengthCheck()
         return self
 
@@ -366,7 +371,14 @@ class CertificateRequest(HandshakeMsg):
         w = HandshakeMsg.preWrite(self, HandshakeType.certificate_request,
                                   trial)
         w.addVarSeq(self.certificate_types, 1, 1)
-        w.addVarSeq(self.certificate_authorities, 1, 2)
+        caLength = 0
+        #determine length
+        for ca_dn in self.certificate_authorities:
+            caLength += len(ca_dn)+2
+        w.add(caLength, 2)
+        #add bytes
+        for ca_dn in self.certificate_authorities:
+            w.addVarSeq(ca_dn, 1, 2)
         return HandshakeMsg.postWrite(self, w, trial)
 
 class ServerKeyExchange(HandshakeMsg):

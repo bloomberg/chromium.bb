@@ -16,13 +16,16 @@ class ASN1Parser:
 
     #Assuming this is a sequence...
     def getChild(self, which):
+        return ASN1Parser(self.getChildBytes(which))
+
+    def getChildBytes(self, which):
         p = Parser(self.value)
         for x in range(which+1):
             markIndex = p.index
             p.get(1) #skip Type
             length = self._getASN1Length(p)
             p.getFixBytes(length)
-        return ASN1Parser(p.bytes[markIndex : p.index])
+        return p.bytes[markIndex : p.index]
 
     #Decode the ASN.1 DER length field
     def _getASN1Length(self, p):

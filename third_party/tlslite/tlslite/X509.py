@@ -13,11 +13,15 @@ class X509:
 
     @type publicKey: L{tlslite.utils.RSAKey.RSAKey}
     @ivar publicKey: The subject public key from the certificate.
+
+    @type subject: L{array.array} of unsigned bytes
+    @ivar subject: The DER-encoded ASN.1 subject distinguished name.
     """
 
     def __init__(self):
         self.bytes = createByteArraySequence([])
         self.publicKey = None
+        self.subject = None
 
     def parse(self, s):
         """Parse a PEM-encoded X.509 certificate.
@@ -62,6 +66,10 @@ class X509:
             subjectPublicKeyInfoIndex = 6
         else:
             subjectPublicKeyInfoIndex = 5
+
+        #Get the subject
+        self.subject = tbsCertificateP.getChildBytes(\
+                           subjectPublicKeyInfoIndex - 1)
 
         #Get the subjectPublicKeyInfo
         subjectPublicKeyInfoP = tbsCertificateP.getChild(\
