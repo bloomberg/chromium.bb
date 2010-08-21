@@ -70,7 +70,7 @@ bool CollectGraphicsInfoD3D(IDirect3D9* d3d,
   uint32 vertex_shader_version = d3d_caps.VertexShaderVersion;
 
   gpu_info.SetGraphicsInfo(vendor_id, device_id, driver_version,
-                           pixel_shader_version, vertex_shader_version);
+                           pixel_shader_version, vertex_shader_version, 0);
   return true;
 }
 
@@ -100,7 +100,7 @@ bool CollectGraphicsInfoGL(GPUInfo& gpu_info) {
   uint32 pixel_shader_version = 0;
   uint32 vertex_shader_version = 0;
   gpu_info.SetGraphicsInfo(vendor_id, device_id, driver_version,
-                           pixel_shader_version, vertex_shader_version);
+                           pixel_shader_version, vertex_shader_version, 0);
   return true;
 
   // TODO(rlp): Add driver and pixel versions

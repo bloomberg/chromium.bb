@@ -15,7 +15,8 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   GPUInfo input;
   // Test variables taken from Lenovo T61
   input.SetGraphicsInfo(0x10de, 0x429, L"6.14.11.7715",
-                        0xffff0300, 0xfffe0300);
+                        0xffff0300, 0xfffe0300,
+                        0x00010005);
 
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   IPC::WriteParam(&msg, input);
@@ -28,6 +29,7 @@ TEST(GPUIPCMessageTest, GPUInfo) {
   EXPECT_EQ(input.driver_version(), output.driver_version());
   EXPECT_EQ(input.pixel_shader_version(), output.pixel_shader_version());
   EXPECT_EQ(input.vertex_shader_version(), output.vertex_shader_version());
+  EXPECT_EQ(input.gl_version(), output.gl_version());
 
   std::string log_message;
   IPC::LogParam(output, &log_message);

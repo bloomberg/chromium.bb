@@ -87,6 +87,7 @@ struct ParamTraits<GPUInfo> {
     m->WriteWString(p.driver_version());
     m->WriteUInt32(p.pixel_shader_version());
     m->WriteUInt32(p.vertex_shader_version());
+    m->WriteUInt32(p.gl_version());
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     uint32 vendor_id;
@@ -94,13 +95,16 @@ struct ParamTraits<GPUInfo> {
     std::wstring driver_version;
     uint32 pixel_shader_version;
     uint32 vertex_shader_version;
+    uint32 gl_version;
     bool ret = m->ReadUInt32(iter, &vendor_id);
     ret = ret && m->ReadUInt32(iter, &device_id);
     ret = ret && m->ReadWString(iter, &driver_version);
     ret = ret && m->ReadUInt32(iter, &pixel_shader_version);
     ret = ret && m->ReadUInt32(iter, &vertex_shader_version);
+    ret = ret && m->ReadUInt32(iter, &gl_version);
     p->SetGraphicsInfo(vendor_id, device_id, driver_version,
-                       pixel_shader_version, vertex_shader_version);
+                       pixel_shader_version, vertex_shader_version,
+                       gl_version);
     return ret;
   }
   static void Log(const param_type& p, std::string* l) {

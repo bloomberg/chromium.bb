@@ -39,17 +39,26 @@ class GPUInfo {
   // should be okay.
   uint32 vertex_shader_version() const;
 
+  // Return the version of OpenGL we are using.
+  // Major version in the high word, minor in the low word, eg version 2.5
+  // would be 0x00020005.
+  // Returns 0 if we're not using OpenGL, say because we're going through
+  // D3D instead.
+  uint32 gl_version() const;
+
   // Populate variables with passed in values
   void SetGraphicsInfo(uint32 vendor_id, uint32 device_id,
                        const std::wstring& driver_version,
                        uint32 pixel_shader_version,
-                       uint32 vertex_shader_version);
+                       uint32 vertex_shader_version,
+                       uint32 gl_version);
  private:
   uint32 vendor_id_;
   uint32 device_id_;
   std::wstring driver_version_;
   uint32 pixel_shader_version_;
   uint32 vertex_shader_version_;
+  uint32 gl_version_;
 };
 
 #endif  // CHROME_COMMON_GPU_INFO_H__
