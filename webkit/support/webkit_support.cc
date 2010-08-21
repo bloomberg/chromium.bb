@@ -113,7 +113,7 @@ class TestEnvironment {
     SimpleResourceLoaderBridge::Shutdown();
   }
 
-  TestWebKitClient* webkit_client() { return webkit_client_.get(); }
+  TestWebKitClient* webkit_client() const { return webkit_client_.get(); }
 
 #if defined(OS_WIN)
   void set_theme_engine(WebKit::WebThemeEngine* engine) {
@@ -121,7 +121,7 @@ class TestEnvironment {
     webkit_client_->SetThemeEngine(engine);
   }
 
-  WebKit::WebThemeEngine* theme_engine() {
+  WebKit::WebThemeEngine* theme_engine() const {
     return webkit_client_->themeEngine();
   }
 #endif
@@ -181,9 +181,9 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   const char* kFixedArguments[] = {"DumpRenderTree"};
   CommandLine::Init(arraysize(kFixedArguments), kFixedArguments);
 
-  webkit_support::BeforeInitialize();
+  webkit_support::BeforeInitialize(unit_test_mode);
   webkit_support::test_environment = new TestEnvironment(unit_test_mode);
-  webkit_support::AfterInitialize();
+  webkit_support::AfterInitialize(unit_test_mode);
   if (!unit_test_mode) {
     // Load ICU data tables.  This has to run after TestEnvironment is created
     // because on Linux, we need base::AtExitManager.

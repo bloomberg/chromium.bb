@@ -25,10 +25,12 @@ namespace webkit_support {
 // TODO(tkent): Implement some of the followings for platform-dependent tasks
 // such as loading resource.
 
-void BeforeInitialize() {
+void BeforeInitialize(bool unit_test_mode) {
 }
 
-void AfterInitialize() {
+void AfterInitialize(bool unit_test_mode) {
+  if (unit_test_mode)
+    return;  // We don't have a resource pack when running the unit-tests.
   g_resource_data_pack = new base::DataPack;
   FilePath data_path;
   PathService::Get(base::DIR_EXE, &data_path);

@@ -24,7 +24,7 @@ namespace webkit_support {
 
 static NSAutoreleasePool* autorelease_pool;
 
-void BeforeInitialize() {
+void BeforeInitialize(bool unit_test_mode) {
   // Need to initialize NSAutoreleasePool before InitWebCoreSystemInterface().
   autorelease_pool = [[NSAutoreleasePool alloc] init];
   DCHECK(autorelease_pool);
@@ -93,7 +93,10 @@ static void SwizzleNSPasteboard() {
 #endif
 }
 
-void AfterInitialize() {
+void AfterInitialize(bool unit_test_mode) {
+  if (unit_test_mode)
+    return;  // We don't have a resource pack when running the unit-tests.
+
   // Load a data pack.
   g_resource_data_pack = new base::DataPack;
   NSString* resource_path =

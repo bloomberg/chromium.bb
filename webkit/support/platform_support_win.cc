@@ -46,10 +46,10 @@ namespace webkit_support {
 // TODO(tkent): Implement some of the followings for platform-dependent tasks
 // such as loading resource.
 
-void BeforeInitialize() {
+void BeforeInitialize(bool unit_test_mode) {
 }
 
-void AfterInitialize() {
+void AfterInitialize(bool unit_test_mode) {
 }
 
 void BeforeShutdown() {
