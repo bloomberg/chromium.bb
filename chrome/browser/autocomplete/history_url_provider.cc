@@ -27,7 +27,6 @@
 using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
-// TODO(mrossetti): Move these to a more appropriate place.
 using history::Prefix;
 using history::Prefixes;
 using history::HistoryMatch;
@@ -112,6 +111,13 @@ HistoryURLProviderParams::HistoryURLProviderParams(
       cancel(false),
       failed(false),
       languages(languages) {
+}
+
+HistoryURLProvider::HistoryURLProvider(ACProviderListener* listener,
+                                       Profile* profile)
+    : AutocompleteProvider(listener, profile, "HistoryURL"),
+      prefixes_(GetPrefixes()),
+      params_(NULL) {
 }
 
 void HistoryURLProvider::Start(const AutocompleteInput& input,
@@ -784,10 +790,8 @@ void HistoryURLProvider::CullPoorMatches(HistoryMatches* matches) const {
   Time recent_threshold = history::AutocompleteAgeThreshold();
   for (HistoryMatches::iterator i(matches->begin()); i != matches->end();) {
     const history::URLRow& url_info(i->url_info);
-    if ((url_info.typed_count() <=
-             history::kLowQualityMatchTypedLimit) &&
-        (url_info.visit_count() <=
-             history::kLowQualityMatchVisitLimit) &&
+    if ((url_info.typed_count() <= history::kLowQualityMatchTypedLimit) &&
+        (url_info.visit_count() <= history::kLowQualityMatchVisitLimit) &&
         (url_info.last_visit() < recent_threshold)) {
       i = matches->erase(i);
     } else {
