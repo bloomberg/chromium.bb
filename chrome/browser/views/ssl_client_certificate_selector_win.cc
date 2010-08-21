@@ -26,7 +26,6 @@ void ShowSSLClientCertificateSelector(
     TabContents* parent,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
-  net::X509Certificate* cert = NULL;
   // TODO(jcampan): replace this with our own cert selection dialog.
   // CryptUIDlgSelectCertificateFromStore is blocking (but still processes
   // Windows messages), which is scary.
@@ -51,11 +50,17 @@ void ShowSSLClientCertificateSelector(
       client_certs, parent->GetMessageBoxRootWindow(),
       title.c_str(), text.c_str(), 0, 0, NULL);
 
+  net::X509Certificate* cert = NULL;
   if (cert_context) {
-    cert = net::X509Certificate::CreateFromHandle(
-        cert_context,
-        net::X509Certificate::SOURCE_LONE_CERT_IMPORT,
-        net::X509Certificate::OSCertHandles());
+    for (size_t i = 0; i < cert_request_info->client_certs.size(); ++i) {
+      net::X509Certificate* client_cert = cert_request_info->client_certs[i];
+      if (net::X509Certificate::IsSameOSCert(cert_context,
+                                             client_cert->os_cert_handle())) {
+        cert = client_cert;
+        break;
+      }
+    }
+    DCHECK(cert != NULL);
     net::X509Certificate::FreeOSCertHandle(cert_context);
   }
 
