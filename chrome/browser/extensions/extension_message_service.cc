@@ -153,7 +153,7 @@ ExtensionMessageService::~ExtensionMessageService() {
   channels_.clear();
 }
 
-void ExtensionMessageService::ProfileDestroyed() {
+void ExtensionMessageService::DestroyingProfile() {
   profile_ = NULL;
   if (!registrar_.IsEmpty())
     registrar_.RemoveAll();

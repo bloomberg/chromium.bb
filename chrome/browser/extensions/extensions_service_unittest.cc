@@ -1844,6 +1844,35 @@ TEST_F(ExtensionsServiceTest, BlacklistedByPolicyWillNotInstall) {
   EXPECT_EQ(1u, service_->extensions()->size());
 }
 
+// Extension blacklisted by policy get unloaded after installing.
+TEST_F(ExtensionsServiceTest, BlacklistedByPolicyRemovedIfRunning) {
+  InitializeEmptyExtensionsService();
+
+  // Install good_crx.
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions");
+  FilePath path = extensions_path.AppendASCII("good.crx");
+  service_->InstallExtension(path);
+  loop_.RunAllPending();
+  EXPECT_EQ(1u, service_->extensions()->size());
+
+  ListValue* blacklist = prefs_->GetMutableList("extensions.install.denylist");
+  ASSERT_TRUE(blacklist != NULL);
+
+  // Blacklist this extension.
+  blacklist->Append(Value::CreateStringValue(good_crx));
+  prefs_->ScheduleSavePersistentPrefs();
+
+  // Programmatically appending to the prefs doesn't seem to notify the
+  // observers... :/
+  prefs_->pref_notifier()->FireObservers("extensions.install.denylist");
+
+  // Extension should not be running now.
+  loop_.RunAllPending();
+  EXPECT_EQ(0u, service_->extensions()->size());
+}
+
 // Tests disabling extensions
 TEST_F(ExtensionsServiceTest, DisableExtension) {
   InitializeEmptyExtensionsService();
@@ -2365,19 +2394,19 @@ class ExtensionsReadyRecorder : public NotificationObserver {
 // enabled or not.
 TEST(ExtensionsServiceTestSimple, Enabledness) {
   ExtensionsReadyRecorder recorder;
-  TestingProfile profile;
+  scoped_ptr<TestingProfile> profile(new TestingProfile());
   MessageLoop loop;
   ChromeThread ui_thread(ChromeThread::UI, &loop);
   ChromeThread file_thread(ChromeThread::FILE, &loop);
   scoped_ptr<CommandLine> command_line;
   scoped_refptr<ExtensionsService> service;
-  FilePath install_dir = profile.GetPath()
+  FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionsService::kInstallDirectoryName);
 
   // By default, we are enabled.
   command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
-  service = new ExtensionsService(&profile, command_line.get(),
-      profile.GetPrefs(), install_dir, false);
+  service = new ExtensionsService(profile.get(), command_line.get(),
+      profile->GetPrefs(), install_dir, false);
   EXPECT_TRUE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
@@ -2385,27 +2414,31 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
 
   // If either the command line or pref is set, we are disabled.
   recorder.set_ready(false);
+  profile.reset(new TestingProfile());
   command_line->AppendSwitch(switches::kDisableExtensions);
-  service = new ExtensionsService(&profile, command_line.get(),
-      profile.GetPrefs(), install_dir, false);
+  service = new ExtensionsService(profile.get(), command_line.get(),
+      profile->GetPrefs(), install_dir, false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
   EXPECT_TRUE(recorder.ready());
 
   recorder.set_ready(false);
-  profile.GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
-  service = new ExtensionsService(&profile, command_line.get(),
-      profile.GetPrefs(), install_dir, false);
+  profile.reset(new TestingProfile());
+  profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
+  service = new ExtensionsService(profile.get(), command_line.get(),
+      profile->GetPrefs(), install_dir, false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();
   EXPECT_TRUE(recorder.ready());
 
   recorder.set_ready(false);
+  profile.reset(new TestingProfile());
+  profile->GetPrefs()->SetBoolean(prefs::kDisableExtensions, true);
   command_line.reset(new CommandLine(CommandLine::ARGUMENTS_ONLY));
-  service = new ExtensionsService(&profile, command_line.get(),
-      profile.GetPrefs(), install_dir, false);
+  service = new ExtensionsService(profile.get(), command_line.get(),
+      profile->GetPrefs(), install_dir, false);
   EXPECT_FALSE(service->extensions_enabled());
   service->Init();
   loop.RunAllPending();

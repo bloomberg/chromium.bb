@@ -241,6 +241,10 @@ bool ExtensionPrefs::IsExtensionAllowedByPolicy(
     const std::string& extension_id) {
   std::string string_value;
 
+  const ListValue* blacklist = prefs_->GetList(kExtensionInstallDenyList);
+  if (!blacklist || blacklist->empty())
+    return true;
+
   // Check the whitelist first.
   const ListValue* whitelist = prefs_->GetList(kExtensionInstallAllowList);
   if (whitelist) {
@@ -254,7 +258,6 @@ bool ExtensionPrefs::IsExtensionAllowedByPolicy(
   }
 
   // Then check the blacklist (the admin blacklist, not the Google blacklist).
-  const ListValue* blacklist = prefs_->GetList(kExtensionInstallDenyList);
   if (blacklist) {
     for (ListValue::const_iterator it = blacklist->begin();
          it != blacklist->end(); ++it) {

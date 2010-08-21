@@ -71,7 +71,7 @@ class ExtensionMessageService
   explicit ExtensionMessageService(Profile* profile);
 
   // Notification that our owning profile is going away.
-  void ProfileDestroyed();
+  void DestroyingProfile();
 
   // Add or remove |render_process_pid| as a listener for |event_name|.
   void AddEventListener(const std::string& event_name, int render_process_id);

@@ -40,33 +40,37 @@ class MockService : public ExtensionUpdateService {
   virtual ~MockService() {}
 
   virtual const ExtensionList* extensions() const {
-    EXPECT_TRUE(false);
+    ADD_FAILURE();
     return NULL;
   }
 
   virtual const PendingExtensionMap& pending_extensions() const {
-    EXPECT_TRUE(false);
+    ADD_FAILURE();
     return pending_extensions_;
   }
 
   virtual void UpdateExtension(const std::string& id,
                                const FilePath& extension_path,
                                const GURL& download_url) {
-    EXPECT_TRUE(false);
+    FAIL();
   }
 
   virtual Extension* GetExtensionById(const std::string& id, bool) {
-    EXPECT_TRUE(false);
+    ADD_FAILURE();
     return NULL;
   }
 
   virtual void UpdateExtensionBlacklist(
-    const std::vector<std::string>& blacklist) {
-    EXPECT_TRUE(false);
+      const std::vector<std::string>& blacklist) {
+    FAIL();
+  }
+
+  virtual void CheckAdminBlacklist() {
+    FAIL();
   }
 
   virtual bool HasInstalledExtensions() {
-    EXPECT_TRUE(false);
+    ADD_FAILURE();
     return false;
   }
 

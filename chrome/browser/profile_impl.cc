@@ -509,10 +509,10 @@ ProfileImpl::~ProfileImpl() {
   favicon_service_ = NULL;
 
   if (extension_message_service_)
-    extension_message_service_->ProfileDestroyed();
+    extension_message_service_->DestroyingProfile();
 
   if (extensions_service_)
-    extensions_service_->ProfileDestroyed();
+    extensions_service_->DestroyingProfile();
 
   // This causes the Preferences file to be written to disk.
   MarkAsCleanShutdown();
