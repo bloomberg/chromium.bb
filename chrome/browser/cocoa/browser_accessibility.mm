@@ -6,9 +6,11 @@
 
 #import "chrome/browser/cocoa/browser_accessibility.h"
 
+#include "app/l10n_util_mac.h"
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include "grit/webkit_strings.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 
 using webkit_glue::WebAccessibility;
@@ -128,6 +130,21 @@ bool GetState(WebAccessibility accessibility, int state) {
   return role;
 }
 
+// Returns a string indicating the role description of this object.
+- (NSString*)roleDescription {
+  // The following descriptions are specific to webkit.
+  if ([[self role] isEqualToString:@"AXWebArea"])
+    return l10n_util::GetNSString(IDS_AX_ROLE_WEB_AREA);
+
+  if ([[self role] isEqualToString:@"NSAccessibilityLinkRole"])
+    return l10n_util::GetNSString(IDS_AX_ROLE_LINK);
+
+  if ([[self role] isEqualToString:@"AXHeading"])
+    return l10n_util::GetNSString(IDS_AX_ROLE_HEADING);
+
+  return NSAccessibilityRoleDescription([self role], nil);
+}
+
 // Returns the size of this object.
 - (NSSize)size {
   return NSMakeSize(webAccessibility_.location.width,
@@ -173,7 +190,7 @@ bool GetState(WebAccessibility accessibility, int state) {
     return base::SysUTF16ToNSString(webAccessibility_.value);
   }
   if ([attribute isEqualToString:NSAccessibilityRoleDescriptionAttribute]) {
-    return NSAccessibilityRoleDescription([self role], nil);
+    return [self roleDescription];
   }
   if ([attribute isEqualToString:NSAccessibilityFocusedAttribute]) {
     NSNumber* ret = [NSNumber numberWithBool:

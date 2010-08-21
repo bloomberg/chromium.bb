@@ -253,7 +253,7 @@ below:
       </message>
 
       <message name="IDS_AX_ROLE_WEB_AREA" desc="accessibility role description for web area">
-        web area
+        HTML content
       </message>
       <message name="IDS_AX_ROLE_LINK" desc="accessibility role description for link">
         link
