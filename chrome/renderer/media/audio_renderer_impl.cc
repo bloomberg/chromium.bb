@@ -165,8 +165,13 @@ void AudioRendererImpl::Play(media::FilterCallback* callback) {
   if (stopped_)
     return;
 
-  io_loop_->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
+  if (GetPlaybackRate() != 0.0f) {
+    io_loop_->PostTask(FROM_HERE,
+                       NewRunnableMethod(this, &AudioRendererImpl::PlayTask));
+  } else {
+    io_loop_->PostTask(FROM_HERE,
+                       NewRunnableMethod(this, &AudioRendererImpl::PauseTask));
+  }
 }
 
 void AudioRendererImpl::SetVolume(float volume) {

@@ -137,24 +137,30 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
 }
 
 void UILayoutTest::AddResourceForLayoutTest(const FilePath& parent_dir,
-                                            const FilePath& resource_dir) {
+                                            const FilePath& resource_name) {
   FilePath root_dir;
   PathService::Get(base::DIR_SOURCE_ROOT, &root_dir);
 
-  FilePath src_dir = root_dir.AppendASCII("chrome");
-  src_dir = src_dir.AppendASCII("test");
-  src_dir = src_dir.AppendASCII("data");
-  src_dir = src_dir.AppendASCII("layout_tests");
-  src_dir = src_dir.AppendASCII("LayoutTests");
-  src_dir = src_dir.Append(parent_dir);
-  src_dir = src_dir.Append(resource_dir);
-  ASSERT_TRUE(file_util::DirectoryExists(src_dir));
+  FilePath source = root_dir.AppendASCII("chrome");
+  source = source.AppendASCII("test");
+  source = source.AppendASCII("data");
+  source = source.AppendASCII("layout_tests");
+  source = source.AppendASCII("LayoutTests");
+  source = source.Append(parent_dir);
+  source = source.Append(resource_name);
+
+  ASSERT_TRUE(file_util::PathExists(source));
 
   FilePath dest_parent_dir = temp_test_dir_.
       AppendASCII("LayoutTests").Append(parent_dir);
   ASSERT_TRUE(file_util::CreateDirectory(dest_parent_dir));
-  FilePath dest_dir = dest_parent_dir.Append(resource_dir);
-  ASSERT_TRUE(file_util::CopyDirectory(src_dir, dest_dir, true));
+  FilePath dest = dest_parent_dir.Append(resource_name);
+
+  if (file_util::DirectoryExists(source)) {
+    ASSERT_TRUE(file_util::CopyDirectory(source, dest, true));
+  } else {
+    ASSERT_TRUE(file_util::CopyFile(source, dest));
+  }
 }
 
 static size_t FindInsertPosition(const std::string& html) {
