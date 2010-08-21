@@ -415,7 +415,8 @@ TEST_F(HistoryTest, AddPage) {
   const GURL test_url("http://www.google.com/");
   history->AddPage(test_url, NULL, 0, GURL(),
                    PageTransition::MANUAL_SUBFRAME,
-                   history::RedirectList(), false);
+                   history::RedirectList(),
+                   history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history, test_url));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_EQ(0, query_url_row_.typed_count());
@@ -423,7 +424,8 @@ TEST_F(HistoryTest, AddPage) {
 
   // Add the page once from the main frame (should unhide it).
   history->AddPage(test_url, NULL, 0, GURL(), PageTransition::LINK,
-                   history::RedirectList(), false);
+                   history::RedirectList(),
+                   history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history, test_url));
   EXPECT_EQ(2, query_url_row_.visit_count());  // Added twice.
   EXPECT_EQ(0, query_url_row_.typed_count());  // Never typed.
@@ -446,14 +448,16 @@ TEST_F(HistoryTest, AddPageSameTimes) {
   // additions have different timestamps.
   history->AddPage(test_urls[0], now, NULL, 0, GURL(),
                    PageTransition::LINK,
-                   history::RedirectList(), false);
+                   history::RedirectList(),
+                   history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history, test_urls[0]));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_TRUE(now == query_url_row_.last_visit());  // gtest doesn't like Time
 
   history->AddPage(test_urls[1], now, NULL, 0, GURL(),
                    PageTransition::LINK,
-                   history::RedirectList(), false);
+                   history::RedirectList(),
+                   history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history, test_urls[1]));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_TRUE(now + TimeDelta::FromMicroseconds(1) ==
@@ -463,7 +467,8 @@ TEST_F(HistoryTest, AddPageSameTimes) {
   history->AddPage(test_urls[2], now + TimeDelta::FromMinutes(1),
                    NULL, 0, GURL(),
                    PageTransition::LINK,
-                   history::RedirectList(), false);
+                   history::RedirectList(),
+                   history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history, test_urls[2]));
   EXPECT_EQ(1, query_url_row_.visit_count());
   EXPECT_TRUE(now + TimeDelta::FromMinutes(1) ==
@@ -486,7 +491,8 @@ TEST_F(HistoryTest, AddRedirect) {
   // Add the sequence of pages as a server with no referrer. Note that we need
   // to have a non-NULL page ID scope.
   history->AddPage(first_redirects.back(), MakeFakeHost(1), 0, GURL(),
-                   PageTransition::LINK, first_redirects, true);
+                   PageTransition::LINK, first_redirects,
+                   history::SOURCE_BROWSED,  true);
 
   // The first page should be added once with a link visit type (because we set
   // LINK when we added the original URL, and a referrer of nowhere (0).
@@ -524,7 +530,7 @@ TEST_F(HistoryTest, AddRedirect) {
                    second_redirects[0],
                    static_cast<PageTransition::Type>(PageTransition::LINK |
                        PageTransition::CLIENT_REDIRECT),
-                   second_redirects, true);
+                   second_redirects, history::SOURCE_BROWSED, true);
 
   // The last page (source of the client redirect) should NOT have an
   // additional visit added, because it was a client redirect (normally it
@@ -549,7 +555,8 @@ TEST_F(HistoryTest, Typed) {
   // Add the page once as typed.
   const GURL test_url("http://www.google.com/");
   history->AddPage(test_url, NULL, 0, GURL(), PageTransition::TYPED,
-                   history::RedirectList(), false);
+                   history::RedirectList(),
+                   history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history, test_url));
 
   // We should have the same typed & visit count.
@@ -558,7 +565,8 @@ TEST_F(HistoryTest, Typed) {
 
   // Add the page again not typed.
   history->AddPage(test_url, NULL, 0, GURL(), PageTransition::LINK,
-                   history::RedirectList(), false);
+                   history::RedirectList(),
+                   history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history, test_url));
 
   // The second time should not have updated the typed count.
@@ -568,7 +576,7 @@ TEST_F(HistoryTest, Typed) {
   // Add the page again as a generated URL.
   history->AddPage(test_url, NULL, 0, GURL(),
                    PageTransition::GENERATED, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history, test_url));
 
   // This should have worked like a link click.
@@ -578,7 +586,7 @@ TEST_F(HistoryTest, Typed) {
   // Add the page again as a reload.
   history->AddPage(test_url, NULL, 0, GURL(),
                    PageTransition::RELOAD, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
   EXPECT_TRUE(QueryURL(history, test_url));
 
   // This should not have incremented any visit counts.
@@ -593,7 +601,7 @@ TEST_F(HistoryTest, SetTitle) {
 
   // Add a URL.
   const GURL existing_url("http://www.google.com/");
-  history->AddPage(existing_url);
+  history->AddPage(existing_url, history::SOURCE_BROWSED);
 
   // Set some title.
   const string16 existing_title = UTF8ToUTF16("Google");
@@ -628,7 +636,7 @@ TEST_F(HistoryTest, Segments) {
   const GURL existing_url("http://www.google.com/");
   history->AddPage(existing_url, scope, 0, GURL(),
                    PageTransition::TYPED, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
 
   // Make sure a segment was created.
   history->QuerySegmentUsageSince(
@@ -647,7 +655,7 @@ TEST_F(HistoryTest, Segments) {
   const GURL link_url("http://yahoo.com/");
   history->AddPage(link_url, scope, 0, GURL(),
                    PageTransition::LINK, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
 
   // Query again
   history->QuerySegmentUsageSince(
@@ -665,7 +673,7 @@ TEST_F(HistoryTest, Segments) {
   // Add a page linked from existing_url.
   history->AddPage(GURL("http://www.google.com/foo"), scope, 3, existing_url,
                    PageTransition::LINK, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
 
   // Query again
   history->QuerySegmentUsageSince(
@@ -699,7 +707,8 @@ TEST_F(HistoryTest, Thumbnails) {
   static const double boringness = 0.25;
 
   const GURL url("http://www.google.com/thumbnail_test/");
-  history->AddPage(url);  // Must be visited before adding a thumbnail.
+  // Must be visited before adding a thumbnail.
+  history->AddPage(url, history::SOURCE_BROWSED);
   history->SetPageThumbnail(url, *thumbnail,
                             ThumbnailScore(boringness, true, true));
 
@@ -766,10 +775,10 @@ TEST_F(HistoryTest, MostVisitedURLs) {
   // Add two pages.
   history->AddPage(url0, scope, 0, GURL(),
                    PageTransition::TYPED, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
   history->AddPage(url1, scope, 0, GURL(),
                    PageTransition::TYPED, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
                                 NewCallback(static_cast<HistoryTest*>(this),
                                     &HistoryTest::OnMostVisitedURLsAvailable));
@@ -782,7 +791,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
   // Add another page.
   history->AddPage(url2, scope, 0, GURL(),
                    PageTransition::TYPED, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
                                 NewCallback(static_cast<HistoryTest*>(this),
                                     &HistoryTest::OnMostVisitedURLsAvailable));
@@ -796,7 +805,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
   // Revisit url2, making it the top URL.
   history->AddPage(url2, scope, 0, GURL(),
                    PageTransition::TYPED, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
                                 NewCallback(static_cast<HistoryTest*>(this),
                                     &HistoryTest::OnMostVisitedURLsAvailable));
@@ -810,7 +819,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
   // Revisit url1, making it the top URL.
   history->AddPage(url1, scope, 0, GURL(),
                    PageTransition::TYPED, history::RedirectList(),
-                   false);
+                   history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
                                 NewCallback(static_cast<HistoryTest*>(this),
                                     &HistoryTest::OnMostVisitedURLsAvailable));
@@ -829,7 +838,7 @@ TEST_F(HistoryTest, MostVisitedURLs) {
   // Visit url4 using redirects.
   history->AddPage(url4, scope, 0, GURL(),
                    PageTransition::TYPED, redirects,
-                   false);
+                   history::SOURCE_BROWSED, false);
   history->QueryMostVisitedURLs(20, 90, &consumer_,
                                 NewCallback(static_cast<HistoryTest*>(this),
                                     &HistoryTest::OnMostVisitedURLsAvailable));
@@ -887,7 +896,8 @@ HistoryAddPageArgs* MakeAddArgs(const GURL& url) {
                                 0,
                                 GURL(),
                                 history::RedirectList(),
-                                PageTransition::TYPED, false);
+                                PageTransition::TYPED,
+                                history::SOURCE_BROWSED, false);
 }
 
 // Convenience version of the above to convert a char string.

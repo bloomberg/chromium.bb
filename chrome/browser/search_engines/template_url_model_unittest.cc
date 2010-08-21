@@ -689,7 +689,7 @@ TEST_F(TemplateURLModelTest, GenerateVisitOnKeyword) {
       GURL(t_url->url()->ReplaceSearchTerms(*t_url, L"blah", 0,
                                             std::wstring())),
       NULL, 0, GURL(), PageTransition::KEYWORD, history::RedirectList(),
-      false);
+      history::SOURCE_BROWSED, false);
 
   // Wait for history to finish processing the request.
   profile_->BlockUntilHistoryProcessesPendingRequests();

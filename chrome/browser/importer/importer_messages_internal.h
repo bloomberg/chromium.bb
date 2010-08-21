@@ -49,8 +49,10 @@ IPC_BEGIN_MESSAGES(ProfileImportProcessHost)
   IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyHistoryImportStart,
                        int  /* total number of history::URLRow items */)
 
-  IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyHistoryImportGroup,
-                       std::vector<history::URLRow>)
+  IPC_MESSAGE_CONTROL2(ProfileImportProcessHostMsg_NotifyHistoryImportGroup,
+                       std::vector<history::URLRow>,
+                       int  /* the source of URLs as in history::VisitSource.*/
+                            /* To simplify IPC call, pass as an integer */)
 
   IPC_MESSAGE_CONTROL1(ProfileImportProcessHostMsg_NotifyHomePageImportReady,
                        GURL  /* GURL of home page */)

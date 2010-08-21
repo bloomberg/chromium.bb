@@ -51,7 +51,8 @@ class ProfileImportProcessHost : public BrowserChildProcessHost {
     // the external process to the process host client.
     virtual void OnHistoryImportStart(size_t total_history_rows_count) {}
     virtual void OnHistoryImportGroup(
-        const std::vector<history::URLRow> &history_rows_group) {}
+        const std::vector<history::URLRow> &history_rows_group,
+        int visit_source) {}  // visit_source has history::VisitSource type.
 
     virtual void OnHomePageImportReady(
         const GURL& home_page) {}

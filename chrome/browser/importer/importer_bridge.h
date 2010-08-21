@@ -38,7 +38,8 @@ class ImporterBridge : public base::RefCountedThreadSafe<ImporterBridge> {
 
   virtual void SetFavIcons(
       const std::vector<history::ImportedFavIconUsage>& fav_icons) = 0;
-  virtual void SetHistoryItems(const std::vector<history::URLRow> &rows) = 0;
+  virtual void SetHistoryItems(const std::vector<history::URLRow> &rows,
+                               history::VisitSource visit_source) = 0;
   virtual void SetKeywords(const std::vector<TemplateURL*> &template_urls,
                            int default_keyword_index,
                            bool unique_on_host_and_path) = 0;
@@ -95,7 +96,8 @@ class InProcessImporterBridge : public ImporterBridge {
 
   virtual void SetFavIcons(
       const std::vector<history::ImportedFavIconUsage>& fav_icons);
-  virtual void SetHistoryItems(const std::vector<history::URLRow> &rows);
+  virtual void SetHistoryItems(const std::vector<history::URLRow> &rows,
+                               history::VisitSource visit_source);
   virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
                            int default_keyword_index,
                            bool unique_on_host_and_path);
@@ -140,7 +142,8 @@ class ExternalProcessImporterBridge : public ImporterBridge {
 
   virtual void SetFavIcons(
       const std::vector<history::ImportedFavIconUsage>& fav_icons);
-  virtual void SetHistoryItems(const std::vector<history::URLRow> &rows);
+  virtual void SetHistoryItems(const std::vector<history::URLRow> &rows,
+                               history::VisitSource visit_source);
   virtual void SetKeywords(const std::vector<TemplateURL*>& template_urls,
                            int default_keyword_index,
                            bool unique_on_host_and_path);

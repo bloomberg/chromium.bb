@@ -948,7 +948,7 @@ TEST_F(BookmarkModelTestWithProfile2, RemoveNotification) {
 
   profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(
       url, NULL, 1, GURL(), PageTransition::TYPED,
-      history::RedirectList(), false);
+      history::RedirectList(), history::SOURCE_BROWSED, false);
 
   // This won't actually delete the URL, rather it'll empty out the visits.
   // This triggers blocking on the BookmarkModel.

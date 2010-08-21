@@ -505,14 +505,16 @@ void ExternalProcessImporterClient::OnHistoryImportStart(
 }
 
 void ExternalProcessImporterClient::OnHistoryImportGroup(
-    const std::vector<history::URLRow> &history_rows_group) {
+    const std::vector<history::URLRow>& history_rows_group,
+    int visit_source) {
   if (cancelled_)
     return;
 
   history_rows_.insert(history_rows_.end(), history_rows_group.begin(),
                        history_rows_group.end());
   if (history_rows_.size() == total_history_rows_count_)
-    bridge_->SetHistoryItems(history_rows_);
+    bridge_->SetHistoryItems(history_rows_,
+                             static_cast<history::VisitSource>(visit_source));
 }
 
 void ExternalProcessImporterClient::OnHomePageImportReady(

@@ -119,7 +119,7 @@ void Firefox3Importer::ImportHistory() {
     rows.push_back(row);
   }
   if (!rows.empty() && !cancelled()) {
-    bridge_->SetHistoryItems(rows);
+    bridge_->SetHistoryItems(rows, history::SOURCE_FIREFOX_IMPORTED);
   }
 }
 

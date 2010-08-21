@@ -301,9 +301,10 @@ void HistoryService::AddPage(const GURL& url,
                              const GURL& referrer,
                              PageTransition::Type transition,
                              const history::RedirectList& redirects,
+                             history::VisitSource visit_source,
                              bool did_replace_entry) {
   AddPage(url, Time::Now(), id_scope, page_id, referrer, transition, redirects,
-          did_replace_entry);
+          visit_source, did_replace_entry);
 }
 
 void HistoryService::AddPage(const GURL& url,
@@ -313,6 +314,7 @@ void HistoryService::AddPage(const GURL& url,
                              const GURL& referrer,
                              PageTransition::Type transition,
                              const history::RedirectList& redirects,
+                             history::VisitSource visit_source,
                              bool did_replace_entry) {
   DCHECK(thread_) << "History service being called after cleanup";
 
@@ -340,8 +342,8 @@ void HistoryService::AddPage(const GURL& url,
   }
 
   scoped_refptr<history::HistoryAddPageArgs> request(
-      new history::HistoryAddPageArgs(url, time, id_scope, page_id,
-                                      referrer, redirects, transition,
+      new history::HistoryAddPageArgs(url, time, id_scope, page_id, referrer,
+                                      redirects, transition, visit_source,
                                       did_replace_entry));
   ScheduleAndForget(PRIORITY_NORMAL, &HistoryBackend::AddPage, request);
 }
@@ -356,7 +358,8 @@ void HistoryService::AddPageWithDetails(const GURL& url,
                                         int visit_count,
                                         int typed_count,
                                         Time last_visit,
-                                        bool hidden) {
+                                        bool hidden,
+                                        history::VisitSource visit_source) {
   // Filter out unwanted URLs.
   if (!CanAddURL(url))
     return;
@@ -377,11 +380,12 @@ void HistoryService::AddPageWithDetails(const GURL& url,
   rows.push_back(row);
 
   ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::AddPagesWithDetails, rows);
+                    &HistoryBackend::AddPagesWithDetails, rows, visit_source);
 }
 
 void HistoryService::AddPagesWithDetails(
-    const std::vector<history::URLRow>& info) {
+    const std::vector<history::URLRow>& info,
+    history::VisitSource visit_source) {
 
   // Add to the visited links system.
   VisitedLinkMaster* visited_links;
@@ -397,7 +401,7 @@ void HistoryService::AddPagesWithDetails(
   }
 
   ScheduleAndForget(PRIORITY_NORMAL,
-                    &HistoryBackend::AddPagesWithDetails, info);
+                    &HistoryBackend::AddPagesWithDetails, info, visit_source);
 }
 
 void HistoryService::SetPageContents(const GURL& url,

@@ -345,8 +345,10 @@ class ExternalProcessImporterClient
   virtual void OnHistoryImportStart(size_t total_history_rows_count);
 
   // Called when a group of URLRows has been received.
+  // The source is passed with history::VisitSource type.
   virtual void OnHistoryImportGroup(
-      const std::vector<history::URLRow> &history_rows_group);
+      const std::vector<history::URLRow> &history_rows_group,
+      int visit_source);
 
   // Called when the home page has been received.
   virtual void OnHomePageImportReady(const GURL& home_page);

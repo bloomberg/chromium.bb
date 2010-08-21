@@ -106,6 +106,7 @@ class ExpireHistoryBackend {
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, DeleteFaviconsIfPossible);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ArchiveSomeOldHistory);
   FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ExpiringVisitsReader);
+  FRIEND_TEST_ALL_PREFIXES(ExpireHistoryTest, ArchiveSomeOldHistoryWithSource);
   friend class ::TestingProfile;
 
   struct DeleteDependencies;

@@ -36,9 +36,10 @@ void ProfileWriter::AddIE7PasswordInfo(const IE7PasswordInfo& info) {
 }
 #endif
 
-void ProfileWriter::AddHistoryPage(const std::vector<history::URLRow>& page) {
+void ProfileWriter::AddHistoryPage(const std::vector<history::URLRow>& page,
+                                   history::VisitSource visit_source) {
   profile_->GetHistoryService(Profile::EXPLICIT_ACCESS)->
-      AddPagesWithDetails(page);
+      AddPagesWithDetails(page, visit_source);
 }
 
 void ProfileWriter::AddHomepage(const GURL& home_page) {
