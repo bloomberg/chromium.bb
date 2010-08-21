@@ -4211,3 +4211,13 @@
    fun:_ZN17ExtensionsService18UninstallExtensionERKSsb
    fun:_ZN18AutomationProvider18UninstallExtensionEiPb
 }
+{
+   bug_52957
+   Memcheck:Addr4
+   fun:glGetString
+   fun:_ZN18gpu_info_collector19CollectGraphicsInfoER7GPUInfo
+   fun:_ZN9GpuThread18OnEstablishChannelEi
+   fun:_Z16DispatchToMethodI9GpuThreadMS0_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple1IiEE8DispatchI9GpuThreadMS5_FviEEEbPKNS_7MessageEPT_T0_
+   fun:_ZN9GpuThread24OnControlMessageReceivedERKN3IPC7MessageE
+}
