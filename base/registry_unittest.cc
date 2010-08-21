@@ -44,8 +44,13 @@ TEST_F(RegistryTest, ValueTest) {
                          KEY_READ | KEY_SET_VALUE));
 
     const wchar_t* kName = L"Bar";
-    EXPECT_TRUE(key.WriteValue(kName, L"bar"));
+    const wchar_t* kValue = L"bar";
+    EXPECT_TRUE(key.WriteValue(kName, kValue));
     EXPECT_TRUE(key.ValueExists(kName));
+    std::wstring out_value;
+    EXPECT_TRUE(key.ReadValue(kName, &out_value));
+    EXPECT_NE(out_value, L"");
+    EXPECT_STREQ(out_value.c_str(), kValue);
     EXPECT_TRUE(key.DeleteValue(kName));
   }
 }
