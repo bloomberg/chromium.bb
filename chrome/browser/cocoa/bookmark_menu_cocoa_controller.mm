@@ -6,6 +6,7 @@
 
 #include "app/text_elider.h"
 #include "base/sys_string_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_BOOKMARK_MENU
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -30,7 +31,8 @@ const NSUInteger kMaximumMenuPixelsWide = 300;
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   gfx::Font font(base::SysNSStringToWide([nsfont fontName]),
                  static_cast<int>([nsfont pointSize]));
-  std::wstring title = gfx::ElideText(node->GetTitle(),
+  std::wstring title = gfx::ElideText(UTF16ToWideHack(
+                                          node->GetTitleAsString16()),
                                       font,
                                       kMaximumMenuPixelsWide,
                                       false);

@@ -32,7 +32,8 @@
       DCHECK_LE(newIndex, parent->GetChildCount());
     }
     if (node_) {
-      initialName_.reset([base::SysWideToNSString(node_->GetTitle()) retain]);
+      initialName_.reset(
+          [base::SysUTF16ToNSString(node_->GetTitleAsString16()) retain]);
     } else {
       NSString* newString =
         l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);

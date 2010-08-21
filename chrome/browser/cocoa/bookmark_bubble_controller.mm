@@ -278,8 +278,7 @@ void BookmarkBubbleNotificationBridge::Observe(
 - (IBAction)remove:(id)sender {
   [self stopPulsingBookmarkButton];
   // TODO(viettrungluu): get rid of conversion and utf_string_conversions.h.
-  model_->SetURLStarred(node_->GetURL(), WideToUTF16Hack(node_->GetTitle()),
-                        false);
+  model_->SetURLStarred(node_->GetURL(), node_->GetTitleAsString16(), false);
   UserMetrics::RecordAction(UserMetricsAction("BookmarkBubble_Unstar"),
                             model_->profile());
   node_ = NULL;  // no longer valid
@@ -324,7 +323,7 @@ void BookmarkBubbleNotificationBridge::Observe(
   if (!node_) return;
 
   // First the title...
-  NSString* oldTitle = base::SysWideToNSString(node_->GetTitle());
+  NSString* oldTitle = base::SysUTF16ToNSString(node_->GetTitleAsString16());
   NSString* newTitle = [nameTextField_ stringValue];
   if (![oldTitle isEqual:newTitle]) {
     model_->SetTitle(node_, base::SysNSStringToUTF16(newTitle));
@@ -353,7 +352,8 @@ void BookmarkBubbleNotificationBridge::Observe(
 
 // Fill in all information related to the folder pop up button.
 - (void)fillInFolderList {
-  [nameTextField_ setStringValue:base::SysWideToNSString(node_->GetTitle())];
+  [nameTextField_
+      setStringValue:base::SysUTF16ToNSString(node_->GetTitleAsString16())];
   DCHECK([folderPopUpButton_ numberOfItems] == 0);
   [self addFolderNodes:model_->root_node()
          toPopUpButton:folderPopUpButton_
@@ -387,7 +387,7 @@ void BookmarkBubbleNotificationBridge::Observe(
          toPopUpButton:(NSPopUpButton*)button
            indentation:(int)indentation {
   if (!model_->is_root(parent))  {
-    NSString* title = base::SysWideToNSString(parent->GetTitle());
+    NSString* title = base::SysUTF16ToNSString(parent->GetTitleAsString16());
     NSMenu* menu = [button menu];
     NSMenuItem* item = [menu addItemWithTitle:title
                                        action:NULL

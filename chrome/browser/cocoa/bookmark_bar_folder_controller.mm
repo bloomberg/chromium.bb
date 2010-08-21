@@ -250,7 +250,7 @@ const CGFloat kScrollWindowVerticalMargin = 0.0;
       [button setTarget:self];
       [button setAction:@selector(openBookmark:)];
       // Add a tooltip.
-      NSString* title = base::SysWideToNSString(node->GetTitle());
+      NSString* title = base::SysUTF16ToNSString(node->GetTitleAsString16());
       std::string urlString = node->GetURL().possibly_invalid_spec();
       NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", title,
                                     urlString.c_str()];

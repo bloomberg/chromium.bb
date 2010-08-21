@@ -18,7 +18,8 @@
 }
 
 - (void)rebuild {
-  title_.reset([base::SysWideToNSString(treeNode_->GetTitle()) retain]);
+  title_.reset(
+      [base::SysUTF16ToNSString(treeNode_->GetTitleAsString16()) retain]);
   children_.reset();
   // The tree node assumes ownership of the cookie details object
   details_.reset([[CocoaCookieDetails createFromCookieTreeNode:(treeNode_)]

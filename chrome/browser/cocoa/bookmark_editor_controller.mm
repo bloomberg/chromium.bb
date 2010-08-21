@@ -48,7 +48,7 @@
   // Set text fields to match our bookmark.  If the node is NULL we
   // arrived here from an "Add Page..." item in a context menu.
   if (node_) {
-    [self setInitialName:base::SysWideToNSString(node_->GetTitle())];
+    [self setInitialName:base::SysUTF16ToNSString(node_->GetTitleAsString16())];
     std::string url_string = node_->GetURL().possibly_invalid_spec();
     initialUrl_.reset([[NSString stringWithUTF8String:url_string.c_str()]
                         retain]);

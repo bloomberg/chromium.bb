@@ -1014,11 +1014,11 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
     "javascript:alert('lolwut')",
     "file://localhost/tmp/local-file.txt"  // As if dragged from the desktop.
   };
-  std::wstring titles[] = {
-    std::wstring(L"Philosophoraptor"),
-    std::wstring(L"Can't draw"),
-    std::wstring(L"Inspiration"),
-    std::wstring(L"Frum stuf")
+  const char* titles[] = {
+    "Philosophoraptor",
+    "Can't draw",
+    "Inspiration",
+    "Frum stuf"
   };
   EXPECT_EQ(arraysize(urls), arraysize(titles));
 
@@ -1026,7 +1026,7 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
   NSMutableArray* nstitles = [NSMutableArray array];
   for (size_t i = 0; i < arraysize(urls); ++i) {
     [nsurls addObject:base::SysUTF8ToNSString(urls[i])];
-    [nstitles addObject:base::SysWideToNSString(titles[i])];
+    [nstitles addObject:base::SysUTF8ToNSString(titles[i])];
   }
 
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
@@ -1044,7 +1044,8 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
       std::string my_string = parent->GetChild(i)->GetURL().spec();
       EXPECT_NE(gurl_string.find(my_string), std::string::npos);
     }
-    EXPECT_EQ(parent->GetChild(i)->GetTitle(), titles[i]);
+    EXPECT_EQ(parent->GetChild(i)->GetTitleAsString16(),
+              ASCIIToUTF16(titles[i]));
   }
 }
 
@@ -1166,8 +1167,8 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_EQ(1, folder->GetChildCount());
   x = NSMidX([[[bar_ buttons] objectAtIndex:0] frame]);
   x += [[bar_ view] frame].origin.x;
-  std::wstring title = [[[bar_ buttons] objectAtIndex:2]
-                         bookmarkNode]->GetTitle();
+  string16 title =
+      [[[bar_ buttons] objectAtIndex:2] bookmarkNode]->GetTitleAsString16();
   [bar_ dragButton:[[bar_ buttons] objectAtIndex:2]
                 to:NSMakePoint(x, 0)
               copy:NO];
@@ -1176,7 +1177,7 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   // In the folder
   EXPECT_EQ(2, folder->GetChildCount());
   // At the end
-  EXPECT_EQ(title, folder->GetChild(1)->GetTitle());
+  EXPECT_EQ(title, folder->GetChild(1)->GetTitleAsString16());
 }
 
 TEST_F(BookmarkBarControllerTest, TestCopyButton) {
@@ -1947,7 +1948,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DragBookmarkData) {
   ASSERT_TRUE(targetButton);
   NSPoint targetPoint = [targetButton center];
   newNode = other->GetChild(2);  // Should be O4f.
-  EXPECT_EQ(newNode->GetTitle(), L"O4f");
+  EXPECT_EQ(newNode->GetTitleAsString16(), ASCIIToUTF16("O4f"));
   [bar_ setDragDataNode:newNode];
   [dragInfo setDropLocation:targetPoint];
   [bar_ dragBookmarkData:(id<NSDraggingInfo>)dragInfo.get()];

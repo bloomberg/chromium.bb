@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -222,8 +222,8 @@ void BookmarkMenuBridge::ConfigureMenuItem(const BookmarkNode* node,
   // Add a tooltip
   std::string url_string = node->GetURL().possibly_invalid_spec();
   NSString* tooltip = [NSString stringWithFormat:@"%@\n%s",
-                                base::SysWideToNSString(node->GetTitle()),
-                                url_string.c_str()];
+                          base::SysUTF16ToNSString(node->GetTitleAsString16()),
+                          url_string.c_str()];
   [item setToolTip:tooltip];
 
   // Check to see if we have a favicon.
