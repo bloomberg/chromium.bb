@@ -621,7 +621,6 @@ class Browser : public TabStripModelDelegate,
   virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(BrowserTest, PinnedTabDisposition);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, NoTabsInPopups);
 
   // Used to describe why a tab is being detached. This is used by
@@ -636,8 +635,6 @@ class Browser : public TabStripModelDelegate,
     // Result of the tab strip not having any significant tabs.
     DETACH_TYPE_EMPTY
   };
-
-  bool IsPinned(TabContents* source);
 
   // Overridden from TabStripModelDelegate:
   virtual TabContents* AddBlankTab(bool foreground);
@@ -949,17 +946,6 @@ class Browser : public TabStripModelDelegate,
   // If watcher denies closing of browser, CancelWindowClose is called to
   // cancel closing of window.
   bool IsClosingPermitted();
-
-  // Calculate a new window open disposition for a navigation. The return
-  // value will usually be |original_disposition|, but for some pinned tab cases
-  // we change it to NEW_FOREGROUND_TAB so that the pinned tab feels more
-  // permanent.
-  static WindowOpenDisposition AdjustWindowOpenDispositionForTab(
-      bool is_pinned,
-      const GURL& url,
-      const GURL& referrer,
-      PageTransition::Type transition,
-      WindowOpenDisposition original_disposition);
 
   // Data members /////////////////////////////////////////////////////////////
 

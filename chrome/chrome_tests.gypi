@@ -844,7 +844,6 @@
         'browser/browser_commands_unittest.cc',
         'browser/browser_theme_pack_unittest.cc',
         'browser/browser_theme_provider_unittest.cc',
-        'browser/browser_unittest.cc',
         'browser/browsing_data_appcache_helper_unittest.cc',
         'browser/browsing_data_database_helper_unittest.cc',
         'browser/browsing_data_local_storage_helper_unittest.cc',

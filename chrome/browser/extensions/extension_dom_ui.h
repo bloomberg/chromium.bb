@@ -23,7 +23,9 @@ class TabContents;
 struct ViewHostMsg_DomMessage_Params;
 
 // This class implements DOMUI for extensions and allows extensions to put UI in
-// the main tab contents area.
+// the main tab contents area. For example, each extension can specify an
+// "options_page", and that page is displayed in the tab contents area and is
+// hosted by this class.
 class ExtensionDOMUI
     : public DOMUI,
       public ExtensionFunctionDispatcher::Delegate {
@@ -92,6 +94,8 @@ class ExtensionDOMUI
 
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
 
+  // TODO(aa): This seems out of place. Why is it not with the event routers for
+  // the other extension APIs?
   scoped_ptr<ExtensionBookmarkManagerEventRouter>
       extension_bookmark_manager_event_router_;
 };

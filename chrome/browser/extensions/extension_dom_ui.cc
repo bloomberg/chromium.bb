@@ -22,6 +22,7 @@
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "gfx/codec/png_codec.h"
@@ -143,13 +144,14 @@ void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
 }
 
 void ExtensionDOMUI::ResetExtensionBookmarkManagerEventRouter() {
-  extension_bookmark_manager_event_router_.reset(
-      new ExtensionBookmarkManagerEventRouter(GetProfile(), tab_contents()));
-  // We set the link transition type to AUTO_BOOKMARK for the bookmark manager.
-  // This doesn't really belong here, but neither does this function.
-  // ExtensionDOMUI could potentially be used for extensions besides the
-  // bookmark manager, but currently it does not.
-  link_transition_type_ = PageTransition::AUTO_BOOKMARK;
+  // Hack: A few things we specialize just for the bookmark manager.
+  if (extension_function_dispatcher_->extension_id() ==
+      extension_misc::kBookmarkManagerId) {
+    extension_bookmark_manager_event_router_.reset(
+        new ExtensionBookmarkManagerEventRouter(GetProfile(), tab_contents()));
+
+    link_transition_type_ = PageTransition::AUTO_BOOKMARK;
+  }
 }
 
 void ExtensionDOMUI::RenderViewCreated(RenderViewHost* render_view_host) {

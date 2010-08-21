@@ -1280,17 +1280,6 @@ void Browser::OpenCurrentURL() {
       CloseTabContents(selected_contents);
       return;
     }
-
-    if (selected_contents) {
-      // For the purposes of changing the window open disposition, the referrer
-      // is the current tab's URL.
-      open_disposition = AdjustWindowOpenDispositionForTab(
-          IsPinned(selected_contents),
-          url,
-          selected_contents->GetURL(),
-          location_bar->GetPageTransition(),
-          open_disposition);
-    }
   }
 
   // Use ADD_INHERIT_OPENER so that all pages opened by the omnibox at least
@@ -3779,39 +3768,6 @@ Browser* Browser::GetOrCreateTabbedBrowser(Profile* profile) {
   return browser;
 }
 
-// static
-WindowOpenDisposition Browser::AdjustWindowOpenDispositionForTab(
-    bool is_pinned,
-    const GURL& url,
-    const GURL& referrer,
-    PageTransition::Type transition,
-    WindowOpenDisposition original_disposition) {
-  if (!is_pinned ||
-      original_disposition != CURRENT_TAB ||
-      (transition != PageTransition::AUTO_BOOKMARK &&
-       transition != PageTransition::LINK &&
-       transition != PageTransition::TYPED)) {
-    return original_disposition;
-  }
-
-  bool url_is_http_or_https =
-       url.SchemeIs(chrome::kHttpScheme) ||
-       url.SchemeIs(chrome::kHttpsScheme);
-  bool referrer_is_http_or_https =
-       referrer.SchemeIs(chrome::kHttpScheme) ||
-       referrer.SchemeIs(chrome::kHttpsScheme);
-  bool scheme_matches =
-      (url.scheme() == referrer.scheme()) ||
-      (url_is_http_or_https && referrer_is_http_or_https);
-
-  // If the host and scheme are the same, then we allow the link to open in
-  // the current tab, to make the page feel more web-appy.
-  if (url.host() == referrer.host() && scheme_matches)
-    return original_disposition;
-
-  return NEW_FOREGROUND_TAB;
-}
-
 void Browser::OpenURLAtIndex(TabContents* source,
                              const GURL& url,
                              const GURL& referrer,
@@ -3838,13 +3794,6 @@ void Browser::OpenURLAtIndex(TabContents* source,
     RenderViewHostDelegate::BrowserIntegration* delegate = current_tab;
     delegate->OnUserGesture();
   }
-
-  disposition = AdjustWindowOpenDispositionForTab(
-      current_tab && IsPinned(current_tab),
-      url,
-      referrer,
-      transition,
-      disposition);
 
   // If the URL is part of the same web site, then load it in the same
   // SiteInstance (and thus the same process).  This is an optimization to
@@ -4088,13 +4037,4 @@ void Browser::TabRestoreServiceDestroyed(TabRestoreService* service) {
   DCHECK_EQ(tab_restore_service_, service);
   tab_restore_service_->RemoveObserver(this);
   tab_restore_service_ = NULL;
-}
-
-bool Browser::IsPinned(TabContents* source) {
-  int index = tabstrip_model_.GetIndexOfTabContents(source);
-  if (index == TabStripModel::kNoTab) {
-    NOTREACHED() << "IsPinned called for tab not in our strip";
-    return false;
-  }
-  return tabstrip_model_.IsTabPinned(index);
 }
