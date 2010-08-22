@@ -330,7 +330,7 @@ bool SearchBookmarksFunction::RunImpl() {
   std::wstring lang =
       UTF8ToWide(profile()->GetPrefs()->GetString(prefs::kAcceptLanguages));
   std::vector<const BookmarkNode*> nodes;
-  bookmark_utils::GetBookmarksContainingText(model, UTF16ToWideHack(query),
+  bookmark_utils::GetBookmarksContainingText(model, query,
                                              std::numeric_limits<int>::max(),
                                              lang, &nodes);
   std::vector<const BookmarkNode*>::iterator i = nodes.begin();

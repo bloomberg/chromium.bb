@@ -501,13 +501,13 @@ bool MoreRecentlyAdded(const BookmarkNode* n1, const BookmarkNode* n2) {
 }
 
 void GetBookmarksContainingText(BookmarkModel* model,
-                                const std::wstring& text,
+                                const string16& text,
                                 size_t max_count,
                                 const std::wstring& languages,
                                 std::vector<const BookmarkNode*>* nodes) {
   std::vector<string16> words;
   QueryParser parser;
-  parser.ExtractQueryWords(l10n_util::ToLower(WideToUTF16(text)), &words);
+  parser.ExtractQueryWords(l10n_util::ToLower(text), &words);
   if (words.empty())
     return;
 
@@ -523,11 +523,11 @@ void GetBookmarksContainingText(BookmarkModel* model,
 }
 
 bool DoesBookmarkContainText(const BookmarkNode* node,
-                             const std::wstring& text,
+                             const string16& text,
                              const std::wstring& languages) {
   std::vector<string16> words;
   QueryParser parser;
-  parser.ExtractQueryWords(l10n_util::ToLower(WideToUTF16(text)), &words);
+  parser.ExtractQueryWords(l10n_util::ToLower(text), &words);
   if (words.empty())
     return false;
 

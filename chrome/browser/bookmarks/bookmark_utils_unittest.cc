@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,27 +27,27 @@ TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {
 
   std::vector<const BookmarkNode*> nodes;
   bookmark_utils::GetBookmarksContainingText(
-      &model, L"foo", 100, std::wstring(), &nodes);
+      &model, ASCIIToUTF16("foo"), 100, std::wstring(), &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == n1);
   EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      n1, L"foo", std::wstring()));
+      n1, ASCIIToUTF16("foo"), std::wstring()));
   nodes.clear();
 
   bookmark_utils::GetBookmarksContainingText(
-      &model, L"cnn", 100, std::wstring(), &nodes);
+      &model, ASCIIToUTF16("cnn"), 100, std::wstring(), &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == n2);
   EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      n2, L"cnn", std::wstring()));
+      n2, ASCIIToUTF16("cnn"), std::wstring()));
   nodes.clear();
 
   bookmark_utils::GetBookmarksContainingText(
-      &model, L"foo bar", 100, std::wstring(), &nodes);
+      &model, ASCIIToUTF16("foo bar"), 100, std::wstring(), &nodes);
   ASSERT_EQ(1U, nodes.size());
   EXPECT_TRUE(nodes[0] == n1);
   EXPECT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      n1, L"foo bar", std::wstring()));
+      n1, ASCIIToUTF16("foo bar"), std::wstring()));
   nodes.clear();
 }
 
@@ -58,16 +58,16 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
                                           GURL("http://www.google.com"));
   // Matches to the title.
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, L"ar", std::wstring()));
+      node, ASCIIToUTF16("ar"), std::wstring()));
   // Matches to the URL
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, L"www", std::wstring()));
+      node, ASCIIToUTF16("www"), std::wstring()));
   // No match.
   ASSERT_FALSE(bookmark_utils::DoesBookmarkContainText(
-      node, L"cnn", std::wstring()));
+      node, ASCIIToUTF16("cnn"), std::wstring()));
 
   // Tests for a Japanese IDN.
-  const wchar_t* kDecodedIdn = L"\x30B0\x30FC\x30B0\x30EB";
+  const string16 kDecodedIdn = WideToUTF16(L"\x30B0\x30FC\x30B0\x30EB");
   node = model.AddURL(model.other_node(), 0, ASCIIToUTF16("foo bar"),
                       GURL("http://xn--qcka1pmc.jp"));
   // Unicode query doesn't match if languages have no "ja".
@@ -78,23 +78,23 @@ TEST_F(BookmarkUtilsTest, DoesBookmarkContainText) {
       node, kDecodedIdn, L"ja"));
   // Punycode query also matches as ever.
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, L"qcka1pmc", L"ja"));
+      node, ASCIIToUTF16("qcka1pmc"), L"ja"));
 
   // Tests with various lower/upper case characters.
   node = model.AddURL(model.other_node(), 0, ASCIIToUTF16("FOO bar"),
                       GURL("http://www.google.com/search?q=ABC"));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, L"foo", std::wstring()));
+      node, ASCIIToUTF16("foo"), std::wstring()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, L"Foo", std::wstring()));
+      node, ASCIIToUTF16("Foo"), std::wstring()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, L"FOO", std::wstring()));
+      node, ASCIIToUTF16("FOO"), std::wstring()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, L"google abc", std::wstring()));
+      node, ASCIIToUTF16("google abc"), std::wstring()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, L"google ABC", std::wstring()));
+      node, ASCIIToUTF16("google ABC"), std::wstring()));
   ASSERT_TRUE(bookmark_utils::DoesBookmarkContainText(
-      node, L"http://www.google.com/search?q=A", std::wstring()));
+      node, ASCIIToUTF16("http://www.google.com/search?q=A"), std::wstring()));
 }
 
 #if !defined(OS_MACOSX)
