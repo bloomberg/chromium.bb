@@ -71,7 +71,7 @@ class ClearBrowsingDataView : public views::View,
 
   // Overridden from ComboboxModel:
   virtual int GetItemCount();
-  virtual std::wstring GetItemAt(int index);
+  virtual string16 GetItemAt(int index);
 
   // Overridden from views::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* sender, int prev_index,

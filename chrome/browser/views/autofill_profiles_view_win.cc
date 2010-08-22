@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -892,7 +893,7 @@ void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
     } else {
       temporary_info_.credit_card.SetInfo(
           AutoFillType(CREDIT_CARD_EXP_MONTH),
-          combo_box_model_month_->GetItemAt(new_index));
+          UTF16ToWideHack(combo_box_model_month_->GetItemAt(new_index)));
     }
   } else if (combo_box == combo_box_year_) {
     if (new_index == -1) {
@@ -900,7 +901,7 @@ void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
     } else {
       temporary_info_.credit_card.SetInfo(
           AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-          combo_box_model_year_->GetItemAt(new_index));
+          UTF16ToWideHack(combo_box_model_year_->GetItemAt(new_index)));
     }
   } else {
     NOTREACHED();
@@ -1279,16 +1280,16 @@ int AutoFillProfilesView::AddressComboBoxModel::GetItemCount() {
   return static_cast<int>(address_labels_.size()) + shift;
 }
 
-std::wstring AutoFillProfilesView::AddressComboBoxModel::GetItemAt(int index) {
+string16 AutoFillProfilesView::AddressComboBoxModel::GetItemAt(int index) {
   int shift = is_billing_ ? 0 : 1;
   DCHECK(index < (static_cast<int>(address_labels_.size()) + shift));
   if (!is_billing_ && !index)
-    return l10n_util::GetString(IDS_AUTOFILL_DIALOG_SAME_AS_BILLING);
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_SAME_AS_BILLING);
   DCHECK(address_labels_.at(index - shift).is_address);
-  std::wstring label =
-      address_labels_.at(index - shift).address.Label();
+  string16 label =
+      WideToUTF16Hack(address_labels_.at(index - shift).address.Label());
   if (label.empty())
-    label = l10n_util::GetString(IDS_AUTOFILL_NEW_ADDRESS);
+    label = l10n_util::GetStringUTF16(IDS_AUTOFILL_NEW_ADDRESS);
   return label;
 }
 
@@ -1301,10 +1302,9 @@ int AutoFillProfilesView::StringVectorComboboxModel::GetItemCount() {
   return cb_strings_.size();
 }
 
-std::wstring AutoFillProfilesView::StringVectorComboboxModel::GetItemAt(
-    int index) {
+string16 AutoFillProfilesView::StringVectorComboboxModel::GetItemAt(int index) {
   DCHECK_GT(static_cast<int>(cb_strings_.size()), index);
-  return cb_strings_[index];
+  return WideToUTF16Hack(cb_strings_[index]);
 }
 
 int AutoFillProfilesView::StringVectorComboboxModel::GetIndex(

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "app/combobox_model.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "gfx/rect.h"
@@ -322,8 +323,8 @@ class DummyComboboxModel : public ComboboxModel {
  public:
   virtual int GetItemCount() { return 10; }
 
-  virtual std::wstring GetItemAt(int index) {
-    return L"Item " + UTF16ToWideHack(base::IntToString16(index));
+  virtual string16 GetItemAt(int index) {
+    return ASCIIToUTF16("Item ") + base::IntToString16(index);
   }
 };
 
@@ -907,8 +908,8 @@ class TestCombobox : public Combobox, public ComboboxModel {
   virtual int GetItemCount() {
     return 10;
   }
-  virtual std::wstring GetItemAt(int index) {
-    return L"Hello combo";
+  virtual string16 GetItemAt(int index) {
+    return ASCIIToUTF16("Hello combo");
   }
 };
 

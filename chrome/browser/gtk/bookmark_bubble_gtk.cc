@@ -338,7 +338,7 @@ void BookmarkBubbleGtk::InitFolderComboModel() {
   // the 'Select another folder...' entry that opens the bookmark editor.
   for (int i = 0; i < folder_combo_model_->GetItemCount(); ++i) {
     gtk_combo_box_append_text(GTK_COMBO_BOX(folder_combo_),
-        WideToUTF8(folder_combo_model_->GetItemAt(i)).c_str());
+        UTF16ToUTF8(folder_combo_model_->GetItemAt(i)).c_str());
   }
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(folder_combo_),

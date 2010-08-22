@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "app/combobox_model.h"
+#include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 
 // Model for the combobox showing the list of folders to choose from. The
@@ -20,7 +21,7 @@ class RecentlyUsedFoldersComboModel : public ComboboxModel {
 
   // Overridden from ComboboxModel:
   virtual int GetItemCount();
-  virtual std::wstring GetItemAt(int index);
+  virtual string16 GetItemAt(int index);
 
   // Returns the node at the specified |index|.
   const BookmarkNode* GetNodeAt(int index);

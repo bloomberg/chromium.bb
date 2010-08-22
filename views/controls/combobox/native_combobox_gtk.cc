@@ -44,7 +44,7 @@ void NativeComboboxGtk::UpdateFromModel() {
   while (count-- > 0) {
     gtk_list_store_prepend(store, &iter);
     gtk_list_store_set(store, &iter,
-                       0, WideToUTF8(model->GetItemAt(count)).c_str(),
+                       0, UTF16ToUTF8(model->GetItemAt(count)).c_str(),
                        -1);
   }
 }

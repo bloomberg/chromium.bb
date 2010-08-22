@@ -32,7 +32,7 @@ GtkWidget* NewComboboxFromModel(ComboboxModel* model) {
   int count = model->GetItemCount();
   for (int i = 0; i < count; ++i)
     gtk_combo_box_append_text(GTK_COMBO_BOX(combobox),
-                              WideToUTF8(model->GetItemAt(i)).c_str());
+                              UTF16ToUTF8(model->GetItemAt(i)).c_str());
   return combobox;
 }
 

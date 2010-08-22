@@ -116,7 +116,7 @@ void FontsPageGtk::InitDefaultEncodingComboBox() {
   for (int i = 0; i < default_encoding_combobox_model_->GetItemCount(); ++i) {
     gtk_combo_box_append_text(
         GTK_COMBO_BOX(default_encoding_combobox_),
-        WideToUTF8(default_encoding_combobox_model_->GetItemAt(i)).c_str());
+        UTF16ToUTF8(default_encoding_combobox_model_->GetItemAt(i)).c_str());
   }
 }
 

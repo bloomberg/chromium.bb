@@ -26,18 +26,18 @@ TEST(AddLanguageComboboxModelTest, AddLanguageComboboxModel) {
   ASSERT_EQ(4, model.GetItemCount());
 
   // The first item should be "Add language" labe.
-  EXPECT_EQ(l10n_util::GetString(
+  EXPECT_EQ(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_COMBOBOX),
             model.GetItemAt(0));
   // Other items should be sorted language display names for UI (hence
   // French comes before German).  Note that the returned display names
   // are followed by their native representations. To simplify matching,
   // use StartsWith() here.
-  EXPECT_TRUE(StartsWith(model.GetItemAt(1), L"French", true))
+  EXPECT_TRUE(StartsWith(model.GetItemAt(1), ASCIIToUTF16("French"), true))
       << model.GetItemAt(1);
-  EXPECT_TRUE(StartsWith(model.GetItemAt(2), L"German", true))
+  EXPECT_TRUE(StartsWith(model.GetItemAt(2), ASCIIToUTF16("German"), true))
       << model.GetItemAt(2);
-  EXPECT_TRUE(StartsWith(model.GetItemAt(3), L"Korean", true))
+  EXPECT_TRUE(StartsWith(model.GetItemAt(3), ASCIIToUTF16("Korean"), true))
       << model.GetItemAt(3);
 
   // GetLanguageIndex() returns the given index -1 to offset "Add language".

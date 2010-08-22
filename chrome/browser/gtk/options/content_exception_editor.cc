@@ -54,7 +54,7 @@ ContentExceptionEditor::ContentExceptionEditor(
   action_combo_ = gtk_combo_box_new_text();
   for (int i = 0; i < cb_model_.GetItemCount(); ++i) {
     gtk_combo_box_append_text(GTK_COMBO_BOX(action_combo_),
-        WideToUTF8(cb_model_.GetItemAt(i)).c_str());
+        UTF16ToUTF8(cb_model_.GetItemAt(i)).c_str());
   }
   gtk_combo_box_set_active(GTK_COMBO_BOX(action_combo_),
                            cb_model_.IndexForSetting(setting_));

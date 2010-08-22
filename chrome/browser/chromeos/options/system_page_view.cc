@@ -10,6 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/combobox_model.h"
 #include "base/stl_util-inl.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -126,14 +127,15 @@ class DateTimeSection : public SettingsPageSection,
       return static_cast<int>(timezones_.size());
     }
 
-    virtual std::wstring GetItemAt(int index) {
+    virtual string16 GetItemAt(int index) {
       icu::UnicodeString name;
       timezones_[index]->getDisplayName(name);
       std::wstring output;
       UTF16ToWide(name.getBuffer(), name.length(), &output);
       int hour_offset = timezones_[index]->getRawOffset() / 3600000;
-      return StringPrintf(hour_offset == 0 ? L"(GMT) " : (hour_offset > 0 ?
-          L"(GMT+%d) " : L"(GMT%d) "), hour_offset) + output;
+      return WideToUTF16Hack(
+          StringPrintf(hour_offset == 0 ? L"(GMT) " : (hour_offset > 0 ?
+          L"(GMT+%d) " : L"(GMT%d) "), hour_offset) + output);
     }
 
     virtual icu::TimeZone* GetTimeZoneAt(int index) {

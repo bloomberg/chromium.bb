@@ -7,6 +7,7 @@
 #pragma once
 
 #include "app/combobox_model.h"
+#include "base/string16.h"
 #include "chrome/browser/importer/importer.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
@@ -56,7 +57,7 @@ class ImporterView : public views::View,
 
   // Overridden from ComboboxModel:
   virtual int GetItemCount();
-  virtual std::wstring GetItemAt(int index);
+  virtual string16 GetItemAt(int index);
 
   // Overridden from ChromeViews::Combobox::Listener:
   virtual void ItemChanged(views::Combobox* combobox,

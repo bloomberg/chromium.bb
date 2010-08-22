@@ -1,10 +1,12 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/views/clear_browsing_data.h"
 
 #include "app/l10n_util.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/pref_service.h"
@@ -337,15 +339,15 @@ int ClearBrowsingDataView::GetItemCount() {
   return 5;
 }
 
-std::wstring ClearBrowsingDataView::GetItemAt(int index) {
+string16 ClearBrowsingDataView::GetItemAt(int index) {
   switch (index) {
-    case 0: return l10n_util::GetString(IDS_CLEAR_DATA_HOUR);
-    case 1: return l10n_util::GetString(IDS_CLEAR_DATA_DAY);
-    case 2: return l10n_util::GetString(IDS_CLEAR_DATA_WEEK);
-    case 3: return l10n_util::GetString(IDS_CLEAR_DATA_4WEEKS);
-    case 4: return l10n_util::GetString(IDS_CLEAR_DATA_EVERYTHING);
-    default: NOTREACHED() << L"Missing item";
-             return L"?";
+    case 0: return l10n_util::GetStringUTF16(IDS_CLEAR_DATA_HOUR);
+    case 1: return l10n_util::GetStringUTF16(IDS_CLEAR_DATA_DAY);
+    case 2: return l10n_util::GetStringUTF16(IDS_CLEAR_DATA_WEEK);
+    case 3: return l10n_util::GetStringUTF16(IDS_CLEAR_DATA_4WEEKS);
+    case 4: return l10n_util::GetStringUTF16(IDS_CLEAR_DATA_EVERYTHING);
+    default: NOTREACHED() << "Missing item";
+             return ASCIIToUTF16("?");
   }
 }
 

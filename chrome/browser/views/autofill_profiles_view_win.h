@@ -11,6 +11,7 @@
 
 #include "app/combobox_model.h"
 #include "app/table_model.h"
+#include "base/string16.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
@@ -377,7 +378,7 @@ class AutoFillProfilesView : public views::View,
     // Overridden from ComboboxModel:
     // Public as they are used from EditableSetViewContents.
     virtual int GetItemCount();
-    virtual std::wstring GetItemAt(int index);
+    virtual string16 GetItemAt(int index);
 
    private:
     std::list<views::Combobox*> combo_boxes_;
@@ -398,7 +399,7 @@ class AutoFillProfilesView : public views::View,
 
     // Overridden from ComboboxModel:
     virtual int GetItemCount();
-    virtual std::wstring GetItemAt(int index);
+    virtual string16 GetItemAt(int index);
 
     // Find an index of the item in the model, -1 if not present.
     int GetIndex(const std::wstring& value);

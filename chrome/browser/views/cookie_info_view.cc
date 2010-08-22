@@ -9,7 +9,9 @@
 #include "app/l10n_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profile.h"
 #include "gfx/canvas.h"
@@ -149,8 +151,8 @@ int CookieInfoView::GetItemCount() {
   return static_cast<int>(expire_combo_values_.size());
 }
 
-std::wstring CookieInfoView::GetItemAt(int index) {
-  return expire_combo_values_[index];
+string16 CookieInfoView::GetItemAt(int index) {
+  return WideToUTF16Hack(expire_combo_values_[index]);
 }
 
 void CookieInfoView::AddLabelRow(int layout_id, views::GridLayout* layout,

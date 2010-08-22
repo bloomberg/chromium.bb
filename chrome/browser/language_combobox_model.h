@@ -12,6 +12,7 @@
 
 #include "app/combobox_model.h"
 #include "base/basictypes.h"
+#include "base/string16.h"
 
 class Profile;
 
@@ -77,9 +78,8 @@ class LanguageComboboxModel : public LanguageList, public ComboboxModel {
 
   virtual ~LanguageComboboxModel() {}
 
-  virtual int GetItemCount() { return get_languages_count(); }
-
-  virtual std::wstring GetItemAt(int index) { return GetLanguageNameAt(index); }
+  virtual int GetItemCount();
+  virtual string16 GetItemAt(int index);
 
   // Returns the index of the language currently specified in the user's
   // preference file.  Note that it's possible for language A to be picked

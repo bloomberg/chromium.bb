@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/string16.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/pref_service.h"
@@ -27,7 +28,7 @@ class AddLanguageComboboxModel : public ::LanguageComboboxModel {
                            const std::vector<std::string>& locale_codes);
   // LanguageComboboxModel overrides.
   virtual int GetItemCount();
-  virtual std::wstring GetItemAt(int index);
+  virtual string16 GetItemAt(int index);
 
   // Converts the given index (index of the items in the combobox) to the
   // index of the internal language list. The returned index can be used

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,7 @@
 #define APP_COMBOBOX_MODEL_H_
 #pragma once
 
-#include <string>
+#include "base/string16.h"
 
 // The interface for models backing a combobox.
 class ComboboxModel {
@@ -17,7 +17,7 @@ class ComboboxModel {
   virtual int GetItemCount() = 0;
 
   // Return the string that should be used to represent a given item.
-  virtual std::wstring GetItemAt(int index) = 0;
+  virtual string16 GetItemAt(int index) = 0;
 };
 
 #endif  // APP_COMBOBOX_MODEL_H_

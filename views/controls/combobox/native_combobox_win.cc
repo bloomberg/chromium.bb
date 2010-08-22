@@ -7,6 +7,7 @@
 #include "app/combobox_model.h"
 #include "app/resource_bundle.h"
 #include "base/i18n/rtl.h"
+#include "base/utf_string_conversions.h"
 #include "gfx/font.h"
 #include "gfx/native_theme_win.h"
 #include "views/controls/combobox/combobox.h"
@@ -46,7 +47,7 @@ void NativeComboboxWin::UpdateFromModel() {
   int max_width = 0;
   int num_items = combobox_->model()->GetItemCount();
   for (int i = 0; i < num_items; ++i) {
-    const std::wstring& text = combobox_->model()->GetItemAt(i);
+    const std::wstring& text = UTF16ToWide(combobox_->model()->GetItemAt(i));
 
     // Inserting the Unicode formatting characters if necessary so that the
     // text is displayed correctly in right-to-left UIs.

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -142,9 +144,9 @@ int UninstallView::GetItemCount() {
   return browsers_->size();
 }
 
-std::wstring UninstallView::GetItemAt(int index) {
+string16 UninstallView::GetItemAt(int index) {
   DCHECK(index < (int) browsers_->size());
   BrowsersMap::const_iterator it = browsers_->begin();
   std::advance(it, index);
-  return (*it).first;
+  return WideToUTF16Hack((*it).first);
 }

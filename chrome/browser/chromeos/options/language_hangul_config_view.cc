@@ -6,6 +6,7 @@
 
 #include "app/combobox_model.h"
 #include "app/l10n_util.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -43,12 +44,12 @@ class HangulKeyboardComboboxModel : public ComboboxModel {
   }
 
   // Implements ComboboxModel interface.
-  virtual std::wstring GetItemAt(int index) {
+  virtual string16 GetItemAt(int index) {
     if (index < 0 || index > GetItemCount()) {
       LOG(ERROR) << "Index is out of bounds: " << index;
-      return L"";
+      return string16();
     }
-    return UTF8ToWide(layouts_.at(index).first);
+    return UTF8ToUTF16(layouts_.at(index).first);
   }
 
   // Gets a keyboard layout ID (e.g. "2", "3f", ..) for an item at zero-origin

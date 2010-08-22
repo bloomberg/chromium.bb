@@ -7,6 +7,7 @@
 #include "app/combobox_model.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "views/controls/combobox/native_combobox_wrapper.h"
 #include "views/controls/native/native_view_host.h"
 
@@ -96,7 +97,7 @@ bool Combobox::GetAccessibleRole(AccessibilityTypes::Role* role) {
 bool Combobox::GetAccessibleValue(std::wstring* value) {
   DCHECK(value);
 
-  *value = model_->GetItemAt(selected_item_);
+  *value = UTF16ToWideHack(model_->GetItemAt(selected_item_));
   return true;
 }
 

@@ -5,6 +5,8 @@
 #include "chrome/browser/views/importer_view.h"
 
 #include "app/l10n_util.h"
+#include "base/string16.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/importer/importer_data_types.h"
@@ -183,9 +185,9 @@ int ImporterView::GetItemCount() {
   return item_count;
 }
 
-std::wstring ImporterView::GetItemAt(int index) {
+string16 ImporterView::GetItemAt(int index) {
   DCHECK(importer_host_.get());
-  return importer_host_->GetSourceProfileNameAt(index);
+  return WideToUTF16Hack(importer_host_->GetSourceProfileNameAt(index));
 }
 
 void ImporterView::ItemChanged(views::Combobox* combobox,

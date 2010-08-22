@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/network_screen.h"
 
 #include "app/l10n_util.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -54,21 +55,21 @@ int NetworkScreen::GetItemCount() {
       (wifi_disabled_ ? 1 : 0);
 }
 
-std::wstring NetworkScreen::GetItemAt(int index) {
+string16 NetworkScreen::GetItemAt(int index) {
   if (index == 0) {
     return networks_.IsEmpty() ?
-        l10n_util::GetString(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
-        l10n_util::GetString(IDS_NETWORK_SELECTION_NONE);
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
+        l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_NONE);
   }
   if (wifi_disabled_ &&
       index == static_cast<int>(networks_.GetNetworkCount()) + 1) {
-    return l10n_util::GetStringF(
+    return l10n_util::GetStringFUTF16(
         IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
-        l10n_util::GetString(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
   }
   NetworkList::NetworkItem* network =
       networks_.GetNetworkAt(index - 1);
-  return network ? UTF16ToWide(network->label) : std::wstring();
+  return network ? network->label : string16();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

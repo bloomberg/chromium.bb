@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
@@ -64,7 +65,7 @@ class SearchEngineListModel : public ComboboxModel,
 
   // ComboboxModel overrides:
   virtual int GetItemCount();
-  virtual std::wstring GetItemAt(int index);
+  virtual string16 GetItemAt(int index);
 
   // Returns the TemplateURL at the specified index.
   const TemplateURL* GetTemplateURLAt(int index);
@@ -121,9 +122,9 @@ int SearchEngineListModel::GetItemCount() {
   return static_cast<int>(template_urls_.size());
 }
 
-std::wstring SearchEngineListModel::GetItemAt(int index) {
+string16 SearchEngineListModel::GetItemAt(int index) {
   DCHECK(index < GetItemCount());
-  return template_urls_[index]->short_name();
+  return WideToUTF16Hack(template_urls_[index]->short_name());
 }
 
 const TemplateURL* SearchEngineListModel::GetTemplateURLAt(int index) {

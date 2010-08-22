@@ -53,10 +53,10 @@ int RecentlyUsedFoldersComboModel::GetItemCount() {
   return static_cast<int>(nodes_.size() + 1);
 }
 
-std::wstring RecentlyUsedFoldersComboModel::GetItemAt(int index) {
+string16 RecentlyUsedFoldersComboModel::GetItemAt(int index) {
   if (index == static_cast<int>(nodes_.size()))
-    return l10n_util::GetString(IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
-  return nodes_[index]->GetTitle();
+    return l10n_util::GetStringUTF16(IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
+  return nodes_[index]->GetTitleAsString16();
 }
 
 const BookmarkNode* RecentlyUsedFoldersComboModel::GetNodeAt(int index) {

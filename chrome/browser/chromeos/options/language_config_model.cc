@@ -31,13 +31,13 @@ int AddLanguageComboboxModel::GetItemCount() {
   return get_languages_count() + 1 - ignore_set_.size();
 }
 
-std::wstring AddLanguageComboboxModel::GetItemAt(int index) {
+string16 AddLanguageComboboxModel::GetItemAt(int index) {
   // Show "Add language" as the first item.
   if (index == 0) {
-    return l10n_util::GetString(
+    return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_LANGUAGES_ADD_LANGUAGE_COMBOBOX);
   }
-  return GetLanguageNameAt(GetLanguageIndex(index));
+  return WideToUTF16Hack(GetLanguageNameAt(GetLanguageIndex(index)));
 }
 
 int AddLanguageComboboxModel::GetLanguageIndex(int index) const {

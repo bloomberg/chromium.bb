@@ -24,7 +24,7 @@ class DefaultEncodingComboboxModel : public ComboboxModel {
     return static_cast<int>(sorted_encoding_list_.size());
   }
 
-  virtual std::wstring GetItemAt(int index);
+  virtual string16 GetItemAt(int index);
 
   std::string GetEncodingCharsetByIndex(int index);
 

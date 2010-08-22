@@ -7,6 +7,7 @@
 #pragma once
 
 #include "app/combobox_model.h"
+#include "base/string16.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "views/controls/combobox/combobox.h"
 
@@ -38,13 +39,13 @@ class LanguageComboboxModel : public ComboboxModel {
   }
 
   // Implements ComboboxModel interface.
-  virtual std::wstring GetItemAt(int index) {
+  virtual string16 GetItemAt(int index) {
     if (index < 0 || index >= num_items_) {
       LOG(ERROR) << "Index is out of bounds: " << index;
-      return L"";
+      return string16();
     }
     const int message_id = (pref_data_->values_and_ids)[index].item_message_id;
-    return l10n_util::GetString(message_id);
+    return l10n_util::GetStringUTF16(message_id);
   }
 
   // Gets a label for the combobox like "Input mode". This function is NOT part

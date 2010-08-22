@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pref_member.h"
 #include "chrome/browser/profile.h"
@@ -23,9 +24,9 @@ DefaultEncodingComboboxModel::DefaultEncodingComboboxModel() {
   l10n_util::SortVectorWithStringKey(locale, &sorted_encoding_list_, true);
 }
 
-std::wstring DefaultEncodingComboboxModel::GetItemAt(int index) {
+string16 DefaultEncodingComboboxModel::GetItemAt(int index) {
   DCHECK(index >= 0 && index < GetItemCount());
-  return sorted_encoding_list_[index].encoding_display_name;
+  return WideToUTF16Hack(sorted_encoding_list_[index].encoding_display_name);
 }
 
 std::string DefaultEncodingComboboxModel::GetEncodingCharsetByIndex(int index) {
