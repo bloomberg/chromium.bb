@@ -123,3 +123,7 @@ TEST_F(PPAPITest, FLAKY_Scrollbar) {
 TEST_F(PPAPITest, UrlUtil) {
   RunTest("UrlUtil");
 }
+
+TEST_F(PPAPITest, CharSet) {
+  RunTest("CharSet");
+}

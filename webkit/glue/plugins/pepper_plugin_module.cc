@@ -13,6 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "third_party/ppapi/c/ppb_buffer.h"
+#include "third_party/ppapi/c/ppb_char_set.h"
 #include "third_party/ppapi/c/ppb_core.h"
 #include "third_party/ppapi/c/ppb_device_context_2d.h"
 #include "third_party/ppapi/c/ppb_file_io.h"
@@ -39,6 +40,7 @@
 #include "third_party/ppapi/c/pp_var.h"
 #include "webkit/glue/plugins/pepper_audio.h"
 #include "webkit/glue/plugins/pepper_buffer.h"
+#include "webkit/glue/plugins/pepper_char_set.h"
 #include "webkit/glue/plugins/pepper_device_context_2d.h"
 #include "webkit/glue/plugins/pepper_directory_reader.h"
 #include "webkit/glue/plugins/pepper_file_chooser.h"
@@ -215,6 +217,8 @@ const void* GetInterface(const char* name) {
     return FileChooser::GetInterface();
   if (strcmp(name, PPB_VIDEODECODER_INTERFACE) == 0)
     return VideoDecoder::GetInterface();
+  if (strcmp(name, PPB_CHAR_SET_DEV) == 0)
+    return CharSet::GetInterface();
 
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface

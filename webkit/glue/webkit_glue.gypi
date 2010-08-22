@@ -167,6 +167,8 @@
         'plugins/pepper_audio.h',
         'plugins/pepper_buffer.cc',
         'plugins/pepper_buffer.h',
+        'plugins/pepper_char_set.cc',
+        'plugins/pepper_char_set.h',
         'plugins/pepper_device_context_2d.cc',
         'plugins/pepper_device_context_2d.h',
         'plugins/pepper_directory_reader.cc',
