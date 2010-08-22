@@ -97,7 +97,8 @@ char* UTF16ToCharSet(const uint16_t* utf16, uint32_t utf16_len,
   // ucnv_fromUChars returns size not including terminating null.
   char* encoded = static_cast<char*>(malloc(encoded_max_length + 1));
   int actual_size = ucnv_fromUChars(converter, encoded,
-      encoded_max_length, utf16, utf16_len, &status);
+      encoded_max_length, reinterpret_cast<const UChar*>(utf16), utf16_len,
+      &status);
   ucnv_close(converter);
   if (!U_SUCCESS(status)) {
     free(encoded);
