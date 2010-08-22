@@ -474,8 +474,7 @@ void BookmarkModel::GetBookmarksWithTitlesMatching(
   if (!loaded_)
     return;
 
-  index_->GetBookmarksWithTitlesMatching(UTF16ToWideHack(text), max_count,
-                                         matches);
+  index_->GetBookmarksWithTitlesMatching(text, max_count, matches);
 }
 
 void BookmarkModel::ClearStore() {
