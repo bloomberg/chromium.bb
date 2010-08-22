@@ -317,6 +317,10 @@ def SubprocessCallAndFilter(command,
         last_flushed_at = time.time()
         sys.stdout.flush()
     in_byte = kid.stdout.read(1)
+  # Flush the rest of buffered output. This is only an issue with files not
+  # ending with a \n.
+  if len(in_line) and filter_fn:
+    filter_fn(in_line)
   rv = kid.wait()
 
   if rv:
