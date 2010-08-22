@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,7 +70,7 @@ void WebDataService::CancelRequest(Handle h) {
   AutoLock l(pending_lock_);
   RequestMap::iterator i = pending_requests_.find(h);
   if (i == pending_requests_.end()) {
-    NOTREACHED() << "Canceling a nonexistant web data service request";
+    NOTREACHED() << "Canceling a nonexistent web data service request";
     return;
   }
   i->second->Cancel();

@@ -297,7 +297,7 @@ class CancelableRequestConsumerTSimple : public CancelableRequestConsumerBase {
     typename PendingRequestList::iterator i =
         pending_requests_.find(PendingRequest(provider, handle));
     if (i == pending_requests_.end()) {
-      NOTREACHED() << "Got a complete notification for a nonexistant request";
+      NOTREACHED() << "Got a complete notification for a nonexistent request";
       return;
     }
 

@@ -406,7 +406,7 @@ void ExtensionsService::UninstallExtension(const std::string& extension_id,
                                            bool external_uninstall) {
   Extension* extension = GetExtensionByIdInternal(extension_id, true, true);
 
-  // Callers should not send us nonexistant extensions.
+  // Callers should not send us nonexistent extensions.
   DCHECK(extension);
 
   // Notify interested parties that we're uninstalling this extension.
@@ -901,7 +901,7 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
   scoped_ptr<Extension> extension(
       GetExtensionByIdInternal(extension_id, true, true));
 
-  // Callers should not send us nonexistant extensions.
+  // Callers should not send us nonexistent extensions.
   CHECK(extension.get());
 
   // Keep information about the extension so that we can reload it later

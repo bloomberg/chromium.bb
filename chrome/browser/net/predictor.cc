@@ -392,7 +392,7 @@ void Predictor::GetHtmlInfo(std::string* output) {
   // Partition the UrlInfo's into categories.
   for (SortedUrlInfo::iterator it(snapshot.begin());
        it != snapshot.end(); it++) {
-    if (it->second.was_nonexistant()) {
+    if (it->second.was_nonexistent()) {
       name_not_found.push_back(it->second);
       continue;
     }

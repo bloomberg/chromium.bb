@@ -130,12 +130,12 @@ class TokenServiceTest : public testing::Test {
 TEST_F(TokenServiceTest, SanityCheck) {
   EXPECT_TRUE(service_.HasLsid());
   EXPECT_EQ(service_.GetLsid(), "lsid");
-  EXPECT_FALSE(service_.HasTokenForService("nonexistant service"));
+  EXPECT_FALSE(service_.HasTokenForService("nonexistent service"));
 }
 
 TEST_F(TokenServiceTest, NoToken) {
-  EXPECT_FALSE(service_.HasTokenForService("nonexistant service"));
-  EXPECT_EQ(service_.GetTokenForService("nonexistant service"), std::string());
+  EXPECT_FALSE(service_.HasTokenForService("nonexistent service"));
+  EXPECT_EQ(service_.GetTokenForService("nonexistent service"), std::string());
 }
 
 TEST_F(TokenServiceTest, NotificationSuccess) {

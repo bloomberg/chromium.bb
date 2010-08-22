@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -106,7 +106,7 @@ TEST(DnsHostInfoTest, CongestionResetStateTest) {
   // Since this was a new info instance, and it never got resolved, we land back
   // in a PENDING state rather than FOUND or NO_SUCH_NAME.
   EXPECT_FALSE(info.was_found());
-  EXPECT_FALSE(info.was_nonexistant());
+  EXPECT_FALSE(info.was_nonexistent());
 
   // Make sure we're completely re-usable, by going throug a normal flow.
   info.SetQueuedState(UrlInfo::UNIT_TEST_MOTIVATED);

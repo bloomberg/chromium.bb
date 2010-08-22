@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -67,9 +67,9 @@ class URLDatabaseTest : public testing::Test,
   sql::Connection db_;
 };
 
-// Test add and query for the URL table in the HistoryDatabase
+// Test add and query for the URL table in the HistoryDatabase.
 TEST_F(URLDatabaseTest, AddURL) {
-  // first, add two URLs
+  // First, add two URLs.
   const GURL url1("http://www.google.com/");
   URLRow url_info1(url1);
   url_info1.set_title(UTF8ToUTF16("Google"));
@@ -88,7 +88,7 @@ TEST_F(URLDatabaseTest, AddURL) {
   url_info2.set_hidden(true);
   EXPECT_TRUE(AddURL(url_info2));
 
-  // query both of them
+  // Query both of them.
   URLRow info;
   EXPECT_TRUE(GetRowForURL(url1, &info));
   EXPECT_TRUE(IsURLRowEqual(url_info1, info));
@@ -96,7 +96,7 @@ TEST_F(URLDatabaseTest, AddURL) {
   EXPECT_TRUE(id2);
   EXPECT_TRUE(IsURLRowEqual(url_info2, info));
 
-  // update the second
+  // Update the second.
   url_info2.set_title(UTF8ToUTF16("Google Mail Too"));
   url_info2.set_visit_count(4);
   url_info2.set_typed_count(1);
@@ -104,19 +104,19 @@ TEST_F(URLDatabaseTest, AddURL) {
   url_info2.set_hidden(false);
   EXPECT_TRUE(UpdateURLRow(id2, url_info2));
 
-  // make sure it got updated
+  // Make sure it got updated.
   URLRow info2;
   EXPECT_TRUE(GetRowForURL(url2, &info2));
   EXPECT_TRUE(IsURLRowEqual(url_info2, info2));
 
-  // query a nonexistant URL
+  // Query a nonexistent URL.
   EXPECT_EQ(0, GetRowForURL(GURL("http://news.google.com/"), &info));
 
-  // Delete all urls in the domain
+  // Delete all urls in the domain.
   // TODO(acw): test the new url based delete domain
   // EXPECT_TRUE(db.DeleteDomain(kDomainID));
 
-  // Make sure the urls have been properly removed
+  // Make sure the urls have been properly removed.
   // TODO(acw): commented out because remove no longer works.
   // EXPECT_TRUE(db.GetURLInfo(url1, NULL) == NULL);
   // EXPECT_TRUE(db.GetURLInfo(url2, NULL) == NULL);

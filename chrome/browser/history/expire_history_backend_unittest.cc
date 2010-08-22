@@ -891,7 +891,7 @@ TEST_F(ExpireHistoryTest, ArchiveSomeOldHistoryWithSource) {
 }
 
 // TODO(brettw) add some visits with no URL to make sure everything is updated
-// properly. Have the visits also refer to nonexistant FTS rows.
+// properly. Have the visits also refer to nonexistent FTS rows.
 //
 // Maybe also refer to invalid favicons.
 

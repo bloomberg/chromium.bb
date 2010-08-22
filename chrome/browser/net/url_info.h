@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,7 +110,7 @@ class UrlInfo {
   }
 
   bool was_found() const { return FOUND == state_; }
-  bool was_nonexistant() const { return NO_SUCH_NAME == state_; }
+  bool was_nonexistent() const { return NO_SUCH_NAME == state_; }
   bool is_assigned() const {
     return ASSIGNED == state_ || ASSIGNED_BUT_MARKED == state_;
   }

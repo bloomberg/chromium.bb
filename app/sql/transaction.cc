@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ bool Transaction::Begin() {
 
 void Transaction::Rollback() {
   if (!is_open_) {
-    NOTREACHED() << "Attempting to roll back a nonexistant transaction. "
+    NOTREACHED() << "Attempting to roll back a nonexistent transaction. "
                  << "Did you remember to call Begin() and check its return?";
     return;
   }
@@ -40,7 +40,7 @@ void Transaction::Rollback() {
 
 bool Transaction::Commit() {
   if (!is_open_) {
-    NOTREACHED() << "Attempting to commit a nonexistant transaction. "
+    NOTREACHED() << "Attempting to commit a nonexistent transaction. "
                  << "Did you remember to call Begin() and check its return?";
     return false;
   }
