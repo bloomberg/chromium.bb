@@ -273,9 +273,9 @@ class TreeNodeModel : public TreeModel {
 
   // Sets the title of the specified node.
   virtual void SetTitle(TreeModelNode* node,
-                        const std::wstring& title) {
+                        const string16& title) {
     DCHECK(node);
-    AsNode(node)->SetTitle(WideToUTF16Hack(title));
+    AsNode(node)->SetTitle(title);
     NotifyObserverTreeNodeChanged(node);
   }
 

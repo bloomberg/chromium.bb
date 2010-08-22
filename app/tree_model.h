@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/string16.h"
 
 class SkBitmap;
 
@@ -21,7 +22,9 @@ class TreeModel;
 class TreeModelNode {
  public:
   // Returns the title for the node.
+  // TODO(viettrungluu): remove wstring version and rename string16 version.
   virtual std::wstring GetTitle() const = 0;
+  virtual const string16& GetTitleAsString16() const = 0;
 
  protected:
   virtual ~TreeModelNode() {}
@@ -79,7 +82,7 @@ class TreeModel {
   // Sets the title of the specified node.
   // This is only invoked if the node is editable and the user edits a node.
   virtual void SetTitle(TreeModelNode* node,
-                        const std::wstring& title) {
+                        const string16& title) {
     NOTREACHED();
   }
 
