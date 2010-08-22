@@ -63,10 +63,20 @@ class HttpAlternateProtocols {
   // attempts to set the alternate protocol for |http_host_port_pair| will fail.
   void MarkBrokenAlternateProtocolFor(const HostPortPair& http_host_port_pair);
 
+  // Debugging to simulate presence of an AlternateProtocol.
+  // If we don't have an alternate protocol in the map for any given host/port
+  // pair, force this ProtocolPortPair.
+  static void ForceAlternateProtocol(const PortProtocolPair& pair);
+  static void DisableForcedAlternateProtocol();
+
  private:
   typedef std::map<HostPortPair, PortProtocolPair> ProtocolMap;
 
   ProtocolMap protocol_map_;
+
+  // The forced alternate protocol.  If not-null, there is a protocol being
+  // forced.
+  static PortProtocolPair* forced_alternate_protocol_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpAlternateProtocols);
 };
