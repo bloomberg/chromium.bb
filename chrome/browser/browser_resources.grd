@@ -60,9 +60,11 @@ without changes to the corresponding grd file. eadee -->
       <include name="IDR_REMOTING_SETUP_FLOW_HTML" file="remoting\resources\remoting_setup_flow.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_REMOTING_SETUP_DONE_HTML" file="remoting\resources\remoting_setup_done.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
-
+      <include name="IDR_BUGREPORT_HTML" file="resources\bug_report.html" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_BUGREPORT_HTML_INVALID" file="resources\bug_report_invalid.html" flattenhtml="true" type="BINDATA" />
       <if expr="pp_ifdef('chromeos')">
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_BUGREPORT_HTML_CHROMEOS" file="resources\bug_report_cros.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILEBROWSE_HTML" file="resources\filebrowse.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HOST_REGISTRATION_PAGE_HTML" file="resources\host_registration_page.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MEDIAPLAYER_HTML" file="resources\mediaplayer.html" flattenhtml="true" type="BINDATA" />

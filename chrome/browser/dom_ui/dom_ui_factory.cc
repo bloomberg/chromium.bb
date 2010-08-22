@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/bookmarks_ui.h"
+#include "chrome/browser/dom_ui/bug_report_ui.h"
 #include "chrome/browser/dom_ui/downloads_ui.h"
 #include "chrome/browser/dom_ui/devtools_ui.h"
 #include "chrome/browser/dom_ui/history_ui.h"
@@ -102,6 +103,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
   // after the host name.
   if (url.host() == chrome::kChromeUIBookmarksHost)
     return &NewDOMUI<BookmarksUI>;
+  if (url.host() == chrome::kChromeUIBugReportHost)
+    return &NewDOMUI<BugReportUI>;
   if (url.host() == chrome::kChromeUIDevToolsHost)
     return &NewDOMUI<DevToolsUI>;
   if (url.host() == chrome::kChromeUIDownloadsHost)

@@ -65,6 +65,7 @@ const char kAboutBrowserCrash[] = "about:inducebrowsercrashforrealz";
 const char kChromeUIAboutURL[] = "chrome://options/about";
 const char kChromeUIAppLauncherURL[] = "chrome://newtab/#mode=app-launcher";
 const char kChromeUIBookmarksURL[] = "chrome://bookmarks/";
+const char kChromeUIBugReportURL[] = "chrome://bugreport/";
 const char kChromeUIDevToolsURL[] = "chrome://devtools/";
 const char kChromeUIDownloadsURL[] = "chrome://downloads/";
 const char kChromeUIExtensionsURL[] = "chrome://extensions/";
@@ -82,6 +83,7 @@ const char kChromeUIRegisterPageURL[] = "chrome://register/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
 
 const char kChromeUIBookmarksHost[] = "bookmarks";
+const char kChromeUIBugReportHost[] = "bugreport";
 const char kChromeUIDevToolsHost[] = "devtools";
 const char kChromeUIDialogHost[] = "dialog";
 const char kChromeUIDownloadsHost[] = "downloads";
@@ -104,6 +106,7 @@ const char kChromeUISlideshowHost[] = "slideshow";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUIRemotingResourcesHost[] = "remotingresources";
 const char kChromeUIThemePath[] = "theme";
+const char kChromeUIScreenshotPath[] = "screenshots";
 const char kChromeUIThumbnailPath[] = "thumb";
 
 const char kAppCacheViewInternalsURL[] = "chrome://appcache-internals/";

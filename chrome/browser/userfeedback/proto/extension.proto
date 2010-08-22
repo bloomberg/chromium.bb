@@ -8,6 +8,7 @@ syntax = "proto2";
 package userfeedback;
 
 import "common.proto";
+import "chrome.proto";
 import "dom.proto";
 import "math.proto";
 import "web.proto";
@@ -64,6 +65,8 @@ message ExternalExtensionSubmit {
   optional HtmlDocument html_document_structure = 5;
 
   optional ExtensionErrors extension_errors = 13;
+
+  optional ChromeData chrome_data = 14;
 };
 
 // Sent when user hits final submit button in internal extension.

@@ -20,10 +20,12 @@
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/dom_ui/bug_report_ui.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/page_info_window.h"
@@ -56,6 +58,7 @@
 #include "chrome/common/native_window_notification_source.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "gfx/canvas_skia.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
@@ -1151,11 +1154,7 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
 }
 
 void BrowserView::ShowReportBugDialog() {
-  // Retrieve the URL for the current tab (if any) and tell the BugReportView
-  TabContents* current_tab = browser_->GetSelectedTabContents();
-  if (!current_tab)
-    return;
-  browser::ShowBugReportView(GetWindow(), browser_->profile(), current_tab);
+  browser::ShowHtmlBugReportView(GetWindow(), browser_.get());
 }
 
 void BrowserView::ShowClearBrowsingDataDialog() {

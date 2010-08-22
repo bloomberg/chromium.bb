@@ -58,6 +58,7 @@ extern const char kAboutVersionURL[];
 extern const char kChromeUIAboutURL[];
 extern const char kChromeUIAppLauncherURL[];
 extern const char kChromeUIBookmarksURL[];
+extern const char kChromeUIBugReportURL[];
 extern const char kChromeUIDevToolsURL[];
 extern const char kChromeUIDownloadsURL[];
 extern const char kChromeUIExtensionsURL[];
@@ -77,6 +78,7 @@ extern const char kChromeUISlideshowURL[];
 // chrome components of URLs. Should be kept in sync with the full URLs
 // above.
 extern const char kChromeUIBookmarksHost[];
+extern const char kChromeUIBugReportHost[];
 extern const char kChromeUIDevToolsHost[];
 extern const char kChromeUIDialogHost[];
 extern const char kChromeUIDownloadsHost[];
@@ -95,6 +97,7 @@ extern const char kChromeUIPrintHost[];
 extern const char kChromeUIRegisterPageHost[];
 extern const char kChromeUIRemotingHost[];
 extern const char kChromeUIResourcesHost[];
+extern const char kChromeUIScreenshotPath[];
 extern const char kChromeUISlideshowHost[];
 extern const char kChromeUISyncResourcesHost[];
 extern const char kChromeUIRemotingResourcesHost[];
