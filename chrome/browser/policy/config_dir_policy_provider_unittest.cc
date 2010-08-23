@@ -9,9 +9,24 @@
 #include "chrome/browser/policy/mock_configuration_policy_store.h"
 #include "chrome/common/json_value_serializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
-class ConfigDirPolicyProviderTest : public testing::Test {
+using testing::Mock;
+
+namespace {
+
+// Shorter reload intervals for testing PolicyDirWatcher.
+const int kSettleIntervalSecondsForTesting = 0;
+const int kReloadIntervalMinutesForTesting = 1;
+
+}  // namespace
+
+class ConfigDirPolicyProviderTestBase : public testing::Test {
  protected:
+  ConfigDirPolicyProviderTestBase()
+      : ui_thread_(ChromeThread::UI, &loop_),
+        file_thread_(ChromeThread::FILE, &loop_) {}
+
   virtual void SetUp() {
     // Determine the directory to use for testing.
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
@@ -22,12 +37,10 @@ class ConfigDirPolicyProviderTest : public testing::Test {
     file_util::Delete(test_dir_, true);
     file_util::CreateDirectory(test_dir_);
     ASSERT_TRUE(file_util::DirectoryExists(test_dir_));
-
-    // Create a fresh policy store mock.
-    policy_store_.reset(new MockConfigurationPolicyStore());
   }
 
   virtual void TearDown() {
+    loop_.RunAllPending();
     // Clean up test directory.
     ASSERT_TRUE(file_util::Delete(test_dir_, true));
     ASSERT_FALSE(file_util::PathExists(test_dir_));
@@ -40,10 +53,101 @@ class ConfigDirPolicyProviderTest : public testing::Test {
     JSONStringValueSerializer serializer(&data);
     serializer.Serialize(dict);
     FilePath file_path(test_dir_.AppendASCII(file_name));
-    file_util::WriteFile(file_path, data.c_str(), data.size());
+    ASSERT_TRUE(file_util::WriteFile(file_path, data.c_str(), data.size()));
   }
 
   FilePath test_dir_;
+  MessageLoop loop_;
+  ChromeThread ui_thread_;
+  ChromeThread file_thread_;
+};
+
+// A mock provider that allows us to capture to reload notifications.
+class MockConfigDirPolicyProvider : public ConfigDirPolicyProvider {
+ public:
+  explicit MockConfigDirPolicyProvider(const FilePath& config_dir_)
+      : ConfigDirPolicyProvider(config_dir_) {}
+
+  MOCK_METHOD0(NotifyStoreOfPolicyChange, void());
+};
+
+class PolicyDirLoaderTest : public ConfigDirPolicyProviderTestBase {
+ protected:
+  PolicyDirLoaderTest() {}
+
+  virtual void SetUp() {
+    ConfigDirPolicyProviderTestBase::SetUp();
+    provider_.reset(new MockConfigDirPolicyProvider(test_dir_));
+  }
+
+  virtual void TearDown() {
+    provider_.reset(NULL);
+    ConfigDirPolicyProviderTestBase::TearDown();
+  }
+
+  scoped_ptr<MockConfigDirPolicyProvider> provider_;
+};
+
+TEST_F(PolicyDirLoaderTest, BasicLoad) {
+  DictionaryValue test_dict;
+  test_dict.SetString("HomepageLocation", "http://www.google.com");
+  WriteConfigFile(test_dict, "config_file");
+
+  scoped_refptr<PolicyDirLoader> loader_(
+      new PolicyDirLoader(provider_->AsWeakPtr(), test_dir_,
+                          kSettleIntervalSecondsForTesting,
+                          kReloadIntervalMinutesForTesting));
+  scoped_ptr<DictionaryValue> policy(loader_->GetPolicy());
+  EXPECT_TRUE(policy.get());
+  EXPECT_EQ(1U, policy->size());
+
+  std::string str_value;
+  EXPECT_TRUE(policy->GetString("HomepageLocation", &str_value));
+  EXPECT_EQ("http://www.google.com", str_value);
+
+  loader_->Stop();
+}
+
+TEST_F(PolicyDirLoaderTest, TestRefresh) {
+  scoped_refptr<PolicyDirLoader> loader_(
+      new PolicyDirLoader(provider_->AsWeakPtr(), test_dir_,
+                          kSettleIntervalSecondsForTesting,
+                          kReloadIntervalMinutesForTesting));
+  scoped_ptr<DictionaryValue> policy(loader_->GetPolicy());
+  EXPECT_TRUE(policy.get());
+  EXPECT_EQ(0U, policy->size());
+
+  DictionaryValue test_dict;
+  test_dict.SetString("HomepageLocation", "http://www.google.com");
+  WriteConfigFile(test_dict, "config_file");
+
+  EXPECT_CALL(*provider_, NotifyStoreOfPolicyChange()).Times(1);
+  loader_->OnFilePathChanged(test_dir_.AppendASCII("config_file"));
+
+  // Run the loop. The refresh should be handled immediately since the settle
+  // interval has been disabled.
+  loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(provider_.get());
+
+  policy.reset(loader_->GetPolicy());
+  EXPECT_TRUE(policy.get());
+  EXPECT_EQ(1U, policy->size());
+
+  std::string str_value;
+  EXPECT_TRUE(policy->GetString("HomepageLocation", &str_value));
+  EXPECT_EQ("http://www.google.com", str_value);
+
+  loader_->Stop();
+}
+
+class ConfigDirPolicyProviderTest : public ConfigDirPolicyProviderTestBase {
+ protected:
+  virtual void SetUp() {
+    ConfigDirPolicyProviderTestBase::SetUp();
+    // Create a fresh policy store mock.
+    policy_store_.reset(new MockConfigurationPolicyStore());
+  }
+
   scoped_ptr<MockConfigurationPolicyStore> policy_store_;
 };
 
