@@ -1,4 +1,4 @@
 #!/bin/bash
 
 dir=$(dirname $0)
-exec $dir/nacl64-gcc -m32 -specs=$dir/nacl-glibc-spec "$@"
+exec $dir/nacl-gcc -specs=$dir/nacl-glibc-spec "$@"

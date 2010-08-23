@@ -125,7 +125,9 @@ def GetTargets(src):
   # be pulled in whenever gcc is declared as a dependency.
   gcc_libs = ["gmp", "mpfr"]
 
-  arch = "nacl64"
+  # TODO(mseaborn): Using "--target=nacl" is a temporary measure in
+  # order to get full-gcc to build against nacl-glibc.
+  arch = "nacl"
   common_gcc_options = [
       "--disable-libmudflap",
       "--disable-decimal-float",
@@ -168,13 +170,17 @@ def GetTargets(src):
   AddAutoconfModule(
       "newlib", "newlib2", deps=["binutils", "pre-gcc"] + gcc_libs,
       configure_opts=[
+          # TODO(mseaborn): "--disable-multilib" is a temporary
+          # measure because using "--target=nacl" on pre-gcc omits
+          # the ability to compile for 64-bit.
+          "--disable-multilib",
           "--disable-libgloss",
           "--enable-newlib-io-long-long",
           "--enable-newlib-io-c99-formats",
           "--enable-newlib-mb",
           "--target=%s" % arch],
       configure_env=["CFLAGS=-O2"],
-      make_cmd=["make", "CFLAGS_FOR_TARGET=-m64 -O2"])
+      make_cmd=["make", "CFLAGS_FOR_TARGET=-O2"])
 
   AddSconsModule(
       "nc_threads",
@@ -197,6 +203,7 @@ def GetTargets(src):
       "full-gcc", "gcc",
       deps=["binutils", "newlib", "libnacl_headers", "nc_threads"] + gcc_libs,
       configure_opts=common_gcc_options + [
+          "--disable-multilib", # See note for newlib.
           "--with-newlib",
           "--enable-threads=nacl",
           "--enable-tls",
@@ -207,7 +214,8 @@ def GetTargets(src):
           "CFLAGS=-Dinhibit_libc -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
       make_cmd=["make", "all"])
 
-  for arch_bits in ("32", "64"):
+  # TODO(mseaborn): Add "64" back to the list.
+  for arch_bits in ["32"]:
     AddSconsModule(
         "libnacl_x86_%s" % arch_bits,
         deps=["binutils", "full-gcc", "newlib",
@@ -217,10 +225,11 @@ def GetTargets(src):
 
   # Note that ordering is significant in the dependencies: nc_threads
   # must come after newlib in order to override newlib's pthread.h.
+  # TODO(mseaborn): Add "libnacl_x86_64" back to the list.
   newlib_toolchain = MakeInstallPrefix(
       "newlib_toolchain",
       deps=["binutils", "full-gcc", "newlib", "nc_threads",
-            "libnacl_x86_32", "libnacl_x86_64"] + gcc_libs)
+            "libnacl_x86_32"] + gcc_libs)
 
   hello_c = """
 #include <stdio.h>

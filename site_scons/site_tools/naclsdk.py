@@ -136,34 +136,41 @@ def _SetEnvForX86Sdk(env, sdk_path):
   #       absolute path have been futile
   env.PrependENVPath('PATH', sdk_path + '/bin')
 
-  # /lib64 is symlinked to /lib, we are using the actual directory because Scons
-  # does not work correctly with Cygwin symlinks.
-  libsuffix = '/lib'
-  extraflag = '-m64'
-  if env['TARGET_SUBARCH'] == '32':
-    # /lib32 is symlinked to /lib/32.
-    libsuffix = '/lib/32'
-    extraflag = '-m32'
-  elif env['TARGET_SUBARCH'] != '64':
-    print "ERROR: unknown TARGET_SUBARCH: ", env['TARGET_SUBARCH']
-    assert 0
+  if os.path.exists(os.path.join(sdk_path, 'nacl64')):
+    arch = 'nacl64'
+    default_subarch = '64'
+  else:
+    # This fallback allows the Scons build to work if we have a
+    # 32-bit-by-default toolchain that lacks "nacl64" compatibility
+    # symlinks.
+    arch = 'nacl'
+    default_subarch = '32'
+
+  # Although "lib32" is symlinked to "lib/32" and "lib64" is symlinked
+  # to "lib", we use the actual directories because, on Windows, Scons
+  # does not run under Cygwin and does not follow Cygwin symlinks.
+  if env['TARGET_SUBARCH'] == default_subarch:
+    libsuffix = 'lib'
+  else:
+    libsuffix = 'lib/%s' % env['TARGET_SUBARCH']
+  extraflag = '-m%s' % env['TARGET_SUBARCH']
 
   env.Replace(# Replace header and lib paths.
               # where to put nacl extra sdk headers
               # TODO(robertm): switch to using the mechanism that
               #                passes arguments to scons
-              NACL_SDK_INCLUDE=sdk_path + '/nacl64/include',
+              NACL_SDK_INCLUDE='%s/%s/include' % (sdk_path, arch),
               # where to find/put nacl generic extra sdk libraries
-              NACL_SDK_LIB=sdk_path + '/nacl64' + libsuffix,
+              NACL_SDK_LIB='%s/%s/%s' % (sdk_path, arch, libsuffix),
               # Replace the normal unix tools with the NaCl ones.
-              CC='nacl64-gcc',
-              CXX='nacl64-g++',
-              AR='nacl64-ar',
-              AS='nacl64-as',
+              CC='%s-gcc' % arch,
+              CXX='%s-g++' % arch,
+              AR='%s-ar' % arch,
+              AS='%s-as' % arch,
               GDB='nacl-gdb',
               # NOTE: use g++ for linking so we can handle C AND C++.
-              LINK='nacl64-g++',
-              RANLIB='nacl64-ranlib',
+              LINK='%s-g++' % arch,
+              RANLIB='%s-ranlib' % arch,
               CFLAGS = ['-std=gnu99'],
               CCFLAGS=['-O3',
                        '-Werror',
@@ -182,7 +189,7 @@ def _SetEnvForX86Sdk(env, sdk_path):
   if env.Bit('nacl_glibc'):
     env.Replace(CC="nacl-glibc-gcc")
     env.Replace(LINK="nacl-glibc-gcc")
-    env.Replace(NACL_SDK_LIB=sdk_path + '/nacl64/lib')
+    env.Replace(NACL_SDK_LIB='%s/%s/lib' % (sdk_path, arch))
 
 def _SetEnvForPnacl(env, arch):
   assert arch in ['arm', 'x86-32', 'x86-64']
