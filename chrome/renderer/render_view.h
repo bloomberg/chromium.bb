@@ -1096,9 +1096,6 @@ class RenderView : public RenderWidget,
   // same page twice in a row.
   int32 last_indexed_page_id_;
 
-  // page id for the last navigation sent to the browser.
-  int32 last_top_level_navigation_page_id_;
-
   // The next available page ID to use. This ensures that the page IDs are
   // globally unique in the renderer.
   static int32 next_page_id_;

@@ -771,8 +771,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_PersistentCookieTest) {
   SimpleBrowserTest(IE, kPersistentCookieTest, L"PersistentCookieTest");
 }
 
+// This test has been disabled because we need a better way to navigate out
+// of chrome frame and detect it.
 const wchar_t kNavigateOutPage[] = L"files/navigate_out.html";
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_NavigateOut) {
   SimpleBrowserTest(IE, kNavigateOutPage, L"navigate_out");
 }
 

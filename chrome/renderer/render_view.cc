@@ -451,7 +451,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       page_id_(-1),
       last_page_id_sent_to_browser_(-1),
       last_indexed_page_id_(-1),
-      last_top_level_navigation_page_id_(-1),
       history_list_offset_(-1),
       history_list_length_(0),
       has_unload_listener_(false),
@@ -2527,7 +2526,6 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
   // navigations.
   if (renderer_preferences_.browser_handles_top_level_requests &&
       IsNonLocalTopLevelNavigation(url, frame, type)) {
-    last_top_level_navigation_page_id_ = page_id_;
     GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
     OpenURL(url, referrer, default_policy);
     return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
@@ -5501,34 +5499,15 @@ bool RenderView::IsNonLocalTopLevelNavigation(
 
   // Navigations initiated within Webkit are not sent out to the external host
   // in the following cases.
-  // 1. The url scheme or the frame url scheme is not http/https
-  // 2. The origin of the url and the frame is the same in which case the
+  // 1. The url scheme is not http/https
+  // 2. There is no opener and this is not the first url being opened by this
+  //    RenderView.
+  // 3. The origin of the url and the opener is the same in which case the
   //    opener relationship is maintained.
-  // 3. Anchor navigation within the same page.
   // 4. Reloads/form submits/back forward navigations
   if (!url.SchemeIs("http") && !url.SchemeIs("https"))
     return false;
 
-  GURL frame_url(frame->url());
-  if (!frame_url.SchemeIs("http") && !frame_url.SchemeIs("https"))
-    return false;
-
-  // Skip if navigation is on the same page (using '#').
-  GURL frame_origin = frame_url.GetOrigin();
-  if (url.GetOrigin() != frame_origin || url.ref().empty()) {
-    // The link click could stay on the same page, in cases where it sends some
-    // parameters to the same URL.
-    if (type == WebKit::WebNavigationTypeLinkClicked)
-      return true;
-
-    if (last_top_level_navigation_page_id_ != page_id_ &&
-        // Not interested in reloads.
-        type != WebKit::WebNavigationTypeReload &&
-        type != WebKit::WebNavigationTypeFormSubmitted &&
-        type != WebKit::WebNavigationTypeBackForward) {
-      return true;
-    }
-  }
   // Not interested in reloads.
   if (type != WebKit::WebNavigationTypeReload &&
       type != WebKit::WebNavigationTypeFormSubmitted &&
@@ -5538,10 +5517,18 @@ bool RenderView::IsNonLocalTopLevelNavigation(
     // the origins of the two domains are different. This can be treated as a
     // top level navigation and routed back to the host.
     WebKit::WebFrame* opener = frame->opener();
-    if (opener) {
-      if (url.GetOrigin() != GURL(opener->url()).GetOrigin())
+    if (!opener) {
+      // If this is the first page being loaded by this RenderView instance then
+      // it should stay here.
+      if (page_id_ == -1) {
+        return false;
+      } else {
         return true;
+      }
     }
+
+    if (url.GetOrigin() != GURL(opener->url()).GetOrigin())
+      return true;
   }
   return false;
 }
