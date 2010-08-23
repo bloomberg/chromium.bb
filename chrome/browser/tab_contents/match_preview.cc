@@ -37,7 +37,6 @@ class MatchPreview::TabContentsDelegateImpl : public TabContentsDelegate {
   virtual void ActivateContents(TabContents* contents) {
     match_preview_->CommitCurrentPreview();
   }
-  virtual void DeactivateContents(TabContents* contents) {}
   virtual void LoadingStateChanged(TabContents* source) {}
   virtual void CloseContents(TabContents* source) {}
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}

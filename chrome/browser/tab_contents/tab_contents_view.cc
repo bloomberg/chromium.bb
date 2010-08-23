@@ -72,11 +72,11 @@ void TabContentsView::ShowCreatedWidget(int route_id,
 }
 
 void TabContentsView::Activate() {
-  tab_contents_->Activate();
+  tab_contents_->delegate()->Activate();
 }
 
 void TabContentsView::Deactivate() {
-  tab_contents_->Deactivate();
+  tab_contents_->delegate()->Deactivate();
 }
 
 void TabContentsView::ShowCreatedFullscreenWidget(int route_id) {

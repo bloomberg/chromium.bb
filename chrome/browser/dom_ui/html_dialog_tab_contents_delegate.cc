@@ -76,11 +76,6 @@ void HtmlDialogTabContentsDelegate::ActivateContents(TabContents* contents) {
   // this frame and we don't have a TabStripModel.
 }
 
-void HtmlDialogTabContentsDelegate::DeactivateContents(TabContents* contents) {
-  // We don't care about this notification (called when a user gesture triggers
-  // a call to window.blur()).
-}
-
 void HtmlDialogTabContentsDelegate::LoadingStateChanged(TabContents* source) {
   // We don't care about this notification.
 }

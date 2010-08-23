@@ -2222,24 +2222,6 @@ void RenderView::didAcceptAutocompleteSuggestion(
 
 // WebKit::WebWidgetClient ----------------------------------------------------
 
-void RenderView::didFocus() {
-  // TODO(jcivelli): when https://bugs.webkit.org/show_bug.cgi?id=33389 is fixed
-  //                 we won't have to test for user gesture anymore and we can
-  //                 move that code back to render_widget.cc
-  if (webview() && webview()->mainFrame() &&
-      webview()->mainFrame()->isProcessingUserGesture()) {
-    Send(new ViewHostMsg_Focus(routing_id_));
-  }
-}
-
-void RenderView::didBlur() {
-  // TODO(jcivelli): see TODO above in didFocus().
-  if (webview() && webview()->mainFrame() &&
-      webview()->mainFrame()->isProcessingUserGesture()) {
-    Send(new ViewHostMsg_Blur(routing_id_));
-  }
-}
-
 // We are supposed to get a single call to Show for a newly created RenderView
 // that was created via RenderView::CreateWebView.  So, we wait until this
 // point to dispatch the ShowView message.

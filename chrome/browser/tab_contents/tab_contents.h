@@ -325,9 +325,6 @@ class TabContents : public PageNavigator,
   // to the foreground if necessary.
   void Activate();
 
-  // Deactivates this contents by deactivating its containing window.
-  void Deactivate();
-
   // TODO(brettw) document these.
   virtual void ShowContents();
   virtual void HideContents();

@@ -403,9 +403,6 @@ bool ExternalTabContainer::infobars_enabled() {
 void ExternalTabContainer::ActivateContents(TabContents* contents) {
 }
 
-void ExternalTabContainer::DeactivateContents(TabContents* contents) {
-}
-
 void ExternalTabContainer::LoadingStateChanged(TabContents* source) {
 }
 
