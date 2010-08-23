@@ -146,6 +146,10 @@ void DraggedTabControllerGtk::ActivateContents(TabContents* contents) {
   // Ignored.
 }
 
+void DraggedTabControllerGtk::DeactivateContents(TabContents* contents) {
+  // Ignored.
+}
+
 void DraggedTabControllerGtk::LoadingStateChanged(TabContents* source) {
   // TODO(jhawkins): It would be nice to respond to this message by changing the
   // screen shot in the dragged tab.

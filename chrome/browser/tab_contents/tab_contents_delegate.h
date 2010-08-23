@@ -68,6 +68,10 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // Selects the specified contents, bringing its container to the front.
   virtual void ActivateContents(TabContents* contents) = 0;
 
+  // Deactivates the specified contents by deactivating its container and
+  // potentialy moving it to the back of the Z order.
+  virtual void DeactivateContents(TabContents* contents) = 0;
+
   // Notifies the delegate that this contents is starting or is done loading
   // some resource. The delegate should use this notification to represent
   // loading feedback. See TabContents::is_loading()
@@ -178,11 +182,6 @@ class TabContentsDelegate : public AutomationResourceRoutingDelegate {
   // controls on the page. Provides a way for TabContentsDelegates to handle
   // this. Returns true if the delegate successfully handled it.
   virtual bool TakeFocus(bool reverse);
-
-  // Called by WebKit to notify that the page requested the tab hosting window
-  // to be activated/deactivated (by calling window.focus()/blur()).
-  virtual void Activate();
-  virtual void Deactivate();
 
   // Changes the blocked state of the tab at |index|. TabContents are
   // considered blocked while displaying a tab modal dialog. During that time

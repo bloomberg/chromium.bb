@@ -70,12 +70,6 @@ bool TabContentsDelegate::TakeFocus(bool reverse) {
   return false;
 }
 
-void TabContentsDelegate::Activate() {
-}
-
-void TabContentsDelegate::Deactivate(){
-}
-
 void TabContentsDelegate::SetTabContentBlocked(
     TabContents* contents, bool blocked) {
 }

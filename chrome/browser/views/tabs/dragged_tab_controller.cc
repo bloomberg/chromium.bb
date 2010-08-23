@@ -429,6 +429,10 @@ void DraggedTabController::ActivateContents(TabContents* contents) {
   // Ignored.
 }
 
+void DraggedTabController::DeactivateContents(TabContents* contents) {
+  // Ignored.
+}
+
 void DraggedTabController::LoadingStateChanged(TabContents* source) {
   // It would be nice to respond to this message by changing the
   // screen shot in the dragged tab.

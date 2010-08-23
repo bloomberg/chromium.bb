@@ -815,6 +815,11 @@ void TabContents::Activate() {
     delegate_->ActivateContents(this);
 }
 
+void TabContents::Deactivate() {
+  if (delegate_)
+    delegate_->DeactivateContents(this);
+}
+
 void TabContents::ShowContents() {
   RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
   if (rwhv)

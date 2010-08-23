@@ -60,8 +60,10 @@ class BlockedPopupContainer : public TabContentsDelegate {
                               const gfx::Rect& initial_position,
                               bool user_gesture);
 
-  // Ignore activation requests from the TabContents we're blocking.
+  // Ignore activation/deactivation requests from the TabContents we're
+  // blocking.
   virtual void ActivateContents(TabContents* contents) {}
+  virtual void DeactivateContents(TabContents* contents) {}
 
   // Ignored; BlockedPopupContainer doesn't display a throbber.
   virtual void LoadingStateChanged(TabContents* source) {}
