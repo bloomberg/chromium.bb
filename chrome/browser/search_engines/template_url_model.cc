@@ -565,13 +565,6 @@ void TemplateURLModel::OnWebDataServiceRequestDone(
   if (default_search_provider_)
     SaveDefaultSearchProviderToPrefs(default_search_provider_);
 
-  // Delete any hosts that were deleted before we finished loading.
-  for (std::vector<std::wstring>::iterator i = hosts_to_delete_.begin();
-       i != hosts_to_delete_.end(); ++i) {
-    DeleteGeneratedKeywordsMatchingHost(*i);
-  }
-  hosts_to_delete_.clear();
-
   // Index any visits that occurred before we finished loading.
   for (size_t i = 0; i < visits_to_add_.size(); ++i)
     UpdateKeywordSearchTermsForURL(visits_to_add_[i]);
@@ -758,20 +751,6 @@ void TemplateURLModel::SetTemplateURLs(
     next_id_ = std::max(next_id_, (*i)->id());
     AddToMaps(*i);
     template_urls_.push_back(*i);
-  }
-}
-
-void TemplateURLModel::DeleteGeneratedKeywordsMatchingHost(
-    const std::wstring& host) {
-  const std::wstring host_slash = host + L"/";
-  // Iterate backwards as we may end up removing multiple entries.
-  for (int i = static_cast<int>(template_urls_.size()) - 1; i >= 0; --i) {
-    if (CanReplace(template_urls_[i]) &&
-        (template_urls_[i]->keyword() == host ||
-         template_urls_[i]->keyword().compare(0, host_slash.length(),
-                                              host_slash) == 0)) {
-      Remove(template_urls_[i]);
-    }
   }
 }
 

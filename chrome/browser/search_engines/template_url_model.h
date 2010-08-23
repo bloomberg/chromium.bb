@@ -365,13 +365,6 @@ class TemplateURLModel : public WebDataServiceConsumer,
   // Service used to store entries.
   scoped_refptr<WebDataService> service_;
 
-  // List of hosts to feed to DeleteGeneratedKeywordsMatchingHost. When
-  // we receive NOTIFY_HOST_DELETED_FROM_HISTORY if we haven't loaded yet,
-  // we force a load and add the host to hosts_to_delete_. When done loading
-  // we invoke DeleteGeneratedKeywordsMatchingHost with all the elements of
-  // the vector.
-  std::vector<std::wstring> hosts_to_delete_;
-
   // All visits that occurred before we finished loading. Once loaded
   // UpdateKeywordSearchTermsForURL is invoked for each element of the vector.
   std::vector<history::URLVisitedDetails> visits_to_add_;
