@@ -49,7 +49,6 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
                                           bool enabled);
   virtual void runtimePropertyChanged(const WebKit::WebString& name,
                                       const WebKit::WebString& value);
-  virtual WebKit::WebCString injectedScriptSource();
   virtual WebKit::WebCString debuggerScriptSource();
   virtual WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop();

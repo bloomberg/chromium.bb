@@ -471,16 +471,6 @@ WebKit::WebThemeEngine* GetThemeEngine() {
 #endif
 
 // DevTools
-WebCString GetDevToolsInjectedScriptSource() {
-  base::StringPiece injectJSWebkit = webkit_glue::GetDataResource(
-      IDR_DEVTOOLS_INJECT_WEBKIT_JS);
-  return WebCString(injectJSWebkit.as_string().c_str());
-}
-
-WebCString GetDevToolsInjectedScriptDispatcherSource() {
-  return WebCString();
-}
-
 WebCString GetDevToolsDebuggerScriptSource() {
   base::StringPiece debuggerScriptJS = webkit_glue::GetDataResource(
       IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);

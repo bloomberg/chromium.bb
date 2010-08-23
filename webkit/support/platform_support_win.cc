@@ -112,7 +112,6 @@ base::StringPiece GetDataResource(int resource_id) {
   case IDR_MEDIA_SOUND_DISABLED:
   case IDR_MEDIA_SLIDER_THUMB:
   case IDR_MEDIA_VOLUME_SLIDER_THUMB:
-  case IDR_DEVTOOLS_INJECT_WEBKIT_JS:
   case IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS:
     return NetResourceProvider(resource_id);
 

@@ -138,12 +138,6 @@ void DevToolsAgent::runtimePropertyChanged(
       value.utf8()));
 }
 
-WebCString DevToolsAgent::injectedScriptSource() {
-  base::StringPiece injectjsWebkit =
-      webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_WEBKIT_JS);
-  return WebCString(injectjsWebkit.data(), injectjsWebkit.length());
-}
-
 WebCString DevToolsAgent::debuggerScriptSource() {
   base::StringPiece debuggerScriptjs =
       webkit_glue::GetDataResource(IDR_DEVTOOLS_DEBUGGER_SCRIPT_JS);

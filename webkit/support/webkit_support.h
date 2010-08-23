@@ -145,8 +145,6 @@ WebKit::WebThemeEngine* GetThemeEngine();
 #endif
 
 // - DevTools
-WebKit::WebCString GetDevToolsInjectedScriptSource();
-WebKit::WebCString GetDevToolsInjectedScriptDispatcherSource();
 WebKit::WebCString GetDevToolsDebuggerScriptSource();
 WebKit::WebURL GetDevToolsPathAsURL();
 
