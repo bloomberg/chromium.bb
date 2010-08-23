@@ -2660,6 +2660,10 @@ void Browser::ActivateContents(TabContents* contents) {
   window_->Activate();
 }
 
+void Browser::DeactivateContents(TabContents* contents) {
+  window_->Deactivate();
+}
+
 void Browser::LoadingStateChanged(TabContents* source) {
   window_->UpdateLoadingAnimations(tabstrip_model_.TabsAreLoading());
   window_->UpdateTitleBar();
@@ -2801,14 +2805,6 @@ bool Browser::TakeFocus(bool reverse) {
       Source<Browser>(this),
       NotificationService::NoDetails());
   return false;
-}
-
-void Browser::Activate() {
-  window_->Activate();
-}
-
-void Browser::Deactivate() {
-  window_->Deactivate();
 }
 
 bool Browser::IsApplication() const {

@@ -312,6 +312,8 @@ class RenderView : public RenderWidget,
   // WebKit::WebWidgetClient implementation ------------------------------------
 
   // Most methods are handled by RenderWidget.
+  virtual void didFocus();
+  virtual void didBlur();
   virtual void show(WebKit::WebNavigationPolicy policy);
   virtual void closeWidgetSoon();
   virtual void runModal();

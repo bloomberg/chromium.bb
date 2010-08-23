@@ -655,11 +655,9 @@ void RenderWidget::show(WebNavigationPolicy) {
 }
 
 void RenderWidget::didFocus() {
-  Send(new ViewHostMsg_Focus(routing_id_));
 }
 
 void RenderWidget::didBlur() {
-  Send(new ViewHostMsg_Blur(routing_id_));
 }
 
 void RenderWidget::DoDeferredClose() {
