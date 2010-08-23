@@ -192,7 +192,7 @@ static void gtk_floating_container_forall(GtkContainer* container,
 
 static void gtk_floating_container_size_request(GtkWidget* widget,
                                                 GtkRequisition* requisition) {
-  GtkBin *bin = GTK_BIN(widget);
+  GtkBin* bin = GTK_BIN(widget);
   if (bin && bin->child) {
     gtk_widget_size_request(bin->child, requisition);
   } else {

@@ -27,7 +27,8 @@
 // signature:
 //
 //   void (*set_floating_position)(GtkFloatingContainer* container,
-//                                 GtkAllocation* allocation);
+//                                 GtkAllocation* allocation,
+//                                 gpointer userdata);
 //
 // Your handler should, for each floating widget, set the "x" and "y" child
 // properties.
