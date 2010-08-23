@@ -15,6 +15,7 @@
 #include "chrome/common/serialized_script_value.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCursor.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBDatabaseError.h"
 
 // Template magic to figure out what message to send to the renderer based on
@@ -156,6 +157,28 @@ class IndexedDBCallbacks<void> : public IndexedDBCallbacksBase {
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
+};
+
+class IndexedDBTransactionCallbacks
+    : public WebKit::WebIDBTransactionCallbacks {
+public:
+  IndexedDBTransactionCallbacks(
+      IndexedDBDispatcherHost* dispatcher_host, int transaction_id)
+      : dispatcher_host_(dispatcher_host), transaction_id_(transaction_id) {
+  }
+
+  virtual void onAbort() {
+    dispatcher_host_->Send(new ViewMsg_IDBTransactionCallbacksAbort(
+        transaction_id_));
+  }
+
+  virtual int id() const {
+    return transaction_id_;
+  }
+
+private:
+  scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
+  int transaction_id_;
 };
 
 #endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_INDEXED_DB_CALLBACKS_H_

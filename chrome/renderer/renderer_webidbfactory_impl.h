@@ -8,6 +8,7 @@
 
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 
 namespace WebKit {
 class WebDOMStringList;
@@ -27,6 +28,8 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       const WebKit::WebString& name, const WebKit::WebString& description,
       WebKit::WebIDBCallbacks* callbacks,
       const WebKit::WebSecurityOrigin& origin, WebKit::WebFrame* web_frame);
+  virtual void abortPendingTransactions(
+      const WebKit::WebVector<int>& pendingIDs);
 };
 
 #endif  // CHROME_RENDERER_RENDERER_WEBIDBFACTORY_IMPL_H_

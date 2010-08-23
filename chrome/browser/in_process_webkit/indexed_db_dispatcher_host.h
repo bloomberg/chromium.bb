@@ -25,6 +25,7 @@ class WebIDBCursor;
 class WebIDBDatabase;
 class WebIDBIndex;
 class WebIDBObjectStore;
+class WebIDBTransaction;
 }
 
 // Handles all IndexedDB related messages from a particular renderer process.
@@ -60,6 +61,7 @@ class IndexedDBDispatcherHost
   int32 Add(WebKit::WebIDBDatabase* idb_database);
   int32 Add(WebKit::WebIDBIndex* idb_index);
   int32 Add(WebKit::WebIDBObjectStore* idb_object_store);
+  void Add(WebKit::WebIDBTransaction* idb_transaction);
 
  private:
   friend class base::RefCountedThreadSafe<IndexedDBDispatcherHost>;
@@ -69,6 +71,7 @@ class IndexedDBDispatcherHost
   // below.
   void OnMessageReceivedWebKit(const IPC::Message& message);
   void OnIDBFactoryOpen(const ViewHostMsg_IDBFactoryOpen_Params& p);
+  void OnIDBFactoryAbortPendingTransactions(const std::vector<int32>& ids);
 
   // Helper templates.
   template <class ReturnType>
@@ -103,6 +106,9 @@ class IndexedDBDispatcherHost
                        IPC::Message* reply_msg);
     void OnRemoveObjectStore(int32 idb_database_id, int32 response_id,
                              const string16& name);
+    void OnTransaction(int32 idb_database_id,
+                       const std::vector<string16>& names,
+                       int32 mode, int32 timeout, IPC::Message* reply_msg);
     void OnDestroyed(int32 idb_database_id);
 
     IndexedDBDispatcherHost* parent_;
@@ -174,6 +180,22 @@ class IndexedDBDispatcherHost
     IndexedDBDispatcherHost* parent_;
     IDMap<WebKit::WebIDBCursor, IDMapOwnPointer> map_;
   };
+
+  class TransactionDispatcherHost {
+   public:
+    explicit TransactionDispatcherHost(IndexedDBDispatcherHost* parent);
+    ~TransactionDispatcherHost();
+
+    bool OnMessageReceived(const IPC::Message& message, bool *msg_is_ok);
+    void Send(IPC::Message* message);
+
+    // TODO: add the rest of the transaction methods.
+    void OnDestroyed(int32 idb_transaction_id);
+
+    IndexedDBDispatcherHost* parent_;
+    IDMap<WebKit::WebIDBTransaction, IDMapOwnPointer> map_;
+  };
+
   // Only use on the IO thread.
   IPC::Message::Sender* sender_;
 
@@ -185,6 +207,8 @@ class IndexedDBDispatcherHost
   scoped_ptr<IndexDispatcherHost> index_dispatcher_host_;
   scoped_ptr<ObjectStoreDispatcherHost> object_store_dispatcher_host_;
   scoped_ptr<CursorDispatcherHost> cursor_dispatcher_host_;
+  scoped_ptr<TransactionDispatcherHost> transaction_dispatcher_host_;
+
 
   // If we get a corrupt message from a renderer, we need to kill it using this
   // handle.

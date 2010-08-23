@@ -51,6 +51,8 @@ bool IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnSuccessSerializedScriptValue)
     IPC_MESSAGE_HANDLER(ViewMsg_IDBCallbacksError,
                         OnError)
+    IPC_MESSAGE_HANDLER(ViewMsg_IDBTransactionCallbacksAbort,
+                        OnAbort)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -177,6 +179,11 @@ void IndexedDBDispatcher::RequestIDBObjectStoreOpenCursor(
       new ViewHostMsg_IDBObjectStoreOpenCursor(params));
 }
 
+void IndexedDBDispatcher::RequestIDBTransactionSetCallbacks(
+    WebKit::WebIDBTransactionCallbacks* callbacks) {
+    pending_transaction_callbacks_.AddWithID(callbacks, callbacks->id());
+}
+
 void IndexedDBDispatcher::OnSuccessNull(int32 response_id) {
   WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onSuccess();
@@ -231,4 +238,12 @@ void IndexedDBDispatcher::OnError(int32 response_id, int code,
   WebKit::WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
   callbacks->onError(WebIDBDatabaseError(code, message));
   pending_callbacks_.Remove(response_id);
+}
+
+void IndexedDBDispatcher::OnAbort(int transaction_id) {
+  WebKit::WebIDBTransactionCallbacks* callbacks =
+      pending_transaction_callbacks_.Lookup(transaction_id);
+  DCHECK(callbacks);
+  callbacks->onAbort();
+  pending_transaction_callbacks_.Remove(transaction_id);
 }

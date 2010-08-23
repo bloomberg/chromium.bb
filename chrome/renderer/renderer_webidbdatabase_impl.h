@@ -14,6 +14,7 @@ namespace WebKit {
 class WebFrame;
 class WebIDBCallbacks;
 class WebString;
+class WebIDBTransaction;
 }
 
 class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
@@ -29,7 +30,9 @@ class RendererWebIDBDatabaseImpl : public WebKit::WebIDBDatabase {
   virtual void createObjectStore(
       const WebKit::WebString& name, const WebKit::WebString& key_path,
       bool auto_increment, WebKit::WebIDBCallbacks* callbacks);
-
+  virtual WebKit::WebIDBTransaction* transaction(
+      const WebKit::WebDOMStringList& names,
+      unsigned short mode, unsigned long timeout);
  private:
   int32 idb_database_id_;
 };
