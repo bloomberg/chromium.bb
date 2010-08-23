@@ -75,6 +75,11 @@ class AcceleratedSurfaceContainerMac {
   // time the drawing context has changed.
   void ForceTextureReload() { texture_needs_upload_ = true; }
 
+  // Notifies the surface that it was painted to.
+  void set_was_painted_to() { was_painted_to_ = true; }
+
+  // Returns if the surface should be shown.
+  bool should_be_visible() const { return visible_ && was_painted_to_; }
  private:
   // The manager of this accelerated surface container.
   AcceleratedSurfaceContainerManagerMac* manager_;
@@ -113,6 +118,13 @@ class AcceleratedSurfaceContainerMac {
   // This may refer to an old version of the texture if the container is
   // resized, for example.
   GLuint texture_pending_deletion_;
+
+  // Stores if the plugin has a visible state.
+  bool visible_;
+
+  // Stores if the plugin's IOSurface has been swapped before. Used to not show
+  // it before it hasn't been painted to at least once.
+  bool was_painted_to_;
 
   // Releases the IOSurface reference, if any, retained by this object.
   void ReleaseIOSurface();

@@ -65,11 +65,17 @@ class AcceleratedSurfaceContainerManagerMac {
   // Should be called any time the drawing context has changed.
   void ForceTextureReload();
 
+  // Notifies a surface that it has been painted to.
+  void SetSurfaceWasPaintedTo(gfx::PluginWindowHandle id);
+
+  // Returns if a given surface should be shown.
+  bool SurfaceShouldBeVisible(gfx::PluginWindowHandle id) const;
  private:
   uint32 current_id_;
 
   // Maps a "fake" plugin window handle to the corresponding container.
-  AcceleratedSurfaceContainerMac* MapIDToContainer(gfx::PluginWindowHandle id);
+  AcceleratedSurfaceContainerMac*
+      MapIDToContainer(gfx::PluginWindowHandle id) const;
 
   // A map that associates plugin window handles with their containers.
   typedef std::map<gfx::PluginWindowHandle, AcceleratedSurfaceContainerMac*>

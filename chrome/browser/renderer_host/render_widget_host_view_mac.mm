@@ -427,39 +427,41 @@ void RenderWidgetHostViewMac::MovePluginWindows(
     const std::vector<webkit_glue::WebPluginGeometry>& moves) {
   // Handle movement of accelerated plugins, which are the only "windowed"
   // plugins that exist on the Mac.
-  if (moves.size() > 0) {
-    for (std::vector<webkit_glue::WebPluginGeometry>::const_iterator iter =
-             moves.begin();
-         iter != moves.end();
-         ++iter) {
-      webkit_glue::WebPluginGeometry geom = *iter;
-      // Ignore bogus moves which claim to move the plugin to (0, 0)
-      // with width and height (0, 0)
-      if (geom.window_rect.x() == 0 &&
-          geom.window_rect.y() == 0 &&
-          geom.window_rect.IsEmpty()) {
-        continue;
-      }
-
-      gfx::Rect rect = geom.window_rect;
-      if (geom.visible) {
-        rect.set_x(rect.x() + geom.clip_rect.x());
-        rect.set_y(rect.y() + geom.clip_rect.y());
-        rect.set_width(geom.clip_rect.width());
-        rect.set_height(geom.clip_rect.height());
-      }
-
-      PluginViewMap::iterator it = plugin_views_.find(geom.window);
-      DCHECK(plugin_views_.end() != it);
-      if (plugin_views_.end() == it) {
-        continue;
-      }
-      NSRect new_rect([cocoa_view_ RectToNSRect:rect]);
-      [it->second setFrame:new_rect];
-      [it->second setNeedsDisplay:YES];
-
-      plugin_container_manager_.SetPluginContainerGeometry(geom);
+  for (std::vector<webkit_glue::WebPluginGeometry>::const_iterator iter =
+           moves.begin();
+       iter != moves.end();
+       ++iter) {
+    webkit_glue::WebPluginGeometry geom = *iter;
+    // Ignore bogus moves which claim to move the plugin to (0, 0)
+    // with width and height (0, 0)
+    if (geom.window_rect.x() == 0 &&
+        geom.window_rect.y() == 0 &&
+        geom.window_rect.IsEmpty()) {
+      continue;
     }
+
+    gfx::Rect rect = geom.window_rect;
+    if (geom.visible) {
+      rect.set_x(rect.x() + geom.clip_rect.x());
+      rect.set_y(rect.y() + geom.clip_rect.y());
+      rect.set_width(geom.clip_rect.width());
+      rect.set_height(geom.clip_rect.height());
+    }
+
+    PluginViewMap::iterator it = plugin_views_.find(geom.window);
+    DCHECK(plugin_views_.end() != it);
+    if (plugin_views_.end() == it) {
+      continue;
+    }
+    NSRect new_rect([cocoa_view_ RectToNSRect:rect]);
+    [it->second setFrame:new_rect];
+    [it->second setNeedsDisplay:YES];
+
+    plugin_container_manager_.SetPluginContainerGeometry(geom);
+
+    BOOL visible =
+        plugin_container_manager_.SurfaceShouldBeVisible(geom.window);
+    [it->second setHidden:!visible];
   }
 }
 
@@ -835,9 +837,12 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   }
   DCHECK([it->second isKindOfClass:[AcceleratedPluginView class]]);
 
+  plugin_container_manager_.SetSurfaceWasPaintedTo(window);
   AcceleratedPluginView* view =
       static_cast<AcceleratedPluginView*>(it->second);
-  [view setHidden:NO];
+  // The surface is hidden until its first paint, to not show gargabe.
+  if (plugin_container_manager_.SurfaceShouldBeVisible(window))
+    [view setHidden:NO];
   [view setSurfaceWasSwapped:YES];
 }
 

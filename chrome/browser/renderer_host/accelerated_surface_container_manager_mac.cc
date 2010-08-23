@@ -105,9 +105,22 @@ void AcceleratedSurfaceContainerManagerMac::ForceTextureReload() {
   }
 }
 
+void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
+    gfx::PluginWindowHandle id) {
+  AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
+  if (container)
+    container->set_was_painted_to();
+}
+
+bool AcceleratedSurfaceContainerManagerMac::SurfaceShouldBeVisible(
+    gfx::PluginWindowHandle id) const {
+  AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
+  return container && container->should_be_visible();
+}
+
 AcceleratedSurfaceContainerMac*
     AcceleratedSurfaceContainerManagerMac::MapIDToContainer(
-        gfx::PluginWindowHandle id) {
+        gfx::PluginWindowHandle id) const {
   PluginWindowToContainerMap::const_iterator i =
       plugin_window_to_container_map_.find(id);
   if (i != plugin_window_to_container_map_.end())

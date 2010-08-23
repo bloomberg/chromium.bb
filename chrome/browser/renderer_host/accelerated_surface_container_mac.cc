@@ -19,7 +19,9 @@ AcceleratedSurfaceContainerMac::AcceleratedSurfaceContainerMac(
       height_(0),
       texture_(0),
       texture_needs_upload_(true),
-      texture_pending_deletion_(0) {
+      texture_pending_deletion_(0),
+      visible_(false),
+      was_painted_to_(false) {
 }
 
 AcceleratedSurfaceContainerMac::~AcceleratedSurfaceContainerMac() {
@@ -62,11 +64,8 @@ void AcceleratedSurfaceContainerMac::SetSizeAndTransportDIB(
 
 void AcceleratedSurfaceContainerMac::SetGeometry(
     const webkit_glue::WebPluginGeometry& geom) {
-  // TODO(kbr): may need to pay attention to cutout rects.
-  if (geom.visible)
-    clipRect_ = geom.clip_rect;
-  else
-    clipRect_ = gfx::Rect();
+  visible_ = geom.visible;
+  clipRect_ = geom.clip_rect;
 }
 
 void AcceleratedSurfaceContainerMac::Draw(CGLContextObj context) {
