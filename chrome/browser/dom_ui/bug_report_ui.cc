@@ -448,11 +448,7 @@ base::StringPiece BugReportHandler::Init() {
 
   return base::StringPiece(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-#if defined(OS_CHROMEOS)
-          IDR_BUGREPORT_HTML_CHROMEOS));
-#else
           IDR_BUGREPORT_HTML));
-#endif
 }
 
 void BugReportHandler::RegisterMessages() {

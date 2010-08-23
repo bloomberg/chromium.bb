@@ -22,6 +22,10 @@ function load() {
 
   $('current-screenshot').nextSibling.textContent =
       localStrings.getString('currentscreenshots');
+<if expr="pp_ifdef('chromeos')">
+  $('saved-screenshot').nextSibling.textContent =
+      localStrings.getString('savedscreenshots');
+</if>
   $('no-screenshot').nextSibling.textContent =
       localStrings.getString('noscreenshot');
 
@@ -32,6 +36,7 @@ function load() {
   // bug_report_cros.html files.
   var issueTypeText = [];
   issueTypeText[0] = localStrings.getString('issue-choose');
+<if expr="not pp_ifdef('chromeos')">
   issueTypeText[1] = localStrings.getString('issue-page-formatting');
   issueTypeText[2] = localStrings.getString('issue-page-load');
   issueTypeText[3] = localStrings.getString('issue-plugins');
@@ -41,7 +46,17 @@ function load() {
   issueTypeText[7] = localStrings.getString('issue-extensions');
   issueTypeText[8] = localStrings.getString('issue-phishing');
   issueTypeText[9] = localStrings.getString('issue-other');
-
+</if>
+<if expr="pp_ifdef('chromeos')">
+  issueTypeText[1] = localStrings.getString('issue-connectivity');
+  issueTypeText[2] = localStrings.getString('issue-sync');
+  issueTypeText[3] = localStrings.getString('issue-crashes');
+  issueTypeText[4] = localStrings.getString('issue-page-formatting');
+  issueTypeText[5] = localStrings.getString('issue-extensions');
+  issueTypeText[6] = localStrings.getString('issue-standby');
+  issueTypeText[7] = localStrings.getString('issue-phishing');
+  issueTypeText[8] = localStrings.getString('issue-other');
+</if>
   // Add all the issues to the selection box.
   for (var i = 0; i < issueTypeText.length; i++) {
     var option = document.createElement('option');
@@ -55,13 +70,28 @@ function load() {
 };
 
 function setupScreenshots(screenshots) {
-  if (screenshots.length > 0)
+  if (screenshots.length == 1) {
     addScreenshot('current-screenshots', screenshots[0]);
+  } else {
+    // We're in Chromium OS.
+    currentScreenshot = screenshots[0];
+    addScreenshot('current-screenshots', currentScreenshot);
+
+    savedScreenshots = screenshots[1];
+    for (i = 0; i < savedScreenshots.length; ++i)
+      addScreenshot('saved-screenshots', savedScreenshots[i]);
+  }
 }
 
 function setupDialogDefaults(defaults) {
-  if (defaults.length > 0)
+  if (defaults.length > 0) {
     $('page-url-text').value = defaults[0];
+    if (defaults.length > 2) {
+      // We're in Chromium OS.
+      $('sysinfo-url').href = defaults[1];
+      $('user-email-text').value = defaults[2];
+    }
+  }
 }
 
 window.addEventListener('DOMContentLoaded', load);
@@ -103,6 +133,26 @@ window.addEventListener('DOMContentLoaded', load);
       </textarea>
     </td>
   </tr>
+<if expr="pp_ifdef('chromeos')">
+  <!--  System Information checkbox -->
+  <tr>
+    <td>
+      <input id="sys-info-checkbox" type="checkbox" value="sysinfo" checked>
+      <span id="sysinfo-label"></span> <a href='about:blank' id="sysinfo-url"
+            target="_blank" i18n-content="sysinfo">></a>
+    </td>
+  </tr>
+  <!--  Page URL text box -->
+  <tr>
+    <th id="user-email" class="bug-report-label" i18n-content="user-email">
+    </th>
+  </tr>
+  <tr>
+    <td>
+      <input id='user-email-text' maxlength=200 class="bug-report-text">
+    </td>
+  </tr>
+</if>
   <!--  Screenshot radio buttons -->
   <tr>
     <th id="screenshot" class="bug-report-label" i18n-content="screenshot">
@@ -113,6 +163,14 @@ window.addEventListener('DOMContentLoaded', load);
       <input id="no-screenshot" type="radio" name="screenshot-group"
              value="none" onclick="noneSelected()">
       <br>
+<if expr="pp_ifdef('chromeos')">
+      <input id="saved-screenshot" type="radio" name="screenshot-group"
+             value="saved" onclick="savedSelected()">
+      <br>
+      <div id="saved-screenshots" style="display: none;"
+           class="thumbnail-list">
+      </div>
+</if>
       <input id="current-screenshot" type="radio" name="screenshot-group"
              value="current" checked onclick="currentSelected()">
       <br>
