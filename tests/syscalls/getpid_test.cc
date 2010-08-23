@@ -35,7 +35,7 @@ bool TestGetPid() {
              "getpid returned an invalid pid for this test: %d",
              pid_one);
     buffer[255] = 0;
-    test_status = test::Failed(testname, buffer);
+    test_status = test::Failed(testname, buffer, __FILE__, __LINE__);
   } else {
     char buffer[256];
     snprintf(buffer,
@@ -45,7 +45,7 @@ bool TestGetPid() {
              pid_one,
              pid_two);
     buffer[255] = 0;
-    test_status = test::Failed(testname, buffer);
+    test_status = test::Failed(testname, buffer, __FILE__, __LINE__);
   }
   return test_status;
 }
@@ -61,4 +61,26 @@ bool TestSuite() {
   bool ret = true;
   ret &= TestGetPid();
   return ret;
+}
+
+/*
+ * Main entry point.
+ *
+ * Runs all tests and calls system exit with appropriate value
+ *   0 - success, all tests passed.
+ *  -1 - one or more tests failed.
+ */
+int main(const int argc, const char *argv[]) {
+  bool passed;
+
+  // run the full test suite
+  passed = TestSuite();
+
+  if (passed) {
+    printf("All tests PASSED\n");
+    exit(0);
+  } else {
+    printf("One or more tests FAILED\n");
+    exit(-1);
+  }
 }

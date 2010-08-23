@@ -32,6 +32,8 @@
 
 Import('env')
 
+env.ComponentLibrary('syscall_test_framework', ['test.cc'])
+
 env.ComponentProgram('syscalls.nexe',
                      'syscalls.cc',
                      EXTRA_LIBS=['pthread'])
@@ -59,8 +61,9 @@ if not env.Bit('host_windows'):
                                    )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
 
-
-  env.ComponentProgram('getpid_test.nexe', ['getpid_test.cc', 'test.cc'])
+  env.ComponentProgram('getpid_test.nexe',
+                       ['getpid_test.cc'],
+                       EXTRA_LIBS=['syscall_test_framework'])
   node = env.CommandSelLdrTestNacl(
       'getpid_test.out',
       command=[env.File('getpid_test.nexe')],
@@ -101,3 +104,16 @@ node = env.CommandSelLdrTestNacl(
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'],
                        'run_exit_large_test')
+
+# Test the semaphore system calls.
+env.ComponentProgram('semaphore_tests.nexe',
+                     ['semaphore_tests.cc'],
+                     EXTRA_LIBS=['pthread', 'syscall_test_framework'])
+node = env.CommandSelLdrTestNacl(
+      'semaphore_tests.out',
+      command=[env.File('semaphore_tests.nexe')],
+      )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_semaphore_tests')
+
