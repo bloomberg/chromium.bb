@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "app/menus/simple_menu_model.h"
+#include "app/menus/accelerator.h"
 #include "app/slide_animation.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/back_forward_menu_model.h"
@@ -27,11 +27,12 @@ class BrowserActionsContainer;
 class Browser;
 class Profile;
 class WrenchMenu;
+class WrenchMenuModel;
 
 // The Browser Window's toolbar.
 class ToolbarView : public AccessibleToolbarView,
                     public views::ViewMenuDelegate,
-                    public menus::SimpleMenuModel::Delegate,
+                    public menus::AcceleratorProvider,
                     public LocationBarView::Delegate,
                     public AnimationDelegate,
                     public NotificationObserver,
@@ -104,12 +105,9 @@ class ToolbarView : public AccessibleToolbarView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Overridden from menus::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
+  // Overridden from menus::AcceleratorProvider:
   virtual bool GetAcceleratorForCommandId(int command_id,
                                           menus::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -185,7 +183,7 @@ class ToolbarView : public AccessibleToolbarView,
   DisplayMode display_mode_;
 
   // The contents of the app menu.
-  scoped_ptr<menus::SimpleMenuModel> app_menu_model_;
+  scoped_ptr<WrenchMenuModel> wrench_menu_model_;
 
   // Wrench menu.
   scoped_ptr<WrenchMenu> wrench_menu_;

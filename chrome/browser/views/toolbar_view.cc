@@ -110,7 +110,7 @@ void ToolbarView::Init(Profile* profile) {
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   forward_menu_model_.reset(new BackForwardMenuModel(
       browser_, BackForwardMenuModel::FORWARD_MENU));
-  app_menu_model_.reset(new WrenchMenuModel(this, browser_));
+  wrench_menu_model_.reset(new WrenchMenuModel(this, browser_));
 
   back_ = new views::ButtonDropDown(this, back_menu_model_.get());
   back_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
@@ -248,7 +248,7 @@ void ToolbarView::RunMenu(views::View* source, const gfx::Point& /*pt*/) {
   bool destroyed_flag = false;
   destroyed_flag_ = &destroyed_flag;
   wrench_menu_.reset(new WrenchMenu(browser_));
-  wrench_menu_->Init(app_menu_model_.get());
+  wrench_menu_->Init(wrench_menu_model_->menu_model());
 
   for (size_t i = 0; i < menu_listeners_.size(); ++i)
     menu_listeners_[i]->OnMenuOpened();
@@ -344,21 +344,7 @@ void ToolbarView::Observe(NotificationType type,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, menus::SimpleMenuModel::Delegate implementation:
-
-bool ToolbarView::IsCommandIdChecked(int command_id) const {
-#if defined(OS_CHROMEOS)
-  if (command_id == IDC_TOGGLE_VERTICAL_TABS) {
-    return browser_->UseVerticalTabs();
-  }
-#endif
-  return (command_id == IDC_SHOW_BOOKMARK_BAR) &&
-      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
-}
-
-bool ToolbarView::IsCommandIdEnabled(int command_id) const {
-  return browser_->command_updater()->IsCommandEnabled(command_id);
-}
+// ToolbarView, menus::AcceleratorProvider implementation:
 
 bool ToolbarView::GetAcceleratorForCommandId(int command_id,
     menus::Accelerator* accelerator) {
@@ -378,10 +364,6 @@ bool ToolbarView::GetAcceleratorForCommandId(int command_id,
   }
   // Else, we retrieve the accelerator information from the frame.
   return GetWidget()->GetAccelerator(command_id, accelerator);
-}
-
-void ToolbarView::ExecuteCommand(int command_id) {
-  browser_->ExecuteCommand(command_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
