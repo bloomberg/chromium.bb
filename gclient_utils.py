@@ -23,7 +23,6 @@ import subprocess
 import sys
 import threading
 import time
-import threading
 import xml.dom.minidom
 import xml.parsers.expat
 
@@ -39,8 +38,31 @@ class CheckCallError(OSError):
     self.stderr = stderr
 
 
+def Popen(*args, **kwargs):
+  """Calls subprocess.Popen() with hacks to work around certain behaviors.
+
+  Ensure English outpout for svn and make it work reliably on Windows.
+  """
+  copied = False
+  if not 'env' in kwargs:
+    copied = True
+    kwargs = kwargs.copy()
+    # It's easier to parse the stdout if it is always in English.
+    kwargs['env'] = os.environ.copy()
+    kwargs['env']['LANGUAGE'] = 'en'
+  if not 'shell' in kwargs:
+    if not copied:
+      kwargs = kwargs.copy()
+    # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
+    # executable, but shell=True makes subprocess on Linux fail when it's called
+    # with a list because it only tries to execute the first item in the list.
+    kwargs['shell'] = (sys.platform=='win32')
+  return subprocess.Popen(*args, **kwargs)
+
+
 def CheckCall(command, cwd=None, print_error=True):
-  """Like subprocess.check_call() but returns stdout.
+  """Similar subprocess.check_call() but redirects stdout and
+  returns (stdout, stderr).
 
   Works on python 2.4
   """
@@ -49,13 +71,7 @@ def CheckCall(command, cwd=None, print_error=True):
     stderr = None
     if not print_error:
       stderr = subprocess.PIPE
-    env = os.environ.copy()
-    env['LANGUAGE'] = 'en'
-    process = subprocess.Popen(command, cwd=cwd,
-                               shell=sys.platform.startswith('win'),
-                               stdout=subprocess.PIPE,
-                               stderr=stderr,
-                               env=env)
+    process = Popen(command, cwd=cwd, stdout=subprocess.PIPE, stderr=stderr)
     std_out, std_err = process.communicate()
   except OSError, e:
     raise CheckCallError(command, cwd, e.errno, None)
@@ -275,15 +291,9 @@ def SubprocessCallAndFilter(command,
   if print_messages:
     print('\n________ running \'%s\' in \'%s\''
           % (' '.join(command), in_directory))
-  env = os.environ.copy()
-  env['LANGUAGE'] = 'en'
 
-  # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
-  # executable, but shell=True makes subprocess on Linux fail when it's called
-  # with a list because it only tries to execute the first item in the list.
-  kid = subprocess.Popen(command, bufsize=0, cwd=in_directory,
-      shell=(sys.platform == 'win32'), stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT, env=env)
+  kid = Popen(command, bufsize=0, cwd=in_directory,
+              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
   # Do a flush of sys.stdout before we begin reading from the subprocess's
   # stdout.
@@ -327,7 +337,7 @@ def SubprocessCallAndFilter(command,
     msg = 'failed to run command: %s' % ' '.join(command)
 
     if fail_status != None:
-      print >>sys.stderr, msg
+      print >> sys.stderr, msg
       sys.exit(fail_status)
 
     raise Error(msg)
@@ -337,10 +347,10 @@ def FindGclientRoot(from_dir, filename='.gclient'):
   """Tries to find the gclient root."""
   path = os.path.realpath(from_dir)
   while not os.path.exists(os.path.join(path, filename)):
-    next = os.path.split(path)
-    if not next[1]:
+    split_path = os.path.split(path)
+    if not split_path[1]:
       return None
-    path = next[0]
+    path = split_path[0]
   logging.info('Found gclient root at ' + path)
   return path
 
