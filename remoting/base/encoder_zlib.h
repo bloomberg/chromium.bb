@@ -31,12 +31,12 @@ class EncoderZlib : public Encoder {
   void EncodeRect(CompressorZlib* compressor, const gfx::Rect& rect,
                   size_t rect_index);
 
-  // Create a new ChromotingHostMessage with the right flag and attributes.
-  // The message can be used immediately for output of encoding.
-  ChromotingHostMessage* PrepareMessage(const gfx::Rect* rect);
+  // Create a new HostMessage with the right flag and attributes. The message
+  // can be used immediately for output of encoding.
+  HostMessage* PrepareMessage(const gfx::Rect* rect);
 
   // Submit |message| to |callback_|.
-  void SubmitMessage(ChromotingHostMessage* message, size_t rect_index);
+  void SubmitMessage(HostMessage* message, size_t rect_index);
 
   scoped_refptr<CaptureData> capture_data_;
   scoped_ptr<DataAvailableCallback> callback_;

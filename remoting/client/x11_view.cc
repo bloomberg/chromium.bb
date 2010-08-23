@@ -169,8 +169,8 @@ void X11View::InitPaintTarget() {
   CHECK(picture_) << "Backing picture not created";
 }
 
-void X11View::HandleBeginUpdateStream(ChromotingHostMessage* msg) {
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
+void X11View::HandleBeginUpdateStream(HostMessage* msg) {
+  scoped_ptr<HostMessage> deleter(msg);
 
   // TODO(hclam): Use the information from the message to create the decoder.
   // We lazily construct the decoder.
@@ -184,12 +184,12 @@ void X11View::HandleBeginUpdateStream(ChromotingHostMessage* msg) {
       NewRunnableMethod(this, &X11View::OnDecodeDone));
 }
 
-void X11View::HandleUpdateStreamPacket(ChromotingHostMessage* msg) {
+void X11View::HandleUpdateStreamPacket(HostMessage* msg) {
   decoder_->PartialDecode(msg);
 }
 
-void X11View::HandleEndUpdateStream(ChromotingHostMessage* msg) {
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
+void X11View::HandleEndUpdateStream(HostMessage* msg) {
+  scoped_ptr<HostMessage> deleter(msg);
   decoder_->EndDecode();
 }
 

@@ -18,12 +18,12 @@ ProtocolDecoder::ProtocolDecoder()
 
 void ProtocolDecoder::ParseClientMessages(scoped_refptr<media::DataBuffer> data,
                                           ClientMessageList* messages) {
-  ParseMessages<ChromotingClientMessage>(data, messages);
+  ParseMessages<ClientMessage>(data, messages);
 }
 
 void ProtocolDecoder::ParseHostMessages(scoped_refptr<media::DataBuffer> data,
                                         HostMessageList* messages) {
-  ParseMessages<ChromotingHostMessage>(data, messages);
+  ParseMessages<HostMessage>(data, messages);
 }
 
 template <typename T>

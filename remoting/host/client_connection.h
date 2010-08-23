@@ -62,11 +62,11 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
 
   virtual ~ClientConnection();
 
-  // Creates a DataBuffer object that wraps around ChromotingHostMessage. The
-  // DataBuffer object will be responsible for serializing and framing the
-  // message. DataBuffer will also own |msg| after this call.
+  // Creates a DataBuffer object that wraps around HostMessage. The DataBuffer
+  // object will be responsible for serializing and framing the message.
+  // DataBuffer will also own |msg| after this call.
   static scoped_refptr<media::DataBuffer> CreateWireFormatDataBuffer(
-      const ChromotingHostMessage* msg);
+      const HostMessage* msg);
 
   virtual void set_jingle_channel(JingleChannel* channel) {
     channel_ = channel;
@@ -84,11 +84,11 @@ class ClientConnection : public base::RefCountedThreadSafe<ClientConnection>,
   // Send encoded update stream data to the viewer.
   //
   // |data| is the actual bytes in wire format. That means it is fully framed
-  // and serialized from a ChromotingHostMessage. This is a special case only
-  // for UpdateStreamPacket to reduce the amount of memory copies.
+  // and serialized from a HostMessage. This is a special case only for
+  // UpdateStreamPacket to reduce the amount of memory copies.
   //
   // |data| should be created by calling to
-  // CreateWireFormatDataBuffer(ChromotingHostMessage).
+  // CreateWireFormatDataBuffer(HostMessage).
   virtual void SendUpdateStreamPacketMessage(
       scoped_refptr<media::DataBuffer> data);
 

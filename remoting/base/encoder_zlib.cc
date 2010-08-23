@@ -48,7 +48,7 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor,
   const int bytes_per_pixel = GetBytesPerPixel(capture_data_->pixel_format());
   const int row_size = bytes_per_pixel * rect.width();
 
-  ChromotingHostMessage* message = PrepareMessage(&rect);
+  HostMessage* message = PrepareMessage(&rect);
   const uint8 * in = capture_data_->data_planes().data[0] +
                      rect.y() * strides +
                      rect.x() * bytes_per_pixel;
@@ -107,8 +107,8 @@ void EncoderZlib::EncodeRect(CompressorZlib* compressor,
   }
 }
 
-ChromotingHostMessage* EncoderZlib::PrepareMessage(const gfx::Rect* rect) {
-  ChromotingHostMessage* message = new ChromotingHostMessage();
+HostMessage* EncoderZlib::PrepareMessage(const gfx::Rect* rect) {
+  HostMessage* message = new HostMessage();
   UpdateStreamPacketMessage* packet = message->mutable_update_stream_packet();
 
   // Prepare the begin rect content.
@@ -126,8 +126,7 @@ ChromotingHostMessage* EncoderZlib::PrepareMessage(const gfx::Rect* rect) {
   return message;
 }
 
-void EncoderZlib::SubmitMessage(ChromotingHostMessage* message,
-                                size_t rect_index) {
+void EncoderZlib::SubmitMessage(HostMessage* message, size_t rect_index) {
   EncodingState state = EncodingInProgress;
   if (rect_index == 0 && message->update_stream_packet().has_begin_rect())
     state |= EncodingStarting;

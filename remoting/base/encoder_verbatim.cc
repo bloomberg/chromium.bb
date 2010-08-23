@@ -23,7 +23,7 @@ void EncoderVerbatim::Encode(scoped_refptr<CaptureData> capture_data,
   for (InvalidRects::const_iterator r = rects.begin();
       r != rects.end(); ++r, ++index) {
     const gfx::Rect& dirty_rect = *r;
-    ChromotingHostMessage* msg = new ChromotingHostMessage();
+    HostMessage* msg = new HostMessage();
     UpdateStreamPacketMessage* packet = msg->mutable_update_stream_packet();
 
     if (EncodeRect(dirty_rect.x(), dirty_rect.y(), dirty_rect.width(),

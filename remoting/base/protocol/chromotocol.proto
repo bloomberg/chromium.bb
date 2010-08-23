@@ -98,7 +98,7 @@ message UpdateStreamPacketMessage {
 // Defines the message that is sent from the host to the client.
 // Only one of these messages should be present.
 // NEXT ID: 5
-message ChromotingHostMessage {
+message HostMessage {
   optional InitClientMessage init_client= 1;
   optional BeginUpdateStreamMessage begin_update_stream = 2;
   optional EndUpdateStreamMessage end_update_stream = 3;
@@ -161,7 +161,7 @@ message MouseUpEvent {
 // Defines the message that is sent from the client to the host.
 // Only one of these messages should be present.
 // NEXT ID: 7
-message ChromotingClientMessage {
+message ClientMessage {
   optional KeyEvent key_event = 1;
   optional MouseSetPositionEvent mouse_set_position_event = 2;
   optional MouseMoveEvent mouse_move_event = 3;

@@ -139,7 +139,7 @@ void PepperView::SetHostScreenSize(int width, int height) {
   backing_store_height_ = height;
 }
 
-void PepperView::HandleBeginUpdateStream(ChromotingHostMessage* msg) {
+void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
   if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::HandleBeginUpdateStream,
@@ -147,7 +147,7 @@ void PepperView::HandleBeginUpdateStream(ChromotingHostMessage* msg) {
     return;
   }
 
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
+  scoped_ptr<HostMessage> deleter(msg);
 
   // TODO(hclam): Use the information from the message to create the decoder.
   // We lazily construct the decoder.
@@ -169,7 +169,7 @@ void PepperView::HandleBeginUpdateStream(ChromotingHostMessage* msg) {
       NewRunnableMethod(this, &PepperView::OnDecodeDone));
 }
 
-void PepperView::HandleUpdateStreamPacket(ChromotingHostMessage* msg) {
+void PepperView::HandleUpdateStreamPacket(HostMessage* msg) {
   if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::HandleUpdateStreamPacket,
@@ -180,7 +180,7 @@ void PepperView::HandleUpdateStreamPacket(ChromotingHostMessage* msg) {
   decoder_->PartialDecode(msg);
 }
 
-void PepperView::HandleEndUpdateStream(ChromotingHostMessage* msg) {
+void PepperView::HandleEndUpdateStream(HostMessage* msg) {
   if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::HandleEndUpdateStream,
@@ -188,7 +188,7 @@ void PepperView::HandleEndUpdateStream(ChromotingHostMessage* msg) {
     return;
   }
 
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
+  scoped_ptr<HostMessage> deleter(msg);
   decoder_->EndDecode();
 }
 

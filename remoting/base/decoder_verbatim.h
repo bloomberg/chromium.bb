@@ -18,15 +18,15 @@ class DecoderVerbatim : public Decoder {
                            UpdatedRects* update_rects,
                            Task* partial_decode_done,
                            Task* decode_done);
-  virtual bool PartialDecode(ChromotingHostMessage* message);
+  virtual bool PartialDecode(HostMessage* message);
   virtual void EndDecode();
 
   void set_reverse_rows(bool reverse) { reverse_rows_ = reverse; }
 
  private:
-  bool HandleBeginRect(ChromotingHostMessage* message);
-  bool HandleRectData(ChromotingHostMessage* message);
-  bool HandleEndRect(ChromotingHostMessage* message);
+  bool HandleBeginRect(HostMessage* message);
+  bool HandleRectData(HostMessage* message);
+  bool HandleEndRect(HostMessage* message);
 
   // The internal state of the decoder.
   State state_;

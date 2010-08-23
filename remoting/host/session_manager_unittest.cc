@@ -106,7 +106,7 @@ TEST_F(SessionManagerTest, OneRecordCycle) {
       .WillOnce(RunCallback(update_rects, data));
 
   // Expect the encoder be called.
-  ChromotingHostMessage* msg = new ChromotingHostMessage();
+  HostMessage* msg = new HostMessage();
   EXPECT_CALL(*encoder_, Encode(data, false, NotNull()))
       .WillOnce(FinishEncode(msg));
 

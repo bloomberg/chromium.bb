@@ -105,7 +105,7 @@ void ChromotingClient::HandleMessages(HostConnection* conn,
   }
 
   for (size_t i = 0; i < messages->size(); ++i) {
-    ChromotingHostMessage* msg = (*messages)[i];
+    HostMessage* msg = (*messages)[i];
     // TODO(ajwong): Consider creating a macro similar to the IPC message
     // mappings.  Also reconsider the lifetime of the message object.
     if (msg->has_init_client()) {
@@ -175,10 +175,10 @@ void ChromotingClient::SetState(State s) {
   Repaint();
 }
 
-void ChromotingClient::InitClient(ChromotingHostMessage* msg) {
+void ChromotingClient::InitClient(HostMessage* msg) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(msg->has_init_client());
-  scoped_ptr<ChromotingHostMessage> deleter(msg);
+  scoped_ptr<HostMessage> deleter(msg);
 
   // Resize the window.
   int width = msg->init_client().width();
@@ -191,21 +191,21 @@ void ChromotingClient::InitClient(ChromotingHostMessage* msg) {
   input_handler_->Initialize();
 }
 
-void ChromotingClient::BeginUpdate(ChromotingHostMessage* msg) {
+void ChromotingClient::BeginUpdate(HostMessage* msg) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(msg->has_begin_update_stream());
 
   view_->HandleBeginUpdateStream(msg);
 }
 
-void ChromotingClient::HandleUpdate(ChromotingHostMessage* msg) {
+void ChromotingClient::HandleUpdate(HostMessage* msg) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(msg->has_update_stream_packet());
 
   view_->HandleUpdateStreamPacket(msg);
 }
 
-void ChromotingClient::EndUpdate(ChromotingHostMessage* msg) {
+void ChromotingClient::EndUpdate(HostMessage* msg) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK(msg->has_end_update_stream());
 

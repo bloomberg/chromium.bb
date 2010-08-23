@@ -16,7 +16,7 @@ static const int kWidth = 640;
 static const int kHeight = 480;
 static const std::string kTestData = "Chromoting rockz";
 
-static void AppendMessage(const ChromotingHostMessage& msg,
+static void AppendMessage(const HostMessage& msg,
                           std::string* buffer) {
   // Contains one encoded message.
   scoped_refptr<media::DataBuffer> encoded_msg;
@@ -31,7 +31,7 @@ static void PrepareData(uint8** buffer, int* size) {
   std::string encoded_data;
 
   // The first message is InitClient.
-  ChromotingHostMessage msg;
+  HostMessage msg;
   msg.mutable_init_client()->set_width(kWidth);
   msg.mutable_init_client()->set_height(kHeight);
   AppendMessage(msg, &encoded_data);

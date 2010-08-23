@@ -38,10 +38,10 @@ ClientConnection::~ClientConnection() {
 // static
 scoped_refptr<media::DataBuffer>
     ClientConnection::CreateWireFormatDataBuffer(
-        const ChromotingHostMessage* msg) {
+        const HostMessage* msg) {
   // TODO(hclam): Instead of serializing |msg| create an DataBuffer
   // object that wraps around it.
-  scoped_ptr<const ChromotingHostMessage> message_deleter(msg);
+  scoped_ptr<const HostMessage> message_deleter(msg);
   return SerializeAndFrameMessage(*msg);
 }
 
@@ -53,7 +53,7 @@ void ClientConnection::SendInitClientMessage(int width, int height) {
   if (!channel_)
     return;
 
-  ChromotingHostMessage msg;
+  HostMessage msg;
   msg.mutable_init_client()->set_width(width);
   msg.mutable_init_client()->set_height(height);
   DCHECK(msg.IsInitialized());
@@ -67,7 +67,7 @@ void ClientConnection::SendBeginUpdateStreamMessage() {
   if (!channel_)
     return;
 
-  ChromotingHostMessage msg;
+  HostMessage msg;
   msg.mutable_begin_update_stream();
   DCHECK(msg.IsInitialized());
 
@@ -96,7 +96,7 @@ void ClientConnection::SendEndUpdateStreamMessage() {
   if (!channel_)
     return;
 
-  ChromotingHostMessage msg;
+  HostMessage msg;
   msg.mutable_end_update_stream();
   DCHECK(msg.IsInitialized());
 

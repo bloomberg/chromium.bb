@@ -32,9 +32,9 @@ class X11View : public ChromotingView {
   virtual void UnsetSolidFill();
   virtual void SetViewport(int x, int y, int width, int height);
   virtual void SetHostScreenSize(int width, int height);
-  virtual void HandleBeginUpdateStream(ChromotingHostMessage* msg);
-  virtual void HandleUpdateStreamPacket(ChromotingHostMessage* msg);
-  virtual void HandleEndUpdateStream(ChromotingHostMessage* msg) ;
+  virtual void HandleBeginUpdateStream(HostMessage* msg);
+  virtual void HandleUpdateStreamPacket(HostMessage* msg);
+  virtual void HandleEndUpdateStream(HostMessage* msg) ;
 
   Display* display() { return display_; }
 

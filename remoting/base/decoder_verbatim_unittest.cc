@@ -21,7 +21,7 @@ TEST(DecoderVerbatimTest, SimpleDecode) {
   const size_t kWidth = 10;
   const size_t kHeight = 1;
   const char kData[] = "ABCDEFGHIJ";
-  scoped_ptr<ChromotingHostMessage> msg(new ChromotingHostMessage());
+  scoped_ptr<HostMessage> msg(new HostMessage());
 
   // Prepare the begin rect message.
   UpdateStreamBeginRect* begin_rect =

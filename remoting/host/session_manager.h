@@ -131,7 +131,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
   void DoRateControl();
 
   // DoSendUpdate takes ownership of header and is responsible for deleting it.
-  void DoSendUpdate(ChromotingHostMessage* message,
+  void DoSendUpdate(HostMessage* message,
                     Encoder::EncodingState state);
   void DoSendInit(scoped_refptr<ClientConnection> client,
                   int width, int height);
@@ -146,7 +146,7 @@ class SessionManager : public base::RefCountedThreadSafe<SessionManager> {
 
   // EncodeDataAvailableTask takes ownership of header and is responsible for
   // deleting it.
-  void EncodeDataAvailableTask(ChromotingHostMessage* message,
+  void EncodeDataAvailableTask(HostMessage* message,
                                Encoder::EncodingState state);
 
   // Message loops used by this class.

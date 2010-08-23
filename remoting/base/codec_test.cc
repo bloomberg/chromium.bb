@@ -85,7 +85,7 @@ class EncoderMessageTester {
   }
 
   // Test that we received the correct message.
-  void ReceivedMessage(ChromotingHostMessage* message) {
+  void ReceivedMessage(HostMessage* message) {
     EXPECT_TRUE(message->has_update_stream_packet());
 
     if (state_ == kWaitingForBeginRect) {
@@ -162,7 +162,7 @@ class DecoderTester {
     EXPECT_TRUE(frame_.get());
   }
 
-  void ReceivedMessage(ChromotingHostMessage* message) {
+  void ReceivedMessage(HostMessage* message) {
     if (message->has_update_stream_packet()) {
       decoder_->PartialDecode(message);
       return;
@@ -265,7 +265,7 @@ class EncoderTester {
     EXPECT_GT(data_available_, 0);
   }
 
-  void DataAvailable(ChromotingHostMessage* message,
+  void DataAvailable(HostMessage* message,
                      Encoder::EncodingState state) {
     ++data_available_;
     message_tester_->ReceivedMessage(message);
@@ -274,7 +274,7 @@ class EncoderTester {
     // Send the message to the DecoderTester.
     if (decoder_tester_) {
       if (state & Encoder::EncodingStarting) {
-        ChromotingHostMessage* begin_update = new ChromotingHostMessage();
+        HostMessage* begin_update = new HostMessage();
         begin_update->mutable_begin_update_stream();
         decoder_tester_->ReceivedMessage(begin_update);
       }
@@ -284,7 +284,7 @@ class EncoderTester {
       }
 
       if (state & Encoder::EncodingEnded) {
-        ChromotingHostMessage* end_update = new ChromotingHostMessage();
+        HostMessage* end_update = new HostMessage();
         end_update->mutable_end_update_stream();
         decoder_tester_->ReceivedMessage(end_update);
       }
