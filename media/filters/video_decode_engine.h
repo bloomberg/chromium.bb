@@ -19,6 +19,7 @@ enum VideoCodec {
   kCodecMPEG2,
   kCodecMPEG4,
   kCodecTheora,
+  kCodecVP8,
 };
 
 static const uint32 kProfileDoNotCare = static_cast<uint32>(-1);
