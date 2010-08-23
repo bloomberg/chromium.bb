@@ -237,6 +237,15 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   [self drawView];
 }
 
+- (void)rightMouseDown:(NSEvent*)event {
+  // The NSResponder documentation: "Note: The NSView implementation of this
+  // method does not pass the message up the responder chain, it handles it
+  // directly."
+  // That's bad, we want the next responder (RWHVMac) to handle this event to
+  // dispatch it to the renderer.
+  [[self nextResponder] rightMouseDown:event];
+}
+
 - (void)globalFrameDidChange:(NSNotification*)notification {
   CGLLockContext(cglContext_);
   [glContext_ update];
