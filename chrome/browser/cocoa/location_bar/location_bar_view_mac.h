@@ -110,7 +110,9 @@ class LocationBarViewMac : public AutocompleteEditController,
                                    bool preview_enabled);
 
   // Return |page_action|'s info-bubble point in window coordinates.
-  // Returns |NSZeroPoint| if |page_action| is not present.
+  // This function should always be called with a visible page action.
+  // If |page_action| is not a page action or not visible, NOTREACHED()
+  // is called and this function returns |NSZeroPoint|.
   NSPoint GetPageActionBubblePoint(ExtensionAction* page_action);
 
   // Get the blocked-popup content setting's frame in window

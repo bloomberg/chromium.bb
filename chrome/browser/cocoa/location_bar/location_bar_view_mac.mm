@@ -287,6 +287,8 @@ PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
     if (page_action_decorations_[i]->page_action() == page_action)
       return page_action_decorations_[i];
   }
+  // If |page_action| is the browser action of an extension, no element in
+  // |page_action_decorations_| will match.
   NOTREACHED();
   return NULL;
 }
