@@ -175,6 +175,8 @@ GL_APICALL void         GL_APIENTRY glVertexAttrib4f (GLuint indx, GLfloat x, GL
 GL_APICALL void         GL_APIENTRY glVertexAttrib4fv (GLuint indx, const GLfloat* values);
 GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLintVertexAttribSize size, GLenumVertexAttribType type, GLboolean normalized, GLsizei stride, const void* ptr);
 GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glBlitFramebufferEXT (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenumBlitFilter filter);
+GL_APICALL void         GL_APIENTRY glRenderbufferStorageMultisampleEXT (GLenumRenderBufferTarget target, GLsizei samples, GLenumRenderBufferFormat internalformat, GLsizei width, GLsizei height);
 // Non-GL commands.
 GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
 GL_APICALL GLuint       GL_APIENTRY glGetMaxValueInBuffer (GLidBuffer buffer_id, GLsizei count, GLenumGetMaxIndexType type, GLuint offset);
@@ -383,18 +385,30 @@ _CMD_ID_TABLE = {
   'CommandBufferEnable':                                       442,
   'CompressedTexImage2DBucket':                                443,
   'CompressedTexSubImage2DBucket':                             444,
+  'RenderbufferStorageMultisampleEXT':                         445,
+  'BlitFramebufferEXT':                                        446,
 }
 
 # This is a list of enum names and their valid values. It is used to map
 # GLenum arguments to a specific set of valid values.
 _ENUM_LISTS = {
+  'BlitFilter': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_NEAREST',
+      'GL_LINEAR',
+    ],
+    'invalid': [
+      'GL_LINEAR_MIPMAP_LINEAR',
+    ],
+  },
   'FrameBufferTarget': {
     'type': 'GLenum',
     'valid': [
       'GL_FRAMEBUFFER',
     ],
     'invalid': [
-      'GL_RENDERBUFFER',
+      'GL_READ_FRAMEBUFFER' ,
     ],
   },
   'RenderBufferTarget': {
@@ -1030,6 +1044,10 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoBindTexture',
     'gen_func': 'GenTextures',
   },
+  'BlitFramebufferEXT': {
+    'decoder_func': 'DoBlitFramebufferEXT',
+    'unit_test': False,
+  },
   'BufferData': {'type': 'Manual', 'immediate': True},
   'BufferSubData': {'type': 'Data', 'decoder_func': 'DoBufferSubData'},
   'CheckFramebufferStatus': {
@@ -1355,6 +1373,12 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glRenderbufferStorageEXT',
     'expectation': False,
   },
+  'RenderbufferStorageMultisampleEXT': {
+    'decoder_func': 'DoRenderbufferStorageMultisample',
+    'gl_test_func': 'glRenderbufferStorageMultisampleEXT',
+    'expectation': False,
+    'unit_test': False,
+  },
   'ReadPixels': {
     'cmd_comment':
         '// ReadPixels has the result separated from the pixel buffer so that\n'
@@ -1623,7 +1647,6 @@ class CHeaderWriter(CWriter):
 
   def __init__(self, filename, file_comment = None):
     CWriter.__init__(self, filename)
-
     base = os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     hpath = os.path.abspath(filename)[len(base) + 1:]

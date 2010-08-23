@@ -122,6 +122,7 @@ TEST_F(ContextGroupTest, Basic) {
   EXPECT_TRUE(group_.texture_manager() == NULL);
   EXPECT_TRUE(group_.program_manager() == NULL);
   EXPECT_TRUE(group_.shader_manager() == NULL);
+  EXPECT_FALSE(group_.extension_flags().ext_framebuffer_multisample);
 }
 
 TEST_F(ContextGroupTest, InitializeNoExtensions) {
@@ -284,6 +285,24 @@ TEST_F(ContextGroupTest, InitializeOES_texture_half_float_linearGLES2) {
               HasSubstr("GL_OES_texture_half_float_linear"));
   EXPECT_FALSE(group_.validators()->pixel_type.IsValid(GL_FLOAT));
   EXPECT_TRUE(group_.validators()->pixel_type.IsValid(GL_HALF_FLOAT_OES));
+}
+
+TEST_F(ContextGroupTest, InitializeEXT_framebuffer_multisample) {
+  SetupInitExpectations("GL_EXT_framebuffer_multisample");
+  group_.Initialize();
+  EXPECT_TRUE(group_.extension_flags().ext_framebuffer_multisample);
+  EXPECT_THAT(group_.extensions(), HasSubstr("GL_EXT_framebuffer_multisample"));
+  EXPECT_THAT(group_.extensions(), HasSubstr("GL_EXT_framebuffer_blit"));
+  EXPECT_TRUE(group_.validators()->frame_buffer_target.IsValid(
+      GL_READ_FRAMEBUFFER_EXT));
+  EXPECT_TRUE(group_.validators()->frame_buffer_target.IsValid(
+      GL_DRAW_FRAMEBUFFER_EXT));
+  EXPECT_TRUE(group_.validators()->g_l_state.IsValid(
+      GL_READ_FRAMEBUFFER_BINDING_EXT));
+  EXPECT_TRUE(group_.validators()->g_l_state.IsValid(
+      GL_DRAW_FRAMEBUFFER_BINDING_EXT));
+  EXPECT_TRUE(group_.validators()->render_buffer_parameter.IsValid(
+      GL_MAX_SAMPLES_EXT));
 }
 
 }  // namespace gles2

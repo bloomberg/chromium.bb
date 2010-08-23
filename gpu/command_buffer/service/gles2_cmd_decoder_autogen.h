@@ -2723,6 +2723,68 @@ error::Error GLES2DecoderImpl::HandleViewport(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleBlitFramebufferEXT(
+    uint32 immediate_data_size, const gles2::BlitFramebufferEXT& c) {
+  GLint srcX0 = static_cast<GLint>(c.srcX0);
+  GLint srcY0 = static_cast<GLint>(c.srcY0);
+  GLint srcX1 = static_cast<GLint>(c.srcX1);
+  GLint srcY1 = static_cast<GLint>(c.srcY1);
+  GLint dstX0 = static_cast<GLint>(c.dstX0);
+  GLint dstY0 = static_cast<GLint>(c.dstY0);
+  GLint dstX1 = static_cast<GLint>(c.dstX1);
+  GLint dstY1 = static_cast<GLint>(c.dstY1);
+  GLbitfield mask = static_cast<GLbitfield>(c.mask);
+  GLenum filter = static_cast<GLenum>(c.filter);
+  if (!validators_->blit_filter.IsValid(filter)) {
+    SetGLError(
+        GL_INVALID_ENUM, "glBlitFramebufferEXT: filter GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  DoBlitFramebufferEXT(
+      srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleEXT(
+    uint32 immediate_data_size,
+    const gles2::RenderbufferStorageMultisampleEXT& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei samples = static_cast<GLsizei>(c.samples);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  if (!validators_->render_buffer_target.IsValid(target)) {
+    SetGLError(
+        GL_INVALID_ENUM,
+        "glRenderbufferStorageMultisampleEXT: target GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (samples < 0) {
+    SetGLError(
+        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT: samples < 0");
+    return error::kNoError;
+  }
+  if (!validators_->render_buffer_format.IsValid(internalformat)) {
+    SetGLError(
+        GL_INVALID_ENUM,
+        "glRenderbufferStorageMultisampleEXT: internalformat GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (width < 0) {
+    SetGLError(
+        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT: width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(
+        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT: height < 0");
+    return error::kNoError;
+  }
+  DoRenderbufferStorageMultisample(
+      target, samples, internalformat, width, height);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderImpl::HandleGetMaxValueInBuffer(
     uint32 immediate_data_size, const gles2::GetMaxValueInBuffer& c) {
   GLuint buffer_id = c.buffer_id;

@@ -377,6 +377,10 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_VertexAttribPointer_kCmdId_mismatch);
   COMPILE_ASSERT(Viewport::kCmdId == 430,
                  GLES2_Viewport_kCmdId_mismatch);
+  COMPILE_ASSERT(BlitFramebufferEXT::kCmdId == 446,
+                 GLES2_BlitFramebufferEXT_kCmdId_mismatch);
+  COMPILE_ASSERT(RenderbufferStorageMultisampleEXT::kCmdId == 445,
+                 GLES2_RenderbufferStorageMultisampleEXT_kCmdId_mismatch);
   COMPILE_ASSERT(SwapBuffers::kCmdId == 431,
                  GLES2_SwapBuffers_kCmdId_mismatch);
   COMPILE_ASSERT(GetMaxValueInBuffer::kCmdId == 438,

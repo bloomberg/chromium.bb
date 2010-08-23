@@ -13,6 +13,11 @@ static GLenum valid_attachment_table[] = {
   GL_STENCIL_ATTACHMENT,
 };
 
+static GLenum valid_blit_filter_table[] = {
+  GL_NEAREST,
+  GL_LINEAR,
+};
+
 static GLenum valid_buffer_parameter_table[] = {
   GL_BUFFER_SIZE,
   GL_BUFFER_USAGE,
@@ -413,6 +418,8 @@ static GLenum valid_vertex_pointer_table[] = {
 Validators::Validators()
     : attachment(
           valid_attachment_table, arraysize(valid_attachment_table)),
+      blit_filter(
+          valid_blit_filter_table, arraysize(valid_blit_filter_table)),
       buffer_parameter(
           valid_buffer_parameter_table, arraysize(
               valid_buffer_parameter_table)),

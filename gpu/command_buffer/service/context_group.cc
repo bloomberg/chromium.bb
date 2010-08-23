@@ -142,6 +142,18 @@ bool ContextGroup::Initialize() {
     }
   }
 
+  // Check for multisample support
+  if (strstr(extensions, "GL_EXT_framebuffer_multisample")) {
+    extension_flags_.ext_framebuffer_multisample = true;
+    validators_.frame_buffer_target.AddValue(GL_READ_FRAMEBUFFER_EXT);
+    validators_.frame_buffer_target.AddValue(GL_DRAW_FRAMEBUFFER_EXT);
+    validators_.g_l_state.AddValue(GL_READ_FRAMEBUFFER_BINDING_EXT);
+    validators_.g_l_state.AddValue(GL_DRAW_FRAMEBUFFER_BINDING_EXT);
+    validators_.render_buffer_parameter.AddValue(GL_MAX_SAMPLES_EXT);
+    AddExtensionString("GL_EXT_framebuffer_multisample");
+    AddExtensionString("GL_EXT_framebuffer_blit");
+  }
+
   // TODO(gman): Add support for these extensions.
   //     GL_OES_depth24
   //     GL_OES_depth32

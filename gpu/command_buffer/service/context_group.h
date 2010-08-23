@@ -30,6 +30,14 @@ class TextureManager;
 // resources.
 class ContextGroup {
  public:
+  struct ExtensionFlags {
+    ExtensionFlags()
+        : ext_framebuffer_multisample(false) {
+    }
+
+    bool ext_framebuffer_multisample;
+  };
+
   ContextGroup();
   ~ContextGroup();
 
@@ -101,6 +109,10 @@ class ContextGroup {
     return extensions_;
   }
 
+  const ExtensionFlags& extension_flags() const {
+    return extension_flags_;
+  }
+
  private:
   void AddExtensionString(const std::string& str);
 
@@ -134,6 +146,9 @@ class ContextGroup {
 
   // The extensions string returned by glGetString(GL_EXTENSIONS);
   std::string extensions_;
+
+  // Flags for some extensions
+  ExtensionFlags extension_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextGroup);
 };

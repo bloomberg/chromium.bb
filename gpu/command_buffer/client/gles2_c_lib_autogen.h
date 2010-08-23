@@ -500,6 +500,18 @@ void GLES2VertexAttribPointer(
 void GLES2Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   gles2::GetGLContext()->Viewport(x, y, width, height);
 }
+void GLES2BlitFramebufferEXT(
+    GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0,
+    GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter) {
+  gles2::GetGLContext()->BlitFramebufferEXT(
+      srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+}
+void GLES2RenderbufferStorageMultisampleEXT(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
+    GLsizei height) {
+  gles2::GetGLContext()->RenderbufferStorageMultisampleEXT(
+      target, samples, internalformat, width, height);
+}
 void GLES2SwapBuffers() {
   gles2::GetGLContext()->SwapBuffers();
 }

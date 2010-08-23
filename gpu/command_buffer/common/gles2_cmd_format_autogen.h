@@ -8321,6 +8321,141 @@ COMPILE_ASSERT(offsetof(Viewport, width) == 12,
 COMPILE_ASSERT(offsetof(Viewport, height) == 16,
                OffsetOf_Viewport_height_not_16);
 
+struct BlitFramebufferEXT {
+  typedef BlitFramebufferEXT ValueType;
+  static const CommandId kCmdId = kBlitFramebufferEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLint _srcX0, GLint _srcY0, GLint _srcX1, GLint _srcY1, GLint _dstX0,
+      GLint _dstY0, GLint _dstX1, GLint _dstY1, GLbitfield _mask,
+      GLenum _filter) {
+    SetHeader();
+    srcX0 = _srcX0;
+    srcY0 = _srcY0;
+    srcX1 = _srcX1;
+    srcY1 = _srcY1;
+    dstX0 = _dstX0;
+    dstY0 = _dstY0;
+    dstX1 = _dstX1;
+    dstY1 = _dstY1;
+    mask = _mask;
+    filter = _filter;
+  }
+
+  void* Set(
+      void* cmd, GLint _srcX0, GLint _srcY0, GLint _srcX1, GLint _srcY1,
+      GLint _dstX0, GLint _dstY0, GLint _dstX1, GLint _dstY1, GLbitfield _mask,
+      GLenum _filter) {
+    static_cast<ValueType*>(
+        cmd)->Init(
+            _srcX0, _srcY0, _srcX1, _srcY1, _dstX0, _dstY0, _dstX1, _dstY1,
+            _mask, _filter);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32 srcX0;
+  int32 srcY0;
+  int32 srcX1;
+  int32 srcY1;
+  int32 dstX0;
+  int32 dstY0;
+  int32 dstX1;
+  int32 dstY1;
+  uint32 mask;
+  uint32 filter;
+};
+
+COMPILE_ASSERT(sizeof(BlitFramebufferEXT) == 44,
+               Sizeof_BlitFramebufferEXT_is_not_44);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, header) == 0,
+               OffsetOf_BlitFramebufferEXT_header_not_0);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, srcX0) == 4,
+               OffsetOf_BlitFramebufferEXT_srcX0_not_4);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, srcY0) == 8,
+               OffsetOf_BlitFramebufferEXT_srcY0_not_8);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, srcX1) == 12,
+               OffsetOf_BlitFramebufferEXT_srcX1_not_12);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, srcY1) == 16,
+               OffsetOf_BlitFramebufferEXT_srcY1_not_16);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, dstX0) == 20,
+               OffsetOf_BlitFramebufferEXT_dstX0_not_20);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, dstY0) == 24,
+               OffsetOf_BlitFramebufferEXT_dstY0_not_24);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, dstX1) == 28,
+               OffsetOf_BlitFramebufferEXT_dstX1_not_28);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, dstY1) == 32,
+               OffsetOf_BlitFramebufferEXT_dstY1_not_32);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, mask) == 36,
+               OffsetOf_BlitFramebufferEXT_mask_not_36);
+COMPILE_ASSERT(offsetof(BlitFramebufferEXT, filter) == 40,
+               OffsetOf_BlitFramebufferEXT_filter_not_40);
+
+struct RenderbufferStorageMultisampleEXT {
+  typedef RenderbufferStorageMultisampleEXT ValueType;
+  static const CommandId kCmdId = kRenderbufferStorageMultisampleEXT;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLsizei _samples, GLenum _internalformat, GLsizei _width,
+      GLsizei _height) {
+    SetHeader();
+    target = _target;
+    samples = _samples;
+    internalformat = _internalformat;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLsizei _samples, GLenum _internalformat,
+      GLsizei _width, GLsizei _height) {
+    static_cast<ValueType*>(
+        cmd)->Init(_target, _samples, _internalformat, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 samples;
+  uint32 internalformat;
+  int32 width;
+  int32 height;
+};
+
+COMPILE_ASSERT(sizeof(RenderbufferStorageMultisampleEXT) == 24,
+               Sizeof_RenderbufferStorageMultisampleEXT_is_not_24);
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, header) == 0,
+               OffsetOf_RenderbufferStorageMultisampleEXT_header_not_0);
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, target) == 4,
+               OffsetOf_RenderbufferStorageMultisampleEXT_target_not_4);
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, samples) == 8,
+               OffsetOf_RenderbufferStorageMultisampleEXT_samples_not_8);
+COMPILE_ASSERT(
+    offsetof(RenderbufferStorageMultisampleEXT, internalformat) == 12,
+               OffsetOf_RenderbufferStorageMultisampleEXT_internalformat_not_12);  // NOLINT
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, width) == 16,
+               OffsetOf_RenderbufferStorageMultisampleEXT_width_not_16);
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleEXT, height) == 20,
+               OffsetOf_RenderbufferStorageMultisampleEXT_height_not_20);
+
 struct SwapBuffers {
   typedef SwapBuffers ValueType;
   static const CommandId kCmdId = kSwapBuffers;

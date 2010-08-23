@@ -8,6 +8,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_AUTOGEN_H_
 
 ValueValidator<GLenum> attachment;
+ValueValidator<GLenum> blit_filter;
 ValueValidator<GLenum> buffer_parameter;
 ValueValidator<GLenum> buffer_target;
 ValueValidator<GLenum> buffer_usage;

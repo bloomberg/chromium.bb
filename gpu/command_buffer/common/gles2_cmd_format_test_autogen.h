@@ -3288,6 +3288,58 @@ TEST(GLES2FormatTest, Viewport) {
   EXPECT_EQ(static_cast<GLsizei>(14), cmd.height);
 }
 
+TEST(GLES2FormatTest, BlitFramebufferEXT) {
+  BlitFramebufferEXT cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLint>(11),
+      static_cast<GLint>(12),
+      static_cast<GLint>(13),
+      static_cast<GLint>(14),
+      static_cast<GLint>(15),
+      static_cast<GLint>(16),
+      static_cast<GLint>(17),
+      static_cast<GLint>(18),
+      static_cast<GLbitfield>(19),
+      static_cast<GLenum>(20));
+  EXPECT_EQ(static_cast<uint32>(BlitFramebufferEXT::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLint>(11), cmd.srcX0);
+  EXPECT_EQ(static_cast<GLint>(12), cmd.srcY0);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.srcX1);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.srcY1);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.dstX0);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.dstY0);
+  EXPECT_EQ(static_cast<GLint>(17), cmd.dstX1);
+  EXPECT_EQ(static_cast<GLint>(18), cmd.dstY1);
+  EXPECT_EQ(static_cast<GLbitfield>(19), cmd.mask);
+  EXPECT_EQ(static_cast<GLenum>(20), cmd.filter);
+}
+
+TEST(GLES2FormatTest, RenderbufferStorageMultisampleEXT) {
+  RenderbufferStorageMultisampleEXT cmd = { { 0 } };
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLsizei>(12),
+      static_cast<GLenum>(13),
+      static_cast<GLsizei>(14),
+      static_cast<GLsizei>(15));
+  EXPECT_EQ(static_cast<uint32>(RenderbufferStorageMultisampleEXT::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<char*>(next_cmd),
+            reinterpret_cast<char*>(&cmd) + sizeof(cmd));
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.samples);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
+}
+
 TEST(GLES2FormatTest, SwapBuffers) {
   SwapBuffers cmd = { { 0 } };
   void* next_cmd = cmd.Set(

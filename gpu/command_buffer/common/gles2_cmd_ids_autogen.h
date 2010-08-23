@@ -197,6 +197,8 @@
   OP(CommandBufferEnable)                                      /* 442 */ \
   OP(CompressedTexImage2DBucket)                               /* 443 */ \
   OP(CompressedTexSubImage2DBucket)                            /* 444 */ \
+  OP(RenderbufferStorageMultisampleEXT)                        /* 445 */ \
+  OP(BlitFramebufferEXT)                                       /* 446 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.
