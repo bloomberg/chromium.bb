@@ -17,7 +17,7 @@ namespace media {
 namespace remoting {
 
 class CaptureData;
-class HostMessage;
+class ChromotingHostMessage;
 
 // A class to perform the task of encoding a continous stream of
 // images.
@@ -40,7 +40,8 @@ class Encoder {
   // of HostMessage to reduce the amount of memory copies.
   // The callback takes ownership of the HostMessage and is responsible for
   // deleting it.
-  typedef Callback2<HostMessage*, EncodingState>::Type DataAvailableCallback;
+  typedef Callback2<ChromotingHostMessage*,
+                    EncodingState>::Type DataAvailableCallback;
 
   virtual ~Encoder() {}
 

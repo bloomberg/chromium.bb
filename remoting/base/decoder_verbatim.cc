@@ -38,8 +38,8 @@ bool DecoderVerbatim::BeginDecode(scoped_refptr<media::VideoFrame> frame,
   return true;
 }
 
-bool DecoderVerbatim::PartialDecode(HostMessage* message) {
-  scoped_ptr<HostMessage> msg_deleter(message);
+bool DecoderVerbatim::PartialDecode(ChromotingHostMessage* message) {
+  scoped_ptr<ChromotingHostMessage> msg_deleter(message);
   DCHECK(message->has_update_stream_packet());
 
   bool ret = true;
@@ -62,7 +62,7 @@ void DecoderVerbatim::EndDecode() {
   updated_rects_ = NULL;
 }
 
-bool DecoderVerbatim::HandleBeginRect(HostMessage* message) {
+bool DecoderVerbatim::HandleBeginRect(ChromotingHostMessage* message) {
   DCHECK_EQ(kWaitingForBeginRect, state_);
   state_ = kWaitingForRectData;
 
@@ -86,7 +86,7 @@ bool DecoderVerbatim::HandleBeginRect(HostMessage* message) {
   return true;
 }
 
-bool DecoderVerbatim::HandleRectData(HostMessage* message) {
+bool DecoderVerbatim::HandleRectData(ChromotingHostMessage* message) {
   DCHECK_EQ(kWaitingForRectData, state_);
   DCHECK_EQ(0,
             message->update_stream_packet().rect_data().sequence_number());
@@ -118,7 +118,7 @@ bool DecoderVerbatim::HandleRectData(HostMessage* message) {
   return true;
 }
 
-bool DecoderVerbatim::HandleEndRect(HostMessage* message) {
+bool DecoderVerbatim::HandleEndRect(ChromotingHostMessage* message) {
   DCHECK_EQ(kWaitingForRectData, state_);
   state_ = kWaitingForBeginRect;
   return true;

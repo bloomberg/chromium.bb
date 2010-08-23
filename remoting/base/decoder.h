@@ -24,7 +24,7 @@ typedef std::vector<gfx::Rect> UpdatedRects;
 // Sequence of actions with a decoder is as follows:
 //
 // 1. BeginDecode(PartialDecodeDone, DecodeDone, VideoFrame)
-// 2. PartialDecode(HostMessage)
+// 2. PartialDecode(ChromotingHostMessage)
 //    ...
 // 3. EndDecode()
 //
@@ -54,15 +54,15 @@ class Decoder {
                            Task* partial_decode_done,
                            Task* decode_done) = 0;
 
-  // Give a HostMessage that contains the update stream packet that contains
-  // the encoded data to the decoder.
+  // Give a ChromotingHostMessage that contains the update stream packet that
+  // contains the encoded data to the decoder.
   // The decoder will own |message| and is responsible for deleting it.
   //
   // If the decoder has written something into |frame|,
   // |partial_decode_done_| is called with |frame| and updated regions.
   // Return true if the decoder can accept |message| and decode it.
   //
-  // HostMessage returned by this method will contain a
+  // ChromotingHostMessage returned by this method will contain a
   // UpdateStreamPacketMessage.
   // This message will contain either:
   // 1. UpdateStreamBeginRect
@@ -71,7 +71,7 @@ class Decoder {
   //
   // See remoting/base/protocol/chromotocol.proto for more information about
   // these messages.
-  virtual bool PartialDecode(HostMessage* message) = 0;
+  virtual bool PartialDecode(ChromotingHostMessage* message) = 0;
 
   // Notify the decoder that we have received the last update stream packet.
   // If the decoding of the update stream has completed |decode_done_| is

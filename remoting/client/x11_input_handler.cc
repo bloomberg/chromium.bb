@@ -9,8 +9,8 @@
 #include "remoting/client/x11_view.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 
-// Include Xlib at the end because it clashes with ClientMessage defined in
-// the protocol buffer.
+// Include Xlib at the end because it clashes with Status in
+// base/tracked_objects.h.
 #include <X11/Xlib.h>
 
 namespace remoting {

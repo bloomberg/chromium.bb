@@ -9,7 +9,7 @@
 
 namespace remoting {
 
-class HostMessage;
+class ChromotingHostMessage;
 
 // ChromotingView defines the behavior of an object that draws a view of the
 // remote desktop. Its main function is to choose the right decoder and render
@@ -47,13 +47,13 @@ class ChromotingView {
   virtual void SetHostScreenSize(int width, int height) = 0;
 
   // Handle the BeginUpdateStream message.
-  virtual void HandleBeginUpdateStream(HostMessage* msg) = 0;
+  virtual void HandleBeginUpdateStream(ChromotingHostMessage* msg) = 0;
 
   // Handle the UpdateStreamPacket message.
-  virtual void HandleUpdateStreamPacket(HostMessage* msg) = 0;
+  virtual void HandleUpdateStreamPacket(ChromotingHostMessage* msg) = 0;
 
   // Handle the EndUpdateStream message.
-  virtual void HandleEndUpdateStream(HostMessage* msg) = 0;
+  virtual void HandleEndUpdateStream(ChromotingHostMessage* msg) = 0;
 };
 
 }  // namespace remoting
