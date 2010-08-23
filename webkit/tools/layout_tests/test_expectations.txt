@@ -11,3 +11,9 @@ BUG52841 MAC : fast/dom/Geolocation/callback-exception.html = TEXT PASS
 BUG52841 MAC : fast/dom/Geolocation/no-page-cache.html = TEXT PASS
 BUG52841 MAC : fast/dom/HTMLAnchorElement/set-href-attribute-hash.html = TEXT PASS
 BUG52841 MAC : editing/selection/drag-in-iframe.html = IMAGE
+
+BUG53073 WIN : fast/repaint/multicol-repaint.html = IMAGE+TEXT
+BUG53073 DEBUG : storage/change-version.html = CRASH PASS
+BUG21852 MAC : fast/canvas/webgl/tex-image-and-sub-image-2d-with-video.html = TEXT
+BUG53073 LINUX : svg/custom/clip-path-units-changes.svg = TEXT
+BUG10296 LINUX DEBUG : svg/batik/paints/patternPreserveAspectRatioA.svg = IMAGE IMAGE+TEXT TIMEOUT
