@@ -3759,14 +3759,6 @@
    fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
 }
 {
-   bug_51055
-   Memcheck:Addr4
-   ...
-   fun:_ZN7testing8internal11CmpHelperEQIN17SocketStreamEvent9EventTypeES3_EENS_15AssertionResultEPKcS6_RKT_RKT0_
-   fun:_ZN7testing8internal8EqHelperILb0EE7CompareIN17SocketStreamEvent9EventTypeES5_EENS_15AssertionResultEPKcS8_RKT_RKT0_
-   fun:_ZN3net44SocketStreamTest_CloseFlushPendingWrite_Test8TestBodyEv
-}
-{
    bug_51057_a
    Memcheck:Leak
    fun:_Znw*
