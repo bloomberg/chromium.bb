@@ -91,6 +91,7 @@ class UserController : public views::ButtonListener,
   void ClearAndEnableFields();
 
   // Returns bounds of password field in screen coordinates.
+  // For new user it returns username coordinates.
   gfx::Rect GetScreenBounds() const;
 
   // Get widget that contains all controls.

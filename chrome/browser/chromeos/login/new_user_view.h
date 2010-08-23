@@ -79,6 +79,9 @@ class NewUserView : public views::View,
   // Returns bounds of password field in screen coordinates.
   gfx::Rect GetPasswordBounds() const;
 
+  // Returns bounds of username field in screen coordinates.
+  gfx::Rect GetUsernameBounds() const;
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();

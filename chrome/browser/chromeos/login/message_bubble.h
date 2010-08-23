@@ -8,6 +8,7 @@
 
 #include "chrome/browser/views/info_bubble.h"
 #include "views/controls/button/button.h"
+#include "views/controls/link.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
 
@@ -21,9 +22,16 @@ class Label;
 
 namespace chromeos {
 
+class MessageBubbleDelegate : public InfoBubbleDelegate {
+ public:
+  // Called when the user clicked on help link.
+  virtual void OnHelpLinkActivated() = 0;
+};
+
 // MessageBubble is used to show error and info messages on OOBE screens.
 class MessageBubble : public InfoBubble,
-                      public views::ButtonListener {
+                      public views::ButtonListener,
+                      public views::LinkController {
  public:
   // Create and show bubble. position_relative_to must be in screen coordinates.
   static MessageBubble* Show(views::Widget* parent,
@@ -31,7 +39,8 @@ class MessageBubble : public InfoBubble,
                              BubbleBorder::ArrowLocation arrow_location,
                              SkBitmap* image,
                              const std::wstring& text,
-                             InfoBubbleDelegate* delegate);
+                             const std::wstring& help,
+                             MessageBubbleDelegate* delegate);
 
   // Create and show bubble which does not grab pointer.  This creates
   // a TYPE_CHILD WidgetGtk and |position_relative_to| must be in parent's
@@ -41,7 +50,8 @@ class MessageBubble : public InfoBubble,
                                    BubbleBorder::ArrowLocation arrow_location,
                                    SkBitmap* image,
                                    const std::wstring& text,
-                                   InfoBubbleDelegate* delegate);
+                                   const std::wstring& help,
+                                   MessageBubbleDelegate* delegate);
 
   // Overridden from WidgetGtk.
   virtual void Close();
@@ -53,9 +63,12 @@ class MessageBubble : public InfoBubble,
   }
 
  protected:
-  // views::ButtonListener implmenets.
+  // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
                              const views::Event& event);
+
+  // Overridden from views::LinkController:
+  virtual void LinkActivated(views::Link* source, int event_flags);
 
   // Overridden from WidgetGtk.
   virtual void IsActiveChanged();
@@ -63,13 +76,19 @@ class MessageBubble : public InfoBubble,
 
  private:
   MessageBubble(views::WidgetGtk::Type type,
-                views::Widget* parent, SkBitmap* image,
-                const std::wstring& text, bool grab_enabled);
+                views::Widget* parent,
+                SkBitmap* image,
+                const std::wstring& text,
+                const std::wstring& help,
+                bool grab_enabled,
+                MessageBubbleDelegate* delegate);
 
   views::Widget* parent_;
   views::ImageView* icon_;
   views::Label* text_;
   views::ImageButton* close_button_;
+  views::Link* help_link_;
+  MessageBubbleDelegate* message_delegate_;
   bool grab_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBubble);

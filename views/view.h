@@ -644,6 +644,9 @@ class View : public AcceleratorTarget {
   // screen. This is useful for example when placing popup windows.
   static void ConvertPointToScreen(const View* src, gfx::Point* point);
 
+  // Return the bounds of the View in screen coordinate system.
+  gfx::Rect GetScreenBounds() const;
+
   // Event Handlers
 
   // This method is invoked when the user clicks on this view.

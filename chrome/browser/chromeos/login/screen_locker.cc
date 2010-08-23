@@ -517,6 +517,7 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
       BubbleBorder::BOTTOM_LEFT,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
       msg,
+      std::wstring(),  // TODO: add help link
       this);
   if (mouse_event_relay_.get()) {
     MessageLoopForUI::current()->RemoveObserver(mouse_event_relay_.get());

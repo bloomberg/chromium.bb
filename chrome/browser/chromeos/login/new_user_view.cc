@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "chrome/browser/google_util.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
@@ -47,9 +46,6 @@ const int kLanguagesMenuWidth = 200;
 const int kLanguagesMenuHeight = 30;
 const SkColor kErrorColor = 0xFF8F384F;
 const char kDefaultDomain[] = "@gmail.com";
-
-const char kAccountRecoveryHelpUrl[] =
-    "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
 
 // Textfield that adds domain to the entered username if focus is lost and
 // username doesn't have full domain.
@@ -352,8 +348,7 @@ void NewUserView::LinkActivated(views::Link* source, int event_flags) {
   } else if (source == cant_access_account_link_) {
     // TODO(nkostylev): Display offline help when network is not connected.
     // http://crosbug.com/3874
-    delegate_->AddStartUrl(
-        google_util::AppendGoogleLocaleParam(GURL(kAccountRecoveryHelpUrl)));
+    delegate_->AddStartUrl(GetAccountRecoveryHelpUrl());
     delegate_->OnLoginOffTheRecord();
   }
 }
@@ -376,11 +371,11 @@ void NewUserView::ClearAndEnableFields() {
 }
 
 gfx::Rect NewUserView::GetPasswordBounds() const {
-  gfx::Rect screen_bounds(password_field_->bounds());
-  gfx::Point origin(screen_bounds.origin());
-  views::View::ConvertPointToScreen(password_field_->GetParent(), &origin);
-  screen_bounds.set_origin(origin);
-  return screen_bounds;
+  return password_field_->GetScreenBounds();
+}
+
+gfx::Rect NewUserView::GetUsernameBounds() const {
+  return username_field_->GetScreenBounds();
 }
 
 void NewUserView::StopThrobber() {

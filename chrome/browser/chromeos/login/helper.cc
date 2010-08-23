@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/helper.h"
+
 #include "app/resource_bundle.h"
+#include "chrome/browser/google_util.h"
 #include "gfx/canvas_skia.h"
+#include "googleurl/src/gurl.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/throbber.h"
@@ -22,6 +26,9 @@ const int kThrobberStartDelayMs = 500;
 
 const SkColor kBackgroundCenterColor = SkColorSetRGB(41, 50, 67);
 const SkColor kBackgroundEdgeColor = SK_ColorBLACK;
+
+const char kAccountRecoveryHelpUrl[] =
+    "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
 
 class BackgroundPainter : public views::Painter {
  public:
@@ -85,6 +92,10 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
   }
 
   return bounds;
+}
+
+GURL GetAccountRecoveryHelpUrl() {
+  return google_util::AppendGoogleLocaleParam(GURL(kAccountRecoveryHelpUrl));
 }
 
 }  // namespace chromeos

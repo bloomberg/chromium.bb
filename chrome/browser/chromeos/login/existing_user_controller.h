@@ -14,11 +14,11 @@
 #include "base/timer.h"
 #include "chrome/browser/chromeos/login/captcha_view.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/password_changed_view.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_controller.h"
 #include "chrome/browser/chromeos/wm_message_listener.h"
-#include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "gfx/size.h"
 
@@ -41,7 +41,7 @@ class MessageBubble;
 class ExistingUserController : public WmMessageListener::Observer,
                                public UserController::Delegate,
                                public LoginStatusConsumer,
-                               public InfoBubbleDelegate,
+                               public MessageBubbleDelegate,
                                public CaptchaView::Delegate,
                                public PasswordChangedView::Delegate {
  public:
@@ -100,6 +100,7 @@ class ExistingUserController : public WmMessageListener::Observer,
   }
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return false; }
+  virtual void OnHelpLinkActivated();
 
   // CaptchaView::Delegate:
   virtual void OnCaptchaEntered(const std::string& captcha);
@@ -140,6 +141,10 @@ class ExistingUserController : public WmMessageListener::Observer,
 
   // Index of selected view (user).
   size_t selected_view_index_;
+
+  // Number of login attempts. Used to show help link when > 1 unsuccessful
+  // logins for the same user.
+  size_t num_login_attempts_;
 
   // See comment in ProcessWmMessage.
   base::OneShotTimer<ExistingUserController> delete_timer_;

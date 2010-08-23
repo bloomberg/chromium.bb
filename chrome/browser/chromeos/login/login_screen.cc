@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
@@ -86,7 +87,7 @@ void LoginScreen::OnLoginFailure(const LoginFailure& failure) {
   } else if (!network->Connected()) {
     ShowError(IDS_LOGIN_ERROR_OFFLINE_FAILED_NETWORK_NOT_CONNECTED, error);
   } else {
-    ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
+    ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
   }
 
   view()->ClearAndEnablePassword();
@@ -103,6 +104,11 @@ void LoginScreen::OnLoginSuccess(const std::string& username,
 void LoginScreen::OnOffTheRecordLoginSuccess() {
   delegate()->GetObserver(this)->OnExit(ScreenObserver::LOGIN_GUEST_SELECTED);
   LoginUtils::Get()->CompleteOffTheRecordLogin(start_url_);
+}
+
+void LoginScreen::OnHelpLinkActivated() {
+  AddStartUrl(GetAccountRecoveryHelpUrl());
+  OnLoginOffTheRecord();
 }
 
 void LoginScreen::AppendStartUrlToCmdline() {
@@ -123,6 +129,7 @@ void LoginScreen::ShowError(int error_id, const std::string& details) {
       BubbleBorder::LEFT_TOP,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
       error_text,
+      l10n_util::GetString(IDS_CANT_ACCESS_ACCOUNT_BUTTON),
       this);
 }
 

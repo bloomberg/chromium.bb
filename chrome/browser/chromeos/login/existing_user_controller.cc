@@ -47,6 +47,10 @@ const size_t kMaxUsers = 6;
 // Used to indicate no user has been selected.
 const size_t kNotSelected = -1;
 
+// Offset of cursor in first position from edit left side. It's used to position
+// info bubble arrow to cursor.
+const int kCursorOffset = 5;
+
 // Checks if display names are unique. If there are duplicates, enables
 // tooltips with full emails to let users distinguish their accounts.
 // Otherwise, disables the tooltips.
@@ -77,6 +81,7 @@ ExistingUserController::ExistingUserController(
       background_window_(NULL),
       background_view_(NULL),
       selected_view_index_(kNotSelected),
+      num_login_attempts_(0),
       bubble_(NULL) {
   if (delete_scheduled_instance_)
     delete_scheduled_instance_->Delete();
@@ -189,7 +194,13 @@ void ExistingUserController::Login(UserController* source,
   std::vector<UserController*>::const_iterator i =
       std::find(controllers_.begin(), controllers_.end(), source);
   DCHECK(i != controllers_.end());
-  selected_view_index_ = i - controllers_.begin();
+
+  if (selected_view_index_ == static_cast<size_t>(i - controllers_.begin())) {
+    num_login_attempts_++;
+  } else {
+    selected_view_index_ = i - controllers_.begin();
+    num_login_attempts_ = 0;
+  }
 
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   Profile* profile = g_browser_process->profile_manager()->GetDefaultProfile();
@@ -233,6 +244,7 @@ void ExistingUserController::OnUserSelected(UserController* source) {
       selected_view_index_ != kNotSelected) {
     controllers_[selected_view_index_]->ClearAndEnableFields();
     ClearCaptchaState();
+    num_login_attempts_ = 0;
   }
   selected_view_index_ = new_selected_index;
 }
@@ -312,7 +324,10 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
       }
     } else {
-      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
+      if (controllers_[selected_view_index_]->is_guest())
+        ShowError(IDS_LOGIN_ERROR_AUTHENTICATING_NEW, error);
+      else
+        ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
     }
   }
 
@@ -345,12 +360,27 @@ void ExistingUserController::ShowError(int error_id,
   // low level error info that is not localized and even is not user friendly.
   // For now just ignore it because error_text contains all required information
   // for end users, developers can see details string in Chrome logs.
+
+  gfx::Rect bounds = controllers_[selected_view_index_]->GetScreenBounds();
+  BubbleBorder::ArrowLocation arrow;
+  if (controllers_[selected_view_index_]->is_guest()) {
+    arrow = BubbleBorder::LEFT_TOP;
+  } else {
+    // Point info bubble arrow to cursor position (approximately).
+    bounds.set_width(kCursorOffset * 2);
+    arrow = BubbleBorder::BOTTOM_LEFT;
+  }
+  std::wstring help_link;
+  if (num_login_attempts_ > static_cast<size_t>(1))
+    help_link = l10n_util::GetString(IDS_CANT_ACCESS_ACCOUNT_BUTTON);
+
   bubble_ = MessageBubble::Show(
       controllers_[selected_view_index_]->controls_window(),
-      controllers_[selected_view_index_]->GetScreenBounds(),
-      BubbleBorder::BOTTOM_LEFT,
+      bounds,
+      arrow,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
       error_text,
+      help_link,
       this);
 }
 
@@ -400,6 +430,11 @@ void ExistingUserController::OnPasswordChangeDetected(
                                                             view);
   window->SetIsAlwaysOnTop(true);
   window->Show();
+}
+
+void ExistingUserController::OnHelpLinkActivated() {
+  AddStartUrl(GetAccountRecoveryHelpUrl());
+  LoginOffTheRecord();
 }
 
 void ExistingUserController::OnCaptchaEntered(const std::string& captcha) {

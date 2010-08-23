@@ -387,17 +387,10 @@ WidgetGtk* UserController::CreateLabelWindow(int index,
 }
 
 gfx::Rect UserController::GetScreenBounds() const {
-  if (is_guest_) {
-    return new_user_view_->GetPasswordBounds();
-  } else {
-    gfx::Rect screen_bounds(existing_user_view_->password_field()->bounds());
-    gfx::Point origin(screen_bounds.origin());
-    views::View::ConvertPointToScreen(
-        existing_user_view_->password_field()->GetParent(),
-        &origin);
-    screen_bounds.set_origin(origin);
-    return screen_bounds;
-  }
+  if (is_guest_)
+    return new_user_view_->GetUsernameBounds();
+  else
+    return existing_user_view_->password_field()->GetScreenBounds();
 }
 
 void UserController::OnLogin(const std::string& username,

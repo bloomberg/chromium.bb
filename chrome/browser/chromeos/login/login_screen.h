@@ -11,9 +11,9 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/new_user_view.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
-#include "chrome/browser/views/info_bubble.h"
 
 namespace chromeos {
 
@@ -22,7 +22,7 @@ class MessageBubble;
 class LoginScreen : public ViewScreen<NewUserView>,
                     public NewUserView::Delegate,
                     public LoginStatusConsumer,
-                    public InfoBubbleDelegate {
+                    public MessageBubbleDelegate {
  public:
   explicit LoginScreen(WizardScreenDelegate* delegate);
   virtual ~LoginScreen();
@@ -53,6 +53,7 @@ class LoginScreen : public ViewScreen<NewUserView>,
   }
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return false; }
+  virtual void OnHelpLinkActivated();
 
  private:
   // ViewScreen<NewUserView>:

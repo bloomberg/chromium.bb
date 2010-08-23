@@ -10,6 +10,13 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 
+class GURL;
+
+namespace gfx {
+class Rect;
+class Size;
+}  // namespace gfx
+
 namespace views {
 class Painter;
 class Throbber;
@@ -30,6 +37,9 @@ views::Painter* CreateBackgroundPainter();
 // The rect is centered within the default monitor and sized accordingly if
 // |size| is not empty. Otherwise the whole monitor is occupied.
 gfx::Rect CalculateScreenBounds(const gfx::Size& size);
+
+// Returns URL used for account recovery.
+GURL GetAccountRecoveryHelpUrl();
 
 // Define the constants in |login| namespace to avoid potential
 // conflict with other chromeos components.

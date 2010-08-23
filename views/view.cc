@@ -1257,6 +1257,12 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
   }
 }
 
+gfx::Rect View::GetScreenBounds() const {
+  gfx::Point origin;
+  View::ConvertPointToScreen(this, &origin);
+  return gfx::Rect(origin, size());
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // View - event handlers

@@ -10,8 +10,8 @@
 
 #include "base/task.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
+#include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/views/info_bubble.h"
 
 namespace gfx {
 class Rect;
@@ -38,7 +38,7 @@ class ScreenLockerTester;
 // authenticate the user. ScreenLocker manages its life cycle and will
 // delete itself when it's unlocked.
 class ScreenLocker : public LoginStatusConsumer,
-                     public InfoBubbleDelegate {
+                     public MessageBubbleDelegate {
  public:
   explicit ScreenLocker(const UserManager::User& user);
 
@@ -55,6 +55,7 @@ class ScreenLocker : public LoginStatusConsumer,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape() { return true; }
   virtual bool FadeInOnShow() { return false; }
+  virtual void OnHelpLinkActivated() {}
 
   // Authenticates the user with given |password| and authenticator.
   void Authenticate(const string16& password);
