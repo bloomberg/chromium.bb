@@ -33,6 +33,7 @@ extern const char kAppsDebug[];
 extern const char kAppsPanel[];
 extern const char kAppsGalleryURL[];
 extern const char kAppsNoThrob[];
+extern const char kAuthSchemes[];
 extern const char kAuthServerWhitelist[];
 extern const char kAutomationClientChannelID[];
 extern const char kBlockNonSandboxedPlugins[];
@@ -159,7 +160,6 @@ extern const char kEnableWatchdog[];
 extern const char kEnableWin7Location[];
 extern const char kEnableXSSAuditor[];
 // Experimental features.
-extern const char kExperimentalEnableNegotiateAuth[];
 extern const char kExperimentalSpellcheckerFeatures[];
 // End experimental features.
 extern const char kExplicitlyAllowedPorts[];

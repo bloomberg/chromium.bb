@@ -63,7 +63,13 @@ const char kAppsNoThrob[]                   = "apps-no-throb";
 // Whether to display the "Debug" link for app launch behavior.
 const char kAppsDebug[]      = "apps-debug";
 
-// Authentication white list for servers
+// HTTP authentication schemes to enable. This is a comma separated list
+// of authentication schemes (basic, digest, ntlm, and negotiate). By default
+// all schemes are enabled. The primary use of this command line flag is to help
+// triage autentication-related issues reported by end-users.
+const char kAuthSchemes[]                   = "auth-schemes";
+
+// Authentication white list for servers.
 const char kAuthServerWhitelist[]           = "auth-server-whitelist";
 
 // The value of this switch tells the app to listen for and broadcast
@@ -503,10 +509,6 @@ const char kEnableWin7Location[]            = "enable-win7-location";
 
 // Disable WebKit's XSSAuditor.  The XSSAuditor mitigates reflective XSS.
 const char kEnableXSSAuditor[]              = "enable-xss-auditor";
-
-// Enables the experimental Negotiate authentication protocol.
-const char kExperimentalEnableNegotiateAuth[] =
-    "experimental-enable-negotiate-auth";
 
 // Enables experimental features for Spellchecker. Right now, the first
 // experimental feature is auto spell correct, which corrects words which are

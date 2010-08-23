@@ -24,7 +24,6 @@
 #include "net/base/net_util.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_auth_handler_negotiate.h"
 
 namespace {
 
@@ -245,63 +244,35 @@ void IOThread::CleanUpAfterMessageLoopDestruction() {
 
 net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
     net::HostResolver* resolver) {
-  net::HttpAuthFilterWhitelist* auth_filter = NULL;
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   // Get the whitelist information from the command line, create an
   // HttpAuthFilterWhitelist, and attach it to the HttpAuthHandlerFactory.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
+  net::HttpAuthFilterWhitelist* auth_filter = NULL;
   if (command_line.HasSwitch(switches::kAuthServerWhitelist)) {
     std::string auth_server_whitelist =
         command_line.GetSwitchValueASCII(switches::kAuthServerWhitelist);
-
     // Create a whitelist filter.
     auth_filter = new net::HttpAuthFilterWhitelist();
     auth_filter->SetWhitelist(auth_server_whitelist);
   }
-
-  // Set the flag that enables or disables the Negotiate auth handler.
-  static const bool kNegotiateAuthEnabledDefault = true;
-
-  bool negotiate_auth_enabled = kNegotiateAuthEnabledDefault;
-  if (command_line.HasSwitch(switches::kExperimentalEnableNegotiateAuth)) {
-    std::string enable_negotiate_auth = command_line.GetSwitchValueASCII(
-        switches::kExperimentalEnableNegotiateAuth);
-    // Enabled if no value, or value is 'true'.  Disabled otherwise.
-    negotiate_auth_enabled =
-        enable_negotiate_auth.empty() ||
-        (StringToLowerASCII(enable_negotiate_auth) == "true");
-  }
-
-  net::HttpAuthHandlerRegistryFactory* registry_factory =
-      net::HttpAuthHandlerFactory::CreateDefault();
-
   globals_->url_security_manager.reset(
       net::URLSecurityManager::Create(auth_filter));
 
-  // Add the security manager to the auth factories that need it.
-  registry_factory->SetURLSecurityManager("ntlm",
-                                          globals_->url_security_manager.get());
-  registry_factory->SetURLSecurityManager("negotiate",
-                                          globals_->url_security_manager.get());
-  if (negotiate_auth_enabled) {
-    // Configure the Negotiate settings for the Kerberos SPN.
-    // TODO(cbentzel): Read the related IE registry settings on Windows builds.
-    // TODO(cbentzel): Ugly use of static_cast here.
-    net::HttpAuthHandlerNegotiate::Factory* negotiate_factory =
-        static_cast<net::HttpAuthHandlerNegotiate::Factory*>(
-            registry_factory->GetSchemeFactory("negotiate"));
-    DCHECK(negotiate_factory);
-    negotiate_factory->set_host_resolver(resolver);
-    if (command_line.HasSwitch(switches::kDisableAuthNegotiateCnameLookup))
-      negotiate_factory->set_disable_cname_lookup(true);
-    if (command_line.HasSwitch(switches::kEnableAuthNegotiatePort))
-      negotiate_factory->set_use_port(true);
-  } else {
-    // Disable the Negotiate authentication handler.
-    registry_factory->RegisterSchemeFactory("negotiate", NULL);
-  }
-  return registry_factory;
+  // Determine which schemes are supported.
+  std::string csv_auth_schemes = "basic,digest,ntlm,negotiate";
+  if (command_line.HasSwitch(switches::kAuthSchemes))
+    csv_auth_schemes = StringToLowerASCII(
+        command_line.GetSwitchValueASCII(switches::kAuthSchemes));
+  std::vector<std::string> supported_schemes;
+  SplitString(csv_auth_schemes, ',', &supported_schemes);
+
+  return net::HttpAuthHandlerRegistryFactory::Create(
+      supported_schemes,
+      globals_->url_security_manager.get(),
+      resolver,
+      command_line.HasSwitch(switches::kDisableAuthNegotiateCnameLookup),
+      command_line.HasSwitch(switches::kEnableAuthNegotiatePort));
 }
 
 void IOThread::InitNetworkPredictorOnIOThread(
