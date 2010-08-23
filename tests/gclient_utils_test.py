@@ -88,7 +88,8 @@ class SubprocessCallAndFilterTestCase(GclientUtilBase):
     in_directory = 'bleh'
     env = gclient_utils.os.environ.copy()
     env['LANGUAGE'] = 'en'
-    print("\n________ running 'boo foo bar' in 'bleh'")
+    gclient_utils.sys.stdout.write(
+        '\n________ running \'boo foo bar\' in \'bleh\'\n')
     for i in test_string:
       gclient_utils.sys.stdout.write(i)
     gclient_utils.subprocess.Popen(

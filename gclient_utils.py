@@ -266,7 +266,9 @@ def SubprocessCallAndFilter(command,
                             in_directory,
                             print_messages,
                             print_stdout,
-                            fail_status=None, filter_fn=None):
+                            fail_status=None,
+                            filter_fn=None,
+                            stdout=None):
   """Runs command, a list, in directory in_directory.
 
   If print_messages is true, a message indicating what is being done
@@ -287,9 +289,10 @@ def SubprocessCallAndFilter(command,
   exit with an exit status of fail_status.  If fail_status is None (the
   default), gclient will raise an Error exception.
   """
+  stdout = stdout or sys.stdout
   logging.debug(command)
   if print_messages:
-    print('\n________ running \'%s\' in \'%s\''
+    stdout.write('\n________ running \'%s\' in \'%s\'\n'
           % (' '.join(command), in_directory))
 
   kid = Popen(command, bufsize=0, cwd=in_directory,
@@ -298,7 +301,7 @@ def SubprocessCallAndFilter(command,
   # Do a flush of sys.stdout before we begin reading from the subprocess's
   # stdout.
   last_flushed_at = time.time()
-  sys.stdout.flush()
+  stdout.flush()
 
   # Also, we need to forward stdout to prevent weird re-ordering of output.
   # This has to be done on a per byte basis to make sure it is not buffered:
@@ -310,10 +313,10 @@ def SubprocessCallAndFilter(command,
     if in_byte != '\r':
       if print_stdout:
         if not print_messages:
-          print('\n________ running \'%s\' in \'%s\''
+          stdout.write('\n________ running \'%s\' in \'%s\'\n'
               % (' '.join(command), in_directory))
           print_messages = True
-        sys.stdout.write(in_byte)
+        stdout.write(in_byte)
       if in_byte != '\n':
         in_line += in_byte
     if in_byte == '\n':
@@ -325,7 +328,7 @@ def SubprocessCallAndFilter(command,
       # which can slow busy readers down.
       if (time.time() - last_flushed_at) > 10:
         last_flushed_at = time.time()
-        sys.stdout.flush()
+        stdout.flush()
     in_byte = kid.stdout.read(1)
   # Flush the rest of buffered output. This is only an issue with files not
   # ending with a \n.
@@ -335,11 +338,9 @@ def SubprocessCallAndFilter(command,
 
   if rv:
     msg = 'failed to run command: %s' % ' '.join(command)
-
     if fail_status != None:
-      print >> sys.stderr, msg
+      sys.stderr.write(msg + '\n')
       sys.exit(fail_status)
-
     raise Error(msg)
 
 

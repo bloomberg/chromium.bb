@@ -121,7 +121,8 @@ class GIT(object):
                          in_directory,
                          print_messages,
                          print_stdout,
-                         filter_fn):
+                         filter_fn,
+                         stdout=None):
     """Runs a command, optionally outputting to stdout.
 
     stdout is passed line-by-line to the given filter_fn function. If
@@ -146,7 +147,8 @@ class GIT(object):
                                           in_directory,
                                           print_messages,
                                           print_stdout,
-                                          filter_fn=filter_fn)
+                                          filter_fn=filter_fn,
+                                          stdout=stdout)
 
   @staticmethod
   def GetEmail(repo_root):
@@ -378,7 +380,7 @@ class SVN(object):
         stderr=stderr).communicate()[0]
 
   @staticmethod
-  def RunAndGetFileList(verbose, args, in_directory, file_list):
+  def RunAndGetFileList(verbose, args, in_directory, file_list, stdout=None):
     """Runs svn checkout, update, or status, output to stdout.
 
     The first item in args must be either "checkout", "update", or "status".
@@ -436,7 +438,8 @@ class SVN(object):
                                in_directory,
                                verbose,
                                True,
-                               CaptureMatchingLines)
+                               CaptureMatchingLines,
+                               stdout=stdout)
       except gclient_utils.Error:
         def IsKnownFailure():
           for x in failure:
@@ -482,7 +485,8 @@ class SVN(object):
                          in_directory,
                          print_messages,
                          print_stdout,
-                         filter_fn):
+                         filter_fn,
+                         stdout=None):
     """Runs a command, optionally outputting to stdout.
 
     stdout is passed line-by-line to the given filter_fn function. If
@@ -507,7 +511,8 @@ class SVN(object):
                                           in_directory,
                                           print_messages,
                                           print_stdout,
-                                          filter_fn=filter_fn)
+                                          filter_fn=filter_fn,
+                                          stdout=stdout)
 
   @staticmethod
   def CaptureInfo(relpath, in_directory=None, print_error=True):

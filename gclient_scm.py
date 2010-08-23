@@ -154,7 +154,8 @@ class GitWrapper(SCMWrapper):
     merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
     command = ['diff', merge_base]
     filterer = DiffFilterer(self.relpath)
-    scm.GIT.RunAndFilterOutput(command, path, False, False, filterer.Filter)
+    scm.GIT.RunAndFilterOutput(command, path, False, False, filterer.Filter,
+        stdout=options.stdout)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -706,7 +707,8 @@ class SVNWrapper(SCMWrapper):
     command.extend(args)
 
     filterer = DiffFilterer(self.relpath)
-    scm.SVN.RunAndFilterOutput(command, path, False, False, filterer.Filter)
+    scm.SVN.RunAndFilterOutput(command, path, False, False, filterer.Filter,
+        stdout=options.stdout)
 
   def update(self, options, args, file_list):
     """Runs svn to update or transparently checkout the working copy.
