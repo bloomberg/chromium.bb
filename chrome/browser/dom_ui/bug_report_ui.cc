@@ -165,7 +165,7 @@ void RefreshLastScreenshot(views::Window* parent) {
 // Global "display this dialog" function declared in browser_dialogs.h.
 void ShowHtmlBugReportView(views::Window* parent, Browser* browser) {
   std::string bug_report_url = std::string(chrome::kChromeUIBugReportURL) +
-      base::IntToString(browser->selected_index());
+      "#" + base::IntToString(browser->selected_index());
 
   RefreshLastScreenshot(parent);
   browser->ShowSingletonTab(GURL(bug_report_url));
@@ -424,10 +424,11 @@ base::StringPiece BugReportHandler::Init() {
   }
 
   std::string params = page_url.substr(strlen(chrome::kChromeUIBugReportURL));
+  // Erase the # - the first character.
+  params.erase(params.begin(),params.begin() + 1);
 
   int index = 0;
   if (!base::StringToInt(params, &index)) {
-    ClobberScreenshotsSource();
     return base::StringPiece(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_BUGREPORT_HTML_INVALID));
@@ -435,7 +436,6 @@ base::StringPiece BugReportHandler::Init() {
 
   // Sanity checks.
   if (((index == 0) && (params != "0")) || (index >= browser_->tab_count())) {
-    ClobberScreenshotsSource();
     return base::StringPiece(
         ResourceBundle::GetSharedInstance().GetRawDataResource(
             IDR_BUGREPORT_HTML_INVALID));
@@ -445,6 +445,9 @@ base::StringPiece BugReportHandler::Init() {
     target_tab_ = browser_->GetTabContentsAt(index);
   else
     LOG(FATAL) << "Failed to get last active browser.";
+
+  // Setup the screenshot source after we've verified input is legit.
+  SetupScreenshotsSource();
 
   return base::StringPiece(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
