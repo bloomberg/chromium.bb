@@ -2961,6 +2961,12 @@ RunWithLog() {
     echo
     echo "PWD: $(pwd)"
     echo
+    # TODO(pdox): Make this a separate BUILDBOT flag (currently, this is it)
+    if ${UTMAN_DEBUG}; then
+      echo "BEGIN LOGFILE Contents."
+      cat "${log}"
+      echo "END LOGFILE Contents."
+    fi
     exit -1
   fi
 }
