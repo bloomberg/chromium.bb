@@ -42,6 +42,9 @@ cr.define('options', function() {
       $('addAddressButton').onclick = function(event) {
         OptionsPage.showOverlay('autoFillEditAddressOverlay');
       };
+      $('addCreditCardButton').onclick = function(event) {
+        OptionsPage.showOverlay('autoFillEditCreditCardOverlay');
+      };
 
       Preferences.getInstance().addEventListener('autofill.enabled',
           cr.bind(self.updateButtonState_, self));

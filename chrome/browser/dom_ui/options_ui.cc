@@ -20,6 +20,7 @@
 #include "chrome/browser/dom_ui/add_startup_page_handler.h"
 #include "chrome/browser/dom_ui/advanced_options_handler.h"
 #include "chrome/browser/dom_ui/autofill_edit_address_handler.h"
+#include "chrome/browser/dom_ui/autofill_edit_creditcard_handler.h"
 #include "chrome/browser/dom_ui/autofill_options_handler.h"
 #include "chrome/browser/dom_ui/browser_options_handler.h"
 #include "chrome/browser/dom_ui/clear_browser_data_handler.h"
@@ -134,6 +135,8 @@ OptionsUI::OptionsUI(TabContents* contents) : DOMUI(contents) {
   AddOptionsPageUIHandler(localized_strings, new AddStartupPageHandler());
   AddOptionsPageUIHandler(localized_strings, new AdvancedOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new AutoFillEditAddressHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new AutoFillEditCreditCardHandler());
   AddOptionsPageUIHandler(localized_strings, new AutoFillOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new BrowserOptionsHandler());
   AddOptionsPageUIHandler(localized_strings, new ClearBrowserDataHandler());
