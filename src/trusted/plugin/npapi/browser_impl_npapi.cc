@@ -110,6 +110,53 @@ bool BrowserImplNpapi::EvalString(InstanceIdentifier instance_id,
   return true;
 }
 
+bool BrowserImplNpapi::AddToConsole(InstanceIdentifier instance_id,
+                                    const nacl::string& text) {
+#if defined(NACL_STANDALONE)
+  // We cannot be sure whether console.log is supported by the browser,
+  // so we use alerts instead.
+  return Alert(instance_id, text);
+#else
+  bool success = false;
+  // Usually these messages are important enough to call attention to them.
+  puts(text.c_str());
+
+  NPObject* window = NULL;
+  NPP npp = InstanceIdentifierToNPP(instance_id);
+  if (NPN_GetValue(npp, NPNVWindowNPObject, &window) != NPERR_NO_ERROR) {
+    return false;
+  }
+
+  NPVariant console_variant;
+  if (!NPN_GetProperty(npp, window, NPN_GetStringIdentifier("console"),
+                       &console_variant)) {
+    goto cleanup_window;
+  }
+  if (!NPVARIANT_IS_OBJECT(console_variant)) {
+    goto cleanup_console_variant;
+  }
+  NPObject* console_object = NPVARIANT_TO_OBJECT(console_variant);
+
+  NPVariant message;  // doesn't hold its own string data, so don't release
+  STRINGN_TO_NPVARIANT(text.c_str(),
+                       static_cast<uint32_t>(text.size()),
+                       message);
+
+  NPVariant result;
+  VOID_TO_NPVARIANT(result);
+  success = NPN_Invoke(npp, console_object, NPN_GetStringIdentifier("log"),
+                       &message, 1, &result);
+  if (success) {
+    NPN_ReleaseVariantValue(&result);
+  }
+cleanup_console_variant:
+  NPN_ReleaseVariantValue(&console_variant);
+cleanup_window:
+  NPN_ReleaseObject(window);
+  return success;
+#endif
+}
+
 bool BrowserImplNpapi::Alert(InstanceIdentifier instance_id,
                              const nacl::string& text) {
   // Usually these messages are important enough to call attention to them.
@@ -131,7 +178,7 @@ bool BrowserImplNpapi::Alert(InstanceIdentifier instance_id,
   bool ok = NPN_Invoke(npp, window, NPN_GetStringIdentifier("alert"),
                        &message, 1, &result);
   if (ok) NPN_ReleaseVariantValue(&result);
-  // TODO(adonovan): NPN_ReleaseObject(window) needed?
+  NPN_ReleaseObject(window);
   return ok;
 }
 

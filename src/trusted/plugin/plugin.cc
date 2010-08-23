@@ -328,12 +328,9 @@ bool Plugin::SetNexesPropertyImpl(const char* nexes_attr) {
                  nexes_attr));
   nacl::string result;
   if (!GetNexeURL(nexes_attr, &result)) {
-    // TODO(adonovan): Ideally we would print to the browser's
-    // JavaScript console: alert popups are annoying, and no-one can
-    // be expected to read stderr.
     PLUGIN_PRINTF(("Plugin::SetNexesPropertyImpl (result='%s')\n",
                    result.c_str()));
-    browser_interface()->Alert(instance_id(), result);
+    browser_interface()->AddToConsole(instance_id(), result);
     return false;
   } else {
     return SetSrcPropertyImpl(result);
@@ -541,7 +538,7 @@ bool Plugin::Load(nacl::string logical_url,
     nacl::string message = nacl::string("Load failed: NaCl module ") +
         logical_url + " does not come ""from a whitelisted source. "
         "See native_client/src/trusted/plugin/origin.cc for the list.";
-    browser_interface->Alert(instance_id(), message.c_str());
+    browser_interface->AddToConsole(instance_id(), message.c_str());
     PLUGIN_PRINTF(("Plugin::Load (return 0)"));
     return false;
   }
@@ -572,7 +569,7 @@ bool Plugin::Load(nacl::string logical_url,
   }
   if (!success) {
     PLUGIN_PRINTF(("Plugin::Load (error_string='%s')\n", error_string.c_str()));
-    browser_interface->Alert(instance_id(), error_string);
+    browser_interface->AddToConsole(instance_id(), error_string);
     return false;
   }
 
@@ -586,7 +583,8 @@ bool Plugin::Load(nacl::string logical_url,
   service_runtime_ = new(std::nothrow) ServiceRuntime(browser_interface, this);
   if (NULL == service_runtime_) {
     PLUGIN_PRINTF(("Plugin::Load (ServiceRuntime Ctor failed)\n"));
-    browser_interface->Alert(instance_id(), "ServiceRuntime Ctor failed");
+    browser_interface->AddToConsole(instance_id(),
+                                    "ServiceRuntime Ctor failed");
     return false;
   }
   bool service_runtime_started = false;
@@ -607,8 +605,8 @@ bool Plugin::Load(nacl::string logical_url,
   }
   if (!service_runtime_started) {
     PLUGIN_PRINTF(("Plugin::Load (failed to start service runtime)\n"));
-    browser_interface->Alert(instance_id(),
-                             "Load: FAILED to start service runtime");
+    browser_interface->AddToConsole(instance_id(),
+                                    "Load: FAILED to start service runtime");
     return false;
   }
 

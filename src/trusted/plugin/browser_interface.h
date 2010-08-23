@@ -49,12 +49,17 @@ class BrowserInterface {
                      const nacl::string& text) = 0;
 
   // Evaluate a JavaScript string in the browser.
-  virtual bool EvalString(InstanceIdentifier plugin_identifier,
+  virtual bool EvalString(InstanceIdentifier instance_id,
                           const nacl::string& str) = 0;
 
   // Gets the full URL of the current page.
   virtual bool GetFullURL(InstanceIdentifier instance_id,
                           nacl::string* full_url) = 0;
+
+  // Write to the JavaScript console. Currently works in Chrome only, generates
+  // an alert in other browsers.
+  virtual bool AddToConsole(InstanceIdentifier instance_id,
+                            const nacl::string& text) = 0;
 
   // Gets the origin of the current page.  Origin is scheme://domain.
   bool GetOrigin(InstanceIdentifier instance_id,

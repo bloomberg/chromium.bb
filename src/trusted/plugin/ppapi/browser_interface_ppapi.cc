@@ -23,6 +23,7 @@ using nacl::assert_cast;
 
 namespace {
 
+// TODO(polina): this function should return pp::Var
 bool GetWindow(plugin::InstanceIdentifier instance_id, pp::Var* window) {
   pp::Instance* instance = plugin::InstanceIdentifierToPPInstance(instance_id);
   *window = instance->GetWindowObject();
@@ -63,6 +64,16 @@ bool BrowserInterfacePpapi::Alert(InstanceIdentifier instance_id,
   return exception.is_void();
 }
 
+bool BrowserInterfacePpapi::AddToConsole(InstanceIdentifier instance_id,
+                                         const nacl::string& text) {
+  pp::Var window;
+  if (!GetWindow(instance_id, &window)) {
+    return false;
+  }
+  pp::Var exception;
+  window.GetProperty("console", &exception).Call("log", text, &exception);
+  return exception.is_void();
+}
 
 bool BrowserInterfacePpapi::EvalString(InstanceIdentifier instance_id,
                                        const nacl::string& expression) {

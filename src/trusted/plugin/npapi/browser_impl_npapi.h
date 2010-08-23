@@ -43,8 +43,13 @@ class BrowserImplNpapi : public BrowserInterface {
                      const nacl::string& text);
 
   // Evaluate a JavaScript string in the browser.
-  virtual bool EvalString(InstanceIdentifier plugin_identifier,
+  virtual bool EvalString(InstanceIdentifier instance_id,
                           const nacl::string& handler_string);
+
+  // Write to the JavaScript console. Currently works in Chrome only, generates
+  // an alert in other browsers.
+  virtual bool AddToConsole(InstanceIdentifier instance_id,
+                            const nacl::string& text);
 
   // Gets the full URL of the current page.
   bool GetFullURL(InstanceIdentifier instance_id,

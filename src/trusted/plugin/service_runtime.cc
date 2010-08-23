@@ -69,7 +69,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   if (NULL == default_socket_address_) {
     const char* error = "service runtime: no valid socket address";
     PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
-    browser_interface_->Alert(plugin()->instance_id(), error);
+    browser_interface_->AddToConsole(plugin()->instance_id(), error);
     return false;
   }
   // The first connect on the socket address returns the service
@@ -84,7 +84,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   if (NULL == raw_channel) {
     const char* error = "service runtime connect failed";
     PLUGIN_PRINTF(("ServiceRuntime::InitCommuncation (%s)\n", error));
-    browser_interface_->Alert(plugin()->instance_id(), error);
+    browser_interface_->AddToConsole(plugin()->instance_id(), error);
     return false;
   }
   PLUGIN_PRINTF(("ServiceRuntime::InitCommunication"
@@ -104,7 +104,7 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
     if (!runtime_channel_->LoadModule(shm->desc())) {
       const char* error = "failed to send nexe";
       PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
-      browser_interface_->Alert(plugin()->instance_id(), error);
+      browser_interface_->AddToConsole(plugin()->instance_id(), error);
       shm->Delete();
       // TODO(gregoryd): close communication channels
       delete subprocess_;
@@ -134,14 +134,14 @@ bool ServiceRuntime::InitCommunication(nacl::Handle bootstrap_socket,
   if (!runtime_channel_->StartModule(&load_status)) {
     const char* error = "could not start nacl module";
     PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error));
-    browser_interface_->Alert(plugin()->instance_id(), error);
+    browser_interface_->AddToConsole(plugin()->instance_id(), error);
     return false;
   }
   PLUGIN_PRINTF((" start_module returned %d\n", load_status));
   if (LOAD_OK != load_status) {
     nacl::string error = "loading of module failed with status " + load_status;
     PLUGIN_PRINTF(("ServiceRuntime::InitCommunication (%s)\n", error.c_str()));
-    browser_interface_->Alert(plugin()->instance_id(), error.c_str());
+    browser_interface_->AddToConsole(plugin()->instance_id(), error.c_str());
     return false;
   }
   return true;
@@ -171,38 +171,38 @@ bool ServiceRuntime::Start(const char* nacl_file) {
   if (NULL == subprocess_) {
     const char* error = "could not create SelLdrLauncher";
     PLUGIN_PRINTF(("ServiceRuntime::Start (%s)\n", error));
-    browser_interface_->Alert(plugin()->instance_id(), error);
+    browser_interface_->AddToConsole(plugin()->instance_id(), error);
     return false;
   }
   subprocess_->Init(nacl_file, -1, kArgv, kEmpty);
 
   nacl::Handle receive_handle = subprocess_->ExportImcFD(6);
   if (receive_handle == nacl::kInvalidHandle) {
-    browser_interface_->Alert(plugin()->instance_id(),
-                              "Failed to create async receive handle");
+    browser_interface_->AddToConsole(plugin()->instance_id(),
+                                     "Failed to create async receive handle");
     return false;
   }
   async_receive_desc = plugin()->wrapper_factory()->MakeImcSock(receive_handle);
 
   nacl::Handle send_handle = subprocess_->ExportImcFD(7);
   if (send_handle == nacl::kInvalidHandle) {
-    browser_interface_->Alert(plugin()->instance_id(),
-                              "Failed to create async send handle");
+    browser_interface_->AddToConsole(plugin()->instance_id(),
+                                     "Failed to create async send handle");
     return false;
   }
   async_send_desc = plugin()->wrapper_factory()->MakeImcSock(send_handle);
 
   nacl::Handle bootstrap_socket = subprocess_->ExportImcFD(5);
   if (bootstrap_socket == nacl::kInvalidHandle) {
-    browser_interface_->Alert(plugin()->instance_id(),
-                              "Failed to create socket handle");
+    browser_interface_->AddToConsole(plugin()->instance_id(),
+                                     "Failed to create socket handle");
     return false;
   }
 
   if (!subprocess_->Launch()) {
     const char* error = "could not start SelLdrLauncher";
     PLUGIN_PRINTF(("ServiceRuntime::Start (%s)\n", error));
-    browser_interface_->Alert(plugin()->instance_id(), error);
+    browser_interface_->AddToConsole(plugin()->instance_id(), error);
     delete subprocess_;
     subprocess_ = NULL;
     return false;

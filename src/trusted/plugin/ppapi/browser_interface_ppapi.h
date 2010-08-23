@@ -42,8 +42,12 @@ class BrowserInterfacePpapi : public BrowserInterface {
                      const nacl::string& text);
 
   // Evaluate a JavaScript string in the browser.
-  virtual bool EvalString(InstanceIdentifier plugin_identifier,
+  virtual bool EvalString(InstanceIdentifier instance_id,
                           const nacl::string& handler_string);
+
+  // Write to the JavaScript console.
+  virtual bool AddToConsole(InstanceIdentifier instance_id,
+                            const nacl::string& text);
 
   // Gets the full URL of the current page.
   virtual bool GetFullURL(InstanceIdentifier instance_id,
