@@ -57,13 +57,6 @@ bool OpenFirstRunDialog(Profile* profile,
   return controller->DoFirstRun(profile, process_singleton);
 }
 
-bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
-                                        MasterPrefs* out_prefs) {
-  // TODO(jeremy,viettrungluu): http://crbug.com/44901
-  NOTIMPLEMENTED();
-  return true;
-}
-
 FirstRunController::FirstRunController()
     : importer_host_(new ExternalProcessImporterHost) {
 }
@@ -155,4 +148,8 @@ bool FirstRunController::DoFirstRun(Profile* profile,
   }
 
   return true;
+}
+bool FirstRun::ImportBookmarks(const FilePath& import_bookmarks_path) {
+  // http://crbug.com/48880
+  return false;
 }

@@ -131,6 +131,18 @@ class FirstRun {
   FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);
 
 #if defined(OS_WIN)
+  // Writes the EULA to a temporary file, returned in |*eula_path|, and returns
+  // true if successful.
+  static bool WriteEULAtoTempFile(FilePath* eula_path);
+  // Launches the setup exe with the given parameter/value on the command-line,
+  // waits for its termination, returns its exit code in |*ret_code|, and
+  // returns true if the exit code is valid.
+  static bool LaunchSetupWithParam(const std::string& param,
+                                   const std::wstring& value,
+                                   int* ret_code);
+  // Installs a task to do an extensions update check once the extensions system
+  // is running.
+  static void DoDelayedInstallExtensions();
   // Imports settings in a separate process. It is the implementation of the
   // public version.  |skip_first_run_ui| is true if no first run UI should
   // appear (search engine dialog, Firefox import warning dialog).
@@ -142,7 +154,7 @@ class FirstRun {
   // Import browser items in this process. The browser and the items to
   // import are encoded int the command line.
   static int ImportFromBrowser(Profile* profile, const CommandLine& cmdline);
-#elif defined(OS_LINUX)
+#else
   static bool ImportBookmarks(const FilePath& import_bookmarks_path);
 #endif
 

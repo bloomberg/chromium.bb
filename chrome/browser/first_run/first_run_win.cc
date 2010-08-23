@@ -11,65 +11,44 @@
 #include <set>
 #include <sstream>
 
-// TODO(port): trim this include list once first run has been refactored fully.
 #include "app/app_switches.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_util.h"
-#include "base/logging.h"
 #include "base/object_watcher.h"
 #include "base/path_service.h"
-#include "base/process.h"
-#include "base/process_util.h"
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "base/string_number_conversions.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/win_util.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_registrar.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
-#include "chrome/browser/hang_monitor/hung_window_detector.h"
 #include "chrome/browser/importer/importer.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/pref_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/profile_manager.h"
-#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/views/first_run_search_engine_view.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/result_codes.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/worker_thread_ticker.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 #include "google_update_idl.h"
-#include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "views/background.h"
 #include "views/controls/button/image_button.h"
-#include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/image_view.h"
-#include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/grid_layout.h"
@@ -77,8 +56,6 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
-#include "views/window/window_delegate.h"
-#include "views/window/window_win.h"
 
 namespace {
 
@@ -94,19 +71,6 @@ bool GetBackupChromeFile(std::wstring* path) {
     return false;
   file_util::AppendToPath(path, installer_util::kChromeOldExe);
   return true;
-}
-
-FilePath GetDefaultPrefFilePath(bool create_profile_dir,
-                                const FilePath& user_data_dir) {
-  FilePath default_pref_dir =
-      ProfileManager::GetDefaultProfileDir(user_data_dir);
-  if (create_profile_dir) {
-    if (!file_util::PathExists(default_pref_dir)) {
-      if (!file_util::CreateDirectory(default_pref_dir))
-        return FilePath();
-    }
-  }
-  return ProfileManager::GetProfilePrefsPath(default_pref_dir);
 }
 
 bool InvokeGoogleUpdateForRename() {
@@ -213,6 +177,48 @@ class FirstRunDelayedTasks : public NotificationObserver {
 
 }  // namespace
 
+bool FirstRun::LaunchSetupWithParam(const std::string& param,
+                                    const std::wstring& value,
+                                    int* ret_code) {
+  FilePath exe_path;
+  if (!PathService::Get(base::DIR_MODULE, &exe_path))
+    return false;
+  exe_path = exe_path.Append(installer_util::kInstallerDir);
+  exe_path = exe_path.Append(installer_util::kSetupExe);
+  base::ProcessHandle ph;
+  CommandLine cl(exe_path);
+  cl.AppendSwitchNative(param, value);
+
+  CommandLine* browser_command_line = CommandLine::ForCurrentProcess();
+  if (browser_command_line->HasSwitch(switches::kChromeFrame)) {
+    cl.AppendSwitch(switches::kChromeFrame);
+  }
+
+  if (!base::LaunchApp(cl, false, false, &ph))
+    return false;
+  DWORD wr = ::WaitForSingleObject(ph, INFINITE);
+  if (wr != WAIT_OBJECT_0)
+    return false;
+  return (TRUE == ::GetExitCodeProcess(ph, reinterpret_cast<DWORD*>(ret_code)));
+}
+
+bool FirstRun::WriteEULAtoTempFile(FilePath* eula_path) {
+  base::StringPiece terms =
+      ResourceBundle::GetSharedInstance().GetRawDataResource(IDR_TERMS_HTML);
+  if (terms.empty())
+    return false;
+  FILE *file = file_util::CreateAndOpenTemporaryFile(eula_path);
+  if (!file)
+    return false;
+  bool good = fwrite(terms.data(), terms.size(), 1, file) == 1;
+  fclose(file);
+  return good;
+}
+
+void FirstRun::DoDelayedInstallExtensions() {
+  new FirstRunDelayedTasks(FirstRunDelayedTasks::INSTALL_EXTENSIONS);
+}
+
 CommandLine* Upgrade::new_command_line_ = NULL;
 
 bool FirstRun::CreateChromeDesktopShortcut() {
@@ -234,196 +240,6 @@ bool FirstRun::CreateChromeQuickLaunchShortcut() {
   return ShellUtil::CreateChromeQuickLaunchShortcut(chrome_exe,
       ShellUtil::CURRENT_USER,  // create only for current user.
       true);  // create if doesn't exist.
-}
-
-bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
-                                        MasterPrefs* out_prefs) {
-  DCHECK(!user_data_dir.empty());
-
-  // The standard location of the master prefs is next to the chrome exe.
-  FilePath master_prefs;
-  if (!PathService::Get(base::DIR_EXE, &master_prefs))
-    return true;
-  master_prefs = master_prefs.AppendASCII(installer_util::kDefaultMasterPrefs);
-
-  scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(master_prefs));
-  if (!prefs.get())
-    return true;
-
-  out_prefs->new_tabs = installer_util::GetFirstRunTabs(prefs.get());
-
-  if (!installer_util::GetDistroIntegerPreference(prefs.get(),
-      installer_util::master_preferences::kDistroPingDelay,
-      &out_prefs->ping_delay)) {
-    // 90 seconds is the default that we want to use in case master
-    // preferences is missing, corrupt or ping_delay is missing.
-    out_prefs->ping_delay = 90;
-  }
-
-  std::string not_used;
-  out_prefs->homepage_defined = prefs->GetString(prefs::kHomePage, &not_used);
-
-  bool value = false;
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kRequireEula, &value) && value) {
-    // Show the post-installation EULA. This is done by setup.exe and the
-    // result determines if we continue or not. We wait here until the user
-    // dismisses the dialog.
-
-    // The actual eula text is in a resource in chrome. We extract it to
-    // a text file so setup.exe can use it as an inner frame.
-    FilePath inner_html;
-    if (WriteEULAtoTempFile(&inner_html)) {
-      int retcode = 0;
-      if (!LaunchSetupWithParam(installer_util::switches::kShowEula,
-                                inner_html.ToWStringHack(), &retcode) ||
-          (retcode == installer_util::EULA_REJECTED)) {
-        LOG(WARNING) << "EULA rejected. Fast exit.";
-        ::ExitProcess(1);
-      }
-      if (retcode == installer_util::EULA_ACCEPTED) {
-        LOG(INFO) << "EULA : no collection";
-        GoogleUpdateSettings::SetCollectStatsConsent(false);
-      } else if (retcode == installer_util::EULA_ACCEPTED_OPT_IN) {
-        LOG(INFO) << "EULA : collection consent";
-        GoogleUpdateSettings::SetCollectStatsConsent(true);
-      }
-    }
-  }
-
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kAltFirstRunBubble, &value) && value)
-    FirstRun::SetOEMFirstRunBubblePref();
-
-  FilePath user_prefs = GetDefaultPrefFilePath(true, user_data_dir);
-  if (user_prefs.empty())
-    return true;
-
-  // The master prefs are regular prefs so we can just copy the file
-  // to the default place and they just work.
-  if (!file_util::CopyFile(master_prefs, user_prefs))
-    return true;
-
-  DictionaryValue* extensions = 0;
-  if (installer_util::HasExtensionsBlock(prefs.get(), &extensions)) {
-    LOG(INFO) << "Extensions block found in master preferences";
-    new FirstRunDelayedTasks(FirstRunDelayedTasks::INSTALL_EXTENSIONS);
-  }
-
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportSearchPref, &value)) {
-    if (value) {
-      out_prefs->do_import_items |= importer::SEARCH_ENGINES;
-    } else {
-      out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
-    }
-  }
-
-  // Check to see if search engine logos should be randomized.
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kSearchEngineExperimentRandomizePref,
-      &value) && value)
-    out_prefs->randomize_search_engine_experiment = true;
-
-  // If we're suppressing the first-run bubble, set that preference now.
-  // Otherwise, wait until the user has completed first run to set it, so the
-  // user is guaranteed to see the bubble iff he or she has completed the first
-  // run process.
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroSuppressFirstRunBubble,
-      &value) && value)
-    FirstRun::SetShowFirstRunBubblePref(false);
-
-
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHistoryPref, &value)) {
-    if (value) {
-      out_prefs->do_import_items |= importer::HISTORY;
-    } else {
-      out_prefs->dont_import_items |= importer::HISTORY;
-    }
-  }
-
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportHomePagePref, &value)) {
-    if (value) {
-      out_prefs->do_import_items |= importer::HOME_PAGE;
-    } else {
-      out_prefs->dont_import_items |= importer::HOME_PAGE;
-    }
-  }
-
-  // Bookmarks are never imported unless specifically turned on.
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportBookmarksPref, &value)
-      && value) {
-    out_prefs->do_import_items |= importer::FAVORITES;
-  }
-
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kMakeChromeDefaultForUser, &value) &&
-      value)
-    ShellIntegration::SetAsDefaultBrowser();
-
-  // TODO(mirandac): Refactor skip-first-run-ui process into regular first run
-  // import process.  http://crbug.com/49647
-  // Note we are skipping all other master preferences if skip-first-run-ui
-  // is *not* specified. (That is, we continue only if skipping first run ui.)
-  if (!installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroSkipFirstRunPref, &value) ||
-      !value)
-    return true;
-
-  // We need to be able to create the first run sentinel or else we cannot
-  // proceed because ImportSettings will launch the importer process which
-  // would end up here if the sentinel is not present.
-  if (!FirstRun::CreateSentinel())
-    return false;
-
-  if (installer_util::GetDistroBooleanPreference(prefs.get(),
-      installer_util::master_preferences::kDistroShowWelcomePage, &value) &&
-      value)
-    FirstRun::SetShowWelcomePagePref();
-
-  std::string import_bookmarks_path;
-  installer_util::GetDistroStringPreference(prefs.get(),
-      installer_util::master_preferences::kDistroImportBookmarksFromFilePref,
-      &import_bookmarks_path);
-
-  std::wstring brand;
-  GoogleUpdateSettings::GetBrand(&brand);
-  // This should generally be true, as skip_first_run_ui is a setting used for
-  // non-organic builds.
-  if (!GoogleUpdateSettings::IsOrganic(brand)) {
-    // If search engines aren't explicitly imported, don't import.
-    if (!(out_prefs->do_import_items & importer::SEARCH_ENGINES)) {
-      out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
-    }
-    // If home page isn't explicitly imported, don't import.
-    if (!(out_prefs->do_import_items & importer::HOME_PAGE)) {
-      out_prefs->dont_import_items |= importer::HOME_PAGE;
-    }
-    // If history isn't explicitly forbidden, do import.
-    if (!(out_prefs->dont_import_items & importer::HISTORY)) {
-      out_prefs->do_import_items |= importer::HISTORY;
-    }
-  }
-
-  if (out_prefs->do_import_items || !import_bookmarks_path.empty()) {
-    // There is something to import from the default browser. This launches
-    // the importer process and blocks until done or until it fails.
-    scoped_refptr<ImporterHost> importer_host = new ImporterHost();
-    if (!FirstRun::ImportSettings(NULL,
-          importer_host->GetSourceProfileInfoAt(0).browser_type,
-              out_prefs->do_import_items,
-              FilePath::FromWStringHack(UTF8ToWide(import_bookmarks_path)),
-              true, NULL)) {
-      LOG(WARNING) << "silent import failed";
-    }
-  }
-
-  return false;
 }
 
 bool Upgrade::IsBrowserAlreadyRunning() {
@@ -846,7 +662,7 @@ const wchar_t kHelpCenterUrl[] =
 //   |        [o] Give the new version a try  |
 //   |        [ ] Uninstall Google Chrome     |
 //   |        [ OK ] [Don't bug me]           |
-//   |        _why_am_I_seeign this?__        |
+//   |        _why_am_I_seeing this?__        |
 //   ------------------------------------------
 class TryChromeDialog : public views::ButtonListener,
                         public views::LinkController {

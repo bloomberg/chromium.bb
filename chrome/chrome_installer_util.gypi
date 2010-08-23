@@ -127,7 +127,7 @@
         },
       ],
     }],
-    ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+    ['OS!="win"', {
       'targets': [
         {
           'target_name': 'installer_util',
@@ -147,21 +147,6 @@
           ],
           'include_dirs': [
             '<(DEPTH)',
-          ],
-        }
-      ],
-    }],
-    ['OS=="mac"', {
-      'targets': [
-        {
-          'target_name': 'installer_util',
-          'type': '<(library)',
-          'dependencies': [
-            '../base/base.gyp:base',
-          ],
-          'sources': [
-            'installer/util/version.cc',
-            'installer/util/version.h',
           ],
         }
       ],
