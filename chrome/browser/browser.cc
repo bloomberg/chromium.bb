@@ -1092,7 +1092,8 @@ void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_REPORT_BUG, show_main_ui);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR, show_main_ui);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_BAR,
+      browser_defaults::bookmarks_enabled && show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_SYNC_BOOKMARKS,
       show_main_ui && profile_->IsSyncAccessible());
@@ -3270,7 +3271,8 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_DEV_TOOLS_INSPECT, true);
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER,
+                                        browser_defaults::bookmarks_enabled);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
@@ -3316,7 +3318,8 @@ void Browser::InitCommandState() {
 #endif
 
   // Page-related commands
-  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE,
+      browser_defaults::bookmarks_enabled && normal_window);
 
   // Clipboard commands
   command_updater_.UpdateCommandEnabled(IDC_COPY_URL, non_devtools_window);
@@ -3363,7 +3366,7 @@ void Browser::UpdateCommandsForTabState() {
   // Page-related commands
   window_->SetStarredState(current_tab->is_starred());
   command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_ALL_TABS,
-                                        CanBookmarkAllTabs());
+      browser_defaults::bookmarks_enabled && CanBookmarkAllTabs());
   command_updater_.UpdateCommandEnabled(IDC_VIEW_SOURCE,
       current_tab->controller().CanViewSource());
   // Instead of using GetURL here, we use url() (which is the "real" url of the
