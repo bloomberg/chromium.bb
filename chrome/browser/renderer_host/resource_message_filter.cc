@@ -53,6 +53,7 @@
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
+#include "chrome/browser/search_engines/search_provider_install_state_dispatcher_host.h"
 #include "chrome/browser/speech/speech_input_dispatcher_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager.h"
@@ -244,6 +245,9 @@ ResourceMessageFilter::ResourceMessageFilter(
       ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
           GeolocationDispatcherHost::New(
               this->id(), profile->GetGeolocationPermissionContext()))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          search_provider_install_state_dispatcher_host_(
+              new SearchProviderInstallStateDispatcherHost(this, profile))),
       ALLOW_THIS_IN_INITIALIZER_LIST(device_orientation_dispatcher_host_(
           new device_orientation::DispatcherHost(this->id()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(file_system_dispatcher_host_(
@@ -353,6 +357,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
           msg, this, next_route_id_callback(), &msg_is_ok) ||
       geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       speech_input_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
+      search_provider_install_state_dispatcher_host_->OnMessageReceived(
+          msg, &msg_is_ok) ||
       device_orientation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       file_system_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 

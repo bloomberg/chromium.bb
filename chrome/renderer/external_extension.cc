@@ -124,8 +124,11 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::IsSearchProviderInstalled(
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
+  WebFrame* webframe = WebFrame::frameForEnteredContext();
+  if (!webframe) return v8::Undefined();
+
   ViewHostMsg_GetSearchProviderInstallState_Params install
-      = render_view->GetSearchProviderInstallState(name);
+      = render_view->GetSearchProviderInstallState(webframe, name);
   if (install.state ==
       ViewHostMsg_GetSearchProviderInstallState_Params::DENIED) {
     // FIXME: throw access denied exception.

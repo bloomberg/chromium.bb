@@ -1612,9 +1612,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Find out if the given url's security origin is installed as a search
   // provider.
-  IPC_SYNC_MESSAGE_ROUTED1_1(
+  IPC_SYNC_MESSAGE_ROUTED2_1(
       ViewHostMsg_GetSearchProviderInstallState,
-      GURL,
+      GURL /* page url */,
+      GURL /* inquiry url */,
       ViewHostMsg_GetSearchProviderInstallState_Params /* install */)
 
   // Required for updating text input state.

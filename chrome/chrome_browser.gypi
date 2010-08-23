@@ -2369,6 +2369,8 @@
         'browser/search_engines/edit_search_engine_controller.h',
         'browser/search_engines/keyword_editor_controller.cc',
         'browser/search_engines/keyword_editor_controller.h',
+        'browser/search_engines/search_provider_install_state_dispatcher_host.cc',
+        'browser/search_engines/search_provider_install_state_dispatcher_host.h',
         'browser/search_engines/template_url.cc',
         'browser/search_engines/template_url.h',
         'browser/search_engines/template_url_fetcher.cc',

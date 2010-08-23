@@ -1609,12 +1609,15 @@ void RenderView::AddSearchProvider(const std::string& url) {
 }
 
 ViewHostMsg_GetSearchProviderInstallState_Params
-RenderView::GetSearchProviderInstallState(const std::string& url) {
+RenderView::GetSearchProviderInstallState(WebFrame* frame,
+                                          const std::string& url) {
   GURL inquiry_url = GURL(url);
   if (inquiry_url.is_empty())
     return ViewHostMsg_GetSearchProviderInstallState_Params::Denied();
+
   ViewHostMsg_GetSearchProviderInstallState_Params install;
   Send(new ViewHostMsg_GetSearchProviderInstallState(routing_id_,
+                                                     frame->url(),
                                                      inquiry_url,
                                                      &install));
   return install;

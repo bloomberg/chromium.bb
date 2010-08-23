@@ -104,6 +104,7 @@ class WebApplicationCacheHostClient;
 class WebDataSource;
 class WebDocument;
 class WebDragData;
+class WebFrame;
 class WebGeolocationServiceInterface;
 class WebImage;
 class WebInputElement;
@@ -214,7 +215,8 @@ class RenderView : public RenderWidget,
 
   // Returns the install state for the given search provider url.
   ViewHostMsg_GetSearchProviderInstallState_Params
-      GetSearchProviderInstallState(const std::string& url);
+      GetSearchProviderInstallState(WebKit::WebFrame* frame,
+                                    const std::string& url);
 
   // Evaluates a string of JavaScript in a particular frame.
   void EvaluateScript(const std::wstring& frame_xpath,

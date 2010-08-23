@@ -43,6 +43,7 @@ class IndexedDBDispatcherHost;
 class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
+class SearchProviderInstallStateDispatcherHost;
 class URLRequestContextGetter;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_CreateWorker_Params;
@@ -468,6 +469,10 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Used to handle geolocation-related messages.
   scoped_refptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;
+
+  // Used to handle search provider related messages.
+  scoped_ptr<SearchProviderInstallStateDispatcherHost>
+      search_provider_install_state_dispatcher_host_;
 
   // Used to handle device orientation related messages.
   scoped_refptr<device_orientation::DispatcherHost>
