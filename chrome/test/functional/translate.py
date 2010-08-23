@@ -6,6 +6,8 @@
 import glob
 import logging
 import os
+import shutil
+import tempfile
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
@@ -379,6 +381,66 @@ class TranslateTest(pyauto.PyUITest):
         logging.debug('Starting file %s' % lang_file)
         lang_file = self.GetFileURLForPath(lang_file)
         self._AssertTranslateWorks(lang_file, lang_code)
+
+  def _CreateCrazyDownloads(self):
+    """Doownload files with filenames containing special chars.
+       The files are created on the fly and cleaned after use.
+    """
+    download_dir = self.GetDownloadDirectory().value()
+    filename = os.path.join(self.DataDir(), 'downloads', 'crazy_filenames.txt')
+    crazy_filenames = self.EvalDataFrom(filename)
+    logging.info('Testing with %d crazy filenames' % len(crazy_filenames))
+
+    def _CreateFile(name):
+      """Create and fill the given file with some junk."""
+      fp = open(name, 'w')  # name could be unicode
+      print >>fp, 'This is a junk file named %s. ' % repr(name) * 100
+      fp.close()
+
+    # Temp dir for hosting crazy filenames.
+    temp_dir = tempfile.mkdtemp(prefix='download')
+    # Filesystem-interfacing functions like os.listdir() need to
+    # be given unicode strings to "do the right thing" on win.
+    # Ref: http://boodebr.org/main/python/all-about-python-and-unicode
+    try:
+      for filename in crazy_filenames:  # filename is unicode.
+        utf8_filename = filename.encode('utf-8')
+        file_path = os.path.join(temp_dir, utf8_filename)
+        _CreateFile(os.path.join(temp_dir, filename))  # unicode file.
+        file_url = self.GetFileURLForPath(file_path)
+        downloaded_file = os.path.join(download_dir, filename)
+        os.path.exists(downloaded_file) and os.remove(downloaded_file)
+        self.DownloadAndWaitForStart(file_url)
+      self.WaitForAllDownloadsToComplete()
+
+    finally:
+      shutil.rmtree(unicode(temp_dir))  # unicode so that win treats nicely.
+
+  def testHistoryNotTranslated(self):
+    """Tests navigating to History page with other languages."""
+    # Build the history with non-English content.
+    history_file = os.path.join(
+        self.DataDir(), 'translate', 'crazy_history.txt')
+    history_items = self.EvalDataFrom(history_file)
+    for history_item in history_items:
+       self.AddHistoryItem(history_item)
+    # Navigate to a page that triggers the translate bar so we can verify that
+    # it disappears on the history page.
+    self._NavigateAndWaitForBar(self._GetDefaultSpanishURL())
+    self.NavigateToURL('chrome://history/')
+    self.WaitForInfobarCount(0)
+    self.assertFalse('translate_bar' in self.GetTranslateInfo())
+
+  def testDownloadsNotTranslated(self):
+    """Tests navigating to the Downloads page with other languages."""
+    # Build the download history with non-English content.
+    self._CreateCrazyDownloads()
+    # Navigate to a page that triggers the translate bar so we can verify that
+    # it disappears on the downloads page.
+    self._NavigateAndWaitForBar(self._GetDefaultSpanishURL())
+    self.NavigateToURL('chrome://downloads/')
+    self.WaitForInfobarCount(0)
+    self.assertFalse('translate_bar' in self.GetTranslateInfo())
 
 
 if __name__ == '__main__':

@@ -1,0 +1,43 @@
+# List of crazy URLs.
+# URLs are for pages that contain i18n chars, special chars.
+# These files are created on-the-fly instead of checking-in because i18n
+# chars in filenames causes svn problems on win.
+# Used by: chrome/test/functional/translate.py
+
+[ { u'snippet': u'',
+    u'time': 1281727939.661804,
+    u'title': u'Google \ube14\ub85c\uadf8 \uac80\uc0c9',
+    u'url': u'http://blogsearch.google.com/?q=&hl=ko&tab=sb'},
+  { u'snippet': u'',
+    u'time': 1281727937.0636239,
+    u'title': u'Google \ud559\uc220 \uac80\uc0c9',
+    u'url': u'http://scholar.google.com/schhp?q=&hl=ko&tab=ps'},
+  { u'snippet': u'',
+    u'time': 1281727934.328491,
+    u'title': u'Google \ub3c4\uc11c',
+    u'url': u'http://books.google.com/bkshp?q&hl=ko&tab=np'},
+  { u'snippet': u'',
+    u'time': 1281727933.137692,
+    u'title': u'',
+    u'url': u'http://translate.google.com/?q=&hl=ko&tab=pT#'},
+  { u'snippet': u'',
+    u'time': 1281727926.639116,
+    u'title': u'Google \ub274\uc2a4',
+    u'url': u'http://news.google.com/news?hl=ko&sa=N&tab=ln&q='},
+  { u'snippet': u'',
+    u'time': 1281727923.4877269,
+    u'title': u'Google \uc9c0\ub3c4',
+    u'url': u'http://maps.google.com/maps?hl=ko&tab=vl'},
+  { u'snippet': u'',
+    u'time': 1281727921.0749111,
+    u'title': u'Google \ube44\ub514\uc624',
+    u'url': u'http://video.google.com/?hl=ko&tab=iv'},
+  { u'snippet': u'',
+    u'time': 1281727918.5299749,
+    u'title': u'Google \uc774\ubbf8\uc9c0',
+    u'url': u'http://www.google.com/imghp?hl=ko&tab=wi'},
+  { u'snippet': u'',
+    u'time': 1281727915.327976,
+    u'title': u'Google',
+    u'url': u'http://www.google.com/webhp?hl=ko'}
+]

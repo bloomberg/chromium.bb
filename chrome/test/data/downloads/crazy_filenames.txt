@@ -6,6 +6,7 @@
 # ascii.
 # Used by: chrome/test/functional/downloads.py
 #          chrome/test/functional/omnibox.py
+#          chrome/test/functional/translate.py
 
 [
   u'a_file_name.zip',
