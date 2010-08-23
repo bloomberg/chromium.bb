@@ -106,6 +106,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
   virtual void SetUp() {
     URLFetcher::set_factory(&url_fetcher_factory_);
     access_token_store_ = new FakeAccessTokenStore;
+    gateway_data_provider_ =
+        MockDeviceDataProviderImpl<GatewayData>::CreateInstance();
     radio_data_provider_ =
         MockDeviceDataProviderImpl<RadioData>::CreateInstance();
     wifi_data_provider_ =
@@ -133,6 +135,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
   GeolocationNetworkProviderTest() : test_server_url_(kTestServerUrl) {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
+    GatewayDataProvider::SetFactory(
+        MockDeviceDataProviderImpl<GatewayData>::GetInstance);
     RadioDataProvider::SetFactory(
         MockDeviceDataProviderImpl<RadioData>::GetInstance);
     WifiDataProvider::SetFactory(
@@ -167,10 +171,51 @@ class GeolocationNetworkProviderTest : public testing::Test {
     return data;
   }
 
-  static void ParseRequest(const std::string& request_data,
-                           WifiData* wifi_data_out,
-                           int* max_age_out,
-                           std::string* access_token_out) {
+  // Creates gateway data containing the specified number of routers, with
+  // some differentiating charactistics in each.
+  static GatewayData CreateReferenceRouterData(int router_count) {
+    GatewayData data;
+    for (int i = 0; i < router_count; ++i) {
+      RouterData router;
+      router.mac_address =
+          ASCIIToUTF16(StringPrintf("%02d-34-56-78-54-32", i));
+      data.router_data.insert(router);
+    }
+    return data;
+  }
+
+  static void ParseGatewayRequest(const std::string& request_data,
+                                  GatewayData* gateway_data_out) {
+    scoped_ptr<Value> value(base::JSONReader::Read(request_data, false));
+    EXPECT_TRUE(value != NULL);
+    EXPECT_EQ(Value::TYPE_DICTIONARY, value->GetType());
+    DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.get());
+    std::string attr_value;
+    EXPECT_TRUE(dictionary->GetString("version", &attr_value));
+    EXPECT_EQ(attr_value, "1.1.0");
+    EXPECT_TRUE(dictionary->GetString("host", &attr_value));
+    EXPECT_EQ(attr_value, kTestHost);
+    // Everything else is optional.
+    ListValue* gateways;
+    if (dictionary->GetList("gateways", &gateways)) {
+      int i = 0;
+      for (ListValue::const_iterator it = gateways->begin();
+           it < gateways->end(); ++it, ++i) {
+        EXPECT_EQ(Value::TYPE_DICTIONARY, (*it)->GetType());
+        DictionaryValue* gateway = static_cast<DictionaryValue*>(*it);
+        RouterData data;
+        gateway->GetString("mac_address", &data.mac_address);
+        gateway_data_out->router_data.insert(data);
+      }
+    } else {
+      gateway_data_out->router_data.clear();
+    }
+  }
+
+  static void ParseWifiRequest(const std::string& request_data,
+                               WifiData* wifi_data_out,
+                               int* max_age_out,
+                               std::string* access_token_out) {
     CHECK(wifi_data_out && max_age_out && access_token_out);
     scoped_ptr<Value> value(base::JSONReader::Read(request_data, false));
     EXPECT_TRUE(value != NULL);
@@ -213,45 +258,67 @@ class GeolocationNetworkProviderTest : public testing::Test {
     WifiData wifi_aps;
     std::string access_token;
     int max_age;
-    ParseRequest(request_data, &wifi_aps, &max_age, &access_token);
+    ParseWifiRequest(request_data, &wifi_aps, &max_age, &access_token);
     EXPECT_EQ(kint32min, max_age);
     EXPECT_EQ(0, static_cast<int>(wifi_aps.access_point_data.size()));
     EXPECT_TRUE(access_token.empty());
   }
 
   static void CheckRequestIsValid(const std::string& request_data,
+                                  int expected_routers,
                                   int expected_wifi_aps,
                                   const std::string& expected_access_token) {
     WifiData wifi_aps;
     std::string access_token;
     int max_age;
-    ParseRequest(request_data, &wifi_aps, &max_age, &access_token);
-    EXPECT_GE(max_age, 0) << "Age must not be negative.";
-    EXPECT_LT(max_age, 10 * 1000) << "This test really shouldn't take 10s.";
+    ParseWifiRequest(request_data, &wifi_aps, &max_age, &access_token);
     EXPECT_EQ(expected_wifi_aps,
               static_cast<int>(wifi_aps.access_point_data.size()));
-    WifiData expected_data = CreateReferenceWifiScanData(expected_wifi_aps);
-    WifiData::AccessPointDataSet::const_iterator expected =
-        expected_data.access_point_data.begin();
-    WifiData::AccessPointDataSet::const_iterator actual =
-        wifi_aps.access_point_data.begin();
-    for (int i = 0; i < expected_wifi_aps; ++i) {
+    if (expected_wifi_aps > 0) {
+      EXPECT_GE(max_age, 0) << "Age must not be negative.";
+      EXPECT_LT(max_age, 10 * 1000) << "This test really shouldn't take 10s.";
+      WifiData expected_data = CreateReferenceWifiScanData(expected_wifi_aps);
+      WifiData::AccessPointDataSet::const_iterator expected =
+          expected_data.access_point_data.begin();
+      WifiData::AccessPointDataSet::const_iterator actual =
+          wifi_aps.access_point_data.begin();
+      for (int i = 0; i < expected_wifi_aps; ++i) {
+        EXPECT_EQ(expected->mac_address, actual->mac_address) << i;
+        EXPECT_EQ(expected->radio_signal_strength,
+            actual->radio_signal_strength) << i;
+        EXPECT_EQ(expected->channel, actual->channel) << i;
+        EXPECT_EQ(expected->signal_to_noise, actual->signal_to_noise) << i;
+        EXPECT_EQ(expected->ssid, actual->ssid) << i;
+        ++expected;
+        ++actual;
+      }
+    } else {
+      EXPECT_EQ(max_age, kint32min);
+    }
+    EXPECT_EQ(expected_access_token, access_token);
+
+    GatewayData gateway_data;
+    ParseGatewayRequest(request_data, &gateway_data);
+    EXPECT_EQ(expected_routers,
+              static_cast<int>(gateway_data.router_data.size()));
+    GatewayData expected_data = CreateReferenceRouterData(expected_routers);
+    GatewayData::RouterDataSet::const_iterator expected =
+        expected_data.router_data.begin();
+    GatewayData::RouterDataSet::const_iterator actual =
+        gateway_data.router_data.begin();
+    for (int i = 0; i < expected_routers; ++i) {
       EXPECT_EQ(expected->mac_address, actual->mac_address) << i;
-      EXPECT_EQ(expected->radio_signal_strength, actual->radio_signal_strength)
-          << i;
-      EXPECT_EQ(expected->channel, actual->channel) << i;
-      EXPECT_EQ(expected->signal_to_noise, actual->signal_to_noise) << i;
-      EXPECT_EQ(expected->ssid, actual->ssid) << i;
       ++expected;
       ++actual;
     }
-    EXPECT_EQ(expected_access_token, access_token);
   }
 
   const GURL test_server_url_;
   MessageLoop main_message_loop_;
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   TestURLFetcherFactory url_fetcher_factory_;
+  scoped_refptr<MockDeviceDataProviderImpl<GatewayData> >
+      gateway_data_provider_;
   scoped_refptr<MockDeviceDataProviderImpl<RadioData> > radio_data_provider_;
   scoped_refptr<MockDeviceDataProviderImpl<WifiData> > wifi_data_provider_;
 };
@@ -328,7 +395,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   fetcher = get_url_fetcher_and_advance_id();
   ASSERT_TRUE(fetcher != NULL);
   // The request should have access token (set previously) and the wifi data.
-  CheckRequestIsValid(fetcher->upload_data(),
+  CheckRequestIsValid(fetcher->upload_data(), 0,
                       kFirstScanAps,
                       REFERENCE_ACCESS_TOKEN);
 
@@ -402,6 +469,157 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_TRUE(position.IsValidFix());
 }
 
+TEST_F(GeolocationNetworkProviderTest, GatewayAndWifiScans) {
+  scoped_ptr<LocationProviderBase> provider(CreateProvider(true));
+  EXPECT_TRUE(provider->StartProvider(false));
+
+  TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();
+  ASSERT_TRUE(fetcher != NULL);
+  CheckEmptyRequestIsValid(fetcher->upload_data());
+  // Complete the network request with bad position fix (using #define so we
+  // can paste this into various other strings below)
+  #define REFERENCE_ACCESS_TOKEN "2:k7j3G6LaL6u_lafw:4iXOeOpTh1glSXe"
+  const char* kNoFixNetworkResponse =
+      "{"
+      "  \"location\": null,"
+      "  \"access_token\": \"" REFERENCE_ACCESS_TOKEN "\""
+      "}";
+  fetcher->delegate()->OnURLFetchComplete(
+      fetcher, test_server_url_, URLRequestStatus(), 200,  // OK
+      ResponseCookies(), kNoFixNetworkResponse);
+
+  // This should have set the access token anyhow
+  EXPECT_EQ(UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
+            access_token_store_->access_token_set_[test_server_url_]);
+
+  Geoposition position;
+  provider->GetPosition(&position);
+  EXPECT_FALSE(position.IsValidFix());
+
+  // Now gateway data arrives -- SetData will notify listeners.
+  const int kFirstScanRouters = 1;
+  gateway_data_provider_->SetData(
+      CreateReferenceRouterData(kFirstScanRouters));
+  main_message_loop_.RunAllPending();
+  fetcher = get_url_fetcher_and_advance_id();
+  ASSERT_TRUE(fetcher != NULL);
+  // The request should have access token (set previously) and the
+  // gateway data.
+  CheckRequestIsValid(fetcher->upload_data(), kFirstScanRouters,
+                      0, REFERENCE_ACCESS_TOKEN);
+
+  // Send a reply with good position fix.
+  const char* kReferenceNetworkResponse_1 =
+      "{"
+      "  \"location\": {"
+      "    \"latitude\": 51.0,"
+      "    \"longitude\": -0.1,"
+      "    \"altitude\": 30.1,"
+      "    \"accuracy\": 1200.4,"
+      "    \"altitude_accuracy\": 10.6"
+      "  }"
+      "}";
+  fetcher->delegate()->OnURLFetchComplete(
+      fetcher, test_server_url_, URLRequestStatus(), 200,  // OK
+      ResponseCookies(), kReferenceNetworkResponse_1);
+
+  provider->GetPosition(&position);
+  EXPECT_EQ(51.0, position.latitude);
+  EXPECT_EQ(-0.1, position.longitude);
+  EXPECT_EQ(30.1, position.altitude);
+  EXPECT_EQ(1200.4, position.accuracy);
+  EXPECT_EQ(10.6, position.altitude_accuracy);
+  EXPECT_TRUE(position.is_valid_timestamp());
+  EXPECT_TRUE(position.IsValidFix());
+
+  // Token should still be in the store.
+  EXPECT_EQ(UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
+            access_token_store_->access_token_set_[test_server_url_]);
+
+  // Gateway updated again, with one more router. This is a significant change
+  // so a new request is made.
+  const int kSecondScanRouters = kFirstScanRouters + 1;
+  gateway_data_provider_->SetData(
+      CreateReferenceRouterData(kSecondScanRouters));
+  main_message_loop_.RunAllPending();
+  fetcher = get_url_fetcher_and_advance_id();
+  EXPECT_TRUE(fetcher);
+
+  CheckRequestIsValid(fetcher->upload_data(), kSecondScanRouters,
+                      0, REFERENCE_ACCESS_TOKEN);
+
+  // Send a reply with good position fix.
+  const char* kReferenceNetworkResponse_2 =
+      "{"
+      "  \"location\": {"
+      "    \"latitude\": 51.1,"
+      "    \"longitude\": -0.1,"
+      "    \"altitude\": 30.2,"
+      "    \"accuracy\": 1100.4,"
+      "    \"altitude_accuracy\": 10.6"
+      "  }"
+      "}";
+  fetcher->delegate()->OnURLFetchComplete(
+      fetcher, test_server_url_, URLRequestStatus(), 200,  // OK
+      ResponseCookies(), kReferenceNetworkResponse_2);
+
+  provider->GetPosition(&position);
+  EXPECT_EQ(51.1, position.latitude);
+  EXPECT_EQ(-0.1, position.longitude);
+  EXPECT_EQ(30.2, position.altitude);
+  EXPECT_EQ(1100.4, position.accuracy);
+  EXPECT_EQ(10.6, position.altitude_accuracy);
+  EXPECT_TRUE(position.is_valid_timestamp());
+  EXPECT_TRUE(position.IsValidFix());
+
+  // Now add new wifi scan data.
+  const int kScanAps = 4;
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(kScanAps));
+  main_message_loop_.RunAllPending();
+  fetcher = get_url_fetcher_and_advance_id();
+  EXPECT_TRUE(fetcher);
+  CheckRequestIsValid(fetcher->upload_data(), kSecondScanRouters,
+                      kScanAps, REFERENCE_ACCESS_TOKEN);
+
+  // Send a reply with good position fix.
+  const char* kReferenceNetworkResponse_3 =
+      "{"
+      "  \"location\": {"
+      "    \"latitude\": 51.3,"
+      "    \"longitude\": -0.1,"
+      "    \"altitude\": 30.2,"
+      "    \"accuracy\": 50.4,"
+      "    \"altitude_accuracy\": 10.6"
+      "  }"
+      "}";
+  fetcher->delegate()->OnURLFetchComplete(
+      fetcher, test_server_url_, URLRequestStatus(), 200,  // OK
+      ResponseCookies(), kReferenceNetworkResponse_3);
+
+  provider->GetPosition(&position);
+  EXPECT_EQ(51.3, position.latitude);
+  EXPECT_EQ(-0.1, position.longitude);
+  EXPECT_EQ(30.2, position.altitude);
+  EXPECT_EQ(50.4, position.accuracy);
+  EXPECT_EQ(10.6, position.altitude_accuracy);
+  EXPECT_TRUE(position.is_valid_timestamp());
+  EXPECT_TRUE(position.IsValidFix());
+
+  // Wifi scan returns no access points found: should be serviced from cache.
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(0));
+  main_message_loop_.RunAllPending();
+  EXPECT_FALSE(get_url_fetcher_and_advance_id());  // No new request created.
+
+  provider->GetPosition(&position);
+  EXPECT_EQ(51.1, position.latitude);
+  EXPECT_EQ(-0.1, position.longitude);
+  EXPECT_EQ(30.2, position.altitude);
+  EXPECT_EQ(1100.4, position.accuracy);
+  EXPECT_EQ(10.6, position.altitude_accuracy);
+  EXPECT_TRUE(position.is_valid_timestamp());
+  EXPECT_TRUE(position.IsValidFix());
+}
+
 TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
   MessageLoopQuitListener listener;
   wifi_data_provider_->set_got_data(false);
@@ -472,6 +690,6 @@ TEST_F(GeolocationNetworkProviderTest,
 
   EXPECT_EQ(test_server_url_, fetcher->original_url());
 
-  CheckRequestIsValid(fetcher->upload_data(), kScanCount,
-                      REFERENCE_ACCESS_TOKEN);
+  CheckRequestIsValid(fetcher->upload_data(), 0,
+                      kScanCount, REFERENCE_ACCESS_TOKEN);
 }

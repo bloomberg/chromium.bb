@@ -176,6 +176,49 @@ struct WifiData {
   AccessPointDataSet access_point_data;
 };
 
+// Gateway data relating to a single router.
+struct RouterData {
+  RouterData() {}
+  // MAC address, formatted as per MacAddressAsString16.
+  string16 mac_address;
+};
+
+// This is to allow RouterData to be used in std::set. We order
+// lexicographically by MAC address.
+struct RouterDataLess : public std::less<RouterData> {
+  bool operator()(const RouterData& data1,
+                  const RouterData& data2) const {
+    return data1.mac_address < data2.mac_address;
+  }
+};
+
+// All gateway data for routers.
+struct GatewayData {
+  // Determines whether a new set of gateway data differs significantly
+  // from this.
+  bool DiffersSignificantly(const GatewayData& other) const {
+    // Any change is significant.
+    if (this->router_data.size() != other.router_data.size())
+      return true;
+    RouterDataSet::const_iterator iter1 = router_data.begin();
+    RouterDataSet::const_iterator iter2 = other.router_data.begin();
+    while (iter1 != router_data.end()) {
+      if (iter1->mac_address != iter2->mac_address) {
+        // There is a difference between the sets of routers.
+        return true;
+      }
+      ++iter1;
+      ++iter2;
+    }
+    return false;
+  }
+
+  // Store routers as a set, sorted by MAC address. This allows quick
+  // comparison of sets for detecting changes and for caching.
+  typedef std::set<RouterData, RouterDataLess> RouterDataSet;
+  RouterDataSet router_data;
+};
+
 template<typename DataType>
 class DeviceDataProvider;
 
@@ -271,6 +314,7 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
   DISALLOW_COPY_AND_ASSIGN(DeviceDataProviderImplBase);
 };
 
+typedef DeviceDataProviderImplBase<GatewayData> GatewayDataProviderImplBase;
 typedef DeviceDataProviderImplBase<RadioData> RadioDataProviderImplBase;
 typedef DeviceDataProviderImplBase<WifiData> WifiDataProviderImplBase;
 
@@ -407,6 +451,7 @@ template<typename DataType>
 typename DeviceDataProvider<DataType>::ImplFactoryFunction
     DeviceDataProvider<DataType>::factory_function_ = DefaultFactoryFunction;
 
+typedef DeviceDataProvider<GatewayData> GatewayDataProvider;
 typedef DeviceDataProvider<RadioData> RadioDataProvider;
 typedef DeviceDataProvider<WifiData> WifiDataProvider;
 

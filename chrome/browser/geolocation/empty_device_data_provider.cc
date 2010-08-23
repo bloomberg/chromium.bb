@@ -20,3 +20,9 @@ WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
 }
 #endif
 
+// No platform has a gateway data provider yet.
+// static
+template<>
+GatewayDataProviderImplBase* GatewayDataProvider::DefaultFactoryFunction() {
+  return new EmptyDeviceDataProvider<GatewayData>();
+}

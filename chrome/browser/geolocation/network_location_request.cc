@@ -32,6 +32,7 @@ const char kAltitudeAccuracyString[] = "altitude_accuracy";
 // Creates the request payload to send to the server.
 void FormRequestBody(const std::string& host_name,
                      const string16& access_token,
+                     const GatewayData& gateway_data,
                      const RadioData& radio_data,
                      const WifiData& wifi_data,
                      const base::Time& timestamp,
@@ -61,6 +62,9 @@ bool ParseServerResponse(const std::string& response_body,
                          const base::Time& timestamp,
                          Geoposition* position,
                          string16* access_token);
+void AddGatewayData(const GatewayData& gateway_data,
+                  int age_milliseconds,
+                  DictionaryValue* body_object);
 void AddRadioData(const RadioData& radio_data,
                   int age_milliseconds,
                   DictionaryValue* body_object);
@@ -84,6 +88,7 @@ NetworkLocationRequest::~NetworkLocationRequest() {
 
 bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
                                          const string16& access_token,
+                                         const GatewayData& gateway_data,
                                          const RadioData& radio_data,
                                          const WifiData& wifi_data,
                                          const base::Time& timestamp) {
@@ -91,12 +96,13 @@ bool NetworkLocationRequest::MakeRequest(const std::string& host_name,
     DLOG(INFO) << "NetworkLocationRequest : Cancelling pending request";
     url_fetcher_.reset();
   }
+  gateway_data_ = gateway_data;
   radio_data_ = radio_data;
   wifi_data_ = wifi_data;
   timestamp_ = timestamp;
   std::string post_body;
-  FormRequestBody(host_name, access_token, radio_data_, wifi_data_,
-                  timestamp_, &post_body);
+  FormRequestBody(host_name, access_token, gateway_data, radio_data_,
+                  wifi_data_, timestamp_, &post_body);
 
   url_fetcher_.reset(URLFetcher::Create(
       url_fetcher_id_for_tests, url_, URLFetcher::POST, this));
@@ -131,7 +137,7 @@ void NetworkLocationRequest::OnURLFetchComplete(const URLFetcher* source,
   DLOG(INFO) << "NetworkLocationRequest::Run() : "
                 "Calling listener with position.\n";
   listener_->LocationResponseAvailable(position, server_error, access_token,
-                                       radio_data_, wifi_data_);
+                                       gateway_data_, radio_data_, wifi_data_);
 }
 
 // Local functions.
@@ -139,6 +145,7 @@ namespace {
 
 void FormRequestBody(const std::string& host_name,
                      const string16& access_token,
+                     const GatewayData& gateway_data,
                      const RadioData& radio_data,
                      const WifiData& wifi_data,
                      const base::Time& timestamp,
@@ -166,6 +173,7 @@ void FormRequestBody(const std::string& host_name,
   }
   AddRadioData(radio_data, age, &body_object);
   AddWifiData(wifi_data, age, &body_object);
+  AddGatewayData(gateway_data, age, &body_object);
 
   base::JSONWriter::Write(&body_object, false, data);
   DLOG(INFO) << "NetworkLocationRequest::FormRequestBody(): Formed body "
@@ -420,5 +428,26 @@ void AddWifiData(const WifiData& wifi_data,
     wifi_towers->Append(wifi_tower);
   }
   body_object->Set("wifi_towers", wifi_towers);
+}
+
+void AddGatewayData(const GatewayData& gateway_data,
+                    int age_milliseconds,
+                    DictionaryValue* body_object) {
+  DCHECK(body_object);
+
+  if (gateway_data.router_data.empty()) {
+    return;
+  }
+
+  ListValue* gateways = new ListValue;
+  for (GatewayData::RouterDataSet::const_iterator iter =
+       gateway_data.router_data.begin();
+       iter != gateway_data.router_data.end();
+       iter++) {
+    DictionaryValue* gateway = new DictionaryValue;
+    AddString("mac_address", iter->mac_address, gateway);
+    gateways->Append(gateway);
+  }
+  body_object->Set("gateways", gateways);
 }
 }  // namespace
