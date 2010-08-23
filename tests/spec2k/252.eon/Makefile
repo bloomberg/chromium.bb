@@ -129,7 +129,7 @@ src/myrand.cc
 
 
 IT=eon
-CFLAGS_EXTRA = -DNDEBUG -Isrc # -DHAS_ERRLIST
+CFLAGS_EXTRA = -DNDEBUG -Isrc  -DUSE_STRERROR # -DHAS_ERRLIST
 
 EXTRA_CLEAN= pixels* chair* materials spectra.dat
 include ../Makefile.common

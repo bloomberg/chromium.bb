@@ -58,20 +58,20 @@ LOCAL_GCC=$(TIME_CMD) /usr/bin/gcc
 
 # straight x86-32 gcc
 $(IT).gcc.x8632: $(SRC) $(CPPSRC)
-	$(LOCAL_GCC) -O0 -m32 $(CFLAGS) $(SRC)  -static  -lm  -o $@
+	$(LOCAL_GCC) -O0 -m32 $(CFLAGS) $^  -static  -lm  -o $@
 
 # optimized x86-32 gcc
 $(IT).gcc.opt.x8632: $(SRC) $(CPPSRC)
-	$(LOCAL_GCC) -O3 -m32 $(CFLAGS) $(SRC)  -static -lm  -o $@
+	$(LOCAL_GCC) -O3 -m32 $(CFLAGS) $^  -static -lm  -o $@
 
 
 # straight x86-64 gcc
 $(IT).gcc.x8664: $(SRC) $(CPPSRC)
-	$(LOCAL_GCC) -O0 -m64 $(CFLAGS) $(SRC)  -static  -lm  -o $@
+	$(LOCAL_GCC) -O0 -m64 $(CFLAGS) $^  -static  -lm  -o $@
 
 # optimized x86-64 gcc
 $(IT).gcc.opt.x8664: $(SRC) $(CPPSRC)
-	$(LOCAL_GCC) -O3 -m64 $(CFLAGS) $(SRC)  -static -lm  -o $@
+	$(LOCAL_GCC) -O3 -m64 $(CFLAGS) $^  -static -lm  -o $@
 
 ######################################################################
 LOCAL_CROSS_GCC=$(TIME_CMD) \
@@ -79,11 +79,11 @@ LOCAL_CROSS_GCC=$(TIME_CMD) \
 
 # straight arm gcc (code sourcery)
 $(IT).gcc.arm: $(SRC) $(CPPSRC)
-	$(LOCAL_CROSS_GCC) -O0 -march=armv6 $(CFLAGS) $(SRC)  -static  -lm  -o $@
+	$(LOCAL_CROSS_GCC) -O0 -march=armv6 $(CFLAGS) $^  -static  -lm  -o $@
 
 # optimized x86 gcc (code sourcery)
 $(IT).gcc.opt.arm: $(SRC) $(CPPSRC)
-	$(LOCAL_CROSS_GCC) -O3 -march=armv6 $(CFLAGS) $(SRC)  -static -lm  -o $@
+	$(LOCAL_CROSS_GCC) -O3 -march=armv6 $(CFLAGS) $^  -static -lm  -o $@
 
 ######################################################################
 ## NACL-GCC TOOLCHAINS
@@ -92,22 +92,22 @@ NACL_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl-gcc
 
 # nacl x86 gcc
 $(IT).nacl.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O0 -m32 $(CFLAGS) $(SRC)  -static  -lm  -lnosys -o $@
+	$(NACL_GCC) -O0 -m32 $(CFLAGS) $^ -static  -lm  -lnosys -o $@
 
 # nacl optimized x86 gcc
 $(IT).nacl.opt.x8632: $(SRC) $(CPPSRC)
-	$(NACL_GCC) -O3 -m32 $(CFLAGS) $(SRC)  -static -lm  -lnosys -o $@
+	$(NACL_GCC) -O3 -m32 $(CFLAGS) $^  -static -lm  -lnosys -o $@
 
 ######################################################################
 NACL64_GCC=$(TIME_CMD) $(TC_ROOT)/linux_x86/bin/nacl64-gcc
 
 # nacl x86-64 gcc
 $(IT).nacl.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC) -O0 $(CFLAGS) $(SRC)  -static  -lm  -lnosys -o $@
+	$(NACL64_GCC) -O0 $(CFLAGS) $^  -static  -lm  -lnosys -o $@
 
 # nacl optimized x86-64 gcc
 $(IT).nacl.opt.x8664: $(SRC) $(CPPSRC)
-	$(NACL64_GCC) -O3 $(CFLAGS) $(SRC)  -static -lm  -lnosys -o $@
+	$(NACL64_GCC) -O3 $(CFLAGS) $^  -static -lm  -lnosys -o $@
 
 
 ######################################################################
@@ -142,7 +142,7 @@ PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS) -D__native_client__=1
 #       The primary purpose is to find the undefined references in some
 #       native startup object files
 $(IT).bc: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
-	$(BC_PRE_LINK) -arch arm $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc) \
+	$(BC_PRE_LINK) -arch arm $^ \
                         $(PNACL_FLAGS) -L$(LIB_BC_PATH) $(LIBS_BC) -o $(IT)
 
 # llvm bit code optimized
