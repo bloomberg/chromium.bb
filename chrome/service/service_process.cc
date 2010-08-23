@@ -8,9 +8,11 @@
 
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/json_pref_store.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/service_process_type.h"
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
@@ -65,6 +67,16 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop) {
                                          file_thread_->message_loop_proxy()));
   service_prefs_->ReadPrefs();
 
+  DictionaryValue* values = service_prefs_->prefs();
+  bool remoting_host_enabled = false;
+
+  // Check if remoting host is already enabled.
+  if (values->GetBoolean(prefs::kRemotingHostEnabled, &remoting_host_enabled) &&
+	  remoting_host_enabled) {
+    // If true then we start the host.
+    StartChromotingHost();
+  }
+
   // TODO(hclam): Each type of service process should has it own instance of
   // process and thus channel, but now we have only one process for all types
   // so the type parameter doesn't matter now.
@@ -81,7 +93,6 @@ bool ServiceProcess::Initialize(MessageLoop* message_loop) {
 }
 
 bool ServiceProcess::Teardown() {
-  // TODO(hclam): Remove this as this looks like dead code.
   if (service_prefs_.get()) {
     service_prefs_->WritePrefs();
     service_prefs_.reset();
@@ -132,6 +143,8 @@ bool ServiceProcess::EnableChromotingHostWithTokens(
   talk_token_ = talk_token;
 
   // Use the remoting directory to register the host.
+  if (remoting_directory_.get())
+    remoting_directory_->CancelRequest();
   remoting_directory_.reset(new RemotingDirectoryService(this));
   remoting_directory_->AddHost(remoting_token);
   return true;
@@ -206,6 +219,12 @@ void ServiceProcess::OnRemotingHostAdded() {
   remoting_login_ = "";
   remoting_token_ = "";
   talk_token_ = "";
+
+  // Save the preference that we have enabled the remoting host.
+  service_prefs_->prefs()->SetBoolean(prefs::kRemotingHostEnabled, true);
+
+  // Force writing prefs to the disk.
+  service_prefs_->WritePrefs();
 
   // TODO(hclam): If we have a problem we need to send an IPC message back
   // to the client that started this.

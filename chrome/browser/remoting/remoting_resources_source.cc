@@ -52,9 +52,7 @@ void RemotingResourcesSource::StartDataRequest(const std::string& path_raw,
 
     localized_strings.SetString("settingupsync",
         l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SETTING_UP_SYNC));
-    localized_strings.SetString("introduction",
-                                ASCIIToUTF16("Remoting ") +
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+    localized_strings.SetString("introduction", "");
     localized_strings.SetString("signinprefix",
         l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_SIGNIN_PREFIX));
     localized_strings.SetString("signinsuffix",

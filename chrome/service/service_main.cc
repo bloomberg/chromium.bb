@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/debug_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -14,6 +15,10 @@
 // Mainline routine for running as the service process.
 int ServiceProcessMain(const MainFunctionParams& parameters) {
   MessageLoopForUI main_message_loop;
+  if (parameters.command_line_.HasSwitch(switches::kWaitForDebugger)) {
+    DebugUtil::WaitForDebugger(60, true);
+  }
+
   PlatformThread::SetName("CrServiceMain");
 
 #if defined(OS_WIN)

@@ -75,9 +75,7 @@ void RemotingDirectoryService::OnURLFetchComplete(
   // Destroy the fetcher after the response has been received.
   fetcher_.reset();
 
-  LOG(INFO) << "Remoting directory response: \n" << data.c_str();
-
-  // TODO(hclam): Simply checking 200 status is not ennough.
+  // TODO(hclam): Simply checking 200 status is not enough.
   if (response_code == 200) {
     client_->OnRemotingHostAdded();
   } else {
