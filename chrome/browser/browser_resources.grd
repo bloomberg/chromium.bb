@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This comment is only here because changes to resources are not picked up
-without changes to the corresponding grd file. eadee -->
+without changes to the corresponding grd file. eadeae-->
 <grit latest_public_release="0" current_release="1">
   <outputs>
     <output filename="grit/browser_resources.h" type="rc_header">
@@ -66,6 +66,7 @@ without changes to the corresponding grd file. eadee -->
         <include name="IDR_ABOUT_SYS_HTML" file="resources\about_sys.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_FILEBROWSE_HTML" file="resources\filebrowse.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_HOST_REGISTRATION_PAGE_HTML" file="resources\host_registration_page.html" flattenhtml="true" type="BINDATA" />
+        <include name="IDR_IMAGEBURNER_HTML" file="resources\imageburner.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MEDIAPLAYER_HTML" file="resources\mediaplayer.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MEDIAPLAYERPLAYLIST_HTML" file="resources\playlist.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_OFFLINE_LOAD_HTML" file="resources\offline_load.html" flattenhtml="true" type="BINDATA" />

@@ -12,6 +12,7 @@
 #include "base/singleton.h"
 namespace chromeos {
 
+class BurnLibrary;
 class CryptohomeLibrary;
 class KeyboardLibrary;
 class InputMethodLibrary;
@@ -44,6 +45,8 @@ class CrosLibrary {
     // when the CrosLibrary is deleted (or other mocks are set).
     // Setter for LibraryLoader.
     void SetLibraryLoader(LibraryLoader* loader, bool own);
+    // Setter for BurnLibrary.
+    void SetBurnLibrary(BurnLibrary* library, bool own);
     // Setter for CryptohomeLibrary.
     void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
     // Setter for KeyboardLibrary
@@ -79,6 +82,9 @@ class CrosLibrary {
 
   // This gets the CrosLibrary.
   static CrosLibrary* Get();
+
+  // Getter for BurnLibrary.
+  BurnLibrary* GetBurnLibrary();
 
   // Getter for CryptohomeLibrary.
   CryptohomeLibrary* GetCryptohomeLibrary();
@@ -139,6 +145,7 @@ class CrosLibrary {
   virtual ~CrosLibrary();
 
   LibraryLoader* library_loader_;
+
   bool own_library_loader_;
 
   // This template supports the creation, setting and optional deletion of
@@ -175,6 +182,7 @@ class CrosLibrary {
     bool own_;
   };
 
+  Library<BurnLibrary> burn_lib_;
   Library<CryptohomeLibrary> crypto_lib_;
   Library<KeyboardLibrary> keyboard_lib_;
   Library<InputMethodLibrary> input_method_lib_;

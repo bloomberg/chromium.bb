@@ -31,6 +31,7 @@
 #include "googleurl/src/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/dom_ui/imageburner_ui.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/dom_ui/mediaplayer_ui.h"
 #include "chrome/browser/dom_ui/register_page_ui.h"
@@ -133,6 +134,8 @@ static DOMUIFactoryFunction GetDOMUIFactoryFunction(const GURL& url) {
     return &NewDOMUI<FileBrowseUI>;
   if (url.host() == chrome::kChromeUIMediaplayerHost)
     return &NewDOMUI<MediaplayerUI>;
+  if (url.host() == chrome::kChromeUIImageBurnerHost)
+    return &NewDOMUI<ImageBurnUI>;
   if (url.host() == chrome::kChromeUIRegisterPageHost)
     return &NewDOMUI<RegisterPageUI>;
   if (url.host() == chrome::kChromeUISlideshowHost)

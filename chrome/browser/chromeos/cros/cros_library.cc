@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library_loader.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
+#include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/input_method_library.h"
 #include "chrome/browser/chromeos/cros/keyboard_library.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
@@ -37,6 +38,10 @@ CrosLibrary::~CrosLibrary() {
 // static
 CrosLibrary* CrosLibrary::Get() {
   return Singleton<CrosLibrary>::get();
+}
+
+BurnLibrary* CrosLibrary::GetBurnLibrary() {
+  return burn_lib_.GetDefaultImpl(use_stub_impl_);
 }
 
 CryptohomeLibrary* CrosLibrary::GetCryptohomeLibrary() {
@@ -127,6 +132,11 @@ void CrosLibrary::TestApi::SetLibraryLoader(LibraryLoader* loader, bool own) {
   // going to be happy.
   library_->loaded_ = false;
   library_->load_error_ = false;
+}
+
+void CrosLibrary::TestApi::SetBurnLibrary(
+    BurnLibrary* library, bool own) {
+  library_->burn_lib_.SetImpl(library, own);
 }
 
 void CrosLibrary::TestApi::SetCryptohomeLibrary(

@@ -1,6 +1,6 @@
 # Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# found in the LICENSE file. 
 
 {
   'targets': [
@@ -377,6 +377,8 @@
         'browser/chromeos/cros_settings_provider.h',
         'browser/chromeos/cros_settings_provider_user.cc',
         'browser/chromeos/cros_settings_provider_user.h',
+        'browser/chromeos/cros/burn_library.cc',
+        'browser/chromeos/cros/burn_library.h',
         'browser/chromeos/cros/cros_library.cc',
         'browser/chromeos/cros/cros_library.h',
         'browser/chromeos/cros/cros_library_loader.cc',
@@ -1220,6 +1222,8 @@
         'browser/dom_ui/html_dialog_tab_contents_delegate.h',
         'browser/dom_ui/html_dialog_ui.cc',
         'browser/dom_ui/html_dialog_ui.h',
+        'browser/chromeos/dom_ui/imageburner_ui.cc',
+        'browser/chromeos/dom_ui/imageburner_ui.h',
         'browser/dom_ui/import_data_handler.cc',
         'browser/dom_ui/import_data_handler.h',
         'browser/dom_ui/mediaplayer_ui.cc',
