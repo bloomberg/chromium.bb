@@ -781,8 +781,6 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageHasOSDD, OnMsgPageHasOSDD)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetSearchProviderInstallState,
-                                    OnMsgGetSearchProviderInstallState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidGetPrintedPagesCount,
                         OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidPrintPage, DidPrintPage)
@@ -1467,14 +1465,6 @@ void RenderViewHost::OnTakeFocus(bool reverse) {
 void RenderViewHost::OnMsgPageHasOSDD(int32 page_id, const GURL& doc_url,
                                       bool autodetected) {
   delegate_->PageHasOSDD(this, page_id, doc_url, autodetected);
-}
-
-void RenderViewHost::OnMsgGetSearchProviderInstallState(
-    const GURL& url, IPC::Message* reply_msg) {
-  ViewHostMsg_GetSearchProviderInstallState::WriteReplyParams(
-      reply_msg,
-      delegate_->GetSearchProviderInstallState(url));
-  Send(reply_msg);
 }
 
 void RenderViewHost::OnDidGetPrintedPagesCount(int cookie, int number_pages) {

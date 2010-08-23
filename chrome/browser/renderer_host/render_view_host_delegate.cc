@@ -95,11 +95,6 @@ GURL RenderViewHostDelegate::GetAlternateErrorPageURL() const {
   return GURL();
 }
 
-ViewHostMsg_GetSearchProviderInstallState_Params
-RenderViewHostDelegate::GetSearchProviderInstallState(const GURL& url) {
-  return ViewHostMsg_GetSearchProviderInstallState_Params::Denied();
-}
-
 WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {
   return WebPreferences();
 }
