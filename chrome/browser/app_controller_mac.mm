@@ -882,14 +882,10 @@ void RecordLastRunAppBundlePath() {
 }
 
 - (void)registerServicesMenuTypesTo:(NSApplication*)app {
-  // Currently we only support one-way service requests and don't
-  // support services that have return values such as the PGP
-  // encryption service.
-  // Also note that RenderWidgetHostViewCocoa implements
-  // NSServicesRequests which handles requests from services.
-  NSArray* sendTypes = [NSArray arrayWithObjects:NSStringPboardType, nil];
-  NSArray* returnTypes = [NSArray array];
-  [app registerServicesMenuSendTypes:sendTypes returnTypes:returnTypes];
+  // Note that RenderWidgetHostViewCocoa implements NSServicesRequests which
+  // handles requests from services.
+  NSArray* types = [NSArray arrayWithObjects:NSStringPboardType, nil];
+  [app registerServicesMenuSendTypes:types returnTypes:types];
 }
 
 - (Profile*)defaultProfile {

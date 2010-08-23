@@ -2273,12 +2273,24 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (id)validRequestorForSendType:(NSString*)sendType
                      returnType:(NSString*)returnType {
-  if ([sendType isEqual:NSStringPboardType] && !returnType &&
-      !renderWidgetHostView_->selected_text().empty()) {
-    return self;
-  }
+  id requestor = nil;
+  BOOL sendTypeIsString = [sendType isEqual:NSStringPboardType];
+  BOOL returnTypeIsString = [returnType isEqual:NSStringPboardType];
+  BOOL hasText = !renderWidgetHostView_->selected_text().empty();
+  BOOL takesText =
+      renderWidgetHostView_->text_input_type_ != WebKit::WebTextInputTypeNone;
 
-  return [super validRequestorForSendType:sendType returnType:returnType];
+  if (sendTypeIsString && hasText && !returnType) {
+    requestor = self;
+  } else if (!sendType && returnTypeIsString && takesText) {
+    requestor = self;
+  } else if (sendTypeIsString && returnTypeIsString && hasText && takesText) {
+    requestor = self;
+  } else {
+    requestor = [super validRequestorForSendType:sendType
+                                      returnType:returnType];
+  }
+  return requestor;
 }
 
 @end
@@ -2290,11 +2302,9 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
 - (BOOL)writeSelectionToPasteboard:(NSPasteboard*)pboard
                              types:(NSArray*)types {
-  if (![types containsObject:NSStringPboardType] ||
-      renderWidgetHostView_->selected_text().empty())
-    return NO;
-
   const std::string& str = renderWidgetHostView_->selected_text();
+  if (![types containsObject:NSStringPboardType] || str.empty()) return NO;
+
   scoped_nsobject<NSString> text([[NSString alloc]
                                    initWithUTF8String:str.c_str()]);
   NSArray* toDeclare = [NSArray arrayWithObject:NSStringPboardType];
@@ -2303,7 +2313,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 }
 
 - (BOOL)readSelectionFromPasteboard:(NSPasteboard*)pboard {
-  return NO;
+  NSString *string = [pboard stringForType:NSStringPboardType];
+  if (!string) return NO;
+
+  // If the user is currently using an IME, confirm the IME input,
+  // and then insert the text from the service, the same as TextEdit and Safari.
+  [self confirmComposition];
+  [self insertText:string];
+  return YES;
 }
 
 @end
