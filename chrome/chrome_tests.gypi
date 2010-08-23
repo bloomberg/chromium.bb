@@ -1033,6 +1033,7 @@
         'browser/command_updater_unittest.cc',
         'browser/cookies_tree_model_unittest.cc',
         'browser/debugger/devtools_manager_unittest.cc',
+        'browser/device_orientation/provider_unittest.cc',
         'browser/dock_info_unittest.cc',
         'browser/dom_ui/dom_ui_theme_source_unittest.cc',
         'browser/dom_ui/dom_ui_unittest.cc',

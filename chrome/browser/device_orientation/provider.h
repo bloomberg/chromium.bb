@@ -12,7 +12,7 @@ namespace device_orientation {
 
 class Orientation;
 
-class Provider : public base::RefCounted<Provider> {
+class Provider : public base::RefCountedThreadSafe<Provider> {
  public:
   class Observer {
    public:
@@ -33,8 +33,8 @@ class Provider : public base::RefCounted<Provider> {
   // injected object's reference count.
   static void SetInstanceForTests(Provider* provider);
 
-  virtual void AddObserver(Observer* observer) {}
-  virtual void RemoveObserver(Observer* observer) {}
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
  protected:
   Provider() {}
@@ -44,7 +44,7 @@ class Provider : public base::RefCounted<Provider> {
   }
 
  private:
-  friend class base::RefCounted<Provider>;
+  friend class base::RefCountedThreadSafe<Provider>;
   static Provider* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(Provider);

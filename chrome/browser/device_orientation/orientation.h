@@ -34,6 +34,12 @@ class Orientation {
         can_provide_gamma_(false) {
   }
 
+  static Orientation Empty() { return Orientation(); }
+
+  bool IsEmpty() {
+    return !can_provide_alpha_ && !can_provide_beta_ && !can_provide_gamma_;
+  }
+
   double alpha_;
   double beta_;
   double gamma_;

@@ -4,13 +4,20 @@
 
 #include "chrome/browser/device_orientation/provider.h"
 
+#include "base/logging.h"
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/device_orientation/data_fetcher.h"
+#include "chrome/browser/device_orientation/provider_impl.h"
+
 namespace device_orientation {
 
 Provider* Provider::GetInstance() {
-  if (!instance_)
-    // TODO(hans) This is not finished. We will create an instance of the real
-    // Provider implementation once it is implemented.
-    instance_ = new Provider();
+  if (!instance_) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    const ProviderImpl::DataFetcherFactory default_factories[] = { NULL };
+
+    instance_ = new ProviderImpl(MessageLoop::current(), default_factories);
+  }
   return instance_;
 }
 
