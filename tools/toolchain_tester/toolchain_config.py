@@ -201,16 +201,16 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
 
 
-TOOLCHAIN_CONFIGS['llvm_pnacl_arm_opt'] = ToolchainConfig(
+TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O9'] = ToolchainConfig(
     desc='pnacl llvm with optimizations [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
     tools_needed=[PNACL_LLVM_GCC, PNACL_BCLD, EMU_SCRIPT, SEL_LDR_ARM],
     CC = PNACL_LLVM_GCC + ' -emit-llvm',
-    LD = PNACL_BCLD,
+    LD = PNACL_BCLD  + ' -arch arm',
     EMU = EMU_SCRIPT,
     SEL_LDR = SEL_LDR_ARM,
     LIB_DIR = PNACL_LIB_DIR,
-    CFLAGS = '-static -O3 ' + GLOBAL_CFLAGS)
+    CFLAGS = '-09 -static ' + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [X8632]
