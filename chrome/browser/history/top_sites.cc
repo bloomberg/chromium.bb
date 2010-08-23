@@ -249,7 +249,8 @@ void TopSites::GetMostVisitedURLs(CancelableRequestConsumer* consumer,
 
 bool TopSites::GetPageThumbnail(const GURL& url, RefCountedBytes** data) const {
   AutoLock lock(lock_);
-  std::map<GURL, Images>::const_iterator found = top_images_.find(url);
+  std::map<GURL, Images>::const_iterator found =
+      top_images_.find(GetCanonicalURL(url));
   if (found == top_images_.end()) {
     found = temp_thumbnails_map_.find(url);
     if (found == temp_thumbnails_map_.end())
@@ -379,7 +380,9 @@ std::string TopSites::GetURLString(const GURL& url) {
 
 std::string TopSites::GetURLHash(const GURL& url) {
   lock_.AssertAcquired();
-  return MD5String(GetCanonicalURL(url).spec());
+  // We don't use canonical URLs here to be able to blacklist only one of
+  // the two 'duplicate' sites, e.g. 'gmail.com' and 'mail.google.com'.
+  return MD5String(url.spec());
 }
 
 void TopSites::UpdateMostVisited(MostVisitedURLList most_visited) {
@@ -565,8 +568,11 @@ void TopSites::StoreRedirectChain(const RedirectList& redirects,
   }
 
   // Map all the redirected URLs to the destination.
-  for (size_t i = 0; i < redirects.size(); i++)
-    canonical_urls_[redirects[i]] = destination;
+  for (size_t i = 0; i < redirects.size(); i++) {
+    // If this redirect is already known, don't replace it with a new one.
+    if (canonical_urls_.find(redirects[i]) == canonical_urls_.end())
+      canonical_urls_[redirects[i]] = destination;
+  }
 }
 
 GURL TopSites::GetCanonicalURL(const GURL& url) const {
@@ -634,7 +640,7 @@ void TopSites::StartQueryForMostVisited() {
     // Testing with a mockup.
     // QueryMostVisitedURLs is not virtual, so we have to duplicate the code.
     mock_history_service_->QueryMostVisitedURLs(
-        kTopSitesNumber,
+        kTopSitesNumber + blacklist_->size(),
         kDaysOfHistory,
         &cancelable_consumer_,
         NewCallback(this, &TopSites::OnTopSitesAvailable));
@@ -646,7 +652,7 @@ void TopSites::StartQueryForMostVisited() {
     // |hs| may be null during unit tests.
     if (hs) {
       hs->QueryMostVisitedURLs(
-          kTopSitesNumber,
+          kTopSitesNumber + blacklist_->size(),
           kDaysOfHistory,
           &cancelable_consumer_,
           NewCallback(this, &TopSites::OnTopSitesAvailable));
@@ -764,7 +770,6 @@ base::TimeDelta TopSites::GetUpdateDelay() {
 void TopSites::OnTopSitesAvailable(
     CancelableRequestProvider::Handle handle,
     MostVisitedURLList pages) {
-
   AddPrepopulatedPages(&pages);
   ChromeThread::PostTask(ChromeThread::DB, FROM_HERE, NewRunnableMethod(
       this, &TopSites::UpdateMostVisited, pages));

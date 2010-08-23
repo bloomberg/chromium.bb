@@ -153,6 +153,7 @@ class TopSites :
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, PinnedURLs);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, BlacklistingAndPinnedURLs);
   FRIEND_TEST_ALL_PREFIXES(TopSitesTest, AddPrepopulatedPages);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesTest, GetPageThumbnail);
 
   ~TopSites();
 

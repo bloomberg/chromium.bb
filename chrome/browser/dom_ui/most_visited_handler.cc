@@ -127,17 +127,6 @@ void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
   }
 }
 
-// Set a DictionaryValue |dict| from a MostVisitedURL.
-void SetDictionaryValue(const history::MostVisitedURL& url,
-                        DictionaryValue& dict) {
-  NewTabUI::SetURLTitleAndDirection(&dict, url.title, url.url);
-  dict.SetString("url", url.url.spec());
-  dict.SetString("faviconUrl", url.favicon_url.spec());
-  // TODO(Nik): Need thumbnailUrl?
-  // TODO(Nik): Add pinned and blacklisted URLs.
-  dict.SetBoolean("pinned", false);
-}
-
 void MostVisitedHandler::SendPagesValue() {
   if (pages_value_.get()) {
     FundamentalValue first_run(IsFirstRun());

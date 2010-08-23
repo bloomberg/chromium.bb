@@ -415,6 +415,50 @@ TEST_F(TopSitesTest, SetPageThumbnail) {
   EXPECT_FALSE(top_sites().SetPageThumbnail(url1a, thumbnail, medium_score));
 }
 
+TEST_F(TopSitesTest, GetPageThumbnail) {
+  ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
+  MostVisitedURLList url_list;
+  MostVisitedURL url1 = {GURL("http://asdf.com")};
+  url1.redirects.push_back(url1.url);
+  url_list.push_back(url1);
+
+  MostVisitedURL url2 = {GURL("http://gmail.com")};
+  url2.redirects.push_back(url2.url);
+  url2.redirects.push_back(GURL("http://mail.google.com"));
+  url_list.push_back(url2);
+
+  top_sites().UpdateMostVisited(url_list);
+  MessageLoop::current()->RunAllPending();
+
+  // Create a dummy thumbnail.
+  SkBitmap thumbnail;
+  thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 4, 4);
+  thumbnail.allocPixels();
+  thumbnail.eraseRGB(0x00, 0x00, 0x00);
+  ThumbnailScore score(0.5, true, true, base::Time::Now());
+
+  RefCountedBytes* result = NULL;
+  EXPECT_TRUE(top_sites().SetPageThumbnail(url1.url, thumbnail, score));
+  EXPECT_TRUE(top_sites().GetPageThumbnail(url1.url, &result));
+
+  EXPECT_TRUE(top_sites().SetPageThumbnail(GURL("http://gmail.com"),
+                                           thumbnail, score));
+  EXPECT_TRUE(top_sites().GetPageThumbnail(GURL("http://gmail.com"),
+                                           &result));
+  // Get a thumbnail via a redirect.
+  EXPECT_TRUE(top_sites().GetPageThumbnail(GURL("http://mail.google.com"),
+                                           &result));
+
+  EXPECT_TRUE(top_sites().SetPageThumbnail(GURL("http://mail.google.com"),
+                                           thumbnail, score));
+  EXPECT_TRUE(top_sites().GetPageThumbnail(url2.url, &result));
+
+  scoped_ptr<SkBitmap> out_bitmap(gfx::JPEGCodec::Decode(result->front(),
+                                                         result->size()));
+  EXPECT_EQ(0, memcmp(thumbnail.getPixels(), out_bitmap->getPixels(),
+                      thumbnail.getSize()));
+}
+
 TEST_F(TopSitesTest, GetMostVisited) {
   ChromeThread db_loop(ChromeThread::DB, MessageLoop::current());
   GURL news("http://news.google.com/");
