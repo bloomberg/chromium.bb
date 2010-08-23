@@ -4221,3 +4221,10 @@
    fun:_ZN3IPC16MessageWithTupleI6Tuple1IiEE8DispatchI9GpuThreadMS5_FviEEEbPKNS_7MessageEPT_T0_
    fun:_ZN9GpuThread24OnControlMessageReceivedERKN3IPC7MessageE
 }
+{
+   bug_53044
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN24mozilla_security_manager19nsPKCS12Blob_ImportEPKcjRKSbItN4base20string16_char_traitsESaItEE
+}
