@@ -572,6 +572,10 @@ void ValidateInst(const struct NCDecoderState *mstate) {
         if ((mstate->inst.prefixmask &
              BadPrefixMask[mstate->opinfo->insttype]) == 0) break;
       }
+    } else if ((mstate->inst.prefixbytes == 2) &&
+               (mstate->inst.prefixmask == (kPrefixLOCK | kPrefixDATA16))) {
+      /* Special case of lock on short integer, if instruction allows lock. */
+      if (mstate->opinfo->insttype == NACLi_386L) break;
     }
     BadInstructionError(mstate, "Bad prefix usage");
     Stats_BadPrefix(mstate->vstate);
