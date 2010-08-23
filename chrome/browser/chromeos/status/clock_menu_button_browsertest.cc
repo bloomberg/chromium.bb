@@ -35,13 +35,18 @@ class ClockMenuButtonTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ClockMenuButtonTest, TimezoneTest) {
   ClockMenuButton* clock = GetClockMenuButton();
   ASSERT_TRUE(clock != NULL);
+
   // Update timezone and make sure clock text changes.
-  std::wstring text_before = clock->text();
-  scoped_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone(
+  scoped_ptr<icu::TimeZone> timezone_first(icu::TimeZone::createTimeZone(
       icu::UnicodeString::fromUTF8("Asia/Hong_Kong")));
-  CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(timezone.get());
+  CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(timezone_first.get());
+  std::wstring text_before = clock->text();
+  scoped_ptr<icu::TimeZone> timezone_second(icu::TimeZone::createTimeZone(
+      icu::UnicodeString::fromUTF8("Pacific/Samoa")));
+  CrosLibrary::Get()->GetSystemLibrary()->SetTimezone(timezone_second.get());
   std::wstring text_after = clock->text();
   EXPECT_NE(text_before, text_after);
+
 }
 
 }  // namespace chromeos
