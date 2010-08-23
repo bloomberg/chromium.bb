@@ -66,3 +66,6 @@ PREFIX: renderwidgethost::onmsgupdaterect___ipc::messagewithtuple<tuple1<viewhos
 
 # 52346
 PREFIX : tabcontentsview::deactivate___renderwidgethost::onmessagereceived___renderviewhost::onmessagereceived___browserrenderprocesshost::onmessagereceived
+
+# 53076
+PREFIX : tabcontentsview::activate___renderwidgethost::onmessagereceived___renderviewhost::onmessagereceived___browserrenderprocesshost::onmessagereceived
