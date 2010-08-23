@@ -69,6 +69,13 @@ const char kOobeCompleteFlagFilePath[] =
 const int kWizardScreenWidth = 700;
 const int kWizardScreenHeight = 416;
 
+// Update window should appear for at least kMinimalUpdateTimeSec seconds.
+const int kMinimalUpdateTimeSec = 3;
+
+// Time in seconds that we wait for the device to reboot.
+// If reboot didn't happen, ask user to reboot device manually.
+const int kWaitForRebootTimeSec = 3;
+
 // RootView of the Widget WizardController creates. Contains the contents of the
 // WizardController.
 class ContentView : public views::View {
@@ -344,8 +351,11 @@ chromeos::AccountScreen* WizardController::GetAccountScreen() {
 }
 
 chromeos::UpdateScreen* WizardController::GetUpdateScreen() {
-  if (!update_screen_.get())
+  if (!update_screen_.get()) {
     update_screen_.reset(new chromeos::UpdateScreen(this));
+    update_screen_->SetMinimalUpdateTime(kMinimalUpdateTimeSec);
+    update_screen_->SetRebootCheckDelay(kWaitForRebootTimeSec);
+  }
   return update_screen_.get();
 }
 

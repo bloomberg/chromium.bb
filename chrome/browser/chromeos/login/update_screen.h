@@ -41,6 +41,14 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
   // Returns true if minimal update time has elapsed.
   virtual bool MinimalUpdateTimeElapsed();
 
+  // Minimal update time get/set, in seconds.
+  int minimal_update_time() const { return minimal_update_time_; }
+  void SetMinimalUpdateTime(int seconds);
+
+  // Reboot check delay get/set, in seconds.
+  int reboot_check_delay() const { return reboot_check_delay_; }
+  void SetRebootCheckDelay(int seconds);
+
  private:
   // Timer notification handlers.
   void OnMinimalUpdateTimeElapsed();
@@ -58,6 +66,15 @@ class UpdateScreen: public DefaultViewScreen<chromeos::UpdateView>,
 
   // True if in the process of checking for update.
   bool checking_for_update_;
+
+  // Minimal update delay in seconds, for a user to notice
+  // check for update is taking place.
+  int minimal_update_time_;
+
+  // Time in seconds after which we decide that the device has not rebooted
+  // automatically. If reboot didn't happen durin this interval, ask user to
+  // reboot device manually.
+  int reboot_check_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateScreen);
 };

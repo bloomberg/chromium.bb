@@ -1655,6 +1655,7 @@
         'browser/chromeos/login/screen_locker_browsertest.cc',
         'browser/chromeos/login/screen_locker_tester.cc',
         'browser/chromeos/login/screen_locker_tester.h',
+        'browser/chromeos/login/update_screen_browsertest.cc',
         'browser/chromeos/login/wizard_controller_browsertest.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.cc',
         'browser/chromeos/login/wizard_in_process_browser_test.h',

@@ -11,13 +11,6 @@
 
 namespace {
 
-// Update window should appear for at least kMinimalUpdateTime seconds.
-const int kMinimalUpdateTimeSec = 3;
-
-// Time in seconds that we wait for the device to reboot.
-// If reboot didn't happen, ask user to reboot device manually.
-const int kWaitForRebootTimeSec = 3;
-
 // Progress bar stages. Each represents progress bar value
 // at the beginning of each stage.
 // TODO(nkostylev): Base stage progress values on approximate time.
@@ -38,7 +31,9 @@ namespace chromeos {
 UpdateScreen::UpdateScreen(WizardScreenDelegate* delegate)
     : DefaultViewScreen<chromeos::UpdateView>(delegate),
       proceed_with_oobe_(false),
-      checking_for_update_(true) {
+      checking_for_update_(true),
+      minimal_update_time_(0),
+      reboot_check_delay_(0) {
 }
 
 UpdateScreen::~UpdateScreen() {
@@ -50,7 +45,6 @@ UpdateScreen::~UpdateScreen() {
 
 void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
   UpdateStatusOperation status = library->status().status;
-  LOG(INFO) << "Update status: " << status;
   if (checking_for_update_ && status > UPDATE_STATUS_CHECKING_FOR_UPDATE) {
     checking_for_update_ = false;
   }
@@ -81,7 +75,7 @@ void UpdateScreen::UpdateStatusChanged(UpdateLibrary* library) {
       view()->SetProgress(kProgressComplete);
       CrosLibrary::Get()->GetUpdateLibrary()->RebootAfterUpdate();
       LOG(INFO) << "Reboot API was called. Waiting for reboot.";
-      reboot_timer_.Start(base::TimeDelta::FromSeconds(kWaitForRebootTimeSec),
+      reboot_timer_.Start(base::TimeDelta::FromSeconds(reboot_check_delay_),
                           this,
                           &UpdateScreen::OnWaitForRebootTimeElapsed);
       break;
@@ -105,10 +99,12 @@ void UpdateScreen::StartUpdate() {
   view()->set_controller(this);
 
   // Start the minimal update time timer.
-  minimal_update_time_timer_.Start(
-      base::TimeDelta::FromSeconds(kMinimalUpdateTimeSec),
-      this,
-      &UpdateScreen::OnMinimalUpdateTimeElapsed);
+  if (minimal_update_time_ > 0) {
+    minimal_update_time_timer_.Start(
+        base::TimeDelta::FromSeconds(minimal_update_time_),
+        this,
+        &UpdateScreen::OnMinimalUpdateTimeElapsed);
+  }
 
   view()->SetProgress(kBeforeUpdateCheckProgress);
 
@@ -166,6 +162,20 @@ void UpdateScreen::OnMinimalUpdateTimeElapsed() {
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
   LOG(ERROR) << "Unable to reboot - asking user for a manual reboot.";
   view()->ShowManualRebootInfo();
+}
+
+void UpdateScreen::SetMinimalUpdateTime(int seconds) {
+  if (seconds <= 0)
+    minimal_update_time_timer_.Stop();
+  DCHECK(!minimal_update_time_timer_.IsRunning());
+  minimal_update_time_ = seconds;
+}
+
+void UpdateScreen::SetRebootCheckDelay(int seconds) {
+  if (seconds <= 0)
+    reboot_timer_.Stop();
+  DCHECK(!reboot_timer_.IsRunning());
+  reboot_check_delay_ = seconds;
 }
 
 }  // namespace chromeos

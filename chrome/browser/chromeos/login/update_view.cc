@@ -99,6 +99,7 @@ void UpdateView::Init() {
 void UpdateView::Reset() {
   progress_bar_->SetProgress(0);
 #if !defined(OFFICIAL_BUILD)
+  ResetAccelerators();
   AddAccelerator(escape_accelerator_);
 #endif
 }
