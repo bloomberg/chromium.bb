@@ -20,8 +20,7 @@ class CoreChromeOSOptionsHandler : public ::CoreOptionsHandler {
   virtual void ObservePref(const std::string& pref_name);
   virtual void SetPref(const std::string& pref_name,
                        Value::ValueType pref_type,
-                       const std::string& value_string,
-                       const std::string& metric);
+                       const std::string& value_string);
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

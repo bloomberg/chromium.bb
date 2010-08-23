@@ -33,7 +33,7 @@ cr.define('options', function() {
       // Listen to user events.
       this.addEventListener('click',
           function(e) {
-            Preferences.setBooleanPref(self.pref, self.checked, self.metric);
+            Preferences.setBooleanPref(self.pref, self.checked);
           });
     }
   };
@@ -43,12 +43,6 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefCheckbox, 'pref', cr.PropertyKind.ATTR);
-
-  /**
-   * The user metric string.
-   * @type {string}
-   */
-  cr.defineProperty(PrefCheckbox, 'metric', cr.PropertyKind.ATTR);
 
   /////////////////////////////////////////////////////////////////////////////
   // PrefRadio class:
@@ -80,10 +74,10 @@ cr.define('options', function() {
           function(e) {
             if(self.value == 'true' || self.value == 'false') {
               Preferences.setBooleanPref(self.pref,
-                  self.value == 'true', self.metric);
+                  self.value == 'true');
             } else {
               Preferences.setIntegerPref(self.pref,
-                  parseInt(self.value, 10), self.metric);
+                  parseInt(self.value, 10));
             }
           });
     },
@@ -103,11 +97,6 @@ cr.define('options', function() {
     }
   };
 
-  /**
-   * The user metric string.
-   * @type {string}
-   */
-  cr.defineProperty(PrefRadio, 'metric', cr.PropertyKind.ATTR);
 
   /////////////////////////////////////////////////////////////////////////////
   // PrefNumeric class:
@@ -135,7 +124,7 @@ cr.define('options', function() {
       // Listen to user events.
       this.addEventListener('change',
           function(e) {
-            Preferences.setIntegerPref(self.pref, self.value, self.metric);
+            Preferences.setIntegerPref(self.pref, self.value);
           });
     }
   };
@@ -145,12 +134,6 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefNumeric, 'pref', cr.PropertyKind.ATTR);
-
-  /**
-   * The user metric string.
-   * @type {string}
-   */
-  cr.defineProperty(PrefNumeric, 'metric', cr.PropertyKind.ATTR);
 
   /////////////////////////////////////////////////////////////////////////////
   // PrefNumber class:
@@ -226,15 +209,15 @@ cr.define('options', function() {
             switch(self.dataType) {
               case 'number':
                 Preferences.setIntegerPref(self.pref,
-                    self.options[self.selectedIndex].value, self.metric);
+                    self.options[self.selectedIndex].value);
                 break;
               case 'boolean':
                 Preferences.setBooleanValue(self.pref,
-                    self.options[self.selectedIndex].value, self.metric);
+                    self.options[self.selectedIndex].value);
                 break;
               case 'string':
                 Preferences.setStringPref(self.pref,
-                    self.options[self.selectedIndex].value, self.metric);
+                    self.options[self.selectedIndex].value);
                 break;
             }
           });
@@ -272,12 +255,6 @@ cr.define('options', function() {
    */
   cr.defineProperty(PrefSelect, 'pref', cr.PropertyKind.ATTR);
 
-  /**
-   * The user metric string.
-   * @type {string}
-   */
-  cr.defineProperty(PrefSelect, 'metric', cr.PropertyKind.ATTR);
-
   /////////////////////////////////////////////////////////////////////////////
   // PrefTextField class:
 
@@ -305,7 +282,7 @@ cr.define('options', function() {
       // Listen to user events.
       this.addEventListener('change',
           function(e) {
-            Preferences.setStringPref(self.pref, self.value, self.metric);
+            Preferences.setStringPref(self.pref, self.value);
           });
 
       window.addEventListener('unload',
@@ -321,12 +298,6 @@ cr.define('options', function() {
    * @type {string}
    */
   cr.defineProperty(PrefTextField, 'pref', cr.PropertyKind.ATTR);
-
-  /**
-   * The user metric string.
-   * @type {string}
-   */
-  cr.defineProperty(PrefTextField, 'metric', cr.PropertyKind.ATTR);
 
   // Export
   return {

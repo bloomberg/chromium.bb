@@ -13,24 +13,21 @@
       <div><a target="_blank" i18n-content="privacyLearnMoreLabel"
           i18n-values="href:privacyLearnMoreURL"></a></div>
       <label><input id="alternateErrorPagesEnabled"
-          pref="alternate_error_pages.enabled"
-          metric="Options_LinkDoctorCheckbox" type="checkbox"><span
+          pref="alternate_error_pages.enabled" type="checkbox"><span
           i18n-content="linkDoctorPref"></span></label>
       <label><input id="searchSuggestEnabled"
-          pref="search.suggest_enabled" metric="Options_UseSuggestCheckbox"
-          type="checkbox"><span i18n-content="suggestPref"></span></label>
+          pref="search.suggest_enabled" type="checkbox"><span
+          i18n-content="suggestPref"></span></label>
       <label><input id="dnsPrefetchingEnabled"
-          pref="dns_prefetching.enabled" metric="Options_DnsPrefetchCheckbox"
-          type="checkbox"><span
-          i18n-content="networkDNSPrefetchEnabledDescription"></span></label>
+          pref="dns_prefetching.enabled" type="checkbox"><span
+          i18n-content="networkDNSPrefetchEnabledDescription"></span>
+          </label>
       <label><input id="safeBrowsingEnabled"
-          pref="safebrowsing.enabled" metric="Options_SafeBrowsingCheckbox"
-          type="checkbox"><span i18n-content="safeBrowsingEnableProtection">
-          </span></label>
+          pref="safebrowsing.enabled" type="checkbox"><span
+          i18n-content="safeBrowsingEnableProtection"></span></label>
 <if expr="pp_ifdef('_google_chrome')">
       <label><input id="metricsReportingEnabled"
-          pref="user_experience_metrics.reporting_enabled"
-          metric="Options_MetricsReportingCheckbox" type="checkbox">
+          pref="user_experience_metrics.reporting_enabled" type="checkbox">
           <span i18n-content="enableLogging"></span></label>
 </if>
     </div>
@@ -47,8 +44,8 @@
     <h3 i18n-content="advancedSectionTitleTranslate"></h3>
     <div>
       <label><input id="enableTranslate"
-          pref="translate.enabled" metric="Options_Translate" type="checkbox">
-          <span i18n-content="translateEnableTranslate"></span></label>
+          pref="translate.enabled" type="checkbox"><span
+          i18n-content="translateEnableTranslate"></span></label>
     </div>
   </section>
   <section>
@@ -62,8 +59,7 @@
             i18n-content="downloadLocationBrowseButton"></button>
       </div>
       <label><input id="promptForDownload"
-          pref="download.prompt_for_download"
-          metric="Options_AskForSaveLocation" type="checkbox"><span
+          pref="download.prompt_for_download" type="checkbox"><span
           i18n-content="downloadLocationAskForSaveLocation"></span></label>
 </if>
       <div i18n-content="autoOpenFileTypesInfo"></div>
@@ -76,8 +72,8 @@
     <div>
 <if expr="os == 'darwin'">
       <label><input id="tabsToLinksPref"
-          pref="webkit.webprefs.tabs_to_links" metric="Options_TabsToLinks"
-          type="checkbox"><span i18n-content="tabsToLinksPref"></span></label>
+          pref="webkit.webprefs.tabs_to_links" type="checkbox"><span
+          i18n-content="tabsToLinksPref"></span></label>
 </if>
       <div><button id="fontSettingsConfigureFontsOnlyButton"
           i18n-content="fontSettingsConfigureFontsOnlyButton"></button></div>
@@ -112,17 +108,16 @@
 <if expr="not pp_ifdef('chromeos') and (os == 'linux2' or os.find('bsd') != -1)">
       <!-- Configure these options for Linux/BSD as preference keys -->
       <label><input id="sslCheckRevocation"
-          pref="ssl.rev_checking.enabled" metric="Options_CheckCertRevocation"
-          type="checkbox"><span i18n-content="sslCheckRevocation"></span>
-          </label>
+          pref="ssl.rev_checking.enabled" type="checkbox"><span
+          i18n-content="sslCheckRevocation"></span></label>
       <label><input id="sslUseSSL2"
-          pref="ssl.ssl2.enabled" metric="Options_SSL2" type="checkbox"><span
+          pref="ssl.ssl2.enabled" type="checkbox"><span
           i18n-content="sslUseSSL2"></span></label>
       <label><input id="sslUseSSL3"
-          pref="ssl.ssl3.enabled" metric="Options_SSL3" type="checkbox"><span
+          pref="ssl.ssl3.enabled" type="checkbox"><span
           i18n-content="sslUseSSL3"></span></label>
       <label><input id="sslUseTLS1"
-          pref="ssl.tls1.enabled" metric="Options_TLS1" type="checkbox"><span
+          pref="ssl.tls1.enabled" type="checkbox"><span
           i18n-content="sslUseTLS1"></span></label>
 </if>
 <if expr="not pp_ifdef('chromeos')">
