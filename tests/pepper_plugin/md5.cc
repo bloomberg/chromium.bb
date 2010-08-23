@@ -18,10 +18,13 @@
  * will fill a supplied 16-byte array with the digest.
  */
 
+#include "native_client/tests/pepper_plugin/md5.h"
+
+#include <stdint.h>
+#include <cstring>
 #include <string>
 
-#include "base/basictypes.h"
-#include "native_client/tests/pepper_plugin/md5.h"
+typedef uint32_t uint32;
 
 struct Context {
   uint32 buf[4];
