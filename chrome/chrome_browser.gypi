@@ -14,7 +14,6 @@
         'chrome_extra_resources',
         'chrome_resources',
         'chrome_strings',
-        'chrome_version_info',
         'component_extensions',
         'installer_util',
         'platform_locale_settings',
