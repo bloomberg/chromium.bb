@@ -9,10 +9,11 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -110,6 +111,8 @@ void CoreOptionsHandler::RegisterMessages() {
       NewCallback(this, &CoreOptionsHandler::HandleSetStringPref));
   dom_ui_->RegisterMessageCallback("setObjectPref",
       NewCallback(this, &CoreOptionsHandler::HandleSetObjectPref));
+  dom_ui_->RegisterMessageCallback("coreOptionsUserMetricsAction",
+      NewCallback(this, &CoreOptionsHandler::HandleUserMetricsAction));
 }
 
 void CoreOptionsHandler::HandleInitialize(const ListValue* args) {
@@ -143,7 +146,8 @@ void CoreOptionsHandler::ObservePref(const std::string& pref_name) {
 
 void CoreOptionsHandler::SetPref(const std::string& pref_name,
                                  Value::ValueType pref_type,
-                                 const std::string& value_string) {
+                                 const std::string& value_string,
+                                 const std::string& metric) {
   DCHECK(dom_ui_);
   PrefService* pref_service = dom_ui_->GetProfile()->GetPrefs();
 
@@ -162,6 +166,22 @@ void CoreOptionsHandler::SetPref(const std::string& pref_name,
     default:
       NOTREACHED();
   }
+
+  ProcessUserMetric(pref_type, value_string, metric);
+}
+
+void CoreOptionsHandler::ProcessUserMetric(Value::ValueType pref_type,
+                                           const std::string& value_string,
+                                           const std::string& metric) {
+  if (metric.empty())
+    return;
+
+  std::string metric_string = metric;
+  if (pref_type == Value::TYPE_BOOLEAN)
+    metric_string += (value_string == "true" ? "_Enable" : "_Disable");
+
+  UserMetricsRecordAction(UserMetricsAction(metric_string.c_str()),
+                          dom_ui_->GetProfile()->GetPrefs());
 }
 
 void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
@@ -202,8 +222,6 @@ void CoreOptionsHandler::HandleFetchPrefs(const ListValue* args) {
 }
 
 void CoreOptionsHandler::HandleObservePrefs(const ListValue* args) {
-  DictionaryValue result_value;
-
   // First param is name is JS callback function name, the rest are pref
   // identifiers that we are observing.
   const size_t kMinObservePrefsParamCount = 2;
@@ -254,7 +272,7 @@ void CoreOptionsHandler::HandleSetObjectPref(const ListValue* args) {
 
 void CoreOptionsHandler::HandleSetPref(const ListValue* args,
                                        Value::ValueType type) {
-  if (args->GetSize() != 2)
+  if (args->GetSize() < 2)
     return;
 
   std::string pref_name;
@@ -265,7 +283,17 @@ void CoreOptionsHandler::HandleSetPref(const ListValue* args,
   if (!args->GetString(1, &value_string))
     return;
 
-  SetPref(pref_name, type, value_string);
+  std::string metric;
+  if (args->GetSize() > 2)
+    args->GetString(2, &metric);
+
+  SetPref(pref_name, type, value_string, metric);
+}
+
+void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
+  std::string metric = WideToUTF8(ExtractStringValue(args));
+  if (!metric.empty())
+    UserMetricsRecordAction(UserMetricsAction(metric.c_str()), NULL);
 }
 
 void CoreOptionsHandler::NotifyPrefChanged(const std::string* pref_name) {

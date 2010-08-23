@@ -15,6 +15,7 @@
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/dom_ui/options_managed_banner_handler.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/options_window.h"
@@ -139,6 +140,8 @@ void BrowserOptionsHandler::UpdateDefaultBrowserState() {
 }
 
 void BrowserOptionsHandler::BecomeDefaultBrowser(const ListValue* args) {
+  UserMetricsRecordAction(UserMetricsAction("Options_SetAsDefaultBrowser"),
+                          NULL);
 #if defined(OS_MACOSX)
   if (ShellIntegration::SetAsDefaultBrowser())
     UpdateDefaultBrowserState();
@@ -226,6 +229,9 @@ void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {
   if (selected_index >= 0 &&
       selected_index < static_cast<int>(model_urls.size()))
     template_url_model_->SetDefaultSearchProvider(model_urls[selected_index]);
+
+  UserMetricsRecordAction(UserMetricsAction("Options_SearchEngineChanged"),
+                          NULL);
 }
 
 void BrowserOptionsHandler::UpdateSearchEngines() {

@@ -39,6 +39,8 @@ cr.define('options', function() {
       };
       $('defaultSearchManageEnginesButton').onclick = function(event) {
         OptionsPage.showPageByName('searchEngines');
+        chrome.send('coreOptionsUserMetricsAction',
+            ['Options_ManageSearchEngines']);
       };
       if (!cr.isChromeOS) {
         $('defaultBrowserUseAsDefaultButton').onclick = function(event) {

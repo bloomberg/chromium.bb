@@ -50,10 +50,14 @@ cr.define('options', function() {
         PasswordsExceptions.load();
         OptionsPage.showPageByName('passwordsExceptions');
         OptionsPage.showTab($('passwords-nav-tab'));
+        chrome.send('coreOptionsUserMetricsAction',
+            ['Options_ShowPasswordsExceptions']);
       };
 
       $('autofill_options').onclick = function(event) {
         OptionsPage.showPageByName('autoFillOptions');
+        chrome.send('coreOptionsUserMetricsAction',
+            ['Options_ShowAutoFillSettings']);
       };
 
       if (!cr.isChromeOS) {
@@ -63,6 +67,7 @@ cr.define('options', function() {
         $('import_data').onclick = function(event) {
           ImportDataOverlay.loadImporter();
           OptionsPage.showOverlay('importDataOverlay');
+          chrome.send('coreOptionsUserMetricsAction', ['Import_ShowDlg']);
         };
       }
 

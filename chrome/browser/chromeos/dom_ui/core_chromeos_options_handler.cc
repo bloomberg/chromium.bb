@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/notification_service.h"
 
 namespace chromeos {
@@ -30,9 +31,11 @@ void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
 
 void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
                                          Value::ValueType pref_type,
-                                         const std::string& value_string) {
+                                         const std::string& value_string,
+                                         const std::string& metric) {
   if (!CrosSettings::IsCrosSettings(pref_name))
-    return ::CoreOptionsHandler::SetPref(pref_name, pref_type, value_string);
+    return ::CoreOptionsHandler::SetPref(pref_name, pref_type, value_string,
+                                         metric);
 
   CrosSettings* cros_settings = CrosSettings::Get();
   switch (pref_type) {
@@ -57,6 +60,8 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
       break;
     }
   }
+
+  ProcessUserMetric(pref_type, value_string, metric);
 }
 
 void CoreChromeOSOptionsHandler::Observe(NotificationType type,

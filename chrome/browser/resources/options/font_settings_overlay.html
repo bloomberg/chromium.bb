@@ -7,12 +7,14 @@
         <label style="display:inline;">
           <span i18n-content="fontSettingsSerifLabel"></span>
           <select id="fontSettingsSerifSelector"
-              pref="webkit.webprefs.serif_font_family"></select>
+              pref="webkit.webprefs.serif_font_family"
+              metric="Options_ChangeSerifFont"></select>
         </label>
         <label style="display:inline;">
           <span i18n-content="fontSettingsSizeLabel"></span>
           <select id="fontSettingsSerifSizeSelector"
-              pref="webkit.webprefs.default_font_size"></select>
+              pref="webkit.webprefs.default_font_size"
+              metric="Options_ChangeSerifFontSize"></select>
         </label>
         <div id="fontSettingsSerifPreview"></div>
       </div>
@@ -20,12 +22,14 @@
         <label style="display:inline;">
           <span i18n-content="fontSettingsSansSerifLabel"></span>
           <select id="fontSettingsSansSerifSelector"
-              pref="webkit.webprefs.sansserif_font_family"></select>
+              pref="webkit.webprefs.sansserif_font_family"
+              metric="Options_ChangeSansSerifFont"></select>
         </label>
         <label style="display:inline;">
           <span i18n-content="fontSettingsSizeLabel"></span>
           <select id="fontSettingsSansSerifSizeSelector"
-              pref="webkit.webprefs.default_font_size"></select>
+              pref="webkit.webprefs.default_font_size"
+              metric="Options_ChangeSansSerifFontSize"></select>
         </label>
         <div id="fontSettingsSansSerifPreview"></div>
       </div>
@@ -33,12 +37,14 @@
         <label style="display:inline;">
           <span i18n-content="fontSettingsFixedWidthLabel"></span>
           <select id="fontSettingsFixedWidthSelector"
-              pref="webkit.webprefs.fixed_font_family"></select>
+              pref="webkit.webprefs.fixed_font_family"
+              metric="Options_ChangeFixedFont"></select>
         </label>
         <label style="display:inline;">
           <span i18n-content="fontSettingsSizeLabel"></span>
           <select id="fontSettingsFixedWidthSizeSelector"
-              pref="webkit.webprefs.default_fixed_font_size"></select>
+              pref="webkit.webprefs.default_fixed_font_size"
+              metric="Options_ChangeFixedFontSize"></select>
         </label>
         <div id="fontSettingsFixedWidthPreview"></div>
       </div>
@@ -50,7 +56,8 @@
       <label style="display:inline;">
         <span i18n-content="fontSettingsEncodingLabel"></span>
         <select id="fontSettingsEncodingSelector"
-            pref="intl.charset_default"></select>
+            pref="intl.charset_default" metric="Options_ChangeFontEncoding">
+        </select>
       </label>
     </div>
   </section>

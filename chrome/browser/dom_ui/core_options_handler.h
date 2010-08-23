@@ -41,7 +41,13 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // Sets a pref value |value_string| of |pref_type| to given |pref_name|.
   virtual void SetPref(const std::string& pref_name,
                        Value::ValueType pref_type,
-                       const std::string& value_string);
+                       const std::string& value_string,
+                       const std::string& metric);
+
+  // Records a user metric action for the given value.
+  void ProcessUserMetric(Value::ValueType pref_type,
+                         const std::string& value_string,
+                         const std::string& metric);
 
   typedef std::multimap<std::string, std::wstring> PreferenceCallbackMap;
   PreferenceCallbackMap pref_callback_map_;
@@ -70,6 +76,10 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   void HandleSetObjectPref(const ListValue* args);
 
   void HandleSetPref(const ListValue* args, Value::ValueType type);
+
+  // Callback for the "coreOptionsUserMetricsAction" message.  This records
+  // an action that should be tracked if metrics recording is enabled.
+  void HandleUserMetricsAction(const ListValue* args);
 
   void NotifyPrefChanged(const std::string* pref_name);
 
