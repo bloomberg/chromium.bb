@@ -71,16 +71,29 @@ bool AmIBundled() {
   ProcessSerialNumber psn = {0, kCurrentProcess};
 
   FSRef fsref;
-  if (GetProcessBundleLocation(&psn, &fsref) != noErr)
-    return false;
-
-  FSCatalogInfo info;
-  if (FSGetCatalogInfo(&fsref, kFSCatInfoNodeFlags, &info,
-                       NULL, NULL, NULL) != noErr) {
+  if (GetProcessBundleLocation(&psn, &fsref) != noErr) {
+    LOG(ERROR) << "GetProcessBundleLocation failed, returning false";
     return false;
   }
 
-  return info.nodeFlags & kFSNodeIsDirectoryMask;
+  FSCatalogInfo info;
+  HFSUniStr255 hfsname;
+  if (FSGetCatalogInfo(&fsref, kFSCatInfoNodeFlags, &info,
+                       &hfsname, NULL, NULL) != noErr) {
+    LOG(ERROR) << "FSGetCatalogInfo failed, returning false";
+    return false;
+  }
+
+  scoped_cftyperef<CFStringRef> cfname(
+      CFStringCreateWithCharacters(kCFAllocatorDefault,
+                                   hfsname.unicode,
+                                   hfsname.length));
+  std::string filename = base::SysCFStringRefToUTF8(cfname);
+  bool bundled = info.nodeFlags & kFSNodeIsDirectoryMask;
+  LOG(ERROR) << "AmIBundled() filename is: " << filename
+             << ", returning " << (bundled ? "true" : "false");
+
+  return bundled;
 }
 
 bool IsBackgroundOnlyProcess() {
