@@ -73,22 +73,6 @@ BOOL CALLBACK EnumThreadWndProc(HWND hwnd, LPARAM l_param) {
   return TRUE;
 }
 
-void AutomationProvider::GetActiveWindow(int* handle) {
-  HWND window = GetForegroundWindow();
-
-  // Let's make sure this window belongs to our process.
-  if (EnumThreadWindows(::GetCurrentThreadId(),
-                        EnumThreadWndProc,
-                        reinterpret_cast<LPARAM>(window))) {
-    // We enumerated all the windows and did not find the foreground window,
-    // it is not our window, ignore it.
-    *handle = 0;
-    return;
-  }
-
-  *handle = window_tracker_->Add(window);
-}
-
 // This task enqueues a mouse event on the event loop, so that the view
 // that it's being sent to can do the requisite post-processing.
 class MouseEventTask : public Task {
@@ -268,25 +252,6 @@ void AutomationProvider::SetWindowVisible(int handle, bool visible,
     *result = true;
   } else {
     *result = false;
-  }
-}
-
-void AutomationProvider::ActivateWindow(int handle) {
-  if (window_tracker_->ContainsHandle(handle)) {
-    ::SetActiveWindow(window_tracker_->GetResource(handle));
-  }
-}
-
-void AutomationProvider::IsWindowMaximized(int handle, bool* is_maximized,
-                                           bool* success) {
-  *success = false;
-
-  HWND hwnd = window_tracker_->GetResource(handle);
-  if (hwnd) {
-    *success = true;
-    WINDOWPLACEMENT window_placement;
-    GetWindowPlacement(hwnd, &window_placement);
-    *is_maximized = (window_placement.showCmd == SW_MAXIMIZE);
   }
 }
 

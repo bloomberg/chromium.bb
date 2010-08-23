@@ -70,6 +70,19 @@ class TestingAutomationProvider : public AutomationProvider,
                         IPC::Message* reply_message);
   void GetBrowserWindowCount(int* window_count);
   void GetNormalBrowserWindowCount(int* window_count);
+  // Be aware that the browser window returned might be of non TYPE_NORMAL
+  // or in incognito mode.
+  void GetBrowserWindow(int index, int* handle);
+  void FindNormalBrowserWindow(int* handle);
+  void GetLastActiveBrowserWindow(int* handle);
+  void GetActiveWindow(int* handle);
+  void ExecuteBrowserCommandAsync(int handle, int command, bool* success);
+  void ExecuteBrowserCommand(int handle, int command,
+                             IPC::Message* reply_message);
+  void GetBrowserLocale(string16* locale);
+  void IsWindowActive(int handle, bool* success, bool* is_active);
+  void ActivateWindow(int handle);
+  void IsWindowMaximized(int handle, bool* is_maximized, bool* success);
 
   // Callback for history redirect queries.
   virtual void OnRedirectQueryComplete(

@@ -167,6 +167,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   scoped_ptr<AutomationBrowserTracker> browser_tracker_;
   scoped_ptr<AutomationTabTracker> tab_tracker_;
+  scoped_ptr<AutomationWindowTracker> window_tracker_;
 
   typedef std::map<NavigationController*, LoginHandler*> LoginHandlerMap;
   LoginHandlerMap login_handler_map_;
@@ -183,19 +184,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
  private:
   // IPC Message callbacks.
-  void GetBrowserLocale(string16* locale);
   void GetShowingAppModalDialog(bool* showing_dialog, int* dialog_button);
   void ClickAppModalDialogButton(int button, bool* success);
   void ShutdownSessionService(int handle, bool* result);
-  // Be aware that the browser window returned might be of non TYPE_NORMAL
-  // or in incognito mode.
-  void GetBrowserWindow(int index, int* handle);
-  void FindNormalBrowserWindow(int* handle);
-  void GetLastActiveBrowserWindow(int* handle);
-  void GetActiveWindow(int* handle);
-  void ExecuteBrowserCommandAsync(int handle, int command, bool* success);
-  void ExecuteBrowserCommand(int handle, int command,
-                             IPC::Message* reply_message);
   void TerminateSession(int handle, bool* success);
   void WindowGetViewBounds(int handle, int view_id, bool screen_coordinates,
                            bool* success, gfx::Rect* bounds);
@@ -218,9 +209,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void GetWindowBounds(int handle, gfx::Rect* bounds, bool* result);
   void SetWindowBounds(int handle, const gfx::Rect& bounds, bool* result);
   void SetWindowVisible(int handle, bool visible, bool* result);
-  void IsWindowActive(int handle, bool* success, bool* is_active);
-  void ActivateWindow(int handle);
-  void IsWindowMaximized(int handle, bool* is_maximized, bool* success);
 
   void GetTabCount(int handle, int* tab_count);
   void GetType(int handle, int* type_as_int);
@@ -920,7 +908,6 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
       extension_test_result_observer_;
   scoped_ptr<MetricEventDurationObserver> metric_event_duration_observer_;
   scoped_ptr<AutomationExtensionTracker> extension_tracker_;
-  scoped_ptr<AutomationWindowTracker> window_tracker_;
   scoped_ptr<AutomationAutocompleteEditTracker> autocomplete_edit_tracker_;
   scoped_ptr<NavigationControllerRestoredObserver> restore_tracker_;
   PortContainerMap port_containers_;

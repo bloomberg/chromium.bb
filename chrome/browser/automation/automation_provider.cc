@@ -334,20 +334,6 @@ Extension* AutomationProvider::GetDisabledExtension(int extension_handle) {
 
 void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AutomationProvider, message)
-    IPC_MESSAGE_HANDLER(AutomationMsg_BrowserWindow, GetBrowserWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetBrowserLocale, GetBrowserLocale)
-    IPC_MESSAGE_HANDLER(AutomationMsg_LastActiveBrowserWindow,
-                        GetLastActiveBrowserWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ActiveWindow, GetActiveWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_FindNormalBrowserWindow,
-                        FindNormalBrowserWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowActive, IsWindowActive)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ActivateWindow, ActivateWindow)
-    IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowMaximized, IsWindowMaximized)
-    IPC_MESSAGE_HANDLER(AutomationMsg_WindowExecuteCommandAsync,
-                        ExecuteBrowserCommandAsync)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowExecuteCommand,
-                        ExecuteBrowserCommand)
     IPC_MESSAGE_HANDLER(AutomationMsg_TerminateSession, TerminateSession)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowViewBounds, WindowGetViewBounds)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetWindowBounds, GetWindowBounds)
@@ -558,11 +544,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 }
 
-void AutomationProvider::GetBrowserLocale(string16* locale) {
-  DCHECK(g_browser_process);
-  *locale = ASCIIToUTF16(g_browser_process->GetApplicationLocale());
-}
-
 void AutomationProvider::GetShowingAppModalDialog(bool* showing_dialog,
                                                   int* dialog_button) {
   AppModalDialog* dialog_delegate =
@@ -603,92 +584,6 @@ void AutomationProvider::ShutdownSessionService(int handle, bool* result) {
   } else {
     *result = false;
   }
-}
-
-void AutomationProvider::GetBrowserWindow(int index, int* handle) {
-  *handle = 0;
-  if (index >= 0) {
-    BrowserList::const_iterator iter = BrowserList::begin();
-    for (; (iter != BrowserList::end()) && (index > 0); ++iter, --index) {}
-    if (iter != BrowserList::end()) {
-      *handle = browser_tracker_->Add(*iter);
-    }
-  }
-}
-
-void AutomationProvider::FindNormalBrowserWindow(int* handle) {
-  *handle = 0;
-  Browser* browser = BrowserList::FindBrowserWithType(profile_,
-                                                      Browser::TYPE_NORMAL,
-                                                      false);
-  if (browser)
-    *handle = browser_tracker_->Add(browser);
-}
-
-void AutomationProvider::GetLastActiveBrowserWindow(int* handle) {
-  *handle = 0;
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser)
-    *handle = browser_tracker_->Add(browser);
-}
-
-#if defined(OS_POSIX)
-// TODO(estade): use this implementation for all platforms?
-void AutomationProvider::GetActiveWindow(int* handle) {
-  gfx::NativeWindow window =
-      BrowserList::GetLastActive()->window()->GetNativeHandle();
-  *handle = window_tracker_->Add(window);
-}
-#endif
-
-void AutomationProvider::ExecuteBrowserCommandAsync(int handle, int command,
-                                                    bool* success) {
-  *success = false;
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser->command_updater()->SupportsCommand(command) &&
-        browser->command_updater()->IsCommandEnabled(command)) {
-      browser->ExecuteCommand(command);
-      *success = true;
-    }
-  }
-}
-
-void AutomationProvider::ExecuteBrowserCommand(
-    int handle, int command, IPC::Message* reply_message) {
-  // List of commands which just finish synchronously and don't require
-  // setting up an observer.
-  static const int kSynchronousCommands[] = {
-    IDC_HOME,
-    IDC_SELECT_NEXT_TAB,
-    IDC_SELECT_PREVIOUS_TAB,
-    IDC_SHOW_BOOKMARK_MANAGER,
-  };
-  if (browser_tracker_->ContainsHandle(handle)) {
-    Browser* browser = browser_tracker_->GetResource(handle);
-    if (browser->command_updater()->SupportsCommand(command) &&
-        browser->command_updater()->IsCommandEnabled(command)) {
-      // First check if we can handle the command without using an observer.
-      for (size_t i = 0; i < arraysize(kSynchronousCommands); i++) {
-        if (command == kSynchronousCommands[i]) {
-          browser->ExecuteCommand(command);
-          AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message,
-                                                               true);
-          Send(reply_message);
-          return;
-        }
-      }
-
-      // Use an observer if we have one, otherwise fail.
-      if (ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
-          this, browser, command, reply_message)) {
-        browser->ExecuteCommand(command);
-        return;
-      }
-    }
-  }
-  AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message, false);
-  Send(reply_message);
 }
 
 // This task just adds another task to the event queue.  This is useful if
@@ -744,18 +639,6 @@ void AutomationProvider::WindowSimulateKeyPress(const IPC::Message& message,
                               views::Event::EF_ALT_DOWN),
                             ((flags & views::Event::EF_COMMAND_DOWN) ==
                               views::Event::EF_COMMAND_DOWN));
-}
-
-void AutomationProvider::IsWindowActive(int handle, bool* success,
-                                        bool* is_active) {
-  if (window_tracker_->ContainsHandle(handle)) {
-    *is_active =
-        platform_util::IsWindowActive(window_tracker_->GetResource(handle));
-    *success = true;
-  } else {
-    *success = false;
-    *is_active = false;
-  }
 }
 
 void AutomationProvider::GetTabCount(int handle, int* tab_count) {

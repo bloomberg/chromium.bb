@@ -5,13 +5,17 @@
 #include "chrome/browser/automation/testing_automation_provider.h"
 
 #include "base/command_line.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_provider_list.h"
 #include "chrome/browser/automation/automation_provider_observers.h"
 #include "chrome/browser/automation/automation_tab_tracker.h"
+#include "chrome/browser/automation/automation_window_tracker.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/login_prompt.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/url_request_context_getter.h"
 #include "chrome/common/notification_service.h"
@@ -170,6 +174,20 @@ void TestingAutomationProvider::OnMessageReceived(
     IPC_MESSAGE_HANDLER(AutomationMsg_BrowserWindowCount, GetBrowserWindowCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_NormalBrowserWindowCount,
                         GetNormalBrowserWindowCount)
+    IPC_MESSAGE_HANDLER(AutomationMsg_BrowserWindow, GetBrowserWindow)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetBrowserLocale, GetBrowserLocale)
+    IPC_MESSAGE_HANDLER(AutomationMsg_LastActiveBrowserWindow,
+                        GetLastActiveBrowserWindow)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ActiveWindow, GetActiveWindow)
+    IPC_MESSAGE_HANDLER(AutomationMsg_FindNormalBrowserWindow,
+                        FindNormalBrowserWindow)
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowActive, IsWindowActive)
+    IPC_MESSAGE_HANDLER(AutomationMsg_ActivateWindow, ActivateWindow)
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsWindowMaximized, IsWindowMaximized)
+    IPC_MESSAGE_HANDLER(AutomationMsg_WindowExecuteCommandAsync,
+                        ExecuteBrowserCommandAsync)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowExecuteCommand,
+                        ExecuteBrowserCommand)
 
     IPC_MESSAGE_UNHANDLED(AutomationProvider::OnMessageReceived(message));
   IPC_END_MESSAGE_MAP()
@@ -529,6 +547,108 @@ void TestingAutomationProvider::GetBrowserWindowCount(int* window_count) {
 void TestingAutomationProvider::GetNormalBrowserWindowCount(int* window_count) {
   *window_count = static_cast<int>(
       BrowserList::GetBrowserCountForType(profile_, Browser::TYPE_NORMAL));
+}
+
+void TestingAutomationProvider::GetBrowserWindow(int index, int* handle) {
+  *handle = 0;
+  if (index >= 0) {
+    BrowserList::const_iterator iter = BrowserList::begin();
+    for (; (iter != BrowserList::end()) && (index > 0); ++iter, --index) {}
+    if (iter != BrowserList::end()) {
+      *handle = browser_tracker_->Add(*iter);
+    }
+  }
+}
+
+void TestingAutomationProvider::FindNormalBrowserWindow(int* handle) {
+  *handle = 0;
+  Browser* browser = BrowserList::FindBrowserWithType(profile_,
+                                                      Browser::TYPE_NORMAL,
+                                                      false);
+  if (browser)
+    *handle = browser_tracker_->Add(browser);
+}
+
+void TestingAutomationProvider::GetLastActiveBrowserWindow(int* handle) {
+  *handle = 0;
+  Browser* browser = BrowserList::GetLastActive();
+  if (browser)
+    *handle = browser_tracker_->Add(browser);
+}
+
+void TestingAutomationProvider::GetActiveWindow(int* handle) {
+  gfx::NativeWindow window =
+      BrowserList::GetLastActive()->window()->GetNativeHandle();
+  *handle = window_tracker_->Add(window);
+}
+
+void TestingAutomationProvider::ExecuteBrowserCommandAsync(int handle,
+                                                           int command,
+                                                           bool* success) {
+  *success = false;
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser->command_updater()->SupportsCommand(command) &&
+        browser->command_updater()->IsCommandEnabled(command)) {
+      browser->ExecuteCommand(command);
+      *success = true;
+    }
+  }
+}
+
+void TestingAutomationProvider::ExecuteBrowserCommand(
+    int handle, int command, IPC::Message* reply_message) {
+  // List of commands which just finish synchronously and don't require
+  // setting up an observer.
+  static const int kSynchronousCommands[] = {
+    IDC_HOME,
+    IDC_SELECT_NEXT_TAB,
+    IDC_SELECT_PREVIOUS_TAB,
+    IDC_SHOW_BOOKMARK_MANAGER,
+  };
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser->command_updater()->SupportsCommand(command) &&
+        browser->command_updater()->IsCommandEnabled(command)) {
+      // First check if we can handle the command without using an observer.
+      for (size_t i = 0; i < arraysize(kSynchronousCommands); i++) {
+        if (command == kSynchronousCommands[i]) {
+          browser->ExecuteCommand(command);
+          AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message,
+                                                               true);
+          Send(reply_message);
+          return;
+        }
+      }
+
+      // Use an observer if we have one, otherwise fail.
+      if (ExecuteBrowserCommandObserver::CreateAndRegisterObserver(
+          this, browser, command, reply_message)) {
+        browser->ExecuteCommand(command);
+        return;
+      }
+    }
+  }
+  AutomationMsg_WindowExecuteCommand::WriteReplyParams(reply_message, false);
+  Send(reply_message);
+}
+
+void TestingAutomationProvider::GetBrowserLocale(string16* locale) {
+  DCHECK(g_browser_process);
+  *locale = ASCIIToUTF16(g_browser_process->GetApplicationLocale());
+}
+
+void TestingAutomationProvider::IsWindowActive(int handle,
+                                               bool* success,
+                                               bool* is_active) {
+  if (window_tracker_->ContainsHandle(handle)) {
+    *is_active =
+        platform_util::IsWindowActive(window_tracker_->GetResource(handle));
+    *success = true;
+  } else {
+    *success = false;
+    *is_active = false;
+  }
 }
 
 // TODO(brettw) change this to accept GURLs when history supports it

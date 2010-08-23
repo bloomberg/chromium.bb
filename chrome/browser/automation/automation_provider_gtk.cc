@@ -71,16 +71,6 @@ void AutomationProvider::WindowGetViewBounds(int handle, int view_id,
 }
 #endif
 
-void AutomationProvider::ActivateWindow(int handle) {
-  NOTIMPLEMENTED();
-}
-
-void AutomationProvider::IsWindowMaximized(int handle, bool* is_maximized,
-                                           bool* success) {
-  *success = false;
-  NOTIMPLEMENTED();
-}
-
 void AutomationProvider::PrintAsync(int tab_handle) {
   NOTIMPLEMENTED();
 }
