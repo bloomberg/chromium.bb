@@ -56,6 +56,7 @@ class RenderViewContextMenu : public menus::SimpleMenuModel::Delegate {
   virtual bool GetAcceleratorForCommandId(
       int command_id,
       menus::Accelerator* accelerator) = 0;
+  virtual void LookUpInDictionary();
 
   // Attempts to get an ExtensionMenuItem given the id of a context menu item.
   ExtensionMenuItem* GetExtensionMenuItem(int id) const;

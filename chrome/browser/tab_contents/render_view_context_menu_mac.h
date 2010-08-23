@@ -33,6 +33,9 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
     return false;
   }
 
+  virtual void LookUpInDictionary();
+
+  void InitPlatformMenu();
  private:
   scoped_nsobject<MenuController> menuController_;
   NSView* parent_view_;  // parent view

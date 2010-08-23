@@ -309,6 +309,9 @@ each locale. -->
           <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL" desc="The name of the 'Right to Left' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/Textedit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
             Right to Left
           </message>
+          <message name="IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY" desc="The name of the 'Look Up in Dictionary' item in the content area context menu.  To translate, launch /Applications/Textedit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+            Look Up in Dictionary
+          </message>
       </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">

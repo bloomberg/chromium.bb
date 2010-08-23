@@ -7,7 +7,10 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsobject.h"
+#include "base/sys_string_conversions.h"
+#include "chrome/app/chrome_dll_resource.h"
 #import "chrome/browser/cocoa/menu_controller.h"
+#include "grit/generated_resources.h"
 
 // Obj-C bridge class that is the target of all items in the context menu.
 // Relies on the tag being set to the command id.
@@ -24,6 +27,7 @@ RenderViewContextMenuMac::~RenderViewContextMenuMac() {
 }
 
 void RenderViewContextMenuMac::PlatformInit() {
+  InitPlatformMenu();
   menuController_.reset(
       [[MenuController alloc] initWithModel:&menu_model_
                      useWithPopUpButtonCell:NO]);
@@ -53,4 +57,27 @@ void RenderViewContextMenuMac::PlatformInit() {
                    withEvent:clickEvent
                      forView:parent_view_];
   }
+}
+
+void RenderViewContextMenuMac::InitPlatformMenu() {
+  bool has_selection = !params_.selection_text.empty();
+
+  if (has_selection) {
+      menu_model_.AddSeparator();
+      menu_model_.AddItemWithStringId(
+          IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY,
+          IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY);
+  }
+
+}
+
+void RenderViewContextMenuMac::LookUpInDictionary() {
+  // TODO(morrita): On Safari, A dictionary panel could be shown
+  // based on a preference setting of Dictionary.app.  We currently
+  // don't support it: http://crbug.com/17951
+  NSString* text = base::SysWideToNSString(params_.selection_text);
+  NSPasteboard* pboard = [NSPasteboard pasteboardWithUniqueName];
+  BOOL ok = [pboard setString:text forType:NSStringPboardType];
+  if (ok)
+    NSPerformService(@"Look Up in Dictionary", pboard);
 }

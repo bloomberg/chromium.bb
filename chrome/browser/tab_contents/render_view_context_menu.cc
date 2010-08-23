@@ -400,6 +400,11 @@ void RenderViewContextMenu::InitMenu() {
   AppendDeveloperItems();
 }
 
+void RenderViewContextMenu::LookUpInDictionary() {
+  // Used only in the Mac port.
+  NOTREACHED();
+}
+
 bool RenderViewContextMenu::AppendCustomItems() {
   std::vector<WebMenuItem>& custom_items = params_.custom_items;
   for (size_t i = 0; i < custom_items.size(); ++i) {
@@ -935,6 +940,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
           WebContextMenuData::CheckableMenuItemEnabled;
     case IDC_WRITING_DIRECTION_MENU:
       return true;
+    case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
+      // This is OK because the menu is not shown when it isn't
+      // appropriate.
+      return true;
 #elif defined(OS_POSIX)
     // TODO(suzhe): this should not be enabled for password fields.
     case IDC_INPUT_METHODS_MENU:
@@ -981,6 +990,8 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
     if (id == IDC_WRITING_DIRECTION_LTR)
       return params_.writing_direction_left_to_right &
           WebContextMenuData::CheckableMenuItemChecked;
+    if (id == IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY)
+      return false;
 #endif  // OS_MACOSX
 
   // Check box for 'Check the Spelling of this field'.
@@ -1323,6 +1334,9 @@ void RenderViewContextMenu::ExecuteCommand(int id) {
       source_tab_contents_->render_view_host()->NotifyTextDirection();
       break;
     }
+    case IDC_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY:
+      LookUpInDictionary();
+      break;
 #endif  // OS_MACOSX
 
     default:
