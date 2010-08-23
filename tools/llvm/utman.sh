@@ -2403,6 +2403,7 @@ organize-native-code() {
 
 
 readonly LLVM_DIS=${INSTALL_DIR}/bin/llvm-dis
+readonly LLVM_OPT=${INSTALL_DIR}/bin/opt
 readonly LLVM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
 
 
@@ -2530,42 +2531,57 @@ bitcode-to-native() {
   rm -rf "${PNACL_BC_ARM_ROOT}"
   mkdir -p "${PNACL_BC_ARM_ROOT}"
 
+  # Special case: Convert nacl_startup.o
+  spushd "${PNACL_BITCODE_ROOT}"
+  local nso="nacl_startup.o"
+  bitcode-to-native-x8632 "${nso}" "${PNACL_BC_X8632_ROOT}/${nso}" &
+  bitcode-to-native-x8664 "${nso}" "${PNACL_BC_X8664_ROOT}/${nso}" &
+  bitcode-to-native-arm   "${nso}" "${PNACL_BC_ARM_ROOT}/${nso}" &
+  wait
+  spopd
+
   local tmp="/tmp/ar-${RANDOM}${RANDOM}"
   local a=""
+  local ARCHIVE_LIST="${PNACL_BITCODE_ROOT}"/*.a
 
-  ARCHIVE_LIST="libc.a libnacl.a libstdc++.a libnosys.a libm.a"
-
-  for a in ${ARCHIVE_LIST} ; do
+  for arfile in ${ARCHIVE_LIST} ; do
+    a=$(basename ${arfile})
     rm -rf "${tmp}"
     mkdir -p "${tmp}"
-    cp "${PNACL_BITCODE_ROOT}/${a}" "${tmp}"
     spushd ${tmp}
+    mkdir orig
     mkdir ar-x8632
     mkdir ar-x8664
     mkdir ar-arm
     StepBanner "BC-TO-NATIVE" "Converting ${a}"
-    ${LLVM_AR} x "${a}"
-    for objfile in *.o ; do
-      bitcode-to-native-x8632 "${objfile}" "ar-x8632/${objfile}" &
-      bitcode-to-native-x8664 "${objfile}" "ar-x8664/${objfile}" &
-      bitcode-to-native-arm   "${objfile}" "ar-arm/${objfile}" &
+
+    spushd orig
+    ${LLVM_AR} x "${arfile}"
+    for objfile in *.o; do
+      ${LLVM_OPT} -O3 -std-compile-opts "${objfile}" -f -o "${objfile}.opt"
+      bitcode-to-native-x8632 "${objfile}.opt" "../ar-x8632/${objfile}" &
+      bitcode-to-native-x8664 "${objfile}.opt" "../ar-x8664/${objfile}" &
+      bitcode-to-native-arm   "${objfile}.opt" "../ar-arm/${objfile}" &
       wait
     done
+    spopd  # orig
 
     local ARM_AR=${INSTALL_DIR}/bin/${CROSS_TARGET_ARM}-ar
     local X8632_AR=${NACL_TOOLCHAIN}/bin/nacl-ar
     local X8664_AR=${NACL_TOOLCHAIN}/bin/nacl64-ar
 
-    (cd ar-x8632; ${X8632_AR} cq "${a}" *.o; ${X8632_AR} s "${a}") &
-    (cd ar-x8664; ${X8664_AR} cq "${a}" *.o; ${X8664_AR} s "${a}") &
-    (cd ar-arm  ; ${ARM_AR} cq "${a}" *.o; ${ARM_AR} s "${a}") &
+    (cd ar-x8632; ${X8632_AR} rc "${a}" *.o) &
+    (cd ar-x8664; ${X8664_AR} rc "${a}" *.o) &
+    (cd ar-arm  ; ${ARM_AR} rc "${a}" *.o) &
     wait
 
     mv "ar-x8632/${a}" "${PNACL_BC_X8632_ROOT}"
     mv "ar-x8664/${a}" "${PNACL_BC_X8664_ROOT}"
     mv "ar-arm/${a}"   "${PNACL_BC_ARM_ROOT}"
-    spopd
+    spopd  # ${tmp}
   done
+
+  rm -rf "${tmp}"
 }
 
 bitcode-to-native-x8632() {
