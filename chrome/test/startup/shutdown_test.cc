@@ -126,9 +126,11 @@ TEST_F(ShutdownTest, SimpleUserQuit) {
 // http://crbug.com/52858
 #if defined(OS_MACOSX)
 #define MAYBE_SimpleSessionEnding FLAKY_SimpleSessionEnding
+#define MAYBE_TwentyTabsWindowClose FLAKY_TwentyTabsWindowClose
 #define MAYBE_TwentyTabsUserQuit FLAKY_TwentyTabsUserQuit
 #else
 #define MAYBE_SimpleSessionEnding SimpleSessionEnding
+#define MAYBE_TwentyTabsWindowClose TwentyTabsWindowClose
 #define MAYBE_TwentyTabsUserQuit TwentyTabsUserQuit
 #endif
 
@@ -137,7 +139,7 @@ TEST_F(ShutdownTest, MAYBE_SimpleSessionEnding) {
                   true, /* important */ SIMPLE, UITest::SESSION_ENDING);
 }
 
-TEST_F(ShutdownTest, TwentyTabsWindowClose) {
+TEST_F(ShutdownTest, MAYBE_TwentyTabsWindowClose) {
   RunShutdownTest("shutdown", "twentytabs-window-close",
                   true, /* important */ TWENTY_TABS, UITest::WINDOW_CLOSE);
 }
