@@ -26,7 +26,10 @@ SearchEngineManagerHandler::~SearchEngineManagerHandler() {
 
 void SearchEngineManagerHandler::Initialize() {
   controller_.reset(new KeywordEditorController(dom_ui_->GetProfile()));
-  controller_->table_model()->SetObserver(this);
+  if (controller_.get()) {
+    controller_->table_model()->SetObserver(this);
+    OnModelChanged();
+  }
 }
 
 void SearchEngineManagerHandler::GetLocalizedValues(
@@ -59,6 +62,9 @@ void SearchEngineManagerHandler::RegisterMessages() {
 }
 
 void SearchEngineManagerHandler::OnModelChanged() {
+  if (!controller_->loaded())
+    return;
+
   ListValue engine_list;
 
   // Find the default engine.
