@@ -54,6 +54,26 @@ void FreeNPString(NPString* npstr) {
   NPN_MemFree(str_bytes);
 }
 
+bool LogToConsole(NPP npp,
+                  NPVariant* console_variant,
+                  const nacl::string& text) {
+  NPObject* console_object = NPVARIANT_TO_OBJECT(*console_variant);
+  NPVariant message;  // doesn't hold its own string data, so don't release
+  bool success = false;
+  STRINGN_TO_NPVARIANT(text.c_str(),
+                       static_cast<uint32_t>(text.size()),
+                       message);
+
+  NPVariant result;
+  VOID_TO_NPVARIANT(result);
+  success = NPN_Invoke(npp, console_object, NPN_GetStringIdentifier("log"),
+                       &message, 1, &result);
+  if (success) {
+    NPN_ReleaseVariantValue(&result);
+  }
+  return success;
+}
+
 }  // namespace
 
 namespace plugin {
@@ -135,20 +155,9 @@ bool BrowserImplNpapi::AddToConsole(InstanceIdentifier instance_id,
   if (!NPVARIANT_IS_OBJECT(console_variant)) {
     goto cleanup_console_variant;
   }
-  NPObject* console_object = NPVARIANT_TO_OBJECT(console_variant);
 
-  NPVariant message;  // doesn't hold its own string data, so don't release
-  STRINGN_TO_NPVARIANT(text.c_str(),
-                       static_cast<uint32_t>(text.size()),
-                       message);
+  success = LogToConsole(npp, &console_variant, text);
 
-  NPVariant result;
-  VOID_TO_NPVARIANT(result);
-  success = NPN_Invoke(npp, console_object, NPN_GetStringIdentifier("log"),
-                       &message, 1, &result);
-  if (success) {
-    NPN_ReleaseVariantValue(&result);
-  }
 cleanup_console_variant:
   NPN_ReleaseVariantValue(&console_variant);
 cleanup_window:
