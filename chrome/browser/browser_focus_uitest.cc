@@ -305,10 +305,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
                                           VIEW_ID_LOCATION_BAR;
       ASSERT_TRUE(IsViewFocused(vid));
 
-      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, true,
-                                              false, false, false,
-                                              new MessageLoop::QuitTask());
-      ui_test_utils::RunMessageLoop();
+      ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+          window, base::VKEY_TAB, true, false, false, false));
     }
 
     // As above, but with ctrl+shift+tab.
@@ -318,10 +316,8 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
                                           VIEW_ID_LOCATION_BAR;
       ASSERT_TRUE(IsViewFocused(vid));
 
-      ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_TAB, true,
-                                              true, false, false,
-                                              new MessageLoop::QuitTask());
-      ui_test_utils::RunMessageLoop();
+      ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+          window, base::VKEY_TAB, true, true, false, false));
     }
   }
 }
@@ -488,11 +484,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
                                             false, false, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
-        ui_test_utils::WaitForFocusChange(browser()->GetSelectedTabContents()->
-            render_view_host());
+        ASSERT_NO_FATAL_FAILURE(
+            ui_test_utils::WaitForFocusChange(
+                browser()->GetSelectedTabContents()->render_view_host()));
       } else {
         // On the last tab key press, the focus returns to the browser.
-        ui_test_utils::WaitForFocusInBrowser(browser());
+        ASSERT_NO_FATAL_FAILURE(
+            ui_test_utils::WaitForFocusInBrowser(browser()));
       }
     }
 
@@ -515,11 +513,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversal) {
                                             false, true, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
-        ui_test_utils::WaitForFocusChange(browser()->GetSelectedTabContents()->
-            render_view_host());
+        ASSERT_NO_FATAL_FAILURE(
+            ui_test_utils::WaitForFocusChange(
+                browser()->GetSelectedTabContents()->render_view_host()));
       } else {
         // On the last tab key press, the focus returns to the browser.
-        ui_test_utils::WaitForFocusInBrowser(browser());
+        ASSERT_NO_FATAL_FAILURE(
+            ui_test_utils::WaitForFocusInBrowser(browser()));
       }
 
       // Let's make sure the focus is on the expected element in the page.
@@ -588,10 +588,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
                                             false, false, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
-        interstitial_page->WaitForFocusChange();
+        ASSERT_NO_FATAL_FAILURE(interstitial_page->WaitForFocusChange());
       } else {
         // On the last tab key press, the focus returns to the browser.
-        ui_test_utils::WaitForFocusInBrowser(browser());
+        ASSERT_NO_FATAL_FAILURE(
+            ui_test_utils::WaitForFocusInBrowser(browser()));
       }
     }
 
@@ -612,10 +613,11 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FocusTraversalOnInterstitial) {
                                             false, true, false, false));
 
       if (j < arraysize(kExpElementIDs) - 1) {
-        interstitial_page->WaitForFocusChange();
+        ASSERT_NO_FATAL_FAILURE(interstitial_page->WaitForFocusChange());
       } else {
         // On the last tab key press, the focus returns to the browser.
-        ui_test_utils::WaitForFocusInBrowser(browser());
+        ASSERT_NO_FATAL_FAILURE(
+            ui_test_utils::WaitForFocusInBrowser(browser()));
       }
 
       // Let's make sure the focus is on the expected element in the page.
@@ -679,16 +681,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
 #if defined(OS_MACOSX)
   // Press Cmd+F, which will make the Find box open and request focus.
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, false,
-                                          false, false, true,
-                                          new MessageLoop::QuitTask());
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_F, false, false, false, true));
 #else
   // Press Ctrl+F, which will make the Find box open and request focus.
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
-                                          false, false, false,
-                                          new MessageLoop::QuitTask());
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_F, true, false, false, false));
 #endif
-  ui_test_utils::RunMessageLoop();
 
   // Ideally, we wouldn't sleep here and instead would intercept the
   // RenderViewHostDelegate::HandleKeyboardEvent() callback.  To do that, we
@@ -706,15 +705,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
   // Now press Ctrl+F again and focus should move to the Find box.
 #if defined(OS_MACOSX)
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, false,
-                                          false, false, true,
-                                          new MessageLoop::QuitTask());
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_F, false, false, false, true));
 #else
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
-                                          false, false, false,
-                                          new MessageLoop::QuitTask());
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_F, true, false, false, false));
 #endif
-  ui_test_utils::RunMessageLoop();
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Set focus to the page.
@@ -723,15 +719,12 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FindFocusTest) {
 
   // Now press Ctrl+F again and focus should move to the Find box.
 #if defined(OS_MACOSX)
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, false,
-                                          false, false, true,
-                                          new MessageLoop::QuitTask());
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_F, false, false, false, true));
 #else
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F, true,
-                                          false, false, false,
-                                          new MessageLoop::QuitTask());
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_F, true, false, false, false));
 #endif
-  ui_test_utils::RunMessageLoop();
 
   // See remark above on why we wait.
   MessageLoop::current()->PostDelayedTask(

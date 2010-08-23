@@ -49,7 +49,7 @@ class FindInPageTest : public InProcessBrowserTest {
                                            ui_controls::LEFT,
                                            ui_controls::DOWN | ui_controls::UP,
                                            new MessageLoop::QuitTask());
-    ui_test_utils::RunMessageLoop();
+    ASSERT_NO_FATAL_FAILURE(ui_test_utils::RunMessageLoop());
   }
 
   int GetFocusedViewID() {
@@ -113,17 +113,16 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, CrashEscHandlers) {
   browser()->CloseTabContents(browser()->GetTabContentsAt(1));
 
   // Click on the location bar so that Find box loses focus.
-  ClickOnView(VIEW_ID_LOCATION_BAR);
+  ASSERT_NO_FATAL_FAILURE(ClickOnView(VIEW_ID_LOCATION_BAR));
 #if defined(TOOLKIT_VIEWS) || defined(OS_WIN)
   // Check the location bar is focused.
   EXPECT_EQ(VIEW_ID_LOCATION_BAR, GetFocusedViewID());
 #endif
 
   // This used to crash until bug 1303709 was fixed.
-  ui_controls::SendKeyPressNotifyWhenDone(
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser()->window()->GetNativeHandle(), base::VKEY_ESCAPE,
-      false, false, false, false, new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+      false, false, false, false));
 }
 
 IN_PROC_BROWSER_TEST_F(FindInPageTest, FocusRestore) {
@@ -187,28 +186,22 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
   browser()->GetFindBarController()->Show();
 
   // Search for "a".
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_A,
-      false, false, false, false,  // No modifiers.
-      new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_A, false, false, false, false));  // No modifiers
 
   // We should find "a" here.
   EXPECT_EQ(ASCIIToUTF16("a"), GetFindBarText());
 
   // Delete "a".
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_BACK,
-      false, false, false, false,  // No modifiers.
-      new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_BACK, false, false, false, false));  // No modifiers.
 
   // Validate we have cleared the text.
   EXPECT_EQ(string16(), GetFindBarText());
 
   // Close the Find box.
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_ESCAPE,
-      false, false, false, false,  // No modifiers.
-      new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_ESCAPE, false, false, false, false));  // No modifiers.
 
   // Show the Find bar.
   browser()->GetFindBarController()->Show();
@@ -218,16 +211,12 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
   EXPECT_EQ(string16(), GetFindBarText());
 
   // Close the Find box.
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_ESCAPE,
-      false, false, false, false,  // No modifiers.
-      new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_ESCAPE, false, false, false, false));  // No modifiers.
 
   // Press F3 to trigger FindNext.
-  ui_controls::SendKeyPressNotifyWhenDone(window, base::VKEY_F3,
-      false, false, false, false,  // No modifiers.
-      new MessageLoop::QuitTask());
-  ui_test_utils::RunMessageLoop();
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      window, base::VKEY_F3, false, false, false, false));  // No modifiers.
 
   // After the Find box has been reopened, it should still have no prepopulate
   // value.

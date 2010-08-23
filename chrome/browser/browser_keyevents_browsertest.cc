@@ -149,10 +149,8 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
                bool command) {
     gfx::NativeWindow window = NULL;
     ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
-    EXPECT_TRUE(ui_controls::SendKeyPressNotifyWhenDone(
-                    window, key, control, shift, alt, command,
-                    new MessageLoop::QuitTask()));
-    ui_test_utils::RunMessageLoop();
+    ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+                    window, key, control, shift, alt, command));
   }
 
   bool IsViewFocused(ViewID vid) {
@@ -790,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(BrowserKeyEventsTest, MAYBE_ReservedAccelerators) {
 
   // Ctrl+F4 to close the tab.
   ASSERT_NO_FATAL_FAILURE(SuppressAllEvents(0, true));
-  ASSERT_NO_FATAL_FAILURE( SendKey(base::VKEY_F4, true, false, false, false));
+  ASSERT_NO_FATAL_FAILURE(SendKey(base::VKEY_F4, true, false, false, false));
   ASSERT_EQ(1, browser()->tab_count());
 #endif
 }

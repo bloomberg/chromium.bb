@@ -327,9 +327,10 @@ void InProcessBrowserTest::TimedOut() {
   error_message += base::IntToString(initial_timeout_);
   error_message += " ms (kInitialTimeoutInMS).";
 
-  GTEST_NONFATAL_FAILURE_(error_message.c_str());
-
   MessageLoopForUI::current()->Quit();
+
+  // WARNING: This must be after Quit as it returns.
+  FAIL() << error_message;
 }
 
 void InProcessBrowserTest::SetInitialTimeoutInMS(int timeout_value) {

@@ -14,6 +14,7 @@
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/dom_operation_notification_details.h"
@@ -547,6 +548,25 @@ void WaitForBookmarkModelToLoad(BookmarkModel* model) {
   RunMessageLoop();
   model->RemoveObserver(&observer);
   ASSERT_TRUE(model->IsLoaded());
+}
+
+bool SendKeyPressSync(gfx::NativeWindow window,
+                      base::KeyboardCode key,
+                      bool control,
+                      bool shift,
+                      bool alt,
+                      bool command) {
+  if (!ui_controls::SendKeyPressNotifyWhenDone(
+          window, key, control, shift, alt, command,
+          new MessageLoop::QuitTask())) {
+    LOG(ERROR) << "ui_controls::SendKeyPressNotifyWhenDone failed";
+    return false;
+  }
+  // Run the message loop. It'll stop running when either the key was received
+  // or the test timed out (in which case testing::Test::HasFatalFailure should
+  // be set).
+  RunMessageLoop();
+  return !testing::Test::HasFatalFailure();
 }
 
 TimedMessageLoopRunner::TimedMessageLoopRunner()

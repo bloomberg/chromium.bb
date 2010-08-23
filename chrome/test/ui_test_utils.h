@@ -10,8 +10,8 @@
 #include <string>
 #include <set>
 
-#include "gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
@@ -21,6 +21,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/automation/dom_element_proxy.h"
+#include "gfx/native_widget_types.h"
 
 class AppModalDialog;
 class BookmarkModel;
@@ -187,6 +188,16 @@ void RegisterAndWait(NotificationObserver* observer,
 
 // Blocks until |model| finishes loading.
 void WaitForBookmarkModelToLoad(BookmarkModel* model);
+
+// Sends a key press blocking until the key press is received or the test times
+// out. This uses ui_controls::SendKeyPress, see it for details. Returns true
+// if the event was successfully sent and received.
+bool SendKeyPressSync(gfx::NativeWindow window,
+                      base::KeyboardCode key,
+                      bool control,
+                      bool shift,
+                      bool alt,
+                      bool command) WARN_UNUSED_RESULT;
 
 // Run a message loop only for the specified amount of time.
 class TimedMessageLoopRunner {

@@ -12,9 +12,9 @@
 #include <wtypes.h>
 #endif
 
+#include "base/keyboard_codes.h"
 #include "gfx/native_widget_types.h"
 #include "gfx/point.h"
-#include "base/keyboard_codes.h"
 
 #if defined(TOOLKIT_VIEWS)
 namespace views {
@@ -42,6 +42,9 @@ namespace ui_controls {
 // these functions, so passing NULL is ok.
 
 // Send a key press with/without modifier keys.
+//
+// If you're writing a test chances are you want the variant in ui_test_utils.
+// See it for details.
 bool SendKeyPress(gfx::NativeWindow window,
                   base::KeyboardCode key,
                   bool control,

@@ -125,10 +125,9 @@ class AutocompleteEditViewTest : public InProcessBrowserTest,
   void SendKey(base::KeyboardCode key, bool control, bool shift, bool alt) {
     gfx::NativeWindow window = NULL;
     ASSERT_NO_FATAL_FAILURE(GetNativeWindow(&window));
-    ui_controls::SendKeyPressNotifyWhenDone(window, key, control, shift, alt,
-                                            false /* command */,
-                                            new MessageLoop::QuitTask());
-    ui_test_utils::RunMessageLoop();
+    ASSERT_TRUE(
+        ui_test_utils::SendKeyPressSync(
+            window, key, control, shift, alt, false /* command */));
   }
 
   void SendKeySequence(const wchar_t* keys) {
