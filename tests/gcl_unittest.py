@@ -28,6 +28,9 @@ class GclTestsBase(SuperMoxTestBase):
 
 class GclUnittest(GclTestsBase):
   """General gcl.py tests."""
+  def tearDown(self):
+    gcl.CODEREVIEW_SETTINGS = {}
+
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
@@ -72,6 +75,39 @@ class GclUnittest(GclTestsBase):
   def testCheckHomeForFile(self):
     # TODO(maruel): TEST ME
     pass
+
+  def testDefaultSettings(self):
+    self.assertEquals({}, gcl.CODEREVIEW_SETTINGS)
+
+  def testGetCodeReviewSettingOk(self):
+    self.mox.StubOutWithMock(gcl, 'GetCachedFile')
+    gcl.GetCachedFile(gcl.CODEREVIEW_SETTINGS_FILE).AndReturn(
+        'foo:bar\n'
+        '# comment\n'
+        ' c : d \n\r'
+        'e: f')
+    self.mox.ReplayAll()
+    self.assertEquals('bar', gcl.GetCodeReviewSetting('foo'))
+    self.assertEquals('d', gcl.GetCodeReviewSetting('c'))
+    self.assertEquals('f', gcl.GetCodeReviewSetting('e'))
+    self.assertEquals('', gcl.GetCodeReviewSetting('other'))
+    self.assertEquals(
+        {'foo': 'bar', 'c': 'd', 'e': 'f', '__just_initialized': None},
+        gcl.CODEREVIEW_SETTINGS)
+
+  def testGetCodeReviewSettingFail(self):
+    self.mox.StubOutWithMock(gcl, 'GetCachedFile')
+    gcl.GetCachedFile(gcl.CODEREVIEW_SETTINGS_FILE).AndReturn(
+        'aaa\n'
+        ' c : d \n\r'
+        'e: f')
+    self.mox.ReplayAll()
+    try:
+      gcl.GetCodeReviewSetting('c')
+      self.fail()
+    except gcl.gclient_utils.Error:
+      pass
+    self.assertEquals({}, gcl.CODEREVIEW_SETTINGS)
 
   def testGetRepositoryRootNone(self):
     gcl.os.getcwd().AndReturn(self.fake_root_dir)

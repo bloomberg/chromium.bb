@@ -78,30 +78,30 @@ class CheckCallTestCase(GclientUtilBase):
 
 
 class SubprocessCallAndFilterTestCase(GclientUtilBase):
-  def testSubprocessCallAndFilter(self):
-    command = ['boo', 'foo', 'bar']
+  class ProcessIdMock(object):
+    def __init__(self, test_string):
+      self.stdout = StringIO.StringIO(test_string)
+    def wait(self):
+        pass
+
+  def _inner(self, command, test_string):
     in_directory = 'bleh'
-    fail_status = None
-    pattern = 'a(.*)b'
-    test_string = 'ahah\naccb\nallo\naddb\n'
     env = gclient_utils.os.environ.copy()
     env['LANGUAGE'] = 'en'
-    class Mock(object):
-      stdout = StringIO.StringIO(test_string)
-      def wait(self):
-        pass
-    kid = Mock()
     print("\n________ running 'boo foo bar' in 'bleh'")
     for i in test_string:
       gclient_utils.sys.stdout.write(i)
     gclient_utils.subprocess.Popen(
-        command, bufsize=0, cwd=in_directory,
+        command,
+        cwd=in_directory,
         shell=(gclient_utils.sys.platform == 'win32'),
         env=env,
         stdout=gclient_utils.subprocess.PIPE,
-        stderr=gclient_utils.subprocess.STDOUT).AndReturn(kid)
+        stderr=gclient_utils.subprocess.STDOUT,
+        bufsize=0).AndReturn(self.ProcessIdMock(test_string))
+
     self.mox.ReplayAll()
-    compiled_pattern = gclient_utils.re.compile(pattern)
+    compiled_pattern = gclient_utils.re.compile(r'a(.*)b')
     line_list = []
     capture_list = []
     def FilterLines(line):
@@ -110,11 +110,20 @@ class SubprocessCallAndFilterTestCase(GclientUtilBase):
       if match:
         capture_list.append(match.group(1))
     gclient_utils.SubprocessCallAndFilter(
-        command, in_directory,
-        True, True,
-        fail_status, FilterLines)
+        command, in_directory, True, True, None, FilterLines)
     self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb'])
     self.assertEquals(capture_list, ['cc', 'dd'])
+
+  def testSubprocessCallAndFilter(self):
+    command = ['boo', 'foo', 'bar']
+    test_string = 'ahah\naccb\nallo\naddb\n'
+    self._inner(command, test_string)
+
+  def testNoLF(self):
+    # Exactly as testSubprocessCallAndFilter without trailing \n
+    command = ['boo', 'foo', 'bar']
+    test_string = 'ahah\naccb\nallo\naddb'
+    self._inner(command, test_string)
 
 
 class SplitUrlRevisionTestCase(GclientUtilBase):

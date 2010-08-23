@@ -191,8 +191,8 @@ def GetCodeReviewSetting(key):
           raise gclient_utils.Error(
               '%s is invalid, please fix. It\'s content:\n\n%s' %
                   (CODEREVIEW_SETTINGS_FILE, settings_file))
-        k, v = line.split(': ', 1)
-        CODEREVIEW_SETTINGS[k] = v
+        k, v = line.split(':', 1)
+        CODEREVIEW_SETTINGS[k.strip()] = v.strip()
     CODEREVIEW_SETTINGS.setdefault('__just_initialized', None)
   return CODEREVIEW_SETTINGS.get(key, "")
 
