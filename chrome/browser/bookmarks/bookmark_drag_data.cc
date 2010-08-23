@@ -208,7 +208,7 @@ void BookmarkDragData::Write(Profile* profile, OSExchangeData* data) const {
   // clipboard.
   if (elements.size() == 1 && elements[0].is_url) {
     if (elements[0].url.SchemeIs(chrome::kJavaScriptScheme)) {
-      data->SetString(ASCIIToWide(elements[0].url.spec()));
+      data->SetString(UTF8ToWide(elements[0].url.spec()));
     } else {
       data->SetURL(elements[0].url, UTF16ToWide(elements[0].title));
     }
