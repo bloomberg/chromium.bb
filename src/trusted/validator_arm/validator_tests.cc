@@ -236,6 +236,21 @@ static const AnnotatedInstruction examples_of_safe_stores[] = {
   // Store-multiple
   { 0x0881FFFF, "stm r1, { r0-r15 }: store multiple, no writeback" },
   { 0x08A1FFFF, "stm r1!, { r0-r15 }: store multiple, writeback" },
+
+  // Stores from the floating point / vector register file
+  // These all compile to STC instructions.
+  { 0x0D810B00, "vstr d0, [r1]: direct vector store" },
+  { 0x0D810B99, "vstr d0, [r1, #0x99]: positive displacement vector store" },
+  { 0x0D010B99, "vstr d0, [r1, #-0x99]: negative displacement vector store" },
+  { 0x0C810BBF, "vstmia r1, { d0-d7 }: no writeback" },
+  { 0x0CA10BBF, "vstmia r1!, { d0-d7 }: writeback" },
+};
+
+static const AnnotatedInstruction examples_of_safe_masks[] = {
+  { 0x03C11103, "bic r1, r1, #0xC0000000: simple in-place mask (form 1)" },
+  { 0x03C114C0, "bic r1, r1, #0xC0000000: simple in-place mask (form 2)" },
+  { 0x03C314C0, "bic r1, r3, #0xC0000000: mask with register move" },
+  { 0x03C114FF, "bic r1, r1, #0xFF000000: overzealous but correct mask" },
 };
 
 
@@ -247,13 +262,6 @@ TEST_F(ValidatorTests, SafeMaskedStores) {
    * Each mask instruction must leave a valid (data) address in r1.
    */
 
-  static const AnnotatedInstruction masks[] = {
-    { 0x03C11103, "bic r1, r1, #0xC0000000: simple in-place mask (form 1)" },
-    { 0x03C114C0, "bic r1, r1, #0xC0000000: simple in-place mask (form 2)" },
-    { 0x03C314C0, "bic r1, r3, #0xC0000000: mask with register move" },
-    { 0x03C114FF, "bic r1, r1, #0xFF000000: overzealous but correct mask" },
-  };
-
   for (unsigned p = 0; p < 15; p++) {
     /*
      * Conditionally executed instructions have a top nibble of 0..14.
@@ -261,15 +269,15 @@ TEST_F(ValidatorTests, SafeMaskedStores) {
      */
     arm_inst predicate = p << 28;
 
-    for (unsigned m = 0; m < NACL_ARRAY_SIZE(masks); m++) {
+    for (unsigned m = 0; m < NACL_ARRAY_SIZE(examples_of_safe_masks); m++) {
       for (unsigned s = 0; s < NACL_ARRAY_SIZE(examples_of_safe_stores); s++) {
         ostringstream message;
-        message << masks[m].about
+        message << examples_of_safe_masks[m].about
                 << ", "
                 << examples_of_safe_stores[s].about
                 << " (predicate #" << p << ")";
         arm_inst program[] = {
-          masks[m].inst | predicate,
+          examples_of_safe_masks[m].inst | predicate,
           examples_of_safe_stores[s].inst | predicate,
         };
         validation_should_pass(program,
@@ -277,6 +285,49 @@ TEST_F(ValidatorTests, SafeMaskedStores) {
                                kDefaultBaseAddr,
                                message.str());
       }
+    }
+  }
+}
+
+/*
+ * These stores can't be predicated, so we must use a different, simpler
+ * fixture generator.
+ */
+static const AnnotatedInstruction examples_of_safe_unconditional_stores[] = {
+  // Vector stores
+  { 0xF481A5AF, "vst2.16 {d10[2],d12[2]}, [r1]: simple vector store" },
+  { 0xF401A64F, "vst1.16 {d10-d12}, [r1]: larger vector store" },
+  { 0xF4010711, "vst1.8 {d0}, [r1, :64], r1: register post-increment" },
+};
+
+TEST_F(ValidatorTests, SafeUnconditionalMaskedStores) {
+  /*
+   * Produces many examples of unconditional masked stores using the safe
+   * unconditional store table (above) and the list of possible masking
+   * instructions (below).
+   *
+   * Each mask instruction must leave a valid (data) address in r1.
+   */
+
+  // These instructions can't be predicated.
+  arm_inst predicate = 0xE0000000;  // "always"
+
+  for (unsigned m = 0; m < NACL_ARRAY_SIZE(examples_of_safe_masks); m++) {
+    for (unsigned s = 0;
+         s < NACL_ARRAY_SIZE(examples_of_safe_unconditional_stores);
+         s++) {
+      ostringstream message;
+      message << examples_of_safe_masks[m].about
+              << ", "
+              << examples_of_safe_unconditional_stores[s].about;
+      arm_inst program[] = {
+        examples_of_safe_masks[m].inst | predicate,
+        examples_of_safe_unconditional_stores[s].inst,
+      };
+      validation_should_pass(program,
+                             2,
+                             kDefaultBaseAddr,
+                             message.str());
     }
   }
 }
@@ -320,7 +371,7 @@ TEST_F(ValidatorTests, SafeConditionalStores) {
 }
 
 
-TEST_F(ValidatorTests, InvalidMaskedStores) {
+TEST_F(ValidatorTests, InvalidMasksOnSafeStores) {
   static const AnnotatedInstruction examples_of_invalid_masks[] = {
     { 0x01A01003, "mov r1, r3: not even a mask" },
     { 0x03C31000, "bic r1, r3, #0: doesn't mask anything" },
@@ -372,7 +423,7 @@ TEST_F(ValidatorTests, InvalidMaskedStores) {
   }
 }
 
-TEST_F(ValidatorTests, InvalidConditionalStores) {
+TEST_F(ValidatorTests, InvalidGuardsOnSafeStores) {
   static const AnnotatedInstruction invalid_guards[] = {
     { 0x03110100, "tst r1, #0: always sets Z" },
     { 0x03110102, "tst r1, #0x80000000: doesn't test enough bits" },
@@ -424,6 +475,67 @@ TEST_F(ValidatorTests, InvalidConditionalStores) {
     }
   }
 }
+
+TEST_F(ValidatorTests, ValidMasksOnUnsafeStores) {
+  static const AnnotatedInstruction invalid_stores[] = {
+    { 0x07810002, "str r0, [r1, r2]: register-plus-register addressing" },
+    { 0x07010002, "str r0, [r1, -r2]: register-minus-register addressing" },
+    { 0x07810182, "str r0, [r1, r2, LSL #3]: complicated addressing 1" },
+    { 0x07018482, "str r0, [r1, -r2, ASR #16]: complicated addressing 2" },
+  };
+
+  for (unsigned p = 0; p < 15; p++) {
+    /*
+     * Conditionally executed instructions have a top nibble of 0..14.
+     * 15 is an escape sequence used to fit in additional encodings.
+     */
+    arm_inst predicate = p << 28;
+
+    for (unsigned m = 0; m < NACL_ARRAY_SIZE(examples_of_safe_masks); m++) {
+      for (unsigned s = 0; s < NACL_ARRAY_SIZE(invalid_stores); s++) {
+        ostringstream message;
+        message << examples_of_safe_masks[m].about
+                << ", "
+                << invalid_stores[s].about
+                << " (predicate #" << p << ")";
+        arm_inst program[] = {
+          examples_of_safe_masks[m].inst | predicate,
+          invalid_stores[s].inst | predicate,
+        };
+
+        vector<ProblemRecord> problems =
+            validation_should_fail(program,
+                                   NACL_ARRAY_SIZE(program),
+                                   kDefaultBaseAddr,
+                                   message.str());
+
+        // EXPECT/continue rather than ASSERT so that we run the other cases.
+        EXPECT_EQ(1U, problems.size());
+        if (problems.size() != 1) continue;
+
+        ProblemRecord first = problems[0];
+        EXPECT_EQ(kDefaultBaseAddr + 4, first.vaddr)
+            << "Problem report must point to the store: "
+            << message.str();
+        EXPECT_NE(nacl_arm_dec::MAY_BE_SAFE, first.safety)
+            << "Store must be flagged by the decoder as unsafe: "
+            << message.str();
+
+        /*
+         * Note that we expect kProblemUnsafe, *not* kProblemUnsafeStore.  This
+         * is because the store instructions themselves, in isolation, are
+         * unsafe to appear anywhere in a Native Client program -- whereas
+         * kProblemUnsafeStore indicates a legitimate store used in an unsafe
+         * manner.
+         */
+        EXPECT_EQ(nacl::string(nacl_arm_val::kProblemUnsafe),
+                  first.problem_code)
+            << message;
+      }
+    }
+  }
+}
+
 
 /*
  * Implementation of the ValidatorTests utility methods.  These are documented
