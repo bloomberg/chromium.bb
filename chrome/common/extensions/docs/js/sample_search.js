@@ -75,6 +75,10 @@ function initSearch() {
   if (canclear) {
     searchinput.addEventListener('click', filterSamples, false);
   }
+
+  if (window.location.hash.length > 1) {
+    setFilter(window.location.hash.substring(1));
+  }
 };
 
 var currentfilter = "";

@@ -1,2 +1,59 @@
+<div id="pageData-name" class="pageData">Omnibox</div>
+
 <!-- BEGIN AUTHORED CONTENT -->
+<p>The omnibox API allows you to register a
+keyword with Google Chrome's omnibox.
+
+<p><img src="omnibox.png" width="480" height="300">
+
+<p>When the user enters your extension's
+keyword, they enter a mode where they are
+interacting solely with your extension.
+Each of their keystrokes is sent to your
+extension, and you can provide suggestions
+in response.
+
+<p>The suggestions can be richly formatted
+in a variety of ways. When the user accepts
+a suggestion, your extension is notified
+and can take action.
+
+<h2 id="manifest">Manifest</h2>
+
+<p>To use the Omnibox API, your manifest must
+declare the "experimental" permission and
+register an omnibox keyword. You should also
+specify a 16x16-pixel icon. This will get
+displayed in the omnibox when suggesting users
+enter keyword mode.
+
+<p>For example:
+
+<pre>{
+  "name": "Aaron's omnibox extension",
+  "version": "1.0",
+  <b>"permissions": ["experimental"],</b>
+  <b>"omnibox_keyword": "aaron",</b>
+  <b>"icons": {</b>
+    <b>"16": "16-full-color.png"</b>
+  <b>},</b>
+  "background_page": "background.html"
+  
+}</pre>
+
+<p><b class="note">Note:</b> Google Chrome
+automatically creates a greyscale version of
+your 16x16-pixel icon. You should provide
+a full-color version so that it can also be
+used in other situations that require color.
+For example, the <a href="contextMenus.html"
+>Context Menus API</a> also uses a 16x16-pixel
+icon, but it is displayed in color.
+
+<h2 id="examples">Examples</h2>
+
+<p>
+You can find samples of this API on the
+<a href="samples.html#omnibox">sample page</a>.
+
 <!-- END AUTHORED CONTENT -->

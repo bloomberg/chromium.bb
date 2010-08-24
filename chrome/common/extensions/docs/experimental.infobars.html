@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.experimental.infobars - Google Chrome Extensions - Google Code</title></head>
+  <title>Infobars - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -227,16 +227,16 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.infobars</h1>
+        <h1 class="page_title">Infobars</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
-            <li style="display: none; ">
-              <a>h2Name</a>
+            <li>
+              <a href="#manifest">Manifest</a>
               <ol>
-                <li>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
@@ -283,12 +283,52 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
+        <p id="classSummary" style="display: none; ">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
+        <div id="static"><div id="pageData-name" class="pageData">Infobars</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
+<p>The infobars API allows you to add
+horizontal panels to the top of tabs.
+
+</p><p><img src="infobars.png" width="580" height="385">
+
+</p><p>You implement the content of your
+infobar using HTML. Just like with other
+parts of the extension system, you can
+communicate with the rest of your extension
+using APIs like
+<a href="extension.html#method-getBackgroundPage">chrome.extension.getBackgroundPage()</a>
+and
+<a href="extension.html#method-getViews">chrome.extension.getViews()</a>.
+
+</p><p>Infobars should be used to tell users
+something about a particular page. Google
+Chrome automatically closes an infobar when
+the page that it was displayed for is navigated
+elsewhere.
+
+</p><h2 id="manifest">Manifest</h2>
+
+<p>Because the Infobars API is currently
+experimental, you must declare the "experimental"
+permission to use it. Also, you should specify
+a 16x16-pixel icon for display next to your infobar.
+For example:
+
+</p><pre>{
+  "name": "Andy's infobar extension",
+  "version": "1.0",
+  <b>"permissions": ["experimental"],</b>
+  <b>"icons": {</b>
+    <b>"16": "16.png"</b>
+  <b>},</b>
+  "background_page": "background.html"
+}</pre>
+
 <!-- END AUTHORED CONTENT -->
 </div>
 

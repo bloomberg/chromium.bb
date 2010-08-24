@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.contextMenus - Google Chrome Extensions - Google Code</title></head>
+  <title>Context Menus - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -227,7 +227,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.contextMenus</h1>
+        <h1 class="page_title">Context Menus</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -235,6 +235,13 @@
           <ol>
             <li>
               <a href="#manifest">Manifest</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#examples">Examples</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -294,7 +301,9 @@
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
+        <div id="static"><div id="pageData-name" class="pageData">Context Menus</div>
+
+<!-- BEGIN AUTHORED CONTENT -->
 <p>
 The context menus module allows you
 to add items to Google Chrome's context menu.
@@ -336,8 +345,14 @@ For example:
   ...
 }</pre>
 
+<h2 id="examples">Examples</h2>
+
+<p>
+You can find samples of this API on the
+<a href="samples.html#contextMenus">sample page</a>.
+
 <!-- END AUTHORED CONTENT -->
-</div>
+</p></div>
 
         <!-- API PAGE -->
         <div class="apiPage">

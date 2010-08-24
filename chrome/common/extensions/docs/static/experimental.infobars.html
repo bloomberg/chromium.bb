@@ -1,2 +1,44 @@
+<div id="pageData-name" class="pageData">Infobars</div>
+
 <!-- BEGIN AUTHORED CONTENT -->
+<p>The infobars API allows you to add
+horizontal panels to the top of tabs.
+
+<p><img src="infobars.png" width="598">
+
+<p>You implement the content of your
+infobar using HTML. Just like with other
+parts of the extension system, you can
+communicate to an from the infobar
+using APIs like
+<a href="extension.html#method-getBackgroundPage"
+  >chrome.extension.getBackgroundPage()</a>
+and
+<a href="extension.html#method-getViews"
+  >chrome.extension.getViews()</a>.
+
+<p>Infobars should be used to tell users
+something about a particular page. Google
+Chrome automatically closes an infobar when
+the page that it was displayed for is navigated
+elsewhere.
+
+<h2 id="manifest">Manifest</h2>
+
+<p>Because the Infobars API is currently
+experimental, you must declare the "experimental"
+permission to use it. Also, you should specify
+a 16x16-pixel icon for display next to your infobar.
+For example:
+
+<pre>{
+  "name": "Andy's infobar extension",
+  "version": "1.0",
+  <b>"permissions": ["experimental"],</b>
+  <b>"icons": {</b>
+    <b>"16": "16.png"</b>
+  <b>},</b>
+  "background_page": "background.html"
+}</pre>
+
 <!-- END AUTHORED CONTENT -->
