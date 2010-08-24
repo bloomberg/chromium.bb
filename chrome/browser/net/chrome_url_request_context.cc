@@ -40,6 +40,10 @@
 #include "net/ocsp/nss_ocsp.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/proxy_config_service.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // ----------------------------------------------------------------------------
@@ -58,22 +62,27 @@ void CheckCurrentlyOnMainThread() {
 // Helper methods to initialize proxy
 // ----------------------------------------------------------------------------
 
-net::ProxyConfigService* CreateProxyConfigService(
-    const PrefService* pref_service) {
+net::ProxyConfigService* CreateProxyConfigService(Profile* profile) {
   // The linux gconf-based proxy settings getter relies on being initialized
   // from the UI thread.
   CheckCurrentlyOnMainThread();
 
-  scoped_ptr<net::ProxyConfig> proxy_config(CreateProxyConfig(pref_service));
+  scoped_ptr<net::ProxyConfig> proxy_config(CreateProxyConfig(
+      profile->GetPrefs()));
 
   if (!proxy_config.get()) {
     // Use system settings.
     // TODO(port): the IO and FILE message loops are only used by Linux.  Can
     // that code be moved to chrome/browser instead of being in net, so that it
     // can use ChromeThread instead of raw MessageLoop pointers? See bug 25354.
+#if defined(OS_CHROMEOS)
+    return new chromeos::ProxyConfigService(
+        profile->GetChromeOSProxyConfigServiceImpl());
+#else
     return net::ProxyService::CreateSystemProxyConfigService(
         g_browser_process->io_thread()->message_loop(),
         g_browser_process->file_thread()->message_loop());
+#endif  // defined(OS_CHROMEOS)
   }
 
   // Otherwise use the fixed settings from the command line.
@@ -225,7 +234,7 @@ class FactoryForOriginal : public ChromeURLRequestContextFactory {
         // We need to initialize the ProxyConfigService from the UI thread
         // because on linux it relies on initializing things through gconf,
         // and needs to be on the main thread.
-        proxy_config_service_(CreateProxyConfigService(profile->GetPrefs())) {
+        proxy_config_service_(CreateProxyConfigService(profile)) {
   }
 
   virtual ChromeURLRequestContext* Create();

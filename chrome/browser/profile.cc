@@ -487,6 +487,13 @@ class OffTheRecordProfileImpl : public Profile,
     last_selected_directory_ = path;
   }
 
+#if defined(OS_CHROMEOS)
+  virtual chromeos::ProxyConfigServiceImpl*
+      GetChromeOSProxyConfigServiceImpl() {
+    return profile_->GetChromeOSProxyConfigServiceImpl();
+  }
+#endif  // defined(OS_CHROMEOS)
+
   virtual void ExitedOffTheRecordMode() {
     // Drop our download manager so we forget about all the downloads made
     // in off-the-record mode.

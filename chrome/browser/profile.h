@@ -14,6 +14,13 @@
 namespace base {
 class Time;
 }
+
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class ProxyConfigServiceImpl;
+}
+#endif
+
 namespace history {
 class TopSites;
 }
@@ -421,6 +428,12 @@ class Profile {
   // Returns the last directory that was chosen for uploading or opening a file.
   virtual FilePath last_selected_directory() = 0;
   virtual void set_last_selected_directory(const FilePath& path) = 0;
+
+#if defined(OS_CHROMEOS)
+  // Returns ChromeOS's ProxyConfigServiceImpl, creating if not yet created.
+  virtual chromeos::ProxyConfigServiceImpl*
+      GetChromeOSProxyConfigServiceImpl() = 0;
+#endif  // defined(OS_CHROMEOS)
 
 #ifdef UNIT_TEST
   // Use with caution.  GetDefaultRequestContext may be called on any thread!

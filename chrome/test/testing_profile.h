@@ -236,7 +236,12 @@ class TestingProfile : public Profile {
   virtual void set_last_selected_directory(const FilePath& path) {
     last_selected_directory_ = path;
   }
-
+#if defined(OS_CHROMEOS)
+  virtual chromeos::ProxyConfigServiceImpl*
+      GetChromeOSProxyConfigServiceImpl() {
+    return NULL;
+  }
+#endif  // defined(OS_CHROMEOS)
 
   // Schedules a task on the history backend and runs a nested loop until the
   // task is processed.  This has the effect of blocking the caller until the

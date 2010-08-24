@@ -104,6 +104,10 @@ class ProfileImpl : public Profile,
   virtual CloudPrintProxyService* GetCloudPrintProxyService();
   void InitCloudPrintProxyService();
 
+#if defined(OS_CHROMEOS)
+  virtual chromeos::ProxyConfigServiceImpl* GetChromeOSProxyConfigServiceImpl();
+#endif  // defined(OS_CHROMEOS)
+
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -231,6 +235,9 @@ class ProfileImpl : public Profile,
 
 #if defined(OS_CHROMEOS)
   chromeos::Preferences chromeos_preferences_;
+
+  scoped_refptr<chromeos::ProxyConfigServiceImpl>
+      chromeos_proxy_config_service_impl_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);

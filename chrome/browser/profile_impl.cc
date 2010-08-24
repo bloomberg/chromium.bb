@@ -87,6 +87,8 @@
 #elif defined(OS_MACOSX)
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
+#elif defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #elif defined(OS_POSIX) && !defined(OS_CHROMEOS)
 #include "base/xdg_util.h"
 #include "chrome/browser/password_manager/native_backend_gnome_x.h"
@@ -1213,3 +1215,14 @@ void ProfileImpl::InitCloudPrintProxyService() {
   cloud_print_proxy_service_.reset(new CloudPrintProxyService(this));
   cloud_print_proxy_service_->Initialize();
 }
+
+#if defined(OS_CHROMEOS)
+chromeos::ProxyConfigServiceImpl*
+    ProfileImpl::GetChromeOSProxyConfigServiceImpl() {
+  if (!chromeos_proxy_config_service_impl_) {
+    chromeos_proxy_config_service_impl_ =
+        new chromeos::ProxyConfigServiceImpl();
+  }
+  return chromeos_proxy_config_service_impl_;
+}
+#endif  // defined(OS_CHROMEOS)
