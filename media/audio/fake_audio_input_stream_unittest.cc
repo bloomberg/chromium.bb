@@ -5,7 +5,6 @@
 #include "base/basictypes.h"
 #include "base/platform_thread.h"
 #include "media/audio/audio_io.h"
-#include "media/audio/audio_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,3 +48,4 @@ TEST(FakeAudioInputTest, BasicCallbacks) {
   stream->Stop();
   stream->Close();
 }
+
