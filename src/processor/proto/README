@@ -1,0 +1,23 @@
+All sourcecode in this file is generated using the .proto and protoc from
+the protobuf project (http://code.google.com/p/protobuf/).
+
+To make changes edit the .proto file and regenerate the dependent files for
+check in.
+
+-----
+Troubleshooting for Protobuf:
+
+Install:
+If you are getting permission errors install, make sure you are not trying to
+install from an NFS.
+
+
+Running protoc:
+protoc: error while loading shared libraries: libprotobuf.so.0: cannot open
+shared object file: No such file or directory
+
+The issue is that Ubuntu 8.04 doesn't include /usr/local/lib in
+library paths. 
+
+To fix it for your current terminal session, just type in
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib 
