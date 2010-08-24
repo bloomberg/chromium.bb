@@ -51,18 +51,17 @@ VERBOSE = 0
 LIMIT = 5
 TIMEOUT = 10
 
-# These program are likely not available/working on windows
+# These programs are likely not available/working on windows.
 
 # http://tidy.sourceforge.net/
 HTML_CHECKER = ['tidy', '-errors']
 
-# From depot_tools
-# to see a list of all filters run: 'depot_tools/cpplint.py --filter='
+# From depot_tools:
+# To see a list of all filters run: 'depot_tools/cpplint.py --filter='
 CPP_CHECKER = ['cpplint.py', '--filter=-build/header_guard']
 
-
-# From depot_tools (currently not uses -- too many false positives
-# to see a list of all filters run: 'depot_tools/cpplint.py --filter='
+# From depot_tools (currently not used -- too many false positives).
+# To see a list of all filters run: 'depot_tools/cpplint.py --filter='
 C_CHECKER = ['cpplint.py', '--filter=-build/header_guard']
 
 # http://pychecker.sourceforge.net/
@@ -77,7 +76,7 @@ def Debug(s):
 
 
 def RunCommand(cmd):
-  """Run a shell command given as an argv style vector."""
+  """Run a shell command given an argv style vector."""
   Debug(str(cmd))
 
   start = time.time()
@@ -131,7 +130,7 @@ class ExternalChecker(object):
 
 
 class TidyChecker(ExternalChecker):
-  """Invoke tidy tool on html files."""
+  """Invokes tidy tool on html files."""
   def __init__(self):
     ExternalChecker.__init__(self, HTML_CHECKER, use_stderr=True)
     return
@@ -141,7 +140,7 @@ class TidyChecker(ExternalChecker):
 
 
 class PyChecker(ExternalChecker):
-  """Invoke pychecker tool on python files."""
+  """Invokes pychecker tool on python files."""
   def __init__(self):
     ExternalChecker.__init__(self, PYTHON_CHECKER)
     return
@@ -151,13 +150,14 @@ class PyChecker(ExternalChecker):
 
 
 class CppLintChecker(ExternalChecker):
-  """Invoke Google's cpplint tool on c++ files."""
+  """Invokes Google's cpplint tool on c++ files."""
   def __init__(self):
     ExternalChecker.__init__(self, CPP_CHECKER, use_stderr=True)
     return
 
   def FileFilter(self, props):
     return '.cc' in props or '.h' in props
+
 
 # ======================================================================
 class GenericRegexChecker(object):
@@ -172,7 +172,8 @@ class GenericRegexChecker(object):
     return
 
   def FindProblems(self, unused_props, data):
-    # speedy early out
+    """Looks for presubmit issues in the data from a file."""
+    # Speedy early out.
     if not self._content_regex.search(data):
       return []
 
@@ -197,13 +198,18 @@ class GenericRegexChecker(object):
     return problem
 
   def _RenderItem(self, no, line):
-      return 'line %d: [%s]' % (no, repr(line))
+    """Returns a formatted message."""
+    return 'line %d: [%s]' % (no, repr(line))
 
   def FileFilter(self, unused_props):
+    """Returns true if the file should be checked by the checker."""
+    # NOTE: All subclasses need to implement this and return True if the
+    # input Properties show that this file should be checked.
     raise NotImplementedError()
 
   def IsProblemMatch(self, unused_match):
-    # NOTE: not all subclasses need to implement this
+    """Returns true if the file contains a presubmit problem."""
+    # NOTE: Not all subclasses need to implement this.
     pass
 
 
@@ -260,10 +266,11 @@ class CarriageReturnChecker(GenericRegexChecker):
   def FileFilter(self, props):
     return '.h' in props or '.cc' in props or '.c' in props or '.py' in props
 
+
 class CppCommentChecker(GenericRegexChecker):
   """No cpp comments in regular c files."""
   def __init__(self):
-    # we tolerate http:// etc in comments
+    # We tolerate http:// etc in comments
     GenericRegexChecker.__init__(self, r'(^|[^:])//')
     return
 
@@ -302,7 +309,7 @@ class ExternChecker(GenericRegexChecker):
 
   def IsProblemMatch(self, match):
     extra = match.group(1).strip()
-    # allow 'extern "C" {'
+    # Allow 'extern "C" {'
     # but do not allow plain 'extern "C"'
     if extra == '"C" {':
       return False
@@ -343,8 +350,8 @@ class IncludeChecker(object):
     seen_code = False
     for no, line in enumerate(lines):
       if line.startswith('}'):
-        # this test is our hacked indicator signaling that no includes
-        # directives should follow after we have seen actual code
+        # This test is our hacked indicator signaling that no includes
+        # directives should follow after we have seen actual code.
         seen_code = True
         continue
 
@@ -361,7 +368,7 @@ class IncludeChecker(object):
           if path.startswith(prefix):
             break
         else:
-          # no prefix matched
+          # No prefix matched.
           problem.append('line %d: [%s]' % (no, repr(line)))
 
     return problem
@@ -372,7 +379,7 @@ class IncludeChecker(object):
 
 class LineLengthChecker(object):
   def __init__(self):
-    self._dummy = None   # shut up pylint
+    self._dummy = None   # Shut up pylint.
 
   def FindProblems(self, unused_props, data):
     lines = data.split('\n')
@@ -381,11 +388,10 @@ class LineLengthChecker(object):
       if len(line) <= 80:
         continue
       line = line.strip()
-      # we allow comments and as it so happens pre processor directives
-      # to be longer
+      # We allow comments (and as it so happens, preprocessor directives) to
+      # be longer
       if line.startswith('//') or line.startswith('/*') or line.startswith('#'):
         continue
-
       problem.append('line %d: [%s]' % (no + 1, repr(line)))
     return problem
 
@@ -397,33 +403,52 @@ class LineLengthChecker(object):
 
 # ======================================================================
 # 'props' (short for properties) are tags associated with checkable files.
-
-# Excpept for the 'name', props do not carry any associcated value.
 #
-# Props are used to make decissions on whether a (how) a certain check
-# is applicable.
-# Prop' are usually derived from the pathname put can also be forced
-# using the magic string  '@PROPS[prop1,prop2,...]' anywhere in the
-# first 2k of data.
+# Except for the 'name', props do not carry any associated value.
+#
+# Props are used to make decisions on whether (and how) a certain check is
+# applicable.
+#
+# Props are usually derived from the pathname but can also be forced using
+# the magic string '@PROPS[prop1,prop2,...]' anywhere in the first 2k of
+# data.
 
 VALID_PROPS = {
-    'name': True,          # filename, only prop with a valie
+    'name': True,                # Filename, only prop with a value.
     'is_makefile': True,
-    'is_trusted': True,    # is trusted code
-    'is_untrusted': True,  # is untrusted code
-    'is_untrusted_stubs': True,  # is untrusted/stubs code
-    'is_shared': True,     # is shared code
-    'is_scons': True,      # is scons file (not one generated by gyp)
+    'is_trusted': True,          # Is trusted code.
+    'is_untrusted': True,        # Is untrusted code.
+    'is_untrusted_stubs': True,  # Is untrusted/stubs code.
+    'is_shared': True,           # Is shared code.
+    'is_scons': True,            # Is scons file (not one generated by gyp).
 }
 
 
 def IsValidProp(prop):
+  """Returns true if the property name is valid.
+
+  Valid property names start with '.' or are listed in VALID_PROPS.
+
+  Args:
+    prop: a property name.
+  Returns:
+    True if the property name is valid.
+  """
   if prop.startswith('.'):
     return True
   return prop in VALID_PROPS
 
 
 def FindProperties(data):
+  """Finds extra properties for a file.
+
+  Finds strings of the form '@PROPS[name name name]'.
+
+  Args:
+    data: The contents of the file being checked.
+  Returns:
+    A list of properties from the PROPS line in the file.
+  """
   match = re.search(r'@PROPS\[([^\]]*)\]', data)
   if match:
     return match.group(1).split(',')
@@ -431,6 +456,17 @@ def FindProperties(data):
 
 
 def FileProperties(filename, data):
+  """Finds all properties associated with this file.
+
+  Valid properties are based on the file's name and on the '@PROPS' line in
+  the file.
+
+  Args:
+    filename: the filename.
+    data: The contents of the file being checked.
+  Returns:
+    A map of property to value for each property associated with this file.
+  """
   d = {}
   d['name'] = filename
   _, ext = os.path.splitext(filename)
@@ -454,8 +490,8 @@ def FileProperties(filename, data):
       filename.endswith('SConstruct')):
       d['is_scons'] = True
 
-  # NOTE: look in a somewhat arbitrary region at the file beginning for
-  #       a special marker advertising addtional properties
+  # NOTE: Look in a somewhat arbitrary region at the file beginning for
+  #       a special marker advertising addtional properties.
   for p in FindProperties(data[:2048]):
     d[p] = True
 
@@ -463,87 +499,103 @@ def FileProperties(filename, data):
     assert IsValidProp(p)
   return d
 
+
 # ======================================================================
 def IsBinary(data):
+  """Checks for a 0x00 byte as a proxy for 'binary-ness'."""
   return '\x00' in data
 
 
-def FindExemptions(data):
-  match = re.search(r'@EXEMPTION\[([^\]]*)\]', data)
-  if match:
-    return match.group(1).split(',')
-  return []
-
 # ======================================================================
+# CHECK entry is: is_fatal, name, check_function.
 CHECKS = [# fatal checks
-          (1, 'tabs', TabsChecker()),
-          (1, 'trailing_space', TrailingWhiteSpaceChecker()),
-          (1, 'cpp_comment', CppCommentChecker()),
-          (1, 'fixme', FixmeChecker()),
-          (1, 'include', IncludeChecker()),
-          (1, 'extern', ExternChecker()),
-          (1, 'untrusted_ifdef', UntrustedIfDefChecker()),
-          (1, 'untrusted_asm', UntrustedAsmChecker()),
+          (True, 'tabs', TabsChecker()),
+          (True, 'trailing_space', TrailingWhiteSpaceChecker()),
+          (True, 'cpp_comment', CppCommentChecker()),
+          (True, 'fixme', FixmeChecker()),
+          (True, 'include', IncludeChecker()),
+          (True, 'extern', ExternChecker()),
+          (True, 'untrusted_ifdef', UntrustedIfDefChecker()),
+          (True, 'untrusted_asm', UntrustedAsmChecker()),
           # Non fatal checks
-          (0, 'open_curly', OpenCurlyChecker()),
-          (0, 'line_length', LineLengthChecker()),
-          (0, 'carriage_return', CarriageReturnChecker()),
-          (0, 'rewrite', RewriteChecker()),
-          (0, 'tidy', TidyChecker()),
-          (0, 'pychecker', PyChecker()),
-          (0, 'cpplint', CppLintChecker()),
+          (False, 'open_curly', OpenCurlyChecker()),
+          (False, 'line_length', LineLengthChecker()),
+          (False, 'carriage_return', CarriageReturnChecker()),
+          (False, 'rewrite', RewriteChecker()),
+          (False, 'tidy', TidyChecker()),
+          (False, 'pychecker', PyChecker()),
+          (False, 'cpplint', CppLintChecker()),
           ]
 
 
 def EmitStatus(filename, status, details=[]):
+  """Prints the status and all supporting details for a file."""
   print '%s: %s' % (filename, status)
   for no, line in details[:LIMIT]:
     print '  line %d: [%s]' % (no, repr(line))
   return
 
 
+def FindExemptions(data):
+  """Looks for and returns EXEMPTION items from the data.
+
+  Finds strings of the form '@EXEMPTION[name name name]' where
+  'name' is one of the names in the CHECKS table.
+
+  Args:
+    data: The contents of the file being checked.
+  """
+  match = re.search(r'@EXEMPTION\[([^\]]*)\]', data)
+  if match:
+    return match.group(1).split(',')
+  return []
+
+
 def CheckFile(filename, report):
-    Debug('\n' + filename)
-    errors = {}
-    warnings = {}
+  """Runs all possible presubmit checks against the filename."""
+  Debug('\n' + filename)
+  errors = {}
+  warnings = {}
 
-    data = open(filename).read()
+  data = open(filename).read()
 
-    if IsBinary(data):
-      EmitStatus(filename, 'binary')
-      return errors, warnings
-
-    exemptions = FindExemptions(data)
-    props = FileProperties(filename, data)
-    Debug('PROPS: ' + repr(props.keys()))
-
-    for fatal, name, check in CHECKS:
-      Debug('trying %s' % name)
-
-      if not check.FileFilter(props):
-        Debug('skipping')
-        continue
-
-      if name in exemptions:
-        Debug('exempt')
-        continue
-      problems = check.FindProblems(props, data)
-      if problems:
-        info =  '%s: %s' % (filename, name)
-        items = problems[:LIMIT]
-        if report:
-          print info
-          for i in items:
-            print i
-        if fatal:
-          errors[info] = items
-          break
-        else:
-          warnings[info] = items
+  if IsBinary(data):
+    EmitStatus(filename, 'binary')
     return errors, warnings
+
+  exemptions = FindExemptions(data)
+  props = FileProperties(filename, data)
+  Debug('PROPS: ' + repr(props.keys()))
+
+  for fatal, name, check in CHECKS:
+    Debug('trying %s' % name)
+
+    if not check.FileFilter(props):
+      Debug('skipping')
+      continue
+
+    if name in exemptions:
+      Debug('exempt')
+      continue
+
+    problems = check.FindProblems(props, data)
+    if problems:
+      info = '%s: %s' % (filename, name)
+      items = problems[:LIMIT]
+      if report:
+        print info
+        for i in items:
+          print i
+      if fatal:
+        errors[info] = items
+        break
+      else:
+        warnings[info] = items
+  return errors, warnings
 
 
 def main(argv):
+  """Runs all required presubmit checks for all listed files."""
   num_error = 0
   for filename in argv:
     if os.path.isdir(filename):
