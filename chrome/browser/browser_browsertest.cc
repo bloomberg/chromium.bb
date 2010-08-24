@@ -696,8 +696,6 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
 
   int app_tab_index = browser()->selected_index();
   ASSERT_EQ(0, app_tab_index) << "App tab should be the left most tab.";
-  ASSERT_EQ(browser()->GetTabContentsAt(0),
-            Browser::FindAppTab(browser(), extension_app_));
 
   // Open the same app.  The existing tab should stay focused.
   tab = Browser::OpenApplication(profile_, extension_app_->id());
@@ -705,27 +703,12 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   // No need to wait for navigation, because the tab already exists,
   // and no navigation should take place.
   ASSERT_TRUE(tab != NULL);
-  ASSERT_EQ(2, browser()->tab_count());
-  ASSERT_EQ(app_tab_index, browser()->selected_index());
-
-  // Focus the other tab, and reopen the app. The existing tab should
-  // be refocused.
-  browser()->SelectTabContentsAt(1, false);
-  Browser::OpenApplication(profile_, extension_app_->id());
-
-  tab = Browser::OpenApplication(profile_, extension_app_->id());
-  ASSERT_TRUE(tab != NULL);
-
-  ASSERT_EQ(2, browser()->tab_count());
-  ASSERT_EQ(app_tab_index, browser()->selected_index());
+  ASSERT_EQ(3, browser()->tab_count());
+  ASSERT_EQ(app_tab_index + 1, browser()->selected_index());
 
   // Open a second browser window, and open the app in a tab.
   Browser* second_browser = CreateBrowser(profile_);
   second_browser->window()->Show();
-
-  ASSERT_EQ(NULL, Browser::FindAppTab(second_browser, extension_app_)) <<
-      "Browser::FindAppTab() should not find an app tab in the second " <<
-      "window, beacuse it has not been added yet.";
 
   Browser::OpenApplication(profile_, extension_app_, Extension::LAUNCH_TAB);
   ASSERT_EQ(2, second_browser->tab_count()) <<
@@ -733,9 +716,6 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_OpenTab) {
   int second_app_tab_index = second_browser->selected_index();
   ASSERT_EQ(0, second_app_tab_index) <<
       "Second app tab should be the left most tab.";
-  ASSERT_EQ(second_browser->GetTabContentsAt(0),
-            Browser::FindAppTab(second_browser, extension_app_)) <<
-      "Browser::FindAppTab() should look at the focused window.";
 }
 
 // Test that launching an app refocuses a panel running the app.
@@ -857,40 +837,6 @@ IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_PanelBeforeTab) {
   // Open the app.  Focus should move to the panel.
   Browser::OpenApplication(profile_, extension_app_->id());
   ASSERT_EQ(app_panel, BrowserList::GetLastActive());
-}
-
-// Test that if multiple tabs host an app, and that app is opened,
-// the tab in the current window gets focus.
-IN_PROC_BROWSER_TEST_F(BrowserAppRefocusTest, MAYBE_TabInFocusedWindow) {
-  SetUpExtensionApp();
-
-  ASSERT_EQ(1, browser()->tab_count());
-
-  Browser::OpenApplicationTab(profile_, extension_app_, NULL);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(browser()));
-  ASSERT_EQ(2, browser()->tab_count());
-  int app_tab_index = browser()->selected_index();
-  ASSERT_EQ(0, app_tab_index) << "App tab should be the left most tab.";
-
-  // Open a new browser window, add an app tab.
-  Browser* extra_browser = CreateBrowser(profile_);
-  ASSERT_EQ(extra_browser, BrowserList::GetLastActive());
-
-  Browser::OpenApplicationTab(profile_, extension_app_, NULL);
-  ASSERT_TRUE(ui_test_utils::WaitForNavigationInCurrentTab(extra_browser));
-  ASSERT_EQ(2, extra_browser->tab_count());
-  app_tab_index = extra_browser->selected_index();
-  ASSERT_EQ(0, app_tab_index) << "App tab should be the left most tab";
-
-  // Open the app.  Focus should move to the panel.
-  Browser::OpenApplication(profile_, extension_app_->id());
-  ASSERT_EQ(extra_browser, BrowserList::GetLastActive());
-  ASSERT_EQ(2, extra_browser->tab_count());
-
-  browser()->window()->Show();
-  Browser::OpenApplication(profile_, extension_app_->id());
-  ASSERT_EQ(browser(), BrowserList::GetLastActive());
-  ASSERT_EQ(2, browser()->tab_count());
 }
 
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.

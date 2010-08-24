@@ -626,17 +626,11 @@ TabContents* Browser::OpenApplicationTab(Profile* profile,
 
   // TODO(erikkay): This doesn't seem like the right transition in all cases.
   PageTransition::Type transition = PageTransition::START_PAGE;
-  GURL url = extension->GetFullLaunchURL();
-  TabContents* tab_contents =
-      local_browser->CreateTabContentsForURL(url, GURL(), profile,
-                                             transition, false, NULL);
-  tab_contents->SetExtensionApp(extension);
-  local_browser->AddTab(tab_contents, transition);
 
-  if (browser)
-    *browser = local_browser;
-
-  return tab_contents;
+  return local_browser->AddTabWithURL(
+      extension->GetFullLaunchURL(), GURL(), transition, -1,
+      TabStripModel::ADD_PINNED | TabStripModel::ADD_SELECTED,
+      NULL, "", browser);
 }
 
 // static
