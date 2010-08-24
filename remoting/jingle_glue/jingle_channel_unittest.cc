@@ -138,6 +138,10 @@ TEST(JingleChannelTest, Close) {
   channel->thread_ = &thread;
   channel->stream_.reset(stream);
   channel->state_ = JingleChannel::OPEN;
+
+  EXPECT_CALL(callback, OnStateChange(channel.get(), JingleChannel::CLOSED))
+      .Times(1);
+
   thread.Start();
   channel->Close();
   thread.Stop();
