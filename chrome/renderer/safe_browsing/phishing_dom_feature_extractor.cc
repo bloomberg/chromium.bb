@@ -8,7 +8,10 @@
 #include "base/hash_tables.h"
 #include "base/histogram.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
+#include "base/time.h"
 #include "chrome/renderer/render_view.h"
+#include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "net/base/registry_controlled_domain.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
@@ -19,6 +22,19 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 namespace safe_browsing {
+
+// This time should be short enough that it doesn't noticeably disrupt the
+// user's interaction with the page.
+const int PhishingDOMFeatureExtractor::kMaxTimePerChunkMs = 50;
+
+// Experimenting shows that we get a reasonable gain in performance by
+// increasing this up to around 10, but there's not much benefit in
+// increasing it past that.
+const int PhishingDOMFeatureExtractor::kClockCheckGranularity = 10;
+
+// This should be longer than we expect feature extraction to take on any
+// actual phishing page.
+const int PhishingDOMFeatureExtractor::kMaxTotalTimeMs = 500;
 
 // Intermediate state used for computing features.  See features.h for
 // descriptions of the DOM features that are computed.
@@ -45,7 +61,13 @@ struct PhishingDOMFeatureExtractor::PageFeatureState {
   // How many script tags
   int num_script_tags;
 
-  PageFeatureState()
+  // The time at which we started feature extraction for the current page.
+  base::TimeTicks start_time;
+
+  // The number of iterations we've done for the current extraction.
+  int num_iterations;
+
+  explicit PageFeatureState(base::TimeTicks start_time_ticks)
       : external_links(0),
         secure_links(0),
         total_links(0),
@@ -58,7 +80,9 @@ struct PhishingDOMFeatureExtractor::PageFeatureState {
         total_actions(0),
         img_other_domain(0),
         total_imgs(0),
-        num_script_tags(0) {}
+        num_script_tags(0),
+        start_time(start_time_ticks),
+        num_iterations(0) {}
 
   ~PageFeatureState() {}
 };
@@ -74,8 +98,10 @@ struct PhishingDOMFeatureExtractor::FrameData {
 };
 
 PhishingDOMFeatureExtractor::PhishingDOMFeatureExtractor(
-    RenderView* render_view)
+    RenderView* render_view,
+    FeatureExtractorClock* clock)
     : render_view_(render_view),
+      clock_(clock),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Clear();
 }
@@ -98,6 +124,8 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(
 
   features_ = features;
   done_callback_.reset(done_callback);
+
+  page_feature_state_.reset(new PageFeatureState(clock_->Now()));
   MessageLoop::current()->PostTask(
       FROM_HERE,
       method_factory_.NewRunnableMethod(
@@ -111,6 +139,10 @@ void PhishingDOMFeatureExtractor::CancelPendingExtraction() {
 }
 
 void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
+  DCHECK(page_feature_state_.get());
+  ++page_feature_state_->num_iterations;
+  base::TimeTicks current_chunk_start_time = clock_->Now();
+
   if (!cur_frame_) {
     WebKit::WebView* web_view = render_view_->webview();
     if (!web_view) {
@@ -122,15 +154,21 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
       return;
     }
     cur_frame_ = web_view->mainFrame();
-    page_feature_state_.reset(new PageFeatureState);
   }
 
+  int num_elements = 0;
   for (; cur_frame_;
        cur_frame_ = cur_frame_->traverseNext(false /* don't wrap around */)) {
     WebKit::WebNode cur_node;
     if (cur_frame_data_.get()) {
       // We're resuming traversal of a frame, so just advance to the next node.
       cur_node = cur_frame_data_->elements.nextItem();
+      // When we resume the traversal, the first call to nextItem() potentially
+      // has to walk through the document again from the beginning, if it was
+      // modified between our chunks of work.  Log how long this takes, so we
+      // can tell if it's too slow.
+      UMA_HISTOGRAM_TIMES("SBClientPhishing.DOMFeatureResumeTime",
+                          clock_->Now() - current_chunk_start_time);
     } else {
       // We just moved to a new frame, so update our frame state
       // and advance to the first element.
@@ -160,8 +198,36 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
         HandleScript(element);
       }
 
-      // TODO(bryner): stop if too much time has elapsed, and add histograms
-      // for the time spent processing.
+      if (++num_elements >= kClockCheckGranularity) {
+        num_elements = 0;
+        base::TimeTicks now = clock_->Now();
+        if (now - page_feature_state_->start_time >=
+            base::TimeDelta::FromMilliseconds(kMaxTotalTimeMs)) {
+          DLOG(ERROR) << "Feature extraction took too long, giving up";
+          // We expect this to happen infrequently, so record when it does.
+          UMA_HISTOGRAM_COUNTS("SBClientPhishing.DOMFeatureTimeout", 1);
+          RunCallback(false);
+          return;
+        }
+        base::TimeDelta chunk_elapsed = now - current_chunk_start_time;
+        if (chunk_elapsed >=
+            base::TimeDelta::FromMilliseconds(kMaxTimePerChunkMs)) {
+          // The time limit for the current chunk is up, so post a task to
+          // continue extraction.
+          //
+          // Record how much time we actually spent on the chunk. If this is
+          // much higher than kMaxTimePerChunkMs, we may need to adjust the
+          // clock granularity.
+          UMA_HISTOGRAM_TIMES("SBClientPhishing.DOMFeatureChunkTime",
+                              chunk_elapsed);
+          MessageLoop::current()->PostTask(
+              FROM_HERE,
+              method_factory_.NewRunnableMethod(
+                  &PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout));
+          return;
+        }
+        // Otherwise, continue.
+      }
     }
 
     // We're done with this frame, recalculate the FrameData when we
@@ -296,6 +362,14 @@ void PhishingDOMFeatureExtractor::CheckNoPendingExtraction() {
 }
 
 void PhishingDOMFeatureExtractor::RunCallback(bool success) {
+  // Record some timing stats that we can use to evaluate feature extraction
+  // performance.  These include both successful and failed extractions.
+  DCHECK(page_feature_state_.get());
+  UMA_HISTOGRAM_COUNTS("SBClientPhishing.DOMFeatureIterations",
+                       page_feature_state_->num_iterations);
+  UMA_HISTOGRAM_TIMES("SBClientPhishing.DOMFeatureTotalTime",
+                      clock_->Now() - page_feature_state_->start_time);
+
   DCHECK(done_callback_.get());
   done_callback_->Run(success);
   Clear();

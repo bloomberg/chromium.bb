@@ -26,6 +26,7 @@ class WebFrame;
 }
 
 namespace safe_browsing {
+class FeatureExtractorClock;
 class FeatureMap;
 
 class PhishingDOMFeatureExtractor {
@@ -36,8 +37,11 @@ class PhishingDOMFeatureExtractor {
 
   // Creates a PhishingDOMFeatureExtractor for the specified RenderView.
   // The PhishingDOMFeatureExtrator should be destroyed prior to destroying
-  // the RenderView.
-  explicit PhishingDOMFeatureExtractor(RenderView* render_view);
+  // the RenderView.  |clock| is used for timing feature extractor operations,
+  // and may be mocked for testing.  PhishingDOMFeatureExtractor takes
+  // ownership of the clock.
+  PhishingDOMFeatureExtractor(RenderView* render_view,
+                              FeatureExtractorClock* clock);
   ~PhishingDOMFeatureExtractor();
 
   // Begins extracting features into the given FeatureMap for the page
@@ -56,6 +60,19 @@ class PhishingDOMFeatureExtractor {
  private:
   struct FrameData;
   struct PageFeatureState;
+
+  // The maximum amount of time that we will spend on a single extraction
+  // iteration before pausing to let other MessageLoop tasks run.
+  static const int kMaxTimePerChunkMs;
+
+  // The number of elements that we will process before checking to see whether
+  // kMaxTimePerChunkMs has elapsed.  Since checking the current time can be
+  // slow, we don't do this on every element processed.
+  static const int kClockCheckGranularity;
+
+  // The maximum total amount of time that the feature extractor will run
+  // before giving up on the current page.
+  static const int kMaxTotalTimeMs;
 
   // Does the actual work of ExtractFeatures.  ExtractFeaturesWithTimeout runs
   // until a predefined maximum amount of time has elapsed, then posts a task
@@ -100,6 +117,9 @@ class PhishingDOMFeatureExtractor {
 
   // Non-owned pointer to the view that we will extract features from.
   RenderView* render_view_;
+
+  // Owned pointer to our clock.
+  scoped_ptr<FeatureExtractorClock> clock_;
 
   // The output parameters from the most recent call to ExtractFeatures().
   FeatureMap* features_;  // The caller keeps ownership of this.

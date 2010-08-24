@@ -181,6 +181,7 @@
         'renderer/renderer_webstoragearea_impl.h',
         'renderer/renderer_webstoragenamespace_impl.cc',
         'renderer/renderer_webstoragenamespace_impl.h',
+        'renderer/safe_browsing/feature_extractor_clock.h',
         'renderer/safe_browsing/features.cc',
         'renderer/safe_browsing/features.h',
         'renderer/safe_browsing/phishing_dom_feature_extractor.cc',

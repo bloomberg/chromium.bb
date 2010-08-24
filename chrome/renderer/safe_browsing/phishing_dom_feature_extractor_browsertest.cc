@@ -18,6 +18,7 @@
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/string_util.h"
+#include "base/time.h"
 #include "chrome/common/main_function_params.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
@@ -27,6 +28,7 @@
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_main_platform_delegate.h"
+#include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_channel.h"
@@ -40,6 +42,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 using ::testing::ContainerEq;
+using ::testing::Return;
 
 namespace safe_browsing {
 
@@ -63,6 +66,11 @@ class PhishingDOMFeatureExtractorTest : public ::testing::Test,
   }
 
  protected:
+  class MockClock : public FeatureExtractorClock {
+   public:
+    MOCK_METHOD0(Now, base::TimeTicks());
+  };
+
   virtual void SetUp() {
     // Set up the renderer.  This code is largely adapted from
     // render_view_test.cc and renderer_main.cc.  Note that we use a
@@ -98,7 +106,8 @@ class PhishingDOMFeatureExtractorTest : public ::testing::Test,
     ASSERT_TRUE(channel_->Send(new ViewMsg_New(params)));
     msg_loop_.Run();
 
-    extractor_.reset(new PhishingDOMFeatureExtractor(view_));
+    clock_ = new MockClock();
+    extractor_.reset(new PhishingDOMFeatureExtractor(view_, clock_));
   }
 
   virtual void TearDown() {
@@ -234,6 +243,7 @@ class PhishingDOMFeatureExtractorTest : public ::testing::Test,
   scoped_ptr<SandboxInitWrapper> sandbox_init_wrapper_;
 
   scoped_ptr<PhishingDOMFeatureExtractor> extractor_;
+  MockClock* clock_;  // owned by extractor_
   // Map of URL -> response body for network requests from the renderer.
   // Any URLs not in this map are served a 404 error.
   std::map<std::string, std::string> responses_;
@@ -243,6 +253,8 @@ class PhishingDOMFeatureExtractorTest : public ::testing::Test,
 int PhishingDOMFeatureExtractorTest::next_thread_id_ = 0;
 
 TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
+  // This test doesn't exercise the extraction timing.
+  EXPECT_CALL(*clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
       "<html><head><body>"
       "<form action=\"query\"><input type=text><input type=checkbox></form>"
@@ -299,6 +311,8 @@ TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
 }
 
 TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
+  // This test doesn't exercise the extraction timing.
+  EXPECT_CALL(*clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://www.host.com/"] =
       "<html><head><body>"
       "<a href=\"http://www2.host.com/abc\">link</a>"
@@ -339,6 +353,8 @@ TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
 }
 
 TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
+  // This test doesn't exercise the extraction timing.
+  EXPECT_CALL(*clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
   responses_["http://host.com/"] =
       "<html><head><script></script><script></script></head></html>";
 
@@ -368,6 +384,9 @@ TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
 }
 
 TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
+  // This test doesn't exercise the extraction timing.
+  EXPECT_CALL(*clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
+
   // Test that features are aggregated across all frames.
   responses_["http://host.com/"] =
       "<html><body><input type=text><a href=\"info.html\">link</a>"
@@ -416,7 +435,87 @@ TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
   EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
 }
 
-// TODO(bryner): Test extraction with multiple passes, including the case where
-// the node we stopped on is removed from the document.
+TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
+  // For this test, we'll cause the feature extraction to run multiple
+  // iterations by incrementing the clock.
+
+  // This page has a total of 50 elements.  For the external forms feature to
+  // be computed correctly, the extractor has to examine the whole document.
+  // Note: the empty HEAD is important -- WebKit will synthesize a HEAD if
+  // there isn't one present, which can be confusing for the element counts.
+  std::string response = "<html><head></head><body>"
+      "<form action=\"ondomain\"></form>";
+  for (int i = 0; i < 45; ++i) {
+    response.append("<p>");
+  }
+  response.append("<form action=\"http://host2.com/\"></form></body></html>");
+  responses_["http://host.com/"] = response;
+
+  // Advance the clock 30 ms every 10 elements processed, 10 ms between chunks.
+  // Note that this assumes kClockCheckGranularity = 10 and
+  // kMaxTimePerChunkMs = 50.
+  base::TimeTicks now = base::TimeTicks::Now();
+  EXPECT_CALL(*clock_, Now())
+      // Time check at the start of extraction.
+      .WillOnce(Return(now))
+      // Time check at the start of the first chunk of work.
+      .WillOnce(Return(now))
+      // Time check after the first 10 elements.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(30)))
+      // Time check after the next 10 elements.  This is over the chunk
+      // time limit, so a continuation task will be posted.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(60)))
+      // Time check at the start of the second chunk of work.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(70)))
+      // Time check after resuming iteration for the second chunk.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(72)))
+      // Time check after the next 10 elements.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(100)))
+      // Time check after the next 10 elements.  This will trigger another
+      // continuation task.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(130)))
+      // Time check at the start of the third chunk of work.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(140)))
+      // Time check after resuming iteration for the third chunk.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(142)))
+      // Time check after the last 10 elements.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(170)))
+      // A final time check for the histograms.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(180)));
+
+  FeatureMap expected_features;
+  expected_features.AddBooleanFeature(features::kPageHasForms);
+  expected_features.AddRealFeature(features::kPageActionOtherDomainFreq, 0.5);
+
+  FeatureMap features;
+  LoadURL("http://host.com/");
+  ASSERT_TRUE(ExtractFeatures(&features));
+  EXPECT_THAT(features.features(), ContainerEq(expected_features.features()));
+  // Make sure none of the mock expectations carry over to the next test.
+  ::testing::Mock::VerifyAndClearExpectations(clock_);
+
+  // Now repeat the test with the same page, but advance the clock faster so
+  // that the extraction time exceeds the maximum total time for the feature
+  // extractor.  Extraction should fail.  Note that this assumes
+  // kMaxTotalTimeMs = 500.
+  EXPECT_CALL(*clock_, Now())
+      // Time check at the start of extraction.
+      .WillOnce(Return(now))
+      // Time check at the start of the first chunk of work.
+      .WillOnce(Return(now))
+      // Time check after the first 10 elements.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(300)))
+      // Time check at the start of the second chunk of work.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(350)))
+      // Time check after resuming iteration for the second chunk.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(360)))
+      // Time check after the next 10 elements.  This is over the limit.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(600)))
+      // A final time check for the histograms.
+      .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(620)));
+
+  features.Clear();
+  EXPECT_FALSE(ExtractFeatures(&features));
+}
 
 }  // namespace safe_browsing
