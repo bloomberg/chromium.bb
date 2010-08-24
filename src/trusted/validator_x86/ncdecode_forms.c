@@ -16,6 +16,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/validator_x86/lock_insts.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
+#include "native_client/src/trusted/validator_x86/zero_extends.h"
 
 /* To turn on debugging of instruction decoding, change value of
  * DEBUGGING to 1.
@@ -141,6 +142,12 @@ static NaClOpFlags NaClGetIcatFlags(NaClInstCat icat,
   return flags;
 }
 
+/* Add miscellaneous flags defined elsewhere. */
+static void NaClAddMiscellaneousFlags() {
+  NaClAddZeroExtend32FlagIfApplicable();
+  NaClLockableFlagIfApplicable();
+}
+
 /* Add set/use/dest flags to all operands of the current instruction,
  * for the given instruction category.
  */
@@ -171,8 +178,7 @@ void NaClSetInstCat(NaClInstCat icat) {
   if ((Binary == icat) && (4 ==  operand_index)) {
     NaClRemoveOpFlags(0, NACL_OPFLAG(OpUse));
   }
-  /* Before returning, add miscellaneous flags defined elsewhere. */
-  NaClLockableFlagIfApplicable();
+  NaClAddMiscellaneousFlags();
 }
 
 void DEF_OPERAND(E__)(NaClInstCat icat, int operand_index) {

@@ -114,6 +114,7 @@ ncdecode_tablegen = env_decode_table.ComponentProgram(
     'ncdecode_tablegen',
     ['ncdecode_tablegen.c',
      'ncdecode_forms.c',
+     'zero_extends.c',
      'lock_insts.c',
      'ncdecode_onebyte.c',
      'ncdecode_OF.c',
@@ -440,6 +441,8 @@ def __AddModeledInstsTest():
       __OutTestFile(test, base, ext),
       command,
       stdout_golden = __BaseTestFile(base, ext))
-  __AddTest(test, base, ext, model, ['small_tests', 'validator_tests'])
+  __AddTest(test, base, ext, model, ['small_tests',
+                                     'validator_tests',
+                                     'validator_modeling'])
 
 __AddModeledInstsTest()
