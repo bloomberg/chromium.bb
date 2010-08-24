@@ -3742,9 +3742,6 @@
    fun:_ZN7Browser18NewIncognitoWindowEv
    fun:_ZN7Browser29ExecuteCommandWithDispositionEi21WindowOpenDisposition
    fun:_ZN7Browser14ExecuteCommandEi
-   ...
-   fun:_ZN3IPC16MessageWithReplyI6Tuple2IiiE6Tuple1IRbEE18DispatchDelayReplyI18AutomationProviderMS8_FviiPNS_7MessageEEEEbPKS9_PT_T0_
-   fun:_ZN18AutomationProvider17OnMessageReceivedERKN3IPC7MessageE
 }
 {
    bug_50968
@@ -4200,4 +4197,27 @@
    fun:_Z16DispatchToMethodI9GpuThreadMS0_FviEiEvPT_T0_RK6Tuple1IT1_E
    fun:_ZN3IPC16MessageWithTupleI6Tuple1IiEE8DispatchI9GpuThreadMS5_FviEEEbPKNS_7MessageEPT_T0_
    fun:_ZN9GpuThread24OnControlMessageReceivedERKN3IPC7MessageE
+}
+{
+   bug_53187
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN32RenderViewHostDelegateViewHelper25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeEP17RenderProcessHost
+   fun:_ZN15TabContentsView33CreateNewFullscreenWidgetInternalEiN6WebKit12WebPopupTypeE
+   fun:_ZN15TabContentsView25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
+   fun:_ZN14RenderViewHost25CreateNewFullscreenWidgetEiN6WebKit12WebPopupTypeE
+}
+{
+   bug_53188
+   Memcheck:Addr4
+   ...
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelper20CancelAllConnectJobsEv
+   fun:_ZN3net8internal26ClientSocketPoolBaseHelperD0Ev
+   fun:_ZN4base10RefCountedIN3net8internal26ClientSocketPoolBaseHelperEE7ReleaseEv
+   ...
+   fun:_ZN13scoped_refptrIN3net8internal26ClientSocketPoolBaseHelperEED*Ev
+   ...
+   fun:_ZN3net20ClientSocketPoolBaseINS_15TCPSocketParamsEED*Ev
+   fun:_ZN3net19TCPClientSocketPoolD0Ev
+   fun:_ZN4base10RefCountedIN3net16ClientSocketPoolEE7ReleaseEv
 }
