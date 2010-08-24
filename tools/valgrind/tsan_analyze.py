@@ -43,11 +43,18 @@ class TsanAnalyzer:
                             '(?:[^ ]* )*'
                             '([^ :\n]+)'
                             '')
+  TSAN_WARNING_LINE_RE = re.compile('==[0-9]+==\s*[#0-9]+\s*'
+                                    '(?:[^ ]* )*'
+                                    '([^ :\n]+)')
 
   THREAD_CREATION_STR = ("INFO: T.* "
       "(has been created by T.* at this point|is program's main thread)")
 
   SANITY_TEST_SUPPRESSION = "ThreadSanitizer sanity test"
+  TSAN_RACE_DESCRIPTION = "Possible data race"
+  TSAN_WARNING_DESCRIPTION =  ("Unlocking a non-locked lock"
+      "|accessing an invalid lock"
+      "|which did not acquire this lock")
   def __init__(self, source_dir, use_gdb=False):
     '''Reads in a set of files.
 
@@ -75,7 +82,9 @@ class TsanAnalyzer:
       TheAddressTable.Add(stack_trace_line.binary, stack_trace_line.address)
       self.stack_trace_line_ = stack_trace_line
 
-  def ReadSection(self):
+  # TODO(glider): merge Read*Section once TSan is fixed to print {{{ and }}}
+  # around all reports.
+  def ReadRaceSection(self):
     result = [self.line_]
     if re.search("{{{", self.line_):
       while not re.search('}}}', self.line_):
@@ -86,11 +95,23 @@ class TsanAnalyzer:
           result.append(self.stack_trace_line_)
     return result
 
+  def ReadWarningSection(self):
+    result = [self.line_]
+    self.ReadLine()
+    while TsanAnalyzer.TSAN_WARNING_LINE_RE.match(self.line_):
+      self.ReadLine()
+      if self.stack_trace_line_ is None:
+        result.append(self.line_)
+      else:
+        result.append(self.stack_trace_line_)
+    return result
+
+
   def ParseReportFile(self, filename):
     self.cur_fd_ = open(filename, 'r')
 
     while True:
-      # Read race reports.
+      # Read ThreadSanitizer reports.
       self.ReadLine()
       if (self.line_ == ''):
         break
@@ -99,9 +120,12 @@ class TsanAnalyzer:
       while re.search(TsanAnalyzer.THREAD_CREATION_STR, self.line_):
         tmp.extend(self.ReadSection())
         self.ReadLine()
-      if re.search("Possible data race", self.line_):
-        tmp.extend(self.ReadSection())
-        self.races.append(tmp)
+      if re.search(TsanAnalyzer.TSAN_RACE_DESCRIPTION, self.line_):
+        tmp.extend(self.ReadRaceSection())
+        self.reports.append(tmp)
+      if re.search(TsanAnalyzer.TSAN_WARNING_DESCRIPTION, self.line_):
+        tmp.extend(self.ReadWarningSection())
+        self.reports.append(tmp)
 
       match = re.search(" used_suppression:\s+([0-9]+)\s(.*)", self.line_)
       if match:
@@ -114,15 +138,19 @@ class TsanAnalyzer:
     self.cur_fd_.close()
 
   def Report(self, files, check_sanity=False):
-    '''TODO!!!
+    '''Reads in a set of files and prints ThreadSanitizer report.
+
+    Args:
       files: A list of filenames.
+      check_sanity: if true, search for SANITY_TEST_SUPPRESSIONS
     '''
+
     global TheAddressTable
     if self._use_gdb:
       TheAddressTable = gdb_helper.AddressTable()
     else:
       TheAddressTable = None
-    self.races = []
+    self.reports = []
     self.used_suppressions = {}
     for file in files:
       self.ParseReportFile(file)
@@ -141,9 +169,9 @@ class TsanAnalyzer:
     sys.stdout.flush()
 
     retcode = 0
-    if len(self.races) > 0:
-      logging.error("FAIL! Found %i race reports" % len(self.races))
-      for report_list in self.races:
+    if len(self.reports) > 0:
+      logging.error("FAIL! Found %i reports" % len(self.reports))
+      for report_list in self.reports:
         report = ''
         for line in report_list:
           report += str(line)
@@ -157,7 +185,7 @@ class TsanAnalyzer:
 
     if retcode != 0:
       return retcode
-    logging.info("PASS: No race reports found")
+    logging.info("PASS: No reports found")
     return 0
 
 if __name__ == '__main__':
