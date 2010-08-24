@@ -6,16 +6,16 @@
 #define REMOTING_CLIENT_CHROMOTING_VIEW_H_
 
 #include "base/ref_counted.h"
+#include "remoting/base/decoder.h"
 
 namespace remoting {
-
-class HostMessage;
 
 // ChromotingView defines the behavior of an object that draws a view of the
 // remote desktop. Its main function is to choose the right decoder and render
 // the update stream onto the screen.
 class ChromotingView {
  public:
+  ChromotingView();
   virtual ~ChromotingView() {}
 
   // Initialize the common structures for the view.
@@ -47,13 +47,63 @@ class ChromotingView {
   virtual void SetHostScreenSize(int width, int height) = 0;
 
   // Handle the BeginUpdateStream message.
+  // This method should perform the following tasks:
+  // (1) Perform any platform-specific tasks for start of update stream.
+  // (2) Make sure the |frame_| has been initialized.
+  // (3) Delete the HostMessage.
   virtual void HandleBeginUpdateStream(HostMessage* msg) = 0;
 
   // Handle the UpdateStreamPacket message.
+  // This method should perform the following tasks:
+  // (1) Extract the decoding from the update packet message.
+  // (2) Call SetupDecoder with the encoding to lazily initialize the decoder.
+  //     We don't do this in BeginUpdateStream because the begin message
+  //     doesn't contain the encoding.
+  // (3) Call BeginDecoding if this is the first packet of the stream.
+  // (4) Call the decoder's PartialDecode() method to decode the packet.
+  //     This call will delete the HostMessage.
+  // Note:
+  // * For a given begin/end update stream, the encodings specified in the
+  //   update packets must all match. We may revisit this constraint at a
+  //   later date.
   virtual void HandleUpdateStreamPacket(HostMessage* msg) = 0;
 
   // Handle the EndUpdateStream message.
+  // This method should perform the following tasks:
+  // (1) Call EndDecoding().
+  // (2) Perform any platform-specific tasks for end of update stream.
+  // (3) Delete the HostMessage.
   virtual void HandleEndUpdateStream(HostMessage* msg) = 0;
+
+ protected:
+  // Setup the decoder based on the given encoding.
+  // Returns true if a new decoder has already been started (with a call to
+  // BeginDecoding).
+  bool SetupDecoder(UpdateStreamEncoding encoding);
+
+  // Prepare the decoder to start decoding a chunk of data.
+  // This needs to be called if SetupDecoder() returns false.
+  bool BeginDecoding(Task* partial_decode_done, Task* decode_done);
+
+  // Decode the given message.
+  // BeginDecoding() must be called before any calls to Decode().
+  bool Decode(HostMessage* msg);
+
+  // Finish decoding and send notifications to update the view.
+  bool EndDecoding();
+
+  // Decoder used to decode the video frames (or frame fragements).
+  scoped_ptr<Decoder> decoder_;
+
+  // Framebuffer for the decoder.
+  scoped_refptr<media::VideoFrame> frame_;
+
+  // Dimensions of |frame_| bitmap.
+  int frame_width_;
+  int frame_height_;
+
+  UpdatedRects update_rects_;
+  UpdatedRects all_update_rects_;
 };
 
 }  // namespace remoting

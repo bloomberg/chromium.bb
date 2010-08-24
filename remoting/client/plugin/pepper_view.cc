@@ -5,7 +5,6 @@
 #include "remoting/client/plugin/pepper_view.h"
 
 #include "base/message_loop.h"
-#include "remoting/base/decoder_zlib.h"
 #include "remoting/client/plugin/chromoting_instance.h"
 #include "remoting/client/plugin/pepper_util.h"
 #include "third_party/ppapi/cpp/device_context_2d.h"
@@ -17,8 +16,6 @@ namespace remoting {
 
 PepperView::PepperView(ChromotingInstance* instance)
   : instance_(instance),
-    backing_store_width_(0),
-    backing_store_height_(0),
     viewport_x_(0),
     viewport_y_(0),
     viewport_width_(0),
@@ -63,13 +60,13 @@ void PepperView::Paint() {
   } else if (frame_) {
     uint32_t* frame_data =
         reinterpret_cast<uint32_t*>(frame_->data(media::VideoFrame::kRGBPlane));
-    int max_height = std::min(backing_store_height_, image.size().height());
-    int max_width = std::min(backing_store_width_, image.size().width());
+    int max_height = std::min(frame_height_, image.size().height());
+    int max_width = std::min(frame_width_, image.size().width());
     for (int y = 0; y < max_height; y++) {
       for (int x = 0; x < max_width; x++) {
         // Force alpha to be set to 255.
         *image.GetAddr32(pp::Point(x, y)) =
-            frame_data[y*backing_store_width_ + x] | 0xFF000000;
+            frame_data[y*frame_width_ + x] | 0xFF000000;
       }
     }
   } else {
@@ -135,8 +132,11 @@ void PepperView::SetHostScreenSize(int width, int height) {
     return;
   }
 
-  backing_store_width_ = width;
-  backing_store_height_ = height;
+  frame_width_ = width;
+  frame_height_ = height;
+
+  // Reset |frame_| - it will be recreated by the next update stream.
+  frame_ = NULL;
 }
 
 void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
@@ -149,24 +149,14 @@ void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
 
   scoped_ptr<HostMessage> deleter(msg);
 
-  // TODO(hclam): Use the information from the message to create the decoder.
-  // We lazily construct the decoder.
-  if (!decoder_.get()) {
-    decoder_.reset(new DecoderZlib());
-  }
-
+  // Make sure the |frame_| is initialized.
   if (!frame_) {
     media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
-                                   backing_store_width_,
-                                   backing_store_height_,
+                                   frame_width_, frame_height_,
                                    base::TimeDelta(), base::TimeDelta(),
                                    &frame_);
+    CHECK(frame_);
   }
-
-  // Tell the decoder to do start decoding.
-  decoder_->BeginDecode(frame_, &update_rects_,
-      NewRunnableMethod(this, &PepperView::OnPartialDecodeDone),
-      NewRunnableMethod(this, &PepperView::OnDecodeDone));
 }
 
 void PepperView::HandleUpdateStreamPacket(HostMessage* msg) {
@@ -177,7 +167,14 @@ void PepperView::HandleUpdateStreamPacket(HostMessage* msg) {
     return;
   }
 
-  decoder_->PartialDecode(msg);
+  // Lazily initialize the decoder.
+  SetupDecoder(msg->update_stream_packet().begin_rect().encoding());
+  if (!decoder_->IsStarted()) {
+    BeginDecoding(NewRunnableMethod(this, &PepperView::OnPartialDecodeDone),
+                  NewRunnableMethod(this, &PepperView::OnDecodeDone));
+  }
+
+  Decode(msg);
 }
 
 void PepperView::HandleEndUpdateStream(HostMessage* msg) {
@@ -189,7 +186,7 @@ void PepperView::HandleEndUpdateStream(HostMessage* msg) {
   }
 
   scoped_ptr<HostMessage> deleter(msg);
-  decoder_->EndDecode();
+  EndDecoding();
 }
 
 void PepperView::OnPaintDone() {

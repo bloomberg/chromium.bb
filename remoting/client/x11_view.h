@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "media/base/video_frame.h"
-#include "remoting/base/decoder.h"
 #include "remoting/client/chromoting_view.h"
 
 typedef unsigned long XID;
@@ -19,9 +18,7 @@ namespace remoting {
 // A ChromotingView implemented using X11 and XRender.
 class X11View : public ChromotingView {
  public:
-  X11View();  // Delete this.
-  X11View(Display* display, XID window, int width, int height);
-
+  X11View();
   virtual ~X11View();
 
   // ChromotingView implementations.
@@ -34,7 +31,7 @@ class X11View : public ChromotingView {
   virtual void SetHostScreenSize(int width, int height);
   virtual void HandleBeginUpdateStream(HostMessage* msg);
   virtual void HandleUpdateStreamPacket(HostMessage* msg);
-  virtual void HandleEndUpdateStream(HostMessage* msg) ;
+  virtual void HandleEndUpdateStream(HostMessage* msg);
 
   Display* display() { return display_; }
 
@@ -45,18 +42,10 @@ class X11View : public ChromotingView {
 
   Display* display_;
   XID window_;
-  int width_;
-  int height_;
 
   // A picture created in the X server that represents drawing area of the
   // window.
   XID picture_;
-
-  scoped_refptr<media::VideoFrame> frame_;
-  UpdatedRects update_rects_;
-  UpdatedRects all_update_rects_;
-
-  scoped_ptr<Decoder> decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(X11View);
 };

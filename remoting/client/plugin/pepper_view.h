@@ -17,14 +17,12 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "media/base/video_frame.h"
-#include "remoting/base/decoder.h"
 #include "remoting/client/chromoting_view.h"
 #include "third_party/ppapi/cpp/device_context_2d.h"
 
 namespace remoting {
 
 class ChromotingInstance;
-class Decoder;
 
 class PepperView : public ChromotingView {
  public:
@@ -60,9 +58,6 @@ class PepperView : public ChromotingView {
 
   pp::DeviceContext2D device_context_;
 
-  int backing_store_width_;
-  int backing_store_height_;
-
   int viewport_x_;
   int viewport_y_;
   int viewport_width_;
@@ -70,12 +65,6 @@ class PepperView : public ChromotingView {
 
   bool is_static_fill_;
   uint32 static_fill_color_;
-
-  scoped_refptr<media::VideoFrame> frame_;
-  UpdatedRects update_rects_;
-  UpdatedRects all_update_rects_;
-
-  scoped_ptr<Decoder> decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperView);
 };

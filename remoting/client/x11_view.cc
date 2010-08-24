@@ -10,7 +10,6 @@
 #include <X11/extensions/Xcomposite.h>
 
 #include "base/logging.h"
-#include "remoting/base/decoder_verbatim.h"
 #include "remoting/base/decoder_zlib.h"
 
 namespace remoting {
@@ -18,20 +17,7 @@ namespace remoting {
 X11View::X11View()
     : display_(NULL),
       window_(0),
-      width_(0),
-      height_(0),
       picture_(0) {
-}
-
-X11View::X11View(Display* display, XID window, int width, int height)
-    : display_(display),
-      window_(window),
-      width_(width),
-      height_(height),
-      picture_(0) {
-  media::VideoFrame::CreateFrame(media::VideoFrame::RGB32, width_, height_,
-                                 base::TimeDelta(), base::TimeDelta(), &frame_);
-  DCHECK(frame_);
 }
 
 X11View::~X11View() {
@@ -74,7 +60,7 @@ void X11View::TearDown() {
 
 void X11View::Paint() {
   // Don't bother attempting to paint if the display hasn't been set up.
-  if (!display_ || !window_ || !height_ || !width_ || !frame_) {
+  if (!display_ || !window_ || !frame_height_ || !frame_width_ || !frame_) {
     return;
   }
 
@@ -91,8 +77,8 @@ void X11View::Paint() {
   // Creates a XImage.
   XImage image;
   memset(&image, 0, sizeof(image));
-  image.width = width_;
-  image.height = height_;
+  image.width = frame_width_;
+  image.height = frame_height_;
   image.depth = 32;
   image.bits_per_pixel = 32;
   image.format = ZPixmap;
@@ -107,10 +93,12 @@ void X11View::Paint() {
       frame_->data(media::VideoFrame::kRGBPlane));
 
   // Creates a pixmap and uploads from the XImage.
-  unsigned long pixmap = XCreatePixmap(display_, window_, width_, height_, 32);
+  unsigned long pixmap = XCreatePixmap(display_, window_,
+                                       frame_width_, frame_height_, 32);
 
   GC gc = XCreateGC(display_, pixmap, 0, NULL);
-  XPutImage(display_, pixmap, gc, &image, 0, 0, 0, 0, width_, height_);
+  XPutImage(display_, pixmap, gc, &image, 0, 0, 0, 0,
+            frame_width_, frame_height_);
   XFreeGC(display_, gc);
 
   // Creates the picture representing the pixmap.
@@ -122,7 +110,7 @@ void X11View::Paint() {
   // Composite the picture over the picture representing the window.
   XRenderComposite(display_, PictOpSrc, picture, 0,
                    picture_, 0, 0, 0, 0, 0, 0,
-                   width_, height_);
+                   frame_width_, frame_height_);
 
   XRenderFreePicture(display_, picture);
   XFreePixmap(display_, pixmap);
@@ -144,11 +132,11 @@ void X11View::SetViewport(int x, int y, int width, int height) {
 }
 
 void X11View::SetHostScreenSize(int width, int height) {
-  width_ = width;
-  height_ = height;
-  XResizeWindow(display_, window_, width_, height_);
-  media::VideoFrame::CreateFrame(media::VideoFrame::RGB32, width_, height_,
-                                 base::TimeDelta(), base::TimeDelta(), &frame_);
+  frame_width_ = width;
+  frame_height_ = height;
+  frame_ = NULL;
+
+  XResizeWindow(display_, window_, frame_width_, frame_height_);
 }
 
 void X11View::InitPaintTarget() {
@@ -172,25 +160,30 @@ void X11View::InitPaintTarget() {
 void X11View::HandleBeginUpdateStream(HostMessage* msg) {
   scoped_ptr<HostMessage> deleter(msg);
 
-  // TODO(hclam): Use the information from the message to create the decoder.
-  // We lazily construct the decoder.
-  if (!decoder_.get()) {
-    decoder_.reset(new DecoderZlib());
+  // Make sure the |frame_| is initialized.
+  if (!frame_) {
+    media::VideoFrame::CreateFrame(media::VideoFrame::RGB32,
+                                   frame_width_, frame_height_,
+                                   base::TimeDelta(), base::TimeDelta(),
+                                   &frame_);
+    CHECK(frame_);
   }
-
-  // Tell the decoder to do start decoding.
-  decoder_->BeginDecode(frame_, &update_rects_,
-      NewRunnableMethod(this, &X11View::OnPartialDecodeDone),
-      NewRunnableMethod(this, &X11View::OnDecodeDone));
 }
 
 void X11View::HandleUpdateStreamPacket(HostMessage* msg) {
-  decoder_->PartialDecode(msg);
+  // Lazily initialize the decoder.
+  SetupDecoder(msg->update_stream_packet().begin_rect().encoding());
+  if (!decoder_->IsStarted()) {
+    BeginDecoding(NewRunnableMethod(this, &X11View::OnPartialDecodeDone),
+                  NewRunnableMethod(this, &X11View::OnDecodeDone));
+  }
+
+  Decode(msg);
 }
 
 void X11View::HandleEndUpdateStream(HostMessage* msg) {
   scoped_ptr<HostMessage> deleter(msg);
-  decoder_->EndDecode();
+  EndDecoding();
 }
 
 void X11View::OnPartialDecodeDone() {

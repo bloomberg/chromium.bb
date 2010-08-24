@@ -37,7 +37,10 @@ typedef std::vector<gfx::Rect> UpdatedRects;
 // decoder (most likely the renderer) and the decoder.
 class Decoder {
  public:
-
+  Decoder()
+      : encoding_(EncodingInvalid),
+        started_(false) {
+  }
   virtual ~Decoder() {
   }
 
@@ -80,6 +83,13 @@ class Decoder {
   // decoder should also call |decode_done_| as soon as possible.
   virtual void EndDecode() = 0;
 
+  // Return the encoding type that this decoder handles.
+  virtual UpdateStreamEncoding Encoding() { return encoding_; }
+
+  // Return the current state of the decoder: 'true' if we're in the middle
+  // of BeginDecode() / EndDecode().
+  virtual bool IsStarted() { return started_; }
+
  protected:
   // Every decoder will have two internal states because there are three
   // kinds of messages send to PartialDecode().
@@ -107,6 +117,12 @@ class Decoder {
     // is received.
     kWaitingForRectData,
   };
+
+  // The encoding that this decoder supports.
+  UpdateStreamEncoding encoding_;
+
+  // Has the decoder been started? I.e., has BeginDecode() been called.
+  bool started_;
 };
 
 }  // namespace remoting

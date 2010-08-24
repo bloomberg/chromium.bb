@@ -17,6 +17,7 @@ DecoderVerbatim::DecoderVerbatim()
       bytes_per_pixel_(0),
       updated_rects_(NULL),
       reverse_rows_(true) {
+  encoding_ = EncodingNone;
 }
 
 bool DecoderVerbatim::BeginDecode(scoped_refptr<media::VideoFrame> frame,
@@ -27,6 +28,7 @@ bool DecoderVerbatim::BeginDecode(scoped_refptr<media::VideoFrame> frame,
   DCHECK(!decode_done_.get());
   DCHECK(!updated_rects_);
   DCHECK_EQ(kWaitingForBeginRect, state_);
+  DCHECK(!started_);
 
   partial_decode_done_.reset(partial_decode_done);
   decode_done_.reset(decode_done);
@@ -35,12 +37,15 @@ bool DecoderVerbatim::BeginDecode(scoped_refptr<media::VideoFrame> frame,
   // TODO(hclam): Check if we can accept the color format of the video frame
   // and the codec.
   frame_ = frame;
+
+  started_ = true;
   return true;
 }
 
 bool DecoderVerbatim::PartialDecode(HostMessage* message) {
   scoped_ptr<HostMessage> msg_deleter(message);
   DCHECK(message->has_update_stream_packet());
+  DCHECK(started_);
 
   bool ret = true;
   if (message->update_stream_packet().has_begin_rect())
@@ -54,12 +59,15 @@ bool DecoderVerbatim::PartialDecode(HostMessage* message) {
 
 void DecoderVerbatim::EndDecode() {
   DCHECK_EQ(kWaitingForBeginRect, state_);
+  DCHECK(started_);
+
   decode_done_->Run();
 
   partial_decode_done_.reset();
   decode_done_.reset();
   frame_ = NULL;
   updated_rects_ = NULL;
+  started_ = false;
 }
 
 bool DecoderVerbatim::HandleBeginRect(HostMessage* message) {

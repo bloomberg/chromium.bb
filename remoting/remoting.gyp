@@ -239,6 +239,7 @@
       'sources': [
         'client/chromoting_client.cc',
         'client/chromoting_client.h',
+        'client/chromoting_view.cc',
         'client/chromoting_view.h',
         'client/client_config.h',
         'client/client_context.cc',
@@ -364,6 +365,7 @@
         'base/mock_objects.h',
         'base/multiple_array_input_stream_unittest.cc',
         'base/protocol_decoder_unittest.cc',
+        'client/chromoting_view_unittest.cc',
         'client/mock_objects.h',
         'host/chromoting_host_context_unittest.cc',
         'host/client_connection_unittest.cc',

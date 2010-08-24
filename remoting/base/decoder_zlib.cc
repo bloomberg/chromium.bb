@@ -23,6 +23,7 @@ DecoderZlib::DecoderZlib()
       // to determine whether we should reverse the rows or not.
       // But for simplicity we set to be always true.
       reverse_rows_(true) {
+  encoding_ = EncodingZlib;
 }
 
 bool DecoderZlib::BeginDecode(scoped_refptr<media::VideoFrame> frame,
@@ -33,6 +34,7 @@ bool DecoderZlib::BeginDecode(scoped_refptr<media::VideoFrame> frame,
   DCHECK(!decode_done_.get());
   DCHECK(!updated_rects_);
   DCHECK_EQ(kWaitingForBeginRect, state_);
+  DCHECK(!started_);
 
   if (static_cast<PixelFormat>(frame->format()) != PixelFormatRgb32) {
     LOG(INFO) << "DecoderZlib only supports RGB32.";
@@ -46,12 +48,15 @@ bool DecoderZlib::BeginDecode(scoped_refptr<media::VideoFrame> frame,
 
   // Create the decompressor.
   decompressor_.reset(new DecompressorZlib());
+
+  started_ = true;
   return true;
 }
 
 bool DecoderZlib::PartialDecode(HostMessage* message) {
   scoped_ptr<HostMessage> msg_deleter(message);
   DCHECK(message->has_update_stream_packet());
+  DCHECK(started_);
 
   bool ret = true;
   if (message->update_stream_packet().has_begin_rect())
@@ -65,6 +70,8 @@ bool DecoderZlib::PartialDecode(HostMessage* message) {
 
 void DecoderZlib::EndDecode() {
   DCHECK_EQ(kWaitingForBeginRect, state_);
+  DCHECK(started_);
+
   decode_done_->Run();
 
   partial_decode_done_.reset();
@@ -72,6 +79,7 @@ void DecoderZlib::EndDecode() {
   updated_rects_ = NULL;
   frame_ = NULL;
   decompressor_.reset();
+  started_ = false;
 }
 
 bool DecoderZlib::HandleBeginRect(HostMessage* message) {

@@ -19,7 +19,7 @@ message InitClientMessage {
 }
 
 // A message to denote the beginning of an update stream. It will be followed
-// by 0 or more PartialUpdateStream messages and then a EndUpdateStream message.
+// by 0 or more UpdateStreamPacketMessages and then a EndUpdateStreamMessage.
 // NEXT ID: 1
 message BeginUpdateStreamMessage {
 }
@@ -31,6 +31,7 @@ message EndUpdateStreamMessage {
 
 // Identifies how the image was encoded.
 enum UpdateStreamEncoding {
+  EncodingInvalid = -1;
   EncodingNone = 0;
   EncodingZlib = 1;
 }
@@ -159,7 +160,7 @@ message MouseUpEvent {
 }
 
 // Defines the message that is sent from the client to the host.
-// Only one of these messages should be present.
+// Only one of the optional messages should be present.
 // NEXT ID: 7
 message ClientMessage {
   optional KeyEvent key_event = 1;
