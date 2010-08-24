@@ -14,6 +14,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::gfx::MockGLInterface;
@@ -41,36 +42,8 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
 
   InSequence sequence;
 
-  EXPECT_CALL(*gl_, GetString(GL_EXTENSIONS))
-      .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
-      .WillOnce(SetArgumentPointee<1>(kNumVertexAttribs))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, _))
-      .WillOnce(SetArgumentPointee<1>(kNumTextureUnits))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TEXTURE_SIZE, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxTextureSize))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxTextureImageUnits))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVertexTextureImageUnits))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformVectors))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VARYING_FLOATS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVaryingVectors))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformVectors))
-      .RetiresOnSaturation();
+  TestHelper::SetupContextGroupInitExpectations(gl_.get(), "");
+
   EXPECT_CALL(*gl_, EnableVertexAttribArray(0))
       .Times(1)
       .RetiresOnSaturation();
@@ -91,45 +64,23 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
       .Times(1)
       .RetiresOnSaturation();
 
-  static GLuint black_ids[] = {
-    kServiceBlackTexture2dId,
-    kServiceBlackTextureCubemapId,
-  };
-  EXPECT_CALL(*gl_, GenTextures(arraysize(black_ids), _))
-      .WillOnce(SetArrayArgument<1>(black_ids,
-                                    black_ids + arraysize(black_ids)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceBlackTexture2dId))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                               GL_UNSIGNED_BYTE, _))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, 0))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_CUBE_MAP,
-                                kServiceBlackTextureCubemapId))
-      .Times(1)
-      .RetiresOnSaturation();
-  static GLenum faces[] = {
-      GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-      GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-      GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-      GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-      GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-      GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-  };
-  for (size_t ii = 0; ii < arraysize(faces); ++ii) {
-    EXPECT_CALL(*gl_, TexImage2D(faces[ii], 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                                 GL_UNSIGNED_BYTE, _))
+  for (GLint tt = 0; tt < TestHelper::kNumTextureUnits; ++tt) {
+    EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0 + tt))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindTexture(
+        GL_TEXTURE_CUBE_MAP, TestHelper::kServiceDefaultTextureCubemapId))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BindTexture(
+        GL_TEXTURE_2D, TestHelper::kServiceDefaultTexture2dId))
         .Times(1)
         .RetiresOnSaturation();
   }
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_CUBE_MAP, 0))
+  EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
       .Times(1)
       .RetiresOnSaturation();
+
   EXPECT_CALL(*gl_, Enable(GL_VERTEX_PROGRAM_POINT_SIZE))
       .Times(1)
       .RetiresOnSaturation();
@@ -186,9 +137,6 @@ void GLES2DecoderTestBase::InitDecoder(const char* extensions) {
 void GLES2DecoderTestBase::TearDown() {
   // All Tests should have read all their GLErrors before getting here.
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_CALL(*gl_, DeleteTextures(1, _))
-      .Times(2)
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, DeleteBuffersARB(1, _))
       .Times(1)
       .RetiresOnSaturation();
@@ -435,9 +383,6 @@ const GLint GLES2DecoderTestBase::kMaxVertexTextureImageUnits;
 const GLint GLES2DecoderTestBase::kMaxFragmentUniformVectors;
 const GLint GLES2DecoderTestBase::kMaxVaryingVectors;
 const GLint GLES2DecoderTestBase::kMaxVertexUniformVectors;
-
-const GLuint GLES2DecoderTestBase::kServiceBlackTexture2dId;
-const GLuint GLES2DecoderTestBase::kServiceBlackTextureCubemapId;
 
 const GLuint GLES2DecoderTestBase::kServiceAttrib0BufferId;
 

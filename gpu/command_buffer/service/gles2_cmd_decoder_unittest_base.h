@@ -48,9 +48,6 @@ class GLES2DecoderTestBase : public testing::Test {
   static const GLint kMaxVaryingVectors = 8;
   static const GLint kMaxVertexUniformVectors = 128;
 
-  static const GLuint kServiceBlackTexture2dId = 701;
-  static const GLuint kServiceBlackTextureCubemapId = 702;
-
   static const GLuint kServiceAttrib0BufferId = 801;
 
   static const GLuint kServiceBufferId = 301;
@@ -167,6 +164,10 @@ class GLES2DecoderTestBase : public testing::Test {
   void SetBucketAsCString(uint32 bucket_id, const char* str);
 
   void InitDecoder(const char* extensions);
+
+  const ContextGroup& group() const {
+    return group_;
+  }
 
   struct AttribInfo {
     const char* name;

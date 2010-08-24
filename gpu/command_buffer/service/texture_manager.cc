@@ -75,6 +75,15 @@ void TextureManager::Destroy(bool have_context) {
     }
     texture_infos_.erase(texture_infos_.begin());
   }
+  if (have_context) {
+    GLuint ids[] = {
+      black_2d_texture_id_,
+      black_cube_texture_id_,
+      default_texture_2d_->service_id(),
+      default_texture_cube_map_->service_id(),
+    };
+    glDeleteTextures(arraysize(ids), ids);
+  }
 }
 
 bool TextureManager::TextureInfo::CanRender(
@@ -352,18 +361,50 @@ TextureManager::TextureManager(
       max_cube_map_levels_(ComputeMipMapCount(max_cube_map_texture_size,
                                               max_cube_map_texture_size,
                                               max_cube_map_texture_size)),
-      num_unrenderable_textures_(0) {
-  default_texture_2d_ = TextureInfo::Ref(new TextureInfo(0));
+      num_unrenderable_textures_(0),
+      black_2d_texture_id_(0),
+      black_cube_texture_id_(0) {
+}
+
+bool TextureManager::Initialize() {
+  // TODO(gman): The default textures have to be real textures, not the 0
+  // texture because we simulate non shared resources on top of shared
+  // resources and all contexts that share resource share the same default
+  // texture.
+
+  // Make default textures and texture for replacing non-renderable textures.
+  GLuint ids[4];
+  glGenTextures(arraysize(ids), ids);
+  static uint8 black[] = {0, 0, 0, 255};
+  for (int ii = 0; ii < 2; ++ii) {
+    glBindTexture(GL_TEXTURE_2D, ids[ii]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, black);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, ids[2 + ii]);
+    for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
+      glTexImage2D(GLES2Util::IndexToGLFaceTarget(ii), 0, GL_RGBA, 1, 1, 0,
+                   GL_RGBA, GL_UNSIGNED_BYTE, black);
+    }
+  }
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+  default_texture_2d_ = TextureInfo::Ref(new TextureInfo(ids[1]));
   SetInfoTarget(default_texture_2d_, GL_TEXTURE_2D);
   default_texture_2d_->SetLevelInfo(
     this, GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
-  default_texture_cube_map_ = TextureInfo::Ref(new TextureInfo(0));
+  default_texture_cube_map_ = TextureInfo::Ref(new TextureInfo(ids[3]));
   SetInfoTarget(default_texture_cube_map_, GL_TEXTURE_CUBE_MAP);
   for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
     default_texture_cube_map_->SetLevelInfo(
       this, GLES2Util::IndexToGLFaceTarget(ii),
       0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   }
+
+  black_2d_texture_id_ = ids[0];
+  black_cube_texture_id_ = ids[2];
+
+  return true;
 }
 
 bool TextureManager::ValidForTarget(

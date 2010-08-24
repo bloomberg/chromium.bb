@@ -206,6 +206,10 @@ bool ContextGroup::Initialize() {
     max_vertex_uniform_vectors_ /= 4;
   }
 
+  if (!texture_manager_->Initialize()) {
+    return false;
+  }
+
   initialized_ = true;
   return true;
 }

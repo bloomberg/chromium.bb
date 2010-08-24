@@ -7,8 +7,10 @@
 #include "app/gfx/gl/gl_mock.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "gpu/command_buffer/service/test_helper.h"
 
 using ::testing::Pointee;
+using ::testing::_;
 
 namespace gpu {
 namespace gles2 {
@@ -19,6 +21,12 @@ class TextureManagerTest : public testing::Test {
   static const GLint kMaxCubeMapTextureSize = 8;
   static const GLint kMax2dLevels = 5;
   static const GLint kMaxCubeMapLevels = 4;
+
+  static const GLuint kServiceBlackTexture2dId = 701;
+  static const GLuint kServiceBlackTextureCubemapId = 702;
+  static const GLuint kServiceDefaultTexture2dId = 703;
+  static const GLuint kServiceDefaultTextureCubemapId = 704;
+
 
   TextureManagerTest()
       : manager_(false, false, false, kMaxTextureSize, kMaxCubeMapTextureSize) {
@@ -32,6 +40,9 @@ class TextureManagerTest : public testing::Test {
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
+
+    TestHelper::SetupTextureManagerInitExpectations(gl_.get());
+    manager_.Initialize();
   }
 
   virtual void TearDown() {
@@ -50,6 +61,10 @@ const GLint TextureManagerTest::kMaxTextureSize;
 const GLint TextureManagerTest::kMaxCubeMapTextureSize;
 const GLint TextureManagerTest::kMax2dLevels;
 const GLint TextureManagerTest::kMaxCubeMapLevels;
+const GLuint TextureManagerTest::kServiceBlackTexture2dId;
+const GLuint TextureManagerTest::kServiceBlackTextureCubemapId;
+const GLuint TextureManagerTest::kServiceDefaultTexture2dId;
+const GLuint TextureManagerTest::kServiceDefaultTextureCubemapId;
 #endif
 
 TEST_F(TextureManagerTest, Basic) {
@@ -85,6 +100,9 @@ TEST_F(TextureManagerTest, Destroy) {
   TextureManager::TextureInfo* info1 = manager_.GetTextureInfo(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
   EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(kService1Id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DeleteTextures(4, _))
       .Times(1)
       .RetiresOnSaturation();
   manager_.Destroy(true);

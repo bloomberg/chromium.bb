@@ -217,6 +217,9 @@ class TextureManager {
                  GLsizei max_cube_map_texture_size);
   ~TextureManager();
 
+  // Init the texture manager.
+  bool Initialize();
+
   // Must call before destruction.
   void Destroy(bool have_context);
 
@@ -302,6 +305,11 @@ class TextureManager {
     return num_unrenderable_textures_ > 0;
   }
 
+  GLuint black_texture_id(GLenum target) const {
+    return target == GL_SAMPLER_2D ?  black_2d_texture_id_ :
+                                      black_cube_texture_id_;
+  }
+
  private:
   // Info for each texture in the system.
   // TODO(gman): Choose a faster container.
@@ -317,6 +325,12 @@ class TextureManager {
   GLint max_cube_map_levels_;
 
   int num_unrenderable_textures_;
+
+  // Black (0,0,0,1) textures for when non-renderable textures are used.
+  // NOTE: There is no corresponding TextureInfo for these textures.
+  // TextureInfos are only for textures the client side can access.
+  GLuint black_2d_texture_id_;
+  GLuint black_cube_texture_id_;
 
   // The default textures for each target (texture name = 0)
   TextureInfo::Ref default_texture_2d_;

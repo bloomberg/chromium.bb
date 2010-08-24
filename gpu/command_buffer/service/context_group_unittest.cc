@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "app/gfx/gl/gl_mock.h"
 #include "base/scoped_ptr.h"
+#include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/GLES2/gles2_command_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,19 +32,11 @@ class ContextGroupTest : public testing::Test {
   ContextGroupTest() {
   }
 
-  void SetupInitExpectations(const char* extensions);
+  void SetupInitExpectations(const char* extensions) {
+    TestHelper::SetupContextGroupInitExpectations(gl_.get(), extensions);
+  }
 
  protected:
-  static const GLint kMaxTextureSize = 2048;
-  static const GLint kMaxCubeMapTextureSize = 256;
-  static const GLint kNumVertexAttribs = 16;
-  static const GLint kNumTextureUnits = 8;
-  static const GLint kMaxTextureImageUnits = 8;
-  static const GLint kMaxVertexTextureImageUnits = 2;
-  static const GLint kMaxFragmentUniformVectors = 16;
-  static const GLint kMaxVaryingVectors = 8;
-  static const GLint kMaxVertexUniformVectors = 128;
-
   virtual void SetUp() {
     gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
     ::gfx::GLInterface::SetGLInterface(gl_.get());
@@ -58,54 +51,6 @@ class ContextGroupTest : public testing::Test {
   scoped_ptr< ::testing::StrictMock< ::gfx::MockGLInterface> > gl_;
   ContextGroup group_;
 };
-
-// GCC requires these declarations, but MSVC requires they not be present
-#ifndef COMPILER_MSVC
-const GLint ContextGroupTest::kMaxTextureSize;
-const GLint ContextGroupTest::kMaxCubeMapTextureSize;
-const GLint ContextGroupTest::kNumVertexAttribs;
-const GLint ContextGroupTest::kNumTextureUnits;
-const GLint ContextGroupTest::kMaxTextureImageUnits;
-const GLint ContextGroupTest::kMaxVertexTextureImageUnits;
-const GLint ContextGroupTest::kMaxFragmentUniformVectors;
-const GLint ContextGroupTest::kMaxVaryingVectors;
-const GLint ContextGroupTest::kMaxVertexUniformVectors;
-#endif
-
-void ContextGroupTest::SetupInitExpectations(const char* extensions) {
-  InSequence sequence;
-
-  EXPECT_CALL(*gl_, GetString(GL_EXTENSIONS))
-      .WillOnce(Return(reinterpret_cast<const uint8*>(extensions)))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
-      .WillOnce(SetArgumentPointee<1>(kNumVertexAttribs))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, _))
-      .WillOnce(SetArgumentPointee<1>(kNumTextureUnits))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TEXTURE_SIZE, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxTextureSize))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxTextureImageUnits))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVertexTextureImageUnits))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformVectors))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VARYING_FLOATS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVaryingVectors))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, _))
-      .WillOnce(SetArgumentPointee<1>(kMaxVertexUniformVectors))
-      .RetiresOnSaturation();
-}
 
 TEST_F(ContextGroupTest, Basic) {
   // Test it starts off uninitialized.

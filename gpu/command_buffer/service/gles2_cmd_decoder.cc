@@ -273,7 +273,7 @@ class FrameBuffer {
 };
 
 #if defined(GLES2_GPU_SERVICE_TRANSLATE_SHADER)
-void FinalizeShaderTranslator(void*) {
+void FinalizeShaderTranslator(void* /* dummy */) {
   ShFinalize();
 }
 
@@ -1226,12 +1226,6 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // Which textures are bound to texture units through glActiveTexture.
   scoped_array<TextureUnit> texture_units_;
 
-  // Black (0,0,0,1) textures for when non-renderable textures are used.
-  // NOTE: There is no corresponding TextureInfo for these textures.
-  // TextureInfos are only for textures the client side can access.
-  GLuint black_2d_texture_id_;
-  GLuint black_cube_texture_id_;
-
   // state saved for clearing so we can clear render buffers and then
   // restore to these values.
   GLclampf clear_red_;
@@ -1525,8 +1519,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       attrib_0_buffer_id_(0),
       attrib_0_size_(0),
       active_texture_unit_(0),
-      black_2d_texture_id_(0),
-      black_cube_texture_id_(0),
       clear_red_(0),
       clear_green_(0),
       clear_blue_(0),
@@ -1616,28 +1608,17 @@ bool GLES2DecoderImpl::Initialize(gfx::GLContext* context,
   texture_units_.reset(
       new TextureUnit[group_->max_texture_units()]);
   for (uint32 tt = 0; tt < group_->max_texture_units(); ++tt) {
-    texture_units_[tt].bound_texture_2d =
-        texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_2D);
-    texture_units_[tt].bound_texture_cube_map =
+    glActiveTexture(GL_TEXTURE0 + tt);
+    // Do cube map first because we want the last bind to be 2D.
+    TextureManager::TextureInfo* info =
         texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_CUBE_MAP);
+    texture_units_[tt].bound_texture_cube_map = info;
+    glBindTexture(GL_TEXTURE_CUBE_MAP, info->service_id());
+    info = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_2D);
+    texture_units_[tt].bound_texture_2d = info;
+    glBindTexture(GL_TEXTURE_2D, info->service_id());
   }
-
-  GLuint ids[2];
-  glGenTextures(2, ids);
-  // Make black textures for replacing non-renderable textures.
-  black_2d_texture_id_ = ids[0];
-  black_cube_texture_id_ = ids[1];
-  static uint8 black[] = {0, 0, 0, 255};
-  glBindTexture(GL_TEXTURE_2D, black_2d_texture_id_);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, black);
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, black_cube_texture_id_);
-  for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
-    glTexImage2D(GLES2Util::IndexToGLFaceTarget(ii), 0, GL_RGBA, 1, 1, 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, black);
-  }
-  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  glActiveTexture(GL_TEXTURE0);
   CHECK_GL_ERROR();
 
   if (context_->IsOffscreen()) {
@@ -2115,12 +2096,6 @@ void GLES2DecoderImpl::Destroy() {
   if (context_.get()) {
     MakeCurrent();
 
-    if (black_2d_texture_id_) {
-      glDeleteTextures(1, &black_2d_texture_id_);
-    }
-    if (black_cube_texture_id_) {
-      glDeleteTextures(1, &black_cube_texture_id_);
-    }
     if (attrib_0_buffer_id_) {
       glDeleteBuffersARB(1, &attrib_0_buffer_id_);
     }
@@ -3464,8 +3439,7 @@ bool GLES2DecoderImpl::SetBlackTextureForNonRenderableTextures() {
           glBindTexture(
               uniform_info->type == GL_SAMPLER_2D ? GL_TEXTURE_2D :
                                                     GL_TEXTURE_CUBE_MAP,
-              uniform_info->type == GL_SAMPLER_2D ? black_2d_texture_id_ :
-                                                    black_cube_texture_id_);
+              texture_manager()->black_texture_id(uniform_info->type));
         }
       }
       // else: should this be an error?

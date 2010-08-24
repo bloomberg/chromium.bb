@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::gfx::MockGLInterface;
@@ -96,7 +97,8 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysBadTextureUsesBlack) {
     EXPECT_CALL(*gl_, ActiveTexture(GL_TEXTURE0))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceBlackTexture2dId))
+    EXPECT_CALL(*gl_, BindTexture(
+        GL_TEXTURE_2D, TestHelper::kServiceBlackTexture2dId))
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
