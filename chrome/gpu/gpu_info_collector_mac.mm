@@ -55,6 +55,8 @@ static void CollectVideoCardInfo(CGDirectDisplayID displayID,
   CFReleaseIf(deviceIDRef);
 }
 
+// TODO(maf): uncomment when using code below is re-enabled.
+/*
 // Return a pointer to the last character with value c in string s.
 // Returns NULL if c is not found.
 static char* FindLastChar(char *s, char c) {
@@ -67,6 +69,7 @@ static char* FindLastChar(char *s, char c) {
   }
   return s_found;
 }
+*/
 
 
 bool CollectGraphicsInfo(GPUInfo& gpu_info) {
@@ -75,10 +78,13 @@ bool CollectGraphicsInfo(GPUInfo& gpu_info) {
   std::wstring driver_version = L"";
   uint32 pixel_shader_version = 0u;
   uint32 vertex_shader_version = 0u;
-  uint32 gl_version;
+  uint32 gl_version = 0u;
 
   CollectVideoCardInfo(kCGDirectMainDisplay, &vendor_id, &device_id);
 
+  // TODO(maf): when this is called, there is no OpenGL context
+  // current, so calls to glGetString crash.
+  /*
   char *gl_version_string = (char*)glGetString(GL_VERSION);
   char *gl_extensions_string = (char*)glGetString(GL_EXTENSIONS);
 
@@ -124,6 +130,7 @@ bool CollectGraphicsInfo(GPUInfo& gpu_info) {
 
   gl_version = ((gl_major << 16) & 0xffff0000)
                + (gl_minor & 0x0000ffff);
+  */
 
   gpu_info.SetGraphicsInfo(vendor_id, device_id, driver_version,
                            pixel_shader_version, vertex_shader_version,
