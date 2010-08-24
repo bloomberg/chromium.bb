@@ -36,7 +36,16 @@ class AcceleratedSurfaceContainerManagerMac {
   // Indicates whether the given PluginWindowHandle is "root", which
   // means that we are using accelerated compositing and that this one
   // contains the compositor's output.
-  bool IsRootContainer(gfx::PluginWindowHandle id);
+  bool IsRootContainer(gfx::PluginWindowHandle id) const;
+
+  // Returns the handle of the compositor surface, or kNullPluginWindow if no
+  // compositor surface is active.
+  gfx::PluginWindowHandle root_container_handle() const {
+    return root_container_handle_;
+  }
+
+  // Informs the manager if gpu rendering is active.
+  void set_gpu_rendering_active(bool active) { gpu_rendering_active_ = active; }
 
   // Sets the size and backing store of the plugin instance.  There are two
   // versions: the IOSurface version is used on systems where the IOSurface
@@ -57,9 +66,7 @@ class AcceleratedSurfaceContainerManagerMac {
 
   // Draws the plugin container associated with the given id into the given
   // OpenGL context, which must already be current.
-  void Draw(CGLContextObj context,
-            gfx::PluginWindowHandle id,
-            bool draw_root_container);
+  void Draw(CGLContextObj context, gfx::PluginWindowHandle id);
 
   // Causes the next Draw call on each container to trigger a texture upload.
   // Should be called any time the drawing context has changed.
@@ -92,6 +99,12 @@ class AcceleratedSurfaceContainerManagerMac {
   // there will only be one container active when the accelerated
   // compositor is active.
   AcceleratedSurfaceContainerMac* root_container_;
+  gfx::PluginWindowHandle root_container_handle_;
+
+  // True if gpu rendering is active. The root container is created on demand
+  // and destroyed only when a renderer process exits. When the compositor was
+  // created, this is set to |false| while the compositor is not needed.
+  bool gpu_rendering_active_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedSurfaceContainerManagerMac);
 };

@@ -846,6 +846,30 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   [view setSurfaceWasSwapped:YES];
 }
 
+void RenderWidgetHostViewMac::GpuRenderingStateDidChange() {
+  // Plugins are destroyed on page navigate. The compositor layer on the other
+  // hand is created on demand and then stays alive until its renderer process
+  // dies (usually on cross-domain navigation). Instead, only a flag
+  // |is_gpu_rendering_active()| is flipped when the compositor output should be
+  // shown/hidden.
+  // Show/hide the view belonging to the compositor here.
+  plugin_container_manager_.set_gpu_rendering_active(
+      GetRenderWidgetHost()->is_gpu_rendering_active());
+
+  gfx::PluginWindowHandle root_handle =
+      plugin_container_manager_.root_container_handle();
+  if (root_handle != gfx::kNullPluginWindow) {
+    PluginViewMap::iterator it = plugin_views_.find(root_handle);
+    DCHECK(plugin_views_.end() != it);
+    if (plugin_views_.end() == it) {
+      return;
+    }
+    bool visible =
+        plugin_container_manager_.SurfaceShouldBeVisible(root_handle);
+    [it->second setHidden:!visible];
+  }
+}
+
 void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
       CGLContextObj context, gfx::PluginWindowHandle plugin_handle) {
   // Called on the display link thread.
@@ -866,10 +890,7 @@ void RenderWidgetHostViewMac::DrawAcceleratedSurfaceInstance(
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  plugin_container_manager_.Draw(
-      context,
-      plugin_handle,
-      GetRenderWidgetHost()->is_gpu_rendering_active());
+  plugin_container_manager_.Draw(context, plugin_handle);
 }
 
 void RenderWidgetHostViewMac::ForceTextureReload() {

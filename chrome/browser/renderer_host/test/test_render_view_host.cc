@@ -151,8 +151,7 @@ void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window) {
 }
 
-void TestRenderWidgetHostView::DrawAcceleratedSurfaceInstances(
-    CGLContextObj context) {
+void TestRenderWidgetHostView::GpuRenderingStateDidChange() {
 }
 #endif
 

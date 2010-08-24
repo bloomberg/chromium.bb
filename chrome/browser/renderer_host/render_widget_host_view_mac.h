@@ -235,6 +235,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       int32 height,
       TransportDIB::Handle transport_dib);
   virtual void AcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window);
+  virtual void GpuRenderingStateDidChange();
   void DrawAcceleratedSurfaceInstance(
       CGLContextObj context, gfx::PluginWindowHandle plugin_handle);
   // Forces the textures associated with any accelerated plugin instances

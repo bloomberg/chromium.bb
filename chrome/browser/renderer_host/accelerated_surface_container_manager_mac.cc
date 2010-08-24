@@ -10,7 +10,9 @@
 
 AcceleratedSurfaceContainerManagerMac::AcceleratedSurfaceContainerManagerMac()
     : current_id_(0),
-      root_container_(NULL) {
+      root_container_(NULL),
+      root_container_handle_(gfx::kNullPluginWindow),
+      gpu_rendering_active_(false) {
 }
 
 gfx::PluginWindowHandle
@@ -23,6 +25,7 @@ AcceleratedSurfaceContainerManagerMac::AllocateFakePluginWindowHandle(
   plugin_window_to_container_map_.insert(std::make_pair(res, container));
   if (root) {
     root_container_ = container;
+    root_container_handle_ = res;
   }
   return res;
 }
@@ -31,17 +34,19 @@ void AcceleratedSurfaceContainerManagerMac::DestroyFakePluginWindowHandle(
     gfx::PluginWindowHandle id) {
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   if (container) {
-    if (container == root_container_)
+    if (container == root_container_) {
       root_container_ = NULL;
+      root_container_handle_ = gfx::kNullPluginWindow;
+    }
     delete container;
   }
   plugin_window_to_container_map_.erase(id);
 }
 
 bool AcceleratedSurfaceContainerManagerMac::IsRootContainer(
-    gfx::PluginWindowHandle id) {
-  AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
-  return root_container_ == container;
+    gfx::PluginWindowHandle id) const {
+  return root_container_handle_ != gfx::kNullPluginWindow &&
+      root_container_handle_ == id;
 }
 
 void AcceleratedSurfaceContainerManagerMac::SetSizeAndIOSurface(
@@ -73,8 +78,7 @@ void AcceleratedSurfaceContainerManagerMac::SetPluginContainerGeometry(
 }
 
 void AcceleratedSurfaceContainerManagerMac::Draw(CGLContextObj context,
-                                                 gfx::PluginWindowHandle id,
-                                                 bool draw_root_container) {
+                                                 gfx::PluginWindowHandle id) {
   glColorMask(true, true, true, true);
   glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -114,6 +118,9 @@ void AcceleratedSurfaceContainerManagerMac::SetSurfaceWasPaintedTo(
 
 bool AcceleratedSurfaceContainerManagerMac::SurfaceShouldBeVisible(
     gfx::PluginWindowHandle id) const {
+  if (IsRootContainer(id) && !gpu_rendering_active_)
+    return false;
+
   AcceleratedSurfaceContainerMac* container = MapIDToContainer(id);
   return container && container->should_be_visible();
 }

@@ -920,7 +920,14 @@ void RenderWidgetHost::OnMsgImeCancelComposition() {
 }
 
 void RenderWidgetHost::OnMsgGpuRenderingActivated(bool activated) {
+#if defined(OS_MACOSX)
+  bool old_state = is_gpu_rendering_active_;
+#endif
   is_gpu_rendering_active_ = activated;
+#if defined(OS_MACOSX)
+  if (old_state != is_gpu_rendering_active_ && view_)
+    view_->GpuRenderingStateDidChange();
+#endif
 }
 
 #if defined(OS_MACOSX)

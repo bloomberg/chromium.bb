@@ -218,6 +218,7 @@ class RenderWidgetHostView {
       TransportDIB::Handle transport_dib) = 0;
   virtual void AcceleratedSurfaceBuffersSwapped(
       gfx::PluginWindowHandle window) = 0;
+  virtual void GpuRenderingStateDidChange() = 0;
 #endif
 
 #if defined(TOOLKIT_USES_GTK)

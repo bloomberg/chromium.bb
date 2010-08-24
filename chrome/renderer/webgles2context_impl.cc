@@ -12,7 +12,13 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 
-WebGLES2ContextImpl::WebGLES2ContextImpl() : context_(NULL) {
+WebGLES2ContextImpl::WebGLES2ContextImpl()
+    : context_(NULL)
+#if defined(OS_MACOSX)
+    , plugin_handle_(gfx::kNullPluginWindow)
+    , web_view_(NULL)
+#endif
+    {
 }
 
 WebGLES2ContextImpl::~WebGLES2ContextImpl() {
@@ -49,8 +55,9 @@ bool WebGLES2ContextImpl::initialize(
 #if !defined(OS_MACOSX)
     view_id = renderview->host_window();
 #else
-    view_id = static_cast<gfx::NativeViewId>(
-        renderview->AllocateFakePluginWindowHandle(true, true));
+    plugin_handle_ = renderview->AllocateFakePluginWindowHandle(true, true);
+    web_view_ = web_view;
+    view_id = static_cast<gfx::NativeViewId>(plugin_handle_);
 #endif
     context_ = ggl::CreateViewContext(
         host, view_id,
@@ -76,6 +83,13 @@ bool WebGLES2ContextImpl::makeCurrent() {
 }
 
 bool WebGLES2ContextImpl::destroy() {
+#if defined(OS_MACOSX)
+  RenderView* renderview = RenderView::FromWebView(web_view_);
+  DCHECK(plugin_handle_ == gfx::kNullPluginWindow || renderview);
+  if (plugin_handle_ != gfx::kNullPluginWindow && renderview)
+    renderview->DestroyFakePluginWindowHandle(plugin_handle_);
+  plugin_handle_ = gfx::kNullPluginWindow;
+#endif
   return ggl::DestroyContext(context_);
 }
 

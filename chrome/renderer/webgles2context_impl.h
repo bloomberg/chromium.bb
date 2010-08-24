@@ -12,6 +12,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebGLES2Context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 
+#if defined(OS_MACOSX)
+#include "gfx/native_widget_types.h"
+#endif
+
 class WebGLES2ContextImpl : public WebKit::WebGLES2Context {
  public:
   WebGLES2ContextImpl();
@@ -36,7 +40,11 @@ class WebGLES2ContextImpl : public WebKit::WebGLES2Context {
  private:
   // The GGL context we use for OpenGL rendering.
   ggl::Context* context_;
+
+#if defined(OS_MACOSX)
+  gfx::PluginWindowHandle plugin_handle_;
   WebKit::WebView* web_view_;
+#endif
 };
 
 #endif  // defined(ENABLE_GPU)
