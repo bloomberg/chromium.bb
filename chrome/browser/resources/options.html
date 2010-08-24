@@ -145,6 +145,11 @@ function load() {
                                      localStrings.getString('syncPage'),
                                      'syncPage');
   OptionsPage.registerSubPage(syncSettings);
+  var languageModifierKeysOverlay = new OptionsPage(
+      'languageCustomizeModifierKeysOverlay',
+      localStrings.getString('languageCustomizeModifierKeysOverlay'),
+      'languageCustomizeModifierKeysOverlay')
+  OptionsPage.registerOverlay(languageModifierKeysOverlay);
 
   Preferences.getInstance().initialize();
   OptionsPage.initialize();
@@ -212,6 +217,8 @@ window.onpopstate = function(e) {
   <include src="options/passwords_remove_all_overlay.html">
   <if expr="pp_ifdef('chromeos')">
      <include src="options/chromeos_language_add_language_overlay.html">
+     <include
+         src="options/chromeos_language_customize_modifier_keys_overlay.html">
   </if>
 </div>
 <div id="main-content">

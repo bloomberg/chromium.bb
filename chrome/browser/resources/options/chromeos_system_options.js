@@ -37,6 +37,9 @@ cr.define('options', function() {
       $('language-button').onclick = function(event) {
         OptionsPage.showPageByName('language');
       };
+      $('modifier-keys-button').onclick = function(event) {
+        OptionsPage.showOverlay('languageCustomizeModifierKeysOverlay');
+      };
     }
   };
 
@@ -46,4 +49,3 @@ cr.define('options', function() {
   };
 
 });
-

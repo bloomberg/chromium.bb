@@ -8258,6 +8258,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE" desc="In settings system options, the label for the customize button for languages and input">
         Customize languages and input...
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MODIFIER_KEYS_CUSTOMIZE" desc="In settings system options, the label for the customize button for modifier keys">
+        Modifier keys...
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">
         Languages and Input
       </message>
@@ -8926,6 +8929,54 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KOREAN_INPUT_METHOD"
                desc="The label for the Korean input method">
         Korean input method
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH_LABEL"
+               desc="The label for 'Customize modifier keys' overlay">
+        Search
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_CTRL_LABEL"
+               desc="The label for 'Customize modifier keys' overlay">
+        Ctrl
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_ALT_LABEL"
+               desc="The label for 'Customize modifier keys' overlay">
+        Alt
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH"
+               desc="The dropdown list item for 'Customize modifier keys' overlay">
+        Search
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_CTRL"
+               desc="The dropdown list item for 'Customize modifier keys' overlay">
+        Ctrl
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_ALT"
+               desc="The dropdown list item for 'Customize modifier keys' overlay">
+        Alt
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_VOID"
+               desc="The dropdown list item for 'Customize modifier keys' overlay">
+        Disabled
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPSLOCK"
+               desc="The dropdown list item for 'Customize modifier keys' overlay">
+        CapsLock
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
+               desc="The label for the Chrome OS configuration dialog">
+        fast
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
+               desc="The label for the Chrome OS configuration dialog">
+        fast
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
+               desc="The label for the Chrome OS configuration dialog">
+        fast
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
+               desc="The label for the Chrome OS configuration dialog">
+        fast
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
         Ethernet

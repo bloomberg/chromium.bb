@@ -1,0 +1,34 @@
+<div class="page hidden" id="languageCustomizeModifierKeysOverlay">
+  <section>
+    <table class="option-control-table">
+       <tr>
+         <td class="option-name" i18n-content="xkbRemapSearchKeyToContent"></td>
+         <td class="option-value">
+           <select id="xkb-remap-search-key-to" class="control"
+                pref="settings.language.xkb_remap_search_key_to"
+                data-values="xkbRemapSearchKeyToValue"></select>
+         </td>
+       </tr>
+       <tr>
+         <td class="option-name"
+             i18n-content="xkbRemapControlKeyToContent"></td>
+         <td class="option-value">
+           <select id="xkb-remap-control-key-to" class="control"
+                pref="settings.language.xkb_remap_control_key_to"
+                data-values="xkbRemapControlKeyToValue"></select>
+         </td>
+       </tr>
+       <tr>
+         <td class="option-name" i18n-content="xkbRemapAltKeyToContent"></td>
+         <td class="option-value">
+           <select id="xkb-remap-alt-key-to" class="control"
+                pref="settings.language.xkb_remap_alt_key_to"
+                data-values="xkbRemapAltKeyToValue"></select>
+         </td>
+       </tr>
+    </table>
+  </section>
+  <button id="languageCustomizeModifierKeysOverleyDismissButton"
+      i18n-content="close"
+      onclick="OptionsPage.clearOverlays();"></button>
+</div>

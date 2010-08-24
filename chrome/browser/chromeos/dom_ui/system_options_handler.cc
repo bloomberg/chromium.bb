@@ -57,6 +57,9 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_LANGUAGE));
   localized_strings->SetString("language_customize",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_LANGUAGES_CUSTOMIZE));
+  localized_strings->SetString("modifier_keys_customize",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_LANGUAGES_MODIFIER_KEYS_CUSTOMIZE));
 
   localized_strings->SetString("keyboard",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_SECTION_TITLE_KEYBOARD));
