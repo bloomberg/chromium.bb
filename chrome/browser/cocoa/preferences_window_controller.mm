@@ -418,6 +418,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 
 @implementation PreferencesWindowController
 
+@synthesize showHomeButtonEnabled = showHomeButtonEnabled_;
 @synthesize proxiesConfigureButtonEnabled = proxiesConfigureButtonEnabled_;
 
 - (id)initWithProfile:(Profile*)profile initialPage:(OptionsPage)initialPage {
@@ -492,6 +493,9 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
     proxyPrefs_.reset(
         PrefSetObserver::CreateProxyPrefSetObserver(prefs_, observer_.get()));
     [self setProxiesConfigureButtonEnabled:!proxyPrefs_->IsManaged()];
+
+    // Initialize show home button checkbox enabled state.
+    [self setShowHomeButtonEnabled:!showHomeButton_.IsManaged()];
   }
   return self;
 }
@@ -899,6 +903,7 @@ class ManagedPrefsBannerState : public ManagedPrefsBannerBase {
 
   if (*prefName == prefs::kShowHomeButton) {
     [self setShowHomeButton:showHomeButton_.GetValue() ? YES : NO];
+    [self setShowHomeButtonEnabled:!showHomeButton_.IsManaged()];
   }
 }
 

@@ -51,6 +51,7 @@ void ManagedPrefsBannerBase::Init(PrefService* local_state,
     case OPTIONS_PAGE_GENERAL:
       AddUserPref(prefs::kHomePage);
       AddUserPref(prefs::kHomePageIsNewTabPage);
+      AddUserPref(prefs::kShowHomeButton);
       break;
     case OPTIONS_PAGE_CONTENT:
       AddUserPref(prefs::kSyncManaged);

@@ -182,6 +182,9 @@ void GeneralPageGtk::NotifyPrefChanged(const std::string* pref_name) {
     gtk_toggle_button_set_active(
         GTK_TOGGLE_BUTTON(homepage_show_home_button_checkbox_),
         show_home_button_.GetValue());
+    gtk_widget_set_sensitive(
+        homepage_show_home_button_checkbox_,
+        !show_home_button_.IsManaged());
   }
 
   initializing_ = false;

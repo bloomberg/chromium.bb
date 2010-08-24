@@ -34,6 +34,7 @@ class ConfigurationPolicyStore {
     kPolicyApplicationLocale,
     kPolicyExtensionInstallAllowList,
     kPolicyExtensionInstallDenyList,
+    kPolicyShowHomeButton,
 
     // A policy for allowing administrators to forcibly disable
     // specific plugins. This policy is a comma-separated list of

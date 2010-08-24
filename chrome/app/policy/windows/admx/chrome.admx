@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <policyDefinitions revision="1.0" schemaVersion="1.0">
   <policyNamespaces>
-    <target prefix="fullarmor" namespace="FullArmor.1048238f-d493-4a5d-a728-16df06ed4ac5" />
+    <target prefix="fullarmor" namespace="FullArmor.0ed4732f-0cd4-46eb-884e-fd5e736e5a97" />
     <using prefix="windows" namespace="Microsoft.Policies.Windows" />
   </policyNamespaces>
   <supersededAdm fileName="D:\src\chromium\src\chrome\app\policy\windows\adm\en-US\chrome.adm" />
@@ -166,6 +166,16 @@
       <elements>
         <list id="ExtensionInstallWhitelistDesc" valuePrefix="" />
       </elements>
+    </policy>
+    <policy name="ShowHomeButton" class="Machine" displayName="$(string.ShowHomeButton)" explainText="$(string.ShowHomeButton_Explain)" presentation="$(presentation.ShowHomeButton)" key="Software\Policies\Google\Chrome" valueName="ShowHomeButton">
+      <parentCategory ref="googlechrome" />
+      <supportedOn ref="SUPPORTED_WINXPSP2" />
+      <enabledValue>
+        <decimal value="1" />
+      </enabledValue>
+      <disabledValue>
+        <decimal value="0" />
+      </disabledValue>
     </policy>
   </policies>
 </policyDefinitions>

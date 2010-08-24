@@ -183,6 +183,17 @@ CLASS MACHINE
            END PART
        END POLICY
 
+       POLICY !!ShowHomeButton
+           #if version >= 4
+             SUPPORTED !!SUPPORTED_WINXPSP2
+           #endif
+           EXPLAIN !!ShowHomeButton_Explain
+           VALUENAME "ShowHomeButton"
+           VALUEON NUMERIC 1
+           VALUEOFF NUMERIC 0
+       END POLICY
+
+
     END CATEGORY
   END CATEGORY
 
@@ -265,3 +276,7 @@ DisabledPluginsList="Comma-separated list of disabled plugins:"
 Sync="Disallow synchronization of data with Google"
 Sync_Explain="Disallows data synchronization in Google Chrome using Google-hosted synchronization services and prevents users from changing this setting.\n\n\
 If you enable this setting, users cannot change or override this setting in Google Chrome."
+ShowHomeButton="Show home button"
+ShowHomeButton_Explain="Controls whether the home button is shown on the browser toolbar.\n\n\
+If you enable this setting, the home button will always be shown.\n\n\
+If you disable this setting, the button will be hidden."

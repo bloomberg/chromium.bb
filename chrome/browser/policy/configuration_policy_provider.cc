@@ -54,6 +54,8 @@ const InternalPolicyValueMapEntry kPolicyValueMap[] = {
       Value::TYPE_LIST, policy::key::kExtensionInstallAllowList },
   { ConfigurationPolicyStore::kPolicyExtensionInstallDenyList,
       Value::TYPE_LIST, policy::key::kExtensionInstallDenyList },
+  { ConfigurationPolicyStore::kPolicyShowHomeButton,
+      Value::TYPE_BOOLEAN, policy::key::kShowHomeButton },
 };
 
 }  // namespace
@@ -82,4 +84,3 @@ void ConfigurationPolicyProvider::NotifyStoreOfPolicyChange() {
       Source<ConfigurationPolicyProvider>(this),
       NotificationService::NoDetails());
 }
-

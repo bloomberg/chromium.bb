@@ -109,6 +109,12 @@ If you enable this setting, the specified list of plugins is never used in Googl
       <string id="Sync_Explain">Disallows data synchronization in Google Chrome using Google-hosted synchronization services and prevents users from changing this setting.
 
 If you enable this setting, users cannot change or override this setting in Google Chrome.</string>
+      <string id="ShowHomeButton">Show home button</string>
+      <string id="ShowHomeButton_Explain">Controls whether the home button is shown on the browser toolbar.
+
+If you enable this setting, the home button will always be shown.
+
+If you disable this setting, the button will be hidden.</string>
       <string id="ADMXMigrator_UnresolvedString">ADMX Migrator encountered a string that is not present in the source ADM string table.</string>
       <string id="ADMXMigrator_NoSupportedOn">ADMX Migrator encountered a policy that does not have a supportedOn value.</string>
     </stringTable>
@@ -154,6 +160,7 @@ If you enable this setting, users cannot change or override this setting in Goog
       <presentation id="ExtensionInstallWhitelist">
         <listBox refId="ExtensionInstallWhitelistDesc">Specify extension ids to excempt from the blacklist.</listBox>
       </presentation>
+      <presentation id="ShowHomeButton" />
     </presentationTable>
   </resources>
 </policyDefinitionResources>

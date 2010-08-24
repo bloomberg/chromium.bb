@@ -410,6 +410,8 @@ void GeneralPageView::NotifyPrefChanged(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kShowHomeButton) {
     homepage_show_home_button_checkbox_->SetChecked(
         show_home_button_.GetValue());
+    homepage_show_home_button_checkbox_->SetEnabled(
+        !show_home_button_.IsManaged());
   }
 }
 

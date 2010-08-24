@@ -90,6 +90,7 @@ class ProfileSyncService;
   scoped_nsobject<SearchEngineListModel> searchEngineModel_;
   // Used when creating a new home page url to make the new cell editable.
   BOOL pendingSelectForEdit_;
+  BOOL showHomeButtonEnabled_;
 
   // User Data panel
   BooleanPrefMember askSavePasswords_;
@@ -174,6 +175,7 @@ class ProfileSyncService;
 // Usable from cocoa bindings to hook up the custom home pages table.
 @property (nonatomic, readonly) CustomHomePagesModel* customPagesSource;
 @property (assign, nonatomic) BOOL proxiesConfigureButtonEnabled;
+@property (assign, nonatomic) BOOL showHomeButtonEnabled;
 
 @end
 

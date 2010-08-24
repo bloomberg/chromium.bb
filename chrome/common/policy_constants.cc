@@ -33,6 +33,7 @@ const char kApplicationLocaleValue[] = "ApplicationLocaleValue";
 const char kSyncDisabled[] = "SyncDisabled";
 const char kExtensionInstallAllowList[] = "ExtensionInstallWhitelist";
 const char kExtensionInstallDenyList[] = "ExtensionInstallBlacklist";
+const char kShowHomeButton[] = "ShowHomeButton";
 
 }  // namespace key
 
