@@ -610,14 +610,11 @@
    bug_51328a
    Memcheck:Leak
    ...
-   fun:sec_pkcs12_decoder_asafes_notify
-   fun:sec_asn1d_notify_before
    fun:SEC_ASN1DecoderUpdate_Util
-   fun:sec_pkcs12_decoder_asafes_callback
-   fun:sec_pkcs7_decoder_work_data
+   ...
    fun:SEC_ASN1DecoderUpdate_Util
    fun:SEC_PKCS7DecoderUpdate
-   fun:sec_pkcs12_decode_asafes_cinfo_update
+   ...
    fun:SEC_ASN1DecoderUpdate_Util
    fun:SEC_PKCS12DecoderUpdate
 }
@@ -625,10 +622,8 @@
    bug_51328b
    Memcheck:Leak
    ...
-   fun:PORT_NewArena_Util
    fun:SEC_PKCS7DecoderStart
-   fun:sec_pkcs12_decoder_pfx_notify_proc
-   fun:sec_asn1d_notify_before
+   ...
    fun:SEC_ASN1DecoderUpdate_Util
    fun:SEC_PKCS12DecoderUpdate
 }
@@ -4205,11 +4200,4 @@
    fun:_Z16DispatchToMethodI9GpuThreadMS0_FviEiEvPT_T0_RK6Tuple1IT1_E
    fun:_ZN3IPC16MessageWithTupleI6Tuple1IiEE8DispatchI9GpuThreadMS5_FviEEEbPKNS_7MessageEPT_T0_
    fun:_ZN9GpuThread24OnControlMessageReceivedERKN3IPC7MessageE
-}
-{
-   bug_53044
-   Memcheck:Leak
-   fun:malloc
-   ...
-   fun:_ZN24mozilla_security_manager19nsPKCS12Blob_ImportEPKcjRKSbItN4base20string16_char_traitsESaItEE
 }
