@@ -65,10 +65,10 @@ class ChromotingClient : public HostConnection::HostEventCallback {
   void SetState(State s);
 
   // Handles for chromotocol messages.
-  void InitClient(HostMessage* msg);
-  void BeginUpdate(HostMessage* msg);
-  void HandleUpdate(HostMessage* msg);
-  void EndUpdate(HostMessage* msg);
+  void InitClient(ChromotingHostMessage* msg);
+  void BeginUpdate(ChromotingHostMessage* msg);
+  void HandleUpdate(ChromotingHostMessage* msg);
+  void EndUpdate(ChromotingHostMessage* msg);
 
   // The following are not owned by this class.
   ClientConfig config_;

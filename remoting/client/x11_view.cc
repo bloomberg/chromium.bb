@@ -157,8 +157,8 @@ void X11View::InitPaintTarget() {
   CHECK(picture_) << "Backing picture not created";
 }
 
-void X11View::HandleBeginUpdateStream(HostMessage* msg) {
-  scoped_ptr<HostMessage> deleter(msg);
+void X11View::HandleBeginUpdateStream(ChromotingHostMessage* msg) {
+  scoped_ptr<ChromotingHostMessage> deleter(msg);
 
   // Make sure the |frame_| is initialized.
   if (!frame_) {
@@ -170,7 +170,7 @@ void X11View::HandleBeginUpdateStream(HostMessage* msg) {
   }
 }
 
-void X11View::HandleUpdateStreamPacket(HostMessage* msg) {
+void X11View::HandleUpdateStreamPacket(ChromotingHostMessage* msg) {
   // Lazily initialize the decoder.
   SetupDecoder(msg->update_stream_packet().begin_rect().encoding());
   if (!decoder_->IsStarted()) {
@@ -181,8 +181,8 @@ void X11View::HandleUpdateStreamPacket(HostMessage* msg) {
   Decode(msg);
 }
 
-void X11View::HandleEndUpdateStream(HostMessage* msg) {
-  scoped_ptr<HostMessage> deleter(msg);
+void X11View::HandleEndUpdateStream(ChromotingHostMessage* msg) {
+  scoped_ptr<ChromotingHostMessage> deleter(msg);
   EndDecoding();
 }
 

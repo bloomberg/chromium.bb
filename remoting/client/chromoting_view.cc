@@ -75,7 +75,7 @@ bool ChromotingView::BeginDecoding(Task* partial_decode_done,
   return true;
 }
 
-bool ChromotingView::Decode(HostMessage* msg) {
+bool ChromotingView::Decode(ChromotingHostMessage* msg) {
   if (!decoder_->IsStarted()) {
     LOG(ERROR) << "Attempt to decode payload before calling BeginDecode.";
     return false;

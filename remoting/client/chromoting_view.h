@@ -51,7 +51,7 @@ class ChromotingView {
   // (1) Perform any platform-specific tasks for start of update stream.
   // (2) Make sure the |frame_| has been initialized.
   // (3) Delete the HostMessage.
-  virtual void HandleBeginUpdateStream(HostMessage* msg) = 0;
+  virtual void HandleBeginUpdateStream(ChromotingHostMessage* msg) = 0;
 
   // Handle the UpdateStreamPacket message.
   // This method should perform the following tasks:
@@ -66,14 +66,14 @@ class ChromotingView {
   // * For a given begin/end update stream, the encodings specified in the
   //   update packets must all match. We may revisit this constraint at a
   //   later date.
-  virtual void HandleUpdateStreamPacket(HostMessage* msg) = 0;
+  virtual void HandleUpdateStreamPacket(ChromotingHostMessage* msg) = 0;
 
   // Handle the EndUpdateStream message.
   // This method should perform the following tasks:
   // (1) Call EndDecoding().
   // (2) Perform any platform-specific tasks for end of update stream.
   // (3) Delete the HostMessage.
-  virtual void HandleEndUpdateStream(HostMessage* msg) = 0;
+  virtual void HandleEndUpdateStream(ChromotingHostMessage* msg) = 0;
 
  protected:
   // Setup the decoder based on the given encoding.
@@ -87,7 +87,7 @@ class ChromotingView {
 
   // Decode the given message.
   // BeginDecoding() must be called before any calls to Decode().
-  bool Decode(HostMessage* msg);
+  bool Decode(ChromotingHostMessage* msg);
 
   // Finish decoding and send notifications to update the view.
   bool EndDecoding();

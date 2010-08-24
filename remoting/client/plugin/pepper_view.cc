@@ -139,7 +139,7 @@ void PepperView::SetHostScreenSize(int width, int height) {
   frame_ = NULL;
 }
 
-void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
+void PepperView::HandleBeginUpdateStream(ChromotingHostMessage* msg) {
   if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::HandleBeginUpdateStream,
@@ -147,7 +147,7 @@ void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
     return;
   }
 
-  scoped_ptr<HostMessage> deleter(msg);
+  scoped_ptr<ChromotingHostMessage> deleter(msg);
 
   // Make sure the |frame_| is initialized.
   if (!frame_) {
@@ -159,7 +159,7 @@ void PepperView::HandleBeginUpdateStream(HostMessage* msg) {
   }
 }
 
-void PepperView::HandleUpdateStreamPacket(HostMessage* msg) {
+void PepperView::HandleUpdateStreamPacket(ChromotingHostMessage* msg) {
   if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::HandleUpdateStreamPacket,
@@ -177,7 +177,7 @@ void PepperView::HandleUpdateStreamPacket(HostMessage* msg) {
   Decode(msg);
 }
 
-void PepperView::HandleEndUpdateStream(HostMessage* msg) {
+void PepperView::HandleEndUpdateStream(ChromotingHostMessage* msg) {
   if (!instance_->CurrentlyOnPluginThread()) {
     RunTaskOnPluginThread(
         NewRunnableMethod(this, &PepperView::HandleEndUpdateStream,
@@ -185,7 +185,7 @@ void PepperView::HandleEndUpdateStream(HostMessage* msg) {
     return;
   }
 
-  scoped_ptr<HostMessage> deleter(msg);
+  scoped_ptr<ChromotingHostMessage> deleter(msg);
   EndDecoding();
 }
 

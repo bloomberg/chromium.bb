@@ -22,7 +22,7 @@ class MockDecoder : public Decoder {
                                  UpdatedRects* updated_rects,
                                  Task* partial_decode_done,
                                  Task* decode_done));
-  MOCK_METHOD1(PartialDecode, bool(HostMessage* message));
+  MOCK_METHOD1(PartialDecode, bool(ChromotingHostMessage* message));
   MOCK_METHOD0(EndDecode, void());
 
   MOCK_METHOD0(Encoding, UpdateStreamEncoding());
@@ -46,9 +46,9 @@ class FakeView : public ChromotingView {
     frame_height_ = height;
   }
   void SetHostScreenSize(int width, int height) {}
-  void HandleBeginUpdateStream(HostMessage* msg) {}
-  void HandleUpdateStreamPacket(HostMessage* msg) {}
-  void HandleEndUpdateStream(HostMessage* msg) {}
+  void HandleBeginUpdateStream(ChromotingHostMessage* msg) {}
+  void HandleUpdateStreamPacket(ChromotingHostMessage* msg) {}
+  void HandleEndUpdateStream(ChromotingHostMessage* msg) {}
 
  public:
   // Testing accessors.
@@ -68,7 +68,7 @@ class FakeView : public ChromotingView {
   bool begin_decoding(Task* partial_decode_done, Task* decode_done) {
     return BeginDecoding(partial_decode_done, decode_done);
   }
-  bool decode(HostMessage* msg) {
+  bool decode(ChromotingHostMessage* msg) {
     return Decode(msg);
   }
   bool end_decoding() {

@@ -355,7 +355,7 @@ EventExecutorWin::~EventExecutorWin() {
 
 void EventExecutorWin::HandleInputEvents(ClientMessageList* messages) {
   for (size_t i = 0; i < messages->size(); ++i) {
-    ClientMessage* msg = (*messages)[i];
+    ChromotingClientMessage* msg = (*messages)[i];
     if (msg->has_mouse_set_position_event()) {
       mouse_event(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE,
         static_cast<int>((msg->mouse_set_position_event().x() * 65535)),

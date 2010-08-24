@@ -53,8 +53,8 @@ bool DecoderZlib::BeginDecode(scoped_refptr<media::VideoFrame> frame,
   return true;
 }
 
-bool DecoderZlib::PartialDecode(HostMessage* message) {
-  scoped_ptr<HostMessage> msg_deleter(message);
+bool DecoderZlib::PartialDecode(ChromotingHostMessage* message) {
+  scoped_ptr<ChromotingHostMessage> msg_deleter(message);
   DCHECK(message->has_update_stream_packet());
   DCHECK(started_);
 
@@ -82,7 +82,7 @@ void DecoderZlib::EndDecode() {
   started_ = false;
 }
 
-bool DecoderZlib::HandleBeginRect(HostMessage* message) {
+bool DecoderZlib::HandleBeginRect(ChromotingHostMessage* message) {
   DCHECK_EQ(kWaitingForBeginRect, state_);
   state_ = kWaitingForRectData;
 
@@ -108,7 +108,7 @@ bool DecoderZlib::HandleBeginRect(HostMessage* message) {
   return true;
 }
 
-bool DecoderZlib::HandleRectData(HostMessage* message) {
+bool DecoderZlib::HandleRectData(ChromotingHostMessage* message) {
   DCHECK_EQ(kWaitingForRectData, state_);
   DCHECK_EQ(0,
             message->update_stream_packet().rect_data().sequence_number());
@@ -153,7 +153,7 @@ bool DecoderZlib::HandleRectData(HostMessage* message) {
   return true;
 }
 
-bool DecoderZlib::HandleEndRect(HostMessage* message) {
+bool DecoderZlib::HandleEndRect(ChromotingHostMessage* message) {
   DCHECK_EQ(kWaitingForRectData, state_);
   state_ = kWaitingForBeginRect;
 

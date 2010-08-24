@@ -319,7 +319,7 @@ void SessionManager::DoRateControl() {
   ScheduleNextRateControl();
 }
 
-void SessionManager::DoSendUpdate(HostMessage* message,
+void SessionManager::DoSendUpdate(ChromotingHostMessage* message,
                                   Encoder::EncodingState state) {
   DCHECK_EQ(network_loop_, MessageLoop::current());
 
@@ -393,7 +393,7 @@ void SessionManager::DoEncode(
 }
 
 void SessionManager::EncodeDataAvailableTask(
-    HostMessage* message, Encoder::EncodingState state) {
+    ChromotingHostMessage* message, Encoder::EncodingState state) {
   DCHECK_EQ(encode_loop_, MessageLoop::current());
 
   // Before a new encode task starts, notify clients a new update
