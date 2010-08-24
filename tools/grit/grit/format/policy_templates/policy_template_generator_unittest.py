@@ -12,7 +12,7 @@ from writers.mock_writer import MockWriter
 class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   '''Unit tests for policy_template_generator.py.'''
 
-  def do_test(self, strings, policy_groups, writer):
+  def do_test(self, messages, policy_groups, writer):
     '''Executes a test case.
 
     Creates and invokes an instance of PolicyTemplateGenerator with
@@ -30,7 +30,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         mock_writer.MockWriter.
     '''
     writer.tester = self
-    policy_generator = PolicyTemplateGenerator(strings, policy_groups)
+    policy_generator = PolicyTemplateGenerator(messages, policy_groups)
     res = policy_generator.GetTemplateText(writer)
     writer.Test()
     return res
@@ -59,7 +59,7 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
   def testEmptyGroups(self):
     # Test that in case of three empty policy groups, each one is passed to
     # the writer.
-    strings_mock = {
+    messages_mock = {
       'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
       'IDS_POLICY_GROUP_GROUP1_DESC': None,
       'IDS_POLICY_GROUP_GROUP2_CAPTION': None,
@@ -67,18 +67,18 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       'IDS_POLICY_GROUP_GROUP3_CAPTION': None,
       'IDS_POLICY_GROUP_GROUP3_DESC': None,
     }
-    policies_mock = {
-      'Group1': {'tag': 'T1'},
-      'Group2': {'tag': 'T2'},
-      'Group3': {'tag': 'T3'},
-    }
+    policies_mock = [
+      {'name': 'Group1', 'tag': 'T1'},
+      {'name': 'Group2', 'tag': 'T2'},
+      {'name': 'Group3', 'tag': 'T3'},
+    ]
     class LocalMockWriter(MockWriter):
       def __init__(self):
         self.log = ''
         self.set = set()
-      def BeginPolicyGroup(self, group_name, group):
+      def BeginPolicyGroup(self, group):
         self.log += '['
-        self.set.add ( (group_name, group['tag']) )
+        self.set.add ( (group['name'], group['tag']) )
       def EndPolicyGroup(self):
         self.log += ']'
       def Test(self):
@@ -86,35 +86,35 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
         self.tester.assertEquals(
           self.set,
           set([('Group1', 'T1'), ('Group2', 'T2'), ('Group3', 'T3')]))
-    self.do_test(strings_mock, policies_mock, LocalMockWriter())
+    self.do_test(messages_mock, policies_mock, LocalMockWriter())
 
   def testGroupTexts(self):
     # Test that GUI strings are assigned correctly to policy groups.
-    strings_mock = {
+    messages_mock = {
       'IDS_POLICY_GROUP_GROUP1_CAPTION': 'string1',
       'IDS_POLICY_GROUP_GROUP1_DESC': 'string2',
       'IDS_POLICY_GROUP_GROUP2_CAPTION': 'string3',
       'IDS_POLICY_GROUP_GROUP2_DESC': 'string4',
     }
-    policies_mock = {
-      'Group1': {},
-      'Group2': {},
-    }
+    policy_groups_mock = [
+      {'name': 'Group1'},
+      {'name': 'Group2'},
+    ]
     class LocalMockWriter(MockWriter):
-      def BeginPolicyGroup(self, group_name, group):
-        if group_name == 'Group1':
+      def BeginPolicyGroup(self, group):
+        if group['name'] == 'Group1':
           self.tester.assertEquals(group['caption'], 'string1')
           self.tester.assertEquals(group['desc'], 'string2')
-        elif group_name == 'Group2':
+        elif group['name'] == 'Group2':
           self.tester.assertEquals(group['caption'], 'string3')
           self.tester.assertEquals(group['desc'], 'string4')
         else:
           self.tester.fail()
-    self.do_test(strings_mock, policies_mock, LocalMockWriter())
+    self.do_test(messages_mock, policy_groups_mock, LocalMockWriter())
 
   def testPolicies(self):
     # Test that policies are passed correctly to the writer.
-    strings_mock = {
+    messages_mock = {
       'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
       'IDS_POLICY_GROUP_GROUP1_DESC': None,
       'IDS_POLICY_GROUP_GROUP2_CAPTION': None,
@@ -123,39 +123,41 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       'IDS_POLICY_GROUP1POLICY2_CAPTION': None,
       'IDS_POLICY_GROUP2POLICY3_CAPTION': None,
     }
-    policies_mock = {
-      'Group1': {
-        'policies': {
-          'Group1Policy1': {'type': 'string'},
-          'Group1Policy2': {'type': 'string'}
-        }
+    policy_groups_mock = [
+      {
+        'name': 'Group1',
+        'policies': [
+          {'name': 'Group1Policy1', 'type': 'string'},
+          {'name': 'Group1Policy2', 'type': 'string'},
+        ]
       },
-      'Group2': {
-        'policies': {
-          'Group2Policy3': {'type': 'string'}
-        }
+      {
+        'name': 'Group2',
+        'policies': [
+          {'name': 'Group2Policy3', 'type': 'string'},
+        ]
       }
-    }
+    ]
     class LocalMockWriter(MockWriter):
       def __init__(self):
         self.policy_name = None
         self.policy_set = set()
-      def BeginPolicyGroup(self, group_name, group):
-        self.group_name = group_name
+      def BeginPolicyGroup(self, group):
+        self.group = group;
       def EndPolicyGroup(self):
-        self.group_name = None
-      def WritePolicy(self, group_name, group):
-        self.tester.assertEquals(group_name[0:6], self.group_name)
-        self.policy_set.add(group_name)
+        self.group = None
+      def WritePolicy(self, group):
+        self.tester.assertEquals(group['name'][0:6], self.group['name'])
+        self.policy_set.add(group['name'])
       def Test(self):
         self.tester.assertEquals(
           self.policy_set,
           set(['Group1Policy1', 'Group1Policy2', 'Group2Policy3']))
-    self.do_test(strings_mock, policies_mock, LocalMockWriter())
+    self.do_test(messages_mock, policy_groups_mock, LocalMockWriter())
 
   def testPolicyTexts(self):
     # Test that GUI strings are assigned correctly to policies.
-    strings_mock = {
+    messages_mock = {
       'IDS_POLICY_POLICY1_CAPTION': 'string1',
       'IDS_POLICY_POLICY1_DESC': 'string2',
       'IDS_POLICY_POLICY2_CAPTION': 'string3',
@@ -163,30 +165,31 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
       'IDS_POLICY_GROUP_GROUP1_DESC': None,
     }
-    policies_mock = {
-      'Group1': {
-        'policies': {
-          'Policy1': {'type': 'string'},
-          'Policy2': {'type': 'string'}
-        }
+    policy_groups_mock = [
+      {
+        'name': 'Group1',
+        'policies': [
+          {'name': 'Policy1', 'type': 'string'},
+          {'name': 'Policy2', 'type': 'string'}
+        ]
       }
-    }
+    ]
     class LocalMockWriter(MockWriter):
-      def WritePolicy(self, policy_name, policy):
-        if policy_name == 'Policy1':
+      def WritePolicy(self, policy):
+        if policy['name'] == 'Policy1':
           self.tester.assertEquals(policy['caption'], 'string1')
           self.tester.assertEquals(policy['desc'], 'string2')
-        elif policy_name == 'Policy2':
+        elif policy['name'] == 'Policy2':
           self.tester.assertEquals(policy['caption'], 'string3')
           self.tester.assertEquals(policy['desc'], 'string4')
         else:
           self.tester.fail()
-    self.do_test(strings_mock, policies_mock, LocalMockWriter())
+    self.do_test(messages_mock, policy_groups_mock, LocalMockWriter())
 
   def testEnumTexts(self):
     # Test that GUI strings are assigned correctly to enums
     # (aka dropdown menus).
-    strings_mock = {
+    messages_mock = {
       'IDS_POLICY_ENUM_ITEM1_CAPTION': 'string1',
       'IDS_POLICY_ENUM_ITEM2_CAPTION': 'string2',
       'IDS_POLICY_ENUM_ITEM3_CAPTION': 'string3',
@@ -194,26 +197,26 @@ class PolicyTemplateGeneratorUnittest(unittest.TestCase):
       'IDS_POLICY_GROUP_GROUP1_CAPTION': None,
       'IDS_POLICY_GROUP_GROUP1_DESC': None,
     }
-    policies_mock = {
-      'Group1': {
-        'policies': {
-          'Policy1': {
-            'type': 'enum',
-            'items': {
-              'item1': {'value': '0'},
-              'item2': {'value': '1'},
-              'item3': {'value': '3'},
-            }
-          }
-        }
+    policy_groups_mock = [
+      {
+        'name': 'Group1',
+        'policies': [{
+          'name': 'Policy1',
+          'type': 'enum',
+          'items': [
+            {'name': 'item1', 'value': '0'},
+            {'name': 'item2', 'value': '1'},
+            {'name': 'item3', 'value': '3'},
+          ]
+        }]
       }
-    }
+    ]
     class LocalMockWriter(MockWriter):
-      def WritePolicy(self, policy_name, policy):
-        self.tester.assertEquals(policy['items']['item1']['caption'], 'string1')
-        self.tester.assertEquals(policy['items']['item2']['caption'], 'string2')
-        self.tester.assertEquals(policy['items']['item3']['caption'], 'string3')
-    self.do_test(strings_mock, policies_mock, LocalMockWriter())
+      def WritePolicy(self, policy):
+        self.tester.assertEquals(policy['items'][0]['caption'], 'string1')
+        self.tester.assertEquals(policy['items'][1]['caption'], 'string2')
+        self.tester.assertEquals(policy['items'][2]['caption'], 'string3')
+    self.do_test(messages_mock, policy_groups_mock, LocalMockWriter())
 
 
 if __name__ == '__main__':

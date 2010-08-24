@@ -13,10 +13,10 @@ class MockWriter(TemplateWriter):
   def __init__(self):
     pass
 
-  def WritePolicy(self, policy_name, policy):
+  def WritePolicy(self, policy):
     pass
 
-  def BeginPolicyGroup(self, group_name, group):
+  def BeginPolicyGroup(self, group):
     pass
 
   def EndPolicyGroup(self):

@@ -1,8 +1,11 @@
-{
+[
 # policy_templates.json - Metafile for policy templates
 #
 # This file is used as input to generate the following policy templates:
 # ADM (TODO(gfeher): MCX,ADMX,DOC)
+#
+# TODO(gfeher): The format description also mentions Mac support,
+#               but that functionality is not committed to the tree yet.
 #
 # Policy templates are user interface definitions or documents about the
 # policies that can be used to configure Chrome. Each policy is a name-value
@@ -23,27 +26,43 @@
 #   'enum' - the user can select its value from a collection of items
 #   'main' - a boolean value with additional semantics:
 #     A group can have at most one main policy and it must have a value of true
-#     if the policy group is enabled, false if the group is disabled or no value
-#     if the policy is not specified. Chrome will see this policy no differently
-#     than other policies, but depending on the platform, the GUI of the
-#     templates might reflect the fact that these policies are 'main'. For
-#     example on Windows this policy will be assigned to the Enable/Disable
+#     if the policy group is enabled, false if the group is disabled or no
+#     value if the policy is not specified. Chrome will see this policy no
+#     differently than other policies, but depending on the platform, the GUI
+#     of the templates might reflect the fact that these policies are 'main'.
+#     For example on Windows this policy will be assigned to the Enable/Disable
 #     buttons of the group, and if it is set to Disabled then other policies of
 #     the group will not be visible to Chrome.
+#  'list' - a list of string values
+#     Currently a 'list' policy has to be alone in a group for technical
+#     reasons.
+#     TODO(gfeher): investigate the possibility of having different KEYNAMEs
+#                   for different parts of an ADM policy
 #
 # Policy group descriptions, policy captions and similar texts are localized
 # strings taken from the <message> nodes of the .grd file. Their name
 # attributes are generated from the JSON keys.
-# Possible locations of localized strings in the templates:
-#   Policy groups:
-#     They can have both captions and descriptions.
-#   Policies:
-#     Policies with type 'main':
-#       none (inherits them from the policy group)
-#     Policies of other types:
-#       Captions only.
-#   Selectable item in an 'enum'-typed policy:
-#     Captions only.
+# Each item (policy or group) may have a caption and/or a description. The
+# exact use of these strings depends on the platform:
+#   -On Windows the user sees a list of policy groups from which the pages of
+#    groups can be opened, and the values of policies can be edited on those.
+#   -Mac does not know about policy groups, the user sees a list of single
+#    policies and the values of policies can be edited by clicking on them.
+#   The source of the one-line texts that appear in the list of policies/groups:
+#    -On Windows the group caption is shown for each group in the list.
+#    -On Mac also the group caption is shown by default for each policy. But
+#     if a policy caption is specified then it overrides the group caption.
+#     (Note that the policy caption can only be omitted for policies of type
+#     'main'.)
+#   Descriptions:
+#    -On Windows the user sees the group description on the page of each
+#     group. In addition to this, the policy caption is shown for each
+#     policy on the group page. (Except for 'main' policies, they have no
+#     separate captions.)
+#    -On Mac the user sees each policy on a separate page. By default the
+#     group description is shown here, but if the policy description is
+#     specified then it overrides the group caption.
+#
 # Generated grd names:
 #   Each name has two parts: the second part is either CAPTION or DESC,
 #   and the first part identifies the item the text applies to:
@@ -60,79 +79,125 @@
 #     e.g. the name of the caption of ProxyServerDisabled:
 #       IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION
 #
-# TODO(gfeher): ADMX, MCX, DOC, .h/.cc? files
-#
-  'Homepage': {
-    'policies': {
-      'HomepageLocation': {'type': 'string'},
-      'HomepageIsNewTabPage': {
+  # The homepage-related policies are split into two groups, because if they
+  # are in the same group, then Windows does not allow to set them undefined
+  # independently of each other.
+  {
+    'name': 'HomepageLocation',
+    'policies': [{
+      'name':  'HomepageLocation',
+      'type': 'string',
+     }],
+  },
+  {
+    'name': 'HomepageIsNewTabPage',
+    'policies': [{
+      'name': 'HomepageIsNewTabPage',
+      'type': 'main',
+    }],
+  },
+  {
+    'name': 'ApplicationLocale',
+    'policies': [{
+      'name': 'ApplicationLocaleValue',
+      'type': 'string',
+    }]
+  },
+  {
+    'name': 'AlternateErrorPagesEnabled',
+    'policies': [{
+      'name': 'AlternateErrorPagesEnabled',
+      'type': 'main',
+    }]
+  },
+  {
+    'name': 'SearchSuggestEnabled',
+    'policies': [{
+      'name': 'SearchSuggestEnabled',
+      'type': 'main'
+    }],
+  },
+  {
+    'name': 'DnsPrefetchingEnabled',
+    'policies': [{
+      'name': 'DnsPrefetchingEnabled',
+      'type': 'main'
+    }],
+  },
+  {
+    'name': 'SafeBrowsingEnabled',
+    'policies': [{
+      'name': 'SafeBrowsingEnabled',
+      'type': 'main',
+    }]
+  },
+  {
+    'name': 'MetricsReportingEnabled',
+    'policies': [{
+      'name': 'MetricsReportingEnabled',
+      'type': 'main'
+    }],
+  },
+  {
+    'name': 'PasswordManagerEnabled',
+    'policies': [{
+      'name': 'PasswordManagerEnabled',
+      'type': 'main',
+    }]
+  },
+  {
+    'name': 'DisabledPlugins',
+    'policies': [{
+      'name': 'DisabledPluginsList',
+      'type': 'string',
+    }]
+  },
+  {
+    'name': 'SyncDisabled',
+    'policies': [{
+      'name': 'SyncDisabled',
+      'type': 'main',
+    }]
+  },
+  {
+    'name': 'Proxy',
+    'policies': [
+      {
+        'name': 'ProxyServerMode',
         'type': 'enum',
-        'items': {
-          'HomepageIsLocationURL': {'value': '0'},
-          'HomepageIsNewTabPage': {'value': '1'},
-        }
-       },
-     }
-  },
-  'ApplicationLocale': {
-    'policies': {
-      'ApplicationLocaleValue': {'type': 'string'},
-    }
-  },
-  'AlternateErrorPagesEnabled': {
-    'policies': {
-      'AlternateErrorPagesEnabled': {'type': 'main'},
-    }
-  },
-  'SearchSuggestEnabled': {
-    'policies': {
-      'SearchSuggestEnabled': {'type': 'main'},
-    }
-  },
-  'DnsPrefetchingEnabled': {
-    'policies': {
-      'DnsPrefetchingEnabled': {'type': 'main'},
-    }
-  },
-  'SafeBrowsingEnabled': {
-    'policies': {
-      'SafeBrowsingEnabled': {'type': 'main'},
-    }
-  },
-  'MetricsReportingEnabled': {
-    'policies': {
-      'MetricsReportingEnabled': {'type': 'main'},
-    }
-  },
-  'PasswordManagerEnabled': {
-    'policies': {
-      'PasswordManagerEnabled': {'type': 'main'},
-    }
-  },
-  'DisabledPlugins': {
-    'policies': {
-      'DisabledPluginsList': {'type': 'string'},
-    }
-  },
-  'SyncDisabled': {
-    'policies': {
-      'SyncDisabled': {'type': 'main'},
-    }
-  },
-  'Proxy': {
-    'policies': {
-      'ProxyServerMode': {
-        'type': 'enum',
-        'items': {
-          'ProxyServerDisabled': {'value': '0'},
-          'ProxyServerAutoDetect': {'value': '1'},
-          'ProxyServerManual': {'value': '2'},
-          'ProxyServerUseSystem': {'value': '3'},
-        }
+        'items': [
+          {'name': 'ProxyServerDisabled', 'value': '0'},
+          {'name': 'ProxyServerAutoDetect', 'value': '1'},
+          {'name': 'ProxyServerManual', 'value': '2'},
+          {'name': 'ProxyServerUseSystem', 'value': '3'},
+        ],
       },
-      'ProxyServer': {'type': 'string'},
-      'ProxyPacUrl': {'type': 'string'},
-      'ProxyBypassList': {'type': 'string'},
-    }
+      {
+        'name': 'ProxyServer',
+        'type': 'string'
+      },
+      {
+        'name': 'ProxyPacUrl',
+        'type': 'string'
+      },
+      {
+        'name': 'ProxyBypassList',
+        'type': 'string'
+      },
+    ]
+  },
+  {
+    'name': 'ExtensionInstallBlacklist',
+    'policies': [{
+      'name': 'ExtensionInstallBlacklist',
+      'type': 'list',
+    }]
+  },
+  {
+    'name': 'ExtensionInstallWhitelist',
+    'policies': [{
+      'name': 'ExtensionInstallWhitelist',
+      'type': 'list',
+    }]
   }
-}
+]

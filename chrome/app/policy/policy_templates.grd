@@ -6,128 +6,236 @@ templates and will be translated for each locale. -->
 <grit base_dir="." latest_public_release="0" current_release="1"
       source_lang_id="en" enc_check="möl">
   <outputs>
-    <!-- TODO(gfeher) set output basedir to chrome/app/policy instead of the
-    current Debug/obj/global_intermediate/chrome/app/policy
-    -->
-    <output filename="./app/policy/windows/adm/en-US/chrome.adm" type="adm" lang="en" />
-    <output filename="./app/policy/windows/adm/de/chrome.adm" type="adm" lang="de" />
-    <output filename="./app/policy/windows/adm/hu/chrome.adm" type="adm" lang="hu" />
+    <output filename="app/policy/windows/adm/am/chrome.adm" type="adm" lang="am" />
+    <output filename="app/policy/windows/adm/ar/chrome.adm" type="adm" lang="ar" />
+    <output filename="app/policy/windows/adm/bg/chrome.adm" type="adm" lang="bg" />
+    <output filename="app/policy/windows/adm/bn/chrome.adm" type="adm" lang="bn" />
+    <output filename="app/policy/windows/adm/ca/chrome.adm" type="adm" lang="ca" />
+    <output filename="app/policy/windows/adm/cs/chrome.adm" type="adm" lang="cs" />
+    <output filename="app/policy/windows/adm/da/chrome.adm" type="adm" lang="da" />
+    <output filename="app/policy/windows/adm/de/chrome.adm" type="adm" lang="de" />
+    <output filename="app/policy/windows/adm/el/chrome.adm" type="adm" lang="el" />
+    <output filename="app/policy/windows/adm/en-GB/chrome.adm" type="adm" lang="en-GB" />
+    <output filename="app/policy/windows/adm/en-US/chrome.adm" type="adm" lang="en" />
+    <output filename="app/policy/windows/adm/es/chrome.adm" type="adm" lang="es" />
+    <output filename="app/policy/windows/adm/es-419/chrome.adm" type="adm" lang="es-419" />
+    <output filename="app/policy/windows/adm/et/chrome.adm" type="adm" lang="et" />
+    <output filename="app/policy/windows/adm/fi/chrome.adm" type="adm" lang="fi" />
+    <output filename="app/policy/windows/adm/fil/chrome.adm" type="adm" lang="fil" />
+    <output filename="app/policy/windows/adm/fr/chrome.adm" type="adm" lang="fr" />
+    <output filename="app/policy/windows/adm/gu/chrome.adm" type="adm" lang="gu" />
+    <output filename="app/policy/windows/adm/he/chrome.adm" type="adm" lang="he" />
+    <output filename="app/policy/windows/adm/hi/chrome.adm" type="adm" lang="hi" />
+    <output filename="app/policy/windows/adm/hr/chrome.adm" type="adm" lang="hr" />
+    <output filename="app/policy/windows/adm/hu/chrome.adm" type="adm" lang="hu" />
+    <output filename="app/policy/windows/adm/id/chrome.adm" type="adm" lang="id" />
+    <output filename="app/policy/windows/adm/it/chrome.adm" type="adm" lang="it" />
+    <output filename="app/policy/windows/adm/ja/chrome.adm" type="adm" lang="ja" />
+    <output filename="app/policy/windows/adm/kn/chrome.adm" type="adm" lang="kn" />
+    <output filename="app/policy/windows/adm/ko/chrome.adm" type="adm" lang="ko" />
+    <output filename="app/policy/windows/adm/lt/chrome.adm" type="adm" lang="lt" />
+    <output filename="app/policy/windows/adm/lv/chrome.adm" type="adm" lang="lv" />
+    <output filename="app/policy/windows/adm/ml/chrome.adm" type="adm" lang="ml" />
+    <output filename="app/policy/windows/adm/mr/chrome.adm" type="adm" lang="mr" />
+    <output filename="app/policy/windows/adm/nl/chrome.adm" type="adm" lang="nl" />
+    <!-- The translation console uses 'no' for Norwegian Bokmål. It should
+         be 'nb'. -->
+    <output filename="app/policy/windows/adm/nb/chrome.adm" type="adm" lang="no" />
+    <output filename="app/policy/windows/adm/pl/chrome.adm" type="adm" lang="pl" />
+    <output filename="app/policy/windows/adm/pt-BR/chrome.adm" type="adm" lang="pt-BR" />
+    <output filename="app/policy/windows/adm/pt-PT/chrome.adm" type="adm" lang="pt-PT" />
+    <output filename="app/policy/windows/adm/ro/chrome.adm" type="adm" lang="ro" />
+    <output filename="app/policy/windows/adm/ru/chrome.adm" type="adm" lang="ru" />
+    <output filename="app/policy/windows/adm/sk/chrome.adm" type="adm" lang="sk" />
+    <output filename="app/policy/windows/adm/sl/chrome.adm" type="adm" lang="sl" />
+    <output filename="app/policy/windows/adm/sr/chrome.adm" type="adm" lang="sr" />
+    <output filename="app/policy/windows/adm/sv/chrome.adm" type="adm" lang="sv" />
+    <output filename="app/policy/windows/adm/sw/chrome.adm" type="adm" lang="sw" />
+    <output filename="app/policy/windows/adm/ta/chrome.adm" type="adm" lang="ta" />
+    <output filename="app/policy/windows/adm/te/chrome.adm" type="adm" lang="te" />
+    <output filename="app/policy/windows/adm/th/chrome.adm" type="adm" lang="th" />
+    <output filename="app/policy/windows/adm/tr/chrome.adm" type="adm" lang="tr" />
+    <output filename="app/policy/windows/adm/uk/chrome.adm" type="adm" lang="uk" />
+    <output filename="app/policy/windows/adm/vi/chrome.adm" type="adm" lang="vi" />
+    <output filename="app/policy/windows/adm/zh-CN/chrome.adm" type="adm" lang="zh-CN" />
+    <output filename="app/policy/windows/adm/zh-TW/chrome.adm" type="adm" lang="zh-TW" />
+
   </outputs>
   <translations>
-    <!-- TODO(gfeher): add target languages here -->
+    <!-- TODO(gfeher): get translations into the following files -->
+<!--    <file path="resources/policy_templates_am.xtb" lang="am" />
+    <file path="resources/policy_templates_ar.xtb" lang="ar" />
+    <file path="resources/policy_templates_bg.xtb" lang="bg" />
+    <file path="resources/policy_templates_bn.xtb" lang="bn" />
+    <file path="resources/policy_templates_ca.xtb" lang="ca" />
+    <file path="resources/policy_templates_cs.xtb" lang="cs" />
+    <file path="resources/policy_templates_da.xtb" lang="da" />
+    <file path="resources/policy_templates_de.xtb" lang="de" />
+    <file path="resources/policy_templates_el.xtb" lang="el" />
+    <file path="resources/policy_templates_en-GB.xtb" lang="en-GB" />
+    <file path="resources/policy_templates_es.xtb" lang="es" />
+    <file path="resources/policy_templates_es-419.xtb" lang="es-419" />
+    <file path="resources/policy_templates_et.xtb" lang="et" />
+    <file path="resources/policy_templates_fi.xtb" lang="fi" />
+    <file path="resources/policy_templates_fil.xtb" lang="fil" />
+    <file path="resources/policy_templates_fr.xtb" lang="fr" />
+    <file path="resources/policy_templates_gu.xtb" lang="gu" />
+    <file path="resources/policy_templates_hi.xtb" lang="hi" />
+    <file path="resources/policy_templates_hr.xtb" lang="hr" />
+    <file path="resources/policy_templates_hu.xtb" lang="hu" />
+    <file path="resources/policy_templates_id.xtb" lang="id" />
+    <file path="resources/policy_templates_it.xtb" lang="it" /> -->
+    <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
+    <!-- <file path="resources/policy_templates_iw.xtb" lang="he" />
+    <file path="resources/policy_templates_ja.xtb" lang="ja" />
+    <file path="resources/policy_templates_kn.xtb" lang="kn" />
+    <file path="resources/policy_templates_ko.xtb" lang="ko" />
+    <file path="resources/policy_templates_lt.xtb" lang="lt" />
+    <file path="resources/policy_templates_lv.xtb" lang="lv" />
+    <file path="resources/policy_templates_ml.xtb" lang="ml" />
+    <file path="resources/policy_templates_mr.xtb" lang="mr" />
+    <file path="resources/policy_templates_nl.xtb" lang="nl" />
+    <file path="resources/policy_templates_no.xtb" lang="no" />
+    <file path="resources/policy_templates_pl.xtb" lang="pl" />
+    <file path="resources/policy_templates_pt-BR.xtb" lang="pt-BR" />
+    <file path="resources/policy_templates_pt-PT.xtb" lang="pt-PT" />
+    <file path="resources/policy_templates_ro.xtb" lang="ro" />
+    <file path="resources/policy_templates_ru.xtb" lang="ru" />
+    <file path="resources/policy_templates_sk.xtb" lang="sk" />
+    <file path="resources/policy_templates_sl.xtb" lang="sl" />
+    <file path="resources/policy_templates_sr.xtb" lang="sr" />
+    <file path="resources/policy_templates_sv.xtb" lang="sv" />
+    <file path="resources/policy_templates_sw.xtb" lang="sw" />
+    <file path="resources/policy_templates_ta.xtb" lang="ta" />
+    <file path="resources/policy_templates_te.xtb" lang="te" />
+    <file path="resources/policy_templates_th.xtb" lang="th" />
+    <file path="resources/policy_templates_tr.xtb" lang="tr" />
+    <file path="resources/policy_templates_uk.xtb" lang="uk" />
+    <file path="resources/policy_templates_vi.xtb" lang="vi" />
+    <file path="resources/policy_templates_zh-CN.xtb" lang="zh-CN" />
+    <file path="resources/policy_templates_zh-TW.xtb" lang="zh-TW" /> -->
   </translations>
   <!-- TODO(gfeher): set allow_pseudo="false" before release -->
   <release seq="1" allow_pseudo="true">
     <messages fallback_to_english="false">
-      <!-- Strings for ADM/ADMX/MCX policy templates -->
-      <!-- TODO(gfeher): new wording of these messages might become necessary when
-      MCX/HTML output is introduced -->
-    <message name="IDS_POLICY_GROUP_HOMEPAGE_CAPTION" desc="Caption of the 'homepage' policy settings page.">
-      Configure default homepage
+    <!-- Strings for ADM/ADMX/MCX policy templates -->
+
+    <message name="IDS_POLICY_GROUP_HOMEPAGELOCATION_DESC" desc="Description of the 'homepage' policy settings page.">
+      Configures the default homepage URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
+
+      The homepage type can either be set to a URL you specify here or set to the New Tab Page.
+
+      If you specify the New Tab Page as the homepage type, then this policy is ignored.
+
+      If you enable this setting, users cannot change their homepage URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, but they still can choose the New Tab Page as their homepage.
     </message>
-    <message name="IDS_POLICY_GROUP_HOMEPAGE_DESC" desc="Description of the 'homepage' policy settings page.">
-      Configures the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing homepage preferences.
-      
-      The homepage can either be set to a URL you specify or set to the New Tab Page.
-      
-      If you specify the New Tab Page as the homepage, the homepage URL location is ignored.
-      
-      If you enable this setting, users cannot change their homepage settings in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+    <message name="IDS_POLICY_GROUP_HOMEPAGELOCATION_CAPTION" desc="Caption of the homepage URL text field in the homepage policy settings page.">
+      Configure the homepage URL
     </message>
     <message name="IDS_POLICY_HOMEPAGELOCATION_CAPTION" desc="Caption of the homepage URL text field in the homepage policy settings page.">
-      The homepage URL:
+      Homepage URL
     </message>
-    <message name="IDS_POLICY_HOMEPAGEISNEWTABPAGE_CAPTION" desc="Caption of the homepage type selection dropdown menu in the homepage policy settings page.">
-      Homepage type:
+    <message name="IDS_POLICY_GROUP_HOMEPAGEISNEWTABPAGE_DESC" desc="Description of the 'Use New Tab Page as homepage' policy settings page.">
+      Configures the type of the default home page in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing homepage preferences. The homepage can either be set to a URL you specify or set to the New Tab Page.
+
+      If you enable this setting, always the New Tab Page is used for the homepage, and the homepage URL location is ignored.
+
+      If you disable this setting, the user's homepage will never be the New Tab Page, unless its URL is set to 'chrome://newtab'.
+
+      If you enable or disable this setting, users cannot change their homepage type in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
-    <message name="IDS_POLICY_ENUM_HOMEPAGEISNEWTABPAGE_CAPTION" desc="Label in the 'Homepage type' dropdown menu for selecting new tab page.">
-      Always use New Tab Page as homepage
+    <message name="IDS_POLICY_GROUP_HOMEPAGEISNEWTABPAGE_CAPTION" desc="Caption of the 'homepage type' selection dropdown menu in the 'homepage type' policy settings page.">
+      Use New Tab Page as homepage
     </message>
-    <message name="IDS_POLICY_ENUM_HOMEPAGEISLOCATIONURL_CAPTION" desc="Label in the 'Homepage type' dropdown menu for selecting an URL.">
-      Always use homepage URL as homepage
-    </message>
+
     <message name="IDS_POLICY_GROUP_APPLICATIONLOCALE_CAPTION" desc="Caption of the 'application locale' policy settings page.">
       Configure the application locale
     </message>
     <message name="IDS_POLICY_GROUP_APPLICATIONLOCALE_DESC" desc="Description of the 'application locale' policy settings page.">
       Configures the application locale in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing the locale.
-      
+
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses the specified locale. If the configured locale is not supported, 'en-US' is used instead.
-      
+
       If this setting is disabled or not configured, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses either the user-specified preferred locale (if configured), the system locale or the fallback locale 'en-US'.
     </message>
     <message name="IDS_POLICY_APPLICATIONLOCALEVALUE_CAPTION" desc="Caption of the 'application locale' text field in the 'application locale' policy settings page.">
-      Application locale:
+      Application locale
     </message>
+
     <message name="IDS_POLICY_GROUP_ALTERNATEERRORPAGESENABLED_CAPTION" desc="Caption of the 'alternate error pages' policy settings page.">
       Enable alternate error pages
     </message>
     <message name="IDS_POLICY_GROUP_ALTERNATEERRORPAGESENABLED_DESC" desc="Description of the 'alternate error pages' policy settings page.">
       Enables the use of alternate error pages that are built into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> (such as 'page not found') and prevents users from changing this setting.
-      
+
       If you enable this setting, alternate error pages are used.
-      
+
       If you disable this setting, alternate error pages are never used.
-      
+
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
+
     <message name="IDS_POLICY_GROUP_SEARCHSUGGESTENABLED_CAPTION" desc="Caption of the 'search suggestions' policy settings page.">
       Enable search suggestions
     </message>
     <message name="IDS_POLICY_GROUP_SEARCHSUGGESTENABLED_DESC" desc="Description of the 'search suggestions' policy settings page.">
       Enables search suggestions in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Omnibox and prevents users from changing this setting.
-      
+
       If you enable this setting, search suggestions are used.
-      
+
       If you disable this setting, search suggestions are never used.
-      
+
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
+
     <message name="IDS_POLICY_GROUP_DNSPREFETCHINGENABLED_CAPTION" desc="Caption of the 'DNS prefetching' policy settings page.">
       Enable DNS prefetching
     </message>
     <message name="IDS_POLICY_GROUP_DNSPREFETCHINGENABLED_DESC" desc="Description of the 'DNS prefetching' policy settings page.">
-      Enables DNS prefecthing in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
-      
+      Enables DNS prefetching in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
+
     <message name="IDS_POLICY_GROUP_SAFEBROWSINGENABLED_CAPTION" desc="Caption of the 'safe browsing' policy settings page.">
       Enable Safe Browsing
     </message>
     <message name="IDS_POLICY_GROUP_SAFEBROWSINGENABLED_DESC" desc="Description of the 'safe browsing' policy settings page.">
       Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing feature and prevents users from changing this setting.
-      
+
       If you enable this setting, Safe Browsing is always active.
-      
+
       If you disable this setting, Safe Browsing is never active.
-      
+
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
+
     <message name="IDS_POLICY_GROUP_SYNCDISABLED_CAPTION" desc="Caption of the 'disable sync' policy settings page.">
       Disallow synchronization of data with Google
     </message>
     <message name="IDS_POLICY_GROUP_SYNCDISABLED_DESC" desc="Description of the 'disable sync' policy settings page.">
       Disallows data synchronization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> using Google-hosted synchronization services and prevents users from changing this setting.
-      
+
       If you enable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
+
     <message name="IDS_POLICY_GROUP_PROXY_CAPTION" desc="Caption of the 'proxy' policy settings page.">
       Configure proxy server
     </message>
     <message name="IDS_POLICY_GROUP_PROXY_DESC" desc="Description of the 'proxy' policy settings page.">
       Allows you to specify the proxy server used by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing proxy settings.
-      
+
       If you choose to never use a proxy server and always connect directly, all other options are ignored.
-      
+
       If you choose to auto detect the proxy server, all other options are ignored.
-      
+
       For detailed examples, visit:
       http://www.chromium.org/developers/design-documents/network-settings#TOC-Command-line-options-for-proxy-sett
-      
+
       If you enable this setting, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> ignores all proxy-related options specified from the command line.
     </message>
     <message name="IDS_POLICY_PROXYSERVERMODE_CAPTION" desc="Text describing the dropdown menu for selecting proxy server mode in the 'proxy' policy settings page.">
-      Choose how to specify proxy server settings:
+      Choose how to specify proxy server settings
     </message>
     <message name="IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION" desc="Label in the 'proxy server mode' dropdown menu for selecting no proxy server.">
       Never use a proxy
@@ -142,48 +250,81 @@ templates and will be translated for each locale. -->
       Use system proxy settings
     </message>
     <message name="IDS_POLICY_PROXYSERVER_CAPTION" desc="The label of the 'proxy server address' text field in the 'proxy' policy settings page.">
-      Address or URL of proxy server:
+      Address or URL of proxy server
     </message>
     <message name="IDS_POLICY_PROXYBYPASSLIST_CAPTION" desc="The label of the 'proxy bypass rules' text field in the 'proxy' policy settings page.">
-      Comma-separated list of bypass rules:
+      Comma-separated list of proxy bypass rules
     </message>
     <message name="IDS_POLICY_PROXYPACURL_CAPTION" desc="The label of the 'proxy pac URL' text field in the 'proxy' policy settings page.">
-      URL to a proxy .pac file:
+      URL to a proxy .pac file
     </message>
+
     <message name="IDS_POLICY_GROUP_METRICSREPORTINGENABLED_CAPTION" desc="Caption of the 'crash reporting' policy settings page.">
       Enable reporting of usage and crash-related data
     </message>
     <message name="IDS_POLICY_GROUP_METRICSREPORTINGENABLED_DESC" desc="Description of the 'crash reporting' policy settings page.">
       Enables anonymous reporting of usage and crash-related data about <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to Google and prevents users from changing this setting.
-      
+
       If you enable this setting, anonymous reporting of usage and crash-related data is sent to Google.
-      
+
       If you disable this setting, anonymous reporting of usage and crash-related data is never sent to Google.
-      
+
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
+
     <message name="IDS_POLICY_GROUP_PASSWORDMANAGERENABLED_CAPTION" desc="Caption of the 'password manager' policy settings page.">
       Enable the password manager
     </message>
     <message name="IDS_POLICY_GROUP_PASSWORDMANAGERENABLED_DESC" desc="Description of the 'password manager' policy settings page.">
       Enables saving passwords and using saved passwords in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-      
+
       If you enable this setting, users can have <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> memorize passwords and provide them automatically the next time you log into a site.
-      
+
       If you disable this setting, users are not able to save passwords or use already saved passwords.
-      
+
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
     </message>
+
     <message name="IDS_POLICY_GROUP_DISABLEDPLUGINS_CAPTION" desc="Caption of the 'disable plugins' policy settings page.">
       Specify a list of plugins that are disabled
     </message>
     <message name="IDS_POLICY_GROUP_DISABLEDPLUGINS_DESC" desc="Description of the 'disable plugins' policy settings page.">
       Specifies a list of plugins that are disabled in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting. The value is a comma-separated list of the names of plugins to be disabled.
-      
+
       If you enable this setting, the specified list of plugins is never used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. The plugins are marked as disabled in 'about:plugins' and users are not able to enable them.
     </message>
-    <message name="IDS_POLICY_DISABLEDPLUGINSLIST_CAPTION" desc="The label of the 'list of disabled plugins' text field in the 'disabled plugins' policy settings page.">
-      Comma-separated list of disabled plugins:
+    <message name="IDS_POLICY_DISABLEDPLUGINSLIST_CAPTION" desc="Label of the 'list of disabled plugins' text field in the 'disabled plugins' policy settings page.">
+      Comma-separated list of disabled plugins
+    </message>
+
+    <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLBLACKLIST_CAPTION" desc="Caption of the 'extension blacklist' policy settings page.">
+      Configure extension installation blacklist
+    </message>
+    <message name="IDS_POLICY_EXTENSIONINSTALLBLACKLIST_CAPTION" desc="Label of the 'blacklisted extensions' list editor view in the 'extension blacklist' policy settings page.">
+      Extension IDs the user should be prevented from installing (or * for all)
+    </message>
+    <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLBLACKLIST_DESC" desc="Description of the 'extension blacklist' policy settings page.">
+      Allows you to specify which extensions the users can NOT install.
+
+      A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.
+    </message>
+
+    <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLWHITELIST_CAPTION" desc="Caption of the 'extension whitelist' policy settings page.">
+      Configure extension installation whitelist
+    </message>
+    <message name="IDS_POLICY_EXTENSIONINSTALLWHITELIST_CAPTION" desc="Label of the 'whitelisted extensions' list editor view in the 'extension whitelist' policy settings page.">
+      Extension IDs to exempt from the blacklist
+    </message>
+    <message name="IDS_POLICY_GROUP_EXTENSIONINSTALLWHITELIST_DESC" desc="Description of the 'extension whitelist' policy settings page.">
+      Allows you to specify which extensions are not subject to the blacklist.
+
+      A blacklist value of * means all extensions are blacklisted and users will only be able to install extensions listed in the whitelist.
+
+      By default, all extensions are whitelisted, but if all extensions have been blacklisted by policy, the whitelist can be used to override that policy.
+    </message>
+
+    <message name="IDS_POLICY_WIN_SUPPORTED_WINXPSP2" desc="A label specifying the oldest possible compatible version of Windows. This text will appear right next to a label containing the text 'Supported on:'.">
+      At least Microsoft Windows XP SP2
     </message>
     </messages>
 

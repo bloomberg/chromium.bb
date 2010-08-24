@@ -8,14 +8,25 @@ class TemplateWriter(object):
   The methods of this class will be called by PolicyTemplateGenerator.
   '''
 
-  def __init__(self, build):
+  def __init__(self, info, messages):
     '''Initializes a TemplateWriter object.
 
     Args:
-      build: 'chrome' or 'chromium'
+      info: A dictionary of extra information required to generate the template.
+        Currently it contains three keys:
+          'build': 'chrome' or 'chromium'
+          'branding': 'Google Chrome' or 'Chromium'
+          'mac_bundle_id': The Mac bundle id of Chrome. (Only set when building
+            for Mac.)
+      messages: List of all the message strings from the grd file. Most of them
+        are also present in the policy data structures that are passed to
+        methods. That is the preferred way of accessing them, this should only
+        be used in exceptional cases. An example for its use is the
+        IDS_POLICY_WIN_SUPPORTED_WINXPSP2 message in ADM files, because that
+        can not be associated with any policy or group.
     '''
-    assert build in ['chrome', 'chromium']
-    self.build = build
+    self.info = info
+    self.messages = messages
 
   def Prepare(self):
     '''Initializes the internal buffer where the template will be
@@ -23,22 +34,20 @@ class TemplateWriter(object):
     '''
     raise NotImplementedError()
 
-  def WritePolicy(self, policy_name, policy):
+  def WritePolicy(self, policy):
     '''Appends the template text corresponding to a policy into the
     internal buffer.
 
     Args:
-      policy_name: The name of the policy that has to be written.
       policy: The policy as it is found in the JSON file.
     '''
     raise NotImplementedError()
 
-  def BeginPolicyGroup(self, group_name, group):
+  def BeginPolicyGroup(self, group):
     '''Appends the template text corresponding to the beginning of a
     policy group into the internal buffer.
 
     Args:
-      group_name: The name of the policy group that has to be written.
       group: The policy group as it is found in the JSON file.
     '''
     raise NotImplementedError()

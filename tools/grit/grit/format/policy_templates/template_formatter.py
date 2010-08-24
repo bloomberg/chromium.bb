@@ -58,7 +58,7 @@ class TemplateFormatter(interface.ItemFormatter):
       return ''
 
     self._lang = lang
-    self._SetBranding(item)
+    self._GetFlags(item)
     self._policy_groups = None
     self._messages = {}
     self._ParseGritNodes(item)
@@ -74,24 +74,28 @@ class TemplateFormatter(interface.ItemFormatter):
     '''
     policy_generator = \
         PolicyTemplateGenerator(self._messages, self._policy_groups)
-    writer = self._writer_module.GetWriter(self._build)
+    writer = self._writer_module.GetWriter(self._info, self._messages)
     str = policy_generator.GetTemplateText(writer)
     return str
 
-  def _SetBranding(self, item):
-    '''Sets self._branding and self._build based on the -D_chromium or
-    -D_google_chrome command line switch of grit.
+  def _GetFlags(self, item):
+    '''Sets values in self._info based on the -D flags
+    passed to grit.
 
     Args:
       item: The <grit> root node of the grit tree.
     '''
     defines = item.defines
+
+    self._info = {}
+    if 'mac_bundle_id' in defines:
+      self._info['mac_bundle_id'] = defines['mac_bundle_id']
     if '_chromium' in defines:
-      self._branding = 'Chromium'
-      self._build = 'chromium'
+      self._info['app_name'] = 'Chromium'
+      self._info['build'] = 'chromium'
     elif '_google_chrome' in defines:
-      self._branding = 'Google Chrome'
-      self._build = 'chrome'
+      self._info['app_name'] = 'Google Chrome'
+      self._info['build'] = 'chrome'
     else:
       raise Exception('Unknown build')
 
@@ -104,7 +108,7 @@ class TemplateFormatter(interface.ItemFormatter):
     '''
     msg_name = message.GetTextualIds()[0]
     msg_txt = message.Translate(self._lang)
-    msg_txt = msg_txt.replace('$1', self._branding)
+    msg_txt = msg_txt.replace('$1', self._info['app_name'])
     lines = msg_txt.split('\n')
     lines = [line.strip() for line in lines]
     msg_txt = "\\n".join(lines)

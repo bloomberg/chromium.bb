@@ -6,8 +6,8 @@
 from template_writer import TemplateWriter
 
 
-def GetWriter(build):
-  return AdmWriter(build)
+def GetWriter(info, messages):
+  return AdmWriter(info, messages)
 
 
 class AdmWriter(TemplateWriter):
@@ -17,7 +17,8 @@ class AdmWriter(TemplateWriter):
 
   TYPE_TO_INPUT = {
     'string': 'EDITTEXT',
-    'enum': 'DROPDOWNLIST'}
+    'enum': 'DROPDOWNLIST',
+    'list': 'LISTBOX'}
   NEWLINE = '\r\n'
 
   def _AddGuiString(self, name, value):
@@ -45,9 +46,10 @@ class AdmWriter(TemplateWriter):
     self._PrintLine('SUPPORTED !!SUPPORTED_WINXPSP2')
     self._PrintLine('#endif', -1)
 
-  def WritePolicy(self, policy_name, policy):
-    type = policy['type']
-    if type == 'main':
+  def WritePolicy(self, policy):
+    policy_type = policy['type']
+    policy_name = policy['name']
+    if policy_type == 'main':
       self._PrintLine('VALUENAME "%s"' % policy_name )
       self._PrintLine('VALUEON NUMERIC 1')
       self._PrintLine('VALUEOFF NUMERIC 0')
@@ -57,25 +59,31 @@ class AdmWriter(TemplateWriter):
     self._AddGuiString(policy_part_name, policy['caption'])
 
     self._PrintLine()
+    if policy_type == 'list':
+      self._PrintLine('KEYNAME "%s\\%s"' % (self._key_name, policy_name))
+    # Print the PART ... END PART section:
     self._PrintLine(
-        'PART !!%s  %s' % (policy_part_name, self.TYPE_TO_INPUT[type]),
+        'PART !!%s  %s' % (policy_part_name, self.TYPE_TO_INPUT[policy_type]),
         1)
-    self._PrintLine('VALUENAME "%s"' % policy_name)
-    if type == 'enum':
+    if policy_type == 'list':
+      self._PrintLine('VALUEPREFIX ""')
+    else:
+      self._PrintLine('VALUENAME "%s"' % policy_name)
+    if policy_type == 'enum':
       self._PrintLine('ITEMLIST', 1)
-      for item_name, item in policy['items'].iteritems():
-        self._PrintLine(
-            'NAME !!%s_DropDown VALUE NUMERIC %s' % (item_name,  item['value']))
-        self._AddGuiString(item_name + '_DropDown', item['caption'])
+      for item in policy['items']:
+        self._PrintLine('NAME !!%s_DropDown VALUE NUMERIC %s' %
+                        (item['name'],  item['value']))
+        self._AddGuiString(item['name'] + '_DropDown', item['caption'])
       self._PrintLine('END ITEMLIST', -1)
     self._PrintLine('END PART', -1)
 
-  def BeginPolicyGroup(self, group_name, group):
-    group_explain_name = group_name + '_Explain'
-    self._AddGuiString(group_name + '_Policy', group['caption'])
+  def BeginPolicyGroup(self, group):
+    group_explain_name = group['name'] + '_Explain'
+    self._AddGuiString(group['name'] + '_Policy', group['caption'])
     self._AddGuiString(group_explain_name, group['desc'])
 
-    self._PrintLine('POLICY !!%s_Policy' % group_name, 1)
+    self._PrintLine('POLICY !!%s_Policy' % group['name'], 1)
     self._WriteSupported()
     self._PrintLine('EXPLAIN !!' + group_explain_name)
 
@@ -84,28 +92,28 @@ class AdmWriter(TemplateWriter):
     self._PrintLine()
 
   def BeginTemplate(self):
-    # TODO(gfeher): Move this string to .grd.
     self._AddGuiString('SUPPORTED_WINXPSP2',
-                       'At least Microsoft Windows XP SP2')
+                       self.messages['IDS_POLICY_WIN_SUPPORTED_WINXPSP2'])
     self._PrintLine('CLASS MACHINE', 1)
-    if self.build == 'chrome':
+    if self.info['build'] == 'chrome':
       self._AddGuiString('google', 'Google')
       self._AddGuiString('googlechrome', 'Google Chrome')
       self._PrintLine('CATEGORY !!google', 1)
       self._PrintLine('CATEGORY !!googlechrome', 1)
-      self._PrintLine('KEYNAME "Software\\Policies\\Google\\Google Chrome"')
-    elif self.build == 'chromium':
+      self._key_name = 'Software\\Policies\\Google\\Google Chrome'
+    elif self.info['build'] == 'chromium':
       self._AddGuiString('chromium', 'Chromium')
       self._PrintLine('CATEGORY !!chromium', 1)
-      self._PrintLine('KEYNAME "Software\\Policies\\Chromium"')
+      self._key_name = 'Software\\Policies\\Chromium'
+    self._PrintLine('KEYNAME "%s"' % self._key_name)
     self._PrintLine()
 
   def EndTemplate(self):
-    if self.build == 'chrome':
+    if self.info['build'] == 'chrome':
       self._PrintLine('END CATEGORY', -1)
       self._PrintLine('END CATEGORY', -1)
       self._PrintLine('', -1)
-    elif self.build == 'chromium':
+    elif self.info['build'] == 'chromium':
       self._PrintLine('END CATEGORY', -1)
       self._PrintLine('', -1)
 
