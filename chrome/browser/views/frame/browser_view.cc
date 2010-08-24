@@ -190,6 +190,10 @@ class BrowserView::ContentsContainer : public views::View {
         preview_->SetBounds(0, 0, 0, 0);
       }
     }
+
+    // Need to invoke views::View in case any views whose bounds didn't change
+    // still need a layout.
+    views::View::Layout();
   }
 
  private:
@@ -836,6 +840,11 @@ void BrowserView::SelectedTabToolbarSizeChanged(bool is_animating) {
     contents_container_->SetFastResize(false);
   } else {
     UpdateUIForContents(browser_->GetSelectedTabContents());
+    // When transitioning from animating to not animating we need to make sure
+    // the contents_container_ gets layed out. If we don't do this and the
+    // bounds haven't changed contents_container_ won't get a Layout out and
+    // we'll end up with a gray rect because the clip wasn't updated.
+    contents_container_->InvalidateLayout();
     contents_split_->Layout();
   }
 }
