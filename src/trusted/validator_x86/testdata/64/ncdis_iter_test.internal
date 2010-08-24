@@ -2540,7 +2540,7 @@ NaClExpVector[6] = {
   { ExprConstant[0] , 0, ExprSize8 },
 };
 0000000000000000: 0f b3 20                                     btr [%eax], %esp
-  0f b3                       386 OpcodeUsesModRm NaClIllegal AddressSizeDefaultIs32
+  0f b3                       386 OpcodeUsesModRm OpcodeLockable NaClIllegal AddressSizeDefaultIs32
     Btr $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -2570,7 +2570,7 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
 };
 0000000000000000: 0f bb 20                                     btc [%eax], %esp
-  0f bb                       386 OpcodeUsesModRm NaClIllegal AddressSizeDefaultIs32
+  0f bb                       386 OpcodeUsesModRm OpcodeLockable NaClIllegal AddressSizeDefaultIs32
     Btc $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -2585,7 +2585,7 @@ NaClExpVector[8] = {
   { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
 };
 0000000000000000: 0f ab 20                                     bts [%eax], %esp
-  0f ab                       386 OpcodeUsesModRm NaClIllegal AddressSizeDefaultIs32
+  0f ab                       386 OpcodeUsesModRm OpcodeLockable NaClIllegal AddressSizeDefaultIs32
     Bts $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse

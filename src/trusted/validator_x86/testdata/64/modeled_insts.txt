@@ -3021,7 +3021,7 @@ Target: x86-64 bit mode
   --- a7 ---
   0f a7                       INVALID 
   --- ab ---
-  0f ab                       386 OpcodeUsesModRm NaClIllegal AddressSizeDefaultIs32
+  0f ab                       386 OpcodeUsesModRm OpcodeLockable NaClIllegal AddressSizeDefaultIs32
     Bts $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -3062,7 +3062,7 @@ Target: x86-64 bit mode
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
   --- b3 ---
-  0f b3                       386 OpcodeUsesModRm NaClIllegal AddressSizeDefaultIs32
+  0f b3                       386 OpcodeUsesModRm OpcodeLockable NaClIllegal AddressSizeDefaultIs32
     Btr $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse
@@ -3091,20 +3091,20 @@ Target: x86-64 bit mode
     Bt $E, $I
       E_Operand               OpUse
       Ib_Operand              OpUse
-  0f ba / 5                   386 OpcodeInModRm OpcodeHasImmed_b
+  0f ba / 5                   386 OpcodeInModRm OpcodeHasImmed_b OpcodeLockable
     Bts $E, $I
       E_Operand               OpUse OpSet OpDest
       Ib_Operand              OpUse
-  0f ba / 6                   386 OpcodeInModRm OpcodeHasImmed_b
+  0f ba / 6                   386 OpcodeInModRm OpcodeHasImmed_b OpcodeLockable
     Btr $E, $I
       E_Operand               OpUse OpSet OpDest
       Ib_Operand              OpUse
-  0f ba / 7                   386 OpcodeInModRm OpcodeHasImmed_b
+  0f ba / 7                   386 OpcodeInModRm OpcodeHasImmed_b OpcodeLockable
     Btc $E, $I
       E_Operand               OpUse OpSet OpDest
       Ib_Operand              OpUse
   --- bb ---
-  0f bb                       386 OpcodeUsesModRm NaClIllegal AddressSizeDefaultIs32
+  0f bb                       386 OpcodeUsesModRm OpcodeLockable NaClIllegal AddressSizeDefaultIs32
     Btc $E, $G
       E_Operand               OpUse OpSet OpDest
       G_Operand               OpUse

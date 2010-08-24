@@ -14,6 +14,7 @@
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/validator_x86/lock_insts.h"
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
 /* To turn on debugging of instruction decoding, change value of
@@ -170,6 +171,8 @@ void NaClSetInstCat(NaClInstCat icat) {
   if ((Binary == icat) && (4 ==  operand_index)) {
     NaClRemoveOpFlags(0, NACL_OPFLAG(OpUse));
   }
+  /* Before returning, add miscellaneous flags defined elsewhere. */
+  NaClLockableFlagIfApplicable();
 }
 
 void DEF_OPERAND(E__)(NaClInstCat icat, int operand_index) {

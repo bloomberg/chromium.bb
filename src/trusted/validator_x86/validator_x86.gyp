@@ -376,6 +376,7 @@
       'type': 'executable',
       'sources': ['ncdecode_tablegen.c',
                   'ncdecode_forms.c',
+                  'lock_insts.c',
                   'ncdecode_onebyte.c',
                   'ncdecode_OF.c',
                   'ncdecode_sse.c',
