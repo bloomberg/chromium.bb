@@ -299,9 +299,34 @@ int main() {
       "installed_nacl_headers",
       os.path.join(top_dir, "install", "nacl_headers"),
       treemappers.SubsetNaClHeaders, [modules["nacl-headers"]], args=[arch])
+  modules["dummy_libs"] = btarget.TreeMapper(
+      "dummy_libs",
+      os.path.join(top_dir, "install", "dummy_libs"),
+      treemappers.DummyLibs, [], args=[arch])
+
+  AddAutoconfModule(
+      "full-gcc-glibc", "gcc",
+      deps=["binutils", "glibc", "installed_linux_headers", "dummy_libs"]
+          + gcc_libs,
+      configure_opts=[
+          "--disable-libmudflap",
+          "--disable-decimal-float",
+          "--disable-libssp",
+          "--disable-libstdcxx-pch",
+          "--enable-shared",
+          "--target=nacl",
+          "--disable-multilib", # TODO(mseaborn): Support 64-bit.
+          "--enable-threads=posix",
+          "--enable-tls",
+          "--disable-libgomp",
+          "--enable-languages=c,c++"],
+      configure_env=[
+          "CC=gcc",
+          "CFLAGS=-Dinhibit_libc -DNACL_ALIGN_BYTES=32 -DNACL_ALIGN_POW2=5"],
+      make_cmd=["make", "all"])
 
   glibc_toolchain_deps = [
-      "binutils", "full-gcc", "glibc", "wrappers", "linker_scripts",
+      "binutils", "full-gcc-glibc", "glibc", "wrappers", "linker_scripts",
       "installed_linux_headers", "installed_nacl_headers"] + gcc_libs
   glibc_toolchain = MakeInstallPrefix(
       "glibc_toolchain", deps=glibc_toolchain_deps)
@@ -315,11 +340,8 @@ int main() {
   module_list.append(modules["hello_glibc"])
 
   # TODO(mseaborn): Add the following Scons targets when they work.
-  # These fail because libstdc++ assumes newlib (ctype_base.h wants
-  # to use "_U"):
+  # Problem with uint32_t:
   #   google_nacl_npruntime
-  #   google_nacl_gpu
-  #   google_nacl_pgl
   # This has a problem with PTHREAD_STACK_MIN:
   #   google_nacl_platform
   AddSconsModule(
@@ -327,7 +349,9 @@ int main() {
       deps=glibc_toolchain_deps + ["libnacl_headers"],
       scons_args=["MODE=nacl_extra_sdk", "--nacl_glibc",
                   "gio",
+                  "google_nacl_gpu",
                   "google_nacl_imc",
+                  "google_nacl_pgl",
                   "libav",
                   "libsrpc"])
 

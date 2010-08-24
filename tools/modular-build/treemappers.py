@@ -153,6 +153,14 @@ exec %s "$@"
                                                  executable=True)}}
 
 
+def DummyLibs(arch):
+  # This text file works as a dummy (empty) library because ld treats
+  # it as a linker script.
+  dummy_lib = FileSnapshotInMemory("/* Intentionally empty */\n")
+  return {arch: {"lib": {"libnacl.so": dummy_lib,
+                         "libcrt_platform.so": dummy_lib}}}
+
+
 # The functions above are fairly cheap, so we could run them each
 # time, but they do require scanning their input directory trees, so
 # it would be better to avoid that if the function has not changed.
