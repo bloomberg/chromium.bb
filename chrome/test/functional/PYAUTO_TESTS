@@ -54,6 +54,8 @@
     # download test fails on official builder, thru buildbot only.
     # crbug.com/50481
     '-downloads.DownloadsTest.testZip',
+    # crbug.com/53149
+    '-crash_reporter.CrashReporterTest.testRendererCrash',
   ],
 
   'mac': [
