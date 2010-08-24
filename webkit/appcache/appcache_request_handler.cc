@@ -53,7 +53,8 @@ AppCacheURLRequestJob* AppCacheRequestHandler::MaybeLoadResource(
   // which will call thru to our interception layer again.
   // This time thru, we return NULL so the request hits the wire.
   if (job_) {
-    DCHECK(job_->is_delivering_network_response());
+    DCHECK(job_->is_delivering_network_response() ||
+           job_->cache_entry_not_found());
     job_ = NULL;
     return NULL;
   }

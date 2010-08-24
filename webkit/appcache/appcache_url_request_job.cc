@@ -23,8 +23,8 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
     : URLRequestJob(request), storage_(storage),
       has_been_started_(false), has_been_killed_(false),
       delivery_type_(AWAITING_DELIVERY_ORDERS),
-      cache_id_(kNoCacheId),
-      is_fallback_(false),
+      cache_id_(kNoCacheId), is_fallback_(false),
+      cache_entry_not_found_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
           this, &AppCacheURLRequestJob::OnReadComplete)) {
   DCHECK(storage_);
@@ -122,8 +122,13 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
 
     NotifyHeadersComplete();
   } else {
-    NotifyStartError(
-        URLRequestStatus(URLRequestStatus::FAILED, net::ERR_FAILED));
+    // A resource that is expected to be in the appcache is missing.
+    // See http://code.google.com/p/chromium/issues/detail?id=50657
+    // Instead of failing the request, we restart the request. The retry
+    // attempt will fallthru to the network instead of trying to load
+    // from the appcache.
+    cache_entry_not_found_ = true;
+    NotifyRestartRequired();
   }
   storage_ = NULL;  // no longer needed
 }
