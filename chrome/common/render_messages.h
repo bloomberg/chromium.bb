@@ -823,6 +823,9 @@ struct ViewHostMsg_RunFileChooser_Params {
     // Like Open, but allows picking multiple files to open.
     OpenMultiple,
 
+    // Like Open, but selects a folder.
+    OpenFolder,
+
     // Allows picking a nonexistent file, and prompts to overwrite if the file
     // already exists.
     Save,
@@ -2567,6 +2570,7 @@ struct ParamTraits<ViewHostMsg_RunFileChooser_Params> {
       return false;
     if (mode != param_type::Open &&
         mode != param_type::OpenMultiple &&
+        mode != param_type::OpenFolder &&
         mode != param_type::Save)
       return false;
     p->mode = static_cast<param_type::Mode>(mode);
@@ -2581,6 +2585,9 @@ struct ParamTraits<ViewHostMsg_RunFileChooser_Params> {
         break;
       case param_type::OpenMultiple:
         l->append("(OpenMultiple, ");
+        break;
+      case param_type::OpenFolder:
+        l->append("(OpenFolder, ");
         break;
       case param_type::Save:
         l->append("(Save, ");

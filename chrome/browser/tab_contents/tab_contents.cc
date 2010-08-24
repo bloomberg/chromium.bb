@@ -72,6 +72,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/tab_contents/tab_contents_file_select_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_ssl_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
@@ -325,7 +326,6 @@ TabContents::TabContents(Profile* profile,
       plugin_installer_(),
       bookmark_drag_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(fav_icon_helper_(this)),
-      select_file_dialog_(),
       is_loading_(false),
       is_crashed_(false),
       waiting_for_response_(false),
@@ -453,11 +453,6 @@ TabContents::~TabContents() {
   // Close all blocked popups.
   if (blocked_popups_)
     blocked_popups_->Destroy();
-
-  // There may be pending file dialogs, we need to tell them that we've gone
-  // away so they don't try and call back to us.
-  if (select_file_dialog_.get())
-    select_file_dialog_->ListenerDestroyed();
 
   // Notify any observer that have a reference on this tab contents.
   NotificationService::current()->Notify(
@@ -2267,6 +2262,12 @@ RenderViewHostDelegate::SSL* TabContents::GetSSLDelegate() {
   return GetSSLHelper();
 }
 
+RenderViewHostDelegate::FileSelect* TabContents::GetFileSelectDelegate() {
+  if (file_select_helper_.get() == NULL)
+    file_select_helper_.reset(new TabContentsFileSelectHelper(this));
+  return file_select_helper_.get();
+}
+
 AutomationResourceRoutingDelegate*
 TabContents::GetAutomationResourceRoutingDelegate() {
   return delegate();
@@ -2634,35 +2635,6 @@ void TabContents::ProcessExternalHostMessage(const std::string& message,
     delegate()->ForwardMessageToExternalHost(message, origin, target);
 }
 
-void TabContents::RunFileChooser(
-    const ViewHostMsg_RunFileChooser_Params &params) {
-  if (!select_file_dialog_.get())
-    select_file_dialog_ = SelectFileDialog::Create(this);
-
-  SelectFileDialog::Type dialog_type;
-  switch (params.mode) {
-    case ViewHostMsg_RunFileChooser_Params::Open:
-      dialog_type = SelectFileDialog::SELECT_OPEN_FILE;
-      break;
-    case ViewHostMsg_RunFileChooser_Params::OpenMultiple:
-      dialog_type = SelectFileDialog::SELECT_OPEN_MULTI_FILE;
-      break;
-    case ViewHostMsg_RunFileChooser_Params::Save:
-      dialog_type = SelectFileDialog::SELECT_SAVEAS_FILE;
-      break;
-    default:
-      dialog_type = SelectFileDialog::SELECT_OPEN_FILE;  // Prevent warning.
-      NOTREACHED();
-  }
-  FilePath default_file_name = params.default_file_name;
-  if (default_file_name.empty())
-    default_file_name = profile()->last_selected_directory();
-  select_file_dialog_->SelectFile(dialog_type, params.title,
-                                  default_file_name,
-                                  NULL, 0, FILE_PATH_LITERAL(""),
-                                  view_->GetTopLevelNativeWindow(), NULL);
-}
-
 void TabContents::RunJavaScriptMessage(
     const std::wstring& message,
     const std::wstring& default_prompt,
@@ -2918,27 +2890,6 @@ void TabContents::SetDisplayingPDFContent() {
   displaying_pdf_content_ = true;
   if (delegate())
     delegate()->ContentTypeChanged(this);
-}
-
-void TabContents::FileSelected(const FilePath& path,
-                               int index, void* params) {
-  profile()->set_last_selected_directory(path.DirName());
-  std::vector<FilePath> files;
-  files.push_back(path);
-  render_view_host()->FilesSelectedInChooser(files);
-}
-
-void TabContents::MultiFilesSelected(const std::vector<FilePath>& files,
-                                     void* params) {
-  if (!files.empty())
-    profile()->set_last_selected_directory(files[0].DirName());
-  render_view_host()->FilesSelectedInChooser(files);
-}
-
-void TabContents::FileSelectionCanceled(void* params) {
-  // If the user cancels choosing a file to upload we pass back an
-  // empty vector.
-  render_view_host()->FilesSelectedInChooser(std::vector<FilePath>());
 }
 
 void TabContents::BeforeUnloadFiredFromRenderManager(

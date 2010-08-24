@@ -598,6 +598,19 @@ class RenderViewHostDelegate {
     virtual ~SSL() {}
   };
 
+  // FileSelect ----------------------------------------------------------------
+  // Interface for handling file selection.
+
+  class FileSelect {
+   public:
+    // A file chooser should be shown.
+    virtual void RunFileChooser(
+        const ViewHostMsg_RunFileChooser_Params& params) = 0;
+
+   protected:
+    virtual ~FileSelect() {}
+  };
+
   // ---------------------------------------------------------------------------
 
   // Returns the current delegate associated with a feature. May return NULL if
@@ -615,6 +628,7 @@ class RenderViewHostDelegate {
   virtual BookmarkDrag* GetBookmarkDragDelegate();
   virtual BlockedPlugin* GetBlockedPluginDelegate();
   virtual SSL* GetSSLDelegate();
+  virtual FileSelect* GetFileSelectDelegate();
 
   // Return the delegate for registering RenderViewHosts for automation resource
   // routing.
@@ -725,10 +739,6 @@ class RenderViewHostDelegate {
   virtual void ProcessExternalHostMessage(const std::string& message,
                                           const std::string& origin,
                                           const std::string& target) {}
-
-  // A file chooser should be shown.
-  virtual void RunFileChooser(
-      const ViewHostMsg_RunFileChooser_Params& params) {}
 
   // A javascript message, confirmation or prompt should be shown.
   virtual void RunJavaScriptMessage(const std::wstring& message,

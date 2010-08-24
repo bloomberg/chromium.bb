@@ -2603,6 +2603,8 @@
         'browser/tab_contents/tab_contents.h',
         'browser/tab_contents/tab_contents_delegate.cc',
         'browser/tab_contents/tab_contents_delegate.h',
+        'browser/tab_contents/tab_contents_file_select_helper.cc',
+        'browser/tab_contents/tab_contents_file_select_helper.h',
         'browser/tab_contents/tab_contents_ssl_helper.cc',
         'browser/tab_contents/tab_contents_ssl_helper.h',
         'browser/tab_contents/tab_contents_view.cc',

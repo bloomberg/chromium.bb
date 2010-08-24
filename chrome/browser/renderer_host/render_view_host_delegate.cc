@@ -78,6 +78,11 @@ RenderViewHostDelegate::GetSSLDelegate() {
   return NULL;
 }
 
+RenderViewHostDelegate::FileSelect*
+RenderViewHostDelegate::GetFileSelectDelegate() {
+  return NULL;
+}
+
 AutomationResourceRoutingDelegate*
 RenderViewHostDelegate::GetAutomationResourceRoutingDelegate() {
   return NULL;

@@ -1370,7 +1370,10 @@ void RenderViewHost::OnMsgSelectionChanged(const std::string& text) {
 
 void RenderViewHost::OnMsgRunFileChooser(
     const ViewHostMsg_RunFileChooser_Params& params) {
-  delegate_->RunFileChooser(params);
+  RenderViewHostDelegate::FileSelect* file_select_delegate =
+      delegate()->GetFileSelectDelegate();
+  if (file_select_delegate)
+    file_select_delegate->RunFileChooser(params);
 }
 
 void RenderViewHost::OnMsgRunJavaScriptMessage(

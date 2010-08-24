@@ -25,7 +25,6 @@
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
-#include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/tab_contents/language_state.h"
@@ -79,13 +78,13 @@ class SiteInstance;
 class SkBitmap;
 class TabContents;
 class TabContentsDelegate;
+class TabContentsFileSelectHelper;
 class TabContentsSSLHelper;
 class TabContentsView;
 class URLPattern;
 struct ThumbnailScore;
 struct ViewHostMsg_DomMessage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
-struct ViewHostMsg_RunFileChooser_Params;
 struct WebPreferences;
 
 // Describes what goes in the main content area of a tab. TabContents is
@@ -96,7 +95,6 @@ class TabContents : public PageNavigator,
                     public RenderViewHostDelegate::BrowserIntegration,
                     public RenderViewHostDelegate::Resource,
                     public RenderViewHostManager::Delegate,
-                    public SelectFileDialog::Listener,
                     public JavaScriptMessageBoxClient,
                     public ImageLoadingTracker::Observer,
                     public PasswordManagerDelegate,
@@ -156,7 +154,7 @@ class TabContents : public PageNavigator,
   // Returns the PluginInstaller, creating it if necessary.
   PluginInstaller* GetPluginInstaller();
 
-  // Returns the TabContentsSSLHelper, creating if it necessary.
+  // Returns the TabContentsSSLHelper, creating it if necessary.
   TabContentsSSLHelper* GetSSLHelper();
 
   // Returns the MatchPreview. Returns NULL if MatchPreview is not enabled.
@@ -890,6 +888,7 @@ class TabContents : public PageNavigator,
   virtual RenderViewHostDelegate::AutoFill* GetAutoFillDelegate();
   virtual RenderViewHostDelegate::BlockedPlugin* GetBlockedPluginDelegate();
   virtual RenderViewHostDelegate::SSL* GetSSLDelegate();
+  virtual RenderViewHostDelegate::FileSelect* GetFileSelectDelegate();
   virtual AutomationResourceRoutingDelegate*
       GetAutomationResourceRoutingDelegate();
   virtual TabContents* GetAsTabContents();
@@ -928,7 +927,6 @@ class TabContents : public PageNavigator,
   virtual void ProcessExternalHostMessage(const std::string& message,
                                           const std::string& origin,
                                           const std::string& target);
-  virtual void RunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
   virtual void RunJavaScriptMessage(const std::wstring& message,
                                     const std::wstring& default_prompt,
                                     const GURL& frame_url,
@@ -963,13 +961,6 @@ class TabContents : public PageNavigator,
   virtual void DidInsertCSS();
   virtual void FocusedNodeChanged();
   virtual void SetDisplayingPDFContent();
-
-  // SelectFileDialog::Listener ------------------------------------------------
-
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void MultiFilesSelected(const std::vector<FilePath>& files,
-                                  void* params);
-  virtual void FileSelectionCanceled(void* params);
 
   // RenderViewHostManager::Delegate -------------------------------------------
 
@@ -1065,14 +1056,14 @@ class TabContents : public PageNavigator,
   // BlockedPluginManager, lazily created.
   scoped_ptr<BlockedPluginManager> blocked_plugin_manager_;
 
+  // TabContentsFileSelectHelper, lazily created.
+  scoped_ptr<TabContentsFileSelectHelper> file_select_helper_;
+
   // Handles drag and drop event forwarding to extensions.
   BookmarkDrag* bookmark_drag_;
 
   // Handles downloading favicons.
   FavIconHelper fav_icon_helper_;
-
-  // Dialog box used for choosing files to upload from file form fields.
-  scoped_refptr<SelectFileDialog> select_file_dialog_;
 
   // Cached web app info data.
   webkit_glue::WebApplicationInfo web_app_info_;
