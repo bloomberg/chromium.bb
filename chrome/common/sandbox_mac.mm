@@ -309,12 +309,34 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
   sandbox_data =
       [common_sandbox_prefix_data stringByAppendingString:sandbox_data];
 
-  // Enable verbose logging if enabled on the command line.
-  // (see renderer.sb for details).
+  // Enable verbose logging if enabled on the command line. (See common.sb
+  // for details).
   const CommandLine *command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableSandboxLogging)) {
+  bool enable_logging =
+      command_line->HasSwitch(switches::kEnableSandboxLogging);
+  if (enable_logging) {
     sandbox_data = [sandbox_data
         stringByReplacingOccurrencesOfString:@";ENABLE_LOGGING"
+                                  withString:@""];
+  }
+
+  // Get the OS version.
+  int32 major_version, minor_version, bugfix_version;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
+      &minor_version, &bugfix_version);
+  bool snow_leopard_or_higher =
+      (major_version > 10 || (major_version == 10 && minor_version >= 6));
+
+  // Without this, the sandbox will print a message to the system log every
+  // time it denies a request.  This floods the console with useless spew. The
+  // (with no-log) syntax is only supported on 10.6+
+  if (snow_leopard_or_higher && !enable_logging) {
+    sandbox_data = [sandbox_data
+        stringByReplacingOccurrencesOfString:@"DISABLE_SANDBOX_DENIAL_LOGGING"
+                                  withString:@"(with no-log)"];
+  } else {
+    sandbox_data = [sandbox_data
+        stringByReplacingOccurrencesOfString:@"DISABLE_SANDBOX_DENIAL_LOGGING"
                                   withString:@""];
   }
 
@@ -343,11 +365,7 @@ bool EnableSandbox(SandboxProcessType sandbox_type,
 
   }
 
-  int32 major_version, minor_version, bugfix_version;
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version,
-      &minor_version, &bugfix_version);
-
-  if (major_version > 10 || (major_version == 10 && minor_version >= 6)) {
+  if (snow_leopard_or_higher) {
     // 10.6-only Sandbox rules.
     sandbox_data = [sandbox_data
         stringByReplacingOccurrencesOfString:@";10.6_ONLY"
