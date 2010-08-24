@@ -9,6 +9,7 @@
 #include "base/scoped_ptr.h"
 #include "media/audio/audio_input_controller.h"
 #include "chrome/browser/speech/speech_recognition_request.h"
+#include "chrome/browser/speech/endpointer/endpointer.h"
 #include <list>
 #include <string>
 #include <utility>
@@ -95,6 +96,7 @@ class SpeechRecognizer
   scoped_ptr<SpeechRecognitionRequest> request_;
   scoped_refptr<media::AudioInputController> audio_controller_;
   scoped_ptr<SpeexEncoder> encoder_;
+  Endpointer endpointer_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizer);
 };

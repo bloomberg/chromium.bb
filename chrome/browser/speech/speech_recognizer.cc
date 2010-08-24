@@ -6,6 +6,7 @@
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/net/url_request_context_getter.h"
@@ -43,10 +44,11 @@ class SpeexEncoder {
 
   int samples_per_frame() const { return samples_per_frame_; }
 
-  // Encodes each frame of raw audio in |raw_samples| and adds the
+  // Encodes each frame of raw audio in |samples| and adds the
   // encoded frames as a set of strings to the |encoded_frames| list.
   // Ownership of the newly added strings is transferred to the caller.
-  void Encode(const string& raw_samples,
+  void Encode(const short* samples,
+              int num_samples,
               std::list<std::string*>* encoded_frames);
 
  private:
@@ -73,12 +75,9 @@ SpeexEncoder::~SpeexEncoder() {
   speex_encoder_destroy(encoder_state_);
 }
 
-void SpeexEncoder::Encode(const string& raw_samples,
+void SpeexEncoder::Encode(const short* samples,
+                          int num_samples,
                           std::list<std::string*>* encoded_frames) {
-  const short* samples = reinterpret_cast<const short*>(raw_samples.data());
-  DCHECK((raw_samples.length() % sizeof(short)) == 0);
-  int num_samples = raw_samples.length() / sizeof(short);
-
   // Drop incomplete frames, typically those which come in when recording stops.
   num_samples -= (num_samples % samples_per_frame_);
   for (int i = 0; i < num_samples; i += samples_per_frame_) {
@@ -100,7 +99,14 @@ SpeechRecognizer::SpeechRecognizer(Delegate* delegate,
                                    const SpeechInputCallerId& caller_id)
     : delegate_(delegate),
       caller_id_(caller_id),
-      encoder_(new SpeexEncoder()) {
+      encoder_(new SpeexEncoder()),
+      endpointer_(kAudioSampleRate) {
+  endpointer_.set_speech_input_complete_silence_length(
+      base::Time::kMicrosecondsPerSecond / 2);
+  endpointer_.set_long_speech_input_complete_silence_length(
+      base::Time::kMicrosecondsPerSecond);
+  endpointer_.set_long_speech_length(3 * base::Time::kMicrosecondsPerSecond);
+  endpointer_.StartSession();
 }
 
 SpeechRecognizer::~SpeechRecognizer() {
@@ -109,12 +115,23 @@ SpeechRecognizer::~SpeechRecognizer() {
   DCHECK(!audio_controller_.get());
   DCHECK(!request_.get() || !request_->HasPendingRequest());
   DCHECK(audio_buffers_.empty());
+  endpointer_.EndSession();
 }
 
 bool SpeechRecognizer::StartRecording() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(!audio_controller_.get());
   DCHECK(!request_.get() || !request_->HasPendingRequest());
+
+  // TODO(satish): Normally for a short time (even 0.5s) the endpointer needs to
+  // estimate the environment/background noise before starting to treat the
+  // audio as user input. Once we have implemented a popup UI to notify the user
+  // that recording has started, we should perhaps have a short interval where
+  // we record background audio and then show the popup UI so that the user can
+  // start speaking after that. For now we just do these together so there isn't
+  // any background noise for the end pointer (still works ok).
+  endpointer_.SetEnvironmentEstimationMode();
+  endpointer_.SetUserInputMode();
 
   int samples_per_packet = (kAudioSampleRate * kAudioPacketIntervalMs) / 1000;
   DCHECK((samples_per_packet % encoder_->samples_per_frame()) == 0);
@@ -156,6 +173,7 @@ void SpeechRecognizer::StopRecording() {
   LOG(INFO) << "SpeechRecognizer stopping record.";
   audio_controller_->Close();
   audio_controller_ = NULL;  // Releases the ref ptr.
+
   delegate_->DidCompleteRecording(caller_id_);
 
   // If we haven't got any audio yet end the recognition sequence here.
@@ -240,8 +258,17 @@ void SpeechRecognizer::HandleOnData(string* data) {
     return;
   }
 
-  encoder_->Encode(*data, &audio_buffers_);
+  const short* samples = reinterpret_cast<const short*>(data->data());
+  DCHECK((data->length() % sizeof(short)) == 0);
+  int num_samples = data->length() / sizeof(short);
+
+  encoder_->Encode(samples, num_samples, &audio_buffers_);
+  endpointer_.ProcessAudio(samples, num_samples);
   delete data;
+
+  if (endpointer_.speech_input_complete()) {
+    StopRecording();
+  }
 
   // TODO(satish): Once we have streaming POST, start sending the data received
   // here as POST chunks.
