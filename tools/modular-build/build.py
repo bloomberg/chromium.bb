@@ -247,12 +247,24 @@ int main() {
       compiler=["%s-gcc" % arch, "-m32"])
   module_list.append(modules["hello"])
 
+  # glibc invokes "readelf" in a configure check without an
+  # architecture prefix (such as "nacl-"), which is correct because
+  # readelf knows only about ELF and is otherwise architecture
+  # neutral.  Create readelf as an alias for nacl-readelf so that
+  # glibc can build on Mac OS X, where readelf is not usually
+  # installed.
+  AddModule("readelf",
+            btarget.TreeMapper(
+      "readelf", os.path.join(top_dir, "install", "readelf"),
+      treemappers.CreateAlias, [], args=["readelf", "%s-readelf" % arch]))
+
   # libnacl_nocpp and newlib are dependencies for the "forced unwind
   # support" autoconf check.
   # TODO(mseaborn): Get glibc to build without having to build newlib first.
   AddAutoconfModule(
       "glibc", "glibc",
-      deps=["binutils", "full-gcc", "libnacl_nocpp", "newlib"] + gcc_libs,
+      deps=["binutils", "full-gcc", "libnacl_nocpp", "newlib", "readelf"] +
+          gcc_libs,
       explicitly_passed_deps=[src["linux_headers"]],
       configure_opts=[
           "--prefix=/%s" % arch,

@@ -144,6 +144,15 @@ def SubsetNaClHeaders(input_headers, arch):
   return {arch: {"include": result}}
 
 
+def CreateAlias(new_name, old_name):
+  template = """\
+#!/bin/sh
+exec %s "$@"
+"""
+  return {"bin": {new_name: FileSnapshotInMemory(template % old_name,
+                                                 executable=True)}}
+
+
 # The functions above are fairly cheap, so we could run them each
 # time, but they do require scanning their input directory trees, so
 # it would be better to avoid that if the function has not changed.
