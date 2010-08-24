@@ -7,3 +7,17 @@ URLRequestTestHTTP.*
 # suppressions.  So just skip the tests until we can figure out how to get
 # stacks, or a fixed release of NSS.
 CertDatabaseNSSTest.ImportFromPKCS12*
+# Exclude tests that simulate a crash: they leak a lot of stuff.
+# Note that *InvalidEntry* is too general.
+DiskCacheBackendTest.InvalidEntry
+DiskCacheBackendTest.NewEvictionInvalidEntry
+DiskCacheBackendTest.InvalidEntryRead
+DiskCacheBackendTest.NewEvictionInvalidEntryRead
+DiskCacheBackendTest.InvalidEntryWithLoad
+DiskCacheBackendTest.NewEvictionInvalidEntryWithLoad
+DiskCacheBackendTest.TrimInvalidEntry
+DiskCacheBackendTest.NewEvictionTrimInvalidEntry
+DiskCacheBackendTest.TrimInvalidEntry2
+DiskCacheBackendTest.NewEvictionTrimInvalidEntry2
+DiskCacheBackendTest.InvalidEntryEnumeration
+DiskCacheBackendTest.NewEvictionInvalidEntryEnumeration

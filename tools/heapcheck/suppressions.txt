@@ -85,42 +85,6 @@
    fun:ToolsSanityTest_MemoryLeak_Test::TestBody
 }
 {
-   Intentional leak in DiskCacheBackendTest::BackendInvalidEntry
-   Heapcheck:Leak
-   ...
-   fun:DiskCacheBackendTest::BackendInvalidEntry
-}
-{
-   Intentional leak in DiskCacheBackendTest::BackendInvalidEntryRead
-   Heapcheck:Leak
-   ...
-   fun:DiskCacheBackendTest::BackendInvalidEntryRead
-}
-{
-   Intentional leak in DiskCacheBackendTest::BackendInvalidEntryWithLoad
-   Heapcheck:Leak
-   ...
-   fun:DiskCacheBackendTest::BackendInvalidEntryWithLoad
-}
-{
-   Intentional leak in DiskCacheBackendTest::BackendTrimInvalidEntry
-   Heapcheck:Leak
-   ...
-   fun:DiskCacheBackendTest::BackendTrimInvalidEntry
-}
-{
-   Intentional leak in DiskCacheBackendTest::BackendTrimInvalidEntry2
-   Heapcheck:Leak
-   ...
-   fun:DiskCacheBackendTest::BackendTrimInvalidEntry2
-}
-{
-   Intentional leak in DiskCacheBackendTest::BackendInvalidEntryEnumeration
-   Heapcheck:Leak
-   ...
-   fun:DiskCacheBackendTest::BackendInvalidEntryEnumeration
-}
-{
    Intentional leak in ChromeThreadTest.NotReleasedIfTargetThreadNonExistent
    Heapcheck:Leak
    fun:ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
@@ -961,18 +925,6 @@
    fun:ExtensionsService::LoadAllExtensions
    fun:ExtensionsService::Init
    fun:ExtensionsServiceTest_CleanupOnStartup_Test::TestBody
-}
-{
-   bug_53141
-   Heapcheck:Leak
-   ...
-   fun:disk_cache::EntryImpl::PrepareTarget
-   fun:disk_cache::EntryImpl::WriteDataImpl
-   fun:disk_cache::BackendIO::ExecuteEntryOperation
-   fun:disk_cache::BackendIO::ExecuteOperation
-   fun:void DispatchToMethod
-   fun:RunnableMethod::Run
-   fun:MessageLoop::RunTask
 }
 {
    bug_53184
