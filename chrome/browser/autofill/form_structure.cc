@@ -378,9 +378,7 @@ void FormStructure::GetHeuristicAutoFillTypes() {
 
   for (size_t index = 0; index < field_count(); index++) {
     AutoFillField* field = fields_[index];
-    // TODO(dhollowa): Defensive check for crash happening in the field.
-    // See http://crbug.com/42211
-    CHECK(field);
+    DCHECK(field);
     FieldTypeMap::iterator iter = field_type_map.find(field->unique_name());
 
     AutoFillFieldType heuristic_auto_fill_type;

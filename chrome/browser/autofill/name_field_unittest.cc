@@ -321,6 +321,46 @@ TEST_F(NameFieldTest, MiddleInitialNoLastName) {
   ASSERT_EQ(static_cast<NameField*>(NULL), field_.get());
 }
 
+// This case is from the dell.com checkout page.  The middle initial "mi" string
+// came at the end following other descriptive text.  http://crbug.com/45123.
+TEST_F(NameFieldTest, MiddleInitialAtEnd) {
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("XXXnameXXXfirst"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0),
+                        ASCIIToUTF16("name1")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("XXXnameXXXmi"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0),
+                        ASCIIToUTF16("name2")));
+  list_.push_back(
+      new AutoFillField(webkit_glue::FormField(string16(),
+                                               ASCIIToUTF16("XXXnameXXXlast"),
+                                               string16(),
+                                               ASCIIToUTF16("text"),
+                                               0),
+                        ASCIIToUTF16("name3")));
+  list_.push_back(NULL);
+  iter_ = list_.begin();
+  field_.reset(NameField::Parse(&iter_, false));
+  ASSERT_NE(static_cast<NameField*>(NULL), field_.get());
+  ASSERT_TRUE(field_->GetFieldInfo(&field_type_map_));
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("name1")) != field_type_map_.end());
+  EXPECT_EQ(NAME_FIRST, field_type_map_[ASCIIToUTF16("name1")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("name2")) != field_type_map_.end());
+  EXPECT_EQ(NAME_MIDDLE_INITIAL, field_type_map_[ASCIIToUTF16("name2")]);
+  ASSERT_TRUE(
+      field_type_map_.find(ASCIIToUTF16("name3")) != field_type_map_.end());
+  EXPECT_EQ(NAME_LAST, field_type_map_[ASCIIToUTF16("name3")]);
+}
+
 TEST_F(NameFieldTest, ECMLNoName) {
   list_.push_back(new AutoFillField(
       webkit_glue::FormField(ASCIIToUTF16("Company"),
