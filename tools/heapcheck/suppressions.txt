@@ -962,3 +962,15 @@
    fun:ExtensionsService::Init
    fun:ExtensionsServiceTest_CleanupOnStartup_Test::TestBody
 }
+{
+   bug_53141
+   Heapcheck:Leak
+   ...
+   fun:disk_cache::EntryImpl::PrepareTarget
+   fun:disk_cache::EntryImpl::WriteDataImpl
+   fun:disk_cache::BackendIO::ExecuteEntryOperation
+   fun:disk_cache::BackendIO::ExecuteOperation
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:MessageLoop::RunTask
+}
