@@ -29,7 +29,8 @@ bool IsViewFocused(const Browser* browser, ViewID vid) {
 
   // Handle the special case of focusing a TextField.
   if ([firstResponder isKindOfClass:[NSTextView class]]) {
-    NSView* delegate = [(NSTextView*)firstResponder delegate];
+    NSView* delegate = static_cast<NSView*>([(NSTextView*)firstResponder
+                                                          delegate]);
     if (delegate == view)
       return true;
   }

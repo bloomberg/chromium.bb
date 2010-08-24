@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
+#include "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/table_row_nsimage_cache.h"
 #include "chrome/browser/task_manager.h"
@@ -19,7 +20,9 @@ class TaskManagerMac;
 
 // This class is responsible for loading the task manager window and for
 // managing it.
-@interface TaskManagerWindowController : NSWindowController {
+@interface TaskManagerWindowController :
+  NSWindowController<NSTableViewDataSource,
+                     NSTableViewDelegate> {
  @private
   IBOutlet NSTableView* tableView_;
   IBOutlet NSButton* endProcessButton_;
