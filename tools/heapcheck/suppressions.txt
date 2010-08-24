@@ -974,3 +974,12 @@
    fun:RunnableMethod::Run
    fun:MessageLoop::RunTask
 }
+{
+   bug_53184
+   Heapcheck:Leak
+   fun:base::WaitableEventWatcher::StartWatching
+   fun:IPC::SyncChannel::SyncContext::OnChannelOpened
+   fun:void DispatchToMethod
+   fun:RunnableMethod::Run
+   fun:MessageLoop::RunTask
+}
