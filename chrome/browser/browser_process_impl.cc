@@ -717,7 +717,7 @@ void BrowserProcessImpl::DoInspectorFilesCheck() {
 bool BrowserProcessImpl::CanAutorestartForUpdate() const {
   // Check if browser is in the background and if it needs to be restarted to
   // apply a pending update.
-  return BrowserList::size() == 0 && !BrowserList::WillKeepAlive() &&
+  return BrowserList::size() == 0 && BrowserList::WillKeepAlive() &&
          Upgrade::IsUpdatePendingRestart();
 }
 
