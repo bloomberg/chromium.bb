@@ -54,6 +54,8 @@ ACCEPTABLE_ARGUMENTS = {
     # TODO: check which ones are obsolete
     ####  ASCII SORTED ####
     'COVERAGE': None,
+    # Use a destination directory other than the default "scons-out".
+    'DESTINATION_ROOT': None,
     'DOXYGEN': None,
     'LOAD': None,
     'MODE': None,
@@ -185,6 +187,9 @@ environment_list = []
 
 # ----------------------------------------------------------
 # Base environment for both nacl and non-nacl variants.
+kwargs = {}
+if ARGUMENTS.get('DESTINATION_ROOT') is not None:
+  kwargs['DESTINATION_ROOT'] = ARGUMENTS.get('DESTINATION_ROOT')
 pre_base_env = Environment(
     tools = ['component_setup'],
     # SOURCE_ROOT is one leave above the native_client directory.
@@ -199,6 +204,7 @@ pre_base_env = Environment(
     # Select where to find coverage tools.
     COVERAGE_MCOV = '../third_party/lcov/bin/mcov',
     COVERAGE_GENHTML = '../third_party/lcov/bin/genhtml',
+    **kwargs
 )
 
 # Scons normally wants to scrub the environment.  However, sometimes

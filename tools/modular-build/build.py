@@ -106,6 +106,7 @@ def GetTargets(src):
     module = btarget.SconsBuild(
         name,
         os.path.join(top_dir, "install", name),
+        os.path.join(top_dir, "build", name),
         modules["nacl_src"],
         MakeInstallPrefix(name, deps), scons_args)
     AddModule(name, module)

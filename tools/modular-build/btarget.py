@@ -278,19 +278,19 @@ def ExportHeaders(name, dest_dir, src_dir):
   return BuildTarget(name, dest_dir, DoBuild, args=[], deps=[src_dir])
 
 
-def SconsBuild(name, dest_dir, src_dir, prefix_obj, scons_args):
+def SconsBuild(name, dest_dir, build_dir, src_dir, prefix_obj, scons_args):
   def DoBuild():
+    ResetDir(build_dir)
     ResetDir(dest_dir)
     # We use naclsdk_mode to point to an empty destination directory
     # so Scons can't get nacl-gcc from there.  We set USE_ENVIRON=1 to
     # get Scons to pass PATH through so that it gets nacl-gcc from
     # PATH.
-    # TODO(mseaborn): Get Scons to use a pristine build directory,
-    # instead of reusing the contents of "scons-out".
     subprocess.check_call(
         ["env"] + GetPrefixVars(prefix_obj.dest_path) +
         ["./scons",
          "USE_ENVIRON=1",
+         "DESTINATION_ROOT=%s" % build_dir,
          "naclsdk_mode=custom:%s" % dest_dir,
          "naclsdk_validate=0",
          "--verbose"] + scons_args,
