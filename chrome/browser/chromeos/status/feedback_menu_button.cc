@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
@@ -22,6 +23,7 @@ FeedbackMenuButton::FeedbackMenuButton(StatusAreaHost* host)
     : StatusAreaButton(this),
       host_(host) {
   DCHECK(host_);
+  SetTooltipText(l10n_util::GetString(IDS_STATUSBAR_FEEDBACK_TOOLTIP));
 }
 
 FeedbackMenuButton::~FeedbackMenuButton() {

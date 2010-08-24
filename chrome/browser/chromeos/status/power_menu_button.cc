@@ -173,6 +173,7 @@ void PowerMenuButton::UpdateIcon() {
       icon_id_ = cros->line_power_on() ?
           kChargingImages[index] : kDischargingImages[index];
     }
+    SetTooltipText(UTF16ToWide(GetLabelAt(0)));
   }
   SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(icon_id_));
   SchedulePaint();
