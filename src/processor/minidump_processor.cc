@@ -35,6 +35,7 @@
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/minidump.h"
 #include "google_breakpad/processor/process_state.h"
+#include "google_breakpad/processor/exploitability.h"
 #include "processor/logging.h"
 #include "processor/scoped_ptr.h"
 #include "processor/stackwalker_x86.h"
@@ -43,7 +44,15 @@ namespace google_breakpad {
 
 MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier,
                                      SourceLineResolverInterface *resolver)
-    : supplier_(supplier), resolver_(resolver) {
+    : supplier_(supplier), resolver_(resolver),
+      enable_exploitability_(false) {
+}
+
+MinidumpProcessor::MinidumpProcessor(SymbolSupplier *supplier,
+                                     SourceLineResolverInterface *resolver,
+                                     bool enable_exploitability)
+    : supplier_(supplier), resolver_(resolver),
+      enable_exploitability_(enable_exploitability) {
 }
 
 MinidumpProcessor::~MinidumpProcessor() {
@@ -228,6 +237,22 @@ ProcessResult MinidumpProcessor::Process(
         HexString(requesting_thread_id) << ", not found in " <<
         dump->path();
     process_state->requesting_thread_ = -1;
+  }
+
+  // Exploitability defaults to EXPLOITABILITY_NOT_ANALYZED
+  process_state->exploitability_ = EXPLOITABILITY_NOT_ANALYZED;
+
+  // If an exploitability run was requested we perform the platform specific
+  // rating.
+  if (enable_exploitability_) {
+    scoped_ptr<Exploitability> exploitability(
+        Exploitability::ExploitabilityForPlatform(dump, process_state));
+    // The engine will be null if the platform is not supported
+    if (exploitability != NULL) {
+      process_state->exploitability_ = exploitability->CheckExploitability();
+    } else {
+      process_state->exploitability_ = EXPLOITABILITY_ERR_NOENGINE;
+    }
   }
 
   BPLOG(INFO) << "Processed " << dump->path();

@@ -94,6 +94,14 @@ class MinidumpProcessor {
   // implementation of the SymbolSupplier abstract base class.
   MinidumpProcessor(SymbolSupplier *supplier,
                     SourceLineResolverInterface *resolver);
+
+  // Initializes the MinidumpProcessor with the option of
+  // enabling the exploitability framework to analyze dumps
+  // for probable security relevance.
+  MinidumpProcessor(SymbolSupplier *supplier,
+                    SourceLineResolverInterface *resolver,
+                    bool enable_exploitability);
+
   ~MinidumpProcessor();
 
   // Processes the minidump file and fills process_state with the result.
@@ -149,6 +157,11 @@ class MinidumpProcessor {
  private:
   SymbolSupplier *supplier_;
   SourceLineResolverInterface *resolver_;
+
+  // This flag enables the exploitability scanner which attempts to
+  // guess how likely it is that the crash represents an exploitable
+  // memory corruption issue.
+  bool enable_exploitability_;
 };
 
 }  // namespace google_breakpad

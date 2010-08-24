@@ -164,7 +164,8 @@ am_src_libbreakpad_la_OBJECTS = src/processor/basic_code_modules.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo src/processor/tokenize.lo \
-	src/processor/udp_network.lo
+	src/processor/udp_network.lo \
+	src/processor/exploitability.lo
 src_libbreakpad_la_OBJECTS = $(am_src_libbreakpad_la_OBJECTS)
 @SELFTEST_TRUE@am__EXEEXT_1 =  \
 @SELFTEST_TRUE@	src/processor/stackwalker_selftest$(EXEEXT)
@@ -258,7 +259,8 @@ src_processor_minidump_processor_unittest_DEPENDENCIES =  \
 	src/processor/stackwalker_arm.lo \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
-	src/processor/stackwalker_x86.lo src/processor/tokenize.lo
+	src/processor/stackwalker_x86.lo src/processor/tokenize.lo \
+	src/processor/exploitability.lo
 am_src_processor_minidump_stackwalk_OBJECTS =  \
 	src/processor/minidump_stackwalk.$(OBJEXT)
 src_processor_minidump_stackwalk_OBJECTS =  \
@@ -279,7 +281,8 @@ src_processor_minidump_stackwalk_DEPENDENCIES =  \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo src/processor/tokenize.lo \
-	src/processor/udp_network.lo
+	src/processor/udp_network.lo \
+	src/processor/exploitability.lo
 am_src_processor_minidump_unittest_OBJECTS = src/common/src_processor_minidump_unittest-test_assembler.$(OBJEXT) \
 	src/processor/src_processor_minidump_unittest-minidump_unittest.$(OBJEXT) \
 	src/processor/src_processor_minidump_unittest-synth_minidump.$(OBJEXT) \
@@ -312,7 +315,8 @@ src_processor_network_source_line_resolver_server_unittest_DEPENDENCIES =  \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo src/processor/tokenize.lo \
-	src/processor/udp_network.lo
+	src/processor/udp_network.lo \
+	src/processor/exploitability.lo
 am_src_processor_network_source_line_resolver_unittest_OBJECTS = src/processor/src_processor_network_source_line_resolver_unittest-network_source_line_resolver_unittest.$(OBJEXT) \
 	src/testing/gtest/src/src_processor_network_source_line_resolver_unittest-gtest-all.$(OBJEXT) \
 	src/testing/src/src_processor_network_source_line_resolver_unittest-gmock-all.$(OBJEXT)
@@ -674,6 +678,7 @@ src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/processor/stackwalker.h \
 	src/google_breakpad/processor/symbol_supplier.h \
 	src/google_breakpad/processor/system_info.h \
+	src/google_breakpad/processor/exploitability.h \
 	src/processor/address_map-inl.h \
 	src/processor/address_map.h \
 	src/processor/basic_code_module.h \
@@ -721,7 +726,8 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/tokenize.cc \
 	src/processor/tokenize.h \
 	src/processor/udp_network.cc \
-	src/processor/udp_network.h
+	src/processor/udp_network.h \
+	src/processor/exploitability.cc
 
 check_SCRIPTS = \
 	src/processor/minidump_dump_test \
@@ -855,7 +861,8 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo \
-	src/processor/tokenize.lo
+	src/processor/tokenize.lo \
+	src/processor/exploitability.lo
 
 src_processor_minidump_unittest_SOURCES = \
 	src/common/test_assembler.cc \
@@ -930,7 +937,8 @@ src_processor_network_source_line_resolver_server_unittest_LDADD = \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/tokenize.lo \
-	src/processor/udp_network.lo
+	src/processor/udp_network.lo \
+	src/processor/exploitability.lo
 
 src_processor_network_source_line_server_unittest_SOURCES = \
 	src/processor/network_source_line_server_unittest.cc \
@@ -987,7 +995,8 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/stackwalker_ppc.lo \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo \
-	src/processor/tokenize.lo
+	src/processor/tokenize.lo \
+	src/processor/exploitability.lo
 
 src_processor_stackwalker_amd64_unittest_SOURCES = \
 	src/common/test_assembler.cc \
@@ -1100,7 +1109,8 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo \
 	src/processor/tokenize.lo \
-	src/processor/udp_network.lo
+	src/processor/udp_network.lo \
+	src/processor/exploitability.lo
 
 src_processor_source_daemon_SOURCES = \
 	src/processor/source_daemon.cc
@@ -1863,6 +1873,8 @@ mostlyclean-compile:
 	-rm -f src/processor/cfi_frame_info.$(OBJEXT)
 	-rm -f src/processor/cfi_frame_info.lo
 	-rm -f src/processor/contained_range_map_unittest.$(OBJEXT)
+	-rm -f src/processor/exploitability.$(OBJEXT)
+	-rm -f src/processor/exploitability.lo
 	-rm -f src/processor/logging.$(OBJEXT)
 	-rm -f src/processor/logging.lo
 	-rm -f src/processor/minidump.$(OBJEXT)

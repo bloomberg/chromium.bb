@@ -245,6 +245,24 @@ TEST_F(MinidumpProcessorTest, TestSymbolSupplierLookupCounts) {
             google_breakpad::PROCESS_OK);
 }
 
+TEST_F(MinidumpProcessorTest, TestExploitilityEngine) {
+  TestSymbolSupplier supplier;
+  BasicSourceLineResolver resolver;
+  MinidumpProcessor processor(&supplier, &resolver, true);
+
+  string minidump_file = string(getenv("srcdir") ? getenv("srcdir") : ".") +
+                         "/src/processor/testdata/minidump2.dmp";
+
+  ProcessState state;
+  ASSERT_EQ(processor.Process(minidump_file, &state),
+            google_breakpad::PROCESS_OK);
+
+  // Test that exploitability module correctly fails to supply
+  // an engine for this platform
+  ASSERT_EQ(google_breakpad::EXPLOITABILITY_ERR_NOENGINE,
+            state.exploitability());
+}
+
 TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
   TestSymbolSupplier supplier;
   BasicSourceLineResolver resolver;
@@ -314,6 +332,11 @@ TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
             "kernel32.pdb");
   ASSERT_EQ(state.modules()->GetModuleForAddress(0x77d43210)->version(),
             "5.1.2600.2622");
+
+  // Test that disabled exploitability engine defaults to
+  // EXPLOITABILITY_NOT_ANALYZED.
+  ASSERT_EQ(google_breakpad::EXPLOITABILITY_NOT_ANALYZED,
+            state.exploitability());
 
   // Test that the symbol supplier can interrupt processing
   state.Clear();
