@@ -709,7 +709,7 @@ void ExtensionsDOMHandler::Observe(NotificationType type,
 Extension* ExtensionsDOMHandler::GetExtension(const ListValue* args) {
   std::string extension_id = WideToASCII(ExtractStringValue(args));
   CHECK(!extension_id.empty());
-  return extensions_service_->GetExtensionById(extension_id, false);
+  return extensions_service_->GetExtensionById(extension_id, true);
 }
 
 void ExtensionsDOMHandler::MaybeUpdateAfterNotification() {
