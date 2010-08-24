@@ -722,6 +722,8 @@ def CMDupload(change_info, args):
 
   This does not submit a try job; use gcl try to submit a try job.
   """
+  if '-s' in args or '--server' in args:
+    ErrorExit('Don\'t use the -s flag, fix codereview.settings instead')
   if not change_info.GetFiles():
     print "Nothing to upload, changelist is empty."
     return 0

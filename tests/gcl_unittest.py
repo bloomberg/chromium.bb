@@ -325,6 +325,22 @@ class CMDuploadUnittest(GclTestsBase):
     self.assertEquals(change_info.issue, 1)
     self.assertEquals(change_info.patchset, 2)
 
+  def testNoServer(self):
+    self.mox.StubOutWithMock(gcl.sys, 'stderr')
+    gcl.sys.stderr.write(
+        'Don\'t use the -s flag, fix codereview.settings instead')
+    gcl.sys.stderr.write('\n')
+    gcl.GetRepositoryRoot().AndReturn(self.fake_root_dir)
+    gcl.ChangeInfo.Load('naame', self.fake_root_dir, True, True
+        ).AndReturn(1)
+    self.mox.ReplayAll()
+
+    try:
+      gcl.CMDupload(['naame', '-s', 'foo'])
+      self.fail()
+    except SystemExit:
+      pass
+
 
 if __name__ == '__main__':
   import unittest
