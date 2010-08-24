@@ -152,11 +152,13 @@ int main() {
   if (~0 != i) Error("bad close value\n");
   CheckErrno(EBADF);
 
+#if 0
   myprint("\nclock()\n");
   i = clock();
   PrintInt(i);
-  if (~0 != i) Error("bad clock value\n");
-  CheckErrno(ENOSYS);
+  if (0 > i) Error("bad clock value\n");
+  CheckErrno(0);
+#endif
 
   myprint("before _exit()\n");
   _exit(kExitOk);
