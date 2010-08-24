@@ -47,6 +47,10 @@ void AutoFillOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DELETE_BUTTON));
   localized_strings->SetString("helpButton",
       l10n_util::GetStringUTF16(IDS_AUTOFILL_HELP_LABEL));
+  localized_strings->SetString("addAddressTitle",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_ADDRESS_CAPTION));
+  localized_strings->SetString("addCreditCardTitle",
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_ADD_CREDITCARD_CAPTION));
 }
 
 void AutoFillOptionsHandler::Initialize() {

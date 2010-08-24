@@ -40,16 +40,7 @@ cr.define('options', function() {
      * @private
      */
     dismissOverlay_: function() {
-      $('fullName').value = '';
-      $('companyName').value = '';
-      $('addrLine1').value = '';
-      $('addrLine2').value = '';
-      $('city').value = '';
-      $('state').value = '';
-      $('zipCode').value = '';
-      $('phone').value = '';
-      $('fax').value = '';
-      $('email').value = '';
+      AutoFillEditCreditCardOverlay.clearInputFields();
       OptionsPage.clearOverlays();
     },
 
@@ -94,6 +85,18 @@ cr.define('options', function() {
         expirationYear.add(option, null);
       }
     }
+  };
+
+  AutoFillEditCreditCardOverlay.clearInputFields = function(title) {
+    $('nameOnCard').value = '';
+    $('billingAddress').value = '';
+    $('creditCardNumber').value = '';
+    $('expirationMonth').value = '';
+    $('expirationYear').value = '';
+  };
+
+  AutoFillEditCreditCardOverlay.setTitle = function(title) {
+    $('autoFillCreditCardTitle').textContent = title;
   };
 
   // Export

@@ -38,19 +38,26 @@ cr.define('options', function() {
      * @private
      */
     dismissOverlay_: function() {
-      $('fullName').value = '';
-      $('companyName').value = '';
-      $('addrLine1').value = '';
-      $('addrLine2').value = '';
-      $('city').value = '';
-      $('state').value = '';
-      $('zipCode').value = '';
-      $('phone').value = '';
-      $('fax').value = '';
-      $('email').value = '';
+      AutoFillEditAddressOverlay.clearInputFields();
       OptionsPage.clearOverlays();
     },
+  };
 
+  AutoFillEditAddressOverlay.clearInputFields = function() {
+    $('fullName').value = '';
+    $('companyName').value = '';
+    $('addrLine1').value = '';
+    $('addrLine2').value = '';
+    $('city').value = '';
+    $('state').value = '';
+    $('zipCode').value = '';
+    $('phone').value = '';
+    $('fax').value = '';
+    $('email').value = '';
+  };
+
+  AutoFillEditAddressOverlay.setTitle = function(title) {
+    $('autoFillAddressTitle').textContent = title;
   };
 
   // Export

@@ -37,17 +37,17 @@ cr.define('options', function() {
 
       var self = this;
       $('profileList').onchange = function(event) {
-        self.updateRemoveButtonState_();
+        self.updateButtonState_();
       };
       $('addAddressButton').onclick = function(event) {
-        OptionsPage.showOverlay('autoFillEditAddressOverlay');
+        self.showAddAddressOverlay_();
       };
       $('addCreditCardButton').onclick = function(event) {
-        OptionsPage.showOverlay('autoFillEditCreditCardOverlay');
+        self.showAddCreditCardOverlay_();
       };
 
       Preferences.getInstance().addEventListener('autofill.enabled',
-          cr.bind(self.updateButtonState_, self));
+          cr.bind(self.updateEnabledState_, self));
     },
 
     /**
@@ -55,11 +55,37 @@ cr.define('options', function() {
      * of the |autoFillEnabled| checkbox.
      * @private
      */
-    updateButtonState_: function() {
+    updateEnabledState_: function() {
       var checkbox = $('autoFillEnabled');
       $('addAddressButton').disabled = $('addCreditCardButton').disabled =
           $('editButton').disabled = $('autoFillRemoveButton').disabled =
               !checkbox.checked;
+    },
+
+    /**
+     * Shows the 'Add address' overlay, specifically by loading the
+     * 'Edit address' overlay, emptying the input fields and modifying the
+     * overlay title.
+     * @private
+     */
+    showAddAddressOverlay_: function() {
+      var title = localStrings.getString('addAddressTitle');
+      AutoFillEditAddressOverlay.setTitle(title);
+      AutoFillEditAddressOverlay.clearInputFields();
+      OptionsPage.showOverlay('autoFillEditAddressOverlay');
+    },
+
+    /**
+     * Shows the 'Add credit card' overlay, specifically by loading the
+     * 'Edit credit card' overlay, emptying the input fields and modifying the
+     * overlay title.
+     * @private
+     */
+    showAddCreditCardOverlay_: function() {
+      var title = localStrings.getString('addCreditCardTitle');
+      AutoFillEditCreditCardOverlay.setTitle(title);
+      AutoFillEditCreditCardOverlay.clearInputFields();
+      OptionsPage.showOverlay('autoFillEditCreditCardOverlay');
     },
 
     /**
@@ -102,7 +128,7 @@ cr.define('options', function() {
         profileList.add(option, blankAddress);
       }
 
-      this.updateRemoveButtonState_();
+      this.updateButtonState_();
     },
 
     /**
@@ -120,16 +146,16 @@ cr.define('options', function() {
         profileList.add(option, null);
       }
 
-      this.updateRemoveButtonState_();
+      this.updateButtonState_();
     },
 
     /**
-     * Sets the enabled state of the AutoFill Remove button based on the current
-     * selection in the profile list.
+     * Sets the enabled state of the AutoFill Edit and Remove buttons based on
+     * the current selection in the profile list.
      * @private
      */
-    updateRemoveButtonState_: function() {
-      $('autoFillRemoveButton').disabled =
+    updateButtonState_: function() {
+      $('autoFillRemoveButton').disabled = $('autoFillEditButton').disabled =
           ($('profileList').selectedIndex == -1);
     },
   };
