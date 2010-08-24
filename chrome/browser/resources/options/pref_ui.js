@@ -25,9 +25,11 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.managed = event.value['managed']
+            self.checked = event.value['value'] ? event.value['value']
+                                                : event.value;
+            self.managed = event.value['managed'] ? event.value['managed']
+                                                  : false;
             self.disabled = self.managed;
-            self.checked = event.value['value'];
           });
 
       // Listen to user events.
@@ -70,9 +72,12 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.managed = event.value['managed']
+            var value = event.value['value'] ? event.value['value']
+                                             : event.value;
+            self.managed = event.value['managed'] ? event.value['managed']
+                                                  : false;
+            self.checked = String(value) == self.value;
             self.disabled = self.managed;
-            self.checked = String(event.value['value']) == self.value;
           });
 
       // Listen to user events.
@@ -127,9 +132,11 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.managed = event.value['managed']
+            self.value = event.value['value'] ? event.value['value']
+                                              : event.value;
+            self.managed = event.value['managed'] ? event.value['managed']
+                                                  : false;
             self.disabled = self.managed;
-            self.value = event.value['value'];
           });
 
       // Listen to user events.
@@ -208,10 +215,13 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.managed = event.value['managed']
+            var value = event.value['value'] ? event.value['value']
+                                             : event.value;
+            self.managed = event.value['managed'] ? event.value['managed']
+                                                  : false;
             self.disabled = self.managed;
             for (var i = 0; i < self.options.length; i++) {
-              if (self.options[i].value == event.value['value']) {
+              if (self.options[i].value == value) {
                 self.selectedIndex = i;
                 return;
               }
@@ -297,9 +307,11 @@ cr.define('options', function() {
       // Listen to pref changes.
       Preferences.getInstance().addEventListener(this.pref,
           function(event) {
-            self.managed = event.value['managed']
+            self.value = event.value['value'] ? event.value['value']
+                                              : event.value;
+            self.managed = event.value['managed'] ? event.value['managed']
+                                                  : false;
             self.disabled = self.managed;
-            self.value = event.value['value'];
           });
 
       // Listen to user events.
