@@ -24,7 +24,6 @@
 #pragma once
 
 #include <algorithm>
-#include <functional>
 #include <set>
 #include <vector>
 
@@ -133,7 +132,7 @@ struct AccessPointData {
 
 // This is to allow AccessPointData to be used in std::set. We order
 // lexicographically by MAC address.
-struct AccessPointDataLess : public std::less<AccessPointData> {
+struct AccessPointDataLess {
   bool operator()(const AccessPointData& data1,
                   const AccessPointData& data2) const {
     return data1.mac_address < data2.mac_address;
@@ -185,7 +184,7 @@ struct RouterData {
 
 // This is to allow RouterData to be used in std::set. We order
 // lexicographically by MAC address.
-struct RouterDataLess : public std::less<RouterData> {
+struct RouterDataLess {
   bool operator()(const RouterData& data1,
                   const RouterData& data2) const {
     return data1.mac_address < data2.mac_address;
