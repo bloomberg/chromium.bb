@@ -318,8 +318,10 @@ class ContentSettingPopupBubbleModel : public ContentSettingSingleRadioGroup {
 
  private:
   void SetPopups() {
+    // check for crbug.com/53176
+    if (!tab_contents()->blocked_popup_container())
+      return;
     BlockedPopupContainer::BlockedContents blocked_contents;
-    DCHECK(tab_contents()->blocked_popup_container());
     tab_contents()->blocked_popup_container()->GetBlockedContents(
         &blocked_contents);
     for (BlockedPopupContainer::BlockedContents::const_iterator
