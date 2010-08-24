@@ -77,3 +77,12 @@ class ExistingPathReplacer(object):
   def _RemoveBackupDir(self):
     if self._backup_dir and os.path.isdir(self._backup_dir):
       shutil.rmtree(self._backup_dir, ignore_errors=True)
+
+
+def RemovePath(path):
+  """Remove the given path (file or dir)."""
+  if os.path.isdir(path):
+    shutil.rmtree(path, ignore_errors=True)
+    return
+  os.remove(path)
+

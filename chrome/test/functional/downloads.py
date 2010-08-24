@@ -14,10 +14,28 @@ import urllib
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import pyauto_utils
 
 
 class DownloadsTest(pyauto.PyUITest):
   """TestCase for Downloads."""
+
+  def setUp(self):
+    pyauto.PyUITest.setUp(self)
+    # Record all entries in the download dir
+    download_dir = self.GetDownloadDirectory().value()
+    self._existing_downloads = []
+    if os.path.isdir(download_dir):
+      self._existing_downloads += os.listdir(download_dir)
+
+  def tearDown(self):
+    # Cleanup all files we created in the download dir
+    download_dir = self.GetDownloadDirectory().value()
+    if os.path.isdir(download_dir):
+      for name in os.listdir(download_dir):
+        if name not in self._existing_downloads:
+          pyauto_utils.RemovePath(os.path.join(download_dir, name))
+    pyauto.PyUITest.tearDown(self)
 
   def _GetDangerousDownload(self):
     """Returns the file url for a dangerous download for this OS."""
@@ -245,6 +263,7 @@ class DownloadsTest(pyauto.PyUITest):
     self.assertEqual(1, len(downloads))
     self.assertEqual('a_zip_file.zip', downloads[0]['file_name'])
     self.assertEqual(file_url, downloads[0]['url'])
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
 
 
 if __name__ == '__main__':
