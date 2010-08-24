@@ -18,6 +18,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/nacl_syscalls.h>
+#include <unistd.h>
 
 #include <algorithm>
 
