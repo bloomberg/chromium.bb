@@ -581,8 +581,7 @@ TEST_F(WorkerTest, WorkerClose) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
 }
 
-// http://crbug.com/42641
-TEST_F(WorkerTest, FAILS_QueuedSharedWorkerShutdown) {
+TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
   // Tests to make sure that queued shared workers are started up when
   // shared workers shut down.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
