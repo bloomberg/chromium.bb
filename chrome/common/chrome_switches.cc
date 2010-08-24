@@ -1161,6 +1161,11 @@ const char kPasswordStore[]                 = "password-store";
 // model. This will be removed once the last issues have been resolved.
 const char kDisableFlashCoreAnimation[]     = "disable-flash-core-animation";
 
+// Temporary flag to disable hole punching for accelerated surfaces. This is
+// here to aid debugging eventual problems, it can be removed once hole punching
+// has been out there for a few dev channel releases without problems.
+const char kDisableHolePunching[]           = "disable-hole-punching";
+
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
 const char kEnableExposeForTabs[] = "enable-expose-for-tabs";
 

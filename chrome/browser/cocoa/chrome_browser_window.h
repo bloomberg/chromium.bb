@@ -38,6 +38,7 @@ const NSInteger kChromeWindowButtonsInterButtonSpacing = 7;
   NSButton* zoomButton_;
   BOOL entered_;
   scoped_nsobject<NSTrackingArea> widgetTrackingArea_;
+  int underlaySurfaceCount_;
 }
 
 // Tells the window to suppress title drawing.
@@ -49,6 +50,11 @@ const NSInteger kChromeWindowButtonsInterButtonSpacing = 7;
 
 // Update the tracking areas for our window widgets as appropriate.
 - (void)updateTrackingAreas;
+
+// Informs the window that an underlay surface has been added/removed. The
+// window is non-opaque while underlay surfaces are present.
+- (void)underlaySurfaceAdded;
+- (void)underlaySurfaceRemoved;
 
 @end
 

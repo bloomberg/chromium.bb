@@ -135,6 +135,13 @@ void DisablePasswordInput() {
 // This subclass of NSView hosts the output of accelerated plugins on
 // the page.
 
+// Informal protocol implemented by windows that need to be informed explicitly
+// about underlay surfaces.
+@protocol UnderlayableSurface
+- (void)underlaySurfaceAdded;
+- (void)underlaySurfaceRemoved;
+@end
+
 @interface AcceleratedPluginView : NSView {
   scoped_nsobject<NSOpenGLPixelFormat> glPixelFormat_;
   CGLPixelFormatObj cglPixelFormat_;  // weak, backed by |glPixelFormat_|.
@@ -203,13 +210,20 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     glContext_.reset([[NSOpenGLContext alloc] initWithFormat:glPixelFormat_
                                                 shareContext:nil]);
 
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kDisableHolePunching)) {
+      // We "punch a hole" in the window, and have the WindowServer render the
+      // OpenGL surface underneath so we can draw over it.
+      GLint belowWindow = -1;
+      [glContext_ setValues:&belowWindow forParameter:NSOpenGLCPSurfaceOrder];
+    }
+
     cglContext_ = (CGLContextObj)[glContext_ CGLContextObj];
     cglPixelFormat_ = (CGLPixelFormatObj)[glPixelFormat_ CGLPixelFormatObj];
 
     // Draw at beam vsync.
     GLint swapInterval = 1;
     [glContext_ setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
-
 
     // Set up a display link to do OpenGL rendering on a background thread.
     CVDisplayLinkCreateWithActiveCGDisplays(&displayLink_);
@@ -234,6 +248,17 @@ static CVReturn DrawOneAcceleratedPluginCallback(
 }
 
 - (void)drawRect:(NSRect)rect {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHolePunching)) {
+    const NSRect* dirtyRects;
+    int dirtyRectCount;
+    [self getRectsBeingDrawn:&dirtyRects count:&dirtyRectCount];
+
+    // Punch a hole so that the OpenGL view shows through.
+    [[NSColor clearColor] set];
+    NSRectFillList(dirtyRects, dirtyRectCount);
+  }
+
   [self drawView];
 }
 
@@ -286,6 +311,23 @@ static CVReturn DrawOneAcceleratedPluginCallback(
   CVDisplayLinkRelease(displayLink_);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
+}
+
+- (void)viewWillMoveToWindow:(NSWindow*)newWindow {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableHolePunching)) {
+    return;
+  }
+
+  if ([self window] &&
+      [[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
+    [static_cast<id>([self window]) underlaySurfaceRemoved];
+  }
+
+  if (newWindow &&
+      [newWindow respondsToSelector:@selector(underlaySurfaceAdded)]) {
+    [static_cast<id>(newWindow) underlaySurfaceAdded];
+  }
 }
 @end
 
