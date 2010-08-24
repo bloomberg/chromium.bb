@@ -392,7 +392,7 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnRemoveObjectStore(
   if (!idb_database)
     return;
   idb_database->removeObjectStore(
-      name, new IndexedDBCallbacks<WebIDBObjectStore>(parent_, response_id));
+      name, new IndexedDBCallbacks<void>(parent_, response_id));
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnTransaction(
