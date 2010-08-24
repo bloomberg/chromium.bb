@@ -4,6 +4,7 @@
 # be found in the LICENSE file.
 
 import hashlib
+import itertools
 import optparse
 import os
 import stat
@@ -397,8 +398,62 @@ def SubsetTargets(root_targets, names):
   return [all_targets[name] for name in names]
 
 
+# In order to make the Graphviz graph more understandable, we omit
+# transitive edges, i.e. any direct dependency that is implied by an
+# indirect dependency.  For example, most targets use binutils at
+# build time, but showing all those edges turns the graph into
+# spaghetti.
+#
+# However, dropping edges loses information.  For example, both
+# pre-gcc and full-gcc depend on gcc-src, but since full-gcc depends
+# indirectly on pre-gcc, no edge is shown from full-gcc to gcc-src.
+def RemoveTransitiveEdges(graph):
+  @Memoize
+  def TransitiveClosure(node):
+    got = set()
+    for dep in graph[node]:
+      got.add(dep)
+      got.update(TransitiveClosure(dep))
+    return got
+
+  graph2 = {}
+  for node, deps in graph.iteritems():
+    to_remove = set()
+    for dep in deps:
+      to_remove.update(TransitiveClosure(dep))
+    graph2[node] = [dep for dep in deps
+                    if dep not in to_remove]
+  return graph2
+
+
+def OutputGraphvizGraph(targets, stream):
+  graph = {}
+  @Memoize
+  def Visit(target):
+    graph[target] = target.GetDeps()
+    for dep in target.GetDeps():
+      Visit(dep)
+  for target in targets:
+    Visit(target)
+  graph = RemoveTransitiveEdges(graph)
+
+  counter = itertools.count()
+  @Memoize
+  def GetId(target):
+    return "n%i" % counter.next()
+
+  stream.write("digraph {\n")
+  for node, deps in sorted(graph.iteritems(),
+                           key=lambda (node, deps): node.GetName()):
+    tid = GetId(node)
+    stream.write("  %s [label=\"%s\"];\n" % (tid, node.GetName()))
+    for dep in sorted(deps, key=lambda node: node.GetName()):
+      stream.write("  %s -> %s;\n" % (tid, GetId(dep)))
+  stream.write("}\n")
+
+
 def BuildMain(root_targets, args, stream):
-  parser = optparse.OptionParser()
+  parser = optparse.OptionParser("%prog [options] [action] [target...]")
   parser.add_option("-b", "--build", dest="do_build", action="store_true",
                     help="Do the build")
   parser.add_option("-s", "--single", dest="single", action="store_true",
@@ -406,9 +461,17 @@ def BuildMain(root_targets, args, stream):
                     "dependencies.  This will rebuild targets even if they "
                     "are considered up-to-date.")
   options, args = parser.parse_args(args)
+
+  do_graph = False
+  if len(args) > 0 and args[0] == "graph":
+    do_graph = True
+    args = args[1:]
+
   if len(args) > 0:
     root_targets = SubsetTargets(root_targets, args)
-  if options.single:
+  if do_graph:
+    OutputGraphvizGraph(root_targets, stream)
+  elif options.single:
     if len(args) == 0:
       parser.error("No targets specified with --single")
     for target in root_targets:

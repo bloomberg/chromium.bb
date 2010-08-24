@@ -37,6 +37,12 @@ def GetExample(dir_name):
 
 class BuildTargetTests(TempDirTestCase):
 
+  def DummyTarget(self, name, deps):
+    dest_dir = self.MakeTempDir()
+    def DoBuild():
+      pass
+    return btarget.BuildTarget(name, dest_dir, DoBuild, args=[], deps=deps)
+
   def test_src(self):
     tempdir = self.MakeTempDir()
     src = btarget.SourceTarget("src", os.path.join(tempdir, "src"),
@@ -119,14 +125,8 @@ class BuildTargetTests(TempDirTestCase):
                       "** skipping input\n")
 
   def test_building_single_targets(self):
-    def DummyTarget(name, deps):
-      dest_dir = self.MakeTempDir()
-      def DoBuild():
-        pass
-      return btarget.BuildTarget(name, dest_dir, DoBuild, args=[], deps=deps)
-
-    target1 = DummyTarget("target1", deps=[])
-    target2 = DummyTarget("target2", deps=[target1])
+    target1 = self.DummyTarget("target1", deps=[])
+    target2 = self.DummyTarget("target2", deps=[target1])
     roots = [target1, target2]
     stream = StringIO.StringIO()
 
@@ -149,6 +149,22 @@ class BuildTargetTests(TempDirTestCase):
     btarget.BuildMain(roots, ["--single", "target1"], stream)
     self.assertEquals(PopOutput(),
                       "target1: will force build\n")
+
+  def test_graphviz_output(self):
+    target1 = self.DummyTarget("target1", deps=[])
+    target2 = self.DummyTarget("target2", deps=[target1])
+    target3 = self.DummyTarget("target3", deps=[target1, target2])
+    stream = StringIO.StringIO()
+    btarget.BuildMain([target3], ["graph"], stream)
+    self.assertEquals(stream.getvalue(), """\
+digraph {
+  n0 [label="target1"];
+  n1 [label="target2"];
+  n1 -> n0;
+  n2 [label="target3"];
+  n2 -> n1;
+}
+""")
 
   @Quieten
   def test_install_root(self):
