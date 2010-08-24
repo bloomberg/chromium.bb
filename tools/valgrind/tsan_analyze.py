@@ -9,6 +9,7 @@
 
 import gdb_helper
 
+import common
 import logging
 import optparse
 import os
@@ -123,7 +124,8 @@ class TsanAnalyzer:
       if re.search(TsanAnalyzer.TSAN_RACE_DESCRIPTION, self.line_):
         tmp.extend(self.ReadRaceSection())
         self.reports.append(tmp)
-      if re.search(TsanAnalyzer.TSAN_WARNING_DESCRIPTION, self.line_):
+      if (re.search(TsanAnalyzer.TSAN_WARNING_DESCRIPTION, self.line_) and
+          not common.IsWindows()): # workaround for http://crbug.com/53198
         tmp.extend(self.ReadWarningSection())
         self.reports.append(tmp)
 
