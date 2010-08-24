@@ -1,6 +1,9 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Currently this file is only used for the uninstall prompt. The install prompt
+// code is in extension_install_prompt2_gtk.cc.
 
 #include <gtk/gtk.h>
 
@@ -19,8 +22,6 @@
 class Profile;
 
 namespace {
-
-const int kRightColumnWidth = 290;
 
 // Left or right margin.
 const int kPanelHorizMargin = 13;
@@ -90,14 +91,10 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
   GtkWidget* heading_label = MakeMarkupLabel("<span weight=\"bold\">%s</span>",
                                              heading_text);
   gtk_misc_set_alignment(GTK_MISC(heading_label), 0.0, 0.5);
-  gtk_label_set_selectable(GTK_LABEL(heading_label), TRUE);
   gtk_box_pack_start(GTK_BOX(right_column_area), heading_label, TRUE, TRUE, 0);
 
   GtkWidget* warning_label = gtk_label_new(UTF16ToUTF8(warning_text).c_str());
-  gtk_label_set_line_wrap(GTK_LABEL(warning_label), TRUE);
-  gtk_widget_set_size_request(warning_label, kRightColumnWidth, -1);
   gtk_misc_set_alignment(GTK_MISC(warning_label), 0.0, 0.5);
-  gtk_label_set_selectable(GTK_LABEL(warning_label), TRUE);
   gtk_box_pack_start(GTK_BOX(right_column_area), warning_label, TRUE, TRUE, 0);
 
   g_signal_connect(dialog, "response", G_CALLBACK(OnDialogResponse), delegate);
