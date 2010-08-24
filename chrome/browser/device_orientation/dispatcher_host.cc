@@ -10,19 +10,71 @@
 #include "chrome/browser/device_orientation/provider.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_message.h"
 
 namespace device_orientation {
 
 DispatcherHost::DispatcherHost(int process_id)
-    : process_id_(process_id) {
+    : process_id_(process_id),
+      observers_map_(),
+      provider_(NULL) {
 }
 
 DispatcherHost::~DispatcherHost() {
-  if (provider_)
-    provider_->RemoveObserver(this);
+}
+
+class DispatcherHost::ObserverDelegate
+    : public base::RefCounted<ObserverDelegate>, public Provider::Observer {
+ public:
+    // Create ObserverDelegate that observes provider and forwards updates to
+    // render_view_id in process_id.
+    // Will stop observing provider when destructed.
+    ObserverDelegate(Provider* provider,
+                     int process_id,
+                     int render_view_id);
+
+    // From Provider::Observer.
+    virtual void OnOrientationUpdate(const Orientation& orientation);
+
+ private:
+  friend class base::RefCounted<ObserverDelegate>;
+  virtual ~ObserverDelegate();
+
+  scoped_refptr<Provider> provider_;
+  int process_id_;
+  int render_view_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObserverDelegate);
+};
+
+DispatcherHost::ObserverDelegate::ObserverDelegate(Provider* provider,
+                                                   int process_id,
+                                                   int render_view_id)
+    : provider_(provider),
+      process_id_(process_id),
+      render_view_id_(render_view_id) {
+  provider_->AddObserver(this);
+}
+
+DispatcherHost::ObserverDelegate::~ObserverDelegate() {
+  provider_->RemoveObserver(this);
+}
+
+void DispatcherHost::ObserverDelegate::OnOrientationUpdate(
+    const Orientation& orientation) {
+  ViewMsg_DeviceOrientationUpdated_Params params;
+  params.can_provide_alpha = orientation.can_provide_alpha_;
+  params.alpha = orientation.alpha_;
+  params.can_provide_beta = orientation.can_provide_beta_;
+  params.beta = orientation.beta_;
+  params.can_provide_gamma = orientation.can_provide_gamma_;
+  params.gamma = orientation.gamma_;
+
+  IPC::Message* message = new ViewMsg_DeviceOrientationUpdated(render_view_id_,
+                                                               params);
+  CallRenderViewHost(process_id_, render_view_id_, &RenderViewHost::Send,
+                     message);
 }
 
 bool DispatcherHost::OnMessageReceived(const IPC::Message& msg,
@@ -39,42 +91,21 @@ bool DispatcherHost::OnMessageReceived(const IPC::Message& msg,
   return handled;
 }
 
-void DispatcherHost::OnOrientationUpdate(const Orientation& orientation) {
-  ViewMsg_DeviceOrientationUpdated_Params params;
-  params.can_provide_alpha = orientation.can_provide_alpha_;
-  params.alpha = orientation.alpha_;
-  params.can_provide_beta = orientation.can_provide_beta_;
-  params.beta = orientation.beta_;
-  params.can_provide_gamma = orientation.can_provide_gamma_;
-  params.gamma = orientation.gamma_;
-
-  typedef std::set<int>::const_iterator Iterator;
-  for (Iterator i = render_view_ids_.begin(), e = render_view_ids_.end();
-       i != e; ++i) {
-    IPC::Message* message = new ViewMsg_DeviceOrientationUpdated(*i, params);
-    CallRenderViewHost(process_id_, *i, &RenderViewHost::Send, message);
-  }
-}
-
 void DispatcherHost::OnStartUpdating(int render_view_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  render_view_ids_.insert(render_view_id);
-  if (render_view_ids_.size() == 1) {
-    DCHECK(!provider_);
+  if (!provider_)
     provider_ = Provider::GetInstance();
-    provider_->AddObserver(this);
-  }
+
+  observers_map_[render_view_id] = new ObserverDelegate(provider_,
+                                                        process_id_,
+                                                        render_view_id);
 }
 
 void DispatcherHost::OnStopUpdating(int render_view_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  render_view_ids_.erase(render_view_id);
-  if (render_view_ids_.empty()) {
-    provider_->RemoveObserver(this);
-    provider_ = NULL;
-  }
+  observers_map_.erase(render_view_id);
 }
 
 }  // namespace device_orientation

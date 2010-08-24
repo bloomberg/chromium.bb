@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_DEVICE_ORIENTATION_DISPATCHER_HOST_H_
 #define CHROME_BROWSER_DEVICE_ORIENTATION_DISPATCHER_HOST_H_
 
-#include <set>
+#include <map>
 
 #include "base/ref_counted.h"
 #include "chrome/browser/device_orientation/provider.h"
@@ -16,24 +16,26 @@ namespace device_orientation {
 
 class Orientation;
 
-class DispatcherHost : public base::RefCountedThreadSafe<DispatcherHost>,
-                       public Provider::Observer {
+class DispatcherHost : public base::RefCounted<DispatcherHost> {
  public:
   explicit DispatcherHost(int process_id);
   bool OnMessageReceived(const IPC::Message& msg, bool* msg_was_ok);
 
-  // From Provider::Observer.
-  virtual void OnOrientationUpdate(const Orientation& orientation);
-
  private:
   virtual ~DispatcherHost();
-  friend class base::RefCountedThreadSafe<DispatcherHost>;
+  friend class base::RefCounted<DispatcherHost>;
 
   void OnStartUpdating(int render_view_id);
   void OnStopUpdating(int render_view_id);
 
+  // Helper class that observes a Provider and forwards updates to a RenderView.
+  class ObserverDelegate;
+
   int process_id_;
-  std::set<int> render_view_ids_;
+
+  // map from render_view_id to ObserverDelegate.
+  std::map<int, scoped_refptr<ObserverDelegate> > observers_map_;
+
   scoped_refptr<Provider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(DispatcherHost);
