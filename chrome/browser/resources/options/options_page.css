@@ -118,6 +118,7 @@ html[dir='rtl'] #navbar-container {
   text-align: end;
   display: block;
   color: #426dc9;
+  outline:none;
 }
 
 .navbar-item-selected {
