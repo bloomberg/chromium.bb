@@ -7,6 +7,7 @@
 #include "base/string_util.h"
 #include "base/task.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"

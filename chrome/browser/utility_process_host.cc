@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/utility_messages.h"
 #include "ipc/ipc_switches.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 UtilityProcessHost::UtilityProcessHost(ResourceDispatcherHost* rdh,
                                        Client* client,

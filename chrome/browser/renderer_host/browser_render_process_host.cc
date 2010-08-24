@@ -53,6 +53,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/renderer/render_process_impl.h"
 #include "chrome/renderer/render_thread.h"

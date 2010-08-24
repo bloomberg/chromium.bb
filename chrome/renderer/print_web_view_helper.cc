@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
 #include "gfx/codec/jpeg_codec.h"
 #include "grit/generated_resources.h"

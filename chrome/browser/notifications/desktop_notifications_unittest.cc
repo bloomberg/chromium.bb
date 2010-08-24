@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/common/render_messages_params.h"
 
 // static
 const int MockBalloonCollection::kMockBalloonSpace = 5;

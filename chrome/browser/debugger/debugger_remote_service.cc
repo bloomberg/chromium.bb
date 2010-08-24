@@ -21,6 +21,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 
 namespace {
 

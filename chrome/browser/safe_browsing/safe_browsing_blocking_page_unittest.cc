@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/common/render_messages_params.h"
 
 static const char* kGoogleURL = "http://www.google.com/";
 static const char* kGoodURL = "http://www.goodguys.com/";

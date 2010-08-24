@@ -29,6 +29,7 @@
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"

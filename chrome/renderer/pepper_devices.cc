@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/renderer/pepper_devices.h"
+
+#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/webplugin_delegate_pepper.h"
 #include "skia/ext/platform_canvas.h"

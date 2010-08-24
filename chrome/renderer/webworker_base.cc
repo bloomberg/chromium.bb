@@ -6,6 +6,7 @@
 
 #include "chrome/common/child_thread.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"

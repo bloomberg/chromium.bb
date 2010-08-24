@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "googleurl/src/gurl.h"
 
 using WebKit::WebStorageArea;

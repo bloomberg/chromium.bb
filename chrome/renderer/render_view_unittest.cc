@@ -11,6 +11,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/test/render_view_test.h"
 #include "gfx/codec/jpeg_codec.h"

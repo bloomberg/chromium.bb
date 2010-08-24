@@ -28,6 +28,7 @@
 #include "chrome/common/debug_flags.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/worker_messages.h"
 #include "ipc/ipc_switches.h"

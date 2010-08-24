@@ -7,6 +7,7 @@
 #include "base/stl_util-inl.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 
 namespace chromeos {
 

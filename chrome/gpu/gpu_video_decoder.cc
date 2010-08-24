@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/gpu/gpu_video_decoder.h"
+
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_channel.h"
-#include "chrome/gpu/gpu_video_decoder.h"
 #include "media/base/data_buffer.h"
+#include "media/base/video_frame.h"
 
 void GpuVideoDecoder::OnChannelConnected(int32 peer_pid) {
 }

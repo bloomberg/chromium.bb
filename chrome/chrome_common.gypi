@@ -320,6 +320,8 @@
         'common/plugin_messages_internal.h',
         'common/render_messages.cc',
         'common/render_messages.h',
+        'common/render_messages_params.cc',
+        'common/render_messages_params.h',
         'common/render_messages_internal.h',
         'common/renderer_preferences.h',
         'common/resource_dispatcher.cc',

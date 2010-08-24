@@ -8,6 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/common_param_traits.h"
+#include "chrome/common/geoposition.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"

@@ -15,7 +15,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"
 #include "printing/printed_document.h"

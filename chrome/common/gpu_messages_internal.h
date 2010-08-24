@@ -9,11 +9,18 @@
 // This file needs to be included again, even though we're actually included
 // from it via utility_messages.h.
 #include "base/shared_memory.h"
-#include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_video_common.h"
-#include "gfx/size.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+
+namespace gfx {
+class Size;
+}
+
+namespace IPC {
+struct ChannelHandle;
+}
+
+class GPUInfo;
 
 //------------------------------------------------------------------------------
 // GPU Messages

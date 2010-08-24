@@ -11,6 +11,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "ipc/ipc_message.h"
 
 namespace device_orientation {

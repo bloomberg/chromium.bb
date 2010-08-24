@@ -7,6 +7,7 @@
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_backing_store_win.h"
 #include "chrome/gpu/gpu_thread.h"
+#include "gfx/rect.h"
 
 namespace {
 

@@ -15,18 +15,18 @@
 #include <vector>
 
 #include "app/surface/transport_dib.h"
+#include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/geoposition.h"
 #include "chrome/common/page_zoom.h"
 #include "gfx/native_widget_types.h"
 #include "ipc/ipc_message_utils.h"
-#include "net/base/upload_data.h"
 #include "net/url_request/url_request_status.h"
 #include "printing/native_metafile.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/window_open_disposition.h"
 
 // Forward declarations.
+struct Geoposition;
 class GURL;
 class SkBitmap;
 class DictionaryValue;
@@ -40,6 +40,10 @@ class Point;
 class Rect;
 class Size;
 }  // namespace gfx
+
+namespace net {
+class UploadData;
+}
 
 namespace printing {
 struct PageRange;
@@ -259,86 +263,13 @@ struct ParamTraits<URLRequestStatus> {
   static void Log(const param_type& p, std::string* l);
 };
 
-
-// Traits for net::UploadData::Element.
-template <>
-struct ParamTraits<net::UploadData::Element> {
-  typedef net::UploadData::Element param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p.type()));
-    if (p.type() == net::UploadData::TYPE_BYTES) {
-      m->WriteData(&p.bytes()[0], static_cast<int>(p.bytes().size()));
-    } else {
-      WriteParam(m, p.file_path());
-      WriteParam(m, p.file_range_offset());
-      WriteParam(m, p.file_range_length());
-      WriteParam(m, p.expected_file_modification_time());
-    }
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    int type;
-    if (!ReadParam(m, iter, &type))
-      return false;
-    if (type == net::UploadData::TYPE_BYTES) {
-      const char* data;
-      int len;
-      if (!m->ReadData(iter, &data, &len))
-        return false;
-      r->SetToBytes(data, len);
-    } else {
-      DCHECK(type == net::UploadData::TYPE_FILE);
-      FilePath file_path;
-      uint64 offset, length;
-      base::Time expected_modification_time;
-      if (!ReadParam(m, iter, &file_path))
-        return false;
-      if (!ReadParam(m, iter, &offset))
-        return false;
-      if (!ReadParam(m, iter, &length))
-        return false;
-      if (!ReadParam(m, iter, &expected_modification_time))
-        return false;
-      r->SetToFilePathRange(file_path, offset, length,
-                            expected_modification_time);
-    }
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<net::UploadData::Element>");
-  }
-};
-
 // Traits for net::UploadData.
 template <>
 struct ParamTraits<scoped_refptr<net::UploadData> > {
   typedef scoped_refptr<net::UploadData> param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.get() != NULL);
-    if (p) {
-      WriteParam(m, *p->elements());
-      WriteParam(m, p->identifier());
-    }
-  }
-  static bool Read(const Message* m, void** iter, param_type* r) {
-    bool has_object;
-    if (!ReadParam(m, iter, &has_object))
-      return false;
-    if (!has_object)
-      return true;
-    std::vector<net::UploadData::Element> elements;
-    if (!ReadParam(m, iter, &elements))
-      return false;
-    int64 identifier;
-    if (!ReadParam(m, iter, &identifier))
-      return false;
-    *r = new net::UploadData;
-    (*r)->swap_elements(&elements);
-    (*r)->set_identifier(identifier);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<net::UploadData>");
-  }
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 template<>
@@ -352,14 +283,6 @@ struct ParamTraits<ThumbnailScore> {
 template <>
 struct ParamTraits<Geoposition> {
   typedef Geoposition param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct ParamTraits<Geoposition::ErrorCode> {
-  typedef Geoposition::ErrorCode param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, void** iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

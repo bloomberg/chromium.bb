@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/notifications/desktop_notifications_unittest.h"
+
+#include "base/utf_string_conversions.h"
+#include "chrome/common/render_messages_params.h"
 
 namespace chromeos {
 

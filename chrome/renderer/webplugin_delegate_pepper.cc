@@ -35,6 +35,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/pepper_widget.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"

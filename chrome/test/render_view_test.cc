@@ -8,6 +8,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"

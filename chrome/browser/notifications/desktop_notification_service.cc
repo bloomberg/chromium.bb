@@ -27,6 +27,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"

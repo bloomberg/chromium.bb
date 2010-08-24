@@ -6,6 +6,7 @@
 
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/serialized_script_value.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"

@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_pref_service.h"
 #include "chrome/test/testing_profile.h"

@@ -7,10 +7,12 @@
 
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationClient.h"
 
-#include "chrome/common/render_messages.h"
+#include "base/scoped_ptr.h"
 
 class RenderView;
 namespace IPC { class Message; }
+
+struct ViewMsg_DeviceOrientationUpdated_Params;
 
 class DeviceOrientationDispatcher : public WebKit::WebDeviceOrientationClient {
  public:

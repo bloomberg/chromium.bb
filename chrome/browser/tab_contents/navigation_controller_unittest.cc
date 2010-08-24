@@ -21,6 +21,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/test/test_notification_tracker.h"
 #include "chrome/test/testing_profile.h"
 #include "net/base/net_util.h"

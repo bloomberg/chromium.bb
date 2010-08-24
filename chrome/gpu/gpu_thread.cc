@@ -14,6 +14,7 @@
 #include "chrome/common/gpu_info.h"
 #include "chrome/common/gpu_messages.h"
 #include "chrome/gpu/gpu_info_collector.h"
+#include "ipc/ipc_channel_handle.h"
 
 #if defined(OS_WIN)
 #include "chrome/gpu/gpu_view_win.h"

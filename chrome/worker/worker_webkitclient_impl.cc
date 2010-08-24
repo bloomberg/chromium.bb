@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/common/database_util.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/worker/worker_thread.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"

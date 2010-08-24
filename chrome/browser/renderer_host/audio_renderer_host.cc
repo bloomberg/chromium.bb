@@ -11,6 +11,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/renderer_host/audio_sync_reader.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "ipc/ipc_logging.h"
 
 // The minimum number of samples in a hardware packet.

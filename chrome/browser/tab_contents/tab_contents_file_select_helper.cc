@@ -10,7 +10,7 @@
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 
 TabContentsFileSelectHelper::TabContentsFileSelectHelper(
     TabContents* tab_contents)

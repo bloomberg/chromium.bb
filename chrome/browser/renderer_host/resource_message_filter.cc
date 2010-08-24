@@ -74,6 +74,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/worker_messages.h"
 #include "gfx/native_widget_types.h"

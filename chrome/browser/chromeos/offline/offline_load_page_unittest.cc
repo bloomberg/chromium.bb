@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 
 static const char* kURL1 = "http://www.google.com/";
 static const char* kURL2 = "http://www.gmail.com/";

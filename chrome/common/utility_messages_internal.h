@@ -17,7 +17,9 @@
 #include "gfx/rect.h"
 #include "printing/native_metafile.h"
 #include "printing/page_range.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+
+class FilePath;
+class SkBitmap;
 
 //------------------------------------------------------------------------------
 // Utility process messages:

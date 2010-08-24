@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
 #include "gfx/size.h"
 #include "grit/generated_resources.h"

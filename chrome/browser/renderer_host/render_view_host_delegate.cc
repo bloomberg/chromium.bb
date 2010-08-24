@@ -6,6 +6,7 @@
 
 #include "base/singleton.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "gfx/rect.h"
 #include "googleurl/src/gurl.h"

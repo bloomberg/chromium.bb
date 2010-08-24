@@ -17,6 +17,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 
 namespace {
 

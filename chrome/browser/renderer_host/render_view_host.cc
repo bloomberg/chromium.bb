@@ -34,6 +34,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/net/url_request_context_getter.h"

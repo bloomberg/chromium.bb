@@ -9,9 +9,11 @@
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/indexed_db_param_traits.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/thumbnail_score.h"
 #include "gfx/rect.h"
 #include "ipc/ipc_channel_handle.h"
+#include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCompositionUnderline.h"
@@ -31,6 +33,11 @@
 #include "webkit/glue/plugins/webplugin.h"
 #include "webkit/glue/plugins/webplugininfo.h"
 #include "webkit/glue/dom_operations.h"
+#include "webkit/glue/webmenuitem.h"
+
+#if defined(OS_MACOSX)
+#include "chrome/common/font_descriptor_mac.h"
+#endif
 
 #define MESSAGES_INTERNAL_IMPL_FILE \
   "chrome/common/render_messages_internal.h"
@@ -38,51 +45,40 @@
 
 namespace IPC {
 
-void ParamTraits<ViewMsg_Navigate_Params>::Write(Message* m,
-                                                 const param_type& p) {
-  WriteParam(m, p.page_id);
-  WriteParam(m, p.pending_history_list_offset);
-  WriteParam(m, p.current_history_list_offset);
-  WriteParam(m, p.current_history_list_length);
-  WriteParam(m, p.url);
-  WriteParam(m, p.referrer);
-  WriteParam(m, p.transition);
-  WriteParam(m, p.state);
-  WriteParam(m, p.navigation_type);
-  WriteParam(m, p.request_time);
-}
 
-bool ParamTraits<ViewMsg_Navigate_Params>::Read(const Message* m, void** iter,
-                                                param_type* p) {
-  return
-      ReadParam(m, iter, &p->page_id) &&
-      ReadParam(m, iter, &p->pending_history_list_offset) &&
-      ReadParam(m, iter, &p->current_history_list_offset) &&
-      ReadParam(m, iter, &p->current_history_list_length) &&
-      ReadParam(m, iter, &p->url) &&
-      ReadParam(m, iter, &p->referrer) &&
-      ReadParam(m, iter, &p->transition) &&
-      ReadParam(m, iter, &p->state) &&
-      ReadParam(m, iter, &p->navigation_type) &&
-      ReadParam(m, iter, &p->request_time);
-}
+template<>
+struct ParamTraits<WebMenuItem::Type> {
+  typedef WebMenuItem::Type param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    *p = static_cast<WebMenuItem::Type>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::string* l) {
+    std::string type;
+    switch (p) {
+      case WebMenuItem::OPTION:
+        type = "OPTION";
+        break;
+      case WebMenuItem::GROUP:
+        type = "GROUP";
+        break;
+      case WebMenuItem::SEPARATOR:
+        type = "SEPARATOR";
+        break;
+      default:
+        type = "UNKNOWN";
+        break;
+    }
+    LogParam(type, l);
+  }
+};
 
-void ParamTraits<ViewMsg_Navigate_Params>::Log(const param_type& p,
-                                               std::string* l) {
-  l->append("(");
-  LogParam(p.page_id, l);
-  l->append(", ");
-  LogParam(p.url, l);
-  l->append(", ");
-  LogParam(p.transition, l);
-  l->append(", ");
-  LogParam(p.state, l);
-  l->append(", ");
-  LogParam(p.navigation_type, l);
-  l->append(", ");
-  LogParam(p.request_time, l);
-  l->append(")");
-}
 
 void ParamTraits<webkit_glue::FormField>::Write(Message* m,
                                                 const param_type& p) {
@@ -121,6 +117,25 @@ void ParamTraits<webkit_glue::FormField>::Log(const param_type& p,
                                               std::string* l) {
   l->append("<FormField>");
 }
+
+#if defined(OS_MACOSX)
+void ParamTraits<FontDescriptor>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.font_name);
+  WriteParam(m, p.font_point_size);
+}
+
+bool ParamTraits<FontDescriptor>::Read(const Message* m,
+                                       void** iter,
+                                       param_type* p) {
+  return(
+      ReadParam(m, iter, &p->font_name) &&
+      ReadParam(m, iter, &p->font_point_size));
+}
+
+void ParamTraits<FontDescriptor>::Log(const param_type& p, std::string* l) {
+  l->append("<FontDescriptor>");
+}
+#endif
 
 void ParamTraits<ContextMenuParams>::Write(Message* m, const param_type& p) {
   WriteParam(m, p.media_type);
@@ -181,56 +196,6 @@ bool ParamTraits<ContextMenuParams>::Read(const Message* m, void** iter,
 void ParamTraits<ContextMenuParams>::Log(const param_type& p,
                                          std::string* l) {
   l->append("<ContextMenuParams>");
-}
-
-void ParamTraits<ViewHostMsg_UpdateRect_Params>::Write(
-    Message* m, const param_type& p) {
-  WriteParam(m, p.bitmap);
-  WriteParam(m, p.bitmap_rect);
-  WriteParam(m, p.dx);
-  WriteParam(m, p.dy);
-  WriteParam(m, p.scroll_rect);
-  WriteParam(m, p.copy_rects);
-  WriteParam(m, p.view_size);
-  WriteParam(m, p.plugin_window_moves);
-  WriteParam(m, p.flags);
-}
-
-bool ParamTraits<ViewHostMsg_UpdateRect_Params>::Read(
-    const Message* m, void** iter, param_type* p) {
-  return
-      ReadParam(m, iter, &p->bitmap) &&
-      ReadParam(m, iter, &p->bitmap_rect) &&
-      ReadParam(m, iter, &p->dx) &&
-      ReadParam(m, iter, &p->dy) &&
-      ReadParam(m, iter, &p->scroll_rect) &&
-      ReadParam(m, iter, &p->copy_rects) &&
-      ReadParam(m, iter, &p->view_size) &&
-      ReadParam(m, iter, &p->plugin_window_moves) &&
-      ReadParam(m, iter, &p->flags);
-}
-
-void ParamTraits<ViewHostMsg_UpdateRect_Params>::Log(const param_type& p,
-                                                     std::string* l) {
-  l->append("(");
-  LogParam(p.bitmap, l);
-  l->append(", ");
-  LogParam(p.bitmap_rect, l);
-  l->append(", ");
-  LogParam(p.dx, l);
-  l->append(", ");
-  LogParam(p.dy, l);
-  l->append(", ");
-  LogParam(p.scroll_rect, l);
-  l->append(", ");
-  LogParam(p.copy_rects, l);
-  l->append(", ");
-  LogParam(p.view_size, l);
-  l->append(", ");
-  LogParam(p.plugin_window_moves, l);
-  l->append(", ");
-  LogParam(p.flags, l);
-  l->append(")");
 }
 
 void ParamTraits<webkit_glue::WebPluginGeometry>::Write(Message* m,
@@ -606,6 +571,39 @@ bool ParamTraits<WebDropData>::Read(const Message* m, void** iter,
 
 void ParamTraits<WebDropData>::Log(const param_type& p, std::string* l) {
   l->append("<WebDropData>");
+}
+
+void ParamTraits<WebMenuItem>::Write(Message* m, const param_type& p) {
+  WriteParam(m, p.label);
+  WriteParam(m, p.type);
+  WriteParam(m, p.enabled);
+  WriteParam(m, p.checked);
+  WriteParam(m, p.action);
+}
+
+bool ParamTraits<WebMenuItem>::Read(const Message* m,
+                                    void** iter,
+                                    param_type* p) {
+  return
+      ReadParam(m, iter, &p->label) &&
+      ReadParam(m, iter, &p->type) &&
+      ReadParam(m, iter, &p->enabled) &&
+      ReadParam(m, iter, &p->checked) &&
+      ReadParam(m, iter, &p->action);
+}
+
+void ParamTraits<WebMenuItem>::Log(const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.label, l);
+  l->append(", ");
+  LogParam(p.type, l);
+  l->append(", ");
+  LogParam(p.enabled, l);
+  l->append(", ");
+  LogParam(p.checked, l);
+  l->append(", ");
+  LogParam(p.action, l);
+  l->append(")");
 }
 
 void ParamTraits<URLPattern>::Write(Message* m, const param_type& p) {

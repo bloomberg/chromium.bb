@@ -15,7 +15,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/view_types.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "gfx/rect.h"
 
 ////////////////

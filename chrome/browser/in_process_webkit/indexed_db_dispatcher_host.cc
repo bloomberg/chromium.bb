@@ -11,6 +11,7 @@
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/serialized_script_value.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBCursor.h"

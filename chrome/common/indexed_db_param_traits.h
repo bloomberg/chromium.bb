@@ -8,6 +8,7 @@
 
 #include "chrome/common/indexed_db_key.h"
 #include "chrome/common/serialized_script_value.h"
+#include "ipc/ipc_param_traits.h"
 
 namespace IPC {
 

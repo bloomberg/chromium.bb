@@ -26,7 +26,7 @@
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 #include "grit/app_resources.h"
 #include "net/base/escape.h"

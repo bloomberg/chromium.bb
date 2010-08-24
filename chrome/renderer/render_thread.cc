@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/extension_extent.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_database_observer_impl.h"

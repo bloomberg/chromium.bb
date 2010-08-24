@@ -12,6 +12,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "gfx/canvas_skia.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

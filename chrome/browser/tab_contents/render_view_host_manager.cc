@@ -21,6 +21,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
 
 namespace base {

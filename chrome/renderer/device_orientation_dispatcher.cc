@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/device_orientation_dispatcher.h"
 
+#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientation.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDeviceOrientationController.h"

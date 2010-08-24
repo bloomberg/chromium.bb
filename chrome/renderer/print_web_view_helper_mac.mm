@@ -11,6 +11,7 @@
 #include "base/process_util.h"
 #include "base/scoped_cftyperef.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"

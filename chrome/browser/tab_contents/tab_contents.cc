@@ -88,6 +88,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"

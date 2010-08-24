@@ -11,6 +11,7 @@
 #include "chrome/gpu/gpu_backing_store_glx_context.h"
 #include "chrome/gpu/gpu_thread.h"
 #include "chrome/gpu/gpu_view_x.h"
+#include "gfx/rect.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

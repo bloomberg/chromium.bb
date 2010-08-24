@@ -11,6 +11,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "googleurl/src/gurl.h"
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(

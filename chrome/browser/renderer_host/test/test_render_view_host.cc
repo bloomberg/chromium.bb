@@ -9,8 +9,10 @@
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/dom_storage_common.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
+#include "webkit/glue/password_form.h"
 
 using webkit_glue::PasswordForm;
 

@@ -7,6 +7,7 @@
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "printing/native_metafile.h"
 #include "printing/units.h"
 #include "skia/ext/vector_canvas.h"

@@ -27,8 +27,10 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
-#include "chrome/common/render_messages.h"
+#include "chrome/common/notification_type.h"
+#include "chrome/common/render_messages_params.h"
 #include "chrome/common/url_constants.h"
+#include "webkit/glue/webpreferences.h"
 
 #include "grit/generated_resources.h"
 

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/shared_memory.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "ipc/ipc_message_utils.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"

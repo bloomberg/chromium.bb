@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/tuple.h"
+#include "ipc/ipc_param_traits.h"
 #include "ipc/ipc_sync_message.h"
 
 #if defined(COMPILER_GCC)
@@ -131,14 +132,6 @@ class MessageIterator {
 
 //-----------------------------------------------------------------------------
 // ParamTraits specializations, etc.
-
-template <class P> struct ParamTraits {
-};
-
-template <class P>
-struct SimilarTypeTraits {
-  typedef P Type;
-};
 
 template <class P>
 static inline void WriteParam(Message* m, const P& p) {

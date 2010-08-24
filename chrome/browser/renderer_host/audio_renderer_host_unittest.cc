@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/render_messages_params.h"
 #include "ipc/ipc_message_utils.h"
 #include "media/audio/fake_audio_output_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
