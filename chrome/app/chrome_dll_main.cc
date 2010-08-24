@@ -648,6 +648,26 @@ int ChromeMain(int argc, char** argv) {
     }
   }
 
+#if defined(OS_MACOSX)
+  // Mac Chrome is packaged with a main app bundle and a helper app bundle.
+  // The main app bundle should only be used for the browser process, so it
+  // should never see a --type switch (switches::kProcessType).  Likewise,
+  // the helper should always have a --type switch.
+  //
+  // This check is done this late so there is already a call to
+  // mac_util::IsBackgroundOnlyProcess(), so there is no change in
+  // startup/initialization order.
+
+  // The helper's Info.plist marks it as a background only app.
+  if (mac_util::IsBackgroundOnlyProcess()) {
+    CHECK(parsed_command_line.HasSwitch(switches::kProcessType))
+        << "Helper application requires --type.";
+  } else {
+    CHECK(!parsed_command_line.HasSwitch(switches::kProcessType))
+        << "Main application forbids --type, saw \"" << process_type << "\".";
+  }
+#endif  // defined(OS_MACOSX)
+
   if (IsCrashReporterEnabled())
     InitCrashProcessInfo();
 #endif  // OS_MACOSX

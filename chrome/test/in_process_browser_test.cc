@@ -166,6 +166,15 @@ void InProcessBrowserTest::SetUp() {
   subprocess_path = subprocess_path.DirName();
   subprocess_path = subprocess_path.AppendASCII(WideToASCII(
       chrome::kBrowserProcessExecutablePath));
+#if defined(OS_MACOSX)
+  // Recreate the real environment, run the helper within the app bundle.
+  subprocess_path = subprocess_path.DirName().DirName();
+  DCHECK_EQ(subprocess_path.BaseName().value(), "Contents");
+  subprocess_path =
+      subprocess_path.Append("Versions").Append(chrome::kChromeVersion);
+  subprocess_path =
+      subprocess_path.Append(chrome::kHelperProcessExecutablePath);
+#endif
   command_line->AppendSwitchPath(switches::kBrowserSubprocessPath,
                                  subprocess_path);
 #endif
