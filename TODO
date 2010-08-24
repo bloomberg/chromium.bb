@@ -63,11 +63,24 @@ Core wayland protocol
    to go with.  Problem is, we don't know when we've seen that last
    offer event.
 
+   Create transient dnd object when a client starts a drag.  Announce
+   the dnd object to clients first time the drag enters one of its
+   surfaces.  Track if we've already announced the object by comparing
+   the drag start timestamp/serial with the clients last-event
+   timestamp/serial?  Wont work if we send other events to a client
+   after creating the drag object.  Maybe just keep the transient
+   object on the initiator side?
+
+ - Pointer image issue:
+
+    - A touch input device doesn't have a pointer; indicate that
+      somehow.
+
+    - Cursor themes
+
  - copy-n-paste, store data in server (only one mime-type available)
    or do X style (content mime-type negotiation, but data goes away
    when client quits).
-
- - Optional pointer images.
 
  - Discard buffer, as in "wayland discarded your buffer, it's no
    longer visible, you can stop updating it now.", reattach, as in "oh
