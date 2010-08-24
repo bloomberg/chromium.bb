@@ -100,6 +100,12 @@ class PersonalDataManager
   // ID of newly-added profiles.
   void SetCreditCards(std::vector<CreditCard>* credit_cards);
 
+  // Removes the profile represented by |unique_id|.
+  void RemoveProfile(int unique_id);
+
+  // Removes the credit card represented by |unique_id|.
+  void RemoveCreditCard(int unique_id);
+
   // Gets the possible field types for the given text, determined by matching
   // the text with all known personal information and returning matching types.
   void GetPossibleFieldTypes(const string16& text,

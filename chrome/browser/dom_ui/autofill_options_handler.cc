@@ -72,6 +72,13 @@ void AutoFillOptionsHandler::OnPersonalDataChanged() {
 }
 
 void AutoFillOptionsHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback(
+      "removeAddress",
+      NewCallback(this, &AutoFillOptionsHandler::RemoveAddress));
+
+  dom_ui_->RegisterMessageCallback(
+      "removeCreditCard",
+      NewCallback(this, &AutoFillOptionsHandler::RemoveCreditCard));
 }
 
 void AutoFillOptionsHandler::LoadAutoFillData() {
@@ -84,6 +91,7 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
        i != personal_data_->profiles().end(); ++i) {
     DictionaryValue* address = new DictionaryValue();
     address->SetString("label", (*i)->PreviewSummary());
+    address->SetInteger("unique_id", (*i)->unique_id());
     addresses.Append(address);
   }
 
@@ -96,9 +104,36 @@ void AutoFillOptionsHandler::LoadAutoFillData() {
        i != personal_data_->credit_cards().end(); ++i) {
     DictionaryValue* credit_card = new DictionaryValue();
     credit_card->SetString("label", (*i)->PreviewSummary());
+    credit_card->SetInteger("unique_id", (*i)->unique_id());
     credit_cards.Append(credit_card);
   }
 
   dom_ui_->CallJavascriptFunction(L"AutoFillOptions.updateCreditCards",
                                   credit_cards);
+}
+
+void AutoFillOptionsHandler::RemoveAddress(const ListValue* args) {
+  if (!personal_data_->IsDataLoaded())
+    return;
+
+  int unique_id = 0;
+  if (!ExtractIntegerValue(args, &unique_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  personal_data_->RemoveProfile(unique_id);
+}
+
+void AutoFillOptionsHandler::RemoveCreditCard(const ListValue* args) {
+  if (!personal_data_->IsDataLoaded())
+    return;
+
+  int unique_id = 0;
+  if (!ExtractIntegerValue(args, &unique_id)) {
+    NOTREACHED();
+    return;
+  }
+
+  personal_data_->RemoveCreditCard(unique_id);
 }

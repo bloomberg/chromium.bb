@@ -28,6 +28,28 @@ const int kMinImportSize = 3;
 
 const char kUnlabeled[] = "Unlabeled";
 
+template<typename T>
+class FormGroupIDMatchesFunctor {
+ public:
+  explicit FormGroupIDMatchesFunctor(int id) : id_(id) {}
+
+  bool operator()(const T& form_group) {
+    return form_group.unique_id() == id_;
+  }
+
+ private:
+  int id_;
+};
+
+template<typename T>
+class DereferenceFunctor {
+ public:
+  template<typename T_Iterator>
+  const T& operator()(const T_Iterator& iterator) {
+    return *iterator;
+  }
+};
+
 }  // namespace
 
 PersonalDataManager::~PersonalDataManager() {
@@ -83,7 +105,7 @@ void PersonalDataManager::OnAutoFillDialogApply(
 }
 
 void PersonalDataManager::SetObserver(PersonalDataManager::Observer* observer) {
-  // TODO: RemoveObserver is for compatability with old code, it should be
+  // TODO: RemoveObserver is for compatibility with old code, it should be
   // nuked.
   observers_.RemoveObserver(observer);
   observers_.AddObserver(observer);
@@ -362,6 +384,38 @@ void PersonalDataManager::SetCreditCards(
   }
 
   FOR_EACH_OBSERVER(Observer, observers_, OnPersonalDataChanged());
+}
+
+void PersonalDataManager::RemoveProfile(int unique_id) {
+  // TODO(jhawkins): Refactor SetProfiles so this isn't so hacky.
+  std::vector<AutoFillProfile> profiles(web_profiles_.size());
+  std::transform(web_profiles_.begin(), web_profiles_.end(),
+                 profiles.begin(),
+                 DereferenceFunctor<AutoFillProfile>());
+
+  // Remove the profile that matches |unique_id|.
+  profiles.erase(
+      std::remove_if(profiles.begin(), profiles.end(),
+                     FormGroupIDMatchesFunctor<AutoFillProfile>(unique_id)),
+      profiles.end());
+
+  SetProfiles(&profiles);
+}
+
+void PersonalDataManager::RemoveCreditCard(int unique_id) {
+  // TODO(jhawkins): Refactor SetCreditCards so this isn't so hacky.
+  std::vector<CreditCard> credit_cards(credit_cards_.size());
+  std::transform(credit_cards_.begin(), credit_cards_.end(),
+                 credit_cards.begin(),
+                 DereferenceFunctor<CreditCard>());
+
+  // Remove the credit card that matches |unique_id|.
+  credit_cards.erase(
+      std::remove_if(credit_cards.begin(), credit_cards.end(),
+                     FormGroupIDMatchesFunctor<CreditCard>(unique_id)),
+      credit_cards.end());
+
+  SetCreditCards(&credit_cards);
 }
 
 void PersonalDataManager::GetPossibleFieldTypes(const string16& text,

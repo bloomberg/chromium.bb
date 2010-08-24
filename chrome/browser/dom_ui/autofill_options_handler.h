@@ -28,6 +28,14 @@ class AutoFillOptionsHandler : public OptionsPageUIHandler,
   // Loads AutoFill addresses and credit cards using the PersonalDataManager.
   void LoadAutoFillData();
 
+  // Removes an address from the WebDatabase. Called from DOMUI.
+  // |args| - an integer, the unique ID of the address to remove.
+  void RemoveAddress(const ListValue* args);
+
+  // Removes a credit card from the WebDatabase. Called from DOMUI.
+  // |args| - an integer, the unique ID of the credit card to remove.
+  void RemoveCreditCard(const ListValue* args);
+
   // The personal data manager, used to load AutoFill profiles and credit cards.
   // Unowned pointer, may not be NULL.
   PersonalDataManager* personal_data_;

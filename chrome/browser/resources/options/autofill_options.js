@@ -7,7 +7,8 @@ cr.define('options', function() {
 
   // The offset of the first profile in either the address list or the credit
   // card list. Consists of the header and the horizontal rule.
-  const profileOffset = 2;
+  const addressOffset = 2;
+  const creditCardOffset = 3;
 
   /////////////////////////////////////////////////////////////////////////////
   // AutoFillOptions class:
@@ -22,6 +23,8 @@ cr.define('options', function() {
     this.numAddresses = 0;
     this.numCreditCards = 0;
     this.activeNavTab = null;
+    this.addressIDs = null;
+    this.creditCardIDs = null;
     OptionsPage.call(this, 'autoFillOptions',
                      templateData.autoFillOptionsTitle,
                      'autoFillOptionsPage');
@@ -45,6 +48,9 @@ cr.define('options', function() {
       $('addCreditCardButton').onclick = function(event) {
         self.showAddCreditCardOverlay_();
       };
+      $('autoFillRemoveButton').onclick = function(event) {
+        self.removeProfile_();
+      };
 
       Preferences.getInstance().addEventListener('autofill.enabled',
           cr.bind(self.updateEnabledState_, self));
@@ -56,10 +62,11 @@ cr.define('options', function() {
      * @private
      */
     updateEnabledState_: function() {
-      var checkbox = $('autoFillEnabled');
-      $('addAddressButton').disabled = $('addCreditCardButton').disabled =
-          $('editButton').disabled = $('autoFillRemoveButton').disabled =
-              !checkbox.checked;
+      var disabled = !$('autoFillEnabled').checked;
+      $('addAddressButton').disabled = disabled;
+      $('addCreditCardButton').disabled = disabled;
+      $('autoFillEditButton').disabled = disabled;
+      $('autoFillRemoveButton').disabled = disabled;
     },
 
     /**
@@ -96,7 +103,8 @@ cr.define('options', function() {
     resetAddresses_: function() {
       var profiles = $('profileList');
       for (var i = 0; i <  this.numAddresses; ++i)
-        profiles.remove(profileOffset);
+        profiles.remove(addressOffset);
+      this.numAddresses = 0;
     },
 
     /**
@@ -106,9 +114,10 @@ cr.define('options', function() {
      */
     resetCreditCards_: function() {
       var profiles = $('profileList');
-      var offset = this.numAddresses + profileOffset;
+      var offset = this.numAddresses + addressOffset + creditCardOffset;
       for (var i = 0; i <  this.numCreditCards; ++i)
         profiles.remove(offset);
+      this.numCreditCards = 0;
     },
 
     /**
@@ -118,13 +127,14 @@ cr.define('options', function() {
      */
     updateAddresses_: function(addresses) {
       this.resetAddresses_();
-      profileList = $('profileList');
-      var blankAddress =
-          profileList.options[profileOffset + this.numAddresses];
+      var profileList = $('profileList');
+      var blankAddress = profileList.options[addressOffset];
       this.numAddresses = addresses.length;
+      this.addressIDs = new Array(this.numAddresses);
       for (var i = 0; i < this.numAddresses; i++) {
         var address = addresses[i];
         var option = new Option(address['label']);
+        this.addressIDs[i] = address['unique_id'];
         profileList.add(option, blankAddress);
       }
 
@@ -138,11 +148,13 @@ cr.define('options', function() {
      */
     updateCreditCards_: function(creditCards) {
       this.resetCreditCards_();
-      profileList = $('profileList');
+      var profileList = $('profileList');
       this.numCreditCards = creditCards.length;
+      this.creditCardIDs = new Array(this.numCreditCards);
       for (var i = 0; i < this.numCreditCards; i++) {
         var creditCard = creditCards[i];
         var option = new Option(creditCard['label']);
+        this.creditCardIDs[i] = creditCard['unique_id'];
         profileList.add(option, null);
       }
 
@@ -158,6 +170,55 @@ cr.define('options', function() {
       $('autoFillRemoveButton').disabled = $('autoFillEditButton').disabled =
           ($('profileList').selectedIndex == -1);
     },
+
+    /**
+     * Removes the currently selected profile, whether it's an address or a
+     * credit card.
+     * @private
+     */
+    removeProfile_: function() {
+      var idx = $('profileList').selectedIndex;
+      if ((profileIndex = this.getAddressIndex_(idx)) != -1)
+        chrome.send('removeAddress', [String(this.addressIDs[profileIndex])]);
+      else if ((profileIndex = this.getCreditCardIndex_(idx)) != -1)
+        chrome.send('removeCreditCard',
+                    [String(this.creditCardIDs[profileIndex])]);
+    },
+
+    /**
+     * Returns the index into the address list based on |index|, the index into
+     * the select control. Returns -1 if this is not an address index.
+     * @private
+     */
+    getAddressIndex_: function(index) {
+      index -= addressOffset;
+      if (index >= 0 && index < this.numAddresses)
+        return index;
+
+      return -1;
+    },
+
+    /**
+     * Returns the index into the credit card list based on |index|, the index
+     * into the select control. Returns -1 if this is not a credit card index.
+     * @private
+     */
+    getCreditCardIndex_: function(index) {
+      index -= addressOffset + this.numAddresses + creditCardOffset;
+      if (index >= 0 && index < this.numCreditCards)
+        return index;
+
+      return -1;
+    },
+
+    /**
+     * Returns true if |index| points to a credit card profile.
+     * @private
+     */
+    profileIndexIsCreditCard_: function(index) {
+      index -= addressOffset + this.numAddresses + creditCardOffset;
+      return (index >= 0 && index < this.numCreditCards);
+    }
   };
 
   AutoFillOptions.updateAddresses = function(addresses) {
