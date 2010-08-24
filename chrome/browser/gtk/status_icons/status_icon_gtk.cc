@@ -7,6 +7,7 @@
 #include "base/string16.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/gtk/menu_gtk.h"
 #include "gfx/gtk_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -16,6 +17,8 @@ StatusIconGtk::StatusIconGtk() {
 
   g_signal_connect(icon_, "activate",
                    G_CALLBACK(OnClickThunk), this);
+  g_signal_connect(icon_, "popup-menu",
+                   G_CALLBACK(OnPopupMenuThunk), this);
 }
 
 StatusIconGtk::~StatusIconGtk() {
@@ -40,11 +43,19 @@ void StatusIconGtk::SetToolTip(const string16& tool_tip) {
   gtk_status_icon_set_tooltip(icon_, UTF16ToUTF8(tool_tip).c_str());
 }
 
-void StatusIconGtk::ResetContextMenu(menus::MenuModel* menu) {
-  // TODO(atwilson): Add support for context menus for GTK
-  // (http://crbug.com.37375).
-}
-
 void StatusIconGtk::OnClick(GtkWidget* widget) {
   DispatchClickEvent();
+}
+
+void StatusIconGtk::UpdatePlatformContextMenu(menus::MenuModel* model) {
+  if (!model)
+    menu_.reset();
+  else
+    menu_.reset(new MenuGtk(NULL, model));
+}
+
+void StatusIconGtk::OnPopupMenu(GtkWidget* widget, guint button, guint time) {
+  // If we have a menu - display it.
+  if (menu_.get())
+    menu_->PopupAsContextForStatusIcon(time, button, icon_);
 }

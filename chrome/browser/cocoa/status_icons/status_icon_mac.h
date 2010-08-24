@@ -27,7 +27,8 @@ class StatusIconMac : public StatusIcon {
   virtual void SetToolTip(const string16& tool_tip);
 
  protected:
-  virtual void ResetContextMenu(menus::MenuModel* menu);
+  // Overridden from StatusIcon.
+  virtual void UpdatePlatformContextMenu(menus::MenuModel* menu);
 
  private:
   // Getter for item_ that allows lazy initialization.

@@ -18,7 +18,7 @@ class TestStatusIcon : public StatusIcon {
   virtual void SetImage(const SkBitmap& image) {}
   virtual void SetPressedImage(const SkBitmap& image) {}
   virtual void SetToolTip(const string16& tool_tip) {}
-  virtual void ResetContextMenu(menus::MenuModel* menu) {}
+  virtual void UpdatePlatformContextMenu(menus::MenuModel* menu) {}
 };
 
 TEST(StatusIconTest, ObserverAdd) {
@@ -45,4 +45,3 @@ TEST(StatusIconTest, ObserverRemove) {
   icon.RemoveObserver(&observer);
   icon.DispatchClickEvent();
 }
-

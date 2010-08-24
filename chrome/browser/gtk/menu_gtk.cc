@@ -259,6 +259,12 @@ void MenuGtk::PopupAsContextAt(guint32 event_time, gfx::Point point) {
                  PointMenuPositionFunc, &point, 3, event_time);
 }
 
+void MenuGtk::PopupAsContextForStatusIcon(guint32 event_time, guint32 button,
+                                          GtkStatusIcon* icon) {
+  gtk_menu_popup(GTK_MENU(menu_), NULL, NULL, gtk_status_icon_position_menu,
+                 icon, button, event_time);
+}
+
 void MenuGtk::PopupAsFromKeyEvent(GtkWidget* widget) {
   Popup(widget, 0, gtk_get_current_event_time());
   gtk_menu_shell_select_first(GTK_MENU_SHELL(menu_), FALSE);

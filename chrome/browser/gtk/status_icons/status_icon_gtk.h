@@ -11,6 +11,7 @@
 #include "app/gtk_signal.h"
 #include "chrome/browser/status_icons/status_icon.h"
 
+class MenuGtk;
 class SkBitmap;
 
 class StatusIconGtk : public StatusIcon {
@@ -27,11 +28,18 @@ class StatusIconGtk : public StatusIcon {
   CHROMEGTK_CALLBACK_0(StatusIconGtk, void, OnClick);
 
  protected:
-  virtual void ResetContextMenu(menus::MenuModel* menu);
+  // Overridden from StatusIcon.
+  virtual void UpdatePlatformContextMenu(menus::MenuModel* menu);
 
  private:
+  // Callback invoked when user right-clicks on the status icon.
+  CHROMEGTK_CALLBACK_2(StatusIconGtk, void, OnPopupMenu, guint, guint);
+
   // The currently-displayed icon for the window.
   GtkStatusIcon* icon_;
+
+  // The context menu for this icon (if any).
+  scoped_ptr<MenuGtk> menu_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusIconGtk);
 };

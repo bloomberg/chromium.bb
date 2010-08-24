@@ -31,5 +31,5 @@ void StatusIcon::DispatchClickEvent() {
 
 void StatusIcon::SetContextMenu(menus::MenuModel* menu) {
   context_menu_contents_.reset(menu);
-  ResetContextMenu(menu);
+  UpdatePlatformContextMenu(menu);
 }

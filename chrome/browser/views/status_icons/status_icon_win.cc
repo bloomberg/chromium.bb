@@ -61,7 +61,7 @@ void StatusIconWin::InitIconData(NOTIFYICONDATA* icon_data) {
   icon_data->uID = icon_id_;
 }
 
-void StatusIconWin::ResetContextMenu(menus::MenuModel* menu) {
+void StatusIconWin::UpdatePlatformContextMenu(menus::MenuModel* menu) {
   // If no items are passed, blow away our context menu.
   if (!menu) {
     context_menu_.reset();

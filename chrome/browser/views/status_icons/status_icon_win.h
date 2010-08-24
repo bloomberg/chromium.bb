@@ -38,7 +38,8 @@ class StatusIconWin : public StatusIcon {
   void HandleClickEvent(int x, int y, bool left_button_click);
 
  protected:
-  virtual void ResetContextMenu(menus::MenuModel* menu);
+  // Overridden from StatusIcon.
+  virtual void UpdatePlatformContextMenu(menus::MenuModel* menu);
 
  private:
   void InitIconData(NOTIFYICONDATA* icon_data);

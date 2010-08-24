@@ -83,6 +83,10 @@ class MenuGtk {
   // Displays the menu at the given coords. |point| is intentionally not const.
   void PopupAsContextAt(guint32 event_time, gfx::Point point);
 
+  // Displays the menu as a context menu for the passed status icon.
+  void PopupAsContextForStatusIcon(guint32 event_time, guint32 button,
+                                   GtkStatusIcon* icon);
+
   // Displays the menu following a keyboard event (such as selecting |widget|
   // and pressing "enter").
   void PopupAsFromKeyEvent(GtkWidget* widget);
