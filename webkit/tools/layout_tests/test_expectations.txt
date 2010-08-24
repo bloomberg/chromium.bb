@@ -12,8 +12,16 @@ BUG52841 MAC : fast/dom/Geolocation/no-page-cache.html = TEXT PASS
 BUG52841 MAC : fast/dom/HTMLAnchorElement/set-href-attribute-hash.html = TEXT PASS
 BUG52841 MAC : editing/selection/drag-in-iframe.html = IMAGE
 
-BUG53073 WIN : fast/repaint/multicol-repaint.html = IMAGE+TEXT
-BUG53073 DEBUG : storage/change-version.html = CRASH PASS
-BUG21852 MAC : fast/canvas/webgl/tex-image-and-sub-image-2d-with-video.html = TEXT
-BUG53073 LINUX : svg/custom/clip-path-units-changes.svg = TEXT
-BUG10296 LINUX DEBUG : svg/batik/paints/patternPreserveAspectRatioA.svg = IMAGE IMAGE+TEXT TIMEOUT
+// New in WK r65880, some probably just need rebaselining, others have real diffs
+BUGWK44514 : svg/clip-path/clip-in-mask-objectBoundingBox.svg = IMAGE
+BUGWK44514 : svg/clip-path/clip-in-mask-userSpaceOnUse.svg = IMAGE
+BUGWK44514 : svg/clip-path/clip-in-mask.svg = IMAGE
+BUGWK44514 : svg/clip-path/deep-nested-clip-in-mask-different-unitTypes.svg = IMAGE+TEXT
+BUGWK44514 : svg/clip-path/deep-nested-clip-in-mask-panning.svg = IMAGE+TEXT
+BUGWK44514 : svg/clip-path/deep-nested-clip-in-mask.svg = IMAGE+TEXT
+BUGWK44514 : svg/clip-path/nested-clip-in-mask-image-based-clipping.svg = IMAGE
+BUGWK44514 : svg/clip-path/nested-clip-in-mask-path-and-image-based-clipping.svg = IMAGE
+BUGWK44514 : svg/clip-path/nested-clip-in-mask-path-based-clipping.svg = IMAGE
+// Rebaselined in WK r65874, Linux has missing lines
+BUGWK44514 LINUX : svg/custom/missing-xlink.svg = TEXT
+
