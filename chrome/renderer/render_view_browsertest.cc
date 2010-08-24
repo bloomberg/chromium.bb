@@ -862,7 +862,8 @@ TEST_F(RenderViewTest, InsertCharacters) {
 #endif
 }
 
-TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForError) {
+// Crashy, http://crbug.com/53247.
+TEST_F(RenderViewTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   GetMainFrame()->enableViewSourceMode(true);
   WebURLError error;
   error.domain.fromUTF8("test_domain");
