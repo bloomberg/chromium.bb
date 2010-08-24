@@ -101,11 +101,21 @@ void NaClValidatorStateSetLogVerbosity(NaClValidatorState* state,
 
 /* Returns true if an error message should be printed for the given level, in
  * the current validator state.
+ * Parameters:
+ *   state - The validator state (may be NULL).
+ *   level - The log level of the validator message.
  */
 static Bool NaClPrintValidatorMessages(NaClValidatorState* state, int level) {
-  return ((NULL == state) || (state->quit_after_error_count != 0)) &&
-      (level <= state->log_verbosity) &&
-      (level <= NaClLogGetVerbosity());
+  if (NULL == state) {
+    /* Validator not defined yet, only used log verbosity to decide if message
+     * should be printed.
+     */
+    return level <= NaClLogGetVerbosity();
+  } else {
+    return (state->quit_after_error_count != 0) &&
+        (level <= state->log_verbosity) &&
+        (level <= NaClLogGetVerbosity());
+  }
 }
 
 static const char *NaClLogLevelLabel(int level) {
@@ -121,9 +131,13 @@ static const char *NaClLogLevelLabel(int level) {
   }
 }
 
-/* Records that an error message has just been reported. */
+/* Records that an error message has just been reported.
+ * Parameters:
+ *   state - The validator state (may be NULL).
+ *   level - The log level of the validator message.
+ */
 static void NaClRecordErrorReported(NaClValidatorState* state, int level) {
-  if (((level == LOG_ERROR) || (level == LOG_FATAL)) &&
+  if ((state != NULL) && ((level == LOG_ERROR) || (level == LOG_FATAL)) &&
       (state->quit_after_error_count > 0)) {
     --(state->quit_after_error_count);
     if (state->quit_after_error_count == 0) {
@@ -156,7 +170,6 @@ void NaClValidatorMessage(int level,
   level = NaClRecordIfValidatorError(state, level);
   if (NaClPrintValidatorMessages(state, level)) {
     va_list ap;
-
     NaClLogLock();
     NaClLog_mu(level, "VALIDATOR: %s", NaClLogLevelLabel(level));
     va_start(ap, format);
