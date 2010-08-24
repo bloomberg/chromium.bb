@@ -38,3 +38,22 @@
   fun:RpcServerUnregisterIf
 }
 
+# http://code.google.com/p/data-race-test/issues/detail?id=45
+{
+  accessing an invalid lock in unnamedImageEntryPoint
+  ThreadSanitizer:InvalidLock
+  fun:unnamedImageEntryPoint
+}
+{
+  accessing an invalid lock in CoFreeAllLibraries
+  ThreadSanitizer:InvalidLock
+  fun:CoFreeAllLibraries
+}
+{
+  accessing an invalid lock under exit/doexit
+  ThreadSanitizer:InvalidLock
+  fun:*~Lock*
+  ...
+  fun:doexit
+  fun:exit
+}
