@@ -15,6 +15,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebGraphicsContext3D.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
@@ -236,6 +237,10 @@ void TestWebKitClient::dispatchStorageEvent(const WebKit::WebString& key,
     const WebKit::WebString& origin, const WebKit::WebURL& url,
     bool is_local_storage) {
   // The event is dispatched by the proxy.
+}
+
+WebKit::WebIDBFactory* TestWebKitClient::idbFactory() {
+  return WebKit::WebIDBFactory::create();
 }
 
 #if defined(OS_WIN)
