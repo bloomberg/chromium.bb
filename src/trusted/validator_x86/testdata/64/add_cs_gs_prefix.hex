@@ -1,0 +1,4 @@
+# Example of using multiple prefixes that are illegal. In this case the CS
+# and GS semgment prefixes. Instruction is:
+#       add %al, %al
+2e 36 00 c0

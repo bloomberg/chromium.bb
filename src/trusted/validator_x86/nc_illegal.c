@@ -52,9 +52,16 @@ void NaClValidateInstructionLegal(NaClValidatorState* state,
    * recognized as special cases, and need not be processed here.
    */
   if (num_prefix_bytes > 1) {
-    is_legal = FALSE;
-    disallows_flags |= NACL_DISALLOWS_FLAG(NaClTooManyPrefixBytes);
-    DEBUG(NaClLog(LOG_INFO, "too many prefix bytes\n"));
+    /* Allow data prefix if lock prefix also given. */
+    if ((num_prefix_bytes == 2) &&
+        (inst_state->prefix_mask & kPrefixDATA16) &&
+        (inst_state->prefix_mask & kPrefixLOCK)) {
+      /* Allow special case. */
+    } else {
+      is_legal = FALSE;
+      disallows_flags |= NACL_DISALLOWS_FLAG(NaClTooManyPrefixBytes);
+      DEBUG(NaClLog(LOG_INFO, "too many prefix bytes\n"));
+    }
   }
 
   /* Check other forms to disallow. */
