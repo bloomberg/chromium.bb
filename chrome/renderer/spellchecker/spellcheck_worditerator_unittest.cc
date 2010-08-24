@@ -39,7 +39,13 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
       L"\x0437\x0434\x0440\x0430\x0432\x0441\x0442\x0432"
       L"\x0443\x0439\x0442\x0435"
       // Hebrew (including niqquds)
-      L"\x05e9\x05c1\x05b8\x05dc\x05d5\x05b9\x05dd"
+      L"\x05e9\x05c1\x05b8\x05dc\x05d5\x05b9\x05dd "
+      // Hebrew words with U+0027 and U+05F3
+      L"\x05e6\x0027\x05d9\x05e4\x05e1 \x05e6\x05F3\x05d9\x05e4\x05e1 "
+      // Hebrew words with U+0022 and U+05F4
+      L"\x05e6\x05d4\x0022\x05dc \x05e6\x05d4\x05f4\x05dc "
+      // Hebrew words enclosed with ASCII quotes.
+      L"\"\x05e6\x05d4\x0022\x05dc\" '\x05e9\x05c1\x05b8\x05dc\x05d5'"
       // Arabic (including vowel marks)
       L"\x0627\x064e\x0644\x0633\x064e\x0651\x0644\x0627"
       L"\x0645\x064f\x0020\x0639\x064e\x0644\x064e\x064a"
@@ -55,17 +61,18 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
       L"\x4F60\x597D"
       // Hangul Syllables
       L"\xC548\xB155\xD558\xC138\xC694"
-      // Full-width latin
-      L"\xFF28\xFF45\xFF4C\xFF4C\xFF4F";
+      // Full-width latin : Hello
+      L"\xFF28\xFF45\xFF4C\xFF4C\xFF4F "
+      L"e.g.,";
 
   // The languages and expected results used in this test.
   static const TestCase kTestCases[] = {
     {
       // English (keep contraction words)
-      "en-US", true, L"hello:hello affix Hello"
+      "en-US", true, L"hello:hello affix Hello e.g"
     }, {
       // English (split contraction words)
-      "en-US", false, L"hello hello affix Hello"
+      "en-US", false, L"hello hello affix Hello e g"
     }, {
       // Greek
       "el-GR", true,
@@ -78,7 +85,10 @@ TEST(SpellcheckWordIteratorTest, SplitWord) {
     }, {
       // Hebrew
       "he-IL", true,
-      L"\x05e9\x05dc\x05d5\x05dd"
+      L"\x05e9\x05dc\x05d5\x05dd "
+      L"\x05e6\x0027\x05d9\x05e4\x05e1 \x05e6\x05F3\x05d9\x05e4\x05e1 "
+      L"\x05e6\x05d4\x0022\x05dc \x05e6\x05d4\x05f4\x05dc "
+      L"\x05e6\x05d4\x0022\x05dc \x05e9\x05dc\x05d5"
     }, {
       // Arabic
       "ar", true,
