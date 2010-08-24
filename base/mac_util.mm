@@ -77,23 +77,13 @@ bool AmIBundled() {
   }
 
   FSCatalogInfo info;
-  HFSUniStr255 hfsname;
   if (FSGetCatalogInfo(&fsref, kFSCatInfoNodeFlags, &info,
-                       &hfsname, NULL, NULL) != noErr) {
+                       NULL, NULL, NULL) != noErr) {
     LOG(ERROR) << "FSGetCatalogInfo failed, returning false";
     return false;
   }
 
-  scoped_cftyperef<CFStringRef> cfname(
-      CFStringCreateWithCharacters(kCFAllocatorDefault,
-                                   hfsname.unicode,
-                                   hfsname.length));
-  std::string filename = base::SysCFStringRefToUTF8(cfname);
-  bool bundled = info.nodeFlags & kFSNodeIsDirectoryMask;
-  LOG(ERROR) << "AmIBundled() filename is: " << filename
-             << ", returning " << (bundled ? "true" : "false");
-
-  return bundled;
+  return info.nodeFlags & kFSNodeIsDirectoryMask;
 }
 
 bool IsBackgroundOnlyProcess() {
