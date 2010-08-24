@@ -120,18 +120,13 @@ void CallOnMainThread(int delay_in_msec,
       delay_in_msec);
 }
 
-bool IsMainThread() {
-  return GetMainThreadMessageLoop()->BelongsToCurrentThread();
-}
-
 const PPB_Core core_interface = {
   &AddRefResource,
   &ReleaseResource,
   &MemAlloc,
   &MemFree,
   &GetTime,
-  &CallOnMainThread,
-  &IsMainThread
+  &CallOnMainThread
 };
 
 // PPB_Testing -----------------------------------------------------------------
