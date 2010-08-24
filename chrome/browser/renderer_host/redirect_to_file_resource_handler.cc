@@ -153,6 +153,7 @@ RedirectToFileResourceHandler::~RedirectToFileResourceHandler() {
 }
 
 void RedirectToFileResourceHandler::DidCreateTemporaryFile(
+    int /*error_code*/,
     base::PassPlatformFile file_handle,
     FilePath file_path) {
   file_path_ = file_path;
