@@ -1265,7 +1265,33 @@
    fun:_ZN12_GLOBAL__N_113ExtensionImpl12StartRequestERKN2v89ArgumentsE
 }
 {
-   bug_46186
+   bug_46186_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
+   fun:_ZN16HALDefaultDevice22InstallServerListenersEv
+   fun:_ZN16HALDefaultDevice10InitializeEv
+   fun:_ZN9HALSystem16CheckOutInstanceEv
+   fun:AudioObjectAddPropertyListener
+   fun:_ZN10AQMEDeviceC2EmPK27AudioStreamBasicDescriptionPK18AudioChannelLayout
+   fun:_Z11NewAQIONodembPK27AudioStreamBasicDescriptionPK18AudioChannelLayout
+   fun:_ZN15AQIONodeManager13_FindAQIONodeEmbb
+   fun:_ZN15AQIONodeManager12FindAQIONodeEmbb
+   fun:_ZN16AudioQueueObject15DoIONodeConnectERK25AudioQueueStreamSpecifierPK27AudioStreamBasicDescriptionPK18AudioChannelLayout
+   fun:_ZN16AudioQueueObject13EnqueueBufferEP16AudioQueueBufferjPK28AudioStreamPacketDescriptionjjjPK24AudioQueueParameterEventRK11AQTimeStampPS8_
+   fun:AQServer_EnqueueBuffer
+   fun:AudioQueueEnqueueBufferWithParameters
+   fun:AudioQueueEnqueueBuffer
+   fun:_ZN28PCMQueueOutAudioOutputStream5StartEPN17AudioOutputStream19AudioSourceCallbackE
+   fun:_ZN5media21AudioOutputController6DoPlayEv
+   fun:_ZN14RunnableMethodIN5media21AudioOutputControllerEMS1_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+}
+{
+   bug_46186_b
    Memcheck:Leak
    fun:malloc_zone_malloc
    fun:_ZN4base12_GLOBAL__N_137oom_killer_cfallocator_system_defaultElmPv
@@ -1289,6 +1315,21 @@
    fun:AudioQueueEnqueueBuffer
    fun:_ZN28PCMQueueOutAudioOutputStream5StartEPN17AudioOutputStream19AudioSourceCallbackE
    fun:_ZN17AudioRendererHost14IPCAudioSource4PlayEv
+}
+{
+   bug_46186_c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
+   fun:_ZN16HALDefaultDevice22InstallServerListenersEv
+   fun:_ZN16HALDefaultDevice10InitializeEv
+   fun:_ZN9HALSystem15InitializeShellEv
+   fun:_ZN9HALSystem16CheckOutInstanceEv
+   fun:AudioObjectAddPropertyListener
+   fun:_ZN10AQMEDeviceC2EmbPK27AudioStreamBasicDescriptionPK18AudioChannelLayout
+   fun:_Z11NewAQIONodembbPK27AudioStreamBasicDescriptionPK18AudioChannelLayout
+   fun:_ZN15AQIONodeManager13_FindAQIONodeEmbbb
+   fun:_ZN15AQIONodeManager12FindAQIONodeEmbbb
 }
 {
    bug_46678_m_a
@@ -1438,32 +1479,6 @@
    fun:_Z11BrowserMainRK18MainFunctionParams
    fun:ChromeMain
    fun:main
-}
-{
-   bug_46186
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12HALCADClient19AddPropertyListenerEmPK26AudioObjectPropertyAddressPFlmmS2_PvES3_
-   fun:_ZN16HALDefaultDevice22InstallServerListenersEv
-   fun:_ZN16HALDefaultDevice10InitializeEv
-   fun:_ZN9HALSystem16CheckOutInstanceEv
-   fun:AudioObjectAddPropertyListener
-   fun:_ZN10AQMEDeviceC2EmPK27AudioStreamBasicDescriptionPK18AudioChannelLayout
-   fun:_Z11NewAQIONodembPK27AudioStreamBasicDescriptionPK18AudioChannelLayout
-   fun:_ZN15AQIONodeManager13_FindAQIONodeEmbb
-   fun:_ZN15AQIONodeManager12FindAQIONodeEmbb
-   fun:_ZN16AudioQueueObject15DoIONodeConnectERK25AudioQueueStreamSpecifierPK27AudioStreamBasicDescriptionPK18AudioChannelLayout
-   fun:_ZN16AudioQueueObject13EnqueueBufferEP16AudioQueueBufferjPK28AudioStreamPacketDescriptionjjjPK24AudioQueueParameterEventRK11AQTimeStampPS8_
-   fun:AQServer_EnqueueBuffer
-   fun:AudioQueueEnqueueBufferWithParameters
-   fun:AudioQueueEnqueueBuffer
-   fun:_ZN28PCMQueueOutAudioOutputStream5StartEPN17AudioOutputStream19AudioSourceCallbackE
-   fun:_ZN5media21AudioOutputController6DoPlayEv
-   fun:_ZN14RunnableMethodIN5media21AudioOutputControllerEMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
 }
 {
    bug_50297
