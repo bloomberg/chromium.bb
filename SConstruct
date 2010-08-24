@@ -153,8 +153,7 @@ def ExpandArguments():
   if ARGUMENTS.get('buildbot') == 'memcheck':
     print 'builbot=memcheck expands to the following arguments:'
     SetArgument('run_under',
-                'src/third_party/valgrind/bin/memcheck.sh,' +
-                '--suppressions=src/third_party/valgrind/nacl.supp,' +
+                'src/third_party/valgrind/memcheck.sh,' +
                 '--error-exitcode=1')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
@@ -162,10 +161,8 @@ def ExpandArguments():
   elif ARGUMENTS.get('buildbot') == 'tsan':
     print 'builbot=tsan expands to the following arguments:'
     SetArgument('run_under',
-                'src/third_party/valgrind/bin/tsan.sh,' +
-                '--suppressions=src/third_party/valgrind/nacl.supp,' +
-                '--ignore=src/third_party/valgrind/nacl.ignore,' +
-                '--nacl-untrusted,--error-exitcode=1')
+                'src/third_party/valgrind/tsan.sh,' +
+                '--error-exitcode=1')
     SetArgument('scale_timeout', 20)
     SetArgument('running_on_valgrind', True)
     SetArgument('with_valgrind', True)
