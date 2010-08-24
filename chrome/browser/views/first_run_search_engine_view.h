@@ -103,6 +103,9 @@ class FirstRunSearchEngineView
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
+  // Override from View so we can draw the gray background at dialog top.
+  virtual void Paint(gfx::Canvas* canvas);
+
   // Overridden from TemplateURLModelObserver. When the search engines have
   // loaded from the profile, we can populate the logos in the dialog box
   // to present to the user.

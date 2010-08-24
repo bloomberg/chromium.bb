@@ -15,6 +15,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+#include "gfx/canvas.h"
 #include "gfx/font.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -142,6 +143,16 @@ void FirstRunSearchEngineView::ButtonPressed(views::Button* sender,
   MessageLoop::current()->Quit();
 }
 
+void FirstRunSearchEngineView::Paint(gfx::Canvas* canvas) {
+  // Fill in behind the background image with the standard gray toolbar color.
+  canvas->FillRectInt(SkColorSetRGB(237, 238, 237), 0, 0, width(),
+                      background_image_->height());
+  // The rest of the dialog background should be white.
+  DCHECK(height() > background_image_->height());
+  canvas->FillRectInt(SK_ColorWHITE, 0, background_image_->height(), width(),
+                      height() - background_image_->height());
+}
+
 void FirstRunSearchEngineView::OnTemplateURLModelChanged() {
   using views::ImageView;
 
@@ -244,19 +255,17 @@ void FirstRunSearchEngineView::SetupControls() {
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   background_image_ = new views::ImageView();
+  background_image_->SetImage(rb.GetBitmapNamed(IDR_SEARCH_ENGINE_DIALOG_TOP));
+  background_image_->EnableCanvasFlippingForRTLUI(true);
   if (text_direction_is_rtl_) {
-    background_image_->SetImage(rb.GetBitmapNamed(
-        IDR_SEARCH_ENGINE_DIALOG_TOP_RTL));
+    background_image_->SetHorizontalAlignment(ImageView::LEADING);
   } else {
-    background_image_->SetImage(rb.GetBitmapNamed(
-        IDR_SEARCH_ENGINE_DIALOG_TOP));
+    background_image_->SetHorizontalAlignment(ImageView::TRAILING);
   }
-  background_image_->SetHorizontalAlignment(ImageView::TRAILING);
+
   AddChildView(background_image_);
 
   int label_width = GetPreferredSize().width() - 2 * kPanelHorizMargin;
-
-  set_background(Background::CreateSolidBackground(SK_ColorWHITE));
 
   // Add title and text asking the user to choose a search engine:
   title_label_ = new Label(l10n_util::GetString(
