@@ -619,7 +619,7 @@ drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd, uint32_t blob_id)
 	}
 
 	if (!(r = drmMalloc(sizeof(*r))))
-		return NULL;
+		goto err_allocs;
 
 	r->id = blob.blob_id;
 	r->length = blob.length;
