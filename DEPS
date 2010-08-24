@@ -12,7 +12,7 @@ vars = {
   "gyp_rev": "805",
   "gtest_rev": "267",
   "protobuf_rev": "305",
-  "tools_rev": "2864",
+  "tools_rev": "3082",
   "python_rev": "22967",
   "wix_rev": "153",
   "ppapi_rev": "195",
