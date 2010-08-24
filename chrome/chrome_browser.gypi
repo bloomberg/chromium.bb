@@ -2912,6 +2912,8 @@
         'browser/views/options/plugin_filter_page_view.h',
         'browser/views/options/simple_content_exceptions_view.cc',
         'browser/views/options/simple_content_exceptions_view.h',
+        'browser/views/page_info_bubble_view.cc',
+        'browser/views/page_info_bubble_view.h',
         'browser/views/page_info_window_view.cc',
         'browser/views/pinned_contents_info_bubble.cc',
         'browser/views/pinned_contents_info_bubble.h',

@@ -24,6 +24,12 @@ void ShowPageInfo(gfx::NativeWindow parent,
                   const NavigationEntry::SSLStatus& ssl,
                   bool show_history);
 
+void ShowPageInfoBubble(gfx::NativeWindow parent,
+                        Profile* profile,
+                        const GURL& url,
+                        const NavigationEntry::SSLStatus& ssl,
+                        bool show_history);
+
 }  // namespace browser
 
 #endif  // CHROME_BROWSER_PAGE_INFO_WINDOW_H_

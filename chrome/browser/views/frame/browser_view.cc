@@ -1265,7 +1265,11 @@ void BrowserView::ShowPageInfo(Profile* profile,
   parent = GetNormalBrowserWindowForBrowser(browser(), profile);
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WINDOWS)
+  browser::ShowPageInfoBubble(parent, profile, url, ssl, show_history);
+#else
   browser::ShowPageInfo(parent, profile, url, ssl, show_history);
+#endif
 }
 
 void BrowserView::ShowAppMenu() {
