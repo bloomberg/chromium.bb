@@ -287,7 +287,7 @@
       'target_name': 'chromoting_jingle_glue',
       'type': '<(library)',
       'dependencies': [
-        '../net/net.gyp:net',
+        '../jingle/jingle.gyp:notifier',
         '../third_party/libjingle/libjingle.gyp:libjingle',
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
@@ -296,8 +296,6 @@
         '../third_party/libjingle/libjingle.gyp:libjingle_p2p',
       ],
       'sources': [
-        'jingle_glue/gaia_token_pre_xmpp_auth.cc',
-        'jingle_glue/gaia_token_pre_xmpp_auth.h',
         'jingle_glue/iq_request.cc',
         'jingle_glue/iq_request.h',
         'jingle_glue/jingle_channel.cc',
@@ -310,12 +308,6 @@
         'jingle_glue/jingle_thread.h',
         'jingle_glue/relay_port_allocator.cc',
         'jingle_glue/relay_port_allocator.h',
-        'jingle_glue/ssl_adapter.cc',
-        'jingle_glue/ssl_adapter.h',
-        'jingle_glue/ssl_socket_adapter.cc',
-        'jingle_glue/ssl_socket_adapter.h',
-        'jingle_glue/xmpp_socket_adapter.cc',
-        'jingle_glue/xmpp_socket_adapter.h',
       ],
     },  # end of target 'chromoting_jingle_glue'
 

@@ -3,8 +3,7 @@ include_rules = [
   "+google/protobuf",
   "+media/base",
 
-  # TODO(ajwong): Remove when xmpp code is out of jingle_glue.
-  "+net",  
+  "+jingle",
 
   "+talk",
   "+third_party/npapi",
