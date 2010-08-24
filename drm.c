@@ -74,8 +74,8 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 	EGLint attribs[] = {
 		EGL_WIDTH,		0,
 		EGL_HEIGHT,		0,
-		EGL_IMAGE_STRIDE_MESA,	0,
-		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
+		EGL_DRM_BUFFER_STRIDE_MESA,	0,
+		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
 		EGL_NONE
 	};
 
@@ -108,7 +108,7 @@ drm_create_buffer(struct wl_client *client, struct wl_drm *drm_base,
 	buffer->visual = visual;
 	buffer->image = eglCreateImageKHR(compositor->display,
 					  compositor->context,
-					  EGL_DRM_IMAGE_MESA,
+					  EGL_DRM_BUFFER_MESA,
 					  (EGLClientBuffer) name, attribs);
 	if (buffer->image == NULL) {
 		/* FIXME: Define a real exception event instead of

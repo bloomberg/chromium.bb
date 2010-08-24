@@ -334,8 +334,8 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	EGLint attribs[] = {
 		EGL_WIDTH,		0,
 		EGL_HEIGHT,		0,
-		EGL_IMAGE_STRIDE_MESA,	0,
-		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
+		EGL_DRM_BUFFER_STRIDE_MESA,	0,
+		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
 		EGL_NONE
 	};
 
@@ -413,7 +413,7 @@ x11_compositor_create_output(struct x11_compositor *c, int width, int height)
 	attribs[5] = buffers[0].pitch / 4;
 	output->image =
 		eglCreateImageKHR(c->base.display, c->base.context,
-				  EGL_DRM_IMAGE_MESA,
+				  EGL_DRM_BUFFER_MESA,
 				  (EGLClientBuffer) buffers[0].name,
 				  attribs);
 	free(reply);

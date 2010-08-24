@@ -224,8 +224,8 @@ create_pointer_images(struct wlsc_compositor *ec)
 	EGLint image_attribs[] = {
 		EGL_WIDTH,		0,
 		EGL_HEIGHT,		0,
-		EGL_IMAGE_FORMAT_MESA,	EGL_IMAGE_FORMAT_ARGB8888_MESA,
-		EGL_IMAGE_USE_MESA,	EGL_IMAGE_USE_SCANOUT_MESA,
+		EGL_DRM_BUFFER_FORMAT_MESA,	EGL_DRM_BUFFER_FORMAT_ARGB32_MESA,
+		EGL_DRM_BUFFER_USE_MESA,	EGL_DRM_BUFFER_USE_SCANOUT_MESA,
 		EGL_NONE
 	};
 
@@ -1041,7 +1041,11 @@ wl_drag_reset(struct wl_drag *drag)
 	wl_array_init(&drag->types);
 
 	drag->source = NULL;
-	drag->target = NULL;
+
+	/* FIXME: We need to reset drag->target too, but can't right
+	 * now because we need it for send/drop.
+	 *
+	 * drag->target = NULL; */
 	drag->time = 0;
 	drag->pointer_focus = NULL;
 }
@@ -1134,7 +1138,8 @@ static void
 drag_send(struct wl_client *client,
 	  struct wl_drag *drag, struct wl_array *contents)
 {
-	wl_client_post_event(client, &drag->base, WL_DRAG_DROP, contents);
+	wl_client_post_event(drag->target,
+			     &drag->base, WL_DRAG_DROP, contents);
 }
 
 static void

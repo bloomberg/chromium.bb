@@ -3,6 +3,11 @@ Core wayland protocol
  - generate pointer_focus (and drag focus) on raise/lower, move
    windows, all kinds of changes in surface stacking.
 
+ - make a client side circular buffer of pending ping requests with
+   callbacks and data.  if buffer fills up, just iterate until an
+   entry becomes available.  wl_display_ping(dpy, func, data), basically.
+   func is called when the reply comes in for the ping request.
+
  - glyph cache
 
  - dnd, figure out large object transfer: through wayland protocol or
