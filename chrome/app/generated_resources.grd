@@ -9336,6 +9336,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
        It looks like you've moved.  Would you like to use <ph name="NEW_GOOGLE_URL">$1<ex>google.com</ex></ph>?
     </message>
 
+    <message name="IDS_SPEECH_INPUT_BUBBLE_HEADING" desc="First line in the content area of the speech input bubble. Instructs the user that they can start speaking.">
+      Speak now
+    </message>
+
     </messages>
 
     <structures fallback_to_english="true">
