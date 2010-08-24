@@ -120,11 +120,10 @@ TRANSLATOR_ROOT=$(TC_ROOT)/sandboxed_translators
 BC_GCC=$(LLVM_FAKE_ROOT)/llvm-fake-sfigcc -emit-llvm
 BC_GPP=$(LLVM_FAKE_ROOT)/llvm-fake-sfig++ -emit-llvm
 BC_OPT=$(TC_ROOT)/linux_arm-untrusted/arm-none-linux-gnueabi/bin/opt
-BC_PRE_LINK=$(LLVM_FAKE_ROOT)/llvm-fake-bcfinal
-BC_TRANSLATE=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-translate --native-bc-libs
-
+BC_LINK=$(LLVM_FAKE_ROOT)/bin/llvm-link
 LIB_BC_PATH=$(TC_ROOT)/linux_arm-untrusted/libs-bitcode
-LIBS_BC = -lc -lm -lnacl -lpthread -lnosys
+BC_TRANSLATE=$(TIME_CMD) $(LLVM_FAKE_ROOT)/llvm-fake-bcld -L$(LIB_BC_PATH)
+
 PNACL_FLAGS=--pnacl-driver-verbose
 
 # -fno-fast-math may become necessary once we switch to more recent version
@@ -137,17 +136,18 @@ PNACL_FLAGS_COMMON=$(PNACL_FLAGS) $(CFLAGS) -D__native_client__=1
 	$(BC_GPP) $(PNACL_FLAGS_COMMON) $< -c -o $@
 
 
-# llvm bit code
+# llvm bit code combined
+$(IT).bc: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
+	$(BC_LINK) $^  -o $@
+
+# llvm bit combined and code optimized
+$(IT).opt.bc: $(IT).bc
+	$(BC_OPT) -f -O3 -std-compile-opts $< -o $@
+
+# llvm bit pre linked for use with translator
 # Note: we are using -arch arm here, BUT the actual arch should be irrelevant
 #       The primary purpose is to find the undefined references in some
 #       native startup object files
-$(IT).bc: $(SRC:%.c=%.bc) $(CPPSRC:%.cc=%.bc)
-	$(BC_PRE_LINK) -arch arm $^ \
-                        $(PNACL_FLAGS) -L$(LIB_BC_PATH) $(LIBS_BC) -o $(IT)
-
-# llvm bit code optimized
-$(IT).opt.bc: $(IT).bc
-	$(BC_OPT) -f -O3 -std-compile-opts $< -o $@
 
 ######################################################################
 # BITCODE - BACKEND - ARM
@@ -155,14 +155,14 @@ $(IT).opt.bc: $(IT).bc
 BC_ARM_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/arm/translator
 
 $(IT).pnacl.arm: $(IT).bc
-	$(BC_TRANSLATE) $(IT).bc  -arch arm $(PNACL_FLAGS) -o $@
+	$(BC_TRANSLATE) $(IT).bc  -arch arm $(PNACL_FLAGS) -o $@ -lm
 
 # TODO(robertm): the arm translator is not fully supported at this time
 $(IT).pnacl_translator.arm: $(IT).bc
 	$(BC_ARM_TRANSLATOR) $(IT).bc $@
 
 $(IT).pnacl.opt.arm: $(IT).opt.bc
-	$(BC_TRANSLATE) $(IT).opt.bc -arch arm $(PNACL_FLAGS) -o $@
+	$(BC_TRANSLATE) $(IT).opt.bc -arch arm $(PNACL_FLAGS) -o $@ -lm
 
 # TODO(robertm): the arm translator is not fully supported at this time
 $(IT).pnacl_translator.opt.arm: $(IT).opt.bc
@@ -173,13 +173,13 @@ $(IT).pnacl_translator.opt.arm: $(IT).opt.bc
 BC_X8632_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8632/translator
 
 $(IT).pnacl.x8632: $(IT).bc
-	$(BC_TRANSLATE) $(IT).bc -arch x86-32 $(PNACL_FLAGS) -o $@
+	$(BC_TRANSLATE) $(IT).bc -arch x86-32 $(PNACL_FLAGS) -o $@ -lm
 
 $(IT).pnacl_translator.x8632: $(IT).bc
 	$(BC_X8632_TRANSLATOR) $(IT).bc $@
 
 $(IT).pnacl.opt.x8632: $(IT).opt.bc
-	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-32 $(PNACL_FLAGS) -o $@
+	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-32 $(PNACL_FLAGS) -o $@ -lm
 
 $(IT).pnacl_translator.opt.x8632: $(IT).opt.bc
 	$(BC_X8632_TRANSLATOR) $(IT).opt.bc $@
@@ -189,13 +189,13 @@ $(IT).pnacl_translator.opt.x8632: $(IT).opt.bc
 BC_X8664_TRANSLATOR=$(TIME_CMD) ${TRANSLATOR_ROOT}/x8664/translator
 
 $(IT).pnacl.x8664: $(IT).bc
-	$(BC_TRANSLATE) $(IT).bc -arch x86-64 $(PNACL_FLAGS) -o $@
+	$(BC_TRANSLATE) $(IT).bc -arch x86-64 $(PNACL_FLAGS) -o $@ -lm
 
 $(IT).pnacl_translator.x8664: $(IT).bc
 	$(BC_X8664_TRANSLATOR) $(IT).bc $@
 
 $(IT).pnacl.opt.x8664: $(IT).opt.bc
-	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-64 $(PNACL_FLAGS) -o $@
+	$(BC_TRANSLATE) $(IT).opt.bc -arch x86-64 $(PNACL_FLAGS) -o $@ -lm
 
 $(IT).pnacl_translator.opt.x8664: $(IT).opt.bc
 	$(BC_X8664_TRANSLATOR) $(IT).opt.bc $@
