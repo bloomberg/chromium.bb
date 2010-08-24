@@ -76,7 +76,7 @@ TEST_F(WrenchMenuControllerTest, DispatchSimple) {
 
   // Set fake model to test dispatching.
   EXPECT_CALL(fake_model_, ExecuteCommand(IDC_ZOOM_PLUS));
-  [controller() setWrenchMenuModel:&fake_model_];
+  [controller() setModel:&fake_model_];
 
   [controller() dispatchWrenchMenuCommand:button.get()];
 }

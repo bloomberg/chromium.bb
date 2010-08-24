@@ -28,7 +28,7 @@ class LocationBar;
 class LocationBarViewMac;
 @class MenuButton;
 namespace ToolbarControllerInternal {
-class WrenchAcceleratorDelegate;
+class MenuDelegate;
 class NotificationBridge;
 }  // namespace ToolbarControllerInternal
 class Profile;
@@ -74,8 +74,7 @@ class WrenchMenuModel;
   // Lazily-instantiated model and delegate for the menu on the
   // wrench button.  Once visible, it will be non-null, but will not
   // reaped when the menu is hidden once it is initially shown.
-  scoped_ptr<ToolbarControllerInternal::WrenchAcceleratorDelegate>
-      acceleratorDelegate_;
+  scoped_ptr<ToolbarControllerInternal::MenuDelegate> menuDelegate_;
   scoped_ptr<WrenchMenuModel> wrenchMenuModel_;
 
   // Used for monitoring the optional toolbar button prefs.

@@ -227,7 +227,7 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_container_add(GTK_CONTAINER(wrench_box), wrench_button);
   gtk_box_pack_start(GTK_BOX(toolbar_), wrench_box, FALSE, FALSE, 4);
 
-  wrench_menu_.reset(new MenuGtk(this, wrench_menu_model_.menu_model()));
+  wrench_menu_.reset(new MenuGtk(this, &wrench_menu_model_));
   g_signal_connect(wrench_menu_->widget(), "show",
                    G_CALLBACK(OnWrenchMenuShowThunk), this);
 
@@ -333,7 +333,33 @@ GtkIconSet* BrowserToolbarGtk::GetIconSetForId(int idr) {
   return theme_provider_->GetIconSetForId(idr);
 }
 
-// menus::AcceleratorProvider
+// menus::SimpleMenuModel::Delegate
+
+bool BrowserToolbarGtk::IsCommandIdEnabled(int id) const {
+  return browser_->command_updater()->IsCommandEnabled(id);
+}
+
+bool BrowserToolbarGtk::IsCommandIdChecked(int id) const {
+  if (!profile_)
+    return false;
+
+  EncodingMenuController controller;
+  if (id == IDC_SHOW_BOOKMARK_BAR) {
+    return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  } else if (controller.DoesCommandBelongToEncodingMenu(id)) {
+    TabContents* tab_contents = browser_->GetSelectedTabContents();
+    if (tab_contents) {
+      return controller.IsItemChecked(profile_, tab_contents->encoding(),
+                                      id);
+    }
+  }
+
+  return false;
+}
+
+void BrowserToolbarGtk::ExecuteCommand(int id) {
+  browser_->ExecuteCommand(id);
+}
 
 bool BrowserToolbarGtk::GetAcceleratorForCommandId(
     int id,

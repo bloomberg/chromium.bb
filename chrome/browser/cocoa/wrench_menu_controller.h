@@ -40,15 +40,11 @@ class ZoomLevelObserver;
   IBOutlet NSButton* zoomMinus_;
   IBOutlet NSButton* zoomFullScreen_;
 
-  WrenchMenuModel* wrench_model_;
-
   scoped_ptr<WrenchMenuControllerInternal::ZoomLevelObserver> observer_;
 }
 
 // Designated initializer; called within the NIB.
 - (id)init;
-
-- (void)setWrenchMenuModel:(WrenchMenuModel*)model;
 
 // Used to dispatch commands from the Wrench menu. The custom items within the
 // menu cannot be hooked up directly to First Responder because the window in
@@ -58,6 +54,9 @@ class ZoomLevelObserver;
 
 // Returns the weak reference to the WrenchMenuModel.
 - (WrenchMenuModel*)wrenchMenuModel;
+
+// Inserts the update available notification menu item.
+- (void)insertUpdateAvailableItem;
 
 @end
 

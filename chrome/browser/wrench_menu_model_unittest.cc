@@ -12,51 +12,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class WrenchMenuModelTest : public BrowserWithTestWindowTest,
-                            public menus::AcceleratorProvider {
- public:
-  // Don't handle accelerators.
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      menus::Accelerator* accelerator) { return false; }
-};
-
-// Copies parts of MenuModelTest::Delegate and combines them with the
-// WrenchMenuModel since WrenchMenuModel is now a SimpleMenuModel::Delegate and
-// not derived from SimpleMenuModel.
-class TestWrenchMenuModel : public WrenchMenuModel {
- public:
-  TestWrenchMenuModel(menus::AcceleratorProvider* provider,
-                      Browser* browser)
-      : WrenchMenuModel(provider, browser),
-        execute_count_(0),
-        checked_count_(0),
-        enable_count_(0) {
-  }
-
-  // Testing overrides to menus::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const {
-    bool val = WrenchMenuModel::IsCommandIdChecked(command_id);
-    if (val)
-      checked_count_++;
-    return val;
-  }
-
-  virtual bool IsCommandIdEnabled(int command_id) const {
-    ++enable_count_;
-    return true;
-  }
-
-  virtual void ExecuteCommand(int command_id) { ++execute_count_; }
-
-  int execute_count_;
-  mutable int checked_count_;
-  mutable int enable_count_;
+                            public MenuModelTest {
 };
 
 TEST_F(WrenchMenuModelTest, Basics) {
-  TestWrenchMenuModel wrench(this, browser());
-  menus::SimpleMenuModel* model = wrench.menu_model();
-  int itemCount = model->GetItemCount();
+  WrenchMenuModel model(&delegate_, browser());
+  int itemCount = model.GetItemCount();
 
   // Verify it has items. The number varies by platform, so we don't check
   // the exact number.
@@ -65,34 +26,34 @@ TEST_F(WrenchMenuModelTest, Basics) {
   // Execute a couple of the items and make sure it gets back to our delegate.
   // We can't use CountEnabledExecutable() here because the encoding menu's
   // delegate is internal, it doesn't use the one we pass in.
-  model->ActivatedAt(0);
-  EXPECT_TRUE(model->IsEnabledAt(0));
+  model.ActivatedAt(0);
+  EXPECT_TRUE(model.IsEnabledAt(0));
   // Make sure to use the index that is not separator in all configurations.
-  model->ActivatedAt(2);
-  EXPECT_TRUE(model->IsEnabledAt(2));
-  EXPECT_EQ(wrench.execute_count_, 2);
-  EXPECT_EQ(wrench.enable_count_, 2);
+  model.ActivatedAt(2);
+  EXPECT_TRUE(model.IsEnabledAt(2));
+  EXPECT_EQ(delegate_.execute_count_, 2);
+  EXPECT_EQ(delegate_.enable_count_, 2);
 
-  wrench.execute_count_ = 0;
-  wrench.enable_count_ = 0;
+  delegate_.execute_count_ = 0;
+  delegate_.enable_count_ = 0;
 
   // Choose something from the tools submenu and make sure it makes it back to
   // the delegate as well. Use the first submenu as the tools one.
   int toolsModelIndex = -1;
   for (int i = 0; i < itemCount; ++i) {
-    if (model->GetTypeAt(i) == menus::MenuModel::TYPE_SUBMENU) {
+    if (model.GetTypeAt(i) == menus::MenuModel::TYPE_SUBMENU) {
       toolsModelIndex = i;
       break;
     }
   }
   EXPECT_GT(toolsModelIndex, -1);
-  menus::MenuModel* toolsModel = model->GetSubmenuModelAt(toolsModelIndex);
+  menus::MenuModel* toolsModel = model.GetSubmenuModelAt(toolsModelIndex);
   EXPECT_TRUE(toolsModel);
   EXPECT_GT(toolsModel->GetItemCount(), 2);
   toolsModel->ActivatedAt(2);
   EXPECT_TRUE(toolsModel->IsEnabledAt(2));
-  EXPECT_EQ(wrench.execute_count_, 1);
-  EXPECT_EQ(wrench.enable_count_, 1);
+  EXPECT_EQ(delegate_.execute_count_, 1);
+  EXPECT_EQ(delegate_.enable_count_, 1);
 }
 
 class EncodingMenuModelTest : public BrowserWithTestWindowTest,

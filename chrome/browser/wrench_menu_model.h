@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_WRENCH_MENU_MODEL_H_
 #pragma once
 
-#include "app/menus/accelerator.h"
 #include "app/menus/button_menu_item_model.h"
 #include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
@@ -68,23 +67,26 @@ class ToolsMenuModel : public menus::SimpleMenuModel {
 };
 
 // A menu model that builds the contents of the wrench menu.
-class WrenchMenuModel : public menus::SimpleMenuModel::Delegate,
+class WrenchMenuModel : public menus::SimpleMenuModel,
                         public menus::ButtonMenuItemModel::Delegate,
                         public TabStripModelObserver,
                         public NotificationObserver {
  public:
-  WrenchMenuModel(menus::AcceleratorProvider* provider, Browser* browser);
+  WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+                  Browser* browser);
   virtual ~WrenchMenuModel();
 
-  // Overridden for both ButtonMenuItemModel::Delegate and SimpleMenuModel:
+  // Overridden from menus::SimpleMenuModel:
+  virtual bool IsLabelDynamicAt(int index) const;
+  virtual string16 GetLabelAt(int index) const;
+  virtual bool HasIcons() const { return true; }
+  virtual bool GetIconAt(int index, SkBitmap* icon) const;
+
+  // Overridden from menus::ButtonMenuItemModel::Delegate:
   virtual bool IsLabelForCommandIdDynamic(int command_id) const;
   virtual string16 GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
-  virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      menus::Accelerator* accelerator);
 
   // Overridden from TabStripModelObserver:
   virtual void TabSelectedAt(TabContents* old_contents,
@@ -102,7 +104,6 @@ class WrenchMenuModel : public menus::SimpleMenuModel::Delegate,
 
   // Getters.
   Browser* browser() const { return browser_; }
-  menus::SimpleMenuModel* menu_model() { return &model_; }
 
   // Calculates |zoom_label_| in response to a zoom change.
   void UpdateZoomControls();
@@ -110,7 +111,7 @@ class WrenchMenuModel : public menus::SimpleMenuModel::Delegate,
  private:
   // Testing constructor used for mocking.
   friend class ::MockWrenchMenuModel;
-  WrenchMenuModel();
+  WrenchMenuModel() : menus::SimpleMenuModel(NULL) {}
 
   void Build();
 
@@ -124,9 +125,7 @@ class WrenchMenuModel : public menus::SimpleMenuModel::Delegate,
 
   string16 GetSyncMenuLabel() const;
   string16 GetAboutEntryMenuLabel() const;
-
-  // Our menu, for which we are the delegate.
-  menus::SimpleMenuModel model_;
+  bool IsDynamicItem(int index) const;
 
   // Models for the special menu items with buttons.
   scoped_ptr<menus::ButtonMenuItemModel> edit_menu_item_model_;
@@ -138,7 +137,7 @@ class WrenchMenuModel : public menus::SimpleMenuModel::Delegate,
   // Tools menu.
   scoped_ptr<ToolsMenuModel> tools_menu_model_;
 
-  menus::AcceleratorProvider* provider_;
+  menus::SimpleMenuModel::Delegate* delegate_; // weak
 
   Browser* browser_;  // weak
   TabStripModel* tabstrip_model_; // weak

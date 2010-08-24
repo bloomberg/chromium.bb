@@ -95,9 +95,24 @@ const CGFloat kWrenchMenuLeftPadding = 3.0;
 
 namespace ToolbarControllerInternal {
 
-// A C++ delegate that handles the accelerators in the wrench menu.
-class WrenchAcceleratorDelegate : public menus::AcceleratorProvider {
+// A C++ delegate that handles enabling/disabling menu items and handling when
+// a menu command is chosen.
+class MenuDelegate : public menus::SimpleMenuModel::Delegate {
  public:
+  explicit MenuDelegate(Browser* browser)
+      : browser_(browser) { }
+
+  // Overridden from menus::SimpleMenuModel::Delegate
+  virtual bool IsCommandIdChecked(int command_id) const {
+    if (command_id == IDC_SHOW_BOOKMARK_BAR) {
+      return browser_->profile()->GetPrefs()->GetBoolean(
+          prefs::kShowBookmarkBar);
+    }
+    return false;
+  }
+  virtual bool IsCommandIdEnabled(int command_id) const {
+    return browser_->command_updater()->IsCommandEnabled(command_id);
+  }
   virtual bool GetAcceleratorForCommandId(int command_id,
       menus::Accelerator* accelerator_generic) {
     // Downcast so that when the copy constructor is invoked below, the key
@@ -113,6 +128,26 @@ class WrenchAcceleratorDelegate : public menus::AcceleratorProvider {
     }
     return false;
   }
+  virtual void ExecuteCommand(int command_id) {
+    browser_->ExecuteCommand(command_id);
+  }
+  virtual bool IsLabelForCommandIdDynamic(int command_id) const {
+    // On Mac, switch between "Enter Full Screen" and "Exit Full Screen".
+    return (command_id == IDC_FULLSCREEN);
+  }
+  virtual string16 GetLabelForCommandId(int command_id) const {
+    if (command_id == IDC_FULLSCREEN) {
+      int string_id = IDS_ENTER_FULLSCREEN_MAC;  // Default to Enter.
+      // Note: On startup, |window()| may be NULL.
+      if (browser_->window() && browser_->window()->IsFullscreen())
+        string_id = IDS_EXIT_FULLSCREEN_MAC;
+      return l10n_util::GetStringUTF16(string_id);
+    }
+    return menus::SimpleMenuModel::Delegate::GetLabelForCommandId(command_id);
+  }
+
+ private:
+  Browser* browser_;
 };
 
 // A class registered for C++ notifications. This is used to detect changes in
@@ -512,12 +547,10 @@ class NotificationBridge : public NotificationObserver {
 - (void)installWrenchMenu {
   if (wrenchMenuModel_.get())
     return;
-  acceleratorDelegate_.reset(
-      new ToolbarControllerInternal::WrenchAcceleratorDelegate());
+  menuDelegate_.reset(new ToolbarControllerInternal::MenuDelegate(browser_));
 
-  wrenchMenuModel_.reset(new WrenchMenuModel(
-      acceleratorDelegate_.get(), browser_));
-  [wrenchMenuController_ setWrenchMenuModel:wrenchMenuModel_.get()];
+  wrenchMenuModel_.reset(new WrenchMenuModel(menuDelegate_.get(), browser_));
+  [wrenchMenuController_ setModel:wrenchMenuModel_.get()];
   [wrenchMenuController_ setUseWithPopUpButtonCell:YES];
   [wrenchButton_ setAttachedMenu:[wrenchMenuController_ menu]];
 }
@@ -545,6 +578,8 @@ class NotificationBridge : public NotificationObserver {
   [overlayImage unlockFocus];
 
   [[wrenchButton_ cell] setOverlayImage:overlayImage];
+
+  [wrenchMenuController_ insertUpdateAvailableItem];
 }
 
 - (void)prefChanged:(std::string*)prefName {

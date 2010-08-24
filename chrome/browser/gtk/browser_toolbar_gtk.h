@@ -12,7 +12,6 @@
 #include "app/active_window_watcher_x.h"
 #include "app/gtk_signal.h"
 #include "app/gtk_signal_registrar.h"
-#include "app/menus/accelerator.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/throb_animation.h"
 #include "base/scoped_ptr.h"
@@ -41,7 +40,7 @@ class ToolbarModel;
 // View class that displays the GTK version of the toolbar and routes gtk
 // events back to the Browser.
 class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
-                          public menus::AcceleratorProvider,
+                          public menus::SimpleMenuModel::Delegate,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
                           public AnimationDelegate,
@@ -95,7 +94,10 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   virtual void StoppedShowing();
   virtual GtkIconSet* GetIconSetForId(int idr);
 
-  // Overridden from menus::AcceleratorProvider:
+  // Overridden from menus::SimpleMenuModel::Delegate:
+  virtual bool IsCommandIdEnabled(int id) const;
+  virtual bool IsCommandIdChecked(int id) const;
+  virtual void ExecuteCommand(int id);
   virtual bool GetAcceleratorForCommandId(int id,
                                           menus::Accelerator* accelerator);
 
