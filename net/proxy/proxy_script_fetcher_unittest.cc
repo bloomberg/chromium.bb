@@ -35,7 +35,8 @@ class RequestContext : public URLRequestContext {
   RequestContext() {
     net::ProxyConfig no_proxy;
     host_resolver_ =
-        net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism);
+        net::CreateSystemHostResolver(net::HostResolver::kDefaultParallelism,
+                                      NULL);
     proxy_service_ = net::ProxyService::CreateFixed(no_proxy);
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
 
