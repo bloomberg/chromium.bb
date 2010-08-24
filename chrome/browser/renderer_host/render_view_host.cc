@@ -52,11 +52,6 @@
 #include "webkit/glue/webaccessibility.h"
 #include "webkit/glue/webdropdata.h"
 
-#if defined(OS_WIN)
-// TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
-#include "chrome/browser/browser_accessibility_manager_win.h"
-#endif
-
 using base::TimeDelta;
 using webkit_glue::FormData;
 using webkit_glue::PasswordForm;
@@ -134,7 +129,8 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       sudden_termination_allowed_(false),
       session_storage_namespace_id_(session_storage_namespace_id),
       is_extension_process_(false),
-      autofill_query_id_(0) {
+      autofill_query_id_(0),
+      save_accessibility_tree_for_testing_(false) {
   DCHECK(instance_);
   DCHECK(delegate_);
 }
@@ -1969,6 +1965,9 @@ void RenderViewHost::OnAccessibilityTree(
     const webkit_glue::WebAccessibility& tree) {
   if (view())
     view()->UpdateAccessibilityTree(tree);
+
+  if (save_accessibility_tree_for_testing_)
+    accessibility_tree_ = tree;
 
   NotificationService::current()->Notify(
       NotificationType::RENDER_VIEW_HOST_ACCESSIBILITY_TREE_UPDATED,

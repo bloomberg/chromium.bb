@@ -7,6 +7,13 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityRole.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAttribute.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDocumentType.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNamedNodeMap.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebAccessibilityCache;
@@ -285,6 +292,33 @@ void WebAccessibility::Init(const WebKit::WebAccessibilityObject& src,
     attributes[ATTR_HELP] = src.helpText();
   if (src.keyboardShortcut().length())
     attributes[ATTR_SHORTCUT] = src.keyboardShortcut();
+  if (src.hasComputedStyle())
+    attributes[ATTR_DISPLAY] = src.computedStyleDisplay();
+
+  WebKit::WebNode node = src.node();
+
+  if (!node.isNull() && node.isElementNode()) {
+    WebKit::WebElement element = node.to<WebKit::WebElement>();
+    attributes[ATTR_HTML_TAG] = element.tagName();
+    for (unsigned i = 0; i < element.attributes().length(); i++) {
+      html_attributes.push_back(
+          std::pair<string16, string16>(
+              element.attributes().attributeItem(i).localName(),
+              element.attributes().attributeItem(i).value()));
+    }
+  }
+
+  if (role == WebAccessibility::ROLE_DOCUMENT ||
+      role == WebAccessibility::ROLE_WEB_AREA) {
+    WebKit::WebDocument document = src.document();
+    attributes[ATTR_DOC_TITLE] = document.title();
+    attributes[ATTR_DOC_URL] = document.frame()->url().spec().utf16();
+    if (document.isXHTMLDocument())
+      attributes[ATTR_DOC_MIMETYPE] = WebKit::WebString("text/xhtml");
+    else
+      attributes[ATTR_DOC_MIMETYPE] = WebKit::WebString("text/html");
+    attributes[ATTR_DOC_DOCTYPE] = document.doctype().name();
+  }
 
   // Add the source object to the cache and store its id.
   id = cache->addOrGetId(src);
