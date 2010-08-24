@@ -5,8 +5,9 @@
 #include "chrome/renderer/renderer_webidbtransaction_impl.h"
 
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/indexed_db_dispatcher.h"
+#include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/renderer_webidbobjectstore_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBObjectStore.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebIDBTransactionCallbacks.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
@@ -35,9 +36,11 @@ int RendererWebIDBTransactionImpl::mode() const
 WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
     const WebString& name)
 {
-  // TODO: implement
-  DCHECK(false);
-  return 0;
+  int object_store_id;
+  RenderThread::current()->Send(
+      new ViewHostMsg_IDBTransactionObjectStore(
+          idb_transaction_id_, name, &object_store_id));
+  return new RendererWebIDBObjectStoreImpl(object_store_id);
 }
 
 void RendererWebIDBTransactionImpl::abort()

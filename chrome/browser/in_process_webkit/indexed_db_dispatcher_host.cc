@@ -124,6 +124,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
     case ViewHostMsg_IDBObjectStoreRemoveIndex::ID:
     case ViewHostMsg_IDBObjectStoreDestroyed::ID:
     case ViewHostMsg_IDBTransactionDestroyed::ID:
+    case ViewHostMsg_IDBTransactionObjectStore::ID:
       break;
     default:
       return false;
@@ -754,6 +755,8 @@ bool IndexedDBDispatcherHost::TransactionDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(IndexedDBDispatcherHost::TransactionDispatcherHost,
                            message, *msg_is_ok)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_IDBTransactionObjectStore,
+                                    OnObjectStore)
     IPC_MESSAGE_HANDLER(ViewHostMsg_IDBTransactionDestroyed, OnDestroyed)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -766,6 +769,21 @@ void IndexedDBDispatcherHost::TransactionDispatcherHost::Send(
   // never actually be called.
   NOTREACHED();
   parent_->Send(message);
+}
+
+void IndexedDBDispatcherHost::TransactionDispatcherHost::OnObjectStore(
+    int32 transaction_id, const string16& name, IPC::Message* reply_msg) {
+  WebIDBTransaction* idb_transaction = parent_->GetOrTerminateProcess(
+      &map_, transaction_id, reply_msg,
+      ViewHostMsg_IDBDatabaseObjectStore::ID);
+  if (!idb_transaction)
+    return;
+
+  WebIDBObjectStore* object_store = idb_transaction->objectStore(name);
+  int32 object_id = object_store ? parent_->Add(object_store) : 0;
+  ViewHostMsg_IDBTransactionObjectStore::WriteReplyParams(
+         reply_msg, object_id);
+  parent_->Send(reply_msg);
 }
 
 void IndexedDBDispatcherHost::TransactionDispatcherHost::OnDestroyed(

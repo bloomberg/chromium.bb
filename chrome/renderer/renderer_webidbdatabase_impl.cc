@@ -90,5 +90,5 @@ WebKit::WebIDBTransaction* RendererWebIDBDatabaseImpl::transaction(
   RenderThread::current()->Send(
       new ViewHostMsg_IDBDatabaseTransaction(
           idb_database_id_, object_stores, mode, timeout, &transaction_id));
-    return new RendererWebIDBTransactionImpl(transaction_id);
+  return new RendererWebIDBTransactionImpl(transaction_id);
 }

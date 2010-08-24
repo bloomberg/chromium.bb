@@ -2432,9 +2432,15 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBCursorDestroyed,
                        int32 /* idb_cursor_id */)
 
+  // IDBTransaction::ObjectStore message.
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_IDBTransactionObjectStore,
+                              int32, /* transaction_id */
+                              string16, /* name */
+                              int32 /* object_store_id */)
+
   // WebIDBTransaction::~WebIDBTransaction() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_IDBTransactionDestroyed,
-                       int32 /* idb_index_id */)
+                       int32 /* idb_transaction_id */)
 
   // Get file size in bytes. Set result to -1 if failed to get the file size.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_GetFileSize,

@@ -190,6 +190,8 @@ class IndexedDBDispatcherHost
     void Send(IPC::Message* message);
 
     // TODO: add the rest of the transaction methods.
+    void OnObjectStore(int32 transaction_id, const string16& name,
+                       IPC::Message* reply_msg);
     void OnDestroyed(int32 idb_transaction_id);
 
     IndexedDBDispatcherHost* parent_;
