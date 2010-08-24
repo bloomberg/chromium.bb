@@ -13,10 +13,14 @@
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/view_ids.h"
+#include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/automation/window_proxy.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
+#include "views/event.h"
 
 namespace {
 
@@ -105,7 +109,17 @@ TEST_F(RedirectTest, ClientEmptyReferer) {
 
 // Tests to make sure a location change when a pending redirect exists isn't
 // flagged as a redirect.
-TEST_F(RedirectTest, ClientCancelled) {
+#if defined(OS_MACOSX)
+// SimulateOSClick is broken on the Mac: http://crbug.com/45162
+#define MAYBE_ClientCancelled DISABLED_ClientCancelled
+#elif defined(OS_WIN)
+// http://crbug.com/53091
+#define MAYBE_ClientCancelled FAILS_ClientCancelled
+#else
+#define MAYBE_ClientCancelled ClientCancelled
+#endif
+
+TEST_F(RedirectTest, MAYBE_ClientCancelled) {
   FilePath first_path(test_data_directory_);
   first_path = first_path.AppendASCII("cancelled_redirect_test.html");
   ASSERT_TRUE(file_util::AbsolutePath(&first_path));
@@ -113,10 +127,26 @@ TEST_F(RedirectTest, ClientCancelled) {
 
   NavigateToURLBlockUntilNavigationsComplete(first_url, 1);
 
-  NavigateToURL(GURL("javascript:click()")); // User initiated location change.
-
+  scoped_refptr<BrowserProxy> browser = automation()->GetBrowserWindow(0);
+  ASSERT_TRUE(browser.get());
+  scoped_refptr<WindowProxy> window = browser->GetWindow();
+  ASSERT_TRUE(window.get());
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
   ASSERT_TRUE(tab_proxy.get());
+  int64 last_nav_time = 0;
+  EXPECT_TRUE(tab_proxy->GetLastNavigationTime(&last_nav_time));
+  // Simulate a click to force to make a user-initiated location change;
+  // otherwise, a non user-initiated in-page location change will be treated
+  // as client redirect and the redirect will be recoreded, which can cause
+  // this test failed.
+  gfx::Rect tab_view_bounds;
+  ASSERT_TRUE(browser->BringToFront());
+  ASSERT_TRUE(window->GetViewBounds(VIEW_ID_TAB_CONTAINER, &tab_view_bounds,
+                                    true));
+  ASSERT_TRUE(
+      window->SimulateOSClick(tab_view_bounds.CenterPoint(),
+                              views::Event::EF_LEFT_BUTTON_DOWN));
+  EXPECT_TRUE(tab_proxy->WaitForNavigation(last_nav_time));
 
   std::vector<GURL> redirects;
   ASSERT_TRUE(tab_proxy->GetRedirectsFrom(first_url, &redirects));

@@ -4,6 +4,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -19,7 +20,9 @@ class AppApiTest : public ExtensionApiTest {
 
 // Simulates a page calling window.open on an URL, and waits for the navigation.
 static void WindowOpenHelper(Browser* browser,
-                             RenderViewHost* opener_host, const GURL& url) {
+                             RenderViewHost* opener_host,
+                             const GURL& url,
+                             bool newtab_process_should_equal_opener) {
   bool result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       opener_host, L"",
@@ -28,12 +31,21 @@ static void WindowOpenHelper(Browser* browser,
       &result);
   ASSERT_TRUE(result);
 
-  // Now the current tab should be the new tab.
-  TabContents* newtab = browser->GetSelectedTabContents();
+  // The above window.open call is not user-initiated, it will create
+  // a popup window instead of a new tab in current window.
+  // Now the active tab in last active window should be the new tab.
+  Browser* last_active_browser = BrowserList::GetLastActive();
+  EXPECT_TRUE(last_active_browser);
+  TabContents* newtab = last_active_browser->GetSelectedTabContents();
+  EXPECT_TRUE(newtab);
   if (!newtab->controller().GetLastCommittedEntry() ||
       newtab->controller().GetLastCommittedEntry()->url() != url)
     ui_test_utils::WaitForNavigation(&newtab->controller());
   EXPECT_EQ(url, newtab->controller().GetLastCommittedEntry()->url());
+  if (newtab_process_should_equal_opener)
+    EXPECT_EQ(opener_host->process(), newtab->render_view_host()->process());
+  else
+    EXPECT_NE(opener_host->process(), newtab->render_view_host()->process());
 }
 
 // Simulates a page navigating itself to an URL, and waits for the navigation.
@@ -55,6 +67,9 @@ static void NavigateTabHelper(TabContents* contents, const GURL& url) {
 }
 
 IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
 
@@ -82,20 +97,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
             browser()->GetTabContentsAt(3)->render_view_host()->process());
 
   // Now let's do the same using window.open. The same should happen.
+  ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
   WindowOpenHelper(browser(), host,
-                   base_url.Resolve("path1/empty.html"));
+                   base_url.Resolve("path1/empty.html"), true);
   WindowOpenHelper(browser(), host,
-                   base_url.Resolve("path2/empty.html"));
+                   base_url.Resolve("path2/empty.html"), true);
   WindowOpenHelper(browser(), host,
-                   base_url.Resolve("path3/empty.html"));
-
-  ASSERT_EQ(7, browser()->tab_count());
-  EXPECT_EQ(host->process(),
-            browser()->GetTabContentsAt(4)->render_view_host()->process());
-  EXPECT_EQ(host->process(),
-            browser()->GetTabContentsAt(5)->render_view_host()->process());
-  EXPECT_NE(host->process(),
-            browser()->GetTabContentsAt(6)->render_view_host()->process());
+                   base_url.Resolve("path3/empty.html"), false);
 
   // Now let's have these pages navigate, into or out of the extension web
   // extent. They should switch processes.

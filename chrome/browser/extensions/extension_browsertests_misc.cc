@@ -614,8 +614,11 @@ static TabContents* WindowOpenHelper(Browser* browser, const GURL& start_url,
       L"window.domAutomationController.send(true);", &result);
   EXPECT_TRUE(result);
 
-  // Now the current tab should be the new tab.
-  TabContents* newtab = browser->GetSelectedTabContents();
+  // Now the active tab in last active window should be the new tab.
+  Browser* last_active_browser = BrowserList::GetLastActive();
+  EXPECT_TRUE(last_active_browser);
+  TabContents* newtab = last_active_browser->GetSelectedTabContents();
+  EXPECT_TRUE(newtab);
   GURL expected_url = start_url.Resolve(newtab_url);
   if (!newtab->controller().GetLastCommittedEntry() ||
       newtab->controller().GetLastCommittedEntry()->url() != expected_url)
