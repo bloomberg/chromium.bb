@@ -528,7 +528,8 @@ void WizardController::OnNetworkConnected() {
   if (is_official_build_) {
     ShowEulaScreen();
   } else {
-    OnOOBECompleted();
+    ShowUpdateScreen();
+    GetUpdateScreen()->StartUpdate();
   }
 }
 
