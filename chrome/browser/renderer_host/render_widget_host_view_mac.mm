@@ -137,7 +137,7 @@ void DisablePasswordInput() {
 
 // Informal protocol implemented by windows that need to be informed explicitly
 // about underlay surfaces.
-@protocol UnderlayableSurface
+@interface NSObject (UnderlayableSurface)
 - (void)underlaySurfaceAdded;
 - (void)underlaySurfaceRemoved;
 @end
@@ -319,13 +319,11 @@ static CVReturn DrawOneAcceleratedPluginCallback(
     return;
   }
 
-  if ([self window] &&
-      [[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
+  if ([[self window] respondsToSelector:@selector(underlaySurfaceRemoved)]) {
     [static_cast<id>([self window]) underlaySurfaceRemoved];
   }
 
-  if (newWindow &&
-      [newWindow respondsToSelector:@selector(underlaySurfaceAdded)]) {
+  if ([newWindow respondsToSelector:@selector(underlaySurfaceAdded)]) {
     [static_cast<id>(newWindow) underlaySurfaceAdded];
   }
 }
