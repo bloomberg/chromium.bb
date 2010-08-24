@@ -41,9 +41,12 @@ cr.define('options', function() {
    * and signals its changed value.
    * @param {string} name Preference name.
    * @param {boolean} value New preference value.
+   * @param {string} metric User metrics identifier.
    */
-  Preferences.setBooleanPref = function (name, value) {
-    chrome.send('setBooleanPref', [name, value ? 'true' : 'false']);
+  Preferences.setBooleanPref = function (name, value, metric) {
+    var arguments = [name, value ? 'true' : 'false'];
+    if (metric != undefined) arguments.push(metric);
+    chrome.send('setBooleanPref', arguments);
   };
 
   /**
@@ -51,9 +54,12 @@ cr.define('options', function() {
    * and signals its changed value.
    * @param {string} name Preference name.
    * @param {number} value New preference value.
+   * @param {string} metric User metrics identifier.
    */
-  Preferences.setIntegerPref = function(name, value) {
-    chrome.send('setIntegerPref', [name, String(value)]);
+  Preferences.setIntegerPref = function(name, value, metric) {
+    var arguments = [name, String(value)];
+    if (metric != undefined) arguments.push(metric);
+    chrome.send('setIntegerPref', arguments);
   };
 
   /**
@@ -61,9 +67,12 @@ cr.define('options', function() {
    * and signals its changed value.
    * @param {string} name Preference name.
    * @param {string} value New preference value.
+   * @param {string} metric User metrics identifier.
    */
-  Preferences.setStringPref = function(name, value) {
-    chrome.send('setStringPref', [name, value]);
+  Preferences.setStringPref = function(name, value, metric) {
+    var arguments = [name, value];
+    if (metric != undefined) arguments.push(metric);
+    chrome.send('setStringPref', arguments);
   };
 
   /**
@@ -71,9 +80,12 @@ cr.define('options', function() {
    * and signals its changed value.
    * @param {string} name Preference name.
    * @param {string} value New preference value.
+   * @param {string} metric User metrics identifier.
    */
-  Preferences.setObjectPref = function(name, value) {
-    chrome.send('setObjectPref', [name, JSON.stringify(value)]);
+  Preferences.setObjectPref = function(name, value, metric) {
+    var arguments = [name, JSON.stringify(value)];
+    if (metric != undefined) arguments.push(metric);
+    chrome.send('setObjectPref', arguments);
   };
 
   Preferences.prototype = {

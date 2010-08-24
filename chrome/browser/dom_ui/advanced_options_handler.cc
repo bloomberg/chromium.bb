@@ -218,11 +218,15 @@ void AdvancedOptionsHandler::HandleSelectDownloadLocation(
 
 void AdvancedOptionsHandler::FileSelected(const FilePath& path, int index,
                                           void* params) {
+  UserMetricsRecordAction(UserMetricsAction("Options_SetDownloadDirectory"),
+                          NULL);
   default_download_location_.SetValue(path);
   SetupDownloadLocationPath();
 }
 
 void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
+  UserMetricsRecordAction(UserMetricsAction("Options_ResetAutoOpenFiles"),
+                          NULL);
   DCHECK(dom_ui_);
   DownloadManager* manager = dom_ui_->GetProfile()->GetDownloadManager();
   if (manager) manager->ResetAutoOpenFiles();
@@ -232,11 +236,19 @@ void AdvancedOptionsHandler::HandleAutoOpenButton(const ListValue* args) {
 void AdvancedOptionsHandler::HandleCheckRevocationCheckbox(
     const ListValue* args) {
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  std::string metric =
+      (checked_str == "true" ? "Options_CheckCertRevocation_Enable"
+                             : "Options_CheckCertRevocation_Disable");
+  UserMetricsRecordAction(UserMetricsAction(metric.c_str()), NULL);
   net::SSLConfigServiceWin::SetRevCheckingEnabled(checked_str == "true");
 }
 
 void AdvancedOptionsHandler::HandleUseSSL2Checkbox(const ListValue* args) {
   std::string checked_str = WideToUTF8(ExtractStringValue(args));
+  std::string metric =
+      (checked_str == "true" ? "Options_SSL2_Enable"
+                             : "Options_SSL2_Disable");
+  UserMetricsRecordAction(UserMetricsAction(metric.c_str()), NULL);
   net::SSLConfigServiceWin::SetSSL2Enabled(checked_str == "true");
 }
 

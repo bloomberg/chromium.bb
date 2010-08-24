@@ -30,15 +30,19 @@ var OptionsPage = options.OptionsPage;
       $('privacyContentSettingsButton').onclick = function(event) {
         OptionsPage.showPageByName('content');
         OptionsPage.showTab($('cookies-nav-tab'));
+        chrome.send('coreOptionsUserMetricsAction',
+            ['Options_ContentSettings']);
       };
       $('privacyClearDataButton').onclick = function(event) {
         OptionsPage.showOverlay('clearBrowserDataOverlay');
+        chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
       $('autoOpenFileTypesResetToDefault').onclick = function(event) {
         chrome.send('autoOpenFileTypesAction');
       };
       $('fontSettingsConfigureFontsOnlyButton').onclick = function(event) {
         OptionsPage.showOverlay('fontSettingsOverlay');
+        chrome.send('coreOptionsUserMetricsAction', ['Options_FontSettings']);
       };
 
       if (!cr.isChromeOS) {
@@ -61,6 +65,8 @@ var OptionsPage = options.OptionsPage;
       } else {
         $('proxiesConfigureButton').onclick = function(event) {
           OptionsPage.showPageByName('proxy');
+          chrome.send('coreOptionsUserMetricsAction',
+              ['Options_ShowProxySettings']);
         };
       }
 
