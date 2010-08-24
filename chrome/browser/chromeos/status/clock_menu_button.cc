@@ -70,9 +70,7 @@ void ClockMenuButton::UpdateTextAndSetNextTimer() {
 }
 
 void ClockMenuButton::UpdateText() {
-  base::Time time(base::Time::Now());
-  SetText(base::TimeFormatTimeOfDay(time));
-  SetTooltipText(base::TimeFormatShortDate(time));
+  SetText(base::TimeFormatTimeOfDay(base::Time::Now()));
   SchedulePaint();
 }
 
