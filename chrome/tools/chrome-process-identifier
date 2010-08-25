@@ -28,7 +28,7 @@ fi
 ls -l "/proc/$pid/exe" 2>/dev/null|egrep -q '/chrome$' || {
   echo "Cannot find any running instance of Chrome" >&2; exit 1; }
 while :; do
-  ppid=$(sed 's/PPid:[^0-9]*//;t1;d;:1;q' /proc/$pid/status 2>/dev/null)
+  ppid="$(ps h --format ppid --pid "$pid" 2>/dev/null)"
   [ -n "$ppid" ] || {
     echo "Cannot find any running instance of Chrome" >&2; exit 1; }
   ls "/proc/$ppid/exe" 2>/dev/null|egrep -q '/chrome$' && pid="$ppid" || break
@@ -36,6 +36,7 @@ done
 
 # Iterate over child processes and try to identify them
 identify() {
+  local child cmd foundzygote plugin seccomp type
   foundzygote=0
   for child in $(ps h --format pid --ppid $1); do
     cmd="$(xargs -0 </proc/$child/cmdline|sed 's/ -/\n-/g')" 2>/dev/null
