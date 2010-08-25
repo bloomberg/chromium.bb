@@ -95,7 +95,7 @@ int32_t NaClWaitForAsyncOpSysRet(struct NaClAppThread *natp) {
   result = (uintptr_t) NaClClosureResultWait(&natp->result);
   result32 = (int32_t) result;
 
-  if (result != (uintptr_t) result) {
+  if (result != (uintptr_t) result32) {
     NaClLog(LOG_ERROR,
             ("Overflow in NaClWaitForAsyncOpSysRet: return value is "
             "%"NACL_PRIxPTR"\n"),
