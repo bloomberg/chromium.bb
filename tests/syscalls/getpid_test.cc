@@ -9,6 +9,9 @@
  * Test for getpid syscall.
  */
 
+#ifdef USE_RAW_SYSCALLS
+#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#endif
 #include "native_client/tests/syscalls/test.h"  //NOLINT
 
 #include <errno.h>
@@ -16,11 +19,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#ifdef USE_RAW_SYSCALLS
+#define GETPID NACL_SYSCALL(getpid)
+#else
+#define GETPID getpid
+#endif
+
 bool TestGetPid() {
   bool test_status;
   const char *testname = "getpid_test";
-  pid_t pid_one = getpid();
-  pid_t pid_two = getpid();
+  pid_t pid_one = GETPID();
+  pid_t pid_two = GETPID();
 
   // check if it's greater than 0.
   if ((pid_one > 0) && (pid_one == pid_two)) {

@@ -60,18 +60,28 @@ if not env.Bit('host_windows'):
       sel_ldr_flags=['-d'],
                                    )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
-
-  env.ComponentProgram('getpid_test.nexe',
-                       ['getpid_test.cc'],
-                       EXTRA_LIBS=['syscall_test_framework'])
-  node = env.CommandSelLdrTestNacl(
-      'getpid_test.out',
-      command=[env.File('getpid_test.nexe')],
-      )
-  env.AddNodeToTestSuite(node,
-                         ['small_tests', 'sel_ldr_tests'],
-                         'run_getpid_test')
 #endif
+
+env.ComponentProgram('getpid_test.nexe',
+                     ['getpid_test.cc'],
+                     EXTRA_LIBS=['syscall_test_framework'])
+node = env.CommandSelLdrTestNacl(
+    'getpid_test.out',
+    command=[env.File('getpid_test.nexe')],
+    )
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_getpid_test')
+
+raw_syscall_objects = env.RawSyscallObjects(['getpid_test.cc'])
+env.ComponentProgram('raw_getpid_test.nexe',
+                     raw_syscall_objects,
+                     EXTRA_LIBS=['syscall_test_framework'])
+node = env.CommandSelLdrTestNacl('raw_getpid_test.out',
+                                  command=[env.File('raw_getpid_test.nexe')])
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_raw_getpid_test')
 
 # The next few tests test the exit syscall.
 # The first one checks for exit success.

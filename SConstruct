@@ -1661,6 +1661,31 @@ if nacl_env.Bit('host_windows'):
   # Without this we use nacl-as, which doesn't handle include directives, etc.
   nacl_env.Replace(ASCOM = '${CCCOM}')
 
+# ---------------------------------------------------------------------
+# Special environment for untrusted test binaries that use raw syscalls
+# ---------------------------------------------------------------------
+def RawSyscallObjects(env, sources):
+  raw_syscall_env = env.Clone()
+  raw_syscall_env.Append(
+    CPPDEFINES = [
+      ['USE_RAW_SYSCALLS', '1'],
+      ['NACL_BLOCK_SHIFT', '5'],
+      ['NACL_BLOCK_SIZE', '32'],
+      ['NACL_BUILD_ARCH', '${BUILD_ARCHITECTURE}' ],
+      ['NACL_BUILD_SUBARCH', '${BUILD_SUBARCH}' ],
+      ['NACL_TARGET_ARCH', '${TARGET_ARCHITECTURE}' ],
+      ['NACL_TARGET_SUBARCH', '${TARGET_SUBARCH}' ],
+      ],
+  )
+  objects = []
+  for source_file in sources:
+    target_name = 'raw_' + os.path.basename(source_file).rstrip('.c')
+    object = raw_syscall_env.ComponentObject(target_name,
+                                             source_file)
+    objects.append(object)
+  return objects
+
+nacl_env.AddMethod(RawSyscallObjects)
 
 # TODO(khim): document this
 if not ARGUMENTS.get('nocpp'):
