@@ -35,7 +35,6 @@ extern const char kGDB[];
 extern const char kProfiler[];
 extern const char kHeapProfiler[];
 extern const char kAllowExternalPages[];
-extern const char kEnableLegacyParser[];
 
 }  // namespace test_shell
 

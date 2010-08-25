@@ -86,6 +86,4 @@ const char kHeapProfiler[] = "heap-profiler";
 
 const char kAllowExternalPages[] = "allow-external-pages";    
 
-const char kEnableLegacyParser[] = "legacy-parser";
-
 }  // namespace test_shell

@@ -324,8 +324,6 @@ public:
       return dev_tools_agent_.get();
     }
 
-    static void disable_html5_parser() { enable_html5_parser_ = false; }
-
 protected:
     void CreateDevToolsClient(TestShellDevToolsAgent* agent);
     bool Initialize(const GURL& starting_url);
@@ -387,9 +385,6 @@ private:
     // www.google.com even when in --layout-test mode (used for QA to 
     // produce images of the rendered page)
     static bool allow_external_pages_;
-
-    // Whether to use the new HTML5 parsing code.
-    static bool enable_html5_parser_;
 
     // Default timeout in ms for file page loads when in layout test mode.
     static int file_test_timeout_ms_;

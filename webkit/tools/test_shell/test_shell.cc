@@ -106,7 +106,6 @@ class URLRequestTestShellFileJob : public URLRequestFileJob {
 WindowList* TestShell::window_list_;
 WebPreferences* TestShell::web_prefs_ = NULL;
 bool TestShell::developer_extras_enabled_ = false;
-bool TestShell::enable_html5_parser_ = true;
 bool TestShell::layout_test_mode_ = false;
 bool TestShell::allow_external_pages_ = false;
 int TestShell::file_test_timeout_ms_ = kDefaultFileTestTimeoutMillisecs;
@@ -498,8 +497,6 @@ void TestShell::ResetWebPreferences() {
         // LayoutTests were written with Safari Mac in mind which does not allow
         // tabbing to links by default.
         web_prefs_->tabs_to_links = false;
-
-        web_prefs_->enable_html5_parser = enable_html5_parser_;
 
         // Allow those layout tests running as local files, i.e. under
         // LayoutTests/http/tests/local, to access http server.
