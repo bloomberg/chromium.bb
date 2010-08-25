@@ -59,6 +59,29 @@ class DownloadsTest(pyauto.PyUITest):
     """
     return self.GetDownloadsInfo().Downloads()[download_index]['id']
 
+  def _MakeFile(self, size):
+    """Make a file on-the-fly with the given size. Returns the path to the
+       file.
+    """
+    fd, file_path = tempfile.mkstemp(suffix='.zip', prefix='file-')
+    os.lseek(fd, size, 0)
+    os.write(fd, 'a')
+    os.close(fd)
+    return file_path
+
+  def _CallFunctionWithNewTimeout(self, new_timeout, function):
+    """Sets the timeout to |new_timeout| and calls |function|.
+
+    This method resets the timeout before returning.
+    """
+    timeout_changer = pyauto.PyUITest.CmdExecutionTimeoutChanger(
+        self, new_timeout)
+    logging.info('Automation execution timeout has been changed to %d. '
+                 'If the timeout is large the test might appear to hang.'
+                 % new_timeout)
+    function()
+    del timeout_changer
+
   def _GetAllDownloadIDs(self):
     """Return a list of all download ids."""
     return [download['id'] for download in self.GetDownloadsInfo().Downloads()]
@@ -133,12 +156,8 @@ class DownloadsTest(pyauto.PyUITest):
     Note: This test increases automation timeout to 4 min.  Things might seem
           to hang.
     """
-    size = 2**30  # 1 GB
     # Create a 1 GB file on the fly
-    fd, file_path = tempfile.mkstemp(suffix='.zip', prefix='bigfile-')
-    os.lseek(fd, size, 0)
-    os.write(fd, 'a')
-    os.close(fd)
+    file_path = self._MakeFile(2**30)
     try:
       file_url = self.GetFileURLForPath(file_path)
       downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
@@ -147,13 +166,8 @@ class DownloadsTest(pyauto.PyUITest):
       self.DownloadAndWaitForStart(file_url)
       # Waiting for big file to download might exceed automation timeout.
       # Temporarily increase the automation timeout.
-      new_timeout = 4 * 60 * 1000  # 4 min
-      timeout_changer = pyauto.PyUITest.CmdExecutionTimeoutChanger(
-          self, new_timeout)
-      logging.info('Automation execution timeout has been increased. Things '
-                   'might seem to be hung even though it might not really be.')
-      self.WaitForAllDownloadsToComplete()
-      del timeout_changer  # reset automation timeout
+      self._CallFunctionWithNewTimeout(4 * 60 * 1000,  # 4 min.
+                                       self.WaitForAllDownloadsToComplete)
       # Verify that the file was correctly downloaded
       self.assertTrue(os.path.exists(downloaded_pkg),
                       'Downloaded file %s missing.' % downloaded_pkg)
@@ -239,6 +253,89 @@ class DownloadsTest(pyauto.PyUITest):
         os.path.exists(downloaded_file) and os.remove(downloaded_file)
     finally:
       shutil.rmtree(unicode(temp_dir))  # unicode so that win treats nicely.
+
+  def testNoUnsafeDownloadsOnRestart(self):
+    """Verify that unsafe file should not show up on session restart."""
+    file_path = self._GetDangerousDownload()
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  os.path.basename(file_path))
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self.DownloadAndWaitForStart(file_url)
+    self.assertTrue(self.IsDownloadShelfVisible())
+    # Restart the browser and assert that the download was removed.
+    self.RestartBrowser(clear_profile=False)
+    self.assertFalse(os.path.exists(downloaded_pkg))
+    self.assertFalse(self.IsDownloadShelfVisible())
+    self.NavigateToURL("chrome://downloads")
+    self.assertFalse(self.GetDownloadsInfo().Downloads())
+
+  def testPauseAndResume(self):
+    """Verify that pause and resume work while downloading a file.
+
+    Note: This test increases automation timeout to 2 min.  Things might seem
+          to hang.
+    """
+    # Create a 250 MB file on the fly
+    file_path = self._MakeFile(2**28)
+    try:
+      file_url = self.GetFileURLForPath(file_path)
+      downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                    os.path.basename(file_path))
+      os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+      self.DownloadAndWaitForStart(file_url)
+
+      # Pause the download and assert that it is paused.
+      pause_dict = self.PerformActionOnDownload(self._GetDownloadId(),
+                                                'toggle_pause')
+      if pause_dict['state'] == 'COMPLETE':
+        logging.info('The download completed before pause. Stopping test.')
+        return
+
+      self.assertTrue(pause_dict['is_paused'])
+      self.assertTrue(pause_dict['state'] == 'IN_PROGRESS')
+
+      # Resume the download and assert it is not paused.
+      resume_dict = self.PerformActionOnDownload(self._GetDownloadId(),
+                                                 'toggle_pause')
+      self.assertFalse(resume_dict['is_paused'])
+
+      # Waiting for big file to download might exceed automation timeout.
+      # Temporarily increase the automation timeout.
+      self._CallFunctionWithNewTimeout(2 * 60 * 1000,  # 2 min.
+                                       self.WaitForAllDownloadsToComplete)
+
+      # Verify that the file was correctly downloaded after pause and resume.
+      self.assertTrue(os.path.exists(downloaded_pkg),
+                      'Downloaded file %s missing.' % downloaded_pkg)
+      self.assertTrue(self._EqualFileContents(file_path, downloaded_pkg),
+                      'Downloaded file %s does not match original' %
+                      downloaded_pkg)
+    finally:  # Cleanup. Remove all big files.
+      os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+      os.path.exists(file_path) and os.remove(file_path)
+
+  def testCancelDownload(self):
+    """Verify that we can cancel a download."""
+    # Create a big file (250 MB) on the fly, so that the download won't finish
+    # before being cancelled.
+    file_path = self._MakeFile(2**28)
+    file_url = self.GetFileURLForPath(file_path)
+    downloaded_pkg = os.path.join(self.GetDownloadDirectory().value(),
+                                  os.path.basename(file_path))
+    os.path.exists(downloaded_pkg) and os.remove(downloaded_pkg)
+    self.DownloadAndWaitForStart(file_url)
+    self.PerformActionOnDownload(self._GetDownloadId(), 'cancel')
+
+    state = self.GetDownloadsInfo().Downloads()[0]['state']
+    if state == 'COMPLETE':
+      logging.info('The download completed before cancel. Test stopped.')
+      return
+
+    # Verify the download has been cancelled.
+    self.assertEqual('CANCELLED',
+                     self.GetDownloadsInfo().Downloads()[0]['state'])
+    self.assertFalse(os.path.exists(downloaded_pkg))
 
   def testDownloadsPersistence(self):
     """Verify that download history persists on session restart."""
