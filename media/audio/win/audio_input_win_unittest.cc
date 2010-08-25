@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/audio_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

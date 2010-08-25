@@ -26,7 +26,7 @@
 #include "chrome/common/window_container_type.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_param_traits.h"
-#include "media/audio/audio_io.h"
+#include "media/audio/audio_manager.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFileSystem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 #include "webkit/glue/password_form.h"
