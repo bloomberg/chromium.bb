@@ -3,9 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/blocked_popup_container.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_view.h"
 
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "gfx/rect.h"
 
 // static
@@ -33,12 +32,6 @@ void BlockedPopupContainer::AddTabContents(TabContents* tab_contents,
         "be possible. Renderer compromised?";
     return;
   }
-
-  // BUG:52754 Super hack time. If we supress a popup that has flash 10.1
-  // playing a movie, it cannot handle being zero-sized: an unending series
-  // of divide by zero exceptions are thrown (and ignored) inside the flash
-  // in the UI thread thereby hanging the plugin and in turn hanging us.
-  tab_contents->view()->SizeContents(gfx::Size(10, 10));
 
   blocked_popups_.push_back(BlockedPopup(tab_contents, bounds));
   tab_contents->set_delegate(this);
