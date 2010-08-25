@@ -13,6 +13,7 @@ import operator
 import random
 import threading
 
+import app_specifics_pb2
 import autofill_specifics_pb2
 import bookmark_specifics_pb2
 import extension_specifics_pb2
@@ -30,6 +31,7 @@ import sync_pb2
 # of a program, it is useful to have an enumeration.
 ALL_TYPES = (
     TOP_LEVEL,  # The type of the 'Google Chrome' folder.
+    APPS,
     AUTOFILL,
     BOOKMARK,
     EXTENSIONS,
@@ -38,11 +40,12 @@ ALL_TYPES = (
     PREFERENCE,
     SESSION,
     THEME,
-    TYPED_URL) = range(10)
+    TYPED_URL) = range(11)
 
 # Given a sync type from ALL_TYPES, find the extension token corresponding
 # to that datatype.  Note that TOP_LEVEL has no such token.
 SYNC_TYPE_TO_EXTENSION = {
+    APPS: app_specifics_pb2.app,
     AUTOFILL: autofill_specifics_pb2.autofill,
     BOOKMARK: bookmark_specifics_pb2.bookmark,
     EXTENSIONS: extension_specifics_pb2.extension,
@@ -175,6 +178,8 @@ class SyncDataModel(object):
                     parent_tag='google_chrome', sync_type=TYPED_URL),
       PermanentItem('google_chrome_nigori', name='Nigori',
                     parent_tag='google_chrome', sync_type=NIGORI),
+      PermanentItem('google_chrome_apps', name='Apps',
+                    parent_tag='google_chrome', sync_type=APPS),
       ]
 
   def __init__(self):
