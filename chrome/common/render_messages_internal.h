@@ -1009,6 +1009,13 @@ IPC_BEGIN_MESSAGES(View)
                       string16 /* name */,
                       string16 /* root_path */)
 
+  // WebFileSystem response messages.
+  IPC_MESSAGE_CONTROL1(ViewMsg_FileSystem_Succeeded,
+                       int /* request_id */)
+  IPC_MESSAGE_CONTROL2(ViewMsg_FileSystem_Failed,
+                       int /* request_id */,
+                       int /* error_code */)
+
 IPC_END_MESSAGES(View)
 
 
@@ -2695,5 +2702,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // WebFrameClient::openFileSystem() message.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_OpenFileSystemRequest,
                        ViewHostMsg_OpenFileSystemRequest_Params)
+
+  // WebFileSystem::move() message.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_FileSystem_Move,
+                       int /* request_id */,
+                       string16 /* src path */,
+                       string16 /* dest path */)
 
 IPC_END_MESSAGES(ViewHost)

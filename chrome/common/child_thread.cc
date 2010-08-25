@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/file_system/file_system_dispatcher.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/resource_dispatcher.h"
@@ -51,6 +52,7 @@ void ChildThread::Init() {
 
   resource_dispatcher_.reset(new ResourceDispatcher(this));
   socket_stream_dispatcher_.reset(new SocketStreamDispatcher());
+  file_system_dispatcher_.reset(new FileSystemDispatcher());
 
   sync_message_filter_ =
       new IPC::SyncMessageFilter(ChildProcess::current()->GetShutDownEvent());
@@ -137,6 +139,8 @@ void ChildThread::OnMessageReceived(const IPC::Message& msg) {
   if (resource_dispatcher_->OnMessageReceived(msg))
     return;
   if (socket_stream_dispatcher_->OnMessageReceived(msg))
+    return;
+  if (file_system_dispatcher_->OnMessageReceived(msg))
     return;
 
   bool handled = true;

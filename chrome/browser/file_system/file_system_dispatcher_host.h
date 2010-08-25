@@ -26,11 +26,18 @@ class FileSystemDispatcherHost
   bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
 
   void OnOpenFileSystem(const ViewHostMsg_OpenFileSystemRequest_Params&);
+  void OnMove(
+      int request_id,
+      const string16& src_path,
+      const string16& dest_path);
+
   // TODO(kinuko): add more methods.
 
   void Send(IPC::Message* message);
 
  private:
+  void Move(const string16& src, const string16& dest, int operation_id);
+
   // The sender to be used for sending out IPC messages.
   IPC::Message::Sender* message_sender_;
 

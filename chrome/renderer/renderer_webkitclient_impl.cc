@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/database_util.h"
+#include "chrome/common/file_system/webfilesystem_impl.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/plugin/npobject_util.h"
@@ -59,6 +60,7 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+using WebKit::WebFileSystem;
 using WebKit::WebFrame;
 using WebKit::WebIDBFactory;
 using WebKit::WebKitClient;
@@ -278,6 +280,14 @@ WebIDBFactory* RendererWebKitClientImpl::idbFactory() {
       web_idb_factory_.reset(new RendererWebIDBFactoryImpl());
   }
   return web_idb_factory_.get();
+}
+
+//------------------------------------------------------------------------------
+
+WebFileSystem* RendererWebKitClientImpl::fileSystem() {
+  if (!web_file_system_.get())
+    web_file_system_.reset(new WebFileSystemImpl());
+  return web_file_system_.get();
 }
 
 //------------------------------------------------------------------------------

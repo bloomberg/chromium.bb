@@ -13,6 +13,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 #include "googleurl/src/gurl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFileError.h"
 
 FileSystemDispatcherHost::FileSystemDispatcherHost(
     IPC::Message::Sender* sender,
@@ -44,6 +45,7 @@ bool FileSystemDispatcherHost::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(FileSystemDispatcherHost, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenFileSystemRequest, OnOpenFileSystem)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FileSystem_Move, OnMove)
     // TODO(kinuko): add more.
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
@@ -58,10 +60,18 @@ void FileSystemDispatcherHost::OnOpenFileSystem(
   // TODO(kinuko): not implemented yet.
 
   Send(new ViewMsg_OpenFileSystemRequest_Complete(
-    params.routing_id,
-    params.request_id,
-    false,
-    name, root_path));
+      params.routing_id,
+      params.request_id,
+      false,
+      name, root_path));
+}
+
+void FileSystemDispatcherHost::OnMove(
+    int request_id, const string16& src_path, const string16& dest_path) {
+  // TODO(kinuko): not implemented yet.
+
+  Send(new ViewMsg_FileSystem_Failed(
+      request_id, WebKit::WebFileErrorAbort));
 }
 
 void FileSystemDispatcherHost::Send(IPC::Message* message) {

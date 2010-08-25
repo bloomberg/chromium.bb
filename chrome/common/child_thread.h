@@ -12,6 +12,7 @@
 #include "ipc/ipc_message.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
+class FileSystemDispatcher;
 class MessageLoop;
 class NotificationService;
 class ResourceDispatcher;
@@ -52,6 +53,10 @@ class ChildThread : public IPC::Channel::Listener,
 
   SocketStreamDispatcher* socket_stream_dispatcher() {
     return socket_stream_dispatcher_.get();
+  }
+
+  FileSystemDispatcher* file_system_dispatcher() const {
+    return file_system_dispatcher_.get();
   }
 
   // Safe to call on any thread, as long as it's guaranteed that the thread's
@@ -117,6 +122,8 @@ class ChildThread : public IPC::Channel::Listener,
   MessageLoop* message_loop_;
 
   scoped_ptr<NotificationService> notification_service_;
+
+  scoped_ptr<FileSystemDispatcher> file_system_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThread);
 };

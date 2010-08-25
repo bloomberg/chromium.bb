@@ -551,7 +551,7 @@ class RenderView : public RenderWidget,
                                          const WebKit::WebRect& sel);
 
   virtual void openFileSystem(WebKit::WebFrame* frame,
-                              WebKit::WebFileSystem::Type,
+                              WebKit::WebFileSystem::Type type,
                               long long size,
                               WebKit::WebFileSystemCallbacks* callbacks);
 

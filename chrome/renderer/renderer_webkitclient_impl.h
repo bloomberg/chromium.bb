@@ -11,6 +11,7 @@
 #include "webkit/glue/webkitclient_impl.h"
 
 class WebSharedWorkerRepositoryImpl;
+class WebFileSystemImpl;
 
 namespace IPC {
 class SyncMessage;
@@ -61,6 +62,7 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebString& challenge,
       const WebKit::WebURL& url);
   virtual WebKit::WebIDBFactory* idbFactory();
+  virtual WebKit::WebFileSystem* fileSystem();
 
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
   virtual WebKit::WebGraphicsContext3D* createGraphicsContext3D();
@@ -94,6 +96,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   scoped_ptr<WebSharedWorkerRepositoryImpl> shared_worker_repository_;
 
   scoped_ptr<WebKit::WebIDBFactory> web_idb_factory_;
+
+  scoped_ptr<WebFileSystemImpl> web_file_system_;
 };
 
 #endif  // CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
