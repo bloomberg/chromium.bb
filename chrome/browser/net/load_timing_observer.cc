@@ -161,14 +161,12 @@ void LoadTimingObserver::OnAddURLRequestEntry(
       }
       break;
     case net::NetLog::TYPE_HTTP_TRANSACTION_SEND_REQUEST:
-    case net::NetLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST:
       if (is_begin)
         timing.send_start = TimeTicksToOffset(time, record);
       else if (is_end)
         timing.send_end = TimeTicksToOffset(time, record);
       break;
     case net::NetLog::TYPE_HTTP_TRANSACTION_READ_HEADERS:
-    case net::NetLog::TYPE_SPDY_TRANSACTION_READ_HEADERS:
       if (is_begin)
         timing.receive_headers_start =  TimeTicksToOffset(time, record);
       else if (is_end)
