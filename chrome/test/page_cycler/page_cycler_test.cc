@@ -499,7 +499,9 @@ PAGE_CYCLER_HTTP_TESTS("bloat", BloatHttp);
 
 // HTML5 database tests
 // These tests are _really_ slow on XP/Vista.
-#if !defined(OS_WIN)
+// crbug.com/53140: The Mac perf bot is not happy with this test suite either,
+// even though it doesn't seem to be a problem related to this test suite.
+#if !defined(OS_WIN) && !defined(OS_MAC)
 PAGE_CYCLER_DATABASE_TESTS("select-transactions",
                            SelectTransactions);
 PAGE_CYCLER_DATABASE_TESTS("select-readtransactions",
