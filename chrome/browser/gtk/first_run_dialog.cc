@@ -11,7 +11,6 @@
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_floating_container.h"
 #include "chrome/browser/gtk/gtk_util.h"
-#include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile.h"
@@ -66,14 +65,10 @@ void SetWelcomePosition(GtkFloatingContainer* container,
 
 // static
 bool FirstRunDialog::Show(Profile* profile,
-                          ProcessSingleton* process_singleton) {
+                          bool randomize_search_engine_order) {
   int response = -1;
   // Object deletes itself.
-  new FirstRunDialog(profile, response);
-
-  // Prevent further launches of Chrome until First Run UI is done.
-  // We don't actually use the parameter to Lock() on Posix.
-  process_singleton->Lock(NULL);
+  new FirstRunDialog(profile, randomize_search_engine_order, response);
 
   // TODO(port): it should be sufficient to just run the dialog:
   // int response = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -82,25 +77,27 @@ bool FirstRunDialog::Show(Profile* profile,
   // Instead, run a loop and extract the response manually.
   MessageLoop::current()->Run();
 
-  process_singleton->Unlock();
   return (response == GTK_RESPONSE_ACCEPT);
 }
 
-FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
+FirstRunDialog::FirstRunDialog(Profile* profile,
+                               bool randomize_search_engine_order,
+                               int& response)
     : search_engine_window_(NULL),
       dialog_(NULL),
       report_crashes_(NULL),
       make_default_(NULL),
       profile_(profile),
       chosen_search_engine_(NULL),
-      response_(response),
-      importer_host_(new ImporterHost()) {
+      response_(response) {
   search_engines_model_ = profile_->GetTemplateURLModel();
-  DCHECK(!search_engines_model_->loaded());
-  search_engines_model_->AddObserver(this);
-  search_engines_model_->Load();
-
   ShowSearchEngineWindow();
+
+  search_engines_model_->AddObserver(this);
+  if (search_engines_model_->loaded())
+    OnTemplateURLModelChanged();
+  else
+    search_engines_model_->Load();
 }
 
 FirstRunDialog::~FirstRunDialog() {
@@ -304,8 +301,6 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
     gtk_widget_hide_all(dialog_);
   response_ = response;
 
-  bool do_import = false;
-
   if (response == GTK_RESPONSE_ACCEPT) {
     // Mark that first run has ran.
     FirstRun::CreateSentinel();
@@ -327,30 +322,8 @@ void FirstRunDialog::OnResponseDialog(GtkWidget* widget, int response) {
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(make_default_))) {
       ShellIntegration::SetAsDefaultBrowser();
     }
-
-    do_import = importer_host_->GetAvailableProfileCount() > 0;
-    if (do_import) {
-      // Import data.
-      const ProfileInfo& source_profile =
-          importer_host_->GetSourceProfileInfoAt(0);
-      int items = importer::SEARCH_ENGINES + importer::HISTORY +
-          importer::HOME_PAGE + importer::PASSWORDS;
-      importer_host_->SetObserver(this);
-      // TODO(port): Should we do the actual import in a new process like
-      // Windows?
-      importer_host_->StartImportSettings(source_profile,
-                                          profile_,
-                                          items,
-                                          new ProfileWriter(profile_),
-                                          true);
-    }
   }
 
-  if (!do_import)
-    FirstRunDone();
-}
-
-void FirstRunDialog::ImportEnded() {
   FirstRunDone();
 }
 

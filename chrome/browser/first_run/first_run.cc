@@ -18,7 +18,9 @@
 #include "base/path_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/importer.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/chrome_paths.h"
@@ -454,3 +456,80 @@ void FirstRunImportObserver::Finish() {
     MessageLoop::current()->Quit();
 }
 
+// TODO(avi): port the relevant pieces and enable this.
+#if !defined(OS_MACOSX)
+// static
+void FirstRun::AutoImport(
+    Profile* profile,
+    bool homepage_defined,
+    int import_items,
+    int dont_import_items,
+    bool search_engine_experiment,
+    bool randomize_search_engine_experiment,
+    ProcessSingleton* process_singleton) {
+  // We need to avoid dispatching new tabs when we are importing because
+  // that will lead to data corruption or a crash. Because there is no UI for
+  // the import process, we pass NULL as the window to bring to the foreground
+  // when a CopyData message comes in; this causes the message to be silently
+  // discarded, which is the correct behavior during the import process.
+  process_singleton->Lock(NULL);
+
+  PlatformSetup();
+
+  scoped_refptr<ImporterHost> importer_host;
+  importer_host = new ImporterHost();
+  // Do import if there is an available profile for us to import.
+  if (importer_host->GetAvailableProfileCount() > 0) {
+    // Don't show the warning dialog if import fails.
+    importer_host->set_headless();
+    int items = 0;
+
+    // History is always imported unless turned off in master_preferences.
+    if (!(dont_import_items & importer::HISTORY))
+      items = items | importer::HISTORY;
+    // Home page is imported in organic builds only unless turned off or
+    // defined in master_preferences.
+    if (IsOrganic()) {
+      if (!(dont_import_items & importer::HOME_PAGE) && !homepage_defined)
+        items = items | importer::HOME_PAGE;
+    } else {
+      if (import_items & importer::HOME_PAGE)
+        items = items | importer::HOME_PAGE;
+    }
+    // Search engines are imported in organic builds only unless overriden
+    // in master_preferences.
+    if (IsOrganic()) {
+      if (!(dont_import_items & importer::SEARCH_ENGINES))
+        items = items | importer::SEARCH_ENGINES;
+    } else {
+      if (import_items & importer::SEARCH_ENGINES)
+        items = items | importer::SEARCH_ENGINES;
+    }
+
+    // Bookmarks are never imported, unless turned on in master_preferences.
+    if (import_items & importer::FAVORITES)
+      items = items | importer::FAVORITES;
+
+    ImportSettings(profile, importer_host, items);
+  }
+
+  UserMetrics::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
+
+  // Launch the search engine dialog only if build is organic.
+  if (IsOrganic()) {
+    // The home page string may be set in the preferences, but the user should
+    // initially use Chrome with the NTP as home page in organic builds.
+    profile->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
+
+    ShowFirstRunDialog(profile, randomize_search_engine_experiment);
+  }
+
+  FirstRun::SetShowFirstRunBubblePref(true);
+  // Set the first run bubble to minimal.
+  FirstRun::SetMinimalFirstRunBubblePref();
+  FirstRun::SetShowWelcomePagePref();
+
+  process_singleton->Unlock();
+  FirstRun::CreateSentinel();
+}
+#endif  // !defined(OS_MACOSX)

@@ -11,25 +11,19 @@ typedef struct _GtkWidget GtkWidget;
 
 #include "app/gtk_signal.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/importer/importer.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 
-class FirstRunDialog : public ImporterHost::Observer,
-                       public TemplateURLModelObserver {
+class FirstRunDialog : public TemplateURLModelObserver {
  public:
   // Displays the first run UI for reporting opt-in, import data etc.
-  static bool Show(Profile* profile, ProcessSingleton* process_singleton);
-
-  // Overridden from ImporterHost::Observer ------------------------------------
-  virtual void ImportEnded();
-  virtual void ImportStarted() {}
-  virtual void ImportItemStarted(importer::ImportItem item) {}
-  virtual void ImportItemEnded(importer::ImportItem item) {}
+  static bool Show(Profile* profile, bool randomize_search_engine_order);
 
   virtual void OnTemplateURLModelChanged();
 
  private:
-  FirstRunDialog(Profile* profile, int& response);
+  FirstRunDialog(Profile* profile,
+                 bool randomize_search_engine_order,
+                 int& response);
   virtual ~FirstRunDialog();
 
   CHROMEGTK_CALLBACK_1(FirstRunDialog, void, OnResponseDialog, int);
@@ -73,9 +67,6 @@ class FirstRunDialog : public ImporterHost::Observer,
 
   // User response (accept or cancel) is returned through this.
   int& response_;
-
-  // Utility class that does the actual import.
-  scoped_refptr<ImporterHost> importer_host_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunDialog);
 };

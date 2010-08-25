@@ -1236,7 +1236,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // touches reads preferences.
   if (is_first_run) {
     if (!first_run_ui_bypass) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
       FirstRun::AutoImport(profile,
                            master_prefs.homepage_defined,
                            master_prefs.do_import_items,

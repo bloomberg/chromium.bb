@@ -67,13 +67,25 @@ class FirstRun {
 
   // Automatically import history and home page (and search engine, if
   // nonorganic).
-  static void AutoImport(Profile* profile,
+  static void AutoImport(
+      Profile* profile,
       bool homepage_defined,
       int import_items,
       int dont_import_items,
       bool search_engine_experiment,
       bool randomize_search_engine_experiment,
       ProcessSingleton* process_singleton);
+
+  // Does platform specific setup. Called at the start of AutoImport.
+  static void PlatformSetup();
+
+  // Returns whether the current install is "organic".
+  static bool IsOrganic();
+
+  // Shows the search engine choice dialog, and any other platform dialogs.
+  // Only called in "organic" installs.
+  static void ShowFirstRunDialog(Profile* profile,
+                                 bool randomize_search_engine_experiment);
 
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from a standard
@@ -98,11 +110,12 @@ class FirstRun {
   // Removes the sentinel file created in ConfigDone(). Returns false if the
   // sentinel file could not be removed.
   static bool RemoveSentinel();
-  // Imports settings in a separate process. It spawns a second dedicated
-  // browser process that just does the import with the import progress UI.
-  static bool ImportSettings(Profile* profile, int browser_type,
-                             int items_to_import,
-                             gfx::NativeView parent_window);
+  // Imports settings. This may be done in a separate process depending on the
+  // platform, but it will always block until done. The return value indicates
+  // success.
+  static bool ImportSettings(Profile* profile,
+                             scoped_refptr<ImporterHost> importer_host,
+                             int items_to_import);
 
   // Sets the kShouldShowFirstRunBubble local state pref so that the browser
   // shows the bubble once the main message loop gets going (or refrains from

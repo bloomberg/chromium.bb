@@ -277,8 +277,7 @@ void ImporterHost::CheckForFirefoxLock(
       // If fail to acquire the lock, we set the source unreadable and
       // show a warning dialog, unless running without UI.
       is_source_readable_ = false;
-      if (!this->headless_)
-        ShowWarningDialog();
+      ShowWarningDialog();
     }
   }
 }

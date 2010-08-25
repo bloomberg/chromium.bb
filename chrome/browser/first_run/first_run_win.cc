@@ -446,94 +446,38 @@ bool DecodeImportParams(const std::string& encoded, int* browser_type,
 
 }  // namespace
 
-void FirstRun::AutoImport(Profile* profile,
-    bool homepage_defined,
-    int import_items,
-    int dont_import_items,
-    bool search_engine_experiment,
-    bool randomize_search_engine_experiment,
-    ProcessSingleton* process_singleton) {
+// static
+void FirstRun::PlatformSetup() {
   FirstRun::CreateChromeDesktopShortcut();
   // Windows 7 has deprecated the quick launch bar.
   if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
     CreateChromeQuickLaunchShortcut();
-
-  scoped_refptr<ImporterHost> importer_host;
-  importer_host = new ImporterHost();
-  int items = 0;
-
-  // History is always imported unless turned off in master_preferences.
-  if (!(dont_import_items & importer::HISTORY))
-    items = items | importer::HISTORY;
-  // Home page is imported in organic builds only unless turned off or
-  // defined in master_preferences.
-  std::wstring brand;
-  GoogleUpdateSettings::GetBrand(&brand);
-  if (GoogleUpdateSettings::IsOrganic(brand)) {
-    if (!(dont_import_items & importer::HOME_PAGE) && !homepage_defined) {
-      items = items | importer::HOME_PAGE;
-    }
-  } else {
-    if (import_items & importer::HOME_PAGE) {
-      items = items | importer::HOME_PAGE;
-    }
-  }
-  // Search engines are imported in organic builds only, unless turned on
-  // in master_preferences.
-  if (GoogleUpdateSettings::IsOrganic(brand)) {
-    if (!(dont_import_items & importer::SEARCH_ENGINES)) {
-      items = items | importer::SEARCH_ENGINES;
-    }
-  } else {
-    if (import_items & importer::SEARCH_ENGINES) {
-      items = items | importer::SEARCH_ENGINES;
-    }
-  }
-
-  // Bookmarks are never imported, unless turned on in master_preferences.
-  if (import_items & importer::FAVORITES)
-    items = items | importer::FAVORITES;
-
-  // We need to avoid dispatching new tabs when we are importing because
-  // that will lead to data corruption or a crash. Because there is no UI for
-  // the import process, we pass NULL as the window to bring to the foreground
-  // when a CopyData message comes in; this causes the message to be silently
-  // discarded, which is the correct behavior during the import process.
-  process_singleton->Lock(NULL);
-
-  // Index 0 is the default browser.
-  FirstRun::ImportSettings(profile,
-      importer_host->GetSourceProfileInfoAt(0).browser_type, items, NULL);
-  UserMetrics::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
-
-  // Launch the search engine dialog only if build is organic.
-  if (GoogleUpdateSettings::IsOrganic(brand)) {
-    // The home page string may be set in the preferences, but the user should
-    // initially use Chrome with the NTP as home page in organic builds.
-    profile->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage, true);
-
-    views::Window* search_engine_dialog = views::Window::CreateChromeWindow(
-        NULL,
-        gfx::Rect(),
-        new FirstRunSearchEngineView(profile,
-        randomize_search_engine_experiment));
-    DCHECK(search_engine_dialog);
-
-    search_engine_dialog->Show();
-    views::AcceleratorHandler accelerator_handler;
-    MessageLoopForUI::current()->Run(&accelerator_handler);
-    search_engine_dialog->Close();
-  }
-
-  FirstRun::SetShowFirstRunBubblePref(true);
-  // Set the first run bubble to minimal.
-  FirstRun::SetMinimalFirstRunBubblePref();
-  FirstRun::SetShowWelcomePagePref();
-
-  process_singleton->Unlock();
-  FirstRun::CreateSentinel();
 }
 
+// static
+bool FirstRun::IsOrganic() {
+  std::wstring brand;
+  GoogleUpdateSettings::GetBrand(&brand);
+  return GoogleUpdateSettings::IsOrganic(brand);
+}
+
+// static
+void FirstRun::ShowFirstRunDialog(Profile* profile,
+                                  bool randomize_search_engine_experiment) {
+  views::Window* search_engine_dialog = views::Window::CreateChromeWindow(
+      NULL,
+      gfx::Rect(),
+      new FirstRunSearchEngineView(profile,
+      randomize_search_engine_experiment));
+  DCHECK(search_engine_dialog);
+
+  search_engine_dialog->Show();
+  views::AcceleratorHandler accelerator_handler;
+  MessageLoopForUI::current()->Run(&accelerator_handler);
+  search_engine_dialog->Close();
+}
+
+// static
 bool FirstRun::ImportSettings(Profile* profile, int browser_type,
                               int items_to_import,
                               const FilePath& import_bookmarks_path,
@@ -558,7 +502,7 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
   if (items_to_import) {
     import_cmd.CommandLine::AppendSwitchASCII(switches::kImport,
         EncodeImportParams(browser_type, items_to_import,
-                           skip_first_run_ui ? 1 : 0, parent_window));
+                           skip_first_run_ui ? 1 : 0, NULL));
   }
 
   if (!import_bookmarks_path.empty()) {
@@ -570,11 +514,6 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
   base::ProcessHandle import_process;
   if (!base::LaunchApp(import_cmd, false, false, &import_process))
     return false;
-
-  // Activate the importer monitor. It awakes periodically in another thread
-  // and checks that the importer UI is still pumping messages.
-  if (parent_window)
-    HungImporterMonitor hang_monitor(parent_window, import_process);
 
   // We block inside the import_runner ctor, pumping messages until the
   // importer process ends. This can happen either by completing the import
@@ -589,11 +528,15 @@ bool FirstRun::ImportSettings(Profile* profile, int browser_type,
   return (import_runner.exit_code() == ResultCodes::NORMAL_EXIT);
 }
 
-bool FirstRun::ImportSettings(Profile* profile, int browser_type,
-                              int items_to_import,
-                              HWND parent_window) {
-  return ImportSettings(profile, browser_type, items_to_import,
-                        FilePath(), false, parent_window);
+// static
+bool FirstRun::ImportSettings(Profile* profile,
+                              scoped_refptr<ImporterHost> importer_host,
+                              int items_to_import) {
+  return ImportSettings(
+      profile,
+      importer_host->GetSourceProfileInfoAt(0).browser_type,
+      items_to_import,
+      FilePath(), false, NULL);
 }
 
 int FirstRun::ImportFromBrowser(Profile* profile,
