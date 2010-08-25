@@ -147,9 +147,20 @@ struct WebAccessibility {
     STATE_UNAVAILABLE
   };
 
+  // Additional optional attributes that can be optionally attached to
+  // a node.
   enum Attribute {
+    // Doc attributes: only make sense when applied to the top-level
+    // Document node.
+    ATTR_DOC_URL,
+    ATTR_DOC_TITLE,
+    ATTR_DOC_MIMETYPE,
+    ATTR_DOC_DOCTYPE,
+
+    // Attributes that could apply to any node.
     ATTR_ACTION,
     ATTR_DESCRIPTION,
+    ATTR_DISPLAY,
     ATTR_HELP,
     ATTR_HTML_TAG,
     ATTR_LINK_TARGET,
@@ -180,6 +191,7 @@ struct WebAccessibility {
   WebKit::WebRect location;
   std::map<int32, string16> attributes;
   std::vector<WebAccessibility> children;
+  std::vector<std::pair<string16, string16> > html_attributes;
 };
 
 }  // namespace webkit_glue
