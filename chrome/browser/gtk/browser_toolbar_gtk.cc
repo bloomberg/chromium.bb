@@ -333,33 +333,7 @@ GtkIconSet* BrowserToolbarGtk::GetIconSetForId(int idr) {
   return theme_provider_->GetIconSetForId(idr);
 }
 
-// menus::SimpleMenuModel::Delegate
-
-bool BrowserToolbarGtk::IsCommandIdEnabled(int id) const {
-  return browser_->command_updater()->IsCommandEnabled(id);
-}
-
-bool BrowserToolbarGtk::IsCommandIdChecked(int id) const {
-  if (!profile_)
-    return false;
-
-  EncodingMenuController controller;
-  if (id == IDC_SHOW_BOOKMARK_BAR) {
-    return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
-  } else if (controller.DoesCommandBelongToEncodingMenu(id)) {
-    TabContents* tab_contents = browser_->GetSelectedTabContents();
-    if (tab_contents) {
-      return controller.IsItemChecked(profile_, tab_contents->encoding(),
-                                      id);
-    }
-  }
-
-  return false;
-}
-
-void BrowserToolbarGtk::ExecuteCommand(int id) {
-  browser_->ExecuteCommand(id);
-}
+// menus::AcceleratorProvider
 
 bool BrowserToolbarGtk::GetAcceleratorForCommandId(
     int id,

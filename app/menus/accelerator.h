@@ -68,6 +68,21 @@ class Accelerator {
   int modifiers_;
 };
 
+// Since acclerator code is one of the few things that can't be cross platform
+// in the chrome UI, separate out just the GetAcceleratorForCommandId() from
+// the menu delegates.
+class AcceleratorProvider {
+ public:
+  // Gets the accelerator for the specified command id. Returns true if the
+  // command id has a valid accelerator, false otherwise.
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) = 0;
+
+ protected:
+  virtual ~AcceleratorProvider() {}
+};
+
 }
 
 #endif  // APP_MENUS_ACCELERATOR_H_

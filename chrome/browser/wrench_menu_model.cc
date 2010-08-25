@@ -20,6 +20,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/host_zoom_map.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -29,6 +30,7 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -36,6 +38,10 @@
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
 #include "chrome/browser/gtk/gtk_util.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/browser_window.h"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,10 +170,10 @@ void ToolsMenuModel::Build(Browser* browser) {
 ////////////////////////////////////////////////////////////////////////////////
 // WrenchMenuModel
 
-WrenchMenuModel::WrenchMenuModel(menus::SimpleMenuModel::Delegate* delegate,
+WrenchMenuModel::WrenchMenuModel(menus::AcceleratorProvider* provider,
                                  Browser* browser)
-    : menus::SimpleMenuModel(delegate),
-      delegate_(delegate),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+      provider_(provider),
       browser_(browser),
       tabstrip_model_(browser_->tabstrip_model()) {
   Build();
@@ -186,50 +192,64 @@ WrenchMenuModel::~WrenchMenuModel() {
     tabstrip_model_->RemoveObserver(this);
 }
 
-bool WrenchMenuModel::IsLabelDynamicAt(int index) const {
-  return IsDynamicItem(index) || SimpleMenuModel::IsLabelDynamicAt(index);
+bool WrenchMenuModel::IsLabelForCommandIdDynamic(int command_id) const {
+  return command_id == IDC_ZOOM_PERCENT_DISPLAY ||
+         command_id == IDC_SYNC_BOOKMARKS ||
+#if defined(OS_MACOSX)
+         command_id == IDC_FULLSCREEN ||
+#endif
+         command_id == IDC_ABOUT;
 }
 
-string16 WrenchMenuModel::GetLabelAt(int index) const {
-  if (!IsDynamicItem(index))
-    return SimpleMenuModel::GetLabelAt(index);
-
-  int command_id = GetCommandIdAt(index);
-
+string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
   switch (command_id) {
     case IDC_ABOUT:
       return GetAboutEntryMenuLabel();
     case IDC_SYNC_BOOKMARKS:
       return GetSyncMenuLabel();
+    case IDC_ZOOM_PERCENT_DISPLAY:
+      return zoom_label_;
+#if defined(OS_MACOSX)
+    case IDC_FULLSCREEN: {
+      int string_id = IDS_ENTER_FULLSCREEN_MAC;  // Default to Enter.
+      // Note: On startup, |window()| may be NULL.
+      if (browser_->window() && browser_->window()->IsFullscreen())
+        string_id = IDS_EXIT_FULLSCREEN_MAC;
+      return l10n_util::GetStringUTF16(string_id);
+    }
+#endif
     default:
       NOTREACHED();
       return string16();
   }
 }
 
-bool WrenchMenuModel::GetIconAt(int index, SkBitmap* icon) const {
-  if (GetCommandIdAt(index) == IDC_ABOUT &&
-      Singleton<UpgradeDetector>::get()->notify_upgrade()) {
-    // Show the exclamation point next to the menu item.
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    *icon = *rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE);
-    return true;
+void WrenchMenuModel::ExecuteCommand(int command_id) {
+  browser_->ExecuteCommand(command_id);
+}
+
+bool WrenchMenuModel::IsCommandIdChecked(int command_id) const {
+#if defined(OS_CHROMEOS)
+  if (command_id == IDC_TOGGLE_VERTICAL_TABS) {
+    return browser_->UseVerticalTabs();
   }
+#endif
+
+  if (command_id == IDC_SHOW_BOOKMARK_BAR) {
+    return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+  }
+
   return false;
 }
 
-bool WrenchMenuModel::IsLabelForCommandIdDynamic(int command_id) const {
-  return command_id == IDC_ZOOM_PERCENT_DISPLAY;
+bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
+  return browser_->command_updater()->IsCommandEnabled(command_id);
 }
 
-string16 WrenchMenuModel::GetLabelForCommandId(int command_id) const {
-  DCHECK_EQ(IDC_ZOOM_PERCENT_DISPLAY, command_id);
-  return zoom_label_;
-}
-
-void WrenchMenuModel::ExecuteCommand(int command_id) {
-  if (delegate_)
-    delegate_->ExecuteCommand(command_id);
+bool WrenchMenuModel::GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) {
+  return provider_->GetAcceleratorForCommandId(command_id, accelerator);
 }
 
 void WrenchMenuModel::TabSelectedAt(TabContents* old_contents,
@@ -259,10 +279,19 @@ void WrenchMenuModel::Observe(NotificationType type,
   UpdateZoomControls();
 }
 
+// For testing.
+WrenchMenuModel::WrenchMenuModel()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
+      provider_(NULL),
+      browser_(NULL),
+      tabstrip_model_(NULL) {
+}
+
 void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
-  AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
+  AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW,
+                             IDS_NEW_INCOGNITO_WINDOW);
 
   AddSeparator();
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(TOOLKIT_VIEWS))
@@ -304,7 +333,7 @@ void WrenchMenuModel::Build() {
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 
-  tools_menu_model_.reset(new ToolsMenuModel(delegate(), browser_));
+  tools_menu_model_.reset(new ToolsMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_ZOOM_MENU, IDS_TOOLS_MENU,
                          tools_menu_model_.get());
 
@@ -337,6 +366,12 @@ void WrenchMenuModel::Build() {
                            IDS_TAB_CXMENU_USE_VERTICAL_TABS);
 #endif
 
+  // TODO(erg): This entire section needs to be reworked and is out of scope of
+  // the first cleanup patch I'm doing. Part 1 (crbug.com/47320) is moving most
+  // of the logic from each platform specific UI code into the model here. Part
+  // 2 (crbug.com/46221) is normalizing the about menu item/hidden update menu
+  // item behaviour across the three platforms.
+
   // On Mac, there is no About item unless it is replaced with the update
   // available notification.
   if (browser_defaults::kShowAboutMenuItem ||
@@ -345,6 +380,9 @@ void WrenchMenuModel::Build() {
             l10n_util::GetStringFUTF16(
                 IDS_ABOUT,
                 l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+    // ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    // SetIcon(GetIndexOfCommandId(IDC_ABOUT),
+    //                *rb.GetBitmapNamed(IDR_UPDATE_AVAILABLE));
   }
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
   if (browser_defaults::kShowExitMenuItem) {
@@ -413,16 +451,4 @@ string16 WrenchMenuModel::GetAboutEntryMenuLabel() const {
   }
   return l10n_util::GetStringFUTF16(
       IDS_ABOUT, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
-}
-
-bool WrenchMenuModel::IsDynamicItem(int index) const {
-  int command_id = GetCommandIdAt(index);
-  return command_id == IDC_SYNC_BOOKMARKS ||
-         command_id == IDC_ABOUT;
-}
-
-bool WrenchMenuModel::IsCommandIdEnabled(int command_id) const {
-  if (delegate_)
-    return delegate_->IsCommandIdEnabled(command_id);
-  return true;
 }
