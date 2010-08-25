@@ -135,12 +135,14 @@ void PluginList::GetPluginDirectories(std::vector<FilePath>* plugin_dirs) {
       plugin_dirs->push_back(FilePath(paths[i]));
   }
 
+#if !defined(OS_CHROMEOS)
   // 2) NS_USER_PLUGINS_DIR: ~/.mozilla/plugins.
   // This is a de-facto standard, so even though we're not Mozilla, let's
   // look in there too.
   FilePath home = file_util::GetHomeDir();
   if (!home.empty())
     plugin_dirs->push_back(home.Append(".mozilla/plugins"));
+#endif
 
   // 3) NS_SYSTEM_PLUGINS_DIR:
   // This varies across different browsers and versions, so check 'em all.
