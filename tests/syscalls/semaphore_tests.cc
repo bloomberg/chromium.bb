@@ -7,6 +7,8 @@
 #include <semaphore.h>
 
 #include <errno.h>
+#include <pthread.h>
+#include <signal.h>
 #include <unistd.h>
 
 #include <cstdlib>
@@ -38,7 +40,7 @@ int TestSemInitErrors() {
 
   sem_t my_semaphore;
 
-  // Create a value just beyond SEM_VALUE_MAX
+  // Create a value just beyond SEM_VALUE_MAX, try to initialize the semaphore.
   const unsigned int sem_max_plus_1 = SEM_VALUE_MAX + 1;
 
   // sem_init should return -1 and errno should equal EINVAL
@@ -52,9 +54,220 @@ int TestSemInitErrors() {
   EXPECT(EINVAL == errno);
 
   // NaCl semaphores do not currently support the pshared option, so this should
-  // fail.  If pshared gets added, we should begin testing for it.
+  // fail with an ENOSYS error.  If pshared gets added, we should begin testing
+  // it for proper successful behavior.
   EXPECT(-1 == sem_init(&my_semaphore, 1, 0));
+  EXPECT(ENOSYS == errno);
+
+  END_TEST();
+}
+
+// Test simple usages of sem_destroy and return the number of failed checks.
+//
+// According to the man page on Linux:
+// ===================================
+// RETURN VALUE
+//
+//        sem_destroy() returns 0 on success; on error, -1 is returned, and
+//        errno is set to indicate the error.
+// ERRORS
+//
+//        EINVAL sem is not a valid semaphore.
+// ===================================
+int TestSemDestroy() {
+  START_TEST("sem_destroy");
+
+  sem_t my_semaphore[2];
+
+  // Try destroying a semaphore twice.  After the first destroy, the semaphore
+  // is no longer valid, so the second call should fail.
+  EXPECT(0 == sem_init(&my_semaphore[0], 0, 0));
+  EXPECT(0 == sem_destroy(&my_semaphore[0]));
+  EXPECT(-1 == sem_destroy(&my_semaphore[0]));
   EXPECT(EINVAL == errno);
+  // Try sem_destroy with a null pointer.
+  EXPECT(-1 == sem_destroy(NULL));
+  EXPECT(EINVAL == errno);
+
+  END_TEST();
+}
+
+// Test error conditions of sem_post and return the number of failed checks.
+//
+// According to the man page on Linux:
+// ===================================
+// RETURN VALUE
+//        sem_post() returns 0 on success; on error, the value of the semaphore
+//        is left unchanged, -1 is returned, and errno is set to indicate the
+//        error.
+//
+//  ERRORS
+//         EINVAL sem is not a valid semaphore.
+//
+//         EOVERFLOW
+//                The maximum allowable value for a semaphore would be exceeded.
+// ===================================
+int TestSemPostErrors() {
+  START_TEST("sem_post error conditions");
+
+  sem_t my_semaphore[2];
+
+  // Test invalid semaphores.
+  // Try posting to a semaphore that has been initialized and destroyed.
+  EXPECT(0 == sem_init(&my_semaphore[0], 0, 0));
+  EXPECT(0 == sem_destroy(&my_semaphore[0]));
+  EXPECT(-1 == sem_post(&my_semaphore[0]));
+  EXPECT(EINVAL == errno);
+  // Try a null pointer.
+  EXPECT(-1 == sem_post(NULL));
+  EXPECT(EINVAL == errno);
+
+  // Now really initialize one with the max value, and try to post to it.
+  EXPECT(0 == sem_init(&my_semaphore[1], 0, SEM_VALUE_MAX));
+  EXPECT(-1 == sem_post(&my_semaphore[1]));
+  EXPECT(EOVERFLOW == errno);
+  EXPECT(0 == sem_destroy(&my_semaphore[1]));
+
+  END_TEST();
+}
+
+// The real type of the void* argument to PostThreadFunc.  See PostThreadFunc
+// for more information.
+struct PostThreadArg {
+  // The semaphore to which PostThreadFunc will post.
+  sem_t* semaphore;
+  // An amount of time to sleep before each post (in microseconds).
+  unsigned int sleep_microseconds;
+  // The number of times to post before exiting the function.
+  unsigned int iterations;
+};
+
+// Post to the given semaphore some number of times, with a sleep before each
+// post.  poster_thread_arg must be of type PosterThreadArg.  Returns NULL.
+void* PostThreadFunc(void* poster_thread_arg) {
+  PostThreadArg* pta = static_cast<PostThreadArg*>(poster_thread_arg);
+  for (unsigned int i = 0; i < pta->iterations; ++i) {
+    usleep(pta->sleep_microseconds);
+    sem_post(pta->semaphore);
+  }
+  return NULL;
+}
+
+// TODO(dmichael):  Add this code and appropriate tests back if/when signal
+// support is added.
+// The following is intended to be used to test that calls which may be
+// interrupted by a signal (e.g., sem_wait) will stop and report failure
+// properly.  However, NaCl does not currently support signals.
+//
+// The real type of the void* argument to SignalThreadFunc.  See
+// SignalThreadFunc for more information.
+// struct SignalThreadArg {
+//   // The signal to send.
+//   int signal;
+//   // The amount of time to sleep before sending the signal (in microseconds).
+//   unsigned int sleep_microseconds;
+// };
+//
+// Sleep for sleep_microseconds, then raise the given signal.  signal_thread_arg
+// must be of type SignalThreadArg.  Returns NULL.
+// void* SignalThreadFunc(void* signal_thread_arg) {
+//   SignalThreadArg* sta = static_cast<SignalThreadArg*>(signal_thread_arg);
+//   usleep(sta->sleep_microseconds);
+//   raise(sta->signal);  // This currently results in link error;  signals
+//                        // are currently unsupported by NaCl.
+//   return NULL;
+// }
+
+// Test error conditions of sem_wait and return the number of failed checks.
+//
+// According to the man page on Linux:
+// ===================================
+// RETURN VALUE
+//        All of these functions return 0 on success; on error, the value of the
+//        semaphore is left unchanged, -1 is returned, and errno is set to indi‐
+//        cate the error.
+//
+// ERRORS
+//        EINTR  The call was interrupted by a signal handler; see signal(7).
+//
+//        EINVAL sem is not a valid semaphore.
+// ===================================
+int TestSemWaitErrors() {
+  START_TEST("sem_wait error conditions");
+
+  sem_t my_semaphore[2];
+
+  // Try waiting on an invalid (destroyed) semaphore.
+  EXPECT(0 == sem_init(&my_semaphore[0], 0, 0));
+  EXPECT(0 == sem_destroy(&my_semaphore[0]));
+  EXPECT(-1 == sem_wait(&my_semaphore[0]));
+  EXPECT(EINVAL == errno);
+  // Try a null pointer.
+  EXPECT(-1 == sem_wait(NULL));
+  EXPECT(EINVAL == errno);
+
+  // TODO(dmichael):  Uncomment this test (and supporting code above) if/when
+  //                  NaCl support for signals is added.
+  // Now really initialize one with the a value of 1, wait on it until a signal.
+  //  EXPECT(0 == sem_init(&my_semaphore[1], 0, SEM_VALUE_MAX));
+  //  // Spawn a thread to signal us so we'll get an EINTR error.
+  //  SignalThreadArg sta = { SIGINT, /* signal */
+  //                          2000000u /* sleep_microseconds */ };
+
+  //  pthread_t sig_thread;
+  //
+  //  EXPECT(0 == pthread_create(&sig_thread, 0, &SignalThreadFunc, &sta));
+  //  EXPECT(-1 == sem_wait(&my_semaphore[1]));
+  //  EXPECT(EINTR == errno);
+  //  void* dummy_return;
+  //  EXPECT(0 == pthread_join(sig_thread, &dummy_return));
+
+  END_TEST();
+}
+
+int TestSemNormalOperation() {
+  START_TEST("semaphore normal operation");
+
+  // Test 1 thread posting to 1 semaphore.
+  sem_t my_semaphore;
+  EXPECT(0 == sem_init(&my_semaphore, 0, 0));
+  PostThreadArg pta = { &my_semaphore, /* semaphore */
+                        500000u, /* sleep_microseconds */
+                        1 /* iterations */ };
+  pthread_t my_thread;
+  EXPECT(0 == pthread_create(&my_thread, 0, &PostThreadFunc, &pta));
+  EXPECT(0 == sem_wait(&my_semaphore));
+  EXPECT(0 == pthread_join(my_thread, 0));
+  EXPECT(0 == sem_destroy(&my_semaphore));
+
+  // Reinitialize a previously used semaphore, test 10 threads posting to 1
+  // semaphore, 5 times each.
+  EXPECT(0 == sem_init(&my_semaphore, 0, 0));
+  pta.iterations = 5;
+  pthread_t my_thread_array[10];
+  for (int i = 0; i < 10; ++i) {
+    EXPECT(0 == pthread_create(&my_thread_array[i], 0, &PostThreadFunc, &pta));
+  }
+  // Wait 5*10 times, once per post:  5 posts for each of 10 posting-threads.
+  for (int i = 0; i < 5*10; ++i) {
+    EXPECT(0 == sem_wait(&my_semaphore));
+  }
+  for (int i = 0; i < 10; ++i) {
+    EXPECT(0 == pthread_join(my_thread_array[i], 0));
+  }
+  EXPECT(0 == sem_destroy(&my_semaphore));
+
+  // Reinitialize the previously used semaphore again, this time with a positive
+  // starting value.
+  EXPECT(0 == sem_init(&my_semaphore, 0, 5));
+  pta.iterations = 1;
+  EXPECT(0 == pthread_create(&my_thread, 0, &PostThreadFunc, &pta));
+  // Wait 6 times, once for the post, 5 times for the initial starting value.
+  for (int i = 0; i < 6; ++i) {
+    EXPECT(0 == sem_wait(&my_semaphore));
+  }
+  EXPECT(0 == pthread_join(my_thread, 0));
+  EXPECT(0 == sem_destroy(&my_semaphore));
 
   END_TEST();
 }
@@ -62,6 +275,9 @@ int TestSemInitErrors() {
 int main() {
   int fail_count = 0;
   fail_count += TestSemInitErrors();
-
+  fail_count += TestSemDestroy();
+  fail_count += TestSemPostErrors();
+  fail_count += TestSemWaitErrors();
+  fail_count += TestSemNormalOperation();
   std::exit(fail_count);
 }
