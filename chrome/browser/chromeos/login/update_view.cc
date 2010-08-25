@@ -28,19 +28,19 @@ namespace {
 // TODO(nkostylev): Switch to GridLayout.
 
 // Y offset for the 'installing updates' label.
-const int kManualRebootLabelY = 100;
-// Y offset for the 'installing updates' label.
-const int kInstallingUpdatesLabelY = 130;
+const int kInstallingUpdatesLabelYBottomFromProgressBar = 18;
 // Y offset for the progress bar.
-const int kProgressBarY = 200;
-// Y offset for the 'computer will be rebooted' label.
-const int kRebootLabelY = 250;
+const int kProgressBarY = 199;
+// Y offset for the 'computer will restart' label.
+const int kRebootLabelYFromProgressBar = 77;
 // Y offset for the 'ESCAPE to skip' label.
-const int kEscapeToSkipLabelY = 300;
+const int kEscapeToSkipLabelY = 48;
 // Progress bar width.
-const int kProgressBarWidth = 450;
+const int kProgressBarWidth = 550;
+// Progress bar height.
+const int kProgressBarHeight = 18;
 // Horizontal spacing (ex. min left and right margins for label on the screen).
-const int kHorizontalSpacing = 25;
+const int kHorizontalSpacing = 75;
 
 // Label color.
 const SkColor kLabelColor = 0xFF000000;
@@ -69,15 +69,9 @@ void UpdateView::Init() {
       &chromeos::BorderDefinition::kScreenBorder);
   set_background(views::Background::CreateBackgroundPainter(true, painter));
 
-  ResourceBundle& res_bundle = ResourceBundle::GetSharedInstance();
-  gfx::Font label_font = res_bundle.GetFont(ResourceBundle::MediumFont);
-
   InitLabel(&installing_updates_label_);
   InitLabel(&reboot_label_);
   InitLabel(&manual_reboot_label_);
-  installing_updates_label_->SetFont(label_font);
-  reboot_label_->SetFont(label_font);
-  manual_reboot_label_->SetFont(label_font);
   manual_reboot_label_->SetVisible(false);
   manual_reboot_label_->SetColor(kManualRebootLabelColor);
 
@@ -87,12 +81,10 @@ void UpdateView::Init() {
   UpdateLocalizedStrings();
 
 #if !defined(OFFICIAL_BUILD)
-  escape_to_skip_label_ = new views::Label();
+  InitLabel(&escape_to_skip_label_);
   escape_to_skip_label_->SetColor(kSkipLabelColor);
-  escape_to_skip_label_->SetFont(label_font);
   escape_to_skip_label_->SetText(
       L"Press ESCAPE to skip (Non-official builds only)");
-  AddChildView(escape_to_skip_label_);
 #endif
 }
 
@@ -126,34 +118,37 @@ void UpdateView::ShowManualRebootInfo() {
   manual_reboot_label_->SetVisible(true);
 }
 
-// Sets the bounds of the view, placing it at the center of the screen
-// with the |y| coordinate provided. |width| could specify desired view width
-// otherwise preferred width/height are used.
-// |x_center| specifies screen center.
-static void setViewBounds(
-    views::View* view, int x_center, int y, int width = -1) {
-  int preferred_width = (width >= 0) ? width : view->GetPreferredSize().width();
-  int preferred_height = view->GetPreferredSize().height();
-  view->SetBounds(
-      x_center - preferred_width / 2,
-      y,
-      preferred_width,
-      preferred_height);
-}
-
 void UpdateView::Layout() {
-  int x_center = width() / 2;
   int max_width = width() - GetInsets().width() - 2 * kHorizontalSpacing;
+  int right_margin = GetInsets().right() + kHorizontalSpacing;
+  int max_height = height() - GetInsets().height();
+  int vertical_center = GetInsets().top() + max_height / 2;
+
   installing_updates_label_->SizeToFit(max_width);
   reboot_label_->SizeToFit(max_width);
   manual_reboot_label_->SizeToFit(max_width);
 
-  setViewBounds(manual_reboot_label_, x_center, kManualRebootLabelY);
-  setViewBounds(installing_updates_label_, x_center, kInstallingUpdatesLabelY);
-  setViewBounds(progress_bar_, x_center, kProgressBarY, kProgressBarWidth);
-  setViewBounds(reboot_label_, x_center, kRebootLabelY);
+  progress_bar_->SetBounds(right_margin,
+                           vertical_center - kProgressBarHeight / 2,
+                           max_width,
+                           kProgressBarHeight);
+
+  installing_updates_label_->SetX(right_margin);
+  installing_updates_label_->SetY(
+      progress_bar_->y() -
+      kInstallingUpdatesLabelYBottomFromProgressBar -
+      installing_updates_label_->height());
+  reboot_label_->SetX(right_margin);
+  reboot_label_->SetY(
+      progress_bar_->y() +
+      progress_bar_->height() +
+      kRebootLabelYFromProgressBar);
+  manual_reboot_label_->SetX(reboot_label_->x());
+  manual_reboot_label_->SetY(reboot_label_->y());
 #if !defined(OFFICIAL_BUILD)
-  setViewBounds(escape_to_skip_label_, x_center, kEscapeToSkipLabelY);
+  escape_to_skip_label_->SizeToFit(max_width);
+  escape_to_skip_label_->SetX(right_margin);
+  escape_to_skip_label_->SetY(kEscapeToSkipLabelY);
 #endif
   SchedulePaint();
 }
@@ -174,8 +169,13 @@ bool UpdateView::AcceleratorPressed(const views::Accelerator& a) {
 void UpdateView::InitLabel(views::Label** label) {
   *label = new views::Label();
   (*label)->SetColor(kLabelColor);
-  (*label)->SetHorizontalAlignment(views::Label::ALIGN_CENTER);
+  (*label)->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   (*label)->SetMultiLine(true);
+
+  ResourceBundle& res_bundle = ResourceBundle::GetSharedInstance();
+  gfx::Font label_font = res_bundle.GetFont(ResourceBundle::MediumBoldFont);
+  (*label)->SetFont(label_font);
+
   AddChildView(*label);
 }
 

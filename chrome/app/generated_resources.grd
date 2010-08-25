@@ -8044,8 +8044,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       	Finalizing system update&#x2026;
       </message>
       <message name="IDS_UPDATE_COMPLETED" desc="Notification for update completed">
-      	System update complete. Please restart the system by pressing the power
-      	button, wait for the system to power down, then press the power button again.
+      	System update complete. Please restart the system by pressing the power button, wait for the system to power down, then press the power button again.
       </message>
       <message name="IDS_INSTALLING_UPDATE" desc="Label shown on the updates installation screen during OOBE">
         Please wait while <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> installs the latest system updates.
