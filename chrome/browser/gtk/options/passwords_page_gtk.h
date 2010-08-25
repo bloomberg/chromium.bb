@@ -36,6 +36,7 @@ class PasswordsPageGtk {
   CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnRemoveAllButtonClicked);
   CHROMEGTK_CALLBACK_1(PasswordsPageGtk, void, OnRemoveAllConfirmResponse, int);
   CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnShowPasswordButtonClicked);
+  CHROMEGTK_CALLBACK_0(PasswordsPageGtk, void, OnShowPasswordButtonRealized);
 
   CHROMEG_CALLBACK_0(PasswordsPageGtk, void, OnPasswordSelectionChanged,
                      GtkTreeSelection*);

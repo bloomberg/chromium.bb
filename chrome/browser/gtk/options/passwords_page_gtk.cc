@@ -52,26 +52,14 @@ PasswordsPageGtk::PasswordsPageGtk(Profile* profile)
   g_signal_connect(remove_all_button_, "clicked",
                    G_CALLBACK(OnRemoveAllButtonClickedThunk), this);
 
+  // We start with the "hide password" text but change it in the realize event.
   show_password_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON).c_str());
-  GtkRequisition hide_size, show_size;
-  // Get the size request of the button with the "hide password" text.
-  gtk_widget_size_request(show_password_button_, &hide_size);
-  gtk_button_set_label(GTK_BUTTON(show_password_button_),
-      l10n_util::GetStringUTF8(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON).c_str());
-  // Get the size request of the button with the "show password" text.
-  gtk_widget_size_request(show_password_button_, &show_size);
-  // Determine the maximum width and height.
-  if (hide_size.width > show_size.width)
-    show_size.width = hide_size.width;
-  if (hide_size.height > show_size.height)
-    show_size.height = hide_size.height;
-  // Force the button to be large enough for both labels.
-  gtk_widget_set_size_request(show_password_button_, show_size.width,
-                              show_size.height);
   gtk_widget_set_sensitive(show_password_button_, FALSE);
   g_signal_connect(show_password_button_, "clicked",
                    G_CALLBACK(OnShowPasswordButtonClickedThunk), this);
+  g_signal_connect(show_password_button_, "realize",
+                   G_CALLBACK(OnShowPasswordButtonRealizedThunk), this);
 
   password_ = gtk_label_new("");
 
@@ -263,6 +251,28 @@ void PasswordsPageGtk::OnShowPasswordButtonClicked(GtkWidget* widget) {
   gtk_label_set_text(GTK_LABEL(password_), pass.c_str());
   gtk_button_set_label(GTK_BUTTON(show_password_button_),
       l10n_util::GetStringUTF8(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON).c_str());
+}
+
+void PasswordsPageGtk::OnShowPasswordButtonRealized(GtkWidget* widget) {
+  // We have just realized the "show password" button, so we can now accurately
+  // find out how big it needs to be in order to accomodate both the "show" and
+  // "hide" labels. (This requires font information to work correctly.) The
+  // button starts with the "hide" label so we only have to change it once.
+  GtkRequisition hide_size, show_size;
+  // Get the size request of the button with the "hide password" text.
+  gtk_widget_size_request(show_password_button_, &hide_size);
+  gtk_button_set_label(GTK_BUTTON(show_password_button_),
+      l10n_util::GetStringUTF8(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON).c_str());
+  // Get the size request of the button with the "show password" text.
+  gtk_widget_size_request(show_password_button_, &show_size);
+  // Determine the maximum width and height.
+  if (hide_size.width > show_size.width)
+    show_size.width = hide_size.width;
+  if (hide_size.height > show_size.height)
+    show_size.height = hide_size.height;
+  // Force the button to be large enough for both labels.
+  gtk_widget_set_size_request(show_password_button_, show_size.width,
+                              show_size.height);
 }
 
 void PasswordsPageGtk::OnPasswordSelectionChanged(GtkTreeSelection* selection) {
