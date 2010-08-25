@@ -107,10 +107,14 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
   personal_data_ =
       tab_contents_->profile()->GetOriginalProfile()->GetPersonalDataManager();
   download_manager_.SetObserver(this);
+  if (personal_data_)
+    personal_data_->SetObserver(this);
 }
 
 AutoFillManager::~AutoFillManager() {
   download_manager_.SetObserver(NULL);
+  if (personal_data_)
+    personal_data_->RemoveObserver(this);
 }
 
 // static
@@ -158,6 +162,12 @@ void AutoFillManager::FormSubmitted(const FormData& form) {
 void AutoFillManager::FormsSeen(const std::vector<FormData>& forms) {
   if (!IsAutoFillEnabled())
     return;
+
+  if (!personal_data_->IsDataLoaded()) {
+    // Profile data is in the process of loading: delay parsing of the forms.
+    delayed_forms_.push_back(forms);
+    return;
+  }
 
   // No profiles or credit cards, no need to parse the forms.
   if (personal_data_->profiles().empty() &&
@@ -403,6 +413,14 @@ void AutoFillManager::OnHeuristicsRequestError(
     int http_error) {
 }
 
+void AutoFillManager::OnPersonalDataLoaded() {
+  DCHECK(personal_data_->IsDataLoaded());
+  while (!delayed_forms_.empty()) {
+    FormsSeen(delayed_forms_.front());
+    delayed_forms_.pop_front();
+  }
+}
+
 bool AutoFillManager::IsAutoFillEnabled() const {
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
 
@@ -477,6 +495,8 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents,
       download_manager_(NULL),
       disable_download_manager_requests_(false) {
   DCHECK(tab_contents);
+  if (personal_data_)
+    personal_data_->SetObserver(this);
 }
 
 void AutoFillManager::GetProfileSuggestions(FormStructure* form,

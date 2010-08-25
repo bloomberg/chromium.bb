@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_MANAGER_H_
 #pragma once
 
-#include <vector>
+#include <list>
 #include <string>
+#include <vector>
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
@@ -34,7 +35,8 @@ extern const char* kAutoFillLearnMoreUrl;
 // Manages saving and restoring the user's personal information entered into web
 // forms.
 class AutoFillManager : public RenderViewHostDelegate::AutoFill,
-                        public AutoFillDownloadManager::Observer {
+                        public AutoFillDownloadManager::Observer,
+                        public PersonalDataManager::Observer {
  public:
   explicit AutoFillManager(TabContents* tab_contents);
   virtual ~AutoFillManager();
@@ -75,6 +77,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
       const std::string& form_signature,
       AutoFillDownloadManager::AutoFillRequestType request_type,
       int http_error);
+
+  // PersonalDataManager::Observer implementation:
+  virtual void OnPersonalDataLoaded();
 
   // Returns the value of the AutoFillEnabled pref.
   virtual bool IsAutoFillEnabled() const;
@@ -201,6 +206,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;
+
+  // Forms delayed for parsing, because personal data were not loaded yet.
+  std::list<std::vector<webkit_glue::FormData> > delayed_forms_;
 
   // The form data the user has submitted.
   scoped_ptr<FormStructure> upload_form_structure_;
