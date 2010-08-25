@@ -56,6 +56,24 @@ TEST_F(MediaTest, VideoBearSilentTheora) {
   PlayVideo("bear_silent.ogv");
 }
 
+TEST_F(MediaTest, VideoBearWebm) {
+  PlayVideo("bear.webm");
+}
+
+TEST_F(MediaTest, VideoBearSilentWebm) {
+  PlayVideo("bear_silent.webm");
+}
+
+#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+TEST_F(MediaTest, VideoBearMp4) {
+  PlayVideo("bear.mp4");
+}
+
+TEST_F(MediaTest, VideoBearSilentMp4) {
+  PlayVideo("bear_silent.mp4");
+}
+#endif
+
 TEST_F(UILayoutTest, MediaUILayoutTest) {
   static const char* kResources[] = {
     "content",
