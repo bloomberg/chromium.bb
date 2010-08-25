@@ -70,19 +70,10 @@ class LanguageMenuButton : public StatusAreaButton,
 
   // Converts an InputMethodDescriptor object into human readable string.
   // Returns a string for the drop-down menu and the tooltip for the indicator.
-  static std::wstring GetTextForMenu(
-      const InputMethodDescriptor& input_method, bool add_method_name);
+  static std::wstring GetTextForMenu(const InputMethodDescriptor& input_method);
 
   // Registers input method preferences for the login screen.
   static void RegisterPrefs(PrefService* local_state);
-
-  // Gets the language codes that are ambiguous if we only show the
-  // language names in the menu. For these languages, we'll show the input
-  // method names in addition to the language names. The original contents
-  // of |ambiguous_language_code_set| are lost.
-  static void GetAmbiguousLanguageCodeSet(
-      const InputMethodDescriptors& input_method_descriptors,
-      std::set<std::string>* ambiguous_language_code_set);
 
  protected:
   // views::View implementation.
@@ -122,10 +113,6 @@ class LanguageMenuButton : public StatusAreaButton,
   // Objects for reading/writing the Chrome prefs.
   StringPrefMember previous_input_method_pref_;
   StringPrefMember current_input_method_pref_;
-
-  // Language codes that can be ambiguous. See comments at
-  // GetAmbiguousLanguageCodeSet() for details.
-  std::set<std::string> ambiguous_language_code_set_;
 
   // We borrow menus::SimpleMenuModel implementation to maintain the current
   // content of the pop-up menu. The menus::MenuModel is implemented using this

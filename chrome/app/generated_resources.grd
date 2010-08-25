@@ -9181,61 +9181,61 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Japanese keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SLOVENIA" desc="In the language menu button, this shows the input mode.">
-        Sloveniain keyboard layout
+        Sloveniain
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_GERMANY" desc="In the language menu button, this shows the input mode.">
         German keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_ITALY" desc="In the language menu button, this shows the input mode.">
-        Italian keyboard layout
+        Italian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_ESTONIA" desc="In the language menu button, this shows the input mode.">
-        Estonian keyboard layout
+        Estonian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_HUNGARY" desc="In the language menu button, this shows the input mode.">
-        Hungarian keyboard layout
+        Hungarian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_POLAND" desc="In the language menu button, this shows the input mode.">
-        Polish keyboard layout
+        Polish
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_DENMARK" desc="In the language menu button, this shows the input mode.">
-        Danish keyboard layout
+        Danish
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_CROATIA" desc="In the language menu button, this shows the input mode.">
-        Croatian keyboard layout
+        Croatian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_BRAZIL" desc="In the language menu button, this shows the input mode.">
-        Brazilian keyboard layout
+        Brazilian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SERBIA" desc="In the language menu button, this shows the input mode.">
-        Serbian keyboard layout
+        Serbian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_CZECHIA" desc="In the language menu button, this shows the input mode.">
-        Czechian keyboard layout
+        Czechian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_USA_DVORAK" desc="In the language menu button, this shows the input mode.">
-        English (Dvorak) keyboard layout
+        English (Dvorak)
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_ROMANIA" desc="In the language menu button, this shows the input mode.">
-        Romanian keyboard layout
+        Romanian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_USA" desc="In the language menu button, this shows the input mode.">
-        English (USA) keyboard layout
+        English (USA)
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_LITHUANIA" desc="In the language menu button, this shows the input mode.">
-        Lithuanian keyboard layout
+        Lithuanian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM" desc="In the language menu button, this shows the input mode.">
-        English (UK) keyboard layout
+        English (UK)
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SLOVAKIA" desc="In the language menu button, this shows the input mode.">
-        Slovakian keyboard layout
+        Slovakian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_RUSSIA" desc="In the language menu button, this shows the input mode.">
-        Russian keyboard layout
+        Russian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_GREECE" desc="In the language menu button, this shows the input mode.">
-        Greek keyboard layout
+        Greek
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_BELGIUM" desc="In the language menu button, this shows the input mode.">
         Belgian keyboard layout
@@ -9253,43 +9253,43 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Swiss (French) keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_TURKEY" desc="In the language menu button, this shows the input mode.">
-        Turkish keyboard layout
+        Turkish
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_PORTUGAL" desc="In the language menu button, this shows the input mode.">
-        Portugese keyboard layout
+        Portugese
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SPAIN" desc="In the language menu button, this shows the input mode.">
-        Spanish keyboard layout
+        Spanish
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_FINLAND" desc="In the language menu button, this shows the input mode.">
-        Finnish keyboard layout
+        Finnish
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_UKRAINE" desc="In the language menu button, this shows the input mode.">
-        Ukrainian keyboard layout
+        Ukrainian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SPAIN_CATALAN" desc="In the language menu button, this shows the input mode.">
-        Spanish (Catalan) keyboard layout
+        Spanish (Catalan)
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_FRANCE" desc="In the language menu button, this shows the input mode.">
         French keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_NORWAY" desc="In the language menu button, this shows the input mode.">
-        Norwegian keyboard layout
+        Norwegian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_SWEDEN" desc="In the language menu button, this shows the input mode.">
-        Swedish keyboard layout
+        Swedish
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_NETHERLANDS" desc="In the language menu button, this shows the input mode.">
         Dutch keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_LATVIA" desc="In the language menu button, this shows the input mode.">
-        Latvian keyboard layout
+        Latvian
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_CANADA" desc="In the language menu button, this shows the input mode.">
         Canadian (French) keyboard layout
       </message>
       <message name="IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH" desc="In the language menu button, this shows the input mode.">
-        Canadian (English) keyboard layout
+        Canadian (English)
       </message>
 
       <message name="IDS_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't log in because password is invalid">

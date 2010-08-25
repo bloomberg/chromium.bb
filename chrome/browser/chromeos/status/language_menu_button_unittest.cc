@@ -65,63 +65,97 @@ TEST(LanguageMenuButtonTest, GetTextForIndicatorTest) {
   }
 }
 
-TEST(LanguageMenuButtonTest, GetTextForTooltipTest) {
-  const bool kAddMethodName = true;
+
+// Test whether the function returns language name for non-ambiguous languages.
+TEST(LanguageMenuButtonTest, GetTextForMenuTest) {
+  // For most languages input method or keyboard layout name is returned.
+  // See below for exceptions.
   {
     InputMethodDescriptor desc("m17n:fa:isiri", "isiri (m17n)", "us", "fa");
-    EXPECT_EQ(L"Persian - Persian input method (ISIRI 2901 layout)",
-              LanguageMenuButton::GetTextForMenu(desc, kAddMethodName));
+    EXPECT_EQ(L"Persian input method (ISIRI 2901 layout)",
+              LanguageMenuButton::GetTextForMenu(desc));
   }
   {
     InputMethodDescriptor desc("hangul", "Korean", "us", "ko");
-    EXPECT_EQ(L"Korean - Korean input method",
-              LanguageMenuButton::GetTextForMenu(desc, kAddMethodName));
+    EXPECT_EQ(L"Korean input method",
+              LanguageMenuButton::GetTextForMenu(desc));
   }
+  {
+    InputMethodDescriptor desc("m17n:vi:tcvn", "tcvn (m17n)", "us", "vi");
+    EXPECT_EQ(L"Vietnamese input method (TCVN6064)",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("mozc", "Mozc (US keyboard layout)", "us", "ja");
+    EXPECT_EQ(L"Japanese input method (for US keyboard)",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("xkb:jp::jpn", "Japan", "jp", "jpn");
+    EXPECT_EQ(L"Japanese keyboard layout",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("xkb:us:dvorak:eng", "USA - Dvorak",
+                               "us(dvorak)", "eng");
+    EXPECT_EQ(L"English (Dvorak)",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+
+  // For Arabic, Dutch, French, German, Hebrew and Hindi,
+  // "language - keyboard layout" pair is returned.
+  {
+    InputMethodDescriptor desc("m17n:ar:kbd", "kbd (m17n)", "us", "ar");
+    EXPECT_EQ(L"Arabic - Standard input method",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("xkb:nl::nld", "Netherlands", "nl", "nld");
+    EXPECT_EQ(L"Dutch - Dutch keyboard layout",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("xkb:be::nld", "Belgium", "be", "nld");
+    EXPECT_EQ(L"Dutch - Belgian keyboard layout",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("xkb:fr::fra", "France", "fr", "fra");
+    EXPECT_EQ(L"French - French keyboard layout",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("xkb:be::fra", "Belgium", "be", "fra");
+    EXPECT_EQ(L"French - Belgian keyboard layout",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("xkb:de::ger", "Germany", "de", "ger");
+    EXPECT_EQ(L"German - German keyboard layout",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("xkb:be::ger", "Belgium", "be", "ger");
+    EXPECT_EQ(L"German - Belgian keyboard layout",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("m17n:he:kbd", "kbd (m17n)", "us", "he");
+    EXPECT_EQ(L"Hebrew - Standard input method",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+  {
+    InputMethodDescriptor desc("m17n:hi:itrans", "itrans (m17n)", "us", "hi");
+    EXPECT_EQ(L"Hindi - Standard input method",
+              LanguageMenuButton::GetTextForMenu(desc));
+  }
+
   {
     InputMethodDescriptor desc("invalid-id", "unregistered string", "us", "xx");
     // You can safely ignore the "Resouce ID is not found for: unregistered
     // string" error.
-    EXPECT_EQ(L"xx - unregistered string",
-              LanguageMenuButton::GetTextForMenu(desc, kAddMethodName));
-  }
-}
-
-TEST(LanguageMenuButtonTest, GetAmbiguousLanguageCodeSet) {
-  {
-    std::set<std::string> ambiguous_language_code_set;
-    InputMethodDescriptors descriptors;
-    descriptors.push_back(InputMethodDescriptor(
-        "xkb:us::eng", "USA", "us", "eng"));
-    LanguageMenuButton::GetAmbiguousLanguageCodeSet(
-        descriptors, &ambiguous_language_code_set);
-    // There is no ambituity.
-    EXPECT_TRUE(ambiguous_language_code_set.empty());
-  }
-  {
-    std::set<std::string> ambiguous_language_code_set;
-    InputMethodDescriptors descriptors;
-    descriptors.push_back(InputMethodDescriptor(
-        "xkb:us::eng", "USA", "us", "eng"));
-    descriptors.push_back(InputMethodDescriptor(
-        "xkb:us:dvorak:eng", "Dvorak", "us", "eng"));
-    LanguageMenuButton::GetAmbiguousLanguageCodeSet(
-        descriptors, &ambiguous_language_code_set);
-    // This is ambiguous, as two input methods are present for "en-US".
-    EXPECT_EQ(1U, ambiguous_language_code_set.size());
-    EXPECT_EQ(1U, ambiguous_language_code_set.count("en-US"));
-  }
-  {
-    std::set<std::string> ambiguous_language_code_set;
-    InputMethodDescriptors descriptors;
-    descriptors.push_back(InputMethodDescriptor(
-        "xkb:jp::jpn", "Japan", "jp", "jpn"));
-    LanguageMenuButton::GetAmbiguousLanguageCodeSet(
-        descriptors, &ambiguous_language_code_set);
-    // Japanese is special. Showing the language name alone for the
-    // Japanese keyboard layout is confusing, hence we consider it
-    // ambiguous.
-    EXPECT_EQ(1U, ambiguous_language_code_set.size());
-    EXPECT_EQ(1U, ambiguous_language_code_set.count("ja"));
+    EXPECT_EQ(L"unregistered string",
+              LanguageMenuButton::GetTextForMenu(desc));
   }
 }
 
