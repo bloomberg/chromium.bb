@@ -34,13 +34,44 @@ cr.define('options', function() {
 
       // Setup option values for the time period select control.
       $('clearBrowsingDataTimePeriod').initializeValues(
-          templateData.clearBrowsingDataTimeList)
+          templateData.clearBrowsingDataTimeList);
+
+      var f = cr.bind(this.updateButtonState_, this);
+      var types = ['browser.clear_data.browsing_history',
+                   'browser.clear_data.download_history',
+                   'browser.clear_data.cache',
+                   'browser.clear_data.cookies',
+                   'browser.clear_data.passwords',
+                   'browser.clear_data.form_data'];
+      types.forEach(function(type) {
+          Preferences.getInstance().addEventListener(type, f);
+      });
+
+      var checkboxes = document.querySelectorAll(
+          '#checkboxListData input[type=checkbox]');
+      for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].onclick = f;
+      }
+      this.updateButtonState_();
 
       // Setup click handler for the clear(Ok) button.
       $('clearBrowsingDataCommit').onclick = function(event) {
         chrome.send('performClearBrowserData');
       };
-    }
+    },
+
+    updateButtonState_: function() {
+      var checkboxes = document.querySelectorAll(
+          '#checkboxListData input[type=checkbox]');
+      var isChecked = false;
+      for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+          isChecked = true;
+          break;
+        }
+      }
+      $('clearBrowsingDataCommit').disabled = !isChecked;
+    },
   };
 
   //
