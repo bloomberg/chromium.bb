@@ -753,28 +753,33 @@ void RenderWidgetHost::OnMsgUpdateRect(
   DCHECK(!params.bitmap_rect.IsEmpty());
   DCHECK(!params.view_size.IsEmpty());
 
-  const size_t size = params.bitmap_rect.height() *
-                      params.bitmap_rect.width() * 4;
-  TransportDIB* dib = process_->GetTransportDIB(params.bitmap);
   bool painted_synchronously = true;  // Default to sending a paint ACK below.
-  if (dib) {
-    if (dib->size() < size) {
-      DLOG(WARNING) << "Transport DIB too small for given rectangle";
-      process()->ReceivedBadMessage(ViewHostMsg_UpdateRect__ID);
-    } else {
-      // Scroll the backing store.
-      if (!params.scroll_rect.IsEmpty()) {
-        ScrollBackingStoreRect(params.dx, params.dy,
-                               params.scroll_rect,
-                               params.view_size);
-      }
+  if (!is_gpu_rendering_active_) {
+    const size_t size = params.bitmap_rect.height() *
+        params.bitmap_rect.width() * 4;
+    TransportDIB* dib = process_->GetTransportDIB(params.bitmap);
 
-      // Paint the backing store. This will update it with the renderer-supplied
-      // bits. The view will read out of the backing store later to actually
-      // draw to the screen.
-      PaintBackingStoreRect(params.bitmap, params.bitmap_rect,
-                            params.copy_rects, params.view_size,
-                            &painted_synchronously);
+    // If gpu process does painting, scroll_rect and copy_rects are always empty
+    // and backing store is never used.
+    if (dib) {
+      if (dib->size() < size) {
+        DLOG(WARNING) << "Transport DIB too small for given rectangle";
+        process()->ReceivedBadMessage(ViewHostMsg_UpdateRect__ID);
+      } else {
+        // Scroll the backing store.
+        if (!params.scroll_rect.IsEmpty()) {
+          ScrollBackingStoreRect(params.dx, params.dy,
+                                 params.scroll_rect,
+                                 params.view_size);
+        }
+
+        // Paint the backing store. This will update it with the
+        // renderer-supplied bits. The view will read out of the backing store
+        // later to actually draw to the screen.
+        PaintBackingStoreRect(params.bitmap, params.bitmap_rect,
+                              params.copy_rects, params.view_size,
+                              &painted_synchronously);
+      }
     }
   }
 
