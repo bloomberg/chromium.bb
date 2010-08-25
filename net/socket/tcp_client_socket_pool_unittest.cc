@@ -198,8 +198,10 @@ class MockClientSocketFactory : public ClientSocketFactory {
         client_socket_types_(NULL), client_socket_index_(0),
         client_socket_index_max_(0) {}
 
-  virtual ClientSocket* CreateTCPClientSocket(const AddressList& addresses,
-                                              NetLog* /* net_log */) {
+  virtual ClientSocket* CreateTCPClientSocket(
+      const AddressList& addresses,
+      NetLog* /* net_log */,
+      const NetLog::Source& /* source */) {
     allocation_count_++;
 
     ClientSocketType type = client_socket_type_;

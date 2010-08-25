@@ -143,7 +143,7 @@ int TCPConnectJob::DoResolveHostComplete(int result) {
 int TCPConnectJob::DoTCPConnect() {
   next_state_ = kStateTCPConnectComplete;
   set_socket(client_socket_factory_->CreateTCPClientSocket(
-        addresses_, net_log().net_log()));
+        addresses_, net_log().net_log(), net_log().source()));
   connect_start_time_ = base::TimeTicks::Now();
   return socket()->Connect(&callback_);
 }
