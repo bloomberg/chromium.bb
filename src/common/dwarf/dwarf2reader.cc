@@ -39,7 +39,6 @@
 #include <string.h>
 
 #include <map>
-#include <memory>
 #include <stack>
 #include <utility>
 
@@ -494,11 +493,8 @@ void CompilationUnit::ProcessDIEs() {
   else
     lengthstart += 4;
 
-  // we need semantics of boost scoped_ptr here - no intention of trasnferring
-  // ownership of the stack.  use const, but then we limit ourselves to not
-  // ever being able to call .reset() on the smart pointer.
-  std::auto_ptr<stack<uint64> > const die_stack(new stack<uint64>);
-
+  stack<uint64> die_stack;
+  
   while (dieptr < (lengthstart + header_.length)) {
     // We give the user the absolute offset from the beginning of
     // debug_info, since they need it to deal with ref_addr forms.
@@ -510,8 +506,8 @@ void CompilationUnit::ProcessDIEs() {
 
     // Abbrev == 0 represents the end of a list of children.
     if (abbrev_num == 0) {
-      const uint64 offset = die_stack->top();
-      die_stack->pop();
+      const uint64 offset = die_stack.top();
+      die_stack.pop();
       handler_->EndDIE(offset);
       continue;
     }
@@ -525,7 +521,7 @@ void CompilationUnit::ProcessDIEs() {
     }
 
     if (abbrev.has_children) {
-      die_stack->push(absolute_offset);
+      die_stack.push(absolute_offset);
     } else {
       handler_->EndDIE(absolute_offset);
     }
