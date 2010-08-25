@@ -46,6 +46,10 @@ class AdvancedOptionsHandler
   // remove all auto-open file-type settings.
   void HandleAutoOpenButton(const ListValue* args);
 
+  // Callback for the "resetToDefaults" message.  This will ask the user if
+  // they want to reset all options to their default values.
+  void HandleResetToDefaults(const ListValue* args);
+
 #if defined(OS_WIN)
   // Callback for the "Check SSL Revocation" checkbox.  This is needed so we
   // can support manual handling on Windows.

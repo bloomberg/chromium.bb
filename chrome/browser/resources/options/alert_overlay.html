@@ -1,0 +1,15 @@
+<div class="page hidden" id="alertOverlay">
+  <div id="alertOverlayMessage"></div>
+  <div class="button-strip">
+    <if expr="os != 'darwin'">
+      <button type="submit" id="alertOverlayOk"
+          onclick="AlertOverlay.handleOk();"></button>
+    </if>
+    <button type="reset" id="alertOverlayCancel"
+        onclick="AlertOverlay.handleCancel();"></button>
+    <if expr="os == 'darwin'">
+      <button type="submit" id="alertOverlayOk"
+          onclick="AlertOverlay.handleOk();"></button>
+    </if>
+  </div>
+</div>
