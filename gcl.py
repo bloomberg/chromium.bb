@@ -143,8 +143,15 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
             # stderr into content_array.
             content_array = []
             svn_path = url_path + "/" + filename
-            SVN.RunAndFilterOutput(['cat', svn_path, '--non-interactive'],
-                                   cwd='.', filter_fn=content_array.append)
+            args = ['cat', svn_path]
+            if sys.platform != 'darwin':
+              # MacOSX 10.5.2 has a bug with svn 1.4.4 that will trigger the
+              # 'Can\'t get username or password' and can be fixed easily.
+              # The fix doesn't work if the user upgraded to svn 1.6.x. Bleh.
+              # I don't have time to fix their broken stuff.
+              args.append('--non-interactive')
+            SVN.RunAndFilterOutput(args, cwd='.',
+                                   filter_fn=content_array.append)
             # Exit the loop if the file was found. Override content.
             content = '\n'.join(content_array)
             break
