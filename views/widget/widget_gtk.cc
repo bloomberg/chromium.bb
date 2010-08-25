@@ -1413,6 +1413,15 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
       DCHECK(GTK_WIDGET_REALIZED(widget_));
       gdk_window_set_composited(widget_->window, true);
     }
+    if (!bounds.size().IsEmpty()) {
+      // Make sure that an widget is given it's initial size before
+      // we're done initializing, to take care of some potential
+      // corner cases when programmatically arranging hierarchies as
+      // seen in
+      // http://code.google.com/p/chromium-os/issues/detail?id=5987
+      GtkAllocation alloc = { 0, 0, bounds.width(), bounds.height() };
+      gtk_widget_size_allocate(widget_, &alloc);
+    }
   } else {
     // Use our own window class to override GtkWindow's move_focus method.
     widget_ = gtk_views_window_new(

@@ -65,6 +65,11 @@ views::Widget* ScreenLockerTester::GetWidget() {
   return ScreenLocker::screen_locker_->lock_window_;
 }
 
+views::Widget* ScreenLockerTester::GetChildWidget() {
+  DCHECK(ScreenLocker::screen_locker_);
+  return ScreenLocker::screen_locker_->lock_widget_;
+}
+
 }  // namespace test
 
 }  // namespace chromeos

@@ -39,6 +39,8 @@ class ScreenLockerTester {
   // Returns the widget for screen locker window.
   views::Widget* GetWidget();
 
+  views::Widget* GetChildWidget();
+
  private:
   friend class chromeos::ScreenLocker;
 
