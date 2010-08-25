@@ -51,6 +51,7 @@ TEST_F(RegistryTest, ValueTest) {
     EXPECT_TRUE(key.ReadValue(kName, &out_value));
     EXPECT_NE(out_value, L"");
     EXPECT_STREQ(out_value.c_str(), kValue);
+    EXPECT_EQ(1U, key.ValueCount());
     EXPECT_TRUE(key.DeleteValue(kName));
   }
 }
