@@ -138,7 +138,8 @@ const int kRightMargin = 2;
   [self close];
   if (htmlContents_.get())
     htmlContents_->Shutdown();
-  balloon_->OnClose(byUser);
+  if (balloon_)
+    balloon_->OnClose(byUser);
   balloon_ = NULL;
 }
 
