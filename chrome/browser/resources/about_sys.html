@@ -1,8 +1,7 @@
 <!DOCTYPE HTML>
-<html id="t">
-<head>
+<html i18n-values="dir:textdirection;"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>About S&#121;stem</title>
+<title i18n-content="title"></title>
 
 <style>
 body {
@@ -13,11 +12,12 @@ body {
   min-width: 45em;
 }
 
-h1,h2 {
+h1, h2 {
  font-size: 110%;
  letter-spacing: -1px;
  margin: 0;
 }
+
 h1 {
   font-weight: bold;
   color: #4a8ee6;
@@ -28,12 +28,12 @@ h2 {
   font-weight: normal;
   padding: 0.5em 1em;
   color: #3a75bd;
-  margin-left: -38px;
-  padding-left: 38px;
+  -webkit-margin-start: -38px;
+  -webkit-padding-start: 38px;
   border-top: 1px solid #3a75bd;
   padding-top: 0.5em;
-
 }
+
 h2:first-child {
   border-top: 0;
   padding-top: 0;
@@ -51,35 +51,47 @@ h2:first-child {
   color: white;
   text-shadow: 0 0 2px black;
 }
-div#header h1 {
-  padding-left: 3em;
+
+html[dir='rtl'] #header {
+  padding: 0.6em 0 0.75em 1em;
+}
+
+#header h1 {
+  -webkit-padding-start: 3em;
   margin: 0;
   display: inline;
-  background: url('shared/images/gear.png') 12px 60% no-repeat;
+  background: url('shared/images/gear.png') no-repeat;
+  background-position: 12px 60%;
   color: white;
 }
-div#header p {
+
+html[dir='rtl'] #header h1 {
+  background-position-left: auto;
+  backgroun-position-right: 12px;
+}
+
+#header p {
   font-size: 84%;
   font-style: italic;
   padding: 0;
   margin: 0;
   color: white;
-  padding-left: 0.4em;
+  -webkit-padding-start: 0.4em;
   display: inline;
 }
 
-table.list {
+.list {
   line-height: 200%;
   border-collapse: collapse;
   font-size: 84%;
   table-layout: fixed;
   width: 100%;
 }
-table.list:not([class*='filtered']) tr:nth-child(odd) td {
+.list:not(.filtered) tr:nth-child(odd) td {
   background: #eff3ff;
 }
 
-table.list td {
+.list td {
   padding: 0 0.5em;
   vertical-align: top;
   line-height: 1.4em;
@@ -87,58 +99,164 @@ table.list td {
   font-family: 'Courier New', monospace;
   white-space: pre;
 }
-table.list tr td:nth-last-child(1),
-table.list tr th:nth-last-child(1) {
-  padding-right: 1em;
-}
-table.list:not([class*='filtered']) .tab .name {
-  padding-left: 1.5em;
+
+.list tr td:nth-last-child(1),
+.list tr th:nth-last-child(1) {
+  -webkit-padding-end: 1em;
 }
 
-table.list .name {
+.list:not(.filtered) .tab .name {
+  -webkit-padding-start: 1.5em;
+}
+
+.list .name {
   width: 20%;
 }
 
-table.list .name div {
+.list .name div {
   height: 1.6em;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
-table.list .number {
+.number_expanded, .number_collapsed  {
   text-align: left;
   width: 80%;
 }
 
-table.list#details tr:not([class*='firstRow']) > *:nth-child(1),
-table.list#details tr:not([class*='firstRow']) > *:nth-child(4),
-table.list#details tr.firstRow th:nth-child(1),
-table.list#details tr.firstRow th:nth-child(2) {
+html[dir='rtl'] .number_expanded, html[dir='rtl'] .number_collapsed  {
+  text-align: right;
+}
+
+tr:not(.firstRow) > *:nth-child(1),
+tr:not(.firstRow) > *:nth-child(4),
+tr.firstRow th:nth-child(1),
+tr.firstRow th:nth-child(2) {
   border-right: 1px solid #b5c6de;
 }
-table.list#details .name {
-  padding-left: 25px;
+
+html[dir='rtl'] tr:not(.firstRow) > *:nth-child(1),
+html[dir='rtl'] tr:not(.firstRow) > *:nth-child(4),
+html[dir='rtl'] tr.firstRow th:nth-child(1),
+html[dir='rtl'] tr.firstRow th:nth-child(2) {
+  border-right: auto;
+  border-left: 1px solid #b5c6de;
+}
+
+.name {
+  -webkit-padding-start: 25px;
   background-position: 5em center;
   background-repeat: no-repeat;
 }
+
+html[dir='rtl'] #details .name {
+  background-position-left: auto;
+  background-position-right: 5em;
+}
+
+.number_collapsed .stat_value {
+  display: none;
+}
+
+.number_expanded .stat_value {
+  display: auto;
+}
+
+#anchor {
+  display: none;
+}
+
+.globalButton {
+  float: right;
+  margin: 1px 5px;
+}
+
+html[dir='rtl'] .globalButton {
+  float: left;
+}
 </style>
+<script src="shared/js/local_strings.js"></script>
+<script>
+var localStrings;
+
+function changeCollapsedStatus() {
+  if (this.parentNode.className == 'number_collapsed') {
+    this.parentNode.className = 'number_expanded';
+    this.textContent = localStrings.getString('collapse_btn');
+  } else {
+    this.parentNode.className = 'number_collapsed';
+    this.textContent = localStrings.getString('expand_btn');
+  }
+}
+
+function collapseAll() {
+  var expandStatusDivs = document.getElementsByClassName('expand_status');
+  for(var i = 0; i < expandStatusDivs.length; i++) {
+    expandStatusDivs[i].textContent = localStrings.getString('expand_btn');
+    expandStatusDivs[i].parentNode.className = 'number_collapsed';
+  }
+}
+
+function expandAll() {
+  var expandStatusDivs = document.getElementsByClassName('expand_status');
+  for(var i = 0; i < expandStatusDivs.length; i++) {
+    expandStatusDivs[i].textContent = localStrings.getString('collapse_btn');
+    expandStatusDivs[i].parentNode.className = 'number_expanded';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  localStrings = new LocalStrings();    
+    
+  var collapseAllBtn = document.getElementById('collapseAll');
+  collapseAllBtn.onclick = collapseAll;
+  
+  var expandAllBtn = document.getElementById('expandAll');
+  expandAllBtn.onclick = expandAll;
+  
+  var anchorName = document.getElementById('anchor').textContent;
+  var expandStatusDivs = document.getElementsByClassName('expand_status');
+  for(var i = 0; i < expandStatusDivs.length; i++) {
+    expandStatusDivs[i].onclick = changeCollapsedStatus;
+    if (expandStatusDivs[i].id != anchorName + 'Btn') {
+      expandStatusDivs[i].textContent = localStrings.getString('expand_btn');
+      expandStatusDivs[i].parentNode.className = 'number_collapsed';
+    } else {
+      var anchor = document.createElement('a');
+      anchor.name = anchorName;
+      expandStatusDivs[i].parentNode.insertBefore(anchor, expandStatusDivs[i]);
+      window.location.hash = anchorName; 
+      expandStatusDivs[i].textContent = localStrings.getString('collapse_btn');
+      expandStatusDivs[i].parentNode.className = 'number_expanded';
+    }
+  }    
+});
+</script>
 
 </head>
-<body>
+<body id="t">
   <div id="header">
-    <h1>About S&#121;stem</h1>
-    <p>System diagnostic data</p>
+    <h1 i18n-content="title"></h1>
+    <p i18n-content="description"></p>
   </div>
   <div id="content">
-    <h2>Details</h2>
+    <h2 i18n-content="table_title"></h2>
+    <div id="anchor" jscontent="anchor"></div>
+    <button id="expandAll" class="globalButton" i18n-content="expand_all_btn">
+    </button>
+    <button id="collapseAll" class="globalButton" 
+        i18n-content="collapse_all_btn"></button>
     <table class="list" id="details">
       <tr jsselect="details">
         <td class="name">
+          <a jsvalues="name:anchor_value"></a>
           <div jscontent="stat_name"></div>
         </td>
         <td class="number">
-          <div jscontent="stat_value"></div>
+          <button jsvalues="id:stat_name + 'Btn'" class="expand_status">
+          </button>
+          <div class="stat_value" jscontent="stat_value"></div>
         </td>
       </tr>
     </table>
