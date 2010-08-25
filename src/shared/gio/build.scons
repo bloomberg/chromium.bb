@@ -28,6 +28,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import tempfile # for gio_test
 
 Import('env')
 
@@ -58,13 +59,36 @@ if env['BUILD_ARCHITECTURE'] == env['TARGET_ARCHITECTURE']:
 
   gtest_env.Prepend(CPPPATH=['${SOURCE_ROOT}/testing/gtest/include'])
 
-  unit_tests_exe = gtest_env.ComponentProgram('gio_test',
-                                              ['gio_mem_test.cc'],
-                                              EXTRA_LIBS=['gtest', 'gio',])
-  gtest_env.Requires(unit_tests_exe, crt)
+  gio_mem_test_exe = gtest_env.ComponentProgram(
+      'gio_mem_test',
+      ['gio_mem_test.cc', 'gio_test_base.cc'],
+      EXTRA_LIBS=['gtest', 'gio',])
+  gtest_env.Requires(gio_mem_test_exe, crt)
 
   node = gtest_env.CommandTest(
+      'gio_mem_test_output.xml.out',
+      command=[gio_mem_test_exe, '--gtest_output=xml:${TARGET}'])
+  gtest_env.AddNodeToTestSuite(node, ['small_tests'],
+      'run_gio_mem_test')
+
+  gio_test_exe = gtest_env.ComponentProgram(
+      'gio_test',
+      ['gio_test.cc', 'gio_test_base.cc',],
+      EXTRA_LIBS=['gtest', 'gio', 'platform',])
+  gtest_env.Requires(gio_test_exe, crt)
+
+  # temp file will be removed by gio_test (if it compiles and test completes).
+  temppath = tempfile.NamedTemporaryFile(prefix="gio", suffix=".tmp").name
+  node = gtest_env.CommandTest(
       'gio_test_output.xml.out',
-      command=[unit_tests_exe, '--gtest_output=xml:${TARGET}'])
+      command=[gio_test_exe[0], # [0] to omit misc bits for argv[]...
+               '--gtest_output=xml:${TARGET}',
+               '-t', temppath,
+     # Note: to regenerate the premade_text/binary_file, use "make_premade.py"
+               '-x', env.File('premade_text_file'),
+     # TODO(jvoung): after binary file is checked in, enable this too
+#               '-b', env.File('premade_binary_file'),
+               ],
+      )
   gtest_env.AddNodeToTestSuite(node, ['small_tests'],
       'run_gio_test')
