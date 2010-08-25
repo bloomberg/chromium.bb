@@ -177,6 +177,7 @@ void BrowserMainParts::EarlyInitialization() {
   ProxyConnectionsFieldTrial();
   SpdyFieldTrial();
   PrefetchFieldTrial();
+  ConnectBackupJobsFieldTrial();
   InitializeSSL();
 
   if (parsed_command_line().HasSwitch(switches::kEnableDNSSECCerts))
@@ -389,6 +390,34 @@ void BrowserMainParts::PrefetchFieldTrial() {
     const int trial_grp = trial->group();
     ResourceDispatcherHost::set_is_prefetch_enabled(
         trial_grp == yes_prefetch_grp);
+  }
+}
+
+// If neither --enable-connect-backup-jobs or --disable-connect-backup-jobs is
+// specified, run an A/B test for automatically establishing backup TCP
+// connections when a certain timeout value is exceeded.
+void BrowserMainParts::ConnectBackupJobsFieldTrial() {
+  if (parsed_command_line().HasSwitch(switches::kEnableConnectBackupJobs)) {
+    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
+        true);
+  } else if (parsed_command_line().HasSwitch(
+        switches::kDisableConnectBackupJobs)) {
+    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
+        false);
+  } else {
+    const FieldTrial::Probability kConnectBackupJobsDivisor = 100;
+    // 50% probability.
+    const FieldTrial::Probability kConnectBackupJobsProbability = 50;
+    scoped_refptr<FieldTrial> trial =
+      new FieldTrial("ConnnectBackupJobs", kConnectBackupJobsDivisor);
+    const int connect_backup_jobs_enabled =
+        trial->AppendGroup("ConnectBackupJobsEnabled",
+            kConnectBackupJobsProbability);
+    trial->AppendGroup("ConnectBackupJobsDisabled",
+                       FieldTrial::kAllRemainingProbability);
+    const int trial_group = trial->group();
+    net::internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
+        trial_group == connect_backup_jobs_enabled);
   }
 }
 

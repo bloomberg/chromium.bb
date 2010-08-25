@@ -4911,6 +4911,43 @@ void RenderView::DumpLoadHistograms() const {
                   begin_to_finish_all_loads);
   }
 
+  // Histograms to determine if backup connection jobs have an impact on PLT.
+  static const bool connect_backup_jobs_fieldtrial(
+      FieldTrialList::Find("ConnnectBackupJobs") &&
+      !FieldTrialList::Find("ConnnectBackupJobs")->group_name().empty());
+  if (connect_backup_jobs_fieldtrial) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.Abandoned", "ConnnectBackupJobs"),
+        abandoned_page ? 1 : 0, 2);
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("PLT.LoadType", "ConnnectBackupJobs"),
+        load_type, NavigationState::kLoadTypeMax);
+    switch (load_type) {
+      case NavigationState::NORMAL_LOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_NormalLoad", "ConnnectBackupJobs"),
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadNormal", "ConnnectBackupJobs"),
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadReload", "ConnnectBackupJobs"),
+            begin_to_finish_all_loads);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        PLT_HISTOGRAM(FieldTrial::MakeName(
+            "PLT.BeginToFinish_LinkLoadStaleOk", "ConnnectBackupJobs"),
+            begin_to_finish_all_loads);
+        break;
+      default:
+        break;
+    }
+  }
+
   // Histograms to determine if the number of connections has an
   // impact on PLT.
   // TODO(jar): Consider removing the per-link-type versions.  We

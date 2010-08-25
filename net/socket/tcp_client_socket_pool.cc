@@ -202,7 +202,7 @@ TCPClientSocketPool::TCPClientSocketPool(
             base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),
             new TCPConnectJobFactory(client_socket_factory,
                                      host_resolver, net_log)) {
-  base_.EnableBackupJobs();
+  base_.EnableConnectBackupJobs();
 }
 
 TCPClientSocketPool::~TCPClientSocketPool() {}

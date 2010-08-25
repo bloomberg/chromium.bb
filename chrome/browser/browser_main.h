@@ -116,6 +116,10 @@ class BrowserMainParts {
   // A/B test for prefetching with --(enable|disable)-prefetch not set.
   void PrefetchFieldTrial();
 
+  // A/B test for automatically establishing a backup TCP connection when a
+  // specified timeout value is reached.
+  void ConnectBackupJobsFieldTrial();
+
   // Used to initialize NSPR where appropriate.
   virtual void InitializeSSL() = 0;
 

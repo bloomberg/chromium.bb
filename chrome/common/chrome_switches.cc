@@ -145,6 +145,10 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // Disable support for cached byte-ranges.
 const char kDisableByteRangeSupport[]       = "disable-byte-range-support";
 
+// Disables establishing a backup TCP connection if a specified timeout is
+// exceeded.
+const char kDisableConnectBackupJobs[]      = "disable-connect-backup-jobs";
+
 // Disable requests that webkit labels TargetIsPrefetch.  As of
 // writing only <link rel=prefetch...> but also eventually
 // Link: headers.
@@ -268,7 +272,7 @@ const char kDisableSyncPasswords[]          = "disable-sync-passwords";
 const char kDisableSyncPreferences[]        = "disable-sync-preferences";
 
 // Disable syncing of sessions.
-const char kDisableSyncSessions[]        = "disable-sync-sessions";
+const char kDisableSyncSessions[]           = "disable-sync-sessions";
 
 // Disable syncing of themes.
 const char kDisableSyncThemes[]             = "disable-sync-themes";
@@ -316,7 +320,7 @@ const char kDomAutomationController[]       = "dom-automation";
 const char kDumpHistogramsOnExit[]          = "dump-histograms-on-exit";
 
 // Enable displaying net log events on the command line.
-extern const char kLogNetLog[]             = "log-net-log";
+extern const char kLogNetLog[]              = "log-net-log";
 
 // Enable gpu-accelerated compositing.
 const char kEnableAcceleratedCompositing[]  = "enable-accelerated-compositing";
@@ -337,7 +341,7 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // This applies only when the process type is "service". Enables the
 // Chromoting Host Process within the service process.
-const char kEnableRemoting[]              = "enable-remoting";
+const char kEnableRemoting[]                = "enable-remoting";
 
 // Enable click-to-play for blocked plugins.
 const char kEnableClickToPlay[]             = "enable-click-to-play";
@@ -348,6 +352,10 @@ const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 
 // Enables the Cloud Print dialog hosting code.
 const char kEnableCloudPrint[]              = "enable-cloud-print";
+
+// Enables establishing a backup TCP connection if a specified timeout is
+// exceeded.
+const char kEnableConnectBackupJobs[]       = "enable-connect-backup-jobs";
 
 // Enable requests that webkit labels TargetIsPrefetch.  As of
 // writing only <link rel=prefetch...> but also eventually
@@ -468,7 +476,7 @@ const char kEnableSyncPasswords[]           = "enable-sync-passwords";
 const char kEnableSyncPreferences[]         = "enable-sync-preferences";
 
 // Enable syncing browser sessions.
-const char kEnableSyncSessions[]         = "enable-sync-sessions";
+const char kEnableSyncSessions[]            = "enable-sync-sessions";
 
 // Enable syncing browser themes.
 const char kEnableSyncThemes[]              = "enable-sync-themes";

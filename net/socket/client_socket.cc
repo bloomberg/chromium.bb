@@ -4,6 +4,7 @@
 
 #include "net/socket/client_socket.h"
 
+#include "base/field_trial.h"
 #include "base/histogram.h"
 
 namespace net {
@@ -41,7 +42,15 @@ void ClientSocket::EmitPreconnectionHistograms() const {
     result += 3;
   else if (subresource_speculation_)
     result += 6;
-  UMA_HISTOGRAM_ENUMERATION("Net.PreconnectUtilization", result, 9);
+
+  static const bool connect_backup_jobs_fieldtrial =
+      FieldTrialList::Find("ConnnectBackupJobs") &&
+      !FieldTrialList::Find("ConnnectBackupJobs")->group_name().empty();
+  if (connect_backup_jobs_fieldtrial) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("Net.PreconnectUtilization", "ConnnectBackupJobs"),
+        result, 9);
+  }
 }
 
 void ClientSocket::SetSubresourceSpeculation() {
