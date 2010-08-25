@@ -63,7 +63,7 @@ TEST_F(FirefoxProxySettingsTest, TestParse) {
       "    HTTP: http_proxy:1111\n"
       "    HTTPS: ssl_proxy:2222\n"
       "    FTP: ftp_proxy:3333\n"
-      "    SOCKS: socks4://socks_host:5555\n"
+      "    (fallback): socks4://socks_host:5555\n"
       "  Bypass list: \n"
       "    *localhost\n"
       "    127.0.0.1\n"

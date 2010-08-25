@@ -485,8 +485,10 @@ TEST_F(ProxyConfigServiceImplTest, ModifyFromUI) {
                 ui_config.https_proxy.server.ToURI());
     if (input.ftp_uri)
       EXPECT_EQ(proxy_rules.proxy_for_ftp, ui_config.ftp_proxy.server.ToURI());
-    if (input.socks_uri)
-      EXPECT_EQ(proxy_rules.socks_proxy, ui_config.socks_proxy.server.ToURI());
+    if (input.socks_uri) {
+      EXPECT_EQ(proxy_rules.fallback_proxy,
+                ui_config.socks_proxy.server.ToURI());
+    }
     if (input.bypass_rules)
       EXPECT_TRUE(bypass_rules.Equals(ui_config.bypass_rules));
   }

@@ -147,7 +147,7 @@ bool FirefoxProxySettings::ToProxyConfig(net::ProxyConfig* config) {
     net::ProxyServer::Scheme proxy_scheme = V5 == socks_version() ?
         net::ProxyServer::SCHEME_SOCKS5 : net::ProxyServer::SCHEME_SOCKS4;
 
-    config->proxy_rules().socks_proxy = net::ProxyServer(
+    config->proxy_rules().fallback_proxy = net::ProxyServer(
         proxy_scheme,
         net::HostPortPair(socks_host(), socks_port()));
   }

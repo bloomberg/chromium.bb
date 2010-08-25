@@ -129,7 +129,7 @@ void ProxyConfigServiceImpl::ProxyConfig::ConvertToNetProxyConfig(
       net_config->proxy_rules().proxy_for_http = http_proxy.server;
       net_config->proxy_rules().proxy_for_https = https_proxy.server;
       net_config->proxy_rules().proxy_for_ftp = ftp_proxy.server;
-      net_config->proxy_rules().socks_proxy = socks_proxy.server;
+      net_config->proxy_rules().fallback_proxy = socks_proxy.server;
       net_config->proxy_rules().bypass_rules = bypass_rules;
       break;
     default:
