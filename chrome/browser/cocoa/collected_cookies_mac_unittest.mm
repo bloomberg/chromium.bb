@@ -11,6 +11,7 @@
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/browser/profile.h"
+#include "chrome/test/testing_profile.h"
 
 namespace {
 

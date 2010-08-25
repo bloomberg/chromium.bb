@@ -15,6 +15,7 @@
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/test/browser_with_test_window_test.h"
+#include "chrome/test/testing_profile.h"
 #include "gfx/size.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gmock/include/gmock/gmock.h"

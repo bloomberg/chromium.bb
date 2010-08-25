@@ -13,6 +13,7 @@
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
+#include "chrome/test/testing_profile.h"
 #include "gfx/canvas_skia.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

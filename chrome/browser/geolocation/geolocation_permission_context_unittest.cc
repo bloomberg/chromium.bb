@@ -14,9 +14,11 @@
 #include "chrome/browser/renderer_host/mock_render_process_host.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TestTabContents short-circuits TAB_CONTENTS_INFOBAR_REMOVED to call

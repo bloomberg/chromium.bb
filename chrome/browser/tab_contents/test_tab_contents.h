@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
 #pragma once
 
-#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
 #include "webkit/glue/webpreferences.h"
 
+class Profile;
 class TestRenderViewHost;
 
 // Subclass TabContents to ensure it creates TestRenderViewHosts and does

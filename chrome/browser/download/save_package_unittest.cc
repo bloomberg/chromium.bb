@@ -11,6 +11,7 @@
 #include "chrome/browser/download/save_package.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
+#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/pref_value_store.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"

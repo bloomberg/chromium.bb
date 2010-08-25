@@ -7,6 +7,7 @@
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"

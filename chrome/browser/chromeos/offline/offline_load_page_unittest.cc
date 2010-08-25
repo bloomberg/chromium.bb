@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/chromeos/offline/offline_load_page.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/render_messages_params.h"
 

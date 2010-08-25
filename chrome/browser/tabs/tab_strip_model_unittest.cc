@@ -6,6 +6,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string_number_conversions.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/stl_util-inl.h"
@@ -29,6 +30,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;

@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 
 #include "chrome/browser/renderer_host/render_view_host.h"
+#include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/common/notification_service.h"
