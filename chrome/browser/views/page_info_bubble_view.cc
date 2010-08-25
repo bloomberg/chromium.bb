@@ -4,25 +4,19 @@
 
 #include "chrome/browser/views/page_info_bubble_view.h"
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/controls/link.h"
 #include "views/controls/separator.h"
 #include "views/grid_layout.h"
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
-
-namespace {
 
 // Layout constants.
 const int kHGapToBorder = 11;
@@ -36,29 +30,28 @@ const int kIconOffset = 28;
 
 // A section contains an image that shows a status (good or bad), a title, an
 // optional head-line (in bold) and a description.
-class Section : public views::View,
-                public views::LinkController {
+class Section : public views::View {
  public:
-  Section(PageInfoBubbleView* owner,
-          const PageInfoModel::SectionInfo& section_info);
+  Section(bool state,
+          const string16& headline,
+          const string16& description);
   virtual ~Section();
 
-  // views::View methods:
   virtual int GetHeightForWidth(int w);
   virtual void Layout();
-
-  // views::LinkController methods:
-  virtual void LinkActivated(views::Link* source, int event_flags);
 
  private:
   // Calculate the layout if |compute_bounds_only|, otherwise does Layout also.
   gfx::Size LayoutItems(bool compute_bounds_only, int width);
 
-  // The view that owns this Section object.
-  PageInfoBubbleView* owner_;
+  // Whether to show the good/bad icon.
+  bool state_;
 
-  // The information this view represents.
-  PageInfoModel::SectionInfo info_;
+  // The first line of the description, show in bold.
+  string16 headline_;
+
+  // The description, displayed below the head line.
+  string16 description_;
 
   static SkBitmap* good_state_icon_;
   static SkBitmap* bad_state_icon_;
@@ -66,7 +59,6 @@ class Section : public views::View,
   views::ImageView* status_image_;
   views::Label* headline_label_;
   views::Label* description_label_;
-  views::Link* link_;
 
   DISALLOW_COPY_AND_ASSIGN(Section);
 };
@@ -75,29 +67,21 @@ class Section : public views::View,
 SkBitmap* Section::good_state_icon_ = NULL;
 SkBitmap* Section::bad_state_icon_ = NULL;
 
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // PageInfoBubbleView
 
-PageInfoBubbleView::PageInfoBubbleView(gfx::NativeWindow parent_window,
-                                       Profile* profile,
+PageInfoBubbleView::PageInfoBubbleView(Profile* profile,
                                        const GURL& url,
                                        const NavigationEntry::SSLStatus& ssl,
                                        bool show_history)
     : ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
                                             show_history, this)),
-      parent_window_(parent_window),
       cert_id_(ssl.cert_id()),
       info_bubble_(NULL) {
   LayoutSections();
 }
 
 PageInfoBubbleView::~PageInfoBubbleView() {
-}
-
-void PageInfoBubbleView::ShowCertDialog() {
-  ShowCertificateViewerByID(parent_window_, cert_id_);
 }
 
 void PageInfoBubbleView::LayoutSections() {
@@ -120,7 +104,7 @@ void PageInfoBubbleView::LayoutSections() {
     layout->StartRow(0, 0);
     // TODO(finnur): Remove title from the info struct, since it is
     //               not used anymore.
-    layout->AddView(new Section(this, info));
+    layout->AddView(new Section(info.state, info.head_line, info.description));
 
     // Add separator after all sections except the last.
     if (i < count - 1) {
@@ -140,7 +124,7 @@ gfx::Size PageInfoBubbleView::GetPreferredSize() {
   int count = model_.GetSectionCount();
   for (int i = 0; i < count; ++i) {
     PageInfoModel::SectionInfo info = model_.GetSectionInfo(i);
-    Section section(this, info);
+    Section section(info.state, info.head_line, info.description);
     size.Enlarge(0, section.GetHeightForWidth(size.width()));
   }
 
@@ -161,43 +145,35 @@ void PageInfoBubbleView::ModelChanged() {
 ////////////////////////////////////////////////////////////////////////////////
 // Section
 
-Section::Section(PageInfoBubbleView* owner,
-                 const PageInfoModel::SectionInfo& section_info)
-    : owner_(owner),
-      info_(section_info) {
+Section::Section(bool state,
+                 const string16& headline,
+                 const string16& description)
+    : state_(state),
+      headline_(headline),
+      description_(description) {
   if (!good_state_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     good_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_GOOD);
     bad_state_icon_ = rb.GetBitmapNamed(IDR_PAGEINFO_BAD);
   }
 
-  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY ||
-      info_.type == PageInfoModel::SECTION_INFO_CONNECTION) {
-    status_image_ = new views::ImageView();
-    status_image_->SetImage(info_.state ? good_state_icon_ : bad_state_icon_);
-    AddChildView(status_image_);
-  }
+  status_image_ = new views::ImageView();
+  status_image_->SetImage(state ? good_state_icon_ : bad_state_icon_);
+  AddChildView(status_image_);
 
-  headline_label_ = new views::Label(UTF16ToWideHack(info_.headline));
+  headline_label_ = new views::Label(UTF16ToWideHack(headline));
   headline_label_->SetFont(
       headline_label_->font().DeriveFont(0, gfx::Font::BOLD));
   headline_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(headline_label_);
 
-  description_label_ = new views::Label(UTF16ToWideHack(info_.description));
+  description_label_ = new views::Label(UTF16ToWideHack(description));
   description_label_->SetMultiLine(true);
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   // Allow linebreaking in the middle of words if necessary, so that extremely
   // long hostnames (longer than one line) will still be completely shown.
   description_label_->SetAllowCharacterBreak(true);
   AddChildView(description_label_);
-
-  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY) {
-    link_ = new views::Link(
-        l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
-    link_->SetController(this);
-    AddChildView(link_);
-  }
 }
 
 Section::~Section() {
@@ -211,22 +187,14 @@ void Section::Layout() {
   LayoutItems(false, width());
 }
 
-void Section::LinkActivated(views::Link* source, int event_flags) {
-  owner_->ShowCertDialog();
-}
-
 gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
   int x = kHGapToBorder;
   int y = kVGapToImage;
 
   // Layout the image, head-line and description.
-  gfx::Size size;
-  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY ||
-      info_.type == PageInfoModel::SECTION_INFO_CONNECTION) {
-    size = status_image_->GetPreferredSize();
-    if (!compute_bounds_only)
-      status_image_->SetBounds(x, y, size.width(), size.height());
-  }
+  gfx::Size size = status_image_->GetPreferredSize();
+  if (!compute_bounds_only)
+    status_image_->SetBounds(x, y, size.width(), size.height());
   int image_height = y + size.height();
   x += size.width() + kHGapImageToDescription;
   int w = width - x - kTextPaddingRight;
@@ -248,11 +216,6 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
   } else {
     if (!compute_bounds_only)
       description_label_->SetBounds(x, y, 0, 0);
-  }
-  if (info_.type == PageInfoModel::SECTION_INFO_IDENTITY) {
-    size = link_->GetPreferredSize();
-    link_->SetBounds(x, y, size.width(), size.height());
-    y += size.height();
   }
 
   // Make sure the image is not truncated if the text doesn't contain much.
@@ -279,7 +242,7 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
   // Show the bubble.
   PageInfoBubbleView* page_info_bubble =
-      new PageInfoBubbleView(parent, profile, url, ssl, show_history);
+      new PageInfoBubbleView(profile, url, ssl, show_history);
   InfoBubble* info_bubble =
       InfoBubble::Show(browser_view->GetWidget(), bounds,
                        BubbleBorder::TOP_LEFT,

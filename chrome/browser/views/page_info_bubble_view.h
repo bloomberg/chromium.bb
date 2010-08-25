@@ -18,15 +18,12 @@ class PageInfoBubbleView : public views::View,
                            public PageInfoModel::PageInfoModelObserver,
                            public InfoBubbleDelegate {
  public:
-  PageInfoBubbleView(gfx::NativeWindow parent_window,
-                     Profile* profile,
+  PageInfoBubbleView(Profile* profile,
                      const GURL& url,
                      const NavigationEntry::SSLStatus& ssl,
                      bool show_history);
   virtual ~PageInfoBubbleView();
 
-  // Show the certificate dialog.
-  void ShowCertDialog();
 
   void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
 
@@ -46,9 +43,6 @@ class PageInfoBubbleView : public views::View,
  private:
   // Layout the sections within the bubble.
   void LayoutSections();
-
-  // The parent window of the InfoBubble showing this view.
-  gfx::NativeWindow parent_window_;
 
   // The model providing the various section info.
   PageInfoModel model_;
