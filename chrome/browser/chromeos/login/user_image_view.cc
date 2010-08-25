@@ -79,6 +79,7 @@ void UserImageView::Init() {
 
   video_button_ = new views::ImageButton(this);
   video_button_->SetImage(views::CustomButton::BS_NORMAL, &video_button_image);
+  video_button_->SetFocusable(true);
   AddChildView(video_button_);
 
   selected_image_ = new views::ImageView();

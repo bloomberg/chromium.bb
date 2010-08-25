@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/login/update_screen.h"
 #include "chrome/browser/chromeos/login/user_image_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/pref_service.h"
@@ -98,7 +99,9 @@ class ContentView : public views::View {
         accel_eula_screen_(views::Accelerator(base::VKEY_E,
                                               false, true, true)),
         accel_register_screen_(views::Accelerator(base::VKEY_R,
-                                                  false, true, true)) {
+                                                  false, true, true)),
+        accel_enable_accessibility_(views::Accelerator(
+            WizardAccessibilityHelper::accelerator, false, true, true)) {
     AddAccelerator(accel_account_screen_);
     AddAccelerator(accel_login_screen_);
     AddAccelerator(accel_network_screen_);
@@ -106,6 +109,7 @@ class ContentView : public views::View {
     AddAccelerator(accel_image_screen_);
     AddAccelerator(accel_eula_screen_);
     AddAccelerator(accel_register_screen_);
+    AddAccelerator(accel_enable_accessibility_);
   }
 
   ~ContentView() {
@@ -134,6 +138,9 @@ class ContentView : public views::View {
       controller->ShowEulaScreen();
     } else if (accel == accel_register_screen_) {
       controller->ShowRegistrationScreen();
+    } else if (accel == accel_enable_accessibility_) {
+      WizardAccessibilityHelper::GetInstance()->EnableAccessibility(
+          controller->contents(), ProfileManager::GetDefaultProfile());
     } else {
       return false;
     }
@@ -174,6 +181,7 @@ class ContentView : public views::View {
   views::Accelerator accel_image_screen_;
   views::Accelerator accel_eula_screen_;
   views::Accelerator accel_register_screen_;
+  views::Accelerator accel_enable_accessibility_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
@@ -500,6 +508,7 @@ const chromeos::StartupCustomizationDocument*
 // static
 void WizardController::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterBooleanPref(kOobeComplete, false);
+  local_state->RegisterBooleanPref(prefs::kAccessibilityEnabled, false);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
